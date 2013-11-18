@@ -217,15 +217,13 @@ set (tests
   test_Atomic.cpp
   test_Capabilities.cpp
   test_Coallocation.cpp
-  test_StopRestartAgentsCoalloc.cpp
   test_Inotify.cpp
   test_CancelJob.cpp
   test_SynchronizedQueue.cpp
   test_JobId.cpp
   test_Scheduler.cpp
   test_LostAgentRegistrationAck.cpp
-  test_StopRestartDrtsSubscriberCli.cpp
-  test_StopRestartDrtsPollingCli.cpp
+  restart_drts_worker_while_jobs_are_running.cpp
   test_Topologies.cpp
   test_Subscriber.cpp
   test_SubmitJobFails.cpp

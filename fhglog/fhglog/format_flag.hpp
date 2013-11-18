@@ -249,7 +249,7 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << std::endl;
+            return os << '\n';
           }
         };
         struct UNDEF

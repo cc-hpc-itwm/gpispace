@@ -3,14 +3,18 @@
 #ifndef SDPA_TEST_UTILS_HPP
 #define SDPA_TEST_UTILS_HPP
 
-#include <CreateDrtsWorker.hpp>
+#include "tests_config.hpp"
 
 #include <sdpa/client/ClientApi.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <sdpa/memory.hpp>
 
 #include <fhg/plugin/core/kernel.hpp>
+#include <fhg/plugin/plugin.hpp>
 
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 #include <boost/ref.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
@@ -133,6 +137,40 @@ namespace utils
         result.push_back (sdpa::MasterInfo (agent.name()));
       }
       return result;
+    }
+
+    sdpa::shared_ptr<fhg::core::kernel_t>
+      createDRTSWorker ( const std::string& drtsName
+                       , const std::string& masterName
+                       , const std::string& cpbList
+                       , const std::string& strModulesPath
+                       , const std::string& kvsHost
+                       , const std::string& kvsPort
+                       )
+    {
+      sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
+      kernel->set_name (drtsName);
+
+      kernel->put ("plugin.kvs.host", kvsHost);
+      kernel->put ("plugin.kvs.port", kvsPort);
+
+      //see ~/.sdpa/configs/sdpa.rc
+
+      kernel->put ("plugin.drts.name", drtsName);
+      kernel->put ("plugin.drts.master", masterName);
+      kernel->put ("plugin.drts.backlog", "2");
+
+      if(!cpbList.empty())
+        kernel->put ("plugin.drts.capabilities", cpbList);
+
+      kernel->put ("plugin.wfe.library_path", strModulesPath);
+
+      kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
+      kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
+      kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
+      kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
+
+      return kernel;
     }
   }
 
@@ -305,6 +343,73 @@ namespace utils
       throw retried_too_often ("cancel_job");
     }
 
+    void subscribe (sdpa::client::ClientApi::ptr_t c, const sdpa::job_id_t& id)
+    {
+      LOG (DEBUG, "Subscribe to job " << id);
+
+      for (int i (0); i < NMAXTRIALS; ++i)
+      {
+        try
+        {
+          return c->subscribe (id);
+        }
+        catch (const sdpa::client::ClientException& ex)
+        {
+          LOG (DEBUG, ex.what());
+        }
+      }
+
+      throw retried_too_often ("subscribe");
+    }
+
+    //! \note This duplicates behavior from apps/blocking_client.cpp,
+    //! which should probably go into ClientApi.
+    sdpa::status::code wait_for_status_change
+      (sdpa::client::ClientApi::ptr_t c, const sdpa::job_id_t& id)
+    {
+      subscribe (c, id);
+
+      seda::IEvent::Ptr event (c->waitForNotification());
+
+      if ( sdpa::events::JobFinishedEvent* evt
+         = dynamic_cast<sdpa::events::JobFinishedEvent*> (event.get())
+         )
+      {
+        BOOST_REQUIRE (evt->job_id() == id);
+        return sdpa::status::FINISHED;
+      }
+      else if ( sdpa::events::JobFailedEvent* evt
+              = dynamic_cast<sdpa::events::JobFailedEvent*> (event.get())
+              )
+      {
+        BOOST_REQUIRE (evt->job_id() == id);
+        return sdpa::status::FAILED;
+      }
+      else if ( sdpa::events::CancelJobAckEvent* evt
+              = dynamic_cast<sdpa::events::CancelJobAckEvent*> (event.get())
+              )
+      {
+        BOOST_REQUIRE (evt->job_id() == id);
+        return sdpa::status::CANCELED;
+      }
+      else if ( sdpa::events::ErrorEvent* evt
+              = dynamic_cast<sdpa::events::ErrorEvent*>(event.get())
+              )
+      {
+        throw std::runtime_error
+          ( "got error event: reason := "
+          + evt->reason()
+          + " code := "
+          + boost::lexical_cast<std::string> (evt->error_code())
+          );
+      }
+      else
+      {
+        throw std::runtime_error
+          ("invalid event after subscription to client");
+      }
+    }
+
     namespace
     {
       struct shutdown_on_exit
@@ -324,10 +429,11 @@ namespace utils
       };
     }
 
-    void submit_job_and_wait_for_termination ( std::string workflow
-                                             , std::string client_name
-                                             , const orchestrator& orch
-                                             )
+    void create_client_and_execute
+      ( std::string client_name
+      , const orchestrator& orch
+      , boost::function<void (sdpa::client::ClientApi::ptr_t)> function
+      )
     {
       std::vector<std::string> command_line;
       command_line.push_back ("--orchestrator=" + orch.name());
@@ -346,10 +452,7 @@ namespace utils
         ptrCli->configure_network( config );
         shutdown_on_exit _ (ptrCli);
 
-        const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
-        wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
-        retrieve_job_results (ptrCli, job_id_user);
-        delete_job (ptrCli, job_id_user);
+        function (ptrCli);
       }
       catch (const retried_too_often& ex)
       {
@@ -357,40 +460,118 @@ namespace utils
       }
     }
 
+    namespace
+    {
+      void wait_for_termination_impl
+        (sdpa::job_id_t job_id_user, sdpa::client::ClientApi::ptr_t ptrCli)
+      {
+        wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
+        retrieve_job_results (ptrCli, job_id_user);
+        delete_job (ptrCli, job_id_user);
+      }
+
+      void wait_for_termination_as_subscriber_impl
+        (sdpa::job_id_t job_id_user, sdpa::client::ClientApi::ptr_t ptrCli)
+      {
+        const sdpa::status::code state
+          (wait_for_status_change (ptrCli, job_id_user));
+        BOOST_REQUIRE (sdpa::status::is_terminal (state));
+        retrieve_job_results (ptrCli, job_id_user);
+        delete_job (ptrCli, job_id_user);
+      }
+
+      void submit_job_and_wait_for_termination_impl
+        (std::string workflow, sdpa::client::ClientApi::ptr_t ptrCli)
+      {
+        const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
+        wait_for_termination_impl (job_id_user, ptrCli);
+      }
+
+      void submit_job_and_cancel_and_wait_for_termination_impl
+        (std::string workflow, sdpa::client::ClientApi::ptr_t ptrCli)
+      {
+        const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
+        //! \todo There should not be a requirement for this!
+        boost::this_thread::sleep (boost::posix_time::seconds (1));
+        cancel_job (ptrCli, job_id_user);
+        wait_for_termination_impl (job_id_user, ptrCli);
+      }
+
+      void submit_job_and_wait_for_termination_as_subscriber_impl
+        (std::string workflow, sdpa::client::ClientApi::ptr_t ptrCli)
+      {
+        wait_for_termination_as_subscriber_impl
+          (submit_job (ptrCli, workflow), ptrCli);
+      }
+
+      void submit_job_result_by_ref
+        ( std::string workflow
+        , sdpa::client::ClientApi::ptr_t ptrCli
+        , sdpa::job_id_t* job_id
+        )
+      {
+        *job_id = submit_job (ptrCli, workflow);
+      }
+    }
+
+    void submit_job_and_wait_for_termination ( std::string workflow
+                                             , std::string client_name
+                                             , const orchestrator& orch
+                                             )
+    {
+      create_client_and_execute
+        ( client_name
+        , orch
+        , boost::bind (&submit_job_and_wait_for_termination_impl, workflow, _1)
+        );
+    }
+
     void submit_job_and_cancel_and_wait_for_termination ( std::string workflow
                                                         , std::string client_name
                                                         , const orchestrator& orch
                                                         )
     {
-      std::vector<std::string> command_line;
-      command_line.push_back ("--orchestrator=" + orch.name());
+      create_client_and_execute
+        ( client_name
+        , orch
+        , boost::bind (&submit_job_and_cancel_and_wait_for_termination_impl, workflow, _1)
+        );
+    }
 
-      try
-      {
-        sdpa::client::config_t config (sdpa::client::ClientApi::config());
-        config.parse_command_line (command_line);
+    void submit_job_and_wait_for_termination_as_subscriber
+      ( std::string workflow
+      , std::string client_name
+      , const orchestrator& orch
+      )
+    {
+      create_client_and_execute
+        ( client_name
+        , orch
+        , boost::bind (&submit_job_and_wait_for_termination_as_subscriber_impl, workflow, _1)
+        );
+    }
 
-        sdpa::client::ClientApi::ptr_t ptrCli
-          ( sdpa::client::ClientApi::create ( config
-                                            , client_name
-                                            , client_name + ".apps.client.out"
-                                            )
-          );
-        ptrCli->configure_network( config );
-        shutdown_on_exit _ (ptrCli);
+    void submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
+      ( std::string workflow
+      , std::string client_name
+      , const orchestrator& orch
+      )
+    {
+      sdpa::job_id_t job_id_user;
+      create_client_and_execute ( client_name
+                                , orch
+                                , boost::bind ( &submit_job_result_by_ref
+                                              , workflow
+                                              , _1
+                                              , &job_id_user
+                                              )
+                                );
 
-        const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
-        //! \todo There should not be a requirement for this!
-        boost::this_thread::sleep (boost::posix_time::seconds (1));
-        cancel_job (ptrCli, job_id_user);
-        wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
-        retrieve_job_results (ptrCli, job_id_user);
-        delete_job (ptrCli, job_id_user);
-      }
-      catch (const retried_too_often& ex)
-      {
-        BOOST_FAIL (ex.what());
-      }
+      create_client_and_execute
+        ( client_name
+        , orch
+        , boost::bind (&wait_for_termination_as_subscriber_impl, job_id_user, _1)
+        );
     }
   }
 }

@@ -40,6 +40,6 @@ BOOST_AUTO_TEST_CASE (fail_on_empty_workflow)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination
+  utils::client::submit_job_and_cancel_and_wait_for_termination
     ("", "sdpac", orchestrator);
 }

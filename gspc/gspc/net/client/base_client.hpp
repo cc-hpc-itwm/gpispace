@@ -10,6 +10,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
 
 #include <fhg/util/thread/atomic.hpp>
 
@@ -93,8 +94,17 @@ namespace gspc
 
         void set_timeout (size_t ms);
       private:
+        enum state_t
+          {
+            DISCONNECTED
+          , CONNECTED
+          };
+
         bool try_notify_response (frame const & f);
         size_t abort_all_responses (boost::system::error_code const &);
+
+        void set_state (state_t newstate);
+        state_t get_state () const;
 
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
         typedef boost::shared_lock<boost::shared_mutex> shared_lock;
@@ -105,13 +115,16 @@ namespace gspc
         mutable boost::shared_mutex     m_mutex;
         boost::asio::io_service        &m_io_service;
         endpoint_type                   m_endpoint;
-        int                             m_state;
+
+        mutable boost::shared_mutex     m_state_mutex;
+        state_t                         m_state;
         connection_ptr_t                m_connection;
 
         frame_handler_t                *m_frame_handler;
 
         fhg::thread::atomic<size_t> m_message_id;
 
+        mutable boost::condition_variable_any m_responses_changed;
         mutable boost::shared_mutex      m_responses_mutex;
         response_map_t                   m_responses;
         boost::posix_time::time_duration m_timeout;

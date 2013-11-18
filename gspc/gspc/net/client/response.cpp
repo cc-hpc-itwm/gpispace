@@ -52,7 +52,6 @@ namespace gspc
       void response_t::abort (boost::system::error_code const &ec)
       {
         boost::unique_lock<boost::mutex> lock (m_mutex);
-        assert (! m_aborted);
 
         if (not m_reply)
         {

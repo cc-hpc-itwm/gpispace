@@ -19,13 +19,6 @@ namespace gspc
   {
     namespace client
     {
-      enum state_t
-        {
-          DISCONNECTED
-        , CONNECTED
-        , FAILED
-        };
-
       template <class Proto>
       base_client<Proto>::base_client ( boost::asio::io_service &io
                                       , endpoint_type const &endpoint
@@ -55,15 +48,27 @@ namespace gspc
       }
 
       template <class Proto>
+      typename base_client<Proto>::state_t base_client<Proto>::get_state () const
+      {
+        shared_lock _ (m_state_mutex);
+        return m_state;
+      }
+
+      template <class Proto>
+      void base_client<Proto>::set_state (base_client<Proto>::state_t newstate)
+      {
+        unique_lock _ (m_state_mutex);
+        m_state = newstate;
+      }
+
+      template <class Proto>
       int base_client<Proto>::start (const boost::posix_time::time_duration timeout)
       {
-        boost::system::error_code ec;
+        unique_lock monitor_lock (m_mutex);
 
-        {
-          unique_lock _ (m_mutex);
-          m_connection.reset (new connection_type (0, m_io_service, *this));
-          m_connection->socket ().connect (m_endpoint, ec);
-        }
+        boost::system::error_code ec;
+        m_connection.reset (new connection_type (0, m_io_service, *this));
+        m_connection->socket ().connect (m_endpoint, ec);
 
         if (not ec)
         {
@@ -81,10 +86,20 @@ namespace gspc
       {
         unique_lock _ (m_mutex);
 
-        if (m_connection)
+        m_connection.reset ();
+
+        abort_all_responses
+          (boost::system::errc::make_error_code (boost::system::errc::operation_canceled));
+
         {
-          m_connection->stop ();
+          unique_lock _ (m_responses_mutex);
+          while (not m_responses.empty ())
+          {
+            m_responses_changed.wait (_);
+          }
         }
+
+        set_state (DISCONNECTED);
 
         return 0;
       }
@@ -93,14 +108,15 @@ namespace gspc
       bool
       base_client<Proto>::is_connected () const
       {
-        shared_lock _ (m_mutex);
-        return this->m_state == CONNECTED;
+        shared_lock _ (m_state_mutex);
+        return m_state == CONNECTED;
       }
 
       template <class Proto>
       boost::system::error_code const &
       base_client<Proto>::last_error_code () const
       {
+        shared_lock _ (m_mutex);
         return this->m_last_error_code;
       }
 
@@ -108,6 +124,7 @@ namespace gspc
       std::string const &
       base_client<Proto>::get_private_queue () const
       {
+        shared_lock _ (m_mutex);
         return this->m_priv_queue;
       }
 
@@ -115,6 +132,8 @@ namespace gspc
       void
       base_client<Proto>::set_timeout (size_t ms)
       {
+        unique_lock _ (m_mutex);
+
         if (std::size_t (-1) == ms)
         {
           m_timeout = boost::posix_time::pos_infin;
@@ -148,17 +167,14 @@ namespace gspc
 
         if (rc != 0)
         {
-          {
-            unique_lock _ (m_mutex);
-            m_state = FAILED;
-          }
+          set_state (DISCONNECTED);
 
           m_connection.reset ();
 
           return rc;
         }
 
-        if (rply.get_command () == "CONNECTED")
+        if (rc == 0 && rply.get_command () == "CONNECTED")
         {
           std::string session_id =
             header::get (rply, "session-id", std::string ());
@@ -170,30 +186,30 @@ namespace gspc
             ).str ();
 
 
-          {
-            unique_lock _ (m_mutex);
-            m_state = CONNECTED;
-          }
+          set_state (CONNECTED);
 
           subscribe (m_priv_queue, m_priv_queue);
 
           return 0;
         }
-        else if (rply.get_command () == "ERROR")
-        {
-          {
-            unique_lock _ (m_mutex);
-            m_state = FAILED;
-          }
-          return header::get (rply, "code", -EPERM);
-        }
         else
         {
+          set_state (DISCONNECTED);
+          m_connection.reset ();
+
+          if (rc == 0)
           {
-            unique_lock _ (m_mutex);
-            m_state = FAILED;
+            if (rply.get_command () == "ERROR")
+            {
+              rc = header::get (rply, "code", -EPERM);
+            }
+            else
+            {
+              rc = -EPROTO;
+            }
           }
-          return -EPROTO;
+
+          return rc;
         }
       }
 
@@ -324,17 +340,13 @@ namespace gspc
         {
           unique_lock lock (m_responses_mutex);
           m_responses [response->id ()] = response;
+          m_responses_changed.notify_all ();
         }
 
         rc = send_raw (to_send);
         if (0 == rc)
         {
           rc = response->wait (to_wait);
-        }
-
-        {
-          unique_lock lock (m_responses_mutex);
-          m_responses.erase (response->id ());
         }
 
         if (rc == 0)
@@ -345,8 +357,14 @@ namespace gspc
           }
           else
           {
-            return -ETIME;
+            rc = -ETIME;
           }
+        }
+
+        {
+          unique_lock lock (m_responses_mutex);
+          m_responses.erase (response->id ());
+          m_responses_changed.notify_all ();
         }
 
         return rc;
@@ -395,7 +413,7 @@ namespace gspc
                                         , std::string const &id
                                         )
       {
-        if (m_state != CONNECTED)
+        if (not is_connected ())
         {
           return -ENOTCONN;
         }
@@ -409,7 +427,7 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::unsubscribe (std::string const &id)
       {
-        if (m_state != CONNECTED)
+        if (not is_connected ())
         {
           return -ENOTCONN;
         }
@@ -475,10 +493,7 @@ namespace gspc
                                            , boost::system::error_code const &ec
                                            )
       {
-        {
-          unique_lock _ (m_mutex);
-          m_state = FAILED;
-        }
+        set_state (DISCONNECTED);
 
         if (0 == abort_all_responses (ec))
         {

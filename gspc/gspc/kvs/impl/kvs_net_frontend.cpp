@@ -1,5 +1,6 @@
 #include "kvs_net_frontend.hpp"
 
+#include <boost/thread/locks.hpp>
 #include <boost/format.hpp>
 
 #include <gspc/net.hpp>
@@ -54,11 +55,18 @@ namespace gspc
       frame rply;
       frame rqst;
 
-      if (not m_client->is_connected ())
       {
-        rc = m_client->start ();
-        if (rc != 0)
-          return rc;
+        boost::lock_guard<boost::mutex> _ (m_mutex);
+
+        if (not m_client->is_connected ())
+        {
+          m_client->stop ();
+          rc = m_client->start ();
+          if (rc != 0)
+          {
+            return rc;
+          }
+        }
       }
 
       rqst.set_header ("destination", KVS_SERVICE + "/" + rpc);

@@ -114,7 +114,7 @@ fhg_add_test(test_supervisor.cpp
 
 #### KVS related tests
 
-fhg_add_test(test_kvs.cpp
+fhg_add_test(test_kvs_impl.cpp
   LINK_LIBRARIES libgspc
                  fhg-util
                  we-dev
@@ -123,5 +123,17 @@ fhg_add_test(test_kvs.cpp
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
                  ${Boost_SYSTEM_SHARED_LIBRARY}
                  ${CMAKE_DL_LIBS}
-  DESCRIPTION "GSPCKvs - KVS related tests"
+  DESCRIPTION "GSPCKvs - KVS implementation tests"
+)
+
+fhg_add_test(test_kvs_net.cpp
+  LINK_LIBRARIES libgspc
+                 fhg-util
+                 we-dev
+                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_SIGNALS_SHARED_LIBRARY}
+                 ${Boost_DATE_TIME_SHARED_LIBRARY}
+                 ${Boost_SYSTEM_SHARED_LIBRARY}
+                 ${CMAKE_DL_LIBS}
+  DESCRIPTION "GSPCKvs - KVS network tests"
 )
