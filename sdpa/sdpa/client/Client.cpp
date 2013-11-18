@@ -103,7 +103,41 @@ void Client::perform(const seda::IEvent::Ptr &event)
 void Client::start(const config_t & config) throw (ClientException)
 {
   fsm_.Start (config);
-  action_configure (config);
+
+  if (config.is_set("network.timeout"))
+  {
+    timeout_ = config.get<unsigned int>("network.timeout");
+  }
+
+  if (config.is_set("orchestrator"))
+  {
+    orchestrator_ = config.get<std::string>("orchestrator");
+  }
+
+  if (config.is_set("location"))
+  {
+    my_location_ = config.get<std::string>("location");
+  }
+
+  sdpa::com::NetworkStrategy::ptr_t net
+    (new sdpa::com::NetworkStrategy( client_stage_->name()
+                                   , client_stage_->name() //"sdpac" // TODO encode user, pid, etc
+                                   , fhg::com::host_t ("*")
+                                   , fhg::com::port_t ("0")
+                                   )
+    );
+  _output_stage = seda::Stage::Ptr (new seda::Stage (_output_stage_name, net));
+  seda::StageRegistry::instance().insert (_output_stage);
+  _output_stage->start();
+
+  if (orchestrator_.empty())
+  {
+    client_stage_->send(seda::IEvent::Ptr(new ConfigNOK("no orchestrator specified!")));
+  }
+  else
+  {
+    client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
+  }
 
   try
   {
@@ -365,44 +399,6 @@ sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (Clien
   catch (const Timedout &)
   {
     throw ApiCallFailed("retrieveResults");
-  }
-}
-
-void Client::action_configure(const config_t &cfg)
-{
-  if (cfg.is_set("network.timeout"))
-  {
-    timeout_ = cfg.get<unsigned int>("network.timeout");
-  }
-
-  if (cfg.is_set("orchestrator"))
-  {
-    orchestrator_ = cfg.get<std::string>("orchestrator");
-  }
-
-  if (cfg.is_set("location"))
-  {
-    my_location_ = cfg.get<std::string>("location");
-  }
-
-  sdpa::com::NetworkStrategy::ptr_t net
-    (new sdpa::com::NetworkStrategy( client_stage_->name()
-                                   , client_stage_->name() //"sdpac" // TODO encode user, pid, etc
-                                   , fhg::com::host_t ("*")
-                                   , fhg::com::port_t ("0")
-                                   )
-    );
-  _output_stage = seda::Stage::Ptr (new seda::Stage (_output_stage_name, net));
-  seda::StageRegistry::instance().insert (_output_stage);
-  _output_stage->start();
-
-  if (orchestrator_.empty())
-  {
-    client_stage_->send(seda::IEvent::Ptr(new ConfigNOK("no orchestrator specified!")));
-  }
-  else
-  {
-    client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
   }
 }
 
