@@ -26,12 +26,11 @@ namespace utils
     std::ifstream f (filename.c_str());
     BOOST_REQUIRE (f.is_open());
 
-    std::ostringstream os;
-    char c;
-    while (f.get (c)) os << c;
-    f.close();
+    std::noskipws (f);
 
-    return os.str();
+    return std::string ( std::istream_iterator<char> (f)
+                       , std::istream_iterator<char>()
+                       );
   }
 
   struct orchestrator : boost::noncopyable
