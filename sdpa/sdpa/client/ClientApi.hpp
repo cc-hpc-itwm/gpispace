@@ -10,8 +10,6 @@
 namespace sdpa { namespace client {
   class ClientApi : boost::noncopyable {
   public:
-    typedef sdpa::shared_ptr<ClientApi> ptr_t;
-
     static config_t config()
     {
       return Client::config();
