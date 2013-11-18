@@ -25,16 +25,12 @@ namespace sdpa
     namespace client
     {
         // Static class declarations.
-        ClientFsm_Unconfigured ClientFsm::Unconfigured("ClientFsm::Unconfigured", 0);
-        ClientFsm_Configuring ClientFsm::Configuring("ClientFsm::Configuring", 1);
         ClientFsm_Configured ClientFsm::Configured("ClientFsm::Configured", 2);
 
         const int ClientContext::MIN_INDEX = 0;
-        const int ClientContext::MAX_INDEX = 2;
-        ClientState* ClientContext::_States[] = 
+        const int ClientContext::MAX_INDEX = 0;
+        ClientState* ClientContext::_States[] =
 {
-            &ClientFsm::Unconfigured,
-            &ClientFsm::Configuring,
             &ClientFsm::Configured
         };
 
@@ -158,80 +154,6 @@ namespace sdpa
                 TransitionUndefinedException(
                     context.getState().getName(),
                     context.getTransition()));
-
-            return;
-        }
-
-        void ClientFsm_Unconfigured::Default(ClientContext& context)
-        {
-
-
-            return;
-        }
-
-        void ClientFsm_Unconfigured::Start(ClientContext& context, const sdpa::client::config_t & cfg)
-        {
-            Client& ctxt = context.getOwner();
-
-            (context.getState()).Exit(context);
-            context.clearState();
-            try
-            {
-                context.setState(ClientFsm::Configuring);
-            }
-            catch (...)
-            {
-                context.setState(ClientFsm::Configuring);
-                throw;
-            }
-            (context.getState()).Entry(context);
-
-            return;
-        }
-
-        void ClientFsm_Configuring::ConfigNok(ClientContext& context, const seda::IEvent::Ptr & evt)
-        {
-            Client& ctxt = context.getOwner();
-
-            (context.getState()).Exit(context);
-            context.clearState();
-            try
-            {
-                context.setState(ClientFsm::Unconfigured);
-            }
-            catch (...)
-            {
-                context.setState(ClientFsm::Unconfigured);
-                throw;
-            }
-            (context.getState()).Entry(context);
-
-            return;
-        }
-
-        void ClientFsm_Configuring::ConfigOk(ClientContext& context, const seda::IEvent::Ptr & evt)
-        {
-            Client& ctxt = context.getOwner();
-
-            (context.getState()).Exit(context);
-            context.clearState();
-            try
-            {
-                context.setState(ClientFsm::Configured);
-            }
-            catch (...)
-            {
-                context.setState(ClientFsm::Configured);
-                throw;
-            }
-            (context.getState()).Entry(context);
-
-            return;
-        }
-
-        void ClientFsm_Configuring::Default(ClientContext& context)
-        {
-
 
             return;
         }

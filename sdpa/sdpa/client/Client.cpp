@@ -61,11 +61,7 @@ Client::~Client()
 
 void Client::perform(const seda::IEvent::Ptr &event)
 {
-  if (dynamic_cast<ConfigOK*>(event.get())) {
-    fsm_.ConfigOk(event);
-  } else if (dynamic_cast<ConfigNOK*>(event.get())) {
-    fsm_.ConfigNok(event);
-  } else if (dynamic_cast<se::SubmitJobEvent*>(event.get())) {
+  if (dynamic_cast<se::SubmitJobEvent*>(event.get())) {
     fsm_.Submit(event);
   } else if (dynamic_cast<se::SubmitJobAckEvent*>(event.get())) {
     fsm_.SubmitAck(event);
@@ -100,8 +96,6 @@ void Client::perform(const seda::IEvent::Ptr &event)
 
 void Client::start(const config_t & config) throw (ClientException)
 {
-  fsm_.Start (config);
-
   if (config.is_set("network.timeout"))
   {
     timeout_ = config.get<unsigned int>("network.timeout");
@@ -130,11 +124,8 @@ void Client::start(const config_t & config) throw (ClientException)
 
   if (orchestrator_.empty())
   {
-    client_stage_->send(seda::IEvent::Ptr(new ConfigNOK("no orchestrator specified!")));
     throw ClientException ("no orchestrator specified!");
   }
-
-  client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
 }
 
 void Client::shutdown() throw (ClientException)

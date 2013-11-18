@@ -11,8 +11,6 @@ namespace sdpa
     {
         // Forward declarations.
         class ClientFsm;
-        class ClientFsm_Unconfigured;
-        class ClientFsm_Configuring;
         class ClientFsm_Configured;
         class ClientFsm_Default;
         class ClientState;
@@ -58,8 +56,6 @@ namespace sdpa
         {
         public:
 
-            static ClientFsm_Unconfigured Unconfigured;
-            static ClientFsm_Configuring Configuring;
             static ClientFsm_Configured Configured;
         };
 
@@ -72,31 +68,6 @@ namespace sdpa
             : ClientState(name, stateId)
             {};
 
-        };
-
-        class ClientFsm_Unconfigured :
-            public ClientFsm_Default
-        {
-        public:
-            ClientFsm_Unconfigured(const char *name, int stateId)
-            : ClientFsm_Default(name, stateId)
-            {};
-
-            void Default(ClientContext& context);
-            void Start(ClientContext& context, const sdpa::client::config_t & cfg);
-        };
-
-        class ClientFsm_Configuring :
-            public ClientFsm_Default
-        {
-        public:
-            ClientFsm_Configuring(const char *name, int stateId)
-            : ClientFsm_Default(name, stateId)
-            {};
-
-            void ConfigNok(ClientContext& context, const seda::IEvent::Ptr & evt);
-            void ConfigOk(ClientContext& context, const seda::IEvent::Ptr & evt);
-            void Default(ClientContext& context);
         };
 
         class ClientFsm_Configured :
@@ -131,8 +102,8 @@ namespace sdpa
             ClientContext(Client& owner)
             : _owner(owner)
             {
-                setState(ClientFsm::Unconfigured);
-                ClientFsm::Unconfigured.Entry(*this);
+                setState(ClientFsm::Configured);
+                ClientFsm::Configured.Entry(*this);
             };
 
             Client& getOwner() const

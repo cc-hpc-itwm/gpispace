@@ -21,41 +21,10 @@
 %include <sdpa/client/types.hpp>
 %include <seda/IEvent.hpp>
 
-%start ClientFsm::Unconfigured
+%start ClientFsm::Configured
 
 %map ClientFsm
 %%
-Unconfigured
-{
-  Start(cfg: const sdpa::client::config_t &)
-    Configuring
-    {
-    }
-
-  Default
-    nil
-    {
-    }
-}
-
-Configuring
-{
-  ConfigOk(evt: const seda::IEvent::Ptr &)
-    Configured
-    {
-    }
-
-  ConfigNok(evt: const seda::IEvent::Ptr &)
-    Unconfigured
-    {
-    }
-
-  Default
-    nil
-    {
-    }
-}
-
 Configured
 {
   // client side api
