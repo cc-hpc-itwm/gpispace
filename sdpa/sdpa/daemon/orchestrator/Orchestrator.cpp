@@ -196,18 +196,6 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
         {
             SDPA_LOG_WARN("Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
         }
-
-        if( hasWorkflowEngine() )
-        {
-          try {
-              //delete it also from job_map_
-              jobManager()->deleteJob(pEvt->job_id());
-          }
-          catch(const JobNotDeletedException&)
-          {
-              SDPA_LOG_WARN("The JobManager could not delete the job "<<pJob->id());
-          }
-        }
       }
       catch(...) {
           SDPA_LOG_ERROR("Unexpected exception occurred!");
