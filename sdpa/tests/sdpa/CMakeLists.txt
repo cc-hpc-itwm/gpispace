@@ -217,7 +217,6 @@ set (tests
   test_Atomic.cpp
   test_Capabilities.cpp
   test_Coallocation.cpp
-  test_StopRestartAgentsCoalloc.cpp
   test_Inotify.cpp
   test_CancelJob.cpp
   test_SynchronizedQueue.cpp
@@ -225,7 +224,6 @@ set (tests
   test_Scheduler.cpp
   test_LostAgentRegistrationAck.cpp
   test_StopRestartDrtsSubscriberCli.cpp
-  test_StopRestartDrtsPollingCli.cpp
   test_Topologies.cpp
   test_Subscriber.cpp
   test_SubmitJobFails.cpp
