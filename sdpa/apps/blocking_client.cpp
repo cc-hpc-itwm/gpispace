@@ -122,14 +122,14 @@ int main(int argc, char** argv)
 	cav.push_back(oss.str());
 	config.parse_command_line(cav);
 
-	sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create_with_configured_network( config );
+	sdpa::client::ClientApi ptrCli ( config );
 
 	sdpa::job_id_t job_id_user;
 	int nTrials = 0;
 	try {
 
 		LOG( DEBUG, "Submitting the workflow "<<strWorkflow);
-		job_id_user = ptrCli->submitJob(strWorkflow);
+		job_id_user = ptrCli.submitJob(strWorkflow);
 		LOG( DEBUG, "Got the job id "<<job_id_user);
 	}
 	catch(const sdpa::client::ClientException& cliExc)
@@ -142,7 +142,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	ptrCli->subscribe(job_id_user);
+	ptrCli.subscribe(job_id_user);
 
 	LOG( DEBUG, "The client successfully subscribed for orchestrator notifications ...");
   sdpa::status::code job_status (sdpa::status::UNKNOWN);
@@ -210,7 +210,7 @@ int main(int argc, char** argv)
 	nTrials = 0;
 	try {
 		LOG( INFO, "Delete the user job "<<job_id_user);
-		ptrCli->deleteJob(job_id_user);
+		ptrCli.deleteJob(job_id_user);
 		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
 	catch(const sdpa::client::ClientException& cliExc)
