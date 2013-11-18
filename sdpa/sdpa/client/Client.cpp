@@ -67,7 +67,7 @@ void Client::perform(const seda::IEvent::Ptr &event)
     fsm_.ConfigNok(event);
   } else if (StartUp * startup = dynamic_cast<StartUp*>(event.get())) {
     fsm_.Start(startup->config());
-  } else if (/* Shutdown *shut = */ dynamic_cast<Shutdown*>(event.get())) {
+  } else if (dynamic_cast<Shutdown*>(event.get())) {
     fsm_.Shutdown();
   } else if (dynamic_cast<se::SubmitJobEvent*>(event.get())) {
     fsm_.Submit(event);
@@ -144,7 +144,7 @@ void Client::subscribe(const job_id_list_t& listJobIds) throw (ClientException)
   try
   {
     seda::IEvent::Ptr reply(wait_for_reply());
-    if (se::SubscribeAckEvent *sj_ack = dynamic_cast<se::SubscribeAckEvent*>(reply.get()))
+    if (dynamic_cast<se::SubscribeAckEvent*>(reply.get()))
     {
     }
     else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
