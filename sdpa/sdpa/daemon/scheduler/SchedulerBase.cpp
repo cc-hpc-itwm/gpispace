@@ -451,7 +451,7 @@ void SchedulerBase::run()
         else {
           pending_jobs_queue_.push(jobId);
           // mark the job as stalled
-          ptr_comm_handler_->pause(jobId);
+          //ptr_comm_handler_->pause(jobId);
           lock_type lock(mtx_);
           cond_workers_registered.wait(lock);
         } // else fail
