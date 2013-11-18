@@ -228,6 +228,7 @@ set (tests
   test_StopRestartDrtsPollingCli.cpp
   test_Topologies.cpp
   test_Subscriber.cpp
+  test_SubmitJobFails.cpp
   test_TransformFile.cpp
   test_wfe_plugin.cpp
 )
