@@ -205,7 +205,6 @@ void MyFixture::run_client(const std::string& orchName, const std::string& cliNa
   std::vector<std::string> cav;
   std::string prefix("--orchestrator=");
   cav.push_back(prefix+orchName);
-  //cav.push_back("--network.timeout=-1");
   config.parse_command_line(cav);
 
   sdpa::client::ClientApi::ptr_t ptrCli = sdpa::client::ClientApi::create( config, cliName, cliName+".apps.client.out" );
