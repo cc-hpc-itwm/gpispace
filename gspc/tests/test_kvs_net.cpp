@@ -76,7 +76,7 @@ static void s_wfh_client_thread ( const size_t rank
 
 BOOST_AUTO_TEST_CASE (test_net_start_stop)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer _net_init;
 
   int rc;
   gspc::kvs::api_t::value_type val;
@@ -118,19 +118,13 @@ BOOST_AUTO_TEST_CASE (test_net_start_stop)
     std::cerr << "failed in iteration " << i << ": " << ex.what ()
               << std::endl;
 
-    server->stop ();
-    gspc::net::shutdown ();
-
     throw;
   }
-
-  server->stop ();
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_net_get_nokey)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer _net_init;
 
   int rc;
   gspc::kvs::api_t::value_type val;
@@ -153,18 +147,13 @@ BOOST_AUTO_TEST_CASE (test_net_get_nokey)
   }
   catch (std::exception const &)
   {
-    server->stop ();
-    gspc::net::shutdown ();
     throw;
   }
-
-  server->stop ();
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_net_api)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer _net_init;
 
   int rc;
   gspc::kvs::api_t::value_type val;
@@ -238,18 +227,13 @@ BOOST_AUTO_TEST_CASE (test_net_api)
   }
   catch (...)
   {
-    server->stop ();
-    gspc::net::shutdown ();
     throw;
   }
-
-  server->stop ();
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_net_put_get)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer _net_init;
 
   int rc;
   gspc::kvs::api_t::value_type val;
@@ -291,18 +275,13 @@ BOOST_AUTO_TEST_CASE (test_net_put_get)
   }
   catch (...)
   {
-    server->stop ();
-    gspc::net::shutdown ();
     throw;
   }
-
-  server->stop ();
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_net_wait)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer _net_init;
 
   int rc;
   gspc::kvs::api_t::value_type val;
@@ -343,18 +322,13 @@ BOOST_AUTO_TEST_CASE (test_net_wait)
   }
   catch (...)
   {
-    server->stop ();
-    gspc::net::shutdown ();
     throw;
   }
-
-  server->stop ();
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_net_push_pop)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer _net_init;
 
   int rc;
   gspc::kvs::api_t::value_type val;
@@ -395,18 +369,13 @@ BOOST_AUTO_TEST_CASE (test_net_push_pop)
   }
   catch (...)
   {
-    server->stop ();
-    gspc::net::shutdown ();
     throw;
   }
-
-  server->stop ();
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_net_many_push_pop)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer _net_init;
 
   int rc;
   gspc::kvs::api_t::value_type val;
@@ -504,14 +473,8 @@ BOOST_AUTO_TEST_CASE (test_net_many_push_pop)
   }
   catch (std::exception const &ex)
   {
-    server->stop ();
-    gspc::net::shutdown ();
-
     throw;
   }
-
-  server->stop ();
-  gspc::net::shutdown ();
 
   BOOST_REQUIRE_EQUAL (rc, 0);
 }
