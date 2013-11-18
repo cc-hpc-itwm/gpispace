@@ -97,6 +97,7 @@ namespace sdpa {
       bool schedulingAllowed() { return !ptr_worker_man_->common_queue_.empty(); }
       job_id_t nextJobToSchedule() { return ptr_worker_man_->common_queue_.pop(); }
 
+      void setTestingMode(bool b) { use_testing_mode_=b; }
     protected:
       JobQueue pending_jobs_queue_;
       WorkerManager::ptr_t ptr_worker_man_;
@@ -112,6 +113,7 @@ namespace sdpa {
       mutable mutex_type mtx_;
       condition_type cond_feed_workers;
       condition_type cond_workers_registered;
+      bool use_testing_mode_;
     };
   }
 }

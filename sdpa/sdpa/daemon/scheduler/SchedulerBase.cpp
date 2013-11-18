@@ -37,6 +37,7 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
   , m_timeout(boost::posix_time::milliseconds(100))
+  , use_testing_mode_(false)
 {
   if (!ptr_comm_handler_)
   {
