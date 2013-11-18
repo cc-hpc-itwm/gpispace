@@ -59,7 +59,8 @@ void CoallocationScheduler::assignJobsToWorkers()
         if( pReservation->acquired() ) {
             LOG(INFO, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<pReservation->getWorkerList());
             // serve the same job to all reserved workers!!!!
-            ptr_comm_handler_->serveJob(pReservation->getWorkerList(), jobId);
+            if(!use_testing_mode_)
+              ptr_comm_handler_->serveJob(pReservation->getWorkerList(), jobId);
             ptr_comm_handler_->resume(jobId);
         }
         else
