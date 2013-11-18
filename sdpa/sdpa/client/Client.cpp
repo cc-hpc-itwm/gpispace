@@ -48,7 +48,7 @@ Client::ptr_t Client::create( const config_t &cfg
 Client::Client(const std::string &a_name, const std::string &output_stage)
   : seda::Strategy(a_name)
   , name_(a_name)
-  , output_stage_(output_stage)
+  , _output_stage_name (output_stage)
   , fsm_(*this)
   , timeout_(5000U)
   , my_location_("127.0.0.1:0")
@@ -410,9 +410,9 @@ void Client::action_configure_network(const config_t &cfg)
                                    , fhg::com::port_t ("0")
                                    )
     );
-  seda::Stage::Ptr output (new seda::Stage(output_stage_, net));
-  seda::StageRegistry::instance().insert (output);
-  output->start ();
+  _output_stage = seda::Stage::Ptr (new seda::Stage (_output_stage_name, net));
+  seda::StageRegistry::instance().insert (_output_stage);
+  _output_stage->start();
 }
 
 void Client::action_shutdown()
@@ -422,13 +422,14 @@ void Client::action_shutdown()
 
 void Client::action_shutdown_network()
 {
-  seda::StageRegistry::instance().lookup(output_stage_)->stop();
-  seda::StageRegistry::instance().remove(output_stage_);
+  _output_stage->stop();
+  _output_stage.reset();
+  seda::StageRegistry::instance().remove (_output_stage_name);
 }
 
 void Client::forward_to_output_stage (const seda::IEvent::Ptr& event) const
 {
-  seda::StageRegistry::instance().lookup (output_stage_)->send (event);
+  _output_stage->send (event);
 }
 
 void Client::action_store_reply(const seda::IEvent::Ptr &reply)

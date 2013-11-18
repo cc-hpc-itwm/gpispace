@@ -86,7 +86,7 @@ namespace sdpa { namespace client {
     void action_shutdown_network();
 
     const std::string &input_stage() const { return client_stage_->name(); }
-    const std::string &output_stage() const { return output_stage_; }
+    const std::string &output_stage() const { return _output_stage_name; }
 
     typedef unsigned long long timeout_t;
     seda::IEvent::Ptr wait_for_reply() throw (Timedout);
@@ -103,7 +103,8 @@ namespace sdpa { namespace client {
     }
 
     std::string name_;
-    std::string output_stage_;
+    seda::Stage::Ptr _output_stage;
+    std::string _output_stage_name;
 
     boost::mutex mtx_;
     event_queue_t m_incoming_events;
