@@ -45,7 +45,24 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
     while (not client->is_connected ())
     {
       rc = client->stop ();
+      BOOST_REQUIRE_EQUAL (rc, 0);
       rc = client->start ();
+
+      if (0 == rc)
+      {
+        break;
+      }
+      else if (-ETIME == rc)
+      {
+        continue;
+      }
+      else if (-ENOTCONN)
+      {
+        continue;
+      }
+
+      std::cerr << "failed: " << strerror (-rc) << std::endl;
+      BOOST_REQUIRE (rc != 0);
     }
 
     rc = client->send ("/test", "");
