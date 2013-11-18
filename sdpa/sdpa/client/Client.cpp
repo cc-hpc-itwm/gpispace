@@ -386,18 +386,6 @@ void Client::action_configure(const config_t &cfg)
     my_location_ = cfg.get<std::string>("location");
   }
 
-  if (orchestrator_.empty())
-  {
-    client_stage_->send(seda::IEvent::Ptr(new ConfigNOK("no orchestrator specified!")));
-  }
-  else
-  {
-    client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
-  }
-}
-
-void Client::action_configure_network(const config_t &cfg)
-{
   sdpa::com::NetworkStrategy::ptr_t net
     (new sdpa::com::NetworkStrategy( client_stage_->name()
                                    , client_stage_->name() //"sdpac" // TODO encode user, pid, etc
@@ -408,6 +396,15 @@ void Client::action_configure_network(const config_t &cfg)
   _output_stage = seda::Stage::Ptr (new seda::Stage (_output_stage_name, net));
   seda::StageRegistry::instance().insert (_output_stage);
   _output_stage->start();
+
+  if (orchestrator_.empty())
+  {
+    client_stage_->send(seda::IEvent::Ptr(new ConfigNOK("no orchestrator specified!")));
+  }
+  else
+  {
+    client_stage_->send(seda::IEvent::Ptr(new ConfigOK()));
+  }
 }
 
 void Client::action_shutdown()

@@ -23,7 +23,6 @@ namespace sdpa { namespace client {
               )
       : pimpl (Client::create(cfg, name_prefix, output_stage))
     {
-      pimpl->action_configure_network (cfg);
     }
 
     ~ClientApi() {

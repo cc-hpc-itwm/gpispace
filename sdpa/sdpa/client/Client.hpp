@@ -82,7 +82,6 @@ namespace sdpa { namespace client {
 
     void action_store_reply(const seda::IEvent::Ptr &);
 
-    void action_configure_network(const config_t &);
     void action_shutdown_network();
 
     typedef unsigned long long timeout_t;
