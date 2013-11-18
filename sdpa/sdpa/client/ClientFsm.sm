@@ -43,13 +43,11 @@ Configuring
   ConfigOk(evt: const seda::IEvent::Ptr &)
     Configured
     {
-      action_store_reply(evt);
     }
 
   ConfigNok(evt: const seda::IEvent::Ptr &)
     Unconfigured
     {
-      action_store_reply(evt);
     }
 
   Default
