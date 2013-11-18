@@ -41,7 +41,6 @@ namespace sdpa
             virtual void Query(ClientContext& context, const seda::IEvent::Ptr & evt);
             virtual void Results(ClientContext& context, const seda::IEvent::Ptr & evt);
             virtual void Retrieve(ClientContext& context, const seda::IEvent::Ptr & evt);
-            virtual void Shutdown(ClientContext& context);
             virtual void Start(ClientContext& context, const sdpa::client::config_t & cfg);
             virtual void StatusReply(ClientContext& context, const seda::IEvent::Ptr & evt);
             virtual void Submit(ClientContext& context, const seda::IEvent::Ptr & evt);
@@ -84,7 +83,6 @@ namespace sdpa
             {};
 
             void Default(ClientContext& context);
-            void Shutdown(ClientContext& context);
             void Start(ClientContext& context, const sdpa::client::config_t & cfg);
         };
 
@@ -117,7 +115,6 @@ namespace sdpa
             void Query(ClientContext& context, const seda::IEvent::Ptr & evt);
             void Results(ClientContext& context, const seda::IEvent::Ptr & evt);
             void Retrieve(ClientContext& context, const seda::IEvent::Ptr & evt);
-            void Shutdown(ClientContext& context);
             void StatusReply(ClientContext& context, const seda::IEvent::Ptr & evt);
             void Submit(ClientContext& context, const seda::IEvent::Ptr & evt);
             void SubmitAck(ClientContext& context, const seda::IEvent::Ptr & evt);
@@ -201,11 +198,6 @@ namespace sdpa
             void Retrieve(const seda::IEvent::Ptr & evt)
             {
                 (getState()).Retrieve(*this, evt);
-            };
-
-            void Shutdown()
-            {
-                (getState()).Shutdown(*this);
             };
 
             void Start(const sdpa::client::config_t & cfg)

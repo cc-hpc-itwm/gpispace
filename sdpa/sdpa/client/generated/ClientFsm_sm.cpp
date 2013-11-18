@@ -110,12 +110,6 @@ namespace sdpa
             return;
         }
 
-        void ClientState::Shutdown(ClientContext& context)
-        {
-            Default(context);
-            return;
-        }
-
         void ClientState::Start(ClientContext& context, const sdpa::client::config_t & cfg)
         {
             Default(context);
@@ -171,27 +165,6 @@ namespace sdpa
         void ClientFsm_Unconfigured::Default(ClientContext& context)
         {
 
-
-            return;
-        }
-
-        void ClientFsm_Unconfigured::Shutdown(ClientContext& context)
-        {
-            Client& ctxt = context.getOwner();
-
-            ClientState& EndStateName = context.getState();
-
-            context.clearState();
-            try
-            {
-                ctxt.action_shutdown();
-                context.setState(EndStateName);
-            }
-            catch (...)
-            {
-                context.setState(EndStateName);
-                throw;
-            }
 
             return;
         }
@@ -422,27 +395,6 @@ namespace sdpa
             try
             {
                 ctxt.forward_to_output_stage (evt);
-                context.setState(EndStateName);
-            }
-            catch (...)
-            {
-                context.setState(EndStateName);
-                throw;
-            }
-
-            return;
-        }
-
-        void ClientFsm_Configured::Shutdown(ClientContext& context)
-        {
-            Client& ctxt = context.getOwner();
-
-            ClientState& EndStateName = context.getState();
-
-            context.clearState();
-            try
-            {
-                ctxt.action_shutdown();
                 context.setState(EndStateName);
             }
             catch (...)

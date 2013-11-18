@@ -5,11 +5,6 @@
 #include <sdpa/client/types.hpp>
 
 namespace sdpa { namespace client {
-  class Shutdown : public seda::IEvent
-  {
-    public:
-      std::string str() const { return "Shutdown"; }
-  };
   class ShutdownComplete : public seda::IEvent
   {
     public:

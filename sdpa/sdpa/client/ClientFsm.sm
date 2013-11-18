@@ -32,12 +32,6 @@ Unconfigured
     {
     }
 
-  Shutdown
-    nil
-    {
-      action_shutdown();
-    }
-
   Default
     nil
     {
@@ -101,12 +95,6 @@ Configured
     nil
     {
       forward_to_output_stage (evt);
-    }
-
-  Shutdown
-    nil
-    {
-      action_shutdown();
     }
 
   // replies (i.e. pseudo callbacks) from daemon

@@ -65,8 +65,6 @@ void Client::perform(const seda::IEvent::Ptr &event)
     fsm_.ConfigOk(event);
   } else if (dynamic_cast<ConfigNOK*>(event.get())) {
     fsm_.ConfigNok(event);
-  } else if (dynamic_cast<Shutdown*>(event.get())) {
-    fsm_.Shutdown();
   } else if (dynamic_cast<se::SubmitJobEvent*>(event.get())) {
     fsm_.Submit(event);
   } else if (dynamic_cast<se::SubmitJobAckEvent*>(event.get())) {
