@@ -270,10 +270,6 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
     id_type workflowId = pEvt->job_id();
     reason_type reason("No reason");
     DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
-    if (hasWorkflowEngine())
-    {
-      workflowEngine()->cancel(workflowId, reason);
-    }
     pJob->CancelJob(pEvt);
     DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());
   }
