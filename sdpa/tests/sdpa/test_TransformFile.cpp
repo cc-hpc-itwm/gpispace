@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE (testTransformFile1)
     );
 
   utils::client::submit_job_and_wait_for_termination
-    (workflow, "sdpac", orchestrator);
+    (workflow, orchestrator);
 
 	// tr [a-z] [A-Z] < in.txt > out.txt.expected
 }

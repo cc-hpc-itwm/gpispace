@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE (TestCancelCoallocation)
     );
 
   utils::client::submit_job_and_cancel_and_wait_for_termination
-    (workflow, "sdpac", orchestrator);
+    (workflow, orchestrator);
 }
 
 BOOST_AUTO_TEST_CASE (Test1)
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE (Test1)
     );
 
   utils::client::submit_job_and_cancel_and_wait_for_termination
-    (workflow, "sdpac", orchestrator);
+    (workflow, orchestrator);
 }
 
 BOOST_AUTO_TEST_CASE (Test2)
@@ -81,5 +81,5 @@ BOOST_AUTO_TEST_CASE (Test2)
     );
 
   utils::client::submit_job_and_cancel_and_wait_for_termination
-    (workflow, "sdpac", orchestrator);
+    (workflow, orchestrator);
 }

@@ -30,7 +30,6 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_polling_clie
   boost::thread client_thread
     ( &utils::client::submit_job_and_wait_for_termination
     , workflow
-    , "sdpac"
     , boost::cref (orchestrator)
     );
 
@@ -73,7 +72,6 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_subscribing_
   boost::thread client_thread
     ( &utils::client::submit_job_and_wait_for_termination_as_subscriber
     , workflow
-    , "sdpac"
     , boost::cref (orchestrator)
     );
 
@@ -143,7 +141,6 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_coallocated_job_is_running_with_
   boost::thread client_thread
     ( &utils::client::submit_job_and_wait_for_termination_as_subscriber
     , workflow
-    , "sdpac"
     , boost::cref (orchestrator)
     );
 

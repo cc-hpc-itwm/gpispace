@@ -514,24 +514,22 @@ namespace utils
     }
 
     void submit_job_and_wait_for_termination ( std::string workflow
-                                             , std::string client_name
                                              , const orchestrator& orch
                                              )
     {
       create_client_and_execute
-        ( client_name
+        ( "sdpac"
         , orch
         , boost::bind (&submit_job_and_wait_for_termination_impl, workflow, _1)
         );
     }
 
     void submit_job_and_cancel_and_wait_for_termination ( std::string workflow
-                                                        , std::string client_name
                                                         , const orchestrator& orch
                                                         )
     {
       create_client_and_execute
-        ( client_name
+        ( "sdpac"
         , orch
         , boost::bind (&submit_job_and_cancel_and_wait_for_termination_impl, workflow, _1)
         );
@@ -539,12 +537,11 @@ namespace utils
 
     void submit_job_and_wait_for_termination_as_subscriber
       ( std::string workflow
-      , std::string client_name
       , const orchestrator& orch
       )
     {
       create_client_and_execute
-        ( client_name
+        ( "sdpac"
         , orch
         , boost::bind (&submit_job_and_wait_for_termination_as_subscriber_impl, workflow, _1)
         );
@@ -552,12 +549,11 @@ namespace utils
 
     void submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
       ( std::string workflow
-      , std::string client_name
       , const orchestrator& orch
       )
     {
       sdpa::job_id_t job_id_user;
-      create_client_and_execute ( client_name
+      create_client_and_execute ( "sdpac"
                                 , orch
                                 , boost::bind ( &submit_job_result_by_ref
                                               , workflow
@@ -567,7 +563,7 @@ namespace utils
                                 );
 
       create_client_and_execute
-        ( client_name
+        ( "sdpac2"
         , orch
         , boost::bind (&wait_for_termination_as_subscriber_impl, job_id_user, _1)
         );

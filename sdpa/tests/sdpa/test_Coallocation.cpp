@@ -51,5 +51,5 @@ BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
     );
 
   utils::client::submit_job_and_wait_for_termination_as_subscriber
-    (workflow, "sdpac", orchestrator);
+    (workflow, orchestrator);
 }

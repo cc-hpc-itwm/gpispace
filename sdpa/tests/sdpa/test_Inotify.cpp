@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE (testInotifyExecution)
                         );
 
   utils::client::submit_job_and_wait_for_termination
-    (workflow, "sdpac", orchestrator);
+    (workflow, orchestrator);
 
   keep_on_touching = false;
   if (toucher.joinable())

@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE (Test1)
     );
 
   utils::client::submit_job_and_wait_for_termination
-    (workflow, "sdpac", orchestrator);
+    (workflow, orchestrator);
 }
 
 BOOST_AUTO_TEST_CASE (testCapabilities_NoMandatoryReq)
@@ -69,5 +69,5 @@ BOOST_AUTO_TEST_CASE (testCapabilities_NoMandatoryReq)
     );
 
   utils::client::submit_job_and_wait_for_termination
-    (workflow, "sdpac", orchestrator);
+    (workflow, orchestrator);
 }

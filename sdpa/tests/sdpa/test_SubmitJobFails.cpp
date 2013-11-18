@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE (fail_on_invalid_workflow)
     );
 
   utils::client::submit_job_and_wait_for_termination
-    ("invalid workflow", "sdpac", orchestrator);
+    ("invalid workflow", orchestrator);
 }
 
 BOOST_AUTO_TEST_CASE (fail_on_empty_workflow)
@@ -41,5 +41,5 @@ BOOST_AUTO_TEST_CASE (fail_on_empty_workflow)
     );
 
   utils::client::submit_job_and_cancel_and_wait_for_termination
-    ("", "sdpac", orchestrator);
+    ("", orchestrator);
 }
