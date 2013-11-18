@@ -39,15 +39,14 @@ namespace fhg
     }
 
     deeper::deeper (indenter& indenter)
-      : _indenter (++indenter)
+      : _indenter (indenter)
     {}
-    deeper::~deeper()
-    {
-      --_indenter;
-    }
     std::ostream& deeper::operator() (std::ostream& os) const
     {
-      return _indenter (os);
+      ++_indenter;
+      os << _indenter;
+      --_indenter;
+      return os;
     }
   }
 }

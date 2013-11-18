@@ -27,8 +27,7 @@ case "$myhost" in
         export BOOST_ROOT=~/external_software/boost/1.52/gcc/
         export NACL_HOME=~/external_software/nacl/20110221
         export SMC_HOME=~/external_software/smc/5.0.0
-        export TMPDIR=/tmp/gitlab-ci
-        export CCACHE_DIR="${TMPDIR}/.ccache"
+        export BASE_BUILD_DIR=/tmp/gitlab-ci
         opts+=(--type=Debug)
         opts+=(--assert-mode=on)
         makeflags+=(-j2)
@@ -37,7 +36,7 @@ case "$myhost" in
         if [ "$myhost" = "build-centos6" ]
         then
             export PATH="$HOME/external_software/ccache/3.1.9/lib:$PATH"
-            export CCACHE_DIR=
+            export CCACHE_DIR="${BASE_BUILD_DIR}/.ccache"
         fi
         ;;
     lcs*)
@@ -89,11 +88,17 @@ ${ruler}
 EOF
 }
 
-if [ -n "${TMPDIR}" -a ! -d "${TMPDIR}" ]
+if [ -n "${BASE_BUILD_DIR}" -a ! -d "${BASE_BUILD_DIR}" ]
 then
-    mkdir -p "${TMPDIR}"
+    mkdir -p "${BASE_BUILD_DIR}"
+    ec=$?
+    if [ $ec -ne 0 ]
+    then
+        log_or_send_mail $ec "MKDIR FAILED"
+        exit $ec
+    fi
 fi
-builddir=$(mktemp -d)
+tmpdir=$(TMPDIR="${BASE_BUILD_DIR}" mktemp -d)
 ec=$?
 if [ $ec -ne 0 ]
 then
@@ -101,17 +106,22 @@ then
     exit $ec
 fi
 
+builddir="${tmpdir}/build"
+mkdir -p "${builddir}"
+
+instdir="${tmpdir}/inst"
+
 cleanup()
 {
     cd /
-    if [ -d "${builddir}" ]
+    if [ -d "${tmpdir}" ]
     then
-        rm -rf "${builddir}"
+        rm -rf "${tmpdir}"
     fi
 }
 trap cleanup EXIT
 
-cd "${builddir}" && "${srcdir}/configure" --prefix=$PWD/inst "${opts[@]}"
+cd "${builddir}" && "${srcdir}/configure" --prefix="${instdir}" "${opts[@]}"
 ec=$?
 if [ $ec -ne 0 ]
 then

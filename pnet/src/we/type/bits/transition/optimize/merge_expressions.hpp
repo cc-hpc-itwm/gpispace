@@ -45,14 +45,15 @@ namespace we { namespace type {
                          , const petri_net::place_id_type & pid
                          )
       {
-        try
-          {
-            return trans.get_port (input_port_by_pid (trans, pid).first);
-          }
-        catch (const we::type::exception::not_connected<petri_net::place_id_type> &)
-          {
-            return boost::none;
-          }
+        boost::optional<transition_t::port_id_with_prop_t const&> pwp
+          (input_port_by_pid (trans, pid));
+
+        if (pwp)
+        {
+          return trans.get_port (pwp->first);
+        }
+
+        return boost::none;
       }
 
       // ******************************************************************* //
@@ -146,7 +147,7 @@ namespace we { namespace type {
           const connection_t& connection (pc.second);
           const petri_net::place_id_type& place_id (pc.first);
 
-          if (petri_net::edge::is_pt_read (connection.type))
+          if (petri_net::edge::is_pt_read (connection.type()))
           {
             if (net.in_to_place (place_id).empty())
             {
@@ -263,10 +264,10 @@ namespace we { namespace type {
             if (pid_read.find (place_id) == pid_read.end())
               {
                 const port_t & pred_out
-                  (pred.get_port (output_port_by_pid (pred, place_id).first));
+                  (pred.get_port (output_port_by_pid (pred, place_id)->first));
 
                 port_t & trans_in
-                  (trans.get_port (input_port_by_pid (trans, place_id).first));
+                  (trans.get_port (input_port_by_pid (trans, place_id)->first));
 
                 expression.rename (trans_in.name(), pred_out.name());
 
@@ -282,7 +283,7 @@ namespace we { namespace type {
                     const port_t & pred_in (*maybe_pred_in);
 
                     port_t & trans_in
-                      (trans.get_port (input_port_by_pid (trans, place_id).first));
+                      (trans.get_port (input_port_by_pid (trans, place_id)->first));
 
                     expression.rename (trans_in.name(), pred_in.name());
 
@@ -353,13 +354,16 @@ namespace we { namespace type {
                 const petri_net::place_id_type pid
                   (trans.inner_to_outer().at (p.first).first);
 
-                connection_t connection (net.get_connection_out (tid_trans, pid));
+                connection_t const connection
+                  (net.get_connection_out (tid_trans, pid));
 
                 net.delete_edge_out (tid_trans, pid);
 
-                connection.tid = tid_pred;
-
-                net.add_connection (connection);
+                net.add_connection (connection_t ( connection.type()
+                                                 , tid_pred
+                                                 , connection.place_id()
+                                                 )
+                                   );
 
                 pred.add_connection (p.second.name(), pid, p.second.property());
               }
@@ -379,9 +383,9 @@ namespace we { namespace type {
 
                   net.delete_edge_in (tid_trans, *pid);
 
-                  net.add_connection (connection_t ( connection.type
+                  net.add_connection (connection_t ( connection.type()
                                                    , tid_pred
-                                                   , connection.pid
+                                                   , connection.place_id()
                                                    )
                                      );
 

@@ -29,7 +29,6 @@ namespace fhg
     {
     public:
       deeper (indenter&);
-      ~deeper();
       std::ostream& operator() (std::ostream&) const;
     private:
       indenter& _indenter;

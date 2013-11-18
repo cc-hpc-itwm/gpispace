@@ -4,7 +4,7 @@
 #include <sdpa/memory.hpp>
 #include <fhglog/fhglog.hpp>
 #include <sdpa/client/Client.hpp>
-
+#include <sdpa/job_states.hpp>
 #include <boost/utility.hpp>
 
 namespace sdpa { namespace client {
@@ -73,7 +73,7 @@ namespace sdpa { namespace client {
       return pimpl->queryJob(jid);
     }
 
-    int queryJob(const job_id_t &jid, job_info_t & status)
+    status::code queryJob(const job_id_t &jid, job_info_t & status)
     {
       return pimpl->queryJob(jid, status);
     }

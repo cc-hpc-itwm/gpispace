@@ -33,33 +33,35 @@ namespace petri_net
   }
 
   connection_t::connection_t ()
-    : type()
-    , tid()
-    , pid()
+    : _type()
+    , _tid()
+    , _pid()
   {}
 
-  connection_t::connection_t ( const edge::type& _type
-	 		     , const transition_id_type& _tid
-		 	     , const place_id_type& _pid
+  connection_t::connection_t ( const edge::type& type
+	 		     , const transition_id_type& tid
+		 	     , const place_id_type& pid
 			     )
-    : type (_type)
-    , tid (_tid)
-    , pid (_pid)
+    : _type (type)
+    , _tid (tid)
+    , _pid (pid)
   {}
 
   std::size_t hash_value (const connection_t& c)
   {
     std::size_t h (0);
-    boost::hash_combine (h, c.type);
-    boost::hash_combine (h, c.tid);
-    boost::hash_combine (h, c.pid);
+    boost::hash_combine (h, c.type());
+    boost::hash_combine (h, c.transition_id());
+    boost::hash_combine (h, c.place_id());
 
     return h;
   }
 
   bool operator== (const connection_t& a, const connection_t& b)
   {
-    return a.type == b.type && a.tid == b.tid && a.pid == b.pid;
+    return a.type() == b.type()
+      && a.transition_id() == b.transition_id()
+      && a.place_id() == b.place_id();
   }
   bool operator!= (const connection_t& a, const connection_t& b)
   {

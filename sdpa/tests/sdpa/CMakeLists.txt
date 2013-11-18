@@ -220,15 +220,12 @@ set (tests
   test_StopRestartAgentsCoalloc.cpp
   test_Inotify.cpp
   test_CancelJob.cpp
-  test_Config.cpp
-  test_Worker.cpp
+  test_SynchronizedQueue.cpp
   test_JobId.cpp
   test_Scheduler.cpp
   test_LostAgentRegistrationAck.cpp
-  test_AgentsAndDrts.cpp
   test_StopRestartDrtsSubscriberCli.cpp
   test_StopRestartDrtsPollingCli.cpp
-  test_MultipleMasters.cpp
   test_Topologies.cpp
   test_Subscriber.cpp
   test_TransformFile.cpp
