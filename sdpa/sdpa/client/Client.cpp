@@ -60,28 +60,16 @@ Client::~Client()
 
 void Client::perform(const seda::IEvent::Ptr &event)
 {
-  if (dynamic_cast<se::SubmitJobEvent*>(event.get())) {
-    forward_to_output_stage (event);
-  } else if (dynamic_cast<se::SubmitJobAckEvent*>(event.get())) {
+  if (dynamic_cast<se::SubmitJobAckEvent*>(event.get())) {
     action_store_reply (event);
-  } else if (dynamic_cast<se::SubscribeEvent*>(event.get())) {
-    forward_to_output_stage (event);
   } else if (dynamic_cast<se::SubscribeAckEvent*>(event.get())) {
     action_store_reply (event);
-  } else if (dynamic_cast<se::QueryJobStatusEvent*>(event.get())) {
-    forward_to_output_stage (event);
   } else if (dynamic_cast<se::JobStatusReplyEvent*>(event.get())) {
     action_store_reply (event);
-  } else if (dynamic_cast<se::CancelJobEvent*>(event.get())) {
-    forward_to_output_stage (event);
   } else if (dynamic_cast<se::CancelJobAckEvent*>(event.get())) {
     action_store_reply (event);
-  } else if (dynamic_cast<se::RetrieveJobResultsEvent*>(event.get())) {
-    forward_to_output_stage (event);
   } else if (dynamic_cast<se::JobResultsReplyEvent*>(event.get())) {
     action_store_reply (event);
-  } else if (dynamic_cast<se::DeleteJobEvent*>(event.get())) {
-    forward_to_output_stage (event);
   } else if (dynamic_cast<se::DeleteJobAckEvent*>(event.get())) {
     action_store_reply (event);
   } else if (dynamic_cast<se::ErrorEvent*>(event.get())) {
@@ -143,7 +131,7 @@ void Client::shutdown() throw (ClientException)
 void Client::subscribe(const job_id_list_t& listJobIds) throw (ClientException)
 {
         clear_reply();
-  client_stage_->send(seda::IEvent::Ptr(new se::SubscribeEvent(name(), orchestrator_, listJobIds)));
+  _output_stage->send(seda::IEvent::Ptr(new se::SubscribeEvent(name(), orchestrator_, listJobIds)));
   try
   {
     seda::IEvent::Ptr reply(wait_for_reply());
@@ -202,7 +190,7 @@ void Client::clear_reply()
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
         clear_reply();
-  client_stage_->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), orchestrator_, "", desc, "")));
+  _output_stage->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), orchestrator_, "", desc, "")));
   try
   {
     seda::IEvent::Ptr reply(wait_for_reply());
@@ -232,7 +220,7 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 {
         clear_reply();
-  client_stage_->send(seda::IEvent::Ptr(new se::CancelJobEvent( name()
+  _output_stage->send(seda::IEvent::Ptr(new se::CancelJobEvent( name()
                                                               , orchestrator_
                                                               , jid
                                                               , "user cancel"
@@ -273,7 +261,7 @@ sdpa::status::code Client::queryJob(const job_id_t &jid) throw (ClientException)
 sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
 {
   clear_reply();
-  client_stage_->send
+  _output_stage->send
     (seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
                                                   , orchestrator_
                                                   , jid)
@@ -314,7 +302,7 @@ sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
 void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 {
         clear_reply();
-  client_stage_->send(seda::IEvent::Ptr(new se::DeleteJobEvent(name(), orchestrator_, jid)));
+  _output_stage->send(seda::IEvent::Ptr(new se::DeleteJobEvent(name(), orchestrator_, jid)));
   try
   {
     seda::IEvent::Ptr reply(wait_for_reply());
@@ -343,7 +331,7 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (ClientException)
 {
         clear_reply();
-  client_stage_->send(seda::IEvent::Ptr(new se::RetrieveJobResultsEvent(name()
+  _output_stage->send(seda::IEvent::Ptr(new se::RetrieveJobResultsEvent(name()
                                                                       , orchestrator_
                                                                       , jid)));
   try
