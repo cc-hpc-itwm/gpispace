@@ -63,8 +63,7 @@ void get_user_input(std::string const & prompt, std::string & result, std::istre
     result = tmp;
 }
 
-/* returns sdpa::status::code */
-int command_poll_and_wait ( const std::string &job_id
+sdpa::status::code command_poll_and_wait ( const std::string &job_id
                  , const sdpa::client::ClientApi::ptr_t &api
                  , boost::posix_time::time_duration poll_interval
                  , sdpa::client::job_info_t & job_info
@@ -77,7 +76,7 @@ int command_poll_and_wait ( const std::string &job_id
 
   std::cerr << "waiting for job to return..." << std::flush;
 
-  int status = sdpa::status::UNKNOWN;
+  sdpa::status::code status (sdpa::status::UNKNOWN);
   std::size_t fail_count(0);
   for (; fail_count < 3 ;)
   {
@@ -120,7 +119,7 @@ int command_poll_and_wait ( const std::string &job_id
 }
 
 
-int command_subscribe_and_wait ( const std::string &job_id
+sdpa::status::code command_subscribe_and_wait ( const std::string &job_id
                                , const sdpa::client::ClientApi::ptr_t &ptrCli
                                , sdpa::client::job_info_t & job_info
                                )
@@ -133,7 +132,7 @@ int command_subscribe_and_wait ( const std::string &job_id
   std::cerr << "waiting for job to return..." << std::flush;
 
   bool bSubscribed = false;
-  int status = sdpa::status::UNKNOWN;
+  sdpa::status::code status (sdpa::status::UNKNOWN);
   int nTrials = 0;
 
   do
@@ -218,8 +217,7 @@ int command_subscribe_and_wait ( const std::string &job_id
   return status;
 }
 
-/* returns the sdpa::status::code for the given job */
-int command_wait ( const std::string &job_id
+sdpa::status::code command_wait ( const std::string &job_id
                  , const sdpa::client::ClientApi::ptr_t &api
                  , boost::posix_time::time_duration poll_interval
                  , sdpa::client::job_info_t & job_info
@@ -520,7 +518,7 @@ int main (int argc, char **argv) {
       {
         const int poll_interval = cfg.get<int>("poll-interval");
         sdpa::client::job_info_t job_info;
-        int status = command_wait( job_id
+        sdpa::status::code status = command_wait( job_id
                                     , api
                                     , boost::posix_time::milliseconds(poll_interval)
                                     , job_info
@@ -558,7 +556,7 @@ int main (int argc, char **argv) {
       const int poll_interval = cfg.get<int>("poll-interval");
       sdpa::client::job_info_t job_info;
 
-      int status = command_wait( job_id
+      sdpa::status::code status = command_wait( job_id
                                , api
                                , boost::posix_time::milliseconds(poll_interval)
                                , job_info
@@ -600,7 +598,7 @@ int main (int argc, char **argv) {
         return JOB_ID_MISSING;
       }
       sdpa::client::job_info_t job_info;
-      int status = api->queryJob(args.front(), job_info);
+      const sdpa::status::code status (api->queryJob(args.front(), job_info));
       std::cout << sdpa::status::show(status) << std::endl;
       if (status == sdpa::status::FAILED)
       {
