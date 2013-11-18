@@ -138,17 +138,10 @@ BOOST_AUTO_TEST_CASE (test_net_get_nokey)
                                                        )
                     );
 
-  try
-  {
-    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
+  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
 
-    rc = kvs.get ("foo", val);
-    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
-  }
-  catch (std::exception const &)
-  {
-    throw;
-  }
+  rc = kvs.get ("foo", val);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 }
 
 BOOST_AUTO_TEST_CASE (test_net_api)
@@ -169,66 +162,59 @@ BOOST_AUTO_TEST_CASE (test_net_api)
 
   std::cerr << "server running on: " << server->url () << std::endl;
 
-  try
-  {
-    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
+  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
 
-    rc = kvs.get ("foo", val);
-    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+  rc = kvs.get ("foo", val);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 
-    rc = kvs.put ("foo", "bar");
-    BOOST_REQUIRE_EQUAL (rc, 0);
+  rc = kvs.put ("foo", "bar");
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
-    rc = kvs.get ("foo", val);
-    BOOST_REQUIRE_EQUAL (rc, 0);
-    BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
+  rc = kvs.get ("foo", val);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
 
-    rc = kvs.set_ttl ("foo", 60);
-    BOOST_REQUIRE_EQUAL (rc, 0);
+  rc = kvs.set_ttl ("foo", 60);
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
-    rc = kvs.set_ttl_regex ("foo", 60);
-    BOOST_REQUIRE_EQUAL (rc, 0);
+  rc = kvs.set_ttl_regex ("foo", 60);
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
-    rc = kvs.push ("bar", "foo");
-    BOOST_REQUIRE_EQUAL (rc, 0);
+  rc = kvs.push ("bar", "foo");
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
-    rc = kvs.pop ("bar", val);
-    BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "foo");
+  rc = kvs.pop ("bar", val);
+  BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "foo");
 
-    rc = kvs.try_pop ("bar", val);
-    BOOST_REQUIRE_EQUAL (rc, -EAGAIN);
+  rc = kvs.try_pop ("bar", val);
+  BOOST_REQUIRE_EQUAL (rc, -EAGAIN);
 
-    rc = kvs.try_pop ("bar", val);
-    BOOST_REQUIRE_EQUAL (rc, -EAGAIN);
+  rc = kvs.try_pop ("bar", val);
+  BOOST_REQUIRE_EQUAL (rc, -EAGAIN);
 
-    int cnt;
-    rc = kvs.counter_reset ("cnt", 0);
-    BOOST_REQUIRE_EQUAL (rc, 0);
+  int cnt;
+  rc = kvs.counter_reset ("cnt", 0);
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
-    rc = kvs.counter_change ("cnt", cnt, +1);
-    BOOST_REQUIRE_EQUAL (rc, 0);
-    BOOST_REQUIRE_EQUAL (cnt, 0);
+  rc = kvs.counter_change ("cnt", cnt, +1);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (cnt, 0);
 
-    rc = kvs.counter_change ("cnt", cnt, -1);
-    BOOST_REQUIRE_EQUAL (rc, 0);
-    BOOST_REQUIRE_EQUAL (cnt, 1);
+  rc = kvs.counter_change ("cnt", cnt, -1);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (cnt, 1);
 
-    rc = kvs.del_regex (".*");
-    BOOST_REQUIRE_EQUAL (rc, 0);
+  rc = kvs.del_regex (".*");
+  BOOST_REQUIRE_EQUAL (rc, 0);
 
-    rc = kvs.get ("bar", val);
-    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+  rc = kvs.get ("bar", val);
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 
-    rc = kvs.del ("cnt");
-    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
+  rc = kvs.del ("cnt");
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 
-    rc = kvs.del ("foo");
-    BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
-  }
-  catch (...)
-  {
-    throw;
-  }
+  rc = kvs.del ("foo");
+  BOOST_REQUIRE_EQUAL (rc, -ENOKEY);
 }
 
 BOOST_AUTO_TEST_CASE (test_net_put_get)
@@ -249,33 +235,26 @@ BOOST_AUTO_TEST_CASE (test_net_put_get)
 
   std::cerr << "server running on: " << server->url () << std::endl;
 
-  try
+  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
+
+  static const size_t NUM = 1 << 15;
+
   {
-    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
-
-    static const size_t NUM = 1 << 15;
-
+    double duration = -fhg::util::now ();
+    for (size_t i = 0 ; i < NUM; ++i)
     {
-      double duration = -fhg::util::now ();
-      for (size_t i = 0 ; i < NUM; ++i)
-      {
-        rc = kvs.put ("foo", std::string ("bar"));
-        BOOST_REQUIRE_EQUAL (rc, 0);
+      rc = kvs.put ("foo", std::string ("bar"));
+      BOOST_REQUIRE_EQUAL (rc, 0);
 
-        rc = kvs.get ("foo", val);
-        BOOST_REQUIRE_EQUAL (rc, 0);
-      }
-      duration += fhg::util::now ();
-
-      std::cerr << "put/get of " << NUM << " elements took: "
-                << duration << " sec"
-                << " => " << 2*(NUM / duration) << " ops/sec"
-                << std::endl;
+      rc = kvs.get ("foo", val);
+      BOOST_REQUIRE_EQUAL (rc, 0);
     }
-  }
-  catch (...)
-  {
-    throw;
+    duration += fhg::util::now ();
+
+    std::cerr << "put/get of " << NUM << " elements took: "
+              << duration << " sec"
+              << " => " << 2*(NUM / duration) << " ops/sec"
+              << std::endl;
   }
 }
 
@@ -297,33 +276,26 @@ BOOST_AUTO_TEST_CASE (test_net_wait)
 
   std::cerr << "server running on: " << server->url () << std::endl;
 
-  try
-  {
-    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
+  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
 
-    rc = kvs.wait ("foo", gspc::kvs::api_t::E_EXIST, 500);
-    BOOST_REQUIRE_EQUAL (rc, -ETIME);
+  rc = kvs.wait ("foo", gspc::kvs::api_t::E_EXIST, 500);
+  BOOST_REQUIRE_EQUAL (rc, -ETIME);
 
-    // fire up a thread to push
-    gspc::kvs::api_t::value_type val_to_push (std::string ("bar"));
-    boost::thread pusher (boost::bind (&s_push_value, &kvs, "foo", val_to_push));
+  // fire up a thread to push
+  gspc::kvs::api_t::value_type val_to_push (std::string ("bar"));
+  boost::thread pusher (boost::bind (&s_push_value, &kvs, "foo", val_to_push));
 
-    rc = kvs.wait ("foo", gspc::kvs::api_t::E_PUSH, 2000);
-    if (rc < 0)
-      std::cerr << "wait returned: " << strerror (-rc) << std::endl;
+  rc = kvs.wait ("foo", gspc::kvs::api_t::E_PUSH, 2000);
+  if (rc < 0)
+    std::cerr << "wait returned: " << strerror (-rc) << std::endl;
 
-    BOOST_REQUIRE (rc & gspc::kvs::api_t::E_PUSH);
+  BOOST_REQUIRE (rc & gspc::kvs::api_t::E_PUSH);
 
-    pusher.join ();
+  pusher.join ();
 
-    rc = kvs.pop ("foo", val);
-    BOOST_REQUIRE_EQUAL (rc, 0);
-    BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
-  }
-  catch (...)
-  {
-    throw;
-  }
+  rc = kvs.pop ("foo", val);
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
 }
 
 BOOST_AUTO_TEST_CASE (test_net_push_pop)
@@ -344,33 +316,26 @@ BOOST_AUTO_TEST_CASE (test_net_push_pop)
 
   std::cerr << "server running on: " << server->url () << std::endl;
 
-  try
+  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
+
+  // fire up a thread to push
+  gspc::kvs::api_t::value_type val_to_push (std::string ("bar"));
+  boost::thread pusher (boost::bind ( &s_push_value
+                                    , &kvs
+                                    , "foo"
+                                    , val_to_push
+                                    )
+                       );
+
+  rc = kvs.pop ("foo", val, 1500);
+  if (rc != 0)
   {
-    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=5000");
-
-    // fire up a thread to push
-    gspc::kvs::api_t::value_type val_to_push (std::string ("bar"));
-    boost::thread pusher (boost::bind ( &s_push_value
-                                      , &kvs
-                                      , "foo"
-                                      , val_to_push
-                                      )
-                         );
-
-    rc = kvs.pop ("foo", val, 1500);
-    if (rc != 0)
-    {
-      std::cerr << "pop failed: " << strerror (-rc) << std::endl;
-    }
-    BOOST_REQUIRE_EQUAL (rc, 0);
-    BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
-
-    pusher.join ();
+    std::cerr << "pop failed: " << strerror (-rc) << std::endl;
   }
-  catch (...)
-  {
-    throw;
-  }
+  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
+
+  pusher.join ();
 }
 
 BOOST_AUTO_TEST_CASE (test_net_many_push_pop)
@@ -395,85 +360,78 @@ BOOST_AUTO_TEST_CASE (test_net_many_push_pop)
 
   std::cerr << "server running on: " << server->url () << std::endl;
 
-  try
+  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=10000");
+
+  std::vector<boost::shared_ptr<boost::thread> >
+    threads;
+
+  for (size_t i = 0 ; i < NTHREAD ; ++i)
   {
-    gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=10000");
+    threads.push_back
+      (boost::shared_ptr<boost::thread>
+      (new boost::thread (boost::bind ( &s_wfh_client_thread
+                                      , i
+                                      , &kvs
+                                      , NUM
+                                      , queue
+                                      )
+                         )
+      ));
+  }
 
-    std::vector<boost::shared_ptr<boost::thread> >
-      threads;
-
-    for (size_t i = 0 ; i < NTHREAD ; ++i)
+  for (size_t i = 0 ; i < NTHREAD*NUM ; ++i)
+  {
+    rc = kvs.pop (queue, val, 1000);
+    if (rc != 0)
     {
-      threads.push_back
-        (boost::shared_ptr<boost::thread>
-        (new boost::thread (boost::bind ( &s_wfh_client_thread
-                                        , i
-                                        , &kvs
-                                        , NUM
-                                        , queue
-                                        )
-                           )
-        ));
-    }
-
-    for (size_t i = 0 ; i < NTHREAD*NUM ; ++i)
-    {
-      rc = kvs.pop (queue, val, 1000);
-      if (rc != 0)
-      {
-        std::cerr << "wfh: could not pop #" << i << " from '" << queue << "': "
-                  << strerror (-rc)
-                  << std::endl
-          ;
-
-        kvs.get (queue, val);
-        std::cerr << "wfh: queue content: "
-                  << pnet::type::value::show (val)
-                  << std::endl
-          ;
-
-        break;
-      }
-
-      std::string from =
-        boost::get<std::string>(*pnet::type::value::peek ("from", val));
-      int msg =
-        boost::get<int>(*pnet::type::value::peek ("msg", val));
-
-      rc = kvs.push (from, msg);
-      if (rc != 0)
-      {
-        std::cerr << "wfh: could not push #" << msg << " to '" << from << "': "
-                  << strerror (-rc)
-                  << std::endl
-          ;
-        break;
-      }
-
-      std::cerr << "wfh: sent reply " << i+1 << "/" << NTHREAD*NUM
-                << " for request #" << msg
-                << " to '" << from << "'"
+      std::cerr << "wfh: could not pop #" << i << " from '" << queue << "': "
+                << strerror (-rc)
                 << std::endl
         ;
+
+      kvs.get (queue, val);
+      std::cerr << "wfh: queue content: "
+                << pnet::type::value::show (val)
+                << std::endl
+        ;
+
+      break;
     }
 
-    if (0 == rc)
+    std::string from =
+      boost::get<std::string>(*pnet::type::value::peek ("from", val));
+    int msg =
+      boost::get<int>(*pnet::type::value::peek ("msg", val));
+
+    rc = kvs.push (from, msg);
+    if (rc != 0)
     {
-      std::cerr << "wfh: everything done" << std::endl;
-    }
-    else
-    {
-      std::cerr << "wfh: failed: " << strerror (-rc) << std::endl;
+      std::cerr << "wfh: could not push #" << msg << " to '" << from << "': "
+                << strerror (-rc)
+                << std::endl
+        ;
+      break;
     }
 
-    for (size_t i = 0 ; i < NTHREAD ; ++i)
-    {
-      threads [i]->join ();
-    }
+    std::cerr << "wfh: sent reply " << i+1 << "/" << NTHREAD*NUM
+              << " for request #" << msg
+              << " to '" << from << "'"
+              << std::endl
+      ;
   }
-  catch (std::exception const &ex)
+
+  if (0 == rc)
   {
-    throw;
+    std::cerr << "wfh: everything done" << std::endl;
+  }
+  else
+  {
+    std::cerr << "wfh: failed: " << strerror (-rc) << std::endl;
+  }
+
+  for (size_t i = 0 ; i < NTHREAD ; ++i)
+  {
+    threads [i]->join ();
   }
 
   BOOST_REQUIRE_EQUAL (rc, 0);
