@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
 
-  ptrScheduler->setTestingMode(true);
+  ptrScheduler->setFlagSendJobToWorkers(false);
   sdpa::worker_id_t worker_A("worker_A");
 
   sdpa::capabilities_set_t cpbSetA;
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
 
-  ptrScheduler->setTestingMode(true);
+  ptrScheduler->setFlagSendJobToWorkers(false);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
 
-  ptrScheduler->setTestingMode(true);
+  ptrScheduler->setFlagSendJobToWorkers(false);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
 
-  ptrScheduler->setTestingMode(true);
+  ptrScheduler->setFlagSendJobToWorkers(false);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
 
-  ptrScheduler->setTestingMode(true);
+  ptrScheduler->setFlagSendJobToWorkers(false);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
@@ -473,7 +473,7 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
    LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
    BOOST_REQUIRE(ptrScheduler);
 
-   ptrScheduler->setTestingMode(true);
+   ptrScheduler->setFlagSendJobToWorkers(false);
 
   // add a couple of workers
   for( int k=0; k<NWORKERS; k++ )
@@ -550,8 +550,6 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   sdpa::worker_id_list_t listFreeWorkers(ptrScheduler->getListAllocatedWorkers(jobId4));
   BOOST_CHECK(listFreeWorkers.empty());
 
-  //reinterpret_cast<SchedulerBase*>(ptrScheduler.get())->printAllocationTable();
-
   // Now report that jobId0 has finished and try to assign again resources to the job 4
   ptrScheduler->releaseReservation(jobId0);
 
@@ -564,8 +562,8 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   int w0 = boost::lexical_cast<int>(listFreeWorkers.front());
   BOOST_CHECK(w0==0 || w0 == 3  || w0 == 6|| w0 == 9);
 
-  //int w1 = boost::lexical_cast<int>(*(boost::next(listFreeWorkers.begin())));
-  //BOOST_CHECK(w1==0 || w1 == 3  || w1 == 6|| w1 == 9);
+  int w1 = boost::lexical_cast<int>(*(boost::next(listFreeWorkers.begin())));
+  BOOST_CHECK(w1==0 || w1 == 3  || w1 == 6|| w1 == 9);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

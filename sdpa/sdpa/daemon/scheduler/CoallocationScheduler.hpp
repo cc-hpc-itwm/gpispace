@@ -31,9 +31,12 @@ namespace sdpa {
       bool allPartialResultsCollected(const job_id_t& jid);
       bool groupFinished(const sdpa::job_id_t& jid);
 
+      void setFlagSendJobToWorkers(bool b) { b_send_job_to_workers_=b;}
+
     private:
       mutable mutex_type mtx_alloc_table_;
       allocation_table_t allocation_table_;
+      bool b_send_job_to_workers_;
   };
 }}
 

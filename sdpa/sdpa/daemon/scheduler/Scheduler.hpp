@@ -88,7 +88,6 @@ namespace daemon {
     virtual void print() = 0;
 
     virtual void printPendingJobs() = 0;
-    virtual void setTestingMode(bool b) = 0;
   };
 }}
 
