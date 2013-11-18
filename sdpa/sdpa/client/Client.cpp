@@ -32,7 +32,8 @@
 namespace se = sdpa::events;
 using namespace sdpa::client;
 
-Client::ptr_t Client::create(const std::string &name_prefix
+Client::ptr_t Client::create( const config_t &cfg
+                            , const std::string &name_prefix
                            , const std::string &output_stage) {
   // warning: we introduce a cycle here, we have to resolve it during shutdown!
   Client::ptr_t client(new Client(name_prefix, output_stage));
@@ -40,6 +41,7 @@ Client::ptr_t Client::create(const std::string &name_prefix
   client->setStage(client_stage);
   seda::StageRegistry::instance().insert(client_stage);
   client_stage->start();
+  client->start (cfg);
   return client;
 }
 

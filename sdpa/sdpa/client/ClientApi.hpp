@@ -21,8 +21,7 @@ namespace sdpa { namespace client {
                                   , const std::string &name_prefix="sdpac"
                                   , const std::string &output_stage="sdpa.apps.client.out") throw (ClientException)
     {
-      ClientApi::ptr_t api(new ClientApi(Client::create(name_prefix, output_stage)));
-      api->pimpl->start(cfg);
+      ClientApi::ptr_t api(new ClientApi(Client::create(cfg, name_prefix, output_stage)));
       return api;
     }
 
