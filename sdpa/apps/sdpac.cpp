@@ -683,8 +683,6 @@ int main (int argc, char **argv) {
       std::cerr << "illegal command: " << command << std::endl;
       return (ERR_USAGE);
     }
-
-    api->shutdown_network();
   }
   catch (std::exception const &ex)
   {

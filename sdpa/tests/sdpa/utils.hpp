@@ -409,25 +409,6 @@ namespace utils
       }
     }
 
-    namespace
-    {
-      struct shutdown_on_exit
-      {
-        shutdown_on_exit (sdpa::client::ClientApi::ptr_t& c)
-          : _c (c)
-        {}
-        ~shutdown_on_exit()
-        {
-          if (_c)
-          {
-            _c->shutdown_network();
-          }
-        }
-
-        sdpa::client::ClientApi::ptr_t& _c;
-      };
-    }
-
     void create_client_and_execute
       ( std::string client_name
       , const orchestrator& orch
@@ -449,7 +430,6 @@ namespace utils
             , client_name + ".apps.client.out"
             )
           );
-        shutdown_on_exit _ (ptrCli);
 
         function (ptrCli);
       }

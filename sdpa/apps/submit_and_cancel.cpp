@@ -131,7 +131,6 @@ int main(int argc, char** argv)
 		{
 			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-			ptrCli->shutdown_network();
 			return -1;
 		}
 	}
@@ -161,7 +160,6 @@ int main(int argc, char** argv)
 			{
 				LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-				ptrCli->shutdown_network();
 				return -1;
 			}
 
@@ -184,7 +182,6 @@ int main(int argc, char** argv)
           {
                   LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-                  ptrCli->shutdown_network();
                   return -1;
           }
 
@@ -204,12 +201,9 @@ int main(int argc, char** argv)
           {
             LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-            ptrCli->shutdown_network();
             return -1;
           }
 
           boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
-
-	ptrCli->shutdown_network();
 }

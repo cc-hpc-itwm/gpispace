@@ -138,7 +138,6 @@ int main(int argc, char** argv)
 		{
 			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-			ptrCli->shutdown_network();
 			return -1;
 		}
 	}
@@ -182,20 +181,17 @@ int main(int argc, char** argv)
 						+ boost::lexical_cast<std::string>(err->error_code())
 						);
 
-			ptrCli->shutdown_network();
 			return -1;
 		}
 		else
 		{
 			LOG(ERROR, "unexpected reply: " << (reply ? reply->str() : "null"));
-			ptrCli->shutdown_network();
 			return -1;
 		}
 	}
 	catch (const sdpa::client::Timedout &)
 	{
 		LOG(ERROR, "Timeout expired!");
-		ptrCli->shutdown_network();
 		return -1;
 	}
 
@@ -205,7 +201,6 @@ int main(int argc, char** argv)
 	if(!sdpa::status::is_terminal (job_status))
 	{
 		LOG(ERROR, "Unexpected status, leave now ...");
-		ptrCli->shutdown_network();
 		return -1;
 	}
 
@@ -224,14 +219,11 @@ int main(int argc, char** argv)
 		{
 			LOG( DEBUG, "The maximum number of job submission  trials was exceeded. Giving-up now!");
 
-			ptrCli->shutdown_network();
 			return -1;
 		}
 
 		boost::this_thread::sleep(boost::posix_time::microseconds(mPollingInterval));
 	}
-
-	ptrCli->shutdown_network();
 
 	return 0;
 }

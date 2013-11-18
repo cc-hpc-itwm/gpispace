@@ -36,6 +36,7 @@ namespace sdpa { namespace client {
     {}
 
     ~ClientApi() {
+      pimpl->action_shutdown_network();
       try
       {
         pimpl->shutdown();
@@ -106,10 +107,6 @@ namespace sdpa { namespace client {
       pimpl->action_configure_network(config);
     }
 
-    void shutdown_network()
-    {
-      pimpl->action_shutdown_network();
-    }
   private:
 
     Client::ptr_t pimpl;
