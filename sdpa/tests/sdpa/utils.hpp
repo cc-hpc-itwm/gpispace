@@ -232,14 +232,14 @@ namespace utils
     };
 
     sdpa::job_id_t submit_job
-      (sdpa::client::ClientApi::ptr_t c, std::string workflow)
+      (sdpa::client::ClientApi& c, std::string workflow)
     {
       LOG (DEBUG, "Submitting the following test workflow: \n" << workflow);
       for (int i (0); i < NMAXTRIALS; ++i)
       {
         try
         {
-          return c->submitJob (workflow);
+          return c.submitJob (workflow);
         }
         catch (const sdpa::client::ClientException& ex)
         {
@@ -251,7 +251,7 @@ namespace utils
     }
 
     sdpa::status::code query_job_status
-      (sdpa::client::ClientApi::ptr_t c, const sdpa::job_id_t& id)
+      (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Query status for job " << id);
 
@@ -259,7 +259,7 @@ namespace utils
       {
         try
         {
-          return c->queryJob (id);
+          return c.queryJob (id);
         }
         catch (const sdpa::client::ClientException& ex)
         {
@@ -271,7 +271,7 @@ namespace utils
     }
 
     template<typename Duration>
-      void wait_for_job_termination ( sdpa::client::ClientApi::ptr_t c
+      void wait_for_job_termination ( sdpa::client::ClientApi& c
                                     , const sdpa::job_id_t& id
                                     , Duration sleep_duration
                                     )
@@ -285,7 +285,7 @@ namespace utils
     }
 
     sdpa::client::result_t retrieve_job_results
-      (sdpa::client::ClientApi::ptr_t c, const sdpa::job_id_t& id)
+      (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Retrieving results of job " << id);
 
@@ -293,7 +293,7 @@ namespace utils
       {
         try
         {
-          return c->retrieveResults (id);
+          return c.retrieveResults (id);
         }
         catch (const sdpa::client::ClientException& ex)
         {
@@ -304,7 +304,7 @@ namespace utils
       throw retried_too_often ("retrieve_job_results");
     }
 
-    void delete_job (sdpa::client::ClientApi::ptr_t c, const sdpa::job_id_t& id)
+    void delete_job (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Delete job " << id);
 
@@ -312,7 +312,7 @@ namespace utils
       {
         try
         {
-          return c->deleteJob (id);
+          return c.deleteJob (id);
         }
         catch (const sdpa::client::ClientException& ex)
         {
@@ -323,7 +323,7 @@ namespace utils
       throw retried_too_often ("delete_job");
     }
 
-    void cancel_job (sdpa::client::ClientApi::ptr_t c, const sdpa::job_id_t& id)
+    void cancel_job (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Cancel job " << id);
 
@@ -331,7 +331,7 @@ namespace utils
       {
         try
         {
-          return c->cancelJob (id);
+          return c.cancelJob (id);
         }
         catch (const sdpa::client::ClientException& ex)
         {
@@ -342,7 +342,7 @@ namespace utils
       throw retried_too_often ("cancel_job");
     }
 
-    void subscribe (sdpa::client::ClientApi::ptr_t c, const sdpa::job_id_t& id)
+    void subscribe (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Subscribe to job " << id);
 
@@ -350,7 +350,7 @@ namespace utils
       {
         try
         {
-          return c->subscribe (id);
+          return c.subscribe (id);
         }
         catch (const sdpa::client::ClientException& ex)
         {
@@ -364,11 +364,11 @@ namespace utils
     //! \note This duplicates behavior from apps/blocking_client.cpp,
     //! which should probably go into ClientApi.
     sdpa::status::code wait_for_status_change
-      (sdpa::client::ClientApi::ptr_t c, const sdpa::job_id_t& id)
+      (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
     {
       subscribe (c, id);
 
-      seda::IEvent::Ptr event (c->waitForNotification());
+      seda::IEvent::Ptr event (c.waitForNotification());
 
       if ( sdpa::events::JobFinishedEvent* evt
          = dynamic_cast<sdpa::events::JobFinishedEvent*> (event.get())
@@ -412,7 +412,7 @@ namespace utils
     void create_client_and_execute
       ( std::string client_name
       , const orchestrator& orch
-      , boost::function<void (sdpa::client::ClientApi::ptr_t)> function
+      , boost::function<void (sdpa::client::ClientApi&)> function
       )
     {
       std::vector<std::string> command_line;
@@ -423,15 +423,10 @@ namespace utils
         sdpa::client::config_t config (sdpa::client::ClientApi::config());
         config.parse_command_line (command_line);
 
-        sdpa::client::ClientApi::ptr_t ptrCli
-          ( sdpa::client::ClientApi::create_with_configured_network
-            ( config
-            , client_name
-            , client_name + ".apps.client.out"
-            )
-          );
+        sdpa::client::ClientApi c
+          (config, client_name, client_name + ".apps.client.out");
 
-        function (ptrCli);
+        function (c);
       }
       catch (const retried_too_often& ex)
       {
@@ -442,54 +437,54 @@ namespace utils
     namespace
     {
       void wait_for_termination_impl
-        (sdpa::job_id_t job_id_user, sdpa::client::ClientApi::ptr_t ptrCli)
+        (sdpa::job_id_t job_id_user, sdpa::client::ClientApi& c)
       {
-        wait_for_job_termination (ptrCli, job_id_user, boost::posix_time::seconds (1));
-        retrieve_job_results (ptrCli, job_id_user);
-        delete_job (ptrCli, job_id_user);
+        wait_for_job_termination (c, job_id_user, boost::posix_time::seconds (1));
+        retrieve_job_results (c, job_id_user);
+        delete_job (c, job_id_user);
       }
 
       void wait_for_termination_as_subscriber_impl
-        (sdpa::job_id_t job_id_user, sdpa::client::ClientApi::ptr_t ptrCli)
+        (sdpa::job_id_t job_id_user, sdpa::client::ClientApi& c)
       {
         const sdpa::status::code state
-          (wait_for_status_change (ptrCli, job_id_user));
+          (wait_for_status_change (c, job_id_user));
         BOOST_REQUIRE (sdpa::status::is_terminal (state));
-        retrieve_job_results (ptrCli, job_id_user);
-        delete_job (ptrCli, job_id_user);
+        retrieve_job_results (c, job_id_user);
+        delete_job (c, job_id_user);
       }
 
       void submit_job_and_wait_for_termination_impl
-        (std::string workflow, sdpa::client::ClientApi::ptr_t ptrCli)
+        (std::string workflow, sdpa::client::ClientApi& c)
       {
-        const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
-        wait_for_termination_impl (job_id_user, ptrCli);
+        const sdpa::job_id_t job_id_user (submit_job (c, workflow));
+        wait_for_termination_impl (job_id_user, c);
       }
 
       void submit_job_and_cancel_and_wait_for_termination_impl
-        (std::string workflow, sdpa::client::ClientApi::ptr_t ptrCli)
+        (std::string workflow, sdpa::client::ClientApi& c)
       {
-        const sdpa::job_id_t job_id_user (submit_job (ptrCli, workflow));
+        const sdpa::job_id_t job_id_user (submit_job (c, workflow));
         //! \todo There should not be a requirement for this!
         boost::this_thread::sleep (boost::posix_time::seconds (1));
-        cancel_job (ptrCli, job_id_user);
-        wait_for_termination_impl (job_id_user, ptrCli);
+        cancel_job (c, job_id_user);
+        wait_for_termination_impl (job_id_user, c);
       }
 
       void submit_job_and_wait_for_termination_as_subscriber_impl
-        (std::string workflow, sdpa::client::ClientApi::ptr_t ptrCli)
+        (std::string workflow, sdpa::client::ClientApi& c)
       {
         wait_for_termination_as_subscriber_impl
-          (submit_job (ptrCli, workflow), ptrCli);
+          (submit_job (c, workflow), c);
       }
 
       void submit_job_result_by_ref
         ( std::string workflow
-        , sdpa::client::ClientApi::ptr_t ptrCli
+        , sdpa::client::ClientApi& c
         , sdpa::job_id_t* job_id
         )
       {
-        *job_id = submit_job (ptrCli, workflow);
+        *job_id = submit_job (c, workflow);
       }
     }
 
