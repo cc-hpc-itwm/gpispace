@@ -139,6 +139,13 @@ void Client::start(const config_t & config) throw (ClientException)
 
 void Client::shutdown() throw (ClientException)
 {
+  if (_output_stage)
+  {
+    _output_stage->stop();
+    seda::StageRegistry::instance().remove (_output_stage_name);
+    _output_stage.reset();
+  }
+
   if (client_stage_)
   {
     client_stage_->stop();
