@@ -9,6 +9,7 @@ namespace sdpa {
     class CoallocationScheduler : public SchedulerBase
     {
     public:
+      typedef sdpa::shared_ptr<CoallocationScheduler> ptr_t;
       typedef boost::unordered_map<sdpa::job_id_t, Reservation*> allocation_table_t;
 
       CoallocationScheduler(sdpa::daemon::IAgent*);
