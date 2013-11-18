@@ -64,7 +64,7 @@ void get_user_input(std::string const & prompt, std::string & result, std::istre
 }
 
 sdpa::status::code command_poll_and_wait ( const std::string &job_id
-                 , const sdpa::client::ClientApi::ptr_t &api
+                 , sdpa::client::ClientApi& api
                  , boost::posix_time::time_duration poll_interval
                  , sdpa::client::job_info_t & job_info
                  )
@@ -82,7 +82,7 @@ sdpa::status::code command_poll_and_wait ( const std::string &job_id
   {
     try
     {
-      status = api->queryJob(job_id, job_info);
+      status = api.queryJob(job_id, job_info);
       fail_count = 0; // reset counter
     }
     catch (const sdpa::client::ClientException &ce)
@@ -120,7 +120,7 @@ sdpa::status::code command_poll_and_wait ( const std::string &job_id
 
 
 sdpa::status::code command_subscribe_and_wait ( const std::string &job_id
-                               , const sdpa::client::ClientApi::ptr_t &ptrCli
+                               , sdpa::client::ClientApi& ptrCli
                                , sdpa::client::job_info_t & job_info
                                )
 {
@@ -141,7 +141,7 @@ sdpa::status::code command_subscribe_and_wait ( const std::string &job_id
 	{
 		try
 		{
-			ptrCli->subscribe(job_id);
+			ptrCli.subscribe(job_id);
 			bSubscribed = true;
 		}
 		catch(...)
@@ -170,7 +170,7 @@ sdpa::status::code command_subscribe_and_wait ( const std::string &job_id
 
     try
     {
-      seda::IEvent::Ptr reply( ptrCli->waitForNotification(0) );
+      seda::IEvent::Ptr reply( ptrCli.waitForNotification(0) );
 
       // check event type
       if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
@@ -218,7 +218,7 @@ sdpa::status::code command_subscribe_and_wait ( const std::string &job_id
 }
 
 sdpa::status::code command_wait ( const std::string &job_id
-                 , const sdpa::client::ClientApi::ptr_t &api
+                 , sdpa::client::ClientApi& api
                  , boost::posix_time::time_duration poll_interval
                  , sdpa::client::job_info_t & job_info
                  )
@@ -482,8 +482,7 @@ int main (int argc, char **argv) {
         boost::uuids::to_string (boost::uuids::random_generator()());
     }
 
-    sdpa::client::ClientApi::ptr_t api
-      (sdpa::client::ClientApi::create_with_configured_network (cfg, client_api_name));
+    sdpa::client::ClientApi api (cfg, client_api_name);
 
     if (command == "submit")
     {
@@ -502,7 +501,7 @@ int main (int argc, char **argv) {
       std::stringstream sstr;
       ifs >> std::noskipws >> sstr.rdbuf();
 
-      const std::string job_id(api->submitJob(sstr.str()));
+      const std::string job_id(api.submitJob(sstr.str()));
       std::cout << job_id << std::endl;
 
       if (cfg.is_set("wait"))
@@ -579,7 +578,7 @@ int main (int argc, char **argv) {
         std::cerr << "E: job-id required" << std::endl;
         return JOB_ID_MISSING;
       }
-      api->cancelJob(args.front());
+      api.cancelJob(args.front());
     }
     else if (command == "status")
     {
@@ -589,7 +588,7 @@ int main (int argc, char **argv) {
         return JOB_ID_MISSING;
       }
       sdpa::client::job_info_t job_info;
-      const sdpa::status::code status (api->queryJob(args.front(), job_info));
+      const sdpa::status::code status (api.queryJob(args.front(), job_info));
       std::cout << sdpa::status::show(status) << std::endl;
       if (status == sdpa::status::FAILED)
       {
@@ -630,7 +629,7 @@ int main (int argc, char **argv) {
                 return IO_ERROR;
           }
 
-      sdpa::client::result_t results(api->retrieveResults(job_id));
+      sdpa::client::result_t results(api.retrieveResults(job_id));
       ofs << results << std::flush;
       std::cerr << "stored results in: " << output_path << std::endl;
     }
@@ -641,7 +640,7 @@ int main (int argc, char **argv) {
         std::cerr << "E: job-id required" << std::endl;
         return JOB_ID_MISSING;
       }
-      api->deleteJob(args.front());
+      api.deleteJob(args.front());
     }
     else if (command == "wait")
     {
