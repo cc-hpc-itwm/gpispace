@@ -75,7 +75,6 @@ namespace sdpa { namespace client {
 
     // Action implementations
     void action_configure(const config_t &);
-    void action_config_nok();
     void action_shutdown();
 
     void action_subscribe(const seda::IEvent::Ptr&);

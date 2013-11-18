@@ -56,7 +56,6 @@ Configuring
   ConfigNok(evt: const seda::IEvent::Ptr &)
     Unconfigured
     {
-      action_config_nok(); // exit
       action_store_reply(evt);
     }
 

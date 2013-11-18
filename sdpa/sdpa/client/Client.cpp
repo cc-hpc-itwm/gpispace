@@ -413,10 +413,6 @@ void Client::action_configure_network(const config_t &cfg)
   output->start ();
 }
 
-void Client::action_config_nok()
-{
-}
-
 void Client::action_shutdown()
 {
   action_store_reply(seda::IEvent::Ptr(new ShutdownComplete()));
