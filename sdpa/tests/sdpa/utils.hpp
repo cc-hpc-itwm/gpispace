@@ -365,8 +365,7 @@ namespace utils
         sdpa::client::config_t config (sdpa::client::ClientApi::config());
         config.parse_command_line (command_line);
 
-        sdpa::client::ClientApi c
-          (config, client_name, client_name + ".apps.client.out");
+        sdpa::client::ClientApi c (config, client_name);
 
         function (c);
       }

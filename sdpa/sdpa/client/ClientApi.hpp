@@ -17,10 +17,9 @@ namespace sdpa { namespace client {
     }
 
     ClientApi ( const config_t &cfg
-              , const std::string &name_prefix="sdpac"
-              , const std::string &output_stage="sdpa.apps.client.out"
+              , const std::string &name_prefix
               )
-      : pimpl (Client::create(cfg, name_prefix, output_stage))
+      : pimpl (Client::create(cfg, name_prefix))
     {
     }
 

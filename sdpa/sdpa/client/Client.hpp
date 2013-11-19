@@ -42,8 +42,7 @@ namespace sdpa { namespace client {
 
     // API
     static Client::ptr_t create( const config_t &cfg
-                               , const std::string &name_prefix="sdpac"
-                              , const std::string &output_stage="sdpac-out");
+                               , const std::string &name_prefix);
 
     static config_t config()
     {
