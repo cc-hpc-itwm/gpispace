@@ -77,6 +77,21 @@ Client::~Client()
   }
 }
 
+fhg::com::message_t Client::message_for_event (sdpa::events::SDPAEvent* event)
+{
+  static sdpa::events::Codec codec;
+
+  fhg::com::message_t msg;
+  msg.header.dst = m_peer.resolve_name (event->to());
+  msg.header.src = m_peer.address();
+
+  const std::string encoded_evt (codec.encode (event));
+  msg.data.assign (encoded_evt.begin(), encoded_evt.end());
+  msg.header.length = msg.data.size();
+
+  return msg;
+}
+
 void Client::send_outgoing()
 {
   //! \note No interruption point required: event_queue::get() contains one.
@@ -84,20 +99,11 @@ void Client::send_outgoing()
   {
     const seda::IEvent::Ptr event (_outgoing_events.get());
 
-    static sdpa::events::Codec codec;
-
     sdpa::events::SDPAEvent* sdpa_event
       (dynamic_cast<sdpa::events::SDPAEvent*>(event.get()));
-
     assert (sdpa_event);
 
-    fhg::com::message_t msg;
-    msg.header.dst = m_peer.resolve_name (sdpa_event->to());
-    msg.header.src = m_peer.address();
-
-    const std::string encoded_evt (codec.encode(sdpa_event));
-    msg.data.assign (encoded_evt.begin(), encoded_evt.end());
-    msg.header.length = msg.data.size();
+    fhg::com::message_t msg (message_for_event (sdpa_event));;
 
     try
     {
