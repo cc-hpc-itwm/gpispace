@@ -36,37 +36,36 @@ namespace sdpa
 
       assert (e);
 
+      sdpa::events::SDPAEvent* sdpa_event
+        (dynamic_cast<sdpa::events::SDPAEvent*>(e.get()));
+
+      assert (sdpa_event);
+
       // convert event to fhg::com::message_t
-      if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
+
+      DLOG(TRACE, "sending event: " << sdpa_event->str());
+
+      fhg::com::message_t msg;
+      msg.header.dst = m_peer->resolve_name (sdpa_event->to());
+      msg.header.src = m_peer->address();
+
+      const std::string encoded_evt (codec.encode(sdpa_event));
+      msg.data.assign (encoded_evt.begin(), encoded_evt.end());
+      msg.header.length = msg.data.size();
+
+      try
       {
-          DLOG(TRACE, "sending event: " << sdpa_event->str());
-
-          fhg::com::message_t msg;
-          msg.header.dst = m_peer->resolve_name (sdpa_event->to());
-          msg.header.src = m_peer->address();
-
-          const std::string encoded_evt (codec.encode(sdpa_event));
-          msg.data.assign (encoded_evt.begin(), encoded_evt.end());
-          msg.header.length = msg.data.size();
-
-          try
-          {
-            m_peer->async_send (&msg, boost::bind (&NetworkStrategy::handle_send, this, e, _1));
-          }
-          catch (std::exception const & ex)
-          {
-            sdpa::events::ErrorEvent::Ptr ptrErrEvt
-              (new sdpa::events::ErrorEvent( sdpa_event->to()
-                                           , sdpa_event->from()
-                                           , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                           , sdpa_event->str())
-              );
-            seda::ForwardStrategy::perform (ptrErrEvt);
-          }
+        m_peer->async_send (&msg, boost::bind (&NetworkStrategy::handle_send, this, e, _1));
       }
-      else
+      catch (std::exception const & ex)
       {
-        LOG(ERROR, "cannot handle non-SDPAEvent events: " << e->str());
+        sdpa::events::ErrorEvent::Ptr ptrErrEvt
+          (new sdpa::events::ErrorEvent( sdpa_event->to()
+                                       , sdpa_event->from()
+                                       , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                       , sdpa_event->str())
+          );
+        seda::ForwardStrategy::perform (ptrErrEvt);
       }
     }
 
