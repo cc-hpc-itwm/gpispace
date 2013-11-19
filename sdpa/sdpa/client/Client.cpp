@@ -53,9 +53,9 @@ Client::Client (const config_t& config, const std::string &a_name)
                   )
   , _communication_thread (&Client::send_outgoing, this)
   , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
+  , _peer_thread (&fhg::com::peer_t::run, &m_peer)
   , _stopping (false)
 {
-  _peer_thread = boost::thread (&fhg::com::peer_t::run, &m_peer);
   m_peer.set_kvs_error_handler (&kvs_error_handler);
   m_peer.start ();
   m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
