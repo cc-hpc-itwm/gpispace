@@ -8,7 +8,6 @@ using namespace sdpa::daemon;
 
 CoallocationScheduler::CoallocationScheduler(sdpa::daemon::IAgent* pCommHandler)
   : SchedulerBase(pCommHandler)
-  , b_send_job_to_workers_ (true)
 {}
 
 void CoallocationScheduler::assignJobsToWorkers()
@@ -61,12 +60,12 @@ void CoallocationScheduler::assignJobsToWorkers()
             LOG(INFO, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<pReservation->getWorkerList());
             // serve the same job to all reserved workers!!!!
               ptr_comm_handler_->serveJob(pReservation->getWorkerList(), jobId);
-            ptr_comm_handler_->resume(jobId);
+            //ptr_comm_handler_->resume(jobId);
         }
         else
         {
           schedule_first(jobId);
-          ptr_comm_handler_->pause(jobId);
+          //ptr_comm_handler_->pause(jobId);
         }
     }
     else // put it back into the common queue
