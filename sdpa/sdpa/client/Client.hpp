@@ -73,7 +73,7 @@ namespace sdpa { namespace client {
     seda::IEvent::Ptr wait_for_reply() throw (Timedout);
     seda::IEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
 
-        Client(const std::string &a_name);
+        Client(const config_t& cfg, const std::string &a_name);
 
     std::string _name;
 

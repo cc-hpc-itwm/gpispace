@@ -34,17 +34,18 @@ using namespace sdpa::client;
 
 Client::ptr_t Client::create( const config_t &cfg
                             , const std::string &name_prefix) {
-  Client::ptr_t client(new Client(name_prefix));
-  client->start (cfg);
+  Client::ptr_t client(new Client(cfg, name_prefix));
   return client;
 }
 
-Client::Client(const std::string &a_name)
+Client::Client (const config_t& cfg, const std::string &a_name)
   : _name (a_name)
   , timeout_(5000U)
   , _communication_thread (&Client::send_outgoing, this)
   , _stopping (false)
-{}
+{
+  start (cfg);
+}
 
 Client::~Client()
 {
