@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 #include <gspc/net/frame.hpp>
 
 namespace gspc
@@ -9,20 +10,20 @@ namespace gspc
   namespace net
   {
     heartbeat_info_t::heartbeat_info_t ()
-      : m_recv_interval (0)
-      , m_send_interval (0)
+      : m_recv_duration (boost::none)
+      , m_send_duration (boost::none)
     {}
 
     heartbeat_info_t::heartbeat_info_t (frame const &f)
-      : m_recv_interval (0)
-      , m_send_interval (0)
+      : m_recv_duration (boost::none)
+      , m_send_duration (boost::none)
     {
       set_from_string (f.get_header ("heart-beat", "0,0"));
     }
 
     heartbeat_info_t::heartbeat_info_t (std::string const &s)
-      : m_recv_interval (0)
-      , m_send_interval (0)
+      : m_recv_duration (boost::none)
+      , m_send_duration (boost::none)
     {
       set_from_string (s);
     }
@@ -30,7 +31,26 @@ namespace gspc
     std::string heartbeat_info_t::str () const
     {
       std::ostringstream os;
-      os << m_recv_interval << "," << m_send_interval;
+      if (m_recv_duration)
+      {
+        os << m_recv_duration->total_seconds ();
+      }
+      else
+      {
+        os << "0";
+      }
+
+      os << ",";
+
+      if (m_send_duration)
+      {
+        os << m_send_duration->total_seconds ();
+      }
+      else
+      {
+        os << "0";
+      }
+
       return os.str ();
     }
 
@@ -39,77 +59,104 @@ namespace gspc
       f.set_header ("heart-beat", str ());
     }
 
-    std::size_t heartbeat_info_t::recv_interval () const
+    heartbeat_info_t & heartbeat_info_t::recv_duration (boost::optional<boost::posix_time::time_duration> const &d)
     {
-      return m_recv_interval;
+      m_recv_duration = d;
+      return *this;
     }
 
-    std::size_t heartbeat_info_t::send_interval () const
+    heartbeat_info_t & heartbeat_info_t::send_duration (boost::optional<boost::posix_time::time_duration> const &d)
     {
-      return m_send_interval;
+      m_send_duration = d;
+      return *this;
     }
 
     boost::optional<boost::posix_time::time_duration>
     heartbeat_info_t::recv_duration () const
     {
-      if (0 == recv_interval ())
-      {
-        return boost::none;
-      }
-      else
-      {
-        return boost::posix_time::seconds (recv_interval ());
-      }
+      return m_recv_duration;
     }
 
     boost::optional<boost::posix_time::time_duration>
     heartbeat_info_t::send_duration () const
     {
-      if (0 == send_interval ())
-      {
-        return boost::none;
-      }
-      else
-      {
-        return boost::posix_time::seconds (send_interval ());
-      }
+      return m_send_duration;
+    }
+
+    heartbeat_info_t heartbeat_info_t::opposite () const
+    {
+      heartbeat_info_t o;
+      o.send_duration (recv_duration ());
+      o.recv_duration (send_duration ());
+      return o;
     }
 
     void heartbeat_info_t::set_from_string (std::string const &heart_beat)
     {
-      int c;
-      int i;
-
       std::istringstream sstr (heart_beat);
-      sstr >> i;
-      if (sstr.fail () || i < 0)
-      {
-        throw std::invalid_argument
-          ("expected uint as 'recv' interval in: " + heart_beat);
-      }
-      m_recv_interval = static_cast<std::size_t>(i);
+      set_from_stream (sstr);
 
-      c = sstr.get ();
-      if (c != ',')
-      {
-        throw std::invalid_argument
-          ("heart-beat in invalid format, expected ',': " + heart_beat);
-      }
-
-      sstr >> i;
-      if (sstr.fail () || i < 0)
-      {
-        throw std::invalid_argument
-          ("expected uint as 'send' interval in: " + heart_beat);
-      }
-      m_send_interval = static_cast<std::size_t>(i);
-
-      c = sstr.get ();
+      int c = sstr.get ();
       if (c != -1)
       {
         throw std::invalid_argument
           ("unexpected trailing character(s) at the end of heart-beat" + heart_beat);
       }
+    }
+
+    void heartbeat_info_t::set_from_stream (std::istream &is)
+    {
+      int c;
+      int i;
+
+      is >> i;
+      if (is.fail () || i < 0)
+      {
+        throw std::invalid_argument
+          ("expected uint as 'recv' interval");
+      }
+      if (0 == i)
+      {
+        m_recv_duration = boost::none;
+      }
+      else
+      {
+        m_recv_duration = boost::posix_time::seconds (i);
+      }
+
+      c = is.get ();
+      if (c != ',')
+      {
+        throw std::invalid_argument
+          ("heart-beat in invalid format, expected ','");
+      }
+
+      is >> i;
+      if (is.fail () || i < 0)
+      {
+        throw std::invalid_argument
+          ("expected uint as 'send' interval");
+      }
+      if (0 == i)
+      {
+        m_send_duration = boost::none;
+      }
+      else
+      {
+        m_send_duration = boost::posix_time::seconds (i);
+      }
+    }
+
+    std::ostream & operator << (std::ostream &os, heartbeat_info_t const &hb)
+    {
+      os << hb.str ();
+      return os;
+    }
+
+    std::istream & operator >> (std::istream &is, heartbeat_info_t &hb)
+    {
+      hb.set_from_stream (is);
+      return is;
     }
   }
 }
