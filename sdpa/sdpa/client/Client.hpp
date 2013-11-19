@@ -80,8 +80,6 @@ namespace sdpa { namespace client {
 
     template<typename Expected, typename Sent>
       Expected send_and_wait_for_reply (Sent event);
-    template<typename Expected, typename Sent>
-      Expected send_and_wait_for_reply_sync (Sent event);
     void send_outgoing();
 
     void handle_send ( seda::IEvent::Ptr event
