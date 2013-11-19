@@ -42,6 +42,8 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
   {
     throw std::runtime_error ("SchedulerBase ctor with NULL ptr_comm_handler");
   }
+
+  m_agent_name = ptr_comm_handler_->name();
 }
 
 SchedulerBase::~SchedulerBase()
@@ -174,7 +176,7 @@ void SchedulerBase::schedule_local(const sdpa::job_id_t &jobId)
         // declare job as failed
         JobFailedEvent::Ptr pEvtJobFailed
               (new JobFailedEvent( sdpa::daemon::WE
-                                 , ptr_comm_handler_->name()
+                                 , m_agent_name
                                  , jobId
                                  , ""
                                  , fhg::error::UNEXPECTED_ERROR
@@ -194,7 +196,7 @@ void SchedulerBase::schedule_local(const sdpa::job_id_t &jobId)
 
     JobFailedEvent::Ptr pEvtJobFailed
       (new JobFailedEvent( sdpa::daemon::WE
-                         , ptr_comm_handler_->name()
+                         , m_agent_name
                          , jobId
                          , result
                          , fhg::error::UNEXPECTED_ERROR
@@ -210,7 +212,7 @@ void SchedulerBase::schedule_local(const sdpa::job_id_t &jobId)
 
     JobFailedEvent::Ptr pEvtJobFailed
       (new JobFailedEvent( sdpa::daemon::WE
-                         , ptr_comm_handler_->name()
+                         , m_agent_name
                          , jobId
                          , result
                          , fhg::error::UNEXPECTED_ERROR
@@ -229,7 +231,7 @@ void SchedulerBase::schedule_local(const sdpa::job_id_t &jobId)
 
     JobFailedEvent::Ptr pEvtJobFailed
       (new JobFailedEvent( sdpa::daemon::WE
-                         , ptr_comm_handler_->name()
+                         , m_agent_name
                          , jobId
                          , result
                          , fhg::error::UNEXPECTED_ERROR
@@ -265,8 +267,8 @@ void SchedulerBase::schedule_remotely(const sdpa::job_id_t& jobId)
   {
     sdpa::job_result_t result(ex.what());
 
-    JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(ptr_comm_handler_->name()
-                                                         , ptr_comm_handler_->name()
+    JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(m_agent_name
+                                                         , m_agent_name
                                                          , jobId
                                                          , result
                                                          , fhg::error::UNEXPECTED_ERROR
@@ -281,8 +283,8 @@ void SchedulerBase::schedule_remotely(const sdpa::job_id_t& jobId)
     sdpa::job_result_t result(ex.what());
 
     JobFailedEvent::Ptr pEvtJobFailed
-          (new JobFailedEvent(  ptr_comm_handler_->name()
-                                , ptr_comm_handler_->name()
+          (new JobFailedEvent(  m_agent_name
+                                , m_agent_name
                                 , jobId
                                 , result
                              , fhg::error::UNEXPECTED_ERROR
@@ -533,7 +535,7 @@ void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 
 void SchedulerBase::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
 {
-  ptr_worker_man_->getCapabilities(ptr_comm_handler_->name(), cpbset);
+  ptr_worker_man_->getCapabilities(m_agent_name, cpbset);
 }
 
 void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sdpa::capabilities_set_t& cpbset)
