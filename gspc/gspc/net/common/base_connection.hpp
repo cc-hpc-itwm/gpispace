@@ -92,6 +92,7 @@ namespace gspc
         boost::asio::deadline_timer m_send_heartbeat_timer;
 
         heartbeat_info_t m_heartbeat_info;
+        size_t m_lost_heartbeats;
       };
     }
   }

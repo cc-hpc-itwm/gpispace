@@ -3,6 +3,7 @@
 
 #include <boost/bind.hpp>
 
+#include <gspc/net/constants.hpp>
 #include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_util.hpp>
 #include <gspc/net/frame_handler.hpp>
@@ -39,6 +40,7 @@ namespace gspc
         , m_recv_heartbeat_timer (service)
         , m_send_heartbeat_timer (service)
         , m_heartbeat_info ()
+        , m_lost_heartbeats (0)
       {}
 
       template <class Proto>
@@ -195,6 +197,7 @@ namespace gspc
           {
             unique_lock _ (m_heartbeat_mutex);
             m_recv_timestamp = boost::get_system_time ();
+            m_lost_heartbeats = 0;
           }
 
           gspc::net::parse::result_t result;
@@ -317,16 +320,19 @@ namespace gspc
           if (m_heartbeat_info.recv_duration ())
           {
             boost::posix_time::ptime now = boost::get_system_time ();
-            if ((m_recv_timestamp + *m_heartbeat_info.recv_duration ()*2) < now)
+            if ((m_recv_timestamp + *m_heartbeat_info.recv_duration ()) < now)
             {
-              this->m_frame_handler.handle_error
-                ( this
-                , boost::system::errc::make_error_code(boost::system::errc::timed_out)
-                );
+              ++m_lost_heartbeats;
 
-              this->stop ();
-
-              return;
+              if (m_lost_heartbeats >= gspc::net::constants::MAX_LOST_HEARTBEATS ())
+              {
+                this->m_frame_handler.handle_error
+                  ( this
+                  , boost::system::errc::make_error_code(boost::system::errc::timed_out)
+                  );
+                this->stop ();
+                return;
+              }
             }
 
             m_recv_heartbeat_timer.expires_from_now (*m_heartbeat_info.recv_duration ());
