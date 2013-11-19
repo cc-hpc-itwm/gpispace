@@ -84,7 +84,6 @@ namespace sdpa { namespace client {
     seda::Stage::Ptr _output_stage;
     std::string _output_stage_name;
 
-    boost::mutex mtx_;
     event_queue_t m_incoming_events;
 
     seda::Stage::Ptr client_stage_;
