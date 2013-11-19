@@ -218,6 +218,7 @@ namespace sdpa {
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
       virtual bool hasJobs() { return (jobManager()->getNumberOfJobs()>0); }
+    protected:
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
 
       virtual void createScheduler() = 0;
