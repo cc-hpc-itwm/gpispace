@@ -33,7 +33,8 @@ namespace sdpa { namespace client {
   class Client {
   public:
     typedef sdpa::shared_ptr<Client> ptr_t;
-    typedef fhg::thread::queue<seda::IEvent::Ptr, std::list> event_queue_t;
+    typedef fhg::thread::queue<sdpa::events::SDPAEvent::Ptr, std::list>
+      event_queue_t;
 
     Client(const config_t& cfg, const std::string &a_name);
     ~Client();
@@ -64,8 +65,8 @@ namespace sdpa { namespace client {
   private:
     typedef unsigned long long timeout_t;
 
-    seda::IEvent::Ptr wait_for_reply() throw (Timedout);
-    seda::IEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
+    sdpa::events::SDPAEvent::Ptr wait_for_reply() throw (Timedout);
+    sdpa::events::SDPAEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
 
     std::string _name;
 

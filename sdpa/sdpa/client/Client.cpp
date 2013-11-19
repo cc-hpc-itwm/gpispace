@@ -97,7 +97,7 @@ void Client::send_outgoing()
   //! \note No interruption point required: event_queue::get() contains one.
   for (;;)
   {
-    const seda::IEvent::Ptr event (_outgoing_events.get());
+    const sdpa::events::SDPAEvent::Ptr event (_outgoing_events.get());
 
     sdpa::events::SDPAEvent* sdpa_event
       (dynamic_cast<sdpa::events::SDPAEvent*>(event.get()));
@@ -199,7 +199,7 @@ template<typename Expected, typename Sent>
   m_incoming_events.clear();
   _outgoing_events.put (event);
 
-  const seda::IEvent::Ptr reply (wait_for_reply());
+  const sdpa::events::SDPAEvent::Ptr reply (wait_for_reply());
   if (Expected* e = dynamic_cast<Expected*> (reply.get()))
   {
     return *e;
@@ -221,14 +221,14 @@ sdpa::status::code Client::wait_for_terminal_state
   (job_id_t id, job_info_t& job_info)
 {
   send_and_wait_for_reply<se::SubscribeAckEvent>
-    ( seda::IEvent::Ptr ( new se::SubscribeEvent ( _name
+    ( sdpa::events::SDPAEvent::Ptr ( new se::SubscribeEvent ( _name
                                                  , orchestrator_
                                                  , job_id_list_t (1, id)
                                                  )
                         )
     );
 
-  seda::IEvent::Ptr reply (wait_for_reply (-1));
+  sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (-1));
 
   if ( sdpa::events::JobFinishedEvent* evt
      = dynamic_cast<sdpa::events::JobFinishedEvent*> (reply.get())
@@ -281,13 +281,13 @@ sdpa::status::code Client::wait_for_terminal_state
 }
 
 
-seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
+sdpa::events::SDPAEvent::Ptr Client::wait_for_reply() throw (Timedout)
 {
   return wait_for_reply(timeout_);
 }
 
 // on t=0 blocks forever
-seda::IEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
+sdpa::events::SDPAEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
 {
   if (t == (timeout_t)(-1))
   {
@@ -309,7 +309,7 @@ seda::IEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
   return send_and_wait_for_reply<se::SubmitJobAckEvent>
-    ( seda::IEvent::Ptr ( new se::SubmitJobEvent ( _name
+    ( sdpa::events::SDPAEvent::Ptr ( new se::SubmitJobEvent ( _name
                                                  , orchestrator_
                                                  , ""
                                                  , desc
@@ -322,7 +322,7 @@ sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 {
   send_and_wait_for_reply<se::CancelJobAckEvent>
-    ( seda::IEvent::Ptr ( new se::CancelJobEvent ( _name
+    ( sdpa::events::SDPAEvent::Ptr ( new se::CancelJobEvent ( _name
                                                  , orchestrator_
                                                  , jid
                                                  , "user cancel"
@@ -341,7 +341,7 @@ sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
 {
   const se::JobStatusReplyEvent reply
     ( send_and_wait_for_reply<se::JobStatusReplyEvent>
-      ( seda::IEvent::Ptr ( new se::QueryJobStatusEvent ( _name
+      ( sdpa::events::SDPAEvent::Ptr ( new se::QueryJobStatusEvent ( _name
                                                         , orchestrator_
                                                         , jid
                                                         )
@@ -358,7 +358,7 @@ sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
 void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 {
   send_and_wait_for_reply<se::DeleteJobAckEvent>
-    ( seda::IEvent::Ptr ( new se::DeleteJobEvent ( _name
+    ( sdpa::events::SDPAEvent::Ptr ( new se::DeleteJobEvent ( _name
                                                  , orchestrator_
                                                  , jid
                                                  )
@@ -369,7 +369,7 @@ void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (ClientException)
 {
   return send_and_wait_for_reply<se::JobResultsReplyEvent>
-    ( seda::IEvent::Ptr ( new se::RetrieveJobResultsEvent ( _name
+    ( sdpa::events::SDPAEvent::Ptr ( new se::RetrieveJobResultsEvent ( _name
                                                           , orchestrator_
                                                           , jid
                                                           )
