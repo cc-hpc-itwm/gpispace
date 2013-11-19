@@ -272,6 +272,66 @@ void Client::subscribe(const job_id_list_t& listJobIds) throw (ClientException)
     );
 }
 
+sdpa::status::code Client::wait_for_terminal_state
+  (job_id_t id, job_info_t& job_info)
+{
+  job_id_list_t listJobIds;
+  listJobIds.push_back (id);
+  subscribe (listJobIds);
+
+  seda::IEvent::Ptr reply (wait_for_reply (-1));
+
+  if ( sdpa::events::JobFinishedEvent* evt
+     = dynamic_cast<sdpa::events::JobFinishedEvent*> (reply.get())
+     )
+  {
+    if (evt->job_id() != id)
+    {
+      throw std::runtime_error ("got status change for different job");
+    }
+    return sdpa::status::FINISHED;
+  }
+  else if ( sdpa::events::JobFailedEvent* evt
+          = dynamic_cast<sdpa::events::JobFailedEvent*> (reply.get())
+          )
+  {
+    if (evt->job_id() != id)
+    {
+      throw std::runtime_error ("got status change for different job");
+    }
+    job_info.error_code = evt->error_code();
+    job_info.error_message = evt->error_message();
+    return sdpa::status::FAILED;
+  }
+  else if ( sdpa::events::CancelJobAckEvent* evt
+          = dynamic_cast<sdpa::events::CancelJobAckEvent*> (reply.get())
+          )
+  {
+    if (evt->job_id() != id)
+    {
+      throw std::runtime_error ("got status change for different job");
+    }
+    return sdpa::status::CANCELED;
+  }
+  else if ( sdpa::events::ErrorEvent *err
+          = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get())
+          )
+  {
+    throw std::runtime_error
+      ( "got error event: reason := "
+      + err->reason()
+      + " code := "
+      + boost::lexical_cast<std::string>(err->error_code())
+      );
+  }
+  else
+  {
+    throw std::runtime_error
+      (std::string ("unexpected reply: ") + (reply ? reply->str() : "null"));
+  }
+}
+
+
 seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
 {
   return wait_for_reply(timeout_);

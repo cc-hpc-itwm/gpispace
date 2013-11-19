@@ -70,11 +70,14 @@ namespace sdpa { namespace client {
     void deleteJob(const job_id_t &) throw (ClientException);
     result_t retrieveResults(const job_id_t &) throw (ClientException);
 
+    sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
+
+  private:
     typedef unsigned long long timeout_t;
+
     seda::IEvent::Ptr wait_for_reply() throw (Timedout);
     seda::IEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
 
-  private:
         Client(const std::string &a_name);
 
     void setStage(seda::Stage::Ptr stage)
