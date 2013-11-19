@@ -134,6 +134,14 @@ namespace gspc
       return boost::none;
     }
 
+    frame::value_type frame::get_header ( key_type const &key
+                                        , value_type const &def
+                                        ) const
+    {
+      frame::header_value val = get_header (key);
+      return val ? *val : def;
+    }
+
     bool frame::has_header (std::string const & key) const
     {
       return get_header (key) != boost::none;

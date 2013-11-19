@@ -65,6 +65,11 @@ namespace gspc
       header_value get_header (key_type const &key) const;
 
       /**
+         Get a header entry or the given default.
+       */
+      value_type get_header (key_type const &key, value_type const &def) const;
+
+      /**
          Check if a header entry exists or not.
        */
       bool has_header (std::string const &key) const;
