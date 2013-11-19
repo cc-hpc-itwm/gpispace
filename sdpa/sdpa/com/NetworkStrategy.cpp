@@ -164,10 +164,6 @@ namespace sdpa
           seda::ForwardStrategy::perform (error);
           m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
         }
-        else
-        {
-                LOG(TRACE, m_peer->name() << " is shutting down");
-        }
       }
     }
   }
