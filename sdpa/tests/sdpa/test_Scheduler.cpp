@@ -104,14 +104,19 @@ public:
 struct MyFixture
 {
     MyFixture()
-    : m_pAgent(new TestAgent("agent", "127.0.0.1", sdpa::master_info_list_t()))
     {
-      BOOST_REQUIRE(m_pAgent);
+      try {
+          m_pAgent = new TestAgent("agent", "127.0.0.1", sdpa::master_info_list_t());
+      }
+      catch(const std::bad_alloc&) {
+          m_pAgent = NULL;
+      }
+
+      BOOST_REQUIRE(m_pAgent!=NULL);
     }
 
     ~MyFixture()
     {
-      //m_pAgent->shutdown();
       delete m_pAgent;
     }
 
@@ -408,7 +413,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   //ptrScheduler->printAllocationTable();
 }
 
-BOOST_AUTO_TEST_CASE(testCollocSched)
+BOOST_AUTO_TEST_CASE(testCoallocSched)
 {
   LOG(INFO, "Test the co-allocation ...");
 
