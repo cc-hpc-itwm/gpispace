@@ -49,11 +49,12 @@ namespace gspc
       return m_send_interval;
     }
 
-    boost::posix_time::time_duration heartbeat_info_t::recv_duration () const
+    boost::optional<boost::posix_time::time_duration>
+    heartbeat_info_t::recv_duration () const
     {
       if (0 == recv_interval ())
       {
-        return boost::posix_time::pos_infin;
+        return boost::none;
       }
       else
       {
@@ -61,11 +62,12 @@ namespace gspc
       }
     }
 
-    boost::posix_time::time_duration heartbeat_info_t::send_duration () const
+    boost::optional<boost::posix_time::time_duration>
+    heartbeat_info_t::send_duration () const
     {
       if (0 == send_interval ())
       {
-        return boost::posix_time::pos_infin;
+        return boost::none;
       }
       else
       {

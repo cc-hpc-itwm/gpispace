@@ -3,6 +3,7 @@
 
 #include <string>
 #include <gspc/net/frame_fwd.hpp>
+#include <boost/optional.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 namespace gspc
@@ -20,8 +21,8 @@ namespace gspc
       explicit
       heartbeat_info_t (std::string const &heartbeat_header);
 
-      boost::posix_time::time_duration recv_duration () const;
-      boost::posix_time::time_duration send_duration () const;
+      boost::optional<boost::posix_time::time_duration> recv_duration () const;
+      boost::optional<boost::posix_time::time_duration> send_duration () const;
 
       std::size_t recv_interval () const;
       std::size_t send_interval () const;

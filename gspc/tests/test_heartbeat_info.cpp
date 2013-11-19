@@ -11,24 +11,24 @@ BOOST_AUTO_TEST_CASE (test_valid_heartbeat)
     heartbeat_info_t hb;
     BOOST_REQUIRE_EQUAL (hb.recv_interval (), 0u);
     BOOST_REQUIRE_EQUAL (hb.send_interval (), 0u);
-    BOOST_REQUIRE_EQUAL (hb.recv_duration (), boost::posix_time::pos_infin);
-    BOOST_REQUIRE_EQUAL (hb.send_duration (), boost::posix_time::pos_infin);
+    BOOST_REQUIRE_EQUAL (hb.recv_duration (), boost::none);
+    BOOST_REQUIRE_EQUAL (hb.send_duration (), boost::none);
   }
 
   {
     heartbeat_info_t hb ("0,0");
     BOOST_REQUIRE_EQUAL (hb.recv_interval (), 0u);
     BOOST_REQUIRE_EQUAL (hb.send_interval (), 0u);
-    BOOST_REQUIRE_EQUAL (hb.recv_duration (), boost::posix_time::pos_infin);
-    BOOST_REQUIRE_EQUAL (hb.send_duration (), boost::posix_time::pos_infin);
+    BOOST_REQUIRE_EQUAL (hb.recv_duration (), boost::none);
+    BOOST_REQUIRE_EQUAL (hb.send_duration (), boost::none);
   }
 
   {
     heartbeat_info_t hb ("60,20");
     BOOST_REQUIRE_EQUAL (hb.recv_interval (), 60u);
     BOOST_REQUIRE_EQUAL (hb.send_interval (), 20u);
-    BOOST_REQUIRE_EQUAL (hb.recv_duration (), boost::posix_time::seconds (60));
-    BOOST_REQUIRE_EQUAL (hb.send_duration (), boost::posix_time::seconds (20));
+    BOOST_REQUIRE_EQUAL (*hb.recv_duration (), boost::posix_time::seconds (60));
+    BOOST_REQUIRE_EQUAL (*hb.send_duration (), boost::posix_time::seconds (20));
   }
 }
 
