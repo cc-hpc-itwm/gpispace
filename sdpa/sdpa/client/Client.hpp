@@ -89,7 +89,7 @@ namespace sdpa { namespace client {
                      );
     void handle_recv (boost::system::error_code const & ec);
 
-    shared_ptr<fhg::com::peer_t> m_peer;
+    fhg::com::peer_t m_peer;
     fhg::com::message_t m_message;
     boost::thread _peer_thread;
     bool _stopping;

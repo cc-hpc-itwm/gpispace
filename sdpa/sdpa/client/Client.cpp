@@ -52,18 +52,13 @@ Client::Client (const config_t& config, const std::string &a_name)
                   : throw ClientException ("no orchestrator specified!")
                   )
   , _communication_thread (&Client::send_outgoing, this)
+  , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
   , _stopping (false)
 {
-  m_peer.reset (new fhg::com::peer_t ( _name
-                                     , fhg::com::host_t ("*")
-                                     , fhg::com::port_t ("0")
-                                     )
-                   );
-
-  _peer_thread = boost::thread (&fhg::com::peer_t::run, m_peer);
-  m_peer->set_kvs_error_handler (&kvs_error_handler);
-  m_peer->start ();
-  m_peer->async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
+  _peer_thread = boost::thread (&fhg::com::peer_t::run, &m_peer);
+  m_peer.set_kvs_error_handler (&kvs_error_handler);
+  m_peer.start ();
+  m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
 }
 
 Client::~Client()
@@ -75,15 +70,11 @@ Client::~Client()
   }
 
   _stopping = true;
-  if (m_peer)
-  {
-    m_peer->stop();
-  }
+  m_peer.stop();
   if (_peer_thread.joinable())
   {
     _peer_thread.join();
   }
-  m_peer.reset();
 }
 
 void Client::send_outgoing()
@@ -101,8 +92,8 @@ void Client::send_outgoing()
     assert (sdpa_event);
 
     fhg::com::message_t msg;
-    msg.header.dst = m_peer->resolve_name (sdpa_event->to());
-    msg.header.src = m_peer->address();
+    msg.header.dst = m_peer.resolve_name (sdpa_event->to());
+    msg.header.src = m_peer.address();
 
     const std::string encoded_evt (codec.encode(sdpa_event));
     msg.data.assign (encoded_evt.begin(), encoded_evt.end());
@@ -110,7 +101,7 @@ void Client::send_outgoing()
 
     try
     {
-      m_peer->async_send (&msg, boost::bind (&Client::handle_send, this, event, _1));
+      m_peer.async_send (&msg, boost::bind (&Client::handle_send, this, event, _1));
     }
     catch (std::exception const & ex)
     {
@@ -174,23 +165,23 @@ void Client::handle_send ( seda::IEvent::Ptr event
           LOG(WARN, "could not handle incoming message: " << ex.what());
         }
 
-        m_peer->async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
+        m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
       }
       else if (!_stopping)
       {
         const fhg::com::p2p::address_t & addr = m_message.header.src;
-        if (addr != m_peer->address())
+        if (addr != m_peer.address())
         {
           sdpa::events::ErrorEvent::Ptr
-            error(new sdpa::events::ErrorEvent ( m_peer->resolve(addr, "*unknown*")
-                                               , m_peer->name()
+            error(new sdpa::events::ErrorEvent ( m_peer.resolve(addr, "*unknown*")
+                                               , m_peer.name()
                                                , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
                                                , boost::lexical_cast<std::string>(ec)
                                                )
                  );
           m_incoming_events.put (error);
 
-          m_peer->async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
+          m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
         }
       }
     }
