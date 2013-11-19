@@ -103,26 +103,28 @@ namespace sdpa
     {
       if (ec)
       {
-        if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
-        {
-          DMLOG ( WARN
-                , "send failed:"
-                << " ec := " << ec
-                << " msg := " << ec.message ()
-                << " event := " << e->str()
-                << " to := " << sdpa_event->to ()
-                << " from := " << sdpa_event->from ()
-                );
+        sdpa::events::SDPAEvent* sdpa_event
+          (dynamic_cast<sdpa::events::SDPAEvent*>(e.get()));
 
-          //sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
-          sdpa::events::ErrorEvent::Ptr ptrErrEvt
-            (new sdpa::events::ErrorEvent( sdpa_event->to()
-                                         , sdpa_event->from()
-                                         , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                         , sdpa_event->str())
-            );
-          seda::ForwardStrategy::perform (ptrErrEvt);
-        }
+        assert (sdpa_event);
+
+        DMLOG ( WARN
+              , "send failed:"
+              << " ec := " << ec
+              << " msg := " << ec.message ()
+              << " event := " << sdpa_event->str()
+              << " to := " << sdpa_event->to ()
+              << " from := " << sdpa_event->from ()
+              );
+
+        //sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
+        sdpa::events::ErrorEvent::Ptr ptrErrEvt
+          (new sdpa::events::ErrorEvent( sdpa_event->to()
+                                       , sdpa_event->from()
+                                       , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                       , sdpa_event->str())
+          );
+        seda::ForwardStrategy::perform (ptrErrEvt);
       }
     }
 
