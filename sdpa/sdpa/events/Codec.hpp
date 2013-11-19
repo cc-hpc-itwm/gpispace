@@ -14,7 +14,7 @@ namespace sdpa
     {
     public:
 
-      std::string encode (sdpa::events::SDPAEvent* e) const
+      std::string encode (const sdpa::events::SDPAEvent* e) const
       {
         std::ostringstream sstr;
         boost::archive::text_oarchive ar (sstr);
