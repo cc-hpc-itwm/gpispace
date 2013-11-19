@@ -110,7 +110,7 @@ void Client::shutdown() throw (ClientException)
 template<typename Expected, typename Sent>
   Expected Client::send_and_wait_for_reply (Sent event)
 {
-  clear_reply();
+  m_incoming_events.clear();
   _output_stage->send (event);
 
   const seda::IEvent::Ptr reply (wait_for_reply());
@@ -164,14 +164,6 @@ seda::IEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
     {
       throw Timedout ("did not receive reply");
     }
-  }
-}
-
-void Client::clear_reply()
-{
-  if (not m_incoming_events.empty ())
-  {
-    m_incoming_events.clear ();
   }
 }
 
