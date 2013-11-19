@@ -994,7 +994,7 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
     }
   }
 
-  addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank(), evtRegWorker.agent_uuid() );
+  scheduler()->addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank(), evtRegWorker.agent_uuid() );
 
   // send back an acknowledgment
   DMLOG (TRACE, "Send back to the worker " << worker_id << " a registration acknowledgment!" );
@@ -1145,15 +1145,6 @@ Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worke
 const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) const
 {
   return scheduler()->findWorker(job_id);
-}
-
-void GenericDaemon::addWorker(  const Worker::worker_id_t& workerId,
-                                boost::optional<unsigned int> cap,
-                                const capabilities_set_t& cpbset,
-                                const unsigned int& agent_rank,
-                                const sdpa::worker_id_t& agent_uuid )
-{
-  scheduler()->addWorker(workerId, cap, cpbset, agent_rank, agent_uuid);
 }
 
 void GenericDaemon::pause(const job_id_t& jobId)

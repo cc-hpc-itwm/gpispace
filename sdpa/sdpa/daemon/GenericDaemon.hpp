@@ -205,22 +205,16 @@ namespace sdpa {
       void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
       void serveJob(const Worker::worker_id_t&, const job_id_t&);
       void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
-      virtual void addWorker( const Worker::worker_id_t& workerId,
-                              boost::optional<unsigned int> cap,
-                              const capabilities_set_t& cpbset,
-                              const unsigned int& rank = 0,
-                              const sdpa::worker_id_t& agent_uuid  = "");
 
       // jobs
       Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& );
       std::string gen_id() { return sdpa::JobId ().str (); }
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
-
       virtual bool hasJobs() { return (jobManager()->getNumberOfJobs()>0); }
+
     protected:
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
-
       virtual void createScheduler() = 0;
 
     protected:
