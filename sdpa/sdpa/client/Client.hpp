@@ -94,7 +94,6 @@ namespace sdpa { namespace client {
     // config variables
     timeout_t timeout_;
     std::string orchestrator_;
-    std::string my_location_;
   };
 }}
 
