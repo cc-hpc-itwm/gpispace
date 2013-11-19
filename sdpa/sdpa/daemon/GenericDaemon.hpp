@@ -241,8 +241,6 @@ namespace sdpa {
       Scheduler::ptr_t ptr_scheduler_;
       we::mgmt::basic_layer* ptr_workflow_engine_;
 
-      mutex_type _state_machine_mutex;
-
     private:
 
       unsigned int m_nRank;
