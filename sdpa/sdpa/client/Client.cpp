@@ -107,30 +107,39 @@ void Client::shutdown() throw (ClientException)
   }
 }
 
+template<typename Expected, typename Sent>
+  Expected Client::send_and_wait_for_reply (Sent event)
+{
+  clear_reply();
+  _output_stage->send (event);
+
+  const seda::IEvent::Ptr reply (wait_for_reply());
+  if (Expected* e = dynamic_cast<Expected*> (reply.get()))
+  {
+    return *e;
+  }
+  else if (se::ErrorEvent* err = dynamic_cast<se::ErrorEvent*> (reply.get()))
+  {
+    throw ClientException ( "Error: reason := "+ err->reason()
+                          + " code := "
+                          + boost::lexical_cast<std::string> (err->error_code())
+                          );
+  }
+  else
+  {
+    throw ClientException ("Unexpected reply: " + reply->str());
+  }
+}
+
 void Client::subscribe(const job_id_list_t& listJobIds) throw (ClientException)
 {
-        clear_reply();
-  _output_stage->send(seda::IEvent::Ptr(new se::SubscribeEvent(name(), orchestrator_, listJobIds)));
-  try
-  {
-    seda::IEvent::Ptr reply(wait_for_reply());
-    if (dynamic_cast<se::SubscribeAckEvent*>(reply.get()))
-    {
-    }
-    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
-    {
-      throw ClientException( "error during subscribe: reason := "+ err->reason()
-                           + " code := "+ boost::lexical_cast<std::string>(err->error_code()));
-    }
-    else
-    {
-      throw ClientException("got an unexpected reply to Subscribe: " + reply->str());
-    }
-  }
-  catch (const Timedout &)
-  {
-    throw ApiCallFailed("subscribe");
-  }
+  send_and_wait_for_reply<se::SubscribeAckEvent>
+    ( seda::IEvent::Ptr ( new se::SubscribeEvent ( name()
+                                                 , orchestrator_
+                                                 , listJobIds
+                                                 )
+                        )
+    );
 }
 
 seda::IEvent::Ptr Client::wait_for_reply() throw (Timedout)
@@ -168,67 +177,27 @@ void Client::clear_reply()
 
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
 {
-        clear_reply();
-  _output_stage->send(seda::IEvent::Ptr(new se::SubmitJobEvent(name(), orchestrator_, "", desc, "")));
-  try
-  {
-    seda::IEvent::Ptr reply(wait_for_reply());
-    if (se::SubmitJobAckEvent *sj_ack = dynamic_cast<se::SubmitJobAckEvent*>(reply.get()))
-    {
-      return sj_ack->job_id();
-    }
-    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
-    {
-      throw ClientException( "error during submit: reason := "
-                           + err->reason()
-                           + " code := "
-                           + boost::lexical_cast<std::string>(err->error_code())
-                           );
-    }
-    else
-    {
-      throw ClientException("got an unexpected reply to SubmitJob: " + reply->str());
-    }
-  }
-  catch (const Timedout &)
-  {
-    throw ApiCallFailed("submitJob");
-  }
+  return send_and_wait_for_reply<se::SubmitJobAckEvent>
+    ( seda::IEvent::Ptr ( new se::SubmitJobEvent ( name()
+                                                 , orchestrator_
+                                                 , ""
+                                                 , desc
+                                                 , ""
+                                                 )
+                        )
+    ).job_id();
 }
 
 void Client::cancelJob(const job_id_t &jid) throw (ClientException)
 {
-        clear_reply();
-  _output_stage->send(seda::IEvent::Ptr(new se::CancelJobEvent( name()
-                                                              , orchestrator_
-                                                              , jid
-                                                              , "user cancel"
-                                                              )
-                                       )
-                     );
-  try
-  {
-    seda::IEvent::Ptr reply(wait_for_reply());
-    if (/* se::CancelJobAckEvent *ack = */ dynamic_cast<se::CancelJobAckEvent*>(reply.get()))
-    {
-    }
-    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
-    {
-      throw ClientException( "error during cancel: reason := "
-                           + err->reason()
-                           + " code := "
-                           + boost::lexical_cast<std::string>(err->error_code())
-                           );
-    }
-    else
-    {
-      throw ClientException("got an unexpected reply to CancelJob: " + reply->str());
-    }
-  }
-  catch(const Timedout &)
-  {
-    throw ApiCallFailed("cancelJob");
-  }
+  send_and_wait_for_reply<se::CancelJobAckEvent>
+    ( seda::IEvent::Ptr ( new se::CancelJobEvent ( name()
+                                                 , orchestrator_
+                                                 , jid
+                                                 , "user cancel"
+                                                 )
+                        )
+    );
 }
 
 sdpa::status::code Client::queryJob(const job_id_t &jid) throw (ClientException)
@@ -239,102 +208,40 @@ sdpa::status::code Client::queryJob(const job_id_t &jid) throw (ClientException)
 
 sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
 {
-  clear_reply();
-  _output_stage->send
-    (seda::IEvent::Ptr(new se::QueryJobStatusEvent(name()
-                                                  , orchestrator_
-                                                  , jid)
-                      )
+  const se::JobStatusReplyEvent reply
+    ( send_and_wait_for_reply<se::JobStatusReplyEvent>
+      ( seda::IEvent::Ptr ( new se::QueryJobStatusEvent ( name()
+                                                        , orchestrator_
+                                                        , jid
+                                                        )
+                          )
+      )
     );
-  try
-  {
-    seda::IEvent::Ptr reply(wait_for_reply());
-    if (se::JobStatusReplyEvent *status
-       = dynamic_cast<se::JobStatusReplyEvent*>(reply.get()))
-    {
-      info.error_code = status->error_code();
-      info.error_message = status->error_message();
 
-      return status->status();
-    }
-    else if (se::ErrorEvent *err
-            = dynamic_cast<se::ErrorEvent*>(reply.get()))
-    {
-      throw ClientException( "error during query: reason := "
-                           + err->reason()
-                           + " code := "
-                           + boost::lexical_cast<std::string>(err->error_code())
-                           );
-    }
-    else
-    {
-      throw ClientException
-        ("got an unexpected reply to QueryJob: " + reply->str());
-    }
-  }
-  catch (const Timedout &)
-  {
-    throw ApiCallFailed("queryJob");
-  }
+  info.error_code = reply.error_code();
+  info.error_message = reply.error_message();
+
+  return reply.status();
 }
 
 void Client::deleteJob(const job_id_t &jid) throw (ClientException)
 {
-        clear_reply();
-  _output_stage->send(seda::IEvent::Ptr(new se::DeleteJobEvent(name(), orchestrator_, jid)));
-  try
-  {
-    seda::IEvent::Ptr reply(wait_for_reply());
-    if (/* se::DeleteJobAckEvent *ack = */ dynamic_cast<se::DeleteJobAckEvent*>(reply.get()))
-    {
-    }
-    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
-    {
-        throw ClientException( "error during delete: reason := "
-                           + err->reason()
-                           + " code := "
-                           + boost::lexical_cast<std::string>(err->error_code())
-                           );
-    }
-    else
-    {
-      throw ClientException("got an unexpected reply to DeleteJob: " + reply->str());
-    }
-  }
-  catch (const Timedout &)
-  {
-          throw ApiCallFailed("deleteJob");
-  }
+  send_and_wait_for_reply<se::DeleteJobAckEvent>
+    ( seda::IEvent::Ptr ( new se::DeleteJobEvent ( name()
+                                                 , orchestrator_
+                                                 , jid
+                                                 )
+                        )
+    );
 }
 
 sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (ClientException)
 {
-        clear_reply();
-  _output_stage->send(seda::IEvent::Ptr(new se::RetrieveJobResultsEvent(name()
-                                                                      , orchestrator_
-                                                                      , jid)));
-  try
-  {
-    seda::IEvent::Ptr reply(wait_for_reply());
-    if (se::JobResultsReplyEvent *res = dynamic_cast<se::JobResultsReplyEvent*>(reply.get()))
-    {
-      return res->result();
-    }
-    else if (se::ErrorEvent *err = dynamic_cast<se::ErrorEvent*>(reply.get()))
-    {
-      throw ClientException( "error during retrieve: reason := "
-                           + err->reason()
-                           + " code := "
-                           + boost::lexical_cast<std::string>(err->error_code())
-                           );
-    }
-    else
-    {
-      throw ClientException("got an unexpected reply to RetrieveResults: " + reply->str());
-    }
-  }
-  catch (const Timedout &)
-  {
-    throw ApiCallFailed("retrieveResults");
-  }
+  return send_and_wait_for_reply<se::JobResultsReplyEvent>
+    ( seda::IEvent::Ptr ( new se::RetrieveJobResultsEvent ( name()
+                                                          , orchestrator_
+                                                          , jid
+                                                          )
+                        )
+    ).result();
 }

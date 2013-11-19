@@ -93,6 +93,9 @@ namespace sdpa { namespace client {
     // config variables
     timeout_t timeout_;
     std::string orchestrator_;
+
+    template<typename Expected, typename Sent>
+      Expected send_and_wait_for_reply (Sent event);
   };
 }}
 
