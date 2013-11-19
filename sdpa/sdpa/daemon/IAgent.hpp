@@ -65,7 +65,7 @@ namespace sdpa {
     virtual void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId) = 0;
 
     virtual void schedule(const sdpa::job_id_t& job) = 0;
-    virtual bool hasWorkflowEngine() = 0;
+    virtual bool hasWorkflowEngine()const = 0;
     virtual bool isTop() = 0;
 
     virtual bool isScheduled(const sdpa::job_id_t& job_id) = 0;

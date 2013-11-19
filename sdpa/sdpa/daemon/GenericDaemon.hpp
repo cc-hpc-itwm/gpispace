@@ -125,6 +125,7 @@ namespace sdpa {
       void setStage(const seda::Stage::Ptr& stage){ ptr_daemon_stage_ = stage; }
       virtual seda::Stage::Ptr to_master_stage() const { return ptr_to_master_stage_ ; }
       virtual seda::Stage::Ptr to_slave_stage() const { return ptr_to_slave_stage_ ; }
+      virtual sdpa::weak_ptr<seda::Stage> daemon_stage() const { return ptr_daemon_stage_ ; }
 
       // masters and subscribers
       sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
@@ -182,7 +183,7 @@ namespace sdpa {
 
       // workflow engine
       virtual we::mgmt::basic_layer* workflowEngine() const { return ptr_workflow_engine_; }
-      virtual bool hasWorkflowEngine() { return ptr_workflow_engine_;}
+      virtual bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
       template <typename T>
         void createWorkflowEngine()
