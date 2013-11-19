@@ -39,27 +39,6 @@ namespace sdpa { namespace client {
       }
     }
 
-    void subscribe(const job_id_t& jobId)
-        {
-        job_id_list_t listJobIds;
-        listJobIds.push_back(jobId);
-        pimpl->subscribe(listJobIds);
-        }
-
-    void subscribe(const job_id_list_t& listJobIds)
-        {
-        pimpl->subscribe(listJobIds);
-        }
-
-    //! \todo This API seems horribly broken: We expose implementation
-    //! details and pretty much can steal anything from the Client,
-    //! breaking its state machine. Also, we not only get events for
-    //! the subscribed job id, but any job.
-    seda::IEvent::Ptr  waitForNotification(const sdpa::client::Client::timeout_t& t = -1)
-        {
-                return pimpl->wait_for_reply(t);
-        }
-
     sdpa::status::code wait_for_terminal_state (job_id_t id, job_info_t& job_info)
     {
       job_id_list_t listJobIds;

@@ -342,25 +342,6 @@ namespace utils
       throw retried_too_often ("cancel_job");
     }
 
-    void subscribe (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
-    {
-      LOG (DEBUG, "Subscribe to job " << id);
-
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.subscribe (id);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
-
-      throw retried_too_often ("subscribe");
-    }
-
     sdpa::status::code wait_for_status_change
       (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
     {
