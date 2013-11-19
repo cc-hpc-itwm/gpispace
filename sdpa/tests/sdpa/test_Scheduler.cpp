@@ -67,6 +67,30 @@ public:
   {
     DLOG(TRACE, "Submit the job "<<jobId<<" to each of these workers: "<<worker_list);
   }
+
+  void submitWorkflow(const id_type& id, const encoded_type& )
+  {
+    DLOG(TRACE, "The agent is trying to forward the master job "<<id<<" to the workflow engine");
+    BOOST_REQUIRE(hasWorkflowEngine());
+  }
+
+  void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
+  {
+    DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the daemon stage");
+    BOOST_REQUIRE(daemon_stage().lock());
+  }
+
+  void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
+  {
+    DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the master stage");
+    BOOST_REQUIRE(to_master_stage());
+  }
+
+  void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
+  {
+    DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the slave stage");
+    BOOST_REQUIRE(to_slave_stage());
+  }
 };
 
 struct MyFixture
