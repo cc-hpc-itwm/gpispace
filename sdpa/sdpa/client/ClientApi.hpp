@@ -23,21 +23,6 @@ namespace sdpa { namespace client {
     {
     }
 
-    ~ClientApi() {
-      try
-      {
-        pimpl->shutdown();
-      }
-      catch (std::exception &ex)
-      {
-        LOG(ERROR, "client->shutdown() failed!" << ex.what());
-      }
-      catch (...)
-      {
-        LOG(ERROR, "client->shutdown() failed due to an unknown reason!");
-      }
-    }
-
     sdpa::status::code wait_for_terminal_state (job_id_t id, job_info_t& job_info)
     {
       return pimpl->wait_for_terminal_state (id, job_info);
