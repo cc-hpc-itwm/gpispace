@@ -7,9 +7,6 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/thread.hpp> // condition variables
 
-#include <seda/Stage.hpp>
-#include <seda/Strategy.hpp>
-
 #if defined(HAVE_CONFIG_H)
 #include <sdpa/sdpa-config.hpp>
 #endif
