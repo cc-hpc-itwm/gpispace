@@ -211,8 +211,12 @@ template<typename Expected, typename Sent>
   }
 }
 
-void Client::subscribe(const job_id_list_t& listJobIds) throw (ClientException)
+sdpa::status::code Client::wait_for_terminal_state
+  (job_id_t id, job_info_t& job_info)
 {
+  job_id_list_t listJobIds;
+  listJobIds.push_back (id);
+
   send_and_wait_for_reply<se::SubscribeAckEvent>
     ( seda::IEvent::Ptr ( new se::SubscribeEvent ( _name
                                                  , orchestrator_
@@ -220,14 +224,6 @@ void Client::subscribe(const job_id_list_t& listJobIds) throw (ClientException)
                                                  )
                         )
     );
-}
-
-sdpa::status::code Client::wait_for_terminal_state
-  (job_id_t id, job_info_t& job_info)
-{
-  job_id_list_t listJobIds;
-  listJobIds.push_back (id);
-  subscribe (listJobIds);
 
   seda::IEvent::Ptr reply (wait_for_reply (-1));
 

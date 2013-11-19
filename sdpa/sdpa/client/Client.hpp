@@ -52,8 +52,6 @@ namespace sdpa { namespace client {
       return cfg;
     }
 
-    void subscribe(const job_id_list_t&) throw (ClientException);
-
     job_id_t submitJob(const job_desc_t &) throw (ClientException);
     void cancelJob(const job_id_t &) throw (ClientException);
     status::code queryJob(const job_id_t &) throw (ClientException);
