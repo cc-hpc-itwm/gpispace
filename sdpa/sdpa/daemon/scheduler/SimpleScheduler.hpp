@@ -20,11 +20,6 @@ namespace sdpa {
     void workerCanceled(const worker_id_t& wid, const job_id_t& jid);
     bool allPartialResultsCollected(const job_id_t& jid);
     bool groupFinished(const sdpa::job_id_t& jid);
-
-    void setFlagSendJobToWorkers(bool b) { b_send_job_to_workers_=b;}
-
-    private:
-    bool b_send_job_to_workers_;
     };
   }
 }

@@ -43,8 +43,7 @@ void SimpleScheduler::assignJobsToWorkers()
         LOG(INFO, "Serve the job "<<jobId<<" to the worker "<<matchingWorkerId);
 
         // serve the same job to all reserved workers!!!!
-        if(b_send_job_to_workers_)
-          ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
+        ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
         //ptr_comm_handler_->resume(jobId);
     }
     else { // put it back into the common queue
