@@ -82,7 +82,6 @@ namespace sdpa { namespace client {
       client_stage_ = stage;
     }
 
-    std::string name_;
     seda::Stage::Ptr _output_stage;
     std::string _output_stage_name;
 

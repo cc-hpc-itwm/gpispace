@@ -47,7 +47,6 @@ Client::ptr_t Client::create( const config_t &cfg
 
 Client::Client(const std::string &a_name, const std::string &output_stage)
   : seda::Strategy(a_name)
-  , name_(a_name)
   , _output_stage_name (output_stage)
   , timeout_(5000U)
 {}
