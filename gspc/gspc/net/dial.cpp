@@ -33,6 +33,13 @@ namespace gspc
                     , ec
                     )
         );
+      client->set_heartbeat_info
+        (get_option ( opts
+                    , "heartbeat"
+                    , heartbeat_info_t ("0,0")
+                    , ec
+                    )
+        );
     }
 
     static
