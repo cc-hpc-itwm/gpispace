@@ -30,15 +30,12 @@
 #include <fhgcom/peer.hpp>
 
 namespace sdpa { namespace client {
-  class Client : public seda::Strategy {
+  class Client {
   public:
     typedef sdpa::shared_ptr<Client> ptr_t;
     typedef fhg::thread::queue<seda::IEvent::Ptr, std::list> event_queue_t;
 
     ~Client();
-
-    // seda strategy
-    void perform(const seda::IEvent::Ptr &);
 
     // API
     static Client::ptr_t create( const config_t &cfg
@@ -78,16 +75,10 @@ namespace sdpa { namespace client {
 
         Client(const std::string &a_name);
 
-    void setStage(seda::Stage::Ptr stage)
-    {
-      // assert stage->strategy() == this
-      client_stage_ = stage;
-    }
+    std::string _name;
 
     event_queue_t _outgoing_events;
     event_queue_t m_incoming_events;
-
-    seda::Stage::Ptr client_stage_;
 
     // config variables
     timeout_t timeout_;
