@@ -43,20 +43,17 @@ namespace
 
 Client::Client (const config_t& config, const std::string &a_name)
   : _name (a_name)
-  , timeout_(5000U)
+  , timeout_ ( config.is_set("network.timeout")
+             ? config.get<unsigned int>("network.timeout")
+             : 5000U
+             )
+  , orchestrator_ ( config.is_set("orchestrator")
+                  ? config.get<std::string>("orchestrator")
+                  : throw ClientException ("no orchestrator specified!")
+                  )
   , _communication_thread (&Client::send_outgoing, this)
   , _stopping (false)
 {
-  if (config.is_set("network.timeout"))
-  {
-    timeout_ = config.get<unsigned int>("network.timeout");
-  }
-
-  if (config.is_set("orchestrator"))
-  {
-    orchestrator_ = config.get<std::string>("orchestrator");
-  }
-
   m_peer.reset (new fhg::com::peer_t ( _name
                                      , fhg::com::host_t ("*")
                                      , fhg::com::port_t ("0")
@@ -67,11 +64,6 @@ Client::Client (const config_t& config, const std::string &a_name)
   m_peer->set_kvs_error_handler (&kvs_error_handler);
   m_peer->start ();
   m_peer->async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
-
-  if (orchestrator_.empty())
-  {
-    throw ClientException ("no orchestrator specified!");
-  }
 }
 
 Client::~Client()
