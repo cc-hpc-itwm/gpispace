@@ -104,10 +104,8 @@ fhg::com::message_t Client::message_for_event
         {
           LOG(WARN, "could not handle incoming message: " << ex.what());
         }
-
-        m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
       }
-      else if (!_stopping)
+      else
       {
         const fhg::com::p2p::address_t & addr = m_message.header.src;
         if (addr != m_peer.address())
@@ -120,9 +118,12 @@ fhg::com::message_t Client::message_for_event
                                                )
                  );
           m_incoming_events.put (error);
-
-          m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
         }
+      }
+
+      if (!_stopping)
+      {
+        m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
       }
     }
 
