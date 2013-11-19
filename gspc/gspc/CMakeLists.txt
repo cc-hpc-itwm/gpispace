@@ -1,4 +1,5 @@
 set (gspc_src
+  net/constants.cpp
   net/io.cpp
   net/util.cpp
   net/error.cpp
