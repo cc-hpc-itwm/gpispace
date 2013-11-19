@@ -8,6 +8,7 @@ using namespace sdpa::daemon;
 
 CoallocationScheduler::CoallocationScheduler(sdpa::daemon::IAgent* pCommHandler)
   : SchedulerBase(pCommHandler)
+  , b_send_job_to_workers_ (true)
 {}
 
 void CoallocationScheduler::assignJobsToWorkers()

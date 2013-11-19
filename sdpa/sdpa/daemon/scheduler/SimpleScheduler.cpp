@@ -7,6 +7,7 @@ using namespace std;
 
 SimpleScheduler::SimpleScheduler(sdpa::daemon::IAgent* pCommHandler)
   : SchedulerBase (pCommHandler)
+  , b_send_job_to_workers_ (true)
 {}
 
 void SimpleScheduler::assignJobsToWorkers()
