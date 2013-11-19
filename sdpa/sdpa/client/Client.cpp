@@ -50,7 +50,7 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
   , name_(a_name)
   , _output_stage_name (output_stage)
   , timeout_(5000U)
-  , my_location_("127.0.0.1:0")
+  , my_location_("0.0.0.0:0")
 {}
 
 Client::~Client()
@@ -73,11 +73,6 @@ void Client::start(const config_t & config) throw (ClientException)
   if (config.is_set("orchestrator"))
   {
     orchestrator_ = config.get<std::string>("orchestrator");
-  }
-
-  if (config.is_set("location"))
-  {
-    my_location_ = config.get<std::string>("location");
   }
 
   sdpa::com::NetworkStrategy::ptr_t net
