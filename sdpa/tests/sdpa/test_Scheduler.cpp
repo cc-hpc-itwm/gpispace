@@ -16,27 +16,8 @@
  * =====================================================================================
  */
 #define BOOST_TEST_MODULE TestScheduler
-#include <sdpa/daemon/Job.hpp>
 #include <boost/test/unit_test.hpp>
-
-#include <iostream>
-#include <string>
-#include <list>
-#include <sdpa/memory.hpp>
-#include <time.h>
-#include <sdpa/util/util.hpp>
-#include <fstream>
-
-#include <seda/StageRegistry.hpp>
-
-#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
-#include <sdpa/daemon/agent/AgentFactory.hpp>
-#include <boost/pointer_cast.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/get_pointer.hpp>
-#include <utils.hpp>
-
 #include "kvs_setup_fixture.hpp"
 
 using namespace std;
