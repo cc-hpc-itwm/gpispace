@@ -51,8 +51,6 @@ namespace sdpa { namespace client {
       cfg.specific_opts().add_options()
         ("orchestrator", po::value<std::string>()->default_value("orchestrator"),
          "name of the orchestrator")
-        ("name", po::value<std::string>()->default_value("sdpac"),
-         "name of the client")
         ("config,C", po::value<std::string>()->default_value(home + "/.sdpa/configs/sdpac.rc"),
          "path to the configuration file")
         ;
