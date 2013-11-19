@@ -127,6 +127,43 @@ BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
+BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
+{
+  LOG( INFO, "Test if the capabilities are matching the requirements "<<std::endl);
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(m_pAgent));
+
+  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
+  BOOST_REQUIRE(ptrScheduler);
+
+  sdpa::worker_id_t workerId("test_worker");
+  sdpa::capabilities_set_t workerCpbSet;
+
+  workerCpbSet.insert(sdpa::capability_t("A","",workerId));
+  workerCpbSet.insert(sdpa::capability_t("B","",workerId));
+  workerCpbSet.insert(sdpa::capability_t("C","",workerId));
+
+  ptrScheduler->addWorker(workerId, 1, workerCpbSet);
+
+  // check what are the agent's capabilites now
+  sdpa::capabilities_set_t acquiredCpbs;
+  ptrScheduler->getWorkerCapabilities(workerId, acquiredCpbs);
+  bool bSameCpbs(workerCpbSet==acquiredCpbs);
+  BOOST_REQUIRE(bSameCpbs);
+  LOG_IF(ERROR, !bSameCpbs, "The worker doesn't have the expected capabilities!");
+
+  // Now, create a job that requires the capabilities A and B
+  requirement_list_t reqList;
+  reqList.push_back(requirement_t("A", true));
+  reqList.push_back(requirement_t("B", true));
+  job_requirements_t jobReqs(reqList, schedule_data());
+
+  // check if there is any matching worker
+  sdpa::worker_id_list_t wlist(1, workerId);
+  sdpa::worker_id_t matchingWorkerId(ptrScheduler->findSuitableWorker(jobReqs, wlist));
+  LOG_IF(ERROR, workerId!=matchingWorkerId, "The worker found is not the expected one!");
+  BOOST_REQUIRE(workerId==matchingWorkerId);
+}
+
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
   LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
