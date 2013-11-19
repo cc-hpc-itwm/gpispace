@@ -27,6 +27,8 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/thread/queue.hpp>
 
+#include <fhgcom/peer.hpp>
+
 namespace sdpa { namespace client {
   class Client : public seda::Strategy {
   public:
@@ -73,16 +75,13 @@ namespace sdpa { namespace client {
     seda::IEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
 
   private:
-        Client(const std::string &a_name, const std::string &output_stage);
+        Client(const std::string &a_name);
 
     void setStage(seda::Stage::Ptr stage)
     {
       // assert stage->strategy() == this
       client_stage_ = stage;
     }
-
-    seda::Stage::Ptr _output_stage;
-    std::string _output_stage_name;
 
     event_queue_t _outgoing_events;
     event_queue_t m_incoming_events;
@@ -98,6 +97,16 @@ namespace sdpa { namespace client {
     template<typename Expected, typename Sent>
       Expected send_and_wait_for_reply (Sent event);
     void send_outgoing();
+
+    void handle_send ( seda::IEvent::Ptr event
+                     , boost::system::error_code const & ec
+                     );
+    void handle_recv (boost::system::error_code const & ec);
+
+    shared_ptr<fhg::com::peer_t> m_peer;
+    fhg::com::message_t m_message;
+    boost::thread _peer_thread;
+    bool _stopping;
   };
 }}
 

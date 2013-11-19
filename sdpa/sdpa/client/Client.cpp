@@ -36,7 +36,7 @@ Client::ptr_t Client::create( const config_t &cfg
                             , const std::string &name_prefix
                            , const std::string &output_stage) {
   // warning: we introduce a cycle here, we have to resolve it during shutdown!
-  Client::ptr_t client(new Client(name_prefix, output_stage));
+  Client::ptr_t client(new Client(name_prefix));
   seda::Stage::Ptr client_stage(new seda::Stage(name_prefix, client));
   client->setStage(client_stage);
   seda::StageRegistry::instance().insert(client_stage);
@@ -45,11 +45,11 @@ Client::ptr_t Client::create( const config_t &cfg
   return client;
 }
 
-Client::Client(const std::string &a_name, const std::string &output_stage)
+Client::Client(const std::string &a_name)
   : seda::Strategy(a_name)
-  , _output_stage_name (output_stage)
   , timeout_(5000U)
   , _communication_thread (&Client::send_outgoing, this)
+  , _stopping (false)
 {}
 
 Client::~Client()
@@ -60,6 +60,15 @@ Client::~Client()
 void Client::perform(const seda::IEvent::Ptr &event)
 {
   m_incoming_events.put (event);
+}
+
+namespace
+{
+  void kvs_error_handler (boost::system::error_code const &)
+  {
+    MLOG (ERROR, "could not contact KVS, terminating");
+    kill (getpid (), SIGTERM);
+  }
 }
 
 void Client::start(const config_t & config) throw (ClientException)
@@ -74,16 +83,16 @@ void Client::start(const config_t & config) throw (ClientException)
     orchestrator_ = config.get<std::string>("orchestrator");
   }
 
-  sdpa::com::NetworkStrategy::ptr_t net
-    (new sdpa::com::NetworkStrategy( client_stage_->name()
-                                   , client_stage_->name() //"sdpac" // TODO encode user, pid, etc
-                                   , fhg::com::host_t ("*")
-                                   , fhg::com::port_t ("0")
-                                   )
-    );
-  _output_stage = seda::Stage::Ptr (new seda::Stage (_output_stage_name, net));
-  seda::StageRegistry::instance().insert (_output_stage);
-  _output_stage->start();
+  m_peer.reset (new fhg::com::peer_t ( client_stage_->name()
+                                     , fhg::com::host_t ("*")
+                                     , fhg::com::port_t ("0")
+                                     )
+                   );
+
+  _peer_thread = boost::thread (&fhg::com::peer_t::run, m_peer);
+  m_peer->set_kvs_error_handler (&kvs_error_handler);
+  m_peer->start ();
+  m_peer->async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
 
   if (orchestrator_.empty())
   {
@@ -99,12 +108,16 @@ void Client::shutdown() throw (ClientException)
     _communication_thread.join();
   }
 
-  if (_output_stage)
+  _stopping = true;
+  if (m_peer)
   {
-    _output_stage->stop();
-    seda::StageRegistry::instance().remove (_output_stage_name);
-    _output_stage.reset();
+    m_peer->stop();
   }
+  if (_peer_thread.joinable())
+  {
+    _peer_thread.join();
+  }
+  m_peer.reset();
 
   if (client_stage_)
   {
@@ -120,9 +133,109 @@ void Client::send_outgoing()
   for (;;)
   {
     const seda::IEvent::Ptr event (_outgoing_events.get());
-    _output_stage->send (event);
+
+    static sdpa::events::Codec codec;
+
+    sdpa::events::SDPAEvent* sdpa_event
+      (dynamic_cast<sdpa::events::SDPAEvent*>(event.get()));
+
+    assert (sdpa_event);
+
+    fhg::com::message_t msg;
+    msg.header.dst = m_peer->resolve_name (sdpa_event->to());
+    msg.header.src = m_peer->address();
+
+    const std::string encoded_evt (codec.encode(sdpa_event));
+    msg.data.assign (encoded_evt.begin(), encoded_evt.end());
+    msg.header.length = msg.data.size();
+
+    try
+    {
+      m_peer->async_send (&msg, boost::bind (&Client::handle_send, this, event, _1));
+    }
+    catch (std::exception const & ex)
+    {
+      sdpa::events::ErrorEvent::Ptr ptrErrEvt
+        (new sdpa::events::ErrorEvent( sdpa_event->to()
+                                     , sdpa_event->from()
+                                     , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                     , sdpa_event->str())
+        );
+      m_incoming_events.put (ptrErrEvt);
+    }
   }
 }
+
+void Client::handle_send ( seda::IEvent::Ptr event
+                         , boost::system::error_code const & ec
+                         )
+{
+  if (ec)
+  {
+    sdpa::events::SDPAEvent* e
+      (dynamic_cast<sdpa::events::SDPAEvent*>(event.get()));
+
+    assert (e);
+
+    DMLOG ( WARN
+          , "send failed:"
+          << " ec := " << ec
+          << " msg := " << ec.message ()
+          << " event := " << e->str()
+          << " to := " << e->to ()
+          << " from := " << e->from ()
+          );
+
+    sdpa::events::ErrorEvent::Ptr ptrErrEvt
+      (new sdpa::events::ErrorEvent( e->to()
+                                   , e->from()
+                                   , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                   , e->str())
+      );
+    m_incoming_events.put (ptrErrEvt);
+  }
+}
+
+    void Client::handle_recv (boost::system::error_code const & ec)
+    {
+      static sdpa::events::Codec codec;
+
+      if (! ec)
+      {
+        // convert m_message to event
+        try
+        {
+          sdpa::events::SDPAEvent::Ptr evt
+            (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
+          DLOG(TRACE, "received event: " << evt->str());
+          m_incoming_events.put (evt);
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(WARN, "could not handle incoming message: " << ex.what());
+        }
+
+        m_peer->async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
+      }
+      else if (!_stopping)
+      {
+        const fhg::com::p2p::address_t & addr = m_message.header.src;
+        if (addr != m_peer->address())
+        {
+          sdpa::events::ErrorEvent::Ptr
+            error(new sdpa::events::ErrorEvent ( m_peer->resolve(addr, "*unknown*")
+                                               , m_peer->name()
+                                               , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+                                               , boost::lexical_cast<std::string>(ec)
+                                               )
+                 );
+          m_incoming_events.put (error);
+
+          m_peer->async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
+        }
+      }
+    }
+
 
 template<typename Expected, typename Sent>
   Expected Client::send_and_wait_for_reply (Sent event)
