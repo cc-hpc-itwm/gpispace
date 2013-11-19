@@ -225,19 +225,18 @@ template<typename Expected, typename Sent>
 
   fhg::com::message_t msg (message_for_event (&event));
 
+  //! \todo Fall-through without additional message / type?
   try
   {
     m_peer.send (&msg);
   }
-  catch (std::exception const & ex)
+  catch (const std::exception& ex)
   {
-    sdpa::events::ErrorEvent::Ptr ptrErrEvt
-      (new sdpa::events::ErrorEvent( event.to()
-                                   , event.from()
-                                   , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                   , event.str())
-      );
-    m_incoming_events.put (ptrErrEvt);
+    throw ClientException ( "Network error: unable to send '"
+                          + event.str()
+                          + "' from " + event.from() + " to " + event.to()
+                          + ": " + ex.what()
+                          );
   }
 
   const sdpa::events::SDPAEvent::Ptr reply (wait_for_reply());
