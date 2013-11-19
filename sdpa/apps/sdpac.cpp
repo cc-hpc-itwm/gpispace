@@ -52,8 +52,6 @@ enum return_codes_t
   , UNKNOWN_ERROR         = 100
   };
 
-const int NMAXTRIALS = 10;
-
 void get_user_input(std::string const & prompt, std::string & result, std::istream & in = std::cin)
 {
   std::cout << prompt;
@@ -119,104 +117,6 @@ sdpa::status::code command_poll_and_wait ( const std::string &job_id
 }
 
 
-sdpa::status::code command_subscribe_and_wait ( const std::string &job_id
-                               , sdpa::client::ClientApi& ptrCli
-                               , sdpa::client::job_info_t & job_info
-                               )
-{
-  typedef boost::posix_time::ptime time_type;
-  time_type poll_start = boost::posix_time::microsec_clock::local_time();
-
-  std::cerr << "starting at: " << poll_start << std::endl;
-
-  std::cerr << "waiting for job to return..." << std::flush;
-
-  bool bSubscribed = false;
-  sdpa::status::code status (sdpa::status::UNKNOWN);
-  int nTrials = 0;
-
-  do
-  {
-	do
-	{
-		try
-		{
-			ptrCli.subscribe(job_id);
-			bSubscribed = true;
-		}
-		catch(...)
-		{
-			bSubscribed = false;
-		}
-
-		if(bSubscribed)
-			break;
-
-		nTrials++;
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
-
-	}while(nTrials<NMAXTRIALS);
-
-	if(bSubscribed)
-	{
-		LOG(INFO, "The client successfully subscribed to the orchestrator for the job "<<job_id);
-		nTrials = 0;
-	}
-	else
-	{
-		LOG(INFO, "Could not connect to the orchestrator. Giving-up, now!");
-		return status;
-	}
-
-    try
-    {
-      seda::IEvent::Ptr reply( ptrCli.waitForNotification(0) );
-
-      // check event type
-      if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
-      {
-        status = sdpa::status::FINISHED;
-      }
-      else if ( sdpa::events::JobFailedEvent *jfe
-              = dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get())
-              )
-      {
-        status = sdpa::status::FAILED;
-        job_info.error_code = jfe->error_code();
-        job_info.error_message = jfe->error_message();
-      }
-      else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
-      {
-        status = sdpa::status::CANCELED;
-      }
-      else if ( sdpa::events::ErrorEvent *err
-              = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get())
-              )
-      {
-        std::cerr<< "got error event: reason := "
-          + err->reason()
-          + " code := "
-          + boost::lexical_cast<std::string>(err->error_code())<<std::endl;
-      }
-      else
-      {
-        LOG(WARN, "unexpected reply: " << (reply ? reply->str() : "null"));
-      }
-    }
-    catch (const sdpa::client::Timedout &)
-    {
-      LOG(WARN, "timeout expired!");
-    }
-  } while(status == sdpa::status::UNKNOWN);
-
-  time_type poll_end = boost::posix_time::microsec_clock::local_time();
-
-  std::cerr << "stopped at: " << poll_end << std::endl;
-  std::cerr << "execution time: " << (poll_end - poll_start) << std::endl;
-
-  return status;
-}
-
 sdpa::status::code command_wait ( const std::string &job_id
                  , sdpa::client::ClientApi& api
                  , boost::posix_time::time_duration poll_interval
@@ -226,7 +126,7 @@ sdpa::status::code command_wait ( const std::string &job_id
   if(poll_interval.total_milliseconds())
     return command_poll_and_wait(job_id, api, poll_interval, job_info);
   else
-    return command_subscribe_and_wait(job_id, api, job_info);
+    return api.wait_for_terminal_state (job_id, job_info);
 }
 
 bool file_exists(const std::string &path)
