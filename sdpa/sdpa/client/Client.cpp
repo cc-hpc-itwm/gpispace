@@ -53,7 +53,29 @@ Client::Client(const std::string &a_name)
 
 Client::~Client()
 {
-  shutdown ();
+  _communication_thread.interrupt();
+  if (_communication_thread.joinable())
+  {
+    _communication_thread.join();
+  }
+
+  _stopping = true;
+  if (m_peer)
+  {
+    m_peer->stop();
+  }
+  if (_peer_thread.joinable())
+  {
+    _peer_thread.join();
+  }
+  m_peer.reset();
+
+  if (client_stage_)
+  {
+    client_stage_->stop();
+    seda::StageRegistry::instance().remove(client_stage_);
+    client_stage_.reset();
+  }
 }
 
 void Client::perform(const seda::IEvent::Ptr &event)
@@ -96,33 +118,6 @@ void Client::start(const config_t & config) throw (ClientException)
   if (orchestrator_.empty())
   {
     throw ClientException ("no orchestrator specified!");
-  }
-}
-
-void Client::shutdown() throw (ClientException)
-{
-  _communication_thread.interrupt();
-  if (_communication_thread.joinable())
-  {
-    _communication_thread.join();
-  }
-
-  _stopping = true;
-  if (m_peer)
-  {
-    m_peer->stop();
-  }
-  if (_peer_thread.joinable())
-  {
-    _peer_thread.join();
-  }
-  m_peer.reset();
-
-  if (client_stage_)
-  {
-    client_stage_->stop();
-    seda::StageRegistry::instance().remove(client_stage_);
-    client_stage_.reset();
   }
 }
 
