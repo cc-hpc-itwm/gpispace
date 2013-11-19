@@ -138,6 +138,21 @@ namespace gspc
       }
 
       template <class Proto>
+      void
+      base_connection<Proto>::send_heartbeat_if_needed ()
+      {
+        bool need_to_send = false;
+        {
+          unique_lock lock (m_pending_mutex);
+          need_to_send = m_pending.empty ();
+        }
+        if (need_to_send)
+        {
+          this->deliver (gspc::net::make::heartbeat_frame ());
+        }
+      }
+
+      template <class Proto>
       int base_connection<Proto>::deliver (frame const &f)
       {
         {
@@ -331,9 +346,9 @@ namespace gspc
       {
         if (not ec)
         {
-          unique_lock _ (m_heartbeat_mutex);
-          this->deliver (gspc::net::make::heartbeat_frame ());
+          this->send_heartbeat_if_needed ();
 
+          unique_lock _ (m_heartbeat_mutex);
           if (m_heartbeat_info.send_duration ())
           {
             m_send_heartbeat_timer.expires_from_now (*m_heartbeat_info.send_duration ());

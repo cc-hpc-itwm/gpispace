@@ -54,6 +54,7 @@ namespace gspc
 
         typedef std::deque<frame>  frame_list_t;
 
+        void send_heartbeat_if_needed ();
         void start_heartbeats ();
         void handle_read ( const boost::system::error_code &
                          , std::size_t transferred
