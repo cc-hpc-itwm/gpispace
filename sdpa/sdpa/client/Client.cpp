@@ -77,7 +77,8 @@ Client::~Client()
   }
 }
 
-fhg::com::message_t Client::message_for_event (sdpa::events::SDPAEvent* event)
+fhg::com::message_t Client::message_for_event
+  (const sdpa::events::SDPAEvent* event)
 {
   static sdpa::events::Codec codec;
 

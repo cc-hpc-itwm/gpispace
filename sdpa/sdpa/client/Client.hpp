@@ -76,7 +76,7 @@ namespace sdpa { namespace client {
 
     boost::thread _communication_thread;
 
-    fhg::com::message_t message_for_event (sdpa::events::SDPAEvent*);
+    fhg::com::message_t message_for_event (const sdpa::events::SDPAEvent*);
 
     template<typename Expected, typename Sent>
       Expected send_and_wait_for_reply (Sent event);
