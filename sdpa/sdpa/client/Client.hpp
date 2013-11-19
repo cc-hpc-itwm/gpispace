@@ -62,8 +62,7 @@ namespace sdpa { namespace client {
   private:
     typedef unsigned long long timeout_t;
 
-    sdpa::events::SDPAEvent::Ptr wait_for_reply() throw (Timedout);
-    sdpa::events::SDPAEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
+    sdpa::events::SDPAEvent::Ptr wait_for_reply (bool use_timeout);
 
     std::string _name;
 

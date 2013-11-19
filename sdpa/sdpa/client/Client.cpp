@@ -148,7 +148,7 @@ template<typename Expected, typename Sent>
                           );
   }
 
-  const sdpa::events::SDPAEvent::Ptr reply (wait_for_reply());
+  const sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (true));
   if (Expected* e = dynamic_cast<Expected*> (reply.get()))
   {
     return *e;
@@ -172,7 +172,7 @@ sdpa::status::code Client::wait_for_terminal_state
   send_and_wait_for_reply<se::SubscribeAckEvent>
     (se::SubscribeEvent (_name, orchestrator_, job_id_list_t (1, id)));
 
-  sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (-1));
+  sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (false));
 
   if ( sdpa::events::JobFinishedEvent* evt
      = dynamic_cast<sdpa::events::JobFinishedEvent*> (reply.get())
@@ -225,28 +225,22 @@ sdpa::status::code Client::wait_for_terminal_state
 }
 
 
-sdpa::events::SDPAEvent::Ptr Client::wait_for_reply() throw (Timedout)
+sdpa::events::SDPAEvent::Ptr Client::wait_for_reply (bool use_timeout)
 {
-  return wait_for_reply(timeout_);
-}
-
-// on t=0 blocks forever
-sdpa::events::SDPAEvent::Ptr Client::wait_for_reply(timeout_t t) throw (Timedout)
-{
-  if (t == (timeout_t)(-1))
-  {
-    return m_incoming_events.get ();
-  }
-  else
+  if (use_timeout)
   {
     try
     {
-      return m_incoming_events.get (boost::posix_time::milliseconds (t));
+      return m_incoming_events.get (boost::posix_time::milliseconds (timeout_));
     }
     catch (fhg::thread::operation_timedout const &)
     {
       throw Timedout ("did not receive reply");
     }
+  }
+  else
+  {
+    return m_incoming_events.get();
   }
 }
 
