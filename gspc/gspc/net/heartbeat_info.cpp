@@ -31,9 +31,10 @@ namespace gspc
     std::string heartbeat_info_t::str () const
     {
       std::ostringstream os;
-      if (m_recv_duration)
+
+      if (m_send_duration)
       {
-        os << m_recv_duration->total_seconds ();
+        os << m_send_duration->total_seconds ();
       }
       else
       {
@@ -42,9 +43,9 @@ namespace gspc
 
       os << ",";
 
-      if (m_send_duration)
+      if (m_recv_duration)
       {
-        os << m_send_duration->total_seconds ();
+        os << m_recv_duration->total_seconds ();
       }
       else
       {
@@ -113,15 +114,15 @@ namespace gspc
       if (is.fail () || i < 0)
       {
         throw std::invalid_argument
-          ("expected uint as 'recv' interval");
+          ("expected uint as 'send' interval");
       }
       if (0 == i)
       {
-        m_recv_duration = boost::none;
+        m_send_duration = boost::none;
       }
       else
       {
-        m_recv_duration = boost::posix_time::seconds (i);
+        m_send_duration = boost::posix_time::seconds (i);
       }
 
       c = is.get ();
@@ -135,15 +136,15 @@ namespace gspc
       if (is.fail () || i < 0)
       {
         throw std::invalid_argument
-          ("expected uint as 'send' interval");
+          ("expected uint as 'recv' interval");
       }
       if (0 == i)
       {
-        m_send_duration = boost::none;
+        m_recv_duration = boost::none;
       }
       else
       {
-        m_send_duration = boost::posix_time::seconds (i);
+        m_recv_duration = boost::posix_time::seconds (i);
       }
     }
 
