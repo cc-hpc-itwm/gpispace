@@ -51,7 +51,6 @@ Client::Client (const config_t& config, const std::string &a_name)
                   ? config.get<std::string>("orchestrator")
                   : throw ClientException ("no orchestrator specified!")
                   )
-  , _communication_thread (&Client::send_outgoing, this)
   , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
   , _peer_thread (&fhg::com::peer_t::run, &m_peer)
   , _stopping (false)
@@ -63,12 +62,6 @@ Client::Client (const config_t& config, const std::string &a_name)
 
 Client::~Client()
 {
-  _communication_thread.interrupt();
-  if (_communication_thread.joinable())
-  {
-    _communication_thread.join();
-  }
-
   _stopping = true;
   m_peer.stop();
   if (_peer_thread.joinable())
@@ -91,66 +84,6 @@ fhg::com::message_t Client::message_for_event
   msg.header.length = msg.data.size();
 
   return msg;
-}
-
-void Client::send_outgoing()
-{
-  //! \note No interruption point required: event_queue::get() contains one.
-  for (;;)
-  {
-    const sdpa::events::SDPAEvent::Ptr event (_outgoing_events.get());
-
-    sdpa::events::SDPAEvent* sdpa_event
-      (dynamic_cast<sdpa::events::SDPAEvent*>(event.get()));
-    assert (sdpa_event);
-
-    fhg::com::message_t msg (message_for_event (sdpa_event));;
-
-    try
-    {
-      m_peer.async_send (&msg, boost::bind (&Client::handle_send, this, event, _1));
-    }
-    catch (std::exception const & ex)
-    {
-      sdpa::events::ErrorEvent::Ptr ptrErrEvt
-        (new sdpa::events::ErrorEvent( sdpa_event->to()
-                                     , sdpa_event->from()
-                                     , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                     , sdpa_event->str())
-        );
-      m_incoming_events.put (ptrErrEvt);
-    }
-  }
-}
-
-void Client::handle_send ( seda::IEvent::Ptr event
-                         , boost::system::error_code const & ec
-                         )
-{
-  if (ec)
-  {
-    sdpa::events::SDPAEvent* e
-      (dynamic_cast<sdpa::events::SDPAEvent*>(event.get()));
-
-    assert (e);
-
-    DMLOG ( WARN
-          , "send failed:"
-          << " ec := " << ec
-          << " msg := " << ec.message ()
-          << " event := " << e->str()
-          << " to := " << e->to ()
-          << " from := " << e->from ()
-          );
-
-    sdpa::events::ErrorEvent::Ptr ptrErrEvt
-      (new sdpa::events::ErrorEvent( e->to()
-                                   , e->from()
-                                   , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                   , e->str())
-      );
-    m_incoming_events.put (ptrErrEvt);
-  }
 }
 
     void Client::handle_recv (boost::system::error_code const & ec)

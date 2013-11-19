@@ -67,24 +67,17 @@ namespace sdpa { namespace client {
 
     std::string _name;
 
-    event_queue_t _outgoing_events;
     event_queue_t m_incoming_events;
 
     // config variables
     timeout_t timeout_;
     std::string orchestrator_;
 
-    boost::thread _communication_thread;
-
     fhg::com::message_t message_for_event (const sdpa::events::SDPAEvent*);
 
     template<typename Expected, typename Sent>
       Expected send_and_wait_for_reply (Sent event);
-    void send_outgoing();
 
-    void handle_send ( seda::IEvent::Ptr event
-                     , boost::system::error_code const & ec
-                     );
     void handle_recv (boost::system::error_code const & ec);
 
     fhg::com::peer_t m_peer;
