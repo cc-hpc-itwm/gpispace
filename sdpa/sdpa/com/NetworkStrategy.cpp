@@ -23,7 +23,7 @@ namespace sdpa
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
-      : super (next_stage)
+      : seda::ForwardStrategy (next_stage)
       , m_name (peer_name)
       , m_host (host)
       , m_port (port)
@@ -51,7 +51,7 @@ namespace sdpa
 
           try
           {
-            m_peer->async_send (&msg, boost::bind (&self::handle_send, this, e, _1));
+            m_peer->async_send (&msg, boost::bind (&NetworkStrategy::handle_send, this, e, _1));
           }
           catch (std::exception const & ex)
           {
@@ -62,7 +62,7 @@ namespace sdpa
                                            , sdpa_event->str())
               );
             if (ptrErrEvt)
-              super::perform (ptrErrEvt);
+              seda::ForwardStrategy::perform (ptrErrEvt);
           }
       }
       else
@@ -73,7 +73,7 @@ namespace sdpa
 
     void NetworkStrategy::onStageStart (std::string const &s)
     {
-      super::onStageStart (s);
+      seda::ForwardStrategy::onStageStart (s);
 
       m_shutting_down = false;
 
@@ -85,7 +85,7 @@ namespace sdpa
       m_thread.reset (new boost::thread(boost::bind(&fhg::com::peer_t::run, m_peer)));
       m_peer->set_kvs_error_handler (kvs_error_handler);
       m_peer->start ();
-      m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
+      m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
     }
 
     void NetworkStrategy::onStageStop (std::string const & s)
@@ -96,7 +96,7 @@ namespace sdpa
       m_thread->join();
       m_peer.reset();
 
-      super::onStageStop (s);
+      seda::ForwardStrategy::onStageStop (s);
     }
 
     void NetworkStrategy::handle_send ( seda::IEvent::Ptr const &e
@@ -124,7 +124,7 @@ namespace sdpa
                                          , sdpa_event->str())
             );
           if (ptrErrEvt)
-            super::perform (ptrErrEvt);
+            seda::ForwardStrategy::perform (ptrErrEvt);
         }
       }
     }
@@ -141,14 +141,14 @@ namespace sdpa
           sdpa::events::SDPAEvent::Ptr evt
             (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
           DLOG(TRACE, "received event: " << evt->str());
-          super::perform (evt);
+          seda::ForwardStrategy::perform (evt);
         }
         catch (std::exception const & ex)
         {
           LOG(WARN, "could not handle incoming message: " << ex.what());
         }
 
-        m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
+        m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
       }
       else if (! m_shutting_down)
       {
@@ -162,8 +162,8 @@ namespace sdpa
                                                , boost::lexical_cast<std::string>(ec)
                                                )
                  );
-          super::perform (error);
-          m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
+          seda::ForwardStrategy::perform (error);
+          m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
         }
         else
         {
