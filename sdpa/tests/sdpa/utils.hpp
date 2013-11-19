@@ -361,52 +361,13 @@ namespace utils
       throw retried_too_often ("subscribe");
     }
 
-    //! \note This duplicates behavior from apps/blocking_client.cpp,
-    //! which should probably go into ClientApi.
     sdpa::status::code wait_for_status_change
       (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
     {
-      subscribe (c, id);
+      LOG (DEBUG, "Subscribe to job " << id);
 
-      seda::IEvent::Ptr event (c.waitForNotification());
-
-      if ( sdpa::events::JobFinishedEvent* evt
-         = dynamic_cast<sdpa::events::JobFinishedEvent*> (event.get())
-         )
-      {
-        BOOST_REQUIRE (evt->job_id() == id);
-        return sdpa::status::FINISHED;
-      }
-      else if ( sdpa::events::JobFailedEvent* evt
-              = dynamic_cast<sdpa::events::JobFailedEvent*> (event.get())
-              )
-      {
-        BOOST_REQUIRE (evt->job_id() == id);
-        return sdpa::status::FAILED;
-      }
-      else if ( sdpa::events::CancelJobAckEvent* evt
-              = dynamic_cast<sdpa::events::CancelJobAckEvent*> (event.get())
-              )
-      {
-        BOOST_REQUIRE (evt->job_id() == id);
-        return sdpa::status::CANCELED;
-      }
-      else if ( sdpa::events::ErrorEvent* evt
-              = dynamic_cast<sdpa::events::ErrorEvent*>(event.get())
-              )
-      {
-        throw std::runtime_error
-          ( "got error event: reason := "
-          + evt->reason()
-          + " code := "
-          + boost::lexical_cast<std::string> (evt->error_code())
-          );
-      }
-      else
-      {
-        throw std::runtime_error
-          ("invalid event after subscription to client");
-      }
+      sdpa::client::job_info_t job_info;
+      return c.wait_for_terminal_state (id, job_info);
     }
 
     void create_client_and_execute
