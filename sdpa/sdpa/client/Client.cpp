@@ -92,18 +92,10 @@ fhg::com::message_t Client::message_for_event
 
       if (! ec)
       {
-        // convert m_message to event
-        try
-        {
-          sdpa::events::SDPAEvent::Ptr evt
-            (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
-          DLOG(TRACE, "received event: " << evt->str());
-          m_incoming_events.put (evt);
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(WARN, "could not handle incoming message: " << ex.what());
-        }
+        sdpa::events::SDPAEvent::Ptr evt
+          (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
+        DLOG(TRACE, "received event: " << evt->str());
+        m_incoming_events.put (evt);
       }
       else
       {
