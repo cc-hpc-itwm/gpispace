@@ -53,9 +53,6 @@ namespace daemon {
 
     virtual void getWorkerList(worker_id_list_t&) = 0;
     virtual Worker::worker_id_t getWorkerId(unsigned int rank) = 0;
-
-    virtual void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&) = 0;
-
     virtual size_t numberOfWorkers() = 0;
 
     virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) = 0;

@@ -68,7 +68,6 @@ namespace sdpa {
       void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
       virtual Worker::worker_id_t getWorkerId(unsigned int rank);
 
-      virtual void setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime);
       virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
 
       virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);

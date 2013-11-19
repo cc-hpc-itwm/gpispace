@@ -556,11 +556,6 @@ Worker::worker_id_t SchedulerBase::getWorkerId(unsigned int r)
   return ptr_worker_man_->getWorkerId(r);
 }
 
-void SchedulerBase::setLastTimeServed(const worker_id_t& wid, const sdpa::util::time_type& servTime)
-{
-  ptr_worker_man_->setLastTimeServed(wid, servTime);
-}
-
 void SchedulerBase::schedule_first(const sdpa::job_id_t& jid)
 {
   ptr_worker_man_->common_queue_.push_front(jid);
