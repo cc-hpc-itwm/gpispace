@@ -61,8 +61,7 @@ namespace sdpa
                                            , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                            , sdpa_event->str())
               );
-            if (ptrErrEvt)
-              seda::ForwardStrategy::perform (ptrErrEvt);
+            seda::ForwardStrategy::perform (ptrErrEvt);
           }
       }
       else
@@ -123,8 +122,7 @@ namespace sdpa
                                          , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                          , sdpa_event->str())
             );
-          if (ptrErrEvt)
-            seda::ForwardStrategy::perform (ptrErrEvt);
+          seda::ForwardStrategy::perform (ptrErrEvt);
         }
       }
     }
