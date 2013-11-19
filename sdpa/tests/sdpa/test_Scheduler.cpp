@@ -49,20 +49,40 @@ const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
 typedef std::map<sdpa::job_id_t, sdpa::worker_id_t> mapJob2Worker_t;
 
+// deriveaza o clasa TestAgent si override the methods SendEventOSlaves that's all
+class TestAgent : public sdpa::daemon::Agent
+{
+public:
+  typedef sdpa::shared_ptr<TestAgent > ptr_t;
+  TestAgent( const std::string& name
+             , const std::string& url
+             , const sdpa::master_info_list_t& arrMasterNames
+             , const unsigned int rank = 0
+             , const boost::optional<std::string>& appGuiUrl = boost::none)
+    : sdpa::daemon::Agent(name, url, arrMasterNames, rank, appGuiUrl)
+  {
+  }
+
+  void serveJob(const sdpa::worker_id_list_t& worker_list, const sdpa::job_id_t& jobId)
+  {
+    DLOG(TRACE, "Submit the job "<<jobId<<" to each of these workers: "<<worker_list);
+  }
+};
+
 struct MyFixture
 {
     MyFixture()
-    : m_pAgent(sdpa::daemon::AgentFactory<void>::create("agent", "127.0.0.1", sdpa::master_info_list_t()))
+    : m_pAgent(new TestAgent("agent", "127.0.0.1", sdpa::master_info_list_t()))
     {
-      FHGLOG_SETUP();
     }
 
     ~MyFixture()
     {
-      m_pAgent->shutdown();
+      //m_pAgent->shutdown();
+      delete m_pAgent;
     }
 
-    sdpa::daemon::Agent::ptr_t m_pAgent;
+    TestAgent* m_pAgent;
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
@@ -72,14 +92,11 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
   LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
-
-  m_pAgent->createScheduler();
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(m_pAgent));
 
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
 
-  ptrScheduler->setFlagSendJobToWorkers(false);
   sdpa::worker_id_t worker_A("worker_A");
 
   sdpa::capabilities_set_t cpbSetA;
@@ -132,13 +149,11 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
   LOG(INFO, "testLoadBalancing");
-  m_pAgent->createScheduler();
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(m_pAgent));
 
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
 
-  ptrScheduler->setFlagSendJobToWorkers(false);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -211,13 +226,11 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
   LOG(INFO, "Test the load-balancing when a worker joins later ...");
-  m_pAgent->createScheduler();
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(m_pAgent));
 
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
 
-  ptrScheduler->setFlagSendJobToWorkers(false);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -286,13 +299,11 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
   LOG(INFO, "Test the load-balancing when a worker gains a capability later ...");
 
-  m_pAgent->createScheduler();
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(m_pAgent));
 
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
 
-  ptrScheduler->setFlagSendJobToWorkers(false);
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -364,98 +375,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   //ptrScheduler->printAllocationTable();
 }
 
-BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
-{
-  LOG(INFO, "Test the load-balancing when a worker is stopped, re-started and announces afterwards its capabilities ...");
-
-  m_pAgent->createScheduler();
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
-
-  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
-  BOOST_REQUIRE(ptrScheduler);
-
-  ptrScheduler->setFlagSendJobToWorkers(false);
-  // number of workers
-  const int nWorkers = 10;
-  const int nJobs = 10;
-
-  // create a give number of workers with different capabilities:
-  std::ostringstream osstr;
-  std::vector<sdpa::worker_id_t> arrWorkerIds;
-  for(int k=0;k<nWorkers;k++)
-  {
-    osstr<<"worker_"<<k;
-    sdpa::worker_id_t workerId(osstr.str());
-    osstr.str("");
-    arrWorkerIds.push_back(workerId);
-    std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
-    sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-    ptrScheduler->addWorker(workerId, 1, cpbSet);
-  }
-
-  // submit a bunch of jobs now
-  std::vector<sdpa::job_id_t> arrJobIds;
-  for(int i=0;i<nJobs;i++)
-  {
-    osstr<<"job_"<<i;
-    sdpa::job_id_t jobId(osstr.str());
-    arrJobIds.push_back(jobId);
-    osstr.str("");
-    sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t()));
-    m_pAgent->addJob(jobId, pJob,  job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
-  }
-
-  // schedule all jobs now
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
-  {
-    ptrScheduler->schedule_remotely(jobId);
-  }
-
-  ptrScheduler->assignJobsToWorkers();
-  ptrScheduler->checkAllocations();
-
-  LOG(DEBUG, "Initial allocations ...");
-  ptrScheduler->printAllocationTable();
-  // all the workers should have assigned jobs
-  sdpa::worker_id_list_t workerList;
-  ptrScheduler->getListNotAllocatedWorkers(workerList);
-  // check if there are any workers that are not yet reserved
-  BOOST_CHECK(workerList.empty());
-
-  sdpa::worker_id_t lastWorkerId("worker_9");
-  sdpa::job_id_t jobId = ptrScheduler->getAssignedJob(lastWorkerId);
-  LOG(DEBUG, "The worker "<<lastWorkerId<<" was assigned the job "<<jobId);
-  sdpa::job_id_t oldJobId(jobId);
-
-  LOG(DEBUG, "The worker "<<lastWorkerId<<" has the job "<<jobId<<" assigned");
-
-  // and now simply delete the last worker !
-  LOG(DEBUG, "Reschedule the jobs assigned to "<<lastWorkerId<<"!");
-  ptrScheduler->rescheduleWorkerJob(lastWorkerId, jobId);
-
-  ptrScheduler->schedule_remotely(jobId);
-  BOOST_CHECK (ptrScheduler->schedulingAllowed());
-
-  LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");
-  ptrScheduler->deleteWorker(lastWorkerId);
-  sdpa::worker_id_list_t listW = ptrScheduler->getListAllocatedWorkers(jobId);
-  BOOST_CHECK(listW.empty());
-  LOG_IF(DEBUG, listW.empty(), "The worker "<<lastWorkerId<<" was deleted!");
-
-  std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
-  sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-  ptrScheduler->addWorker(lastWorkerId, 1, cpbSet);
-
-  LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
-  ptrScheduler->assignJobsToWorkers();
-  ptrScheduler->checkAllocations();
-  ptrScheduler->printAllocationTable();
-
-  jobId = ptrScheduler->getAssignedJob(lastWorkerId);
-  BOOST_CHECK(jobId==oldJobId);
-  LOG_IF(DEBUG, jobId==oldJobId, "The worker "<<lastWorkerId<<" was re-assigned the job "<<jobId);
-}
-
 BOOST_AUTO_TEST_CASE(testCollocSched)
 {
   LOG(INFO, "Test the co-allocation ...");
@@ -467,13 +386,10 @@ BOOST_AUTO_TEST_CASE(testCollocSched)
   std::string strBackupOrch;
   std::ostringstream oss;
 
-  m_pAgent->createScheduler();
-   sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler = boost::dynamic_pointer_cast<sdpa::daemon::CoallocationScheduler>(m_pAgent->scheduler());
+  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(m_pAgent));
 
    LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
    BOOST_REQUIRE(ptrScheduler);
-
-   ptrScheduler->setFlagSendJobToWorkers(false);
 
   // add a couple of workers
   for( int k=0; k<NWORKERS; k++ )
