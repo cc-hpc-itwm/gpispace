@@ -49,6 +49,7 @@ Client::Client(const std::string &a_name, const std::string &output_stage)
   : seda::Strategy(a_name)
   , _output_stage_name (output_stage)
   , timeout_(5000U)
+  , _communication_thread (&Client::send_outgoing, this)
 {}
 
 Client::~Client()
@@ -92,6 +93,12 @@ void Client::start(const config_t & config) throw (ClientException)
 
 void Client::shutdown() throw (ClientException)
 {
+  _communication_thread.interrupt();
+  if (_communication_thread.joinable())
+  {
+    _communication_thread.join();
+  }
+
   if (_output_stage)
   {
     _output_stage->stop();
@@ -107,11 +114,21 @@ void Client::shutdown() throw (ClientException)
   }
 }
 
+void Client::send_outgoing()
+{
+  //! \note No interruption point required: event_queue::get() contains one.
+  for (;;)
+  {
+    const seda::IEvent::Ptr event (_outgoing_events.get());
+    _output_stage->send (event);
+  }
+}
+
 template<typename Expected, typename Sent>
   Expected Client::send_and_wait_for_reply (Sent event)
 {
   m_incoming_events.clear();
-  _output_stage->send (event);
+  _outgoing_events.put (event);
 
   const seda::IEvent::Ptr reply (wait_for_reply());
   if (Expected* e = dynamic_cast<Expected*> (reply.get()))

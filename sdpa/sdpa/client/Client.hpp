@@ -84,6 +84,7 @@ namespace sdpa { namespace client {
     seda::Stage::Ptr _output_stage;
     std::string _output_stage_name;
 
+    event_queue_t _outgoing_events;
     event_queue_t m_incoming_events;
 
     seda::Stage::Ptr client_stage_;
@@ -92,8 +93,11 @@ namespace sdpa { namespace client {
     timeout_t timeout_;
     std::string orchestrator_;
 
+    boost::thread _communication_thread;
+
     template<typename Expected, typename Sent>
       Expected send_and_wait_for_reply (Sent event);
+    void send_outgoing();
   };
 }}
 
