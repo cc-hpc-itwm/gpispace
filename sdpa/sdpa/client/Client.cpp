@@ -218,6 +218,46 @@ template<typename Expected, typename Sent>
   }
 }
 
+template<typename Expected, typename Sent>
+  Expected Client::send_and_wait_for_reply_sync (Sent event)
+{
+  m_incoming_events.clear();
+
+  fhg::com::message_t msg (message_for_event (&event));
+
+  try
+  {
+    m_peer.send (&msg);
+  }
+  catch (std::exception const & ex)
+  {
+    sdpa::events::ErrorEvent::Ptr ptrErrEvt
+      (new sdpa::events::ErrorEvent( event.to()
+                                   , event.from()
+                                   , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                   , event.str())
+      );
+    m_incoming_events.put (ptrErrEvt);
+  }
+
+  const sdpa::events::SDPAEvent::Ptr reply (wait_for_reply());
+  if (Expected* e = dynamic_cast<Expected*> (reply.get()))
+  {
+    return *e;
+  }
+  else if (se::ErrorEvent* err = dynamic_cast<se::ErrorEvent*> (reply.get()))
+  {
+    throw ClientException ( "Error: reason := "+ err->reason()
+                          + " code := "
+                          + boost::lexical_cast<std::string> (err->error_code())
+                          );
+  }
+  else
+  {
+    throw ClientException ("Unexpected reply: " + reply->str());
+  }
+}
+
 sdpa::status::code Client::wait_for_terminal_state
   (job_id_t id, job_info_t& job_info)
 {
