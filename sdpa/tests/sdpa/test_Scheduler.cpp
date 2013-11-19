@@ -106,6 +106,7 @@ struct MyFixture
     MyFixture()
     : m_pAgent(new TestAgent("agent", "127.0.0.1", sdpa::master_info_list_t()))
     {
+      BOOST_REQUIRE(m_pAgent);
     }
 
     ~MyFixture()
