@@ -214,13 +214,10 @@ template<typename Expected, typename Sent>
 sdpa::status::code Client::wait_for_terminal_state
   (job_id_t id, job_info_t& job_info)
 {
-  job_id_list_t listJobIds;
-  listJobIds.push_back (id);
-
   send_and_wait_for_reply<se::SubscribeAckEvent>
     ( seda::IEvent::Ptr ( new se::SubscribeEvent ( _name
                                                  , orchestrator_
-                                                 , listJobIds
+                                                 , job_id_list_t (1, id)
                                                  )
                         )
     );
