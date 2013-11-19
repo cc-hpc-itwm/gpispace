@@ -251,64 +251,6 @@ void SchedulerBase::delete_job (sdpa::job_id_t const & job)
     ptr_worker_man_->deleteJob(job);
 }
 
-void printMatchingWorkers(const sdpa::job_id_t& jobId, const sdpa::list_match_workers_t& listMatchingWorkers)
-{
-  /*ostringstream ossMatchWorkers;ossMatchWorkers<<"[";
-  for( sdpa::list_match_workers_t::iterator it=listMatchingWorkers.begin(); it!=listMatchingWorkers.end(); it++ )
-  {
-          ossMatchWorkers<<"("<<it->first<<","<<it->second<<")";
-          if(boost::next(it)!=listMatchingWorkers.end())
-                  ossMatchWorkers<<",";
-  }
-
-  ossMatchWorkers<<"]";
-  DLOG( INFO, "The workers matching the requirements of the job "<<jobId<<" are: "<<ossMatchWorkers.str());*/
-}
-
-/*void SchedulerBase::schedule_remotely(const sdpa::job_id_t& jobId)
-{
-  try {
-      const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
-
-      ptr_worker_man_->dispatchJob(jobId);
-      // put the job into the running state
-      pJob->Dispatch();
-      cond_feed_workers.notify_one();
-  }
-  catch(const JobNotFoundException& ex)
-  {
-    sdpa::job_result_t result(ex.what());
-
-    JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(ptr_comm_handler_->name()
-                                                         , ptr_comm_handler_->name()
-                                                         , jobId
-                                                         , result
-                                                         ));
-
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = "job could not be found";
-
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-  catch (std::exception const & ex)
-  {
-    //send a JobFailed event
-    sdpa::job_result_t result(ex.what());
-
-    JobFailedEvent::Ptr pEvtJobFailed
-          (new JobFailedEvent(  ptr_comm_handler_->name()
-                                , ptr_comm_handler_->name()
-                                , jobId
-                                , result
-                                 ));
-
-    pEvtJobFailed->error_code() = fhg::error::UNEXPECTED_ERROR;
-    pEvtJobFailed->error_message() = ex.what();
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-}*/
-
-
 void SchedulerBase::schedule_remotely(const sdpa::job_id_t& jobId)
 {
   try {
