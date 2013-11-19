@@ -30,6 +30,7 @@ namespace gspc
         , m_subscriptions ()
         , m_user_subscriptions ()
         , m_service_demux (gspc::net::server::default_service_demux())
+        , m_heartbeat_info ()
       {}
 
       queue_manager_t::queue_manager_t (service_demux_t &demux)
@@ -37,6 +38,7 @@ namespace gspc
         , m_subscriptions ()
         , m_user_subscriptions ()
         , m_service_demux (demux)
+        , m_heartbeat_info ()
       {}
 
       queue_manager_t::~queue_manager_t ()
@@ -69,6 +71,12 @@ namespace gspc
       {
         shared_lock lock (m_mutex);
         return m_connections.find (user) != m_connections.end ();
+      }
+
+      void queue_manager_t::set_heartbeat_info (heartbeat_info_t const &hb)
+      {
+        unique_lock lock (m_mutex);
+        m_heartbeat_info = hb;
       }
 
       static void s_maybe_send_receipt (user_ptr user, frame const &f)
@@ -237,7 +245,18 @@ namespace gspc
 
             gspc::net::frame connected =
               make::connected_frame (gspc::net::header::version ("1.0"));
-            connected.set_header ("heart-beat", "0,0");
+
+            gspc::net::heartbeat_info_t user_hb (f);
+            if (not user_hb.recv_duration ())
+            {
+              user_hb.recv_duration (m_heartbeat_info.send_duration ());
+            }
+            if (not user_hb.send_duration ())
+            {
+              user_hb.send_duration (m_heartbeat_info.recv_duration ());
+            }
+
+            user_hb.apply (connected);
             connected.set_header ("correlation-id", f.get_header ("message-id"));
             gspc::net::header::set ( connected
                                    , "session-id"
@@ -246,6 +265,7 @@ namespace gspc
                                    % m_session_id
                                    );
             u->deliver (connected);
+            u->set_heartbeat_info (user_hb.opposite ());
 
             m_connections.insert (u);
 

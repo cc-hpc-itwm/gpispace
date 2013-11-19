@@ -6,7 +6,9 @@
 #include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_util.hpp>
 #include <gspc/net/frame_handler.hpp>
+#include <gspc/net/frame_builder.hpp>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <iostream>
 
 namespace gspc
@@ -31,6 +33,12 @@ namespace gspc
         , m_shutting_down (false)
         , m_max_queue_length (0)
         , m_id (id)
+        , m_heartbeat_mutex ()
+        , m_recv_timestamp (boost::posix_time::neg_infin)
+        , m_send_timestamp (boost::posix_time::neg_infin)
+        , m_recv_heartbeat_timer (service)
+        , m_send_heartbeat_timer (service)
+        , m_heartbeat_info ()
       {}
 
       template <class Proto>
@@ -53,6 +61,40 @@ namespace gspc
       }
 
       template <class Proto>
+      void base_connection<Proto>::set_heartbeat_info (heartbeat_info_t const &hbi)
+      {
+        m_heartbeat_info = hbi;
+
+        start_heartbeats ();
+      }
+
+      template <class Proto>
+      void base_connection<Proto>::start_heartbeats ()
+      {
+        if (m_heartbeat_info.recv_duration ())
+        {
+          m_recv_heartbeat_timer.expires_from_now (*m_heartbeat_info.recv_duration ());
+          m_recv_heartbeat_timer.async_wait
+            (boost::bind ( &base_connection<Proto>::handle_recv_heartbeat_timer
+                         , this->shared_from_this ()
+                         , boost::asio::placeholders::error
+                         )
+            );
+        }
+
+        if (m_heartbeat_info.send_duration ())
+        {
+          m_send_heartbeat_timer.expires_from_now (*m_heartbeat_info.send_duration ());
+          m_send_heartbeat_timer.async_wait
+            (boost::bind ( &base_connection<Proto>::handle_send_heartbeat_timer
+                         , this->shared_from_this ()
+                         , boost::asio::placeholders::error
+                         )
+            );
+        }
+      }
+
+      template <class Proto>
       void base_connection<Proto>::start ()
       {
         unique_lock lock (m_shutting_down_mutex);
@@ -67,6 +109,8 @@ namespace gspc
                           , boost::asio::placeholders::bytes_transferred
                           ))
           );
+
+        start_heartbeats ();
       }
 
       template <class Proto>
@@ -82,6 +126,9 @@ namespace gspc
         m_socket.cancel (ec);
         m_socket.shutdown (Proto::socket::shutdown_both, ec);
         m_socket.close (ec);
+
+        m_recv_heartbeat_timer.cancel ();
+        m_send_heartbeat_timer.cancel ();
       }
 
       template <class Proto>
@@ -130,6 +177,11 @@ namespace gspc
       {
         if (not ec)
         {
+          {
+            unique_lock _ (m_heartbeat_mutex);
+            m_recv_timestamp = boost::get_system_time ();
+          }
+
           gspc::net::parse::result_t result;
 
           std::size_t offset = 0;
@@ -186,6 +238,9 @@ namespace gspc
         }
         else
         {
+          m_recv_heartbeat_timer.cancel ();
+          m_send_heartbeat_timer.cancel ();
+
           unique_lock lock (m_shutting_down_mutex);
           if (not m_shutting_down)
           {
@@ -200,6 +255,11 @@ namespace gspc
       {
         if (not ec)
         {
+          {
+            unique_lock _ (m_heartbeat_mutex);
+            m_send_timestamp = boost::get_system_time ();
+          }
+
           unique_lock lock (m_pending_mutex);
           if (m_pending.size ())
           {
@@ -220,10 +280,69 @@ namespace gspc
         }
         else
         {
+          m_recv_heartbeat_timer.cancel ();
+          m_send_heartbeat_timer.cancel ();
+
           unique_lock lock (m_shutting_down_mutex);
           if (not m_shutting_down)
           {
             this->m_frame_handler.handle_error (this, ec);
+          }
+        }
+      }
+
+      template <class Proto>
+      void
+      base_connection<Proto>::handle_recv_heartbeat_timer (const boost::system::error_code &ec)
+      {
+        if (not ec)
+        {
+          unique_lock _ (m_heartbeat_mutex);
+
+          if (m_heartbeat_info.recv_duration ())
+          {
+            boost::posix_time::ptime now = boost::get_system_time ();
+            if ((m_recv_timestamp + *m_heartbeat_info.recv_duration ()*2) < now)
+            {
+              this->m_frame_handler.handle_error
+                ( this
+                , boost::system::errc::make_error_code(boost::system::errc::timed_out)
+                );
+
+              this->stop ();
+
+              return;
+            }
+
+            m_recv_heartbeat_timer.expires_from_now (*m_heartbeat_info.recv_duration ());
+            m_recv_heartbeat_timer.async_wait
+              (boost::bind ( &base_connection<Proto>::handle_recv_heartbeat_timer
+                           , this->shared_from_this ()
+                           , boost::asio::placeholders::error
+                           )
+              );
+          }
+        }
+      }
+
+      template <class Proto>
+      void
+      base_connection<Proto>::handle_send_heartbeat_timer (const boost::system::error_code &ec)
+      {
+        if (not ec)
+        {
+          unique_lock _ (m_heartbeat_mutex);
+          this->deliver (gspc::net::make::heartbeat_frame ());
+
+          if (m_heartbeat_info.send_duration ())
+          {
+            m_send_heartbeat_timer.expires_from_now (*m_heartbeat_info.send_duration ());
+            m_send_heartbeat_timer.async_wait
+              (boost::bind ( &base_connection<Proto>::handle_send_heartbeat_timer
+                           , this->shared_from_this ()
+                           , boost::asio::placeholders::error
+                           )
+              );
           }
         }
       }
