@@ -62,12 +62,12 @@ void CoallocationScheduler::assignJobsToWorkers()
             // serve the same job to all reserved workers!!!!
             if(b_send_job_to_workers_)
               ptr_comm_handler_->serveJob(pReservation->getWorkerList(), jobId);
-            //ptr_comm_handler_->resume(jobId);
+            ptr_comm_handler_->resume(jobId);
         }
         else
         {
           schedule_first(jobId);
-          //ptr_comm_handler_->pause(jobId);
+          ptr_comm_handler_->pause(jobId);
         }
     }
     else // put it back into the common queue
