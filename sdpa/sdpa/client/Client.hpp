@@ -35,11 +35,8 @@ namespace sdpa { namespace client {
     typedef sdpa::shared_ptr<Client> ptr_t;
     typedef fhg::thread::queue<seda::IEvent::Ptr, std::list> event_queue_t;
 
+    Client(const config_t& cfg, const std::string &a_name);
     ~Client();
-
-    // API
-    static Client::ptr_t create( const config_t &cfg
-                               , const std::string &name_prefix);
 
     static config_t config()
     {
@@ -72,8 +69,6 @@ namespace sdpa { namespace client {
 
     seda::IEvent::Ptr wait_for_reply() throw (Timedout);
     seda::IEvent::Ptr wait_for_reply(timeout_t t) throw (Timedout);
-
-        Client(const config_t& cfg, const std::string &a_name);
 
     std::string _name;
 

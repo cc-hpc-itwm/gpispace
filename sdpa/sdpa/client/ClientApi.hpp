@@ -19,7 +19,7 @@ namespace sdpa { namespace client {
     ClientApi ( const config_t &cfg
               , const std::string &name_prefix
               )
-      : pimpl (Client::create(cfg, name_prefix))
+      : pimpl (Client::ptr_t (new Client(cfg, name_prefix)))
     {
     }
 
