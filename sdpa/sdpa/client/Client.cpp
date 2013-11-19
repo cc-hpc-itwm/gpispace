@@ -32,35 +32,6 @@
 namespace se = sdpa::events;
 using namespace sdpa::client;
 
-Client::Client (const config_t& cfg, const std::string &a_name)
-  : _name (a_name)
-  , timeout_(5000U)
-  , _communication_thread (&Client::send_outgoing, this)
-  , _stopping (false)
-{
-  start (cfg);
-}
-
-Client::~Client()
-{
-  _communication_thread.interrupt();
-  if (_communication_thread.joinable())
-  {
-    _communication_thread.join();
-  }
-
-  _stopping = true;
-  if (m_peer)
-  {
-    m_peer->stop();
-  }
-  if (_peer_thread.joinable())
-  {
-    _peer_thread.join();
-  }
-  m_peer.reset();
-}
-
 namespace
 {
   void kvs_error_handler (boost::system::error_code const &)
@@ -70,7 +41,11 @@ namespace
   }
 }
 
-void Client::start(const config_t & config) throw (ClientException)
+Client::Client (const config_t& config, const std::string &a_name)
+  : _name (a_name)
+  , timeout_(5000U)
+  , _communication_thread (&Client::send_outgoing, this)
+  , _stopping (false)
 {
   if (config.is_set("network.timeout"))
   {
@@ -97,6 +72,26 @@ void Client::start(const config_t & config) throw (ClientException)
   {
     throw ClientException ("no orchestrator specified!");
   }
+}
+
+Client::~Client()
+{
+  _communication_thread.interrupt();
+  if (_communication_thread.joinable())
+  {
+    _communication_thread.join();
+  }
+
+  _stopping = true;
+  if (m_peer)
+  {
+    m_peer->stop();
+  }
+  if (_peer_thread.joinable())
+  {
+    _peer_thread.join();
+  }
+  m_peer.reset();
 }
 
 void Client::send_outgoing()
