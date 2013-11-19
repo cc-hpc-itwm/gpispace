@@ -67,7 +67,7 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   try {
       Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
       if( !pJob->completed()) {
-          pJob->Reschedule(ptr_comm_handler_); // put the job back into the pending state
+          pJob->Reschedule(this); // put the job back into the pending state
       }
   }
   catch(JobNotFoundException const &ex)

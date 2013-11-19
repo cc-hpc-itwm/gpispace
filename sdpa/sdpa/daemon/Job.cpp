@@ -1,6 +1,7 @@
 #include "Job.hpp"
 
-#include <sdpa/daemon/GenericDaemon.hpp>
+#include <sdpa/daemon/IAgent.hpp>
+#include <sdpa/daemon/scheduler/Scheduler.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/JobResultsReplyEvent.hpp>
@@ -16,7 +17,7 @@ namespace sdpa {
     void JobFSM_::action_reschedule_job(const MSMRescheduleEvent& evt)
     {
       DLOG(TRACE, "Reschedule the job "<<evt.jobId());
-      evt.agent().schedule(evt.jobId());
+      evt.ptrScheduler()->schedule(evt.jobId());
     }
 
     void JobFSM_::action_job_stalled(const MSMStalledEvent& evt)
@@ -132,10 +133,10 @@ namespace sdpa {
       ptr_comm->sendEventToMaster(pResReply);
     }
 
-    void Job::Reschedule(sdpa::daemon::IAgent*  pAgent)
+    void Job::Reschedule(sdpa::daemon::Scheduler*  pSched)
     {
       lock_type lock(mtx_);
-      process_event(MSMRescheduleEvent (pAgent, id()));
+      process_event(MSMRescheduleEvent (pSched, id()));
     }
 
     void Job::Pause(sdpa::daemon::IAgent* pAgent)

@@ -36,6 +36,7 @@
 namespace sdpa {
   namespace daemon {
     class IAgent;
+    class Scheduler;
 
     // front-end: define the FSM structure
     struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
@@ -53,13 +54,13 @@ namespace sdpa {
 
       struct MSMRescheduleEvent
       {
-        MSMRescheduleEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& id)
-        : m_pAgent(pAgent), m_jobId(id)
+        MSMRescheduleEvent(sdpa::daemon::Scheduler* pSched, const sdpa::job_id_t& id)
+        : m_pScheduler(pSched), m_jobId(id)
         {}
-        sdpa::daemon::IAgent& agent() const { return *m_pAgent; }
+        sdpa::daemon::Scheduler* ptrScheduler() const { return m_pScheduler; }
         sdpa::job_id_t jobId() const { return m_jobId; }
       private:
-        sdpa::daemon::IAgent* m_pAgent;
+        sdpa::daemon::Scheduler* m_pScheduler;
         sdpa::job_id_t m_jobId;
       };
       struct MSMStalledEvent{
@@ -157,8 +158,6 @@ namespace sdpa {
       }
     };
 
-
-    class IAgent;
     class Job : public boost::msm::back::state_machine<JobFSM_>
     {
     public:
@@ -253,7 +252,7 @@ namespace sdpa {
       void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm);
       void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon );
       void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm);
-      void Reschedule(sdpa::daemon::IAgent*  pAgent);
+      void Reschedule(sdpa::daemon::Scheduler*  pSched);
 
       void Dispatch();
       void Pause(sdpa::daemon::IAgent*);
