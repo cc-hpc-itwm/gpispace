@@ -17,7 +17,7 @@
 #include <fhg/util/getenv.hpp>
 
 #include <sdpa/job_states.hpp>
-#include <sdpa/client/ClientApi.hpp>
+#include <sdpa/client/Client.hpp>
 #include <seda/IEvent.hpp>
 #include <sdpa/util/util.hpp>
 #include <sdpa/util/Config.hpp>
@@ -59,7 +59,7 @@ void get_user_input(std::string const & prompt, std::string & result, std::istre
 }
 
 sdpa::status::code command_poll_and_wait ( const std::string &job_id
-                 , sdpa::client::ClientApi& api
+                 , sdpa::client::Client& api
                  , boost::posix_time::time_duration poll_interval
                  , sdpa::client::job_info_t & job_info
                  )
@@ -115,7 +115,7 @@ sdpa::status::code command_poll_and_wait ( const std::string &job_id
 
 
 sdpa::status::code command_wait ( const std::string &job_id
-                 , sdpa::client::ClientApi& api
+                 , sdpa::client::Client& api
                  , boost::posix_time::time_duration poll_interval
                  , sdpa::client::job_info_t & job_info
                  )
@@ -142,7 +142,7 @@ int main (int argc, char **argv) {
 
   std::string kvs_url (fhg::util::getenv("KVS_URL", "localhost:2439"));
 
-  sdpa::client::config_t cfg = sdpa::client::ClientApi::config();
+  sdpa::client::config_t cfg = sdpa::client::Client::config();
   cfg.tool_opts().add_options()
     ("output,o", su::po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
@@ -373,7 +373,7 @@ int main (int argc, char **argv) {
     LOG(INFO, fhg::project_summary() << " (" << fhg::project_version() << ")");
     LOG(INFO, "***************************************************");
 
-    sdpa::client::ClientApi api (cfg);
+    sdpa::client::Client api (cfg);
 
     if (command == "submit")
     {

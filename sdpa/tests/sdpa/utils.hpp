@@ -5,7 +5,7 @@
 
 #include "tests_config.hpp"
 
-#include <sdpa/client/ClientApi.hpp>
+#include <sdpa/client/Client.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/memory.hpp>
@@ -220,7 +220,7 @@ namespace utils
   namespace client
   {
     sdpa::job_id_t submit_job
-      (sdpa::client::ClientApi& c, std::string workflow)
+      (sdpa::client::Client& c, std::string workflow)
     {
       LOG (DEBUG, "Submitting the following test workflow: \n" << workflow);
 
@@ -228,7 +228,7 @@ namespace utils
     }
 
     sdpa::status::code query_job_status
-      (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
+      (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Query status for job " << id);
 
@@ -236,7 +236,7 @@ namespace utils
     }
 
     template<typename Duration>
-      void wait_for_job_termination ( sdpa::client::ClientApi& c
+      void wait_for_job_termination ( sdpa::client::Client& c
                                     , const sdpa::job_id_t& id
                                     , Duration sleep_duration
                                     )
@@ -250,21 +250,21 @@ namespace utils
     }
 
     sdpa::client::result_t retrieve_job_results
-      (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
+      (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Retrieving results of job " << id);
 
       return c.retrieveResults (id);
     }
 
-    void delete_job (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
+    void delete_job (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Delete job " << id);
 
       return c.deleteJob (id);
     }
 
-    void cancel_job (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
+    void cancel_job (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Cancel job " << id);
 
@@ -272,7 +272,7 @@ namespace utils
     }
 
     sdpa::status::code wait_for_status_change
-      (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
+      (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Subscribe to job " << id);
 
@@ -282,16 +282,16 @@ namespace utils
 
     void create_client_and_execute
       ( const orchestrator& orch
-      , boost::function<void (sdpa::client::ClientApi&)> function
+      , boost::function<void (sdpa::client::Client&)> function
       )
     {
       std::vector<std::string> command_line;
       command_line.push_back ("--orchestrator=" + orch.name());
 
-      sdpa::client::config_t config (sdpa::client::ClientApi::config());
+      sdpa::client::config_t config (sdpa::client::Client::config());
       config.parse_command_line (command_line);
 
-      sdpa::client::ClientApi c (config);
+      sdpa::client::Client c (config);
 
       function (c);
     }
@@ -299,7 +299,7 @@ namespace utils
     namespace
     {
       void wait_for_termination_impl
-        (sdpa::job_id_t job_id_user, sdpa::client::ClientApi& c)
+        (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
         wait_for_job_termination (c, job_id_user, boost::posix_time::seconds (1));
         retrieve_job_results (c, job_id_user);
@@ -307,7 +307,7 @@ namespace utils
       }
 
       void wait_for_termination_as_subscriber_impl
-        (sdpa::job_id_t job_id_user, sdpa::client::ClientApi& c)
+        (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
         const sdpa::status::code state
           (wait_for_status_change (c, job_id_user));
@@ -317,14 +317,14 @@ namespace utils
       }
 
       void submit_job_and_wait_for_termination_impl
-        (std::string workflow, sdpa::client::ClientApi& c)
+        (std::string workflow, sdpa::client::Client& c)
       {
         const sdpa::job_id_t job_id_user (submit_job (c, workflow));
         wait_for_termination_impl (job_id_user, c);
       }
 
       void submit_job_and_cancel_and_wait_for_termination_impl
-        (std::string workflow, sdpa::client::ClientApi& c)
+        (std::string workflow, sdpa::client::Client& c)
       {
         const sdpa::job_id_t job_id_user (submit_job (c, workflow));
         //! \todo There should not be a requirement for this!
@@ -334,7 +334,7 @@ namespace utils
       }
 
       void submit_job_and_wait_for_termination_as_subscriber_impl
-        (std::string workflow, sdpa::client::ClientApi& c)
+        (std::string workflow, sdpa::client::Client& c)
       {
         wait_for_termination_as_subscriber_impl
           (submit_job (c, workflow), c);
@@ -342,7 +342,7 @@ namespace utils
 
       void submit_job_result_by_ref
         ( std::string workflow
-        , sdpa::client::ClientApi& c
+        , sdpa::client::Client& c
         , sdpa::job_id_t* job_id
         )
       {
