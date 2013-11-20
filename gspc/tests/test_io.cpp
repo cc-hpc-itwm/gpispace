@@ -6,18 +6,14 @@
 
 BOOST_AUTO_TEST_CASE (test_initialize_shutdown)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer _net_init;
 
-  {
-    gspc::net::server::queue_manager_t qmgr;
-    gspc::net::server_ptr_t server =
-      gspc::net::serve ("tcp://localhost:*", qmgr);
-    BOOST_REQUIRE (server);
+  gspc::net::server::queue_manager_t qmgr;
+  gspc::net::server_ptr_t server =
+    gspc::net::serve ("tcp://localhost:*", qmgr);
+  BOOST_REQUIRE (server);
 
-    server->stop ();
-  }
-
-  gspc::net::shutdown ();
+  server->stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
