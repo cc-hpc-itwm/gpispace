@@ -1,12 +1,7 @@
 #ifndef SDPA_CLIENT_CLIENT_API_HPP
 #define SDPA_CLIENT_CLIENT_API_HPP
 
-#include <sdpa/memory.hpp>
-#include <fhglog/fhglog.hpp>
 #include <sdpa/client/Client.hpp>
-#include <sdpa/job_states.hpp>
-#include <boost/utility.hpp>
-#include <sdpa/events/events.hpp>
 
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
