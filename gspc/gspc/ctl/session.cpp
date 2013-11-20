@@ -238,7 +238,7 @@ namespace gspc
         }
       }
 
-      gspc::net::initialize ();
+      gspc::net::initializer _net_init;
 
       gspc::kvs::service_t service;
       gspc::net::handle
@@ -304,8 +304,6 @@ namespace gspc
           ++server;
         }
       }
-
-      gspc::net::shutdown ();
 
       return 0;
     }
