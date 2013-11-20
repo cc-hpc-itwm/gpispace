@@ -94,6 +94,8 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket)
     BOOST_CHECK (fs::exists ("socket.foo"));
 
     server->stop ();
+
+    BOOST_CHECK (not fs::exists ("socket.foo"));
   }
 
   fs::remove ("socket.foo");
