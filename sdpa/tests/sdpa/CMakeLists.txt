@@ -222,6 +222,7 @@ set (tests
   test_SynchronizedQueue.cpp
   test_JobId.cpp
   test_CoallocationScheduler.cpp
+  test_SimpleScheduler.cpp
   test_LostAgentRegistrationAck.cpp
   restart_drts_worker_while_jobs_are_running.cpp
   test_Topologies.cpp
