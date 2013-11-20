@@ -3,8 +3,6 @@
 
 #include <sdpa/client/Client.hpp>
 
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace sdpa
 {
@@ -16,7 +14,7 @@ namespace sdpa
       using Client::config;
 
       ClientApi (const config_t &cfg)
-        : Client (cfg, "sdpac-" + boost::uuids::to_string (boost::uuids::random_generator()()))
+        : Client (cfg)
       {}
 
       using Client::wait_for_terminal_state;

@@ -28,6 +28,8 @@
 #include <sdpa/com/NetworkStrategy.hpp>
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace se = sdpa::events;
 using namespace sdpa::client;
@@ -41,8 +43,8 @@ namespace
   }
 }
 
-Client::Client (const config_t& config, const std::string &a_name)
-  : _name (a_name)
+Client::Client (const config_t& config)
+  : _name ("sdpac-" + boost::uuids::to_string (boost::uuids::random_generator()()))
   , timeout_ ( config.is_set("network.timeout")
              ? config.get<unsigned int>("network.timeout")
              : 5000U

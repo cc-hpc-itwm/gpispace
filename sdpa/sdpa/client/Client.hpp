@@ -32,7 +32,7 @@ namespace sdpa
     class Client
     {
     public:
-      Client(const config_t& cfg, const std::string &a_name);
+      Client (const config_t& cfg);
       ~Client();
 
       static config_t config()
