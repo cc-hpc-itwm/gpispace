@@ -40,24 +40,6 @@ namespace sdpa { namespace client {
   private:
     std::string reason_;
   };
-
-  class ApiCallFailed : public ClientException
-  {
-  public:
-    explicit
-    ApiCallFailed(const std::string &a_function_name, const std::string &a_message="api call timedout")
-      : ClientException("call to " + a_function_name + " failed: " + a_message), function_(a_function_name)
-    {
-    }
-
-    virtual ~ApiCallFailed() throw()
-    {
-    }
-
-    const std::string &function_name() const { return function_; }
-  private:
-    std::string function_;
-  };
 }}
 
 #endif
