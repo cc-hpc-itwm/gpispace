@@ -68,43 +68,10 @@ sdpa::status::code command_poll_and_wait ( const std::string &job_id
   time_type poll_start = boost::posix_time::microsec_clock::local_time();
 
   std::cerr << "starting at: " << poll_start << std::endl;
-
   std::cerr << "waiting for job to return..." << std::flush;
 
-  sdpa::status::code status (sdpa::status::UNKNOWN);
-  std::size_t fail_count(0);
-  for (; fail_count < 3 ;)
-  {
-    try
-    {
-      status = api.queryJob(job_id, job_info);
-      fail_count = 0; // reset counter
-    }
-    catch (const sdpa::client::ClientException &ce)
-    {
-      std::cout << "-" << std::flush;
-      ++fail_count;
-      continue;
-    }
-
-    if (sdpa::status::FINISHED == status)
-    {
-      break;
-    }
-    else if (sdpa::status::FAILED == status)
-    {
-      break;
-    }
-    else if (sdpa::status::CANCELED == status)
-    {
-      std::cerr << "canceled!" << std::endl;
-      break;
-    }
-    else
-    {
-      boost::this_thread::sleep(poll_interval);
-    }
-  }
+  const sdpa::status::code status
+    (api.wait_for_terminal_state_polling (job_id, job_info));
 
   time_type poll_end = boost::posix_time::microsec_clock::local_time();
 
