@@ -478,41 +478,6 @@ int main (int argc, char **argv) {
       }
       api.deleteJob(args.front());
     }
-    else if (command == "wait")
-    {
-      if (args.empty())
-      {
-        std::cerr << "E: job-id required!" << std::endl;
-        return JOB_ID_MISSING;
-      }
-      const std::string &job_id(args.front());
-      const int poll_interval = cfg.get<int>("wait");
-      sdpa::client::job_info_t job_info;
-      int status = command_wait( job_id
-                               , api
-                               , boost::posix_time::milliseconds(poll_interval)
-                               , job_info
-                               );
-
-      if (status == sdpa::status::FAILED)
-      {
-        std::cerr << "error-code"
-                  << " := "
-                  << fhg::error::show(job_info.error_code)
-                  << " (" << job_info.error_code << ")"
-                  << std::endl
-                  << "error-message := " << job_info.error_message
-                  << std::endl
-          ;
-      }
-
-      std::cerr << "retrieve the results with:" << std::endl;
-      std::cerr << "\t" << argv[0] << " results " << job_id << std::endl;
-      std::cerr << "delete the job with:" << std::endl;
-      std::cerr << "\t" << argv[0] << " delete " << job_id << std::endl;
-
-      return status;
-    }
     else
     {
       std::cerr << "illegal command: " << command << std::endl;
