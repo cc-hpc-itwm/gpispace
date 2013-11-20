@@ -288,17 +288,13 @@ namespace gspc
         {
           unique_lock lock (m_responses_mutex);
           m_responses [receipt->id ()] = receipt;
+          m_responses_changed.notify_all ();
         }
 
         rc = send_raw (to_send);
         if (0 == rc)
         {
           rc = receipt->wait (to_wait);
-        }
-
-        {
-          unique_lock lock (m_responses_mutex);
-          m_responses.erase (receipt->id ());
         }
 
         if (rc == 0)
@@ -323,6 +319,12 @@ namespace gspc
           {
             rc = -ETIME;
           }
+        }
+
+        {
+          unique_lock lock (m_responses_mutex);
+          m_responses.erase (receipt->id ());
+          m_responses_changed.notify_all ();
         }
 
         return rc;
