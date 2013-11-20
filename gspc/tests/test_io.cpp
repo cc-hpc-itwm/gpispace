@@ -4,6 +4,8 @@
 #include <gspc/net.hpp>
 #include <gspc/net/io.hpp>
 
+#include "mock_user.hpp"
+
 BOOST_AUTO_TEST_CASE (test_initialize_shutdown)
 {
   gspc::net::initializer _net_init;
@@ -22,6 +24,10 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
 
   gspc::net::server::queue_manager_t qmgr;
   boost::system::error_code ec;
+  gspc::net::tests::mock::user subscriber;
+
+  qmgr.subscribe (&subscriber, "/test", "mock-1", gspc::net::frame ());
+
   int rc;
 
   for (size_t i = 0 ; i < NUM ; ++i)
@@ -61,10 +67,11 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
       BOOST_REQUIRE (rc != 0);
     }
 
-    rc = client->send ("/test", "");
-
+    rc = client->send_sync ("/test", "", boost::posix_time::seconds (3));
     BOOST_REQUIRE_EQUAL (rc, 0);
 
     std::cerr << (i+1) << "/" << NUM << " ok\n";
   }
+
+  BOOST_REQUIRE_EQUAL (subscriber.frames.size (), NUM);
 }
