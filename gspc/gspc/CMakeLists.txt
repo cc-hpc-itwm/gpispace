@@ -1,4 +1,5 @@
 set (gspc_src
+  net/constants.cpp
   net/io.cpp
   net/util.cpp
   net/error.cpp
@@ -12,6 +13,7 @@ set (gspc_src
   net/handle.cpp
   net/serve.cpp
   net/dial.cpp
+  net/heartbeat_info.cpp
 
   net/parse/parser.cpp
 
