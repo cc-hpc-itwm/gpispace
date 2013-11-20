@@ -33,6 +33,9 @@ namespace gspc
         return oss.str ();
       }
 
+      template <>
+      int tcp_server::cleanup () { return 0; }
+
       template class gspc::net::server::base_server<tcp>;
     }
   }

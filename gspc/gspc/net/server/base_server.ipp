@@ -55,6 +55,8 @@ namespace gspc
       int base_server<Proto>::stop ()
       {
         boost::system::error_code ec;
+        cleanup ();
+
         m_acceptor.cancel (ec);
         m_acceptor.close (ec);
 

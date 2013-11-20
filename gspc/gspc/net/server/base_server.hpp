@@ -59,6 +59,7 @@ namespace gspc
         typedef boost::shared_ptr<connection>  connection_ptr;
         typedef std::map<int, connection_ptr>  connection_map_t;
 
+        int cleanup ();
         void start_accept ();
         void handle_accept (boost::system::error_code const &);
 
