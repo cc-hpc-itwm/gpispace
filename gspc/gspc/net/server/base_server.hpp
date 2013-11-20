@@ -10,7 +10,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include <fhg/util/thread/atomic.hpp>
 
@@ -51,9 +51,8 @@ namespace gspc
 
         void set_queue_length (size_t);
       private:
-        typedef boost::shared_mutex            mutex_type;
-        typedef boost::shared_lock<mutex_type> shared_lock;
-        typedef boost::unique_lock<mutex_type> unique_lock;
+        typedef boost::mutex                   mutex_type;
+        typedef boost::unique_lock<mutex_type> lock_type;
 
         typedef base_connection<protocol_type> connection;
         typedef boost::shared_ptr<connection>  connection_ptr;

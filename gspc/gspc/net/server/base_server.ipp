@@ -61,7 +61,7 @@ namespace gspc
         m_acceptor.close (ec);
 
         {
-          unique_lock lock (m_active_connections_mtx);
+          lock_type lock (m_active_connections_mtx);
           m_active_connections.clear ();
         }
 
@@ -89,7 +89,7 @@ namespace gspc
                                            )
       {
         {
-          unique_lock lock (m_active_connections_mtx);
+          lock_type lock (m_active_connections_mtx);
           m_active_connections.erase (user->id ());
         }
 
@@ -127,7 +127,7 @@ namespace gspc
           assert (m_new_connection);
 
           {
-            unique_lock lock (m_active_connections_mtx);
+            lock_type lock (m_active_connections_mtx);
             m_active_connections.insert
               (std::make_pair (m_new_connection->id (), m_new_connection));
           }
