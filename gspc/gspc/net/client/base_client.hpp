@@ -105,6 +105,7 @@ namespace gspc
 
         void set_state (state_t newstate);
         state_t get_state () const;
+        bool is_in_state (state_t) const;
 
         typedef boost::unique_lock<boost::shared_mutex> unique_lock;
         typedef boost::shared_lock<boost::shared_mutex> shared_lock;

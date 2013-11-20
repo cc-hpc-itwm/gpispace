@@ -55,6 +55,14 @@ namespace gspc
       }
 
       template <class Proto>
+      bool
+      base_client<Proto>::is_in_state (base_client<Proto>::state_t s) const
+      {
+        shared_lock _ (m_state_mutex);
+        return m_state == s;
+      }
+
+      template <class Proto>
       void base_client<Proto>::set_state (base_client<Proto>::state_t newstate)
       {
         unique_lock _ (m_state_mutex);
