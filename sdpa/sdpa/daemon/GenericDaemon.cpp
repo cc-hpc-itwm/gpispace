@@ -1142,11 +1142,6 @@ Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worke
   return scheduler()->findWorker(worker_id);
 }
 
-const Worker::worker_id_t& GenericDaemon::findWorker(const sdpa::job_id_t& job_id) const
-{
-  return scheduler()->findWorker(job_id);
-}
-
 void GenericDaemon::pause(const job_id_t& jobId)
 {
   // generate an event of type stalled for the job state machine and trigger it

@@ -200,7 +200,6 @@ namespace sdpa {
 
       // workers
       virtual Worker::worker_id_t getWorkerId(unsigned int rank);
-      virtual const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) const;
       const Worker::ptr_t& findWorker(const Worker::worker_id_t&) const;
       void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
       void serveJob(const Worker::worker_id_t&, const job_id_t&);
