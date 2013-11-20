@@ -2,14 +2,12 @@
 #define SDPA_CLIENT_HPP 1
 
 #include <sdpa/client/exceptions.hpp>
-#include <sdpa/client/job_info.hpp>
-#include <sdpa/client/types.hpp>
 #include <sdpa/common.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/job_states.hpp>
 #include <sdpa/types.hpp>
+#include <sdpa/util/Config.hpp>
 
-#include <fhg/revision.hpp>
 #include <fhg/util/thread/queue.hpp>
 
 #include <fhgcom/peer.hpp>
@@ -23,6 +21,14 @@ namespace sdpa
 {
   namespace client
   {
+    typedef sdpa::util::NewConfig config_t;
+    typedef sdpa::job_result_t result_t;
+    struct job_info_t
+    {
+      int error_code;
+      std::string error_message;
+    };
+
     class Client
     {
     public:
