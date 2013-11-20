@@ -60,6 +60,7 @@ namespace sdpa
       result_t retrieveResults(const job_id_t &) throw (ClientException);
 
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
+      sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
 
     private:
       typedef unsigned long long timeout_t;

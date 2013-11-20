@@ -219,6 +219,18 @@ sdpa::status::code Client::wait_for_terminal_state
   }
 }
 
+sdpa::status::code Client::wait_for_terminal_state_polling
+  (job_id_t id, job_info_t& job_info)
+{
+  sdpa::status::code state (queryJob (id));
+  for (; !sdpa::status::is_terminal (state); state = queryJob (id))
+  {
+    static const boost::posix_time::milliseconds sleep_duration (100);
+    boost::this_thread::sleep (sleep_duration);
+  }
+  return state;
+}
+
 
 sdpa::events::SDPAEvent::Ptr Client::wait_for_reply (bool use_timeout)
 {
