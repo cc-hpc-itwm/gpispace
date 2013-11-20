@@ -72,6 +72,9 @@ namespace gspc
       template <class Proto>
       void base_connection<Proto>::stop ()
       {
+        unique_lock pending_lock (m_pending_mutex);
+        m_pending.clear ();
+
         unique_lock lock (m_shutting_down_mutex);
         m_shutting_down = true;
 
@@ -198,7 +201,10 @@ namespace gspc
         if (not ec)
         {
           unique_lock lock (m_pending_mutex);
-          m_pending.pop_front ();
+          if (m_pending.size ())
+          {
+            m_pending.pop_front ();
+          }
 
           if (not m_pending.empty ())
           {
