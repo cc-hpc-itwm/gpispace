@@ -1,28 +1,23 @@
 #ifndef SDPA_CLIENT_HPP
 #define SDPA_CLIENT_HPP 1
 
-#include <string>
-#include <cstdlib>
-
-#include <boost/date_time/posix_time/posix_time_types.hpp>
-#include <boost/thread.hpp> // condition variables
-
-#include <sdpa/sdpa-config.hpp>
-
-#include <sdpa/memory.hpp>
-#include <sdpa/common.hpp>
-#include <sdpa/types.hpp>
-
-#include <sdpa/client/types.hpp>
 #include <sdpa/client/exceptions.hpp>
 #include <sdpa/client/job_info.hpp>
+#include <sdpa/client/types.hpp>
+#include <sdpa/common.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/job_states.hpp>
+#include <sdpa/types.hpp>
 
 #include <fhg/revision.hpp>
 #include <fhg/util/thread/queue.hpp>
 
 #include <fhgcom/peer.hpp>
+
+#include <cstdlib>
+#include <string>
+
+#include <boost/thread.hpp> // condition variables
 
 namespace sdpa
 {

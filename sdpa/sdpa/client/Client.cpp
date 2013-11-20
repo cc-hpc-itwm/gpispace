@@ -29,6 +29,8 @@
 
 #include <sdpa/com/NetworkStrategy.hpp>
 
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+
 namespace se = sdpa::events;
 using namespace sdpa::client;
 
