@@ -116,8 +116,7 @@ namespace gspc
       bool
       base_client<Proto>::is_connected () const
       {
-        shared_lock _ (m_state_mutex);
-        return m_state == CONNECTED;
+        return is_in_state (CONNECTED);
       }
 
       template <class Proto>
