@@ -26,64 +26,72 @@
 
 #include <fhgcom/peer.hpp>
 
-namespace sdpa { namespace client {
-  class Client {
-  public:
-    typedef sdpa::shared_ptr<Client> ptr_t;
-    typedef fhg::thread::queue<sdpa::events::SDPAEvent::Ptr, std::list>
-      event_queue_t;
-
-    Client(const config_t& cfg, const std::string &a_name);
-    ~Client();
-
-    static config_t config()
+namespace sdpa
+{
+  namespace client
+  {
+    class Client
     {
-      using namespace sdpa::util;
-      config_t cfg("client", "SDPAC_");
-      std::string home(std::getenv("HOME"));
-      cfg.specific_opts().add_options()
-        ("orchestrator", po::value<std::string>()->default_value("orchestrator"),
-         "name of the orchestrator")
-        ("config,C", po::value<std::string>()->default_value(home + "/.sdpa/configs/sdpac.rc"),
-         "path to the configuration file")
-        ;
-      return cfg;
-    }
+    public:
+      typedef sdpa::shared_ptr<Client> ptr_t;
+      typedef fhg::thread::queue<sdpa::events::SDPAEvent::Ptr, std::list>
+        event_queue_t;
 
-    job_id_t submitJob(const job_desc_t &) throw (ClientException);
-    void cancelJob(const job_id_t &) throw (ClientException);
-    status::code queryJob(const job_id_t &) throw (ClientException);
-    status::code queryJob(const job_id_t &, job_info_t &);
-    void deleteJob(const job_id_t &) throw (ClientException);
-    result_t retrieveResults(const job_id_t &) throw (ClientException);
+      Client(const config_t& cfg, const std::string &a_name);
+      ~Client();
 
-    sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
+      static config_t config()
+      {
+        using namespace sdpa::util;
+        config_t cfg ("client", "SDPAC_");
+        cfg.specific_opts().add_options()
+          ( "orchestrator"
+          , po::value<std::string>()->default_value ("orchestrator")
+          , "name of the orchestrator"
+          )
+          ( "config,C"
+          , po::value<std::string>()->default_value
+            (std::getenv ("HOME") + std::string ("/.sdpa/configs/sdpac.rc"))
+          , "path to the configuration file"
+          );
+        return cfg;
+      }
 
-  private:
-    typedef unsigned long long timeout_t;
+      job_id_t submitJob(const job_desc_t &) throw (ClientException);
+      void cancelJob(const job_id_t &) throw (ClientException);
+      status::code queryJob(const job_id_t &) throw (ClientException);
+      status::code queryJob(const job_id_t &, job_info_t &);
+      void deleteJob(const job_id_t &) throw (ClientException);
+      result_t retrieveResults(const job_id_t &) throw (ClientException);
 
-    sdpa::events::SDPAEvent::Ptr wait_for_reply (bool use_timeout);
+      sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
 
-    std::string _name;
+    private:
+      typedef unsigned long long timeout_t;
 
-    event_queue_t m_incoming_events;
+      sdpa::events::SDPAEvent::Ptr wait_for_reply (bool use_timeout);
 
-    // config variables
-    timeout_t timeout_;
-    std::string orchestrator_;
+      std::string _name;
 
-    fhg::com::message_t message_for_event (const sdpa::events::SDPAEvent*);
+      event_queue_t m_incoming_events;
 
-    template<typename Expected, typename Sent>
-      Expected send_and_wait_for_reply (Sent event);
+      // config variables
+      timeout_t timeout_;
+      std::string orchestrator_;
 
-    void handle_recv (boost::system::error_code const & ec);
+      fhg::com::message_t message_for_event (const sdpa::events::SDPAEvent*);
 
-    fhg::com::peer_t m_peer;
-    fhg::com::message_t m_message;
-    boost::thread _peer_thread;
-    bool _stopping;
-  };
-}}
+      template<typename Expected, typename Sent>
+        Expected send_and_wait_for_reply (Sent event);
+
+      void handle_recv (boost::system::error_code const & ec);
+
+      fhg::com::peer_t m_peer;
+      fhg::com::message_t m_message;
+      boost::thread _peer_thread;
+      bool _stopping;
+    };
+  }
+}
 
 #endif
