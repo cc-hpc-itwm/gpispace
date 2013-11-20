@@ -145,8 +145,9 @@ namespace gspc
       {
         bool need_to_send = false;
         {
-          unique_lock lock (m_pending_mutex);
-          need_to_send = m_pending.empty ();
+          unique_lock lock_pending (m_pending_mutex);
+          unique_lock lock_shutdown (m_shutting_down_mutex);
+          need_to_send = m_pending.empty () && not m_shutting_down;
         }
         if (need_to_send)
         {
