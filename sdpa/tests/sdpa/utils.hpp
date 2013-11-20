@@ -219,35 +219,12 @@ namespace utils
 
   namespace client
   {
-    namespace
-    {
-      const int NMAXTRIALS = 5;
-    }
-
-    struct retried_too_often : public std::runtime_error
-    {
-      retried_too_often (std::string what)
-        : std::runtime_error ("RETRIED TOO OFTEN: " + what)
-      {}
-    };
-
     sdpa::job_id_t submit_job
       (sdpa::client::ClientApi& c, std::string workflow)
     {
       LOG (DEBUG, "Submitting the following test workflow: \n" << workflow);
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.submitJob (workflow);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
 
-      throw retried_too_often ("submit_job");
+      return c.submitJob (workflow);
     }
 
     sdpa::status::code query_job_status
@@ -255,19 +232,7 @@ namespace utils
     {
       LOG (DEBUG, "Query status for job " << id);
 
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.queryJob (id);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
-
-      throw retried_too_often ("query_job_status");
+      return c.queryJob (id);
     }
 
     template<typename Duration>
@@ -289,57 +254,21 @@ namespace utils
     {
       LOG (DEBUG, "Retrieving results of job " << id);
 
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.retrieveResults (id);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
-
-      throw retried_too_often ("retrieve_job_results");
+      return c.retrieveResults (id);
     }
 
     void delete_job (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Delete job " << id);
 
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.deleteJob (id);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
-
-      throw retried_too_often ("delete_job");
+      return c.deleteJob (id);
     }
 
     void cancel_job (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Cancel job " << id);
 
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.cancelJob (id);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
-
-      throw retried_too_often ("cancel_job");
+      return c.cancelJob (id);
     }
 
     sdpa::status::code wait_for_status_change
@@ -360,19 +289,12 @@ namespace utils
       std::vector<std::string> command_line;
       command_line.push_back ("--orchestrator=" + orch.name());
 
-      try
-      {
-        sdpa::client::config_t config (sdpa::client::ClientApi::config());
-        config.parse_command_line (command_line);
+      sdpa::client::config_t config (sdpa::client::ClientApi::config());
+      config.parse_command_line (command_line);
 
-        sdpa::client::ClientApi c (config, client_name);
+      sdpa::client::ClientApi c (config, client_name);
 
-        function (c);
-      }
-      catch (const retried_too_often& ex)
-      {
-        BOOST_FAIL (ex.what());
-      }
+      function (c);
     }
 
     namespace
