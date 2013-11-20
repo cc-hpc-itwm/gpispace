@@ -111,6 +111,7 @@ namespace sdpa {
       mutable mutex_type mtx_;
       condition_type cond_feed_workers;
       condition_type cond_workers_registered;
+    protected:
       sdpa::agent_id_t m_agent_name;
     };
   }
