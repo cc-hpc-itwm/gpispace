@@ -31,6 +31,7 @@
 
 #include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
+#include <fhg/util/read_bool.hpp>
 
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
@@ -127,7 +128,7 @@ int main (int argc, char **argv) {
   cfg.tool_opts().add_options()
     ("output,o", su::po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
-    ("polling", su::po::value<fhg::util::bool_t>()->default_value ("true"), "use polling when waiting for job completion")
+    ("polling", su::po::value<std::string>()->default_value ("true"), "use polling when waiting for job completion")
     ("force,f", "force the operation")
     ("make-config", "create a basic config file")
     ("kvs,k", su::po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
@@ -378,7 +379,7 @@ int main (int argc, char **argv) {
 
       if (cfg.is_set("wait"))
       {
-        return wait_for_terminal_state (api, job_id, cfg.get<fhg::util::bool_t> ("polling"), argv[0]);
+        return wait_for_terminal_state (api, job_id, fhg::util::read_bool (cfg.get<std::string> ("polling")), argv[0]);
       }
     }
     else if (command == "wait")
@@ -389,7 +390,7 @@ int main (int argc, char **argv) {
         return JOB_ID_MISSING;
       }
 
-      return wait_for_terminal_state (api, args.front(), cfg.get<fhg::util::bool_t> ("polling"), argv[0]);
+      return wait_for_terminal_state (api, args.front(), fhg::util::read_bool (cfg.get<std::string> ("polling")), argv[0]);
     }
     else if (command == "cancel")
     {
