@@ -9,8 +9,6 @@
 #include <seda/StageRegistry.hpp>
 #include <sdpa/job_states.hpp>
 
-#include <sdpa/client/ClientEvents.hpp>
-
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
