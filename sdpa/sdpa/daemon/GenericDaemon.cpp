@@ -473,7 +473,7 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
       }
     }
 
-    schedule(job_id);
+    scheduler()->schedule(job_id);
 
     if( e.from() != sdpa::daemon::WE )
     {
@@ -1231,19 +1231,6 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
     WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet,  rank(), agent_uuid()));
     sendEventToMaster(pEvtWorkerReg);
   }
-}
-
-void GenericDaemon::schedule(const sdpa::job_id_t& jobId)
-{
-  //! \todo This check if bogus, as there just shouldn't be some race
-  //! in a test where schedule() may be called before/after complete
-  //! construction.
-  if (!scheduler())
-  {
-    throw std::runtime_error
-      ("GenericDaemon::schedule called before start_agent() or after shutdown()!");
-  }
-  scheduler()->schedule(jobId);
 }
 
 void GenericDaemon::addMaster(const agent_id_t& newMasterId )
