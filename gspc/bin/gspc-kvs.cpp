@@ -16,6 +16,7 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
+#include <gspc/net.hpp>
 #include <gspc/kvs.hpp>
 
 static void long_usage (int lvl)
@@ -240,15 +241,7 @@ int main (int argc, char *argv [], char *envp [])
         return EX_USAGE;
       }
 
-      try
-      {
-        kvs.reset (gspc::kvs::create (argv [i++]));
-      }
-      catch (std::exception const &ex)
-      {
-        std::cerr << "kvs: failed: " << ex.what () << std::endl;
-        return EX_UNAVAILABLE;
-      }
+      url = argv [i++];
     }
     else if (arg == "--timeout")
     {
@@ -279,6 +272,18 @@ int main (int argc, char *argv [], char *envp [])
   {
     long_usage (help);
     return 0;
+  }
+
+  gspc::net::initializer _net_init;
+
+  try
+  {
+    kvs.reset (gspc::kvs::create (url));
+  }
+  catch (std::exception const &ex)
+  {
+    std::cerr << "kvs: failed: " << ex.what () << std::endl;
+    return EX_UNAVAILABLE;
   }
 
   if (not kvs)
