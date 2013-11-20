@@ -33,10 +33,6 @@ namespace sdpa
     class Client
     {
     public:
-      typedef sdpa::shared_ptr<Client> ptr_t;
-      typedef fhg::thread::queue<sdpa::events::SDPAEvent::Ptr, std::list>
-        event_queue_t;
-
       Client(const config_t& cfg, const std::string &a_name);
       ~Client();
 
@@ -73,7 +69,8 @@ namespace sdpa
 
       std::string _name;
 
-      event_queue_t m_incoming_events;
+      fhg::thread::queue<sdpa::events::SDPAEvent::Ptr, std::list>
+        m_incoming_events;
 
       // config variables
       timeout_t timeout_;
