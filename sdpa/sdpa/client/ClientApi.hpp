@@ -8,6 +8,9 @@
 #include <boost/utility.hpp>
 #include <sdpa/events/events.hpp>
 
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 namespace sdpa { namespace client {
   class ClientApi : boost::noncopyable {
   public:
@@ -16,10 +19,8 @@ namespace sdpa { namespace client {
       return Client::config();
     }
 
-    ClientApi ( const config_t &cfg
-              , const std::string &name_prefix
-              )
-      : pimpl (Client::ptr_t (new Client(cfg, name_prefix)))
+    ClientApi (const config_t &cfg)
+      : pimpl (Client::ptr_t (new Client(cfg, "sdpac-" + boost::uuids::to_string (boost::uuids::random_generator()()))))
     {
     }
 

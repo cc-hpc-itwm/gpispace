@@ -281,8 +281,7 @@ namespace utils
     }
 
     void create_client_and_execute
-      ( std::string client_name
-      , const orchestrator& orch
+      ( const orchestrator& orch
       , boost::function<void (sdpa::client::ClientApi&)> function
       )
     {
@@ -292,7 +291,7 @@ namespace utils
       sdpa::client::config_t config (sdpa::client::ClientApi::config());
       config.parse_command_line (command_line);
 
-      sdpa::client::ClientApi c (config, client_name);
+      sdpa::client::ClientApi c (config);
 
       function (c);
     }
@@ -356,8 +355,7 @@ namespace utils
                                              )
     {
       create_client_and_execute
-        ( "sdpac"
-        , orch
+        ( orch
         , boost::bind (&submit_job_and_wait_for_termination_impl, workflow, _1)
         );
     }
@@ -367,8 +365,7 @@ namespace utils
                                                         )
     {
       create_client_and_execute
-        ( "sdpac"
-        , orch
+        ( orch
         , boost::bind (&submit_job_and_cancel_and_wait_for_termination_impl, workflow, _1)
         );
     }
@@ -379,8 +376,7 @@ namespace utils
       )
     {
       create_client_and_execute
-        ( "sdpac"
-        , orch
+        ( orch
         , boost::bind (&submit_job_and_wait_for_termination_as_subscriber_impl, workflow, _1)
         );
     }
@@ -391,8 +387,7 @@ namespace utils
       )
     {
       sdpa::job_id_t job_id_user;
-      create_client_and_execute ( "sdpac"
-                                , orch
+      create_client_and_execute ( orch
                                 , boost::bind ( &submit_job_result_by_ref
                                               , workflow
                                               , _1
@@ -401,8 +396,7 @@ namespace utils
                                 );
 
       create_client_and_execute
-        ( "sdpac2"
-        , orch
+        ( orch
         , boost::bind (&wait_for_termination_as_subscriber_impl, job_id_user, _1)
         );
     }

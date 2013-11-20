@@ -27,9 +27,6 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/tokenizer.hpp>
 
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/error_codes.hpp>
@@ -376,13 +373,7 @@ int main (int argc, char **argv) {
     LOG(INFO, fhg::project_summary() << " (" << fhg::project_version() << ")");
     LOG(INFO, "***************************************************");
 
-    std::string client_api_name ("sdpac-");
-    {
-      client_api_name +=
-        boost::uuids::to_string (boost::uuids::random_generator()());
-    }
-
-    sdpa::client::ClientApi api (cfg, client_api_name);
+    sdpa::client::ClientApi api (cfg);
 
     if (command == "submit")
     {
