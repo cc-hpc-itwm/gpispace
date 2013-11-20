@@ -257,7 +257,7 @@ int main (int argc, char *argv[])
         rc = EX_NOPERM;
         break;
       case -ENOENT:
-        rc = EX_UNAVAILABLE;
+        rc = 0;
         break;
       case 0:
         rc = 0;
