@@ -56,11 +56,21 @@ void CoallocationScheduler::assignJobsToWorkers()
         // if all the required resources were acquired, mark the job as submitted
         Reservation* pReservation(allocation_table_[jobId]);
 
-        if( pReservation->acquired() ) {
+        if( pReservation->acquired() )
+        {
             LOG(INFO, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<pReservation->getWorkerList());
             // serve the same job to all reserved workers!!!!
-              ptr_comm_handler_->serveJob(pReservation->getWorkerList(), jobId);
-            //ptr_comm_handler_->resume(jobId);
+            try {
+               Worker::ptr_t pWorker(findWorker(matchingWorkerId));
+               ptr_comm_handler_->serveJob(pReservation->getWorkerList(), jobId);
+               pWorker->submit(jobId);
+               //ptr_comm_handler_->resume(jobId);
+            }
+            catch(const WorkerNotFoundException&) {
+               DMLOG (TRACE, "The worker " << matchingWorkerId << " is not registered! Sending a notification ...");
+               ErrorEvent::Ptr pErrorEvt(new ErrorEvent(m_agent_name, matchingWorkerId, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
+               ptr_comm_handler_->sendEventToSlave(pErrorEvt);
+            }
         }
         else
         {
