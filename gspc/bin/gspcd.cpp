@@ -366,7 +366,10 @@ int main (int argc, char *argv[])
 
       if (0 == rc)
       {
-        std::cout << info.puburl << std::endl;
+        if (daemonize)
+        {
+          std::cout << info.puburl << std::endl;
+        }
       }
       else if (-EEXIST == rc)
       {
