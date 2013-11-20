@@ -222,14 +222,7 @@ sdpa::events::SDPAEvent::Ptr Client::wait_for_reply (bool use_timeout)
 {
   if (use_timeout)
   {
-    try
-    {
-      return m_incoming_events.get (boost::posix_time::milliseconds (timeout_));
-    }
-    catch (fhg::thread::operation_timedout const &)
-    {
-      throw Timedout ("did not receive reply");
-    }
+    return m_incoming_events.get (boost::posix_time::milliseconds (timeout_));
   }
   else
   {
