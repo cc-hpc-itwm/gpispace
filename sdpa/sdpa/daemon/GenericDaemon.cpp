@@ -303,18 +303,10 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
 
     // Post a SubmitJobEvent to the slave who made the request
     sendEventToSlave(pSubmitEvt);
-
-    // if everything was fine up to here, mark the job as submitted
-    Worker::ptr_t pWorker(findWorker(worker_id));
-    pWorker->submit(jobId);
   }
-  catch(const WorkerNotFoundException&)
+  catch(const JobNotFoundException&)
   {
-    DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending him a notification ...");
-
-    // the worker should register first, before posting a job request
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-    sendEventToSlave(pErrorEvt);
+      LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
   }
   catch(const QueueFull&)
   {
@@ -350,20 +342,11 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
 
       // Post a SubmitJobEvent to the slave who made the request
       sendEventToSlave(pSubmitEvt);
-
-      // if everything was fine up to here, mark the job as submitted
-      try {
-          Worker::ptr_t pWorker(findWorker(worker_id));
-          pWorker->submit(ptrJob->id());
-      }
-      catch(const WorkerNotFoundException&) {
-          DMLOG (TRACE, "The worker " << worker_id << " is not registered! Sending a notification ...");
-
-          // the worker should register first, before posting a job request
-          ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-          sendEventToSlave(pErrorEvt);
-      }
     }
+  }
+  catch(const JobNotFoundException&)
+  {
+    LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
   }
   catch(const QueueFull&)
   {
