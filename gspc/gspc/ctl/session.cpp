@@ -332,17 +332,22 @@ namespace gspc
       }
       else
       {
-        fs::path child_socket (m_dir / m_name);
-        int trials = 5;
-        rc = -ENOENT;
+        static const std::size_t CHECK_SOCKET_INTERVAL = 50000;
+        static const std::size_t MAX_SOCKET_CHECKS = 10;
 
-        while ((rc == -ENOENT || rc == -ECONNREFUSED) && trials --> 0)
+        std::size_t timeout
+          (CHECK_SOCKET_INTERVAL * MAX_SOCKET_CHECKS);
+
+        fs::path child_socket (m_dir / m_name);
+        rc = info (child_socket, si);
+
+        while ((rc == -ENOENT || rc == -ECONNREFUSED) && timeout > 0)
         {
+          usleep (CHECK_SOCKET_INTERVAL);
           rc = info (child_socket, si);
           if (0 == rc)
             break;
-
-          usleep (500);
+          timeout -= CHECK_SOCKET_INTERVAL;
         }
       }
 
