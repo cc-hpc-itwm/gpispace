@@ -41,17 +41,6 @@ namespace sdpa { namespace client {
     std::string reason_;
   };
 
-  class Timedout : public ClientException
-  {
-  public:
-    explicit
-    Timedout(const std::string &a_message="timedout")
-      : ClientException(a_message)
-    { }
-
-    virtual ~Timedout() throw() { }
-  };
-
   class ApiCallFailed : public ClientException
   {
   public:
