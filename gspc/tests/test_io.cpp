@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE (test_initialize_shutdown)
 
 BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
 {
-  static const size_t NUM = 50;
+  static const size_t NUM = 25;
 
   gspc::net::server::queue_manager_t qmgr;
   boost::system::error_code ec;
