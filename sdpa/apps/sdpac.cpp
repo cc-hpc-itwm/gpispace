@@ -136,6 +136,45 @@ bool file_exists(const std::string &path)
         return false;
 }
 
+namespace
+{
+  sdpa::status::code wait_for_terminal_state ( sdpa::client::Client& api
+                                             , const std::string job_id
+                                             , const int poll_interval
+                                             , const std::string app_name
+                                             )
+  {
+    sdpa::client::job_info_t job_info;
+
+    const sdpa::status::code status
+      ( command_wait ( job_id
+                     , api
+                     , boost::posix_time::milliseconds (poll_interval)
+                     , job_info
+                     )
+      );
+    if (sdpa::status::FAILED == status)
+    {
+      std::cerr << "failed: "
+                << "error-code"
+                << " := "
+                << fhg::error::show(job_info.error_code)
+                << " (" << job_info.error_code << ")"
+                << std::endl
+                << "error-message := " << job_info.error_message
+                << std::endl
+        ;
+    }
+
+    std::cerr << "retrieve the results with:" << std::endl;
+    std::cerr << "\t" << app_name << " results " << job_id << std::endl;
+    std::cerr << "delete the job with:" << std::endl;
+    std::cerr << "\t" << app_name << " delete " << job_id << std::endl;
+
+    return status;
+  }
+}
+
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
   namespace su = sdpa::util;
@@ -397,32 +436,7 @@ int main (int argc, char **argv) {
 
       if (cfg.is_set("wait"))
       {
-        const int poll_interval = cfg.get<int>("poll-interval");
-        sdpa::client::job_info_t job_info;
-        sdpa::status::code status = command_wait( job_id
-                                    , api
-                                    , boost::posix_time::milliseconds(poll_interval)
-                                    , job_info
-                                    );
-        if (sdpa::status::FAILED == status)
-        {
-          std::cerr << "failed: "
-                    << "error-code"
-                    << " := "
-                    << fhg::error::show(job_info.error_code)
-                    << " (" << job_info.error_code << ")"
-                    << std::endl
-                    << "error-message := " << job_info.error_message
-                    << std::endl
-            ;
-        }
-
-        std::cerr << "retrieve the results with:" << std::endl;
-        std::cerr << "\t" << argv[0] << " results " << job_id << std::endl;
-        std::cerr << "delete the job with:" << std::endl;
-        std::cerr << "\t" << argv[0] << " delete " << job_id << std::endl;
-
-        return status;
+        return wait_for_terminal_state (api, job_id, cfg.get<int> ("poll-interval"), argv[0]);
       }
     }
     else if (command == "wait")
@@ -433,34 +447,7 @@ int main (int argc, char **argv) {
         return JOB_ID_MISSING;
       }
 
-      const std::string job_id (args.front());
-      const int poll_interval = cfg.get<int>("poll-interval");
-      sdpa::client::job_info_t job_info;
-
-      sdpa::status::code status = command_wait( job_id
-                               , api
-                               , boost::posix_time::milliseconds(poll_interval)
-                               , job_info
-                               );
-      if (sdpa::status::FAILED == status)
-      {
-        std::cerr << "failed: "
-                  << "error-code"
-                  << " := "
-                  << fhg::error::show(job_info.error_code)
-                  << " (" << job_info.error_code << ")"
-                  << std::endl
-                  << "error-message := " << job_info.error_message
-                  << std::endl
-          ;
-      }
-
-      std::cerr << "retrieve the results with:" << std::endl;
-      std::cerr << "\t" << argv[0] << " results " << job_id << std::endl;
-      std::cerr << "delete the job with:" << std::endl;
-      std::cerr << "\t" << argv[0] << " delete " << job_id << std::endl;
-
-      return status;
+      return wait_for_terminal_state (api, args.front(), cfg.get<int> ("poll-interval"), argv[0]);
     }
     else if (command == "cancel")
     {
