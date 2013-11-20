@@ -8,5 +8,10 @@ namespace gspc
     {
       return 3;
     }
+
+    std::size_t constants::CONNECT_TIMEOUT ()
+    {
+      return 30*1000;
+    };
   }
 }
