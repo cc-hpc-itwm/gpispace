@@ -39,12 +39,21 @@ void SimpleScheduler::assignJobsToWorkers()
       listAvailWorkers.erase(listAvailWorkers.begin());
     }
 
-    if( !matchingWorkerId.empty() ) { // matching found
+    if( !matchingWorkerId.empty() )
+    { // matching found
         LOG(INFO, "Serve the job "<<jobId<<" to the worker "<<matchingWorkerId);
 
-        // serve the same job to all reserved workers!!!!
-        ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
-        //ptr_comm_handler_->resume(jobId);
+        try {
+           Worker::ptr_t pWorker(findWorker(matchingWorkerId));
+           ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
+           pWorker->submit(jobId);
+           //ptr_comm_handler_->resume(jobId);
+        }
+        catch(const WorkerNotFoundException&) {
+           DMLOG (TRACE, "The worker " << matchingWorkerId << " is not registered! Sending a notification ...");
+           ErrorEvent::Ptr pErrorEvt(new ErrorEvent(m_agent_name, matchingWorkerId, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
+           ptr_comm_handler_->sendEventToSlave(pErrorEvt);
+        }
     }
     else { // put it back into the common queue
         nonmatching_jobs_queue.push(jobId);
@@ -79,6 +88,16 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   }
 }
 
+sdpa::worker_id_t SimpleScheduler::getAssignedWorker(const sdpa::job_id_t& jid)
+{
+  try {
+      return findWorker(jid);
+  }
+  catch(const NoWorkerFoundException& )
+  {
+      return sdpa::worker_id_t("");
+  }
+}
 void SimpleScheduler::releaseReservation(const sdpa::job_id_t& jobId) { throw std::runtime_error ("Not implemented!");}
 void SimpleScheduler::workerFinished(const worker_id_t& wid, const job_id_t& jid) { throw std::runtime_error ("Not implemented!");}
 void SimpleScheduler::workerFailed(const worker_id_t& wid, const job_id_t& jid) { throw std::runtime_error ("Not implemented!");}
