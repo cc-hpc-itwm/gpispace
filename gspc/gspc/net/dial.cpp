@@ -9,6 +9,7 @@
 #include <fhg/util/url.hpp>
 
 #include <gspc/net/io.hpp>
+#include <gspc/net/constants.hpp>
 #include <gspc/net/option.hpp>
 #include <gspc/net/resolver.hpp>
 #include <gspc/net/client.hpp>
@@ -37,6 +38,13 @@ namespace gspc
         (get_option ( opts
                     , "heartbeat"
                     , heartbeat_info_t ("0,0")
+                    , ec
+                    )
+        );
+      client->set_connect_timeout
+        (get_option ( opts
+                    , "connect_timeout"
+                    , gspc::net::constants::CONNECT_TIMEOUT ()
                     , ec
                     )
         );
