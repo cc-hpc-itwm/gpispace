@@ -76,21 +76,21 @@ namespace
                                              , const std::string app_name
                                              )
   {
-    sdpa::client::job_info_t job_info;
-
-    typedef boost::posix_time::ptime time_type;
-    time_type poll_start = boost::posix_time::microsec_clock::local_time();
+    const boost::posix_time::ptime poll_start
+      (boost::posix_time::microsec_clock::local_time());
 
     std::cerr << "starting at: " << poll_start << std::endl;
     std::cerr << "waiting for job to return..." << std::flush;
 
+    sdpa::client::job_info_t job_info;
     const sdpa::status::code status
       ( boost::posix_time::milliseconds (poll_interval).total_milliseconds()
       ? api.wait_for_terminal_state_polling (job_id, job_info)
       : api.wait_for_terminal_state (job_id, job_info)
       );
 
-    time_type poll_end = boost::posix_time::microsec_clock::local_time();
+    const boost::posix_time::ptime poll_end
+      (boost::posix_time::microsec_clock::local_time());
 
     std::cerr << "stopped at: " << poll_end << std::endl;
     std::cerr << "execution time: " << (poll_end - poll_start) << std::endl;
