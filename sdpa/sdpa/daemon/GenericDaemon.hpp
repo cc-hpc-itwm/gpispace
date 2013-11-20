@@ -217,9 +217,6 @@ namespace sdpa {
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
       virtual void createScheduler() = 0;
 
-    protected:
-      virtual bool isScheduled(const sdpa::job_id_t& job_id) { return scheduler()->has_job(job_id); }
-
       // data members
     protected:
       mutex_type mtx_;

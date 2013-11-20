@@ -67,8 +67,6 @@ namespace sdpa {
     virtual bool hasWorkflowEngine()const = 0;
     virtual bool isTop() = 0;
 
-    virtual bool isScheduled(const sdpa::job_id_t& job_id) = 0;
-
     virtual sdpa::master_info_list_t& getListMasterInfo() = 0;
     virtual void getCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
     virtual void addCapability(const capability_t&) = 0;
