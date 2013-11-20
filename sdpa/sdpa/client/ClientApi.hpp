@@ -8,7 +8,7 @@ namespace sdpa
 {
   namespace client
   {
-    class ClientApi : boost::noncopyable, Client
+    class ClientApi : Client
     {
     public:
       using Client::config;

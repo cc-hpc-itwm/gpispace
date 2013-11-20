@@ -29,7 +29,7 @@ namespace sdpa
       std::string error_message;
     };
 
-    class Client
+    class Client : boost::noncopyable
     {
     public:
       Client (const config_t& cfg);
