@@ -72,7 +72,7 @@ namespace
 {
   sdpa::status::code wait_for_terminal_state ( sdpa::client::Client& api
                                              , const std::string job_id
-                                             , const int poll_interval
+                                             , const bool do_polling
                                              , const std::string app_name
                                              )
   {
@@ -84,7 +84,7 @@ namespace
 
     sdpa::client::job_info_t job_info;
     const sdpa::status::code status
-      ( boost::posix_time::milliseconds (poll_interval).total_milliseconds()
+      ( do_polling
       ? api.wait_for_terminal_state_polling (job_id, job_info)
       : api.wait_for_terminal_state (job_id, job_info)
       );
@@ -127,7 +127,7 @@ int main (int argc, char **argv) {
   cfg.tool_opts().add_options()
     ("output,o", su::po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
-    ("poll-interval,t", su::po::value<int>()->default_value(100), "sets the poll interval")
+    ("polling", su::po::value<fhg::util::bool_t>()->default_value ("true"), "use polling when waiting for job completion")
     ("force,f", "force the operation")
     ("make-config", "create a basic config file")
     ("kvs,k", su::po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
@@ -378,7 +378,7 @@ int main (int argc, char **argv) {
 
       if (cfg.is_set("wait"))
       {
-        return wait_for_terminal_state (api, job_id, cfg.get<int> ("poll-interval"), argv[0]);
+        return wait_for_terminal_state (api, job_id, cfg.get<fhg::util::bool_t> ("polling"), argv[0]);
       }
     }
     else if (command == "wait")
@@ -389,7 +389,7 @@ int main (int argc, char **argv) {
         return JOB_ID_MISSING;
       }
 
-      return wait_for_terminal_state (api, args.front(), cfg.get<int> ("poll-interval"), argv[0]);
+      return wait_for_terminal_state (api, args.front(), cfg.get<fhg::util::bool_t> ("polling"), argv[0]);
     }
     else if (command == "cancel")
     {
