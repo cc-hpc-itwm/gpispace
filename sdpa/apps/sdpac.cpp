@@ -58,7 +58,7 @@ void get_user_input(std::string const & prompt, std::string & result, std::istre
     result = tmp;
 }
 
-sdpa::status::code command_poll_and_wait ( const std::string &job_id
+sdpa::status::code command_wait ( const std::string &job_id
                  , sdpa::client::Client& api
                  , boost::posix_time::time_duration poll_interval
                  , sdpa::client::job_info_t & job_info
@@ -70,27 +70,18 @@ sdpa::status::code command_poll_and_wait ( const std::string &job_id
   std::cerr << "starting at: " << poll_start << std::endl;
   std::cerr << "waiting for job to return..." << std::flush;
 
-  const sdpa::status::code status
-    (api.wait_for_terminal_state_polling (job_id, job_info));
+  const sdpa::status::code state
+    ( poll_interval.total_milliseconds()
+    ? api.wait_for_terminal_state_polling (job_id, job_info)
+    : api.wait_for_terminal_state (job_id, job_info)
+    );
 
   time_type poll_end = boost::posix_time::microsec_clock::local_time();
 
   std::cerr << "stopped at: " << poll_end << std::endl;
   std::cerr << "execution time: " << (poll_end - poll_start) << std::endl;
-  return status;
-}
 
-
-sdpa::status::code command_wait ( const std::string &job_id
-                 , sdpa::client::Client& api
-                 , boost::posix_time::time_duration poll_interval
-                 , sdpa::client::job_info_t & job_info
-                 )
-{
-  if(poll_interval.total_milliseconds())
-    return command_poll_and_wait(job_id, api, poll_interval, job_info);
-  else
-    return api.wait_for_terminal_state (job_id, job_info);
+  return state;
 }
 
 bool file_exists(const std::string &path)
