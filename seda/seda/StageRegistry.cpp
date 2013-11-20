@@ -38,15 +38,13 @@ StageRegistry& StageRegistry::instance() {
 void StageRegistry::insert(const std::string& name, const Stage::Ptr& stage) throw(StageAlreadyRegistered) {
     lock_type lock (m_mutex);
 
-    // lookup the stage first
-    try {
-        lookup(name);
+    if (_stages.find(name) != _stages.end()) {
         throw StageAlreadyRegistered(name);
-    } catch (const StageNotFound &) {
-        _stages.insert(std::make_pair(name, stage));
-        _stage_names.push_back (name);
-        DMLOG (TRACE, "added stage `" << name << "'");
     }
+
+    _stages.insert(std::make_pair(name, stage));
+    _stage_names.push_back (name);
+    DMLOG (TRACE, "added stage `" << name << "'");
 }
 void StageRegistry::insert(const std::string& name, Stage* stage) throw(StageAlreadyRegistered) {
     insert(name, Stage::Ptr(stage));

@@ -17,7 +17,7 @@
 #include <fhg/util/getenv.hpp>
 
 #include <sdpa/job_states.hpp>
-#include <sdpa/client/ClientApi.hpp>
+#include <sdpa/client/Client.hpp>
 #include <seda/IEvent.hpp>
 #include <sdpa/util/util.hpp>
 #include <sdpa/util/Config.hpp>
@@ -27,13 +27,11 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/tokenizer.hpp>
 
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
+#include <fhg/util/read_bool.hpp>
 
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
@@ -52,8 +50,6 @@ enum return_codes_t
   , UNKNOWN_ERROR         = 100
   };
 
-const int NMAXTRIALS = 10;
-
 void get_user_input(std::string const & prompt, std::string & result, std::istream & in = std::cin)
 {
   std::cout << prompt;
@@ -61,172 +57,6 @@ void get_user_input(std::string const & prompt, std::string & result, std::istre
   std::getline (in, tmp);
   if (tmp.size())
     result = tmp;
-}
-
-sdpa::status::code command_poll_and_wait ( const std::string &job_id
-                 , sdpa::client::ClientApi& api
-                 , boost::posix_time::time_duration poll_interval
-                 , sdpa::client::job_info_t & job_info
-                 )
-{
-  typedef boost::posix_time::ptime time_type;
-  time_type poll_start = boost::posix_time::microsec_clock::local_time();
-
-  std::cerr << "starting at: " << poll_start << std::endl;
-
-  std::cerr << "waiting for job to return..." << std::flush;
-
-  sdpa::status::code status (sdpa::status::UNKNOWN);
-  std::size_t fail_count(0);
-  for (; fail_count < 3 ;)
-  {
-    try
-    {
-      status = api.queryJob(job_id, job_info);
-      fail_count = 0; // reset counter
-    }
-    catch (const sdpa::client::ClientException &ce)
-    {
-      std::cout << "-" << std::flush;
-      ++fail_count;
-      continue;
-    }
-
-    if (sdpa::status::FINISHED == status)
-    {
-      break;
-    }
-    else if (sdpa::status::FAILED == status)
-    {
-      break;
-    }
-    else if (sdpa::status::CANCELED == status)
-    {
-      std::cerr << "canceled!" << std::endl;
-      break;
-    }
-    else
-    {
-      boost::this_thread::sleep(poll_interval);
-    }
-  }
-
-  time_type poll_end = boost::posix_time::microsec_clock::local_time();
-
-  std::cerr << "stopped at: " << poll_end << std::endl;
-  std::cerr << "execution time: " << (poll_end - poll_start) << std::endl;
-  return status;
-}
-
-
-sdpa::status::code command_subscribe_and_wait ( const std::string &job_id
-                               , sdpa::client::ClientApi& ptrCli
-                               , sdpa::client::job_info_t & job_info
-                               )
-{
-  typedef boost::posix_time::ptime time_type;
-  time_type poll_start = boost::posix_time::microsec_clock::local_time();
-
-  std::cerr << "starting at: " << poll_start << std::endl;
-
-  std::cerr << "waiting for job to return..." << std::flush;
-
-  bool bSubscribed = false;
-  sdpa::status::code status (sdpa::status::UNKNOWN);
-  int nTrials = 0;
-
-  do
-  {
-	do
-	{
-		try
-		{
-			ptrCli.subscribe(job_id);
-			bSubscribed = true;
-		}
-		catch(...)
-		{
-			bSubscribed = false;
-		}
-
-		if(bSubscribed)
-			break;
-
-		nTrials++;
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
-
-	}while(nTrials<NMAXTRIALS);
-
-	if(bSubscribed)
-	{
-		LOG(INFO, "The client successfully subscribed to the orchestrator for the job "<<job_id);
-		nTrials = 0;
-	}
-	else
-	{
-		LOG(INFO, "Could not connect to the orchestrator. Giving-up, now!");
-		return status;
-	}
-
-    try
-    {
-      seda::IEvent::Ptr reply( ptrCli.waitForNotification(0) );
-
-      // check event type
-      if (dynamic_cast<sdpa::events::JobFinishedEvent*>(reply.get()))
-      {
-        status = sdpa::status::FINISHED;
-      }
-      else if ( sdpa::events::JobFailedEvent *jfe
-              = dynamic_cast<sdpa::events::JobFailedEvent*>(reply.get())
-              )
-      {
-        status = sdpa::status::FAILED;
-        job_info.error_code = jfe->error_code();
-        job_info.error_message = jfe->error_message();
-      }
-      else if (dynamic_cast<sdpa::events::CancelJobAckEvent*>(reply.get()))
-      {
-        status = sdpa::status::CANCELED;
-      }
-      else if ( sdpa::events::ErrorEvent *err
-              = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get())
-              )
-      {
-        std::cerr<< "got error event: reason := "
-          + err->reason()
-          + " code := "
-          + boost::lexical_cast<std::string>(err->error_code())<<std::endl;
-      }
-      else
-      {
-        LOG(WARN, "unexpected reply: " << (reply ? reply->str() : "null"));
-      }
-    }
-    catch (const sdpa::client::Timedout &)
-    {
-      LOG(WARN, "timeout expired!");
-    }
-  } while(status == sdpa::status::UNKNOWN);
-
-  time_type poll_end = boost::posix_time::microsec_clock::local_time();
-
-  std::cerr << "stopped at: " << poll_end << std::endl;
-  std::cerr << "execution time: " << (poll_end - poll_start) << std::endl;
-
-  return status;
-}
-
-sdpa::status::code command_wait ( const std::string &job_id
-                 , sdpa::client::ClientApi& api
-                 , boost::posix_time::time_duration poll_interval
-                 , sdpa::client::job_info_t & job_info
-                 )
-{
-  if(poll_interval.total_milliseconds())
-    return command_poll_and_wait(job_id, api, poll_interval, job_info);
-  else
-    return command_subscribe_and_wait(job_id, api, job_info);
 }
 
 bool file_exists(const std::string &path)
@@ -239,17 +69,66 @@ bool file_exists(const std::string &path)
         return false;
 }
 
+namespace
+{
+  sdpa::status::code wait_for_terminal_state ( sdpa::client::Client& api
+                                             , const std::string job_id
+                                             , const bool do_polling
+                                             , const std::string app_name
+                                             )
+  {
+    const boost::posix_time::ptime poll_start
+      (boost::posix_time::microsec_clock::local_time());
+
+    std::cerr << "starting at: " << poll_start << std::endl;
+    std::cerr << "waiting for job to return..." << std::flush;
+
+    sdpa::client::job_info_t job_info;
+    const sdpa::status::code status
+      ( do_polling
+      ? api.wait_for_terminal_state_polling (job_id, job_info)
+      : api.wait_for_terminal_state (job_id, job_info)
+      );
+
+    const boost::posix_time::ptime poll_end
+      (boost::posix_time::microsec_clock::local_time());
+
+    std::cerr << "stopped at: " << poll_end << std::endl;
+    std::cerr << "execution time: " << (poll_end - poll_start) << std::endl;
+
+    if (sdpa::status::FAILED == status)
+    {
+      std::cerr << "failed: "
+                << "error-code"
+                << " := "
+                << fhg::error::show(job_info.error_code)
+                << " (" << job_info.error_code << ")"
+                << std::endl
+                << "error-message := " << job_info.error_message
+                << std::endl
+        ;
+    }
+
+    std::cerr << "retrieve the results with:" << std::endl;
+    std::cerr << "\t" << app_name << " results " << job_id << std::endl;
+    std::cerr << "delete the job with:" << std::endl;
+    std::cerr << "\t" << app_name << " delete " << job_id << std::endl;
+
+    return status;
+  }
+}
+
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
   namespace su = sdpa::util;
 
   std::string kvs_url (fhg::util::getenv("KVS_URL", "localhost:2439"));
 
-  sdpa::client::config_t cfg = sdpa::client::ClientApi::config();
+  sdpa::client::config_t cfg = sdpa::client::Client::config();
   cfg.tool_opts().add_options()
     ("output,o", su::po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
-    ("poll-interval,t", su::po::value<int>()->default_value(100), "sets the poll interval")
+    ("polling", su::po::value<std::string>()->default_value ("true"), "use polling when waiting for job completion")
     ("force,f", "force the operation")
     ("make-config", "create a basic config file")
     ("kvs,k", su::po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
@@ -476,13 +355,7 @@ int main (int argc, char **argv) {
     LOG(INFO, fhg::project_summary() << " (" << fhg::project_version() << ")");
     LOG(INFO, "***************************************************");
 
-    std::string client_api_name ("sdpac-");
-    {
-      client_api_name +=
-        boost::uuids::to_string (boost::uuids::random_generator()());
-    }
-
-    sdpa::client::ClientApi api (cfg, client_api_name);
+    sdpa::client::Client api (cfg);
 
     if (command == "submit")
     {
@@ -506,32 +379,7 @@ int main (int argc, char **argv) {
 
       if (cfg.is_set("wait"))
       {
-        const int poll_interval = cfg.get<int>("poll-interval");
-        sdpa::client::job_info_t job_info;
-        sdpa::status::code status = command_wait( job_id
-                                    , api
-                                    , boost::posix_time::milliseconds(poll_interval)
-                                    , job_info
-                                    );
-        if (sdpa::status::FAILED == status)
-        {
-          std::cerr << "failed: "
-                    << "error-code"
-                    << " := "
-                    << fhg::error::show(job_info.error_code)
-                    << " (" << job_info.error_code << ")"
-                    << std::endl
-                    << "error-message := " << job_info.error_message
-                    << std::endl
-            ;
-        }
-
-        std::cerr << "retrieve the results with:" << std::endl;
-        std::cerr << "\t" << argv[0] << " results " << job_id << std::endl;
-        std::cerr << "delete the job with:" << std::endl;
-        std::cerr << "\t" << argv[0] << " delete " << job_id << std::endl;
-
-        return status;
+        return wait_for_terminal_state (api, job_id, fhg::util::read_bool (cfg.get<std::string> ("polling")), argv[0]);
       }
     }
     else if (command == "wait")
@@ -542,34 +390,7 @@ int main (int argc, char **argv) {
         return JOB_ID_MISSING;
       }
 
-      const std::string job_id (args.front());
-      const int poll_interval = cfg.get<int>("poll-interval");
-      sdpa::client::job_info_t job_info;
-
-      sdpa::status::code status = command_wait( job_id
-                               , api
-                               , boost::posix_time::milliseconds(poll_interval)
-                               , job_info
-                               );
-      if (sdpa::status::FAILED == status)
-      {
-        std::cerr << "failed: "
-                  << "error-code"
-                  << " := "
-                  << fhg::error::show(job_info.error_code)
-                  << " (" << job_info.error_code << ")"
-                  << std::endl
-                  << "error-message := " << job_info.error_message
-                  << std::endl
-          ;
-      }
-
-      std::cerr << "retrieve the results with:" << std::endl;
-      std::cerr << "\t" << argv[0] << " results " << job_id << std::endl;
-      std::cerr << "delete the job with:" << std::endl;
-      std::cerr << "\t" << argv[0] << " delete " << job_id << std::endl;
-
-      return status;
+      return wait_for_terminal_state (api, args.front(), fhg::util::read_bool (cfg.get<std::string> ("polling")), argv[0]);
     }
     else if (command == "cancel")
     {
@@ -641,41 +462,6 @@ int main (int argc, char **argv) {
         return JOB_ID_MISSING;
       }
       api.deleteJob(args.front());
-    }
-    else if (command == "wait")
-    {
-      if (args.empty())
-      {
-        std::cerr << "E: job-id required!" << std::endl;
-        return JOB_ID_MISSING;
-      }
-      const std::string &job_id(args.front());
-      const int poll_interval = cfg.get<int>("wait");
-      sdpa::client::job_info_t job_info;
-      int status = command_wait( job_id
-                               , api
-                               , boost::posix_time::milliseconds(poll_interval)
-                               , job_info
-                               );
-
-      if (status == sdpa::status::FAILED)
-      {
-        std::cerr << "error-code"
-                  << " := "
-                  << fhg::error::show(job_info.error_code)
-                  << " (" << job_info.error_code << ")"
-                  << std::endl
-                  << "error-message := " << job_info.error_message
-                  << std::endl
-          ;
-      }
-
-      std::cerr << "retrieve the results with:" << std::endl;
-      std::cerr << "\t" << argv[0] << " results " << job_id << std::endl;
-      std::cerr << "delete the job with:" << std::endl;
-      std::cerr << "\t" << argv[0] << " delete " << job_id << std::endl;
-
-      return status;
     }
     else
     {

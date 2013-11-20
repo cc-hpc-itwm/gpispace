@@ -23,7 +23,7 @@ namespace sdpa
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
-      : super (next_stage)
+      : seda::ForwardStrategy (next_stage)
       , m_name (peer_name)
       , m_host (host)
       , m_port (port)
@@ -36,44 +36,42 @@ namespace sdpa
 
       assert (e);
 
+      sdpa::events::SDPAEvent* sdpa_event
+        (dynamic_cast<sdpa::events::SDPAEvent*>(e.get()));
+
+      assert (sdpa_event);
+
       // convert event to fhg::com::message_t
-      if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
+
+      DLOG(TRACE, "sending event: " << sdpa_event->str());
+
+      fhg::com::message_t msg;
+      msg.header.dst = m_peer->resolve_name (sdpa_event->to());
+      msg.header.src = m_peer->address();
+
+      const std::string encoded_evt (codec.encode(sdpa_event));
+      msg.data.assign (encoded_evt.begin(), encoded_evt.end());
+      msg.header.length = msg.data.size();
+
+      try
       {
-          DLOG(TRACE, "sending event: " << sdpa_event->str());
-
-          fhg::com::message_t msg;
-          msg.header.dst = m_peer->resolve_name (sdpa_event->to());
-          msg.header.src = m_peer->address();
-
-          const std::string encoded_evt (codec.encode(sdpa_event));
-          msg.data.assign (encoded_evt.begin(), encoded_evt.end());
-          msg.header.length = msg.data.size();
-
-          try
-          {
-            m_peer->async_send (&msg, boost::bind (&self::handle_send, this, e, _1));
-          }
-          catch (std::exception const & ex)
-          {
-            sdpa::events::ErrorEvent::Ptr ptrErrEvt
-              (new sdpa::events::ErrorEvent( sdpa_event->to()
-                                           , sdpa_event->from()
-                                           , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                           , sdpa_event->str())
-              );
-            if (ptrErrEvt)
-              super::perform (ptrErrEvt);
-          }
+        m_peer->async_send (&msg, boost::bind (&NetworkStrategy::handle_send, this, e, _1));
       }
-      else
+      catch (std::exception const & ex)
       {
-        LOG(ERROR, "cannot handle non-SDPAEvent events: " << e->str());
+        sdpa::events::ErrorEvent::Ptr ptrErrEvt
+          (new sdpa::events::ErrorEvent( sdpa_event->to()
+                                       , sdpa_event->from()
+                                       , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                       , sdpa_event->str())
+          );
+        seda::ForwardStrategy::perform (ptrErrEvt);
       }
     }
 
     void NetworkStrategy::onStageStart (std::string const &s)
     {
-      super::onStageStart (s);
+      seda::ForwardStrategy::onStageStart (s);
 
       m_shutting_down = false;
 
@@ -85,7 +83,7 @@ namespace sdpa
       m_thread.reset (new boost::thread(boost::bind(&fhg::com::peer_t::run, m_peer)));
       m_peer->set_kvs_error_handler (kvs_error_handler);
       m_peer->start ();
-      m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
+      m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
     }
 
     void NetworkStrategy::onStageStop (std::string const & s)
@@ -96,7 +94,7 @@ namespace sdpa
       m_thread->join();
       m_peer.reset();
 
-      super::onStageStop (s);
+      seda::ForwardStrategy::onStageStop (s);
     }
 
     void NetworkStrategy::handle_send ( seda::IEvent::Ptr const &e
@@ -105,27 +103,28 @@ namespace sdpa
     {
       if (ec)
       {
-        if (sdpa::events::SDPAEvent *sdpa_event = dynamic_cast<sdpa::events::SDPAEvent*>(e.get()))
-        {
-          DMLOG ( WARN
-                , "send failed:"
-                << " ec := " << ec
-                << " msg := " << ec.message ()
-                << " event := " << e->str()
-                << " to := " << sdpa_event->to ()
-                << " from := " << sdpa_event->from ()
-                );
+        sdpa::events::SDPAEvent* sdpa_event
+          (dynamic_cast<sdpa::events::SDPAEvent*>(e.get()));
 
-          //sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
-          sdpa::events::ErrorEvent::Ptr ptrErrEvt
-            (new sdpa::events::ErrorEvent( sdpa_event->to()
-                                         , sdpa_event->from()
-                                         , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                         , sdpa_event->str())
-            );
-          if (ptrErrEvt)
-            super::perform (ptrErrEvt);
-        }
+        assert (sdpa_event);
+
+        DMLOG ( WARN
+              , "send failed:"
+              << " ec := " << ec
+              << " msg := " << ec.message ()
+              << " event := " << sdpa_event->str()
+              << " to := " << sdpa_event->to ()
+              << " from := " << sdpa_event->from ()
+              );
+
+        //sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
+        sdpa::events::ErrorEvent::Ptr ptrErrEvt
+          (new sdpa::events::ErrorEvent( sdpa_event->to()
+                                       , sdpa_event->from()
+                                       , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                       , sdpa_event->str())
+          );
+        seda::ForwardStrategy::perform (ptrErrEvt);
       }
     }
 
@@ -141,14 +140,14 @@ namespace sdpa
           sdpa::events::SDPAEvent::Ptr evt
             (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
           DLOG(TRACE, "received event: " << evt->str());
-          super::perform (evt);
+          seda::ForwardStrategy::perform (evt);
         }
         catch (std::exception const & ex)
         {
           LOG(WARN, "could not handle incoming message: " << ex.what());
         }
 
-        m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
+        m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
       }
       else if (! m_shutting_down)
       {
@@ -162,12 +161,8 @@ namespace sdpa
                                                , boost::lexical_cast<std::string>(ec)
                                                )
                  );
-          super::perform (error);
-          m_peer->async_recv (&m_message, boost::bind(&self::handle_recv, this, _1));
-        }
-        else
-        {
-                LOG(TRACE, m_peer->name() << " is shutting down");
+          seda::ForwardStrategy::perform (error);
+          m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
         }
       }
     }
