@@ -235,18 +235,14 @@ namespace utils
       return c.queryJob (id);
     }
 
-    template<typename Duration>
-      void wait_for_job_termination ( sdpa::client::Client& c
-                                    , const sdpa::job_id_t& id
-                                    , Duration sleep_duration
-                                    )
+    void wait_for_job_termination ( sdpa::client::Client& c
+                                  , const sdpa::job_id_t& id
+                                  )
     {
       LOG (DEBUG, "Waiting for termination of job " << id);
 
-      while (!sdpa::status::is_terminal (query_job_status (c, id)))
-      {
-        boost::this_thread::sleep (sleep_duration);
-      }
+      sdpa::client::job_info_t job_info;
+      c.wait_for_terminal_state_polling (id, job_info);
     }
 
     sdpa::client::result_t retrieve_job_results
@@ -301,7 +297,7 @@ namespace utils
       void wait_for_termination_impl
         (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
-        wait_for_job_termination (c, job_id_user, boost::posix_time::seconds (1));
+        wait_for_job_termination (c, job_id_user);
         retrieve_job_results (c, job_id_user);
         delete_job (c, job_id_user);
       }
