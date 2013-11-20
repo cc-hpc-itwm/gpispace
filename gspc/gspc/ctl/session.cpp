@@ -223,6 +223,8 @@ namespace gspc
       return 0;
     }
 
+    static void s_ignore_signal (int) {}
+
     int session_t::run (session_info_t & si) const
     {
       if (mkdir (m_dir.c_str (), 0700) < 0)
@@ -289,6 +291,9 @@ namespace gspc
                , getpid ()
                );
       }
+
+      signal (SIGTERM, s_ignore_signal);
+      signal (SIGINT, s_ignore_signal);
 
       pause ();
 
