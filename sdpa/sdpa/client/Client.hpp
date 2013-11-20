@@ -7,9 +7,7 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/thread.hpp> // condition variables
 
-#if defined(HAVE_CONFIG_H)
 #include <sdpa/sdpa-config.hpp>
-#endif
 
 #include <sdpa/memory.hpp>
 #include <sdpa/common.hpp>
