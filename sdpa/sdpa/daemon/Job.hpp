@@ -220,10 +220,8 @@ namespace sdpa {
 
       std::string print_info();
 
-    protected:
-      mutex_type mtx_;
-
     private:
+      mutex_type mtx_;
       sdpa::job_id_t id_;
       sdpa::job_desc_t desc_;
       sdpa::job_id_t parent_;
