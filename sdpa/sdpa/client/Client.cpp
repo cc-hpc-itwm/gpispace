@@ -44,7 +44,7 @@ namespace
 }
 
 Client::Client (const config_t& config)
-  : _name ("sdpac-" + boost::uuids::to_string (boost::uuids::random_generator()()))
+  : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
   , timeout_ ( config.is_set("network.timeout")
              ? config.get<unsigned int>("network.timeout")
              : 5000U
