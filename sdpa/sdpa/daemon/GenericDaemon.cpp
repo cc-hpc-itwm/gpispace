@@ -1228,21 +1228,21 @@ void GenericDaemon::pause(const job_id_t& jobId)
   // else, if it's a master job notify the master that the job stalled
 
   try {
-         Job::ptr_t pJob(findJob(jobId));
-         pJob->Pause(NULL);
-         if(!pJob->isMasterJob()) {
-             try {
-                 Job::ptr_t pMasterJob(findJob(pJob->parent()));
-                 pMasterJob->Pause(this);
+      Job::ptr_t pJob(findJob(jobId));
+      pJob->Pause(NULL);
+      if(!pJob->isMasterJob()) {
+         try {
+             Job::ptr_t pMasterJob(findJob(pJob->parent()));
+             pMasterJob->Pause(this);
 
-                 // notify the master about the status of the job -> do this on action
-             }
-             catch(JobNotFoundException const &) {
-                 std::string strErr("Could not find the job  ");
-                 strErr+=jobId.str();
-                 DMLOG (ERROR, strErr);
-             }
+             // notify the master about the status of the job -> do this on action
          }
+         catch(JobNotFoundException const &) {
+             std::string strErr("Could not find the job  ");
+             strErr+=jobId.str();
+             DMLOG (ERROR, strErr);
+         }
+      }
    }
    catch(JobNotFoundException const &)
    {
@@ -1262,21 +1262,21 @@ void GenericDaemon::resume(const job_id_t& jobId)
   // else, if it's a master job notify the master that the job stalled
 
   try {
-         Job::ptr_t pJob(findJob(jobId));
-         pJob->Resume(NULL);
-         if(!pJob->isMasterJob()) {
-             try {
-                 Job::ptr_t pMasterJob(findJob(pJob->parent()));
-                 pMasterJob->Resume(this);
+      Job::ptr_t pJob(findJob(jobId));
+      pJob->Resume(NULL);
+      if(!pJob->isMasterJob()) {
+         try {
+             Job::ptr_t pMasterJob(findJob(pJob->parent()));
+             pMasterJob->Resume(this);
 
-                 // notify the master about the status of the job -> do this on action
-             }
-             catch(JobNotFoundException const &) {
-                 std::string strErr("Could not find the job  ");
-                 strErr+=jobId.str();
-                 DMLOG (ERROR, strErr);
-             }
+             // notify the master about the status of the job -> do this on action
          }
+         catch(JobNotFoundException const &) {
+             std::string strErr("Could not find the job  ");
+             strErr+=jobId.str();
+             DMLOG (ERROR, strErr);
+         }
+      }
    }
    catch(JobNotFoundException const &)
    {
