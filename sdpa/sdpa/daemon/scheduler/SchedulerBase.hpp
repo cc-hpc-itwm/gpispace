@@ -42,7 +42,7 @@ namespace sdpa {
       virtual ~SchedulerBase();
 
       virtual void enqueueJob(const sdpa::job_id_t&);
-      virtual void schedule_remotely(const sdpa::job_id_t&);
+      virtual void schedule(const sdpa::job_id_t&);
       void delete_job(const sdpa::job_id_t&);
 
       void schedule_first(const sdpa::job_id_t&);

@@ -17,7 +17,7 @@ namespace sdpa {
     void JobFSM_::action_reschedule_job(const MSMRescheduleEvent& evt)
     {
       DLOG(TRACE, "Reschedule the job "<<evt.jobId());
-      evt.ptrScheduler()->schedule_remotely(evt.jobId());
+      evt.ptrScheduler()->schedule(evt.jobId());
     }
 
     void JobFSM_::action_job_stalled(const MSMStalledEvent& evt)

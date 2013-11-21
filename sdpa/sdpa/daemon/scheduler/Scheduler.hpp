@@ -60,7 +60,7 @@ namespace daemon {
     virtual void getWorkerCapabilities(const sdpa::worker_id_t&, sdpa::capabilities_set_t& cpbset) = 0;
 
     virtual void enqueueJob(const sdpa::job_id_t& jobId) = 0;
-    virtual void schedule_remotely(const sdpa::job_id_t &job) = 0;
+    virtual void schedule(const sdpa::job_id_t &job) = 0;
 
     virtual void rescheduleWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job) = 0;
     virtual void rescheduleJob(const sdpa::job_id_t&) = 0;

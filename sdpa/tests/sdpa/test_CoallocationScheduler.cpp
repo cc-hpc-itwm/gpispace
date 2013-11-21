@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   m_pAgent->addJob(jobId1, pJob1, jobReqs1);
 
   LOG(DEBUG, "Schedule the job "<<jobId1);
-  ptrScheduler->schedule_remotely(jobId1);
+  ptrScheduler->schedule(jobId1);
 
   ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
 
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
   {
-      ptrScheduler->schedule_remotely(jobId);
+      ptrScheduler->schedule(jobId);
   }
 
   ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
@@ -320,7 +320,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
   {
-      ptrScheduler->schedule_remotely(jobId);
+      ptrScheduler->schedule(jobId);
   }
 
   ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
   {
-    ptrScheduler->schedule_remotely(jobId);
+    ptrScheduler->schedule(jobId);
   }
 
   ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
@@ -477,9 +477,9 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   job_requirements_t jobReqs2(requirement_list_t(1, requirement_t(WORKER_CPBS[2], true)), schedule_data(4, 100));
   m_pAgent->addJob(jobId2, pJob2, jobReqs2);
 
-  ptrScheduler->schedule_remotely(jobId0);
-  ptrScheduler->schedule_remotely(jobId1);
-  ptrScheduler->schedule_remotely(jobId2);
+  ptrScheduler->schedule(jobId0);
+  ptrScheduler->schedule(jobId1);
+  ptrScheduler->schedule(jobId2);
 
   ptrScheduler->assignJobsToWorkers();
 
@@ -516,7 +516,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   job_requirements_t jobReqs4(requirement_list_t(1, requirement_t(WORKER_CPBS[0], true)), schedule_data(2, 100));
   m_pAgent->addJob(jobId4, pJob4, jobReqs4);
 
-  ptrScheduler->schedule_remotely(jobId4);
+  ptrScheduler->schedule(jobId4);
 
   ptrScheduler->assignJobsToWorkers();
   sdpa::worker_id_list_t listFreeWorkers(ptrScheduler->getListAllocatedWorkers(jobId4));
@@ -580,7 +580,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
   {
-    ptrScheduler->schedule_remotely(jobId);
+    ptrScheduler->schedule(jobId);
   }
 
   ptrScheduler->assignJobsToWorkers();
@@ -605,7 +605,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   LOG(DEBUG, "Reschedule the jobs assigned to "<<lastWorkerId<<"!");
   ptrScheduler->rescheduleWorkerJob(lastWorkerId, jobId);
 
-  ptrScheduler->schedule_remotely(jobId);
+  ptrScheduler->schedule(jobId);
   BOOST_CHECK (ptrScheduler->schedulingAllowed());
 
   LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");

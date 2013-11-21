@@ -163,7 +163,7 @@ void SchedulerBase::delete_job (sdpa::job_id_t const & job)
     ptr_worker_man_->deleteJob(job);
 }
 
-void SchedulerBase::schedule_remotely(const sdpa::job_id_t& jobId)
+void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 {
   try {
       const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
@@ -294,7 +294,7 @@ void SchedulerBase::run()
       sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait(m_timeout);
 
       if( numberOfWorkers()>0 ) {
-          schedule_remotely(jobId);
+          schedule(jobId);
       }
       else {
           pending_jobs_queue_.push(jobId);
