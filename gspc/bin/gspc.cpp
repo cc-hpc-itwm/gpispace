@@ -16,6 +16,7 @@
 #include <gspc/rif.hpp>
 #include <gspc/ctl.hpp>
 
+#include <gspc/ctl/exit_code.hpp>
 #include <gspc/ctl/config_cmd.hpp>
 #include <gspc/ctl/log_cmd.hpp>
 
@@ -162,6 +163,17 @@ int main (int argc, char *argv [], char *envp [])
         return EX_USAGE;
       }
     }
+    else if (arg == "--list-exit-codes")
+    {
+      ++i;
+      std::cout << EXIT_SUCCESS << ": " << gspc::ctl::strerror (EXIT_SUCCESS) << std::endl;
+      std::cout << EXIT_FAILURE << ": " << gspc::ctl::strerror (EXIT_FAILURE) << std::endl;
+      for (int i = EX__BASE ; i < EX__MAX ; ++i)
+      {
+        std::cout << i << ": " << gspc::ctl::strerror (i) << std::endl;
+      }
+      return EX_OK;
+    }
     else
     {
       ++i;
@@ -259,6 +271,8 @@ void long_usage (int lvl)
     << "   --version              print long version information"   << std::endl
     << "   --dumpversion          print short version information"  << std::endl
     << "   --revision             print revision  information"      << std::endl
+    << "   --list-exit-codes      list exit code values and their"  << std::endl
+    << "                          desription"                       << std::endl
     << ""                                                           << std::endl
     << "   --prefix-path          print the installation root"      << std::endl
     << "   --etc-path             print the etc path"               << std::endl
