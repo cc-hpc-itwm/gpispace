@@ -77,12 +77,10 @@ fhg::com::message_t Client::message_for_event
 {
   static sdpa::events::Codec codec;
 
-  fhg::com::message_t msg;
+  const std::string encoded_evt (codec.encode (event));
+  fhg::com::message_t msg (encoded_evt.begin(), encoded_evt.end());
   msg.header.dst = m_peer.resolve_name (event->to());
   msg.header.src = m_peer.address();
-
-  const std::string encoded_evt (codec.encode (event));
-  msg.data.assign (encoded_evt.begin(), encoded_evt.end());
   msg.header.length = msg.data.size();
 
   return msg;
