@@ -40,7 +40,7 @@ namespace fhg
                   );
 
           setSizePolicy (sizePolicy().horizontalPolicy(), QSizePolicy::Preferred);
-          setFocusPolicy (Qt::ClickFocus);
+          setFocusPolicy (Qt::WheelFocus); // |= StrongFocus | TabFocus | ClickFocus
         }
 
         void delegating_header_view::setModel (QAbstractItemModel* m)
@@ -156,6 +156,31 @@ namespace fhg
           }
 
           QHeaderView::contextMenuEvent (event);
+        }
+
+        void delegating_header_view::wheelEvent (QWheelEvent* event)
+        {
+          const int section (logicalIndexAt (event->x()));
+          if (section != -1 && delegate_for_section (section))
+          {
+            delegate_for_section (section)->wheel_event
+              (section_index (this, section), event);
+            return;
+          }
+
+          QHeaderView::wheelEvent (event);
+        }
+
+        bool delegating_header_view::event (QEvent* event)
+        {
+          //! \note These are enabled somewhere down the inheritance tree
+          switch (event->type())
+          {
+          case QEvent::Wheel:
+            wheelEvent (static_cast<QWheelEvent*> (event));
+            return event->isAccepted();
+          }
+          return QHeaderView::event (event);
         }
 
         void delegating_header_view::sections_inserted

@@ -36,6 +36,8 @@ namespace fhg
           virtual QSize sizeHint() const;
           virtual void keyPressEvent (QKeyEvent*);
           virtual void contextMenuEvent (QContextMenuEvent*);
+          virtual void wheelEvent (QWheelEvent*);
+          virtual bool event (QEvent*);
 
         private slots:
           void sections_inserted (const QModelIndex&, int, int);

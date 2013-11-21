@@ -29,6 +29,7 @@ namespace fhg
           virtual void update_editor (section_index, QWidget* editor) = 0;
           virtual bool can_edit_section (section_index) const = 0;
           virtual QMenu* menu_for_section (section_index) const = 0;
+          virtual void wheel_event (section_index, QWheelEvent*) = 0;
         };
       }
     }
