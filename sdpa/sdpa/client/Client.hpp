@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <string>
 
+#include <boost/optional.hpp>
 #include <boost/thread.hpp> // condition variables
 
 namespace sdpa
@@ -31,7 +32,11 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      Client (const sdpa::util::NewConfig& cfg);
+      typedef unsigned long long timeout_t;
+
+      Client ( boost::optional<timeout_t> timeout
+             , const sdpa::util::NewConfig& cfg
+             );
       ~Client();
 
       static sdpa::util::NewConfig config()
@@ -62,8 +67,6 @@ namespace sdpa
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
 
     private:
-      typedef unsigned long long timeout_t;
-
       sdpa::events::SDPAEvent::Ptr wait_for_reply (bool use_timeout);
 
       std::string _name;

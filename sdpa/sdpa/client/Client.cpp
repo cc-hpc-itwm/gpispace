@@ -43,12 +43,11 @@ namespace
   }
 }
 
-Client::Client (const sdpa::util::NewConfig& config)
+Client::Client ( boost::optional<timeout_t> timeout
+               , const sdpa::util::NewConfig& config
+               )
   : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
-  , timeout_ ( config.is_set("network.timeout")
-             ? config.get<unsigned int>("network.timeout")
-             : 5000U
-             )
+  , timeout_ (timeout.get_value_or (5000U))
   , orchestrator_ ( config.is_set("orchestrator")
                   ? config.get<std::string>("orchestrator")
                   : throw ClientException ("no orchestrator specified!")

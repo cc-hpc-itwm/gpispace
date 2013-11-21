@@ -287,7 +287,12 @@ namespace utils
       sdpa::util::NewConfig config (sdpa::client::Client::config());
       config.parse_command_line (command_line);
 
-      sdpa::client::Client c (config);
+      sdpa::client::Client c ( config.is_set("network.timeout")
+                             ? boost::optional<sdpa::client::Client::timeout_t>
+                               (config.get<unsigned int>("network.timeout"))
+                             : boost::none
+                             , config
+                             );
 
       function (c);
     }

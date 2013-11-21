@@ -278,7 +278,12 @@ int main (int argc, char **argv) {
     LOG(INFO, fhg::project_summary() << " (" << fhg::project_version() << ")");
     LOG(INFO, "***************************************************");
 
-    sdpa::client::Client api (cfg);
+    sdpa::client::Client api ( cfg.is_set("network.timeout")
+                             ? boost::optional<sdpa::client::Client::timeout_t>
+                               (cfg.get<unsigned int>("network.timeout"))
+                             : boost::none
+                             , cfg
+                             );
 
     if (command == "submit")
     {
