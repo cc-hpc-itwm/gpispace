@@ -20,11 +20,11 @@
 #include <sdpa/client/Client.hpp>
 #include <seda/IEvent.hpp>
 #include <sdpa/util/util.hpp>
-#include <sdpa/util/Config.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <fhgcom/kvs/kvsc.hpp>
@@ -106,23 +106,255 @@ namespace
 
     return status;
   }
+
+  namespace po = boost::program_options;
+
+  class NewConfig
+  {
+  public:
+    NewConfig();
+
+    void parse_command_line(int argc, char **argv);
+    void parse_command_line(const std::vector<std::string> &);
+
+    void parse_config_file();
+    void parse_config_file(const std::string &cfg_file_path);
+    void parse_config_file(std::istream &stream, const std::string &cfg_file);
+
+    void parse_environment();
+    void parse_environment(const std::string &prefix);
+
+    void notify(); // notify that parsing is finished
+
+    po::options_description &specific_opts() { return specific_opts_; }
+    po::options_description &tool_opts() { return tool_opts_; }
+    po::options_description &tool_hidden_opts() { return tool_hidden_opts_; }
+    po::positional_options_description &positional_opts() { return positional_opts_; }
+    po::options_description& network_opts() { return network_opts_;} // network related options
+
+    std::ostream &printHelp(std::ostream &) const;
+    std::ostream &printModuleHelp(std::ostream &os) const;
+    std::ostream &printModuleHelp(std::ostream &os, const std::string &mod) const;
+
+    const std::string &get(const std::string &name) const { return opts_[name].as<std::string>(); }
+    template <typename T> const T &get(const std::string &name) const { return opts_[name].as<T>(); }
+    template <typename T> const T &operator[](const std::string &name) const { return get<T>(name); }
+
+    bool is_set(const std::string &name) const { return (opts_.count(name) > 0); }
+  private:
+    std::string component_name_;
+    std::string env_prefix_;
+
+    po::options_description generic_opts_; // supported by all command line tools
+    po::options_description logging_opts_; // logging related options
+    po::options_description network_opts_; // network related options
+    po::options_description tool_opts_;    // additional command line options
+    po::options_description tool_hidden_opts_; // hidden command line options
+    po::options_description specific_opts_; // specific options to a component, feel free to modify them
+    po::positional_options_description positional_opts_; // positional parameters used for command line parsing
+
+    po::variables_map opts_;
+  };
+
+  NewConfig::NewConfig()
+    : component_name_("client")
+    , env_prefix_("SDPAC_")
+    , generic_opts_("Generic Options")
+    , logging_opts_("Logging configuration")
+    , network_opts_("Network Options")
+    , tool_opts_("Command-line tool options")
+    , tool_hidden_opts_("Command-line tool options (hidden)")
+    , specific_opts_(component_name_ + " specific options")
+  {
+    // fill in defaults
+    generic_opts_.add_options()
+      ("help,h", "show this help text")
+      ("help-module", po::value<std::string>()->implicit_value("help"),
+      "show the help for a specific module")
+      ("version,V", "print the version number")
+      ("dumpversion", "print the version number (short)")
+      ("verbose,v", po::value<int>()->implicit_value(1),
+      "verbosity level")
+      ("quiet,q", "be quiet")
+      ;
+    logging_opts_.add_options()
+      ("logging.file", po::value<std::string>(),
+      "redirect log output to this file")
+      ("logging.tostderr", "output to stderr")
+      ("logging.level", po::value<int>()->default_value(0),
+      "standard logging level")
+      ;
+    network_opts_.add_options()
+      ("network.timeout", po::value<unsigned int>(),
+      "maximum time to wait for a reply (in milliseconds)")
+      ("network.location", po::value< std::vector<std::string> >()->composing(),
+      "location information for a specific location (name:location)")
+      ;
+    specific_opts_.add_options()
+      ( "orchestrator"
+      , po::value<std::string>()->default_value ("orchestrator")
+      , "name of the orchestrator"
+      )
+      ( "config,C"
+      , po::value<std::string>()->default_value
+      (std::getenv ("HOME") + std::string ("/.sdpa/configs/sdpac.rc"))
+      , "path to the configuration file"
+      );
+  }
+
+  void NewConfig::parse_command_line(int argc, char **argv)
+  {
+    po::options_description desc;
+    desc.add(generic_opts_)
+      .add(logging_opts_)
+      .add(network_opts_)
+      .add(specific_opts_)
+      .add(tool_opts_)
+      .add(tool_hidden_opts_);
+
+    po::store(po::command_line_parser(argc, argv).options(desc)
+             .positional(positional_opts_)
+             .run()
+             , opts_);
+  }
+  void NewConfig::parse_command_line(const std::vector<std::string> &av)
+  {
+    po::options_description desc;
+    desc.add(generic_opts_)
+      .add(logging_opts_)
+      .add(network_opts_)
+      .add(specific_opts_)
+      .add(tool_opts_)
+      .add(tool_hidden_opts_);
+    po::store(po::command_line_parser(av).options(desc)
+             .positional(positional_opts_)
+             .run()
+             , opts_);
+  }
+
+  void NewConfig::parse_config_file()
+  {
+    if (is_set("config"))
+    {
+      const std::string &cfg_file = get("config");
+      parse_config_file(cfg_file);
+    }
+  }
+
+  void NewConfig::parse_config_file(const std::string &cfg_file)
+  {
+    if (is_set("verbose"))
+    {
+      std::cerr << "I: using config file: " << cfg_file << std::endl;
+    }
+    std::ifstream cfg_s(cfg_file.c_str());
+    parse_config_file(cfg_s, cfg_file);
+  }
+
+  void NewConfig::parse_config_file(std::istream &stream, const std::string &cfg_file)
+  {
+    if (! stream)
+    {
+      throw std::runtime_error ("could not read config file: " + cfg_file);
+    }
+    else
+    {
+      po::options_description desc;
+      desc.add(logging_opts_)
+        .add(network_opts_)
+        .add(specific_opts_);
+      po::store(po::parse_config_file(stream, desc), opts_);
+    }
+  }
+
+  struct environment_variable_to_option
+  {
+  public:
+    explicit
+    environment_variable_to_option(const std::string prefix)
+      : p(prefix) {}
+
+    std::string operator()(const std::string &var)
+    {
+      if (var.substr(0, p.size()) == p)
+      {
+        std::string option = var.substr(p.size());
+        std::transform(option.begin(), option.end(), option.begin(), tolower);
+        for (std::string::iterator c(option.begin()); c != option.end(); ++c)
+        {
+          if (*c == '_') *c = '.';
+        }
+        return option;
+      }
+      return "";
+    }
+
+  private:
+    std::string p;
+  };
+
+  void NewConfig::parse_environment()
+  {
+    parse_environment(env_prefix_);
+  }
+  void NewConfig::parse_environment(const std::string &prefix)
+  {
+    po::options_description desc;
+    desc.add(logging_opts_)
+      .add(network_opts_)
+      .add(specific_opts_);
+    po::store(po::parse_environment(desc, environment_variable_to_option(prefix)) , opts_);
+  }
+
+  void NewConfig::notify()
+  {
+    po::notify(opts_);
+  }
+
+  std::ostream &NewConfig::printHelp(std::ostream &os) const
+  {
+    po::options_description desc("Allowed Options");
+    desc.add(generic_opts_).add(tool_opts_);
+    os << desc;
+    return os;
+  }
+
+  std::ostream &NewConfig::printModuleHelp(std::ostream &os) const
+  {
+    return printModuleHelp(os, get<std::string>("help-module"));
+  }
+
+  std::ostream &NewConfig::printModuleHelp(std::ostream &os, const std::string &mod) const
+  {
+    if      (mod == "network")       os << network_opts_;
+    else if (mod == "logging")       os << logging_opts_;
+    else if (mod == component_name_) os << specific_opts_;
+    else
+    {
+      os << "Available modules are:" << std::endl
+         << "\t" << "network" << std::endl
+         << "\t" << "logging" << std::endl
+         << "\t" << component_name_ << std::endl
+         << "use --help-module=module to get more information" << std::endl;
+    }
+    return os;
+  }
 }
 
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
-  namespace su = sdpa::util;
 
   std::string kvs_url (fhg::util::getenv("KVS_URL", "localhost:2439"));
 
-  sdpa::util::NewConfig cfg;
+  NewConfig cfg;
   cfg.tool_opts().add_options()
-    ("output,o", su::po::value<std::string>(), "path to output file")
+    ("output,o", po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
-    ("polling", su::po::value<std::string>()->default_value ("true"), "use polling when waiting for job completion")
+    ("polling", po::value<std::string>()->default_value ("true"), "use polling when waiting for job completion")
     ("force,f", "force the operation")
-    ("kvs,k", su::po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
+    ("kvs,k", po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
     ("revision", "Dump the revision identifier")
-    ("command", su::po::value<std::string>(),
+    ("command", po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
      "cancel: \tcancels a running job, arg must specify the job-id\n"
@@ -133,7 +365,7 @@ int main (int argc, char **argv) {
      )
     ;
   cfg.tool_hidden_opts().add_options()
-    ("arg", su::po::value<std::vector<std::string> >(),
+    ("arg", po::value<std::vector<std::string> >(),
      "arguments to the command")
     ;
   cfg.positional_opts().add("command", 1).add("arg", -1);
