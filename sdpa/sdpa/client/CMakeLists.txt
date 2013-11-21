@@ -9,10 +9,7 @@ set (srcs
 
 set (hdrs
   Client.hpp
-  ClientEvents.hpp
   exceptions.hpp
-  types.hpp
-  job_info.hpp
   )
 
 ADD_LIBRARY(sdpa-client ${hdrs} ${srcs})

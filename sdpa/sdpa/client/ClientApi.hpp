@@ -1,98 +1,15 @@
 #ifndef SDPA_CLIENT_CLIENT_API_HPP
-#define SDPA_CLIENT_CLIENT_API_HPP 1
+#define SDPA_CLIENT_CLIENT_API_HPP
 
-#include <sdpa/memory.hpp>
-#include <fhglog/fhglog.hpp>
 #include <sdpa/client/Client.hpp>
-#include <sdpa/job_states.hpp>
-#include <boost/utility.hpp>
 
-namespace sdpa { namespace client {
-  class ClientApi : boost::noncopyable {
-  public:
-    static config_t config()
-    {
-      return Client::config();
-    }
 
-    ClientApi ( const config_t &cfg
-              , const std::string &name_prefix="sdpac"
-              , const std::string &output_stage="sdpa.apps.client.out"
-              )
-      : pimpl (Client::create(cfg, name_prefix, output_stage))
-    {
-    }
-
-    ~ClientApi() {
-      try
-      {
-        pimpl->shutdown();
-      }
-      catch (std::exception &ex)
-      {
-        LOG(ERROR, "client->shutdown() failed!" << ex.what());
-      }
-      catch (...)
-      {
-        LOG(ERROR, "client->shutdown() failed due to an unknown reason!");
-      }
-    }
-
-    void subscribe(const job_id_t& jobId)
-        {
-        job_id_list_t listJobIds;
-        listJobIds.push_back(jobId);
-        pimpl->subscribe(listJobIds);
-        }
-
-    void subscribe(const job_id_list_t& listJobIds)
-        {
-        pimpl->subscribe(listJobIds);
-        }
-
-    //! \todo This API seems horribly broken: We expose implementation
-    //! details and pretty much can steal anything from the Client,
-    //! breaking its state machine. Also, we not only get events for
-    //! the subscribed job id, but any job.
-    seda::IEvent::Ptr  waitForNotification(const sdpa::client::Client::timeout_t& t = -1)
-        {
-                return pimpl->wait_for_reply(t);
-        }
-
-    job_id_t submitJob(const job_desc_t &desc) throw (ClientException)
-    {
-      return pimpl->submitJob(desc);
-    }
-
-    void cancelJob(const job_id_t &jid) throw (ClientException)
-    {
-      return pimpl->cancelJob(jid);
-    }
-
-    status::code queryJob(const job_id_t &jid) throw (ClientException)
-    {
-      return pimpl->queryJob(jid);
-    }
-
-    status::code queryJob(const job_id_t &jid, job_info_t & status)
-    {
-      return pimpl->queryJob(jid, status);
-    }
-
-    void deleteJob(const job_id_t &jid) throw (ClientException)
-    {
-      return pimpl->deleteJob(jid);
-    }
-
-    result_t retrieveResults(const job_id_t &jid) throw (ClientException)
-    {
-      return pimpl->retrieveResults(jid);
-    }
-
-  private:
-
-    Client::ptr_t pimpl;
-  };
-}}
+namespace sdpa
+{
+  namespace client
+  {
+    typedef Client ClientApi;
+  }
+}
 
 #endif

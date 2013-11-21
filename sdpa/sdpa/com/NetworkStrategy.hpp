@@ -15,8 +15,6 @@ namespace sdpa
     class NetworkStrategy : public seda::ForwardStrategy
     {
     public:
-      typedef NetworkStrategy self;
-      typedef seda::ForwardStrategy super;
       typedef shared_ptr<NetworkStrategy> ptr_t;
 
       NetworkStrategy ( std::string const & next_stage

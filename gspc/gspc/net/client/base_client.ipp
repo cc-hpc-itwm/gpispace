@@ -11,6 +11,7 @@
 #include <gspc/net/client/dummy_frame_handler.hpp>
 #include <gspc/net/client/response.hpp>
 
+#include <gspc/net/constants.hpp>
 #include <gspc/net/auth/cookie.hpp>
 
 namespace gspc
@@ -32,6 +33,8 @@ namespace gspc
         , m_responses_mutex ()
         , m_responses ()
         , m_timeout (boost::posix_time::pos_infin)
+        , m_connect_timeout
+          (boost::posix_time::milliseconds (constants::CONNECT_TIMEOUT ()))
         , m_last_error_code ()
       {}
 
@@ -44,7 +47,7 @@ namespace gspc
       template <class Proto>
       int base_client<Proto>::start ()
       {
-        return this->start (m_timeout);
+        return this->start (m_connect_timeout);
       }
 
       template <class Proto>
@@ -137,6 +140,22 @@ namespace gspc
 
       template <class Proto>
       void
+      base_client<Proto>::set_connect_timeout (size_t ms)
+      {
+        unique_lock _ (m_mutex);
+
+        if (std::size_t (-1) == ms)
+        {
+          m_connect_timeout = boost::posix_time::pos_infin;
+        }
+        else
+        {
+          m_connect_timeout = boost::posix_time::milliseconds (ms);
+        }
+      }
+
+      template <class Proto>
+      void
       base_client<Proto>::set_timeout (size_t ms)
       {
         unique_lock _ (m_mutex);
@@ -152,9 +171,17 @@ namespace gspc
       }
 
       template <class Proto>
+      void
+      base_client<Proto>::set_heartbeat_info (heartbeat_info_t const &hb)
+      {
+        unique_lock _ (m_mutex);
+        m_heartbeat_info = hb;
+      }
+
+      template <class Proto>
       int base_client<Proto>::connect ()
       {
-        return this->connect (m_timeout);
+        return this->connect (m_connect_timeout);
       }
 
       template <class Proto>
@@ -165,6 +192,7 @@ namespace gspc
         int rc;
 
         cnct = make::connect_frame ();
+        m_heartbeat_info.apply (cnct);
         header::set (cnct, "cookie", auth::get_cookie ());
 
         rc = send_and_wait ( cnct
@@ -185,6 +213,9 @@ namespace gspc
         {
           std::string session_id =
             header::get (rply, "session-id", std::string ());
+
+          const heartbeat_info_t server_hb (rply);
+          m_connection->set_heartbeat_info (server_hb);
 
           m_priv_queue =
             ( boost::format ("/queue/%1%-%2%/replies")

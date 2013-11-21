@@ -67,6 +67,17 @@ fhg_add_test(test_auth.cpp
   DESCRIPTION "GSPCNet - auth tests"
 )
 
+fhg_add_test(test_heartbeat_info.cpp
+  LINK_LIBRARIES libgspc
+                 ${Boost_THREAD_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
+                 ${Boost_DATE_TIME_LIBRARY}
+                 ${Boost_FILE_SYSTEM_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+                 ${CMAKE_THREAD_LIBS_INIT}
+  DESCRIPTION "GSPCNet - heartbeat info tests"
+)
+
 fhg_add_test(test_io.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}

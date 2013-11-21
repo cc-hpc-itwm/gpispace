@@ -5,7 +5,7 @@
 
 #include "tests_config.hpp"
 
-#include <sdpa/client/ClientApi.hpp>
+#include <sdpa/client/Client.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/memory.hpp>
@@ -219,233 +219,91 @@ namespace utils
 
   namespace client
   {
-    namespace
-    {
-      const int NMAXTRIALS = 5;
-    }
-
-    struct retried_too_often : public std::runtime_error
-    {
-      retried_too_often (std::string what)
-        : std::runtime_error ("RETRIED TOO OFTEN: " + what)
-      {}
-    };
-
     sdpa::job_id_t submit_job
-      (sdpa::client::ClientApi& c, std::string workflow)
+      (sdpa::client::Client& c, std::string workflow)
     {
       LOG (DEBUG, "Submitting the following test workflow: \n" << workflow);
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.submitJob (workflow);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
 
-      throw retried_too_often ("submit_job");
+      return c.submitJob (workflow);
     }
 
     sdpa::status::code query_job_status
-      (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
+      (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Query status for job " << id);
 
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.queryJob (id);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
-
-      throw retried_too_often ("query_job_status");
+      return c.queryJob (id);
     }
 
-    template<typename Duration>
-      void wait_for_job_termination ( sdpa::client::ClientApi& c
-                                    , const sdpa::job_id_t& id
-                                    , Duration sleep_duration
-                                    )
+    void wait_for_job_termination ( sdpa::client::Client& c
+                                  , const sdpa::job_id_t& id
+                                  )
     {
       LOG (DEBUG, "Waiting for termination of job " << id);
 
-      while (!sdpa::status::is_terminal (query_job_status (c, id)))
-      {
-        boost::this_thread::sleep (sleep_duration);
-      }
+      sdpa::client::job_info_t job_info;
+      c.wait_for_terminal_state_polling (id, job_info);
     }
 
     sdpa::client::result_t retrieve_job_results
-      (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
+      (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Retrieving results of job " << id);
 
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.retrieveResults (id);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
-
-      throw retried_too_often ("retrieve_job_results");
+      return c.retrieveResults (id);
     }
 
-    void delete_job (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
+    void delete_job (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Delete job " << id);
 
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.deleteJob (id);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
-
-      throw retried_too_often ("delete_job");
+      return c.deleteJob (id);
     }
 
-    void cancel_job (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
+    void cancel_job (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Cancel job " << id);
 
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.cancelJob (id);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
-
-      throw retried_too_often ("cancel_job");
+      return c.cancelJob (id);
     }
 
-    void subscribe (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
+    sdpa::status::code wait_for_status_change
+      (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Subscribe to job " << id);
 
-      for (int i (0); i < NMAXTRIALS; ++i)
-      {
-        try
-        {
-          return c.subscribe (id);
-        }
-        catch (const sdpa::client::ClientException& ex)
-        {
-          LOG (DEBUG, ex.what());
-        }
-      }
-
-      throw retried_too_often ("subscribe");
-    }
-
-    //! \note This duplicates behavior from apps/blocking_client.cpp,
-    //! which should probably go into ClientApi.
-    sdpa::status::code wait_for_status_change
-      (sdpa::client::ClientApi& c, const sdpa::job_id_t& id)
-    {
-      subscribe (c, id);
-
-      seda::IEvent::Ptr event (c.waitForNotification());
-
-      if ( sdpa::events::JobFinishedEvent* evt
-         = dynamic_cast<sdpa::events::JobFinishedEvent*> (event.get())
-         )
-      {
-        BOOST_REQUIRE (evt->job_id() == id);
-        return sdpa::status::FINISHED;
-      }
-      else if ( sdpa::events::JobFailedEvent* evt
-              = dynamic_cast<sdpa::events::JobFailedEvent*> (event.get())
-              )
-      {
-        BOOST_REQUIRE (evt->job_id() == id);
-        return sdpa::status::FAILED;
-      }
-      else if ( sdpa::events::CancelJobAckEvent* evt
-              = dynamic_cast<sdpa::events::CancelJobAckEvent*> (event.get())
-              )
-      {
-        BOOST_REQUIRE (evt->job_id() == id);
-        return sdpa::status::CANCELED;
-      }
-      else if ( sdpa::events::ErrorEvent* evt
-              = dynamic_cast<sdpa::events::ErrorEvent*>(event.get())
-              )
-      {
-        throw std::runtime_error
-          ( "got error event: reason := "
-          + evt->reason()
-          + " code := "
-          + boost::lexical_cast<std::string> (evt->error_code())
-          );
-      }
-      else
-      {
-        throw std::runtime_error
-          ("invalid event after subscription to client");
-      }
+      sdpa::client::job_info_t job_info;
+      return c.wait_for_terminal_state (id, job_info);
     }
 
     void create_client_and_execute
-      ( std::string client_name
-      , const orchestrator& orch
-      , boost::function<void (sdpa::client::ClientApi&)> function
+      ( const orchestrator& orch
+      , boost::function<void (sdpa::client::Client&)> function
       )
     {
       std::vector<std::string> command_line;
       command_line.push_back ("--orchestrator=" + orch.name());
 
-      try
-      {
-        sdpa::client::config_t config (sdpa::client::ClientApi::config());
-        config.parse_command_line (command_line);
+      sdpa::client::config_t config (sdpa::client::Client::config());
+      config.parse_command_line (command_line);
 
-        sdpa::client::ClientApi c
-          (config, client_name, client_name + ".apps.client.out");
+      sdpa::client::Client c (config);
 
-        function (c);
-      }
-      catch (const retried_too_often& ex)
-      {
-        BOOST_FAIL (ex.what());
-      }
+      function (c);
     }
 
     namespace
     {
       void wait_for_termination_impl
-        (sdpa::job_id_t job_id_user, sdpa::client::ClientApi& c)
+        (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
-        wait_for_job_termination (c, job_id_user, boost::posix_time::seconds (1));
+        wait_for_job_termination (c, job_id_user);
         retrieve_job_results (c, job_id_user);
         delete_job (c, job_id_user);
       }
 
       void wait_for_termination_as_subscriber_impl
-        (sdpa::job_id_t job_id_user, sdpa::client::ClientApi& c)
+        (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
         const sdpa::status::code state
           (wait_for_status_change (c, job_id_user));
@@ -455,14 +313,14 @@ namespace utils
       }
 
       void submit_job_and_wait_for_termination_impl
-        (std::string workflow, sdpa::client::ClientApi& c)
+        (std::string workflow, sdpa::client::Client& c)
       {
         const sdpa::job_id_t job_id_user (submit_job (c, workflow));
         wait_for_termination_impl (job_id_user, c);
       }
 
       void submit_job_and_cancel_and_wait_for_termination_impl
-        (std::string workflow, sdpa::client::ClientApi& c)
+        (std::string workflow, sdpa::client::Client& c)
       {
         const sdpa::job_id_t job_id_user (submit_job (c, workflow));
         //! \todo There should not be a requirement for this!
@@ -472,7 +330,7 @@ namespace utils
       }
 
       void submit_job_and_wait_for_termination_as_subscriber_impl
-        (std::string workflow, sdpa::client::ClientApi& c)
+        (std::string workflow, sdpa::client::Client& c)
       {
         wait_for_termination_as_subscriber_impl
           (submit_job (c, workflow), c);
@@ -480,7 +338,7 @@ namespace utils
 
       void submit_job_result_by_ref
         ( std::string workflow
-        , sdpa::client::ClientApi& c
+        , sdpa::client::Client& c
         , sdpa::job_id_t* job_id
         )
       {
@@ -493,8 +351,7 @@ namespace utils
                                              )
     {
       create_client_and_execute
-        ( "sdpac"
-        , orch
+        ( orch
         , boost::bind (&submit_job_and_wait_for_termination_impl, workflow, _1)
         );
     }
@@ -504,8 +361,7 @@ namespace utils
                                                         )
     {
       create_client_and_execute
-        ( "sdpac"
-        , orch
+        ( orch
         , boost::bind (&submit_job_and_cancel_and_wait_for_termination_impl, workflow, _1)
         );
     }
@@ -516,8 +372,7 @@ namespace utils
       )
     {
       create_client_and_execute
-        ( "sdpac"
-        , orch
+        ( orch
         , boost::bind (&submit_job_and_wait_for_termination_as_subscriber_impl, workflow, _1)
         );
     }
@@ -528,8 +383,7 @@ namespace utils
       )
     {
       sdpa::job_id_t job_id_user;
-      create_client_and_execute ( "sdpac"
-                                , orch
+      create_client_and_execute ( orch
                                 , boost::bind ( &submit_job_result_by_ref
                                               , workflow
                                               , _1
@@ -538,8 +392,7 @@ namespace utils
                                 );
 
       create_client_and_execute
-        ( "sdpac2"
-        , orch
+        ( orch
         , boost::bind (&wait_for_termination_as_subscriber_impl, job_id_user, _1)
         );
     }
