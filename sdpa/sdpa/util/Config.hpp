@@ -64,53 +64,7 @@ namespace sdpa { namespace util {
       Config();
   };
 
-  struct DefaultConfiguration
-  {
-    Config &operator()(Config &cfg)
-    {
-      cfg.put("config.configfile", "/etc/sdpa/sdparc"); // TODO: CMAKE_INSTALL_PREFIX/etc/sdpa/sdparc
-      cfg.put("logging.loggers", "default");
-      cfg.put("logging.default.level", 0);
-      return cfg;
-    }
-  };
-
-  struct CommonConfiguration
-  {
-    Config &operator ()(Config &cfg)
-    {
-      cfg.put("sdpa.logging.level", "error");
-      return cfg;
-    }
-  };
-
 // new config
-
-  struct environment_variable_to_option
-  {
-  public:
-    explicit
-    environment_variable_to_option(const std::string prefix)
-      : p(prefix) {}
-
-    std::string operator()(const std::string &var)
-    {
-      if (var.substr(0, p.size()) == p)
-      {
-        std::string option = var.substr(p.size());
-        std::transform(option.begin(), option.end(), option.begin(), tolower);
-        for (std::string::iterator c(option.begin()); c != option.end(); ++c)
-        {
-          if (*c == '_') *c = '.';
-        }
-        return option;
-      }
-      return "";
-    }
-
-  private:
-    std::string p;
-  };
 
   namespace po = boost::program_options;
 

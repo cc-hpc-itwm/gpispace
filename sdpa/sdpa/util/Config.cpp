@@ -17,13 +17,6 @@ Config::Config() {
 
 }
 
-/*
-Config &Config::load_defaults()
-{
-  return DefaultConfiguration()(*this);
-}
-*/
-
 NewConfig::NewConfig(const std::string &component_name, const std::string &env_prefix)
   : component_name_(component_name)
   , env_prefix_(env_prefix)
@@ -123,6 +116,35 @@ void NewConfig::parse_config_file(std::istream &stream, const std::string &cfg_f
 	   .add(specific_opts_);
 	po::store(po::parse_config_file(stream, desc), opts_);
   }
+}
+
+namespace
+{
+  struct environment_variable_to_option
+  {
+  public:
+    explicit
+    environment_variable_to_option(const std::string prefix)
+      : p(prefix) {}
+
+    std::string operator()(const std::string &var)
+    {
+      if (var.substr(0, p.size()) == p)
+      {
+        std::string option = var.substr(p.size());
+        std::transform(option.begin(), option.end(), option.begin(), tolower);
+        for (std::string::iterator c(option.begin()); c != option.end(); ++c)
+        {
+          if (*c == '_') *c = '.';
+        }
+        return option;
+      }
+      return "";
+    }
+
+  private:
+    std::string p;
+  };
 }
 
 void NewConfig::parse_environment()
