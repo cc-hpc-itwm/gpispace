@@ -36,8 +36,10 @@ BOOST_AUTO_TEST_CASE (Test1)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        (workflow, orchestrator)
+                      , sdpa::status::FINISHED
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (testCapabilities_NoMandatoryReq)
@@ -68,6 +70,8 @@ BOOST_AUTO_TEST_CASE (testCapabilities_NoMandatoryReq)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        (workflow, orchestrator)
+                      , sdpa::status::FINISHED
+                      );
 }

@@ -20,11 +20,11 @@
 #include <sdpa/client/Client.hpp>
 #include <seda/IEvent.hpp>
 #include <sdpa/util/util.hpp>
-#include <sdpa/util/Config.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <fhgcom/kvs/kvsc.hpp>
@@ -57,16 +57,6 @@ void get_user_input(std::string const & prompt, std::string & result, std::istre
   std::getline (in, tmp);
   if (tmp.size())
     result = tmp;
-}
-
-bool file_exists(const std::string &path)
-{
-  struct stat file_info;
-  int error_code = stat(path.c_str(), &file_info);
-  if (error_code == 0)
-        return true;
-  else
-        return false;
 }
 
 namespace
@@ -116,24 +106,215 @@ namespace
 
     return status;
   }
+
+  namespace po = boost::program_options;
+
+  class NewConfig
+  {
+  public:
+    NewConfig();
+
+    void parse_command_line(int argc, char **argv);
+
+    void parse_config_file();
+
+    void parse_environment();
+
+    void notify(); // notify that parsing is finished
+
+    po::options_description &specific_opts() { return specific_opts_; }
+    po::options_description &tool_opts() { return tool_opts_; }
+    po::options_description &tool_hidden_opts() { return tool_hidden_opts_; }
+    po::positional_options_description &positional_opts() { return positional_opts_; }
+    po::options_description& network_opts() { return network_opts_;} // network related options
+
+    std::ostream &printHelp(std::ostream &) const;
+    std::ostream &printModuleHelp(std::ostream &os) const;
+
+    const std::string &get(const std::string &name) const { return opts_[name].as<std::string>(); }
+    template <typename T> const T &get(const std::string &name) const { return opts_[name].as<T>(); }
+    template <typename T> const T &operator[](const std::string &name) const { return get<T>(name); }
+
+    bool is_set(const std::string &name) const { return (opts_.count(name) > 0); }
+  private:
+    std::string component_name_;
+    std::string env_prefix_;
+
+    po::options_description generic_opts_; // supported by all command line tools
+    po::options_description logging_opts_; // logging related options
+    po::options_description network_opts_; // network related options
+    po::options_description tool_opts_;    // additional command line options
+    po::options_description tool_hidden_opts_; // hidden command line options
+    po::options_description specific_opts_; // specific options to a component, feel free to modify them
+    po::positional_options_description positional_opts_; // positional parameters used for command line parsing
+
+    po::variables_map opts_;
+  };
+
+  NewConfig::NewConfig()
+    : component_name_("client")
+    , env_prefix_("SDPAC_")
+    , generic_opts_("Generic Options")
+    , logging_opts_("Logging configuration")
+    , network_opts_("Network Options")
+    , tool_opts_("Command-line tool options")
+    , tool_hidden_opts_("Command-line tool options (hidden)")
+    , specific_opts_(component_name_ + " specific options")
+  {
+    // fill in defaults
+    generic_opts_.add_options()
+      ("help,h", "show this help text")
+      ("help-module", po::value<std::string>()->implicit_value("help"),
+      "show the help for a specific module")
+      ("version,V", "print the version number")
+      ("dumpversion", "print the version number (short)")
+      ("verbose,v", po::value<int>()->implicit_value(1),
+      "verbosity level")
+      ("quiet,q", "be quiet")
+      ;
+    logging_opts_.add_options()
+      ("logging.file", po::value<std::string>(),
+      "redirect log output to this file")
+      ("logging.tostderr", "output to stderr")
+      ;
+    network_opts_.add_options()
+      ("network.timeout", po::value<unsigned int>(),
+      "maximum time to wait for a reply (in milliseconds)")
+      ;
+    specific_opts_.add_options()
+      ( "orchestrator"
+      , po::value<std::string>()->default_value ("orchestrator")
+      , "name of the orchestrator"
+      )
+      ( "config,C"
+      , po::value<std::string>()->default_value
+      (std::getenv ("HOME") + std::string ("/.sdpa/configs/sdpac.rc"))
+      , "path to the configuration file"
+      );
+  }
+
+  void NewConfig::parse_command_line(int argc, char **argv)
+  {
+    po::options_description desc;
+    desc.add(generic_opts_)
+      .add(logging_opts_)
+      .add(network_opts_)
+      .add(specific_opts_)
+      .add(tool_opts_)
+      .add(tool_hidden_opts_);
+
+    po::store(po::command_line_parser(argc, argv).options(desc)
+             .positional(positional_opts_)
+             .run()
+             , opts_);
+  }
+
+  void NewConfig::parse_config_file()
+  {
+    if (is_set("config"))
+    {
+      const std::string &cfg_file = get("config");
+      if (is_set("verbose"))
+      {
+        std::cerr << "I: using config file: " << cfg_file << std::endl;
+      }
+      std::ifstream stream(cfg_file.c_str());
+      if (! stream)
+      {
+        throw std::runtime_error ("could not read config file: " + cfg_file);
+      }
+      else
+      {
+        po::options_description desc;
+        desc.add(logging_opts_)
+          .add(network_opts_)
+          .add(specific_opts_);
+        po::store(po::parse_config_file(stream, desc), opts_);
+      }
+    }
+  }
+
+  struct environment_variable_to_option
+  {
+  public:
+    explicit
+    environment_variable_to_option(const std::string prefix)
+      : p(prefix) {}
+
+    std::string operator()(const std::string &var)
+    {
+      if (var.substr(0, p.size()) == p)
+      {
+        std::string option = var.substr(p.size());
+        std::transform(option.begin(), option.end(), option.begin(), tolower);
+        for (std::string::iterator c(option.begin()); c != option.end(); ++c)
+        {
+          if (*c == '_') *c = '.';
+        }
+        return option;
+      }
+      return "";
+    }
+
+  private:
+    std::string p;
+  };
+
+  void NewConfig::parse_environment()
+  {
+    po::options_description desc;
+    desc.add(logging_opts_)
+      .add(network_opts_)
+      .add(specific_opts_);
+    po::store(po::parse_environment(desc, environment_variable_to_option(env_prefix_)) , opts_);
+  }
+
+  void NewConfig::notify()
+  {
+    po::notify(opts_);
+  }
+
+  std::ostream &NewConfig::printHelp(std::ostream &os) const
+  {
+    po::options_description desc("Allowed Options");
+    desc.add(generic_opts_).add(tool_opts_);
+    os << desc;
+    return os;
+  }
+
+  std::ostream &NewConfig::printModuleHelp(std::ostream &os) const
+  {
+    const std::string mod (get<std::string>("help-module"));
+
+    if      (mod == "network")       os << network_opts_;
+    else if (mod == "logging")       os << logging_opts_;
+    else if (mod == component_name_) os << specific_opts_;
+    else
+    {
+      os << "Available modules are:" << std::endl
+         << "\t" << "network" << std::endl
+         << "\t" << "logging" << std::endl
+         << "\t" << component_name_ << std::endl
+         << "use --help-module=module to get more information" << std::endl;
+    }
+    return os;
+  }
 }
 
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
-  namespace su = sdpa::util;
 
   std::string kvs_url (fhg::util::getenv("KVS_URL", "localhost:2439"));
 
-  sdpa::client::config_t cfg = sdpa::client::Client::config();
+  NewConfig cfg;
   cfg.tool_opts().add_options()
-    ("output,o", su::po::value<std::string>(), "path to output file")
+    ("output,o", po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
-    ("polling", su::po::value<std::string>()->default_value ("true"), "use polling when waiting for job completion")
+    ("polling", po::value<std::string>()->default_value ("true"), "use polling when waiting for job completion")
     ("force,f", "force the operation")
-    ("make-config", "create a basic config file")
-    ("kvs,k", su::po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
+    ("kvs,k", po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
     ("revision", "Dump the revision identifier")
-    ("command", su::po::value<std::string>(),
+    ("command", po::value<std::string>(),
      "The command that shall be performed. Possible values are:\n\n"
      "submit: \tsubmits a job to an orchestrator, arg must point to the job-description\n"
      "cancel: \tcancels a running job, arg must specify the job-id\n"
@@ -144,7 +325,7 @@ int main (int argc, char **argv) {
      )
     ;
   cfg.tool_hidden_opts().add_options()
-    ("arg", su::po::value<std::vector<std::string> >(),
+    ("arg", po::value<std::vector<std::string> >(),
      "arguments to the command")
     ;
   cfg.positional_opts().add("command", 1).add("arg", -1);
@@ -154,68 +335,6 @@ int main (int argc, char **argv) {
 
   cfg.notify();
 
-  if (cfg.is_set("make-config"))
-  {
-    fs::path cfg_file (cfg.get("config"));
-    if (fs::exists (cfg_file))
-    {
-      std::cerr << "E: config file '" << cfg_file << "' does already exist, please remove it first!" << std::endl;
-      return FILE_EXISTS;
-    }
-
-    std::cout << "In order to create a configuration, I have to ask you some questions." << std::endl;
-    std::cout << std::endl;
-
-    std::string orchestrator_name(cfg.get<std::string>("orchestrator"));
-    get_user_input("Name of the orchestrator ["+orchestrator_name+"]: ", orchestrator_name);
-
-    std::string orchestrator_location("localhost:5000");
-    get_user_input("Location of the orchestrator ["+orchestrator_location+"]: ", orchestrator_location);
-
-    std::cout << std::endl;
-    std::cout << "The information I gathered is:" << std::endl;
-
-    std::stringstream sstr;
-
-    sstr << "#" << std::endl;
-    sstr << "# automatically generated sdpac config on " << boost::posix_time::second_clock::local_time() << std::endl;
-    sstr << "#" << std::endl;
-    sstr << "orchestrator = " << orchestrator_name << std::endl;
-    sstr << std::endl;
-
-    sstr << "[network]" << std::endl;
-    sstr << "location = " << orchestrator_name << ":" << orchestrator_location << std::endl;
-    sstr << std::endl;
-
-    std::cout << sstr.str();
-
-    std::cout << "Is that ok [y/N]? ";
-    {
-      std::string tmp;
-      std::getline (std::cin, tmp);
-      if (tmp != "y" && tmp != "Y")
-        return 0;
-    }
-
-    // try to open config file
-    fs::ofstream cfg_ofs(cfg_file);
-    if ( ! cfg_ofs.is_open() )
-    {
-      fs::create_directories (cfg_file.parent_path());
-      cfg_ofs.open (cfg_file);
-      if ( ! cfg_ofs.is_open())
-      {
-        std::cerr << "E: could not open " << cfg_file << " for writing!" << std::endl;
-        return IO_ERROR;
-      }
-    }
-
-    cfg_ofs << sstr.str();
-
-    std::cout << "Thank you, your config file has been written to " << cfg.get("config") << std::endl;
-    return 0;
-  }
-
   try
   {
     cfg.parse_config_file();
@@ -224,10 +343,6 @@ int main (int argc, char **argv) {
   {
     // std::cerr << "W: could not parse config file: "
     //           << cfg.get("config")
-    //           << std::endl;
-
-    // std::cerr << "W: try generating one with '"
-    //           << argv[0] << " --make-config'"
     //           << std::endl;
   }
   cfg.notify();
@@ -355,7 +470,14 @@ int main (int argc, char **argv) {
     LOG(INFO, fhg::project_summary() << " (" << fhg::project_version() << ")");
     LOG(INFO, "***************************************************");
 
-    sdpa::client::Client api (cfg);
+    sdpa::client::Client api ( cfg.is_set("orchestrator")
+                             ? cfg.get<std::string>("orchestrator")
+                             : throw std::runtime_error ("no orchestrator specified!")
+                             , cfg.is_set("network.timeout")
+                             ? boost::optional<sdpa::client::Client::timeout_t>
+                               (cfg.get<unsigned int>("network.timeout"))
+                             : boost::none
+                             );
 
     if (command == "submit")
     {
@@ -437,7 +559,7 @@ int main (int argc, char **argv) {
       std::string output_path
         (cfg.is_set ("output") ? cfg.get("output") : ("sdpa." + job_id + ".out"));
 
-          if (file_exists(output_path) && (! cfg.is_set("force")))
+          if (fs::exists(output_path) && (! cfg.is_set("force")))
           {
                 std::cerr << "E: output-file " << output_path << " does already exist!" << std::endl;
                 return FILE_EXISTS;

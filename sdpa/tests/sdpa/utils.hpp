@@ -235,14 +235,14 @@ namespace utils
       return c.queryJob (id);
     }
 
-    void wait_for_job_termination ( sdpa::client::Client& c
-                                  , const sdpa::job_id_t& id
-                                  )
+    sdpa::status::code wait_for_job_termination ( sdpa::client::Client& c
+                                                , const sdpa::job_id_t& id
+                                                )
     {
       LOG (DEBUG, "Waiting for termination of job " << id);
 
       sdpa::client::job_info_t job_info;
-      c.wait_for_terminal_state_polling (id, job_info);
+      return c.wait_for_terminal_state_polling (id, job_info);
     }
 
     sdpa::client::result_t retrieve_job_results
@@ -267,7 +267,7 @@ namespace utils
       return c.cancelJob (id);
     }
 
-    sdpa::status::code wait_for_status_change
+    sdpa::status::code wait_for_terminal_state
       (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Subscribe to job " << id);
@@ -276,125 +276,70 @@ namespace utils
       return c.wait_for_terminal_state (id, job_info);
     }
 
-    void create_client_and_execute
-      ( const orchestrator& orch
-      , boost::function<void (sdpa::client::Client&)> function
-      )
-    {
-      std::vector<std::string> command_line;
-      command_line.push_back ("--orchestrator=" + orch.name());
-
-      sdpa::client::config_t config (sdpa::client::Client::config());
-      config.parse_command_line (command_line);
-
-      sdpa::client::Client c (config);
-
-      function (c);
-    }
-
     namespace
     {
-      void wait_for_termination_impl
-        (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
-      {
-        wait_for_job_termination (c, job_id_user);
-        retrieve_job_results (c, job_id_user);
-        delete_job (c, job_id_user);
-      }
-
-      void wait_for_termination_as_subscriber_impl
+      sdpa::status::code wait_for_termination_impl
         (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
         const sdpa::status::code state
-          (wait_for_status_change (c, job_id_user));
-        BOOST_REQUIRE (sdpa::status::is_terminal (state));
+          (wait_for_job_termination (c, job_id_user));
         retrieve_job_results (c, job_id_user);
         delete_job (c, job_id_user);
+        return state;
       }
 
-      void submit_job_and_wait_for_termination_impl
-        (std::string workflow, sdpa::client::Client& c)
+      sdpa::status::code wait_for_termination_as_subscriber_impl
+        (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
-        const sdpa::job_id_t job_id_user (submit_job (c, workflow));
-        wait_for_termination_impl (job_id_user, c);
-      }
-
-      void submit_job_and_cancel_and_wait_for_termination_impl
-        (std::string workflow, sdpa::client::Client& c)
-      {
-        const sdpa::job_id_t job_id_user (submit_job (c, workflow));
-        //! \todo There should not be a requirement for this!
-        boost::this_thread::sleep (boost::posix_time::seconds (1));
-        cancel_job (c, job_id_user);
-        wait_for_termination_impl (job_id_user, c);
-      }
-
-      void submit_job_and_wait_for_termination_as_subscriber_impl
-        (std::string workflow, sdpa::client::Client& c)
-      {
-        wait_for_termination_as_subscriber_impl
-          (submit_job (c, workflow), c);
-      }
-
-      void submit_job_result_by_ref
-        ( std::string workflow
-        , sdpa::client::Client& c
-        , sdpa::job_id_t* job_id
-        )
-      {
-        *job_id = submit_job (c, workflow);
+        const sdpa::status::code state
+          (wait_for_terminal_state (c, job_id_user));
+        retrieve_job_results (c, job_id_user);
+        delete_job (c, job_id_user);
+        return state;
       }
     }
 
-    void submit_job_and_wait_for_termination ( std::string workflow
-                                             , const orchestrator& orch
-                                             )
+    sdpa::status::code submit_job_and_wait_for_termination
+      (std::string workflow, const orchestrator& orch)
     {
-      create_client_and_execute
-        ( orch
-        , boost::bind (&submit_job_and_wait_for_termination_impl, workflow, _1)
-        );
+      sdpa::client::Client c (orch.name());
+
+      return wait_for_termination_impl (submit_job (c, workflow), c);
     }
 
-    void submit_job_and_cancel_and_wait_for_termination ( std::string workflow
-                                                        , const orchestrator& orch
-                                                        )
+    sdpa::status::code submit_job_and_cancel_and_wait_for_termination
+      (std::string workflow, const orchestrator& orch)
     {
-      create_client_and_execute
-        ( orch
-        , boost::bind (&submit_job_and_cancel_and_wait_for_termination_impl, workflow, _1)
-        );
+      sdpa::client::Client c (orch.name());
+
+      const sdpa::job_id_t job_id_user (submit_job (c, workflow));
+      //! \todo There should not be a requirement for this!
+      boost::this_thread::sleep (boost::posix_time::seconds (1));
+      cancel_job (c, job_id_user);
+      return wait_for_termination_impl (job_id_user, c);
     }
 
-    void submit_job_and_wait_for_termination_as_subscriber
-      ( std::string workflow
-      , const orchestrator& orch
-      )
+    sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
+      (std::string workflow, const orchestrator& orch)
     {
-      create_client_and_execute
-        ( orch
-        , boost::bind (&submit_job_and_wait_for_termination_as_subscriber_impl, workflow, _1)
-        );
+      sdpa::client::Client c (orch.name());
+
+      return wait_for_termination_as_subscriber_impl (submit_job (c, workflow), c);
     }
 
-    void submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
-      ( std::string workflow
-      , const orchestrator& orch
-      )
+    sdpa::status::code submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
+      (std::string workflow, const orchestrator& orch)
     {
       sdpa::job_id_t job_id_user;
-      create_client_and_execute ( orch
-                                , boost::bind ( &submit_job_result_by_ref
-                                              , workflow
-                                              , _1
-                                              , &job_id_user
-                                              )
-                                );
+      {
+        sdpa::client::Client c (orch.name());
+        job_id_user = submit_job (c, workflow);
+      }
 
-      create_client_and_execute
-        ( orch
-        , boost::bind (&wait_for_termination_as_subscriber_impl, job_id_user, _1)
-        );
+      {
+        sdpa::client::Client c (orch.name());
+        return wait_for_termination_as_subscriber_impl (job_id_user, c);
+      }
     }
   }
 }

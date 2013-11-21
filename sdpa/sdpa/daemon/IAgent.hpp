@@ -24,7 +24,6 @@
 #include <sdpa/engine/IWorkflowEngine.hpp>
 
 #include <seda/Stage.hpp>
-#include <sdpa/util/Config.hpp>
 #include <sdpa/types.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/scheduler/Reservation.hpp>
@@ -55,7 +54,6 @@ namespace sdpa {
     virtual void resume(const job_id_t& id ) = 0;
 
     virtual const std::string& name() const = 0;
-    virtual sdpa::util::Config& cfg() = 0;
 
     virtual unsigned int& rank() = 0;
     virtual const sdpa::worker_id_t& agent_uuid() = 0;

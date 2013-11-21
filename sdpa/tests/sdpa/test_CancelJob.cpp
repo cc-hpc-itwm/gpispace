@@ -32,8 +32,11 @@ BOOST_AUTO_TEST_CASE (TestCancelCoallocation)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_cancel_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL
+    ( utils::client::submit_job_and_cancel_and_wait_for_termination
+      (workflow, orchestrator)
+    , sdpa::status::CANCELED
+    );
 }
 
 BOOST_AUTO_TEST_CASE (Test1)
@@ -53,8 +56,11 @@ BOOST_AUTO_TEST_CASE (Test1)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_cancel_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL
+    ( utils::client::submit_job_and_cancel_and_wait_for_termination
+      (workflow, orchestrator)
+    , sdpa::status::CANCELED
+    );
 }
 
 BOOST_AUTO_TEST_CASE (Test2)
@@ -80,6 +86,9 @@ BOOST_AUTO_TEST_CASE (Test2)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_cancel_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL
+    ( utils::client::submit_job_and_cancel_and_wait_for_termination
+      (workflow, orchestrator)
+    , sdpa::status::CANCELED
+    );
 }

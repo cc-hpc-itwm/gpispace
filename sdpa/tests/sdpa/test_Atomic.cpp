@@ -41,8 +41,10 @@ BOOST_AUTO_TEST_CASE (testAtomicExecution)
       , kvs_host(), kvs_port()
       );
 
-    utils::client::submit_job_and_wait_for_termination
-      (workflow, orchestrator);
+    BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                          (workflow, orchestrator)
+                        , sdpa::status::FINISHED
+                        );
   }
 
 	int nCounterVal (0);

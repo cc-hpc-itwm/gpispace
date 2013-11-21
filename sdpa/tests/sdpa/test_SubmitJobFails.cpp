@@ -22,8 +22,10 @@ BOOST_AUTO_TEST_CASE (fail_on_invalid_workflow)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination
-    ("invalid workflow", orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        ("invalid workflow", orchestrator)
+                      , sdpa::status::FAILED
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (fail_on_empty_workflow)
@@ -40,6 +42,8 @@ BOOST_AUTO_TEST_CASE (fail_on_empty_workflow)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_cancel_and_wait_for_termination
-    ("", orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        ("", orchestrator)
+                      , sdpa::status::FAILED
+                      );
 }

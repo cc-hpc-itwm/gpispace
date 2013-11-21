@@ -43,16 +43,10 @@ namespace
   }
 }
 
-Client::Client (const config_t& config)
-  : _name ("sdpac-" + boost::uuids::to_string (boost::uuids::random_generator()()))
-  , timeout_ ( config.is_set("network.timeout")
-             ? config.get<unsigned int>("network.timeout")
-             : 5000U
-             )
-  , orchestrator_ ( config.is_set("orchestrator")
-                  ? config.get<std::string>("orchestrator")
-                  : throw ClientException ("no orchestrator specified!")
-                  )
+Client::Client (std::string orchestrator, boost::optional<timeout_t> timeout)
+  : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
+  , timeout_ (timeout.get_value_or (5000U))
+  , orchestrator_ (orchestrator)
   , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
   , _peer_thread (&fhg::com::peer_t::run, &m_peer)
   , _stopping (false)
@@ -77,12 +71,10 @@ fhg::com::message_t Client::message_for_event
 {
   static sdpa::events::Codec codec;
 
-  fhg::com::message_t msg;
+  const std::string encoded_evt (codec.encode (event));
+  fhg::com::message_t msg (encoded_evt.begin(), encoded_evt.end());
   msg.header.dst = m_peer.resolve_name (event->to());
   msg.header.src = m_peer.address();
-
-  const std::string encoded_evt (codec.encode (event));
-  msg.data.assign (encoded_evt.begin(), encoded_evt.end());
   msg.header.length = msg.data.size();
 
   return msg;

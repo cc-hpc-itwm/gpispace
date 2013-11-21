@@ -70,6 +70,9 @@ GenericDaemon::GenericDaemon( const std::string name,
                    (NotificationService (*guiUrl))
                  : boost::none
                  )
+  , _max_consecutive_registration_attempts (360)
+  , _max_consecutive_network_faults (360)
+  , _registration_timeout (boost::posix_time::seconds (1))
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -78,8 +81,6 @@ GenericDaemon::GenericDaemon( const std::string name,
   //             (fhg::com::)kvs::put ("sdpa.daemon.<name>.id", m_strAgentUID)
   //             kvs::put ("sdpa.daemon.<name>.pid", getpid())
   //                - remove them in destructor
-
-  //daemon_cfg_ = new sdpa::util::Config;
 
   // application gui service
   if (guiUrl && !guiUrl->empty())
@@ -92,20 +93,6 @@ GenericDaemon::GenericDaemon( const std::string name,
 
 void GenericDaemon::start_agent()
 {
-  // use for now as below, later read from config file
-  // TODO: move this to "property" style:
-  //    dot separated
-  //    hierarchies / categories
-  //    retrieve values maybe from kvs?
-  //    no spaces
-
-  // Read these values from a configuration file !
-  // if this does not exist, use default values
-
-  // set default configuration
-  cfg().put("registration_timeout",         1 * 1000 * 1000); // 1s
-
-
   ptr_daemon_stage_.lock()->start();
 
 
@@ -603,11 +590,10 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
             masterInfo.set_registered(false);
             masterInfo.incConsecRegAttempts();
 
-            if(masterInfo.getConsecRegAttempts()< cfg().get<unsigned int>("max_consecutive_reg_attempts", 360) )
+            if(masterInfo.getConsecRegAttempts()< _max_consecutive_registration_attempts)
             {
-              const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-              DMLOG (TRACE, "Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-              boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+              DMLOG (TRACE, "Wait " << boost::posix_time::to_simple_string (_registration_timeout) << " before trying to re-register ...");
+              boost::this_thread::sleep (_registration_timeout);
               requestRegistration(masterInfo);
             }
             else
@@ -668,10 +654,9 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
               DMLOG (WARN, "The connection to the master " << masterInfo.name() << " is broken!");
               masterInfo.incConsecNetFailCnt();
 
-              if( masterInfo.getConsecNetFailCnt() < cfg().get<unsigned long>("max_consecutive_net_faults", 360) )
+              if( masterInfo.getConsecNetFailCnt() < _max_consecutive_network_faults)
               {
-                const unsigned long reg_timeout(cfg().get<unsigned long>("registration_timeout", 10 *1000*1000) );
-                boost::this_thread::sleep(boost::posix_time::seconds(reg_timeout/1000000));
+                boost::this_thread::sleep (_registration_timeout);
 
                 masterInfo.set_registered(false);
               }

@@ -133,6 +133,7 @@ namespace fhg
           (util::qt::mvc::section_index, QWidget* editor);
         virtual bool can_edit_section (util::qt::mvc::section_index) const;
         virtual QMenu* menu_for_section (util::qt::mvc::section_index) const;
+        virtual void wheel_event (util::qt::mvc::section_index, QWheelEvent*);
 
         QColor color_for_state (worker_model::state_type) const;
 

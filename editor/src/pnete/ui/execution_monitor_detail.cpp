@@ -1106,6 +1106,20 @@ namespace fhg
 
         return menu;
       }
+
+      void execution_monitor_delegate::wheel_event
+        (util::qt::mvc::section_index index, QWheelEvent* event)
+      {
+        index.data (false, execution_monitor_proxy::automatically_move_role);
+        index.data ( static_cast<int>
+                     ( util::qt::value<long>
+                       (index.data (execution_monitor_proxy::visible_range_to_role))
+                     )
+                   + event->delta() * 10
+                   , execution_monitor_proxy::visible_range_to_role
+                   );
+        event->accept();
+      }
     }
   }
 }

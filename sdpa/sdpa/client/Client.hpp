@@ -6,7 +6,6 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/job_states.hpp>
 #include <sdpa/types.hpp>
-#include <sdpa/util/Config.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 
@@ -15,13 +14,13 @@
 #include <cstdlib>
 #include <string>
 
+#include <boost/optional.hpp>
 #include <boost/thread.hpp> // condition variables
 
 namespace sdpa
 {
   namespace client
   {
-    typedef sdpa::util::NewConfig config_t;
     typedef sdpa::job_result_t result_t;
     struct job_info_t
     {
@@ -32,25 +31,10 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      Client (const config_t& cfg);
-      ~Client();
+      typedef unsigned long long timeout_t;
 
-      static config_t config()
-      {
-        using namespace sdpa::util;
-        config_t cfg ("client", "SDPAC_");
-        cfg.specific_opts().add_options()
-          ( "orchestrator"
-          , po::value<std::string>()->default_value ("orchestrator")
-          , "name of the orchestrator"
-          )
-          ( "config,C"
-          , po::value<std::string>()->default_value
-            (std::getenv ("HOME") + std::string ("/.sdpa/configs/sdpac.rc"))
-          , "path to the configuration file"
-          );
-        return cfg;
-      }
+      Client (std::string orchestrator, boost::optional<timeout_t> = boost::none);
+      ~Client();
 
       job_id_t submitJob(const job_desc_t &) throw (ClientException);
       void cancelJob(const job_id_t &) throw (ClientException);
@@ -63,8 +47,6 @@ namespace sdpa
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
 
     private:
-      typedef unsigned long long timeout_t;
-
       sdpa::events::SDPAEvent::Ptr wait_for_reply (bool use_timeout);
 
       std::string _name;

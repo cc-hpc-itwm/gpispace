@@ -25,8 +25,11 @@ BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination_as_subscriber
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL
+    ( utils::client::submit_job_and_wait_for_termination_as_subscriber
+      (workflow, orchestrator)
+    , sdpa::status::FINISHED
+    );
 }
 
 BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
@@ -46,6 +49,9 @@ BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL
+    ( utils::client::submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
+      (workflow, orchestrator)
+    , sdpa::status::FINISHED
+    );
 }

@@ -14,7 +14,6 @@ set (daemon_libs
 # which seems to be  a known compiler bug in gcc 4.1.2,  by explicitly using the
 # source files, everything is fine but that just sucks.
 set(util-sources
-  ${CMAKE_SOURCE_DIR}/sdpa/sdpa/util/Config.cpp
   ${CMAKE_SOURCE_DIR}/sdpa/sdpa/util/util.cpp
 )
 

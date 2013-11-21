@@ -7,7 +7,6 @@
 #include <sdpa/sdpa-config.hpp>
 
 #include <sdpa/logging.hpp>
-#include <sdpa/util/Config.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>

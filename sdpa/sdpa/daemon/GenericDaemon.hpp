@@ -24,7 +24,6 @@
 
 #include <sdpa/capability.hpp>
 #include <sdpa/sdpa-config.hpp>
-#include <sdpa/util/Config.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
@@ -50,6 +49,7 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/user_data.hpp>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
@@ -134,9 +134,6 @@ namespace sdpa {
       void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
       bool isSubscriber(const sdpa::agent_id_t&);
       bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
-
-      // configuration
-      sdpa::util::Config& cfg() { return daemon_cfg_;}
 
       // agent info and properties
 
@@ -225,7 +222,6 @@ namespace sdpa {
       std::string m_to_slave_stage_name_;
       seda::Stage::Ptr ptr_to_master_stage_;
       seda::Stage::Ptr ptr_to_slave_stage_;
-      sdpa::util::Config daemon_cfg_;
 
     protected:
       JobManager::ptr_t ptr_job_man_;
@@ -248,6 +244,10 @@ namespace sdpa {
 
     private:
       std::vector<std::string> _stages_to_remove;
+
+      unsigned int _max_consecutive_registration_attempts;
+      unsigned int _max_consecutive_network_faults;
+      boost::posix_time::time_duration _registration_timeout;
     };
   }
 }
