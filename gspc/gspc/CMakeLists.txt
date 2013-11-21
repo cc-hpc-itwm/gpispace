@@ -57,6 +57,7 @@ set (gspc_src
   rif/null_process_handler.cpp
   rif/supervisor.cpp
 
+  ctl/exit_code.cpp
   ctl/eval.cpp
   ctl/config.cpp
   ctl/config_cmd.cpp
