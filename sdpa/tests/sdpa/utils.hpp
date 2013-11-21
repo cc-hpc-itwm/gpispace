@@ -281,14 +281,7 @@ namespace utils
       , boost::function<void (sdpa::client::Client&)> function
       )
     {
-      sdpa::util::NewConfig config (sdpa::client::Client::config());
-
-      sdpa::client::Client c ( orch.name()
-                             , config.is_set("network.timeout")
-                             ? boost::optional<sdpa::client::Client::timeout_t>
-                               (config.get<unsigned int>("network.timeout"))
-                             : boost::none
-                             );
+      sdpa::client::Client c (orch.name(), boost::none);
 
       function (c);
     }
