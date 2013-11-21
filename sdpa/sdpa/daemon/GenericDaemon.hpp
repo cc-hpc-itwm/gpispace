@@ -135,9 +135,6 @@ namespace sdpa {
       bool isSubscriber(const sdpa::agent_id_t&);
       bool subscribedFor(const sdpa::agent_id_t&, const sdpa::job_id_t&);
 
-      // configuration
-      sdpa::util::Config& cfg() { return daemon_cfg_;}
-
       // agent info and properties
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
@@ -229,7 +226,6 @@ namespace sdpa {
       std::string m_to_slave_stage_name_;
       seda::Stage::Ptr ptr_to_master_stage_;
       seda::Stage::Ptr ptr_to_slave_stage_;
-      sdpa::util::Config daemon_cfg_;
 
     protected:
       JobManager::ptr_t ptr_job_man_;
@@ -252,6 +248,10 @@ namespace sdpa {
 
     private:
       std::vector<std::string> _stages_to_remove;
+
+      unsigned int _max_consecutive_registration_attempts;
+      unsigned int _max_consecutive_network_faults;
+      unsigned long _registration_timeout;
     };
   }
 }
