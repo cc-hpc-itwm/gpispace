@@ -50,6 +50,9 @@ BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination_as_subscriber
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL
+    ( utils::client::submit_job_and_wait_for_termination_as_subscriber
+      (workflow, orchestrator)
+    , sdpa::status::FINISHED
+    );
 }

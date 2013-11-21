@@ -31,8 +31,10 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        (workflow, orchestrator)
+                      , sdpa::status::FINISHED
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (chained_agents)
@@ -67,8 +69,10 @@ BOOST_AUTO_TEST_CASE (chained_agents)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        (workflow, orchestrator)
+                      , sdpa::status::FINISHED
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
@@ -106,8 +110,10 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        (workflow, orchestrator)
+                      , sdpa::status::FINISHED
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (one_worker_with_multiple_master_agents)
@@ -142,8 +148,10 @@ BOOST_AUTO_TEST_CASE (one_worker_with_multiple_master_agents)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        (workflow, orchestrator)
+                      , sdpa::status::FINISHED
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
@@ -181,6 +189,8 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        (workflow, orchestrator)
+                      , sdpa::status::FINISHED
+                      );
 }

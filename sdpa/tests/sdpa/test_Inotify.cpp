@@ -49,8 +49,10 @@ BOOST_AUTO_TEST_CASE (testInotifyExecution)
                                       )
                         );
 
-  utils::client::submit_job_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        (workflow, orchestrator)
+                      , sdpa::status::FINISHED
+                      );
 
   keep_on_touching = false;
   if (toucher.joinable())

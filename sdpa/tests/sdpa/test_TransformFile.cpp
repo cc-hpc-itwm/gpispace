@@ -25,8 +25,10 @@ BOOST_AUTO_TEST_CASE (testTransformFile1)
     , kvs_host(), kvs_port()
     );
 
-  utils::client::submit_job_and_wait_for_termination
-    (workflow, orchestrator);
+  BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
+                        (workflow, orchestrator)
+                      , sdpa::status::FINISHED
+                      );
 
 	// tr [a-z] [A-Z] < in.txt > out.txt.expected
 }
