@@ -24,7 +24,6 @@
 
 #include <sdpa/capability.hpp>
 #include <sdpa/sdpa-config.hpp>
-#include <sdpa/util/Config.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
