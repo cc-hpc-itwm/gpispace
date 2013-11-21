@@ -284,7 +284,7 @@ namespace utils
       std::vector<std::string> command_line;
       command_line.push_back ("--orchestrator=" + orch.name());
 
-      sdpa::client::config_t config (sdpa::client::Client::config());
+      sdpa::util::NewConfig config (sdpa::client::Client::config());
       config.parse_command_line (command_line);
 
       sdpa::client::Client c (config);

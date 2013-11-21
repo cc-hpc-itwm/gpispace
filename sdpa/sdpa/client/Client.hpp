@@ -21,7 +21,6 @@ namespace sdpa
 {
   namespace client
   {
-    typedef sdpa::util::NewConfig config_t;
     typedef sdpa::job_result_t result_t;
     struct job_info_t
     {
@@ -32,13 +31,13 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      Client (const config_t& cfg);
+      Client (const sdpa::util::NewConfig& cfg);
       ~Client();
 
-      static config_t config()
+      static sdpa::util::NewConfig config()
       {
         using namespace sdpa::util;
-        config_t cfg ("client", "SDPAC_");
+        sdpa::util::NewConfig cfg ("client", "SDPAC_");
         cfg.specific_opts().add_options()
           ( "orchestrator"
           , po::value<std::string>()->default_value ("orchestrator")

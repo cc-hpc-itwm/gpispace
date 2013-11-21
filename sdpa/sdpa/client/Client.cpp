@@ -43,7 +43,7 @@ namespace
   }
 }
 
-Client::Client (const config_t& config)
+Client::Client (const sdpa::util::NewConfig& config)
   : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
   , timeout_ ( config.is_set("network.timeout")
              ? config.get<unsigned int>("network.timeout")
