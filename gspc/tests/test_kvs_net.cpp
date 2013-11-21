@@ -198,11 +198,11 @@ BOOST_AUTO_TEST_CASE (test_net_api)
 
   rc = kvs.counter_change ("cnt", cnt, +1);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (cnt, 0);
+  BOOST_REQUIRE_EQUAL (cnt, 1);
 
   rc = kvs.counter_change ("cnt", cnt, -1);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (cnt, 1);
+  BOOST_REQUIRE_EQUAL (cnt, 0);
 
   rc = kvs.del_regex (".*");
   BOOST_REQUIRE_EQUAL (rc, 0);

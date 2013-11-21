@@ -189,30 +189,30 @@ BOOST_AUTO_TEST_CASE (test_impl_reset_inc_dec)
 
   rc = kvs.counter_increment ("foo", val);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (val, 0);
+  BOOST_REQUIRE_EQUAL (val, 1);
 
   rc = kvs.counter_decrement ("foo", val);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (val, 1);
+  BOOST_REQUIRE_EQUAL (val, 0);
 
   rc = kvs.counter_reset ("foo", 0);
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   rc = kvs.counter_increment ("foo", val);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (val, 0);
+  BOOST_REQUIRE_EQUAL (val, 1);
 
   rc = kvs.counter_change ("foo", val, 2);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (val, 1);
+  BOOST_REQUIRE_EQUAL (val, 3);
 
   rc = kvs.counter_decrement ("foo", val);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (val, 3);
+  BOOST_REQUIRE_EQUAL (val, 2);
 
   rc = kvs.counter_change ("foo", val, -2);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE_EQUAL (val, 2);
+  BOOST_REQUIRE_EQUAL (val, 0);
 
   rc = kvs.counter_change ("foo", val, 0);
   BOOST_REQUIRE_EQUAL (rc, 0);

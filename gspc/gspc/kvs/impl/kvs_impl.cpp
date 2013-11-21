@@ -403,8 +403,8 @@ namespace gspc
         int *cur = boost::get<int>(&it->second->get_value ());
         if (cur)
         {
-          val = *cur;
           *cur += delta;
+          val = *cur;
         }
         else
         {
