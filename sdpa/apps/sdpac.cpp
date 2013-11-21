@@ -437,7 +437,7 @@ int main (int argc, char **argv) {
       std::string output_path
         (cfg.is_set ("output") ? cfg.get("output") : ("sdpa." + job_id + ".out"));
 
-          if (file_exists(output_path) && (! cfg.is_set("force")))
+          if (fs::exists(output_path) && (! cfg.is_set("force")))
           {
                 std::cerr << "E: output-file " << output_path << " does already exist!" << std::endl;
                 return FILE_EXISTS;
