@@ -295,16 +295,6 @@ namespace utils
         retrieve_job_results (c, job_id_user);
         delete_job (c, job_id_user);
       }
-
-      void submit_job_and_cancel_and_wait_for_termination_impl
-        (std::string workflow, sdpa::client::Client& c)
-      {
-        const sdpa::job_id_t job_id_user (submit_job (c, workflow));
-        //! \todo There should not be a requirement for this!
-        boost::this_thread::sleep (boost::posix_time::seconds (1));
-        cancel_job (c, job_id_user);
-        wait_for_termination_impl (job_id_user, c);
-      }
     }
 
     void submit_job_and_wait_for_termination ( std::string workflow
@@ -322,7 +312,11 @@ namespace utils
     {
       sdpa::client::Client c (orch.name());
 
-      submit_job_and_cancel_and_wait_for_termination_impl (workflow, c);
+      const sdpa::job_id_t job_id_user (submit_job (c, workflow));
+      //! \todo There should not be a requirement for this!
+      boost::this_thread::sleep (boost::posix_time::seconds (1));
+      cancel_job (c, job_id_user);
+      wait_for_termination_impl (job_id_user, c);
     }
 
     void submit_job_and_wait_for_termination_as_subscriber
