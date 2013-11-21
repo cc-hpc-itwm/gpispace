@@ -120,7 +120,6 @@ int main (int argc, char **argv) {
     ("wait,w", "wait until job is finished")
     ("polling", su::po::value<std::string>()->default_value ("true"), "use polling when waiting for job completion")
     ("force,f", "force the operation")
-    ("make-config", "create a basic config file")
     ("kvs,k", su::po::value<std::string>(&kvs_url)->default_value(kvs_url), "The kvs daemon's url")
     ("revision", "Dump the revision identifier")
     ("command", su::po::value<std::string>(),
@@ -144,68 +143,6 @@ int main (int argc, char **argv) {
 
   cfg.notify();
 
-  if (cfg.is_set("make-config"))
-  {
-    fs::path cfg_file (cfg.get("config"));
-    if (fs::exists (cfg_file))
-    {
-      std::cerr << "E: config file '" << cfg_file << "' does already exist, please remove it first!" << std::endl;
-      return FILE_EXISTS;
-    }
-
-    std::cout << "In order to create a configuration, I have to ask you some questions." << std::endl;
-    std::cout << std::endl;
-
-    std::string orchestrator_name(cfg.get<std::string>("orchestrator"));
-    get_user_input("Name of the orchestrator ["+orchestrator_name+"]: ", orchestrator_name);
-
-    std::string orchestrator_location("localhost:5000");
-    get_user_input("Location of the orchestrator ["+orchestrator_location+"]: ", orchestrator_location);
-
-    std::cout << std::endl;
-    std::cout << "The information I gathered is:" << std::endl;
-
-    std::stringstream sstr;
-
-    sstr << "#" << std::endl;
-    sstr << "# automatically generated sdpac config on " << boost::posix_time::second_clock::local_time() << std::endl;
-    sstr << "#" << std::endl;
-    sstr << "orchestrator = " << orchestrator_name << std::endl;
-    sstr << std::endl;
-
-    sstr << "[network]" << std::endl;
-    sstr << "location = " << orchestrator_name << ":" << orchestrator_location << std::endl;
-    sstr << std::endl;
-
-    std::cout << sstr.str();
-
-    std::cout << "Is that ok [y/N]? ";
-    {
-      std::string tmp;
-      std::getline (std::cin, tmp);
-      if (tmp != "y" && tmp != "Y")
-        return 0;
-    }
-
-    // try to open config file
-    fs::ofstream cfg_ofs(cfg_file);
-    if ( ! cfg_ofs.is_open() )
-    {
-      fs::create_directories (cfg_file.parent_path());
-      cfg_ofs.open (cfg_file);
-      if ( ! cfg_ofs.is_open())
-      {
-        std::cerr << "E: could not open " << cfg_file << " for writing!" << std::endl;
-        return IO_ERROR;
-      }
-    }
-
-    cfg_ofs << sstr.str();
-
-    std::cout << "Thank you, your config file has been written to " << cfg.get("config") << std::endl;
-    return 0;
-  }
-
   try
   {
     cfg.parse_config_file();
@@ -214,10 +151,6 @@ int main (int argc, char **argv) {
   {
     // std::cerr << "W: could not parse config file: "
     //           << cfg.get("config")
-    //           << std::endl;
-
-    // std::cerr << "W: try generating one with '"
-    //           << argv[0] << " --make-config'"
     //           << std::endl;
   }
   cfg.notify();
