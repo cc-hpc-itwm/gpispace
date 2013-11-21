@@ -281,7 +281,7 @@ namespace utils
       , boost::function<void (sdpa::client::Client&)> function
       )
     {
-      sdpa::client::Client c (orch.name(), boost::none);
+      sdpa::client::Client c (orch.name());
 
       function (c);
     }

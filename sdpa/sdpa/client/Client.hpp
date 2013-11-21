@@ -34,7 +34,7 @@ namespace sdpa
     public:
       typedef unsigned long long timeout_t;
 
-      Client (std::string orchestrator, boost::optional<timeout_t> timeout);
+      Client (std::string orchestrator, boost::optional<timeout_t> = boost::none);
       ~Client();
 
       static sdpa::util::NewConfig config()
