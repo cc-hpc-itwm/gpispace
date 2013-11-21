@@ -13,7 +13,7 @@ NewConfig::NewConfig(const std::string &component_name, const std::string &env_p
   , network_opts_("Network Options")
   , tool_opts_("Command-line tool options")
   , tool_hidden_opts_("Command-line tool options (hidden)")
-  , specific_opts_(component_name + " specific options")
+  , specific_opts_(component_name_ + " specific options")
 {
   // fill in defaults
   generic_opts_.add_options()
