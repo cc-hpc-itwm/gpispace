@@ -25,7 +25,9 @@ namespace sdpa {
       LOG(INFO, "The job "<<evt.jobId()<<" changed its status from RUNNING to STALLED");
       if(evt.ptrAgent()) {
         // notify the the job owner that the job has subtasks that are stalling
-        sdpa::events::JobStalledEvent::Ptr pEvt(new sdpa::events::JobStalledEvent(evt.ptrAgent()->name(), evt.jobOwner(), evt.jobId()));
+        sdpa::events::JobStalledEvent::Ptr pEvt(new sdpa::events::JobStalledEvent(evt.ptrAgent()->name(),
+                                                                                  evt.jobOwner(),
+                                                                                  evt.jobId()));
         evt.ptrAgent()->sendEventToMaster(pEvt);
       }
     }
