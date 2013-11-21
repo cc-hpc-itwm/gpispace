@@ -285,7 +285,6 @@ int main (int argc, char **argv) {
                              ? boost::optional<sdpa::client::Client::timeout_t>
                                (cfg.get<unsigned int>("network.timeout"))
                              : boost::none
-                             , cfg
                              );
 
     if (command == "submit")

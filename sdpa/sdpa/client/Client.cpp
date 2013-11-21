@@ -43,10 +43,7 @@ namespace
   }
 }
 
-Client::Client ( std::string orchestrator
-               , boost::optional<timeout_t> timeout
-               , const sdpa::util::NewConfig& config
-               )
+Client::Client (std::string orchestrator, boost::optional<timeout_t> timeout)
   : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
   , timeout_ (timeout.get_value_or (5000U))
   , orchestrator_ (orchestrator)

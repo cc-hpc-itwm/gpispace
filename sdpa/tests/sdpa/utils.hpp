@@ -288,7 +288,6 @@ namespace utils
                              ? boost::optional<sdpa::client::Client::timeout_t>
                                (config.get<unsigned int>("network.timeout"))
                              : boost::none
-                             , config
                              );
 
       function (c);
