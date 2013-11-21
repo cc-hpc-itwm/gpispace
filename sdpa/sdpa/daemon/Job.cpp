@@ -46,8 +46,7 @@ namespace sdpa {
     Job::Job(const sdpa::job_id_t id,
                      const sdpa::job_desc_t desc,
                      const sdpa::job_id_t &parent)
-        : SDPA_INIT_LOGGER("Job")
-        , id_(id)
+        : id_(id)
         , desc_(desc)
         , parent_(parent)
         , type_(Job::WORKER)

@@ -256,8 +256,6 @@ namespace sdpa {
       void Resume(sdpa::daemon::IAgent*);
 
     protected:
-      SDPA_DECLARE_LOGGER();
-
       mutex_type mtx_;
 
     private:
