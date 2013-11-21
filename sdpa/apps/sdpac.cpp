@@ -115,14 +115,10 @@ namespace
     NewConfig();
 
     void parse_command_line(int argc, char **argv);
-    void parse_command_line(const std::vector<std::string> &);
 
     void parse_config_file();
-    void parse_config_file(const std::string &cfg_file_path);
-    void parse_config_file(std::istream &stream, const std::string &cfg_file);
 
     void parse_environment();
-    void parse_environment(const std::string &prefix);
 
     void notify(); // notify that parsing is finished
 
@@ -134,7 +130,6 @@ namespace
 
     std::ostream &printHelp(std::ostream &) const;
     std::ostream &printModuleHelp(std::ostream &os) const;
-    std::ostream &printModuleHelp(std::ostream &os, const std::string &mod) const;
 
     const std::string &get(const std::string &name) const { return opts_[name].as<std::string>(); }
     template <typename T> const T &get(const std::string &name) const { return opts_[name].as<T>(); }
@@ -217,53 +212,29 @@ namespace
              .run()
              , opts_);
   }
-  void NewConfig::parse_command_line(const std::vector<std::string> &av)
-  {
-    po::options_description desc;
-    desc.add(generic_opts_)
-      .add(logging_opts_)
-      .add(network_opts_)
-      .add(specific_opts_)
-      .add(tool_opts_)
-      .add(tool_hidden_opts_);
-    po::store(po::command_line_parser(av).options(desc)
-             .positional(positional_opts_)
-             .run()
-             , opts_);
-  }
 
   void NewConfig::parse_config_file()
   {
     if (is_set("config"))
     {
       const std::string &cfg_file = get("config");
-      parse_config_file(cfg_file);
-    }
-  }
-
-  void NewConfig::parse_config_file(const std::string &cfg_file)
-  {
-    if (is_set("verbose"))
-    {
-      std::cerr << "I: using config file: " << cfg_file << std::endl;
-    }
-    std::ifstream cfg_s(cfg_file.c_str());
-    parse_config_file(cfg_s, cfg_file);
-  }
-
-  void NewConfig::parse_config_file(std::istream &stream, const std::string &cfg_file)
-  {
-    if (! stream)
-    {
-      throw std::runtime_error ("could not read config file: " + cfg_file);
-    }
-    else
-    {
-      po::options_description desc;
-      desc.add(logging_opts_)
-        .add(network_opts_)
-        .add(specific_opts_);
-      po::store(po::parse_config_file(stream, desc), opts_);
+      if (is_set("verbose"))
+      {
+        std::cerr << "I: using config file: " << cfg_file << std::endl;
+      }
+      std::ifstream stream(cfg_file.c_str());
+      if (! stream)
+      {
+        throw std::runtime_error ("could not read config file: " + cfg_file);
+      }
+      else
+      {
+        po::options_description desc;
+        desc.add(logging_opts_)
+          .add(network_opts_)
+          .add(specific_opts_);
+        po::store(po::parse_config_file(stream, desc), opts_);
+      }
     }
   }
 
@@ -295,15 +266,11 @@ namespace
 
   void NewConfig::parse_environment()
   {
-    parse_environment(env_prefix_);
-  }
-  void NewConfig::parse_environment(const std::string &prefix)
-  {
     po::options_description desc;
     desc.add(logging_opts_)
       .add(network_opts_)
       .add(specific_opts_);
-    po::store(po::parse_environment(desc, environment_variable_to_option(prefix)) , opts_);
+    po::store(po::parse_environment(desc, environment_variable_to_option(env_prefix_)) , opts_);
   }
 
   void NewConfig::notify()
@@ -321,11 +288,8 @@ namespace
 
   std::ostream &NewConfig::printModuleHelp(std::ostream &os) const
   {
-    return printModuleHelp(os, get<std::string>("help-module"));
-  }
+    const std::string mod (get<std::string>("help-module"));
 
-  std::ostream &NewConfig::printModuleHelp(std::ostream &os, const std::string &mod) const
-  {
     if      (mod == "network")       os << network_opts_;
     else if (mod == "logging")       os << logging_opts_;
     else if (mod == component_name_) os << specific_opts_;
