@@ -267,7 +267,7 @@ namespace utils
       return c.cancelJob (id);
     }
 
-    sdpa::status::code wait_for_status_change
+    sdpa::status::code wait_for_terminal_state
       (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
       LOG (DEBUG, "Subscribe to job " << id);
@@ -292,8 +292,7 @@ namespace utils
         (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
         const sdpa::status::code state
-          (wait_for_status_change (c, job_id_user));
-        BOOST_REQUIRE (sdpa::status::is_terminal (state));
+          (wait_for_terminal_state (c, job_id_user));
         retrieve_job_results (c, job_id_user);
         delete_job (c, job_id_user);
         return state;
