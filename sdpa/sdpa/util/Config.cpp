@@ -6,17 +6,6 @@
 using namespace sdpa::util;
 namespace fs = boost::filesystem;
 
-Config::ptr_t Config::create()
-{
-  Config::ptr_t cfg(new Config());
-
-  return cfg;
-}
-
-Config::Config() {
-
-}
-
 NewConfig::NewConfig(const std::string &component_name, const std::string &env_prefix)
   : component_name_(component_name)
   , env_prefix_(env_prefix)

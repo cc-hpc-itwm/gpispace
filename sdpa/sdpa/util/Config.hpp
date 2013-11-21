@@ -15,53 +15,7 @@
 
 namespace sdpa { namespace util {
 
- class InvalidConfiguration  : public sdpa::SDPAException
- {
-		public:
-		 InvalidConfiguration(const std::string& reason): sdpa::SDPAException(reason) {}
-
-		virtual ~InvalidConfiguration() throw() {}
- };
-
   class Config : public boost::property_tree::ptree {
-    public:
-      typedef sdpa::shared_ptr<Config> ptr_t;
-
-      static ptr_t create();
-
-      virtual ~Config() {}
-
-      bool is_set(const std::string &key) const
-      {
-    	  boost::property_tree::ptree::const_assoc_iterator it(find(key));
-    	  return ( it != not_found() );
-      }
-
-      void read(std::string inFile ) throw (InvalidConfiguration)
-      {
-    	  try {
-    		  read_ini(inFile, *dynamic_cast<boost::property_tree::ptree*>(this));
-    	  }
-    	  catch ( const boost::property_tree::ini_parser_error& ex )
-    	  {
-    		  throw InvalidConfiguration(std::string("Invalid configuration: ") + ex.what());
-    	  }
-      }
-
-      void write(std::ostream& os) const
-      {
-    	  write_ini(os, *this);
-      }
-
-      void print()
-      {
-    	  std::ostringstream sstr;
-    	  write(sstr);
-    	  DMLOG(TRACE, "The daemon was configured with the following parameters: \n\n" << sstr.str());
-      }
-
-    //private:
-      Config();
   };
 
 // new config
