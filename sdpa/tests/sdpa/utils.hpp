@@ -235,14 +235,14 @@ namespace utils
       return c.queryJob (id);
     }
 
-    void wait_for_job_termination ( sdpa::client::Client& c
-                                  , const sdpa::job_id_t& id
-                                  )
+    sdpa::status::code wait_for_job_termination ( sdpa::client::Client& c
+                                                , const sdpa::job_id_t& id
+                                                )
     {
       LOG (DEBUG, "Waiting for termination of job " << id);
 
       sdpa::client::job_info_t job_info;
-      c.wait_for_terminal_state_polling (id, job_info);
+      return c.wait_for_terminal_state_polling (id, job_info);
     }
 
     sdpa::client::result_t retrieve_job_results
@@ -278,15 +278,17 @@ namespace utils
 
     namespace
     {
-      void wait_for_termination_impl
+      sdpa::status::code wait_for_termination_impl
         (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
-        wait_for_job_termination (c, job_id_user);
+        const sdpa::status::code state
+          (wait_for_job_termination (c, job_id_user));
         retrieve_job_results (c, job_id_user);
         delete_job (c, job_id_user);
+        return state;
       }
 
-      void wait_for_termination_as_subscriber_impl
+      sdpa::status::code wait_for_termination_as_subscriber_impl
         (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
         const sdpa::status::code state
@@ -294,21 +296,20 @@ namespace utils
         BOOST_REQUIRE (sdpa::status::is_terminal (state));
         retrieve_job_results (c, job_id_user);
         delete_job (c, job_id_user);
+        return state;
       }
     }
 
-    void submit_job_and_wait_for_termination ( std::string workflow
-                                             , const orchestrator& orch
-                                             )
+    sdpa::status::code submit_job_and_wait_for_termination
+      (std::string workflow, const orchestrator& orch)
     {
       sdpa::client::Client c (orch.name());
 
-      wait_for_termination_impl (submit_job (c, workflow), c);
+      return wait_for_termination_impl (submit_job (c, workflow), c);
     }
 
-    void submit_job_and_cancel_and_wait_for_termination ( std::string workflow
-                                                        , const orchestrator& orch
-                                                        )
+    sdpa::status::code submit_job_and_cancel_and_wait_for_termination
+      (std::string workflow, const orchestrator& orch)
     {
       sdpa::client::Client c (orch.name());
 
@@ -316,23 +317,19 @@ namespace utils
       //! \todo There should not be a requirement for this!
       boost::this_thread::sleep (boost::posix_time::seconds (1));
       cancel_job (c, job_id_user);
-      wait_for_termination_impl (job_id_user, c);
+      return wait_for_termination_impl (job_id_user, c);
     }
 
-    void submit_job_and_wait_for_termination_as_subscriber
-      ( std::string workflow
-      , const orchestrator& orch
-      )
+    sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
+      (std::string workflow, const orchestrator& orch)
     {
       sdpa::client::Client c (orch.name());
 
-      wait_for_termination_as_subscriber_impl (submit_job (c, workflow), c);
+      return wait_for_termination_as_subscriber_impl (submit_job (c, workflow), c);
     }
 
-    void submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
-      ( std::string workflow
-      , const orchestrator& orch
-      )
+    sdpa::status::code submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
+      (std::string workflow, const orchestrator& orch)
     {
       sdpa::job_id_t job_id_user;
       {
@@ -342,7 +339,7 @@ namespace utils
 
       {
         sdpa::client::Client c (orch.name());
-        wait_for_termination_as_subscriber_impl (job_id_user, c);
+        return wait_for_termination_as_subscriber_impl (job_id_user, c);
       }
     }
   }
