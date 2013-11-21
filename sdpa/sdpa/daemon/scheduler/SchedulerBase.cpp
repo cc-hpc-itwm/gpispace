@@ -297,7 +297,7 @@ void SchedulerBase::run()
           schedule(jobId);
       }
       else {
-          pending_jobs_queue_.push(jobId);
+          enqueueJob(jobId);
           // mark the job as stalled
           //ptr_comm_handler_->pause(jobId);
           lock_type lock(mtx_);
