@@ -109,7 +109,6 @@ BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-/*
 BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 {
   LOG( INFO, "Test if the capabilities are matching the requirements "<<std::endl);
@@ -170,8 +169,8 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   ptrScheduler->assignJobsToWorkers();
 
-  sdpa::worker_id_t assgnWid(ptrScheduler->getAssignedWorker(jobId1));
-  BOOST_REQUIRE(assgnWid.empty());
+  boost::optional<sdpa::worker_id_t> assgnWid(ptrScheduler->getAssignedWorker(jobId1));
+  BOOST_REQUIRE(!assgnWid);
 
   if(assgnWid == worker_A)
     LOG(DEBUG, "The job Job1 was scheduled on worker_A, which is incorrect, because worker_A doesn't have yet the capability \"C\"");
@@ -193,12 +192,13 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   ptrScheduler->assignJobsToWorkers();
 
   assgnWid = ptrScheduler->getAssignedWorker(jobId1);
-  BOOST_REQUIRE(assgnWid == worker_A);
-  if(assgnWid == worker_A)
+  BOOST_REQUIRE(*assgnWid == worker_A);
+  if(*assgnWid == worker_A)
     LOG(DEBUG, "The job Job1 was scheduled on worker_A, which is correct, as the worker_A has now gained the capability \"C\"");
   else
     LOG(DEBUG, "The job Job1 wasn't scheduled on worker_A, despite the fact is is the only one having the required  capability, which is incorrect");
 }
+
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
@@ -254,9 +254,9 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   {
     sdpa::job_id_t jobId = listJobIds.front();
     // check if the job was assigned to any worker
-    sdpa::worker_id_t assgnWid(ptrScheduler->getAssignedWorker(jobId));
-    BOOST_REQUIRE(!assgnWid.empty());
-    workerList.remove(assgnWid);
+    boost::optional<sdpa::worker_id_t> assgnWid(ptrScheduler->getAssignedWorker(jobId));
+    BOOST_REQUIRE(assgnWid);
+    workerList.remove(*assgnWid);
     listJobIds.pop_front();
   }
 
@@ -318,9 +318,9 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
    {
       sdpa::job_id_t jobId = listJobIds.front();
       // check if the job was assigned to any worker
-      sdpa::worker_id_t assgnWid(ptrScheduler->getAssignedWorker(jobId));
-      BOOST_REQUIRE(!assgnWid.empty());
-      workerList.remove(assgnWid);
+      boost::optional<sdpa::worker_id_t> assgnWid(ptrScheduler->getAssignedWorker(jobId));
+      BOOST_REQUIRE(assgnWid);
+      workerList.remove(*assgnWid);
       listJobIds.pop_front();
    }
 
@@ -336,9 +336,9 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
    sdpa::job_id_t jobId = listJobIds.front();
    // check if the job was assigned to any worker
-   sdpa::worker_id_t assgnWid = ptrScheduler->getAssignedWorker(jobId);
-   BOOST_REQUIRE(!assgnWid.empty());
-   workerList.remove(assgnWid);
+   boost::optional<sdpa::worker_id_t> assgnWid = ptrScheduler->getAssignedWorker(jobId);
+   BOOST_REQUIRE(assgnWid);
+   workerList.remove(*assgnWid);
    listJobIds.pop_front();
 
    // check if there are any jobs non-asssigned left
@@ -408,10 +408,10 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   {
       sdpa::job_id_t jobId = listJobIds.front();
       // check if the job was assigned to any worker
-      sdpa::worker_id_t assgnWid(ptrScheduler->getAssignedWorker(jobId));
-      if(!assgnWid.empty())
+      boost::optional<sdpa::worker_id_t> assgnWid(ptrScheduler->getAssignedWorker(jobId));
+      if(assgnWid)
       {
-        workerList.remove(assgnWid);
+        workerList.remove(*assgnWid);
         listJobIds.pop_front();
       }
   }
@@ -432,9 +432,9 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
   sdpa::job_id_t jobId = listJobIds.front();
   // check if the job was assigned to any worker
-  sdpa::worker_id_t assgnWid = ptrScheduler->getAssignedWorker(jobId);
-  BOOST_REQUIRE(assgnWid == lastWorkerId);
-  workerList.remove(assgnWid);
+  boost::optional<sdpa::worker_id_t> assgnWid = ptrScheduler->getAssignedWorker(jobId);
+  BOOST_REQUIRE(*assgnWid == lastWorkerId);
+  workerList.remove(*assgnWid);
   listJobIds.pop_front();
 
   // check if there are any jobs non-asssigned left
@@ -442,7 +442,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   // check if all the workers were served
   BOOST_REQUIRE(workerList.empty());
 }
-*/
 
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {

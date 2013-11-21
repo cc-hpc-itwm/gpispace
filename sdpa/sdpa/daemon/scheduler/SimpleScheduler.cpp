@@ -88,14 +88,14 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   }
 }
 
-sdpa::worker_id_t SimpleScheduler::getAssignedWorker(const sdpa::job_id_t& jid)
+boost::optional<sdpa::worker_id_t> SimpleScheduler::getAssignedWorker(const sdpa::job_id_t& jid)
 {
   try {
-      return findWorker(jid);
+      return boost::optional<sdpa::worker_id_t>(findWorker(jid));
   }
   catch(const NoWorkerFoundException& )
   {
-      return sdpa::worker_id_t("");
+      return boost::optional<sdpa::worker_id_t>();
   }
 }
 void SimpleScheduler::releaseReservation(const sdpa::job_id_t& jobId) { throw std::runtime_error ("Not implemented!");}

@@ -13,7 +13,7 @@ namespace sdpa {
     SimpleScheduler(sdpa::daemon::IAgent*);
 
     void assignJobsToWorkers();
-    sdpa::worker_id_t getAssignedWorker(const sdpa::job_id_t& jid);
+    boost::optional<sdpa::worker_id_t> getAssignedWorker(const sdpa::job_id_t& jid);
     void rescheduleJob(const sdpa::job_id_t& job_id );
     void releaseReservation(const sdpa::job_id_t& jobId);
     void workerFinished(const worker_id_t& wid, const job_id_t& jid);
