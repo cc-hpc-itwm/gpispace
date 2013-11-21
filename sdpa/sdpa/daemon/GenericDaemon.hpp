@@ -196,7 +196,7 @@ namespace sdpa {
       void pause(const job_id_t& id );
       void resume(const job_id_t& id );
 
-      virtual void submitWorkflow(const id_type& id, const encoded_type& );
+      virtual void submitWorkflow(const job_id_t& id);
 
       // workers
       virtual Worker::worker_id_t getWorkerId(unsigned int rank);

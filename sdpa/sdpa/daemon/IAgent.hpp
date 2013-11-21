@@ -49,7 +49,7 @@ namespace sdpa {
 
     virtual const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const = 0;
 
-    virtual void submitWorkflow(const id_type & id, const encoded_type & ) = 0;
+    virtual void submitWorkflow(const job_id_t &  ) = 0;
 
     virtual void pause(const job_id_t& id ) = 0;
     virtual void resume(const job_id_t& id ) = 0;

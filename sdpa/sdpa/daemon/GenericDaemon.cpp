@@ -454,9 +454,12 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
 
         m_guiService->notify (evt);
       }
-    }
 
-    scheduler()->schedule(job_id);
+      //scheduler()->schedule_local(job_id);
+      submitWorkflow(job_id);
+    }
+    else
+      scheduler()->schedule(job_id);
 
     if( e.from() != sdpa::daemon::WE )
     {
@@ -926,13 +929,104 @@ const job_requirements_t GenericDaemon::getJobRequirements(const sdpa::job_id_t&
   return jobManager()->getJobRequirements(jobId);
 }
 
-void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
+/*void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
 {
   if(!hasWorkflowEngine())
     throw NoWorkflowEngine();
 
   workflowEngine()->submit (wf_id, desc, we::type::user_data ());
+}*/
+
+/*
+        Schedule a job locally, send the job to WE
+*/
+void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
+{
+  DMLOG (TRACE, "Schedule the job "<<jobId.str()<<" to the workflow engine!");
+
+  id_type wf_id = jobId.str();
+
+  try {
+    const Job::ptr_t& pJob = findJob(jobId);
+
+    // Should set the workflow_id here, or send it together with the workflow description
+    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
+    DMLOG (TRACE, "Submit the workflow attached to the job "<<jobId<<" to WE. ");
+    pJob->Dispatch();
+    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
+
+    if(pJob->description().empty() )
+    {
+        SDPA_LOG_ERROR("Empty Workflow!");
+        // declare job as failed
+        JobFailedEvent::Ptr pEvtJobFailed
+              (new JobFailedEvent( sdpa::daemon::WE
+                                 , name()
+                                 , jobId
+                                 , ""
+                                 , fhg::error::UNEXPECTED_ERROR
+                                 , "The job has an empty workflow attached!"
+                                 )
+              );
+
+        sendEventToSelf(pEvtJobFailed);
+    }
+
+    workflowEngine()->submit (wf_id, pJob->description(), we::type::user_data ());
+  }
+  catch(const NoWorkflowEngine& ex)
+  {
+    SDPA_LOG_ERROR("No workflow engine!");
+    sdpa::job_result_t result(ex.what());
+
+    JobFailedEvent::Ptr pEvtJobFailed
+      (new JobFailedEvent( sdpa::daemon::WE
+                         , name()
+                         , jobId
+                         , result
+                         , fhg::error::UNEXPECTED_ERROR
+                         , "no workflow engine attached!"
+                         )
+      );
+    sendEventToSelf(pEvtJobFailed);
+  }
+  catch(const JobNotFoundException& ex)
+  {
+    SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+    sdpa::job_result_t result(ex.what());
+
+    JobFailedEvent::Ptr pEvtJobFailed
+      (new JobFailedEvent( sdpa::daemon::WE
+                         , name()
+                         , jobId
+                         , result
+                         , fhg::error::UNEXPECTED_ERROR
+                         , "job could not be found"
+                         )
+      );
+
+    sendEventToSelf(pEvtJobFailed);
+  }
+  catch (std::exception const & ex)
+  {
+    SDPA_LOG_ERROR("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
+
+    //send a JobFailed event
+    sdpa::job_result_t result(ex.what());
+
+    JobFailedEvent::Ptr pEvtJobFailed
+      (new JobFailedEvent( sdpa::daemon::WE
+                         , name()
+                         , jobId
+                         , result
+                         , fhg::error::UNEXPECTED_ERROR
+                         , ex.what()
+                         )
+      );
+    sendEventToSelf(pEvtJobFailed);
+  }
 }
+
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
