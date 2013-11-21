@@ -72,7 +72,7 @@ GenericDaemon::GenericDaemon( const std::string name,
                  )
   , _max_consecutive_registration_attempts (360)
   , _max_consecutive_network_faults (360)
-  , _registration_timeout (1 * 1000 * 1000)
+  , _registration_timeout (boost::posix_time::seconds (1))
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -592,9 +592,8 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
             if(masterInfo.getConsecRegAttempts()< _max_consecutive_registration_attempts)
             {
-              const unsigned long reg_timeout(_registration_timeout);
-              DMLOG (TRACE, "Wait " << reg_timeout/1000000 << "s before trying to re-register ...");
-              boost::this_thread::sleep(boost::posix_time::microseconds(reg_timeout));
+              DMLOG (TRACE, "Wait " << boost::posix_time::to_simple_string (_registration_timeout) << " before trying to re-register ...");
+              boost::this_thread::sleep (_registration_timeout);
               requestRegistration(masterInfo);
             }
             else
@@ -657,8 +656,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
               if( masterInfo.getConsecNetFailCnt() < _max_consecutive_network_faults)
               {
-                const unsigned long reg_timeout(_registration_timeout);
-                boost::this_thread::sleep(boost::posix_time::seconds(reg_timeout/1000000));
+                boost::this_thread::sleep (_registration_timeout);
 
                 masterInfo.set_registered(false);
               }

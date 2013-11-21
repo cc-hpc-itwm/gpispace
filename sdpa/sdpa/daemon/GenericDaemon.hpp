@@ -50,6 +50,7 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/user_data.hpp>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
@@ -251,7 +252,7 @@ namespace sdpa {
 
       unsigned int _max_consecutive_registration_attempts;
       unsigned int _max_consecutive_network_faults;
-      unsigned long _registration_timeout;
+      boost::posix_time::time_duration _registration_timeout;
     };
   }
 }
