@@ -152,96 +152,6 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id ) throw (
   }
 }
 
-/*
-        Schedule a job locally, send the job to WE
-*/
-void SchedulerBase::schedule_local(const sdpa::job_id_t &jobId)
-{
-  DMLOG (TRACE, "Schedule the job "<<jobId.str()<<" to the workflow engine!");
-
-  id_type wf_id = jobId.str();
-
-  try {
-    const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
-
-    // Should set the workflow_id here, or send it together with the workflow description
-    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
-    DMLOG (TRACE, "Submit the workflow attached to the job "<<jobId<<" to WE. ");
-    pJob->Dispatch();
-    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
-
-    if(pJob->description().empty() )
-    {
-        SDPA_LOG_ERROR("Empty Workflow!");
-        // declare job as failed
-        JobFailedEvent::Ptr pEvtJobFailed
-              (new JobFailedEvent( sdpa::daemon::WE
-                                 , m_agent_name
-                                 , jobId
-                                 , ""
-                                 , fhg::error::UNEXPECTED_ERROR
-                                 , "The job has an empty workflow attached!"
-                                 )
-              );
-
-        ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-    }
-
-    ptr_comm_handler_->submitWorkflow(wf_id, pJob->description());
-  }
-  catch(const NoWorkflowEngine& ex)
-  {
-    SDPA_LOG_ERROR("No workflow engine!");
-    sdpa::job_result_t result(ex.what());
-
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent( sdpa::daemon::WE
-                         , m_agent_name
-                         , jobId
-                         , result
-                         , fhg::error::UNEXPECTED_ERROR
-                         , "no workflow engine attached!"
-                         )
-      );
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-  catch(const JobNotFoundException& ex)
-  {
-    SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
-    sdpa::job_result_t result(ex.what());
-
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent( sdpa::daemon::WE
-                         , m_agent_name
-                         , jobId
-                         , result
-                         , fhg::error::UNEXPECTED_ERROR
-                         , "job could not be found"
-                         )
-      );
-
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-  catch (std::exception const & ex)
-  {
-    SDPA_LOG_ERROR("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
-
-    //send a JobFailed event
-    sdpa::job_result_t result(ex.what());
-
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent( sdpa::daemon::WE
-                         , m_agent_name
-                         , jobId
-                         , result
-                         , fhg::error::UNEXPECTED_ERROR
-                         , ex.what()
-                         )
-      );
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-}
-
 void SchedulerBase::delete_job (sdpa::job_id_t const & job)
 {
   SDPA_LOG_DEBUG("removing job " << job << " from the scheduler's queue ....");
@@ -384,23 +294,16 @@ void SchedulerBase::run()
       sdpa::job_id_t jobId  = pending_jobs_queue_.pop_and_wait(m_timeout);
       const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
 
-      if( !pJob->isMasterJob() ) {
-        // if it's an NRE just execute it!
-        // Attention!: an NRE has no WorkerManager!
-        // or has an Worker Manager and the workers are threads
-        if( numberOfWorkers()>0 ) {
-            schedule_remotely(jobId);
-        }
-        else {
+      if( numberOfWorkers()>0 ) {
+          schedule_remotely(jobId);
+      }
+      else {
           pending_jobs_queue_.push(jobId);
           // mark the job as stalled
           //ptr_comm_handler_->pause(jobId);
           lock_type lock(mtx_);
           cond_workers_registered.wait(lock);
-        } // else fail
       }
-      else // it's a master job
-        schedule_local(jobId);
     }
     catch(const JobNotFoundException& ex)
     {
