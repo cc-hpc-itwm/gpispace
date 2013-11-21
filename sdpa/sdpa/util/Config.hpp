@@ -14,12 +14,6 @@
 #include <sdpa/SDPAException.hpp>
 
 namespace sdpa { namespace util {
-
-  class Config : public boost::property_tree::ptree {
-  };
-
-// new config
-
   namespace po = boost::program_options;
 
   class NewConfig
