@@ -319,15 +319,6 @@ namespace utils
         wait_for_termination_as_subscriber_impl
           (submit_job (c, workflow), c);
       }
-
-      void submit_job_result_by_ref
-        ( std::string workflow
-        , sdpa::client::Client& c
-        , sdpa::job_id_t* job_id
-        )
-      {
-        *job_id = submit_job (c, workflow);
-      }
     }
 
     void submit_job_and_wait_for_termination ( std::string workflow
@@ -366,7 +357,7 @@ namespace utils
       sdpa::job_id_t job_id_user;
       {
         sdpa::client::Client c (orch.name());
-        submit_job_result_by_ref (workflow, c, &job_id_user);
+        job_id_user = submit_job (c, workflow);
       }
 
       {
