@@ -761,14 +761,22 @@ void GenericDaemon::submit( const id_type& activityId
     job_id_t job_id(activityId);
     job_id_t parent_id(user_data.get_user_job_identification());
 
-    jobManager()->addJobRequirements(job_id, jobReqs);
+    try {
+        jobManager()->findJob(parent_id);
+        jobManager()->addJobRequirements(job_id, jobReqs);
 
-    // WORK HERE: limit number of maximum parallel jobs
-    jobManager()->waitForFreeSlot ();
+        // WORK HERE: limit number of maximum parallel jobs
+        jobManager()->waitForFreeSlot ();
 
-    // don't forget to set here the job's preferences
-    SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
-    sendEventToSelf(pEvtSubmitJob);
+        // don't forget to set here the job's preferences
+        SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
+        sendEventToSelf(pEvtSubmitJob);
+      }
+      catch(const JobNotFoundException& ex)
+      {
+          SDPA_LOG_ERROR("Could not find the parent job "<<parent_id<<" indicated by the workflow engine in the last submission!");
+          throw;
+      }
   }
   catch(QueueFull const &)
   {
