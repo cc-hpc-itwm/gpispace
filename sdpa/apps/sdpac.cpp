@@ -176,14 +176,10 @@ namespace
       ("logging.file", po::value<std::string>(),
       "redirect log output to this file")
       ("logging.tostderr", "output to stderr")
-      ("logging.level", po::value<int>()->default_value(0),
-      "standard logging level")
       ;
     network_opts_.add_options()
       ("network.timeout", po::value<unsigned int>(),
       "maximum time to wait for a reply (in milliseconds)")
-      ("network.location", po::value< std::vector<std::string> >()->composing(),
-      "location information for a specific location (name:location)")
       ;
     specific_opts_.add_options()
       ( "orchestrator"
