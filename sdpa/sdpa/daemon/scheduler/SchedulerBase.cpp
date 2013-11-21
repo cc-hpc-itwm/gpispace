@@ -205,7 +205,7 @@ void SchedulerBase::schedule_remotely(const sdpa::job_id_t& jobId)
   }
 }
 
-void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
+void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
 {
   //DMLOG(TRACE, "Schedule the job " << jobId.str());
   pending_jobs_queue_.push(jobId);

@@ -459,7 +459,7 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
       submitWorkflow(job_id);
     }
     else
-      scheduler()->schedule(job_id);
+      scheduler()->enqueueJob(job_id);
 
     if( e.from() != sdpa::daemon::WE )
     {
