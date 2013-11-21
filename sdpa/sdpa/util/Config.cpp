@@ -5,9 +5,9 @@
 
 using namespace sdpa::util;
 
-NewConfig::NewConfig(const std::string &component_name, const std::string &env_prefix)
-  : component_name_(component_name)
-  , env_prefix_(env_prefix)
+NewConfig::NewConfig()
+  : component_name_("client")
+  , env_prefix_("SDPAC_")
   , generic_opts_("Generic Options")
   , logging_opts_("Logging configuration")
   , network_opts_("Network Options")
@@ -39,6 +39,16 @@ NewConfig::NewConfig(const std::string &component_name, const std::string &env_p
     ("network.location", po::value< std::vector<std::string> >()->composing(),
      "location information for a specific location (name:location)")
     ;
+  specific_opts_.add_options()
+    ( "orchestrator"
+    , po::value<std::string>()->default_value ("orchestrator")
+    , "name of the orchestrator"
+    )
+    ( "config,C"
+    , po::value<std::string>()->default_value
+    (std::getenv ("HOME") + std::string ("/.sdpa/configs/sdpac.rc"))
+    , "path to the configuration file"
+    );
 }
 
 void NewConfig::parse_command_line(int argc, char **argv)

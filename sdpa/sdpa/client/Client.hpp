@@ -37,23 +37,6 @@ namespace sdpa
       Client (std::string orchestrator, boost::optional<timeout_t> = boost::none);
       ~Client();
 
-      static sdpa::util::NewConfig config()
-      {
-        using namespace sdpa::util;
-        sdpa::util::NewConfig cfg ("client", "SDPAC_");
-        cfg.specific_opts().add_options()
-          ( "orchestrator"
-          , po::value<std::string>()->default_value ("orchestrator")
-          , "name of the orchestrator"
-          )
-          ( "config,C"
-          , po::value<std::string>()->default_value
-            (std::getenv ("HOME") + std::string ("/.sdpa/configs/sdpac.rc"))
-          , "path to the configuration file"
-          );
-        return cfg;
-      }
-
       job_id_t submitJob(const job_desc_t &) throw (ClientException);
       void cancelJob(const job_id_t &) throw (ClientException);
       status::code queryJob(const job_id_t &) throw (ClientException);

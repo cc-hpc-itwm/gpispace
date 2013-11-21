@@ -19,7 +19,7 @@ namespace sdpa { namespace util {
   class NewConfig
   {
   public:
-    NewConfig(const std::string &component_name, const std::string &env_prefix);
+    NewConfig();
 
     void parse_command_line(int argc, char **argv);
     void parse_command_line(const std::vector<std::string> &);

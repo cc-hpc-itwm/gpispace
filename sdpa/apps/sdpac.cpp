@@ -114,7 +114,7 @@ int main (int argc, char **argv) {
 
   std::string kvs_url (fhg::util::getenv("KVS_URL", "localhost:2439"));
 
-  sdpa::util::NewConfig cfg = sdpa::client::Client::config();
+  sdpa::util::NewConfig cfg;
   cfg.tool_opts().add_options()
     ("output,o", su::po::value<std::string>(), "path to output file")
     ("wait,w", "wait until job is finished")
