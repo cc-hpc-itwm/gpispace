@@ -196,7 +196,6 @@ namespace sdpa {
 
       bool isMasterJob();
       void setType(const job_type& );
-      job_type type() { return type_;}
 
       void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
       sdpa::worker_id_t owner() { return m_owner; }
@@ -214,8 +213,6 @@ namespace sdpa {
       {
         return sdpa::status::is_running (getStatus());
       }
-
-      unsigned long &walltime() { return walltime_;}
 
       // job FSM actions
       virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
