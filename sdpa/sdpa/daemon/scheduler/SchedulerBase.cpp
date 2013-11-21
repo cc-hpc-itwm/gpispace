@@ -291,8 +291,7 @@ void SchedulerBase::run()
   {
     try
     {
-      sdpa::job_id_t jobId  = pending_jobs_queue_.pop_and_wait(m_timeout);
-      const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
+      sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait(m_timeout);
 
       if( numberOfWorkers()>0 ) {
           schedule_remotely(jobId);
@@ -304,10 +303,6 @@ void SchedulerBase::run()
           lock_type lock(mtx_);
           cond_workers_registered.wait(lock);
       }
-    }
-    catch(const JobNotFoundException& ex)
-    {
-        SDPA_LOG_WARN("Could not schedule the job "<<ex.job_id().str()<<". Job not found -> possible recovery inconsistency ...)");
     }
     catch( const boost::thread_interrupted & )
     {
