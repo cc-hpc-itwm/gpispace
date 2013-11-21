@@ -59,16 +59,6 @@ void get_user_input(std::string const & prompt, std::string & result, std::istre
     result = tmp;
 }
 
-bool file_exists(const std::string &path)
-{
-  struct stat file_info;
-  int error_code = stat(path.c_str(), &file_info);
-  if (error_code == 0)
-        return true;
-  else
-        return false;
-}
-
 namespace
 {
   sdpa::status::code wait_for_terminal_state ( sdpa::client::Client& api
