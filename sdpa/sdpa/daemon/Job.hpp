@@ -180,7 +180,7 @@ namespace sdpa {
       const sdpa::job_result_t& result() const;
 
       int error_code() const;
-      std::string const & error_message () const;
+      std::string error_message () const;
 
       Job& error_code(int ec);
       Job& error_message(std::string const &msg);

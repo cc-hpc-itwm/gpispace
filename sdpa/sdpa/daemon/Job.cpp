@@ -45,9 +45,9 @@ namespace sdpa {
       }
     }
 
-    Job::Job(const sdpa::job_id_t id,
-                     const sdpa::job_desc_t desc,
-                     const sdpa::job_id_t &parent)
+    Job::Job( const sdpa::job_id_t id,
+              const sdpa::job_desc_t desc,
+              const sdpa::job_id_t &parent)
         : id_(id)
         , desc_(desc)
         , parent_(parent)
@@ -62,83 +62,96 @@ namespace sdpa {
 
     const sdpa::job_id_t & Job::id() const
     {
-        return id_;
+      return id_;
     }
 
     const sdpa::job_id_t & Job::parent() const
     {
-        return parent_;
+      return parent_;
     }
 
     const sdpa::job_desc_t & Job::description() const
     {
-        return desc_;
+      return desc_;
     }
 
     const sdpa::job_result_t& Job::result() const
     {
+      lock_type mtx_;
       return result_;
     }
 
     int Job::error_code() const
     {
+      lock_type mtx_;
       return m_error_code;
     }
 
-    std::string const& Job::error_message () const
+    std::string Job::error_message () const
     {
+      lock_type mtx_;
       return m_error_message;
     }
 
     Job& Job::error_code(int ec)
     {
+      lock_type lock(mtx_);
       m_error_code = ec;
       return *this;
     }
 
     Job& Job::error_message(std::string const &msg)
     {
+      lock_type lock(mtx_);
       m_error_message = msg;
       return *this;
     }
 
     void Job::set_owner(const sdpa::worker_id_t& owner)
     {
+      lock_type lock(mtx_);
       m_owner = owner;
     }
 
     sdpa::worker_id_t Job::owner()
     {
+      lock_type lock(mtx_);
       return m_owner;
     }
 
     sdpa::status::code Job::getStatus()
     {
+      lock_type lock(mtx_);
       return state_code (*current_state());
     }
 
     bool Job::completed()
     {
-      return sdpa::status::is_terminal (getStatus());
+      lock_type lock(mtx_);
+      return sdpa::status::is_terminal (state_code (*current_state()));
     }
 
     bool Job::is_running()
     {
-      return sdpa::status::is_running (getStatus());
+      lock_type lock(mtx_);
+      return sdpa::status::is_running (state_code (*current_state()));
     }
 
     bool Job::isMasterJob()
     {
+      lock_type lock(mtx_);
       return type_ == Job::MASTER;
     }
 
     void Job::setType(const job_type& type)
     {
+      lock_type lock(mtx_);
       type_ = type;
     }
 
     void Job::setResult(const sdpa::job_result_t& arg_results)
     {
+      lock_type lock(mtx_);
       result_ = arg_results;
     }
 
@@ -148,14 +161,16 @@ namespace sdpa {
 
     void Job::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)
     {
-        setResult(evt.result());
+      lock_type lock(mtx_);
+      setResult(evt.result());
     }
 
     void Job::action_job_failed(const sdpa::events::JobFailedEvent& evt )
     {
-        setResult(evt.result());
-        error_code(evt.error_code());
-        error_message(evt.error_message());
+      lock_type lock(mtx_);
+      setResult(evt.result());
+      error_code(evt.error_code());
+      error_message(evt.error_message());
     }
 
     //transitions
