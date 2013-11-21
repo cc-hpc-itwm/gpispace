@@ -4,7 +4,6 @@
 #include "Config.hpp"
 
 using namespace sdpa::util;
-namespace fs = boost::filesystem;
 
 NewConfig::NewConfig(const std::string &component_name, const std::string &env_prefix)
   : component_name_(component_name)
