@@ -177,83 +177,48 @@ namespace sdpa {
       const sdpa::job_id_t& id() const;
       const sdpa::job_id_t& parent() const;
       const sdpa::job_desc_t& description() const;
-      const sdpa::job_result_t& result() const { return result_; }
+      const sdpa::job_result_t& result() const;
 
-      int error_code() const {return m_error_code;}
-      std::string const & error_message () const { return m_error_message;}
+      int error_code() const;
+      std::string const & error_message () const;
 
-      Job& error_code(int ec)
-      {
-        m_error_code = ec;
-        return *this;
-      }
-
-      Job& error_message(std::string const &msg)
-      {
-        m_error_message = msg;
-        return *this;
-      }
+      Job& error_code(int ec);
+      Job& error_message(std::string const &msg);
 
       bool isMasterJob();
       void setType(const job_type& );
 
-      void set_owner(const sdpa::worker_id_t& owner) { m_owner = owner; }
-      sdpa::worker_id_t owner() { return m_owner; }
+      void set_owner(const sdpa::worker_id_t& owner);
+      sdpa::worker_id_t owner();
 
-      sdpa::status::code getStatus()
-      {
-        return state_code (*current_state());
-      }
+      sdpa::status::code getStatus();
 
-      bool completed()
-      {
-        return sdpa::status::is_terminal (getStatus());
-      }
-      bool is_running()
-      {
-        return sdpa::status::is_running (getStatus());
-      }
+      bool completed();
+      bool is_running();
 
       // job FSM actions
       virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
       virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
 
-      void setResult(const sdpa::job_result_t& arg_results) { result_ = arg_results; }
-
-      std::string print_info()
-      {
-        std::ostringstream os;
-        os<<std::endl;
-        os<<"id: "<<id_<<std::endl;
-        os<<"type: "<<type_<<std::endl;
-        os<<"status: "<<getStatus()<<std::endl;
-        os<<"parent: "<<parent_<<std::endl;
-        os<<"error-code: " << m_error_code << std::endl;
-        os<<"error-message: \"" << m_error_message << "\"" << std::endl;
-        //os<<"description: "<<desc_<<std::endl;
-
-        return os.str();
-      }
+      void setResult(const sdpa::job_result_t& arg_results);
 
       //transitions
-      void CancelJob(const sdpa::events::CancelJobEvent* pEvt)
-      {lock_type lock(mtx_); process_event(*pEvt);}
-      void CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
-      {lock_type lock(mtx_); process_event(*pEvt);}
-      void JobFailed(const sdpa::events::JobFailedEvent* pEvt)
-      {lock_type lock(mtx_); process_event(*pEvt);}
-      void JobFinished(const sdpa::events::JobFinishedEvent* pEvt)
-      {lock_type lock(mtx_); process_event(*pEvt);}
+      void CancelJob(const sdpa::events::CancelJobEvent*);
+      void CancelJobAck(const sdpa::events::CancelJobAckEvent*);
+      void JobFailed(const sdpa::events::JobFailedEvent*);
+      void JobFinished(const sdpa::events::JobFinishedEvent*);
 
-      void DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent*  ptr_comm);
-      void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon );
-      void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm);
-      void Reschedule(sdpa::daemon::Scheduler*  pSched);
+      void DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IAgent*);
+      void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent*);
+      void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent*);
+      void Reschedule(sdpa::daemon::Scheduler*);
 
       void Dispatch();
       void Pause(sdpa::daemon::IAgent*);
       void Resume(sdpa::daemon::IAgent*);
+
+      std::string print_info();
 
     protected:
       mutex_type mtx_;

@@ -58,25 +58,86 @@ namespace sdpa {
       start();
     }
 
-    const sdpa::job_id_t & Job::id() const {
+    const sdpa::job_id_t & Job::id() const
+    {
         return id_;
     }
 
-    const sdpa::job_id_t & Job::parent() const {
+    const sdpa::job_id_t & Job::parent() const
+    {
         return parent_;
     }
 
-    const sdpa::job_desc_t & Job::description() const {
+    const sdpa::job_desc_t & Job::description() const
+    {
         return desc_;
     }
 
-
-    bool Job::isMasterJob() {
-        return type_ == Job::MASTER;
+    const sdpa::job_result_t& Job::result() const
+    {
+      return result_;
     }
 
-    void Job::setType(const job_type& type) {
-        type_ = type;
+    int Job::error_code() const
+    {
+      return m_error_code;
+    }
+
+    std::string const& Job::error_message () const
+    {
+      return m_error_message;
+    }
+
+    Job& Job::error_code(int ec)
+    {
+      m_error_code = ec;
+      return *this;
+    }
+
+    Job& Job::error_message(std::string const &msg)
+    {
+      m_error_message = msg;
+      return *this;
+    }
+
+    void Job::set_owner(const sdpa::worker_id_t& owner)
+    {
+      m_owner = owner;
+    }
+
+    sdpa::worker_id_t Job::owner()
+    {
+      return m_owner;
+    }
+
+    sdpa::status::code Job::getStatus()
+    {
+      return state_code (*current_state());
+    }
+
+    bool Job::completed()
+    {
+      return sdpa::status::is_terminal (getStatus());
+    }
+
+    bool Job::is_running()
+    {
+      return sdpa::status::is_running (getStatus());
+    }
+
+    bool Job::isMasterJob()
+    {
+      return type_ == Job::MASTER;
+    }
+
+    void Job::setType(const job_type& type)
+    {
+      type_ = type;
+    }
+
+    void Job::setResult(const sdpa::job_result_t& arg_results)
+    {
+      result_ = arg_results;
     }
 
     void Job::action_delete_job(const sdpa::events::DeleteJobEvent& e)
@@ -93,6 +154,31 @@ namespace sdpa {
         setResult(evt.result());
         error_code(evt.error_code());
         error_message(evt.error_message());
+    }
+
+    //transitions
+    void Job::CancelJob(const sdpa::events::CancelJobEvent* pEvt)
+    {
+      lock_type lock(mtx_);
+      process_event(*pEvt);
+    }
+
+    void Job::CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
+    {
+      lock_type lock(mtx_);
+      process_event(*pEvt);
+    }
+
+    void Job::JobFailed(const sdpa::events::JobFailedEvent* pEvt)
+    {
+      lock_type lock(mtx_);
+      process_event(*pEvt);
+    }
+
+    void Job::JobFinished(const sdpa::events::JobFinishedEvent* pEvt)
+    {
+      lock_type lock(mtx_);
+      process_event(*pEvt);
     }
 
     void Job::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
@@ -154,5 +240,20 @@ namespace sdpa {
     {
       lock_type lock(mtx_);
       process_event (MSMResumeJobEvent (NULL, id(), owner()));
+    }
+
+    std::string Job::print_info()
+    {
+        std::ostringstream os;
+        os<<std::endl;
+        os<<"id: "<<id_<<std::endl;
+        os<<"type: "<<type_<<std::endl;
+        os<<"status: "<<getStatus()<<std::endl;
+        os<<"parent: "<<parent_<<std::endl;
+        os<<"error-code: " << m_error_code << std::endl;
+        os<<"error-message: \"" << m_error_message << "\"" << std::endl;
+        //os<<"description: "<<desc_<<std::endl;
+
+        return os.str();
     }
 }}
