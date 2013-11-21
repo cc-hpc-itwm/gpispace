@@ -740,5 +740,60 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     }
   }
 }
+void Agent::pause(const job_id_t& jobId)
+{
+  try {
+      Job::ptr_t pJob(findJob(jobId));
+      pJob->Pause(NULL);
+      if(!pJob->isMasterJob()) {
+         try {
+             Job::ptr_t pMasterJob(findJob(pJob->parent()));
+             pMasterJob->Pause(this);
+
+             // notify the master about the status of the job -> do this on action
+         }
+         catch(JobNotFoundException const &) {
+             std::string strErr("Could not find the job  ");
+             strErr+=jobId.str();
+             DMLOG (ERROR, strErr);
+         }
+      }
+   }
+   catch(JobNotFoundException const &)
+   {
+       std::string strErr("Could not find the job  ");
+       strErr+=jobId.str();
+       DMLOG (ERROR, strErr);
+   }
+
+}
+
+void Agent::resume(const job_id_t& jobId)
+{
+  try {
+      Job::ptr_t pJob(findJob(jobId));
+      pJob->Resume(NULL);
+      if(!pJob->isMasterJob()) {
+         try {
+             Job::ptr_t pMasterJob(findJob(pJob->parent()));
+             pMasterJob->Resume(this);
+
+             // notify the master about the status of the job -> do this on action
+         }
+         catch(JobNotFoundException const &) {
+             std::string strErr("Could not find the job  ");
+             strErr+=jobId.str();
+             DMLOG (ERROR, strErr);
+         }
+      }
+   }
+   catch(JobNotFoundException const &)
+   {
+       std::string strErr("Could not find the job  ");
+       strErr+=jobId.str();
+       DMLOG (ERROR, strErr);
+   }
+
+}
 }
 }

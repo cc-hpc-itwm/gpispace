@@ -304,6 +304,36 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   }
 }
 
+void Orchestrator::pause(const job_id_t& jobId)
+{
+  try {
+      Job::ptr_t pJob(findJob(jobId));
+      pJob->Pause(NULL);
+   }
+   catch(JobNotFoundException const &)
+   {
+       std::string strErr("Orchestrator: Could not find the job  ");
+       strErr+=jobId.str();
+       DMLOG (ERROR, strErr);
+   }
+
+}
+
+void Orchestrator::resume(const job_id_t& jobId)
+{
+  try {
+      Job::ptr_t pJob(findJob(jobId));
+      pJob->Resume(NULL);
+   }
+   catch(JobNotFoundException const &)
+   {
+       std::string strErr("Orchestrator: Could not find the job  ");
+       strErr+=jobId.str();
+       DMLOG (ERROR, strErr);
+   }
+
+}
+
 Orchestrator::ptr_t Orchestrator::create ( const std::string& name
                                          , const std::string& url
                                          )

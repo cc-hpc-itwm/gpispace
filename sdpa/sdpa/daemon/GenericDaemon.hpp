@@ -192,10 +192,6 @@ namespace sdpa {
       }
 
       // workflow engine notifications
-
-      void pause(const job_id_t& id );
-      void resume(const job_id_t& id );
-
       virtual void submitWorkflow(const job_id_t& id);
 
       // workers

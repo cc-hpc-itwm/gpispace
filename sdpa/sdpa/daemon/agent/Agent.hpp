@@ -70,6 +70,10 @@ namespace sdpa {
         template <typename T>
         void notifySubscribers(const T& ptrEvt);
 
+        void pause(const job_id_t& id );
+        void resume(const job_id_t& id );
+
+      private:
         virtual void createScheduler()
         {
           ptr_scheduler_ = Scheduler::ptr_t (new CoallocationScheduler (this));
