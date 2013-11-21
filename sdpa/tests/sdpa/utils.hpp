@@ -276,16 +276,6 @@ namespace utils
       return c.wait_for_terminal_state (id, job_info);
     }
 
-    void create_client_and_execute
-      ( const orchestrator& orch
-      , boost::function<void (sdpa::client::Client&)> function
-      )
-    {
-      sdpa::client::Client c (orch.name());
-
-      function (c);
-    }
-
     namespace
     {
       void wait_for_termination_impl
@@ -344,20 +334,18 @@ namespace utils
                                              , const orchestrator& orch
                                              )
     {
-      create_client_and_execute
-        ( orch
-        , boost::bind (&submit_job_and_wait_for_termination_impl, workflow, _1)
-        );
+      sdpa::client::Client c (orch.name());
+
+      submit_job_and_wait_for_termination_impl (workflow, c);
     }
 
     void submit_job_and_cancel_and_wait_for_termination ( std::string workflow
                                                         , const orchestrator& orch
                                                         )
     {
-      create_client_and_execute
-        ( orch
-        , boost::bind (&submit_job_and_cancel_and_wait_for_termination_impl, workflow, _1)
-        );
+      sdpa::client::Client c (orch.name());
+
+      submit_job_and_cancel_and_wait_for_termination_impl (workflow, c);
     }
 
     void submit_job_and_wait_for_termination_as_subscriber
@@ -365,10 +353,9 @@ namespace utils
       , const orchestrator& orch
       )
     {
-      create_client_and_execute
-        ( orch
-        , boost::bind (&submit_job_and_wait_for_termination_as_subscriber_impl, workflow, _1)
-        );
+      sdpa::client::Client c (orch.name());
+
+      submit_job_and_wait_for_termination_as_subscriber_impl (workflow, c);
     }
 
     void submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
@@ -377,18 +364,15 @@ namespace utils
       )
     {
       sdpa::job_id_t job_id_user;
-      create_client_and_execute ( orch
-                                , boost::bind ( &submit_job_result_by_ref
-                                              , workflow
-                                              , _1
-                                              , &job_id_user
-                                              )
-                                );
+      {
+        sdpa::client::Client c (orch.name());
+        submit_job_result_by_ref (workflow, c, &job_id_user);
+      }
 
-      create_client_and_execute
-        ( orch
-        , boost::bind (&wait_for_termination_as_subscriber_impl, job_id_user, _1)
-        );
+      {
+        sdpa::client::Client c (orch.name());
+        wait_for_termination_as_subscriber_impl (job_id_user, c);
+      }
     }
   }
 }
