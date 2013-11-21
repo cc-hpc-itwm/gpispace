@@ -281,13 +281,10 @@ namespace utils
       , boost::function<void (sdpa::client::Client&)> function
       )
     {
-      std::vector<std::string> command_line;
-      command_line.push_back ("--orchestrator=" + orch.name());
-
       sdpa::util::NewConfig config (sdpa::client::Client::config());
-      config.parse_command_line (command_line);
 
-      sdpa::client::Client c ( config.is_set("network.timeout")
+      sdpa::client::Client c ( orch.name()
+                             , config.is_set("network.timeout")
                              ? boost::optional<sdpa::client::Client::timeout_t>
                                (config.get<unsigned int>("network.timeout"))
                              : boost::none

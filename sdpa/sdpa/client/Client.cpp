@@ -43,15 +43,13 @@ namespace
   }
 }
 
-Client::Client ( boost::optional<timeout_t> timeout
+Client::Client ( std::string orchestrator
+               , boost::optional<timeout_t> timeout
                , const sdpa::util::NewConfig& config
                )
   : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
   , timeout_ (timeout.get_value_or (5000U))
-  , orchestrator_ ( config.is_set("orchestrator")
-                  ? config.get<std::string>("orchestrator")
-                  : throw ClientException ("no orchestrator specified!")
-                  )
+  , orchestrator_ (orchestrator)
   , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
   , _peer_thread (&fhg::com::peer_t::run, &m_peer)
   , _stopping (false)
