@@ -296,13 +296,6 @@ namespace utils
         delete_job (c, job_id_user);
       }
 
-      void submit_job_and_wait_for_termination_impl
-        (std::string workflow, sdpa::client::Client& c)
-      {
-        const sdpa::job_id_t job_id_user (submit_job (c, workflow));
-        wait_for_termination_impl (job_id_user, c);
-      }
-
       void submit_job_and_cancel_and_wait_for_termination_impl
         (std::string workflow, sdpa::client::Client& c)
       {
@@ -320,7 +313,7 @@ namespace utils
     {
       sdpa::client::Client c (orch.name());
 
-      submit_job_and_wait_for_termination_impl (workflow, c);
+      wait_for_termination_impl (submit_job (c, workflow), c);
     }
 
     void submit_job_and_cancel_and_wait_for_termination ( std::string workflow
