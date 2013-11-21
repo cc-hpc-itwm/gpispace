@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test_Scheduler.cpp
+ *       Filename:  test_CoallocationScheduler.cpp
  *
  *    Description:  test the scheduler thread
  *
