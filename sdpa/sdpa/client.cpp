@@ -1,33 +1,21 @@
 #include <sdpa/client.hpp>
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
-#include <boost/lexical_cast.hpp>
-
-#include <fhglog/fhglog.hpp>
-#include <fhglog/Configuration.hpp>
-
-#include <seda/StageRegistry.hpp>
-#include <sdpa/job_states.hpp>
-
-#include <sdpa/events/SubmitJobEvent.hpp>
-#include <sdpa/events/SubmitJobAckEvent.hpp>
-#include <sdpa/events/QueryJobStatusEvent.hpp>
-#include <sdpa/events/JobStatusReplyEvent.hpp>
-#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
-#include <sdpa/events/RetrieveJobResultsEvent.hpp>
-#include <sdpa/events/JobResultsReplyEvent.hpp>
-#include <sdpa/events/DeleteJobEvent.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
+#include <sdpa/events/Codec.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
+#include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/SubscribeEvent.hpp>
+#include <sdpa/events/JobResultsReplyEvent.hpp>
+#include <sdpa/events/JobStatusReplyEvent.hpp>
+#include <sdpa/events/QueryJobStatusEvent.hpp>
+#include <sdpa/events/RetrieveJobResultsEvent.hpp>
+#include <sdpa/events/SubmitJobAckEvent.hpp>
+#include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
+#include <sdpa/events/SubscribeEvent.hpp>
 
-#include <sdpa/events/CodecStrategy.hpp>
-
-#include <sdpa/com/NetworkStrategy.hpp>
-
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
