@@ -121,19 +121,7 @@ template<typename Expected, typename Sent>
 
   fhg::com::message_t msg (message_for_event (&event));
 
-  //! \todo Fall-through without additional message / type?
-  try
-  {
-    m_peer.send (&msg);
-  }
-  catch (const std::exception& ex)
-  {
-    throw ClientException ( "Network error: unable to send '"
-                          + event.str()
-                          + "' from " + event.from() + " to " + event.to()
-                          + ": " + ex.what()
-                          );
-  }
+  m_peer.send (&msg);
 
   const sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (true));
   if (Expected* e = dynamic_cast<Expected*> (reply.get()))
