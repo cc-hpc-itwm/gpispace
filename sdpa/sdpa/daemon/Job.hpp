@@ -131,6 +131,7 @@ namespace sdpa {
         _row<   Canceling, 	sdpa::events::CancelJobAckEvent,     	Canceled>,
         a_row<  Canceling, 	sdpa::events::JobFinishedEvent,      	Canceled,       &sm::action_job_finished>,
         a_row<  Canceling, 	sdpa::events::JobFailedEvent,           Canceled,       &sm::action_job_failed>,
+        _irow<  Canceling,      sdpa::events::CancelJobEvent>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Canceled,       sdpa::events::DeleteJobEvent,                           &sm::action_delete_job >,
         _irow<  Canceled,       sdpa::events::RetrieveJobResultsEvent>,
