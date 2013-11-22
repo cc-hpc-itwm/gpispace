@@ -37,6 +37,7 @@ namespace sdpa {
                                    , const boost::optional<std::string>& appGuiUrl = boost::none
                                    );
 
+      protected:
         Agent ( const std::string& name
               , const std::string& url
               , const sdpa::master_info_list_t arrMasterNames
