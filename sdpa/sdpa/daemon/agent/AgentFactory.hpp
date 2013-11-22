@@ -35,15 +35,6 @@ namespace sdpa {
 namespace daemon {
   struct AgentFactory
   {
-    static Agent::ptr_t create( const std::string& name,
-                                const std::string& url,
-                                const sdpa::master_info_list_t& arrMasterNames,
-                                const unsigned int rank = 0,
-                                const boost::optional<std::string>& appGuiUrl = boost::none )
-    {
-      return Agent::create (name, url, arrMasterNames, rank, appGuiUrl);
-    }
-
     static Agent::ptr_t create_with_start_called( const std::string& name,
                                                 const std::string& url,
                                                 const sdpa::master_info_list_t& arrMasterNames,

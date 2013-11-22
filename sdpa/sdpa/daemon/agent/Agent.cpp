@@ -796,12 +796,12 @@ void Agent::resume(const job_id_t& jobId)
        DMLOG (ERROR, strErr);
    }
 
-Agent::ptr_t Agent::create ( const std::string& name
-                           , const std::string& url
-                           , const sdpa::master_info_list_t& arrMasterNames
-                           , const unsigned int rank
-                           , const boost::optional<std::string>& appGuiUrl
-                           )
+Agent::ptr_t Agent::create_with_start_called ( const std::string& name
+                                             , const std::string& url
+                                             , const sdpa::master_info_list_t& arrMasterNames
+                                             , const unsigned int rank
+                                             , const boost::optional<std::string>& appGuiUrl
+                                             )
 {
   Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
   pAgent->createWorkflowEngine<we::mgmt::layer>();
@@ -815,17 +815,6 @@ Agent::ptr_t Agent::create ( const std::string& name
   pAgent->setStage(daemon_stage);
   seda::StageRegistry::instance().insert(daemon_stage);
 
-  return pAgent;
-}
-
-Agent::ptr_t Agent::create_with_start_called ( const std::string& name
-                                             , const std::string& url
-                                             , const sdpa::master_info_list_t& arrMasterNames
-                                             , const unsigned int rank
-                                             , const boost::optional<std::string>& appGuiUrl
-                                             )
-{
-  Agent::ptr_t pAgent (create (name, url, arrMasterNames, rank, appGuiUrl));
   pAgent->start_agent();
   return pAgent;
 }
