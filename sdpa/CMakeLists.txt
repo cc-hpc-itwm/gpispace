@@ -37,8 +37,6 @@ include_directories (${FhgCom_INCLUDE_DIR})
 find_package (MMGR REQUIRED QUIET)
 include_directories (${MMGR_INCLUDE_DIR})
 
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
-
 add_subdirectory (sdpa)
 add_subdirectory (apps)
 add_subdirectory (plugins)
