@@ -63,7 +63,7 @@ int main(int, char **)
 
   {
     std::clog << "testing SubmitJobAckEvent...";
-    SubmitJobAckEvent e("foo", "bar", "job-id-1", "42");
+    SubmitJobAckEvent e("foo", "bar", "job-id-1");
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -71,8 +71,7 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-	   || e2->id() != e.id())
+       || e2->job_id() != e.job_id() )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -130,8 +129,7 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-	   || e2->id() != e.id())
+       || e2->job_id() != e.job_id())
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -181,7 +179,7 @@ int main(int, char **)
 
   {
     std::clog << "testing DeleteJobAckEvent...";
-    DeleteJobAckEvent e("foo", "bar", "job-id-1", "42");
+    DeleteJobAckEvent e("foo", "bar", "job-id-1");
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -189,8 +187,7 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-	   || e2->id() != e.id())
+       || e2->job_id() != e.job_id())
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -280,8 +277,7 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-	   || e2->id() != e.id())
+       || e2->job_id() != e.job_id())
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -340,8 +336,7 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-	   || e2->id() != e.id())
+       || e2->job_id() != e.job_id())
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -536,36 +531,6 @@ int main(int, char **)
       ++errcount;
       std::clog << "FAILED!" << std::endl;
       std::clog << "\tdecoded event is not a WorkerRegistrationAckEvent!" << std::endl;
-    }
-  }
-
-  {
-    std::clog << "testing LifeSignEvent...";
-    LifeSignEvent e("foo", "bar", "last-job-0");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
-
-    if (LifeSignEvent *e2 = dynamic_cast<LifeSignEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->last_job_id() != e.last_job_id()
-      )
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a LifeSignEvent!" << std::endl;
     }
   }
 
