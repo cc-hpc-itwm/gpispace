@@ -112,7 +112,7 @@ namespace sdpa
 
       m_peer.send (&msg);
 
-      const sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (true));
+      const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get (timeout_));
       if (Expected* e = dynamic_cast<Expected*> (reply.get()))
       {
         return *e;
@@ -136,7 +136,7 @@ namespace sdpa
       send_and_wait_for_reply<sdpa::events::SubscribeAckEvent>
         (sdpa::events::SubscribeEvent (_name, orchestrator_, job_id_list_t (1, id)));
 
-      sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (false));
+      sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
 
       if ( sdpa::events::JobFinishedEvent* evt
          = dynamic_cast<sdpa::events::JobFinishedEvent*> (reply.get())
@@ -198,19 +198,6 @@ namespace sdpa
         boost::this_thread::sleep (sleep_duration);
       }
       return state;
-    }
-
-
-    sdpa::events::SDPAEvent::Ptr Client::wait_for_reply (bool use_timeout)
-    {
-      if (use_timeout)
-      {
-        return m_incoming_events.get (timeout_);
-      }
-      else
-      {
-        return m_incoming_events.get();
-      }
     }
 
     sdpa::job_id_t Client::submitJob(const job_desc_t &desc)

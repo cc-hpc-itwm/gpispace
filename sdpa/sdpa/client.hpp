@@ -44,8 +44,6 @@ namespace sdpa
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
 
     private:
-      sdpa::events::SDPAEvent::Ptr wait_for_reply (bool use_timeout);
-
       std::string _name;
 
       fhg::thread::queue<sdpa::events::SDPAEvent::Ptr, std::list>
