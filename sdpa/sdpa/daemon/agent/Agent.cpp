@@ -795,6 +795,7 @@ void Agent::resume(const job_id_t& jobId)
        strErr+=jobId.str();
        DMLOG (ERROR, strErr);
    }
+}
 
 Agent::ptr_t Agent::create ( const std::string& name
                            , const std::string& url
