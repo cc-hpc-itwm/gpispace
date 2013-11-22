@@ -101,8 +101,8 @@ namespace sdpa {
 
       struct transition_table : boost::mpl::vector
         <
-        //      Start           Event                                           Next        		Action                Guard
-        //      +---------------+-----------------------------------------------+------------------+---------------------+-----
+        //      Start           Event                                   Next           Action                Guard
+        //      +---------------+---------------------------------------+--------------+---------------------+-----
         _row<   Pending,        MSMResumeJobEvent,                      Running >,
         _row<   Pending,        sdpa::events::CancelJobEvent, 		Canceled>,
         a_row<  Pending,        sdpa::events::JobFinishedEvent,         Finished,       &sm::action_job_finished >,
@@ -111,25 +111,30 @@ namespace sdpa {
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_row<  Stalled,        MSMResumeJobEvent,        		Running,        &sm::action_resume_job >,
         a_row<  Stalled,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
+        _irow<  Stalled,        MSMStalledEvent>,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,        sdpa::events::JobFinishedEvent,         Finished,       &sm::action_job_finished>,
         a_row<  Running,        sdpa::events::JobFailedEvent,           Failed,         &sm::action_job_failed >,
         _row<   Running,        sdpa::events::CancelJobEvent,           Canceling>,
         a_row<  Running,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
         a_row<  Running,        MSMStalledEvent,        		Stalled,        &sm::action_job_stalled >,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        _irow<  Running,        MSMResumeJobEvent>,
+        //      +---------------+---------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,       sdpa::events::DeleteJobEvent,                           &sm::action_delete_job >,
         _irow<  Finished,   	sdpa::events::RetrieveJobResultsEvent>,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        _irow<  Finished,       sdpa::events::JobFinishedEvent>,
+        //      +---------------+---------------------------------------+-------------------+---------------------+-----
         a_irow< Failed,     	sdpa::events::DeleteJobEvent,                           &sm::action_delete_job >,
         _irow<  Failed,     	sdpa::events::RetrieveJobResultsEvent>,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
+        _irow<  Failed,         sdpa::events::JobFailedEvent>,
+        //      +---------------+---------------------------------------+-------------------+---------------------+-----
         _row<   Canceling, 	sdpa::events::CancelJobAckEvent,     	Canceled>,
         a_row<  Canceling, 	sdpa::events::JobFinishedEvent,      	Canceled,       &sm::action_job_finished>,
         a_row<  Canceling, 	sdpa::events::JobFailedEvent,           Canceled,       &sm::action_job_failed>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Canceled,       sdpa::events::DeleteJobEvent,                           &sm::action_delete_job >,
-        _irow<  Canceled,       sdpa::events::RetrieveJobResultsEvent>
+        _irow<  Canceled,       sdpa::events::RetrieveJobResultsEvent>,
+        _irow<  Canceled,       sdpa::events::CancelJobAckEvent>
         >{};
 
       //! \note This table refers to the order in which states are
@@ -156,24 +161,6 @@ namespace sdpa {
       void no_transition(Event const& e, FSM&, int state)
       {
         DLOG(WARN, "no transition from state "<< sdpa::status::show(state_code(state)) << " on event " << typeid(e).name());
-      }
-
-      template <class FSM>
-      void no_transition(MSMResumeJobEvent const& e, FSM&, int state)
-      {
-        // if the job is already in the state running just ignore the event,
-        // the job is already running!
-        if(state_code(state) != sdpa::status::RUNNING)
-          DLOG(WARN, "no transition from state "<< sdpa::status::show(state_code(state)) << " on event ResumeJobEvent");
-      }
-
-      template <class FSM>
-      void no_transition(MSMStalledEvent const& e, FSM&, int state)
-      {
-        // if the job is already in the state stalled just ignore the event,
-        // the job is already in the state stalled
-        if(state_code(state) != sdpa::status::STALLED )
-          DLOG(WARN, "no transition from state "<< sdpa::status::show(state_code(state)) << " on event JobStalledEvent");
       }
     };
 
