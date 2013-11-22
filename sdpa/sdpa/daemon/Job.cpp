@@ -77,45 +77,38 @@ namespace sdpa {
 
     const sdpa::job_result_t& Job::result() const
     {
-      lock_type mtx_;
       return result_;
     }
 
     int Job::error_code() const
     {
-      lock_type mtx_;
       return m_error_code;
     }
 
     std::string Job::error_message () const
     {
-      lock_type mtx_;
       return m_error_message;
     }
 
     Job& Job::error_code(int ec)
     {
-      lock_type lock(mtx_);
       m_error_code = ec;
       return *this;
     }
 
     Job& Job::error_message(std::string const &msg)
     {
-      lock_type lock(mtx_);
       m_error_message = msg;
       return *this;
     }
 
     void Job::set_owner(const sdpa::worker_id_t& owner)
     {
-      lock_type lock(mtx_);
       m_owner = owner;
     }
 
     sdpa::worker_id_t Job::owner()
     {
-      lock_type lock(mtx_);
       return m_owner;
     }
 
@@ -139,19 +132,16 @@ namespace sdpa {
 
     bool Job::isMasterJob()
     {
-      lock_type lock(mtx_);
       return type_ == Job::MASTER;
     }
 
     void Job::setType(const job_type& type)
     {
-      lock_type lock(mtx_);
       type_ = type;
     }
 
     void Job::setResult(const sdpa::job_result_t& arg_results)
     {
-      lock_type lock(mtx_);
       result_ = arg_results;
     }
 
