@@ -334,9 +334,8 @@ void Orchestrator::resume(const job_id_t& jobId)
 
 }
 
-Orchestrator::ptr_t Orchestrator::create ( const std::string& name
-                                         , const std::string& url
-                                         )
+Orchestrator::ptr_t Orchestrator::create_with_start_called
+  (const std::string& name, const std::string& url)
 {
   Orchestrator::ptr_t pOrch (new Orchestrator (name, url));
 
@@ -344,13 +343,6 @@ Orchestrator::ptr_t Orchestrator::create ( const std::string& name
   pOrch->setStage (daemon_stage);
   seda::StageRegistry::instance().insert (daemon_stage);
 
-  return pOrch;
-}
-
-Orchestrator::ptr_t Orchestrator::create_with_start_called
-  (const std::string& name, const std::string& url)
-{
-  Orchestrator::ptr_t pOrch (create (name, url));
   pOrch->start_agent();
   return pOrch;
 }
