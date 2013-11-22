@@ -1,9 +1,3 @@
-if (ENABLE_LOGGING)
-  set (SDPA_ENABLE_LOGGING 1)
-else()
-  set (SDPA_ENABLE_LOGGING 0)
-endif()
-
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${${PROJECT_NAME}_SOURCE_DIR})
@@ -36,16 +30,12 @@ include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
 find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
-set (SDPA_HAVE_FHGLOG 1)
 
 find_package (FhgCom REQUIRED QUIET)
 include_directories (${FhgCom_INCLUDE_DIR})
 
 find_package (MMGR REQUIRED QUIET)
 include_directories (${MMGR_INCLUDE_DIR})
-
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/sdpa/sdpa-config.hpp)
-add_definitions (-DHAVE_CONFIG_H)
 
 add_subdirectory (sdpa)
 add_subdirectory (apps)

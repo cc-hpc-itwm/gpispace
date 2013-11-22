@@ -1,8 +1,6 @@
 #ifndef SDPA_RUNJOBEVENT_HPP
 #define SDPA_RUNJOBEVENT_HPP
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/JobEvent.hpp>
 
 namespace sdpa

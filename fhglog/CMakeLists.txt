@@ -42,7 +42,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp
   COMPONENT runtime-headers)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FindFhgLog.cmake.in    ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake)
-add_definitions(-DHAVE_CONFIG_H)
 
 # this file is installed and contains all necessary information about the installed libseda,
 # it also loads the file with the exported targets

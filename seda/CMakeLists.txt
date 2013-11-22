@@ -36,10 +36,6 @@ OPTION(ENABLE_SEDA_COMM_LIB
   "Build communication library"
   OFF)
 
-OPTION(USE_STL_TR1
- "Use tr1 from stl"
- 0)
-
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
@@ -85,8 +81,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINAR
 # this file is installed and contains all necessary information about the installed libseda,
 # it also loads the file with the exported targets
 configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
-
-ADD_DEFINITIONS( -DHAVE_CONFIG_H )
 
 # Make sure all subdirectories include correctly
 

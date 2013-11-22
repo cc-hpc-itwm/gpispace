@@ -53,7 +53,9 @@ using namespace sdpa::events;
 GenericDaemon::GenericDaemon( const std::string name,
                               const master_info_list_t arrMasterInfo,
                               unsigned int rank
-                            , const boost::optional<std::string>& guiUrl)
+                            , const boost::optional<std::string>& guiUrl
+                            , bool create_wfe
+                            )
   : Strategy(name),
     SDPA_INIT_LOGGER(name),
     m_arrMasterInfo(arrMasterInfo),
@@ -62,7 +64,11 @@ GenericDaemon::GenericDaemon( const std::string name,
 
     ptr_job_man_(new JobManager(name)),
     ptr_scheduler_(),
-    ptr_workflow_engine_(NULL),
+    ptr_workflow_engine_ ( create_wfe
+                         ? new we::mgmt::layer
+                           (this, boost::bind (&GenericDaemon::gen_id, this))
+                         : NULL
+                         ),
     m_nRank(rank),
     m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
     m_guiService ( guiUrl && !guiUrl->empty()

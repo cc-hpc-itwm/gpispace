@@ -23,24 +23,11 @@
 #ifndef SEDA_SHARED_PTR_HPP
 #define SEDA_SHARED_PTR_HPP 1
 
-#ifdef HAVE_CONFIG_H
-#  include <seda/seda-config.hpp>
-#endif
-
-#if defined(USE_STL_TR1) && (USE_STL_TR1 == 1)
-#  include <tr1/memory>
-
-namespace seda {
-  using ::std::tr1::shared_ptr;
-}
-
-#else
 #include <boost/shared_ptr.hpp>
 
-namespace seda {
-    using boost::shared_ptr;
+namespace seda
+{
+  using boost::shared_ptr;
 }
-
-#endif
 
 #endif

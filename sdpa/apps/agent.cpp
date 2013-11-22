@@ -4,14 +4,12 @@
 #include <vector>
 #include <csignal>
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/logging.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>
 
-#include <sdpa/daemon/agent/AgentFactory.hpp>
+#include <sdpa/daemon/agent/Agent.hpp>
 #include <we/mgmt/layer.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
@@ -178,11 +176,10 @@ int main (int argc, char **argv)
 
   try
   {
-    sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called (   agentName,
-                                                                                             agentUrl,
-                                                                                             listMasterInfo,
-                                                                                             agentRank,
-                                                                                             appGuiUrl ); //, orchUrl );
+    sdpa::daemon::Agent::ptr_t ptrAgent
+      ( sdpa::daemon::Agent::create
+        (agentName, agentUrl, listMasterInfo, agentRank, appGuiUrl)
+      );
 
     sigset_t waitset;
     int sig(0);

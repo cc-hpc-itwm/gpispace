@@ -23,7 +23,7 @@
 #include <seda/Strategy.hpp>
 
 #include <sdpa/capability.hpp>
-#include <sdpa/sdpa-config.hpp>
+#include <sdpa/logging.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
@@ -73,6 +73,7 @@ namespace sdpa {
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
                     unsigned int rank = 0
                    , const boost::optional<std::string>& guiUrl = boost::none
+                   , bool create_wfe = false
                    );
       virtual ~GenericDaemon() {}
 
@@ -178,14 +179,8 @@ namespace sdpa {
       virtual void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
 
       // workflow engine
-      virtual we::mgmt::basic_layer* workflowEngine() const { return ptr_workflow_engine_; }
+      virtual we::mgmt::layer* workflowEngine() const { return ptr_workflow_engine_; }
       virtual bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
-
-      template <typename T>
-        void createWorkflowEngine()
-      {
-    	  ptr_workflow_engine_ = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-      }
 
       // workflow engine notifications
       virtual void submitWorkflow(const job_id_t& id);
@@ -225,7 +220,7 @@ namespace sdpa {
     protected:
       JobManager::ptr_t ptr_job_man_;
       Scheduler::ptr_t ptr_scheduler_;
-      we::mgmt::basic_layer* ptr_workflow_engine_;
+      we::mgmt::layer* ptr_workflow_engine_;
 
     private:
 

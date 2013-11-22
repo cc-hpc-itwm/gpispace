@@ -9,14 +9,18 @@ namespace sdpa
   namespace status
   {
     enum code
-    {
-      PENDING
-      , STALLED
-      , RUNNING
-      , FINISHED
+      {
+        // terminal states
+        FINISHED
       , FAILED
-      , CANCELING
       , CANCELED
+
+        // non-terminal states
+      , PENDING
+      , RUNNING
+      , STALLED
+      , CANCELING
+
       , UNKNOWN
       };
 

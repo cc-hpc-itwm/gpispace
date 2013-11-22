@@ -21,6 +21,8 @@
 #include <sdpa/daemon/Job.hpp>
 #include <fhg/assert.hpp>
 
+#include <seda/StageRegistry.hpp>
+
 namespace sdpa {
   using namespace events;
   namespace daemon {
@@ -793,7 +795,28 @@ void Agent::resume(const job_id_t& jobId)
        strErr+=jobId.str();
        DMLOG (ERROR, strErr);
    }
+}
 
+Agent::ptr_t Agent::create ( const std::string& name
+                           , const std::string& url
+                           , const sdpa::master_info_list_t& arrMasterNames
+                           , const unsigned int rank
+                           , const boost::optional<std::string>& appGuiUrl
+                           )
+{
+  Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
+
+  seda::Stage::Ptr daemon_stage (new seda::Stage( name
+                                                , pAgent
+                                                , 1
+                                                )
+                                );
+
+  pAgent->setStage(daemon_stage);
+  seda::StageRegistry::instance().insert(daemon_stage);
+
+  pAgent->start_agent();
+  return pAgent;
 }
 }
 }

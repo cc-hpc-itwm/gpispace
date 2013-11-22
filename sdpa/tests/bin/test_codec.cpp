@@ -71,7 +71,8 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id() )
+       || e2->job_id() != e.job_id()
+         )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -129,7 +130,8 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
+       || e2->job_id() != e.job_id()
+         )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -187,7 +189,8 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
+       || e2->job_id() != e.job_id()
+         )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -277,7 +280,8 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
+       || e2->job_id() != e.job_id()
+         )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -336,7 +340,8 @@ int main(int, char **)
     {
       if (e2->from() != e.from()
        || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
+       || e2->job_id() != e.job_id()
+         )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;

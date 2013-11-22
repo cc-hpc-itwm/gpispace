@@ -1,8 +1,6 @@
 #ifndef SDPA_CAPABILITIES_GAINED_EVENT
 #define SDPA_CAPABILITIES_GAINED_EVENT 1
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
 

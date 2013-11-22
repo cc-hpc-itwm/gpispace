@@ -5,10 +5,6 @@
 //#include <unistd.h>
 #include <sys/stat.h> // for stat, to check if file exists
 
-#if defined(HAVE_CONFIG_H)
-#include <sdpa/sdpa-config.hpp>
-#endif
-
 #include <fhglog/fhglog.hpp>
 #include <fhglog/Configuration.hpp>
 #include <fhglog/FileAppender.hpp>

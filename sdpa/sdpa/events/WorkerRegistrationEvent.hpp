@@ -1,8 +1,6 @@
 #ifndef SDPA_WORKER_REGISTRATION_EVENT_HPP
 #define SDPA_WORKER_REGISTRATION_EVENT_HPP 1
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
 

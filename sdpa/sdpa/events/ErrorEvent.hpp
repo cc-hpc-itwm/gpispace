@@ -1,8 +1,6 @@
 #ifndef SDPA_ERROREVENT_HPP
 #define SDPA_ERROREVENT_HPP 1
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/types.hpp>
 

@@ -1,8 +1,6 @@
 #ifndef SDPA_DeleteJobAckEvent_HPP
 #define SDPA_DeleteJobAckEvent_HPP 1
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/JobEvent.hpp>
 
 namespace sdpa

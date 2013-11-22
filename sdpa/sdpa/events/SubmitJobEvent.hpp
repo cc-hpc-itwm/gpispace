@@ -1,8 +1,6 @@
 #ifndef SDPA_SubmitJobEvent_HPP
 #define SDPA_SubmitJobEvent_HPP
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/types.hpp>
