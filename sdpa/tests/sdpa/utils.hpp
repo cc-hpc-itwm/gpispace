@@ -51,17 +51,16 @@ namespace utils
     std::string _name; std::string name() const { return _name; }
   };
 
-  template<typename WFE> struct agent;
+  struct agent;
 
-  typedef std::vector<boost::reference_wrapper<const utils::agent<we::mgmt::layer> > >
-    agents_t;
+  typedef std::vector<boost::reference_wrapper<const utils::agent> > agents_t;
 
   namespace
   {
     sdpa::master_info_list_t assemble_master_info_list (const agents_t& masters);
   }
 
-  template<typename WFE> struct agent : boost::noncopyable
+  struct agent : boost::noncopyable
   {
     agent ( const std::string& name
           , const std::string& url
@@ -69,7 +68,7 @@ namespace utils
           , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
-      : _ ( sdpa::daemon::AgentFactory<WFE>::create_with_start_called
+      : _ ( sdpa::daemon::AgentFactory::create_with_start_called
             (name, url, assemble_master_info_list (masters), rank, gui_url)
           )
       , _name (name)
@@ -80,7 +79,7 @@ namespace utils
           , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
-      : _ ( sdpa::daemon::AgentFactory<WFE>::create_with_start_called
+      : _ ( sdpa::daemon::AgentFactory::create_with_start_called
             (name, url
             , sdpa::master_info_list_t (1, sdpa::MasterInfo (orchestrator.name()))
             , rank, gui_url
@@ -90,11 +89,11 @@ namespace utils
     {}
     agent ( const std::string& name
           , const std::string& url
-          , const agent<WFE>& master
+          , const agent& master
           , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
-      : _ ( sdpa::daemon::AgentFactory<WFE>::create_with_start_called
+      : _ ( sdpa::daemon::AgentFactory::create_with_start_called
             (name, url
             , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
             , rank, gui_url
@@ -115,24 +114,17 @@ namespace utils
     std::string assemble_string (const agents_t& masters)
     {
       std::string result;
-      BOOST_FOREACH ( const utils::agent<we::mgmt::layer>& agent
-                    , masters
-                    )
+      BOOST_FOREACH (const utils::agent& agent, masters)
       {
         result += agent.name() + ",";
       }
       return result.substr (0, result.size() - 1);
     }
-  }
 
-  namespace
-  {
     sdpa::master_info_list_t assemble_master_info_list (const agents_t& masters)
     {
       sdpa::master_info_list_t result;
-      BOOST_FOREACH ( const utils::agent<we::mgmt::layer>& agent
-                    , masters
-                    )
+      BOOST_FOREACH (const utils::agent& agent, masters)
       {
         result.push_back (sdpa::MasterInfo (agent.name()));
       }
@@ -177,7 +169,7 @@ namespace utils
   struct drts_worker : boost::noncopyable
   {
     drts_worker ( std::string name
-                , const agent<we::mgmt::layer>& master
+                , const agent& master
                 , std::string capabilities
                 , std::string modules_path
                 , std::string kvs_host

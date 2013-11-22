@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE (testTransformFile1)
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");
-  const utils::agent<we::mgmt::layer> agent
+  const utils::agent agent
     ("agent_0", "127.0.0.1", orchestrator);
 
   const utils::drts_worker worker_0

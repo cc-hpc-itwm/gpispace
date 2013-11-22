@@ -33,7 +33,6 @@ namespace agent {
 
 namespace sdpa {
 namespace daemon {
-  template <typename T>
   struct AgentFactory
   {
     static Agent::ptr_t create( const std::string& name,
@@ -43,7 +42,7 @@ namespace daemon {
                                 const boost::optional<std::string>& appGuiUrl = boost::none )
     {
       Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
-      pAgent->createWorkflowEngine<T>();
+      pAgent->createWorkflowEngine<we::mgmt::layer>();
 
       seda::Stage::Ptr daemon_stage (new seda::Stage( name
                                                     , pAgent

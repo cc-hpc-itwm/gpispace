@@ -24,7 +24,7 @@
 namespace sdpa {
   namespace daemon {
 
-    template <typename T> struct AgentFactory;
+    struct AgentFactory;
 
     class Agent : public GenericDaemon
     {
@@ -65,7 +65,7 @@ namespace sdpa {
 
         const std::string url() const {return url_;}
 
-        template <typename T> friend struct AgentFactory;
+        friend struct AgentFactory;
 
         template <typename T>
         void notifySubscribers(const T& ptrEvt);

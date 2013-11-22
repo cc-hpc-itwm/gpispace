@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");
-  const utils::agent<we::mgmt::layer> agent
+  const utils::agent agent
     ("agent_0", "127.0.0.1", orchestrator);
 
   const utils::drts_worker worker_0
@@ -57,9 +57,9 @@ BOOST_AUTO_TEST_CASE (chained_agents)
 
   //! \note "variable agents #" was hardcoded to 1 when this test got
   //! rewritten. Probably should be more, so got bumped to 2.
-  const utils::agent<we::mgmt::layer> agent_0
+  const utils::agent agent_0
     ("agent_0", "127.0.0.1", orchestrator);
-  const utils::agent<we::mgmt::layer> agent_1
+  const utils::agent agent_1
     ("agent_1", "127.0.0.1", agent_0);
 
   const utils::drts_worker worker_0
@@ -90,11 +90,11 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");
-  const utils::agent<we::mgmt::layer> agent_0
+  const utils::agent agent_0
     ("agent_0", "127.0.0.1", orchestrator);
-  const utils::agent<we::mgmt::layer> agent_1
+  const utils::agent agent_1
     ("agent_1", "127.0.0.1", agent_0);
-  const utils::agent<we::mgmt::layer> agent_2
+  const utils::agent agent_2
     ("agent_2", "127.0.0.1", agent_0);
 
   const utils::drts_worker worker_0
@@ -132,9 +132,9 @@ BOOST_AUTO_TEST_CASE (one_worker_with_multiple_master_agents)
 
   //! \note "variable agents #" was hardcoded to 1 when this test got
   //! rewritten. Probably should be more, so got bumped to 2.
-  const utils::agent<we::mgmt::layer> agent_0
+  const utils::agent agent_0
     ("agent_0", "127.0.0.1", orchestrator);
-  const utils::agent<we::mgmt::layer> agent_1
+  const utils::agent agent_1
     ("agent_1", "127.0.0.1", orchestrator);
 
   utils::agents_t agents;
@@ -170,16 +170,16 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");
 
-  const utils::agent<we::mgmt::layer> agent_0
+  const utils::agent agent_0
     ("agent_0", "127.0.0.1:7700", orchestrator);
-  const utils::agent<we::mgmt::layer> agent_1
+  const utils::agent agent_1
     ("agent_1", "127.0.0.1:7701", orchestrator);
 
   utils::agents_t agents;
   agents.push_back (boost::cref (agent_0));
   agents.push_back (boost::cref (agent_1));
 
-  const utils::agent<we::mgmt::layer> agent_2
+  const utils::agent agent_2
     ("agent_2", "127.0.0.1:7702", agents);
 
   const utils::drts_worker worker_0

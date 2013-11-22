@@ -176,7 +176,7 @@ int main (int argc, char **argv)
 
   try
   {
-    sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory<we::mgmt::layer>::create_with_start_called (   agentName,
+    sdpa::daemon::Agent::ptr_t ptrAgent = sdpa::daemon::AgentFactory::create_with_start_called (   agentName,
                                                                                              agentUrl,
                                                                                              listMasterInfo,
                                                                                              agentRank,
