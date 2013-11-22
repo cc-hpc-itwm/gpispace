@@ -130,14 +130,14 @@ template<typename Expected, typename Sent>
   }
   else if (se::ErrorEvent* err = dynamic_cast<se::ErrorEvent*> (reply.get()))
   {
-    throw ClientException ( "Error: reason := "+ err->reason()
-                          + " code := "
-                          + boost::lexical_cast<std::string> (err->error_code())
-                          );
+    throw std::runtime_error ( "Error: reason := "+ err->reason()
+                             + " code := "
+                             + boost::lexical_cast<std::string> (err->error_code())
+                             );
   }
   else
   {
-    throw ClientException ("Unexpected reply: " + reply->str());
+    throw std::runtime_error ("Unexpected reply: " + reply->str());
   }
 }
 
