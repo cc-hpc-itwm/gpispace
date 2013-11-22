@@ -43,9 +43,11 @@ namespace sdpa
       }
     }
 
-    Client::Client (std::string orchestrator, boost::optional<timeout_t> timeout)
+    Client::Client ( std::string orchestrator
+                   , boost::optional<boost::posix_time::time_duration> timeout
+                   )
       : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
-      , timeout_ (timeout.get_value_or (5000U))
+      , timeout_ (timeout.get_value_or (boost::posix_time::seconds (5)))
       , orchestrator_ (orchestrator)
       , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
@@ -215,7 +217,7 @@ namespace sdpa
     {
       if (use_timeout)
       {
-        return m_incoming_events.get (boost::posix_time::milliseconds (timeout_));
+        return m_incoming_events.get (timeout_);
       }
       else
       {

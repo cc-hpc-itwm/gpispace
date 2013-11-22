@@ -10,6 +10,7 @@
 
 #include <fhgcom/peer.hpp>
 
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
 
@@ -27,9 +28,9 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      typedef unsigned long long timeout_t;
-
-      Client (std::string orchestrator, boost::optional<timeout_t> = boost::none);
+      Client ( std::string orchestrator
+             , boost::optional<boost::posix_time::time_duration> = boost::none
+             );
       ~Client();
 
       job_id_t submitJob(const job_desc_t &);
@@ -51,7 +52,7 @@ namespace sdpa
         m_incoming_events;
 
       // config variables
-      timeout_t timeout_;
+      boost::posix_time::time_duration timeout_;
       std::string orchestrator_;
 
       fhg::com::message_t message_for_event (const sdpa::events::SDPAEvent*);
