@@ -1,8 +1,6 @@
 #ifndef SDPA_LIFESIGNEVENT_HPP
 #define SDPA_LIFESIGNEVENT_HPP 1
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/types.hpp>
 

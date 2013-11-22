@@ -1,8 +1,6 @@
 #ifndef SDPA_QUERYJOBSTATUSEVENT_HPP
 #define SDPA_QUERYJOBSTATUSEVENT_HPP 1
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
 

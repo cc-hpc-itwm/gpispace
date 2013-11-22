@@ -4,7 +4,6 @@
 #include <seda/StrategyDecorator.hpp>
 #include <seda/comm/SedaMessage.hpp>
 
-#include <sdpa/sdpa-config.hpp>
 #include <sdpa/memory.hpp>
 #include <sdpa/logging.hpp>
 

@@ -3,7 +3,6 @@
 #include <iostream>
 #include <vector>
 #include <csignal>
-#include <sdpa/sdpa-config.hpp>
 
 #include <sdpa/logging.hpp>
 

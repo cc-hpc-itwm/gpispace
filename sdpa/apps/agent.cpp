@@ -4,8 +4,6 @@
 #include <vector>
 #include <csignal>
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/logging.hpp>
 
 #include <boost/program_options.hpp>

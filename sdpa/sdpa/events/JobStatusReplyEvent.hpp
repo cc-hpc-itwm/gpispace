@@ -1,8 +1,6 @@
 #ifndef SDPA_ReplyJobStatusEvent_HPP
 #define SDPA_ReplyJobStatusEvent_HPP
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/types.hpp>
 #include <sdpa/job_states.hpp>

@@ -1,8 +1,6 @@
 #ifndef SDPA_LOGGING_HPP
 #define SDPA_LOGGING_HPP 1
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <fhglog/fhglog.hpp>
 
 #define SDPA_LDECLARE_LOGGER(logger)           mutable ::fhg::log::logger_t logger

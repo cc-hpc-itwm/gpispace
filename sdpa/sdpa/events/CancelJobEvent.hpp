@@ -1,8 +1,6 @@
 #ifndef SDPA_CANCELJOBEVENT_HPP
 #define SDPA_CANCELJOBEVENT_HPP 1
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/JobEvent.hpp>
 
 #include <boost/serialization/base_object.hpp>

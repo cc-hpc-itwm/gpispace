@@ -23,7 +23,7 @@
 #include <seda/Strategy.hpp>
 
 #include <sdpa/capability.hpp>
-#include <sdpa/sdpa-config.hpp>
+#include <sdpa/logging.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>

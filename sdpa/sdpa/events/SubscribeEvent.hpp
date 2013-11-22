@@ -1,8 +1,6 @@
 #ifndef SDPA_SUBSCRIBE_EVENT_HPP
 #define SDPA_SUBSCRIBE_EVENT_HPP 1
 
-#include <sdpa/sdpa-config.hpp>
-
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/types.hpp>
 
