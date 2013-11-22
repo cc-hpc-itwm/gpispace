@@ -31,7 +31,6 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-namespace se = sdpa::events;
 using namespace sdpa::client;
 
 namespace
@@ -128,7 +127,7 @@ template<typename Expected, typename Sent>
   {
     return *e;
   }
-  else if (se::ErrorEvent* err = dynamic_cast<se::ErrorEvent*> (reply.get()))
+  else if (sdpa::events::ErrorEvent* err = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get()))
   {
     throw std::runtime_error ( "Error: reason := "+ err->reason()
                              + " code := "
@@ -144,8 +143,8 @@ template<typename Expected, typename Sent>
 sdpa::status::code Client::wait_for_terminal_state
   (job_id_t id, job_info_t& job_info)
 {
-  send_and_wait_for_reply<se::SubscribeAckEvent>
-    (se::SubscribeEvent (_name, orchestrator_, job_id_list_t (1, id)));
+  send_and_wait_for_reply<sdpa::events::SubscribeAckEvent>
+    (sdpa::events::SubscribeEvent (_name, orchestrator_, job_id_list_t (1, id)));
 
   sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (false));
 
@@ -226,14 +225,14 @@ sdpa::events::SDPAEvent::Ptr Client::wait_for_reply (bool use_timeout)
 
 sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
 {
-  return send_and_wait_for_reply<se::SubmitJobAckEvent>
-    (se::SubmitJobEvent (_name, orchestrator_, "", desc, "")).job_id();
+  return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
+    (sdpa::events::SubmitJobEvent (_name, orchestrator_, "", desc, "")).job_id();
 }
 
 void Client::cancelJob(const job_id_t &jid)
 {
-  send_and_wait_for_reply<se::CancelJobAckEvent>
-    (se::CancelJobEvent (_name, orchestrator_, jid, "user cancel"));
+  send_and_wait_for_reply<sdpa::events::CancelJobAckEvent>
+    (sdpa::events::CancelJobEvent (_name, orchestrator_, jid, "user cancel"));
 }
 
 sdpa::status::code Client::queryJob(const job_id_t &jid)
@@ -244,9 +243,9 @@ sdpa::status::code Client::queryJob(const job_id_t &jid)
 
 sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
 {
-  const se::JobStatusReplyEvent reply
-    ( send_and_wait_for_reply<se::JobStatusReplyEvent>
-      (se::QueryJobStatusEvent (_name, orchestrator_, jid))
+  const sdpa::events::JobStatusReplyEvent reply
+    ( send_and_wait_for_reply<sdpa::events::JobStatusReplyEvent>
+      (sdpa::events::QueryJobStatusEvent (_name, orchestrator_, jid))
     );
 
   info.error_code = reply.error_code();
@@ -257,12 +256,12 @@ sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
 
 void Client::deleteJob(const job_id_t &jid)
 {
-  send_and_wait_for_reply<se::DeleteJobAckEvent>
-    (se::DeleteJobEvent (_name, orchestrator_, jid));
+  send_and_wait_for_reply<sdpa::events::DeleteJobAckEvent>
+    (sdpa::events::DeleteJobEvent (_name, orchestrator_, jid));
 }
 
 sdpa::client::result_t Client::retrieveResults(const job_id_t &jid)
 {
-  return send_and_wait_for_reply<se::JobResultsReplyEvent>
-    (se::RetrieveJobResultsEvent (_name, orchestrator_, jid)).result();
+  return send_and_wait_for_reply<sdpa::events::JobResultsReplyEvent>
+    (sdpa::events::RetrieveJobResultsEvent (_name, orchestrator_, jid)).result();
 }
