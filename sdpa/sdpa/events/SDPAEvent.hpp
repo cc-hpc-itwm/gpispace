@@ -41,11 +41,6 @@ namespace sdpa
       virtual std::string str() const = 0;
       virtual void handleBy (EventHandler*) = 0;
 
-      virtual Ptr create_reply (boost::system::error_code const&)
-      {
-        return Ptr();
-      }
-
     protected:
       SDPAEvent()
         : IEvent()
