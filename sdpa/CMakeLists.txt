@@ -30,7 +30,6 @@ include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
 find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
-set (SDPA_HAVE_FHGLOG 1)
 
 find_package (FhgCom REQUIRED QUIET)
 include_directories (${FhgCom_INCLUDE_DIR})

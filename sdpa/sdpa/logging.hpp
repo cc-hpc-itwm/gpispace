@@ -3,10 +3,6 @@
 
 #include <sdpa/sdpa-config.hpp>
 
-#ifndef SDPA_HAVE_FHGLOG
-#error FhgLog is required!
-#endif
-
 #include <fhglog/fhglog.hpp>
 
 #define SDPA_LDECLARE_LOGGER(logger)           mutable ::fhg::log::logger_t logger
