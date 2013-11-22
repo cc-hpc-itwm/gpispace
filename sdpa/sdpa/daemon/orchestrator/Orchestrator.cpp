@@ -334,7 +334,7 @@ void Orchestrator::resume(const job_id_t& jobId)
 
 }
 
-Orchestrator::ptr_t Orchestrator::create_with_start_called
+Orchestrator::ptr_t Orchestrator::create
   (const std::string& name, const std::string& url)
 {
   Orchestrator::ptr_t pOrch (new Orchestrator (name, url));

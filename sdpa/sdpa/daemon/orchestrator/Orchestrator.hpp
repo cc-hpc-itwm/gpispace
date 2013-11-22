@@ -35,7 +35,7 @@ namespace sdpa {
         url_(url)
       {}
 
-			static Orchestrator::ptr_t create_with_start_called
+			static Orchestrator::ptr_t create
         (const std::string& name, const std::string& url);
 
       void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );

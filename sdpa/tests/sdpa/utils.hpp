@@ -40,7 +40,7 @@ namespace utils
   struct orchestrator : boost::noncopyable
   {
     orchestrator (const std::string& name, const std::string& url)
-      : _ (sdpa::daemon::Orchestrator::create_with_start_called (name, url))
+      : _ (sdpa::daemon::Orchestrator::create (name, url))
       , _name (name)
     {}
     ~orchestrator()
