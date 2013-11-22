@@ -1,9 +1,3 @@
-if (ENABLE_LOGGING)
-  set (SDPA_ENABLE_LOGGING 1)
-else()
-  set (SDPA_ENABLE_LOGGING 0)
-endif()
-
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${${PROJECT_NAME}_SOURCE_DIR})

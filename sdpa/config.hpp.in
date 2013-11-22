@@ -1,7 +1,6 @@
 #ifndef SDPA_CONFIG_H
 #define SDPA_CONFIG_H
 
-#cmakedefine SDPA_ENABLE_LOGGING 1
 #cmakedefine SDPA_HAVE_FHGLOG 1
 
 #if defined(SDPA_HAVE_FHGLOG) && SDPA_HAVE_FHGLOG == 1
