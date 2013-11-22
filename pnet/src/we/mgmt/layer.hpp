@@ -20,8 +20,6 @@
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
-#include <we/mgmt/basic_layer.hpp>
-
 #include <we/mgmt/exception.hpp>
 #include <we/mgmt/bits/commands.hpp>
 #include <we/mgmt/bits/queue.hpp>
@@ -38,9 +36,11 @@
 #include <boost/foreach.hpp>
 
 namespace we { namespace mgmt {
-    class layer : public basic_layer
+    class layer
     {
     public:
+      typedef std::string id_type;
+
       typedef std::string external_id_type;
       typedef petri_net::activity_id_type internal_id_type;
 
