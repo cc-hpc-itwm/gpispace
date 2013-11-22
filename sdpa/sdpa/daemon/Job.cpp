@@ -209,10 +209,7 @@ namespace sdpa {
 
     void Job::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon )
     {
-      assert (pDaemon);
-      // attention, no action called!
       lock_type const _ (mtx_);
-      process_event (*pEvt);
 
       sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
         (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
