@@ -63,7 +63,7 @@ int main(int, char **)
 
   {
     std::clog << "testing SubmitJobAckEvent...";
-    SubmitJobAckEvent e("foo", "bar", "job-id-1", "42");
+    SubmitJobAckEvent e("foo", "bar", "job-id-1");
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -72,7 +72,7 @@ int main(int, char **)
       if (e2->from() != e.from()
        || e2->to() != e.to()
        || e2->job_id() != e.job_id()
-	   || e2->id() != e.id())
+         )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -131,7 +131,7 @@ int main(int, char **)
       if (e2->from() != e.from()
        || e2->to() != e.to()
        || e2->job_id() != e.job_id()
-	   || e2->id() != e.id())
+         )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -181,7 +181,7 @@ int main(int, char **)
 
   {
     std::clog << "testing DeleteJobAckEvent...";
-    DeleteJobAckEvent e("foo", "bar", "job-id-1", "42");
+    DeleteJobAckEvent e("foo", "bar", "job-id-1");
     const std::string encoded = codec.encode(&e);
     SDPAEvent *d = codec.decode(encoded);
 
@@ -190,7 +190,7 @@ int main(int, char **)
       if (e2->from() != e.from()
        || e2->to() != e.to()
        || e2->job_id() != e.job_id()
-	   || e2->id() != e.id())
+         )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -281,7 +281,7 @@ int main(int, char **)
       if (e2->from() != e.from()
        || e2->to() != e.to()
        || e2->job_id() != e.job_id()
-	   || e2->id() != e.id())
+         )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
@@ -341,7 +341,7 @@ int main(int, char **)
       if (e2->from() != e.from()
        || e2->to() != e.to()
        || e2->job_id() != e.job_id()
-	   || e2->id() != e.id())
+         )
       {
         ++errcount;
         std::clog << "FAILED!" << std::endl;
