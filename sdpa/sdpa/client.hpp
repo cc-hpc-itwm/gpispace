@@ -1,7 +1,6 @@
 #ifndef SDPA_CLIENT_HPP
-#define SDPA_CLIENT_HPP 1
+#define SDPA_CLIENT_HPP
 
-#include <sdpa/client/exceptions.hpp>
 #include <sdpa/common.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/job_states.hpp>
@@ -11,11 +10,9 @@
 
 #include <fhgcom/peer.hpp>
 
-#include <cstdlib>
-#include <string>
-
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
-#include <boost/thread.hpp> // condition variables
+#include <boost/thread.hpp>
 
 namespace sdpa
 {
@@ -31,31 +28,29 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      typedef unsigned long long timeout_t;
-
-      Client (std::string orchestrator, boost::optional<timeout_t> = boost::none);
+      Client ( std::string orchestrator
+             , boost::optional<boost::posix_time::time_duration> = boost::none
+             );
       ~Client();
 
-      job_id_t submitJob(const job_desc_t &) throw (ClientException);
-      void cancelJob(const job_id_t &) throw (ClientException);
-      status::code queryJob(const job_id_t &) throw (ClientException);
+      job_id_t submitJob(const job_desc_t &);
+      void cancelJob(const job_id_t &);
+      status::code queryJob(const job_id_t &);
       status::code queryJob(const job_id_t &, job_info_t &);
-      void deleteJob(const job_id_t &) throw (ClientException);
-      result_t retrieveResults(const job_id_t &) throw (ClientException);
+      void deleteJob(const job_id_t &);
+      result_t retrieveResults(const job_id_t &);
 
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
 
     private:
-      sdpa::events::SDPAEvent::Ptr wait_for_reply (bool use_timeout);
-
       std::string _name;
 
       fhg::thread::queue<sdpa::events::SDPAEvent::Ptr, std::list>
         m_incoming_events;
 
       // config variables
-      timeout_t timeout_;
+      boost::posix_time::time_duration timeout_;
       std::string orchestrator_;
 
       fhg::com::message_t message_for_event (const sdpa::events::SDPAEvent*);

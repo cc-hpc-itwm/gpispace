@@ -2,7 +2,8 @@ add_subdirectory(util)
 add_subdirectory(events)
 
 add_subdirectory(daemon)
-add_subdirectory(client)
+
+add_library (sdpa-client client.cpp)
 
 set (hdrs
   common.hpp

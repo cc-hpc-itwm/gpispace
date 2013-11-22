@@ -17,7 +17,7 @@
 #include <fhg/util/getenv.hpp>
 
 #include <sdpa/job_states.hpp>
-#include <sdpa/client/Client.hpp>
+#include <sdpa/client.hpp>
 #include <seda/IEvent.hpp>
 #include <sdpa/util/util.hpp>
 
@@ -474,8 +474,10 @@ int main (int argc, char **argv) {
                              ? cfg.get<std::string>("orchestrator")
                              : throw std::runtime_error ("no orchestrator specified!")
                              , cfg.is_set("network.timeout")
-                             ? boost::optional<sdpa::client::Client::timeout_t>
-                               (cfg.get<unsigned int>("network.timeout"))
+                             ? boost::optional<boost::posix_time::time_duration>
+                               ( cfg.get<boost::posix_time::milliseconds>
+                                 ("network.timeout")
+                               )
                              : boost::none
                              );
 
