@@ -155,7 +155,7 @@ namespace sdpa {
       template <class FSM, class Event>
       void no_transition(Event const& e, FSM&, int state)
       {
-        DLOG(WARN, "no transition from state "<< sdpa::status::show(state_code[state]) << " on event " << typeid(e).name());
+        DLOG(WARN, "no transition from state "<< sdpa::status::show(state_code(state)) << " on event " << typeid(e).name());
       }
 
       template <class FSM>
@@ -163,8 +163,8 @@ namespace sdpa {
       {
         // if the job is already in the state running just ignore the event,
         // the job is already running!
-        if(state_code[state] != sdpa::status::RUNNING)
-          DLOG(WARN, "no transition from state "<< sdpa::status::show(state_code[state]) << " on event ResumeJobEvent");
+        if(state_code(state) != sdpa::status::RUNNING)
+          DLOG(WARN, "no transition from state "<< sdpa::status::show(state_code(state)) << " on event ResumeJobEvent");
       }
 
       template <class FSM>
@@ -172,8 +172,8 @@ namespace sdpa {
       {
         // if the job is already in the state stalled just ignore the event,
         // the job is already in the state stalled
-        if(state_code[state] != sdpa::status::STALLED )
-          DLOG(WARN, "no transition from state "<< sdpa::status::show(state_code[state]) << " on event JobStalledEvent");
+        if(state_code(state) != sdpa::status::STALLED )
+          DLOG(WARN, "no transition from state "<< sdpa::status::show(state_code(state)) << " on event JobStalledEvent");
       }
     };
 
