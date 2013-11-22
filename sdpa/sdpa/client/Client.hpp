@@ -1,7 +1,6 @@
 #ifndef SDPA_CLIENT_HPP
 #define SDPA_CLIENT_HPP 1
 
-#include <sdpa/client/exceptions.hpp>
 #include <sdpa/common.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/job_states.hpp>
