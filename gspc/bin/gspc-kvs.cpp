@@ -619,9 +619,17 @@ int main (int argc, char *argv [], char *envp [])
     }
   }
 
-  if (rc == -ETIME || rc == -EAGAIN || rc == -ECONNREFUSED)
+  if (rc == -ETIME || rc == -EAGAIN)
   {
     return EX_TEMPFAIL;
+  }
+  else if (rc == -ECONNREFUSED)
+  {
+    return EX_UNAVAILABLE;
+  }
+  else if (rc == -EPERM)
+  {
+    return EX_NOPERM;
   }
   else if (rc == -ENOKEY)
   {

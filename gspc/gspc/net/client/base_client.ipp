@@ -239,7 +239,17 @@ namespace gspc
           {
             if (rply.get_command () == "ERROR")
             {
-              rc = header::get (rply, "code", -EPERM);
+              const int error_code = header::get (rply, "code", -EPERM);
+              if (  error_code == E_UNAUTHORIZED
+                 || error_code == E_PERMISSION_DENIED
+                 )
+              {
+                rc = -EPERM;
+              }
+              else
+              {
+                rc = -EPROTO;
+              }
             }
             else
             {

@@ -106,16 +106,15 @@ namespace gspc
         return -EKEYREJECTED;
 
       int rc = -EAGAIN;
-      while (rc == -EAGAIN || rc == -ENOKEY || rc > 0)
+      do
       {
         rc = this->do_try_pop (key, val);
-        if (0 == rc)
+        if (rc == -ETIME || rc == -EINVAL || rc == -EPERM || rc == 0)
           break;
-        if (-EINVAL == rc)
-          break;
-
         rc = this->do_wait (key, E_PUSH | E_POPABLE, timeout);
-      }
+        if (rc < 0)
+          break;
+      } while (true);
 
       return rc;
     }

@@ -118,9 +118,6 @@ namespace gspc
       template <class Proto>
       void base_connection<Proto>::stop ()
       {
-        unique_lock pending_lock (m_pending_mutex);
-        m_pending.clear ();
-
         unique_lock lock (m_shutting_down_mutex);
         m_shutting_down = true;
 
@@ -143,13 +140,11 @@ namespace gspc
       void
       base_connection<Proto>::send_heartbeat_if_needed ()
       {
-        bool need_to_send = false;
-        {
-          unique_lock lock_pending (m_pending_mutex);
-          unique_lock lock_shutdown (m_shutting_down_mutex);
-          need_to_send = m_pending.empty () && not m_shutting_down;
-        }
-        if (need_to_send)
+        unique_lock const _ (m_heartbeat_mutex);
+        if ( m_heartbeat_info.send_duration ()
+           &&
+           (m_send_timestamp + *m_heartbeat_info.send_duration ()) <= boost::get_system_time ()
+           )
         {
           this->deliver (gspc::net::make::heartbeat_frame ());
         }

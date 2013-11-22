@@ -226,6 +226,30 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connection_refused)
   gspc::net::shutdown ();
 }
 
+BOOST_AUTO_TEST_CASE (test_serve_client_connection_refused)
+{
+  gspc::net::initializer _net_init;
+
+  boost::system::error_code ec;
+  int rc;
+
+  gspc::net::client_ptr_t client
+    (gspc::net::dial ("unix://this.socket.does.not.exist", ec));
+  BOOST_REQUIRE (client);
+
+  BOOST_REQUIRE (ec);
+  BOOST_REQUIRE (not client->is_connected ());
+
+  rc = client->stop ();
+  BOOST_REQUIRE_EQUAL (rc, 0);
+
+  rc = client->start ();
+  BOOST_REQUIRE (rc < 0);
+
+  rc = client->stop ();
+  BOOST_REQUIRE_EQUAL (rc, 0);
+}
+
 BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 {
   gspc::net::initialize ();

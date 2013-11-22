@@ -1,34 +1,27 @@
 # bundle up
 
-list(APPEND APPS "\${CMAKE_INSTALL_PREFIX}/bin/sdpac")
+set (APPS)
 
-if (TARGET sdpa-gui)
-  list(APPEND APPS "\${CMAKE_INSTALL_PREFIX}/bin/sdpa-gui")
-endif()
-if (TARGET gpish)
-  list(APPEND APPS "\${CMAKE_INSTALL_PREFIX}/bin/gpish")
-endif()
-if (TARGET gpi-space)
-  list(APPEND APPS "\${CMAKE_INSTALL_PREFIX}/bin/gpi-space")
-endif()
-if (TARGET pnete)
-  list(APPEND APPS "\${CMAKE_INSTALL_PREFIX}/bin/pnete")
-endif()
-if (TARGET gspcmond)
-  list(APPEND APPS "\${CMAKE_INSTALL_PREFIX}/bin/gspcmond")
-endif()
-if (TARGET gspcmonc)
-  list(APPEND APPS "\${CMAKE_INSTALL_PREFIX}/bin/gspcmonc")
-endif()
-if (TARGET fhgkernel)
-  list(APPEND APPS "\${CMAKE_INSTALL_PREFIX}/bin/fhgkernel")
-endif()
-if (TARGET gspcnet-req)
-  list(APPEND APPS "\${CMAKE_INSTALL_PREFIX}/bin/gspcnet-req")
-endif()
-if (TARGET gspcnet-ping)
-  list(APPEND APPS "\${CMAKE_INSTALL_PREFIX}/bin/gspcnet-ping")
-endif()
+macro (BUNDLE_APPS)
+  foreach (app ${ARGN})
+    if (TARGET ${app})
+      get_target_property (_loc ${app} LOCATION)
+      list(APPEND APPS "${_loc}")
+      unset (_loc)
+    endif()
+  endforeach()
+endmacro()
+
+bundle_apps(
+  sdpac
+  sdpa-gui
+  gpish
+  gspcd
+  gspc-kvs
+  gpi-space
+  pnete
+  fhgkernel
+)
 
 install(CODE "
   file(GLOB_RECURSE PLUGINS
