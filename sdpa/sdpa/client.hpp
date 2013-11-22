@@ -1,5 +1,5 @@
 #ifndef SDPA_CLIENT_HPP
-#define SDPA_CLIENT_HPP 1
+#define SDPA_CLIENT_HPP
 
 #include <sdpa/common.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
@@ -10,11 +10,8 @@
 
 #include <fhgcom/peer.hpp>
 
-#include <cstdlib>
-#include <string>
-
 #include <boost/optional.hpp>
-#include <boost/thread.hpp> // condition variables
+#include <boost/thread.hpp>
 
 namespace sdpa
 {
