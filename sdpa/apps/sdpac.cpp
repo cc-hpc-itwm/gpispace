@@ -17,7 +17,7 @@
 #include <fhg/util/getenv.hpp>
 
 #include <sdpa/job_states.hpp>
-#include <sdpa/client/Client.hpp>
+#include <sdpa/client.hpp>
 #include <seda/IEvent.hpp>
 #include <sdpa/util/util.hpp>
 

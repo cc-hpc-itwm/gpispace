@@ -5,7 +5,7 @@
 
 #include "tests_config.hpp"
 
-#include <sdpa/client/Client.hpp>
+#include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/AgentFactory.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/memory.hpp>
