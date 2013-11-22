@@ -236,19 +236,19 @@ sdpa::events::SDPAEvent::Ptr Client::wait_for_reply (bool use_timeout)
   }
 }
 
-sdpa::job_id_t Client::submitJob(const job_desc_t &desc) throw (ClientException)
+sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
 {
   return send_and_wait_for_reply<se::SubmitJobAckEvent>
     (se::SubmitJobEvent (_name, orchestrator_, "", desc, "")).job_id();
 }
 
-void Client::cancelJob(const job_id_t &jid) throw (ClientException)
+void Client::cancelJob(const job_id_t &jid)
 {
   send_and_wait_for_reply<se::CancelJobAckEvent>
     (se::CancelJobEvent (_name, orchestrator_, jid, "user cancel"));
 }
 
-sdpa::status::code Client::queryJob(const job_id_t &jid) throw (ClientException)
+sdpa::status::code Client::queryJob(const job_id_t &jid)
 {
   job_info_t info;
   return queryJob (jid, info);
@@ -267,13 +267,13 @@ sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
   return reply.status();
 }
 
-void Client::deleteJob(const job_id_t &jid) throw (ClientException)
+void Client::deleteJob(const job_id_t &jid)
 {
   send_and_wait_for_reply<se::DeleteJobAckEvent>
     (se::DeleteJobEvent (_name, orchestrator_, jid));
 }
 
-sdpa::client::result_t Client::retrieveResults(const job_id_t &jid) throw (ClientException)
+sdpa::client::result_t Client::retrieveResults(const job_id_t &jid)
 {
   return send_and_wait_for_reply<se::JobResultsReplyEvent>
     (se::RetrieveJobResultsEvent (_name, orchestrator_, jid)).result();

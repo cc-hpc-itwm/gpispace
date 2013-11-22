@@ -36,12 +36,12 @@ namespace sdpa
       Client (std::string orchestrator, boost::optional<timeout_t> = boost::none);
       ~Client();
 
-      job_id_t submitJob(const job_desc_t &) throw (ClientException);
-      void cancelJob(const job_id_t &) throw (ClientException);
-      status::code queryJob(const job_id_t &) throw (ClientException);
+      job_id_t submitJob(const job_desc_t &);
+      void cancelJob(const job_id_t &);
+      status::code queryJob(const job_id_t &);
       status::code queryJob(const job_id_t &, job_info_t &);
-      void deleteJob(const job_id_t &) throw (ClientException);
-      result_t retrieveResults(const job_id_t &) throw (ClientException);
+      void deleteJob(const job_id_t &);
+      result_t retrieveResults(const job_id_t &);
 
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
