@@ -15,6 +15,8 @@
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
 
+#include <fhg/util/macros.hpp>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -104,7 +106,8 @@ namespace sdpa
 
     namespace
     {
-      void handle_bad_event (sdpa::events::SDPAEvent::Ptr reply)
+      FHG_ATTRIBUTE_NORETURN
+        void handle_bad_event (sdpa::events::SDPAEvent::Ptr reply)
       {
         if ( sdpa::events::ErrorEvent *err
            = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get())
