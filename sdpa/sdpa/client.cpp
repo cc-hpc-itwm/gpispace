@@ -39,8 +39,7 @@ namespace sdpa
     {
       void kvs_error_handler (boost::system::error_code const &)
       {
-        MLOG (ERROR, "could not contact KVS, terminating");
-        kill (getpid (), SIGTERM);
+        throw std::runtime_error ("could not contact KVS, terminating");
       }
     }
 
@@ -89,7 +88,6 @@ namespace sdpa
       {
         sdpa::events::SDPAEvent::Ptr evt
           (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
-        DLOG(TRACE, "received event: " << evt->str());
         m_incoming_events.put (evt);
       }
       else
