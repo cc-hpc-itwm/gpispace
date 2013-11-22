@@ -1,4 +1,3 @@
-DEFINES = -DUSE_STL_TR1=1
 INCLUDES =-I/p/herc/itwm/hpc/soft/fhglog/1.2.0/intel/include
 INCLUDES+=-I/p/herc/itwm/hpc/soft/sdpa/fvm-pc/include
 INCLUDES+=-I/p/herc/itwm/hpc/ap/SDPA/sdpa/trunk
