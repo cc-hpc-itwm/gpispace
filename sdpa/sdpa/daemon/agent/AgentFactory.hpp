@@ -41,7 +41,7 @@ namespace daemon {
                                                 const unsigned int rank = 0,
                                                 const boost::optional<std::string>& appGuiUrl = boost::none )
     {
-      return Agent::create_with_start_called (name, url, arrMasterNames, rank, appGuiUrl);
+      return Agent::create (name, url, arrMasterNames, rank, appGuiUrl);
     }
   };
 }}
