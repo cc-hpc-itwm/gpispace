@@ -43,11 +43,10 @@ namespace sdpa {
               , int rank
               , const boost::optional<std::string>& guiUrl
               )
-          : GenericDaemon( name, arrMasterNames, rank, guiUrl),
+          : GenericDaemon (name, arrMasterNames, rank, guiUrl, true),
           SDPA_INIT_LOGGER(name),
           url_(url)
         {
-          createWorkflowEngine<we::mgmt::layer>();
           if(rank>=0)
           {
             std::ostringstream oss;

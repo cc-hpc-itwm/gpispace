@@ -74,6 +74,7 @@ namespace sdpa {
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
                     unsigned int rank = 0
                    , const boost::optional<std::string>& guiUrl = boost::none
+                   , bool create_wfe = false
                    );
       virtual ~GenericDaemon() {}
 
@@ -181,12 +182,6 @@ namespace sdpa {
       // workflow engine
       virtual we::mgmt::layer* workflowEngine() const { return ptr_workflow_engine_; }
       virtual bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
-
-      template <typename T>
-        void createWorkflowEngine()
-      {
-    	  ptr_workflow_engine_ = new T(this, boost::bind(&GenericDaemon::gen_id, this));
-      }
 
       // workflow engine notifications
       virtual void submitWorkflow(const job_id_t& id);
