@@ -102,6 +102,25 @@ namespace sdpa
       }
     }
 
+    namespace
+    {
+      void handle_bad_event (sdpa::events::SDPAEvent::Ptr reply)
+      {
+        if ( sdpa::events::ErrorEvent *err
+           = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get())
+           )
+        {
+          throw std::runtime_error
+            ( "Error: reason := "
+            + err->reason()
+            + " code := "
+            + boost::lexical_cast<std::string>(err->error_code())
+            );
+        }
+
+        throw std::runtime_error ("Unexpected reply: " + reply->str());
+      }
+    }
 
     template<typename Expected, typename Sent>
       Expected Client::send_and_wait_for_reply (Sent event)
@@ -117,17 +136,8 @@ namespace sdpa
       {
         return *e;
       }
-      else if (sdpa::events::ErrorEvent* err = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get()))
-      {
-        throw std::runtime_error ( "Error: reason := "+ err->reason()
-                                 + " code := "
-                                 + boost::lexical_cast<std::string> (err->error_code())
-                                 );
-      }
-      else
-      {
-        throw std::runtime_error ("Unexpected reply: " + reply->str());
-      }
+
+      handle_bad_event (reply);
     }
 
     sdpa::status::code Client::wait_for_terminal_state
@@ -170,22 +180,8 @@ namespace sdpa
         }
         return sdpa::status::CANCELED;
       }
-      else if ( sdpa::events::ErrorEvent *err
-              = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get())
-              )
-      {
-        throw std::runtime_error
-          ( "got error event: reason := "
-          + err->reason()
-          + " code := "
-          + boost::lexical_cast<std::string>(err->error_code())
-          );
-      }
-      else
-      {
-        throw std::runtime_error
-          (std::string ("unexpected reply: ") + (reply ? reply->str() : "null"));
-      }
+
+      handle_bad_event (reply);
     }
 
     sdpa::status::code Client::wait_for_terminal_state_polling
