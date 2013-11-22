@@ -31,53 +31,55 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-using namespace sdpa::client;
-
-namespace
+namespace sdpa
 {
-  void kvs_error_handler (boost::system::error_code const &)
+  namespace client
   {
-    MLOG (ERROR, "could not contact KVS, terminating");
-    kill (getpid (), SIGTERM);
-  }
-}
+    namespace
+    {
+      void kvs_error_handler (boost::system::error_code const &)
+      {
+        MLOG (ERROR, "could not contact KVS, terminating");
+        kill (getpid (), SIGTERM);
+      }
+    }
 
-Client::Client (std::string orchestrator, boost::optional<timeout_t> timeout)
-  : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
-  , timeout_ (timeout.get_value_or (5000U))
-  , orchestrator_ (orchestrator)
-  , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
-  , _peer_thread (&fhg::com::peer_t::run, &m_peer)
-  , _stopping (false)
-{
-  m_peer.set_kvs_error_handler (&kvs_error_handler);
-  m_peer.start ();
-  m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
-}
+    Client::Client (std::string orchestrator, boost::optional<timeout_t> timeout)
+      : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
+      , timeout_ (timeout.get_value_or (5000U))
+      , orchestrator_ (orchestrator)
+      , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
+      , _peer_thread (&fhg::com::peer_t::run, &m_peer)
+      , _stopping (false)
+    {
+      m_peer.set_kvs_error_handler (&kvs_error_handler);
+      m_peer.start ();
+      m_peer.async_recv (&m_message, boost::bind(&Client::handle_recv, this, _1));
+    }
 
-Client::~Client()
-{
-  _stopping = true;
-  m_peer.stop();
-  if (_peer_thread.joinable())
-  {
-    _peer_thread.join();
-  }
-}
+    Client::~Client()
+    {
+      _stopping = true;
+      m_peer.stop();
+      if (_peer_thread.joinable())
+      {
+        _peer_thread.join();
+      }
+    }
 
-fhg::com::message_t Client::message_for_event
-  (const sdpa::events::SDPAEvent* event)
-{
-  static sdpa::events::Codec codec;
+    fhg::com::message_t Client::message_for_event
+      (const sdpa::events::SDPAEvent* event)
+    {
+      static sdpa::events::Codec codec;
 
-  const std::string encoded_evt (codec.encode (event));
-  fhg::com::message_t msg (encoded_evt.begin(), encoded_evt.end());
-  msg.header.dst = m_peer.resolve_name (event->to());
-  msg.header.src = m_peer.address();
-  msg.header.length = msg.data.size();
+      const std::string encoded_evt (codec.encode (event));
+      fhg::com::message_t msg (encoded_evt.begin(), encoded_evt.end());
+      msg.header.dst = m_peer.resolve_name (event->to());
+      msg.header.src = m_peer.address();
+      msg.header.length = msg.data.size();
 
-  return msg;
-}
+      return msg;
+    }
 
     void Client::handle_recv (boost::system::error_code const & ec)
     {
@@ -113,155 +115,157 @@ fhg::com::message_t Client::message_for_event
     }
 
 
-template<typename Expected, typename Sent>
-  Expected Client::send_and_wait_for_reply (Sent event)
-{
-  m_incoming_events.clear();
-
-  fhg::com::message_t msg (message_for_event (&event));
-
-  m_peer.send (&msg);
-
-  const sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (true));
-  if (Expected* e = dynamic_cast<Expected*> (reply.get()))
-  {
-    return *e;
-  }
-  else if (sdpa::events::ErrorEvent* err = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get()))
-  {
-    throw std::runtime_error ( "Error: reason := "+ err->reason()
-                             + " code := "
-                             + boost::lexical_cast<std::string> (err->error_code())
-                             );
-  }
-  else
-  {
-    throw std::runtime_error ("Unexpected reply: " + reply->str());
-  }
-}
-
-sdpa::status::code Client::wait_for_terminal_state
-  (job_id_t id, job_info_t& job_info)
-{
-  send_and_wait_for_reply<sdpa::events::SubscribeAckEvent>
-    (sdpa::events::SubscribeEvent (_name, orchestrator_, job_id_list_t (1, id)));
-
-  sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (false));
-
-  if ( sdpa::events::JobFinishedEvent* evt
-     = dynamic_cast<sdpa::events::JobFinishedEvent*> (reply.get())
-     )
-  {
-    if (evt->job_id() != id)
+    template<typename Expected, typename Sent>
+      Expected Client::send_and_wait_for_reply (Sent event)
     {
-      throw std::runtime_error ("got status change for different job");
+      m_incoming_events.clear();
+
+      fhg::com::message_t msg (message_for_event (&event));
+
+      m_peer.send (&msg);
+
+      const sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (true));
+      if (Expected* e = dynamic_cast<Expected*> (reply.get()))
+      {
+        return *e;
+      }
+      else if (sdpa::events::ErrorEvent* err = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get()))
+      {
+        throw std::runtime_error ( "Error: reason := "+ err->reason()
+                                 + " code := "
+                                 + boost::lexical_cast<std::string> (err->error_code())
+                                 );
+      }
+      else
+      {
+        throw std::runtime_error ("Unexpected reply: " + reply->str());
+      }
     }
-    return sdpa::status::FINISHED;
-  }
-  else if ( sdpa::events::JobFailedEvent* evt
-          = dynamic_cast<sdpa::events::JobFailedEvent*> (reply.get())
-          )
-  {
-    if (evt->job_id() != id)
+
+    sdpa::status::code Client::wait_for_terminal_state
+      (job_id_t id, job_info_t& job_info)
     {
-      throw std::runtime_error ("got status change for different job");
+      send_and_wait_for_reply<sdpa::events::SubscribeAckEvent>
+        (sdpa::events::SubscribeEvent (_name, orchestrator_, job_id_list_t (1, id)));
+
+      sdpa::events::SDPAEvent::Ptr reply (wait_for_reply (false));
+
+      if ( sdpa::events::JobFinishedEvent* evt
+         = dynamic_cast<sdpa::events::JobFinishedEvent*> (reply.get())
+         )
+      {
+        if (evt->job_id() != id)
+        {
+          throw std::runtime_error ("got status change for different job");
+        }
+        return sdpa::status::FINISHED;
+      }
+      else if ( sdpa::events::JobFailedEvent* evt
+              = dynamic_cast<sdpa::events::JobFailedEvent*> (reply.get())
+              )
+      {
+        if (evt->job_id() != id)
+        {
+          throw std::runtime_error ("got status change for different job");
+        }
+        job_info.error_code = evt->error_code();
+        job_info.error_message = evt->error_message();
+        return sdpa::status::FAILED;
+      }
+      else if ( sdpa::events::CancelJobAckEvent* evt
+              = dynamic_cast<sdpa::events::CancelJobAckEvent*> (reply.get())
+              )
+      {
+        if (evt->job_id() != id)
+        {
+          throw std::runtime_error ("got status change for different job");
+        }
+        return sdpa::status::CANCELED;
+      }
+      else if ( sdpa::events::ErrorEvent *err
+              = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get())
+              )
+      {
+        throw std::runtime_error
+          ( "got error event: reason := "
+          + err->reason()
+          + " code := "
+          + boost::lexical_cast<std::string>(err->error_code())
+          );
+      }
+      else
+      {
+        throw std::runtime_error
+          (std::string ("unexpected reply: ") + (reply ? reply->str() : "null"));
+      }
     }
-    job_info.error_code = evt->error_code();
-    job_info.error_message = evt->error_message();
-    return sdpa::status::FAILED;
-  }
-  else if ( sdpa::events::CancelJobAckEvent* evt
-          = dynamic_cast<sdpa::events::CancelJobAckEvent*> (reply.get())
-          )
-  {
-    if (evt->job_id() != id)
+
+    sdpa::status::code Client::wait_for_terminal_state_polling
+      (job_id_t id, job_info_t& job_info)
     {
-      throw std::runtime_error ("got status change for different job");
+      sdpa::status::code state (queryJob (id));
+      for (; !sdpa::status::is_terminal (state); state = queryJob (id))
+      {
+        static const boost::posix_time::milliseconds sleep_duration (100);
+        boost::this_thread::sleep (sleep_duration);
+      }
+      return state;
     }
-    return sdpa::status::CANCELED;
+
+
+    sdpa::events::SDPAEvent::Ptr Client::wait_for_reply (bool use_timeout)
+    {
+      if (use_timeout)
+      {
+        return m_incoming_events.get (boost::posix_time::milliseconds (timeout_));
+      }
+      else
+      {
+        return m_incoming_events.get();
+      }
+    }
+
+    sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
+    {
+      return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
+        (sdpa::events::SubmitJobEvent (_name, orchestrator_, "", desc, "")).job_id();
+    }
+
+    void Client::cancelJob(const job_id_t &jid)
+    {
+      send_and_wait_for_reply<sdpa::events::CancelJobAckEvent>
+        (sdpa::events::CancelJobEvent (_name, orchestrator_, jid, "user cancel"));
+    }
+
+    sdpa::status::code Client::queryJob(const job_id_t &jid)
+    {
+      job_info_t info;
+      return queryJob (jid, info);
+    }
+
+    sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
+    {
+      const sdpa::events::JobStatusReplyEvent reply
+        ( send_and_wait_for_reply<sdpa::events::JobStatusReplyEvent>
+        (sdpa::events::QueryJobStatusEvent (_name, orchestrator_, jid))
+        );
+
+      info.error_code = reply.error_code();
+      info.error_message = reply.error_message();
+
+      return reply.status();
+    }
+
+    void Client::deleteJob(const job_id_t &jid)
+    {
+      send_and_wait_for_reply<sdpa::events::DeleteJobAckEvent>
+        (sdpa::events::DeleteJobEvent (_name, orchestrator_, jid));
+    }
+
+    sdpa::client::result_t Client::retrieveResults(const job_id_t &jid)
+    {
+      return send_and_wait_for_reply<sdpa::events::JobResultsReplyEvent>
+        (sdpa::events::RetrieveJobResultsEvent (_name, orchestrator_, jid)).result();
+    }
   }
-  else if ( sdpa::events::ErrorEvent *err
-          = dynamic_cast<sdpa::events::ErrorEvent*>(reply.get())
-          )
-  {
-    throw std::runtime_error
-      ( "got error event: reason := "
-      + err->reason()
-      + " code := "
-      + boost::lexical_cast<std::string>(err->error_code())
-      );
-  }
-  else
-  {
-    throw std::runtime_error
-      (std::string ("unexpected reply: ") + (reply ? reply->str() : "null"));
-  }
-}
-
-sdpa::status::code Client::wait_for_terminal_state_polling
-  (job_id_t id, job_info_t& job_info)
-{
-  sdpa::status::code state (queryJob (id));
-  for (; !sdpa::status::is_terminal (state); state = queryJob (id))
-  {
-    static const boost::posix_time::milliseconds sleep_duration (100);
-    boost::this_thread::sleep (sleep_duration);
-  }
-  return state;
-}
-
-
-sdpa::events::SDPAEvent::Ptr Client::wait_for_reply (bool use_timeout)
-{
-  if (use_timeout)
-  {
-    return m_incoming_events.get (boost::posix_time::milliseconds (timeout_));
-  }
-  else
-  {
-    return m_incoming_events.get();
-  }
-}
-
-sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
-{
-  return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
-    (sdpa::events::SubmitJobEvent (_name, orchestrator_, "", desc, "")).job_id();
-}
-
-void Client::cancelJob(const job_id_t &jid)
-{
-  send_and_wait_for_reply<sdpa::events::CancelJobAckEvent>
-    (sdpa::events::CancelJobEvent (_name, orchestrator_, jid, "user cancel"));
-}
-
-sdpa::status::code Client::queryJob(const job_id_t &jid)
-{
-  job_info_t info;
-  return queryJob (jid, info);
-}
-
-sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
-{
-  const sdpa::events::JobStatusReplyEvent reply
-    ( send_and_wait_for_reply<sdpa::events::JobStatusReplyEvent>
-      (sdpa::events::QueryJobStatusEvent (_name, orchestrator_, jid))
-    );
-
-  info.error_code = reply.error_code();
-  info.error_message = reply.error_message();
-
-  return reply.status();
-}
-
-void Client::deleteJob(const job_id_t &jid)
-{
-  send_and_wait_for_reply<sdpa::events::DeleteJobAckEvent>
-    (sdpa::events::DeleteJobEvent (_name, orchestrator_, jid));
-}
-
-sdpa::client::result_t Client::retrieveResults(const job_id_t &jid)
-{
-  return send_and_wait_for_reply<sdpa::events::JobResultsReplyEvent>
-    (sdpa::events::RetrieveJobResultsEvent (_name, orchestrator_, jid)).result();
 }
