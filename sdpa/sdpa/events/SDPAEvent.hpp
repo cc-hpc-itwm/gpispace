@@ -37,10 +37,6 @@ namespace sdpa
       {
         return to_;
       }
-      const message_id_type& id() const
-      {
-        return id_;
-      }
 
       virtual std::string str() const = 0;
       virtual void handleBy (EventHandler*) = 0;
@@ -55,14 +51,9 @@ namespace sdpa
         : IEvent()
         , from_()
         , to_()
-        , id_()
       {}
 
       SDPAEvent (const address_t& from, const address_t& to);
-      SDPAEvent ( const address_t& from
-                , const address_t& to
-                , const message_id_type& mid
-                );
 
     private:
       address_t from_;
@@ -75,7 +66,6 @@ namespace sdpa
       {
         ar & from_;
         ar & to_;
-        ar & id_;
       }
     };
   }

@@ -203,8 +203,7 @@ void JobManager::resubmitResults(IAgent* pComm)
         {
           sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(pComm->name(),
                                                                                                    pJob->owner(),
-                                                                                                   pJob->id(),
-                                                                                                   ""));
+                                                                                                   pJob->id()));
           // There is a problem with this if uncommented
           pComm->sendEventToMaster(pSubmitJobAckEvt);
         }

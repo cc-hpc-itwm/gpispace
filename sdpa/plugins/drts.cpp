@@ -603,7 +603,6 @@ public:
         send_event (new sdpa::events::SubmitJobAckEvent( m_my_name
                                                        , job->owner()
                                                        , job->id()
-                                                       , "empty-message-id"
                                                        )
                    );
         m_jobs.insert (std::make_pair(job->id(), job));

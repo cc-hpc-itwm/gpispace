@@ -451,7 +451,7 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     if( e.from() != sdpa::daemon::WE )
     {
       // send back to the user a SubmitJobAckEvent
-      SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id, e.id()));
+      SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
 
       // There is a problem with this if uncommented
       sendEventToMaster(pSubmitJobAckEvt);
@@ -526,11 +526,7 @@ void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent
       // just answer back with an acknowledgment
       DMLOG (TRACE, "Send registration ack to the agent " << worker_id );
       WorkerRegistrationAckEvent::Ptr const pWorkerRegAckEvt
-        (new WorkerRegistrationAckEvent ( name()
-                                        , evtRegWorker.from()
-                                        , evtRegWorker.id()
-                                        )
-        );
+        (new WorkerRegistrationAckEvent ( name(), evtRegWorker.from()));
 
       sendEventToSlave(pWorkerRegAckEvt);
     }

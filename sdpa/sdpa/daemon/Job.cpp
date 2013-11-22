@@ -203,7 +203,7 @@ namespace sdpa {
       lock_type lock(mtx_);
       process_event(*pEvt);
 
-      sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id(), pEvt->id()) );
+      sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id()) );
       ptr_comm->sendEventToMaster(pDelJobReply);
     }
 

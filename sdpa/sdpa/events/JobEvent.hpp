@@ -24,15 +24,6 @@ namespace sdpa
         , job_id_ (a_job_id)
       {}
 
-      JobEvent ( const address_t& a_from
-               , const address_t& a_to
-               , const sdpa::job_id_t& a_job_id
-               , const message_id_type& mid
-               )
-        : SDPAEvent (a_from, a_to, mid)
-        , job_id_ (a_job_id)
-      {}
-
       const sdpa::job_id_t& job_id() const
       {
         return job_id_;
