@@ -346,7 +346,7 @@ namespace we { namespace mgmt {
         external_id_gen_ = gen;
       }
 
-      virtual ~layer()
+      ~layer()
       {
         // stop threads
         stop();
