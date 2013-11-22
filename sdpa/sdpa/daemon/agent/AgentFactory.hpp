@@ -41,19 +41,7 @@ namespace daemon {
                                 const unsigned int rank = 0,
                                 const boost::optional<std::string>& appGuiUrl = boost::none )
     {
-      Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
-      pAgent->createWorkflowEngine<we::mgmt::layer>();
-
-      seda::Stage::Ptr daemon_stage (new seda::Stage( name
-                                                    , pAgent
-                                                    , 1
-                                                    )
-                                    );
-
-      pAgent->setStage(daemon_stage);
-      seda::StageRegistry::instance().insert(daemon_stage);
-
-      return pAgent;
+      return Agent::create (name, url, arrMasterNames, rank, appGuiUrl);
     }
 
     static Agent::ptr_t create_with_start_called( const std::string& name,
@@ -62,9 +50,7 @@ namespace daemon {
                                                 const unsigned int rank = 0,
                                                 const boost::optional<std::string>& appGuiUrl = boost::none )
     {
-      Agent::ptr_t pAgent (create (name, url, arrMasterNames, rank, appGuiUrl));
-      pAgent->start_agent();
-      return pAgent;
+      return Agent::create_with_start_called (name, url, arrMasterNames, rank, appGuiUrl);
     }
   };
 }}

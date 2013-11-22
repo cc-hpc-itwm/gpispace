@@ -24,13 +24,24 @@
 namespace sdpa {
   namespace daemon {
 
-    struct AgentFactory;
-
     class Agent : public GenericDaemon
     {
       public:
         typedef sdpa::shared_ptr<Agent > ptr_t;
         SDPA_DECLARE_LOGGER();
+
+        static Agent::ptr_t create ( const std::string& name
+                                   , const std::string& url
+                                   , const sdpa::master_info_list_t& arrMasterNames
+                                   , const unsigned int rank = 0
+                                   , const boost::optional<std::string>& appGuiUrl = boost::none
+                                   );
+        static Agent::ptr_t create_with_start_called ( const std::string& name
+                                                     , const std::string& url
+                                                     , const sdpa::master_info_list_t& arrMasterNames
+                                                     , const unsigned int rank = 0
+                                                     , const boost::optional<std::string>& appGuiUrl = boost::none
+                                                     );
 
         Agent ( const std::string& name
               , const std::string& url
@@ -64,8 +75,6 @@ namespace sdpa {
         bool failed( const id_type& workflowId, const result_type& result, int error_code, std::string const& reason);
 
         const std::string url() const {return url_;}
-
-        friend struct AgentFactory;
 
         template <typename T>
         void notifySubscribers(const T& ptrEvt);
