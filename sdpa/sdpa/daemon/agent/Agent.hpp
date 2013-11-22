@@ -47,6 +47,7 @@ namespace sdpa {
           SDPA_INIT_LOGGER(name),
           url_(url)
         {
+          createWorkflowEngine<we::mgmt::layer>();
           if(rank>=0)
           {
             std::ostringstream oss;
