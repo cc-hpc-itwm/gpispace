@@ -6,7 +6,7 @@
 #include "tests_config.hpp"
 
 #include <sdpa/client.hpp>
-#include <sdpa/daemon/agent/AgentFactory.hpp>
+#include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/memory.hpp>
 
@@ -68,7 +68,7 @@ namespace utils
           , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
-      : _ ( sdpa::daemon::AgentFactory::create_with_start_called
+      : _ ( sdpa::daemon::Agent::create
             (name, url, assemble_master_info_list (masters), rank, gui_url)
           )
       , _name (name)
@@ -79,8 +79,8 @@ namespace utils
           , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
-      : _ ( sdpa::daemon::AgentFactory::create_with_start_called
-            (name, url
+      : _ ( sdpa::daemon::Agent::create
+            ( name, url
             , sdpa::master_info_list_t (1, sdpa::MasterInfo (orchestrator.name()))
             , rank, gui_url
             )
@@ -93,8 +93,8 @@ namespace utils
           , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
-      : _ ( sdpa::daemon::AgentFactory::create_with_start_called
-            (name, url
+      : _ ( sdpa::daemon::Agent::create
+            ( name, url
             , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
             , rank, gui_url
             )
