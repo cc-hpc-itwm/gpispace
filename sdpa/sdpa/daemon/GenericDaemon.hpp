@@ -36,7 +36,6 @@
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>

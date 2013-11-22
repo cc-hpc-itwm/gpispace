@@ -10,7 +10,6 @@
 #include <boost/serialization/assume_abstract.hpp>
 
 #include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/LifeSignEvent.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/WorkerRegistrationAckEvent.hpp>
 

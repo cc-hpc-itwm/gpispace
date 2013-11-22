@@ -16,7 +16,6 @@ namespace sdpa
     class JobFinishedEvent;
     class JobResultsReplyEvent;
     class JobStatusReplyEvent;
-    class LifeSignEvent;
     class QueryJobStatusEvent;
     class RetrieveJobResultsEvent;
     class RunJobEvent;
@@ -47,7 +46,6 @@ namespace sdpa
       virtual void handleJobFinishedEvent (const sdpa::events::JobFinishedEvent *) {}
       virtual void handleJobResultsReplyEvent (const sdpa::events::JobResultsReplyEvent *) {}
       virtual void handleJobStatusReplyEvent (const sdpa::events::JobStatusReplyEvent *) {}
-      virtual void handleLifeSignEvent (const sdpa::events::LifeSignEvent *) {}
       virtual void handleQueryJobStatusEvent (const sdpa::events::QueryJobStatusEvent *) {}
       virtual void handleRetrieveJobResultsEvent (const sdpa::events::RetrieveJobResultsEvent *) {}
       virtual void handleRunJobEvent (const sdpa::events::RunJobEvent *) {}

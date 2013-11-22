@@ -21,7 +21,6 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
-#include <sdpa/events/LifeSignEvent.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <cassert>
