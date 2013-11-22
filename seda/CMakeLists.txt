@@ -82,8 +82,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINAR
 # it also loads the file with the exported targets
 configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
 
-ADD_DEFINITIONS( -DHAVE_CONFIG_H )
-
 # Make sure all subdirectories include correctly
 
 # Reflect the package structure
