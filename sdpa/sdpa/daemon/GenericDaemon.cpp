@@ -761,8 +761,12 @@ void GenericDaemon::submit( const id_type& activityId
       }
       catch(const JobNotFoundException& ex)
       {
-          SDPA_LOG_ERROR("Could not find the parent job "<<parent_id<<" indicated by the workflow engine in the last submission!");
-          throw;
+          DLOG(WARN, "Could not find the parent job "<<parent_id<<" indicated by the workflow engine in the last submission!");
+          workflowEngine()->failed( activityId
+                                  , desc
+                                  , fhg::error::UNEXPECTED_ERROR
+                                  , "Could not find the parent job "+parent_id.str()
+                                  );
       }
   }
   catch(QueueFull const &)
