@@ -1038,9 +1038,6 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
   {
     DMLOG (WARN, "Could not add new capabilities. The worker "<<worker_id<<" was not found!");
   }
-  catch( const AlreadyHasCpbException& ex )
-  {
-  }
 }
 
 void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent* pCpbLostEvt)
