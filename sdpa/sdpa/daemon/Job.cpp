@@ -119,14 +119,12 @@ namespace sdpa {
 
     bool Job::completed()
     {
-      lock_type lock(mtx_);
-      return sdpa::status::is_terminal (state_code (*current_state()));
+      return sdpa::status::is_terminal (getStatus());
     }
 
     bool Job::is_running()
     {
-      lock_type lock(mtx_);
-      return sdpa::status::is_running (state_code (*current_state()));
+      return sdpa::status::is_running (getStatus());
     }
 
     bool Job::isMasterJob()
