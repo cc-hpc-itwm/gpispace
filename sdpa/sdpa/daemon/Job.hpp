@@ -169,8 +169,6 @@ namespace sdpa {
     public:
       typedef Job* ptr_t;
 
-      enum job_type {MASTER, WORKER};
-
       typedef boost::unordered_map<sdpa::job_id_t, Job::ptr_t> job_list_t;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
@@ -178,6 +176,7 @@ namespace sdpa {
       Job ( const sdpa::job_id_t id
           , const sdpa::job_desc_t desc
           , const sdpa::job_id_t &parent
+          , bool is_master_job
           );
 
       const sdpa::job_id_t& id() const;
@@ -192,7 +191,6 @@ namespace sdpa {
       Job& error_message(std::string const &msg);
 
       bool isMasterJob();
-      void setType(const job_type& );
 
       void set_owner(const sdpa::worker_id_t& owner);
       sdpa::worker_id_t owner();
@@ -230,7 +228,7 @@ namespace sdpa {
       sdpa::job_desc_t desc_;
       sdpa::job_id_t parent_;
 
-      job_type type_;
+      bool _is_master_job;
       sdpa::job_result_t result_;
       int m_error_code;
       std::string m_error_message;

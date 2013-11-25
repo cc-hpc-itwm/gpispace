@@ -84,7 +84,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   {
       SDPA_LOG_WARN( "got finished message for old Job "<< pEvt->job_id());
       // decided to keep it, until the client explicitly request to delete it  or a garbage collector will remove it
-      Job::ptr_t pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t()));
+      Job::ptr_t pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t(), false));
       addJob(pEvt->job_id(), pJob);
       pJob->JobFinished(pEvt);
       return;
@@ -165,7 +165,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   {
       SDPA_LOG_WARN( "got failed message for old Job "<< pEvt->job_id());
       // decided to keep it, until the client explicitly request to delete it  or a garbage collector will remove it
-      Job::ptr_t pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t()));
+      Job::ptr_t pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t(), false));
       addJob(pEvt->job_id(), pJob);
       pJob->JobFailed(pEvt);
       return;

@@ -47,11 +47,13 @@ namespace sdpa {
 
     Job::Job( const sdpa::job_id_t id,
               const sdpa::job_desc_t desc,
-              const sdpa::job_id_t &parent)
+              const sdpa::job_id_t &parent
+            , bool is_master_job
+            )
         : id_(id)
         , desc_(desc)
         , parent_(parent)
-        , type_(Job::WORKER)
+        , _is_master_job (is_master_job)
         , result_()
         , m_error_code(0)
         , m_error_message()
@@ -129,12 +131,7 @@ namespace sdpa {
 
     bool Job::isMasterJob()
     {
-      return type_ == Job::MASTER;
-    }
-
-    void Job::setType(const job_type& type)
-    {
-      type_ = type;
+      return _is_master_job;
     }
 
     void Job::setResult(const sdpa::job_result_t& arg_results)
@@ -230,7 +227,6 @@ namespace sdpa {
         std::ostringstream os;
         os<<std::endl;
         os<<"id: "<<id_<<std::endl;
-        os<<"type: "<<type_<<std::endl;
         os<<"status: "<<getStatus()<<std::endl;
         os<<"parent: "<<parent_<<std::endl;
         os<<"error-code: " << m_error_code << std::endl;

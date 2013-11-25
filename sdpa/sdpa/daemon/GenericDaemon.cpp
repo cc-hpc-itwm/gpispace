@@ -385,7 +385,9 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
   try {
     // One should parse the workflow in order to be able to create a valid job
     // if the event comes from Gwes parent_id is the owner_workflow_id
-    Job::ptr_t pJob(new Job(job_id, e.description(), e.parent_id()));
+    Job::ptr_t pJob(new Job( job_id, e.description(), e.parent_id()
+                           , e.from() != sdpa::daemon::WE && hasWorkflowEngine()
+                           ));
     pJob->set_owner(e.from());
 
     // the job job_id is in the Pending state now!
@@ -396,7 +398,6 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() )
     {
       DMLOG (TRACE, "got new job from " << e.from() << " = " << job_id);
-      pJob->setType(Job::MASTER);
 
       if (m_guiService)
       {
