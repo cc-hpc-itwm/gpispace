@@ -3,8 +3,6 @@
 
 #include <sdpa/events/MgmtEvent.hpp>
 
-#include <boost/serialization/base_object.hpp>
-
 namespace sdpa
 {
   namespace events
@@ -14,9 +12,6 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<WorkerRegistrationAckEvent> Ptr;
 
-      WorkerRegistrationAckEvent()
-        : MgmtEvent()
-      {}
       WorkerRegistrationAckEvent ( const address_t& a_from
                                  , const address_t& a_to
                                  )
@@ -32,15 +27,9 @@ namespace sdpa
       {
         return "WorkerRegistrationAckEvent";
       }
-
-    private:
-      friend class boost::serialization::access;
-      template <typename Archive>
-      void serialize (Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<MgmtEvent> (*this);
-      }
     };
+
+    CONSTRUCT_DATA_DEFS_FOR_EMPTY_MGMTEVENT_OVERLOAD (WorkerRegistrationAckEvent)
   }
 }
 

@@ -6,8 +6,7 @@ set(HEADER_DESTINATION_DIR "include/fhg/plugins")
 # distributed runtime system plugin, aka interface to SDPA agent
 fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
   EXPORTS DRTS
-  LINK_LIBRARIES sdpa-events
-                 sdpa-util
+  LINK_LIBRARIES sdpa-util
                  sdpa
                  ${FhgCom_LIBRARY}
                  ${GSPC_LIBRARY_SHARED}
@@ -92,8 +91,7 @@ fhg_add_plugin(wfe_eval wfe_eval.cpp
 
 fhg_add_plugin(sdpac sdpac.cpp
   EXPORTS SDPAC
-  LINK_LIBRARIES sdpa-events
-                 sdpa-util
+  LINK_LIBRARIES sdpa-util
                  sdpa
                  ${FhgCom_LIBRARY}
                  ${GSPC_LIBRARY_SHARED}

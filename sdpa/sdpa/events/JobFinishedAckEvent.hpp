@@ -12,10 +12,6 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<JobFinishedAckEvent> Ptr;
 
-      JobFinishedAckEvent()
-        : JobEvent ("", "", "")
-      {}
-
       JobFinishedAckEvent ( const address_t& a_from
                           , const address_t& a_to
                           , const sdpa::job_id_t& a_job_id
@@ -32,15 +28,9 @@ namespace sdpa
       {
         handler->handleJobFinishedAckEvent (this);
       }
-
-    private:
-      friend class boost::serialization::access;
-      template <class Archive>
-      void serialize (Archive & ar, unsigned int)
-      {
-        ar & boost::serialization::base_object<JobEvent> (*this);
-      }
     };
+
+    CONSTRUCT_DATA_DEFS_FOR_EMPTY_JOBEVENT_OVERLOAD (JobFinishedAckEvent)
   }
 }
 

@@ -5,8 +5,6 @@
 #include <sdpa/capability.hpp>
 
 #include <boost/optional.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/optional.hpp>
 
 namespace sdpa
 {
@@ -16,11 +14,6 @@ namespace sdpa
     {
     public:
       typedef sdpa::shared_ptr<WorkerRegistrationEvent> Ptr;
-      typedef enum {PUSH, REQ } service_model_t;
-
-      WorkerRegistrationEvent()
-        : MgmtEvent()
-      {}
 
       WorkerRegistrationEvent
         ( const address_t& a_from
@@ -69,18 +62,28 @@ namespace sdpa
       capabilities_set_t cpbset_;
       unsigned int rank_;
       sdpa::worker_id_t agent_uuid_;
-
-      friend class boost::serialization::access;
-      template <typename Archive>
-      void serialize (Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<MgmtEvent> (*this);
-        ar & capacity_;
-        ar & cpbset_;
-        ar & rank_;
-        ar & agent_uuid_;
-      }
     };
+
+    SAVE_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
+    {
+      SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->capacity());
+      SAVE_TO_ARCHIVE (e->capabilities());
+      SAVE_TO_ARCHIVE (e->rank());
+      SAVE_TO_ARCHIVE (e->agent_uuid());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
+    {
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_FROM_ARCHIVE (boost::optional<unsigned int>, capacity);
+      LOAD_FROM_ARCHIVE (capabilities_set_t, cpbset);
+      LOAD_FROM_ARCHIVE (unsigned int, agent_rank);
+      LOAD_FROM_ARCHIVE (sdpa::worker_id_t, agent_uuid);
+
+      ::new (e) WorkerRegistrationEvent
+          (from, to, capacity, cpbset, agent_rank, agent_uuid);
+    }
   }
 }
 

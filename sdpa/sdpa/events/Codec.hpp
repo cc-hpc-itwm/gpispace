@@ -1,10 +1,35 @@
 #ifndef SDPA_EVENTS_CODEC_HPP
 #define SDPA_EVENTS_CODEC_HPP 1
 
-#include <sstream>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <sdpa/events/CancelJobAckEvent.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
+#include <sdpa/events/CapabilitiesGainedEvent.hpp>
+#include <sdpa/events/CapabilitiesLostEvent.hpp>
+#include <sdpa/events/DeleteJobAckEvent.hpp>
+#include <sdpa/events/DeleteJobEvent.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/events/JobFailedAckEvent.hpp>
+#include <sdpa/events/JobFailedEvent.hpp>
+#include <sdpa/events/JobFinishedAckEvent.hpp>
+#include <sdpa/events/JobFinishedEvent.hpp>
+#include <sdpa/events/JobResultsReplyEvent.hpp>
+#include <sdpa/events/JobRunningEvent.hpp>
+#include <sdpa/events/JobStalledEvent.hpp>
+#include <sdpa/events/JobStatusReplyEvent.hpp>
+#include <sdpa/events/QueryJobStatusEvent.hpp>
+#include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/Serialization.hpp>
+#include <sdpa/events/SubmitJobAckEvent.hpp>
+#include <sdpa/events/SubmitJobEvent.hpp>
+#include <sdpa/events/SubscribeAckEvent.hpp>
+#include <sdpa/events/SubscribeEvent.hpp>
+#include <sdpa/events/WorkerRegistrationAckEvent.hpp>
+#include <sdpa/events/WorkerRegistrationEvent.hpp>
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
+#include <sstream>
 
 namespace sdpa
 {
@@ -37,29 +62,39 @@ namespace sdpa
       template <class Archive>
       void initialize_archive (Archive & ar) const
       {
-        ar.register_type (static_cast<CancelJobAckEvent*>(NULL));
-        ar.register_type (static_cast<CancelJobEvent*>(NULL));
-        ar.register_type (static_cast<DeleteJobAckEvent*>(NULL));
-        ar.register_type (static_cast<DeleteJobEvent*>(NULL));
-        ar.register_type (static_cast<ErrorEvent*>(NULL));
-        ar.register_type (static_cast<JobFailedAckEvent*>(NULL));
-        ar.register_type (static_cast<JobFailedEvent*>(NULL));
-        ar.register_type (static_cast<JobFinishedAckEvent*>(NULL));
-        ar.register_type (static_cast<JobFinishedEvent*>(NULL));
-        ar.register_type (static_cast<JobResultsReplyEvent*>(NULL));
-        ar.register_type (static_cast<JobStatusReplyEvent*>(NULL));
-        ar.register_type (static_cast<QueryJobStatusEvent*>(NULL));
-        ar.register_type (static_cast<RetrieveJobResultsEvent*>(NULL));
-        ar.register_type (static_cast<SubmitJobAckEvent*>(NULL));
-        ar.register_type (static_cast<SubmitJobEvent*>(NULL));
-        ar.register_type (static_cast<WorkerRegistrationAckEvent*>(NULL));
-        ar.register_type (static_cast<WorkerRegistrationEvent*>(NULL));
-        ar.register_type (static_cast<CapabilitiesGainedEvent*>(NULL));
-        ar.register_type (static_cast<CapabilitiesLostEvent*>(NULL));
-        ar.register_type (static_cast<SubscribeEvent*>(NULL));
-        ar.register_type (static_cast<SubscribeAckEvent*>(NULL));
-        ar.register_type (static_cast<JobRunningEvent*>(NULL));
-        ar.register_type (static_cast<JobStalledEvent*>(NULL));
+        boost::serialization::void_cast_register<JobEvent, SDPAEvent>();
+        boost::serialization::void_cast_register<MgmtEvent, SDPAEvent>();
+
+#define REGISTER(TYPE, BASE)                                            \
+        boost::serialization::void_cast_register<TYPE, BASE>();         \
+        ar.template register_type<TYPE>()
+
+        REGISTER (CancelJobAckEvent, JobEvent);
+        REGISTER (CancelJobEvent, JobEvent);
+        REGISTER (CapabilitiesGainedEvent, MgmtEvent);
+        REGISTER (CapabilitiesLostEvent, MgmtEvent);
+        REGISTER (DeleteJobAckEvent, JobEvent);
+        REGISTER (DeleteJobEvent, JobEvent);
+        REGISTER (ErrorEvent, MgmtEvent);
+        REGISTER (JobFailedAckEvent, JobEvent);
+        REGISTER (JobFailedEvent, JobEvent);
+        REGISTER (JobFinishedAckEvent, JobEvent);
+        REGISTER (JobFinishedEvent, JobEvent);
+        REGISTER (JobResultsReplyEvent, JobEvent);
+        REGISTER (JobRunningEvent, JobEvent);
+        REGISTER (JobStalledEvent, JobEvent);
+        REGISTER (JobStatusReplyEvent, JobEvent);
+        REGISTER (QueryJobStatusEvent, JobEvent);
+        REGISTER (RetrieveJobResultsEvent, JobEvent);
+        REGISTER (SubmitJobAckEvent, JobEvent);
+        REGISTER (SubmitJobEvent, JobEvent);
+        REGISTER (SubscribeAckEvent, MgmtEvent);
+        REGISTER (SubscribeEvent, MgmtEvent);
+        REGISTER (WorkerRegistrationAckEvent, MgmtEvent);
+        REGISTER (WorkerRegistrationEvent, MgmtEvent);
+
+#undef REGISTER
+
       }
     };
   }

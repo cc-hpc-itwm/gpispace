@@ -4,8 +4,6 @@
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/types.hpp>
 
-#include <boost/serialization/base_object.hpp>
-
 namespace sdpa
 {
   namespace events
@@ -15,16 +13,11 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<SubscribeEvent> Ptr;
 
-      SubscribeEvent()
-        : MgmtEvent()
-      {}
-
       SubscribeEvent ( const address_t& a_from
                      , const address_t& a_to
                      , const job_id_list_t& listJobIds
                      )
         : MgmtEvent (a_from, a_to)
-        , subscriber_ (a_from)
         , listJobIds_ (listJobIds)
       {}
 
@@ -35,7 +28,7 @@ namespace sdpa
 
       const sdpa::agent_id_t& subscriber() const
       {
-        return subscriber_;
+        return from();
       }
       const sdpa::job_id_list_t& listJobIds() const
       {
@@ -48,18 +41,22 @@ namespace sdpa
       }
 
     private:
-      sdpa::agent_id_t subscriber_;
       sdpa::job_id_list_t listJobIds_;
-
-      friend class boost::serialization::access;
-      template <class Archive>
-      void serialize (Archive& ar, unsigned int)
-      {
-        ar & boost::serialization::base_object<MgmtEvent> (*this);
-        ar & subscriber_;
-        ar & listJobIds_;
-      }
     };
+
+    SAVE_CONSTRUCT_DATA_DEF (SubscribeEvent, e)
+    {
+      SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->listJobIds());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (SubscribeEvent, e)
+    {
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_FROM_ARCHIVE (sdpa::job_id_list_t, listJobIds);
+
+      ::new (e) SubscribeEvent (from, to, listJobIds);
+    }
   }
 }
 

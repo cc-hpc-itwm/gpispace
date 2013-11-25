@@ -1,10 +1,9 @@
 #ifndef SDPA_ERROREVENT_HPP
 #define SDPA_ERROREVENT_HPP 1
 
+#include <sdpa/events/Serialization.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/types.hpp>
-
-#include <boost/serialization/base_object.hpp>
 
 namespace sdpa
 {
@@ -17,7 +16,6 @@ namespace sdpa
 
       enum error_code_t
         {
-          SDPA_ENOERROR = 0,
           SDPA_ENOJOBAVAIL,
           SDPA_EJOBNOTFOUND,
           SDPA_EJOBEXISTS,
@@ -31,12 +29,6 @@ namespace sdpa
           SDPA_EPERM,
           SDPA_ENETWORKFAILURE
         };
-
-      ErrorEvent()
-        : MgmtEvent()
-        , error_code_ (SDPA_EUNKNOWN)
-        , reason_ ("unknown reason")
-      {}
 
       ErrorEvent
         ( const address_t &a_from
@@ -83,17 +75,25 @@ namespace sdpa
       error_code_t error_code_;
       std::string reason_;
       sdpa::job_id_t job_id_;
-
-      friend class boost::serialization::access;
-      template <typename Archive>
-      void serialize (Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<MgmtEvent> (*this);
-        ar & error_code_;
-        ar & reason_;
-        ar & job_id_;
-      }
     };
+
+    SAVE_CONSTRUCT_DATA_DEF (ErrorEvent, e)
+    {
+      SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->error_code());
+      SAVE_TO_ARCHIVE (e->reason());
+      SAVE_TO_ARCHIVE (e->job_id());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (ErrorEvent, e)
+    {
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_FROM_ARCHIVE (ErrorEvent::error_code_t, error_code);
+      LOAD_FROM_ARCHIVE (std::string, reason);
+      LOAD_FROM_ARCHIVE (sdpa::job_id_t, job_id);
+
+      ::new (e) ErrorEvent (from, to, error_code, reason, job_id);
+    }
   }
 }
 

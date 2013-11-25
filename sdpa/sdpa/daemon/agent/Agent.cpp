@@ -423,8 +423,7 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 
     DMLOG (TRACE, "Canceling the pending job "<<jobId<<" ... ");
 
-    sdpa::events::CancelJobEvent cae;
-    pJob->CancelJob(&cae);
+    pJob->CancelJob(&evt);
     ptr_scheduler_->delete_job (jobId);
 
     if(!isTop())

@@ -93,13 +93,13 @@ BOOST_AUTO_TEST_CASE (CapabilitiesLost)
 BOOST_AUTO_TEST_CASE (DeleteJobAck)
 {
   DeleteJobAckEvent e ("foo", "bar", "job-id-1");
-  DeleteJobAckEvent* r (encode_decode_job_event (e));
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (DeleteJob)
 {
   DeleteJobEvent e ("foo", "bar", "job-id-1");
-  DeleteJobEvent* r (encode_decode_job_event (e));
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (Error)
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE (Error)
 BOOST_AUTO_TEST_CASE (JobFailedAck)
 {
   JobFailedAckEvent e ("foo", "bar", "job-id-1");
-  JobFailedAckEvent* r (encode_decode_job_event (e));
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (JobFailed)
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE (JobFailed)
 BOOST_AUTO_TEST_CASE (JobFinishedAck)
 {
   JobFinishedAckEvent e ("foo", "bar", "job-id-1");
-  JobFinishedAckEvent* r (encode_decode_job_event (e));
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (JobFinished)
@@ -153,13 +153,13 @@ BOOST_AUTO_TEST_CASE (JobResultsReply)
 BOOST_AUTO_TEST_CASE (JobRunning)
 {
   JobRunningEvent e ("foo", "bar", "job-id-1");
-  JobRunningEvent* r (encode_decode_job_event (e));
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (JobStalled)
 {
   JobStalledEvent e ("foo", "bar", "job-id-1");
-  JobStalledEvent* r (encode_decode_job_event (e));
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (JobStatusReply)
@@ -175,19 +175,19 @@ BOOST_AUTO_TEST_CASE (JobStatusReply)
 BOOST_AUTO_TEST_CASE (QueryJobStatus)
 {
   QueryJobStatusEvent e ("foo", "bar", "job-id-1");
-  QueryJobStatusEvent* r (encode_decode_job_event (e));
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (RetrieveJobResults)
 {
   RetrieveJobResultsEvent e ("foo", "bar", "job-id-1");
-  RetrieveJobResultsEvent* r (encode_decode_job_event (e));
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (SubmitJobAck)
 {
   SubmitJobAckEvent e ("foo", "bar", "job-id-1");
-  SubmitJobAckEvent* r (encode_decode_job_event (e));
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (SubmitJob)
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE (Subscribe)
 BOOST_AUTO_TEST_CASE (WorkerRegistrationAck)
 {
   WorkerRegistrationAckEvent e ("foo", "bar");
-  WorkerRegistrationAckEvent* r (encode_decode_mgmt_event (e));
+  encode_decode_mgmt_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (WorkerRegistration)

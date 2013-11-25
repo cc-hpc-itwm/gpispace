@@ -1,5 +1,4 @@
 set (daemon_libs
-  sdpa-events
   sdpa-daemon
   sdpa-com
   sdpa
@@ -41,7 +40,6 @@ install(TARGETS agent
 
 set ( client_libs
       sdpa-client
-      sdpa-events
       sdpa-util
       sdpa-com
       sdpa

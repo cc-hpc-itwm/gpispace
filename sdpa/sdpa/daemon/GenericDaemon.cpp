@@ -18,7 +18,7 @@
 
 #include <sdpa/daemon/Job.hpp>
 #include <seda/StageRegistry.hpp>
-#include <sdpa/events/CodecStrategy.hpp>
+#include <sdpa/events/SubscribeAckEvent.hpp>
 #include <seda/EventPrioQueue.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
@@ -496,11 +496,6 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
   switch (error.error_code())
   {
-    case ErrorEvent::SDPA_ENOERROR:
-    {
-      // everything is fine, nothing to do
-      break;
-    }
     // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
     // 'reason' should not be reused for important information
     case ErrorEvent::SDPA_EJOBREJECTED:
@@ -1037,9 +1032,6 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
   catch( const WorkerNotFoundException& ex )
   {
     DMLOG (WARN, "Could not add new capabilities. The worker "<<worker_id<<" was not found!");
-  }
-  catch( const AlreadyHasCpbException& ex )
-  {
   }
 }
 

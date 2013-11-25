@@ -14,12 +14,6 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<SubmitJobEvent> Ptr;
 
-      SubmitJobEvent()
-        : JobEvent ("", "", sdpa::job_id_t())
-        , desc_()
-        , parent_()
-      {}
-
       SubmitJobEvent
         ( const address_t& a_from
         , const address_t& a_to
@@ -61,17 +55,26 @@ namespace sdpa
       sdpa::job_desc_t desc_;
       sdpa::job_id_t parent_;
       sdpa::worker_id_list_t worker_list_;
-
-      friend class boost::serialization::access;
-      template <typename Archive>
-      void serialize (Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<JobEvent> (*this);
-        ar & desc_;
-        ar & parent_;
-        ar & worker_list_;
-      }
     };
+
+    SAVE_CONSTRUCT_DATA_DEF (SubmitJobEvent, e)
+    {
+      SAVE_JOBEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->description());
+      SAVE_TO_ARCHIVE (e->parent_id());
+      SAVE_TO_ARCHIVE (e->worker_list());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (SubmitJobEvent, e)
+    {
+      LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
+      LOAD_FROM_ARCHIVE (sdpa::job_desc_t, description);
+      LOAD_FROM_ARCHIVE (sdpa::job_id_t, parent_id);
+      LOAD_FROM_ARCHIVE (sdpa::worker_id_list_t, worker_list);
+
+      ::new (e) SubmitJobEvent
+          (from, to, job_id, description, parent_id, worker_list);
+    }
   }
 }
 

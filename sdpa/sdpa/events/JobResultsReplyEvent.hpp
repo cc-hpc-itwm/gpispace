@@ -13,10 +13,6 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<JobResultsReplyEvent> Ptr;
 
-      JobResultsReplyEvent()
-        : JobEvent ("", "", "")
-      {}
-
       JobResultsReplyEvent ( const address_t& a_from
                            , const address_t& a_to
                            , const sdpa::job_id_t& a_job_id
@@ -43,15 +39,21 @@ namespace sdpa
 
     private:
       job_result_t result_;
-
-      friend class boost::serialization::access;
-      template <class Archive>
-      void serialize (Archive & ar, unsigned int)
-      {
-        ar & boost::serialization::base_object<JobEvent> (*this);
-        ar & result_;
-      }
     };
+
+    SAVE_CONSTRUCT_DATA_DEF (JobResultsReplyEvent, e)
+    {
+      SAVE_JOBEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->result());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (JobResultsReplyEvent, e)
+    {
+      LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
+      LOAD_FROM_ARCHIVE (job_result_t, result);
+
+      ::new (e) JobResultsReplyEvent (from, to, job_id, result);
+    }
   }
 }
 

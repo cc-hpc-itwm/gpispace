@@ -16,15 +16,10 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<JobStatusReplyEvent> Ptr;
 
-      JobStatusReplyEvent()
-        : JobEvent ("", "", "")
-        , status_ (sdpa::status::UNKNOWN)
-      {}
-
       JobStatusReplyEvent ( const address_t& a_from
                           , const address_t& a_to
                           , const sdpa::job_id_t& a_job_id
-                          , const sdpa::status::code& a_status = sdpa::status::UNKNOWN
+                          , const sdpa::status::code& a_status
                           , int const error_code = fhg::error::UNASSIGNED_ERROR
                           , std::string const& error_message = std::string()
                           )
@@ -61,17 +56,26 @@ namespace sdpa
       sdpa::status::code status_;
       int m_error_code;
       std::string m_error_message;
-
-      friend class boost::serialization::access;
-      template <class Archive>
-      void serialize (Archive & ar, unsigned int)
-      {
-        ar & boost::serialization::base_object<JobEvent> (*this);
-        ar & status_;
-        ar & m_error_code;
-        ar & m_error_message;
-      }
     };
+
+    SAVE_CONSTRUCT_DATA_DEF (JobStatusReplyEvent, e)
+    {
+      SAVE_JOBEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE_WITH_TEMPORARY (sdpa::status::code, e->status());
+      SAVE_TO_ARCHIVE_WITH_TEMPORARY (int, e->error_code());
+      SAVE_TO_ARCHIVE (e->error_message());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (JobStatusReplyEvent, e)
+    {
+      LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
+      LOAD_FROM_ARCHIVE (sdpa::status::code, status);
+      LOAD_FROM_ARCHIVE (int, error_code);
+      LOAD_FROM_ARCHIVE (std::string, error_message);
+
+      ::new (e) JobStatusReplyEvent
+          (from, to, job_id, status, error_code, error_message);
+    }
   }
 }
 

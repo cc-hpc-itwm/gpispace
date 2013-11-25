@@ -14,8 +14,6 @@ namespace sdpa
     class JobEvent : public sdpa::events::SDPAEvent
     {
     public:
-      typedef sdpa::shared_ptr<JobEvent> Ptr;
-
       JobEvent ( const address_t& a_from
                , const address_t& a_to
                , const sdpa::job_id_t& a_job_id
@@ -28,25 +26,9 @@ namespace sdpa
       {
         return job_id_;
       }
-      virtual std::string str() const = 0;
-
-      int priority() const
-      {
-        return 1;
-      }
-
-      virtual void handleBy (EventHandler* handler) = 0;
 
     private:
       sdpa::job_id_t job_id_;
-
-      friend class boost::serialization::access;
-      template <typename Archive>
-      void serialize (Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<SDPAEvent> (*this);
-        ar & job_id_;
-      }
     };
   }
 }

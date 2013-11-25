@@ -1,5 +1,4 @@
 add_subdirectory(util)
-add_subdirectory(events)
 
 add_subdirectory(daemon)
 

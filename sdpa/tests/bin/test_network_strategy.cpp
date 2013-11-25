@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
 
   net->perform (seda::IEvent::Ptr(new sdpa::events::ErrorEvent( "peer-1"
                                                               , "peer-1"
-                                                              , sdpa::events::ErrorEvent::SDPA_ENOERROR
+                                                              , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                               , "success"
                                                               )
                                  )

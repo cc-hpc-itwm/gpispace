@@ -81,22 +81,6 @@ namespace daemon {
 		sdpa::worker_id_t agent_uuid_;
 	};
 
-	class AlreadyHasCpbException : public WorkerException
-	{
-		public:
-		AlreadyHasCpbException( const sdpa::capability_t& cpb,
-								const sdpa::worker_id_t& worker_id )
-		: WorkerException("A worker with either the same name or the same uuid has already registerd!", worker_id)
-		, capability_(cpb) {}
-
-		virtual ~AlreadyHasCpbException() throw() {}
-
-		const sdpa::capability_t& capability() const { return capability_; }
-
-		private:
-		sdpa::capability_t capability_;
-	};
-
 	class JobNotAddedException : public JobException {
 		public:
 		JobNotAddedException( const sdpa::job_id_t& job_id) : JobException("Job not added!", job_id) {}

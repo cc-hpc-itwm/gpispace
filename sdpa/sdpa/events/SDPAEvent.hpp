@@ -1,16 +1,14 @@
 #ifndef SDPA_EVENT_HPP
 #define SDPA_EVENT_HPP 1
 
-#include <string>
-
-#include <sdpa/logging.hpp>
-#include <seda/IEvent.hpp>
-#include <sdpa/memory.hpp>
 #include <sdpa/events/EventHandler.hpp>
+#include <sdpa/memory.hpp>
 
-#include <boost/system/error_code.hpp>
+#include <seda/IEvent.hpp>
+
 #include <boost/serialization/access.hpp>
-#include <boost/serialization/assume_abstract.hpp>
+
+#include <string>
 
 namespace sdpa
 {
@@ -37,17 +35,19 @@ namespace sdpa
         return to_;
       }
 
+      virtual int priority() const
+      {
+        return 1;
+      }
+
       virtual std::string str() const = 0;
       virtual void handleBy (EventHandler*) = 0;
 
     protected:
-      SDPAEvent()
-        : IEvent()
-        , from_()
-        , to_()
+      SDPAEvent (const address_t & a_from, const address_t &a_to)
+        : from_ (a_from)
+        , to_ (a_to)
       {}
-
-      SDPAEvent (const address_t& from, const address_t& to);
 
     private:
       address_t from_;
@@ -57,11 +57,11 @@ namespace sdpa
       template <class Archive>
       void serialize (Archive & ar, unsigned int)
       {
-        ar & from_;
-        ar & to_;
       }
     };
   }
 }
+
+#include <sdpa/events/Serialization.hpp>
 
 #endif
