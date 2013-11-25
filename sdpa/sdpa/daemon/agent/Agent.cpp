@@ -70,10 +70,6 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       // send the event to the master
       sendEventToMaster(pEvtJobFinished);
     }
-    catch(QueueFull const &)
-    {
-      SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFinishedEvent");
-    }
     catch(std::exception const & ex)
     {
       SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
@@ -221,11 +217,6 @@ bool Agent::finished(const id_type& wfid, const result_type & result)
       }
     }
   }
-  catch(QueueFull const &)
-  {
-    SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFinishedEvent");
-    return false;
-  }
   catch(std::exception const & ex)
   {
     SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
@@ -297,10 +288,6 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
 
       // send the event to the master
       sendEventToMaster(pEvtJobFailed);
-    }
-    catch(QueueFull const &)
-    {
-      SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFailedEvent");
     }
     catch(std::exception const & ex)
     {
@@ -459,11 +446,6 @@ bool Agent::failed( const id_type& wfid
         sendEventToMaster(ptrEvt);
       }
     }
-  }
-  catch(QueueFull const &)
-  {
-    SDPA_LOG_ERROR("Failed to send to the master output stage "<<to_master_stage()->name()<<" a JobFailedEvent");
-    return false;
   }
   catch(std::exception const & ex)
   {
