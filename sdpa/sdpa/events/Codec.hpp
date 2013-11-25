@@ -43,30 +43,30 @@ namespace sdpa
 
         REGISTER (CancelJobAckEvent, JobEvent);
         REGISTER (CancelJobEvent, JobEvent);
+        REGISTER (CapabilitiesGainedEvent, MgmtEvent);
+        REGISTER (CapabilitiesLostEvent, MgmtEvent);
+        REGISTER (DeleteJobAckEvent, JobEvent);
+        REGISTER (DeleteJobEvent, JobEvent);
+        REGISTER (ErrorEvent, MgmtEvent);
+        REGISTER (JobFailedAckEvent, JobEvent);
+        REGISTER (JobFailedEvent, JobEvent);
+        REGISTER (JobFinishedAckEvent, JobEvent);
+        REGISTER (JobFinishedEvent, JobEvent);
+        REGISTER (JobResultsReplyEvent, JobEvent);
+        REGISTER (JobRunningEvent, JobEvent);
+        REGISTER (JobStalledEvent, JobEvent);
+        REGISTER (JobStatusReplyEvent, JobEvent);
+        REGISTER (QueryJobStatusEvent, JobEvent);
+        REGISTER (RetrieveJobResultsEvent, JobEvent);
+        REGISTER (SubmitJobAckEvent, JobEvent);
+        REGISTER (SubmitJobEvent, JobEvent);
+        REGISTER (SubscribeAckEvent, MgmtEvent);
+        REGISTER (SubscribeEvent, MgmtEvent);
+        REGISTER (WorkerRegistrationAckEvent, MgmtEvent);
+        REGISTER (WorkerRegistrationEvent, MgmtEvent);
 
 #undef REGISTER
 
-        ar.register_type (static_cast<DeleteJobAckEvent*>(NULL));
-        ar.register_type (static_cast<DeleteJobEvent*>(NULL));
-        ar.register_type (static_cast<ErrorEvent*>(NULL));
-        ar.register_type (static_cast<JobFailedAckEvent*>(NULL));
-        ar.register_type (static_cast<JobFailedEvent*>(NULL));
-        ar.register_type (static_cast<JobFinishedAckEvent*>(NULL));
-        ar.register_type (static_cast<JobFinishedEvent*>(NULL));
-        ar.register_type (static_cast<JobResultsReplyEvent*>(NULL));
-        ar.register_type (static_cast<JobStatusReplyEvent*>(NULL));
-        ar.register_type (static_cast<QueryJobStatusEvent*>(NULL));
-        ar.register_type (static_cast<RetrieveJobResultsEvent*>(NULL));
-        ar.register_type (static_cast<SubmitJobAckEvent*>(NULL));
-        ar.register_type (static_cast<SubmitJobEvent*>(NULL));
-        ar.register_type (static_cast<WorkerRegistrationAckEvent*>(NULL));
-        ar.register_type (static_cast<WorkerRegistrationEvent*>(NULL));
-        ar.register_type (static_cast<CapabilitiesGainedEvent*>(NULL));
-        ar.register_type (static_cast<CapabilitiesLostEvent*>(NULL));
-        ar.register_type (static_cast<SubscribeEvent*>(NULL));
-        ar.register_type (static_cast<SubscribeAckEvent*>(NULL));
-        ar.register_type (static_cast<JobRunningEvent*>(NULL));
-        ar.register_type (static_cast<JobStalledEvent*>(NULL));
       }
     };
   }
