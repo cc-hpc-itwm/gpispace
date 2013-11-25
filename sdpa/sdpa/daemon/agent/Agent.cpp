@@ -75,11 +75,6 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
       throw;
     }
-    catch(...)
-    {
-      SDPA_LOG_FATAL("Unexpected exception occurred!");
-      throw;
-    }
   }
   else
   {
@@ -142,11 +137,6 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     catch(std::exception const & ex)
     {
         SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-    }
-    catch(...)
-    {
-      SDPA_LOG_FATAL("Unexpected exception occurred!");
-      throw;
     }
   }
 }
@@ -222,11 +212,6 @@ bool Agent::finished(const id_type& wfid, const result_type & result)
     SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
     return false;
   }
-  catch(...)
-  {
-    SDPA_LOG_FATAL("Unexpected exception occurred!");
-    return false;
-  }
 
   return true;
 }
@@ -293,11 +278,6 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
     {
       SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
       throw ex;
-    }
-    catch(...)
-    {
-      SDPA_LOG_FATAL("Unexpected exception occurred!");
-      throw;
     }
   }
   else
@@ -368,11 +348,6 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
     {
       SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
       throw ex;
-    }
-    catch(...)
-    {
-      SDPA_LOG_FATAL("Unexpected exception occurred!");
-      throw;
     }
   }
 }
@@ -450,11 +425,6 @@ bool Agent::failed( const id_type& wfid
   catch(std::exception const & ex)
   {
     SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-    return false;
-  }
-  catch(...)
-  {
-    SDPA_LOG_FATAL("Unexpected exception occurred!");
     return false;
   }
 

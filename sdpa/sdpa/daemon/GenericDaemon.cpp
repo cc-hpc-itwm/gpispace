@@ -208,6 +208,29 @@ void GenericDaemon::addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, c
   return jobManager()->addJob(jid, pJob, reqList);
 }
 
+namespace
+{
+  struct on_scope_exit
+  {
+    on_scope_exit (boost::function<void()> what)
+      : _what (what)
+      , _dont (false)
+    {}
+    ~on_scope_exit()
+    {
+      if (!_dont)
+      {
+        _what();
+      }
+    }
+    void dont()
+    {
+      _dont = true;
+    }
+    bool _dont;
+    boost::function<void()> _what;
+  };
+}
 
 //actions
 void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
@@ -215,6 +238,16 @@ void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
   const DeleteJobEvent& e (*evt);
 
   DMLOG (TRACE, e.from() << " requesting to delete job " << e.job_id() );
+
+  on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToMaster, this
+                                , ErrorEvent::Ptr ( new ErrorEvent ( name()
+                                                                   , e.from()
+                                                                   , ErrorEvent::SDPA_EUNKNOWN
+                                                                   , "unknown"
+                                                                   )
+                                                  )
+                               )
+                  );
 
   try{
     Job::ptr_t pJob = jobManager()->findJob(e.job_id());
@@ -257,19 +290,8 @@ void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
 
     throw;
   }
-  catch(...)
-  {
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
-                                                      , e.from()
-                                                      , ErrorEvent::SDPA_EUNKNOWN
-                                                      , "unknown"
-                                                      )
-                                      )
-               );
 
-    DMLOG (ERROR, "unexpected exception during job-deletion!");
-    throw;
-  }
+  _.dont();
 }
 
 void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId )
@@ -305,10 +327,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
   {
     DMLOG (WARN, "Error during request-job handling: " << ex.what());
   }
-  catch(...)
-  {
-    DMLOG (WARN, "Unknown error during request-job handling!");
-  }
 }
 
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
@@ -336,10 +354,6 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
   catch(const std::exception &ex)
   {
     DMLOG (WARN, "Error during request-job handling: " << ex.what());
-  }
-  catch(...)
-  {
-    DMLOG (WARN, "Unknown error during request-job handling!");
   }
 }
 
@@ -457,11 +471,6 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
   catch(std::exception const & ex)
   {
     DMLOG (WARN, "Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
-    throw;
-  }
-  catch(...)
-  {
-    DMLOG (WARN, "Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<"!");
     throw;
   }
 }
@@ -687,30 +696,6 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 }
 
 /* Implements Gwes2Sdpa */
-
-namespace
-{
-  struct on_scope_exit
-  {
-    on_scope_exit (boost::function<void()> what)
-      : _what (what)
-      , _dont (false)
-    {}
-    ~on_scope_exit()
-    {
-      if (!_dont)
-      {
-        _what();
-      }
-    }
-    void dont()
-    {
-      _dont = true;
-    }
-    bool _dont;
-    boost::function<void()> _what;
-  };
-}
 /**
  * Submit an atomic activity to the SDPA.
  * This method is to be called by the GS in order to delegate
