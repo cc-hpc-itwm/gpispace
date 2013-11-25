@@ -235,7 +235,6 @@ namespace sdpa {
       sdpa::job_result_t result_;
       int m_error_code;
       std::string m_error_message;
-      unsigned long walltime_;
 
       sdpa::worker_id_t m_owner;
     };

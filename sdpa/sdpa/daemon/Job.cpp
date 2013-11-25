@@ -55,7 +55,6 @@ namespace sdpa {
         , result_()
         , m_error_code(0)
         , m_error_message()
-        , walltime_(2592000) // walltime in seconds: one month by default
     {
       start();
     }
