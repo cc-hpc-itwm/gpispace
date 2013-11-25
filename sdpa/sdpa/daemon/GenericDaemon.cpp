@@ -850,6 +850,19 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 
   id_type wf_id = jobId.str();
 
+  on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToSelf
+                                , this
+                                , JobFailedEvent::Ptr ( new JobFailedEvent ( sdpa::daemon::WE
+                                                                           , name()
+                                                                           , jobId
+                                                                           , "exception"
+                                                                           , fhg::error::UNEXPECTED_ERROR
+                                                                           , "Exception in GenericDaemon::submitWorkflow()"
+                                                                           )
+                                                      )
+                                )
+                  );
+
   try {
     const Job::ptr_t& pJob = findJob(jobId);
 
@@ -914,24 +927,8 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 
     sendEventToSelf(pEvtJobFailed);
   }
-  catch (std::exception const & ex)
-  {
-    SDPA_LOG_ERROR("Exception occurred when trying to submit the workflow "<<wf_id<<" to WE: "<<ex.what());
 
-    //send a JobFailed event
-    sdpa::job_result_t result(ex.what());
-
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent( sdpa::daemon::WE
-                         , name()
-                         , jobId
-                         , result
-                         , fhg::error::UNEXPECTED_ERROR
-                         , ex.what()
-                         )
-      );
-    sendEventToSelf(pEvtJobFailed);
-  }
+  _.dont();
 }
 
 

@@ -390,6 +390,30 @@ bool Agent::failed( const id_type& wfid
   return true;
 }
 
+namespace
+{
+  struct on_scope_exit
+  {
+    on_scope_exit (boost::function<void()> what)
+      : _what (what)
+      , _dont (false)
+    {}
+    ~on_scope_exit()
+    {
+      if (!_dont)
+      {
+        _what();
+      }
+    }
+    void dont()
+    {
+      _dont = true;
+    }
+    boost::function<void()> _what;
+    bool _dont;
+  };
+}
+
 void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
   if(hasWorkflowEngine())
@@ -408,22 +432,20 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 
     if(!isTop())
     {
-      try
-      {
-        jobManager()->deleteJob(jobId);
-      }
-      catch (std::exception const & ex)
-      {
-        SDPA_LOG_WARN( "the workflow engine could not cancel the jobId "<<jobId<<"! Reason: "<< ex.what());
+      on_scope_exit _ ( boost::bind ( &Agent::sendEventToMaster
+                                    , this
+                                    , ErrorEvent::Ptr ( new ErrorEvent ( name()
+                                                                       , evt.from()
+                                                                       , ErrorEvent::SDPA_EUNKNOWN
+                                                                       , "Exception in Agent::cancelPendingJob"
+                                                                       )
+                                                      )
+                                    )
+                      );
 
-        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the canceled jobId "<<jobId<<"!");
-        ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
-                                                  , evt.from()
-                                                  , ErrorEvent::SDPA_EUNKNOWN
-                                                  , ex.what()));
+      jobManager()->deleteJob(jobId);
 
-        sendEventToMaster(pErrorEvt);
-      }
+      _.dont();
     }
   }
   catch(const JobNotFoundException &ex1)
@@ -485,6 +507,18 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
   if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
   {
+    on_scope_exit _ ( boost::bind ( &Agent::sendEventToMaster
+                                  , this
+                                  , ErrorEvent::Ptr ( new ErrorEvent ( name()
+                                                                     , pEvt->from()
+                                                                     , ErrorEvent::SDPA_EUNKNOWN
+                                                                     , "Exception in Agent::handleCancelJobEvent"
+                                                                     )
+                                                    )
+                                  )
+                    );
+    if (isTop()) _.dont();
+
     try
     {
       sdpa::worker_id_t worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
@@ -508,21 +542,8 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
       // 1) the job was submitted to an worker but was not yet acknowledged
       cancelPendingJob(*pEvt);
     }
-    catch (std::exception const & ex)
-    {
-      SDPA_LOG_WARN( "the workflow engine could not cancel the job "<<pEvt->job_id()<<"! Reason: "<< ex.what());
 
-      if(!isTop())
-      {
-        SDPA_LOG_WARN("Unexpected error occurred when trying to delete the canceled job "<<pEvt->job_id()<<"!");
-        ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
-                                                  , pEvt->from()
-                                                  , ErrorEvent::SDPA_EUNKNOWN
-                                                  , ex.what()));
-
-        sendEventToMaster(pErrorEvt);
-      }
-    }
+    _.dont();
   }
   else // a Cancel message came from the upper level -> forward cancellation request to WE
   {
@@ -541,21 +562,20 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
   DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
-  try
   {
+    on_scope_exit _ ( boost::bind ( &we::mgmt::layer::canceled
+                                  , workflowEngine()
+                                  , pEvt->job_id()
+                                  )
+                    );
+
     Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
 
     // update the job status to "Canceled"
     pJob->CancelJobAck(pEvt);
     SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
-  }
-  catch (std::exception const & ex)
-  {
-    LOG(WARN, "could not find job: " << ex.what());
 
-    workflowEngine()->canceled (pEvt->job_id ());
-
-    return;
+    _.dont();
   }
 
   // the acknowledgment comes from WE or from a slave and there is no WE
