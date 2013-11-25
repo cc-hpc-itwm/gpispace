@@ -447,17 +447,16 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
     pJob->CancelJob(&cae);
     ptr_scheduler_->delete_job (jobId);
 
-    try
+    if(!isTop())
     {
-      if(!isTop())
-        jobManager()->deleteJob(jobId);
-    }
-    catch (std::exception const & ex)
-    {
-      SDPA_LOG_WARN( "the workflow engine could not cancel the jobId "<<jobId<<"! Reason: "<< ex.what());
-
-      if(!isTop())
+      try
       {
+        jobManager()->deleteJob(jobId);
+      }
+      catch (std::exception const & ex)
+      {
+        SDPA_LOG_WARN( "the workflow engine could not cancel the jobId "<<jobId<<"! Reason: "<< ex.what());
+
         SDPA_LOG_WARN("Unexpected error occurred when trying to delete the canceled jobId "<<jobId<<"!");
         ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name()
                                                   , evt.from()
