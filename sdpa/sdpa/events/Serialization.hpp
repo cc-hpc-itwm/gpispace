@@ -34,6 +34,13 @@
   LOAD_SDPAEVENT_CONSTRUCT_DATA (FROM_VAR_NAME, TO_VAR_NAME);           \
   LOAD_FROM_ARCHIVE (sdpa::job_id_t, JOB_ID_VAR_NAME)
 
+
+#define SAVE_MGMTEVENT_CONSTRUCT_DATA(EVENT_VARIABLE) \
+  SAVE_SDPAEVENT_CONSTRUCT_DATA (EVENT_VARIABLE)
+
+#define LOAD_MGMTEVENT_CONSTRUCT_DATA(FROM_VAR_NAME, TO_VAR_NAME) \
+  LOAD_SDPAEVENT_CONSTRUCT_DATA (FROM_VAR_NAME, TO_VAR_NAME)
+
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
