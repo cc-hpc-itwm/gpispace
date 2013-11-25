@@ -16,12 +16,10 @@ namespace sdpa
         : SDPAEvent (a_from, a_to)
       {}
 
-      int priority() const
+      virtual int priority() const
       {
         return 1;
       }
-
-      virtual std::string str() const = 0;
     };
   }
 }
