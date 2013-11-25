@@ -63,7 +63,6 @@ namespace sdpa
 
       ::new (e) CapabilitiesLostEvent (from, to, capabilities);
     }
-
   }
 }
 
