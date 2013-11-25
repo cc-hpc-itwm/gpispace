@@ -169,7 +169,7 @@ namespace sdpa {
     public:
       typedef Job* ptr_t;
 
-      enum job_type {MASTER, LOCAL, WORKER, TMP};
+      enum job_type {MASTER, WORKER};
 
       typedef boost::unordered_map<sdpa::job_id_t, Job::ptr_t> job_list_t;
       typedef boost::recursive_mutex mutex_type;
