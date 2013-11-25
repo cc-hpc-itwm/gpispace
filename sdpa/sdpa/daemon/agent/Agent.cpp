@@ -300,20 +300,17 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
         SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
       }
 
-      if( hasWorkflowEngine() )
+      try {
+        //delete it also from job_map_
+        DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
+        if(bTaskGroupComputed) {
+            jobManager()->deleteJob(pEvt->job_id());
+        }
+      }
+      catch(JobNotDeletedException const &ex)
       {
-        try {
-          //delete it also from job_map_
-          DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-          if(bTaskGroupComputed) {
-              jobManager()->deleteJob(pEvt->job_id());
-          }
-        }
-        catch(JobNotDeletedException const &ex)
-        {
-          SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
-          throw ex;
-        }
+        SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+        throw ex;
       }
   }
 }
