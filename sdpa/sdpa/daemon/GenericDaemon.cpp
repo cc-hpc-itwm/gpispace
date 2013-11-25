@@ -301,10 +301,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
   {
       LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
   }
-  catch(const QueueFull&)
-  {
-    DMLOG (WARN, "Could not send event to internal stage: " << ptr_to_slave_stage_->name() << ": queue is full!");
-  }
   catch(const seda::StageNotFound&)
   {
     DMLOG (WARN, "Could not lookup stage: " << ptr_to_slave_stage_->name());
@@ -340,10 +336,6 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
   catch(const JobNotFoundException&)
   {
     LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
-  }
-  catch(const QueueFull&)
-  {
-    DMLOG (WARN, "Could not send event to internal stage: " << ptr_to_slave_stage_->name() << ": queue is full!");
   }
   catch(const seda::StageNotFound&)
   {
@@ -470,10 +462,6 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, ex.what()) );
     sendEventToMaster(pErrorEvt);
   }
-  catch(QueueFull const &)
-  {
-    DMLOG (WARN, "Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobAckEvt for the job "<<job_id);
-  }
   catch(seda::StageNotFound const &)
   {
     DMLOG (WARN, "Stage not found when trying to submit SubmitJobAckEvt for the job "<<job_id);
@@ -536,11 +524,6 @@ void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent
 
       sendEventToSlave(pWorkerRegAckEvt);
     }
-  }
-  catch(const QueueFull& ex)
-  {
-    DMLOG (WARN, "could not send WorkerRegistrationAck: queue is full, this should never happen!"<<ex.what());
-    throw;
   }
   catch(const seda::StageNotFound& snf)
   {
@@ -771,12 +754,12 @@ void GenericDaemon::submit( const id_type& activityId
   }
   catch(QueueFull const &)
   {
-    DMLOG (WARN, "could not send event to my stage: queue is full!");
     workflowEngine()->failed( activityId
                             , desc
                             , fhg::error::UNEXPECTED_ERROR
                             , "internal queue had an overflow"
                             );
+    throw;
   }
   catch(seda::StageNotFound const &)
   {
