@@ -22,7 +22,7 @@
 #include <sdpa/daemon/scheduler/Scheduler.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
-#include <sdpa/daemon/SynchronizedQueue.hpp>
+//#include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/IAgent.hpp>
 
 #include <boost/optional.hpp>
