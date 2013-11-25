@@ -64,18 +64,19 @@ void CoallocationScheduler::assignJobsToWorkers()
                Worker::ptr_t pWorker(findWorker(matchingWorkerId));
                ptr_comm_handler_->serveJob(pReservation->getWorkerList(), jobId);
                pWorker->submit(jobId);
-               //ptr_comm_handler_->resume(jobId);
+               ptr_comm_handler_->resume(jobId);
             }
             catch(const WorkerNotFoundException&) {
                DMLOG (TRACE, "The worker " << matchingWorkerId << " is not registered! Sending a notification ...");
                ErrorEvent::Ptr pErrorEvt(new ErrorEvent(m_agent_name, matchingWorkerId, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
                ptr_comm_handler_->sendEventToSlave(pErrorEvt);
+               ptr_comm_handler_->pause(jobId);
             }
         }
         else
         {
           schedule_first(jobId);
-          //ptr_comm_handler_->pause(jobId);
+          ptr_comm_handler_->pause(jobId);
         }
     }
     else // put it back into the common queue
