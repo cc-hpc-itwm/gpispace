@@ -20,6 +20,7 @@
 
 #include <fhg/assert.hpp>
 
+#include <seda/Stage.hpp>
 #include <seda/Strategy.hpp>
 
 #include <sdpa/capability.hpp>
