@@ -2,9 +2,7 @@
 #define SDPA_CANCELJOBACKEVENT_HPP 1
 
 #include <sdpa/events/JobEvent.hpp>
-#include <sdpa/events/EventHandler.hpp>
-
-#include <boost/serialization/base_object.hpp>
+#include <sdpa/events/Serialization.hpp>
 
 namespace sdpa
 {
@@ -14,11 +12,6 @@ namespace sdpa
     {
     public:
       typedef sdpa::shared_ptr<CancelJobAckEvent> Ptr;
-
-      CancelJobAckEvent()
-        : JobEvent ("", "", "")
-        , _result ("unknown_result")
-      {}
 
       CancelJobAckEvent ( const address_t& a_from
                         , const address_t& a_to
@@ -44,15 +37,21 @@ namespace sdpa
 
     private:
       std::string _result;
-
-      friend class boost::serialization::access;
-      template <typename Archive>
-      void serialize (Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<JobEvent> (*this);
-        ar & _result;
-      }
     };
+
+    SAVE_CONSTRUCT_DATA_DEF (CancelJobAckEvent, e)
+    {
+      SAVE_JOBEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->result());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (CancelJobAckEvent, e)
+    {
+      LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
+      LOAD_FROM_ARCHIVE (std::string, result);
+
+      ::new (e) CancelJobAckEvent (from, to, job_id, result);
+    }
   }
 }
 
