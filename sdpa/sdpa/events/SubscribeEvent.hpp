@@ -24,7 +24,6 @@ namespace sdpa
                      , const job_id_list_t& listJobIds
                      )
         : MgmtEvent (a_from, a_to)
-        , subscriber_ (a_from)
         , listJobIds_ (listJobIds)
       {}
 
@@ -35,7 +34,7 @@ namespace sdpa
 
       const sdpa::agent_id_t& subscriber() const
       {
-        return subscriber_;
+        return from();
       }
       const sdpa::job_id_list_t& listJobIds() const
       {
@@ -48,7 +47,6 @@ namespace sdpa
       }
 
     private:
-      sdpa::agent_id_t subscriber_;
       sdpa::job_id_list_t listJobIds_;
 
       friend class boost::serialization::access;
@@ -56,7 +54,6 @@ namespace sdpa
       void serialize (Archive& ar, unsigned int)
       {
         ar & boost::serialization::base_object<MgmtEvent> (*this);
-        ar & subscriber_;
         ar & listJobIds_;
       }
     };
