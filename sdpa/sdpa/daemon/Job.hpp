@@ -87,6 +87,37 @@ namespace sdpa {
         sdpa::worker_id_t m_jobOwner;
       };
 
+      struct MSMDeleteJobEvent
+      {
+        MSMDeleteJobEvent(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent* pAgent)
+        : m_pDelEvt(pEvt), m_pAgent(pAgent)
+        {}
+        sdpa::events::SDPAEvent::address_t to() const { return m_pDelEvt->from();}
+        sdpa::events::SDPAEvent::address_t from() const { return m_pDelEvt->to();}
+        job_id_t jobId() const { return m_pDelEvt->job_id(); }
+        sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
+      private:
+        const sdpa::events::DeleteJobEvent* m_pDelEvt;
+        sdpa::daemon::IAgent* m_pAgent;
+      };
+
+      struct MSMRetrieveJobResultsEvent
+      {
+        MSMRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* pAgent, const sdpa::job_result_t& result)
+        : m_pRetResEvt(pEvt), m_pAgent(pAgent), m_strResult(result)
+        {}
+        sdpa::events::SDPAEvent::address_t to() const { return m_pRetResEvt->from();}
+        sdpa::events::SDPAEvent::address_t from() const { return m_pRetResEvt->to();}
+        job_id_t jobId() const { return m_pRetResEvt->job_id(); }
+        sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
+        const sdpa::job_result_t result() const { return m_strResult; }
+      private:
+        const sdpa::events::RetrieveJobResultsEvent* m_pRetResEvt;
+        sdpa::daemon::IAgent* m_pAgent;
+        const sdpa::job_result_t m_strResult;
+      };
+
+
       // the initial state of the JobFSM SM. Must be defined
       typedef Pending initial_state;
 
@@ -95,6 +126,8 @@ namespace sdpa {
       virtual void action_reschedule_job(const MSMRescheduleEvent& evt);
       virtual void action_job_stalled(const MSMStalledEvent& evt);
       virtual void action_resume_job(const MSMResumeJobEvent& evt);
+      virtual void action_delete_job(const MSMDeleteJobEvent&);
+      virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent& evt);
 
       typedef JobFSM_ sm; // makes transition table cleaner
 
@@ -119,12 +152,12 @@ namespace sdpa {
         a_row<  Running,        MSMStalledEvent,        		Stalled,        &sm::action_job_stalled >,
         _irow<  Running,        MSMResumeJobEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
-        _irow<  Finished,       sdpa::events::DeleteJobEvent>,
-        _irow<  Finished,   	sdpa::events::RetrieveJobResultsEvent>,
+        a_irow< Finished,       MSMDeleteJobEvent,                                      &sm::action_delete_job >,
+        a_irow< Finished,   	MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Finished,       sdpa::events::JobFinishedEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
-        _irow<  Failed,     	sdpa::events::DeleteJobEvent>,
-        _irow<  Failed,     	sdpa::events::RetrieveJobResultsEvent>,
+        a_irow< Failed,     	MSMDeleteJobEvent,                                      &sm::action_delete_job>,
+        a_irow< Failed,     	MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Failed,         sdpa::events::JobFailedEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
         _row<   Canceling, 	sdpa::events::CancelJobAckEvent,     	Canceled>,
@@ -132,8 +165,8 @@ namespace sdpa {
         a_row<  Canceling, 	sdpa::events::JobFailedEvent,           Canceled,       &sm::action_job_failed>,
         _irow<  Canceling,      sdpa::events::CancelJobEvent>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        _irow<  Canceled,       sdpa::events::DeleteJobEvent>,
-        _irow<  Canceled,       sdpa::events::RetrieveJobResultsEvent>,
+        a_irow< Canceled,       MSMDeleteJobEvent,                                      &sm::action_delete_job>,
+        a_irow< Canceled,       MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Canceled,       sdpa::events::CancelJobAckEvent>
         >{};
 

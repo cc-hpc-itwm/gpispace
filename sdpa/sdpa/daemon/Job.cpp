@@ -45,6 +45,24 @@ namespace sdpa {
       }
     }
 
+    void JobFSM_::action_delete_job(const MSMDeleteJobEvent& e)
+    {
+      sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent( e.from()
+                                                                                             , e.to()
+                                                                                             , e.jobId()) );
+      e.ptrAgent()->sendEventToMaster(pDelJobReply);
+    }
+
+    void JobFSM_::action_retrieve_job_results(const MSMRetrieveJobResultsEvent& e)
+    {
+      const sdpa::events::JobResultsReplyEvent::Ptr pResReply(
+         new sdpa::events::JobResultsReplyEvent( e.from()
+                                                 , e.to()
+                                                 , e.jobId()
+                                                 , e.result() ));
+      e.ptrAgent()->sendEventToMaster(pResReply);
+    }
+
     Job::Job( const sdpa::job_id_t id,
               const sdpa::job_desc_t desc,
               const sdpa::job_id_t &parent
@@ -178,24 +196,16 @@ namespace sdpa {
       process_event(*pEvt);
     }
 
-    void Job::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
+    void Job::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent* pAgent)
     {
       lock_type lock(mtx_);
-      process_event(*pEvt);
-
-      //! \todo This should only be sent, if the transition did not fail.
-      sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id()) );
-      ptr_comm->sendEventToMaster(pDelJobReply);
+      process_event(MSMDeleteJobEvent(pEvt, pAgent));
     }
 
-    void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
+    void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* pAgent)
     {
       lock_type lock(mtx_);
-      process_event(*pEvt);
-
-      //! \todo This should only be sent, if the transition did not fail.
-      const sdpa::events::JobResultsReplyEvent::Ptr pResReply( new sdpa::events::JobResultsReplyEvent( pEvt->to(), pEvt->from(), id(), result() ));
-      ptr_comm->sendEventToMaster(pResReply);
+      process_event(MSMRetrieveJobResultsEvent(pEvt, pAgent, result()));
     }
 
     void Job::Reschedule(sdpa::daemon::Scheduler*  pSched)
