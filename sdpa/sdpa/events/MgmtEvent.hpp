@@ -10,8 +10,6 @@ namespace sdpa
     class MgmtEvent : public sdpa::events::SDPAEvent
     {
     public:
-      typedef sdpa::shared_ptr<MgmtEvent> Ptr;
-
       MgmtEvent (const address_t &a_from, const address_t &a_to)
         : SDPAEvent (a_from, a_to)
       {}

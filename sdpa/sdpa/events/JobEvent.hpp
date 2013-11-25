@@ -14,8 +14,6 @@ namespace sdpa
     class JobEvent : public sdpa::events::SDPAEvent
     {
     public:
-      typedef sdpa::shared_ptr<JobEvent> Ptr;
-
       JobEvent ( const address_t& a_from
                , const address_t& a_to
                , const sdpa::job_id_t& a_job_id
