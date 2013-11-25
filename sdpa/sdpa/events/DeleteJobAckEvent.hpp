@@ -12,10 +12,6 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<DeleteJobAckEvent> Ptr;
 
-      DeleteJobAckEvent()
-        : JobEvent ("", "", "")
-      {}
-
       DeleteJobAckEvent ( const address_t& a_from
                         , const address_t& a_to
                         , const sdpa::job_id_t& a_job_id
@@ -32,15 +28,9 @@ namespace sdpa
       {
         handler->handleDeleteJobAckEvent (this);
       }
-
-    private:
-      friend class boost::serialization::access;
-      template <typename Archive>
-      void serialize (Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<JobEvent> (*this);
-      }
     };
+
+    CONSTRUCT_DATA_DEFS_FOR_EMPTY_JOBEVENT_OVERLOAD (DeleteJobAckEvent)
   }
 }
 
