@@ -687,6 +687,30 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 }
 
 /* Implements Gwes2Sdpa */
+
+namespace
+{
+  struct on_scope_exit
+  {
+    on_scope_exit (boost::function<void()> what)
+      : _what (what)
+      , _dont (false)
+    {}
+    ~on_scope_exit()
+    {
+      if (!_dont)
+      {
+        _what();
+      }
+    }
+    void dont()
+    {
+      _dont = true;
+    }
+    bool _dont;
+    boost::function<void()> _what;
+  };
+}
 /**
  * Submit an atomic activity to the SDPA.
  * This method is to be called by the GS in order to delegate
@@ -707,11 +731,17 @@ void GenericDaemon::submit( const id_type& activityId
   // schedule the new job to some worker
   job_requirements_t jobReqs(req_list, schedule_data);
 
-  try {
     DMLOG(TRACE, "workflow engine submitted "<<activityId);
 
     job_id_t job_id(activityId);
     job_id_t parent_id(user_data.get_user_job_identification());
+
+    on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed, workflowEngine()
+                                  , activityId, desc
+                                  , fhg::error::UNEXPECTED_ERROR
+                                  , "Exception in GenericDaemon::submit()"
+                                  )
+                    );
 
     try {
         jobManager()->findJob(parent_id);
@@ -733,45 +763,8 @@ void GenericDaemon::submit( const id_type& activityId
                                   , "Could not find the parent job "+parent_id.str()
                                   );
       }
-  }
-  catch(QueueFull const &)
-  {
-    workflowEngine()->failed( activityId
-                            , desc
-                            , fhg::error::UNEXPECTED_ERROR
-                            , "internal queue had an overflow"
-                            );
-    throw;
-  }
-  catch(seda::StageNotFound const &)
-  {
-    workflowEngine()->failed( activityId
-                            , desc
-                            , fhg::error::UNEXPECTED_ERROR
-                            , "internal stage could not be found"
-                            );
-    throw;
-  }
-  catch(std::exception const & ex)
-  {
-    DMLOG (WARN, "unexpected exception during submitJob: " << ex.what());
-    workflowEngine()->failed( activityId
-                            , desc
-                            , fhg::error::UNEXPECTED_ERROR
-                            , ex.what()
-                            );
-    throw;
-  }
-  catch(...)
-  {
-    DMLOG (WARN, "unexpected exception during submitJob!");
-    workflowEngine()->failed( activityId
-                            , desc
-                            , fhg::error::UNEXPECTED_ERROR
-                            , "something very strange happened"
-                            );
-    throw;
-  }
+
+  _.dont();
 }
 
 /**
