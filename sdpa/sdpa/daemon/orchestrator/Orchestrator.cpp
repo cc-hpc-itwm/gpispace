@@ -312,9 +312,7 @@ void Orchestrator::pause(const job_id_t& jobId)
    }
    catch(JobNotFoundException const &)
    {
-       std::ostringstream osstr;
-       osstr<<"Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!";
-       DMLOG (ERROR, osstr.str());
+       DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
    }
 
 }
@@ -327,9 +325,7 @@ void Orchestrator::resume(const job_id_t& jobId)
    }
    catch(JobNotFoundException const &)
    {
-       std::ostringstream osstr;
-       osstr<<"Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!";
-       DMLOG (ERROR, osstr.str());
+       DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
    }
 
 }
