@@ -4,6 +4,14 @@
 #define SAVE_TO_ARCHIVE(WHAT)                   \
   _ARCHIVE << WHAT
 
+//! \note Archive<<(int) e.g. is broken and can't handle values
+//! returned from a function call, thus needs a temporary.
+#define SAVE_TO_ARCHIVE_WITH_TEMPORARY(T, WHAT) \
+  {                                             \
+    const T temp (WHAT);                        \
+    _ARCHIVE << temp;                           \
+  }
+
 #define LOAD_FROM_ARCHIVE(TYPE, VARIABLE_NAME)  \
   TYPE VARIABLE_NAME; _ARCHIVE >> VARIABLE_NAME
 
