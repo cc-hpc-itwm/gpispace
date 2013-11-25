@@ -301,10 +301,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
   {
       LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
   }
-  catch(const seda::StageNotFound&)
-  {
-    DMLOG (WARN, "Could not lookup stage: " << ptr_to_slave_stage_->name());
-  }
   catch(const std::exception &ex)
   {
     DMLOG (WARN, "Error during request-job handling: " << ex.what());
@@ -336,10 +332,6 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
   catch(const JobNotFoundException&)
   {
     LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
-  }
-  catch(const seda::StageNotFound&)
-  {
-    DMLOG (WARN, "Could not lookup stage: " << ptr_to_slave_stage_->name());
   }
   catch(const std::exception &ex)
   {
@@ -462,11 +454,6 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, ex.what()) );
     sendEventToMaster(pErrorEvt);
   }
-  catch(seda::StageNotFound const &)
-  {
-    DMLOG (WARN, "Stage not found when trying to submit SubmitJobAckEvt for the job "<<job_id);
-    throw;
-  }
   catch(std::exception const & ex)
   {
     DMLOG (WARN, "Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
@@ -524,11 +511,6 @@ void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent
 
       sendEventToSlave(pWorkerRegAckEvt);
     }
-  }
-  catch(const seda::StageNotFound& snf)
-  {
-    MLOG (FATAL, "could not send WorkerRegistrationAck: locate slave-stage failed: " << snf.what());
-    throw;
   }
 }
 
@@ -763,9 +745,6 @@ void GenericDaemon::submit( const id_type& activityId
   }
   catch(seda::StageNotFound const &)
   {
-    DMLOG (WARN, "Stage not found when trying to deliver"
-              << " SubmitJobEvent!"
-          );
     workflowEngine()->failed( activityId
                             , desc
                             , fhg::error::UNEXPECTED_ERROR
