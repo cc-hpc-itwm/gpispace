@@ -90,7 +90,6 @@ namespace sdpa {
       // the initial state of the JobFSM SM. Must be defined
       typedef Pending initial_state;
 
-      virtual void action_delete_job(const sdpa::events::DeleteJobEvent&) = 0;
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&) = 0;
       virtual void action_job_finished(const sdpa::events::JobFinishedEvent&) = 0;
       virtual void action_reschedule_job(const MSMRescheduleEvent& evt);
@@ -120,11 +119,11 @@ namespace sdpa {
         a_row<  Running,        MSMStalledEvent,        		Stalled,        &sm::action_job_stalled >,
         _irow<  Running,        MSMResumeJobEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
-        a_irow< Finished,       sdpa::events::DeleteJobEvent,                           &sm::action_delete_job >,
+        _irow<  Finished,       sdpa::events::DeleteJobEvent>,
         _irow<  Finished,   	sdpa::events::RetrieveJobResultsEvent>,
         _irow<  Finished,       sdpa::events::JobFinishedEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
-        a_irow< Failed,     	sdpa::events::DeleteJobEvent,                           &sm::action_delete_job >,
+        _irow<  Failed,     	sdpa::events::DeleteJobEvent>,
         _irow<  Failed,     	sdpa::events::RetrieveJobResultsEvent>,
         _irow<  Failed,         sdpa::events::JobFailedEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
@@ -133,7 +132,7 @@ namespace sdpa {
         a_row<  Canceling, 	sdpa::events::JobFailedEvent,           Canceled,       &sm::action_job_failed>,
         _irow<  Canceling,      sdpa::events::CancelJobEvent>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        a_irow< Canceled,       sdpa::events::DeleteJobEvent,                           &sm::action_delete_job >,
+        _irow<  Canceled,       sdpa::events::DeleteJobEvent>,
         _irow<  Canceled,       sdpa::events::RetrieveJobResultsEvent>,
         _irow<  Canceled,       sdpa::events::CancelJobAckEvent>
         >{};
@@ -204,7 +203,6 @@ namespace sdpa {
       bool is_running();
 
       // job FSM actions
-      virtual void action_delete_job(const sdpa::events::DeleteJobEvent&);
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
       virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
 

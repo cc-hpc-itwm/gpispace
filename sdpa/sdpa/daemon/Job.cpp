@@ -145,10 +145,6 @@ namespace sdpa {
       result_ = arg_results;
     }
 
-    void Job::action_delete_job(const sdpa::events::DeleteJobEvent& e)
-    {
-    }
-
     void Job::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)
     {
       lock_type lock(mtx_);
