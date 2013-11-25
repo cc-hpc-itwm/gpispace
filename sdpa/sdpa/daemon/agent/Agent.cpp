@@ -57,74 +57,59 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     return;
   }
 
-  if( !true )
-  {
-      // forward it up
-      JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
-                                                                  , pJob->owner()
-                                                                  , pEvt->job_id()
-                                                                  , pEvt->result()
-                                                                ));
+  Worker::worker_id_t worker_id = pEvt->from();
+  id_type actId = pEvt->job_id();
 
-      // send the event to the master
-      sendEventToMaster(pEvtJobFinished);
+  result_type output = pEvt->result();
+
+  // update the status of the reservation
+  scheduler()->workerFinished(worker_id, actId);
+
+  bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
+
+  // if all the partial results were collected, notify the workflow engine
+  // about the status of the job (either finished, or failed
+  // the group is finished when all the partial results are "finished"
+  if(bTaskGroupComputed) {
+    DLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
+    if(scheduler()->groupFinished(actId))
+      workflowEngine()->finished(actId, output);
+    else
+      workflowEngine()->failed( actId,
+                              output,
+                              sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
+                              "One of tasks of the group failed with the actual reservation!");
   }
-  else
+
+  try {
+    DLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
+    // if all partial results were collected, release the reservation
+    if(bTaskGroupComputed) {
+      scheduler()->releaseReservation(pJob->id());
+    }
+    scheduler()->deleteWorkerJob( worker_id, pJob->id() );
+  }
+  catch(WorkerNotFoundException const &)
   {
-    Worker::worker_id_t worker_id = pEvt->from();
-    id_type actId = pEvt->job_id();
+    DMLOG (TRACE, "Worker "<<worker_id<<" not found!");
+    throw;
+  }
+  catch(const JobNotDeletedException&)
+  {
+    SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+  }
 
-      result_type output = pEvt->result();
-
-      // update the status of the reservation
-      scheduler()->workerFinished(worker_id, actId);
-
-      bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
-
-      // if all the partial results were collected, notify the workflow engine
-      // about the status of the job (either finished, or failed
-      // the group is finished when all the partial results are "finished"
-      if(bTaskGroupComputed) {
-          DLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
-          if(scheduler()->groupFinished(actId))
-            workflowEngine()->finished(actId, output);
-          else
-            workflowEngine()->failed( actId,
-                                      output,
-                                      sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
-                                      "One of tasks of the group failed with the actual reservation!");
-      }
-
-      try {
-          DLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
-          // if all partial results were collected, release the reservation
-          if(bTaskGroupComputed) {
-             scheduler()->releaseReservation(pJob->id());
-          }
-          scheduler()->deleteWorkerJob( worker_id, pJob->id() );
-      }
-      catch(WorkerNotFoundException const &)
-      {
-        DMLOG (TRACE, "Worker "<<worker_id<<" not found!");
-        throw;
-      }
-      catch(const JobNotDeletedException&)
-      {
-        SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
-      }
-
-      try {
-        //delete it also from job_map_
-        if(bTaskGroupComputed) {
-           DLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-           jobManager()->deleteJob(pEvt->job_id());
-        }
-      }
-      catch(JobNotDeletedException const &)
-      {
-          SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
-          throw;
-      }
+  try {
+    //delete it also from job_map_
+    if(bTaskGroupComputed) {
+      DLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
+      jobManager()->deleteJob(pEvt->job_id());
+    }
+  }
+  catch(JobNotDeletedException const &)
+  {
+    SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+    throw;
   }
 }
 
@@ -238,83 +223,62 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
     return;
   }
 
-  if( !true )
-  {
-      // forward it up
-      JobFailedEvent::Ptr pEvtJobFailed
-        (new JobFailedEvent ( name()
-                            , pJob->owner()
-                            , pEvt->job_id()
+  Worker::worker_id_t worker_id = pEvt->from();
+
+  id_type actId = pEvt->job_id();
+
+  // this  should only  be called  once, therefore
+  // the state machine when we switch the job from
+  // one state  to another, the  code belonging to
+  // exactly    that    transition    should    be
+  // executed. I.e. all this code should go to the
+  // FSM callback routine.
+
+  // update the status of the reservation
+
+  scheduler()->workerFailed(worker_id, actId);
+  bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
+
+  if(bTaskGroupComputed) {
+    workflowEngine()->failed( actId
                             , pEvt->result()
                             , pEvt->error_code()
                             , pEvt->error_message()
-                            ));
+                            );
 
-      // send the event to the master
-      sendEventToMaster(pEvtJobFailed);
+    // cancel the other jobs assigned to the workers which are
+    // in the reservation list
   }
-  else
+
+  try {
+    DMLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
+    // if all the partial results were collected, release the reservation
+    if(bTaskGroupComputed) {
+      scheduler()->releaseReservation(pJob->id());
+    }
+    scheduler()->deleteWorkerJob( worker_id, pJob->id() );
+  }
+  catch(WorkerNotFoundException const &)
   {
-    Worker::worker_id_t worker_id = pEvt->from();
+    DMLOG (TRACE, "Worker "<<worker_id<<" not found!");
+    throw;
+  }
+  catch(const JobNotDeletedException&)
+  {
+    SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+  }
 
-      id_type actId = pEvt->job_id();
-
-      // this  should only  be called  once, therefore
-      // the state machine when we switch the job from
-      // one state  to another, the  code belonging to
-      // exactly    that    transition    should    be
-      // executed. I.e. all this code should go to the
-      // FSM callback routine.
-
-      // update the status of the reservation
-
-      scheduler()->workerFailed(worker_id, actId);
-      bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
-
-      if(bTaskGroupComputed) {
-          workflowEngine()->failed( actId
-                                    , pEvt->result()
-                                    , pEvt->error_code()
-                                    , pEvt->error_message()
-                                  );
-
-          // cancel the other jobs assigned to the workers which are
-          // in the reservation list
-      }
-
-      try {
-        DMLOG(TRACE, "Remove the job "<<actId<<" from the worker "<<worker_id);
-        // if all the partial results were collected, release the reservation
-        if(bTaskGroupComputed) {
-           scheduler()->releaseReservation(pJob->id());
-        }
-        scheduler()->deleteWorkerJob( worker_id, pJob->id() );
-      }
-      catch(WorkerNotFoundException const &)
-      {
-        DMLOG (TRACE, "Worker "<<worker_id<<" not found!");
-        throw;
-      }
-      catch(const JobNotDeletedException&)
-      {
-        SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
-      }
-
-      if( true )
-      {
-        try {
-          //delete it also from job_map_
-          DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-          if(bTaskGroupComputed) {
-              jobManager()->deleteJob(pEvt->job_id());
-          }
-        }
-        catch(JobNotDeletedException const &ex)
-        {
-          SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
-          throw ex;
-        }
-      }
+  try {
+    //delete it also from job_map_
+    DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
+    if(bTaskGroupComputed) {
+      jobManager()->deleteJob(pEvt->job_id());
+    }
+  }
+  catch(JobNotDeletedException const &ex)
+  {
+    SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+    throw ex;
   }
 }
 
@@ -416,8 +380,7 @@ namespace
 
 void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
-  if(true)
-    workflowEngine()->canceled(evt.job_id ());
+  workflowEngine()->canceled(evt.job_id ());
 
   try
   {
