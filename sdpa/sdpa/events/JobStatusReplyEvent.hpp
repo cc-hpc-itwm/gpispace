@@ -19,7 +19,7 @@ namespace sdpa
       JobStatusReplyEvent ( const address_t& a_from
                           , const address_t& a_to
                           , const sdpa::job_id_t& a_job_id
-                          , const sdpa::status::code& a_status = sdpa::status::UNKNOWN
+                          , const sdpa::status::code& a_status
                           , int const error_code = fhg::error::UNASSIGNED_ERROR
                           , std::string const& error_message = std::string()
                           )

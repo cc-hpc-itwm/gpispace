@@ -20,8 +20,6 @@ namespace sdpa
       , RUNNING
       , STALLED
       , CANCELING
-
-      , UNKNOWN
       };
 
     inline bool is_running (code c)
@@ -50,8 +48,6 @@ namespace sdpa
         return "SDPA::Canceled";
       case CANCELING:
         return "SDPA::Canceling";
-      case UNKNOWN:
-        return "SDPA::Unknown";
       case STALLED:
         return "SDPA::Stalled";
       default:
