@@ -27,11 +27,6 @@ namespace sdpa
         return job_id_;
       }
 
-      virtual int priority() const
-      {
-        return 1;
-      }
-
     private:
       sdpa::job_id_t job_id_;
     };

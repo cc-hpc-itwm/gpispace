@@ -35,6 +35,11 @@ namespace sdpa
         return to_;
       }
 
+      virtual int priority() const
+      {
+        return 1;
+      }
+
       virtual std::string str() const = 0;
       virtual void handleBy (EventHandler*) = 0;
 

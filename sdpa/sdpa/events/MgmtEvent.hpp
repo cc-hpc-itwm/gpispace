@@ -13,11 +13,6 @@ namespace sdpa
       MgmtEvent (const address_t &a_from, const address_t &a_to)
         : SDPAEvent (a_from, a_to)
       {}
-
-      virtual int priority() const
-      {
-        return 1;
-      }
     };
   }
 }
