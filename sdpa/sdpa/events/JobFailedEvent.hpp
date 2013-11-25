@@ -13,10 +13,6 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<JobFailedEvent> Ptr;
 
-      JobFailedEvent()
-        : JobEvent ("", "", "")
-      {}
-
       JobFailedEvent ( const address_t& a_from
                      , const address_t& a_to
                      , const sdpa::job_id_t& a_job_id
@@ -57,17 +53,29 @@ namespace sdpa
       job_result_t result_;
       int m_error_code;
       std::string m_error_message;
-
-      friend class boost::serialization::access;
-      template <class Archive>
-      void serialize (Archive & ar, unsigned int)
-      {
-        ar & boost::serialization::base_object<JobEvent> (*this);
-        ar & result_;
-        ar & m_error_code;
-        ar & m_error_message;
-      }
     };
+
+    SAVE_CONSTRUCT_DATA_DEF (JobFailedEvent, e)
+    {
+      SAVE_JOBEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->result());
+      // \note Required, as Archive<< (int) takes an lvalue or const
+      // rvalue and return value is not const, thus fails. (?!)
+      const int weird_temporary (e->error_code());
+      SAVE_TO_ARCHIVE (weird_temporary);
+      SAVE_TO_ARCHIVE (e->error_message());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (JobFailedEvent, e)
+    {
+      LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
+      LOAD_FROM_ARCHIVE (job_result_t, result);
+      LOAD_FROM_ARCHIVE (int, error_code);
+      LOAD_FROM_ARCHIVE (std::string, error_message);
+
+      ::new (e) JobFailedEvent
+          (from, to, job_id, result, error_code, error_message);
+    }
   }
 }
 
