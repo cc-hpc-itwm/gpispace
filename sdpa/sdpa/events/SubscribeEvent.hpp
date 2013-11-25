@@ -4,8 +4,6 @@
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/types.hpp>
 
-#include <boost/serialization/base_object.hpp>
-
 namespace sdpa
 {
   namespace events

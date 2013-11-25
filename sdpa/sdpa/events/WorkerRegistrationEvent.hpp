@@ -5,8 +5,6 @@
 #include <sdpa/capability.hpp>
 
 #include <boost/optional.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/optional.hpp>
 
 namespace sdpa
 {

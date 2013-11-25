@@ -74,21 +74,8 @@
     ::new (e) TYPE (from, to);                                 \
   }
 
-#include <boost/serialization/assume_abstract.hpp>
-#include <boost/serialization/base_object.hpp>
 #include <boost/serialization/list.hpp>
-#include <boost/serialization/map.hpp>
+#include <boost/serialization/optional.hpp>
 #include <boost/serialization/set.hpp>
-#include <boost/serialization/utility.hpp>
-
-namespace boost
-{
-  namespace serialization
-  {
-    BOOST_SERIALIZATION_ASSUME_ABSTRACT (sdpa::events::SDPAEvent)
-    BOOST_SERIALIZATION_ASSUME_ABSTRACT (sdpa::events::JobEvent)
-    BOOST_SERIALIZATION_ASSUME_ABSTRACT (sdpa::events::MgmtEvent)
-  }
-}
 
 #endif

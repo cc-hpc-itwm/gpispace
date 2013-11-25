@@ -1,12 +1,7 @@
 #ifndef SDPA_MGMT_EVENT_HPP
 #define SDPA_MGMT_EVENT_HPP 1
 
-#include <string>
-
-#include <sdpa/memory.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
-
-#include <boost/serialization/base_object.hpp>
 
 namespace sdpa
 {

@@ -3,8 +3,6 @@
 
 #include <sdpa/events/MgmtEvent.hpp>
 
-#include <boost/serialization/base_object.hpp>
-
 namespace sdpa
 {
   namespace events
