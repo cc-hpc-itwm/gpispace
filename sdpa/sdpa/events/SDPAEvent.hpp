@@ -41,12 +41,6 @@ namespace sdpa
       virtual void handleBy (EventHandler*) = 0;
 
     protected:
-      SDPAEvent()
-        : IEvent()
-        , from_()
-        , to_()
-      {}
-
       SDPAEvent (const address_t & a_from, const address_t &a_to)
         : from_ (a_from)
         , to_ (a_to)
@@ -60,8 +54,6 @@ namespace sdpa
       template <class Archive>
       void serialize (Archive & ar, unsigned int)
       {
-        ar & from_;
-        ar & to_;
       }
     };
   }
