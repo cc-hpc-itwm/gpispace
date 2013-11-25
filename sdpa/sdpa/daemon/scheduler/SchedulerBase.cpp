@@ -16,14 +16,7 @@
  * =====================================================================================
  */
 
-#include <fhg/assert.hpp>
-
-#include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
-#include <boost/tokenizer.hpp>
-
-#include <cassert>
-#include <sdpa/capability.hpp>
 
 using namespace sdpa::daemon;
 using namespace sdpa::events;
