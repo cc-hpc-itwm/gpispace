@@ -57,7 +57,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
     return;
   }
 
-  if( !hasWorkflowEngine() )
+  if( !true )
   {
       // forward it up
       JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
@@ -238,7 +238,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
     return;
   }
 
-  if( !hasWorkflowEngine() )
+  if( !true )
   {
       // forward it up
       JobFailedEvent::Ptr pEvtJobFailed
@@ -300,7 +300,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
         SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
       }
 
-      if( hasWorkflowEngine() )
+      if( true )
       {
         try {
           //delete it also from job_map_
@@ -416,7 +416,7 @@ namespace
 
 void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
-  if(hasWorkflowEngine())
+  if(true)
     workflowEngine()->canceled(evt.job_id ());
 
   try
@@ -505,7 +505,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
     return;
   }
 
-  if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
+  if(pEvt->from() == sdpa::daemon::WE || !true)
   {
     on_scope_exit _ ( boost::bind ( &Agent::sendEventToMaster
                                   , this
@@ -579,7 +579,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   }
 
   // the acknowledgment comes from WE or from a slave and there is no WE
-  if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
+  if( pEvt->from() == sdpa::daemon::WE || !true )
   {
     // just send an acknowledgment to the master
     // send an acknowledgment to the component that requested the cancellation
