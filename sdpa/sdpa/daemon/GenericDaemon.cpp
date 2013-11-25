@@ -185,22 +185,9 @@ void GenericDaemon::shutdown( )
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
-  if( SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get()) )
-  {
-    try
-    {
-      pSdpaEvt->handleBy(this);
-    }
-    catch (std::exception const & ex)
-    {
-      LOG( ERROR, "could not handle event "<< "\""  << pEvent->str() << "\""<< " : " << ex.what());
-    }
-  }
-  else
-  {
-    DMLOG (TRACE, "Received unexpected event " << pEvent->str()<<". Cannot handle it!");
-    //! \todo THROW
-  }
+  SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get());
+  assert (pSdpaEvt);
+  pSdpaEvt->handleBy(this);
 }
 
 void GenericDaemon::addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList)
