@@ -188,6 +188,7 @@ namespace sdpa {
       lock_type lock(mtx_);
       process_event(*pEvt);
 
+      //! \todo This should only be sent, if the transition did not fail.
       sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent(pEvt->to(), pEvt->from(), id()) );
       ptr_comm->sendEventToMaster(pDelJobReply);
     }
@@ -213,6 +214,8 @@ namespace sdpa {
     {
       lock_type lock(mtx_);
       process_event(*pEvt);
+
+      //! \todo This should only be sent, if the transition did not fail.
       const sdpa::events::JobResultsReplyEvent::Ptr pResReply( new sdpa::events::JobResultsReplyEvent( pEvt->to(), pEvt->from(), id(), result() ));
       ptr_comm->sendEventToMaster(pResReply);
     }
