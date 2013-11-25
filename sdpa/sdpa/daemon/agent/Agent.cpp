@@ -505,7 +505,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
     return;
   }
 
-  if(pEvt->from() == sdpa::daemon::WE || !true)
+  if(pEvt->from() == sdpa::daemon::WE)
   {
     on_scope_exit _ ( boost::bind ( &Agent::sendEventToMaster
                                   , this
@@ -579,7 +579,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   }
 
   // the acknowledgment comes from WE or from a slave and there is no WE
-  if( pEvt->from() == sdpa::daemon::WE || !true )
+  if( pEvt->from() == sdpa::daemon::WE)
   {
     // just send an acknowledgment to the master
     // send an acknowledgment to the component that requested the cancellation
