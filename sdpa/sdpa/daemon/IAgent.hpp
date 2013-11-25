@@ -19,14 +19,10 @@
 #define SDPA_ICOMM_HPP 1
 
 #include <sdpa/events/SDPAEvent.hpp>
-#include <sdpa/memory.hpp>
-
 #include <sdpa/engine/IWorkflowEngine.hpp>
-
-#include <seda/Stage.hpp>
+#include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
-#include <sdpa/daemon/JobManager.hpp>
-#include <sdpa/daemon/scheduler/Reservation.hpp>
+#include <sdpa/capability.hpp>
 
 namespace sdpa {
   namespace daemon {
