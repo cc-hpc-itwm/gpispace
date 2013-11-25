@@ -227,8 +227,8 @@ namespace
     {
       _dont = true;
     }
-    bool _dont;
     boost::function<void()> _what;
+    bool _dont;
   };
 }
 
