@@ -16,6 +16,10 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<JobEvent> Ptr;
 
+      JobRunningEvent()
+        : JobEvent ("", "", "")
+      {}
+
       JobRunningEvent ( const address_t& a_from
                , const address_t& a_to
                , const sdpa::job_id_t& a_job_id
