@@ -301,14 +301,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
   {
       LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
   }
-  catch(const QueueFull&)
-  {
-    DMLOG (WARN, "Could not send event to internal stage: " << ptr_to_slave_stage_->name() << ": queue is full!");
-  }
-  catch(const seda::StageNotFound&)
-  {
-    DMLOG (WARN, "Could not lookup stage: " << ptr_to_slave_stage_->name());
-  }
   catch(const std::exception &ex)
   {
     DMLOG (WARN, "Error during request-job handling: " << ex.what());
@@ -340,14 +332,6 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
   catch(const JobNotFoundException&)
   {
     LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
-  }
-  catch(const QueueFull&)
-  {
-    DMLOG (WARN, "Could not send event to internal stage: " << ptr_to_slave_stage_->name() << ": queue is full!");
-  }
-  catch(const seda::StageNotFound&)
-  {
-    DMLOG (WARN, "Could not lookup stage: " << ptr_to_slave_stage_->name());
   }
   catch(const std::exception &ex)
   {
@@ -470,15 +454,6 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, ex.what()) );
     sendEventToMaster(pErrorEvt);
   }
-  catch(QueueFull const &)
-  {
-    DMLOG (WARN, "Failed to send to the master output stage "<<ptr_to_master_stage_->name()<<" a SubmitJobAckEvt for the job "<<job_id);
-  }
-  catch(seda::StageNotFound const &)
-  {
-    DMLOG (WARN, "Stage not found when trying to submit SubmitJobAckEvt for the job "<<job_id);
-    throw;
-  }
   catch(std::exception const & ex)
   {
     DMLOG (WARN, "Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
@@ -536,16 +511,6 @@ void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent
 
       sendEventToSlave(pWorkerRegAckEvt);
     }
-  }
-  catch(const QueueFull& ex)
-  {
-    DMLOG (WARN, "could not send WorkerRegistrationAck: queue is full, this should never happen!"<<ex.what());
-    throw;
-  }
-  catch(const seda::StageNotFound& snf)
-  {
-    MLOG (FATAL, "could not send WorkerRegistrationAck: locate slave-stage failed: " << snf.what());
-    throw;
   }
 }
 
@@ -722,6 +687,30 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 }
 
 /* Implements Gwes2Sdpa */
+
+namespace
+{
+  struct on_scope_exit
+  {
+    on_scope_exit (boost::function<void()> what)
+      : _what (what)
+      , _dont (false)
+    {}
+    ~on_scope_exit()
+    {
+      if (!_dont)
+      {
+        _what();
+      }
+    }
+    void dont()
+    {
+      _dont = true;
+    }
+    bool _dont;
+    boost::function<void()> _what;
+  };
+}
 /**
  * Submit an atomic activity to the SDPA.
  * This method is to be called by the GS in order to delegate
@@ -742,11 +731,17 @@ void GenericDaemon::submit( const id_type& activityId
   // schedule the new job to some worker
   job_requirements_t jobReqs(req_list, schedule_data);
 
-  try {
     DMLOG(TRACE, "workflow engine submitted "<<activityId);
 
     job_id_t job_id(activityId);
     job_id_t parent_id(user_data.get_user_job_identification());
+
+    on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed, workflowEngine()
+                                  , activityId, desc
+                                  , fhg::error::UNEXPECTED_ERROR
+                                  , "Exception in GenericDaemon::submit()"
+                                  )
+                    );
 
     try {
         jobManager()->findJob(parent_id);
@@ -768,48 +763,8 @@ void GenericDaemon::submit( const id_type& activityId
                                   , "Could not find the parent job "+parent_id.str()
                                   );
       }
-  }
-  catch(QueueFull const &)
-  {
-    DMLOG (WARN, "could not send event to my stage: queue is full!");
-    workflowEngine()->failed( activityId
-                            , desc
-                            , fhg::error::UNEXPECTED_ERROR
-                            , "internal queue had an overflow"
-                            );
-  }
-  catch(seda::StageNotFound const &)
-  {
-    DMLOG (WARN, "Stage not found when trying to deliver"
-              << " SubmitJobEvent!"
-          );
-    workflowEngine()->failed( activityId
-                            , desc
-                            , fhg::error::UNEXPECTED_ERROR
-                            , "internal stage could not be found"
-                            );
-    throw;
-  }
-  catch(std::exception const & ex)
-  {
-    DMLOG (WARN, "unexpected exception during submitJob: " << ex.what());
-    workflowEngine()->failed( activityId
-                            , desc
-                            , fhg::error::UNEXPECTED_ERROR
-                            , ex.what()
-                            );
-    throw;
-  }
-  catch(...)
-  {
-    DMLOG (WARN, "unexpected exception during submitJob!");
-    workflowEngine()->failed( activityId
-                            , desc
-                            , fhg::error::UNEXPECTED_ERROR
-                            , "something very strange happened"
-                            );
-    throw;
-  }
+
+  _.dont();
 }
 
 /**

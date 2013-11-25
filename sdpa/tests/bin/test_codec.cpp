@@ -1,543 +1,251 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_codec.cpp
- *
- *    Description:  tests the encoding/decoding of events
- *
- *        Version:  1.0
- *        Created:  10/30/2009 01:43:03 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+#define BOOST_TEST_MODULE encode_and_decode_events
 
-#include <iostream>
-
-#include <fhglog/fhglog.hpp>
-#include <fhglog/Configuration.hpp>
 #include <sdpa/events/Codec.hpp>
+#include <sdpa/events/JobRunningEvent.hpp>
+#include <sdpa/events/JobStalledEvent.hpp>
 
-int main(int, char **)
+#include <boost/test/unit_test.hpp>
+
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::capabilities_set_t);
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::job_id_t);
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::worker_id_list_t);
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::job_id_list_t);
+
+namespace
 {
   using namespace sdpa::events;
-  fhg::log::Configurator::configure();
 
-  int errcount(0);
-
-  Codec codec;
+  template<typename T> T* encode_decode_sdpa_event (T e)
   {
-    std::clog << "testing SubmitJobEvent...";
-    SubmitJobEvent e("foo", "bar", "job-id-1", "<desc></desc>", "parent-job-id-0");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+    static Codec codec;
 
-    if (SubmitJobEvent *e2 = dynamic_cast<SubmitJobEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-       || e2->description() != e.description()
-       || e2->parent_id() != e.parent_id())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a SubmitJobEvent!" << std::endl;
-    }
+    SDPAEvent* d (codec.decode (codec.encode (&e)));
+    T* r (dynamic_cast<T*> (d));
+
+    BOOST_REQUIRE (r);
+
+    BOOST_REQUIRE_EQUAL (r->str(), e.str());
+
+    BOOST_REQUIRE_EQUAL (r->from(), e.from());
+    BOOST_REQUIRE_EQUAL (r->to(), e.to());
+
+    BOOST_REQUIRE_EQUAL (r->priority(), e.priority());
+
+    return r;
   }
 
+  template<typename T> T* encode_decode_job_event (T e)
   {
-    std::clog << "testing SubmitJobAckEvent...";
-    SubmitJobAckEvent e("foo", "bar", "job-id-1");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+    T* r (encode_decode_sdpa_event (e));
 
-    if (SubmitJobAckEvent *e2 = dynamic_cast<SubmitJobAckEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-         )
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a SubmitJobAckEvent!" << std::endl;
-    }
+    BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
+
+    return r;
   }
 
+  template<typename T> T* encode_decode_mgmt_event (T e)
   {
-    std::clog << "testing CancelJobEvent...";
-    CancelJobEvent e("foo", "bar", "job-id-1", "test reason");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
-
-    if (CancelJobEvent *e2 = dynamic_cast<CancelJobEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a CancelJobEvent!" << std::endl;
-    }
+    T* r (encode_decode_sdpa_event (e));
+    return r;
   }
+}
 
-  {
-    std::clog << "testing CancelJobAckEvent...";
-    CancelJobAckEvent e("foo", "bar", "job-id-1");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+BOOST_AUTO_TEST_CASE (CancelJobAck)
+{
+  CancelJobAckEvent e ("foo", "bar", "job-id-1", "result");
+  CancelJobAckEvent* r (encode_decode_job_event (e));
 
-    if (CancelJobAckEvent *e2 = dynamic_cast<CancelJobAckEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-         )
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a CancelJobAckEvent!" << std::endl;
-    }
-  }
+  BOOST_REQUIRE_EQUAL (r->result(), e.result());
+}
 
-  {
-    std::clog << "testing DeleteJobEvent...";
-    DeleteJobEvent e("foo", "bar", "job-id-1");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+BOOST_AUTO_TEST_CASE (CancelJob)
+{
+  CancelJobEvent e ("foo", "bar", "job-id-1", "reason");
+  CancelJobEvent* r (encode_decode_job_event (e));
 
-    if (DeleteJobEvent *e2 = dynamic_cast<DeleteJobEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a DeleteJobEvent!" << std::endl;
-    }
-  }
+  BOOST_REQUIRE_EQUAL (r->reason(), e.reason());
+}
 
-  {
-    std::clog << "testing DeleteJobAckEvent...";
-    DeleteJobAckEvent e("foo", "bar", "job-id-1");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+BOOST_AUTO_TEST_CASE (CapabilitiesGained)
+{
+  sdpa::capabilities_set_t set;
+  set.insert (sdpa::Capability ("foo"));
+  set.insert (sdpa::Capability ("bar"));
 
-    if (DeleteJobAckEvent *e2 = dynamic_cast<DeleteJobAckEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-         )
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a DeleteJobAckEvent!" << std::endl;
-    }
-  }
+  CapabilitiesGainedEvent e ("from", "to", set);
+  CapabilitiesGainedEvent* r (encode_decode_mgmt_event (e));
 
-  {
-    std::clog << "testing ErrorEvent...";
-    ErrorEvent e("foo", "bar", ErrorEvent::SDPA_EBUSY, "busy");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+  BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
+}
 
-    if (ErrorEvent *e2 = dynamic_cast<ErrorEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->reason() != e.reason()
-       || e2->error_code() != e.error_code()
-      )
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a ErrorEvent!" << std::endl;
-    }
-  }
+BOOST_AUTO_TEST_CASE (CapabilitiesLost)
+{
+  sdpa::capabilities_set_t set;
+  set.insert (sdpa::Capability ("foo"));
+  set.insert (sdpa::Capability ("bar"));
 
-  {
-    std::clog << "testing JobFailedEvent...";
-    sdpa::job_result_t result;
-    JobFailedEvent e("foo", "bar", "job-id-1", result);
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+  CapabilitiesLostEvent e ("from", "to", set);
+  CapabilitiesLostEvent* r (encode_decode_mgmt_event (e));
 
-    if (JobFailedEvent *e2 = dynamic_cast<JobFailedEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a JobFailedEvent!" << std::endl;
-    }
-  }
+  BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
+}
 
-  {
-    std::clog << "testing JobFailedAckEvent...";
-    JobFailedAckEvent e("foo", "bar", "job-id-1");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+BOOST_AUTO_TEST_CASE (DeleteJobAck)
+{
+  DeleteJobAckEvent e ("foo", "bar", "job-id-1");
+  DeleteJobAckEvent* r (encode_decode_job_event (e));
+}
 
-    if (JobFailedAckEvent *e2 = dynamic_cast<JobFailedAckEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-         )
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a JobFailedAckEvent!" << std::endl;
-    }
-  }
+BOOST_AUTO_TEST_CASE (DeleteJob)
+{
+  DeleteJobEvent e ("foo", "bar", "job-id-1");
+  DeleteJobEvent* r (encode_decode_job_event (e));
+}
 
-  {
-    std::clog << "testing JobFinishedEvent...";
-    sdpa::job_result_t result;
-    JobFinishedEvent e("foo", "bar", "job-id-1", result);
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+BOOST_AUTO_TEST_CASE (Error)
+{
+  ErrorEvent e ("from", "to", ErrorEvent::SDPA_EUNKNOWN, "testing", "job-id");
+  ErrorEvent* r (encode_decode_mgmt_event (e));
 
-    if (JobFinishedEvent *e2 = dynamic_cast<JobFinishedEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a JobFinishedEvent!" << std::endl;
-    }
-  }
+  BOOST_REQUIRE_EQUAL (r->reason(), e.reason());
+  BOOST_REQUIRE_EQUAL (r->error_code(), e.error_code());
+  BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
+}
 
-  {
-    std::clog << "testing JobFinishedAckEvent...";
-    JobFinishedAckEvent e("foo", "bar", "job-id-1");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+BOOST_AUTO_TEST_CASE (JobFailedAck)
+{
+  JobFailedAckEvent e ("foo", "bar", "job-id-1");
+  JobFailedAckEvent* r (encode_decode_job_event (e));
+}
 
-    if (JobFinishedAckEvent *e2 = dynamic_cast<JobFinishedAckEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-         )
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a JobFinishedAckEvent!" << std::endl;
-    }
-  }
+BOOST_AUTO_TEST_CASE (JobFailed)
+{
+  JobFailedEvent e ("foo", "bar", "job-id-1", "no result", fhg::error::UNASSIGNED_ERROR, "testing");
+  JobFailedEvent* r (encode_decode_job_event (e));
 
-  {
-    std::clog << "testing JobResultsReplyEvent...";
-    sdpa::job_result_t result;
-    JobResultsReplyEvent e("foo", "bar", "job-id-1", result);
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+  BOOST_REQUIRE_EQUAL (r->result(), e.result());
+  BOOST_REQUIRE_EQUAL (r->error_code(), e.error_code());
+  BOOST_REQUIRE_EQUAL (r->error_message(), e.error_message());
+}
 
-    if (JobResultsReplyEvent *e2 = dynamic_cast<JobResultsReplyEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id()
-      )
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a JobResultsReplyEvent!" << std::endl;
-    }
-  }
+BOOST_AUTO_TEST_CASE (JobFinishedAck)
+{
+  JobFinishedAckEvent e ("foo", "bar", "job-id-1");
+  JobFinishedAckEvent* r (encode_decode_job_event (e));
+}
 
-  {
-    std::clog << "testing JobStatusReplyEvent...";
-    JobStatusReplyEvent e("foo", "bar", "job-id-1");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+BOOST_AUTO_TEST_CASE (JobFinished)
+{
+  JobFinishedEvent e ("foo", "bar", "job-id-1", "result");
+  JobFinishedEvent* r (encode_decode_job_event (e));
 
-    if (JobStatusReplyEvent *e2 = dynamic_cast<JobStatusReplyEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a JobStatusReplyEvent!" << std::endl;
-    }
-  }
+  BOOST_REQUIRE_EQUAL (r->result(), e.result());
+}
 
-  {
-    std::clog << "testing QueryJobStatusEvent...";
-    QueryJobStatusEvent e("foo", "bar", "job-id-1");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+BOOST_AUTO_TEST_CASE (JobResultsReply)
+{
+  JobResultsReplyEvent e ("foo", "bar", "job-id-1", "result");
+  JobResultsReplyEvent* r (encode_decode_job_event (e));
 
-    if (QueryJobStatusEvent *e2 = dynamic_cast<QueryJobStatusEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a QueryJobStatusEvent!" << std::endl;
-    }
-  }
+  BOOST_REQUIRE_EQUAL (r->result(), e.result());
+}
 
-  {
-    std::clog << "testing RetrieveJobResultsEvent...";
-    RetrieveJobResultsEvent e("foo", "bar", "job-id-1");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+BOOST_AUTO_TEST_CASE (JobRunning)
+{
+  JobRunningEvent e ("foo", "bar", "job-id-1");
+  JobRunningEvent* r (encode_decode_job_event (e));
+}
 
-    if (RetrieveJobResultsEvent *e2 = dynamic_cast<RetrieveJobResultsEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to()
-       || e2->job_id() != e.job_id())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a RetrieveJobResultsEvent!" << std::endl;
-    }
-  }
+BOOST_AUTO_TEST_CASE (JobStalled)
+{
+  JobStalledEvent e ("foo", "bar", "job-id-1");
+  JobStalledEvent* r (encode_decode_job_event (e));
+}
 
-  {
-    std::clog << "testing WorkerRegistrationEvent...";
-    const sdpa::events::SDPAEvent::address_t from ("from");
-    const sdpa::events::SDPAEvent::address_t to ("to");
-    const sdpa::worker_id_t worker_id ("worker_id");
+BOOST_AUTO_TEST_CASE (JobStatusReply)
+{
+  JobStatusReplyEvent e ("foo", "bar", "job-id-1", sdpa::status::RUNNING, fhg::error::UNASSIGNED_ERROR, "testing");
+  JobStatusReplyEvent* r (encode_decode_job_event (e));
 
-    const unsigned int capacity (10);
-    WorkerRegistrationEvent e(from, to, capacity);
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+  BOOST_REQUIRE_EQUAL (r->status(), e.status());
+  BOOST_REQUIRE_EQUAL (r->error_code(), e.error_code());
+  BOOST_REQUIRE_EQUAL (r->error_message(), e.error_message());
+}
 
-    if (WorkerRegistrationEvent *e2 = dynamic_cast<WorkerRegistrationEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a WorkerRegistrationEvent!" << std::endl;
-    }
-  }
+BOOST_AUTO_TEST_CASE (QueryJobStatus)
+{
+  QueryJobStatusEvent e ("foo", "bar", "job-id-1");
+  QueryJobStatusEvent* r (encode_decode_job_event (e));
+}
 
-  {
-    std::clog << "testing WorkerRegistrationAckEvent...";
-    WorkerRegistrationAckEvent e("foo", "bar");
-    const std::string encoded = codec.encode(&e);
-    SDPAEvent *d = codec.decode(encoded);
+BOOST_AUTO_TEST_CASE (RetrieveJobResults)
+{
+  RetrieveJobResultsEvent e ("foo", "bar", "job-id-1");
+  RetrieveJobResultsEvent* r (encode_decode_job_event (e));
+}
 
-    if (WorkerRegistrationAckEvent *e2 = dynamic_cast<WorkerRegistrationAckEvent*>(d))
-    {
-      if (e2->from() != e.from()
-       || e2->to() != e.to())
-      {
-        ++errcount;
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\tone or more data fields don't match!" << std::endl;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    else
-    {
-      ++errcount;
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tdecoded event is not a WorkerRegistrationAckEvent!" << std::endl;
-    }
-  }
+BOOST_AUTO_TEST_CASE (SubmitJobAck)
+{
+  SubmitJobAckEvent e ("foo", "bar", "job-id-1");
+  SubmitJobAckEvent* r (encode_decode_job_event (e));
+}
 
-  return errcount;
+BOOST_AUTO_TEST_CASE (SubmitJob)
+{
+  sdpa::worker_id_list_t workers;
+  workers.push_back ("foo");
+  workers.push_back ("bar");
+
+  SubmitJobEvent e ("foo", "bar", "job-id-1", "pnet", "parent job", workers);
+  SubmitJobEvent* r (encode_decode_job_event (e));
+
+  BOOST_REQUIRE_EQUAL (r->description(), e.description());
+  BOOST_REQUIRE_EQUAL (r->parent_id(), e.parent_id());
+  BOOST_REQUIRE_EQUAL (r->worker_list(), e.worker_list());
+}
+
+BOOST_AUTO_TEST_CASE (SubscribeAck)
+{
+  sdpa::job_id_list_t jobs;
+  jobs.push_back ("job-1");
+  jobs.push_back ("job-2");
+
+  SubscribeAckEvent e ("foo", "bar", jobs);
+  SubscribeAckEvent* r (encode_decode_mgmt_event (e));
+
+  BOOST_REQUIRE_EQUAL (r->listJobIds(), e.listJobIds());
+}
+
+BOOST_AUTO_TEST_CASE (Subscribe)
+{
+  sdpa::job_id_list_t jobs;
+  jobs.push_back ("job-1");
+  jobs.push_back ("job-2");
+
+  SubscribeEvent e ("foo", "bar", jobs);
+  SubscribeEvent* r (encode_decode_mgmt_event (e));
+
+  BOOST_REQUIRE_EQUAL (r->listJobIds(), e.listJobIds());
+  BOOST_REQUIRE_EQUAL (r->subscriber(), e.subscriber());
+}
+
+BOOST_AUTO_TEST_CASE (WorkerRegistrationAck)
+{
+  WorkerRegistrationAckEvent e ("foo", "bar");
+  WorkerRegistrationAckEvent* r (encode_decode_mgmt_event (e));
+}
+
+BOOST_AUTO_TEST_CASE (WorkerRegistration)
+{
+  sdpa::capabilities_set_t caps;
+  caps.insert (sdpa::Capability ("foo"));
+  caps.insert (sdpa::Capability ("bar"));
+
+  WorkerRegistrationEvent e ("foo", "bar", 10, caps, 50, "fooagent");
+  WorkerRegistrationEvent* r (encode_decode_mgmt_event (e));
+
+  BOOST_REQUIRE_EQUAL (r->capacity(), e.capacity());
+  BOOST_REQUIRE_EQUAL (r->rank(), e.rank());
+  BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
+  BOOST_REQUIRE_EQUAL (r->agent_uuid(), e.agent_uuid());
 }

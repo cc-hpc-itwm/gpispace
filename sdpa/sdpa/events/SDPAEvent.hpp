@@ -22,7 +22,6 @@ namespace sdpa
       typedef sdpa::shared_ptr<SDPAEvent> Ptr;
 
       typedef std::string address_t;
-      typedef std::string message_id_type;
 
       const address_t& from() const
       {
@@ -41,11 +40,6 @@ namespace sdpa
       virtual std::string str() const = 0;
       virtual void handleBy (EventHandler*) = 0;
 
-      virtual Ptr create_reply (boost::system::error_code const&)
-      {
-        return Ptr();
-      }
-
     protected:
       SDPAEvent()
         : IEvent()
@@ -58,7 +52,6 @@ namespace sdpa
     private:
       address_t from_;
       address_t to_;
-      message_id_type id_;
 
       friend class boost::serialization::access;
       template <class Archive>
