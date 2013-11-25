@@ -17,9 +17,6 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<MgmtEvent> Ptr;
 
-      MgmtEvent()
-        : SDPAEvent()
-      {}
       MgmtEvent (const address_t &a_from, const address_t &a_to)
         : SDPAEvent (a_from, a_to)
       {}
@@ -30,14 +27,6 @@ namespace sdpa
       }
 
       virtual std::string str() const = 0;
-
-    private:
-      friend class boost::serialization::access;
-      template <typename Archive>
-      void serialize (Archive& ar, const unsigned int)
-      {
-        ar & boost::serialization::base_object<SDPAEvent> (*this);
-      }
     };
   }
 }

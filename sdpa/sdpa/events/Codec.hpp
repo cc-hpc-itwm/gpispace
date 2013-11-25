@@ -61,6 +61,9 @@ namespace sdpa
       template <class Archive>
       void initialize_archive (Archive & ar) const
       {
+        boost::serialization::void_cast_register<JobEvent, SDPAEvent>();
+        boost::serialization::void_cast_register<MgmtEvent, SDPAEvent>();
+
 #define REGISTER(TYPE, BASE)                                            \
         boost::serialization::void_cast_register<TYPE, BASE>();         \
         ar.template register_type<TYPE>()
