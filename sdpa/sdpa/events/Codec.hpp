@@ -58,6 +58,8 @@ namespace sdpa
         ar.register_type (static_cast<CapabilitiesLostEvent*>(NULL));
         ar.register_type (static_cast<SubscribeEvent*>(NULL));
         ar.register_type (static_cast<SubscribeAckEvent*>(NULL));
+        ar.register_type (static_cast<JobRunningEvent*>(NULL));
+        ar.register_type (static_cast<JobStalledEvent*>(NULL));
       }
     };
   }
