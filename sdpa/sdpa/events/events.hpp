@@ -23,5 +23,7 @@
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
+#include <sdpa/events/JobRunningEvent.hpp>
+#include <sdpa/events/JobStalledEvent.hpp>
 
 #endif
