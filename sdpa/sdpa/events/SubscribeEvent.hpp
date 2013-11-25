@@ -15,10 +15,6 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<SubscribeEvent> Ptr;
 
-      SubscribeEvent()
-        : MgmtEvent()
-      {}
-
       SubscribeEvent ( const address_t& a_from
                      , const address_t& a_to
                      , const job_id_list_t& listJobIds
@@ -48,15 +44,21 @@ namespace sdpa
 
     private:
       sdpa::job_id_list_t listJobIds_;
-
-      friend class boost::serialization::access;
-      template <class Archive>
-      void serialize (Archive& ar, unsigned int)
-      {
-        ar & boost::serialization::base_object<MgmtEvent> (*this);
-        ar & listJobIds_;
-      }
     };
+
+    SAVE_CONSTRUCT_DATA_DEF (SubscribeEvent, e)
+    {
+      SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->listJobIds());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (SubscribeEvent, e)
+    {
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_FROM_ARCHIVE (sdpa::job_id_list_t, listJobIds);
+
+      ::new (e) SubscribeEvent (from, to, listJobIds);
+    }
   }
 }
 
