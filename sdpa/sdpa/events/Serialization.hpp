@@ -41,29 +41,30 @@
 #define LOAD_MGMTEVENT_CONSTRUCT_DATA(FROM_VAR_NAME, TO_VAR_NAME) \
   LOAD_SDPAEVENT_CONSTRUCT_DATA (FROM_VAR_NAME, TO_VAR_NAME)
 
-#include <sdpa/events/CancelJobAckEvent.hpp>
-#include <sdpa/events/CancelJobEvent.hpp>
-#include <sdpa/events/CapabilitiesGainedEvent.hpp>
-#include <sdpa/events/CapabilitiesLostEvent.hpp>
-#include <sdpa/events/DeleteJobAckEvent.hpp>
-#include <sdpa/events/DeleteJobEvent.hpp>
-#include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/JobFailedAckEvent.hpp>
-#include <sdpa/events/JobFailedEvent.hpp>
-#include <sdpa/events/JobFinishedAckEvent.hpp>
-#include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/JobResultsReplyEvent.hpp>
-#include <sdpa/events/JobRunningEvent.hpp>
-#include <sdpa/events/JobStalledEvent.hpp>
-#include <sdpa/events/JobStatusReplyEvent.hpp>
-#include <sdpa/events/QueryJobStatusEvent.hpp>
-#include <sdpa/events/RetrieveJobResultsEvent.hpp>
-#include <sdpa/events/SubmitJobAckEvent.hpp>
-#include <sdpa/events/SubmitJobEvent.hpp>
-#include <sdpa/events/SubscribeAckEvent.hpp>
-#include <sdpa/events/SubscribeEvent.hpp>
-#include <sdpa/events/WorkerRegistrationAckEvent.hpp>
-#include <sdpa/events/WorkerRegistrationEvent.hpp>
+
+#define CONSTRUCT_DATA_DEFS_FOR_EMPTY_JOBEVENT_OVERLOAD(TYPE) \
+  SAVE_CONSTRUCT_DATA_DEF (TYPE, e)                           \
+  {                                                           \
+    SAVE_JOBEVENT_CONSTRUCT_DATA (e);                         \
+  }                                                           \
+  LOAD_CONSTRUCT_DATA_DEF (TYPE, e)                           \
+  {                                                           \
+    LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);          \
+                                                              \
+    ::new (e) TYPE (from, to, job_id);                        \
+  }
+
+#define CONSTRUCT_DATA_DEFS_FOR_EMPTY_MGMTEVENT_OVERLOAD(TYPE) \
+  SAVE_CONSTRUCT_DATA_DEF (TYPE, e)                            \
+  {                                                            \
+    SAVE_MGMTEVENT_CONSTRUCT_DATA (e);                         \
+  }                                                            \
+  LOAD_CONSTRUCT_DATA_DEF (TYPE, e)                            \
+  {                                                            \
+    LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);                  \
+                                                               \
+    ::new (e) TYPE (from, to);                                 \
+  }
 
 #include <boost/serialization/assume_abstract.hpp>
 #include <boost/serialization/base_object.hpp>

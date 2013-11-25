@@ -67,4 +67,6 @@ namespace sdpa
   }
 }
 
+#include <sdpa/events/Serialization.hpp>
+
 #endif
