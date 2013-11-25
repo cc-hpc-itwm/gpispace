@@ -16,7 +16,6 @@ namespace sdpa
     {
     public:
       typedef sdpa::shared_ptr<WorkerRegistrationEvent> Ptr;
-      typedef enum {PUSH, REQ } service_model_t;
 
       WorkerRegistrationEvent()
         : MgmtEvent()
