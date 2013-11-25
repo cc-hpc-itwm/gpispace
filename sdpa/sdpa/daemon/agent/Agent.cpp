@@ -20,8 +20,8 @@
 
 #include <sdpa/daemon/Job.hpp>
 #include <fhg/assert.hpp>
-
 #include <seda/StageRegistry.hpp>
+#include <sstream>
 
 namespace sdpa {
   using namespace events;
@@ -719,17 +719,17 @@ void Agent::pause(const job_id_t& jobId)
              // notify the master about the status of the job -> do this on action
          }
          catch(JobNotFoundException const &) {
-             std::string strErr("Could not find the job  ");
-             strErr+=jobId.str();
-             DMLOG (ERROR, strErr);
+             std::ostringstream osstr;
+             osstr<<"Couldn't mark the master job "<<pJob->parent()<<" as STALLED. The job was not found!";
+             DMLOG (ERROR, osstr.str());
          }
       }
    }
    catch(JobNotFoundException const &)
    {
-       std::string strErr("Could not find the job  ");
-       strErr+=jobId.str();
-       DMLOG (ERROR, strErr);
+       std::ostringstream osstr;
+       osstr<<"Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!";
+       DMLOG (ERROR, osstr.str());
    }
 
 }
@@ -747,17 +747,17 @@ void Agent::resume(const job_id_t& jobId)
              // notify the master about the status of the job -> do this on action
          }
          catch(JobNotFoundException const &) {
-             std::string strErr("Could not find the job  ");
-             strErr+=jobId.str();
-             DMLOG (ERROR, strErr);
+             std::ostringstream osstr;
+             osstr<<"Couldn't mark the master job "<<pJob->parent()<<" as RUNNING. The job was not found!";
+             DMLOG (ERROR, osstr.str());
          }
       }
    }
    catch(JobNotFoundException const &)
    {
-       std::string strErr("Could not find the job  ");
-       strErr+=jobId.str();
-       DMLOG (ERROR, strErr);
+       std::ostringstream osstr;
+       osstr<<"Couldn't mark the worker job "<<jobId<<" as RUNNING. The job was not found!";
+       DMLOG (ERROR, osstr.str());
    }
 }
 
