@@ -180,9 +180,20 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
   sdpa::job_id_t jobId = pEvt->job_id();
 
   try {
-    Job::ptr_t pJob = jobManager()->findJob(jobId);
+    Job::ptr_t pJob (jobManager()->findJob(jobId));
     //SDPA_LOG_INFO("The job "<<jobId<<" has the status "<<pJob->getStatus());
-    pJob->QueryJobStatus(pEvt, this); // should send back a message with the status
+
+    sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
+      (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
+                                             , pEvt->from()
+                                             , pJob->id()
+                                             , pJob->getStatus()
+                                             , pJob->error_code()
+                                             , pJob->error_message()
+                                             )
+      );
+
+    sendEventToMaster (pStatReply);
   }
   catch(JobNotFoundException const& ex)
   {

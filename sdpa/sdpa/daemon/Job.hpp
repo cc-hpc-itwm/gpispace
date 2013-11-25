@@ -215,7 +215,6 @@ namespace sdpa {
       void JobFinished(const sdpa::events::JobFinishedEvent*);
 
       void DeleteJob(const sdpa::events::DeleteJobEvent*, sdpa::daemon::IAgent*);
-      void QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent*);
       void RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent*);
       void Reschedule(sdpa::daemon::Scheduler*);
 

@@ -193,23 +193,6 @@ namespace sdpa {
       ptr_comm->sendEventToMaster(pDelJobReply);
     }
 
-    void Job::QueryJobStatus(const sdpa::events::QueryJobStatusEvent* pEvt, sdpa::daemon::IAgent* pDaemon )
-    {
-      lock_type const _ (mtx_);
-
-      sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
-        (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
-                                               , pEvt->from()
-                                               , id()
-                                               , getStatus()
-                                               , error_code()
-                                               , error_message()
-                                               )
-        );
-
-      pDaemon->sendEventToMaster (pStatReply);
-    }
-
     void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* ptr_comm)
     {
       lock_type lock(mtx_);
