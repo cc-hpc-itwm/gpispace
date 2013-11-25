@@ -22,7 +22,6 @@ set (hdrs
   MgmtEvent.hpp
   QueryJobStatusEvent.hpp
   RetrieveJobResultsEvent.hpp
-  RunJobEvent.hpp
   SDPAEvent.hpp
   Serialization.hpp
   SubmitJobAckEvent.hpp
