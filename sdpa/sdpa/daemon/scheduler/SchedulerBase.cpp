@@ -20,7 +20,6 @@
 
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
-#include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <boost/tokenizer.hpp>
 
 #include <cassert>
