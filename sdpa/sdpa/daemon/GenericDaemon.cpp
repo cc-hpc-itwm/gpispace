@@ -496,11 +496,6 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
   switch (error.error_code())
   {
-    case ErrorEvent::SDPA_ENOERROR:
-    {
-      // everything is fine, nothing to do
-      break;
-    }
     // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
     // 'reason' should not be reused for important information
     case ErrorEvent::SDPA_EJOBREJECTED:
