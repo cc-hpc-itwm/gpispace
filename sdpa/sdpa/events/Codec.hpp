@@ -38,6 +38,7 @@ namespace sdpa
       void initialize_archive (Archive & ar) const
       {
         boost::serialization::void_cast_register<CancelJobAckEvent, JobEvent>();
+        boost::serialization::void_cast_register<CancelJobEvent, JobEvent>();
         ar.register_type (static_cast<CancelJobAckEvent*>(NULL));
         ar.register_type (static_cast<CancelJobEvent*>(NULL));
         ar.register_type (static_cast<DeleteJobAckEvent*>(NULL));
