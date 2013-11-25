@@ -277,19 +277,6 @@ void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
                                         )
                );
   }
-  catch(std::exception const & ex)
-  {
-    DMLOG (WARN, "unexpected exception during job-deletion: " << ex.what());
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
-                                                        , e.from()
-                                                        , ErrorEvent::SDPA_EUNKNOWN
-                                                        , ex.what()
-                                                        )
-                                        )
-               );
-
-    throw;
-  }
 
   _.dont();
 }
@@ -323,10 +310,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
   {
       LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
   }
-  catch(const std::exception &ex)
-  {
-    DMLOG (WARN, "Error during request-job handling: " << ex.what());
-  }
 }
 
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
@@ -350,10 +333,6 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
   catch(const JobNotFoundException&)
   {
     LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
-  }
-  catch(const std::exception &ex)
-  {
-    DMLOG (WARN, "Error during request-job handling: " << ex.what());
   }
 }
 
@@ -467,11 +446,6 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     // the worker should register first, before posting a job request
     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, ex.what()) );
     sendEventToMaster(pErrorEvt);
-  }
-  catch(std::exception const & ex)
-  {
-    DMLOG (WARN, "Unexpected exception occured when calling 'action_submit_job' for the job "<<job_id<<": " << ex.what());
-    throw;
   }
 }
 
@@ -644,11 +618,6 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
         removeMasters(listDeadMasters);
       }
-      catch (std::exception const& ex)
-      {
-        LOG(ERROR, "STRANGE! something went wrong during worker-lookup (" << error.from() << "): " << ex.what ());
-      }
-      break;
     }
     case ErrorEvent::SDPA_EJOBEXISTS:
     {
@@ -671,10 +640,6 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
       catch(WorkerNotFoundException const &)
       {
         DMLOG (WARN, "job re-submission could not be acknowledged: worker " << worker_id << " not found!");
-      }
-      catch(std::exception const &ex)
-      {
-        DMLOG (WARN, "Unexpected exception occurred upon receiving ErrorEvent::SDPA_EJOBEXISTS: " << ex.what());
       }
 
       break;
@@ -1091,10 +1056,6 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
   catch( const AlreadyHasCpbException& ex )
   {
   }
-  catch( const std::exception& ex)
-  {
-    DMLOG (WARN, "Unexpected exception ("<<ex.what()<<") occurred when trying to add new capabilities to the worker "<<worker_id);
-  }
 }
 
 void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent* pCpbLostEvt)
@@ -1120,22 +1081,12 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
   {
     DMLOG (WARN, "Could not remove the specified capabilities. The worker "<<worker_id<<" was not found!");
   }
-  catch( const std::exception& ex)
-  {
-    DMLOG (WARN, "Unexpected exception ("<<ex.what()<<") occurred when trying to remove some capabilities of the worker "<<worker_id);
-  }
 }
 
 void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt )
 {
   DMLOG(TRACE, "Received subscribe event!");
-  try {
-    subscribe(pEvt->subscriber(), pEvt->listJobIds());
-  }
-  catch(const std::exception& exc)
-  {
-    DMLOG (WARN, "An exception occurred when "<<pEvt->subscriber()<<" attempted to subscribe: "<<exc.what());
-  }
+  subscribe(pEvt->subscriber(), pEvt->listJobIds());
 }
 
 void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)

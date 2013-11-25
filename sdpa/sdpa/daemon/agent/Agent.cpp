@@ -59,7 +59,6 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
   if( !hasWorkflowEngine() )
   {
-    try {
       // forward it up
       JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
                                                                   , pJob->owner()
@@ -69,19 +68,12 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
       // send the event to the master
       sendEventToMaster(pEvtJobFinished);
-    }
-    catch(std::exception const & ex)
-    {
-      SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-      throw;
-    }
   }
   else
   {
     Worker::worker_id_t worker_id = pEvt->from();
     id_type actId = pEvt->job_id();
 
-    try {
       result_type output = pEvt->result();
 
       // update the status of the reservation
@@ -133,11 +125,6 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
           SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
           throw;
       }
-    }
-    catch(std::exception const & ex)
-    {
-        SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-    }
   }
 }
 
@@ -159,7 +146,6 @@ bool Agent::finished(const id_type& wfid, const result_type & result)
     return false;
   }
 
-  try {
     // forward it up
     JobFinishedEvent::Ptr pEvtJobFinished
                   (new JobFinishedEvent( name()
@@ -206,12 +192,6 @@ bool Agent::finished(const id_type& wfid, const result_type & result)
         sendEventToMaster(ptrEvt);
       }
     }
-  }
-  catch(std::exception const & ex)
-  {
-    SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-    return false;
-  }
 
   return true;
 }
@@ -260,7 +240,6 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
 
   if( !hasWorkflowEngine() )
   {
-      try {
       // forward it up
       JobFailedEvent::Ptr pEvtJobFailed
         (new JobFailedEvent ( name()
@@ -273,18 +252,11 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
 
       // send the event to the master
       sendEventToMaster(pEvtJobFailed);
-    }
-    catch(std::exception const & ex)
-    {
-      SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-      throw ex;
-    }
   }
   else
   {
     Worker::worker_id_t worker_id = pEvt->from();
 
-    try {
       id_type actId = pEvt->job_id();
 
       // this  should only  be called  once, therefore
@@ -343,12 +315,6 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
           throw ex;
         }
       }
-    }
-    catch(std::exception const & ex)
-    {
-      SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-      throw ex;
-    }
   }
 }
 
@@ -373,7 +339,6 @@ bool Agent::failed( const id_type& wfid
     return false;
   }
 
-  try {
     // forward it up
     JobFailedEvent::Ptr pEvtJobFailed
       (new JobFailedEvent ( name()
@@ -421,12 +386,6 @@ bool Agent::failed( const id_type& wfid
         sendEventToMaster(ptrEvt);
       }
     }
-  }
-  catch(std::exception const & ex)
-  {
-    SDPA_LOG_ERROR("Unexpected exception occurred: " << ex.what());
-    return false;
-  }
 
   return true;
 }
@@ -629,15 +588,9 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     scheduler()->workerCanceled(worker_id, actId);
     bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
 
-    try {
         if(bTaskGroupComputed) {
             workflowEngine()->canceled(pEvt->job_id());
         }
-    }
-    catch (std::exception const & ex)
-    {
-      LOG(ERROR, "could not cancel job on the workflow engine: " << ex.what());
-    }
 
     try {
 
