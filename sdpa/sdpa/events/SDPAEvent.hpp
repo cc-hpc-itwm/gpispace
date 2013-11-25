@@ -47,7 +47,10 @@ namespace sdpa
         , to_()
       {}
 
-      SDPAEvent (const address_t& from, const address_t& to);
+      SDPAEvent (const address_t & a_from, const address_t &a_to)
+        : from_ (a_from)
+        , to_ (a_to)
+      {}
 
     private:
       address_t from_;
