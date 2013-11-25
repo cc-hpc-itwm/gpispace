@@ -13,10 +13,6 @@ namespace sdpa
     public:
       typedef sdpa::shared_ptr<CapabilitiesGainedEvent> Ptr;
 
-      CapabilitiesGainedEvent()
-        : MgmtEvent()
-      {}
-
       CapabilitiesGainedEvent
         ( const address_t& from
         , const address_t& to
@@ -53,15 +49,21 @@ namespace sdpa
 
     private:
       sdpa::capabilities_set_t capabilities_;
-
-      friend class boost::serialization::access;
-      template <class Archive>
-        void serialize (Archive & ar, unsigned int)
-      {
-        ar & boost::serialization::base_object<MgmtEvent> (*this);
-        ar & capabilities_;
-      }
     };
+
+    SAVE_CONSTRUCT_DATA_DEF (CapabilitiesGainedEvent, e)
+    {
+      SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->capabilities());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (CapabilitiesGainedEvent, e)
+    {
+      LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+      LOAD_FROM_ARCHIVE (sdpa::capabilities_set_t, capabilities);
+
+      ::new (e) CapabilitiesGainedEvent (from, to, capabilities);
+    }
   }
 }
 
