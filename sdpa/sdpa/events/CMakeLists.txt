@@ -19,7 +19,6 @@ set (hdrs
   JobStalledEvent.hpp
   JobResultsReplyEvent.hpp
   JobStatusReplyEvent.hpp
-  LifeSignEvent.hpp
   MgmtEvent.hpp
   QueryJobStatusEvent.hpp
   RetrieveJobResultsEvent.hpp
