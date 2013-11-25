@@ -37,10 +37,15 @@ namespace sdpa
       template <class Archive>
       void initialize_archive (Archive & ar) const
       {
-        boost::serialization::void_cast_register<CancelJobAckEvent, JobEvent>();
-        boost::serialization::void_cast_register<CancelJobEvent, JobEvent>();
-        ar.register_type (static_cast<CancelJobAckEvent*>(NULL));
-        ar.register_type (static_cast<CancelJobEvent*>(NULL));
+#define REGISTER(TYPE, BASE)                                            \
+        boost::serialization::void_cast_register<TYPE, BASE>();         \
+        ar.template register_type<TYPE>()
+
+        REGISTER (CancelJobAckEvent, JobEvent);
+        REGISTER (CancelJobEvent, JobEvent);
+
+#undef REGISTER
+
         ar.register_type (static_cast<DeleteJobAckEvent*>(NULL));
         ar.register_type (static_cast<DeleteJobEvent*>(NULL));
         ar.register_type (static_cast<ErrorEvent*>(NULL));
