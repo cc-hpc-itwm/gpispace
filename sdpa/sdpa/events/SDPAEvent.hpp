@@ -1,16 +1,14 @@
 #ifndef SDPA_EVENT_HPP
 #define SDPA_EVENT_HPP 1
 
-#include <string>
-
-#include <sdpa/logging.hpp>
-#include <seda/IEvent.hpp>
-#include <sdpa/memory.hpp>
 #include <sdpa/events/EventHandler.hpp>
+#include <sdpa/memory.hpp>
 
-#include <boost/system/error_code.hpp>
+#include <seda/IEvent.hpp>
+
 #include <boost/serialization/access.hpp>
-#include <boost/serialization/assume_abstract.hpp>
+
+#include <string>
 
 namespace sdpa
 {
