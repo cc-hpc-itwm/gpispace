@@ -658,17 +658,13 @@ void Agent::pause(const job_id_t& jobId)
              // notify the master about the status of the job -> do this on action
          }
          catch(JobNotFoundException const &) {
-             std::ostringstream osstr;
-             osstr<<"Couldn't mark the master job "<<pJob->parent()<<" as STALLED. The job was not found!";
-             DMLOG (ERROR, osstr.str());
+             DMLOG (WARN, "Couldn't mark the master job "<<pJob->parent()<<" as STALLED. The job was not found!");
          }
       }
    }
    catch(JobNotFoundException const &)
    {
-       std::ostringstream osstr;
-       osstr<<"Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!";
-       DMLOG (ERROR, osstr.str());
+       DMLOG (ERROR, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
    }
 
 }
@@ -686,17 +682,13 @@ void Agent::resume(const job_id_t& jobId)
              // notify the master about the status of the job -> do this on action
          }
          catch(JobNotFoundException const &) {
-             std::ostringstream osstr;
-             osstr<<"Couldn't mark the master job "<<pJob->parent()<<" as RUNNING. The job was not found!";
-             DMLOG (ERROR, osstr.str());
+             DMLOG (WARN, "Couldn't mark the master job "<<pJob->parent()<<" as RUNNING. The job was not found!");
          }
       }
    }
    catch(JobNotFoundException const &)
    {
-       std::ostringstream osstr;
-       osstr<<"Couldn't mark the worker job "<<jobId<<" as RUNNING. The job was not found!";
-       DMLOG (ERROR, osstr.str());
+       DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as RUNNING. The job was not found!");
    }
 }
 
