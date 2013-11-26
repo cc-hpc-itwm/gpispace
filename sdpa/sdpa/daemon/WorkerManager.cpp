@@ -337,8 +337,8 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
   if( worker_map_.empty() )
     throw NoWorkerFoundException();
 
-  sdpa::util::time_type last_schedule_time = sdpa::util::now();
-  worker_id_t bestMatchingWorkerId;
+  boost::optional<sdpa::util::time_type> last_schedule_time;
+  boost::optional<worker_id_t> bestMatchingWorkerId;
   int maxMatchingDeg = -1;
 
   BOOST_FOREACH( sdpa::worker_id_t& workerId, workerList )
@@ -364,7 +364,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
   }
 
   return (maxMatchingDeg != -1)
-    ? bestMatchingWorkerId
+    ? *bestMatchingWorkerId
     : throw NoWorkerFoundException();
 }
 
