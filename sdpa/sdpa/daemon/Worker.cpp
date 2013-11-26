@@ -150,13 +150,13 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 bool Worker::hasCapability(const std::string& cpbName)
 {
   lock_type lock(mtx_);
-  bool bHasCpb = false;
-  for( sdpa::capabilities_set_t::iterator it = capabilities_.begin();!bHasCpb && it != capabilities_.end();it++ ) {
+
+  for( sdpa::capabilities_set_t::iterator it = capabilities_.begin();it != capabilities_.end();it++ ) {
     if(it->name() == cpbName)
-      bHasCpb = true;
+      return true;
   }
 
-  return bHasCpb;
+  return false;
 }
 
 void Worker::reserve()
