@@ -287,20 +287,21 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
 {
   lock_type lock(mtx_);
 
-  for( worker_map_t::iterator it_worker = worker_map_.begin(); it_worker != worker_map_.end(); it_worker++ )
+  BOOST_FOREACH (Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values)
   {
-    sdpa::capabilities_set_t workerCpbSet = it_worker->second->capabilities();
-    for(sdpa::capabilities_set_t::iterator itw_cpbs = workerCpbSet.begin(); itw_cpbs != workerCpbSet.end();  itw_cpbs++  )
+    BOOST_FOREACH (sdpa::capability_t capability, worker->capabilities())
     {
-      sdpa::capabilities_set_t::iterator itag_cpbs = agentCpbSet.find(*itw_cpbs);
-      if(itag_cpbs == agentCpbSet.end())
+      const sdpa::capabilities_set_t::iterator itag_cpbs
+        (agentCpbSet.find (capability));
+      if (itag_cpbs == agentCpbSet.end())
       {
-        agentCpbSet.insert(*itw_cpbs);
-        continue;
+        agentCpbSet.insert (capability);
       }
-
-      if(itag_cpbs->depth() > itw_cpbs->depth())
-        const_cast<sdpa::capability_t&>(*itag_cpbs).setDepth(itw_cpbs->depth());
+      else
+      {
+        if (itag_cpbs->depth() > capability.depth())
+          const_cast<sdpa::capability_t&>(*itag_cpbs).setDepth(itw_cpbs->depth());
+      }
     }
   }
 }
