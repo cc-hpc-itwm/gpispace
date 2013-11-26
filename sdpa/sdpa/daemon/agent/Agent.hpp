@@ -82,6 +82,10 @@ namespace sdpa {
         {
           ptr_scheduler_ = Scheduler::ptr_t (new CoallocationScheduler (this));
         }
+        CoallocationScheduler::ptr_t scheduler() const
+        {
+          return boost::static_pointer_cast<CoallocationScheduler> (ptr_scheduler_);
+        }
 
       private:
         std::string url_;
