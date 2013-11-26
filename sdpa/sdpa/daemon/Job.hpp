@@ -54,37 +54,29 @@ namespace sdpa {
 
       struct MSMRescheduleEvent
       {
-        MSMRescheduleEvent(sdpa::daemon::SchedulerBase* pSched, const sdpa::job_id_t& id)
-        : m_pScheduler(pSched), m_jobId(id)
+        MSMRescheduleEvent(sdpa::daemon::SchedulerBase* pSched)
+        : m_pScheduler(pSched)
         {}
         sdpa::daemon::SchedulerBase* ptrScheduler() const { return m_pScheduler; }
-        sdpa::job_id_t jobId() const { return m_jobId; }
       private:
         sdpa::daemon::SchedulerBase* m_pScheduler;
-        sdpa::job_id_t m_jobId;
       };
       struct MSMStalledEvent{
-        MSMStalledEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId, const sdpa::worker_id_t& jobOwner)
-          : m_pAgent(pAgent), m_jobId(jobId), m_jobOwner (jobOwner) {}
+        MSMStalledEvent(sdpa::daemon::IAgent* pAgent)
+          : m_pAgent(pAgent)
+        {}
         sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
-        sdpa::job_id_t jobId() const { return m_jobId; }
-        sdpa::worker_id_t jobOwner() const { return m_jobOwner; }
       private:
         sdpa::daemon::IAgent* m_pAgent;
-        sdpa::job_id_t m_jobId;
-        sdpa::worker_id_t m_jobOwner;
       };
       struct MSMResumeJobEvent
       {
-        MSMResumeJobEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId, const sdpa::worker_id_t& jobOwner)
-          : m_pAgent(pAgent), m_jobId(jobId), m_jobOwner (jobOwner)  {}
+        MSMResumeJobEvent(sdpa::daemon::IAgent* pAgent)
+          : m_pAgent(pAgent)
+        {}
         sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
-        sdpa::job_id_t jobId() const { return m_jobId; }
-        sdpa::worker_id_t jobOwner() const { return m_jobOwner; }
       private:
         sdpa::daemon::IAgent* m_pAgent;
-        sdpa::job_id_t m_jobId;
-        sdpa::worker_id_t m_jobOwner;
       };
 
       struct MSMDeleteJobEvent
@@ -94,7 +86,6 @@ namespace sdpa {
         {}
         sdpa::events::SDPAEvent::address_t to() const { return m_pDelEvt->from();}
         sdpa::events::SDPAEvent::address_t from() const { return m_pDelEvt->to();}
-        job_id_t jobId() const { return m_pDelEvt->job_id(); }
         sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
       private:
         const sdpa::events::DeleteJobEvent* m_pDelEvt;
@@ -103,18 +94,15 @@ namespace sdpa {
 
       struct MSMRetrieveJobResultsEvent
       {
-        MSMRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* pAgent, const sdpa::job_result_t& result)
-        : m_pRetResEvt(pEvt), m_pAgent(pAgent), m_strResult(result)
+        MSMRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* pAgent)
+        : m_pRetResEvt(pEvt), m_pAgent(pAgent)
         {}
         sdpa::events::SDPAEvent::address_t to() const { return m_pRetResEvt->from();}
         sdpa::events::SDPAEvent::address_t from() const { return m_pRetResEvt->to();}
-        job_id_t jobId() const { return m_pRetResEvt->job_id(); }
         sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
-        const sdpa::job_result_t result() const { return m_strResult; }
       private:
         const sdpa::events::RetrieveJobResultsEvent* m_pRetResEvt;
         sdpa::daemon::IAgent* m_pAgent;
-        const sdpa::job_result_t m_strResult;
       };
 
 
@@ -123,11 +111,11 @@ namespace sdpa {
 
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&) = 0;
       virtual void action_job_finished(const sdpa::events::JobFinishedEvent&) = 0;
-      virtual void action_reschedule_job(const MSMRescheduleEvent& evt);
-      virtual void action_job_stalled(const MSMStalledEvent& evt);
-      virtual void action_resume_job(const MSMResumeJobEvent& evt);
-      virtual void action_delete_job(const MSMDeleteJobEvent&);
-      virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent& evt);
+      virtual void action_reschedule_job(const MSMRescheduleEvent&) = 0;
+      virtual void action_job_stalled(const MSMStalledEvent&) = 0;
+      virtual void action_resume_job(const MSMResumeJobEvent&) = 0;
+      virtual void action_delete_job(const MSMDeleteJobEvent&) = 0;
+      virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&) = 0;
 
       typedef JobFSM_ sm; // makes transition table cleaner
 
@@ -194,7 +182,11 @@ namespace sdpa {
       template <class FSM, class Event>
       void no_transition(Event const& e, FSM&, int state)
       {
-        DLOG(WARN, "no transition from state "<< sdpa::status::show(state_code(state)) << " on event " << typeid(e).name());
+        throw std::runtime_error ( "no transition from state "
+                                 + sdpa::status::show(state_code(state))
+                                 + " on event "
+                                 + typeid(e).name()
+                                 );
       }
     };
 
@@ -221,9 +213,6 @@ namespace sdpa {
       int error_code() const;
       std::string error_message () const;
 
-      Job& error_code(int ec);
-      Job& error_message(std::string const &msg);
-
       bool isMasterJob() const;
 
       void set_owner(const sdpa::worker_id_t& owner);
@@ -237,8 +226,11 @@ namespace sdpa {
       // job FSM actions
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
       virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
-
-      void setResult(const sdpa::job_result_t& arg_results);
+      virtual void action_reschedule_job(const MSMRescheduleEvent&);
+      virtual void action_job_stalled(const MSMStalledEvent&);
+      virtual void action_resume_job(const MSMResumeJobEvent&);
+      virtual void action_delete_job(const MSMDeleteJobEvent&);
+      virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&);
 
       //transitions
       void CancelJob(const sdpa::events::CancelJobEvent*);
