@@ -54,8 +54,6 @@ SchedulerBase::~SchedulerBase()
 
   if (m_thread_feed.joinable() )
     m_thread_feed.join();
-
-  pending_jobs_queue_.clear();
 }
 
 
