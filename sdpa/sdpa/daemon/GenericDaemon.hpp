@@ -217,6 +217,7 @@ namespace sdpa {
 
     protected:
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
+      //! \todo type of Scheduler should be template parameter
       virtual void createScheduler() = 0;
 
       // data members
