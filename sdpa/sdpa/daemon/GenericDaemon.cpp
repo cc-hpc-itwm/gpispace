@@ -267,27 +267,7 @@ void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
 
 void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId )
 {
-  //take a job from the workers' queue and serve it
-  DMLOG(TRACE, "Assign the job "<<jobId<<" to the worker '"<<worker_id);
-
-  const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
-  if(ptrJob)
-  {
-    DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
-
-    // create a SubmitJobEvent for the job job_id serialize and attach description
-    sdpa::worker_id_list_t worker_list(1,worker_id);
-    LOG(TRACE, "Submit the job "<<ptrJob->id()<<" to the worker " << worker_id);
-    LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
-    SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), "", worker_list));
-
-    // Post a SubmitJobEvent to the slave who made the request
-    sendEventToSlave(pSubmitEvt);
-  }
-  else
-  {
-      DMLOG (WARN, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
-  }
+  serveJob (sdpa::worker_id_list_t (1, worker_id), jobId);
 }
 
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
