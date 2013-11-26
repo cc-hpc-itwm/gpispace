@@ -99,24 +99,28 @@ namespace sdpa {
       return result_;
     }
 
-    int Job::error_code() const
+    int Job::error_code()
     {
+      lock_type lock(mtx_);
       return m_error_code;
     }
 
-    std::string Job::error_message () const
+    std::string Job::error_message ()
     {
+      lock_type lock(mtx_);
       return m_error_message;
     }
 
     Job& Job::error_code(int ec)
     {
+      lock_type lock(mtx_);
       m_error_code = ec;
       return *this;
     }
 
     Job& Job::error_message(std::string const &msg)
     {
+      lock_type lock(mtx_);
       m_error_message = msg;
       return *this;
     }

@@ -217,8 +217,8 @@ namespace sdpa {
       const sdpa::job_desc_t& description() const;
       const sdpa::job_result_t& result() const;
 
-      int error_code() const;
-      std::string error_message () const;
+      int error_code();
+      std::string error_message ();
 
       Job& error_code(int ec);
       Job& error_message(std::string const &msg);
