@@ -51,14 +51,14 @@ JobManager::~JobManager()
 }
 
 //helpers
-Job::ptr_t& JobManager::findJob(const sdpa::job_id_t& job_id ) throw(JobNotFoundException)
+Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id )
 {
   lock_type lock(mtx_);
   job_map_t::iterator it = job_map_.find( job_id );
   if( it != job_map_.end() )
     return it->second;
   else
-    throw JobNotFoundException( job_id );
+    return NULL;
 }
 
 void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob, const job_requirements_t& job_req_list ) throw(JobNotAddedException)

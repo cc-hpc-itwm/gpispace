@@ -41,7 +41,7 @@ namespace sdpa {
       JobManager(const std::string& str="");
       virtual ~JobManager();
 
-      Job::ptr_t& findJob(const sdpa::job_id_t& ) throw (JobNotFoundException) ;
+      Job::ptr_t findJob(const sdpa::job_id_t& );
       void addJob(const sdpa::job_id_t&, const Job::ptr_t&, const job_requirements_t& job_req_list = job_requirements_t() ) throw(JobNotAddedException) ;
       void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
 

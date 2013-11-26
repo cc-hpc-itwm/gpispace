@@ -38,7 +38,7 @@ namespace sdpa {
     virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e) = 0;
     virtual void requestRegistration(const MasterInfo& masterInfo) = 0;
 
-    virtual Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const = 0;
+    virtual Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const = 0;
     virtual void deleteJob(const sdpa::job_id_t& ) = 0;
     virtual bool hasJobs() = 0;
 

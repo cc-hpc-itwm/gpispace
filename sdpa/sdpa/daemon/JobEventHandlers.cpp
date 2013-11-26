@@ -46,18 +46,42 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
   DLOG(TRACE, "handleSubmitJobAckEvent: " << pEvent->job_id() << " from " << pEvent->from());
 
   Worker::worker_id_t worker_id = pEvent->from();
-  try {
-    // Only, now should be state of the job updated to RUNNING
-    // since it was not rejected, no error occurred etc ....
-    //find the job ptrJob and call
-    Job::ptr_t ptrJob = jobManager()->findJob(pEvent->job_id());
+  // Only, now should be state of the job updated to RUNNING
+  // since it was not rejected, no error occurred etc ....
+  //find the job ptrJob and call
+  Job::ptr_t ptrJob = jobManager()->findJob(pEvent->job_id());
+  if(ptrJob)
+  {
+      try
+      {
+        ptrJob->Dispatch();
+        scheduler()->acknowledgeJob(worker_id, pEvent->job_id());
+      }
+      catch(WorkerNotFoundException const &ex1)
+      {
+        DMLOG ( WARN,  "job " << pEvent->job_id()
+              << " could not be acknowledged:"
+              << " worker " << worker_id
+              << " not found!"
+              );
 
-    ptrJob->Dispatch();
+        // the worker should register first, before posting a job request
+        ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
+        sendEventToSlave(pErrorEvt);
+      }
+      catch(std::exception const &ex2)
+      {
+        SDPA_LOG_ERROR( "Unexpected exception during "
+                        << " handleSubmitJobAckEvent("<< pEvent->job_id() << ")"
+                        << ": "
+                        << ex2.what()
+                        );
 
-    scheduler()->acknowledgeJob(worker_id, pEvent->job_id());
-
+        ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()) );
+        sendEventToMaster(pErrorEvt);
+      }
   }
-  catch(JobNotFoundException const &ex0)
+  else
   {
     SDPA_LOG_ERROR( "job " << pEvent->job_id()
                         << " could not be acknowledged:"
@@ -65,30 +89,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
                         << " not found!"
                         );
 
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, ex0.what()) );
-    sendEventToMaster(pErrorEvt);
-  }
-  catch(WorkerNotFoundException const &ex1)
-  {
-    DMLOG ( WARN,  "job " << pEvent->job_id()
-          << " could not be acknowledged:"
-          << " worker " << worker_id
-          << " not found!"
-          );
-
-    // the worker should register first, before posting a job request
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-    sendEventToSlave(pErrorEvt);
-  }
-  catch(std::exception const &ex2)
-  {
-    SDPA_LOG_ERROR( "Unexpected exception during "
-                    << " handleSubmitJobAckEvent("<< pEvent->job_id() << ")"
-                    << ": "
-                    << ex2.what()
-                    );
-
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()) );
+    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, "Could not acknowledge job") );
     sendEventToMaster(pErrorEvt);
   }
 }
@@ -100,40 +101,40 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
   // therefore, I can delete the job from the job map
   ostringstream os;
   Worker::worker_id_t worker_id = pEvt->from();
+  DMLOG (TRACE, "Got acknowledgment for the finished job " << pEvt->job_id() << "!");
 
-  try {
-    DMLOG (TRACE, "Got acknowledgment for the finished job " << pEvt->job_id() << "!");
-
-    jobManager()->findJob(pEvt->job_id());
-
-    DMLOG (TRACE, "Delete the job " << pEvt->job_id() << " from the JobManager!");
-    // delete it from the map when you receive a JobFinishedAckEvent!
-    jobManager()->deleteJob(pEvt->job_id());
-  }
-  catch(JobNotFoundException const &ex0)
+  if(jobManager()->findJob(pEvt->job_id()))
   {
-    SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
+    try {
+      DMLOG (TRACE, "Delete the job " << pEvt->job_id() << " from the JobManager!");
+      // delete it from the map when you receive a JobFinishedAckEvent!
+      jobManager()->deleteJob(pEvt->job_id());
+    }
+    catch(JobNotDeletedException const & ex1)
+    {
+      SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
 
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, ex0.what()) );
-    sendEventToMaster(pErrorEvt);
+      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
+      sendEventToMaster(pErrorEvt);
+    }
+    catch(std::exception const &ex2)
+    {
+      SDPA_LOG_ERROR( "Unexpected exception during "
+                      << " handleJobFinishedAckEvent("<< pEvt->job_id() << ")"
+                      << ": "
+                      << ex2.what()
+                     );
+
+      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
+      sendEventToMaster(pErrorEvt);
+    }
   }
-  catch(JobNotDeletedException const & ex1)
+  else
   {
-    SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
+     SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
-    sendEventToMaster(pErrorEvt);
-  }
-  catch(std::exception const &ex2)
-  {
-    SDPA_LOG_ERROR( "Unexpected exception during "
-                    << " handleJobFinishedAckEvent("<< pEvt->job_id() << ")"
-                    << ": "
-                    << ex2.what()
-                   );
-
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
-    sendEventToMaster(pErrorEvt);
+     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
+     sendEventToMaster(pErrorEvt);
   }
 }
 
@@ -143,34 +144,36 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
   ostringstream os;
   Worker::worker_id_t worker_id = pEvt->from();
 
-  try {
-    jobManager()->findJob(pEvt->job_id());
-    // delete it from the map when you receive a JobFailedAckEvent!
-    jobManager()->deleteJob(pEvt->job_id());
+  if(jobManager()->findJob(pEvt->job_id()))
+  {
+    try {
+        // delete it from the map when you receive a JobFailedAckEvent!
+        jobManager()->deleteJob(pEvt->job_id());
+    }
+    catch(JobNotDeletedException const & ex1)
+    {
+      SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
+
+      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
+      sendEventToMaster(pErrorEvt);
+    }
+    catch(std::exception const &ex2)
+    {
+      SDPA_LOG_ERROR( "Unexpected exception during "
+                      << " handleJobFinishedAckEvent("<< pEvt->job_id() << ")"
+                      << ": "
+                      << ex2.what()
+                     );
+
+      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
+      sendEventToMaster(pErrorEvt);
+    }
   }
-   catch(JobNotFoundException const &ex0)
+  else
   {
     SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, ex0.what()) );
-    sendEventToMaster(pErrorEvt);
-  }
-  catch(JobNotDeletedException const & ex1)
-  {
-    SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
-
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
-    sendEventToMaster(pErrorEvt);
-  }
-  catch(std::exception const &ex2)
-  {
-    SDPA_LOG_ERROR( "Unexpected exception during "
-                    << " handleJobFinishedAckEvent("<< pEvt->job_id() << ")"
-                    << ": "
-                    << ex2.what()
-                   );
-
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
+    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
     sendEventToMaster(pErrorEvt);
   }
 }
@@ -179,42 +182,42 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 {
   sdpa::job_id_t jobId = pEvt->job_id();
 
-  try {
-    Job::ptr_t pJob (jobManager()->findJob(jobId));
-    //SDPA_LOG_INFO("The job "<<jobId<<" has the status "<<pJob->getStatus());
-
-    sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
-      (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
-                                             , pEvt->from()
-                                             , pJob->id()
-                                             , pJob->getStatus()
-                                             , pJob->error_code()
-                                             , pJob->error_message()
-                                             )
+  Job::ptr_t pJob (jobManager()->findJob(jobId));
+  if(pJob)
+  {
+      sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
+        (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
+                                               , pEvt->from()
+                                               , pJob->id()
+                                               , pJob->getStatus()
+                                               , pJob->error_code()
+                                               , pJob->error_message()
+                                               )
       );
 
-    sendEventToMaster (pStatReply);
+      sendEventToMaster (pStatReply);
   }
-  catch(JobNotFoundException const& ex)
+  else
   {
-    SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
+      SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, ex.what()) );
-    sendEventToMaster(pErrorEvt);
+      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
+      sendEventToMaster(pErrorEvt);
   }
 }
 
 void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
 {
-  try {
-    Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  if(pJob)
+  {
     pJob->RetrieveJobResults(pEvt, this);
   }
-  catch(JobNotFoundException const& ex)
+  else
   {
     SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, ex.what()) );
+    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
     sendEventToMaster(pErrorEvt);
   }
 }

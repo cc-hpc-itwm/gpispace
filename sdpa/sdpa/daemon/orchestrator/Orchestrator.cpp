@@ -27,8 +27,6 @@ using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 
-namespace sdpa {
-  namespace daemon {
 
 template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
@@ -73,14 +71,14 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   }
 
   //put the job into the state Finished or Cancelled
-  Job::ptr_t pJob;
-  try {
-      pJob = jobManager()->findJob(pEvt->job_id());
+  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  if(pJob)
+  {
       DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus()<<". Change its status to \"SDPA::Finished\"!");
       pJob->JobFinished(pEvt);
       DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
   }
-  catch(JobNotFoundException const &)
+  else
   {
       SDPA_LOG_WARN( "got finished message for old Job "<< pEvt->job_id());
       // decided to keep it, until the client explicitly request to delete it  or a garbage collector will remove it
@@ -155,13 +153,13 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   }
 
   //put the job into the state Failed or Cancelled
-  Job::ptr_t pJob;
-  try {
-      pJob = jobManager()->findJob(pEvt->job_id());
+  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  if(pJob)
+  {
       pJob->JobFailed(pEvt);
       SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
   }
-  catch(const JobNotFoundException &)
+  else
   {
       SDPA_LOG_WARN( "got failed message for old Job "<< pEvt->job_id());
       // decided to keep it, until the client explicitly request to delete it  or a garbage collector will remove it
@@ -211,19 +209,17 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
 void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
-  try
+  sdpa::job_id_t jobId = evt.job_id();
+  Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
+  if(pJob)
   {
-    sdpa::job_id_t jobId = evt.job_id();
-    Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
-
     DMLOG (TRACE, "Canceling the pending job "<<jobId<<" ... ");
-
     pJob->CancelJob(&evt);
     ptr_scheduler_->delete_job (jobId);
   }
-  catch(const JobNotFoundException &ex1)
+  else
   {
-    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be canceled! Exception occurred: "<<ex1.what());
+    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be canceled! Exception occurred: Couldn't find the job "<<jobId);
   }
 }
 
@@ -231,22 +227,21 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
   Job::ptr_t pJob;
 
-  try
+  pJob = ptr_job_man_->findJob(pEvt->job_id());
+  if(pJob)
   {
-    pJob = ptr_job_man_->findJob(pEvt->job_id());
+      // send immediately an acknowledgment to the component that requested the cancellation
+      CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
 
-    // send immediately an acknowledgment to the component that requested the cancellation
-    CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
+      if(!isSubscriber(pJob->owner()))
+        sendEventToMaster(pCancelAckEvt);
 
-    if(!isSubscriber(pJob->owner()))
-      sendEventToMaster(pCancelAckEvt);
-
-    notifySubscribers(pCancelAckEvt);
+      notifySubscribers(pCancelAckEvt);
   }
-  catch(const JobNotFoundException &)
+  else
   {
-    SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
-    return;
+      SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
+      return;
   }
 
   try
@@ -276,57 +271,46 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
 void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 {
-  assert (pEvt);
-
   DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
-  try
+  Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
+  if(pJob)
   {
-      Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
-
-        // update the job status to "Canceled"
-        pJob->CancelJobAck(pEvt);
-        SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
-    }
-    catch (std::exception const & ex)
-    {
-        LOG(WARN, "could not find job: " << ex.what());
-        return;
-    }
-
+    // update the job status to "Canceled"
+    pJob->CancelJobAck(pEvt);
+    SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
     // just send an acknowledgment to the master
     // send an acknowledgment to the component that requested the cancellation
     CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
-
     notifySubscribers(pCancelAckEvt);
-}
+    return;
   }
+
+  DMLOG(WARN, "could not find job: " << pEvt->job_id());
 }
 
 void Orchestrator::pause(const job_id_t& jobId)
 {
-  try {
-      Job::ptr_t pJob(findJob(jobId));
-      pJob->Pause(NULL);
-   }
-   catch(JobNotFoundException const &)
-   {
-       DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
-   }
+  Job::ptr_t pJob(jobManager()->findJob(jobId));
+  if(pJob)
+  {
+    pJob->Pause(NULL);
+    return;
+  }
 
+  DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
 }
 
 void Orchestrator::resume(const job_id_t& jobId)
 {
-  try {
-      Job::ptr_t pJob(findJob(jobId));
+  Job::ptr_t pJob(jobManager()->findJob(jobId));
+  if(pJob)
+  {
       pJob->Resume(NULL);
-   }
-   catch(JobNotFoundException const &)
-   {
-       DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
-   }
+      return;
+  }
 
+  DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
 }
 
 Orchestrator::ptr_t Orchestrator::create

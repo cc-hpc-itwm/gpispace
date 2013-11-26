@@ -23,9 +23,9 @@
 #include <seda/StageRegistry.hpp>
 #include <sstream>
 
-namespace sdpa {
-  using namespace events;
-  namespace daemon {
+using namespace std;
+using namespace sdpa::daemon;
+using namespace sdpa::events;
 
 void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {
@@ -46,16 +46,14 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   sendEventToSlave(pEvtJobFinishedAckEvt);
 
   // put the job into the state Finished
-  Job::ptr_t pJob;
-  try {
-    pJob = jobManager()->findJob(pEvt->job_id());
-    pJob->JobFinished(pEvt);
-  }
-  catch(JobNotFoundException const &)
+  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  if(!pJob)
   {
-    SDPA_LOG_WARN( "got finished message for old/unknown Job "<< pEvt->job_id());
-    return;
+      SDPA_LOG_WARN( "got finished message for old/unknown Job "<< pEvt->job_id());
+      return;
   }
+
+  pJob->JobFinished(pEvt);
 
   if( !hasWorkflowEngine() )
   {
@@ -136,62 +134,59 @@ bool Agent::finished(const id_type& wfid, const result_type & result)
         "The workflow engine has notified the agent "<<name()<<" that the job "<<id.str()<<" finished!"
         );
 
-  Job::ptr_t pJob;
-  try {
-    pJob = jobManager()->findJob(id);
-  }
-  catch(JobNotFoundException const &)
+  Job::ptr_t pJob = jobManager()->findJob(id);
+  if(!pJob)
   {
     SDPA_LOG_WARN( "got finished message for old/unknown Job "<<id.str());
     return false;
   }
 
-    // forward it up
-    JobFinishedEvent::Ptr pEvtJobFinished
-                  (new JobFinishedEvent( name()
-                                       , pJob->owner()
-                                       , id
-                                       , result
-                                       )
-                  );
+  // forward it up
+  JobFinishedEvent::Ptr pEvtJobFinished
+                (new JobFinishedEvent( name()
+                                     , pJob->owner()
+                                     , id
+                                     , result
+                                     )
+                );
 
-    pJob->JobFinished(pEvtJobFinished.get());
+  pJob->JobFinished(pEvtJobFinished.get());
 
-    if(!isSubscriber(pJob->owner()))
+  if(!isSubscriber(pJob->owner()))
+  {
+    DMLOG (TRACE, "Post a JobFinished event to the master "<<pJob->owner());
+    sendEventToMaster(pEvtJobFinished);
+  }
+
+  if (m_guiService)
+  {
+    std::list<std::string> workers; workers.push_back (name());
+    const we::mgmt::type::activity_t act (pJob->description());
+    const sdpa::daemon::NotificationEvent evt
+      ( workers
+      , pJob->id().str()
+      , NotificationEvent::STATE_FINISHED
+      , act
+      );
+
+    m_guiService->notify (evt);
+  }
+
+  BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  {
+    if(subscribedFor(pair_subscr_joblist.first, id))
     {
-      DMLOG (TRACE, "Post a JobFinished event to the master "<<pJob->owner());
-      sendEventToMaster(pEvtJobFinished);
-    }
-
-    if (m_guiService)
-    {
-      std::list<std::string> workers; workers.push_back (name());
-      const we::mgmt::type::activity_t act (pJob->description());
-      const sdpa::daemon::NotificationEvent evt
-        ( workers
-        , pJob->id().str()
-        , NotificationEvent::STATE_FINISHED
-        , act
+      sdpa::events::SDPAEvent::Ptr ptrEvt
+        ( new JobFinishedEvent ( name()
+                               , pair_subscr_joblist.first
+                               , pEvtJobFinished->job_id()
+                               , pEvtJobFinished->result()
+                               )
         );
 
-      m_guiService->notify (evt);
+      sendEventToMaster(ptrEvt);
     }
-
-    BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
-    {
-      if(subscribedFor(pair_subscr_joblist.first, id))
-      {
-        sdpa::events::SDPAEvent::Ptr ptrEvt
-          ( new JobFinishedEvent ( name()
-                                 , pair_subscr_joblist.first
-                                 , pEvtJobFinished->job_id()
-                                 , pEvtJobFinished->result()
-                                 )
-          );
-
-        sendEventToMaster(ptrEvt);
-      }
-    }
+  }
 
   return true;
 }
@@ -227,16 +222,14 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   sendEventToSlave(pEvtJobFailedAckEvt);
 
   //put the job into the state Failed
-  Job::ptr_t pJob;
-  try {
-    pJob = jobManager()->findJob(pEvt->job_id());
-    pJob->JobFailed(pEvt);
-  }
-  catch(JobNotFoundException const &)
+  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  if(!pJob)
   {
     SDPA_LOG_WARN( "got failed message for old/unknown Job "<< pEvt->job_id());
     return;
   }
+
+  pJob->JobFailed(pEvt);
 
   if( !hasWorkflowEngine() )
   {
@@ -326,63 +319,60 @@ bool Agent::failed( const id_type& wfid
         );
   //put the job into the state Failed
 
-  Job::ptr_t pJob;
-  try {
-    pJob = jobManager()->findJob(id);
-  }
-  catch(JobNotFoundException const &)
+  Job::ptr_t pJob = jobManager()->findJob(id);
+  if(!pJob)
   {
     SDPA_LOG_WARN( "got failed message for old/unknown Job "<<id.str());
     return false;
   }
 
-    // forward it up
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent ( name()
-                          , pJob->owner()
-                          , id
-                          , result
-                          , error_code
-                          , reason
-                          )
+  // forward it up
+  JobFailedEvent::Ptr pEvtJobFailed
+    (new JobFailedEvent ( name()
+                        , pJob->owner()
+                        , id
+                        , result
+                        , error_code
+                        , reason
+                        )
+    );
+
+  // send the event to the master
+  pJob->JobFailed(pEvtJobFailed.get());
+
+  if(!isSubscriber(pJob->owner()))
+    sendEventToMaster(pEvtJobFailed);
+
+  if (m_guiService)
+  {
+    std::list<std::string> workers; workers.push_back (name());
+    const we::mgmt::type::activity_t act (pJob->description());
+    const sdpa::daemon::NotificationEvent evt
+      ( workers
+      , pJob->id().str()
+      , NotificationEvent::STATE_FINISHED
+      , act
       );
 
-    // send the event to the master
-    pJob->JobFailed(pEvtJobFailed.get());
+    m_guiService->notify (evt);
+  }
 
-    if(!isSubscriber(pJob->owner()))
-      sendEventToMaster(pEvtJobFailed);
-
-    if (m_guiService)
+  BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  {
+    if(subscribedFor(pair_subscr_joblist.first, id))
     {
-      std::list<std::string> workers; workers.push_back (name());
-      const we::mgmt::type::activity_t act (pJob->description());
-      const sdpa::daemon::NotificationEvent evt
-        ( workers
-        , pJob->id().str()
-        , NotificationEvent::STATE_FINISHED
-        , act
+      JobFailedEvent::Ptr ptrEvt
+        ( new JobFailedEvent ( name()
+                             , pair_subscr_joblist.first
+                             , pEvtJobFailed->job_id()
+                             , pEvtJobFailed->result()
+                             , error_code
+                             , reason
+                             )
         );
-
-      m_guiService->notify (evt);
+      sendEventToMaster(ptrEvt);
     }
-
-    BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
-    {
-      if(subscribedFor(pair_subscr_joblist.first, id))
-      {
-        JobFailedEvent::Ptr ptrEvt
-          ( new JobFailedEvent ( name()
-                               , pair_subscr_joblist.first
-                               , pEvtJobFailed->job_id()
-                               , pEvtJobFailed->result()
-                               , error_code
-                               , reason
-                               )
-          );
-        sendEventToMaster(ptrEvt);
-      }
-    }
+  }
 
   return true;
 }
@@ -416,11 +406,11 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
   if(hasWorkflowEngine())
     workflowEngine()->canceled(evt.job_id ());
 
-  try
-  {
-    sdpa::job_id_t jobId = evt.job_id();
-    Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
+  sdpa::job_id_t jobId = evt.job_id();
+  Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
 
+  if(pJob)
+  {
     DMLOG (TRACE, "Canceling the pending job "<<jobId<<" ... ");
 
     pJob->CancelJob(&evt);
@@ -444,9 +434,9 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
       _.dont();
     }
   }
-  catch(const JobNotFoundException &ex1)
+  else
   {
-    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be canceled! Exception occurred: "<<ex1.what());
+    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be canceled! Exception occurred: couln't find it!");
   }
 }
 
@@ -475,30 +465,24 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
   Job::ptr_t pJob;
 
-  try
+  pJob = ptr_job_man_->findJob(pEvt->job_id());
+  if(!pJob)
   {
-    pJob = ptr_job_man_->findJob(pEvt->job_id());
-     if( isTop() )
-    {
-      // send immediately an acknowledgment to the component that requested the cancellation
-      CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
+      DMLOG (TRACE, "Job "<<pEvt->job_id()<<" not found!");
+      if (pEvt->from () == sdpa::daemon::WE)
+        workflowEngine()->canceled (pEvt->job_id ());
+     return;
+   }
 
-      if(!isSubscriber(pJob->owner()))
-        sendEventToMaster(pCancelAckEvt);
-
-      notifySubscribers(pCancelAckEvt);
-    }
-  }
-  catch(const JobNotFoundException &)
+  if( isTop() )
   {
-    DMLOG (TRACE, "Job "<<pEvt->job_id()<<" not found!");
+    // send immediately an acknowledgment to the component that requested the cancellation
+    CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
 
-    if (pEvt->from () == sdpa::daemon::WE)
-    {
-      workflowEngine()->canceled (pEvt->job_id ());
-    }
+    if(!isSubscriber(pJob->owner()))
+      sendEventToMaster(pCancelAckEvt);
 
-    return;
+    notifySubscribers(pCancelAckEvt);
   }
 
   if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
@@ -566,10 +550,12 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
                     );
 
     Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
-
-    // update the job status to "Canceled"
-    pJob->CancelJobAck(pEvt);
-    SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+    if(pJob)
+    {
+        // update the job status to "Canceled"
+        pJob->CancelJobAck(pEvt);
+        SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+    }
 
     _.dont();
   }
@@ -646,49 +632,40 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 }
 void Agent::pause(const job_id_t& jobId)
 {
-  try {
-      Job::ptr_t pJob(findJob(jobId));
+  Job::ptr_t pJob(jobManager()->findJob(jobId));
+  if(pJob)
+  {
       pJob->Pause(NULL);
-      if(!pJob->isMasterJob()) {
-         try {
-             Job::ptr_t pMasterJob(findJob(pJob->parent()));
-             pMasterJob->Pause(this);
-
-             // notify the master about the status of the job -> do this on action
-         }
-         catch(JobNotFoundException const &) {
-             DMLOG (WARN, "Couldn't mark the master job "<<pJob->parent()<<" as STALLED. The job was not found!");
-         }
+      if(!pJob->isMasterJob())
+      {
+          Job::ptr_t pMasterJob(jobManager()->findJob(pJob->parent()));
+          if(pMasterJob)
+            pMasterJob->Pause(this);
       }
-   }
-   catch(JobNotFoundException const &)
-   {
-       DMLOG (ERROR, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
+
+      return;
    }
 
+  DMLOG (ERROR, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
 }
 
 void Agent::resume(const job_id_t& jobId)
 {
-  try {
-      Job::ptr_t pJob(findJob(jobId));
+  Job::ptr_t pJob(jobManager()->findJob(jobId));
+  if(pJob)
+  {
       pJob->Resume(NULL);
-      if(!pJob->isMasterJob()) {
-         try {
-             Job::ptr_t pMasterJob(findJob(pJob->parent()));
-             pMasterJob->Resume(this);
-
-             // notify the master about the status of the job -> do this on action
-         }
-         catch(JobNotFoundException const &) {
-             DMLOG (WARN, "Couldn't mark the master job "<<pJob->parent()<<" as RUNNING. The job was not found!");
-         }
+      if(!pJob->isMasterJob())
+      {
+          Job::ptr_t pMasterJob(jobManager()->findJob(pJob->parent()));
+          if(pMasterJob)
+            pMasterJob->Resume(this);
       }
-   }
-   catch(JobNotFoundException const &)
-   {
-       DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as RUNNING. The job was not found!");
-   }
+
+      return;
+  }
+
+  DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as RUNNING. The job was not found!");
 }
 
 Agent::ptr_t Agent::create ( const std::string& name
@@ -711,6 +688,4 @@ Agent::ptr_t Agent::create ( const std::string& name
 
   pAgent->start_agent();
   return pAgent;
-}
-}
 }

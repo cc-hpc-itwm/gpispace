@@ -236,33 +236,34 @@ void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
                                )
                   );
 
-  try{
-    Job::ptr_t pJob = jobManager()->findJob(e.job_id());
-    pJob->DeleteJob(&e, this);
 
-    jobManager()->deleteJob(e.job_id());
-  }
-  catch(JobNotFoundException const &)
+  Job::ptr_t pJob = jobManager()->findJob(e.job_id());
+  if(pJob)
   {
-    DMLOG (WARN, "Job " << e.job_id() << " could not be found!");
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
-                                                        , e.from()
-                                                        , ErrorEvent::SDPA_EJOBNOTFOUND
-                                                        , "no such job"
-                                                        )
-                                        )
-               );
+      try{
+          pJob->DeleteJob(&e, this);
+          jobManager()->deleteJob(e.job_id());
+      }
+      catch(JobNotDeletedException const & ex)
+      {
+          DMLOG (WARN, "Job " << e.job_id() << " could not be deleted!");
+          sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                              , e.from()
+                                                              , ErrorEvent::SDPA_EUNKNOWN
+                                                              , ex.what()
+                                                            )
+                                            ));
+      }
   }
-  catch(JobNotDeletedException const & ex)
+  else
   {
-    DMLOG (WARN, "Job " << e.job_id() << " could not be deleted!");
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
-                                                        , e.from()
-                                                        , ErrorEvent::SDPA_EUNKNOWN
-                                                        , ex.what()
-                                                        )
-                                        )
-               );
+      DMLOG (WARN, "Job " << e.job_id() << " could not be found!");
+      sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                          , e.from()
+                                                          , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                          , "no such job"
+                                                         )
+                                        ));
   }
 
   _.dont();
@@ -271,17 +272,11 @@ void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
 void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId )
 {
   //take a job from the workers' queue and serve it
+  DMLOG(TRACE, "Assign the job "<<jobId<<" to the worker '"<<worker_id);
 
-  try {
-    // you should consume from the  worker's pending list; put the job into the worker's submitted list
-    //sdpa::job_id_t jobId = scheduler()->getNextJob(worker_id, last_job_id);
-	//check first if the worker exist
-	//Worker::ptr_t ptrWorker(findWorker(worker_id));
-
-    DMLOG(TRACE, "Assign the job "<<jobId<<" to the worker '"<<worker_id);
-
-    const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
-
+  const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
+  if(ptrJob)
+  {
     DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
 
     // create a SubmitJobEvent for the job job_id serialize and attach description
@@ -293,33 +288,36 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
     // Post a SubmitJobEvent to the slave who made the request
     sendEventToSlave(pSubmitEvt);
   }
-  catch(const JobNotFoundException&)
+  else
   {
-      LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
+      DMLOG (WARN, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
   }
 }
 
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
-
-  try {
-    const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
-
-    // create a SubmitJobEvent for the job job_id serialize and attach description
-    LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
-
-    BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
-    {
-      SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), "", worker_list));
-
-      // Post a SubmitJobEvent to the slave who made the request
-      sendEventToSlave(pSubmitEvt);
-    }
-  }
-  catch(const JobNotFoundException&)
+  Job::ptr_t ptrJob = jobManager()->findJob(jobId);
+  if(ptrJob)
   {
-    LOG (ERROR, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
+      // create a SubmitJobEvent for the job job_id serialize and attach description
+      LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
+
+      BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
+      {
+        SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(),
+                                                          worker_id,
+                                                          ptrJob->id(),
+                                                          ptrJob->description(),
+                                                          "",
+                                                          worker_list));
+
+        sendEventToSlave(pSubmitEvt);
+      }
+  }
+  else
+  {
+    DMLOG (WARN, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
   }
 }
 
@@ -359,8 +357,8 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
   static const JobId job_id_empty ("");
 
   // First, check if the job 'job_id' wasn't already submitted!
-  try {
-    jobManager()->findJob(e.job_id());
+  if(jobManager()->findJob(e.job_id()))
+  {
     // The job already exists -> generate an error message that the job already exists
 
     DMLOG (WARN, "The job with job-id: " << e.job_id()<<" does already exist! (possibly recovered)");
@@ -372,10 +370,8 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
 
     return;
   }
-  catch(const JobNotFoundException&)
-  {
-    DMLOG (TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
-  }
+
+  DMLOG (TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
 
   JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
   if(e.job_id() != job_id_empty)  // use the job_id already  assigned by the master
@@ -608,21 +604,25 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
       // do the same as when receiving a SubmitJobAckEvent
 
       Worker::worker_id_t worker_id = error.from();
-      try {
-        // Only now should be the job state machine make a transition to RUNNING
-        // this means that the job was not rejected, no error occurred etc ....
-        // find the job ptrJob and call
-        Job::ptr_t ptrJob = jobManager()->findJob(error.job_id());
-        ptrJob->Dispatch();
-        scheduler()->acknowledgeJob(worker_id, error.job_id());
-      }
-      catch(JobNotFoundException const& ex)
+
+      // Only now should be the job state machine make a transition to RUNNING
+      // this means that the job was not rejected, no error occurred etc ....
+      // find the job ptrJob and call
+      Job::ptr_t ptrJob = jobManager()->findJob(error.job_id());
+      if(ptrJob)
       {
-        DMLOG (WARN, "The job " << error.job_id() << " was not found on"<<name()<<"!");
+        try {
+            ptrJob->Dispatch();
+            scheduler()->acknowledgeJob(worker_id, error.job_id());
+        }
+        catch(WorkerNotFoundException const &)
+        {
+          DMLOG (WARN, "job re-submission could not be acknowledged: worker " << worker_id << " not found!");
+        }
       }
-      catch(WorkerNotFoundException const &)
+      else
       {
-        DMLOG (WARN, "job re-submission could not be acknowledged: worker " << worker_id << " not found!");
+          DMLOG (WARN, "The job " << error.job_id() << " was not found on"<<name()<<"!");
       }
 
       break;
@@ -676,26 +676,26 @@ void GenericDaemon::submit( const id_type& activityId
                                   )
                     );
 
-    try {
-        jobManager()->findJob(parent_id);
-        jobManager()->addJobRequirements(job_id, jobReqs);
+    if( jobManager()->findJob(parent_id) )
+    {
+      jobManager()->addJobRequirements(job_id, jobReqs);
 
-        // WORK HERE: limit number of maximum parallel jobs
-        jobManager()->waitForFreeSlot ();
+      // WORK HERE: limit number of maximum parallel jobs
+      jobManager()->waitForFreeSlot ();
 
-        // don't forget to set here the job's preferences
-        SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
-        sendEventToSelf(pEvtSubmitJob);
-      }
-      catch(const JobNotFoundException& ex)
-      {
-          DLOG(WARN, "Could not find the parent job "<<parent_id<<" indicated by the workflow engine in the last submission!");
-          workflowEngine()->failed( activityId
-                                  , desc
-                                  , fhg::error::UNEXPECTED_ERROR
-                                  , "Could not find the parent job "+parent_id.str()
-                                  );
-      }
+      // don't forget to set here the job's preferences
+      SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
+      sendEventToSelf(pEvtSubmitJob);
+    }
+    else
+    {
+        DLOG(WARN, "Could not find the parent job "<<parent_id<<" indicated by the workflow engine in the last submission!");
+        workflowEngine()->failed( activityId
+                                , desc
+                                , fhg::error::UNEXPECTED_ERROR
+                                , "Could not find the parent job "+parent_id.str()
+                                );
+    }
 
   _.dont();
 }
@@ -801,7 +801,7 @@ bool GenericDaemon::canceled(const id_type& workflowId)
   return true;
 }
 
-Job::ptr_t& GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
+Job::ptr_t GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
 {
   return jobManager()->findJob(job_id);
 }
@@ -1214,11 +1214,12 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   // check if the subscribed jobs are already in a terminal state
   BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
   {
-	  try {
-		  Job::ptr_t& pJob = findJob(jobId);
+    Job::ptr_t pJob = findJob(jobId);
+    if(pJob)
+    {
       switch (pJob->getStatus())
       {
-      case sdpa::status::FINISHED:
+        case sdpa::status::FINISHED:
         {
           JobFinishedEvent::Ptr pEvtJobFinished
             (new JobFinishedEvent( name()
@@ -1230,7 +1231,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
         }
         break;
 
-      case sdpa::status::FAILED:
+        case sdpa::status::FAILED:
         {
           JobFailedEvent::Ptr pEvtJobFailed
             (new JobFailedEvent( name()
@@ -1245,29 +1246,28 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
         }
         break;
 
-      case sdpa::status::CANCELED:
+        case sdpa::status::CANCELED:
         {
           CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
           sendEventToMaster(pEvtCancelJobAck);
         }
         break;
       }
-	  }
-	  catch(JobNotFoundException const &)
-	  {
-		  std::string strErr("The job ");
-		  strErr+=jobId.str();
-		  strErr+=" could not be found!";
+    }
+    else
+    {
+      std::string strErr("The job ");
+      strErr+=jobId.str();
+      strErr+=" could not be found!";
 
-		  DMLOG (ERROR, strErr);
-		  sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
-				  	  	  	  	  	  	  	  	  	  	  	  , subscriber
-				  	  	  	  	  	  	  	  	  	  	  	  , ErrorEvent::SDPA_EJOBNOTFOUND
-				  	  	  	  	  	  	  	  	  	  	  	  , strErr
-		  	  	  	  	  	  	  	  	  	  	  	  	  	  )
-                                           	   ));
-
-     }
+      DMLOG (ERROR, strErr);
+      sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                          , subscriber
+                                                          , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                          , strErr
+                                                          )
+      ));
+    }
   }
 }
 

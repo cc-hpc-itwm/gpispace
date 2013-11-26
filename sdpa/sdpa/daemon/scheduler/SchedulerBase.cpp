@@ -156,17 +156,35 @@ void SchedulerBase::delete_job (sdpa::job_id_t const & job)
 
 void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 {
-  try {
-      const Job::ptr_t& pJob = ptr_comm_handler_->findJob(jobId);
-
-      ptr_worker_man_->dispatchJob(jobId);
-      // put the job into the running state
-      pJob->Dispatch();
-      cond_feed_workers.notify_one();
-  }
-  catch(const JobNotFoundException& ex)
+  const Job::ptr_t pJob = ptr_comm_handler_->findJob(jobId);
+  if(pJob)
   {
-    sdpa::job_result_t result(ex.what());
+    try {
+        ptr_worker_man_->dispatchJob(jobId);
+        // put the job into the running state
+        pJob->Dispatch();
+        cond_feed_workers.notify_one();
+    }
+    catch (std::exception const & ex)
+    {
+      //send a JobFailed event
+      sdpa::job_result_t result(ex.what());
+
+      JobFailedEvent::Ptr pEvtJobFailed
+            (new JobFailedEvent(  m_agent_name
+                                  , m_agent_name
+                                  , jobId
+                                  , result
+                                  , fhg::error::UNEXPECTED_ERROR
+                                  , ex.what()
+                                   ));
+
+      ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
+    }
+  }
+  else
+  {
+    sdpa::job_result_t result("Inexsitent job: "+jobId.str());
 
     JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(m_agent_name
                                                          , m_agent_name
@@ -175,22 +193,6 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
                                                          , fhg::error::UNEXPECTED_ERROR
                                                          , "job could not be found"
                                                          ));
-
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
-  catch (std::exception const & ex)
-  {
-    //send a JobFailed event
-    sdpa::job_result_t result(ex.what());
-
-    JobFailedEvent::Ptr pEvtJobFailed
-          (new JobFailedEvent(  m_agent_name
-                                , m_agent_name
-                                , jobId
-                                , result
-                             , fhg::error::UNEXPECTED_ERROR
-                             , ex.what()
-                                 ));
 
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }

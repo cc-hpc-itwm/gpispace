@@ -194,7 +194,7 @@ namespace sdpa {
       void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
       // jobs
-      Job::ptr_t& findJob(const sdpa::job_id_t& job_id ) const;
+      Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& );
       std::string gen_id() { return sdpa::JobId ().str (); }
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
