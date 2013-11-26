@@ -109,33 +109,6 @@ protected:
 
     mutable mutex_type mtx_;
   };
-
-  template <typename TPtrWorker, typename TReqSet>
-  int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set, bool bOwn = false )
-  {
-    int matchingDeg = 0;
-
-    // for all job requirements
-    const requirement_list_t& listR = job_req_set.getReqList();
-    for( typename TReqSet::const_iterator it = listR.begin(); it != listR.end(); it++ )
-    {
-      //LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<it->value()<<" ... ");
-      if( pWorker->hasCapability(it->value(), bOwn ) )
-      {
-        // increase the number of matchings
-        matchingDeg++;
-      }
-      else // if the worker doesn't have the capability
-        if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
-        {
-          // At least one mandatory requirement is not fulfilled
-          return -1;
-        }
-    }
-
-    return matchingDeg;
-  }
-
 }}
 
 #endif
