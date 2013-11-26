@@ -373,14 +373,9 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     last_schedule_time = pWorker->lastScheduleTime();
   }
 
-  if(maxMatchingDeg != -1)
-  {
-      return bestMatchingWorkerId;
-  }
-  else
-  {
-      throw NoWorkerFoundException();
-  }
+  return (maxMatchingDeg != -1)
+    ? bestMatchingWorkerId
+    : throw NoWorkerFoundException();
 }
 
 Worker::worker_id_t WorkerManager::getWorkerId(unsigned int r)
