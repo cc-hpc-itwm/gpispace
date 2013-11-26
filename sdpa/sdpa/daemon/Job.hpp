@@ -220,8 +220,8 @@ namespace sdpa {
       int error_code() const;
       std::string error_message () const;
 
-      Job& error_code(int ec);
-      Job& error_message(std::string const &msg);
+      void error_code(int ec);
+      void error_message(std::string const &msg);
 
       bool isMasterJob() const;
 
