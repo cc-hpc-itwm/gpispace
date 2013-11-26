@@ -202,20 +202,17 @@ void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId ) throw (W
 bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
+
   if( common_queue_.has_item(job_id) )
   {
     return true;
   }
 
-  BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
-                | boost::adaptors::filtered
-                  (boost::bind (&Worker::has_job, _1, job_id))
-                )
-  {
-    return true;
-  }
-
-  return false;
+  return !boost::empty ( worker_map_
+                       | boost::adaptors::map_values
+                       | boost::adaptors::filtered
+                         (boost::bind (&Worker::has_job, _1, job_id))
+                       );
 }
 
 void WorkerManager::getWorkerList(sdpa::worker_id_list_t& workerList)
