@@ -35,11 +35,10 @@
 using namespace std;
 using namespace sdpa::daemon;
 
-WorkerManager::WorkerManager(): SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
-{
-  lock_type lock(mtx_);
-  iter_last_worker_ = worker_map_.end();
-}
+WorkerManager::WorkerManager()
+  : SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
+  , iter_last_worker_ (worker_map_.end())
+{}
 
 /**
  * find worker
