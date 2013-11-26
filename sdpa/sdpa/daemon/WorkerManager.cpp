@@ -355,13 +355,6 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker
     : throw NoWorkerFoundException();
 }
 
-void WorkerManager::removeWorkers()
-{
-  lock_type lock(mtx_);
-  common_queue_.clear();
-  worker_map_.clear();
-}
-
 void WorkerManager::reserveWorker(const sdpa::worker_id_t& worker_id)
 {
   findWorker (worker_id)->reserve();
