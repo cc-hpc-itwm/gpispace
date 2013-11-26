@@ -28,6 +28,9 @@
 #include <algorithm>
 #include <limits>
 
+#include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/map.hpp>
+
 using namespace std;
 using namespace sdpa::daemon;
 
@@ -57,9 +60,13 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
 {
   lock_type lock(mtx_);
 
-  for( worker_map_t::iterator it = worker_map_.begin(); it!= worker_map_.end(); it++ )
-    if( it->second->has_job(job_id) )
-      return  it->second->name();
+  BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
+                | boost::adaptors::filtered
+                  (boost::bind (&Worker::has_job, _1, job_id))
+                )
+  {
+    return worker->name();
+  }
 
   throw NoWorkerFoundException();
 }
@@ -68,9 +75,13 @@ const Worker::worker_id_t& WorkerManager::findSubmOrAckWorker(const sdpa::job_id
 {
   lock_type lock(mtx_);
 
-  for (worker_map_t::const_iterator it = worker_map_.begin(); it!= worker_map_.end(); ++it)
-    if( it->second->isJobSubmittedOrAcknowleged(job_id))
-      return it->second->name();
+  BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
+                | boost::adaptors::filtered
+                  (boost::bind (&Worker::isJobSubmittedOrAcknowleged, _1, job_id))
+                )
+  {
+    return worker->name();
+  }
 
   throw NoWorkerFoundException();
 }
