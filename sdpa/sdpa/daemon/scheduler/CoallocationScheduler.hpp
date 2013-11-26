@@ -16,7 +16,7 @@ namespace sdpa {
 
       void assignJobsToWorkers();
       void rescheduleJob(const sdpa::job_id_t& job_id );
-      void reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap) throw( WorkerReservationFailed);
+      void reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap);
       void releaseReservation(const sdpa::job_id_t& jobId);
       void getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerList);
       void printAllocationTable();

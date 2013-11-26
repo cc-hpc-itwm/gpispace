@@ -117,7 +117,7 @@ void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   }
 }
 
-void CoallocationScheduler::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap) throw( WorkerReservationFailed)
+void CoallocationScheduler::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap)
 {
   lock_type lock_table(mtx_alloc_table_);
   ptr_worker_man_->reserveWorker(matchingWorkerId);

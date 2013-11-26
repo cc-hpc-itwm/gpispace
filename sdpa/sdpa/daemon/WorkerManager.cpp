@@ -422,7 +422,7 @@ void WorkerManager::removeWorkers()
   worker_map_.clear();
 }
 
-void WorkerManager::reserveWorker(const sdpa::worker_id_t& worker_id) throw (WorkerReservationFailed)
+void WorkerManager::reserveWorker(const sdpa::worker_id_t& worker_id)
 {
   lock_type lock(mtx_);
   worker_map_t::iterator it = worker_map_.find(worker_id);
@@ -431,7 +431,7 @@ void WorkerManager::reserveWorker(const sdpa::worker_id_t& worker_id) throw (Wor
       it->second->reserve();
   }
   else
-    throw WorkerReservationFailed(worker_id);
+    throw WorkerNotFoundException(worker_id);
 }
 
 void addToList(Worker::JobQueue* pQueue, sdpa::job_id_list_t& jobList)

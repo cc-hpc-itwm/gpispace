@@ -72,7 +72,7 @@ namespace sdpa { namespace daemon {
     sdpa::worker_id_t getBestMatchingWorker( const job_requirements_t&, sdpa::worker_id_list_t&) throw (NoWorkerFoundException);
 
     Worker::worker_id_t getWorkerId(unsigned int r);
-    void reserveWorker(const sdpa::worker_id_t&) throw (WorkerReservationFailed);
+    void reserveWorker(const sdpa::worker_id_t&);
 
     bool has_job(const sdpa::job_id_t& job_id);
 
