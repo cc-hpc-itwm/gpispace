@@ -355,10 +355,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
 
     boost::optional<int> matchingDeg = matchRequirements( pWorker, listJobReq); // only proper capabilities of the worker
 
-    if (!matchingDeg)
-      continue;
-
-    if( *matchingDeg < maxMatchingDeg)
+    if (matchingDeg < maxMatchingDeg)
       continue;
 
     if (*matchingDeg == maxMatchingDeg)
