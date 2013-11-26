@@ -30,6 +30,7 @@
 
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm/count_if.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -303,14 +304,8 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
 
 size_t numberOfMandatoryReqs( const job_requirements_t& listJobReq )
 {
-  size_t count = 0;
-  requirement_list_t listR = listJobReq.getReqList();
-  BOOST_FOREACH(const requirement_t& req, listR)
-  {
-    count+=(int)req.is_mandatory();
-  }
-
-  return count;
+  return boost::count_if
+    (listJobReq.getReqList(), boost::mem_fn (&requirement_t::is_mandatory));
 }
 
 sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t& listJobReq, sdpa::worker_id_list_t& workerList ) throw (NoWorkerFoundException)
