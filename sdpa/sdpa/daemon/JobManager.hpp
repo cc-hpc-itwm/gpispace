@@ -49,6 +49,7 @@ namespace sdpa {
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements);
 
 	    size_t getNumberOfJobs() const;
+      bool hasJobs() const;
 
       void waitForFreeSlot();
       bool slotAvailable() const;

@@ -199,7 +199,7 @@ namespace sdpa {
       }
       bool hasJobs()
       {
-        return (jobManager()->getNumberOfJobs()>0);
+        return jobManager()->hasJobs();
       }
       Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const
       {
