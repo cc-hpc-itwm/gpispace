@@ -80,10 +80,6 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
   {
       SDPA_LOG_WARN("The job " << job_id << " could not be deleted: " << ex.what());
   }
-  catch(const std::exception& ex)
-  {
-      SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
-  }
 
   rescheduleJob(job_id);
 }
@@ -318,11 +314,6 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
     SDPA_LOG_WARN("The worker "<<worker_id<<" couldn't be found!");
     throw ex2;
   }
-  catch(const std::exception& ex3 )
-  {
-    SDPA_LOG_WARN("Unexpected exception occurred when trying to delete the job "<<jobId.str()<<" from the worker "<<worker_id<<": "<< ex3.what() );
-    throw ex3;
-  }
 }
 
 bool SchedulerBase::has_job(const sdpa::job_id_t& job_id)
@@ -338,15 +329,7 @@ void SchedulerBase::getWorkerList(sdpa::worker_id_list_t& workerList)
 
 bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
-  try
-  {
-      return _worker_manager.addCapabilities(worker_id, cpbset);
-  }
-  catch(const std::exception& exc)
-  {
-      SDPA_LOG_ERROR("Exception occured when trying to add new capabilities to the worker "<<worker_id<<": "<<exc.what());
-      throw exc;
-  }
+  return _worker_manager.addCapabilities(worker_id, cpbset);
 }
 
 void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)

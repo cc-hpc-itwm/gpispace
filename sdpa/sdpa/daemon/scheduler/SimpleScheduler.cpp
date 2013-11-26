@@ -71,12 +71,9 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
   if(pJob)
   {
-    try {
-        if( !pJob->completed())
-            pJob->Reschedule(this); // put the job back into the pending state
-    }
-    catch(const std::exception& ex) {
-      SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
+    if( !pJob->completed())
+    {
+      pJob->Reschedule(this); // put the job back into the pending state
     }
   }
   else
