@@ -270,26 +270,12 @@ void WorkerManager::getListWorkersNotReserved(sdpa::worker_id_list_t& workerList
 
 bool WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbSet)
 {
-  lock_type lock(mtx_);
-  worker_map_t::iterator it = worker_map_.find(worker_id);
-  if( it != worker_map_.end() )
-  {
-    return it->second->addCapabilities(cpbSet);
-  }
-  else
-    throw WorkerNotFoundException(worker_id);
+  return findWorker (worker_id)->addCapabilities (cpbSet);
 }
 
 void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& TCpbSet) throw (WorkerNotFoundException)
 {
-  lock_type lock(mtx_);
-  worker_map_t::iterator it = worker_map_.find(worker_id);
-  if( it != worker_map_.end() )
-  {
-    it->second->removeCapabilities(TCpbSet);
-  }
-  else
-    throw WorkerNotFoundException(worker_id);
+  findWorker (worker_id)->removeCapabilities (TCpbSet);
 }
 
 bool hasSameName(sdpa::capability_t& cpb1, sdpa::capability_t& cpb2)
@@ -424,14 +410,7 @@ void WorkerManager::removeWorkers()
 
 void WorkerManager::reserveWorker(const sdpa::worker_id_t& worker_id)
 {
-  lock_type lock(mtx_);
-  worker_map_t::iterator it = worker_map_.find(worker_id);
-  if( it != worker_map_.end() )
-  {
-      it->second->reserve();
-  }
-  else
-    throw WorkerNotFoundException(worker_id);
+  findWorker (worker_id)->reserve();
 }
 
 void addToList(Worker::JobQueue* pQueue, sdpa::job_id_list_t& jobList)
