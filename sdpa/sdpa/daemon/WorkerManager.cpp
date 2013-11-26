@@ -311,7 +311,7 @@ size_t numberOfMandatoryReqs( const job_requirements_t& listJobReq )
 namespace
 {
   template <typename TPtrWorker, typename TReqSet>
-  int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set)
+    boost::optional<int> matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set)
   {
     int matchingDeg = 0;
 
@@ -329,7 +329,7 @@ namespace
         if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
         {
           // At least one mandatory requirement is not fulfilled
-          return -1;
+          return boost::none;
         }
     }
 
@@ -359,16 +359,16 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     if (pWorker->disconnected())
       continue;
 
-    int matchingDeg = matchRequirements( pWorker, listJobReq); // only proper capabilities of the worker
+    boost::optional<int> matchingDeg = matchRequirements( pWorker, listJobReq); // only proper capabilities of the worker
 
-    DLOG(TRACE, "matching_degree(" << workerId << ") = " << matchingDeg);
-    if (matchingDeg == -1 )
+    DLOG(TRACE, "matching_degree(" << workerId << ") = " << matchingDeg.get_value_or (-1));
+    if (!matchingDeg)
       continue;
 
-    if( matchingDeg < maxMatchingDeg)
+    if( *matchingDeg < maxMatchingDeg)
       continue;
 
-    if (matchingDeg == maxMatchingDeg)
+    if (*matchingDeg == maxMatchingDeg)
     {
     	if(numberOfMandatoryReqs(listJobReq)<nMaxMandReq)
     	  continue;
@@ -377,8 +377,8 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     	  continue;
     }
 
-    DLOG(TRACE, "worker " << workerId << " (" << matchingDeg << ") is better than " << bestMatchingWorkerId << "(" << maxMatchingDeg << ")");
-    maxMatchingDeg = matchingDeg;
+    DLOG(TRACE, "worker " << workerId << " (" << *matchingDeg << ") is better than " << bestMatchingWorkerId << "(" << maxMatchingDeg << ")");
+    maxMatchingDeg = *matchingDeg;
     nMaxMandReq = numberOfMandatoryReqs(listJobReq);
     bestMatchingWorkerId = workerId;
     last_schedule_time = pWorker->lastScheduleTime();
