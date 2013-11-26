@@ -317,7 +317,7 @@ namespace
 
     BOOST_FOREACH (we::type::requirement_t req, job_req_set.getReqList())
     {
-      if( pWorker->hasCapability(req.value(), false) )
+      if( pWorker->hasCapability(req.value()) )
       {
         matchingDeg++;
       }
