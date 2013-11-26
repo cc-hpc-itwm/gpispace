@@ -109,30 +109,30 @@ namespace sdpa {
 
     void Job::action_reschedule_job(const MSMRescheduleEvent& evt)
     {
-      DLOG(TRACE, "Reschedule the job "<<evt.jobId());
-      evt.ptrScheduler()->schedule(evt.jobId());
+      DLOG(TRACE, "Reschedule the job "<<id());
+      evt.ptrScheduler()->schedule(id());
     }
 
     void Job::action_job_stalled(const MSMStalledEvent& evt)
     {
-      LOG(INFO, "The job "<<evt.jobId()<<" changed its status from RUNNING to STALLED");
+      LOG(INFO, "The job "<<id()<<" changed its status from RUNNING to STALLED");
       if(evt.ptrAgent()) {
         // notify the the job owner that the job has subtasks that are stalling
         sdpa::events::JobStalledEvent::Ptr pEvt(new sdpa::events::JobStalledEvent(evt.ptrAgent()->name(),
-                                                                                  evt.jobOwner(),
-                                                                                  evt.jobId()));
+                                                                                  owner(),
+                                                                                  id()));
         evt.ptrAgent()->sendEventToMaster(pEvt);
       }
     }
 
     void Job::action_resume_job(const MSMResumeJobEvent& evt)
     {
-      LOG(INFO, "The job "<<evt.jobId()<<" changed its status from STALLED to RUNNING");
+      LOG(INFO, "The job "<<id()<<" changed its status from STALLED to RUNNING");
       if(evt.ptrAgent()) {
         // notify the the job owner that the job makes progress
         sdpa::events::JobRunningEvent::Ptr pEvt(new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
-                                                                                 , evt.jobOwner()
-                                                                                 , evt.jobId()
+                                                                                 , owner()
+                                                                                 , id()
                                                                                  ));
         evt.ptrAgent()->sendEventToMaster(pEvt);
       }
@@ -142,7 +142,7 @@ namespace sdpa {
     {
       sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent( e.from()
                                                                                              , e.to()
-                                                                                             , e.jobId()) );
+                                                                                             , id()) );
       e.ptrAgent()->sendEventToMaster(pDelJobReply);
     }
 
@@ -151,8 +151,8 @@ namespace sdpa {
       const sdpa::events::JobResultsReplyEvent::Ptr pResReply(
          new sdpa::events::JobResultsReplyEvent( e.from()
                                                  , e.to()
-                                                 , e.jobId()
-                                                 , e.result() ));
+                                                 , id()
+                                                 , result() ));
       e.ptrAgent()->sendEventToMaster(pResReply);
     }
 
@@ -190,30 +190,30 @@ namespace sdpa {
     void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* pAgent)
     {
       lock_type lock(mtx_);
-      process_event(MSMRetrieveJobResultsEvent(pEvt, pAgent, result()));
+      process_event(MSMRetrieveJobResultsEvent(pEvt, pAgent));
     }
 
     void Job::Reschedule(sdpa::daemon::SchedulerBase*  pSched)
     {
       lock_type lock(mtx_);
-      process_event(MSMRescheduleEvent (pSched, id()));
+      process_event(MSMRescheduleEvent (pSched));
     }
 
     void Job::Pause(sdpa::daemon::IAgent* pAgent)
     {
       lock_type lock(mtx_);
-      process_event (MSMStalledEvent (pAgent, id(), owner()));
+      process_event (MSMStalledEvent (pAgent));
     }
 
     void Job::Resume (sdpa::daemon::IAgent* pAgent)
     {
       lock_type lock(mtx_);
-      process_event (MSMResumeJobEvent (pAgent, id(), owner()));
+      process_event (MSMResumeJobEvent (pAgent));
     }
 
     void Job::Dispatch()
     {
       lock_type lock(mtx_);
-      process_event (MSMResumeJobEvent (NULL, id(), owner()));
+      process_event (MSMResumeJobEvent (NULL));
     }
 }}

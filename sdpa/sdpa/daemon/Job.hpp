@@ -54,37 +54,29 @@ namespace sdpa {
 
       struct MSMRescheduleEvent
       {
-        MSMRescheduleEvent(sdpa::daemon::SchedulerBase* pSched, const sdpa::job_id_t& id)
-        : m_pScheduler(pSched), m_jobId(id)
+        MSMRescheduleEvent(sdpa::daemon::SchedulerBase* pSched)
+        : m_pScheduler(pSched)
         {}
         sdpa::daemon::SchedulerBase* ptrScheduler() const { return m_pScheduler; }
-        sdpa::job_id_t jobId() const { return m_jobId; }
       private:
         sdpa::daemon::SchedulerBase* m_pScheduler;
-        sdpa::job_id_t m_jobId;
       };
       struct MSMStalledEvent{
-        MSMStalledEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId, const sdpa::worker_id_t& jobOwner)
-          : m_pAgent(pAgent), m_jobId(jobId), m_jobOwner (jobOwner) {}
+        MSMStalledEvent(sdpa::daemon::IAgent* pAgent)
+          : m_pAgent(pAgent)
+        {}
         sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
-        sdpa::job_id_t jobId() const { return m_jobId; }
-        sdpa::worker_id_t jobOwner() const { return m_jobOwner; }
       private:
         sdpa::daemon::IAgent* m_pAgent;
-        sdpa::job_id_t m_jobId;
-        sdpa::worker_id_t m_jobOwner;
       };
       struct MSMResumeJobEvent
       {
-        MSMResumeJobEvent(sdpa::daemon::IAgent* pAgent, const sdpa::job_id_t& jobId, const sdpa::worker_id_t& jobOwner)
-          : m_pAgent(pAgent), m_jobId(jobId), m_jobOwner (jobOwner)  {}
+        MSMResumeJobEvent(sdpa::daemon::IAgent* pAgent)
+          : m_pAgent(pAgent)
+        {}
         sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
-        sdpa::job_id_t jobId() const { return m_jobId; }
-        sdpa::worker_id_t jobOwner() const { return m_jobOwner; }
       private:
         sdpa::daemon::IAgent* m_pAgent;
-        sdpa::job_id_t m_jobId;
-        sdpa::worker_id_t m_jobOwner;
       };
 
       struct MSMDeleteJobEvent
@@ -94,7 +86,6 @@ namespace sdpa {
         {}
         sdpa::events::SDPAEvent::address_t to() const { return m_pDelEvt->from();}
         sdpa::events::SDPAEvent::address_t from() const { return m_pDelEvt->to();}
-        job_id_t jobId() const { return m_pDelEvt->job_id(); }
         sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
       private:
         const sdpa::events::DeleteJobEvent* m_pDelEvt;
@@ -103,18 +94,15 @@ namespace sdpa {
 
       struct MSMRetrieveJobResultsEvent
       {
-        MSMRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* pAgent, const sdpa::job_result_t& result)
-        : m_pRetResEvt(pEvt), m_pAgent(pAgent), m_strResult(result)
+        MSMRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* pAgent)
+        : m_pRetResEvt(pEvt), m_pAgent(pAgent)
         {}
         sdpa::events::SDPAEvent::address_t to() const { return m_pRetResEvt->from();}
         sdpa::events::SDPAEvent::address_t from() const { return m_pRetResEvt->to();}
-        job_id_t jobId() const { return m_pRetResEvt->job_id(); }
         sdpa::daemon::IAgent* ptrAgent() const { return m_pAgent; }
-        const sdpa::job_result_t result() const { return m_strResult; }
       private:
         const sdpa::events::RetrieveJobResultsEvent* m_pRetResEvt;
         sdpa::daemon::IAgent* m_pAgent;
-        const sdpa::job_result_t m_strResult;
       };
 
 
