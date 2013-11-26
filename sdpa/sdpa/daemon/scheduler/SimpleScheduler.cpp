@@ -95,9 +95,3 @@ boost::optional<sdpa::worker_id_t> SimpleScheduler::getAssignedWorker(const sdpa
       return boost::optional<sdpa::worker_id_t>();
   }
 }
-void SimpleScheduler::releaseReservation(const sdpa::job_id_t& jobId) { throw std::runtime_error ("Not implemented!");}
-void SimpleScheduler::workerFinished(const worker_id_t& wid, const job_id_t& jid) { throw std::runtime_error ("Not implemented!");}
-void SimpleScheduler::workerFailed(const worker_id_t& wid, const job_id_t& jid) { throw std::runtime_error ("Not implemented!");}
-void SimpleScheduler::workerCanceled(const worker_id_t& wid, const job_id_t& jid) { throw std::runtime_error ("Not implemented!");}
-bool SimpleScheduler::allPartialResultsCollected(const job_id_t& jid) { throw std::runtime_error ("Not implemented!");}
-bool SimpleScheduler::groupFinished(const sdpa::job_id_t& jid) { throw std::runtime_error ("Not implemented!");}

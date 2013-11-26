@@ -68,13 +68,6 @@ namespace daemon {
     virtual void delete_job(const sdpa::job_id_t & job_id) = 0;
     virtual void assignJobsToWorkers() = 0;
 
-    virtual void workerFinished(const worker_id_t&, const job_id_t&) = 0;
-    virtual void workerFailed(const worker_id_t&, const job_id_t&) = 0;
-    virtual void workerCanceled(const worker_id_t&, const job_id_t&) = 0;
-    virtual bool allPartialResultsCollected(const job_id_t&) = 0;
-    virtual bool groupFinished(const sdpa::job_id_t&) = 0;
-    virtual void releaseReservation(const sdpa::job_id_t& jobId) = 0;
-
     virtual void start() = 0;
     virtual void run() = 0;
   };
