@@ -656,9 +656,6 @@ void GenericDaemon::submit( const id_type& activityId
     {
       jobManager()->addJobRequirements(job_id, jobReqs);
 
-      // WORK HERE: limit number of maximum parallel jobs
-      jobManager()->waitForFreeSlot ();
-
       // don't forget to set here the job's preferences
       SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
       sendEventToSelf(pEvtSubmitJob);

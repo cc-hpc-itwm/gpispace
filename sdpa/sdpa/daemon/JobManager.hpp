@@ -50,9 +50,6 @@ namespace sdpa {
 
       bool hasJobs() const;
 
-      void waitForFreeSlot();
-      bool slotAvailable() const;
-
       void resubmitResults(IAgent* );
 
       std::string print() const;

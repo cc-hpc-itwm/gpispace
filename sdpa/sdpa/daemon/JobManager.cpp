@@ -142,16 +142,6 @@ void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requ
   job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
 }
 
-bool JobManager::slotAvailable () const
-{
-  return true;
-}
-
-void JobManager::waitForFreeSlot ()
-{
-  lock_type lock(mtx_);
-}
-
 void JobManager::resubmitResults(IAgent* pComm)
 {
   lock_type lock(mtx_);
