@@ -300,7 +300,10 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
       else
       {
         if (itag_cpbs->depth() > capability.depth())
-          const_cast<sdpa::capability_t&>(*itag_cpbs).setDepth(itw_cpbs->depth());
+        {
+          agentCpbSet.erase (itag_cpbs);
+          agentCpbSet.insert (capability);
+        }
       }
     }
   }
