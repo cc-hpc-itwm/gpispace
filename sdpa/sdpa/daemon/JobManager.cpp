@@ -34,20 +34,6 @@ JobManager::JobManager(const std::string& name)
   : SDPA_INIT_LOGGER(name)
 {}
 
-JobManager::~JobManager()
-{
-  if (job_map_.size())
-  {
-    DMLOG (WARN, "there are still entries left in the job-map: " << job_map_.size() );
-    print();
-  }
-
-  if (job_requirements_.size() )
-  {
-    DMLOG (TRACE, "there are still entries left in the requirements map: " << job_requirements_.size() );
-  }
-}
-
 //helpers
 Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id )
 {
