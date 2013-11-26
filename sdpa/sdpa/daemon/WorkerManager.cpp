@@ -316,7 +316,7 @@ namespace
 }
 
 sdpa::worker_id_t WorkerManager::getBestMatchingWorker
-  (const job_requirements_t& listJobReq, sdpa::worker_id_list_t& workerList)
+  (const job_requirements_t& listJobReq, const sdpa::worker_id_list_t& workerList) const
 {
   lock_type lock(mtx_);
 
@@ -329,7 +329,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker
 
   BOOST_FOREACH (sdpa::worker_id_t workerId, workerList)
   {
-    const Worker::ptr_t pWorker (worker_map_[workerId]);
+    const Worker::ptr_t pWorker (worker_map_.at (workerId));
     if (pWorker->disconnected())
       continue;
 

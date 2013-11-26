@@ -67,7 +67,7 @@ namespace sdpa { namespace daemon {
     void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
     void getListWorkersNotReserved(sdpa::worker_id_list_t& workerList);
 
-    sdpa::worker_id_t getBestMatchingWorker( const job_requirements_t&, sdpa::worker_id_list_t&);
+    sdpa::worker_id_t getBestMatchingWorker( const job_requirements_t&, const sdpa::worker_id_list_t&) const;
 
     void reserveWorker(const sdpa::worker_id_t&);
 
