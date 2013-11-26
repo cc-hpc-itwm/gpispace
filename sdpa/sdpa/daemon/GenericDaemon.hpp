@@ -27,7 +27,6 @@
 #include <sdpa/logging.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/daemon/JobManager.hpp>
-#include <sdpa/daemon/WorkerManager.hpp>
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
