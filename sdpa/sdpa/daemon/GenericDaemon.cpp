@@ -548,7 +548,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
         if(ptrWorker)
         {
-          DMLOG (TRACE, "worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
+          DMLOG (TRACE, "worker " << worker_id << " went down (clean).");
 
           // notify capability losses...
           lock_type lock(mtx_master_);
