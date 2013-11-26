@@ -54,8 +54,8 @@ namespace sdpa { namespace daemon {
     void removeWorkers();
 
     bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
-    virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
-    virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
+    void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
+    void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
     const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
 
@@ -73,7 +73,7 @@ namespace sdpa { namespace daemon {
 
     sdpa::worker_id_t getBestMatchingWorker( const job_requirements_t&, sdpa::worker_id_list_t&) throw (NoWorkerFoundException);
 
-    virtual Worker::worker_id_t getWorkerId(unsigned int r);
+    Worker::worker_id_t getWorkerId(unsigned int r);
     void reserveWorker(const sdpa::worker_id_t&) throw (WorkerReservationFailed);
 
     bool has_job(const sdpa::job_id_t& job_id);
