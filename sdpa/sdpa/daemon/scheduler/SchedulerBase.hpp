@@ -98,9 +98,6 @@ namespace sdpa {
       JobQueue pending_jobs_queue_;
       WorkerManager _worker_manager;
 
-      boost::thread m_thread_run;
-      boost::thread m_thread_feed;
-
       sdpa::daemon::IAgent* ptr_comm_handler_;
       SDPA_DECLARE_LOGGER();
       boost::posix_time::time_duration m_timeout;
@@ -108,8 +105,11 @@ namespace sdpa {
       mutable mutex_type mtx_;
       condition_type cond_feed_workers;
       condition_type cond_workers_registered;
-    protected:
+
       sdpa::agent_id_t m_agent_name;
+
+      boost::thread m_thread_run;
+      boost::thread m_thread_feed;
     };
   }
 }
