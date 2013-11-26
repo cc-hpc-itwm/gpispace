@@ -664,38 +664,26 @@ void GenericDaemon::submit( const id_type& activityId
   // schedule the new job to some worker
   job_requirements_t jobReqs(req_list, schedule_data);
 
-    DMLOG(TRACE, "workflow engine submitted "<<activityId);
+  DMLOG(TRACE, "workflow engine submitted "<<activityId);
 
-    job_id_t job_id(activityId);
-    job_id_t parent_id(user_data.get_user_job_identification());
+  job_id_t job_id(activityId);
+  job_id_t parent_id(user_data.get_user_job_identification());
 
-    on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed, workflowEngine()
-                                  , activityId, desc
-                                  , fhg::error::UNEXPECTED_ERROR
-                                  , "Exception in GenericDaemon::submit()"
-                                  )
-                    );
-
-    if( jobManager()->findJob(parent_id) )
-    {
-      jobManager()->addJobRequirements(job_id, jobReqs);
-
-      // WORK HERE: limit number of maximum parallel jobs
-      jobManager()->waitForFreeSlot ();
-
-      // don't forget to set here the job's preferences
-      SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
-      sendEventToSelf(pEvtSubmitJob);
-    }
-    else
-    {
-        DLOG(WARN, "Could not find the parent job "<<parent_id<<" indicated by the workflow engine in the last submission!");
-        workflowEngine()->failed( activityId
-                                , desc
+  on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed, workflowEngine()
+                                , activityId, desc
                                 , fhg::error::UNEXPECTED_ERROR
-                                , "Could not find the parent job "+parent_id.str()
-                                );
-    }
+                                , "Exception in GenericDaemon::submit()"
+                                )
+                  );
+
+  jobManager()->addJobRequirements(job_id, jobReqs);
+
+  // WORK HERE: limit number of maximum parallel jobs
+  jobManager()->waitForFreeSlot ();
+
+  // don't forget to set here the job's preferences
+  SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
+  sendEventToSelf(pEvtSubmitJob);
 
   _.dont();
 }
