@@ -24,15 +24,14 @@ using namespace std;
 
 SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
   : _worker_manager()
-  , ptr_comm_handler_(pCommHandler)
+  , ptr_comm_handler_ ( pCommHandler
+                      ? pCommHandler
+                      : throw std::runtime_error
+                        ("SchedulerBase ctor with NULL ptr_comm_handler")
+                      )
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
   , m_timeout(boost::posix_time::milliseconds(100))
 {
-  if (!ptr_comm_handler_)
-  {
-    throw std::runtime_error ("SchedulerBase ctor with NULL ptr_comm_handler");
-  }
-
   m_agent_name = ptr_comm_handler_->name();
 }
 
