@@ -302,12 +302,6 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
   }
 }
 
-size_t numberOfMandatoryReqs( const job_requirements_t& listJobReq )
-{
-  return boost::count_if
-    (listJobReq.getReqList(), boost::mem_fn (&requirement_t::is_mandatory));
-}
-
 namespace
 {
   template <typename TPtrWorker, typename TReqSet>
