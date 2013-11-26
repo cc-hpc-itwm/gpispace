@@ -338,16 +338,11 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     throw NoWorkerFoundException();
 
   sdpa::util::time_type last_schedule_time = sdpa::util::now();
-
-  // the worker id of the worker that fulfills most of the requirements
-  // a matching degree 0 means that either at least a mandatory requirement
-  // is not fulfilled or the worker does not have at all that capability
   worker_id_t bestMatchingWorkerId;
   int maxMatchingDeg = -1;
 
   BOOST_FOREACH( sdpa::worker_id_t& workerId, workerList )
   {
-    // assert if the node is reallly reserved!
     Worker::ptr_t pWorker = worker_map_[workerId];
     if (pWorker->disconnected())
       continue;
