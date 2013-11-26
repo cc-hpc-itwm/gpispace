@@ -24,7 +24,6 @@ using namespace std;
 
 SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
   : _worker_manager()
-  , bStopRequested(false)
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
   , m_timeout(boost::posix_time::milliseconds(100))
@@ -39,8 +38,6 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
 
 SchedulerBase::~SchedulerBase()
 {
-  bStopRequested = true;
-
   m_thread_run.interrupt();
   m_thread_feed.interrupt();
 

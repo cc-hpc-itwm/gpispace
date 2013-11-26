@@ -94,7 +94,6 @@ namespace sdpa {
       JobQueue pending_jobs_queue_;
       WorkerManager _worker_manager;
 
-      bool bStopRequested;
       boost::thread m_thread_run;
       boost::thread m_thread_feed;
 
