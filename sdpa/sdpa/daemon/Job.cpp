@@ -14,55 +14,6 @@ using namespace sdpa::events;
 
 namespace sdpa {
   namespace daemon {
-    void JobFSM_::action_reschedule_job(const MSMRescheduleEvent& evt)
-    {
-      DLOG(TRACE, "Reschedule the job "<<evt.jobId());
-      evt.ptrScheduler()->schedule(evt.jobId());
-    }
-
-    void JobFSM_::action_job_stalled(const MSMStalledEvent& evt)
-    {
-      LOG(INFO, "The job "<<evt.jobId()<<" changed its status from RUNNING to STALLED");
-      if(evt.ptrAgent()) {
-        // notify the the job owner that the job has subtasks that are stalling
-        sdpa::events::JobStalledEvent::Ptr pEvt(new sdpa::events::JobStalledEvent(evt.ptrAgent()->name(),
-                                                                                  evt.jobOwner(),
-                                                                                  evt.jobId()));
-        evt.ptrAgent()->sendEventToMaster(pEvt);
-      }
-    }
-
-    void JobFSM_::action_resume_job(const MSMResumeJobEvent& evt)
-    {
-      LOG(INFO, "The job "<<evt.jobId()<<" changed its status from STALLED to RUNNING");
-      if(evt.ptrAgent()) {
-        // notify the the job owner that the job makes progress
-        sdpa::events::JobRunningEvent::Ptr pEvt(new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
-                                                                                 , evt.jobOwner()
-                                                                                 , evt.jobId()
-                                                                                 ));
-        evt.ptrAgent()->sendEventToMaster(pEvt);
-      }
-    }
-
-    void JobFSM_::action_delete_job(const MSMDeleteJobEvent& e)
-    {
-      sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent( e.from()
-                                                                                             , e.to()
-                                                                                             , e.jobId()) );
-      e.ptrAgent()->sendEventToMaster(pDelJobReply);
-    }
-
-    void JobFSM_::action_retrieve_job_results(const MSMRetrieveJobResultsEvent& e)
-    {
-      const sdpa::events::JobResultsReplyEvent::Ptr pResReply(
-         new sdpa::events::JobResultsReplyEvent( e.from()
-                                                 , e.to()
-                                                 , e.jobId()
-                                                 , e.result() ));
-      e.ptrAgent()->sendEventToMaster(pResReply);
-    }
-
     Job::Job( const sdpa::job_id_t id,
               const sdpa::job_desc_t desc,
               const sdpa::job_id_t &parent
@@ -154,6 +105,55 @@ namespace sdpa {
       result_ = evt.result();
       m_error_code = evt.error_code();
       m_error_message = evt.error_message();
+    }
+
+    void Job::action_reschedule_job(const MSMRescheduleEvent& evt)
+    {
+      DLOG(TRACE, "Reschedule the job "<<evt.jobId());
+      evt.ptrScheduler()->schedule(evt.jobId());
+    }
+
+    void Job::action_job_stalled(const MSMStalledEvent& evt)
+    {
+      LOG(INFO, "The job "<<evt.jobId()<<" changed its status from RUNNING to STALLED");
+      if(evt.ptrAgent()) {
+        // notify the the job owner that the job has subtasks that are stalling
+        sdpa::events::JobStalledEvent::Ptr pEvt(new sdpa::events::JobStalledEvent(evt.ptrAgent()->name(),
+                                                                                  evt.jobOwner(),
+                                                                                  evt.jobId()));
+        evt.ptrAgent()->sendEventToMaster(pEvt);
+      }
+    }
+
+    void Job::action_resume_job(const MSMResumeJobEvent& evt)
+    {
+      LOG(INFO, "The job "<<evt.jobId()<<" changed its status from STALLED to RUNNING");
+      if(evt.ptrAgent()) {
+        // notify the the job owner that the job makes progress
+        sdpa::events::JobRunningEvent::Ptr pEvt(new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
+                                                                                 , evt.jobOwner()
+                                                                                 , evt.jobId()
+                                                                                 ));
+        evt.ptrAgent()->sendEventToMaster(pEvt);
+      }
+    }
+
+    void Job::action_delete_job(const MSMDeleteJobEvent& e)
+    {
+      sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent( e.from()
+                                                                                             , e.to()
+                                                                                             , e.jobId()) );
+      e.ptrAgent()->sendEventToMaster(pDelJobReply);
+    }
+
+    void Job::action_retrieve_job_results(const MSMRetrieveJobResultsEvent& e)
+    {
+      const sdpa::events::JobResultsReplyEvent::Ptr pResReply(
+         new sdpa::events::JobResultsReplyEvent( e.from()
+                                                 , e.to()
+                                                 , e.jobId()
+                                                 , e.result() ));
+      e.ptrAgent()->sendEventToMaster(pResReply);
     }
 
     //transitions

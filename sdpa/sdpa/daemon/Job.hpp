@@ -123,11 +123,11 @@ namespace sdpa {
 
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&) = 0;
       virtual void action_job_finished(const sdpa::events::JobFinishedEvent&) = 0;
-      virtual void action_reschedule_job(const MSMRescheduleEvent& evt);
-      virtual void action_job_stalled(const MSMStalledEvent& evt);
-      virtual void action_resume_job(const MSMResumeJobEvent& evt);
-      virtual void action_delete_job(const MSMDeleteJobEvent&);
-      virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent& evt);
+      virtual void action_reschedule_job(const MSMRescheduleEvent&) = 0;
+      virtual void action_job_stalled(const MSMStalledEvent&) = 0;
+      virtual void action_resume_job(const MSMResumeJobEvent&) = 0;
+      virtual void action_delete_job(const MSMDeleteJobEvent&) = 0;
+      virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&) = 0;
 
       typedef JobFSM_ sm; // makes transition table cleaner
 
@@ -233,6 +233,11 @@ namespace sdpa {
       // job FSM actions
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
       virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
+      virtual void action_reschedule_job(const MSMRescheduleEvent&);
+      virtual void action_job_stalled(const MSMStalledEvent&);
+      virtual void action_resume_job(const MSMResumeJobEvent&);
+      virtual void action_delete_job(const MSMDeleteJobEvent&);
+      virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&);
 
       //transitions
       void CancelJob(const sdpa::events::CancelJobEvent*);
