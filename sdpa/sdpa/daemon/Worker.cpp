@@ -151,12 +151,9 @@ bool Worker::hasCapability(const std::string& cpbName)
 {
   lock_type lock(mtx_);
 
-  for( sdpa::capabilities_set_t::iterator it = capabilities_.begin();it != capabilities_.end();it++ ) {
-    if(it->name() == cpbName)
-      return true;
-  }
-
-  return false;
+  return std::find_if ( capabilities_.begin(), capabilities_.end()
+                      , boost::bind (&capability_t::name, _1) == cpbName
+                      ) != capabilities_.end();
 }
 
 void Worker::reserve()
