@@ -260,12 +260,6 @@ void SchedulerBase::run()
           cond_workers_registered.wait(lock);
       }
     }
-    catch( const boost::thread_interrupted & )
-    {
-        DMLOG(DEBUG, "Thread interrupted ...");
-        bStopRequested = true; // FIXME: can probably be removed
-        break;
-    }
     catch( const sdpa::daemon::QueueEmpty &)
     {
         // ignore
