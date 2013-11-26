@@ -57,7 +57,6 @@ SchedulerBase::~SchedulerBase()
       m_thread_feed.join();
 
     pending_jobs_queue_.clear();
-    _worker_manager.removeWorkers();
   }
   catch (std::exception const & ex)
   {
