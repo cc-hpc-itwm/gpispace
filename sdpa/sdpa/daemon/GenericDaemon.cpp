@@ -536,7 +536,6 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
       }
 
       removeMasters(listDeadMasters);
-
       break;
     }
     case ErrorEvent::SDPA_ENODE_SHUTDOWN:
@@ -601,6 +600,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
         removeMasters(listDeadMasters);
       }
+      break;
     }
     case ErrorEvent::SDPA_EJOBEXISTS:
     {
