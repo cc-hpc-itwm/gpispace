@@ -162,12 +162,15 @@ void WorkerManager::deleteJob (sdpa::job_id_t const & job)
     SDPA_LOG_DEBUG("removed job from the central queue...");
   }
   else
-    for( worker_map_t::iterator iter (worker_map_.begin()); iter != worker_map_.end(); iter++ )
+  {
+    BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
+                  | boost::adaptors::filtered
+                    (boost::bind (&Worker::has_job, _1, job))
+                  )
     {
-        Worker::ptr_t pWorker(iter->second);
-        if(pWorker->has_job(job))
-          pWorker->deleteJob(job);
+      worker->deleteJob (job);
     }
+  }
 }
 
 void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
