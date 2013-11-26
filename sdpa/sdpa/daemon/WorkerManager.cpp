@@ -301,14 +301,6 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
   }
 }
 
-bool compare_degrees( sdpa::list_match_workers_t::value_type left, sdpa::list_match_workers_t::value_type right )
-{
-  if( left.second > right.second )
-    return true;
-  else
-    return false;
-}
-
 size_t numberOfMandatoryReqs( const job_requirements_t& listJobReq )
 {
   size_t count = 0;
