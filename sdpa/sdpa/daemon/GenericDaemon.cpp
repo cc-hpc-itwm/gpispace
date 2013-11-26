@@ -103,8 +103,6 @@ void GenericDaemon::start_agent()
 
 
   createScheduler();
-  scheduler()->start();
-
 
   const boost::tokenizer<boost::char_separator<char> > tok
     (url(), boost::char_separator<char> (":"));
@@ -190,10 +188,6 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
   pSdpaEvt->handleBy(this);
 }
 
-void GenericDaemon::addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList)
-{
-  return jobManager()->addJob(jid, pJob, reqList);
-}
 
 namespace
 {
@@ -271,27 +265,7 @@ void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
 
 void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId )
 {
-  //take a job from the workers' queue and serve it
-  DMLOG(TRACE, "Assign the job "<<jobId<<" to the worker '"<<worker_id);
-
-  const Job::ptr_t& ptrJob = jobManager()->findJob(jobId);
-  if(ptrJob)
-  {
-    DMLOG(TRACE, "Serving a job to the worker "<<worker_id);
-
-    // create a SubmitJobEvent for the job job_id serialize and attach description
-    sdpa::worker_id_list_t worker_list(1,worker_id);
-    LOG(TRACE, "Submit the job "<<ptrJob->id()<<" to the worker " << worker_id);
-    LOG(TRACE, "The job "<<ptrJob->id()<<" was assigned the following workers:"<<worker_list);
-    SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(), worker_id, ptrJob->id(),  ptrJob->description(), "", worker_list));
-
-    // Post a SubmitJobEvent to the slave who made the request
-    sendEventToSlave(pSubmitEvt);
-  }
-  else
-  {
-      DMLOG (WARN, "Couldn't find the job "<<jobId<<" when attempting to serve workers!");
-  }
+  serveJob (sdpa::worker_id_list_t (1, worker_id), jobId);
 }
 
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
@@ -548,7 +522,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
         if(ptrWorker)
         {
-          DMLOG (TRACE, "worker " << worker_id << " went down (clean). Tell the WorkerManager to remove it!");
+          DMLOG (TRACE, "worker " << worker_id << " went down (clean).");
 
           // notify capability losses...
           lock_type lock(mtx_master_);
@@ -664,26 +638,35 @@ void GenericDaemon::submit( const id_type& activityId
   // schedule the new job to some worker
   job_requirements_t jobReqs(req_list, schedule_data);
 
-  DMLOG(TRACE, "workflow engine submitted "<<activityId);
+    DMLOG(TRACE, "workflow engine submitted "<<activityId);
 
-  job_id_t job_id(activityId);
-  job_id_t parent_id(user_data.get_user_job_identification());
+    job_id_t job_id(activityId);
+    job_id_t parent_id(user_data.get_user_job_identification());
 
-  on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed, workflowEngine()
-                                , activityId, desc
+    on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed, workflowEngine()
+                                  , activityId, desc
+                                  , fhg::error::UNEXPECTED_ERROR
+                                  , "Exception in GenericDaemon::submit()"
+                                  )
+                    );
+
+    if( jobManager()->findJob(parent_id) )
+    {
+      jobManager()->addJobRequirements(job_id, jobReqs);
+
+      // don't forget to set here the job's preferences
+      SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
+      sendEventToSelf(pEvtSubmitJob);
+    }
+    else
+    {
+        DLOG(WARN, "Could not find the parent job "<<parent_id<<" indicated by the workflow engine in the last submission!");
+        workflowEngine()->failed( activityId
+                                , desc
                                 , fhg::error::UNEXPECTED_ERROR
-                                , "Exception in GenericDaemon::submit()"
-                                )
-                  );
-
-  jobManager()->addJobRequirements(job_id, jobReqs);
-
-  // WORK HERE: limit number of maximum parallel jobs
-  jobManager()->waitForFreeSlot ();
-
-  // don't forget to set here the job's preferences
-  SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
-  sendEventToSelf(pEvtSubmitJob);
+                                , "Could not find the parent job "+parent_id.str()
+                                );
+    }
 
   _.dont();
 }
@@ -787,21 +770,6 @@ bool GenericDaemon::canceled(const id_type& workflowId)
   sendEventToSelf(pEvtCancelJobAck);
 
   return true;
-}
-
-Job::ptr_t GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
-{
-  return jobManager()->findJob(job_id);
-}
-
-void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
-{
-  jobManager()->deleteJob(jobId);
-}
-
-const job_requirements_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
-{
-  return jobManager()->getJobRequirements(jobId);
 }
 
 /*void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
@@ -1072,11 +1040,6 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
-Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) const
-{
-  return scheduler()->findWorker(worker_id);
-}
-
 void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 {
   if( !masterInfo.is_registered() )
@@ -1150,11 +1113,6 @@ void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
   }
 
    scheduler()->getAllWorkersCapabilities(cpbset);
-}
-
-void GenericDaemon::getWorkerCapabilities(const Worker::worker_id_t& worker_id, sdpa::capabilities_set_t& wCpbset)
-{
-  scheduler()->getWorkerCapabilities(worker_id, wCpbset);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)
@@ -1263,9 +1221,4 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 {
   lock_type lock(mtx_subscriber_);
   return m_listSubscribers.find (agentId) != m_listSubscribers.end();
-}
-
-Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
-{
-  return scheduler()->getWorkerId(r);
 }

@@ -22,7 +22,6 @@
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/unordered_map.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <sdpa/daemon/scheduler/Scheduler.hpp>
 
 #include <boost/optional.hpp>
 
@@ -39,32 +38,26 @@ namespace sdpa { namespace daemon {
     typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
 
     WorkerManager();
-    virtual ~WorkerManager();
 
-    Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id) throw (WorkerNotFoundException);
-    const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
-    const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+    Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id);
+    const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id);
+    const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id);
 
     void addWorker( const Worker::worker_id_t& workerId,
                 boost::optional<unsigned int> capacity,
                 const capabilities_set_t& cpbset = capabilities_set_t(),
                 const unsigned int& agent_rank = 0,
-                const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
+                  const sdpa::worker_id_t& agent_uuid = "" );
 
-    void deleteWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
-    void removeWorkers();
+    void deleteWorker( const Worker::worker_id_t& workerId);
 
     bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
-    virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
-    virtual void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
-
-    const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
-
-    void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
+    void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
+    void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
     void dispatchJob(const sdpa::job_id_t& jobId);
     void deleteJob(const sdpa::job_id_t& jobId);
-    void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
+    void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id );
 
     size_t numberOfWorkers() { return worker_map_.size(); }
     sdpa::job_id_list_t getJobListAndCleanQueues(const  Worker::ptr_t& pWorker);
@@ -72,73 +65,23 @@ namespace sdpa { namespace daemon {
     void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
     void getListWorkersNotReserved(sdpa::worker_id_list_t& workerList);
 
-    sdpa::worker_id_t getBestMatchingWorker( const job_requirements_t&, sdpa::worker_id_list_t&) throw (NoWorkerFoundException);
+    sdpa::worker_id_t getBestMatchingWorker( const job_requirements_t&, const sdpa::worker_id_list_t&) const;
 
-    virtual Worker::worker_id_t getWorkerId(unsigned int r);
-    void reserveWorker(const sdpa::worker_id_t&) throw (WorkerReservationFailed);
+    void reserveWorker(const sdpa::worker_id_t&);
 
     bool has_job(const sdpa::job_id_t& job_id);
 
     friend class SchedulerBase; // SchedulerBase::schedule_first()
 
-    void print()
-    {
-      if(!common_queue_.empty())
-      {
-        SDPA_LOG_DEBUG("The content of the common queue is: ");
-        common_queue_.print();
-      }
-      else
-        SDPA_LOG_DEBUG("No job without preferences available!");
-
-      if( worker_map_.begin() == worker_map_.end() )
-      {
-        SDPA_LOG_DEBUG("The worker manager has NO worker! ");
-      }
-      else
-      {
-        for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
-          (*it).second->print();
-      }
-    }
-
 protected:
     worker_map_t  worker_map_;
 
     SDPA_DECLARE_LOGGER();
-    worker_map_t::iterator iter_last_worker_;
 
     JobQueue common_queue_;
 
     mutable mutex_type mtx_;
   };
-
-  template <typename TPtrWorker, typename TReqSet>
-  int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set, bool bOwn = false )
-  {
-    int matchingDeg = 0;
-
-    // for all job requirements
-    const requirement_list_t& listR = job_req_set.getReqList();
-    for( typename TReqSet::const_iterator it = listR.begin(); it != listR.end(); it++ )
-    {
-      //LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<it->value()<<" ... ");
-      if( pWorker->hasCapability(it->value(), bOwn ) )
-      {
-        // increase the number of matchings
-        matchingDeg++;
-      }
-      else // if the worker doesn't have the capability
-        if( it->is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
-        {
-          // At least one mandatory requirement is not fulfilled
-          return -1;
-        }
-    }
-
-    return matchingDeg;
-  }
-
 }}
 
 #endif

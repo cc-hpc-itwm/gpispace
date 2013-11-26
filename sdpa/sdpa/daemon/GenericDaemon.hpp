@@ -27,7 +27,6 @@
 #include <sdpa/logging.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/daemon/JobManager.hpp>
-#include <sdpa/daemon/WorkerManager.hpp>
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
@@ -118,8 +117,7 @@ namespace sdpa {
       virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
       virtual void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
-      Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
-      void addJob(const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList = job_requirements_t());
+      SchedulerBase::ptr_t scheduler() const {return ptr_scheduler_;}
     protected:
 
       // stages
@@ -141,15 +139,6 @@ namespace sdpa {
       bool isOwnCapability(const sdpa::capability_t& cpb)
       {
     	  return (cpb.owner()==name());
-      }
-
-      virtual void print()
-      {
-    	  SDPA_LOG_DEBUG("The content of the JobManager is:");
-    	  jobManager()->print();
-
-    	  SDPA_LOG_DEBUG("The content of the Scheduler is:");
-    	  scheduler()->print();
       }
 
       // event handlers
@@ -187,21 +176,48 @@ namespace sdpa {
       virtual void submitWorkflow(const job_id_t& id);
 
       // workers
-      virtual Worker::worker_id_t getWorkerId(unsigned int rank);
-      const Worker::ptr_t& findWorker(const Worker::worker_id_t&) const;
-      void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
       void serveJob(const Worker::worker_id_t&, const job_id_t&);
       void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
       // jobs
-      Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const;
-      void deleteJob(const sdpa::job_id_t& );
       std::string gen_id() { return sdpa::JobId ().str (); }
-      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
-      virtual bool hasJobs() { return (jobManager()->getNumberOfJobs()>0); }
+
+    public:
+      // forwarding to jobManager() only:
+      void addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList = job_requirements_t())
+      {
+        return jobManager()->addJob(jid, pJob, reqList);
+      }
+      bool hasJobs()
+      {
+        return jobManager()->hasJobs();
+      }
+      Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const
+      {
+        return jobManager()->findJob(job_id);
+      }
+      void deleteJob(const sdpa::job_id_t& jobId)
+      {
+        jobManager()->deleteJob(jobId);
+      }
+      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const
+      {
+        return jobManager()->getJobRequirements(jobId);
+      }
+
+      // forwaring to scheduler() only:
+      Worker::ptr_t const & findWorker(const Worker::worker_id_t& worker_id ) const
+      {
+        return scheduler()->findWorker(worker_id);
+      }
+      void getWorkerCapabilities(const Worker::worker_id_t& worker_id, sdpa::capabilities_set_t& wCpbset)
+      {
+        scheduler()->getWorkerCapabilities(worker_id, wCpbset);
+      }
 
     protected:
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
+      //! \todo type of Scheduler should be template parameter
       virtual void createScheduler() = 0;
 
       // data members
@@ -220,7 +236,7 @@ namespace sdpa {
 
     protected:
       JobManager::ptr_t ptr_job_man_;
-      Scheduler::ptr_t ptr_scheduler_;
+      SchedulerBase::ptr_t ptr_scheduler_;
       we::mgmt::layer* ptr_workflow_engine_;
 
     private:

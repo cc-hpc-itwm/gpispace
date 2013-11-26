@@ -1,7 +1,7 @@
 #include "Job.hpp"
 
 #include <sdpa/daemon/IAgent.hpp>
-#include <sdpa/daemon/scheduler/Scheduler.hpp>
+#include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/JobResultsReplyEvent.hpp>
@@ -99,13 +99,13 @@ namespace sdpa {
       return result_;
     }
 
-    int Job::error_code()
+    int Job::error_code() const
     {
       lock_type lock(mtx_);
       return m_error_code;
     }
 
-    std::string Job::error_message ()
+    std::string Job::error_message () const
     {
       lock_type lock(mtx_);
       return m_error_message;
@@ -130,28 +130,28 @@ namespace sdpa {
       m_owner = owner;
     }
 
-    sdpa::worker_id_t Job::owner()
+    sdpa::worker_id_t Job::owner() const
     {
       return m_owner;
     }
 
-    sdpa::status::code Job::getStatus()
+    sdpa::status::code Job::getStatus() const
     {
       lock_type lock(mtx_);
       return state_code (*current_state());
     }
 
-    bool Job::completed()
+    bool Job::completed() const
     {
       return sdpa::status::is_terminal (getStatus());
     }
 
-    bool Job::is_running()
+    bool Job::is_running() const
     {
       return sdpa::status::is_running (getStatus());
     }
 
-    bool Job::isMasterJob()
+    bool Job::isMasterJob() const
     {
       return _is_master_job;
     }
@@ -212,7 +212,7 @@ namespace sdpa {
       process_event(MSMRetrieveJobResultsEvent(pEvt, pAgent, result()));
     }
 
-    void Job::Reschedule(sdpa::daemon::Scheduler*  pSched)
+    void Job::Reschedule(sdpa::daemon::SchedulerBase*  pSched)
     {
       lock_type lock(mtx_);
       process_event(MSMRescheduleEvent (pSched, id()));
@@ -234,19 +234,5 @@ namespace sdpa {
     {
       lock_type lock(mtx_);
       process_event (MSMResumeJobEvent (NULL, id(), owner()));
-    }
-
-    std::string Job::print_info()
-    {
-        std::ostringstream os;
-        os<<std::endl;
-        os<<"id: "<<id_<<std::endl;
-        os<<"status: "<<getStatus()<<std::endl;
-        os<<"parent: "<<parent_<<std::endl;
-        os<<"error-code: " << m_error_code << std::endl;
-        os<<"error-message: \"" << m_error_message << "\"" << std::endl;
-        //os<<"description: "<<desc_<<std::endl;
-
-        return os.str();
     }
 }}

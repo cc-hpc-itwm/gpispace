@@ -30,25 +30,9 @@
 using namespace std;
 using namespace sdpa::daemon;
 
-static const std::size_t MAX_PARALLEL_JOBS = 1024;
-
 JobManager::JobManager(const std::string& name)
   : SDPA_INIT_LOGGER(name)
 {}
-
-JobManager::~JobManager()
-{
-  if (job_map_.size())
-  {
-    DMLOG (WARN, "there are still entries left in the job-map: " << job_map_.size() );
-    print();
-  }
-
-  if (job_requirements_.size() )
-  {
-    DMLOG (TRACE, "there are still entries left in the requirements map: " << job_requirements_.size() );
-  }
-}
 
 //helpers
 Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id )
@@ -61,7 +45,7 @@ Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id )
     return NULL;
 }
 
-void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob, const job_requirements_t& job_req_list ) throw(JobNotAddedException)
+void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob, const job_requirements_t& job_req_list )
 {
   lock_type lock(mtx_);
   job_map_t::iterator it;
@@ -78,7 +62,7 @@ void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob, co
     job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
 }
 
-void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedException)
+void JobManager::deleteJob(const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
 
@@ -99,34 +83,9 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
   {
     DLOG(TRACE, "Erased the job "<<job_id.str()<<" from job map");
   }
-
-  free_slot_.notify_one();
 }
 
-std::string JobManager::print() const
-{
-  lock_type lock(mtx_);
-  std::ostringstream os;
-
-  DMLOG (TRACE, "Begin dumping the JobManager...");
-
-  if( job_map_.begin() == job_map_.end() )
-    os<<"The JobManager is empty!";
-  else
-  {
-    os<<"The list of jobs still owned by the JobManager:"<<std::endl;
-    for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
-    {
-      DMLOG (TRACE, it->second->print_info());
-    }
-  }
-
-  DMLOG (TRACE, "End dumping the JobManager...");
-
-  return os.str();
-}
-
-const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements)
+const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
   lock_type lock(mtx_);
   if( job_requirements_.empty() )
@@ -140,21 +99,10 @@ const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
   return it_req->second;;
 }
 
-void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requirements_t& job_req_list) throw (JobNotFoundException)
+void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requirements_t& job_req_list)
 {
   lock_type lock(mtx_);
   job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
-}
-
-bool JobManager::slotAvailable () const
-{
-  return getNumberOfJobs () < MAX_PARALLEL_JOBS;
-}
-
-void JobManager::waitForFreeSlot ()
-{
-  lock_type lock(mtx_);
-  free_slot_.wait (mtx_, boost::bind (&JobManager::slotAvailable, this));
 }
 
 void JobManager::resubmitResults(IAgent* pComm)
@@ -213,8 +161,8 @@ void JobManager::resubmitResults(IAgent* pComm)
   }
 }
 
-size_t JobManager::getNumberOfJobs() const
+bool JobManager::hasJobs() const
 {
   lock_type lock(mtx_);
-  return job_map_.size();
+  return !job_map_.empty();
 }

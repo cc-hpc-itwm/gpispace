@@ -60,15 +60,6 @@ namespace daemon {
 		virtual ~WorkerNotFoundException() throw() {}
 	};
 
-	class WorkerReservationFailed : public WorkerException
-	{
-		public:
-		WorkerReservationFailed( const sdpa::worker_id_t& worker_id)
-			: WorkerException("Worker reservation failed!", worker_id) {}
-		virtual ~WorkerReservationFailed() throw() {}
-	};
-
-
 	class WorkerAlreadyExistException : public WorkerException {
 		public:
 		WorkerAlreadyExistException( const sdpa::worker_id_t& worker_id, const sdpa::worker_id_t& agent_uuid )

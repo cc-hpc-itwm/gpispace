@@ -39,29 +39,22 @@ namespace sdpa {
       typedef job_map_t::iterator iterator;
 
       JobManager(const std::string& str="");
-      virtual ~JobManager();
 
       Job::ptr_t findJob(const sdpa::job_id_t& );
-      void addJob(const sdpa::job_id_t&, const Job::ptr_t&, const job_requirements_t& job_req_list = job_requirements_t() ) throw(JobNotAddedException) ;
-      void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
+      void addJob(const sdpa::job_id_t&, const Job::ptr_t&, const job_requirements_t& job_req_list = job_requirements_t() );
+      void deleteJob(const sdpa::job_id_t& );
 
-      void addJobRequirements( const sdpa::job_id_t&, const job_requirements_t& ) throw (JobNotFoundException);
-      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements);
+      void addJobRequirements( const sdpa::job_id_t&, const job_requirements_t& );
+      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
-	    size_t getNumberOfJobs() const;
-
-      void waitForFreeSlot();
-      bool slotAvailable() const;
+      bool hasJobs() const;
 
       void resubmitResults(IAgent* );
-
-      std::string print() const;
 
   protected:
       SDPA_DECLARE_LOGGER();
       job_map_t job_map_;
       mutable mutex_type mtx_;
-      boost::condition_variable_any free_slot_;
       requirements_map_t job_requirements_;
   };
 }}

@@ -61,8 +61,8 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
   lock_type lock(mtx_);
   try
   {
-      acknowledged().push(job_id);
-      submitted().erase(job_id);
+      acknowledged_.push(job_id);
+      submitted_.erase(job_id);
       DMLOG(TRACE, "acknowledged job(" << job_id.str() << ")");
       return true;
   }
@@ -76,36 +76,14 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 void Worker::deleteJob(const sdpa::job_id_t &job_id)
 {
   lock_type lock(mtx_);
-  DLOG(TRACE, "deleting job " << job_id << " from worker " << name());
-
-  if( submitted().erase(job_id) ) {
-      DLOG(TRACE, "removed the job "<<job_id.str()<<" submitted queue");
-  }
-
-  if( acknowledged().erase(job_id) ) {
-      DLOG(TRACE, "removed the job "<<job_id.str()<<" acknowledged queue");
-  }
-}
-
-void Worker::print()
-{
-  lock_type lock(mtx_);
-  // print the values of the restored job queue
-  if( submitted().size() ) {
-      SDPA_LOG_INFO("There are still "<<submitted().size()<<" submitted jobs:");
-      submitted().print();
-  }
-
-  if(acknowledged().size()) {
-      SDPA_LOG_INFO("There are still "<<acknowledged().size()<<" acknowledged jobs:");
-      acknowledged().print();
-  }
+  submitted_.erase (job_id);
+  acknowledged_.erase (job_id);
 }
 
 unsigned int Worker::nbAllocatedJobs()
 {
   lock_type lock(mtx_);
-  unsigned int nJobs = /*pending().size() + */ submitted().size() + acknowledged().size();
+  unsigned int nJobs = /*pending().size() + */ submitted_.size() + acknowledged_.size();
   return nJobs;
 }
 
@@ -154,22 +132,13 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
   }
 }
 
-bool Worker::hasCapability(const std::string& cpbName, bool bOwn)
+bool Worker::hasCapability(const std::string& cpbName)
 {
   lock_type lock(mtx_);
-  bool bHasCpb = false;
-  for( sdpa::capabilities_set_t::iterator it = capabilities_.begin();!bHasCpb && it != capabilities_.end();it++ ) {
-      if(bOwn) {
-          if( it->name() == cpbName && it->owner() == name() )
-            bHasCpb = true;
-      }
-      else {
-          if(it->name() == cpbName)
-            bHasCpb = true;
-      }
-  }
 
-  return bHasCpb;
+  return std::find_if ( capabilities_.begin(), capabilities_.end()
+                      , boost::bind (&capability_t::name, _1) == cpbName
+                      ) != capabilities_.end();
 }
 
 void Worker::reserve()
@@ -190,4 +159,3 @@ void Worker::free()
   lock_type lock(mtx_);
   reserved_ = false;
 }
-

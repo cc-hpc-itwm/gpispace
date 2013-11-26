@@ -91,25 +91,13 @@ void CoallocationScheduler::assignJobsToWorkers()
 
 void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
 {
-  if(bStopRequested) {
-      SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
-      return;
-  }
-
   Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
   if(pJob)
   {
-      try
-      {
-          if(!pJob->completed()) {
-              releaseReservation(job_id);
-              pJob->Reschedule(this); // put the job back into the pending state
-          }
-      }
-      catch(const std::exception& ex)
-      {
-          SDPA_LOG_WARN( "Could not re-schedule the job " << job_id << ": unexpected error!"<<ex.what() );
-      }
+    if(!pJob->completed()) {
+      releaseReservation(job_id);
+      pJob->Reschedule(this); // put the job back into the pending state
+    }
   }
   else //(JobNotFoundException const &ex)
   {
@@ -117,10 +105,10 @@ void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   }
 }
 
-void CoallocationScheduler::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap) throw( WorkerReservationFailed)
+void CoallocationScheduler::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap)
 {
   lock_type lock_table(mtx_alloc_table_);
-  ptr_worker_man_->reserveWorker(matchingWorkerId);
+  _worker_manager.reserveWorker(matchingWorkerId);
   // allocate this worker to the job with the jobId
 
   allocation_table_t::iterator it(allocation_table_.find(jobId));
@@ -175,23 +163,7 @@ void CoallocationScheduler::releaseReservation(const sdpa::job_id_t& jobId)
 void CoallocationScheduler::getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerList)
 {
   workerList.clear();
-  ptr_worker_man_->getListWorkersNotReserved(workerList);
-}
-
-void CoallocationScheduler::printAllocationTable()
-{
-  lock_type lock(mtx_alloc_table_);
-  ostringstream oss;
-  BOOST_FOREACH(const allocation_table_t::value_type& pairJLW, allocation_table_)
-  {
-    oss<<pairJLW.first<<" : ";
-    worker_id_list_t workerList(pairJLW.second->getWorkerList());
-    BOOST_FOREACH(const sdpa::worker_id_t& wid, workerList)
-      oss<<wid<<" ";
-    oss<<endl;
-  }
-
-  LOG(INFO, "Content of the allocation table:\n"<<oss.str());
+  _worker_manager.getListWorkersNotReserved(workerList);
 }
 
 sdpa::job_id_t CoallocationScheduler::getAssignedJob(const sdpa::worker_id_t& wid)
