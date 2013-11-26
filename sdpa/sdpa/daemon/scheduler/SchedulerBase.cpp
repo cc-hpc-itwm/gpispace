@@ -231,13 +231,15 @@ sdpa::worker_id_t SchedulerBase::findSuitableWorker(const job_requirements_t& jo
 
 void SchedulerBase::feedWorkers()
 {
-  while(!bStopRequested)
+  for (;;)
   {
-      lock_type lock(mtx_);
-      cond_feed_workers.wait(lock);
+    lock_type lock (mtx_);
+    cond_feed_workers.wait (lock);
 
-      if( ptr_comm_handler_->hasJobs() )
-        assignJobsToWorkers();
+    if (ptr_comm_handler_->hasJobs())
+    {
+      assignJobsToWorkers();
+    }
   }
 }
 
