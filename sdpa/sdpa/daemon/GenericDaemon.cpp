@@ -1276,8 +1276,3 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
   lock_type lock(mtx_subscriber_);
   return m_listSubscribers.find (agentId) != m_listSubscribers.end();
 }
-
-Worker::worker_id_t GenericDaemon::getWorkerId(unsigned int r)
-{
-  return scheduler()->getWorkerId(r);
-}

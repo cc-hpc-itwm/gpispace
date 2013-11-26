@@ -365,20 +365,6 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker
     : throw NoWorkerFoundException();
 }
 
-Worker::worker_id_t WorkerManager::getWorkerId(unsigned int r)
-{
-  lock_type lock(mtx_);
-  BOOST_FOREACH( worker_map_t::value_type& pair, worker_map_ )
-  {
-    worker_id_t workerId  = pair.first;
-    Worker::ptr_t pWorker = pair.second;
-    if(pWorker->rank() == r)
-      return workerId;
-  }
-
-  return "";
-}
-
 void WorkerManager::removeWorkers()
 {
   lock_type lock(mtx_);

@@ -65,7 +65,6 @@ namespace sdpa {
 
       virtual void getWorkerList(sdpa::worker_id_list_t&);
       void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
-      virtual Worker::worker_id_t getWorkerId(unsigned int rank);
 
       virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
 

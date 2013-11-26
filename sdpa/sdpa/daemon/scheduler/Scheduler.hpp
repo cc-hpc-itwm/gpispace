@@ -52,7 +52,6 @@ namespace daemon {
     virtual void deleteWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException) = 0;
 
     virtual void getWorkerList(worker_id_list_t&) = 0;
-    virtual Worker::worker_id_t getWorkerId(unsigned int rank) = 0;
 
     virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) = 0;
     virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException) = 0;
