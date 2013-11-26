@@ -297,13 +297,10 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
       {
         agentCpbSet.insert (capability);
       }
-      else
+      else if (itag_cpbs->depth() > capability.depth())
       {
-        if (itag_cpbs->depth() > capability.depth())
-        {
-          agentCpbSet.erase (itag_cpbs);
-          agentCpbSet.insert (capability);
-        }
+        agentCpbSet.erase (itag_cpbs);
+        agentCpbSet.insert (capability);
       }
     }
   }
