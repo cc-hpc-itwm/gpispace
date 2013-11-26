@@ -346,6 +346,8 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
   worker_id_t bestMatchingWorkerId;
   int maxMatchingDeg = -1;
 
+  const size_t num_mandatory_requirements (numberOfMandatoryReqs (listJobReq));
+
   BOOST_FOREACH( sdpa::worker_id_t& workerId, workerList )
   {
     // assert if the node is reallly reserved!
@@ -360,7 +362,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
 
     if (*matchingDeg == maxMatchingDeg)
     {
-    	if(numberOfMandatoryReqs(listJobReq)<nMaxMandReq)
+    	if(num_mandatory_requirements<nMaxMandReq)
     	  continue;
 
     	if (pWorker->lastScheduleTime() >= last_schedule_time)
@@ -368,7 +370,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     }
 
     maxMatchingDeg = *matchingDeg;
-    nMaxMandReq = numberOfMandatoryReqs(listJobReq);
+    nMaxMandReq = num_mandatory_requirements;
     bestMatchingWorkerId = workerId;
     last_schedule_time = pWorker->lastScheduleTime();
   }
