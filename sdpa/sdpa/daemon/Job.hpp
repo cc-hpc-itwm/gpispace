@@ -220,9 +220,6 @@ namespace sdpa {
       int error_code() const;
       std::string error_message () const;
 
-      void error_code(int ec);
-      void error_message(std::string const &msg);
-
       bool isMasterJob() const;
 
       void set_owner(const sdpa::worker_id_t& owner);
@@ -236,8 +233,6 @@ namespace sdpa {
       // job FSM actions
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
       virtual void action_job_finished(const sdpa::events::JobFinishedEvent&);
-
-      void setResult(const sdpa::job_result_t& arg_results);
 
       //transitions
       void CancelJob(const sdpa::events::CancelJobEvent*);

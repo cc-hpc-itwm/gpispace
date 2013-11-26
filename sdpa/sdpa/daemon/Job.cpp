@@ -111,18 +111,6 @@ namespace sdpa {
       return m_error_message;
     }
 
-    void Job::error_code(int ec)
-    {
-      lock_type lock(mtx_);
-      m_error_code = ec;
-    }
-
-    void Job::error_message(std::string const &msg)
-    {
-      lock_type lock(mtx_);
-      m_error_message = msg;
-    }
-
     void Job::set_owner(const sdpa::worker_id_t& owner)
     {
       m_owner = owner;
@@ -154,23 +142,18 @@ namespace sdpa {
       return _is_master_job;
     }
 
-    void Job::setResult(const sdpa::job_result_t& arg_results)
-    {
-      result_ = arg_results;
-    }
-
     void Job::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)
     {
       lock_type lock(mtx_);
-      setResult(evt.result());
+      result_ = evt.result();
     }
 
     void Job::action_job_failed(const sdpa::events::JobFailedEvent& evt )
     {
       lock_type lock(mtx_);
-      setResult(evt.result());
-      error_code(evt.error_code());
-      error_message(evt.error_message());
+      result_ = evt.result();
+      m_error_code = evt.error_code();
+      m_error_message = evt.error_message();
     }
 
     //transitions
