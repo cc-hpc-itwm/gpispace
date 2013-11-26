@@ -338,15 +338,12 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     throw NoWorkerFoundException();
 
   sdpa::util::time_type last_schedule_time = sdpa::util::now();
-  size_t nMaxMandReq = numeric_limits<int>::max();
 
   // the worker id of the worker that fulfills most of the requirements
   // a matching degree 0 means that either at least a mandatory requirement
   // is not fulfilled or the worker does not have at all that capability
   worker_id_t bestMatchingWorkerId;
   int maxMatchingDeg = -1;
-
-  const size_t num_mandatory_requirements (numberOfMandatoryReqs (listJobReq));
 
   BOOST_FOREACH( sdpa::worker_id_t& workerId, workerList )
   {
@@ -362,15 +359,11 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
 
     if (*matchingDeg == maxMatchingDeg)
     {
-    	if(num_mandatory_requirements<nMaxMandReq)
-    	  continue;
-
     	if (pWorker->lastScheduleTime() >= last_schedule_time)
     	  continue;
     }
 
     maxMatchingDeg = *matchingDeg;
-    nMaxMandReq = num_mandatory_requirements;
     bestMatchingWorkerId = workerId;
     last_schedule_time = pWorker->lastScheduleTime();
   }
