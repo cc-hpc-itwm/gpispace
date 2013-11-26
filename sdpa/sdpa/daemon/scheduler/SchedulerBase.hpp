@@ -85,7 +85,6 @@ namespace sdpa {
 
       // thread related functions
       virtual void start();
-      virtual void stop();
       virtual void run();
 
       bool schedulingAllowed() { return !_worker_manager.common_queue_.empty(); }

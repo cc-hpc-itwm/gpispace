@@ -76,7 +76,6 @@ namespace daemon {
     virtual void releaseReservation(const sdpa::job_id_t& jobId) = 0;
 
     virtual void start() = 0;
-    virtual void stop() = 0;
     virtual void run() = 0;
   };
 }}

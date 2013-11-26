@@ -45,7 +45,19 @@ SchedulerBase::~SchedulerBase()
       SDPA_LOG_WARN("The scheduler has still "<<pending_jobs_queue_.size()<<" jobs into his queue!");
     }
 
-    stop();
+    bStopRequested = true;
+
+    m_thread_run.interrupt();
+    m_thread_feed.interrupt();
+
+    if (m_thread_run.joinable() )
+      m_thread_run.join();
+
+    if (m_thread_feed.joinable() )
+      m_thread_feed.join();
+
+    pending_jobs_queue_.clear();
+    _worker_manager.removeWorkers();
   }
   catch (std::exception const & ex)
   {
@@ -224,23 +236,6 @@ void SchedulerBase::start()
 
   m_thread_run = boost::thread(boost::bind(&SchedulerBase::run, this));
   m_thread_feed = boost::thread(boost::bind(&SchedulerBase::feedWorkers, this));
-}
-
-void SchedulerBase::stop()
-{
-  bStopRequested = true;
-
-  m_thread_run.interrupt();
-  m_thread_feed.interrupt();
-
-  if (m_thread_run.joinable() )
-    m_thread_run.join();
-
-  if (m_thread_feed.joinable() )
-    m_thread_feed.join();
-
-  pending_jobs_queue_.clear();
-  _worker_manager.removeWorkers();
 }
 
 void SchedulerBase::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
