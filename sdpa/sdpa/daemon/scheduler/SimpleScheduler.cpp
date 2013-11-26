@@ -68,12 +68,6 @@ void SimpleScheduler::assignJobsToWorkers()
 
 void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
 {
-  if(bStopRequested)
-  {
-      SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
-      return;
-  }
-
   Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
   if(pJob)
   {
