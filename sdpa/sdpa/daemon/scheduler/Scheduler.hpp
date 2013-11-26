@@ -67,6 +67,12 @@ namespace daemon {
     virtual bool has_job(const sdpa::job_id_t& job_id) = 0;
     virtual void delete_job(const sdpa::job_id_t & job_id) = 0;
     virtual void assignJobsToWorkers() = 0;
+
+    //! \note This is required to be called after the ctor, as the
+    //! threads use virtual functions, which are pure-virtual during
+    //! the ctor, thus there is a race if the ctor of derived
+    //! classes or the thread run first.
+    virtual void start_threads() = 0;
   };
 }}
 

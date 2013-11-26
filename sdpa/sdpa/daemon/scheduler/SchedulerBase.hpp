@@ -88,7 +88,7 @@ namespace sdpa {
       //! threads use virtual functions, which are pure-virtual during
       //! the ctor, thus there is a race if the ctor of derived
       //! classes or the thread run first.
-      void start_threads();
+      virtual void start_threads();
 
     private:
       void feedWorkers();
