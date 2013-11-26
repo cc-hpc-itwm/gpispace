@@ -325,7 +325,8 @@ namespace
   }
 }
 
-sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t& listJobReq, sdpa::worker_id_list_t& workerList )
+sdpa::worker_id_t WorkerManager::getBestMatchingWorker
+  (const job_requirements_t& listJobReq, sdpa::worker_id_list_t& workerList)
 {
   lock_type lock(mtx_);
 
