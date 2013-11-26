@@ -40,9 +40,6 @@ WorkerManager::WorkerManager()
   , iter_last_worker_ (worker_map_.end())
 {}
 
-/**
- * find worker
- */
 Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
   lock_type lock(mtx_);
@@ -53,9 +50,6 @@ Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) 
     throw WorkerNotFoundException(worker_id);
 }
 
-/**
- * find worker
- */
 const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
   lock_type lock(mtx_);
@@ -86,9 +80,6 @@ const Worker::worker_id_t& WorkerManager::findSubmOrAckWorker(const sdpa::job_id
   throw NoWorkerFoundException();
 }
 
-/**
- * add new worker
- */
 void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
                                 boost::optional<unsigned int> capacity,
                                 const capabilities_set_t& cpbSet,
