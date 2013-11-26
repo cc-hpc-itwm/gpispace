@@ -311,17 +311,18 @@ size_t numberOfMandatoryReqs( const job_requirements_t& listJobReq )
 namespace
 {
   template <typename TPtrWorker, typename TReqSet>
-    boost::optional<std::size_t> matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set)
+    boost::optional<std::size_t> matchRequirements
+      (const TPtrWorker& pWorker, const TReqSet job_req_set)
   {
     std::size_t matchingDeg (0);
 
     BOOST_FOREACH (we::type::requirement_t req, job_req_set.getReqList())
     {
-      if( pWorker->hasCapability(req.value()) )
+      if (pWorker->hasCapability (req.value()))
       {
-        matchingDeg++;
+        ++matchingDeg;
       }
-      else if( req.is_mandatory())
+      else if (req.is_mandatory())
       {
         return boost::none;
       }
@@ -334,20 +335,22 @@ namespace
 sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t& listJobReq, sdpa::worker_id_list_t& workerList ) throw (NoWorkerFoundException)
 {
   lock_type lock(mtx_);
-  if( worker_map_.empty() )
+
+  if (worker_map_.empty())
     throw NoWorkerFoundException();
 
   boost::optional<sdpa::util::time_type> last_schedule_time;
   boost::optional<worker_id_t> bestMatchingWorkerId;
   boost::optional<std::size_t> maxMatchingDeg;
 
-  BOOST_FOREACH( sdpa::worker_id_t& workerId, workerList )
+  BOOST_FOREACH (sdpa::worker_id_t workerId, workerList)
   {
-    Worker::ptr_t pWorker = worker_map_[workerId];
+    const Worker::ptr_t pWorker (worker_map_[workerId]);
     if (pWorker->disconnected())
       continue;
 
-    boost::optional<std::size_t> matchingDeg = matchRequirements( pWorker, listJobReq); // only proper capabilities of the worker
+    const boost::optional<std::size_t> matchingDeg
+      (matchRequirements (pWorker, listJobReq));
 
     if (matchingDeg < maxMatchingDeg)
       continue;
