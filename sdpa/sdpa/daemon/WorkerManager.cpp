@@ -37,7 +37,6 @@ using namespace sdpa::daemon;
 
 WorkerManager::WorkerManager()
   : SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
-  , iter_last_worker_ (worker_map_.end())
 {}
 
 Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
@@ -113,30 +112,8 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
   {
     DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and unlimited capacity");
   }
-
-  if(worker_map_.size() == 1)
-    iter_last_worker_ = worker_map_.begin();
 }
 
-
-/**
- * get next worker to be served (Round-Robin scheduling)
- */
-const Worker::ptr_t& WorkerManager::getNextWorker()
-{
-  lock_type lock(mtx_);
-
-  if( worker_map_.empty() )
-    throw NoWorkerFoundException();
-
-  if (iter_last_worker_ == worker_map_.end())
-    iter_last_worker_ = worker_map_.begin();
-
-  worker_map_t::iterator iter(iter_last_worker_);
-  iter_last_worker_++;
-
-  return iter->second;
-}
 
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {

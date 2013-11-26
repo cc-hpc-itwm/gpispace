@@ -55,8 +55,6 @@ namespace sdpa { namespace daemon {
     void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
     void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
-    const Worker::ptr_t& getNextWorker();
-
     void dispatchJob(const sdpa::job_id_t& jobId);
     void deleteJob(const sdpa::job_id_t& jobId);
     void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id );
@@ -79,7 +77,6 @@ protected:
     worker_map_t  worker_map_;
 
     SDPA_DECLARE_LOGGER();
-    worker_map_t::iterator iter_last_worker_;
 
     JobQueue common_queue_;
 
