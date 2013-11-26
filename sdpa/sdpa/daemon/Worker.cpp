@@ -76,15 +76,8 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 void Worker::deleteJob(const sdpa::job_id_t &job_id)
 {
   lock_type lock(mtx_);
-  DLOG(TRACE, "deleting job " << job_id << " from worker " << name());
-
-  if( submitted().erase(job_id) ) {
-      DLOG(TRACE, "removed the job "<<job_id.str()<<" submitted queue");
-  }
-
-  if( acknowledged().erase(job_id) ) {
-      DLOG(TRACE, "removed the job "<<job_id.str()<<" acknowledged queue");
-  }
+  submitted_.erase (job_id);
+  acknowledged_.erase (job_id);
 }
 
 void Worker::print()
