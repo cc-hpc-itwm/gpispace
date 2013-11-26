@@ -19,7 +19,15 @@
 #define SDPA_SchedulerBase_HPP 1
 
 #include <boost/thread.hpp>
-#include <sdpa/daemon/scheduler/Scheduler.hpp>
+#include <sdpa/daemon/Job.hpp>
+#include <sdpa/daemon/Worker.hpp>
+#include <sdpa/daemon/exceptions.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
+
+#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/daemon/scheduler/Reservation.hpp>
+
+#include <boost/optional.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 //#include <sdpa/daemon/SynchronizedQueue.hpp>
@@ -29,7 +37,7 @@
 
 namespace sdpa {
   namespace daemon {
-    class SchedulerBase : public Scheduler
+    class SchedulerBase
     {
     public:
       typedef sdpa::shared_ptr<SchedulerBase> ptr_t;
@@ -44,10 +52,12 @@ namespace sdpa {
       virtual void enqueueJob(const sdpa::job_id_t&);
       virtual void schedule(const sdpa::job_id_t&);
       void delete_job(const sdpa::job_id_t&);
+      virtual void assignJobsToWorkers() = 0;
 
       void schedule_first(const sdpa::job_id_t&);
 
       void rescheduleWorkerJob( const Worker::worker_id_t&, const sdpa::job_id_t&);
+      virtual void rescheduleJob(const sdpa::job_id_t&) = 0;
       void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
       virtual bool has_job(const sdpa::job_id_t&);
 

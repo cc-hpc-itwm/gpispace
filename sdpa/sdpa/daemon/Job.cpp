@@ -1,7 +1,7 @@
 #include "Job.hpp"
 
 #include <sdpa/daemon/IAgent.hpp>
-#include <sdpa/daemon/scheduler/Scheduler.hpp>
+#include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/JobResultsReplyEvent.hpp>
@@ -212,7 +212,7 @@ namespace sdpa {
       process_event(MSMRetrieveJobResultsEvent(pEvt, pAgent, result()));
     }
 
-    void Job::Reschedule(sdpa::daemon::Scheduler*  pSched)
+    void Job::Reschedule(sdpa::daemon::SchedulerBase*  pSched)
     {
       lock_type lock(mtx_);
       process_event(MSMRescheduleEvent (pSched, id()));

@@ -22,7 +22,6 @@
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/unordered_map.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <sdpa/daemon/scheduler/Scheduler.hpp>
 
 #include <boost/optional.hpp>
 

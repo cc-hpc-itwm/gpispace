@@ -117,7 +117,7 @@ namespace sdpa {
       virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
       virtual void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
-      Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
+      SchedulerBase::ptr_t scheduler() const {return ptr_scheduler_;}
     protected:
 
       // stages
@@ -236,7 +236,7 @@ namespace sdpa {
 
     protected:
       JobManager::ptr_t ptr_job_man_;
-      Scheduler::ptr_t ptr_scheduler_;
+      SchedulerBase::ptr_t ptr_scheduler_;
       we::mgmt::layer* ptr_workflow_engine_;
 
     private:
