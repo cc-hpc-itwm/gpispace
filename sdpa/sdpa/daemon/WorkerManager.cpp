@@ -157,11 +157,7 @@ void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 void WorkerManager::deleteJob (sdpa::job_id_t const & job)
 {
   lock_type lock(mtx_);
-  if (common_queue_.erase(job))
-  {
-    SDPA_LOG_DEBUG("removed job from the central queue...");
-  }
-  else
+  if (!common_queue_.erase(job))
   {
     BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
                   | boost::adaptors::filtered
