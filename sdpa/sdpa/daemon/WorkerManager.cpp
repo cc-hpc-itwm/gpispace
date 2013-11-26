@@ -375,7 +375,6 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
 
   if(maxMatchingDeg != -1)
   {
-      assert (bestMatchingWorkerId != worker_id_t());
       return bestMatchingWorkerId;
   }
   else
