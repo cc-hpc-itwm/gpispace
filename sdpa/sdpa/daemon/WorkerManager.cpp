@@ -204,7 +204,6 @@ bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
   lock_type lock(mtx_);
   if( common_queue_.has_item(job_id) )
   {
-    SDPA_LOG_DEBUG( "The job " << job_id<<" is in the common queue" );
     return true;
   }
 
@@ -213,7 +212,6 @@ bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
                   (boost::bind (&Worker::has_job, _1, job_id))
                 )
   {
-    SDPA_LOG_DEBUG( "The job " << job_id<<" is already assigned to the worker "<<iter->first );
     return true;
   }
 
