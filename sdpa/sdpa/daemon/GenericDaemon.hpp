@@ -185,8 +185,6 @@ namespace sdpa {
       virtual void submitWorkflow(const job_id_t& id);
 
       // workers
-      const Worker::ptr_t& findWorker(const Worker::worker_id_t&) const;
-      void getWorkerCapabilities(const Worker::worker_id_t&, sdpa::capabilities_set_t&);
       void serveJob(const Worker::worker_id_t&, const job_id_t&);
       void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
@@ -214,6 +212,16 @@ namespace sdpa {
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const
       {
         return jobManager()->getJobRequirements(jobId);
+      }
+
+      // forwaring to scheduler() only:
+      Worker::ptr_t const & findWorker(const Worker::worker_id_t& worker_id ) const
+      {
+        return scheduler()->findWorker(worker_id);
+      }
+      void getWorkerCapabilities(const Worker::worker_id_t& worker_id, sdpa::capabilities_set_t& wCpbset)
+      {
+        scheduler()->getWorkerCapabilities(worker_id, wCpbset);
       }
 
     protected:

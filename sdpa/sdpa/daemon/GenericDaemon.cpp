@@ -1065,11 +1065,6 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
-Worker::ptr_t const & GenericDaemon::findWorker(const Worker::worker_id_t& worker_id ) const
-{
-  return scheduler()->findWorker(worker_id);
-}
-
 void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 {
   if( !masterInfo.is_registered() )
@@ -1143,11 +1138,6 @@ void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
   }
 
    scheduler()->getAllWorkersCapabilities(cpbset);
-}
-
-void GenericDaemon::getWorkerCapabilities(const Worker::worker_id_t& worker_id, sdpa::capabilities_set_t& wCpbset)
-{
-  scheduler()->getWorkerCapabilities(worker_id, wCpbset);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)
