@@ -39,11 +39,6 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
 
 SchedulerBase::~SchedulerBase()
 {
-  if( pending_jobs_queue_.size() )
-  {
-    SDPA_LOG_WARN("The scheduler has still "<<pending_jobs_queue_.size()<<" jobs into his queue!");
-  }
-
   bStopRequested = true;
 
   m_thread_run.interrupt();
