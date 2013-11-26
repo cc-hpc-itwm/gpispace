@@ -31,9 +31,8 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
                       )
   , SDPA_INIT_LOGGER (ptr_comm_handler_->name())
   , m_timeout(boost::posix_time::milliseconds(100))
-{
-  m_agent_name = ptr_comm_handler_->name();
-}
+  , m_agent_name (ptr_comm_handler_->name())
+{}
 
 void SchedulerBase::start_threads()
 {
