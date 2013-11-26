@@ -352,13 +352,13 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     const boost::optional<std::size_t> matchingDeg
       (matchRequirements (pWorker, listJobReq));
 
-    if (matchingDeg < maxMatchingDeg)
-      continue;
-
-    if (matchingDeg == maxMatchingDeg)
+    if ( matchingDeg < maxMatchingDeg
+      || ( matchingDeg == maxMatchingDeg
+        && pWorker->lastScheduleTime() >= last_schedule_time
+         )
+       )
     {
-    	if (pWorker->lastScheduleTime() >= last_schedule_time)
-    	  continue;
+      continue;
     }
 
     maxMatchingDeg = matchingDeg;
