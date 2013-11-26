@@ -120,7 +120,7 @@ void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
 void CoallocationScheduler::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap)
 {
   lock_type lock_table(mtx_alloc_table_);
-  ptr_worker_man_->reserveWorker(matchingWorkerId);
+  _worker_manager.reserveWorker(matchingWorkerId);
   // allocate this worker to the job with the jobId
 
   allocation_table_t::iterator it(allocation_table_.find(jobId));
@@ -175,7 +175,7 @@ void CoallocationScheduler::releaseReservation(const sdpa::job_id_t& jobId)
 void CoallocationScheduler::getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerList)
 {
   workerList.clear();
-  ptr_worker_man_->getListWorkersNotReserved(workerList);
+  _worker_manager.getListWorkersNotReserved(workerList);
 }
 
 void CoallocationScheduler::printAllocationTable()

@@ -66,7 +66,7 @@ namespace sdpa {
       virtual void getWorkerList(sdpa::worker_id_list_t&);
       void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
 
-      virtual size_t numberOfWorkers() { return ptr_worker_man_->numberOfWorkers(); }
+      virtual size_t numberOfWorkers() { return _worker_manager.numberOfWorkers(); }
 
       virtual bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
       virtual void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
@@ -91,12 +91,12 @@ namespace sdpa {
       virtual void print();
       void printPendingJobs() { pending_jobs_queue_.print(); }
 
-      bool schedulingAllowed() { return !ptr_worker_man_->common_queue_.empty(); }
-      job_id_t nextJobToSchedule() { return ptr_worker_man_->common_queue_.pop(); }
+      bool schedulingAllowed() { return !_worker_manager.common_queue_.empty(); }
+      job_id_t nextJobToSchedule() { return _worker_manager.common_queue_.pop(); }
 
     protected:
       JobQueue pending_jobs_queue_;
-      WorkerManager::ptr_t ptr_worker_man_;
+      WorkerManager _worker_manager;
 
       bool bStopRequested;
       boost::thread m_thread_run;

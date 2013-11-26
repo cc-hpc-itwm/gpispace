@@ -23,7 +23,7 @@ using namespace sdpa::events;
 using namespace std;
 
 SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
-  : ptr_worker_man_(new WorkerManager())
+  : _worker_manager()
   , bStopRequested(false)
   , ptr_comm_handler_(pCommHandler)
   , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
@@ -64,7 +64,7 @@ void SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
 {
-  ptr_worker_man_->addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
+  _worker_manager.addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
   cond_workers_registered.notify_all();
   cond_feed_workers.notify_one();
 }
@@ -124,7 +124,7 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id ) throw (
     const Worker::ptr_t& pWorker = findWorker(worker_id);
     pWorker->set_disconnected(true);
 
-    sdpa::job_id_list_t workerJobList(ptr_worker_man_->getJobListAndCleanQueues(pWorker));
+    sdpa::job_id_list_t workerJobList(_worker_manager.getJobListAndCleanQueues(pWorker));
     reschedule(worker_id, workerJobList);
 
     if( !workerJobList.empty() )
@@ -134,7 +134,7 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id ) throw (
     }
 
     // delete the worker from the worker map
-    ptr_worker_man_->deleteWorker(worker_id);
+    _worker_manager.deleteWorker(worker_id);
   }
   catch (const WorkerNotFoundException& ex)
   {
@@ -151,7 +151,7 @@ void SchedulerBase::delete_job (sdpa::job_id_t const & job)
     SDPA_LOG_DEBUG("removed job from the central queue...");
   }
   else
-    ptr_worker_man_->deleteJob(job);
+    _worker_manager.deleteJob(job);
 }
 
 void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
@@ -160,7 +160,7 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
   if(pJob)
   {
     try {
-        ptr_worker_man_->dispatchJob(jobId);
+        _worker_manager.dispatchJob(jobId);
         // put the job into the running state
         pJob->Dispatch();
         cond_feed_workers.notify_one();
@@ -206,17 +206,17 @@ void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
 
 const Worker::ptr_t& SchedulerBase::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
 {
-  return ptr_worker_man_->findWorker(worker_id);
+  return _worker_manager.findWorker(worker_id);
 }
 
 const Worker::worker_id_t& SchedulerBase::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
-  return ptr_worker_man_->findWorker(job_id);
+  return _worker_manager.findWorker(job_id);
 }
 
 const Worker::worker_id_t& SchedulerBase::findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
-  return ptr_worker_man_->findSubmOrAckWorker(job_id);
+  return _worker_manager.findSubmOrAckWorker(job_id);
 }
 
 void SchedulerBase::start()
@@ -241,13 +241,13 @@ void SchedulerBase::stop()
     m_thread_feed.join();
 
   pending_jobs_queue_.clear();
-  ptr_worker_man_->removeWorkers();
+  _worker_manager.removeWorkers();
 }
 
 void SchedulerBase::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
 {
   workerList.clear();
-  ptr_worker_man_->getListNotFullWorkers(workerList);
+  _worker_manager.getListNotFullWorkers(workerList);
 }
 
 sdpa::worker_id_t SchedulerBase::findSuitableWorker(const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
@@ -256,7 +256,7 @@ sdpa::worker_id_t SchedulerBase::findSuitableWorker(const job_requirements_t& jo
   sdpa::worker_id_t matchingWorkerId;
 
   try {
-      matchingWorkerId = ptr_worker_man_->getBestMatchingWorker(job_reqs, listAvailWorkers);
+      matchingWorkerId = _worker_manager.getBestMatchingWorker(job_reqs, listAvailWorkers);
       sdpa::worker_id_list_t::iterator it = std::find(listAvailWorkers.begin(), listAvailWorkers.end(), matchingWorkerId);
       listAvailWorkers.erase(it);
   }
@@ -327,7 +327,7 @@ void SchedulerBase::print()
     SDPA_LOG_DEBUG("No job to be scheduled left!");
   }
 
-  ptr_worker_man_->print();
+  _worker_manager.print();
 }
 
 void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw( WorkerNotFoundException, JobNotFoundException)
@@ -364,7 +364,7 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
     // check if there is an allocation list for this job
     // (assert that the head of this list id worker_id!)
     // free all the workers in this list, i.e. mark them as not reserved
-    ptr_worker_man_->deleteWorkerJob(worker_id, jobId);
+    _worker_manager.deleteWorkerJob(worker_id, jobId);
     cond_feed_workers.notify_one();
   }
   catch(JobNotDeletedException const& ex1)
@@ -386,13 +386,13 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
 
 bool SchedulerBase::has_job(const sdpa::job_id_t& job_id)
 {
-  return pending_jobs_queue_.has_item(job_id)|| ptr_worker_man_->has_job(job_id);
+  return pending_jobs_queue_.has_item(job_id)|| _worker_manager.has_job(job_id);
 }
 
 void SchedulerBase::getWorkerList(sdpa::worker_id_list_t& workerList)
 {
   workerList.clear();
-  ptr_worker_man_->getWorkerList(workerList);
+  _worker_manager.getWorkerList(workerList);
 }
 
 bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
@@ -405,7 +405,7 @@ bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sd
 
   try
   {
-      return ptr_worker_man_->addCapabilities(worker_id, cpbset);
+      return _worker_manager.addCapabilities(worker_id, cpbset);
   }
   catch(const std::exception& exc)
   {
@@ -421,12 +421,12 @@ void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const
       return;
   }
 
-  ptr_worker_man_->removeCapabilities(worker_id, cpbset);
+  _worker_manager.removeCapabilities(worker_id, cpbset);
 }
 
 void SchedulerBase::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
 {
-  ptr_worker_man_->getCapabilities(m_agent_name, cpbset);
+  _worker_manager.getCapabilities(m_agent_name, cpbset);
 }
 
 void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sdpa::capabilities_set_t& cpbset)
@@ -444,5 +444,5 @@ void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sd
 
 void SchedulerBase::schedule_first(const sdpa::job_id_t& jid)
 {
-  ptr_worker_man_->common_queue_.push_front(jid);
+  _worker_manager.common_queue_.push_front(jid);
 }
