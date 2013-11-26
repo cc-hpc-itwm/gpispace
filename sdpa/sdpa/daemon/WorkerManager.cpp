@@ -304,9 +304,8 @@ void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabili
 
 namespace
 {
-  template <typename TPtrWorker, typename TReqSet>
-    boost::optional<std::size_t> matchRequirements
-      (const TPtrWorker& pWorker, const TReqSet job_req_set)
+  boost::optional<std::size_t> matchRequirements
+    (const Worker::ptr_t& pWorker, const job_requirements_t& job_req_set)
   {
     std::size_t matchingDeg (0);
 
