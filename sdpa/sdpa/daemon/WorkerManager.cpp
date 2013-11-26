@@ -208,12 +208,14 @@ bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
     return true;
   }
 
-  for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-    if(iter->second->has_job( job_id ))
-    {
-      SDPA_LOG_DEBUG( "The job " << job_id<<" is already assigned to the worker "<<iter->first );
-      return true;
-    }
+  BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
+                | boost::adaptors::filtered
+                  (boost::bind (&Worker::has_job, _1, job_id))
+                )
+  {
+    SDPA_LOG_DEBUG( "The job " << job_id<<" is already assigned to the worker "<<iter->first );
+    return true;
+  }
 
   return false;
 }
