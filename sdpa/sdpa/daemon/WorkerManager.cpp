@@ -311,7 +311,7 @@ size_t numberOfMandatoryReqs( const job_requirements_t& listJobReq )
 namespace
 {
   template <typename TPtrWorker, typename TReqSet>
-  int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set, bool bOwn = false )
+  int matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set)
   {
     int matchingDeg = 0;
 
@@ -320,7 +320,7 @@ namespace
     for( typename TReqSet::const_iterator it = listR.begin(); it != listR.end(); it++ )
     {
       //LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<it->value()<<" ... ");
-      if( pWorker->hasCapability(it->value(), bOwn ) )
+      if( pWorker->hasCapability(it->value(), false) )
       {
         // increase the number of matchings
         matchingDeg++;
@@ -361,7 +361,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     if (pWorker->disconnected())
       continue;
 
-    int matchingDeg = matchRequirements( pWorker, listJobReq, false ); // only proper capabilities of the worker
+    int matchingDeg = matchRequirements( pWorker, listJobReq); // only proper capabilities of the worker
 
     DLOG(TRACE, "matching_degree(" << workerId << ") = " << matchingDeg);
     if (matchingDeg == -1 )
