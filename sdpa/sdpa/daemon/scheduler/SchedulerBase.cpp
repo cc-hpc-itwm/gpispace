@@ -39,33 +39,23 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
 
 SchedulerBase::~SchedulerBase()
 {
-  try  {
-    if( pending_jobs_queue_.size() )
-    {
-      SDPA_LOG_WARN("The scheduler has still "<<pending_jobs_queue_.size()<<" jobs into his queue!");
-    }
-
-    bStopRequested = true;
-
-    m_thread_run.interrupt();
-    m_thread_feed.interrupt();
-
-    if (m_thread_run.joinable() )
-      m_thread_run.join();
-
-    if (m_thread_feed.joinable() )
-      m_thread_feed.join();
-
-    pending_jobs_queue_.clear();
-  }
-  catch (std::exception const & ex)
+  if( pending_jobs_queue_.size() )
   {
-    SDPA_LOG_ERROR("exception during SchedulerBase::stop(): " << ex.what());
+    SDPA_LOG_WARN("The scheduler has still "<<pending_jobs_queue_.size()<<" jobs into his queue!");
   }
-  catch (...)
-  {
-    SDPA_LOG_ERROR("unexpected exception during SchedulerBase::stop()");
-  }
+
+  bStopRequested = true;
+
+  m_thread_run.interrupt();
+  m_thread_feed.interrupt();
+
+  if (m_thread_run.joinable() )
+    m_thread_run.join();
+
+  if (m_thread_feed.joinable() )
+    m_thread_feed.join();
+
+  pending_jobs_queue_.clear();
 }
 
 
