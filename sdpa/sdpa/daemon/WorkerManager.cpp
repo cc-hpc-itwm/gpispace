@@ -203,12 +203,8 @@ bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
 
-  if( common_queue_.has_item(job_id) )
-  {
-    return true;
-  }
-
-  return !boost::empty ( worker_map_
+  return common_queue_.has_item(job_id)
+      || !boost::empty ( worker_map_
                        | boost::adaptors::map_values
                        | boost::adaptors::filtered
                          (boost::bind (&Worker::has_job, _1, job_id))
