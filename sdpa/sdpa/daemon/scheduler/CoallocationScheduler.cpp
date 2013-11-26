@@ -178,22 +178,6 @@ void CoallocationScheduler::getListNotAllocatedWorkers(sdpa::worker_id_list_t& w
   _worker_manager.getListWorkersNotReserved(workerList);
 }
 
-void CoallocationScheduler::printAllocationTable()
-{
-  lock_type lock(mtx_alloc_table_);
-  ostringstream oss;
-  BOOST_FOREACH(const allocation_table_t::value_type& pairJLW, allocation_table_)
-  {
-    oss<<pairJLW.first<<" : ";
-    worker_id_list_t workerList(pairJLW.second->getWorkerList());
-    BOOST_FOREACH(const sdpa::worker_id_t& wid, workerList)
-      oss<<wid<<" ";
-    oss<<endl;
-  }
-
-  LOG(INFO, "Content of the allocation table:\n"<<oss.str());
-}
-
 sdpa::job_id_t CoallocationScheduler::getAssignedJob(const sdpa::worker_id_t& wid)
 {
   lock_type lock(mtx_alloc_table_);

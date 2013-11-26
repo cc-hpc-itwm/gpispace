@@ -80,21 +80,6 @@ void Worker::deleteJob(const sdpa::job_id_t &job_id)
   acknowledged_.erase (job_id);
 }
 
-void Worker::print()
-{
-  lock_type lock(mtx_);
-  // print the values of the restored job queue
-  if( submitted_.size() ) {
-      SDPA_LOG_INFO("There are still "<<submitted_.size()<<" submitted jobs:");
-      submitted_.print();
-  }
-
-  if(acknowledged_.size()) {
-      SDPA_LOG_INFO("There are still "<<acknowledged_.size()<<" acknowledged jobs:");
-      acknowledged_.print();
-  }
-}
-
 unsigned int Worker::nbAllocatedJobs()
 {
   lock_type lock(mtx_);

@@ -421,14 +421,12 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   ptrScheduler->addCapabilities(lastWorkerId, cpbSet);
 
-  //ptrScheduler->printAllocationTable();
   // assign jobs to workers
   ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
   workerList.clear();
   ptrScheduler->getListNotAllocatedWorkers(workerList);
   // all workers should be assigned a job, including the last one
   BOOST_CHECK(workerList.empty());
-  //ptrScheduler->printAllocationTable();
 }
 
 BOOST_AUTO_TEST_CASE(testCoallocSched)
@@ -587,7 +585,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   ptrScheduler->checkAllocations();
 
   LOG(DEBUG, "Initial allocations ...");
-  ptrScheduler->printAllocationTable();
   // all the workers should have assigned jobs
   sdpa::worker_id_list_t workerList;
   ptrScheduler->getListNotAllocatedWorkers(workerList);
@@ -621,7 +618,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
   ptrScheduler->assignJobsToWorkers();
   ptrScheduler->checkAllocations();
-  ptrScheduler->printAllocationTable();
 
   jobId = ptrScheduler->getAssignedJob(lastWorkerId);
   BOOST_CHECK(jobId==oldJobId);

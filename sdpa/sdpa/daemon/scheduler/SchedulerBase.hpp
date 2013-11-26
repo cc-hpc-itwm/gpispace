@@ -88,9 +88,6 @@ namespace sdpa {
       virtual void stop();
       virtual void run();
 
-      virtual void print();
-      void printPendingJobs() { pending_jobs_queue_.print(); }
-
       bool schedulingAllowed() { return !_worker_manager.common_queue_.empty(); }
       job_id_t nextJobToSchedule() { return _worker_manager.common_queue_.pop(); }
 

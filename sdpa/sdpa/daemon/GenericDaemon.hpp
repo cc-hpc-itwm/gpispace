@@ -141,15 +141,6 @@ namespace sdpa {
     	  return (cpb.owner()==name());
       }
 
-      virtual void print()
-      {
-    	  SDPA_LOG_DEBUG("The content of the JobManager is:");
-    	  jobManager()->print();
-
-    	  SDPA_LOG_DEBUG("The content of the Scheduler is:");
-    	  scheduler()->print();
-      }
-
       // event handlers
       virtual void perform(const seda::IEvent::Ptr&);
       virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);

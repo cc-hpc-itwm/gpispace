@@ -144,8 +144,6 @@ namespace sdpa { namespace daemon {
 
     unsigned int nbAllocatedJobs();
 
-    void print();
-
     // methods related to reservation
     bool isReserved();
     void reserve();

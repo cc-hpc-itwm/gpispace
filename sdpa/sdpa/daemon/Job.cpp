@@ -235,18 +235,4 @@ namespace sdpa {
       lock_type lock(mtx_);
       process_event (MSMResumeJobEvent (NULL, id(), owner()));
     }
-
-    std::string Job::print_info()
-    {
-        std::ostringstream os;
-        os<<std::endl;
-        os<<"id: "<<id_<<std::endl;
-        os<<"status: "<<getStatus()<<std::endl;
-        os<<"parent: "<<parent_<<std::endl;
-        os<<"error-code: " << m_error_code << std::endl;
-        os<<"error-message: \"" << m_error_message << "\"" << std::endl;
-        //os<<"description: "<<desc_<<std::endl;
-
-        return os.str();
-    }
 }}

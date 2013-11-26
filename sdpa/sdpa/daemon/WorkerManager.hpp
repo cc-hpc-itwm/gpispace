@@ -77,27 +77,6 @@ namespace sdpa { namespace daemon {
 
     friend class SchedulerBase; // SchedulerBase::schedule_first()
 
-    void print()
-    {
-      if(!common_queue_.empty())
-      {
-        SDPA_LOG_DEBUG("The content of the common queue is: ");
-        common_queue_.print();
-      }
-      else
-        SDPA_LOG_DEBUG("No job without preferences available!");
-
-      if( worker_map_.begin() == worker_map_.end() )
-      {
-        SDPA_LOG_DEBUG("The worker manager has NO worker! ");
-      }
-      else
-      {
-        for( worker_map_t::iterator it = worker_map_.begin(); it!=worker_map_.end(); it++)
-          (*it).second->print();
-      }
-    }
-
 protected:
     worker_map_t  worker_map_;
 

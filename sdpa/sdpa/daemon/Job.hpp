@@ -253,8 +253,6 @@ namespace sdpa {
       void Pause(sdpa::daemon::IAgent*);
       void Resume(sdpa::daemon::IAgent*);
 
-      std::string print_info();
-
     private:
       mutex_type mtx_;
       sdpa::job_id_t id_;

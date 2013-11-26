@@ -85,29 +85,6 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
   }
 }
 
-std::string JobManager::print() const
-{
-  lock_type lock(mtx_);
-  std::ostringstream os;
-
-  DMLOG (TRACE, "Begin dumping the JobManager...");
-
-  if( job_map_.begin() == job_map_.end() )
-    os<<"The JobManager is empty!";
-  else
-  {
-    os<<"The list of jobs still owned by the JobManager:"<<std::endl;
-    for ( job_map_t::const_iterator it (job_map_.begin()); it != job_map_.end(); ++it )
-    {
-      DMLOG (TRACE, it->second->print_info());
-    }
-  }
-
-  DMLOG (TRACE, "End dumping the JobManager...");
-
-  return os.str();
-}
-
 const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements)
 {
   lock_type lock(mtx_);

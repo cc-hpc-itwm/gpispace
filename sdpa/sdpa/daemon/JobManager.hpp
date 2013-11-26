@@ -51,8 +51,6 @@ namespace sdpa {
 
       void resubmitResults(IAgent* );
 
-      std::string print() const;
-
   protected:
       SDPA_DECLARE_LOGGER();
       job_map_t job_map_;

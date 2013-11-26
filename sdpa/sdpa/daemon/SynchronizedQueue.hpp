@@ -193,23 +193,6 @@ namespace sdpa { namespace daemon {
       container_.clear();
     }
 
-    void print(const std::string& msg="")
-    {
-    	lock_type lock(mtx_);
-    	std::ostringstream oss;
-   		oss<<!msg.empty()?msg:"";
-    	oss<<"{";
-    	bool bFirst = true;
-    	for(const_iterator it = container_.begin(); it != container_.end(); it++)
-    	{
-    		bFirst?bFirst=false:oss<<",";
-    		oss<<it->str();
-    	}
-    	oss<<"}";
-
-    	LOG(TRACE, oss.str());
-    }
-
   private:
     mutable mutex_type mtx_;
     condition_type not_empty_;

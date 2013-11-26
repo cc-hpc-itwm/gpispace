@@ -130,7 +130,6 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id ) throw (
     if( !workerJobList.empty() )
     {
         SDPA_LOG_WARN( "The worker " << worker_id << " has still has assigned jobs!");
-        pWorker->print();
     }
 
     // delete the worker from the worker map
@@ -313,21 +312,6 @@ void SchedulerBase::run()
         throw;
     }
   }
-}
-
-void SchedulerBase::print()
-{
-  if(!pending_jobs_queue_.empty())
-  {
-    SDPA_LOG_DEBUG("The content of agent's scheduler queue is:");
-    pending_jobs_queue_.print();
-  }
-  else
-  {
-    SDPA_LOG_DEBUG("No job to be scheduled left!");
-  }
-
-  _worker_manager.print();
 }
 
 void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw( WorkerNotFoundException, JobNotFoundException)
