@@ -190,10 +190,6 @@ void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
   pSdpaEvt->handleBy(this);
 }
 
-void GenericDaemon::addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList)
-{
-  return jobManager()->addJob(jid, pJob, reqList);
-}
 
 namespace
 {
@@ -799,21 +795,6 @@ bool GenericDaemon::canceled(const id_type& workflowId)
   sendEventToSelf(pEvtCancelJobAck);
 
   return true;
-}
-
-Job::ptr_t GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
-{
-  return jobManager()->findJob(job_id);
-}
-
-void GenericDaemon::deleteJob(const sdpa::job_id_t& jobId)
-{
-  jobManager()->deleteJob(jobId);
-}
-
-const job_requirements_t GenericDaemon::getJobRequirements(const sdpa::job_id_t& jobId) const
-{
-  return jobManager()->getJobRequirements(jobId);
 }
 
 /*void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )

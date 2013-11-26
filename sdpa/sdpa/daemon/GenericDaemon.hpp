@@ -118,7 +118,6 @@ namespace sdpa {
       virtual void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
       Scheduler::ptr_t scheduler() const {return ptr_scheduler_;}
-      void addJob(const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList = job_requirements_t());
     protected:
 
       // stages
@@ -192,11 +191,30 @@ namespace sdpa {
       void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
       // jobs
-      Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const;
-      void deleteJob(const sdpa::job_id_t& );
       std::string gen_id() { return sdpa::JobId ().str (); }
-      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
-      virtual bool hasJobs() { return (jobManager()->getNumberOfJobs()>0); }
+
+    public:
+      // forwarding to jobManager() only:
+      void addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList = job_requirements_t())
+      {
+        return jobManager()->addJob(jid, pJob, reqList);
+      }
+      bool hasJobs()
+      {
+        return (jobManager()->getNumberOfJobs()>0);
+      }
+      Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const
+      {
+        return jobManager()->findJob(job_id);
+      }
+      void deleteJob(const sdpa::job_id_t& jobId)
+      {
+        jobManager()->deleteJob(jobId);
+      }
+      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const
+      {
+        return jobManager()->getJobRequirements(jobId);
+      }
 
     protected:
       JobManager::ptr_t jobManager() const { return ptr_job_man_; }
