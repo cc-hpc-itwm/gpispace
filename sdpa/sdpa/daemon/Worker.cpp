@@ -61,8 +61,8 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
   lock_type lock(mtx_);
   try
   {
-      acknowledged().push(job_id);
-      submitted().erase(job_id);
+      acknowledged_.push(job_id);
+      submitted_.erase(job_id);
       DMLOG(TRACE, "acknowledged job(" << job_id.str() << ")");
       return true;
   }
@@ -84,21 +84,21 @@ void Worker::print()
 {
   lock_type lock(mtx_);
   // print the values of the restored job queue
-  if( submitted().size() ) {
-      SDPA_LOG_INFO("There are still "<<submitted().size()<<" submitted jobs:");
-      submitted().print();
+  if( submitted_.size() ) {
+      SDPA_LOG_INFO("There are still "<<submitted_.size()<<" submitted jobs:");
+      submitted_.print();
   }
 
-  if(acknowledged().size()) {
-      SDPA_LOG_INFO("There are still "<<acknowledged().size()<<" acknowledged jobs:");
-      acknowledged().print();
+  if(acknowledged_.size()) {
+      SDPA_LOG_INFO("There are still "<<acknowledged_.size()<<" acknowledged jobs:");
+      acknowledged_.print();
   }
 }
 
 unsigned int Worker::nbAllocatedJobs()
 {
   lock_type lock(mtx_);
-  unsigned int nJobs = /*pending().size() + */ submitted().size() + acknowledged().size();
+  unsigned int nJobs = /*pending().size() + */ submitted_.size() + acknowledged_.size();
   return nJobs;
 }
 
