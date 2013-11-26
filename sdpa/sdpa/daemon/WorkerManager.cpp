@@ -315,21 +315,16 @@ namespace
   {
     int matchingDeg = 0;
 
-    // for all job requirements
     BOOST_FOREACH (we::type::requirement_t req, job_req_set.getReqList())
     {
-      //LOG(ERROR, "Check if the worker "<<pWorker->name()<<" has the capability "<<req.value()<<" ... ");
       if( pWorker->hasCapability(req.value(), false) )
       {
-        // increase the number of matchings
         matchingDeg++;
       }
-      else // if the worker doesn't have the capability
-        if( req.is_mandatory()) // and the capability is mandatory -> return immediately with a matchingDegree -1
-        {
-          // At least one mandatory requirement is not fulfilled
-          return boost::none;
-        }
+      else if( req.is_mandatory())
+      {
+        return boost::none;
+      }
     }
 
     return matchingDeg;
