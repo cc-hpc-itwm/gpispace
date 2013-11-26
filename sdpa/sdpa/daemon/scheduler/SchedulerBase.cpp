@@ -65,12 +65,6 @@ void SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
 
 void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
-  if(bStopRequested)
-  {
-      SDPA_LOG_WARN("The scheduler is requested to stop. Job re-asignement is not anymore possible.");
-      return;
-  }
-
   try
   {
       // delete it from the worker's queues
@@ -95,17 +89,12 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
 
 void SchedulerBase::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
 {
-  if(!bStopRequested) {
       while( !workerJobList.empty() ) {
           sdpa::job_id_t jobId = workerJobList.front();
 	  DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
 	  rescheduleWorkerJob(worker_id, jobId);
 	  workerJobList.pop_front();
       }
-  }
-  else {
-      SDPA_LOG_WARN("The scheduler is requested to stop. Job re-scheduling is not anymore possible.");
-  }
 }
 
 void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
@@ -214,8 +203,6 @@ const Worker::worker_id_t& SchedulerBase::findSubmOrAckWorker(const sdpa::job_id
 
 void SchedulerBase::start()
 {
-  bStopRequested = false;
-
   m_thread_run = boost::thread(boost::bind(&SchedulerBase::run, this));
   m_thread_feed = boost::thread(boost::bind(&SchedulerBase::feedWorkers, this));
 }
@@ -358,12 +345,6 @@ void SchedulerBase::getWorkerList(sdpa::worker_id_list_t& workerList)
 
 bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
-  if(bStopRequested)
-  {
-      SDPA_LOG_DEBUG("The scheduler was requested to stop ...");
-      return false;
-  }
-
   try
   {
       return _worker_manager.addCapabilities(worker_id, cpbset);
@@ -377,11 +358,6 @@ bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sd
 
 void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
 {
-  if(bStopRequested) {
-      SDPA_LOG_DEBUG("The scheduler is requested to stop, no need to remove capabilities ...");
-      return;
-  }
-
   _worker_manager.removeCapabilities(worker_id, cpbset);
 }
 
