@@ -173,7 +173,7 @@ namespace sdpa {
       //! \note This table refers to the order in which states are
       //! first seen in the state machine definition. This is hacky
       //! and should be removed / done via visitors.
-      sdpa::status::code state_code (size_t state)
+      static sdpa::status::code state_code (size_t state)
       {
         static sdpa::status::code const state_codes[] =
           { sdpa::status::PENDING
@@ -217,21 +217,21 @@ namespace sdpa {
       const sdpa::job_desc_t& description() const;
       const sdpa::job_result_t& result() const;
 
-      int error_code();
-      std::string error_message ();
+      int error_code() const;
+      std::string error_message () const;
 
       Job& error_code(int ec);
       Job& error_message(std::string const &msg);
 
-      bool isMasterJob();
+      bool isMasterJob() const;
 
       void set_owner(const sdpa::worker_id_t& owner);
-      sdpa::worker_id_t owner();
+      sdpa::worker_id_t owner() const;
 
-      sdpa::status::code getStatus();
+      sdpa::status::code getStatus() const;
 
-      bool completed();
-      bool is_running();
+      bool completed() const;
+      bool is_running() const;
 
       // job FSM actions
       virtual void action_job_failed(const sdpa::events::JobFailedEvent&);
@@ -254,7 +254,7 @@ namespace sdpa {
       void Resume(sdpa::daemon::IAgent*);
 
     private:
-      mutex_type mtx_;
+      mutable mutex_type mtx_;
       sdpa::job_id_t id_;
       sdpa::job_desc_t desc_;
       sdpa::job_id_t parent_;
