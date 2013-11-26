@@ -29,7 +29,7 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
                       : throw std::runtime_error
                         ("SchedulerBase ctor with NULL ptr_comm_handler")
                       )
-  , SDPA_INIT_LOGGER((pCommHandler?pCommHandler->name().c_str():"Scheduler"))
+  , SDPA_INIT_LOGGER (ptr_comm_handler_->name())
   , m_timeout(boost::posix_time::milliseconds(100))
 {
   m_agent_name = ptr_comm_handler_->name();
