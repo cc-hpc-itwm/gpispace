@@ -147,12 +147,12 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
   }
 }
 
-bool Worker::hasCapability(const std::string& cpbName, bool bOwn)
+bool Worker::hasCapability(const std::string& cpbName)
 {
   lock_type lock(mtx_);
   bool bHasCpb = false;
   for( sdpa::capabilities_set_t::iterator it = capabilities_.begin();!bHasCpb && it != capabilities_.end();it++ ) {
-      if(bOwn) {
+      if(false) {
           if( it->name() == cpbName && it->owner() == name() )
             bHasCpb = true;
       }
@@ -183,4 +183,3 @@ void Worker::free()
   lock_type lock(mtx_);
   reserved_ = false;
 }
-
