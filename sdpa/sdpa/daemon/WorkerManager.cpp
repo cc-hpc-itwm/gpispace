@@ -311,9 +311,9 @@ size_t numberOfMandatoryReqs( const job_requirements_t& listJobReq )
 namespace
 {
   template <typename TPtrWorker, typename TReqSet>
-    boost::optional<int> matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set)
+    boost::optional<std::size_t> matchRequirements( const TPtrWorker& pWorker, const TReqSet job_req_set)
   {
-    int matchingDeg = 0;
+    std::size_t matchingDeg (0);
 
     BOOST_FOREACH (we::type::requirement_t req, job_req_set.getReqList())
     {
@@ -339,7 +339,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
 
   boost::optional<sdpa::util::time_type> last_schedule_time;
   boost::optional<worker_id_t> bestMatchingWorkerId;
-  boost::optional<int> maxMatchingDeg;
+  boost::optional<std::size_t> maxMatchingDeg;
 
   BOOST_FOREACH( sdpa::worker_id_t& workerId, workerList )
   {
@@ -347,7 +347,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     if (pWorker->disconnected())
       continue;
 
-    boost::optional<int> matchingDeg = matchRequirements( pWorker, listJobReq); // only proper capabilities of the worker
+    boost::optional<std::size_t> matchingDeg = matchRequirements( pWorker, listJobReq); // only proper capabilities of the worker
 
     if (matchingDeg < maxMatchingDeg)
       continue;
