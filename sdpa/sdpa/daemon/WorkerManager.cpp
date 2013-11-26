@@ -343,8 +343,6 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
   if( worker_map_.empty() )
     throw NoWorkerFoundException();
 
-  sdpa::list_match_workers_t listJobPrefs;
-
   sdpa::util::time_type last_schedule_time = sdpa::util::now();
   size_t nMaxMandReq = numeric_limits<int>::max();
 
@@ -366,8 +364,6 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     DLOG(TRACE, "matching_degree(" << workerId << ") = " << matchingDeg);
     if (matchingDeg == -1 )
       continue;
-
-    listJobPrefs.push_back(sdpa::list_match_workers_t::value_type(workerId, matchingDeg));
 
     if( matchingDeg < maxMatchingDeg)
       continue;
