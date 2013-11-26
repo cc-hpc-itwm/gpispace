@@ -211,12 +211,6 @@ void JobManager::resubmitResults(IAgent* pComm)
   }
 }
 
-size_t JobManager::getNumberOfJobs() const
-{
-  lock_type lock(mtx_);
-  return job_map_.size();
-}
-
 bool JobManager::hasJobs() const
 {
   lock_type lock(mtx_);
