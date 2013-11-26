@@ -41,11 +41,11 @@ namespace sdpa {
       JobManager(const std::string& str="");
 
       Job::ptr_t findJob(const sdpa::job_id_t& );
-      void addJob(const sdpa::job_id_t&, const Job::ptr_t&, const job_requirements_t& job_req_list = job_requirements_t() ) throw(JobNotAddedException) ;
-      void deleteJob(const sdpa::job_id_t& ) throw(JobNotDeletedException) ;
+      void addJob(const sdpa::job_id_t&, const Job::ptr_t&, const job_requirements_t& job_req_list = job_requirements_t() );
+      void deleteJob(const sdpa::job_id_t& );
 
-      void addJobRequirements( const sdpa::job_id_t&, const job_requirements_t& ) throw (JobNotFoundException);
-      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const throw (NoJobRequirements);
+      void addJobRequirements( const sdpa::job_id_t&, const job_requirements_t& );
+      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const;
 
       bool hasJobs() const;
 

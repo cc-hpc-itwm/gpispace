@@ -39,27 +39,27 @@ namespace sdpa { namespace daemon {
 
     WorkerManager();
 
-    Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id) throw (WorkerNotFoundException);
-    const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
-    const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+    Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id);
+    const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id);
+    const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id);
 
     void addWorker( const Worker::worker_id_t& workerId,
                 boost::optional<unsigned int> capacity,
                 const capabilities_set_t& cpbset = capabilities_set_t(),
                 const unsigned int& agent_rank = 0,
-                const sdpa::worker_id_t& agent_uuid = "" ) throw (WorkerAlreadyExistException);
+                  const sdpa::worker_id_t& agent_uuid = "" );
 
-    void deleteWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+    void deleteWorker( const Worker::worker_id_t& workerId);
 
     bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
-    void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset)  throw (WorkerNotFoundException);
+    void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
     void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
 
-    const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
+    const Worker::ptr_t& getNextWorker();
 
     void dispatchJob(const sdpa::job_id_t& jobId);
     void deleteJob(const sdpa::job_id_t& jobId);
-    void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
+    void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id );
 
     size_t numberOfWorkers() { return worker_map_.size(); }
     sdpa::job_id_list_t getJobListAndCleanQueues(const  Worker::ptr_t& pWorker);

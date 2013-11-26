@@ -40,7 +40,7 @@ WorkerManager::WorkerManager()
   , iter_last_worker_ (worker_map_.end())
 {}
 
-Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
+Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
 {
   lock_type lock(mtx_);
   worker_map_t::iterator it = worker_map_.find(worker_id);
@@ -50,7 +50,7 @@ Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id ) 
     throw WorkerNotFoundException(worker_id);
 }
 
-const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
 
@@ -65,7 +65,7 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
   throw NoWorkerFoundException();
 }
 
-const Worker::worker_id_t& WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+const Worker::worker_id_t& WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
 
@@ -84,7 +84,7 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
                                 boost::optional<unsigned int> capacity,
                                 const capabilities_set_t& cpbSet,
                                 const unsigned int& agent_rank,
-                                const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
+                                const sdpa::worker_id_t& agent_uuid )
 {
   lock_type lock(mtx_);
 
@@ -122,7 +122,7 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 /**
  * get next worker to be served (Round-Robin scheduling)
  */
-const Worker::ptr_t& WorkerManager::getNextWorker() throw (NoWorkerFoundException)
+const Worker::ptr_t& WorkerManager::getNextWorker()
 {
   lock_type lock(mtx_);
 
@@ -160,7 +160,7 @@ void WorkerManager::deleteJob (sdpa::job_id_t const & job)
   }
 }
 
-void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException)
+void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id )
 {
   lock_type lock(mtx_);
   try {
@@ -178,7 +178,7 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
   }
 }
 
-void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId ) throw (WorkerNotFoundException)
+void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId )
 {
   lock_type lock(mtx_);
   worker_map_t::iterator w (worker_map_.find (workerId));
@@ -264,7 +264,7 @@ bool WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sd
   return findWorker (worker_id)->addCapabilities (cpbSet);
 }
 
-void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& TCpbSet) throw (WorkerNotFoundException)
+void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& TCpbSet)
 {
   findWorker (worker_id)->removeCapabilities (TCpbSet);
 }

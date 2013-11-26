@@ -57,7 +57,7 @@ void SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
                                 const boost::optional<unsigned int>& capacity,
                                 const capabilities_set_t& cpbset,
                                 const unsigned int& agent_rank,
-                                const sdpa::worker_id_t& agent_uuid ) throw (WorkerAlreadyExistException)
+                                const sdpa::worker_id_t& agent_uuid )
 {
   _worker_manager.addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
   cond_workers_registered.notify_all();
@@ -94,7 +94,7 @@ void SchedulerBase::reschedule( const Worker::worker_id_t & worker_id, sdpa::job
       }
 }
 
-void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id ) throw (WorkerNotFoundException)
+void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
 {
   // first re-schedule the work:
   // inspect all queues and re-schedule each job
@@ -183,17 +183,17 @@ void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
   pending_jobs_queue_.push(jobId);
 }
 
-const Worker::ptr_t& SchedulerBase::findWorker(const Worker::worker_id_t& worker_id ) throw(WorkerNotFoundException)
+const Worker::ptr_t& SchedulerBase::findWorker(const Worker::worker_id_t& worker_id )
 {
   return _worker_manager.findWorker(worker_id);
 }
 
-const Worker::worker_id_t& SchedulerBase::findWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+const Worker::worker_id_t& SchedulerBase::findWorker(const sdpa::job_id_t& job_id)
 {
   return _worker_manager.findWorker(job_id);
 }
 
-const Worker::worker_id_t& SchedulerBase::findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
+const Worker::worker_id_t& SchedulerBase::findSubmOrAckWorker(const sdpa::job_id_t& job_id)
 {
   return _worker_manager.findSubmOrAckWorker(job_id);
 }
@@ -267,7 +267,7 @@ void SchedulerBase::run()
   }
 }
 
-void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw( WorkerNotFoundException, JobNotFoundException)
+void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
 {
   DLOG(TRACE, "Acknowledge the job "<<job_id.str());
   try {
@@ -292,7 +292,7 @@ void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
   }
 }
 
-void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &jobId ) throw (JobNotDeletedException, WorkerNotFoundException)
+void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &jobId )
 {
   try {
     lock_type lock(mtx_);
@@ -332,7 +332,7 @@ bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sd
   return _worker_manager.addCapabilities(worker_id, cpbset);
 }
 
-void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException)
+void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
   _worker_manager.removeCapabilities(worker_id, cpbset);
 }

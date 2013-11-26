@@ -61,17 +61,17 @@ namespace sdpa {
       void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
       bool has_job(const sdpa::job_id_t&);
 
-      const Worker::worker_id_t& findWorker(const sdpa::job_id_t&) throw (NoWorkerFoundException);
-      const Worker::ptr_t& findWorker(const Worker::worker_id_t&) throw(WorkerNotFoundException);
-      const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException);
+      const Worker::worker_id_t& findWorker(const sdpa::job_id_t&);
+      const Worker::ptr_t& findWorker(const Worker::worker_id_t&);
+      const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id);
 
       void addWorker( const Worker::worker_id_t& workerId,
                               const boost::optional<unsigned int>& capacity = boost::none,
 			      const capabilities_set_t& cpbset = capabilities_set_t(),
 			      const unsigned int& agent_rank = 0,
-			      const sdpa::worker_id_t& agent_uuid = "") throw (WorkerAlreadyExistException);
+                    const sdpa::worker_id_t& agent_uuid = "");
 
-      void deleteWorker( const Worker::worker_id_t& workerId) throw (WorkerNotFoundException);
+      void deleteWorker( const Worker::worker_id_t& workerId);
 
       void getWorkerList(sdpa::worker_id_list_t&);
       void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
@@ -79,15 +79,15 @@ namespace sdpa {
       size_t numberOfWorkers() { return _worker_manager.numberOfWorkers(); }
 
       bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
-      void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset) throw (WorkerNotFoundException);
+      void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
       void getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset);
       void getWorkerCapabilities(const sdpa::worker_id_t&, sdpa::capabilities_set_t& cpbset);
 
-      void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
+      void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id );
 
       sdpa::worker_id_t findSuitableWorker(const job_requirements_t&, sdpa::worker_id_list_t&);
 
-      void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
+      void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id);
 
       void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
 
