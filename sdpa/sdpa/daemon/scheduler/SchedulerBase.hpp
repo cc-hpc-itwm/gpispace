@@ -79,16 +79,20 @@ namespace sdpa {
 
       virtual void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id) throw(WorkerNotFoundException, JobNotFoundException);
 
-      virtual void feedWorkers();
-
       void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
-
-      // thread related functions
-      virtual void start();
-      virtual void run();
 
       bool schedulingAllowed() { return !_worker_manager.common_queue_.empty(); }
       job_id_t nextJobToSchedule() { return _worker_manager.common_queue_.pop(); }
+
+      //! \note This is required to be called after the ctor, as the
+      //! threads use virtual functions, which are pure-virtual during
+      //! the ctor, thus there is a race if the ctor of derived
+      //! classes or the thread run first.
+      void start_threads();
+
+    private:
+      void feedWorkers();
+      void run();
 
     protected:
       JobQueue pending_jobs_queue_;

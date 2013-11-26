@@ -103,8 +103,6 @@ void GenericDaemon::start_agent()
 
 
   createScheduler();
-  scheduler()->start();
-
 
   const boost::tokenizer<boost::char_separator<char> > tok
     (url(), boost::char_separator<char> (":"));

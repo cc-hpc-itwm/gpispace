@@ -36,6 +36,12 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
   m_agent_name = ptr_comm_handler_->name();
 }
 
+void SchedulerBase::start_threads()
+{
+  m_thread_run = boost::thread (&SchedulerBase::run, this);
+  m_thread_feed = boost::thread (&SchedulerBase::feedWorkers, this);
+}
+
 SchedulerBase::~SchedulerBase()
 {
   m_thread_run.interrupt();
@@ -196,12 +202,6 @@ const Worker::worker_id_t& SchedulerBase::findWorker(const sdpa::job_id_t& job_i
 const Worker::worker_id_t& SchedulerBase::findSubmOrAckWorker(const sdpa::job_id_t& job_id) throw (NoWorkerFoundException)
 {
   return _worker_manager.findSubmOrAckWorker(job_id);
-}
-
-void SchedulerBase::start()
-{
-  m_thread_run = boost::thread(boost::bind(&SchedulerBase::run, this));
-  m_thread_feed = boost::thread(boost::bind(&SchedulerBase::feedWorkers, this));
 }
 
 void SchedulerBase::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)

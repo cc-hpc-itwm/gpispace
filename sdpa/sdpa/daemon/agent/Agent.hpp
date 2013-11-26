@@ -81,6 +81,7 @@ namespace sdpa {
         virtual void createScheduler()
         {
           ptr_scheduler_ = Scheduler::ptr_t (new CoallocationScheduler (this));
+          ptr_scheduler_->start_threads();
         }
         CoallocationScheduler::ptr_t scheduler() const
         {
