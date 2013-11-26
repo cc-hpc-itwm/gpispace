@@ -278,11 +278,6 @@ void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const
   findWorker (worker_id)->removeCapabilities (TCpbSet);
 }
 
-bool hasSameName(sdpa::capability_t& cpb1, sdpa::capability_t& cpb2)
-{
-  return (cpb1.name() == cpb2.name()) && (cpb1.type() == cpb2.type());
-}
-
 void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& agentCpbSet)
 {
   lock_type lock(mtx_);
