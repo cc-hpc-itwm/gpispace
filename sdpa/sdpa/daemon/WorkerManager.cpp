@@ -361,7 +361,6 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
 
     boost::optional<int> matchingDeg = matchRequirements( pWorker, listJobReq); // only proper capabilities of the worker
 
-    DLOG(TRACE, "matching_degree(" << workerId << ") = " << matchingDeg.get_value_or (-1));
     if (!matchingDeg)
       continue;
 
@@ -377,7 +376,6 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker( const job_requirements_t
     	  continue;
     }
 
-    DLOG(TRACE, "worker " << workerId << " (" << *matchingDeg << ") is better than " << bestMatchingWorkerId << "(" << maxMatchingDeg << ")");
     maxMatchingDeg = *matchingDeg;
     nMaxMandReq = numberOfMandatoryReqs(listJobReq);
     bestMatchingWorkerId = workerId;
