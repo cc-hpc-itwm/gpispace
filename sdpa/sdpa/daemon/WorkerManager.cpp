@@ -215,19 +215,6 @@ void WorkerManager::getWorkerList(sdpa::worker_id_list_t& workerList)
     workerList.push_back(iter->second->name());
 }
 
-void WorkerManager::setLastTimeServed(const sdpa::worker_id_t& workerId, const sdpa::util::time_type& last_time_srv )
-{
-  lock_type lock(mtx_);
-  try {
-    Worker::ptr_t ptrWorker = findWorker(workerId);
-    ptrWorker->setLastTimeServed(last_time_srv);
-  }
-  catch( const WorkerNotFoundException& exc)
-  {
-    SDPA_LOG_WARN( "Couldn't update the last service time for the worker "<<workerId );
-  }
-}
-
 class CComparator
 {
 public:

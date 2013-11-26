@@ -59,8 +59,6 @@ namespace sdpa { namespace daemon {
 
     const Worker::ptr_t& getNextWorker() throw (NoWorkerFoundException);
 
-    void setLastTimeServed(const worker_id_t&, const sdpa::util::time_type&);
-
     void dispatchJob(const sdpa::job_id_t& jobId);
     void deleteJob(const sdpa::job_id_t& jobId);
     void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id ) throw (JobNotDeletedException, WorkerNotFoundException);
