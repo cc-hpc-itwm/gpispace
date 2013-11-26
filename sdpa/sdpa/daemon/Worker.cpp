@@ -152,14 +152,8 @@ bool Worker::hasCapability(const std::string& cpbName)
   lock_type lock(mtx_);
   bool bHasCpb = false;
   for( sdpa::capabilities_set_t::iterator it = capabilities_.begin();!bHasCpb && it != capabilities_.end();it++ ) {
-      if(false) {
-          if( it->name() == cpbName && it->owner() == name() )
-            bHasCpb = true;
-      }
-      else {
-          if(it->name() == cpbName)
-            bHasCpb = true;
-      }
+    if(it->name() == cpbName)
+      bHasCpb = true;
   }
 
   return bHasCpb;
