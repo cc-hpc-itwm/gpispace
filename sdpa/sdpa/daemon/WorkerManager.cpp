@@ -37,22 +37,6 @@ WorkerManager::WorkerManager(): SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
   iter_last_worker_ = worker_map_.end();
 }
 
-WorkerManager::~WorkerManager()
-{
-  lock_type lock(mtx_);
-
-  DMLOG (TRACE, "The destructor of the WorkerManager was called ...");
-  if( worker_map_.size() )
-  {
-    SDPA_LOG_WARN( "there are still entries left in the worker map: " << worker_map_.size());
-  }
-
-  if( common_queue_.size() )
-  {
-    SDPA_LOG_WARN( "there are still entries left in the common queue: " << common_queue_.size());
-  }
-}
-
 /**
  * find worker
  */
