@@ -30,8 +30,6 @@
 using namespace std;
 using namespace sdpa::daemon;
 
-static const std::size_t MAX_PARALLEL_JOBS = 1024;
-
 JobManager::JobManager(const std::string& name)
   : SDPA_INIT_LOGGER(name)
 {}
@@ -148,7 +146,7 @@ void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requ
 
 bool JobManager::slotAvailable () const
 {
-  return getNumberOfJobs () < MAX_PARALLEL_JOBS;
+  return true;
 }
 
 void JobManager::waitForFreeSlot ()
