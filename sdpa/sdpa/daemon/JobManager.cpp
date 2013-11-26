@@ -97,8 +97,6 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id) throw(JobNotDeletedExce
   {
     DLOG(TRACE, "Erased the job "<<job_id.str()<<" from job map");
   }
-
-  free_slot_.notify_one();
 }
 
 std::string JobManager::print() const
@@ -152,7 +150,6 @@ bool JobManager::slotAvailable () const
 void JobManager::waitForFreeSlot ()
 {
   lock_type lock(mtx_);
-  free_slot_.wait (mtx_, boost::bind (&JobManager::slotAvailable, this));
 }
 
 void JobManager::resubmitResults(IAgent* pComm)
