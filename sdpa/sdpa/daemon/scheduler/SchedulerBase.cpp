@@ -204,17 +204,31 @@ void SchedulerBase::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
   _worker_manager.getListNotFullWorkers(workerList);
 }
 
-sdpa::worker_id_t SchedulerBase::findSuitableWorker(const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
+sdpa::worker_id_t SchedulerBase::findSuitableWorker
+  (const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
 {
   lock_type lock(mtx_);
   sdpa::worker_id_t matchingWorkerId;
 
-  try {
+  if (listAvailWorkers.empty())
+  {
+    return matchingWorkerId;
+  }
+
+  if (job_reqs.empty())
+  {
+    matchingWorkerId = listAvailWorkers.front();
+    listAvailWorkers.pop_front();
+  }
+  else
+  {
+    try {
       matchingWorkerId = _worker_manager.getBestMatchingWorker(job_reqs, listAvailWorkers);
       sdpa::worker_id_list_t::iterator it = std::find(listAvailWorkers.begin(), listAvailWorkers.end(), matchingWorkerId);
       listAvailWorkers.erase(it);
-  }
-  catch(NoWorkerFoundException& exc) {
+    }
+    catch(NoWorkerFoundException& exc) {
+    }
   }
 
   return matchingWorkerId;
