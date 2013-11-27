@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  JobManager.cpp
- *
- *    Description:  Job manager
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #include <sdpa/daemon/JobManager.hpp>
 
 #include <sdpa/daemon/IAgent.hpp>
@@ -29,111 +12,118 @@ namespace sdpa
 {
   namespace daemon
   {
-//helpers
-Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id ) const
-{
-  lock_type lock(_job_map_and_requirements_mutex);
-  const job_map_t::const_iterator it (job_map_.find( job_id ));
-  return it != job_map_.end() ? it->second : NULL;
-}
+    Job::ptr_t JobManager::findJob (const sdpa::job_id_t& job_id) const
+    {
+      lock_type _ (_job_map_and_requirements_mutex);
 
-void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob, const job_requirements_t& job_req_list )
-{
-  lock_type lock(_job_map_and_requirements_mutex);
+      const job_map_t::const_iterator it (job_map_.find( job_id ));
+      return it != job_map_.end() ? it->second : NULL;
+    }
 
-  if(!job_map_.insert(std::make_pair (job_id, pJob)).second)
-     throw JobNotAddedException(job_id);
+    void JobManager::addJob ( const sdpa::job_id_t& job_id
+                            , const Job::ptr_t& pJob
+                            , const job_requirements_t& job_req_list
+                            )
+    {
+      lock_type _ (_job_map_and_requirements_mutex);
 
-  if(!job_req_list.empty())
-    job_requirements_.insert(std::make_pair(job_id, job_req_list));
-}
+      if (!job_map_.insert(std::make_pair (job_id, pJob)).second)
+        throw JobNotAddedException(job_id);
 
-void JobManager::deleteJob(const sdpa::job_id_t& job_id)
-{
-  lock_type lock(_job_map_and_requirements_mutex);
+      if (!job_req_list.empty())
+        job_requirements_.insert(std::make_pair(job_id, job_req_list));
+    }
 
-  job_requirements_.erase (job_id);
+    void JobManager::deleteJob (const sdpa::job_id_t& job_id)
+    {
+      lock_type _ (_job_map_and_requirements_mutex);
 
-  if (!job_map_.erase (job_id))
-  {
-    throw JobNotDeletedException(job_id);
-  }
-}
+      job_requirements_.erase (job_id);
 
-//! \todo Why doesn't every job have an entry here?
-const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const
-{
-  lock_type lock(_job_map_and_requirements_mutex);
-
-  const requirements_map_t::const_iterator it (job_requirements_.find (jobId));
-  return it != job_requirements_.end() ? it->second : job_requirements_t();
-}
-
-void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requirements_t& job_req_list)
-{
-  lock_type lock(_job_map_and_requirements_mutex);
-  job_requirements_.insert(std::make_pair (job_id, job_req_list));
-}
-
-void JobManager::resubmitResults(IAgent* pComm) const
-{
-  lock_type lock(_job_map_and_requirements_mutex);
-
-  BOOST_FOREACH ( Job::ptr_t job
-                , job_map_
-                | boost::adaptors::map_values
-                | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))
-                )
-  {
-      switch (job->getStatus())
+      if (!job_map_.erase (job_id))
       {
-      case sdpa::status::FINISHED:
-        {
-          sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(),
-                                                                                                 job->owner(),
-                                                                                                 job->id(),
-                                                                                                 job->result() ));
-          pComm->sendEventToMaster(pEvtJobFinished);
-        }
-        break;
-
-      case sdpa::status::FAILED:
-        {
-          sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent(pComm->name(),
-                                                                                           job->owner(),
-                                                                                           job->id(),
-                                                                                           job->result() ));
-          pComm->sendEventToMaster(pEvtJobFailed);
-        }
-        break;
-
-      case sdpa::status::CANCELED:
-        {
-          sdpa::events::CancelJobAckEvent::Ptr pEvtJobCanceled( new sdpa::events::CancelJobAckEvent( pComm->name(),
-                                                                                                    job->owner(),
-                                                                                                    job->id()));
-
-          pComm->sendEventToMaster(pEvtJobCanceled);
-        }
-        break;
-
-      case sdpa::status::PENDING:
-        {
-          sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(pComm->name(),
-                                                                                                   job->owner(),
-                                                                                                   job->id()));
-          // There is a problem with this if uncommented
-          pComm->sendEventToMaster(pSubmitJobAckEvt);
-        }
-        break;
+        throw JobNotDeletedException(job_id);
       }
-  }
-}
+    }
 
-bool JobManager::hasJobs() const
-{
-  lock_type lock(_job_map_and_requirements_mutex);
-  return !job_map_.empty();
-}
+    //! \todo Why doesn't every job have an entry here?
+    const job_requirements_t JobManager::getJobRequirements
+      (const sdpa::job_id_t& jobId) const
+    {
+      lock_type _ (_job_map_and_requirements_mutex);
+
+      const requirements_map_t::const_iterator it (job_requirements_.find (jobId));
+      return it != job_requirements_.end() ? it->second : job_requirements_t();
+    }
+
+    void JobManager::addJobRequirements
+      (const sdpa::job_id_t& job_id, const job_requirements_t& job_req_list)
+    {
+      lock_type _ (_job_map_and_requirements_mutex);
+
+      job_requirements_.insert (std::make_pair (job_id, job_req_list));
+    }
+
+    void JobManager::resubmitResults (IAgent* pComm) const
+    {
+      lock_type _ (_job_map_and_requirements_mutex);
+
+      BOOST_FOREACH ( Job::ptr_t job
+                    , job_map_
+                    | boost::adaptors::map_values
+                    | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))
+                    )
+      {
+        switch (job->getStatus())
+        {
+        case sdpa::status::FINISHED:
+          {
+            sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished
+              ( new sdpa::events::JobFinishedEvent
+                (pComm->name(), job->owner(), job->id(), job->result())
+              );
+            pComm->sendEventToMaster(pEvtJobFinished);
+          }
+          break;
+
+        case sdpa::status::FAILED:
+          {
+            sdpa::events::JobFailedEvent::Ptr pEvtJobFailed
+              ( new sdpa::events::JobFailedEvent
+                (pComm->name(), job->owner(), job->id(), job->result())
+              );
+            pComm->sendEventToMaster(pEvtJobFailed);
+          }
+          break;
+
+        case sdpa::status::CANCELED:
+          {
+            sdpa::events::CancelJobAckEvent::Ptr pEvtJobCanceled
+              ( new sdpa::events::CancelJobAckEvent
+                (pComm->name(), job->owner(), job->id())
+              );
+            pComm->sendEventToMaster(pEvtJobCanceled);
+          }
+          break;
+
+        case sdpa::status::PENDING:
+          {
+            sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt
+              ( new sdpa::events::SubmitJobAckEvent
+                (pComm->name(), job->owner(), job->id())
+              );
+            pComm->sendEventToMaster(pSubmitJobAckEvt);
+          }
+          break;
+        }
+      }
+    }
+
+    bool JobManager::hasJobs() const
+    {
+      lock_type _ (_job_map_and_requirements_mutex);
+
+      return !job_map_.empty();
+    }
   }
 }
