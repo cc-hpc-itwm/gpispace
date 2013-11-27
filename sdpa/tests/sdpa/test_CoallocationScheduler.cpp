@@ -394,8 +394,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   const int NWORKERS = 12;
   const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
-  std::string addrAg = "127.0.0.1";
-  std::string strBackupOrch;
   std::ostringstream oss;
 
   sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
