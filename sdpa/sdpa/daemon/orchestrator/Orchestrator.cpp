@@ -71,7 +71,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   }
 
   //put the job into the state Finished or Cancelled
-  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  Job::ptr_t pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
       DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus()<<". Change its status to \"SDPA::Finished\"!");
@@ -153,7 +153,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   }
 
   //put the job into the state Failed or Cancelled
-  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  Job::ptr_t pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
       pJob->JobFailed(pEvt);
@@ -210,7 +210,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
   sdpa::job_id_t jobId = evt.job_id();
-  Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
+  Job::ptr_t pJob(jobManager().findJob(jobId));
   if(pJob)
   {
     DMLOG (TRACE, "Canceling the pending job "<<jobId<<" ... ");
@@ -227,7 +227,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
   Job::ptr_t pJob;
 
-  pJob = ptr_job_man_->findJob(pEvt->job_id());
+  pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
       // send immediately an acknowledgment to the component that requested the cancellation
@@ -273,7 +273,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 {
   DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
-  Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
+  Job::ptr_t pJob(jobManager().findJob(pEvt->job_id()));
   if(pJob)
   {
     // update the job status to "Canceled"
@@ -291,7 +291,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
 void Orchestrator::pause(const job_id_t& jobId)
 {
-  Job::ptr_t pJob(jobManager()->findJob(jobId));
+  Job::ptr_t pJob(jobManager().findJob(jobId));
   if(pJob)
   {
     pJob->Pause(NULL);
@@ -303,7 +303,7 @@ void Orchestrator::pause(const job_id_t& jobId)
 
 void Orchestrator::resume(const job_id_t& jobId)
 {
-  Job::ptr_t pJob(jobManager()->findJob(jobId));
+  Job::ptr_t pJob(jobManager().findJob(jobId));
   if(pJob)
   {
       pJob->Resume(NULL);

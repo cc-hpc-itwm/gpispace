@@ -186,23 +186,23 @@ namespace sdpa {
       // forwarding to jobManager() only:
       void addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList = job_requirements_t())
       {
-        return jobManager()->addJob(jid, pJob, reqList);
+        return jobManager().addJob(jid, pJob, reqList);
       }
       bool hasJobs()
       {
-        return jobManager()->hasJobs();
+        return jobManager().hasJobs();
       }
       Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const
       {
-        return jobManager()->findJob(job_id);
+        return jobManager().findJob(job_id);
       }
       void deleteJob(const sdpa::job_id_t& jobId)
       {
-        jobManager()->deleteJob(jobId);
+        jobManager().deleteJob(jobId);
       }
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const
       {
-        return jobManager()->getJobRequirements(jobId);
+        return jobManager().getJobRequirements(jobId);
       }
 
       // forwaring to scheduler() only:
@@ -216,7 +216,8 @@ namespace sdpa {
       }
 
     protected:
-      JobManager::ptr_t jobManager() const { return ptr_job_man_; }
+      const JobManager& jobManager() const { return _job_manager; }
+      JobManager& jobManager() { return _job_manager; }
       //! \todo type of Scheduler should be template parameter
       virtual void createScheduler() = 0;
 
@@ -235,7 +236,7 @@ namespace sdpa {
       seda::Stage::Ptr ptr_to_slave_stage_;
 
     protected:
-      JobManager::ptr_t ptr_job_man_;
+      JobManager _job_manager;
       SchedulerBase::ptr_t ptr_scheduler_;
       we::mgmt::layer* ptr_workflow_engine_;
 

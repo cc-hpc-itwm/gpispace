@@ -46,7 +46,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   sendEventToSlave(pEvtJobFinishedAckEvt);
 
   // put the job into the state Finished
-  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  Job::ptr_t pJob = jobManager().findJob(pEvt->job_id());
   if(!pJob)
   {
       SDPA_LOG_WARN( "got finished message for old/unknown Job "<< pEvt->job_id());
@@ -115,7 +115,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
         //delete it also from job_map_
         if(bTaskGroupComputed) {
            DLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-           jobManager()->deleteJob(pEvt->job_id());
+           jobManager().deleteJob(pEvt->job_id());
         }
       }
       catch(JobNotDeletedException const &)
@@ -134,7 +134,7 @@ bool Agent::finished(const id_type& wfid, const result_type & result)
         "The workflow engine has notified the agent "<<name()<<" that the job "<<id.str()<<" finished!"
         );
 
-  Job::ptr_t pJob = jobManager()->findJob(id);
+  Job::ptr_t pJob = jobManager().findJob(id);
   if(!pJob)
   {
     SDPA_LOG_WARN( "got finished message for old/unknown Job "<<id.str());
@@ -222,7 +222,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   sendEventToSlave(pEvtJobFailedAckEvt);
 
   //put the job into the state Failed
-  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  Job::ptr_t pJob = jobManager().findJob(pEvt->job_id());
   if(!pJob)
   {
     SDPA_LOG_WARN( "got failed message for old/unknown Job "<< pEvt->job_id());
@@ -297,7 +297,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
         //delete it also from job_map_
         DMLOG(TRACE, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
         if(bTaskGroupComputed) {
-            jobManager()->deleteJob(pEvt->job_id());
+            jobManager().deleteJob(pEvt->job_id());
         }
       }
       catch(JobNotDeletedException const &ex)
@@ -319,7 +319,7 @@ bool Agent::failed( const id_type& wfid
         );
   //put the job into the state Failed
 
-  Job::ptr_t pJob = jobManager()->findJob(id);
+  Job::ptr_t pJob = jobManager().findJob(id);
   if(!pJob)
   {
     SDPA_LOG_WARN( "got failed message for old/unknown Job "<<id.str());
@@ -407,7 +407,7 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
     workflowEngine()->canceled(evt.job_id ());
 
   sdpa::job_id_t jobId = evt.job_id();
-  Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
+  Job::ptr_t pJob(jobManager().findJob(jobId));
 
   if(pJob)
   {
@@ -429,7 +429,7 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
                                     )
                       );
 
-      jobManager()->deleteJob(jobId);
+      jobManager().deleteJob(jobId);
 
       _.dont();
     }
@@ -465,7 +465,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
   Job::ptr_t pJob;
 
-  pJob = ptr_job_man_->findJob(pEvt->job_id());
+  pJob = jobManager().findJob(pEvt->job_id());
   if(!pJob)
   {
       DMLOG (TRACE, "Job "<<pEvt->job_id()<<" not found!");
@@ -549,7 +549,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
                                   )
                     );
 
-    Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
+    Job::ptr_t pJob(jobManager().findJob(pEvt->job_id()));
     if(pJob)
     {
         // update the job status to "Canceled"
@@ -573,7 +573,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
       try
       {
-        jobManager()->deleteJob(pEvt->job_id());
+        jobManager().deleteJob(pEvt->job_id());
       }
       catch(const JobNotDeletedException&)
       {
@@ -621,7 +621,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     try
     {
         if(bTaskGroupComputed) {
-          jobManager()->deleteJob(pEvt->job_id());
+          jobManager().deleteJob(pEvt->job_id());
         }
     }
     catch(const JobNotDeletedException&)
@@ -632,13 +632,13 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 }
 void Agent::pause(const job_id_t& jobId)
 {
-  Job::ptr_t pJob(jobManager()->findJob(jobId));
+  Job::ptr_t pJob(jobManager().findJob(jobId));
   if(pJob)
   {
       pJob->Pause(NULL);
       if(!pJob->isMasterJob())
       {
-          Job::ptr_t pMasterJob(jobManager()->findJob(pJob->parent()));
+          Job::ptr_t pMasterJob(jobManager().findJob(pJob->parent()));
           if(pMasterJob)
             pMasterJob->Pause(this);
       }
@@ -651,13 +651,13 @@ void Agent::pause(const job_id_t& jobId)
 
 void Agent::resume(const job_id_t& jobId)
 {
-  Job::ptr_t pJob(jobManager()->findJob(jobId));
+  Job::ptr_t pJob(jobManager().findJob(jobId));
   if(pJob)
   {
       pJob->Resume(NULL);
       if(!pJob->isMasterJob())
       {
-          Job::ptr_t pMasterJob(jobManager()->findJob(pJob->parent()));
+          Job::ptr_t pMasterJob(jobManager().findJob(pJob->parent()));
           if(pMasterJob)
             pMasterJob->Resume(this);
       }

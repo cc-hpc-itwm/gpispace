@@ -49,7 +49,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
   // Only, now should be state of the job updated to RUNNING
   // since it was not rejected, no error occurred etc ....
   //find the job ptrJob and call
-  Job::ptr_t ptrJob = jobManager()->findJob(pEvent->job_id());
+  Job::ptr_t ptrJob = jobManager().findJob(pEvent->job_id());
   if(ptrJob)
   {
       try
@@ -103,12 +103,12 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
   Worker::worker_id_t worker_id = pEvt->from();
   DMLOG (TRACE, "Got acknowledgment for the finished job " << pEvt->job_id() << "!");
 
-  if(jobManager()->findJob(pEvt->job_id()))
+  if(jobManager().findJob(pEvt->job_id()))
   {
     try {
       DMLOG (TRACE, "Delete the job " << pEvt->job_id() << " from the JobManager!");
       // delete it from the map when you receive a JobFinishedAckEvent!
-      jobManager()->deleteJob(pEvt->job_id());
+      jobManager().deleteJob(pEvt->job_id());
     }
     catch(JobNotDeletedException const & ex1)
     {
@@ -144,11 +144,11 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
   ostringstream os;
   Worker::worker_id_t worker_id = pEvt->from();
 
-  if(jobManager()->findJob(pEvt->job_id()))
+  if(jobManager().findJob(pEvt->job_id()))
   {
     try {
         // delete it from the map when you receive a JobFailedAckEvent!
-        jobManager()->deleteJob(pEvt->job_id());
+        jobManager().deleteJob(pEvt->job_id());
     }
     catch(JobNotDeletedException const & ex1)
     {
@@ -182,7 +182,7 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 {
   sdpa::job_id_t jobId = pEvt->job_id();
 
-  Job::ptr_t pJob (jobManager()->findJob(jobId));
+  Job::ptr_t pJob (jobManager().findJob(jobId));
   if(pJob)
   {
       sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
@@ -208,7 +208,7 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 
 void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
 {
-  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  Job::ptr_t pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
     pJob->RetrieveJobResults(pEvt, this);

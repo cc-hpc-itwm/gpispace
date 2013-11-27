@@ -62,7 +62,7 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_to_master_stage_name_(name+".net"),
     m_to_slave_stage_name_ (name+".net"),
 
-    ptr_job_man_(new JobManager(name)),
+    _job_manager (name),
     ptr_scheduler_(),
     ptr_workflow_engine_ ( create_wfe
                          ? new we::mgmt::layer
@@ -235,12 +235,12 @@ void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
                   );
 
 
-  Job::ptr_t pJob = jobManager()->findJob(e.job_id());
+  Job::ptr_t pJob = jobManager().findJob(e.job_id());
   if(pJob)
   {
       try{
           pJob->DeleteJob(&e, this);
-          jobManager()->deleteJob(e.job_id());
+          jobManager().deleteJob(e.job_id());
       }
       catch(JobNotDeletedException const & ex)
       {
@@ -275,7 +275,7 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
-  Job::ptr_t ptrJob = jobManager()->findJob(jobId);
+  Job::ptr_t ptrJob = jobManager().findJob(jobId);
   if(ptrJob)
   {
       // create a SubmitJobEvent for the job job_id serialize and attach description
@@ -335,7 +335,7 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
   static const JobId job_id_empty ("");
 
   // First, check if the job 'job_id' wasn't already submitted!
-  if(jobManager()->findJob(e.job_id()))
+  if(jobManager().findJob(e.job_id()))
   {
     // The job already exists -> generate an error message that the job already exists
 
@@ -365,7 +365,7 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     pJob->set_owner(e.from());
 
     // the job job_id is in the Pending state now!
-    jobManager()->addJob(job_id, pJob);
+    jobManager().addJob(job_id, pJob);
 
     // check if the message comes from outside/slave or from WFE
     // if it comes from outside set it as local
@@ -586,7 +586,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
       // Only now should be the job state machine make a transition to RUNNING
       // this means that the job was not rejected, no error occurred etc ....
       // find the job ptrJob and call
-      Job::ptr_t ptrJob = jobManager()->findJob(error.job_id());
+      Job::ptr_t ptrJob = jobManager().findJob(error.job_id());
       if(ptrJob)
       {
         try {
@@ -654,9 +654,9 @@ void GenericDaemon::submit( const id_type& activityId
                                   )
                     );
 
-    if( jobManager()->findJob(parent_id) )
+    if( jobManager().findJob(parent_id) )
     {
-      jobManager()->addJobRequirements(job_id, jobReqs);
+      jobManager().addJobRequirements(job_id, jobReqs);
 
       // don't forget to set here the job's preferences
       SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
@@ -896,7 +896,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
   // re-submit  them to the master, after registration
 
   if(!isTop())
-    jobManager()->resubmitResults(this);
+    jobManager().resubmitResults(this);
 }
 
 void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
