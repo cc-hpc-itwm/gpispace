@@ -38,11 +38,8 @@ JobManager::JobManager(const std::string& name)
 Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id ) const
 {
   lock_type lock(mtx_);
-  job_map_t::const_iterator it = job_map_.find( job_id );
-  if( it != job_map_.end() )
-    return it->second;
-  else
-    return NULL;
+  const job_map_t::const_iterator it (job_map_.find( job_id ));
+  return it != job_map_.end() ? it->second : NULL;
 }
 
 void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob, const job_requirements_t& job_req_list )
