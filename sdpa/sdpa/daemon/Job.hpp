@@ -153,6 +153,8 @@ namespace sdpa {
         a_row<  Canceling, 	sdpa::events::JobFinishedEvent,      	Canceled,       &sm::action_job_finished>,
         a_row<  Canceling, 	sdpa::events::JobFailedEvent,           Canceled,       &sm::action_job_failed>,
         _irow<  Canceling,      sdpa::events::CancelJobEvent>,
+        _irow<  Canceling,      MSMResumeJobEvent>,
+        _irow<  Canceling,      MSMStalledEvent>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Canceled,       MSMDeleteJobEvent,                                      &sm::action_delete_job>,
         a_irow< Canceled,       MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
@@ -182,6 +184,12 @@ namespace sdpa {
       template <class FSM, class Event>
       void no_transition(Event const& e, FSM&, int state)
       {
+        DMLOG(ERROR,  "No transition from state "
+                                         + sdpa::status::show(state_code(state))
+                                         + " on event "
+                                         + typeid(e).name()
+                                         );
+
         throw std::runtime_error ( "no transition from state "
                                  + sdpa::status::show(state_code(state))
                                  + " on event "
