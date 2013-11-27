@@ -90,12 +90,8 @@ const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
 {
   lock_type lock(mtx_);
 
-  DLOG(TRACE, "Locate the preferences of the job "<<jobId.str());
-  requirements_map_t::const_iterator it_req = job_requirements_.find(jobId);
-  if( it_req == job_requirements_.end() )
-    return job_requirements_t();
-
-  return it_req->second;;
+  const requirements_map_t::const_iterator it (job_requirements_.find (jobId));
+  return it != job_requirements_.end() ? it->second : job_requirements_t();
 }
 
 void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requirements_t& job_req_list)
