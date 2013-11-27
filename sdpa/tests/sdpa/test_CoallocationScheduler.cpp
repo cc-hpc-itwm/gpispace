@@ -86,14 +86,7 @@ struct MyFixture
 {
     MyFixture()
     {
-      try {
-          m_pAgent = new TestAgent("agent", "127.0.0.1", sdpa::master_info_list_t());
-      }
-      catch(const std::bad_alloc&) {
-          m_pAgent = NULL;
-      }
-
-      BOOST_REQUIRE(m_pAgent!=NULL);
+      m_pAgent = new TestAgent("agent", "127.0.0.1", sdpa::master_info_list_t());
     }
 
     ~MyFixture()
