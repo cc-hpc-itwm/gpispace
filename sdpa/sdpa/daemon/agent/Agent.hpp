@@ -45,24 +45,24 @@ namespace sdpa {
               , const boost::optional<std::string>& guiUrl
               );
 
-        void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
-        void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
+        virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
+        virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
 
-        void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt );
-        void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* pEvt);
+        virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt );
+        virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* pEvt);
 
         void cancelPendingJob (const sdpa::events::CancelJobEvent& evt);
 
-        bool finished(const id_type & id, const result_type & result);
-        bool failed( const id_type& workflowId, const result_type& result, int error_code, std::string const& reason);
+        virtual bool finished(const id_type & id, const result_type & result);
+        virtual bool failed( const id_type& workflowId, const result_type& result, int error_code, std::string const& reason);
 
-        const std::string url() const {return url_;}
+        virtual const std::string url() const {return url_;}
 
         template <typename T>
         void notifySubscribers(const T& ptrEvt);
 
-        void pause(const job_id_t& id );
-        void resume(const job_id_t& id );
+        virtual void pause(const job_id_t& id );
+        virtual void resume(const job_id_t& id );
 
       private:
         virtual void createScheduler()
