@@ -252,8 +252,6 @@ void SchedulerBase::run()
 {
   for (;;)
   {
-    boost::this_thread::interruption_point();
-
     try
     {
       sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait(m_timeout);
