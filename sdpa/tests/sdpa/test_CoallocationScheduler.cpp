@@ -96,9 +96,6 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
   LOG( INFO, "Test if the capabilities are matching the requirements "<<std::endl);
   sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
 
-  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
-  BOOST_REQUIRE(ptrScheduler);
-
   sdpa::worker_id_t workerId("test_worker");
   sdpa::capabilities_set_t workerCpbSet;
 
@@ -132,9 +129,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 {
   LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
   sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
-
-  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
-  BOOST_REQUIRE(ptrScheduler);
 
   sdpa::worker_id_t worker_A("worker_A");
 
@@ -189,9 +183,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
   LOG(INFO, "testLoadBalancing");
   sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
-
-  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
-  BOOST_REQUIRE(ptrScheduler);
 
   // number of workers
   const int nWorkers = 10;
@@ -267,9 +258,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   LOG(INFO, "Test the load-balancing when a worker joins later ...");
   sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
 
-  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
-  BOOST_REQUIRE(ptrScheduler);
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -339,9 +327,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   LOG(INFO, "Test the load-balancing when a worker gains a capability later ...");
 
   sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
-
-  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
-  BOOST_REQUIRE(ptrScheduler);
 
   // number of workers
   const int nWorkers = 10;
@@ -424,9 +409,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   std::ostringstream oss;
 
   sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
-
-   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
-   BOOST_REQUIRE(ptrScheduler);
 
   // add a couple of workers
   for( int k=0; k<NWORKERS; k++ )
@@ -524,9 +506,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   LOG(INFO, "Test the load-balancing when a worker is stopped, re-started and announces afterwards its capabilities ...");
 
   sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
-
-  LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
-  BOOST_REQUIRE(ptrScheduler);
 
   // number of workers
   const int nWorkers = 10;
