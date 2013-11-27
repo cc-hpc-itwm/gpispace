@@ -1,11 +1,13 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 #include <sdpa/daemon/scheduler/SimpleScheduler.hpp>
 
+#include <sdpa/daemon/GenericDaemon.hpp>
+
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SimpleScheduler::SimpleScheduler(sdpa::daemon::IAgent* pCommHandler)
+SimpleScheduler::SimpleScheduler(GenericDaemon* pCommHandler)
   : SchedulerBase (pCommHandler)
 {}
 

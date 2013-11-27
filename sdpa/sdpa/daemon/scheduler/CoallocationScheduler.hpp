@@ -12,7 +12,7 @@ namespace sdpa {
       typedef sdpa::shared_ptr<CoallocationScheduler> ptr_t;
       typedef boost::unordered_map<sdpa::job_id_t, Reservation*> allocation_table_t;
 
-      CoallocationScheduler(sdpa::daemon::IAgent*);
+      CoallocationScheduler(GenericDaemon*);
 
       virtual void assignJobsToWorkers();
       virtual void rescheduleJob(const sdpa::job_id_t& job_id );

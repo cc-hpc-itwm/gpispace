@@ -2,11 +2,13 @@
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
+#include <sdpa/daemon/GenericDaemon.hpp>
+
 using namespace std;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
 
-CoallocationScheduler::CoallocationScheduler(sdpa::daemon::IAgent* pCommHandler)
+CoallocationScheduler::CoallocationScheduler(GenericDaemon* pCommHandler)
   : SchedulerBase(pCommHandler)
 {}
 

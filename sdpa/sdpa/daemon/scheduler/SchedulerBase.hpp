@@ -31,12 +31,12 @@
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 //#include <sdpa/daemon/SynchronizedQueue.hpp>
-#include <sdpa/daemon/IAgent.hpp>
 
 #include <boost/optional.hpp>
 
 namespace sdpa {
   namespace daemon {
+    class GenericDaemon;
     class SchedulerBase
     {
     public:
@@ -46,7 +46,7 @@ namespace sdpa {
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
 
-      SchedulerBase(sdpa::daemon::IAgent* pHandler = NULL);
+      SchedulerBase(GenericDaemon* pHandler);
       virtual ~SchedulerBase();
 
       void enqueueJob(const sdpa::job_id_t&);
@@ -106,7 +106,7 @@ namespace sdpa {
       JobQueue pending_jobs_queue_;
       WorkerManager _worker_manager;
 
-      sdpa::daemon::IAgent* ptr_comm_handler_;
+      GenericDaemon* ptr_comm_handler_;
       SDPA_DECLARE_LOGGER();
 
       mutable mutex_type mtx_;

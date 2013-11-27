@@ -18,11 +18,13 @@
 
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 
+#include <sdpa/daemon/GenericDaemon.hpp>
+
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
+SchedulerBase::SchedulerBase(GenericDaemon* pCommHandler)
   : _worker_manager()
   , ptr_comm_handler_ ( pCommHandler
                       ? pCommHandler
