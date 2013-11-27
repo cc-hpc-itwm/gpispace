@@ -85,9 +85,8 @@ public:
 struct MyFixture
 {
     MyFixture()
-    {
-      m_pAgent = new TestAgent("agent", "127.0.0.1", sdpa::master_info_list_t());
-    }
+      : m_pAgent (new TestAgent("agent", "127.0.0.1", sdpa::master_info_list_t()))
+    {}
 
     ~MyFixture()
     {
