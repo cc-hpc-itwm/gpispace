@@ -52,7 +52,7 @@ void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob, co
      throw JobNotAddedException(job_id);
 
   if(!job_req_list.empty())
-    job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
+    job_requirements_.insert(std::make_pair(job_id, job_req_list));
 }
 
 void JobManager::deleteJob(const sdpa::job_id_t& job_id)
@@ -79,7 +79,7 @@ const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
 void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requirements_t& job_req_list)
 {
   lock_type lock(_job_map_and_requirements_mutex);
-  job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
+  job_requirements_.insert(std::make_pair (job_id, job_req_list));
 }
 
 void JobManager::resubmitResults(IAgent* pComm) const
