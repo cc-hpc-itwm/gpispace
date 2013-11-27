@@ -8,7 +8,6 @@ set (hdrs
   common.hpp
   JobId.hpp
   logging.hpp
-  SDPAException.hpp
   types.hpp
   job_states.hpp
   id_generator.hpp
