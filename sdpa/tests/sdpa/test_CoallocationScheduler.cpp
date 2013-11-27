@@ -82,16 +82,16 @@ public:
   }
 };
 
-struct MyFixture
+struct allocate_test_agent
 {
-    MyFixture()
+    allocate_test_agent()
       : _agent ("agent", "127.0.0.1", sdpa::master_info_list_t())
     {}
 
     TestAgent _agent;
 };
 
-BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
+BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_agent )
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
