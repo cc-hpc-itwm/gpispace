@@ -29,9 +29,10 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-using namespace std;
-using namespace sdpa::daemon;
-
+namespace sdpa
+{
+  namespace daemon
+  {
 JobManager::JobManager(const std::string& name)
   : SDPA_INIT_LOGGER(name)
 {}
@@ -141,4 +142,6 @@ bool JobManager::hasJobs() const
 {
   lock_type lock(_job_map_and_requirements_mutex);
   return !job_map_.empty();
+}
+  }
 }
