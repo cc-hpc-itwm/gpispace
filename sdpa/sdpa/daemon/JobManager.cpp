@@ -89,8 +89,6 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id)
 const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
   lock_type lock(mtx_);
-  if( job_requirements_.empty() )
-    return job_requirements_t();
 
   DLOG(TRACE, "Locate the preferences of the job "<<jobId.str());
   requirements_map_t::const_iterator it_req = job_requirements_.find(jobId);
