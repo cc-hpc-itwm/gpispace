@@ -68,8 +68,6 @@ namespace sdpa { namespace daemon {
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef boost::condition_variable_any condition_type;
 
-    SynchronizedQueue() : stopped_(false) {}
-
     inline value_type pop()
     {
       lock_type lock(mtx_);
@@ -90,21 +88,13 @@ namespace sdpa { namespace daemon {
     	return item;
     }
 
-    inline void stop()
-    {
-    	lock_type lock(mtx_);
-    	stopped_ = true;
-    	not_empty_.notify_all();
-    }
-
     inline value_type pop_and_wait()
     {
       lock_type lock(mtx_);
-      while (container_.empty() && !stopped_)
+      while (container_.empty())
       {
         not_empty_.wait(lock);
       }
-      if (stopped_) throw QueueEmpty();
 
       value_type item = container_.front();
       container_.pop_front();
@@ -117,14 +107,12 @@ namespace sdpa { namespace daemon {
 
       const boost::system_time to = boost::get_system_time() + timeout;
 
-      while (container_.empty() && !stopped_)
+      while (container_.empty())
       {
         not_empty_.timed_wait (lock, to);
         if (container_.empty())
           throw QueueEmpty(); // timedout
       }
-
-      if (stopped_) throw QueueEmpty();
 
       value_type item = container_.front();
       container_.pop_front();
@@ -197,7 +185,6 @@ namespace sdpa { namespace daemon {
     mutable mutex_type mtx_;
     condition_type not_empty_;
     container_type container_;
-    bool stopped_;
   };
 }}
 #endif
