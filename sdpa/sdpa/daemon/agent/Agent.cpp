@@ -538,9 +538,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
 void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 {
-  assert (pEvt);
-
-  DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
+  DMLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
   {
     on_scope_exit _ ( boost::bind ( &we::mgmt::layer::canceled
@@ -630,6 +628,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     }
   }
 }
+
 void Agent::pause(const job_id_t& jobId)
 {
   Job::ptr_t pJob(jobManager()->findJob(jobId));
