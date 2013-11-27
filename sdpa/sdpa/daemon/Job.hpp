@@ -44,12 +44,12 @@ namespace sdpa {
       virtual ~JobFSM_() {}
 
       // The list of FSM states
-      struct Pending :  public boost::msm::front::state<>{};
-      struct Stalled :  public boost::msm::front::state<>{};
-      struct Running :  public boost::msm::front::state<>{};
+      struct Pending : public boost::msm::front::state<>{};
+      struct Stalled : public boost::msm::front::state<>{};
+      struct Running : public boost::msm::front::state<>{};
       struct Finished : public boost::msm::front::state<>{};
-      struct Failed :   public boost::msm::front::state<>{};
-      struct Canceling :public boost::msm::front::state<>{};
+      struct Failed : public boost::msm::front::state<>{};
+      struct Canceling : public boost::msm::front::state<>{};
       struct Canceled : public boost::msm::front::state<>{};
 
       struct MSMRescheduleEvent
