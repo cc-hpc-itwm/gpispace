@@ -178,10 +178,12 @@ namespace sdpa {
       // workflow engine notifications
       virtual void submitWorkflow(const job_id_t& id);
 
+    public:
       // workers
       void serveJob(const Worker::worker_id_t&, const job_id_t&);
       void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
+    private:
       // jobs
       std::string gen_id() { return sdpa::JobId ().str (); }
 
