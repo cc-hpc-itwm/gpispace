@@ -86,11 +86,11 @@ struct allocate_test_agent_and_scheduler
 {
     allocate_test_agent_and_scheduler()
       : _agent ("agent", "127.0.0.1", sdpa::master_info_list_t())
-      , ptrScheduler (new sdpa::daemon::CoallocationScheduler(&_agent))
+      , _scheduler (&_agent)
     {}
 
     TestAgent _agent;
-    sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler;
+    sdpa::daemon::CoallocationScheduler _scheduler;
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_agent_and_scheduler)
@@ -108,11 +108,11 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
   workerCpbSet.insert(sdpa::capability_t("B","",workerId));
   workerCpbSet.insert(sdpa::capability_t("C","",workerId));
 
-  ptrScheduler->addWorker(workerId, 1, workerCpbSet);
+  _scheduler.addWorker(workerId, 1, workerCpbSet);
 
   // check what are the agent's capabilites now
   sdpa::capabilities_set_t acquiredCpbs;
-  ptrScheduler->getWorkerCapabilities(workerId, acquiredCpbs);
+  _scheduler.getWorkerCapabilities(workerId, acquiredCpbs);
 
   BOOST_REQUIRE_EQUAL (workerCpbSet, acquiredCpbs);
 
@@ -124,8 +124,7 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 
   // check if there is any matching worker
   sdpa::worker_id_list_t avail (1, workerId);
-  BOOST_REQUIRE_EQUAL
-    (workerId, ptrScheduler->findSuitableWorker (jobReqs, avail));
+  BOOST_REQUIRE_EQUAL (workerId, _scheduler.findSuitableWorker (jobReqs, avail));
 }
 
 BOOST_AUTO_TEST_CASE(testGainCap)
@@ -135,7 +134,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   sdpa::worker_id_t worker_A("worker_A");
 
   sdpa::capabilities_set_t cpbSetA;
-  ptrScheduler->addWorker(worker_A, 1, cpbSetA);
+  _scheduler.addWorker(worker_A, 1, cpbSetA);
 
   const sdpa::job_id_t jobId1("Job1");
   sdpa::daemon::Job::ptr_t pJob1(new Job(jobId1, "description 1", sdpa::job_id_t(), false));
@@ -143,29 +142,29 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   _agent.addJob(jobId1, pJob1, jobReqs1);
 
   LOG(DEBUG, "Schedule the job "<<jobId1);
-  ptrScheduler->schedule(jobId1);
+  _scheduler.schedule(jobId1);
 
-  ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
+  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
 
-  BOOST_REQUIRE (ptrScheduler->getListAllocatedWorkers (jobId1).empty());
+  BOOST_REQUIRE (_scheduler.getListAllocatedWorkers (jobId1).empty());
 
   sdpa::capability_t cpb1("C", "virtual", worker_A);
   cpbSetA.insert(cpb1);
-  ptrScheduler->addCapabilities(worker_A, cpbSetA);
+  _scheduler.addCapabilities(worker_A, cpbSetA);
 
   LOG(DEBUG, "Check if worker_A really acquired the capability \"C\"");
 
   sdpa::capabilities_set_t cpbset;
-  ptrScheduler->getWorkerCapabilities(worker_A, cpbset);
+  _scheduler.getWorkerCapabilities(worker_A, cpbset);
 
   LOG(DEBUG, "The worker_A has now the following capabilities: ["<<cpbset<<"]");
 
   LOG(DEBUG, "Try to assign again jobs to the workers ...");
-  ptrScheduler->assignJobsToWorkers();
-  ptrScheduler->checkAllocations();
+  _scheduler.assignJobsToWorkers();
+  _scheduler.checkAllocations();
 
   BOOST_REQUIRE_EQUAL ( sdpa::worker_id_list_t (1, worker_A)
-                      , ptrScheduler->getListAllocatedWorkers (jobId1)
+                      , _scheduler.getListAllocatedWorkers (jobId1)
                       );
 }
 
@@ -188,7 +187,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       arrWorkerIds.push_back(workerId);
       std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
       sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-      ptrScheduler->addWorker(workerId, 1, cpbSet);
+      _scheduler.addWorker(workerId, 1, cpbSet);
   }
 
   // submit a bunch of jobs now
@@ -207,36 +206,36 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
   {
-      ptrScheduler->schedule(jobId);
+      _scheduler.schedule(jobId);
   }
 
-  ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
+  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
 
   sdpa::worker_id_list_t workerList;
-  ptrScheduler->getListNotAllocatedWorkers(workerList);
+  _scheduler.getListNotAllocatedWorkers(workerList);
 
   // check if there are any workers that are not yet reserved
   BOOST_CHECK(workerList.empty());
 
   BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
   {
-      sdpa::worker_id_list_t listJobAssignedWorkers = ptrScheduler->getListAllocatedWorkers(jobId);
+      sdpa::worker_id_list_t listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId);
 
       BOOST_CHECK(listJobAssignedWorkers.size() <= 1);
       if(!listJobAssignedWorkers.empty())
       {
           // delete the job
-          ptrScheduler->deleteWorkerJob(listJobAssignedWorkers.front(), jobId);
+          _scheduler.deleteWorkerJob(listJobAssignedWorkers.front(), jobId);
       }
 
-      ptrScheduler->releaseReservation(jobId);
+      _scheduler.releaseReservation(jobId);
   }
 
-  ptrScheduler->assignJobsToWorkers();
-  ptrScheduler->checkAllocations();
+  _scheduler.assignJobsToWorkers();
+  _scheduler.checkAllocations();
 
   workerList.clear();
-  ptrScheduler->getListNotAllocatedWorkers(workerList);
+  _scheduler.getListNotAllocatedWorkers(workerList);
 
   // check if the list of reserved workers is nJobs - nWorkers
   BOOST_CHECK_EQUAL(workerList.size(), 5);
@@ -261,7 +260,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       arrWorkerIds.push_back(workerId);
       std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
       sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-      ptrScheduler->addWorker(workerId, 1, cpbSet);
+      _scheduler.addWorker(workerId, 1, cpbSet);
   }
 
   // submit a bunch of jobs now
@@ -279,14 +278,14 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
   {
-      ptrScheduler->schedule(jobId);
+      _scheduler.schedule(jobId);
   }
 
-  ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
+  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
 
   // all the workers should have assigned jobs
   sdpa::worker_id_list_t workerList;
-  ptrScheduler->getListNotAllocatedWorkers(workerList);
+  _scheduler.getListNotAllocatedWorkers(workerList);
   // check if there are any workers that are not yet reserved
   BOOST_CHECK(workerList.empty());
 
@@ -297,16 +296,16 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   arrWorkerIds.push_back(workerId);
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-  ptrScheduler->addWorker(workerId, 1, cpbSet);
+  _scheduler.addWorker(workerId, 1, cpbSet);
 
-  ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
+  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
   workerList.clear();
-  ptrScheduler->getListNotAllocatedWorkers(workerList);
+  _scheduler.getListNotAllocatedWorkers(workerList);
   // check if there are any workers that are not yet reserved
   BOOST_CHECK(workerList.empty());
 
   // check if to worker_9 was assigned any job
-  sdpa::job_id_t jobId = ptrScheduler->getAssignedJob(workerId);
+  sdpa::job_id_t jobId = _scheduler.getAssignedJob(workerId);
   BOOST_CHECK(!jobId.str().empty());
 }
 
@@ -332,10 +331,10 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     {
         std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
         sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-        ptrScheduler->addWorker(workerId, 1, cpbSet);
+        _scheduler.addWorker(workerId, 1, cpbSet);
     }
     else
-      ptrScheduler->addWorker(workerId, 1);
+      _scheduler.addWorker(workerId, 1);
   }
 
   // submit a bunch of jobs now
@@ -353,14 +352,14 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
   {
-    ptrScheduler->schedule(jobId);
+    _scheduler.schedule(jobId);
   }
 
-  ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
+  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
 
   // all the workers should have assigned jobs
   sdpa::worker_id_list_t workerList;
-  ptrScheduler->getListNotAllocatedWorkers(workerList);
+  _scheduler.getListNotAllocatedWorkers(workerList);
   // all workers should be assigned a job, excepting the last one,
   // which doesn't fit with the job reqs
   BOOST_CHECK(workerList.size()==1);
@@ -373,12 +372,12 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   sdpa::worker_id_t lastWorkerId(osstr.str());
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-  ptrScheduler->addCapabilities(lastWorkerId, cpbSet);
+  _scheduler.addCapabilities(lastWorkerId, cpbSet);
 
   // assign jobs to workers
-  ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
+  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
   workerList.clear();
-  ptrScheduler->getListNotAllocatedWorkers(workerList);
+  _scheduler.getListNotAllocatedWorkers(workerList);
   // all workers should be assigned a job, including the last one
   BOOST_CHECK(workerList.empty());
 }
@@ -403,7 +402,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
     sdpa::capability_t cpb(cpbName, "virtual", workerId);
     sdpa::capabilities_set_t cpbSet;
     cpbSet.insert(cpb);
-    ptrScheduler->addWorker(workerId, 1, cpbSet);
+    _scheduler.addWorker(workerId, 1, cpbSet);
   }
 
   // create a number of jobs
@@ -422,14 +421,14 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   job_requirements_t jobReqs2(requirement_list_t(1, we::type::requirement_t(WORKER_CPBS[2], true)), we::type::schedule_data(4, 100));
   _agent.addJob(jobId2, pJob2, jobReqs2);
 
-  ptrScheduler->schedule(jobId0);
-  ptrScheduler->schedule(jobId1);
-  ptrScheduler->schedule(jobId2);
+  _scheduler.schedule(jobId0);
+  _scheduler.schedule(jobId1);
+  _scheduler.schedule(jobId2);
 
-  ptrScheduler->assignJobsToWorkers();
+  _scheduler.assignJobsToWorkers();
 
   std::ostringstream ossrw;int k=-1;
-  sdpa::worker_id_list_t listJobAssignedWorkers = ptrScheduler->getListAllocatedWorkers(jobId0);
+  sdpa::worker_id_list_t listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId0);
   BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
   {
     k = boost::lexical_cast<int>(wid);
@@ -438,7 +437,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   LOG(INFO, "The job jobId0 has been allocated the workers "<<listJobAssignedWorkers);
 
   listJobAssignedWorkers.clear();
-  listJobAssignedWorkers = ptrScheduler->getListAllocatedWorkers(jobId1);
+  listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId1);
   BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
   {
     k = boost::lexical_cast<int>(wid);
@@ -447,7 +446,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   LOG(INFO, "The job jobId1 has been allocated the workers "<<listJobAssignedWorkers);
 
   listJobAssignedWorkers.clear();
-  listJobAssignedWorkers = ptrScheduler->getListAllocatedWorkers(jobId2);
+  listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId2);
   BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
   {
     k = boost::lexical_cast<int>(wid);
@@ -461,19 +460,19 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   job_requirements_t jobReqs4(requirement_list_t(1, we::type::requirement_t(WORKER_CPBS[0], true)), we::type::schedule_data(2, 100));
   _agent.addJob(jobId4, pJob4, jobReqs4);
 
-  ptrScheduler->schedule(jobId4);
+  _scheduler.schedule(jobId4);
 
-  ptrScheduler->assignJobsToWorkers();
-  sdpa::worker_id_list_t listFreeWorkers(ptrScheduler->getListAllocatedWorkers(jobId4));
+  _scheduler.assignJobsToWorkers();
+  sdpa::worker_id_list_t listFreeWorkers(_scheduler.getListAllocatedWorkers(jobId4));
   BOOST_CHECK(listFreeWorkers.empty());
 
   // Now report that jobId0 has finished and try to assign again resources to the job 4
-  ptrScheduler->releaseReservation(jobId0);
+  _scheduler.releaseReservation(jobId0);
 
   //listFreeWorkers.clear();
-  ptrScheduler->assignJobsToWorkers();
+  _scheduler.assignJobsToWorkers();
 
-  listFreeWorkers = ptrScheduler->getListAllocatedWorkers(jobId4);
+  listFreeWorkers = _scheduler.getListAllocatedWorkers(jobId4);
   BOOST_CHECK(!listFreeWorkers.empty());
 
   int w0 = boost::lexical_cast<int>(listFreeWorkers.front());
@@ -502,7 +501,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     arrWorkerIds.push_back(workerId);
     std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
     sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-    ptrScheduler->addWorker(workerId, 1, cpbSet);
+    _scheduler.addWorker(workerId, 1, cpbSet);
   }
 
   // submit a bunch of jobs now
@@ -520,21 +519,21 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
   {
-    ptrScheduler->schedule(jobId);
+    _scheduler.schedule(jobId);
   }
 
-  ptrScheduler->assignJobsToWorkers();
-  ptrScheduler->checkAllocations();
+  _scheduler.assignJobsToWorkers();
+  _scheduler.checkAllocations();
 
   LOG(DEBUG, "Initial allocations ...");
   // all the workers should have assigned jobs
   sdpa::worker_id_list_t workerList;
-  ptrScheduler->getListNotAllocatedWorkers(workerList);
+  _scheduler.getListNotAllocatedWorkers(workerList);
   // check if there are any workers that are not yet reserved
   BOOST_CHECK(workerList.empty());
 
   sdpa::worker_id_t lastWorkerId("worker_9");
-  sdpa::job_id_t jobId = ptrScheduler->getAssignedJob(lastWorkerId);
+  sdpa::job_id_t jobId = _scheduler.getAssignedJob(lastWorkerId);
   LOG(DEBUG, "The worker "<<lastWorkerId<<" was assigned the job "<<jobId);
   sdpa::job_id_t oldJobId(jobId);
 
@@ -542,26 +541,26 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   // and now simply delete the last worker !
   LOG(DEBUG, "Reschedule the jobs assigned to "<<lastWorkerId<<"!");
-  ptrScheduler->rescheduleWorkerJob(lastWorkerId, jobId);
+  _scheduler.rescheduleWorkerJob(lastWorkerId, jobId);
 
-  ptrScheduler->schedule(jobId);
-  BOOST_CHECK (ptrScheduler->schedulingAllowed());
+  _scheduler.schedule(jobId);
+  BOOST_CHECK (_scheduler.schedulingAllowed());
 
   LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");
-  ptrScheduler->deleteWorker(lastWorkerId);
-  sdpa::worker_id_list_t listW = ptrScheduler->getListAllocatedWorkers(jobId);
+  _scheduler.deleteWorker(lastWorkerId);
+  sdpa::worker_id_list_t listW = _scheduler.getListAllocatedWorkers(jobId);
   BOOST_CHECK(listW.empty());
   LOG_IF(DEBUG, listW.empty(), "The worker "<<lastWorkerId<<" was deleted!");
 
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-  ptrScheduler->addWorker(lastWorkerId, 1, cpbSet);
+  _scheduler.addWorker(lastWorkerId, 1, cpbSet);
 
   LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
-  ptrScheduler->assignJobsToWorkers();
-  ptrScheduler->checkAllocations();
+  _scheduler.assignJobsToWorkers();
+  _scheduler.checkAllocations();
 
-  BOOST_REQUIRE_EQUAL (oldJobId, ptrScheduler->getAssignedJob (lastWorkerId));
+  BOOST_REQUIRE_EQUAL (oldJobId, _scheduler.getAssignedJob (lastWorkerId));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
