@@ -73,7 +73,7 @@ namespace sdpa { namespace daemon {
     bool has_job(const sdpa::job_id_t& job_id);
 
     friend class SchedulerBase; // SchedulerBase::schedule_first()
-
+    void markJobSubmitted(const sdpa::worker_id_list_t& worker_id_list, const sdpa::job_id_t& job_id);
 protected:
     worker_map_t  worker_map_;
 

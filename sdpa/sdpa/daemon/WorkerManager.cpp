@@ -363,3 +363,13 @@ sdpa::job_id_list_t WorkerManager::getJobListAndCleanQueues(const Worker::ptr_t&
 
   return listAssignedJobs;
 }
+
+void WorkerManager::markJobSubmitted(const sdpa::worker_id_list_t& worker_id_list, const sdpa::job_id_t& job_id)
+{
+  lock_type lock(mtx_);
+  BOOST_FOREACH(const Worker::worker_id_t& wid, worker_id_list)
+  {
+    Worker::ptr_t ptrWorker = findWorker(wid);
+    ptrWorker->submit(job_id);
+  }
+}
