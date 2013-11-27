@@ -15,7 +15,6 @@ namespace sdpa { namespace util {
        return (tv.tv_sec * 1000000 + tv.tv_usec);
   */
   extern time_type now();
-  extern time_type time_diff(const time_type &start, const time_type &end);
 }}
 
 #endif
