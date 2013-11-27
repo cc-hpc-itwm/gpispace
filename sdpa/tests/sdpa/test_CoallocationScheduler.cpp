@@ -20,6 +20,10 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 #include "kvs_setup_fixture.hpp"
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::capabilities_set_t)
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::job_id_t)
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::worker_id_list_t)
+
 using namespace std;
 using namespace sdpa::daemon;
 
@@ -108,9 +112,8 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
   // check what are the agent's capabilites now
   sdpa::capabilities_set_t acquiredCpbs;
   ptrScheduler->getWorkerCapabilities(workerId, acquiredCpbs);
-  bool bSameCpbs(workerCpbSet==acquiredCpbs);
-  BOOST_REQUIRE(bSameCpbs);
-  LOG_IF(ERROR, !bSameCpbs, "The worker doesn't have the expected capabilities!");
+
+  BOOST_REQUIRE_EQUAL (workerCpbSet, acquiredCpbs);
 
   // Now, create a job that requires the capabilities A and B
   requirement_list_t reqList;
@@ -119,10 +122,9 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
   job_requirements_t jobReqs(reqList, we::type::schedule_data());
 
   // check if there is any matching worker
-  sdpa::worker_id_list_t wlist(1, workerId);
-  sdpa::worker_id_t matchingWorkerId(ptrScheduler->findSuitableWorker(jobReqs, wlist));
-  LOG_IF(ERROR, workerId!=matchingWorkerId, "The worker found is not the expected one!");
-  BOOST_REQUIRE(workerId==matchingWorkerId);
+  sdpa::worker_id_list_t avail (1, workerId);
+  BOOST_REQUIRE_EQUAL
+    (workerId, ptrScheduler->findSuitableWorker (jobReqs, avail));
 }
 
 BOOST_AUTO_TEST_CASE(testGainCap)
@@ -145,13 +147,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   ptrScheduler->assignJobsToWorkers(); ptrScheduler->checkAllocations();
 
-  sdpa::worker_id_list_t listAssgnWks = ptrScheduler->getListAllocatedWorkers(jobId1);
-  BOOST_CHECK(listAssgnWks.empty());
-
-  if(listAssgnWks == sdpa::worker_id_list_t(1,worker_A))
-    LOG(DEBUG, "The job Job1 was scheduled on worker_A, which is incorrect, because worker_A doesn't have yet the capability \"C\"");
-  else
-    LOG(DEBUG, "The job Job1 wasn't scheduled on worker_A, which is correct, as it hasn't yet acquired the capability \"C\"");
+  BOOST_REQUIRE (ptrScheduler->getListAllocatedWorkers (jobId1).empty());
 
   sdpa::capability_t cpb1("C", "virtual", worker_A);
   cpbSetA.insert(cpb1);
@@ -168,15 +164,9 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   ptrScheduler->assignJobsToWorkers();
   ptrScheduler->checkAllocations();
 
-  listAssgnWks = ptrScheduler->getListAllocatedWorkers(jobId1);
-  BOOST_CHECK(!listAssgnWks.empty());
-
-  bool bOutcome = (listAssgnWks == sdpa::worker_id_list_t(1,worker_A));
-  BOOST_CHECK(bOutcome);
-  if(listAssgnWks == sdpa::worker_id_list_t(1,worker_A))
-    LOG(DEBUG, "The job Job1 was scheduled on worker_A, which is correct, as the worker_A has now gained the capability \"C\"");
-  else
-    LOG(DEBUG, "The job Job1 wasn't scheduled on worker_A, despite the fact is is the only one having the required  capability, which is incorrect");
+  BOOST_REQUIRE_EQUAL ( sdpa::worker_id_list_t (1, worker_A)
+                      , ptrScheduler->getListAllocatedWorkers (jobId1)
+                      );
 }
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
@@ -581,9 +571,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   ptrScheduler->assignJobsToWorkers();
   ptrScheduler->checkAllocations();
 
-  jobId = ptrScheduler->getAssignedJob(lastWorkerId);
-  BOOST_CHECK(jobId==oldJobId);
-  LOG_IF(DEBUG, jobId==oldJobId, "The worker "<<lastWorkerId<<" was re-assigned the job "<<jobId);
+  BOOST_REQUIRE_EQUAL (oldJobId, ptrScheduler->getAssignedJob (lastWorkerId));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

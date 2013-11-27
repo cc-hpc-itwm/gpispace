@@ -21,6 +21,10 @@
 #include <sdpa/daemon/scheduler/SimpleScheduler.hpp>
 #include "kvs_setup_fixture.hpp"
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::capabilities_set_t)
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::job_id_t)
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::worker_id_list_t)
+
 using namespace std;
 using namespace sdpa::daemon;
 
@@ -109,9 +113,7 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
   // check what are the agent's capabilites now
   sdpa::capabilities_set_t acquiredCpbs;
   ptrScheduler->getWorkerCapabilities(workerId, acquiredCpbs);
-  bool bSameCpbs(workerCpbSet==acquiredCpbs);
-  BOOST_REQUIRE(bSameCpbs);
-  LOG_IF(ERROR, !bSameCpbs, "The worker doesn't have the expected capabilities!");
+  BOOST_REQUIRE_EQUAL (workerCpbSet, acquiredCpbs);
 
   // Now, create a job that requires the capabilities A and B
   requirement_list_t reqList;
@@ -120,10 +122,9 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
   job_requirements_t jobReqs(reqList, we::type::schedule_data());
 
   // check if there is any matching worker
-  sdpa::worker_id_list_t wlist(1, workerId);
-  sdpa::worker_id_t matchingWorkerId(ptrScheduler->findSuitableWorker(jobReqs, wlist));
-  LOG_IF(ERROR, workerId!=matchingWorkerId, "The worker found is not the expected one!");
-  BOOST_REQUIRE(workerId==matchingWorkerId);
+  sdpa::worker_id_list_t avail (1, workerId);
+  BOOST_REQUIRE_EQUAL
+    (workerId, ptrScheduler->findSuitableWorker (jobReqs, avail));
 }
 
 BOOST_AUTO_TEST_CASE(testGainCap)
@@ -146,13 +147,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   ptrScheduler->assignJobsToWorkers();
 
-  boost::optional<sdpa::worker_id_t> assgnWid(ptrScheduler->getAssignedWorker(jobId1));
-  BOOST_REQUIRE(!assgnWid);
-
-  if(assgnWid == worker_A)
-    LOG(DEBUG, "The job Job1 was scheduled on worker_A, which is incorrect, because worker_A doesn't have yet the capability \"C\"");
-  else
-    LOG(DEBUG, "The job Job1 wasn't scheduled on worker_A, which is correct, as it hasn't yet acquired the capability \"C\"");
+  BOOST_REQUIRE_EQUAL (ptrScheduler->getAssignedWorker (jobId1), boost::none);
 
   sdpa::capability_t cpb1("C", "virtual", worker_A);
   cpbSetA.insert(cpb1);
@@ -168,12 +163,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   LOG(DEBUG, "Try to assign again jobs to the workers ...");
   ptrScheduler->assignJobsToWorkers();
 
-  assgnWid = ptrScheduler->getAssignedWorker(jobId1);
-  BOOST_REQUIRE(*assgnWid == worker_A);
-  if(*assgnWid == worker_A)
-    LOG(DEBUG, "The job Job1 was scheduled on worker_A, which is correct, as the worker_A has now gained the capability \"C\"");
-  else
-    LOG(DEBUG, "The job Job1 wasn't scheduled on worker_A, despite the fact is is the only one having the required  capability, which is incorrect");
+  BOOST_REQUIRE_EQUAL (ptrScheduler->getAssignedWorker (jobId1), worker_A);
 }
 
 
