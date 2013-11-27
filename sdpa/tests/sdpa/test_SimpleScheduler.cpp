@@ -58,7 +58,7 @@ public:
                                 <<". This message can be ignored.");
   }
 
-  void submitWorkflow(const id_type& id, const encoded_type& )
+  void submitWorkflow(const we::mgmt::layer::id_type& id, const we::mgmt::layer::encoded_type& )
   {
     DLOG(TRACE, "The agent is trying to forward the master job "<<id<<" to the workflow engine");
     BOOST_REQUIRE(hasWorkflowEngine());
@@ -135,9 +135,9 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 
   // Now, create a job that requires the capabilities A and B
   requirement_list_t reqList;
-  reqList.push_back(requirement_t("A", true));
-  reqList.push_back(requirement_t("B", true));
-  job_requirements_t jobReqs(reqList, schedule_data());
+  reqList.push_back(we::type::requirement_t("A", true));
+  reqList.push_back(we::type::requirement_t("B", true));
+  job_requirements_t jobReqs(reqList, we::type::schedule_data());
 
   // check if there is any matching worker
   sdpa::worker_id_list_t wlist(1, workerId);
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   const sdpa::job_id_t jobId1("Job1");
   sdpa::daemon::Job::ptr_t pJob1(new Job(jobId1, "description 1", sdpa::job_id_t(), false));
-  job_requirements_t jobReqs1(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100));
+  job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
   m_pAgent->addJob(jobId1, pJob1, jobReqs1);
 
   LOG(DEBUG, "Schedule the job "<<jobId1);
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       listJobIds.push_back(jobId);
       osstr.str("");
       sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
-      m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+      m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       listJobIds.push_back(jobId);
       osstr.str("");
       sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
-      m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+      m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -389,7 +389,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     listJobIds.push_back(jobId);
     osstr.str("");
     sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
-    m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+    m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -479,7 +479,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     listJobIds.push_back(jobId);
     osstr.str("");
     sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
-    m_pAgent->addJob(jobId, pJob,  job_requirements_t(requirement_list_t(1, requirement_t("C", true)), schedule_data(1, 100)));
+    m_pAgent->addJob(jobId, pJob,  job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   // schedule all jobs now

@@ -629,8 +629,8 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GS about activity status transitions.
  */
-void GenericDaemon::submit( const id_type& activityId
-                          , const encoded_type& desc
+void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
+                          , const we::mgmt::layer::encoded_type& desc
                           , const requirement_list_t& req_list
                           , const we::type::schedule_data& schedule_data
                           , const we::type::user_data& user_data
@@ -679,7 +679,7 @@ void GenericDaemon::submit( const id_type& activityId
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
  */
-bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason)
+bool GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId, const we::mgmt::layer::reason_type & reason)
 {
   DMLOG (TRACE, "The workflow engine requests the cancellation of the activity " << activityId << "( reason: " << reason<<")!");
 
@@ -705,7 +705,7 @@ bool GenericDaemon::cancel(const id_type& activityId, const reason_type & reason
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-bool GenericDaemon::finished(const id_type& workflowId, const result_type& result)
+bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const we::mgmt::layer::result_type& result)
 {
   DMLOG (TRACE, "activity finished: " << workflowId);
   // generate a JobFinishedEvent for self!
@@ -729,8 +729,8 @@ bool GenericDaemon::finished(const id_type& workflowId, const result_type& resul
  * Notify the SDPA that a workflow failed (state transition
  * from running to failed).
  */
-bool GenericDaemon::failed( const id_type& workflowId
-                          , const result_type & result
+bool GenericDaemon::failed( const we::mgmt::layer::id_type& workflowId
+                          , const we::mgmt::layer::result_type & result
                           , int error_code
                           , std::string const & reason
                           )
@@ -763,7 +763,7 @@ bool GenericDaemon::failed( const id_type& workflowId
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */
-bool GenericDaemon::canceled(const id_type& workflowId)
+bool GenericDaemon::canceled(const we::mgmt::layer::id_type& workflowId)
 {
   DMLOG (TRACE, "activity canceled: " << workflowId);
   // generate a JobCanceledEvent for self!
@@ -776,7 +776,7 @@ bool GenericDaemon::canceled(const id_type& workflowId)
   return true;
 }
 
-/*void GenericDaemon::submitWorkflow(const id_type& wf_id, const encoded_type& desc )
+/*void GenericDaemon::submitWorkflow(const we::mgmt::layer::id_type& wf_id, const we::mgmt::layer::encoded_type& desc )
 {
   if(!hasWorkflowEngine())
     throw NoWorkflowEngine();
@@ -791,7 +791,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 {
   DMLOG (TRACE, "Schedule the job "<<jobId.str()<<" to the workflow engine!");
 
-  id_type wf_id = jobId.str();
+  we::mgmt::layer::id_type wf_id = jobId.str();
 
   on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToSelf
                                 , this

@@ -92,11 +92,9 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   if( (pEvt->from() != sdpa::daemon::WE) )
   {
     Worker::worker_id_t worker_id = pEvt->from();
-    id_type act_id = pEvt->job_id();
+    we::mgmt::layer::id_type act_id = pEvt->job_id();
 
     try {
-      result_type output = pEvt->result();
-
       DMLOG (TRACE, "Notify the subscribers that the job "<<act_id<<" finished");
       JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
       notifySubscribers(ptrEvtJobFinished);
@@ -173,11 +171,9 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   if( (pEvt->from() != sdpa::daemon::WE) )
   {
       Worker::worker_id_t worker_id = pEvt->from();
-      id_type actId = pJob->id().str();
+      we::mgmt::layer::id_type actId = pJob->id().str();
 
       try {
-        result_type output = pEvt->result();
-
         JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
         SDPA_LOG_DEBUG("Notify the subscribers that the job "<<actId<<" has failed");
         notifySubscribers(ptrEvtJobFailed);
@@ -245,8 +241,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
   }
   catch(const NoWorkerFoundException&)
   {
-    id_type workflowId = pEvt->job_id();
-    reason_type reason("No reason");
+    we::mgmt::layer::id_type workflowId = pEvt->job_id();
     DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
     pJob->CancelJob(pEvt);
     DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());

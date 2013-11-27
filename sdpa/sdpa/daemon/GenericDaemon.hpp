@@ -104,16 +104,16 @@ namespace sdpa {
       virtual bool isTop() { return false; }
 
       // WE interface
-      void submit( const id_type & id
-                         , const encoded_type&
+      void submit( const we::mgmt::layer::id_type & id
+                         , const we::mgmt::layer::encoded_type&
                          , const requirement_list_t& = requirement_list_t()
                          , const we::type::schedule_data& = we::type::schedule_data()
                          , const we::type::user_data & = we::type::user_data ()
                          );
-      bool cancel(const id_type & id, const reason_type& reason);
-      virtual bool finished(const id_type & id, const result_type& result);
-      virtual bool failed( const id_type& wfId, const result_type& res, int errc, std::string const& reason);
-      bool canceled(const id_type& id);
+      bool cancel(const we::mgmt::layer::id_type & id, const we::mgmt::layer::reason_type& reason);
+      virtual bool finished(const we::mgmt::layer::id_type & id, const we::mgmt::layer::result_type& result);
+      virtual bool failed( const we::mgmt::layer::id_type& wfId, const we::mgmt::layer::result_type& res, int errc, std::string const& reason);
+      bool canceled(const we::mgmt::layer::id_type& id);
       virtual void pause(const job_id_t& id ) = 0;
       virtual void resume(const job_id_t& id ) = 0;
 

@@ -91,9 +91,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   else
   {
     Worker::worker_id_t worker_id = pEvt->from();
-    id_type actId = pEvt->job_id();
-
-      result_type output = pEvt->result();
+    we::mgmt::layer::id_type actId = pEvt->job_id();
 
       // update the status of the reservation
       scheduler()->workerFinished(worker_id, actId);
@@ -106,10 +104,10 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       if(bTaskGroupComputed) {
           DLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
           if(scheduler()->groupFinished(actId))
-            workflowEngine()->finished(actId, output);
+            workflowEngine()->finished(actId, pEvt->result());
           else
             workflowEngine()->failed( actId,
-                                      output,
+                                      pEvt->result(),
                                       sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
                                       "One of tasks of the group failed with the actual reservation!");
       }
@@ -147,7 +145,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   }
 }
 
-bool Agent::finished(const id_type& wfid, const result_type & result)
+bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::layer::result_type & result)
 {
   //put the job into the state Finished
   JobId id(wfid);
@@ -271,7 +269,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   {
     Worker::worker_id_t worker_id = pEvt->from();
 
-      id_type actId = pEvt->job_id();
+      we::mgmt::layer::id_type actId = pEvt->job_id();
 
       // this  should only  be called  once, therefore
       // the state machine when we switch the job from
@@ -329,8 +327,8 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   }
 }
 
-bool Agent::failed( const id_type& wfid
-                  , const result_type & result
+bool Agent::failed( const we::mgmt::layer::id_type& wfid
+                  , const we::mgmt::layer::result_type & result
                   , int error_code
                   , std::string const & reason
                   )
@@ -548,8 +546,9 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
   }
   else // a Cancel message came from the upper level -> forward cancellation request to WE
   {
-    id_type workflowId = pEvt->job_id();
-    reason_type reason("No reason");
+    we::mgmt::layer::id_type workflowId = pEvt->job_id();
+    //! \todo "No reason"?! We've got a CancelJobEvent, which has a reason.
+    we::mgmt::layer::reason_type reason("No reason");
     DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
     workflowEngine()->cancel(workflowId, reason);
     pJob->CancelJob(pEvt);
@@ -605,7 +604,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
   else // acknowledgment comes from a worker -> inform WE that the activity was canceled
   {
     LOG( TRACE, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
-    id_type actId = pEvt->job_id();
+    we::mgmt::layer::id_type actId = pEvt->job_id();
     Worker::worker_id_t worker_id = pEvt->from();
 
     scheduler()->workerCanceled(worker_id, actId);
