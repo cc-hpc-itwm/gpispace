@@ -91,7 +91,6 @@ const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
   if( job_requirements_.empty() )
     throw NoJobRequirements(jobId);
 
-  DLOG(TRACE, "Locate the preferences of the job "<<jobId.str());
   requirements_map_t::const_iterator it_req = job_requirements_.find(jobId);
   if( it_req == job_requirements_.end() )
     throw NoJobRequirements(jobId);
