@@ -85,16 +85,17 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id)
   }
 }
 
+//! \todo Why doesn't every job have an entry here?
 const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
   lock_type lock(mtx_);
   if( job_requirements_.empty() )
-    throw NoJobRequirements(jobId);
+    return job_requirements_t();
 
   DLOG(TRACE, "Locate the preferences of the job "<<jobId.str());
   requirements_map_t::const_iterator it_req = job_requirements_.find(jobId);
   if( it_req == job_requirements_.end() )
-    throw NoJobRequirements(jobId);
+    return job_requirements_t();
 
   return it_req->second;;
 }

@@ -31,20 +31,20 @@ void CoallocationScheduler::assignJobsToWorkers()
   {
     sdpa::job_id_t jobId(nextJobToSchedule());
 
-    size_t nReqWorkers(1); // default number of required workers is 1
+    const job_requirements_t job_reqs
+      (ptr_comm_handler_->getJobRequirements (jobId));
+
+    const size_t nReqWorkers (job_reqs.numWorkers());
     sdpa::worker_id_t matchingWorkerId;
 
-    try {
-      job_requirements_t job_reqs(ptr_comm_handler_->getJobRequirements(jobId));
-
-      nReqWorkers = job_reqs.numWorkers();
-      matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
-    }
-    catch( const NoJobRequirements& ex ) // no requirements are specified
+    if (job_reqs.empty())
     {
-      // we have an empty list of requirements then!
       matchingWorkerId = listAvailWorkers.front();
       listAvailWorkers.erase(listAvailWorkers.begin());
+    }
+    else
+    {
+      matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
     }
 
     if( !matchingWorkerId.empty() ) // matching found

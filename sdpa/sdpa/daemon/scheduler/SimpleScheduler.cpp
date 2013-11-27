@@ -29,14 +29,17 @@ void SimpleScheduler::assignJobsToWorkers()
     sdpa::job_id_t jobId(nextJobToSchedule());
     sdpa::worker_id_t matchingWorkerId;
 
-    try {
-      job_requirements_t job_reqs(ptr_comm_handler_->getJobRequirements(jobId));
-      matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
-    }
-    catch( const NoJobRequirements& ex ) { // no requirements are specified
-      // we have an empty list of requirements then!
+    const job_requirements_t job_reqs
+      (ptr_comm_handler_->getJobRequirements (jobId));
+
+    if (job_reqs.empty())
+    {
       matchingWorkerId = listAvailWorkers.front();
       listAvailWorkers.erase(listAvailWorkers.begin());
+    }
+    else
+    {
+      matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
     }
 
     if( !matchingWorkerId.empty() )
