@@ -128,13 +128,18 @@ namespace sdpa {
     void Job::action_resume_job(const MSMResumeJobEvent& evt)
     {
       LOG(INFO, "The job "<<id()<<" changed its status from STALLED to RUNNING");
-      if(evt.ptrAgent()) {
-        // notify the the job owner that the job makes progress
-        sdpa::events::JobRunningEvent::Ptr pEvt(new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
-                                                                                 , owner()
-                                                                                 , id()
-                                                                                 ));
-        evt.ptrAgent()->sendEventToMaster(pEvt);
+      if(evt.ptrAgent())
+      {
+         if( evt.ptrAgent()->noChildJobStalled(id()) )
+         {
+             // notify the the job owner that the job makes progress
+             sdpa::events::JobRunningEvent::Ptr pEvt(
+                 new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
+                                                    , owner()
+                                                    , id()
+                                                   ));
+             evt.ptrAgent()->sendEventToMaster(pEvt);
+          }
       }
     }
 
