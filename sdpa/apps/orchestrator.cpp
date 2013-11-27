@@ -14,7 +14,6 @@
 #include <boost/tokenizer.hpp>
 
 namespace bfs = boost::filesystem;
-namespace su = sdpa::util;
 namespace po = boost::program_options;
 using namespace std;
 

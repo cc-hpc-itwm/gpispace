@@ -20,7 +20,6 @@
 #include <boost/tokenizer.hpp>
 
 namespace bfs = boost::filesystem;
-namespace su = sdpa::util;
 namespace po = boost::program_options;
 
 static const int EX_STILL_RUNNING = 4;
