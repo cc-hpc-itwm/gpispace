@@ -27,6 +27,27 @@ using namespace std;
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 
+
+Agent::Agent ( const std::string& name
+             , const std::string& url
+             , const sdpa::master_info_list_t arrMasterNames
+             , int rank
+             , const boost::optional<std::string>& guiUrl
+             )
+  : GenericDaemon (name, arrMasterNames, rank, guiUrl, true),
+    SDPA_INIT_LOGGER(name),
+    url_(url)
+{
+  if(rank>=0)
+  {
+    std::ostringstream oss;
+    oss<<"rank"<<rank;
+
+    sdpa::capability_t properCpb(oss.str(), "rank", name);
+    addCapability(properCpb);
+  }
+}
+
 void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 {
   assert (pEvt);
