@@ -14,9 +14,9 @@ using namespace sdpa::events;
 
 namespace sdpa {
   namespace daemon {
-    Job::Job( const sdpa::job_id_t id,
-              const sdpa::job_desc_t desc,
-              const sdpa::job_id_t &parent
+    Job::Job( const job_id_t id,
+              const job_desc_t desc,
+              const job_id_t &parent
             , bool is_master_job
             )
         : id_(id)
@@ -30,22 +30,22 @@ namespace sdpa {
       start();
     }
 
-    const sdpa::job_id_t & Job::id() const
+    const job_id_t & Job::id() const
     {
       return id_;
     }
 
-    const sdpa::job_id_t & Job::parent() const
+    const job_id_t & Job::parent() const
     {
       return parent_;
     }
 
-    const sdpa::job_desc_t & Job::description() const
+    const job_desc_t & Job::description() const
     {
       return desc_;
     }
 
-    const sdpa::job_result_t& Job::result() const
+    const job_result_t& Job::result() const
     {
       return result_;
     }
@@ -62,17 +62,17 @@ namespace sdpa {
       return m_error_message;
     }
 
-    void Job::set_owner(const sdpa::worker_id_t& owner)
+    void Job::set_owner(const worker_id_t& owner)
     {
       m_owner = owner;
     }
 
-    sdpa::worker_id_t Job::owner() const
+    worker_id_t Job::owner() const
     {
       return m_owner;
     }
 
-    sdpa::status::code Job::getStatus() const
+    status::code Job::getStatus() const
     {
       lock_type lock(mtx_);
       return state_code (*current_state());
@@ -80,12 +80,12 @@ namespace sdpa {
 
     bool Job::completed() const
     {
-      return sdpa::status::is_terminal (getStatus());
+      return status::is_terminal (getStatus());
     }
 
     bool Job::is_running() const
     {
-      return sdpa::status::is_running (getStatus());
+      return status::is_running (getStatus());
     }
 
     bool Job::isMasterJob() const
@@ -93,13 +93,13 @@ namespace sdpa {
       return _is_master_job;
     }
 
-    void Job::action_job_finished(const sdpa::events::JobFinishedEvent& evt/* evt */)
+    void Job::action_job_finished(const events::JobFinishedEvent& evt/* evt */)
     {
       lock_type lock(mtx_);
       result_ = evt.result();
     }
 
-    void Job::action_job_failed(const sdpa::events::JobFailedEvent& evt )
+    void Job::action_job_failed(const events::JobFailedEvent& evt )
     {
       lock_type lock(mtx_);
       result_ = evt.result();
@@ -118,7 +118,7 @@ namespace sdpa {
       LOG(INFO, "The job "<<id()<<" changed its status from RUNNING to STALLED");
       if(evt.ptrAgent()) {
         // notify the the job owner that the job has subtasks that are stalling
-        sdpa::events::JobStalledEvent::Ptr pEvt(new sdpa::events::JobStalledEvent(evt.ptrAgent()->name(),
+        events::JobStalledEvent::Ptr pEvt(new events::JobStalledEvent(evt.ptrAgent()->name(),
                                                                                   owner(),
                                                                                   id()));
         evt.ptrAgent()->sendEventToMaster(pEvt);
@@ -130,7 +130,7 @@ namespace sdpa {
       LOG(INFO, "The job "<<id()<<" changed its status from STALLED to RUNNING");
       if(evt.ptrAgent()) {
         // notify the the job owner that the job makes progress
-        sdpa::events::JobRunningEvent::Ptr pEvt(new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
+        events::JobRunningEvent::Ptr pEvt(new events::JobRunningEvent( evt.ptrAgent()->name()
                                                                                  , owner()
                                                                                  , id()
                                                                                  ));
@@ -140,7 +140,7 @@ namespace sdpa {
 
     void Job::action_delete_job(const MSMDeleteJobEvent& e)
     {
-      sdpa::events::DeleteJobAckEvent::Ptr pDelJobReply(new sdpa::events::DeleteJobAckEvent( e.from()
+      events::DeleteJobAckEvent::Ptr pDelJobReply(new events::DeleteJobAckEvent( e.from()
                                                                                              , e.to()
                                                                                              , id()) );
       e.ptrAgent()->sendEventToMaster(pDelJobReply);
@@ -148,8 +148,8 @@ namespace sdpa {
 
     void Job::action_retrieve_job_results(const MSMRetrieveJobResultsEvent& e)
     {
-      const sdpa::events::JobResultsReplyEvent::Ptr pResReply(
-         new sdpa::events::JobResultsReplyEvent( e.from()
+      const events::JobResultsReplyEvent::Ptr pResReply(
+         new events::JobResultsReplyEvent( e.from()
                                                  , e.to()
                                                  , id()
                                                  , result() ));
@@ -157,55 +157,55 @@ namespace sdpa {
     }
 
     //transitions
-    void Job::CancelJob(const sdpa::events::CancelJobEvent* pEvt)
+    void Job::CancelJob(const events::CancelJobEvent* pEvt)
     {
       lock_type lock(mtx_);
       process_event(*pEvt);
     }
 
-    void Job::CancelJobAck(const sdpa::events::CancelJobAckEvent* pEvt)
+    void Job::CancelJobAck(const events::CancelJobAckEvent* pEvt)
     {
       lock_type lock(mtx_);
       process_event(*pEvt);
     }
 
-    void Job::JobFailed(const sdpa::events::JobFailedEvent* pEvt)
+    void Job::JobFailed(const events::JobFailedEvent* pEvt)
     {
       lock_type lock(mtx_);
       process_event(*pEvt);
     }
 
-    void Job::JobFinished(const sdpa::events::JobFinishedEvent* pEvt)
+    void Job::JobFinished(const events::JobFinishedEvent* pEvt)
     {
       lock_type lock(mtx_);
       process_event(*pEvt);
     }
 
-    void Job::DeleteJob(const sdpa::events::DeleteJobEvent* pEvt, sdpa::daemon::IAgent* pAgent)
+    void Job::DeleteJob(const events::DeleteJobEvent* pEvt, IAgent* pAgent)
     {
       lock_type lock(mtx_);
       process_event(MSMDeleteJobEvent(pEvt, pAgent));
     }
 
-    void Job::RetrieveJobResults(const sdpa::events::RetrieveJobResultsEvent* pEvt, sdpa::daemon::IAgent* pAgent)
+    void Job::RetrieveJobResults(const events::RetrieveJobResultsEvent* pEvt, IAgent* pAgent)
     {
       lock_type lock(mtx_);
       process_event(MSMRetrieveJobResultsEvent(pEvt, pAgent));
     }
 
-    void Job::Reschedule(sdpa::daemon::SchedulerBase*  pSched)
+    void Job::Reschedule(SchedulerBase*  pSched)
     {
       lock_type lock(mtx_);
       process_event(MSMRescheduleEvent (pSched));
     }
 
-    void Job::Pause(sdpa::daemon::IAgent* pAgent)
+    void Job::Pause(IAgent* pAgent)
     {
       lock_type lock(mtx_);
       process_event (MSMStalledEvent (pAgent));
     }
 
-    void Job::Resume (sdpa::daemon::IAgent* pAgent)
+    void Job::Resume (IAgent* pAgent)
     {
       lock_type lock(mtx_);
       process_event (MSMResumeJobEvent (pAgent));
