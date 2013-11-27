@@ -30,7 +30,6 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
                         ("SchedulerBase ctor with NULL ptr_comm_handler")
                       )
   , SDPA_INIT_LOGGER (ptr_comm_handler_->name())
-  , m_timeout(boost::posix_time::milliseconds(100))
   , m_agent_name (ptr_comm_handler_->name())
 {}
 

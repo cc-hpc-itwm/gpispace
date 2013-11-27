@@ -89,8 +89,6 @@ namespace sdpa {
 
       void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id);
 
-      void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
-
       bool schedulingAllowed() { return !_worker_manager.common_queue_.empty(); }
       job_id_t nextJobToSchedule() { return _worker_manager.common_queue_.pop(); }
 
@@ -110,7 +108,6 @@ namespace sdpa {
 
       sdpa::daemon::IAgent* ptr_comm_handler_;
       SDPA_DECLARE_LOGGER();
-      boost::posix_time::time_duration m_timeout;
 
       mutable mutex_type mtx_;
       condition_type cond_feed_workers;
