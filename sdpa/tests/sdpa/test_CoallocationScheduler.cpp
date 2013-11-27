@@ -82,23 +82,24 @@ public:
   }
 };
 
-struct allocate_test_agent
+struct allocate_test_agent_and_scheduler
 {
-    allocate_test_agent()
+    allocate_test_agent_and_scheduler()
       : _agent ("agent", "127.0.0.1", sdpa::master_info_list_t())
+      , ptrScheduler (new sdpa::daemon::CoallocationScheduler(&_agent))
     {}
 
     TestAgent _agent;
+    sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler;
 };
 
-BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_agent )
+BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_agent_and_scheduler)
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 {
   LOG( INFO, "Test if the capabilities are matching the requirements "<<std::endl);
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
 
   sdpa::worker_id_t workerId("test_worker");
   sdpa::capabilities_set_t workerCpbSet;
@@ -130,7 +131,6 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
   LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
 
   sdpa::worker_id_t worker_A("worker_A");
 
@@ -172,7 +172,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
   LOG(INFO, "testLoadBalancing");
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
 
   // number of workers
   const int nWorkers = 10;
@@ -246,7 +245,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
   LOG(INFO, "Test the load-balancing when a worker joins later ...");
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
 
   // number of workers
   const int nWorkers = 10;
@@ -315,8 +313,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
   LOG(INFO, "Test the load-balancing when a worker gains a capability later ...");
-
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
 
   // number of workers
   const int nWorkers = 10;
@@ -395,8 +391,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
   std::ostringstream oss;
-
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
 
   // add a couple of workers
   for( int k=0; k<NWORKERS; k++ )
@@ -492,8 +486,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {
   LOG(INFO, "Test the load-balancing when a worker is stopped, re-started and announces afterwards its capabilities ...");
-
-  sdpa::daemon::CoallocationScheduler::ptr_t ptrScheduler(new sdpa::daemon::CoallocationScheduler(&_agent));
 
   // number of workers
   const int nWorkers = 10;
