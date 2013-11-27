@@ -31,6 +31,7 @@ namespace sdpa {
       bool allPartialResultsCollected(const job_id_t& jid);
       bool groupFinished(const sdpa::job_id_t& jid);
 
+      sdpa::worker_id_list_t checkReservationIsValid(const Reservation& res);
     private:
       mutable mutex_type mtx_alloc_table_;
       allocation_table_t allocation_table_;

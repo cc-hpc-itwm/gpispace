@@ -58,19 +58,27 @@ void CoallocationScheduler::assignJobsToWorkers()
 
         if( pReservation->acquired() )
         {
-            LOG(INFO, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<pReservation->getWorkerList());
-            // serve the same job to all reserved workers!!!!
-            try {
-               Worker::ptr_t pWorker(findWorker(matchingWorkerId));
-               ptr_comm_handler_->serveJob(pReservation->getWorkerList(), jobId);
-               pWorker->submit(jobId);
-               ptr_comm_handler_->resume(jobId);
+            sdpa::worker_id_list_t list_reserved_workers = pReservation->getWorkerList();
+            // check if the reservation is valid
+            sdpa::worker_id_list_t list_invalid_workers = checkReservationIsValid(*pReservation);
+            if(list_invalid_workers.empty())
+            {
+              LOG(INFO, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<list_reserved_workers);
+              // serve the same job to all reserved workers!!!!
+
+              ptr_comm_handler_->serveJob(list_reserved_workers, jobId);
+              _worker_manager.markJobSubmitted(pReservation->getWorkerList(), jobId);
+              ptr_comm_handler_->resume(jobId);
             }
-            catch(const WorkerNotFoundException&) {
-               DMLOG (TRACE, "The worker " << matchingWorkerId << " is not registered! Sending a notification ...");
-               ErrorEvent::Ptr pErrorEvt(new ErrorEvent(m_agent_name, matchingWorkerId, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
-               ptr_comm_handler_->sendEventToSlave(pErrorEvt);
-               ptr_comm_handler_->pause(jobId);
+            else
+            {
+              // delete the invalid workers
+              BOOST_FOREACH(const Worker::worker_id_t& wid, list_reserved_workers)
+              {
+                pReservation->delWorker(wid);
+              }
+
+              schedule_first(jobId);
             }
         }
         else
@@ -87,6 +95,19 @@ void CoallocationScheduler::assignJobsToWorkers()
 
   while(!nonmatching_jobs_queue.empty())
     schedule_first(nonmatching_jobs_queue.pop_back());
+}
+
+sdpa::worker_id_list_t CoallocationScheduler::checkReservationIsValid(const Reservation& res)
+{
+  lock_type lock(mtx_);
+  sdpa::worker_id_list_t list_del_workers;
+  sdpa::worker_id_list_t res_worker_list(res.getWorkerList());
+  BOOST_FOREACH(const Worker::worker_id_t& wid, res_worker_list)
+  {
+    if(!hasWorker(wid))
+      list_del_workers.push_back(wid);
+  }
+  return list_del_workers;
 }
 
 void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
