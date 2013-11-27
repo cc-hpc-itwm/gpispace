@@ -160,10 +160,12 @@ namespace sdpa {
       virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *);
 
       // event communication
+    public:
       virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
       virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
       virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
 
+    protected:
       // registration
       virtual void requestRegistration(const MasterInfo& masterInfo);
       virtual void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
