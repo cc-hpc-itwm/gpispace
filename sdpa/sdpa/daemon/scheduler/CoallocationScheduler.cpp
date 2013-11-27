@@ -84,7 +84,7 @@ void CoallocationScheduler::assignJobsToWorkers()
 
 void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
 {
-  Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
+  Job* pJob = ptr_comm_handler_->findJob(job_id);
   if(pJob)
   {
     if(!pJob->completed()) {

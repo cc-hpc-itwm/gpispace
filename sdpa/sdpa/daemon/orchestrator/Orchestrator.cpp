@@ -71,7 +71,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   }
 
   //put the job into the state Finished or Cancelled
-  Job::ptr_t pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
       DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus()<<". Change its status to \"SDPA::Finished\"!");
@@ -82,7 +82,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   {
       SDPA_LOG_WARN( "got finished message for old Job "<< pEvt->job_id());
       // decided to keep it, until the client explicitly request to delete it  or a garbage collector will remove it
-      Job::ptr_t pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t(), false));
+      Job* pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t(), false));
       addJob(pEvt->job_id(), pJob);
       pJob->JobFinished(pEvt);
       return;
@@ -151,7 +151,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   }
 
   //put the job into the state Failed or Cancelled
-  Job::ptr_t pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
       pJob->JobFailed(pEvt);
@@ -161,7 +161,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   {
       SDPA_LOG_WARN( "got failed message for old Job "<< pEvt->job_id());
       // decided to keep it, until the client explicitly request to delete it  or a garbage collector will remove it
-      Job::ptr_t pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t(), false));
+      Job* pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t(), false));
       addJob(pEvt->job_id(), pJob);
       pJob->JobFailed(pEvt);
       return;
@@ -205,7 +205,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
 
 void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
-  Job::ptr_t pJob;
+  Job* pJob;
 
   pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
@@ -252,7 +252,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 {
   DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
-  Job::ptr_t pJob(jobManager().findJob(pEvt->job_id()));
+  Job* pJob(jobManager().findJob(pEvt->job_id()));
   if(pJob)
   {
     // update the job status to "Canceled"
@@ -270,7 +270,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
 void Orchestrator::pause(const job_id_t& jobId)
 {
-  Job::ptr_t pJob(jobManager().findJob(jobId));
+  Job* pJob(jobManager().findJob(jobId));
   if(pJob)
   {
     pJob->Pause(NULL);
@@ -282,7 +282,7 @@ void Orchestrator::pause(const job_id_t& jobId)
 
 void Orchestrator::resume(const job_id_t& jobId)
 {
-  Job::ptr_t pJob(jobManager().findJob(jobId));
+  Job* pJob(jobManager().findJob(jobId));
   if(pJob)
   {
       pJob->Resume(NULL);

@@ -19,13 +19,13 @@ namespace sdpa
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::unordered_map<sdpa::job_id_t, job_requirements_t>
         requirements_map_t;
-      typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t>
+      typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
         job_map_t;
       typedef job_map_t::iterator iterator;
 
-      Job::ptr_t findJob (const sdpa::job_id_t&) const;
+      Job* findJob (const sdpa::job_id_t&) const;
       void addJob ( const sdpa::job_id_t&
-                  , const Job::ptr_t&
+                  , Job*
                   , const job_requirements_t& = job_requirements_t()
                   );
       void deleteJob (const sdpa::job_id_t&);

@@ -191,9 +191,7 @@ namespace sdpa {
     class Job : public boost::msm::back::state_machine<JobFSM_>
     {
     public:
-      typedef Job* ptr_t;
-
-      typedef boost::unordered_map<job_id_t, Job::ptr_t> job_list_t;
+      typedef boost::unordered_map<job_id_t, Job*> job_list_t;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 

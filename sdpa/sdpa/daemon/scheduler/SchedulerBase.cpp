@@ -136,7 +136,7 @@ void SchedulerBase::delete_job (sdpa::job_id_t const & job)
 
 void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 {
-  const Job::ptr_t pJob = ptr_comm_handler_->findJob(jobId);
+  Job* pJob = ptr_comm_handler_->findJob(jobId);
   if(pJob)
   {
     try {

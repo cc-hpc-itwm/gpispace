@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   _scheduler.addWorker(worker_A, 1, cpbSetA);
 
   const sdpa::job_id_t jobId1("Job1");
-  sdpa::daemon::Job::ptr_t pJob1(new Job(jobId1, "description 1", sdpa::job_id_t(), false));
+  sdpa::daemon::Job* pJob1(new Job(jobId1, "description 1", sdpa::job_id_t(), false));
   job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
   _agent.addJob(jobId1, pJob1, jobReqs1);
 
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       sdpa::job_id_t jobId(osstr.str());
       listJobIds.push_back(jobId);
       osstr.str("");
-      sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
+      sdpa::daemon::Job* pJob(new Job(jobId, "", sdpa::job_id_t(), false));
       _agent.addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       sdpa::job_id_t jobId(osstr.str());
       listJobIds.push_back(jobId);
       osstr.str("");
-      sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
+      sdpa::daemon::Job* pJob(new Job(jobId, "", sdpa::job_id_t(), false));
       _agent.addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     sdpa::job_id_t jobId(osstr.str());
     listJobIds.push_back(jobId);
     osstr.str("");
-    sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
+    sdpa::daemon::Job* pJob(new Job(jobId, "", sdpa::job_id_t(), false));
     _agent.addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     sdpa::job_id_t jobId(osstr.str());
     listJobIds.push_back(jobId);
     osstr.str("");
-    sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
+    sdpa::daemon::Job* pJob(new Job(jobId, "", sdpa::job_id_t(), false));
     _agent.addJob(jobId, pJob,  job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 

@@ -12,7 +12,7 @@ namespace sdpa
 {
   namespace daemon
   {
-    Job::ptr_t JobManager::findJob (const sdpa::job_id_t& job_id) const
+    Job* JobManager::findJob (const sdpa::job_id_t& job_id) const
     {
       lock_type _ (_job_map_and_requirements_mutex);
 
@@ -21,7 +21,7 @@ namespace sdpa
     }
 
     void JobManager::addJob ( const sdpa::job_id_t& job_id
-                            , const Job::ptr_t& pJob
+                            , Job* pJob
                             , const job_requirements_t& job_req_list
                             )
     {
@@ -68,7 +68,7 @@ namespace sdpa
     {
       lock_type _ (_job_map_and_requirements_mutex);
 
-      BOOST_FOREACH ( Job::ptr_t job
+      BOOST_FOREACH ( Job* job
                     , job_map_
                     | boost::adaptors::map_values
                     | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))

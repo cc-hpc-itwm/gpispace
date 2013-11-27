@@ -198,7 +198,7 @@ namespace sdpa {
 
     public:
       // forwarding to jobManager() only:
-      void addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList = job_requirements_t())
+      void addJob( const sdpa::job_id_t& jid, Job* pJob, const job_requirements_t& reqList = job_requirements_t())
       {
         return jobManager().addJob(jid, pJob, reqList);
       }
@@ -206,7 +206,7 @@ namespace sdpa {
       {
         return jobManager().hasJobs();
       }
-      Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const
+      Job* findJob(const sdpa::job_id_t& job_id ) const
       {
         return jobManager().findJob(job_id);
       }

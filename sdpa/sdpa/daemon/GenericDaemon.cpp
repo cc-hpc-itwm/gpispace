@@ -235,7 +235,7 @@ void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
                   );
 
 
-  Job::ptr_t pJob = jobManager().findJob(e.job_id());
+  Job* pJob = jobManager().findJob(e.job_id());
   if(pJob)
   {
       try{
@@ -275,7 +275,7 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
-  Job::ptr_t ptrJob = jobManager().findJob(jobId);
+  Job* ptrJob = jobManager().findJob(jobId);
   if(ptrJob)
   {
       // create a SubmitJobEvent for the job job_id serialize and attach description
@@ -359,7 +359,7 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
   try {
     // One should parse the workflow in order to be able to create a valid job
     // if the event comes from Gwes parent_id is the owner_workflow_id
-    Job::ptr_t pJob(new Job( job_id, e.description(), e.parent_id()
+    Job* pJob(new Job( job_id, e.description(), e.parent_id()
                            , e.from() != sdpa::daemon::WE && hasWorkflowEngine()
                            ));
     pJob->set_owner(e.from());
@@ -586,7 +586,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
       // Only now should be the job state machine make a transition to RUNNING
       // this means that the job was not rejected, no error occurred etc ....
       // find the job ptrJob and call
-      Job::ptr_t ptrJob = jobManager().findJob(error.job_id());
+      Job* ptrJob = jobManager().findJob(error.job_id());
       if(ptrJob)
       {
         try {
@@ -807,7 +807,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
                   );
 
   try {
-    const Job::ptr_t& pJob = findJob(jobId);
+    Job* pJob = findJob(jobId);
 
     // Should set the workflow_id here, or send it together with the workflow description
     DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
@@ -1166,7 +1166,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   // check if the subscribed jobs are already in a terminal state
   BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
   {
-    Job::ptr_t pJob = findJob(jobId);
+    Job* pJob = findJob(jobId);
     if(pJob)
     {
       switch (pJob->getStatus())
@@ -1250,7 +1250,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
   // Only, now should be state of the job updated to RUNNING
   // since it was not rejected, no error occurred etc ....
   //find the job ptrJob and call
-  Job::ptr_t ptrJob = jobManager().findJob(pEvent->job_id());
+  Job* ptrJob = jobManager().findJob(pEvent->job_id());
   if(ptrJob)
   {
       try
@@ -1383,7 +1383,7 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 {
   sdpa::job_id_t jobId = pEvt->job_id();
 
-  Job::ptr_t pJob (jobManager().findJob(jobId));
+  Job* pJob (jobManager().findJob(jobId));
   if(pJob)
   {
       sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
@@ -1409,7 +1409,7 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
 
 void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
 {
-  Job::ptr_t pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
     pJob->RetrieveJobResults(pEvt, this);
