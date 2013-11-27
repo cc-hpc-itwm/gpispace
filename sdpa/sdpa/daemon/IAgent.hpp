@@ -43,7 +43,7 @@ namespace sdpa {
     virtual bool hasJobs() = 0;
 
     virtual const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const = 0;
-    virtual bool allSiblingsAreRunning(const sdpa::job_id_t& jobId, const sdpa::job_id_t& parentId ) const = 0;
+    virtual bool noChildJobStalled(const sdpa::job_id_t& jobId) const = 0;
 
     virtual void submitWorkflow(const job_id_t &  ) = 0;
 

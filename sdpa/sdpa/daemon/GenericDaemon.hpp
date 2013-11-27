@@ -182,7 +182,7 @@ namespace sdpa {
       // jobs
       std::string gen_id() { return sdpa::JobId ().str (); }
 
-      bool allSiblingsAreRunning(const sdpa::job_id_t& jobId, const sdpa::job_id_t& parentId ) const;
+      bool noChildJobStalled(const sdpa::job_id_t& jobId) const;
 
     public:
       // forwarding to jobManager() only:

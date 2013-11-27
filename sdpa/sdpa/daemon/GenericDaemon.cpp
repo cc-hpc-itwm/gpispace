@@ -1200,7 +1200,7 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
   return m_listSubscribers.find (agentId) != m_listSubscribers.end();
 }
 
-bool GenericDaemon::allSiblingsAreRunning(const sdpa::job_id_t& jobId, const sdpa::job_id_t& parentId ) const
+bool GenericDaemon::noChildJobStalled(const sdpa::job_id_t& jobId) const
 {
-  return jobManager()->allSiblingsAreRunning(jobId, parentId);
+  return jobManager()->noChildJobStalled(jobId);
 }
