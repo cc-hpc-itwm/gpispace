@@ -31,7 +31,6 @@ const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
 typedef std::map<sdpa::job_id_t, sdpa::worker_id_t> mapJob2Worker_t;
 
-// deriveaza o clasa TestAgent si override the methods SendEventOSlaves that's all
 class TestAgent : public sdpa::daemon::Agent
 {
 public:
