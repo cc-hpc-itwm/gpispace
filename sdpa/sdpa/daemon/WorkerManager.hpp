@@ -28,7 +28,7 @@
 namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
-    typedef sdpa::shared_ptr<WorkerManager> ptr_t;
+    typedef boost::shared_ptr<WorkerManager> ptr_t;
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef boost::condition_variable_any condition_type;

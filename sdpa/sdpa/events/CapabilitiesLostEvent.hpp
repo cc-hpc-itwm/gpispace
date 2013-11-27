@@ -11,7 +11,7 @@ namespace sdpa
     class CapabilitiesLostEvent : public MgmtEvent
     {
     public:
-      typedef sdpa::shared_ptr<CapabilitiesLostEvent> Ptr;
+      typedef boost::shared_ptr<CapabilitiesLostEvent> Ptr;
 
       CapabilitiesLostEvent
         ( const address_t& from

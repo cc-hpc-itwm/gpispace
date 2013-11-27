@@ -8,7 +8,7 @@ namespace sdpa {
   namespace daemon {
     class SimpleScheduler : public SchedulerBase {
     public:
-      typedef sdpa::shared_ptr<SimpleScheduler> ptr_t;
+      typedef boost::shared_ptr<SimpleScheduler> ptr_t;
       SimpleScheduler(GenericDaemon*);
 
       virtual void assignJobsToWorkers();

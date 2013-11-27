@@ -34,7 +34,7 @@ typedef std::map<sdpa::job_id_t, sdpa::worker_id_t> mapJob2Worker_t;
 class TestAgent : public sdpa::daemon::Agent
 {
 public:
-  typedef sdpa::shared_ptr<TestAgent > ptr_t;
+  typedef boost::shared_ptr<TestAgent > ptr_t;
   TestAgent( const std::string& name
              , const std::string& url
              , const sdpa::master_info_list_t& arrMasterNames

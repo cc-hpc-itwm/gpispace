@@ -15,7 +15,7 @@ namespace sdpa
     class NetworkStrategy : public seda::ForwardStrategy
     {
     public:
-      typedef shared_ptr<NetworkStrategy> ptr_t;
+      typedef boost::shared_ptr<NetworkStrategy> ptr_t;
 
       NetworkStrategy ( std::string const & next_stage
                       , std::string const & peer_name
@@ -35,9 +35,9 @@ namespace sdpa
       const std::string m_host;
       const std::string m_port;
 
-      shared_ptr<fhg::com::peer_t> m_peer;
+      boost::shared_ptr<fhg::com::peer_t> m_peer;
       fhg::com::message_t m_message;
-      shared_ptr<boost::thread> m_thread;
+      boost::shared_ptr<boost::thread> m_thread;
       bool m_shutting_down;
     };
   }

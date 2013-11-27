@@ -75,7 +75,7 @@ namespace sdpa {
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
-      typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
+      typedef boost::shared_ptr<GenericDaemon> ptr_t;
 
       GenericDaemon(const std::string name = "orchestrator_0",
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
@@ -128,7 +128,7 @@ namespace sdpa {
       void setStage(const seda::Stage::Ptr& stage){ ptr_daemon_stage_ = stage; }
       seda::Stage::Ptr to_master_stage() const { return ptr_to_master_stage_ ; }
       seda::Stage::Ptr to_slave_stage() const { return ptr_to_slave_stage_ ; }
-      sdpa::weak_ptr<seda::Stage> daemon_stage() const { return ptr_daemon_stage_ ; }
+      boost::weak_ptr<seda::Stage> daemon_stage() const { return ptr_daemon_stage_ ; }
 
       // masters and subscribers
       sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
@@ -244,7 +244,7 @@ namespace sdpa {
       sdpa::subscriber_map_t m_listSubscribers;
 
     private:
-      sdpa::weak_ptr<seda::Stage> ptr_daemon_stage_;
+      boost::weak_ptr<seda::Stage> ptr_daemon_stage_;
       std::string m_to_master_stage_name_;
       std::string m_to_slave_stage_name_;
       seda::Stage::Ptr ptr_to_master_stage_;

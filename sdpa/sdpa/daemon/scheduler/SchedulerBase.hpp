@@ -40,7 +40,7 @@ namespace sdpa {
     class SchedulerBase
     {
     public:
-      typedef sdpa::shared_ptr<SchedulerBase> ptr_t;
+      typedef boost::shared_ptr<SchedulerBase> ptr_t;
       typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;

@@ -10,7 +10,7 @@ namespace sdpa
     class JobFinishedAckEvent : public JobEvent
     {
     public:
-      typedef sdpa::shared_ptr<JobFinishedAckEvent> Ptr;
+      typedef boost::shared_ptr<JobFinishedAckEvent> Ptr;
 
       JobFinishedAckEvent ( const address_t& a_from
                           , const address_t& a_to

@@ -14,7 +14,7 @@ namespace sdpa
     class JobRunningEvent : public sdpa::events::JobEvent
     {
     public:
-      typedef sdpa::shared_ptr<JobEvent> Ptr;
+      typedef boost::shared_ptr<JobEvent> Ptr;
 
       JobRunningEvent ( const address_t& a_from
                , const address_t& a_to

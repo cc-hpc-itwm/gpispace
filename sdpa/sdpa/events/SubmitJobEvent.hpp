@@ -12,7 +12,7 @@ namespace sdpa
     class SubmitJobEvent : public JobEvent
     {
     public:
-      typedef sdpa::shared_ptr<SubmitJobEvent> Ptr;
+      typedef boost::shared_ptr<SubmitJobEvent> Ptr;
 
       SubmitJobEvent
         ( const address_t& a_from

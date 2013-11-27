@@ -24,7 +24,7 @@ namespace sdpa { namespace daemon {
   class Worker {
   public:
 
-    typedef sdpa::shared_ptr<Worker> ptr_t;
+    typedef boost::shared_ptr<Worker> ptr_t;
 
     typedef sdpa::location_t location_t;
     typedef sdpa::worker_id_t worker_id_t;

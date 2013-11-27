@@ -17,7 +17,7 @@ namespace sdpa
     class SDPAEvent : public seda::IEvent
     {
     public:
-      typedef sdpa::shared_ptr<SDPAEvent> Ptr;
+      typedef boost::shared_ptr<SDPAEvent> Ptr;
 
       typedef std::string address_t;
 

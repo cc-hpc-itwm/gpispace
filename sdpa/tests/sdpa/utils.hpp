@@ -131,7 +131,7 @@ namespace utils
       return result;
     }
 
-    sdpa::shared_ptr<fhg::core::kernel_t>
+    boost::shared_ptr<fhg::core::kernel_t>
       createDRTSWorker ( const std::string& drtsName
                        , const std::string& masterName
                        , const std::string& cpbList
@@ -140,7 +140,7 @@ namespace utils
                        , const std::string& kvsPort
                        )
     {
-      sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
+      boost::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
       kernel->set_name (drtsName);
 
       kernel->put ("plugin.kvs.host", kvsHost);
@@ -205,7 +205,7 @@ namespace utils
       _kernel->unload_all();
     }
 
-    sdpa::shared_ptr<fhg::core::kernel_t> _kernel;
+    boost::shared_ptr<fhg::core::kernel_t> _kernel;
     boost::thread _thread;
   };
 

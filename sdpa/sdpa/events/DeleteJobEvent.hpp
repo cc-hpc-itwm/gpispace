@@ -10,7 +10,7 @@ namespace sdpa
     class DeleteJobEvent : public JobEvent
     {
     public:
-      typedef sdpa::shared_ptr<DeleteJobEvent> Ptr;
+      typedef boost::shared_ptr<DeleteJobEvent> Ptr;
 
       DeleteJobEvent ( const address_t& from
                      , const address_t& to

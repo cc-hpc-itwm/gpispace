@@ -26,7 +26,7 @@ namespace sdpa {
     class Orchestrator : public GenericDaemon
     {
       public:
-      typedef sdpa::shared_ptr<Orchestrator> ptr_t;
+      typedef boost::shared_ptr<Orchestrator> ptr_t;
       SDPA_DECLARE_LOGGER();
 
       Orchestrator (const std::string &name, const std::string& url)
