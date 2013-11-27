@@ -207,22 +207,6 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   }
 }
 
-void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
-{
-  sdpa::job_id_t jobId = evt.job_id();
-  Job::ptr_t pJob(jobManager().findJob(jobId));
-  if(pJob)
-  {
-    DMLOG (TRACE, "Canceling the pending job "<<jobId<<" ... ");
-    pJob->CancelJob(&evt);
-    ptr_scheduler_->delete_job (jobId);
-  }
-  else
-  {
-    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be canceled! Exception occurred: Couldn't find the job "<<jobId);
-  }
-}
-
 void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
   Job::ptr_t pJob;

@@ -47,8 +47,6 @@ namespace sdpa {
       const std::string url() const {return url_;}
       bool isTop() { return true; }
 
-      void cancelPendingJob(const sdpa::events::CancelJobEvent& evt);
-
       template <typename T>
       void notifySubscribers(const T& ptrEvt);
 
