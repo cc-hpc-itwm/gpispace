@@ -121,6 +121,4 @@ namespace sdpa {
   }
 }
 
-BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::SchedulerBase )
-
 #endif
