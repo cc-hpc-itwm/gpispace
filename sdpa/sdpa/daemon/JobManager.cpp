@@ -60,19 +60,10 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id)
   // delete the requirements of this job
   requirements_map_t::size_type rc = job_requirements_.erase(job_id);
 
-  if(rc)
-  {
-    DLOG(TRACE, "Erased the requirements of the job "<<job_id.str());
-  }
-
   job_map_t::size_type ret = job_map_.erase(job_id);
   if( !ret )
   {
     throw JobNotDeletedException(job_id);
-  }
-  else
-  {
-    DLOG(TRACE, "Erased the job "<<job_id.str()<<" from job map");
   }
 }
 
