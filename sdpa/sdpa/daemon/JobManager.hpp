@@ -54,7 +54,7 @@ namespace sdpa {
   protected:
       SDPA_DECLARE_LOGGER();
       job_map_t job_map_;
-      mutable mutex_type mtx_;
+      mutable mutex_type _job_map_and_requirements_mutex;
       requirements_map_t job_requirements_;
   };
 }}

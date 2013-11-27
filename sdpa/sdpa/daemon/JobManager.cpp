@@ -37,14 +37,14 @@ JobManager::JobManager(const std::string& name)
 //helpers
 Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id ) const
 {
-  lock_type lock(mtx_);
+  lock_type lock(_job_map_and_requirements_mutex);
   const job_map_t::const_iterator it (job_map_.find( job_id ));
   return it != job_map_.end() ? it->second : NULL;
 }
 
 void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob, const job_requirements_t& job_req_list )
 {
-  lock_type lock(mtx_);
+  lock_type lock(_job_map_and_requirements_mutex);
 
   if(!job_map_.insert(std::make_pair (job_id, pJob)).second)
      throw JobNotAddedException(job_id);
@@ -55,7 +55,7 @@ void JobManager::addJob(const sdpa::job_id_t& job_id, const Job::ptr_t& pJob, co
 
 void JobManager::deleteJob(const sdpa::job_id_t& job_id)
 {
-  lock_type lock(mtx_);
+  lock_type lock(_job_map_and_requirements_mutex);
 
   // delete the requirements of this job
   requirements_map_t::size_type rc = job_requirements_.erase(job_id);
@@ -79,7 +79,7 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id)
 //! \todo Why doesn't every job have an entry here?
 const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jobId) const
 {
-  lock_type lock(mtx_);
+  lock_type lock(_job_map_and_requirements_mutex);
 
   const requirements_map_t::const_iterator it (job_requirements_.find (jobId));
   return it != job_requirements_.end() ? it->second : job_requirements_t();
@@ -87,13 +87,13 @@ const job_requirements_t JobManager::getJobRequirements(const sdpa::job_id_t& jo
 
 void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requirements_t& job_req_list)
 {
-  lock_type lock(mtx_);
+  lock_type lock(_job_map_and_requirements_mutex);
   job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
 }
 
 void JobManager::resubmitResults(IAgent* pComm) const
 {
-  lock_type lock(mtx_);
+  lock_type lock(_job_map_and_requirements_mutex);
 
   for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
   {
@@ -149,6 +149,6 @@ void JobManager::resubmitResults(IAgent* pComm) const
 
 bool JobManager::hasJobs() const
 {
-  lock_type lock(mtx_);
+  lock_type lock(_job_map_and_requirements_mutex);
   return !job_map_.empty();
 }
