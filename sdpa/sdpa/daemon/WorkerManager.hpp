@@ -39,7 +39,7 @@ namespace sdpa { namespace daemon {
 
     WorkerManager();
 
-    Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id);
+    Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id);
     const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id);
     const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id);
 

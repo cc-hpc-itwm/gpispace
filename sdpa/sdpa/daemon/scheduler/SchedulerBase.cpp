@@ -102,7 +102,7 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
   try {
 
     // mark the worker dirty -> don't take it in consideration for re-scheduling
-    const Worker::ptr_t& pWorker = findWorker(worker_id);
+    const Worker::ptr_t pWorker = findWorker(worker_id);
     pWorker->set_disconnected(true);
 
     sdpa::job_id_list_t workerJobList(_worker_manager.getJobListAndCleanQueues(pWorker));
@@ -184,7 +184,7 @@ void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
   pending_jobs_queue_.push(jobId);
 }
 
-const Worker::ptr_t& SchedulerBase::findWorker(const Worker::worker_id_t& worker_id )
+Worker::ptr_t SchedulerBase::findWorker(const Worker::worker_id_t& worker_id )
 {
   return _worker_manager.findWorker(worker_id);
 }

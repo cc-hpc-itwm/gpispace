@@ -38,7 +38,7 @@ WorkerManager::WorkerManager()
   : SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
 {}
 
-Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
+Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
 {
   lock_type lock(mtx_);
   worker_map_t::iterator it = worker_map_.find(worker_id);

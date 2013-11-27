@@ -62,7 +62,7 @@ namespace sdpa {
       bool has_job(const sdpa::job_id_t&);
 
       const Worker::worker_id_t& findWorker(const sdpa::job_id_t&);
-      const Worker::ptr_t& findWorker(const Worker::worker_id_t&);
+      Worker::ptr_t findWorker(const Worker::worker_id_t&);
       const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id);
 
       void addWorker( const Worker::worker_id_t& workerId,

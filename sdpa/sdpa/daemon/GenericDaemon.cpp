@@ -431,7 +431,7 @@ void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent
       DMLOG (TRACE, "The worker manager already contains an worker with the same id (="<<ex.worker_id()<<") but with a different agent_uuid!" );
 
       try {
-    	  const Worker::ptr_t& pWorker = findWorker(worker_id);
+    	  const Worker::ptr_t pWorker = findWorker(worker_id);
 
     	  // mark the worker as disconnected
     	  pWorker->set_disconnected();

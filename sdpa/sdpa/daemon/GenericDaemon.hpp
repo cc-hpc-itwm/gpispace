@@ -220,7 +220,7 @@ namespace sdpa {
       }
 
       // forwaring to scheduler() only:
-      Worker::ptr_t const & findWorker(const Worker::worker_id_t& worker_id ) const
+      Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id ) const
       {
         return scheduler()->findWorker(worker_id);
       }
