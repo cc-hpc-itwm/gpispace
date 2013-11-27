@@ -270,7 +270,6 @@ void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_
 
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
 {
-  //take a job from the workers' queue and serve it
   Job::ptr_t ptrJob = jobManager()->findJob(jobId);
   if(ptrJob)
   {
