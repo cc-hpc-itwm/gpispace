@@ -33,36 +33,8 @@ namespace sdpa {
     public:
     virtual ~IAgent() {}
 
-    virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e) = 0;
-    virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e) = 0;
-    virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e) = 0;
-    virtual void requestRegistration(const MasterInfo& masterInfo) = 0;
-
-    virtual Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const = 0;
-    virtual void deleteJob(const sdpa::job_id_t& ) = 0;
-    virtual bool hasJobs() = 0;
-
-    virtual const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const = 0;
-
-    virtual void submitWorkflow(const job_id_t &  ) = 0;
-
-    virtual void pause(const job_id_t& id ) = 0;
-    virtual void resume(const job_id_t& id ) = 0;
-
-    virtual const std::string& name() const = 0;
-
-    virtual unsigned int& rank() = 0;
-    virtual const sdpa::worker_id_t& agent_uuid() = 0;
-
-    virtual void serveJob(const sdpa::worker_id_t&, const job_id_t&) = 0;
-    virtual void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId) = 0;
-
-    virtual bool hasWorkflowEngine()const = 0;
     virtual bool isTop() = 0;
 
-    virtual sdpa::master_info_list_t& getListMasterInfo() = 0;
-    virtual void getCapabilities(sdpa::capabilities_set_t& cpbset) = 0;
-    virtual void addCapability(const capability_t&) = 0;
   };
 
 }}
