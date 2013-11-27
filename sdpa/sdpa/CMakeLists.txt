@@ -1,5 +1,3 @@
-add_subdirectory(util)
-
 add_subdirectory(daemon)
 
 add_library (sdpa-client client.cpp)
