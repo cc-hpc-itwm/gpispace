@@ -52,12 +52,11 @@
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
-
+#include <boost/shared_ptr.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
 #include <sdpa/capability.hpp>
 

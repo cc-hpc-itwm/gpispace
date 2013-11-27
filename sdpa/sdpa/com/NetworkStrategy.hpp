@@ -1,8 +1,7 @@
 #ifndef SDPA_COM_NETWORK_STRATEGY_HPP
 #define SDPA_COM_NETWORK_STRATEGY_HPP 1
 
-#include <sdpa/memory.hpp>
-
+#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
 #include <seda/ForwardStrategy.hpp>

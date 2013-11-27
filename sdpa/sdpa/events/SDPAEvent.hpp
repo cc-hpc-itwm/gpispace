@@ -2,11 +2,11 @@
 #define SDPA_EVENT_HPP 1
 
 #include <sdpa/events/EventHandler.hpp>
-#include <sdpa/memory.hpp>
 
 #include <seda/IEvent.hpp>
 
 #include <boost/serialization/access.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <string>
 

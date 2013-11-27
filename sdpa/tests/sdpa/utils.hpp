@@ -8,7 +8,6 @@
 #include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <sdpa/memory.hpp>
 
 #include <fhg/plugin/core/kernel.hpp>
 #include <fhg/plugin/plugin.hpp>
@@ -16,6 +15,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/ref.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
 

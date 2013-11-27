@@ -18,7 +18,6 @@
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/job_states.hpp>
 #include <sdpa/logging.hpp>
-#include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
 
 #include <fhg/assert.hpp>

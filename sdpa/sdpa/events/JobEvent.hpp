@@ -3,7 +3,6 @@
 
 #include <string>
 
-#include <sdpa/memory.hpp>
 #include <sdpa/types.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
