@@ -86,15 +86,10 @@ public:
 struct MyFixture
 {
     MyFixture()
-      : m_pAgent (new TestAgent("agent", "127.0.0.1", sdpa::master_info_list_t()))
+      : _agent ("agent", "127.0.0.1", sdpa::master_info_list_t())
     {}
 
-    ~MyFixture()
-    {
-      delete m_pAgent;
-    }
-
-    TestAgent* m_pAgent;
+    TestAgent _agent;
 };
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, MyFixture )
@@ -104,7 +99,7 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 {
   LOG( INFO, "Test if the capabilities are matching the requirements "<<std::endl);
-  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(m_pAgent));
+  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(&_agent));
 
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
@@ -141,7 +136,7 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
   LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
-  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(m_pAgent));
+  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(&_agent));
 
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
@@ -154,7 +149,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   const sdpa::job_id_t jobId1("Job1");
   sdpa::daemon::Job::ptr_t pJob1(new Job(jobId1, "description 1", sdpa::job_id_t(), false));
   job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-  m_pAgent->addJob(jobId1, pJob1, jobReqs1);
+  _agent.addJob(jobId1, pJob1, jobReqs1);
 
   LOG(DEBUG, "Schedule the job "<<jobId1);
   ptrScheduler->schedule(jobId1);
@@ -195,7 +190,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
   LOG(INFO, "testLoadBalancing");
-  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(m_pAgent));
+  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(&_agent));
 
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
@@ -227,7 +222,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       listJobIds.push_back(jobId);
       osstr.str("");
       sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
-      m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
+      _agent.addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -259,7 +254,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
   LOG(INFO, "Test the load-balancing when a worker joins later ...");
-  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(m_pAgent));
+  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(&_agent));
 
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
@@ -291,7 +286,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       listJobIds.push_back(jobId);
       osstr.str("");
       sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
-      m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
+      _agent.addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -343,7 +338,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
   LOG(INFO, "Test the load-balancing when a worker gains a capability later ...");
 
-  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(m_pAgent));
+  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(&_agent));
 
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
@@ -381,7 +376,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     listJobIds.push_back(jobId);
     osstr.str("");
     sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
-    m_pAgent->addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
+    _agent.addJob(jobId, pJob, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -439,7 +434,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {
   LOG(INFO, "Test the load-balancing when a worker is stopped, re-started and announces afterwards its capabilities ...");
 
-  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(m_pAgent));
+  sdpa::daemon::SimpleScheduler::ptr_t ptrScheduler(new sdpa::daemon::SimpleScheduler(&_agent));
 
   LOG_IF(ERROR, !ptrScheduler, "The scheduler was not properly initialized");
   BOOST_REQUIRE(ptrScheduler);
@@ -471,7 +466,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     listJobIds.push_back(jobId);
     osstr.str("");
     sdpa::daemon::Job::ptr_t pJob(new Job(jobId, "", sdpa::job_id_t(), false));
-    m_pAgent->addJob(jobId, pJob,  job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
+    _agent.addJob(jobId, pJob,  job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   // schedule all jobs now
