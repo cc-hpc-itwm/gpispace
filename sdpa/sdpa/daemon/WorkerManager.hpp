@@ -41,6 +41,7 @@ namespace sdpa { namespace daemon {
 
     Worker::ptr_t& findWorker(const Worker::worker_id_t& worker_id);
     bool hasWorker(const Worker::worker_id_t& worker_id) const;
+    bool isDisconnectedWorker(const Worker::worker_id_t& worker_id) const;
     const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id);
     const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id);
 

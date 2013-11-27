@@ -55,6 +55,15 @@ bool WorkerManager::hasWorker(const Worker::worker_id_t& worker_id) const
   return worker_map_.find(worker_id) != worker_map_.end();
 }
 
+bool WorkerManager::isDisconnectedWorker(const Worker::worker_id_t& worker_id) const
+{
+  lock_type lock(mtx_);
+  worker_map_t::const_iterator it = worker_map_.find(worker_id);
+   if( it != worker_map_.end() )
+    return it->second->disconnected();
+
+   throw WorkerNotFoundException(worker_id);
+}
 
 const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_id)
 {
@@ -313,10 +322,13 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker
 
   BOOST_FOREACH (sdpa::worker_id_t workerId, workerList)
   {
-    const Worker::ptr_t pWorker (worker_map_.at (workerId));
-    if (pWorker->disconnected())
+    if(!hasWorker(workerId))
       continue;
 
+    if(isDisconnectedWorker(workerId))
+      continue;
+
+    Worker::ptr_t pWorker(worker_map_.at(workerId));
     const boost::optional<std::size_t> matchingDeg
       (matchRequirements (pWorker, listJobReq));
 
