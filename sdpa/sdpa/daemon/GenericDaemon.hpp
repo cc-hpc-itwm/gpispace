@@ -55,6 +55,7 @@
 
 
 #include <sdpa/daemon/NotificationService.hpp>
+#include <sdpa/daemon/IAgent.hpp>
 
 namespace sdpa {
   namespace daemon {
