@@ -254,7 +254,7 @@ void SchedulerBase::run()
   {
     try
     {
-      sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait(m_timeout);
+      sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait();
 
       if( numberOfWorkers()>0 ) {
           schedule(jobId);
@@ -266,10 +266,6 @@ void SchedulerBase::run()
           lock_type lock(mtx_);
           cond_workers_registered.wait(lock);
       }
-    }
-    catch( const sdpa::daemon::QueueEmpty &)
-    {
-        // ignore
     }
     catch ( const std::exception &ex )
     {
