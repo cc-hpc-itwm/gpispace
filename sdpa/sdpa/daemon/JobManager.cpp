@@ -74,6 +74,8 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id)
     DLOG(TRACE, "Erased the requirements of the job "<<job_id.str());
   }
 
+  Job::ptr_t pJob(findJob(job_id ));
+  delete pJob;
   job_map_t::size_type ret = job_map_.erase(job_id);
   if( !ret )
   {
