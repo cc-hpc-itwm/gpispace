@@ -36,8 +36,6 @@ namespace sdpa {
       typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job::ptr_t> job_map_t;
       typedef job_map_t::iterator iterator;
 
-      JobManager(const std::string& str="");
-
       Job::ptr_t findJob(const sdpa::job_id_t& ) const;
       void addJob(const sdpa::job_id_t&, const Job::ptr_t&, const job_requirements_t& job_req_list = job_requirements_t() );
       void deleteJob(const sdpa::job_id_t& );

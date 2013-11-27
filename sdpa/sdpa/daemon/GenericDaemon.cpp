@@ -62,7 +62,7 @@ GenericDaemon::GenericDaemon( const std::string name,
     m_to_master_stage_name_(name+".net"),
     m_to_slave_stage_name_ (name+".net"),
 
-    _job_manager (name),
+    _job_manager(),
     ptr_scheduler_(),
     ptr_workflow_engine_ ( create_wfe
                          ? new we::mgmt::layer

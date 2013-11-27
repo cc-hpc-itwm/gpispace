@@ -33,9 +33,6 @@ namespace sdpa
 {
   namespace daemon
   {
-JobManager::JobManager(const std::string& name)
-{}
-
 //helpers
 Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id ) const
 {
