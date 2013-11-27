@@ -27,18 +27,6 @@
 namespace sdpa {
   namespace daemon {
   const std::string WE("WE");
-
-  class IAgent
-  {
-    public:
-    virtual ~IAgent() {}
-
-    virtual bool isTop() = 0;
-
-  };
-
 }}
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::IAgent )
 
 #endif

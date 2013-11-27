@@ -61,8 +61,7 @@
 
 namespace sdpa {
   namespace daemon {
-    class GenericDaemon : public sdpa::daemon::IAgent,
-                          public seda::Strategy,
+    class GenericDaemon : public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
     {
