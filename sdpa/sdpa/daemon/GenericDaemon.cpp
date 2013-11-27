@@ -169,13 +169,17 @@ void GenericDaemon::shutdown( )
   BOOST_REVERSE_FOREACH (std::string stage, _stages_to_remove)
   {
     seda::StageRegistry::instance().lookup (stage)->stop();
-    seda::StageRegistry::instance().remove (stage);
   }
 
   ptr_scheduler_.reset();
 
   delete ptr_workflow_engine_;
   ptr_workflow_engine_ = NULL;
+
+  BOOST_REVERSE_FOREACH (std::string stage, _stages_to_remove)
+  {
+    seda::StageRegistry::instance().remove (stage);
+  }
 
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
 }
