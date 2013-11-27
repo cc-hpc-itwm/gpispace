@@ -427,18 +427,14 @@ void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent
       DMLOG (TRACE, "The worker manager already contains an worker with the same id (="<<ex.worker_id()<<") but with a different agent_uuid!" );
 
       try {
-    	  const Worker::ptr_t& pWorker = findWorker(worker_id);
-
-    	  // mark the worker as disconnected
-    	  pWorker->set_disconnected();
     	  scheduler()->deleteWorker(worker_id);
       }
       catch (const WorkerNotFoundException& ex)
       {
-        DMLOG (WARN, "New worker find the worker "<<worker_id);
+        DMLOG (WARN, "The old worker "<<worker_id<<" was already deleted!");
       }
 
-      DMLOG (TRACE, "Add worker"<<worker_id );
+      DMLOG (TRACE, "Add new worker"<<worker_id );
       registerWorker(evtRegWorker);
     }
     else
@@ -448,7 +444,7 @@ void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent
       // just answer back with an acknowledgment
       DMLOG (TRACE, "Send registration ack to the agent " << worker_id );
       WorkerRegistrationAckEvent::Ptr const pWorkerRegAckEvt
-        (new WorkerRegistrationAckEvent ( name(), evtRegWorker.from()));
+        (new WorkerRegistrationAckEvent (name(), evtRegWorker.from()));
 
       sendEventToSlave(pWorkerRegAckEvt);
     }
@@ -516,34 +512,28 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
       worker_id_t worker_id(error.from());
 
-      try
+      if(scheduler()->hasWorker(worker_id))
       {
-        Worker::ptr_t ptrWorker = findWorker(worker_id);
+        DMLOG (TRACE, "worker " << worker_id << " went down (clean).");
 
-        if(ptrWorker)
+        // notify capability losses...
+        lock_type lock(mtx_master_);
+        BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
         {
-          DMLOG (TRACE, "worker " << worker_id << " went down (clean).");
+          sdpa::capabilities_set_t cpbsSet;
+          scheduler()->getWorkerCapabilities(worker_id, cpbsSet);
+          sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
+                                new sdpa::events::CapabilitiesLostEvent( name(),
+                                                                         masterInfo.name(),
+                                                                         cpbsSet
+                                                                         ));
 
-          // notify capability losses...
-          lock_type lock(mtx_master_);
-          BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-          {
-            sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
-                                  new sdpa::events::CapabilitiesLostEvent( name(),
-                                                                           masterInfo.name(),
-                                                                           ptrWorker->capabilities()
-                                                                           ));
-
-            sendEventToMaster(shpCpbLostEvt);
-          }
-
-          // if there still are registered workers, otherwise declare the remaining
-          // jobs failed
-          //scheduler()->reschedule(worker_id);
-          scheduler()->deleteWorker(worker_id); // do a re-scheduling here
+          sendEventToMaster(shpCpbLostEvt);
         }
+
+        scheduler()->deleteWorker(worker_id);
       }
-      catch (WorkerNotFoundException const& /*ignored*/)
+      else
       {
         worker_id_list_t listDeadMasters;
         {

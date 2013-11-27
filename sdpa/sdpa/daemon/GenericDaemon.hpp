@@ -205,11 +205,6 @@ namespace sdpa {
         return jobManager()->getJobRequirements(jobId);
       }
 
-      // forwaring to scheduler() only:
-      Worker::ptr_t const & findWorker(const Worker::worker_id_t& worker_id ) const
-      {
-        return scheduler()->findWorker(worker_id);
-      }
       void getWorkerCapabilities(const Worker::worker_id_t& worker_id, sdpa::capabilities_set_t& wCpbset)
       {
         scheduler()->getWorkerCapabilities(worker_id, wCpbset);
