@@ -49,6 +49,13 @@ Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
     throw WorkerNotFoundException(worker_id);
 }
 
+bool WorkerManager::hasWorker(const Worker::worker_id_t& worker_id) const
+{
+  lock_type lock(mtx_);
+  return worker_map_.find(worker_id) != worker_map_.end();
+}
+
+
 const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
