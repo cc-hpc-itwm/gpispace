@@ -20,34 +20,28 @@
 #define SDPA_DAEMON_SYNCHRONIZED_QUEUE_HPP 1
 
 #include <boost/thread.hpp>
-#include <sdpa/SDPAException.hpp>
-#include <iostream>
 #include <sdpa/logging.hpp>
 
+#include <iostream>
+#include <stdexcept>
+
 namespace sdpa { namespace daemon {
-  class QueueException : public SDPAException
+  class QueueFull : public std::runtime_error
   {
     public:
-      explicit
-      QueueException(const std::string &reason) : SDPAException(reason) {}
+      QueueFull() : std::runtime_error("queue is full") {}
   };
 
-  class QueueFull : public QueueException
+  class QueueEmpty : public std::runtime_error
   {
     public:
-      QueueFull() : QueueException("queue is full") {}
+      QueueEmpty() : std::runtime_error("queue is empty") {}
   };
 
-  class QueueEmpty : public QueueException
-  {
-    public:
-      QueueEmpty() : QueueException("queue is empty") {}
-  };
-
-  class NotFoundItem : public QueueException
+  class NotFoundItem : public std::runtime_error
    {
      public:
-	  NotFoundItem(const std::string& str) : QueueException(std::string("The item ")+str+" was not found!") {}
+   NotFoundItem(const std::string& str) : std::runtime_error(std::string("The item ")+str+" was not found!") {}
    };
 
   /*
