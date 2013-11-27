@@ -299,7 +299,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker
   if (worker_map_.empty())
     throw NoWorkerFoundException();
 
-  boost::optional<sdpa::util::time_type> last_schedule_time;
+  boost::optional<double> last_schedule_time;
   boost::optional<worker_id_t> bestMatchingWorkerId;
   boost::optional<std::size_t> maxMatchingDeg;
 
