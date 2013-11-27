@@ -1199,3 +1199,8 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
   lock_type lock(mtx_subscriber_);
   return m_listSubscribers.find (agentId) != m_listSubscribers.end();
 }
+
+bool GenericDaemon::allSiblingsAreRunning(const sdpa::job_id_t& jobId, const sdpa::job_id_t& parentId ) const
+{
+  return jobManager()->allSiblingsAreRunning(jobId, parentId);
+}

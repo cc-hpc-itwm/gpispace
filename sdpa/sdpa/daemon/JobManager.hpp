@@ -51,6 +51,8 @@ namespace sdpa {
 
       void resubmitResults(IAgent* );
 
+      bool allSiblingsAreRunning(const sdpa::job_id_t& jobId, const sdpa::job_id_t& parentId ) const;
+
   protected:
       SDPA_DECLARE_LOGGER();
       job_map_t job_map_;

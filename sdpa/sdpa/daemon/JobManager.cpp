@@ -166,3 +166,20 @@ bool JobManager::hasJobs() const
   lock_type lock(mtx_);
   return !job_map_.empty();
 }
+
+bool JobManager::allSiblingsAreRunning(const sdpa::job_id_t& jobId, const sdpa::job_id_t& parentId ) const
+{
+  lock_type lock(mtx_);
+  BOOST_FOREACH(const job_map_t::value_type& jpair, job_map_)
+  {
+    Job::ptr_t pJob(jpair.second);
+    if(pJob)
+    {
+      if( jpair.first!=jobId && pJob->parent()==parentId && pJob->getStatus()!=sdpa::status::RUNNING )
+        return false;
+
+    }
+
+    return true;
+  }
+}
