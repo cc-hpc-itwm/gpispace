@@ -18,7 +18,6 @@
 #ifndef SDPA_DAEMON_JOB_MANAGER_HPP
 #define SDPA_DAEMON_JOB_MANAGER_HPP 1
 
-#include <sdpa/common.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/thread.hpp>
@@ -51,7 +50,6 @@ namespace sdpa {
       void resubmitResults(IAgent* ) const;
 
   protected:
-      SDPA_DECLARE_LOGGER();
       mutable mutex_type _job_map_and_requirements_mutex;
       job_map_t job_map_;
       requirements_map_t job_requirements_;

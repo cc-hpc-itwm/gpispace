@@ -34,7 +34,6 @@ namespace sdpa
   namespace daemon
   {
 JobManager::JobManager(const std::string& name)
-  : SDPA_INIT_LOGGER(name)
 {}
 
 //helpers
