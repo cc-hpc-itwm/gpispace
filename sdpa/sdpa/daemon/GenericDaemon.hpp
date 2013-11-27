@@ -55,12 +55,18 @@
 
 
 #include <sdpa/daemon/NotificationService.hpp>
-#include <sdpa/daemon/IAgent.hpp>
+#include <sdpa/events/SDPAEvent.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/memory.hpp>
+#include <sdpa/types.hpp>
+#include <sdpa/capability.hpp>
 
 #define OVERWRITTEN_IN_TEST virtual
 
 namespace sdpa {
   namespace daemon {
+    const std::string WE("WE");
+
     class GenericDaemon : public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
