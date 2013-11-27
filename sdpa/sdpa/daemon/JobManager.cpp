@@ -1,6 +1,6 @@
 #include <sdpa/daemon/JobManager.hpp>
 
-#include <sdpa/daemon/IAgent.hpp>
+#include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
@@ -64,7 +64,7 @@ namespace sdpa
       job_requirements_.insert (std::make_pair (job_id, job_req_list));
     }
 
-    void JobManager::resubmitResults (IAgent* pComm) const
+    void JobManager::resubmitResults (GenericDaemon* pComm) const
     {
       lock_type _ (_job_map_and_requirements_mutex);
 

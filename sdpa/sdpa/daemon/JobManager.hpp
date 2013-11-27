@@ -11,6 +11,7 @@ namespace sdpa
 {
   namespace daemon
   {
+    class GenericDaemon;
     class JobManager
     {
     public:
@@ -34,7 +35,7 @@ namespace sdpa
 
       bool hasJobs() const;
 
-      void resubmitResults (IAgent*) const;
+      void resubmitResults (GenericDaemon*) const;
 
   protected:
       mutable mutex_type _job_map_and_requirements_mutex;
