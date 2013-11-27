@@ -59,6 +59,7 @@ void SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
                                 const unsigned int& agent_rank,
                                 const sdpa::worker_id_t& agent_uuid )
 {
+  lock_type lock(mtx_);
   _worker_manager.addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
   cond_workers_registered.notify_all();
   cond_feed_workers.notify_one();
@@ -66,6 +67,7 @@ void SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
 
 void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
+  lock_type lock(mtx_);
   try
   {
       // delete it from the worker's queues
@@ -86,18 +88,18 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
 
 void SchedulerBase::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
 {
-      while( !workerJobList.empty() ) {
-          sdpa::job_id_t jobId = workerJobList.front();
-	  DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
-	  rescheduleWorkerJob(worker_id, jobId);
-	  workerJobList.pop_front();
-      }
+  lock_type lock(mtx_);
+  while( !workerJobList.empty() ) {
+      sdpa::job_id_t jobId = workerJobList.front();
+      DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
+      rescheduleWorkerJob(worker_id, jobId);
+      workerJobList.pop_front();
+  }
 }
 
 void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
 {
-  // first re-schedule the work:
-  // inspect all queues and re-schedule each job
+  lock_type lock(mtx_);
   try {
 
     // mark the worker dirty -> don't take it in consideration for re-scheduling
@@ -135,6 +137,7 @@ void SchedulerBase::delete_job (sdpa::job_id_t const & job)
 
 void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 {
+  lock_type lock(mtx_);
   const Job::ptr_t pJob = ptr_comm_handler_->findJob(jobId);
   if(pJob)
   {
@@ -179,7 +182,6 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 
 void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
 {
-  //DMLOG(TRACE, "Schedule the job " << jobId.str());
   pending_jobs_queue_.push(jobId);
 }
 
@@ -274,6 +276,7 @@ void SchedulerBase::run()
 
 void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
 {
+  lock_type lock(mtx_);
   DLOG(TRACE, "Acknowledge the job "<<job_id.str());
   try {
     // make sure that the job is erased from the scheduling queue
@@ -323,6 +326,7 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
 
 bool SchedulerBase::has_job(const sdpa::job_id_t& job_id)
 {
+  lock_type lock(mtx_);
   return pending_jobs_queue_.has_item(job_id)|| _worker_manager.has_job(job_id);
 }
 
@@ -349,6 +353,7 @@ void SchedulerBase::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
 
 void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sdpa::capabilities_set_t& cpbset)
 {
+  lock_type lock(mtx_);
   try {
       Worker::ptr_t ptrWorker = findWorker(worker_id);
       cpbset = ptrWorker->capabilities();
