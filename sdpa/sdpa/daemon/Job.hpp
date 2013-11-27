@@ -35,7 +35,7 @@
 
 namespace sdpa {
   namespace daemon {
-    class IAgent;
+    class GenericDaemon;
     class SchedulerBase;
 
     // front-end: define the FSM structure
@@ -62,47 +62,47 @@ namespace sdpa {
         SchedulerBase* m_pScheduler;
       };
       struct MSMStalledEvent{
-        MSMStalledEvent(IAgent* pAgent)
+        MSMStalledEvent(GenericDaemon* pAgent)
           : m_pAgent(pAgent)
         {}
-        IAgent* ptrAgent() const { return m_pAgent; }
+        GenericDaemon* ptrAgent() const { return m_pAgent; }
       private:
-        IAgent* m_pAgent;
+        GenericDaemon* m_pAgent;
       };
       struct MSMResumeJobEvent
       {
-        MSMResumeJobEvent(IAgent* pAgent)
+        MSMResumeJobEvent(GenericDaemon* pAgent)
           : m_pAgent(pAgent)
         {}
-        IAgent* ptrAgent() const { return m_pAgent; }
+        GenericDaemon* ptrAgent() const { return m_pAgent; }
       private:
-        IAgent* m_pAgent;
+        GenericDaemon* m_pAgent;
       };
 
       struct MSMDeleteJobEvent
       {
-        MSMDeleteJobEvent(const events::DeleteJobEvent* pEvt, IAgent* pAgent)
+        MSMDeleteJobEvent(const events::DeleteJobEvent* pEvt, GenericDaemon* pAgent)
         : m_pDelEvt(pEvt), m_pAgent(pAgent)
         {}
         events::SDPAEvent::address_t to() const { return m_pDelEvt->from();}
         events::SDPAEvent::address_t from() const { return m_pDelEvt->to();}
-        IAgent* ptrAgent() const { return m_pAgent; }
+        GenericDaemon* ptrAgent() const { return m_pAgent; }
       private:
         const events::DeleteJobEvent* m_pDelEvt;
-        IAgent* m_pAgent;
+        GenericDaemon* m_pAgent;
       };
 
       struct MSMRetrieveJobResultsEvent
       {
-        MSMRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt, IAgent* pAgent)
+        MSMRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt, GenericDaemon* pAgent)
         : m_pRetResEvt(pEvt), m_pAgent(pAgent)
         {}
         events::SDPAEvent::address_t to() const { return m_pRetResEvt->from();}
         events::SDPAEvent::address_t from() const { return m_pRetResEvt->to();}
-        IAgent* ptrAgent() const { return m_pAgent; }
+        GenericDaemon* ptrAgent() const { return m_pAgent; }
       private:
         const events::RetrieveJobResultsEvent* m_pRetResEvt;
-        IAgent* m_pAgent;
+        GenericDaemon* m_pAgent;
       };
 
 
@@ -237,13 +237,13 @@ namespace sdpa {
       void JobFailed(const events::JobFailedEvent*);
       void JobFinished(const events::JobFinishedEvent*);
 
-      void DeleteJob(const events::DeleteJobEvent*, IAgent*);
-      void RetrieveJobResults(const events::RetrieveJobResultsEvent* pEvt, IAgent*);
+      void DeleteJob(const events::DeleteJobEvent*, GenericDaemon*);
+      void RetrieveJobResults(const events::RetrieveJobResultsEvent* pEvt, GenericDaemon*);
       void Reschedule(SchedulerBase*);
 
       void Dispatch();
-      void Pause(IAgent*);
-      void Resume(IAgent*);
+      void Pause(GenericDaemon*);
+      void Resume(GenericDaemon*);
 
     private:
       mutable mutex_type mtx_;

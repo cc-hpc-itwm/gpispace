@@ -1,6 +1,6 @@
 #include "Job.hpp"
 
-#include <sdpa/daemon/IAgent.hpp>
+#include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
@@ -181,13 +181,13 @@ namespace sdpa {
       process_event(*pEvt);
     }
 
-    void Job::DeleteJob(const events::DeleteJobEvent* pEvt, IAgent* pAgent)
+    void Job::DeleteJob(const events::DeleteJobEvent* pEvt, GenericDaemon* pAgent)
     {
       lock_type lock(mtx_);
       process_event(MSMDeleteJobEvent(pEvt, pAgent));
     }
 
-    void Job::RetrieveJobResults(const events::RetrieveJobResultsEvent* pEvt, IAgent* pAgent)
+    void Job::RetrieveJobResults(const events::RetrieveJobResultsEvent* pEvt, GenericDaemon* pAgent)
     {
       lock_type lock(mtx_);
       process_event(MSMRetrieveJobResultsEvent(pEvt, pAgent));
@@ -199,13 +199,13 @@ namespace sdpa {
       process_event(MSMRescheduleEvent (pSched));
     }
 
-    void Job::Pause(IAgent* pAgent)
+    void Job::Pause(GenericDaemon* pAgent)
     {
       lock_type lock(mtx_);
       process_event (MSMStalledEvent (pAgent));
     }
 
-    void Job::Resume (IAgent* pAgent)
+    void Job::Resume (GenericDaemon* pAgent)
     {
       lock_type lock(mtx_);
       process_event (MSMResumeJobEvent (pAgent));
