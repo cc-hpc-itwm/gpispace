@@ -26,6 +26,8 @@
 #include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/foreach.hpp>
+#include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -84,20 +86,20 @@ void JobManager::resubmitResults(IAgent* pComm) const
 {
   lock_type lock(_job_map_and_requirements_mutex);
 
-  for ( job_map_t::const_iterator it(job_map_.begin()); it != job_map_.end(); ++it )
+  BOOST_FOREACH ( Job::ptr_t job
+                , job_map_
+                | boost::adaptors::map_values
+                | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))
+                )
   {
-    sdpa::daemon::Job::ptr_t pJob = it->second;
-
-    if( pJob->isMasterJob() )
-    {
-      switch (pJob->getStatus())
+      switch (job->getStatus())
       {
       case sdpa::status::FINISHED:
         {
           sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished( new sdpa::events::JobFinishedEvent(pComm->name(),
-                                                                                                 pJob->owner(),
-                                                                                                 pJob->id(),
-                                                                                                 pJob->result() ));
+                                                                                                 job->owner(),
+                                                                                                 job->id(),
+                                                                                                 job->result() ));
           pComm->sendEventToMaster(pEvtJobFinished);
         }
         break;
@@ -105,9 +107,9 @@ void JobManager::resubmitResults(IAgent* pComm) const
       case sdpa::status::FAILED:
         {
           sdpa::events::JobFailedEvent::Ptr pEvtJobFailed( new sdpa::events::JobFailedEvent(pComm->name(),
-                                                                                           pJob->owner(),
-                                                                                           pJob->id(),
-                                                                                           pJob->result() ));
+                                                                                           job->owner(),
+                                                                                           job->id(),
+                                                                                           job->result() ));
           pComm->sendEventToMaster(pEvtJobFailed);
         }
         break;
@@ -115,8 +117,8 @@ void JobManager::resubmitResults(IAgent* pComm) const
       case sdpa::status::CANCELED:
         {
           sdpa::events::CancelJobAckEvent::Ptr pEvtJobCanceled( new sdpa::events::CancelJobAckEvent( pComm->name(),
-                                                                                                    pJob->owner(),
-                                                                                                    pJob->id()));
+                                                                                                    job->owner(),
+                                                                                                    job->id()));
 
           pComm->sendEventToMaster(pEvtJobCanceled);
         }
@@ -125,14 +127,13 @@ void JobManager::resubmitResults(IAgent* pComm) const
       case sdpa::status::PENDING:
         {
           sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent(pComm->name(),
-                                                                                                   pJob->owner(),
-                                                                                                   pJob->id()));
+                                                                                                   job->owner(),
+                                                                                                   job->id()));
           // There is a problem with this if uncommented
           pComm->sendEventToMaster(pSubmitJobAckEvt);
         }
         break;
       }
-    }
   }
 }
 
