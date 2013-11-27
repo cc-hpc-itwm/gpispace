@@ -19,11 +19,10 @@
 #define SDPA_DAEMON_JOB_MANAGER_HPP 1
 
 #include <sdpa/daemon/Job.hpp>
-#include <sdpa/daemon/exceptions.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
+
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
-
-#include <sdpa/engine/IWorkflowEngine.hpp>
 
 namespace sdpa {
   namespace daemon {

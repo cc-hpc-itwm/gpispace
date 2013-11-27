@@ -17,14 +17,10 @@
  */
 #include <sdpa/daemon/JobManager.hpp>
 
-#include <iostream>
-#include <fstream>
-#include <string>
-
 #include <sdpa/daemon/IAgent.hpp>
 #include <sdpa/daemon/Job.hpp>
-#include <boost/pointer_cast.hpp>
-#include <boost/shared_ptr.hpp>
+#include <sdpa/daemon/exceptions.hpp>
+
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
