@@ -35,10 +35,10 @@ JobManager::JobManager(const std::string& name)
 {}
 
 //helpers
-Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id )
+Job::ptr_t JobManager::findJob(const sdpa::job_id_t& job_id ) const
 {
   lock_type lock(mtx_);
-  job_map_t::iterator it = job_map_.find( job_id );
+  job_map_t::const_iterator it = job_map_.find( job_id );
   if( it != job_map_.end() )
     return it->second;
   else
@@ -100,7 +100,7 @@ void JobManager::addJobRequirements(const sdpa::job_id_t& job_id, const job_requ
   job_requirements_.insert(requirements_map_t::value_type(job_id, job_req_list));
 }
 
-void JobManager::resubmitResults(IAgent* pComm)
+void JobManager::resubmitResults(IAgent* pComm) const
 {
   lock_type lock(mtx_);
 
