@@ -32,15 +32,7 @@ void SimpleScheduler::assignJobsToWorkers()
     const job_requirements_t job_reqs
       (ptr_comm_handler_->getJobRequirements (jobId));
 
-    if (job_reqs.empty())
-    {
-      matchingWorkerId = listAvailWorkers.front();
-      listAvailWorkers.erase(listAvailWorkers.begin());
-    }
-    else
-    {
-      matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
-    }
+    matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
 
     if( !matchingWorkerId.empty() )
     { // matching found
