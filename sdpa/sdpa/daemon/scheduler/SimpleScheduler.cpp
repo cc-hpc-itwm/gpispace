@@ -27,12 +27,12 @@ void SimpleScheduler::assignJobsToWorkers()
   while(schedulingAllowed() && !listAvailWorkers.empty())
   {
     sdpa::job_id_t jobId(nextJobToSchedule());
-    sdpa::worker_id_t matchingWorkerId;
 
     const job_requirements_t job_reqs
       (ptr_comm_handler_->getJobRequirements (jobId));
 
-    matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
+    const sdpa::worker_id_t matchingWorkerId
+      (findSuitableWorker(job_reqs, listAvailWorkers));
 
     if( !matchingWorkerId.empty() )
     { // matching found

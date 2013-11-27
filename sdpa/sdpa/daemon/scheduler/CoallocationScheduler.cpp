@@ -35,9 +35,8 @@ void CoallocationScheduler::assignJobsToWorkers()
       (ptr_comm_handler_->getJobRequirements (jobId));
 
     const size_t nReqWorkers (job_reqs.numWorkers());
-    sdpa::worker_id_t matchingWorkerId;
-
-    matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
+    const sdpa::worker_id_t matchingWorkerId
+      (findSuitableWorker(job_reqs, listAvailWorkers));
 
     if( !matchingWorkerId.empty() ) // matching found
     {
