@@ -57,11 +57,9 @@ void JobManager::deleteJob(const sdpa::job_id_t& job_id)
 {
   lock_type lock(_job_map_and_requirements_mutex);
 
-  // delete the requirements of this job
-  requirements_map_t::size_type rc = job_requirements_.erase(job_id);
+  job_requirements_.erase (job_id);
 
-  job_map_t::size_type ret = job_map_.erase(job_id);
-  if( !ret )
+  if (!job_map_.erase (job_id))
   {
     throw JobNotDeletedException(job_id);
   }
