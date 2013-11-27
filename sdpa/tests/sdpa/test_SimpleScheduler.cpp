@@ -24,9 +24,6 @@
 using namespace std;
 using namespace sdpa::daemon;
 
-const int NWORKERS = 12;
-const int NJOBS    = 4;
-
 const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
 typedef std::map<sdpa::job_id_t, sdpa::worker_id_t> mapJob2Worker_t;

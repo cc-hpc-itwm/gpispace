@@ -23,9 +23,6 @@
 using namespace std;
 using namespace sdpa::daemon;
 
-const int NWORKERS = 12;
-const int NJOBS    = 4;
-
 const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
 typedef std::map<sdpa::job_id_t, sdpa::worker_id_t> mapJob2Worker_t;
@@ -261,7 +258,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   workerList.clear();
   ptrScheduler->getListNotAllocatedWorkers(workerList);
 
-  // check if the list of reserved workers is NJOBS - NWORKERS
+  // check if the list of reserved workers is nJobs - nWorkers
   BOOST_CHECK_EQUAL(workerList.size(), 5);
 }
 
