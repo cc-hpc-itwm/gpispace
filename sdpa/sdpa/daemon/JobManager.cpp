@@ -133,7 +133,8 @@ namespace sdpa
       BOOST_FOREACH(const job_map_t::value_type& jpair, job_map_)
       {
         Job* pJob(jpair.second);
-        if( pJob && jpair.second->parent()==jobId && pJob->getStatus()==sdpa::status::STALLED )
+        assert(pJob);
+        if( jpair.second->parent()==jobId && pJob->getStatus()==sdpa::status::STALLED )
             return false;
       }
 
