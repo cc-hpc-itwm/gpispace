@@ -769,7 +769,6 @@ public:
 
   // not implemented events
   virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent *){}
-  virtual void handleDeleteJobAckEvent(const sdpa::events::DeleteJobAckEvent *) {}
   virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent *) {}
   virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent *) {}
   virtual void handleJobResultsReplyEvent(const sdpa::events::JobResultsReplyEvent *) {}

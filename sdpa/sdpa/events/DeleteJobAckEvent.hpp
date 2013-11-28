@@ -26,7 +26,7 @@ namespace sdpa
 
       virtual void handleBy(EventHandler* handler)
       {
-        handler->handleDeleteJobAckEvent (this);
+        // Only the client handles this event
       }
     };
 
