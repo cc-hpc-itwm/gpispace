@@ -470,8 +470,6 @@ namespace we { namespace type {
                && trans.condition().is_const_true()
                )
               {
-                typedef trans_info::pid_set_type pid_set_type;
-
                 const boost::optional<trans_info>
                   maybe_pred (expression_predecessor (trans, tid_trans, net));
 
@@ -480,7 +478,7 @@ namespace we { namespace type {
                     transition_t pred ((*maybe_pred).pred);
                     petri_net::transition_id_type tid_pred ((*maybe_pred).tid_pred);
 
-                    pid_set_type pid_read ((*maybe_pred).pid_read);
+                    trans_info::pid_set_type pid_read ((*maybe_pred).pid_read);
 
                     rename_ports (trans, pred);
 
