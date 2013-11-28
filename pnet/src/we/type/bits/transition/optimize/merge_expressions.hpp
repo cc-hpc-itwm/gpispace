@@ -81,7 +81,6 @@ namespace we { namespace type {
       , const petri_net::net & net
       )
       {
-        typedef petri_net::connection_t connection_t;
         typedef trans_info::pid_set_type pid_set_type;
 
         typedef std::pair<const transition_t, const petri_net::transition_id_type> pair_type;
@@ -139,11 +138,13 @@ namespace we { namespace type {
         pid_set_type pid_read;
         std::size_t max_successors_of_pred = 0;
 
-        typedef std::pair<petri_net::place_id_type, connection_t> pc_type;
+        typedef std::pair< petri_net::place_id_type
+                         , petri_net::connection_t
+                         > pc_type;
 
         BOOST_FOREACH (const pc_type& pc, net.in_to_transition (tid))
         {
-          const connection_t& connection (pc.second);
+          const petri_net::connection_t& connection (pc.second);
           const petri_net::place_id_type& place_id (pc.first);
 
           if (petri_net::edge::is_pt_read (connection.type()))
@@ -333,8 +334,6 @@ namespace we { namespace type {
       , const trans_info::pid_set_type pid_read
       )
       {
-        typedef petri_net::connection_t connection_t;
-
         BOOST_FOREACH
           ( we::type::transition_t::port_map_t::value_type const& p
           , trans.ports()
@@ -347,16 +346,17 @@ namespace we { namespace type {
                 const petri_net::place_id_type pid
                   (trans.inner_to_outer().at (p.first).first);
 
-                connection_t const connection
+                petri_net::connection_t const connection
                   (net.get_connection_out (tid_trans, pid));
 
                 net.delete_edge_out (tid_trans, pid);
 
-                net.add_connection (connection_t ( connection.type()
-                                                 , tid_pred
-                                                 , connection.place_id()
-                                                 )
-                                   );
+                net.add_connection
+                  (petri_net::connection_t ( connection.type()
+                                           , tid_pred
+                                           , connection.place_id()
+                                           )
+                  );
 
                 pred.add_connection (p.second.name(), pid, p.second.property());
               }
@@ -371,16 +371,17 @@ namespace we { namespace type {
                 {
                   pred.add_port (p.second);
 
-                  connection_t const connection
+                  petri_net::connection_t const connection
                     (net.get_connection_in (tid_trans, *pid));
 
                   net.delete_edge_in (tid_trans, *pid);
 
-                  net.add_connection (connection_t ( connection.type()
-                                                   , tid_pred
-                                                   , connection.place_id()
-                                                   )
-                                     );
+                  net.add_connection
+                    (petri_net::connection_t ( connection.type()
+                                             , tid_pred
+                                             , connection.place_id()
+                                             )
+                    );
 
                   pred.add_connection
                     (*pid, p.second.name(), p.second.property())
