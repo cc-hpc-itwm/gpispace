@@ -73,8 +73,7 @@ namespace we { namespace type {
                 , const transition_t & trans_parent
                 )
       {
-        typedef std::string name_type;
-        typedef boost::unordered_map<name_type, petri_net::place_id_type> map_type;
+        typedef boost::unordered_map<std::string, petri_net::place_id_type> map_type;
         typedef boost::unordered_set<petri_net::transition_id_type> tid_set_type;
 
         map_type map_in;
