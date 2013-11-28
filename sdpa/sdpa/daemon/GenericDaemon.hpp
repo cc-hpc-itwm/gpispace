@@ -197,9 +197,16 @@ namespace sdpa {
 
     public:
       // forwarding to jobManager() only:
-      void addJob( const sdpa::job_id_t& jid, Job* pJob, const job_requirements_t& reqList = job_requirements_t())
+      //void addJob( const sdpa::job_id_t& jid, Job* pJob, const job_requirements_t& reqList = job_requirements_t())
+      void addJob ( const sdpa::job_id_t& job_id
+                    , const job_desc_t desc
+                    , const job_id_t &parent
+                    , bool is_master_job
+                    , const worker_id_t& owner
+                    , const job_requirements_t& req_list = job_requirements_t()
+                  )
       {
-        return jobManager().addJob(jid, pJob, reqList);
+        return jobManager().addJob(job_id, desc, parent, is_master_job, owner, req_list);
       }
       bool hasJobs()
       {

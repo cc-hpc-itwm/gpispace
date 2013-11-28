@@ -24,10 +24,19 @@ namespace sdpa
       typedef job_map_t::iterator iterator;
 
       Job* findJob (const sdpa::job_id_t&) const;
-      void addJob ( const sdpa::job_id_t&
+      /*void addJob ( const sdpa::job_id_t&
                   , Job*
                   , const job_requirements_t& = job_requirements_t()
-                  );
+                  );*/
+
+      void addJob ( const sdpa::job_id_t& job_id
+                               , const job_desc_t desc
+                               , const job_id_t &parent
+                               , bool is_master_job
+                               , const worker_id_t& owner
+                               , const job_requirements_t& = job_requirements_t()
+                             );
+
       void deleteJob (const sdpa::job_id_t&);
 
       void addJobRequirements (const sdpa::job_id_t&, const job_requirements_t&);

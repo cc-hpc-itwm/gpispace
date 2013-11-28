@@ -14,10 +14,11 @@ using namespace sdpa::events;
 
 namespace sdpa {
   namespace daemon {
-    Job::Job( const job_id_t id,
-              const job_desc_t desc,
-              const job_id_t &parent
-            , bool is_master_job
+    Job::Job( const job_id_t id
+              , const job_desc_t desc
+              , const job_id_t &parent
+              , bool is_master_job
+              , const worker_id_t& owner
             )
         : id_(id)
         , desc_(desc)
@@ -26,6 +27,7 @@ namespace sdpa {
         , result_()
         , m_error_code(0)
         , m_error_message()
+        , m_owner(owner)
     {
       start();
     }

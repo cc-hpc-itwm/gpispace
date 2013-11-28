@@ -359,13 +359,10 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
   try {
     // One should parse the workflow in order to be able to create a valid job
     // if the event comes from Gwes parent_id is the owner_workflow_id
-    Job* pJob(new Job( job_id, e.description(), e.parent_id()
-                           , e.from() != sdpa::daemon::WE && hasWorkflowEngine()
-                           ));
-    pJob->set_owner(e.from());
 
     // the job job_id is in the Pending state now!
-    jobManager().addJob(job_id, pJob);
+    bool b_master_job(e.from() != sdpa::daemon::WE && hasWorkflowEngine());
+    jobManager().addJob(job_id, e.description(), e.parent_id(), b_master_job, e.from());
 
     // check if the message comes from outside/slave or from WFE
     // if it comes from outside set it as local
@@ -376,10 +373,10 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
       if (m_guiService)
       {
         std::list<std::string> workers; workers.push_back (name());
-        const we::mgmt::type::activity_t act (pJob->description());
+        const we::mgmt::type::activity_t act (e.description());
         const sdpa::daemon::NotificationEvent evt
           ( workers
-          , pJob->id().str()
+          , job_id.str()
           , NotificationEvent::STATE_STARTED
           , act
           );

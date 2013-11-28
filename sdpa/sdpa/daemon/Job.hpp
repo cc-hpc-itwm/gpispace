@@ -208,6 +208,7 @@ namespace sdpa {
           , const job_desc_t desc
           , const job_id_t &parent
           , bool is_master_job
+          , const worker_id_t& owner
           );
 
       const job_id_t& id() const;
