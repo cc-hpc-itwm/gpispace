@@ -38,20 +38,23 @@ if (ENABLE_DOCUMENTATION)
     )
     car (DOC_TARGET ${DOC_DEFAULT_ARGS})
 
+    set (OUTPUT_FOLDER ${CMAKE_CURRENT_BINARY_DIR}/a2x-${DOC_FORMAT})
+
     if (ASCIIDOC_FOUND AND SOURCE_HIGHLITE_FOUND)
       add_custom_command (
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/a2x-html-${DOC_FORMAT}
-        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/a2x-html &&
+        OUTPUT ${OUTPUT_FOLDER}
+        COMMAND mkdir -p ${OUTPUT_FOLDER} &&
                 ${A2X_EXECUTABLE}
                -f ${DOC_FORMAT} ${DOC_OPTION}
                --no-xmllint
-               --destination-dir=${CMAKE_CURRENT_BINARY_DIR}/a2x-html
-               ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
+               --destination-dir=${OUTPUT_FOLDER}
+               ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT} ||
+               rm -rf ${OUTPUT_FOLDER}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
       )
       add_custom_target (${DOC_TARGET}
         ALL
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/a2x-html-${DOC_FORMAT}
+        DEPENDS ${OUTPUT_FOLDER}
       )
     endif()
   endmacro()
