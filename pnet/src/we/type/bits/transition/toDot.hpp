@@ -639,8 +639,6 @@ namespace we { namespace type {
       , const petri_net::priority_type & prio
       )
       {
-        typedef transition_t trans_t;
-
         std::ostringstream s;
 
         const id_type id_trans (id);
@@ -689,7 +687,7 @@ namespace we { namespace type {
                   )
           ;
 
-        BOOST_FOREACH ( typename trans_t::port_map_t::value_type const& p
+        BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
                       , t.ports()
                       )
         {
@@ -709,7 +707,7 @@ namespace we { namespace type {
             s << boost::apply_visitor
                  (transition_visitor_dot<Pred> (id, l + 1, opts), t.data());
 
-            BOOST_FOREACH ( typename trans_t::port_map_t::value_type const& p
+            BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
                           , t.ports()
                           )
             {
