@@ -411,8 +411,7 @@ namespace we { namespace type {
         (const petri_net::net & net) const
         {
           typedef transition_t::port_map_t::value_type pmv_t;
-          typedef std::string place_dot_name_type;
-          typedef std::pair< place_dot_name_type
+          typedef std::pair< std::string
                            , petri_net::port_id_type
                            > extra_connection_type;
           typedef std::string transition_name_type;
@@ -435,7 +434,7 @@ namespace we { namespace type {
             {
               const petri_net::place_id_type& place_id (ip.first);
               const place::type& place (ip.second);
-              const place_dot_name_type place_dot_name
+              const std::string place_dot_name
                 (name (id_net, "place_" + fhg::util::show (place_id)));
 
               std::ostringstream token;
