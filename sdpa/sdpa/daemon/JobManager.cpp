@@ -12,6 +12,16 @@ namespace sdpa
 {
   namespace daemon
   {
+    JobManager::~JobManager()
+    {
+      BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
+      {
+        delete pJob;
+      }
+
+      job_map_.clear();
+    }
+
     Job* JobManager::findJob (const sdpa::job_id_t& job_id) const
     {
       lock_type _ (_job_map_and_requirements_mutex);
@@ -21,11 +31,15 @@ namespace sdpa
     }
 
     void JobManager::addJob ( const sdpa::job_id_t& job_id
-                            , Job* pJob
-                            , const job_requirements_t& job_req_list
+                              , const job_desc_t desc
+                              , const job_id_t &parent
+                              , bool is_master_job
+                              , const worker_id_t& owner
+                              , const job_requirements_t& job_req_list
                             )
     {
       lock_type _ (_job_map_and_requirements_mutex);
+      Job* pJob = new Job( job_id, desc, parent, is_master_job, owner );
 
       if (!job_map_.insert(std::make_pair (job_id, pJob)).second)
         throw JobNotAddedException(job_id);
@@ -130,10 +144,10 @@ namespace sdpa
     bool JobManager::noChildJobStalled(const sdpa::job_id_t& jobId) const
     {
       lock_type lock(_job_map_and_requirements_mutex);
-      BOOST_FOREACH(const job_map_t::value_type& jpair, job_map_)
+      BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
       {
-        Job* pJob(jpair.second);
-        if( pJob && jpair.second->parent()==jobId && pJob->getStatus()==sdpa::status::STALLED )
+        assert(pJob);
+        if( pJob->parent()==jobId && pJob->getStatus()==sdpa::status::STALLED )
             return false;
       }
 

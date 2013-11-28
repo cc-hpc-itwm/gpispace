@@ -68,14 +68,41 @@
     		</properties>
   		</properties>
 	</properties>
-	<module name="coallocation_test" function="done task_A (id, nw)">
+	<module name="coallocation_test" function="done task_A (id, nw)" pass_context="true">
       <cinclude href="fhglog/minimal.hpp"/>
 	  <cinclude href="unistd.h"/>
-	  <code><![CDATA[
-	  LOG(INFO, ">>> running task A_" << id << " on " << nw << " workers ...");
-	  sleep(1);
-	  LOG(INFO, "<<< finished task A_" << id << " on " << nw << " workers ...");
-	  return we::type::literal::control();
+	  <cinclude href="sstream"/>
+	 <code><![CDATA[
+	 	size_t size_wlist = _pnetc_context->worker_list().size();
+	 	std::list<std::string> worker_list = _pnetc_context->worker_list();
+		std::ostringstream oss("[");
+    	bool first=true;
+	    for( std::list<std::string>::const_iterator it=worker_list.begin(); it!=worker_list.end(); it++)
+	    {
+	       if(!first)
+	    	oss<<",";
+    	   else
+	       {
+	    	oss<<"[";
+	    	first=false;
+	       }
+	       oss<<*it;
+	    } 
+	    oss<<"]";
+		LOG(INFO, ">>> running task A_" << id << " on " << size_wlist << " workers ("<<nw<<" required): "<<oss.str());
+    	if(size_wlist != nw)
+    	{
+			oss.str("");
+    		oss<<"The task A_ required " <<nw << " workers and its worker_list contains actually" 
+    		           <<_pnetc_context->worker_list().size() <<" workers!";
+			throw std::runtime_error(oss.str());
+    	}
+    	else
+		{	
+  			sleep(2);
+  			LOG(INFO, "<<< finished task A_" << id << " on " << nw << " workers ...");
+  		}
+  		return we::type::literal::control();
 	  ]]></code>
 	</module>
       </defun>
@@ -118,13 +145,40 @@
     			</properties>
   			</properties>
 		</properties> 
-		<module name="coallocation_test" function=" done task_B (id, nw)">
+		<module name="coallocation_test" function=" done task_B (id, nw)" pass_context="true">
 	        <cinclude href="fhglog/minimal.hpp" />
 		  	<cinclude href="unistd.h" />
+		  	<cinclude href="sstream"/>
 	    	<code><![CDATA[
-			LOG(INFO, ">>> running task B_" << id << " on " << nw << " workers ...");
-	  		sleep(2);
-	  		LOG(INFO, "<<< finished task B_" << id << " on " << nw << " workers ...");
+	    	size_t size_wlist = _pnetc_context->worker_list().size();
+	    	std::list<std::string> worker_list = _pnetc_context->worker_list();
+	    	std::ostringstream oss("[");
+	    	bool first=true;
+		    for( std::list<std::string>::const_iterator it=worker_list.begin(); it!=worker_list.end(); it++)
+		    {
+		       if(!first)
+		    	oss<<",";
+		       else
+		       {
+		    	oss<<"[";
+		    	first=false;
+		       }
+		       oss<<*it;
+		    } 
+		    oss<<"]";
+			LOG(INFO, ">>> running task B_" << id << " on " << size_wlist << " workers ("<<nw<<" required): "<<oss.str());
+	    	if(size_wlist != nw)
+	    	{
+	    		oss.str("");
+    			oss<<"The task A_ required " <<nw << " workers and its worker_list contains actually" 
+    		           <<_pnetc_context->worker_list().size() <<" workers!";
+				throw std::runtime_error(oss.str());
+	    	}
+	    	else
+			{	
+	  			sleep(2);
+	  			LOG(INFO, "<<< finished task B_" << id << " on " << nw << " workers ...");
+	  		}
 	  		return we::type::literal::control();
 		  ]]></code>
 		</module>

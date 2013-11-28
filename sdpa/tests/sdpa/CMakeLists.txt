@@ -208,7 +208,7 @@ set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_
 
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test.pnet"
                    COMMAND ${command}
-                   COMMENT "putting tokens into transform_file workflow: ${command}"
+                   COMMENT "putting tokens into coallocation_test workflow: ${command}"
                    DEPENDS pnet-coallocation_test-wf-gen
 )
 add_dependencies(pnet-coallocation_test-wf pnetput)
@@ -259,3 +259,13 @@ foreach (test ${tests})
               pnet-coallocation_test-wf
      )
 endforeach()
+
+add_custom_target(sdpa-test-workflows ALL
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
+)
