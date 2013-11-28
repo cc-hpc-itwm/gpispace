@@ -92,8 +92,10 @@
 		LOG(INFO, ">>> running task A_" << id << " on " << size_wlist << " workers ("<<nw<<" required): "<<oss.str());
     	if(size_wlist != nw)
     	{
-    		LOG(FATAL, "<<< The task A_ required " <<nw << " workers and its worker_list contains actually" 
-    		           <<_pnetc_context->worker_list().size() <<" workers!");
+			oss.str("");
+    		oss<<"The task A_ required " <<nw << " workers and its worker_list contains actually" 
+    		           <<_pnetc_context->worker_list().size() <<" workers!";
+			throw std::runtime_error(oss.str());
     	}
     	else
 		{	
@@ -167,8 +169,10 @@
 			LOG(INFO, ">>> running task B_" << id << " on " << size_wlist << " workers ("<<nw<<" required): "<<oss.str());
 	    	if(size_wlist != nw)
 	    	{
-	    		LOG(FATAL, "<<< The task B_ required " <<nw << " workers and its worker_list contains actually" 
-	    		            <<size_wlist<<" workers!");
+	    		oss.str("");
+    			oss<<"The task A_ required " <<nw << " workers and its worker_list contains actually" 
+    		           <<_pnetc_context->worker_list().size() <<" workers!";
+				throw std::runtime_error(oss.str());
 	    	}
 	    	else
 			{	
