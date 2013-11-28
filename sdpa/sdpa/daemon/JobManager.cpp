@@ -12,6 +12,16 @@ namespace sdpa
 {
   namespace daemon
   {
+    JobManager::~JobManager()
+    {
+      BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
+      {
+        delete pJob;
+      }
+
+      job_map_.clear();
+    }
+
     Job* JobManager::findJob (const sdpa::job_id_t& job_id) const
     {
       lock_type _ (_job_map_and_requirements_mutex);
