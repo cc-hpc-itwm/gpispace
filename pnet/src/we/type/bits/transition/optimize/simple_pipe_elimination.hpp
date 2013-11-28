@@ -73,7 +73,6 @@ namespace we { namespace type {
                 , const transition_t & trans_parent
                 )
       {
-        typedef we::type::port_t port_t;
         typedef std::string name_type;
         typedef boost::unordered_map<name_type, petri_net::place_id_type> map_type;
         typedef boost::unordered_set<petri_net::transition_id_type> tid_set_type;
@@ -86,7 +85,7 @@ namespace we { namespace type {
           , trans.outer_to_inner()
           )
         {
-          const port_t& port (trans.get_port (oi.second.first));
+          const we::type::port_t& port (trans.get_port (oi.second.first));
           const petri_net::place_id_type& pid (oi.first);
 
           map_in[port.name()] = pid;
@@ -97,7 +96,7 @@ namespace we { namespace type {
           , trans.inner_to_outer()
           )
         {
-          const port_t& port (trans.get_port (io.first));
+          const we::type::port_t& port (trans.get_port (io.first));
           const petri_net::place_id_type& pid (io.second.first);
 
           map_out[port.name()] = pid;
@@ -148,9 +147,9 @@ namespace we { namespace type {
                 return boost::none;
               }
 
-            boost::optional<port_t const&>
+            boost::optional<we::type::port_t const&>
               port_A (get_port_by_associated_pid (trans_parent, pid_A));
-            boost::optional<port_t const&>
+            boost::optional<we::type::port_t const&>
               port_B (get_port_by_associated_pid (trans_parent, pid_B));
 
             if (  (port_A && port_A->is_input()  && port_B && port_B->is_input() )
