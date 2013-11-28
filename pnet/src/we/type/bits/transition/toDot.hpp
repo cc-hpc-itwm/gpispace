@@ -410,8 +410,6 @@ namespace we { namespace type {
         std::string operator ()
         (const petri_net::net & net) const
         {
-          typedef petri_net::net pnet_t;
-          typedef petri_net::connection_t connection_t;
           typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::string place_dot_name_type;
           typedef std::pair< place_dot_name_type
