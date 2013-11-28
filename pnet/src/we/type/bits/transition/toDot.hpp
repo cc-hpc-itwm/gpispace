@@ -414,8 +414,7 @@ namespace we { namespace type {
           typedef std::pair< std::string
                            , petri_net::port_id_type
                            > extra_connection_type;
-          typedef std::string transition_name_type;
-          typedef boost::unordered_map< transition_name_type
+          typedef boost::unordered_map< std::string
                                       , std::list<extra_connection_type>
                                       > extra_connection_by_transition_type;
 
