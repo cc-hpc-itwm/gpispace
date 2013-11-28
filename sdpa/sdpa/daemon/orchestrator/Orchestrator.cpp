@@ -71,7 +71,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   }
 
   //put the job into the state Finished or Cancelled
-  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
       DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus()<<". Change its status to \"SDPA::Finished\"!");
@@ -82,7 +82,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   {
       SDPA_LOG_WARN( "got finished message for old Job "<< pEvt->job_id());
       // decided to keep it, until the client explicitly request to delete it  or a garbage collector will remove it
-      Job::ptr_t pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t(), false));
+      Job* pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t(), false));
       addJob(pEvt->job_id(), pJob);
       pJob->JobFinished(pEvt);
       return;
@@ -92,11 +92,9 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   if( (pEvt->from() != sdpa::daemon::WE) )
   {
     Worker::worker_id_t worker_id = pEvt->from();
-    id_type act_id = pEvt->job_id();
+    we::mgmt::layer::id_type act_id = pEvt->job_id();
 
     try {
-      result_type output = pEvt->result();
-
       DMLOG (TRACE, "Notify the subscribers that the job "<<act_id<<" finished");
       JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
       notifySubscribers(ptrEvtJobFinished);
@@ -153,7 +151,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   }
 
   //put the job into the state Failed or Cancelled
-  Job::ptr_t pJob = jobManager()->findJob(pEvt->job_id());
+  Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
       pJob->JobFailed(pEvt);
@@ -163,7 +161,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   {
       SDPA_LOG_WARN( "got failed message for old Job "<< pEvt->job_id());
       // decided to keep it, until the client explicitly request to delete it  or a garbage collector will remove it
-      Job::ptr_t pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t(), false));
+      Job* pJob(new Job(pEvt->job_id(), job_desc_t(), job_id_t(), false));
       addJob(pEvt->job_id(), pJob);
       pJob->JobFailed(pEvt);
       return;
@@ -173,11 +171,9 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   if( (pEvt->from() != sdpa::daemon::WE) )
   {
       Worker::worker_id_t worker_id = pEvt->from();
-      id_type actId = pJob->id().str();
+      we::mgmt::layer::id_type actId = pJob->id().str();
 
       try {
-        result_type output = pEvt->result();
-
         JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
         SDPA_LOG_DEBUG("Notify the subscribers that the job "<<actId<<" has failed");
         notifySubscribers(ptrEvtJobFailed);
@@ -207,27 +203,11 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   }
 }
 
-void Orchestrator::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
-{
-  sdpa::job_id_t jobId = evt.job_id();
-  Job::ptr_t pJob(ptr_job_man_->findJob(jobId));
-  if(pJob)
-  {
-    DMLOG (TRACE, "Canceling the pending job "<<jobId<<" ... ");
-    pJob->CancelJob(&evt);
-    ptr_scheduler_->delete_job (jobId);
-  }
-  else
-  {
-    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be canceled! Exception occurred: Couldn't find the job "<<jobId);
-  }
-}
-
 void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 {
-  Job::ptr_t pJob;
+  Job* pJob;
 
-  pJob = ptr_job_man_->findJob(pEvt->job_id());
+  pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
       // send immediately an acknowledgment to the component that requested the cancellation
@@ -261,8 +241,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
   }
   catch(const NoWorkerFoundException&)
   {
-    id_type workflowId = pEvt->job_id();
-    reason_type reason("No reason");
+    we::mgmt::layer::id_type workflowId = pEvt->job_id();
     DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
     pJob->CancelJob(pEvt);
     DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());
@@ -273,7 +252,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 {
   DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
-  Job::ptr_t pJob(jobManager()->findJob(pEvt->job_id()));
+  Job* pJob(jobManager().findJob(pEvt->job_id()));
   if(pJob)
   {
     // update the job status to "Canceled"
@@ -291,7 +270,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
 
 void Orchestrator::pause(const job_id_t& jobId)
 {
-  Job::ptr_t pJob(jobManager()->findJob(jobId));
+  Job* pJob(jobManager().findJob(jobId));
   if(pJob)
   {
     pJob->Pause(NULL);
@@ -303,7 +282,7 @@ void Orchestrator::pause(const job_id_t& jobId)
 
 void Orchestrator::resume(const job_id_t& jobId)
 {
-  Job::ptr_t pJob(jobManager()->findJob(jobId));
+  Job* pJob(jobManager().findJob(jobId));
   if(pJob)
   {
       pJob->Resume(NULL);

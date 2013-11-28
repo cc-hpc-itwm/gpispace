@@ -2,11 +2,11 @@
 #define SDPA_EVENT_HPP 1
 
 #include <sdpa/events/EventHandler.hpp>
-#include <sdpa/memory.hpp>
 
 #include <seda/IEvent.hpp>
 
 #include <boost/serialization/access.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <string>
 
@@ -17,7 +17,7 @@ namespace sdpa
     class SDPAEvent : public seda::IEvent
     {
     public:
-      typedef sdpa::shared_ptr<SDPAEvent> Ptr;
+      typedef boost::shared_ptr<SDPAEvent> Ptr;
 
       typedef std::string address_t;
 

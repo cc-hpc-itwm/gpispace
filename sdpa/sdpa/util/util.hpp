@@ -1,10 +1,10 @@
 #ifndef SDPA_UTIL_HPP
 #define SDPA_UTIL_HPP 1
 
-#include <sdpa/types.hpp>
+#include <fhg/util/now.hpp>
 
 namespace sdpa { namespace util {
-  typedef unsigned long long time_type;
+  typedef double time_type;
 
   /**
     Returns the current time in microseconds.
@@ -14,8 +14,7 @@ namespace sdpa { namespace util {
        gettimeofday(&tv, NULL);
        return (tv.tv_sec * 1000000 + tv.tv_usec);
   */
-  extern time_type now();
-  extern time_type time_diff(const time_type &start, const time_type &end);
+    using fhg::util::now;
 }}
 
 #endif

@@ -1,7 +1,7 @@
 #include "Worker.hpp"
 #include <stdexcept>
-#include <sdpa/util/util.hpp>
 #include <sdpa/daemon/exceptions.hpp>
+#include <fhg/util/now.hpp>
 #include <iostream>
 #include <algorithm>
 
@@ -19,7 +19,7 @@ Worker::Worker(	const worker_id_t& name,
     rank_(rank),
     agent_uuid_(agent_uuid),
     location_(location),
-    tstamp_(sdpa::util::now()),
+    tstamp_(fhg::util::now()),
     last_time_served_(0),
     last_schedule_time_(0),
     timedout_(false),
@@ -44,7 +44,7 @@ bool Worker::isJobSubmittedOrAcknowleged( const sdpa::job_id_t& job_id )
 void Worker::update()
 {
   lock_type lock(mtx_);
-  tstamp_ = sdpa::util::now();
+  tstamp_ = fhg::util::now();
   set_timedout (false);
 }
 
@@ -52,7 +52,7 @@ void Worker::submit(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
   DMLOG (TRACE, "appending job(" << jobId.str() << ") to the submitted queue");
-  setLastTimeServed(sdpa::util::now());
+  setLastTimeServed(fhg::util::now());
   submitted_.push(jobId);
 }
 
@@ -145,7 +145,7 @@ void Worker::reserve()
 {
   lock_type lock(mtx_);
   reserved_ = true;
-  last_schedule_time_ = sdpa::util::now();
+  last_schedule_time_ = fhg::util::now();
 }
 
 bool Worker::isReserved()

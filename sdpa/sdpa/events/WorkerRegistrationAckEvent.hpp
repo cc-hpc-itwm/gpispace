@@ -10,7 +10,7 @@ namespace sdpa
     class WorkerRegistrationAckEvent : public MgmtEvent
     {
     public:
-      typedef sdpa::shared_ptr<WorkerRegistrationAckEvent> Ptr;
+      typedef boost::shared_ptr<WorkerRegistrationAckEvent> Ptr;
 
       WorkerRegistrationAckEvent ( const address_t& a_from
                                  , const address_t& a_to

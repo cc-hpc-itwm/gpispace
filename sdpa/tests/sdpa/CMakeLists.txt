@@ -237,7 +237,6 @@ foreach (test ${tests})
       LINK_LIBRARIES sdpa-daemon
                      sdpa-com
                      sdpa-client
-                     sdpa-util
                      sdpa
                      fhg-plugin
                      fhg-revision

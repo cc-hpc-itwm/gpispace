@@ -18,11 +18,13 @@
 
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 
+#include <sdpa/daemon/GenericDaemon.hpp>
+
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
+SchedulerBase::SchedulerBase(GenericDaemon* pCommHandler)
   : _worker_manager()
   , ptr_comm_handler_ ( pCommHandler
                       ? pCommHandler
@@ -30,7 +32,6 @@ SchedulerBase::SchedulerBase(sdpa::daemon::IAgent* pCommHandler)
                         ("SchedulerBase ctor with NULL ptr_comm_handler")
                       )
   , SDPA_INIT_LOGGER (ptr_comm_handler_->name())
-  , m_timeout(boost::posix_time::milliseconds(100))
   , m_agent_name (ptr_comm_handler_->name())
 {}
 
@@ -103,7 +104,7 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
   try {
 
     // mark the worker dirty -> don't take it in consideration for re-scheduling
-    const Worker::ptr_t& pWorker = findWorker(worker_id);
+    const Worker::ptr_t pWorker = findWorker(worker_id);
     pWorker->set_disconnected(true);
 
     sdpa::job_id_list_t workerJobList(_worker_manager.getJobListAndCleanQueues(pWorker));
@@ -138,7 +139,7 @@ void SchedulerBase::delete_job (sdpa::job_id_t const & job)
 void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
-  const Job::ptr_t pJob = ptr_comm_handler_->findJob(jobId);
+  Job* pJob = ptr_comm_handler_->findJob(jobId);
   if(pJob)
   {
     try {
@@ -185,7 +186,7 @@ void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
   pending_jobs_queue_.push(jobId);
 }
 
-const Worker::ptr_t& SchedulerBase::findWorker(const Worker::worker_id_t& worker_id )
+Worker::ptr_t SchedulerBase::findWorker(const Worker::worker_id_t& worker_id )
 {
   return _worker_manager.findWorker(worker_id);
 }
@@ -195,7 +196,7 @@ bool SchedulerBase::hasWorker(const Worker::worker_id_t& worker_id) const
   return _worker_manager.hasWorker(worker_id);
 }
 
-const Worker::worker_id_t& SchedulerBase::findWorker(const sdpa::job_id_t& job_id)
+Worker::worker_id_t SchedulerBase::findWorker(const sdpa::job_id_t& job_id)
 {
   return _worker_manager.findWorker(job_id);
 }
@@ -211,17 +212,31 @@ void SchedulerBase::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
   _worker_manager.getListNotFullWorkers(workerList);
 }
 
-sdpa::worker_id_t SchedulerBase::findSuitableWorker(const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
+sdpa::worker_id_t SchedulerBase::findSuitableWorker
+  (const job_requirements_t& job_reqs, sdpa::worker_id_list_t& listAvailWorkers)
 {
   lock_type lock(mtx_);
   sdpa::worker_id_t matchingWorkerId;
 
-  try {
+  if (listAvailWorkers.empty())
+  {
+    return matchingWorkerId;
+  }
+
+  if (job_reqs.empty())
+  {
+    matchingWorkerId = listAvailWorkers.front();
+    listAvailWorkers.pop_front();
+  }
+  else
+  {
+    try {
       matchingWorkerId = _worker_manager.getBestMatchingWorker(job_reqs, listAvailWorkers);
       sdpa::worker_id_list_t::iterator it = std::find(listAvailWorkers.begin(), listAvailWorkers.end(), matchingWorkerId);
       listAvailWorkers.erase(it);
-  }
-  catch(NoWorkerFoundException& exc) {
+    }
+    catch(NoWorkerFoundException& exc) {
+    }
   }
 
   return matchingWorkerId;
@@ -245,11 +260,9 @@ void SchedulerBase::run()
 {
   for (;;)
   {
-    boost::this_thread::interruption_point();
-
     try
     {
-      sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait(m_timeout);
+      sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait();
 
       if( numberOfWorkers()>0 ) {
           schedule(jobId);
@@ -261,10 +274,6 @@ void SchedulerBase::run()
           lock_type lock(mtx_);
           cond_workers_registered.wait(lock);
       }
-    }
-    catch( const sdpa::daemon::QueueEmpty &)
-    {
-        // ignore
     }
     catch ( const std::exception &ex )
     {

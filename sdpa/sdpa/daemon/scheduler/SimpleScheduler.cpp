@@ -1,11 +1,13 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 #include <sdpa/daemon/scheduler/SimpleScheduler.hpp>
 
+#include <sdpa/daemon/GenericDaemon.hpp>
+
 using namespace sdpa::daemon;
 using namespace sdpa::events;
 using namespace std;
 
-SimpleScheduler::SimpleScheduler(sdpa::daemon::IAgent* pCommHandler)
+SimpleScheduler::SimpleScheduler(GenericDaemon* pCommHandler)
   : SchedulerBase (pCommHandler)
 {}
 
@@ -27,17 +29,12 @@ void SimpleScheduler::assignJobsToWorkers()
   while(schedulingAllowed() && !listAvailWorkers.empty())
   {
     sdpa::job_id_t jobId(nextJobToSchedule());
-    sdpa::worker_id_t matchingWorkerId;
 
-    try {
-      job_requirements_t job_reqs(ptr_comm_handler_->getJobRequirements(jobId));
-      matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
-    }
-    catch( const NoJobRequirements& ex ) { // no requirements are specified
-      // we have an empty list of requirements then!
-      matchingWorkerId = listAvailWorkers.front();
-      listAvailWorkers.erase(listAvailWorkers.begin());
-    }
+    const job_requirements_t job_reqs
+      (ptr_comm_handler_->getJobRequirements (jobId));
+
+    const sdpa::worker_id_t matchingWorkerId
+      (findSuitableWorker(job_reqs, listAvailWorkers));
 
     if( !matchingWorkerId.empty() )
     { // matching found
@@ -68,7 +65,7 @@ void SimpleScheduler::assignJobsToWorkers()
 
 void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
 {
-  Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
+  Job* pJob = ptr_comm_handler_->findJob(job_id);
   if(pJob)
   {
     if( !pJob->completed())

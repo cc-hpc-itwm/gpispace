@@ -8,7 +8,6 @@
 #include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <sdpa/memory.hpp>
 
 #include <fhg/plugin/core/kernel.hpp>
 #include <fhg/plugin/plugin.hpp>
@@ -16,6 +15,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/ref.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
 
@@ -131,7 +131,7 @@ namespace utils
       return result;
     }
 
-    sdpa::shared_ptr<fhg::core::kernel_t>
+    boost::shared_ptr<fhg::core::kernel_t>
       createDRTSWorker ( const std::string& drtsName
                        , const std::string& masterName
                        , const std::string& cpbList
@@ -140,7 +140,7 @@ namespace utils
                        , const std::string& kvsPort
                        )
     {
-      sdpa::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
+      boost::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
       kernel->set_name (drtsName);
 
       kernel->put ("plugin.kvs.host", kvsHost);
@@ -205,7 +205,7 @@ namespace utils
       _kernel->unload_all();
     }
 
-    sdpa::shared_ptr<fhg::core::kernel_t> _kernel;
+    boost::shared_ptr<fhg::core::kernel_t> _kernel;
     boost::thread _thread;
   };
 

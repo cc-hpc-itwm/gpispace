@@ -2,11 +2,13 @@
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
+#include <sdpa/daemon/GenericDaemon.hpp>
+
 using namespace std;
 using namespace sdpa::events;
 using namespace sdpa::daemon;
 
-CoallocationScheduler::CoallocationScheduler(sdpa::daemon::IAgent* pCommHandler)
+CoallocationScheduler::CoallocationScheduler(GenericDaemon* pCommHandler)
   : SchedulerBase(pCommHandler)
 {}
 
@@ -31,21 +33,12 @@ void CoallocationScheduler::assignJobsToWorkers()
   {
     sdpa::job_id_t jobId(nextJobToSchedule());
 
-    size_t nReqWorkers(1); // default number of required workers is 1
-    sdpa::worker_id_t matchingWorkerId;
+    const job_requirements_t job_reqs
+      (ptr_comm_handler_->getJobRequirements (jobId));
 
-    try {
-      job_requirements_t job_reqs(ptr_comm_handler_->getJobRequirements(jobId));
-
-      nReqWorkers = job_reqs.numWorkers();
-      matchingWorkerId = findSuitableWorker(job_reqs, listAvailWorkers);
-    }
-    catch( const NoJobRequirements& ex ) // no requirements are specified
-    {
-      // we have an empty list of requirements then!
-      matchingWorkerId = listAvailWorkers.front();
-      listAvailWorkers.erase(listAvailWorkers.begin());
-    }
+    const size_t nReqWorkers (job_reqs.numWorkers());
+    const sdpa::worker_id_t matchingWorkerId
+      (findSuitableWorker(job_reqs, listAvailWorkers));
 
     if( !matchingWorkerId.empty() ) // matching found
     {
@@ -112,7 +105,7 @@ sdpa::worker_id_list_t CoallocationScheduler::checkReservationIsValid(const Rese
 
 void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
 {
-  Job::ptr_t pJob = ptr_comm_handler_->findJob(job_id);
+  Job* pJob = ptr_comm_handler_->findJob(job_id);
   if(pJob)
   {
     if(!pJob->completed()) {

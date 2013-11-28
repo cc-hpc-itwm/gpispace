@@ -12,7 +12,7 @@ namespace sdpa
     class ErrorEvent : public MgmtEvent
     {
     public:
-      typedef sdpa::shared_ptr<ErrorEvent> Ptr;
+      typedef boost::shared_ptr<ErrorEvent> Ptr;
 
       enum error_code_t
         {

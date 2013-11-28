@@ -60,8 +60,5 @@ BOOST_AUTO_TEST_CASE (testQueue)
     test_queue.pop();
   }
 
-  BOOST_REQUIRE_THROW
-    ( test_queue.pop_and_wait (boost::posix_time::milliseconds(10))
-    , sdpa::daemon::QueueEmpty
-    );
+  BOOST_REQUIRE_THROW (test_queue.pop(), sdpa::daemon::QueueEmpty);
 }

@@ -11,7 +11,7 @@ namespace sdpa
     class SubmitJobAckEvent : public JobEvent
     {
     public:
-      typedef sdpa::shared_ptr<SubmitJobAckEvent> Ptr;
+      typedef boost::shared_ptr<SubmitJobAckEvent> Ptr;
 
       SubmitJobAckEvent ( const address_t& a_from
                         , const address_t& a_to

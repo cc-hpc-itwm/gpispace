@@ -20,34 +20,28 @@
 #define SDPA_DAEMON_SYNCHRONIZED_QUEUE_HPP 1
 
 #include <boost/thread.hpp>
-#include <sdpa/SDPAException.hpp>
-#include <iostream>
 #include <sdpa/logging.hpp>
 
+#include <iostream>
+#include <stdexcept>
+
 namespace sdpa { namespace daemon {
-  class QueueException : public SDPAException
+  class QueueFull : public std::runtime_error
   {
     public:
-      explicit
-      QueueException(const std::string &reason) : SDPAException(reason) {}
+      QueueFull() : std::runtime_error("queue is full") {}
   };
 
-  class QueueFull : public QueueException
+  class QueueEmpty : public std::runtime_error
   {
     public:
-      QueueFull() : QueueException("queue is full") {}
+      QueueEmpty() : std::runtime_error("queue is empty") {}
   };
 
-  class QueueEmpty : public QueueException
-  {
-    public:
-      QueueEmpty() : QueueException("queue is empty") {}
-  };
-
-  class NotFoundItem : public QueueException
+  class NotFoundItem : public std::runtime_error
    {
      public:
-	  NotFoundItem(const std::string& str) : QueueException(std::string("The item ")+str+" was not found!") {}
+   NotFoundItem(const std::string& str) : std::runtime_error(std::string("The item ")+str+" was not found!") {}
    };
 
   /*
@@ -67,8 +61,6 @@ namespace sdpa { namespace daemon {
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef boost::condition_variable_any condition_type;
-
-    SynchronizedQueue() : stopped_(false) {}
 
     inline value_type pop()
     {
@@ -90,41 +82,13 @@ namespace sdpa { namespace daemon {
     	return item;
     }
 
-    inline void stop()
-    {
-    	lock_type lock(mtx_);
-    	stopped_ = true;
-    	not_empty_.notify_all();
-    }
-
     inline value_type pop_and_wait()
     {
       lock_type lock(mtx_);
-      while (container_.empty() && !stopped_)
+      while (container_.empty())
       {
         not_empty_.wait(lock);
       }
-      if (stopped_) throw QueueEmpty();
-
-      value_type item = container_.front();
-      container_.pop_front();
-      return item;
-    }
-
-    inline value_type pop_and_wait(const boost::posix_time::time_duration &timeout)
-    {
-      lock_type lock(mtx_);
-
-      const boost::system_time to = boost::get_system_time() + timeout;
-
-      while (container_.empty() && !stopped_)
-      {
-        not_empty_.timed_wait (lock, to);
-        if (container_.empty())
-          throw QueueEmpty(); // timedout
-      }
-
-      if (stopped_) throw QueueEmpty();
 
       value_type item = container_.front();
       container_.pop_front();
@@ -197,7 +161,6 @@ namespace sdpa { namespace daemon {
     mutable mutex_type mtx_;
     condition_type not_empty_;
     container_type container_;
-    bool stopped_;
   };
 }}
 #endif

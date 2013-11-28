@@ -31,22 +31,22 @@
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 //#include <sdpa/daemon/SynchronizedQueue.hpp>
-#include <sdpa/daemon/IAgent.hpp>
 
 #include <boost/optional.hpp>
 
 namespace sdpa {
   namespace daemon {
+    class GenericDaemon;
     class SchedulerBase
     {
     public:
-      typedef sdpa::shared_ptr<SchedulerBase> ptr_t;
+      typedef boost::shared_ptr<SchedulerBase> ptr_t;
       typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
 
-      SchedulerBase(sdpa::daemon::IAgent* pHandler = NULL);
+      SchedulerBase(GenericDaemon* pHandler);
       virtual ~SchedulerBase();
 
       void enqueueJob(const sdpa::job_id_t&);
@@ -61,9 +61,9 @@ namespace sdpa {
       void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
       bool has_job(const sdpa::job_id_t&);
 
-      const Worker::worker_id_t& findWorker(const sdpa::job_id_t&);
+      Worker::worker_id_t findWorker(const sdpa::job_id_t&);
       bool hasWorker(const Worker::worker_id_t&) const;
-      const Worker::ptr_t& findWorker(const Worker::worker_id_t&);
+      Worker::ptr_t findWorker(const Worker::worker_id_t&);
       const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id);
 
       void addWorker( const Worker::worker_id_t& workerId,
@@ -90,8 +90,6 @@ namespace sdpa {
 
       void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id);
 
-      void set_timeout(long timeout) { m_timeout = boost::posix_time::microseconds(timeout); }
-
       bool schedulingAllowed() { return !_worker_manager.common_queue_.empty(); }
       job_id_t nextJobToSchedule() { return _worker_manager.common_queue_.pop(); }
 
@@ -109,9 +107,8 @@ namespace sdpa {
       JobQueue pending_jobs_queue_;
       WorkerManager _worker_manager;
 
-      sdpa::daemon::IAgent* ptr_comm_handler_;
+      GenericDaemon* ptr_comm_handler_;
       SDPA_DECLARE_LOGGER();
-      boost::posix_time::time_duration m_timeout;
 
       mutable mutex_type mtx_;
       condition_type cond_feed_workers;
@@ -124,7 +121,5 @@ namespace sdpa {
     };
   }
 }
-
-BOOST_SERIALIZATION_ASSUME_ABSTRACT( sdpa::daemon::SchedulerBase )
 
 #endif

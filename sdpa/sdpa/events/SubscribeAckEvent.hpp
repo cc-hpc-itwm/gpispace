@@ -10,7 +10,7 @@ namespace sdpa
     class SubscribeAckEvent : public MgmtEvent
     {
     public:
-      typedef sdpa::shared_ptr<SubscribeAckEvent> Ptr;
+      typedef boost::shared_ptr<SubscribeAckEvent> Ptr;
 
       SubscribeAckEvent ( const address_t& a_from
                         , const address_t& a_to

@@ -3,7 +3,6 @@
 
 #include <list>
 #include <string>
-#include <sdpa/util/util.hpp>
 #include <sdpa/common.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
@@ -24,7 +23,7 @@ namespace sdpa { namespace daemon {
   class Worker {
   public:
 
-    typedef sdpa::shared_ptr<Worker> ptr_t;
+    typedef boost::shared_ptr<Worker> ptr_t;
 
     typedef sdpa::location_t location_t;
     typedef sdpa::worker_id_t worker_id_t;
@@ -68,12 +67,12 @@ namespace sdpa { namespace daemon {
     bool acknowledge(const sdpa::job_id_t&);
 
     // update last service time
-    sdpa::util::time_type lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
-    void setLastTimeServed(const sdpa::util::time_type& last_time_srv ) { lock_type lock(mtx_);last_time_served_ = last_time_srv; }
+    double lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
+    void setLastTimeServed(const double& last_time_srv ) { lock_type lock(mtx_);last_time_served_ = last_time_srv; }
 
     // update last service time
-    sdpa::util::time_type lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
-    void setLastScheduleTime(const sdpa::util::time_type& last_schedule_time ) { lock_type lock(mtx_); last_schedule_time_ = last_schedule_time; }
+    double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
+    void setLastScheduleTime(const double& last_schedule_time ) { lock_type lock(mtx_); last_schedule_time_ = last_schedule_time; }
 
     /**
       Return the name of the worker.
@@ -158,9 +157,9 @@ namespace sdpa { namespace daemon {
     unsigned int rank_;
     sdpa::worker_id_t agent_uuid_;
     location_t location_; //! location where to reach the worker
-    sdpa::util::time_type tstamp_; //! time of last message received
-    sdpa::util::time_type last_time_served_; //! time of last message received
-    sdpa::util::time_type last_schedule_time_;
+    double tstamp_; //! time of last message received
+    double last_time_served_; //! time of last message received
+    double last_schedule_time_;
 
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
     JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)

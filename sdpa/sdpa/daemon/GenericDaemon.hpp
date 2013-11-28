@@ -52,14 +52,21 @@
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
-
+#include <boost/shared_ptr.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
+#include <sdpa/events/SDPAEvent.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/types.hpp>
+#include <sdpa/capability.hpp>
+
+#define OVERWRITTEN_IN_TEST virtual
 
 namespace sdpa {
   namespace daemon {
-    class GenericDaemon : public sdpa::daemon::IAgent,
-                          public seda::Strategy,
+    const std::string WE("WE");
+
+    class GenericDaemon : public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
     {
@@ -67,7 +74,7 @@ namespace sdpa {
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
-      typedef sdpa::shared_ptr<GenericDaemon> ptr_t;
+      typedef boost::shared_ptr<GenericDaemon> ptr_t;
 
       GenericDaemon(const std::string name = "orchestrator_0",
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
@@ -79,10 +86,9 @@ namespace sdpa {
 
       SDPA_DECLARE_LOGGER();
 
-      const std::string& name() const { return Strategy::name(); }
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
-      virtual const std::string url() const {return std::string();}
+      virtual const std::string url() const = 0;
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
       void start_agent();
@@ -95,36 +101,33 @@ namespace sdpa {
       void removeMasters(const agent_id_list_t& );
       size_t numberOfMasterAgents() { return m_arrMasterInfo.size(); }
 
-      bool isTop() { return false; }
+      virtual bool isTop() { return false; }
 
       // WE interface
-      virtual void submit( const id_type & id
-                         , const encoded_type&
+      void submit( const we::mgmt::layer::id_type & id
+                         , const we::mgmt::layer::encoded_type&
                          , const requirement_list_t& = requirement_list_t()
                          , const we::type::schedule_data& = we::type::schedule_data()
                          , const we::type::user_data & = we::type::user_data ()
                          );
-      virtual bool cancel(const id_type & id, const reason_type& reason);
-      virtual bool finished(const id_type & id, const result_type& result);
-      virtual bool failed( const id_type& wfId, const result_type& res, int errc, std::string const& reason);
-      virtual bool canceled(const id_type& id);
+      bool cancel(const we::mgmt::layer::id_type & id, const we::mgmt::layer::reason_type& reason);
+      virtual bool finished(const we::mgmt::layer::id_type & id, const we::mgmt::layer::result_type& result);
+      virtual bool failed( const we::mgmt::layer::id_type& wfId, const we::mgmt::layer::result_type& res, int errc, std::string const& reason);
+      bool canceled(const we::mgmt::layer::id_type& id);
+      virtual void pause(const job_id_t& id ) = 0;
+      virtual void resume(const job_id_t& id ) = 0;
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
-
-      virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
-      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
-      virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
-      virtual void handleErrorEvent(const sdpa::events::ErrorEvent* );
 
       SchedulerBase::ptr_t scheduler() const {return ptr_scheduler_;}
     protected:
 
       // stages
       void setStage(const seda::Stage::Ptr& stage){ ptr_daemon_stage_ = stage; }
-      virtual seda::Stage::Ptr to_master_stage() const { return ptr_to_master_stage_ ; }
-      virtual seda::Stage::Ptr to_slave_stage() const { return ptr_to_slave_stage_ ; }
-      virtual sdpa::weak_ptr<seda::Stage> daemon_stage() const { return ptr_daemon_stage_ ; }
+      seda::Stage::Ptr to_master_stage() const { return ptr_to_master_stage_ ; }
+      seda::Stage::Ptr to_slave_stage() const { return ptr_to_slave_stage_ ; }
+      boost::weak_ptr<seda::Stage> daemon_stage() const { return ptr_daemon_stage_ ; }
 
       // masters and subscribers
       sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
@@ -142,78 +145,95 @@ namespace sdpa {
       }
 
       // event handlers
+    public:
       virtual void perform(const seda::IEvent::Ptr&);
-      virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
-      virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
-      virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*) = 0;
       virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* ) = 0;
-      virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* ) = 0;
-      virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* ) = 0;
-      virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
-      virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
-      virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
-      virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
+      virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*) = 0;
       virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
       virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*);
-      virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
-      virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *);
+      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
+      //virtual void handleDeleteJobAckEvent (const sdpa::events::DeleteJobAckEvent *) ?!
+      virtual void handleErrorEvent(const sdpa::events::ErrorEvent* );
+      virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
+      virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* ) = 0;
+      virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
+      virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* ) = 0;
+      //virtual void handleJobResultsReplyEvent (const sdpa::events::JobResultsReplyEvent *) ?!
       virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *);
+      virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *);
+      virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
+      virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
+      virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
+      virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
+      //virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) ?!
+      virtual void handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt );
+      virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
+      virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
 
       // event communication
-      virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
-      virtual void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
-      virtual void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
+      OVERWRITTEN_IN_TEST void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
+      OVERWRITTEN_IN_TEST void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
+      OVERWRITTEN_IN_TEST void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
 
       // registration
-      virtual void requestRegistration(const MasterInfo& masterInfo);
-      virtual void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
+      void requestRegistration(const MasterInfo& masterInfo);
+    protected:
+      void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
 
       // workflow engine
-      virtual we::mgmt::layer* workflowEngine() const { return ptr_workflow_engine_; }
-      virtual bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
+      we::mgmt::layer* workflowEngine() const { return ptr_workflow_engine_; }
+      bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
       // workflow engine notifications
-      virtual void submitWorkflow(const job_id_t& id);
+      OVERWRITTEN_IN_TEST void submitWorkflow(const job_id_t& id);
 
+    public:
       // workers
-      void serveJob(const Worker::worker_id_t&, const job_id_t&);
-      void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
+      OVERWRITTEN_IN_TEST void serveJob(const Worker::worker_id_t&, const job_id_t&);
+      OVERWRITTEN_IN_TEST void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
+    private:
       // jobs
       std::string gen_id() { return sdpa::JobId ().str (); }
 
-      bool noChildJobStalled(const sdpa::job_id_t& jobId) const;
-
     public:
       // forwarding to jobManager() only:
-      void addJob( const sdpa::job_id_t& jid, const Job::ptr_t& pJob, const job_requirements_t& reqList = job_requirements_t())
+      void addJob( const sdpa::job_id_t& jid, Job* pJob, const job_requirements_t& reqList = job_requirements_t())
       {
-        return jobManager()->addJob(jid, pJob, reqList);
+        return jobManager().addJob(jid, pJob, reqList);
       }
       bool hasJobs()
       {
-        return jobManager()->hasJobs();
+        return jobManager().hasJobs();
       }
-      Job::ptr_t findJob(const sdpa::job_id_t& job_id ) const
+      Job* findJob(const sdpa::job_id_t& job_id ) const
       {
-        return jobManager()->findJob(job_id);
+        return jobManager().findJob(job_id);
       }
       void deleteJob(const sdpa::job_id_t& jobId)
       {
-        jobManager()->deleteJob(jobId);
+        jobManager().deleteJob(jobId);
       }
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const
       {
-        return jobManager()->getJobRequirements(jobId);
+        return jobManager().getJobRequirements(jobId);
       }
 
+      // forwaring to scheduler() only:
+      Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id ) const
+      {
+        return scheduler()->findWorker(worker_id);
+      }
       void getWorkerCapabilities(const Worker::worker_id_t& worker_id, sdpa::capabilities_set_t& wCpbset)
       {
         scheduler()->getWorkerCapabilities(worker_id, wCpbset);
       }
 
+      bool noChildJobStalled(const sdpa::job_id_t& jobId) const;
+
     protected:
-      JobManager::ptr_t jobManager() const { return ptr_job_man_; }
+      const JobManager& jobManager() const { return _job_manager; }
+      JobManager& jobManager() { return _job_manager; }
       //! \todo type of Scheduler should be template parameter
       virtual void createScheduler() = 0;
 
@@ -225,14 +245,14 @@ namespace sdpa {
       sdpa::subscriber_map_t m_listSubscribers;
 
     private:
-      sdpa::weak_ptr<seda::Stage> ptr_daemon_stage_;
+      boost::weak_ptr<seda::Stage> ptr_daemon_stage_;
       std::string m_to_master_stage_name_;
       std::string m_to_slave_stage_name_;
       seda::Stage::Ptr ptr_to_master_stage_;
       seda::Stage::Ptr ptr_to_slave_stage_;
 
     protected:
-      JobManager::ptr_t ptr_job_man_;
+      JobManager _job_manager;
       SchedulerBase::ptr_t ptr_scheduler_;
       we::mgmt::layer* ptr_workflow_engine_;
 

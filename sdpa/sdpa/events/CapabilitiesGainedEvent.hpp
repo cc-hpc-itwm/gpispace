@@ -11,7 +11,7 @@ namespace sdpa
     class CapabilitiesGainedEvent : public MgmtEvent
     {
     public:
-      typedef sdpa::shared_ptr<CapabilitiesGainedEvent> Ptr;
+      typedef boost::shared_ptr<CapabilitiesGainedEvent> Ptr;
 
       CapabilitiesGainedEvent
         ( const address_t& from

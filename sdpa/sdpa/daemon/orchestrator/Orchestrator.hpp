@@ -26,7 +26,7 @@ namespace sdpa {
     class Orchestrator : public GenericDaemon
     {
       public:
-      typedef sdpa::shared_ptr<Orchestrator> ptr_t;
+      typedef boost::shared_ptr<Orchestrator> ptr_t;
       SDPA_DECLARE_LOGGER();
 
       Orchestrator (const std::string &name, const std::string& url)
@@ -38,22 +38,20 @@ namespace sdpa {
 			static Orchestrator::ptr_t create
         (const std::string& name, const std::string& url);
 
-      void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
-      void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
+      virtual void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
+      virtual void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
 
-      void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt );
-      void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
+      virtual void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt );
+      virtual void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
 
-      const std::string url() const {return url_;}
-      bool isTop() { return true; }
-
-      void cancelPendingJob(const sdpa::events::CancelJobEvent& evt);
+      virtual const std::string url() const {return url_;}
+      virtual bool isTop() { return true; }
 
       template <typename T>
       void notifySubscribers(const T& ptrEvt);
 
-      void pause(const job_id_t& id );
-      void resume(const job_id_t& id );
+      virtual void pause(const job_id_t& id );
+      virtual void resume(const job_id_t& id );
 
       private:
       virtual void createScheduler()

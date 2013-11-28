@@ -15,7 +15,6 @@
 #include <sdpa/job_states.hpp>
 #include <sdpa/client.hpp>
 #include <seda/IEvent.hpp>
-#include <sdpa/util/util.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>

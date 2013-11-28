@@ -23,7 +23,6 @@
 #include <sdpa/types.hpp>
 #include <boost/foreach.hpp>
 #include "boost/bind.hpp"
-#include <sdpa/daemon/IAgent.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -39,7 +38,7 @@ WorkerManager::WorkerManager()
   : SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
 {}
 
-Worker::ptr_t &WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
+Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
 {
   lock_type lock(mtx_);
   worker_map_t::iterator it = worker_map_.find(worker_id);
@@ -316,7 +315,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker
   if (worker_map_.empty())
     throw NoWorkerFoundException();
 
-  boost::optional<sdpa::util::time_type> last_schedule_time;
+  boost::optional<double> last_schedule_time;
   boost::optional<worker_id_t> bestMatchingWorkerId;
   boost::optional<std::size_t> maxMatchingDeg;
 

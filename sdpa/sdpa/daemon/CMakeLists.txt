@@ -3,7 +3,6 @@
 set (srcs
   GenericDaemon.cpp
   Job.cpp
-  JobEventHandlers.cpp
   JobManager.cpp
   scheduler/SchedulerBase.cpp
   scheduler/CoallocationScheduler.cpp

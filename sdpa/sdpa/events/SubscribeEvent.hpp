@@ -11,7 +11,7 @@ namespace sdpa
     class SubscribeEvent : public MgmtEvent
     {
     public:
-      typedef sdpa::shared_ptr<SubscribeEvent> Ptr;
+      typedef boost::shared_ptr<SubscribeEvent> Ptr;
 
       SubscribeEvent ( const address_t& a_from
                      , const address_t& a_to

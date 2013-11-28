@@ -1,24 +1,25 @@
 #ifndef SDPA_DAEMON_EXCEPTIONS_HPP
 #define SDPA_DAEMON_EXCEPTIONS_HPP 1
 
-#include <sdpa/SDPAException.hpp>
 #include <sdpa/capability.hpp>
+
+#include <stdexcept>
 
 namespace sdpa {
 namespace daemon {
 
-	class NoWorkflowEngine : public sdpa::SDPAException {
+	class NoWorkflowEngine : public std::runtime_error {
 	public:
 		NoWorkflowEngine()
-			: sdpa::SDPAException("No workflow engine!") {}
+			: std::runtime_error("No workflow engine!") {}
 
 		virtual ~NoWorkflowEngine() throw() {}
 	};
 
-	class JobException : public sdpa::SDPAException {
+	class JobException : public std::runtime_error {
 	public:
 		JobException(const std::string &reason, const sdpa::job_id_t& job_id)
-			: sdpa::SDPAException(reason), job_id_(job_id) {}
+			: std::runtime_error(reason), job_id_(job_id) {}
 
 		virtual ~JobException() throw() {}
 		const sdpa::job_id_t& job_id() const { return job_id_; }
@@ -27,10 +28,10 @@ namespace daemon {
 		sdpa::job_id_t job_id_;
 	};
 
-	class WorkerException : public sdpa::SDPAException {
+	class WorkerException : public std::runtime_error {
 	public:
 		WorkerException(const std::string &reason, const sdpa::worker_id_t& worker_id)
-			: sdpa::SDPAException(reason), worker_id_(worker_id){}
+			: std::runtime_error(reason), worker_id_(worker_id){}
 
 		virtual ~WorkerException() throw() {}
 		const sdpa::worker_id_t& worker_id() const { return worker_id_; }
@@ -45,10 +46,10 @@ namespace daemon {
 		virtual ~JobNotFoundException() throw() {}
 	};
 
-	class NoWorkerFoundException : public sdpa::SDPAException  {
+	class NoWorkerFoundException : public std::runtime_error  {
 		public:
 			NoWorkerFoundException()
-			: sdpa::SDPAException("No worker found!") {}
+			: std::runtime_error("No worker found!") {}
 		virtual ~NoWorkerFoundException() throw() {}
 	};
 
