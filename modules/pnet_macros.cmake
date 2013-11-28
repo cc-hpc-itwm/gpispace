@@ -78,7 +78,6 @@ macro(PNET_COMPILE)
   set(PNETC_ARGS ${PNET__default_flags}
                  ${PNET_FLAGS}
                  ${__pnet_sources}
-              -o ${PNET_OUTPUT}
      )
 
   set (PNET_GEN_OUTPUTS ${PNET_OUTPUT})
@@ -92,26 +91,18 @@ macro(PNET_COMPILE)
     set (PNET_GEN_OUTPUTS ${PNET_GEN_OUTPUTS} ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
   endif()
 
-  if (${PNETC_LOCATION} IS_NEWER_THAN "${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}")
-    add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
-      COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}"
-      COMMAND ${PNETC_LOCATION} ${PNETC_ARGS}
-      DEPENDS ${PNETC_LOCATION} ${__pnet_sources} ${PNET_DEPENDS}
-      COMMENT "Re-building petri-net ${PNET_NAME}"
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      )
-  else()
-    add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
-      COMMAND ${PNETC_LOCATION} ${PNETC_ARGS}
-      DEPENDS ${PNETC_LOCATION} ${__pnet_sources} ${PNET_DEPENDS}
-      COMMENT "Building petri-net ${PNET_NAME}"
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      )
-  endif()
+  add_custom_target(pnet-${PNET_NAME}-gen
+    ${PNETC_LOCATION} ${PNETC_ARGS} -o ${PNET_OUTPUT}
+    DEPENDS ${PNETC_LOCATION} ${__pnet_sources} ${PNET_DEPENDS}
+    COMMENT "Compiling petri-net ${PNET_NAME}"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
 
   if (PNET_BUILD AND NOT PNET_GENERATE)
     message(FATAL_ERROR "** pnet_compile: cannot build pnet without generating code")
   endif()
+
+  add_custom_target (pnet-${PNET_NAME} ALL DEPENDS pnet-${PNET_NAME}-gen ${PNETC_LOCATION})
 
   if (PNET_BUILD)
     set (_make_cmd make)
@@ -122,15 +113,14 @@ macro(PNET_COMPILE)
     # the call to $(MAKE) does currently only work when the gernator is make as
     # well, ninja for example doesn't know about $(MAKE) (and wants it quoted
     # as $$(MAKE) anyways)
-    add_custom_command(OUTPUT ${PNET_GEN_OUTPUTS}
-      COMMAND "${_make_cmd}" -C ${PNET_GENERATE} "BOOST_ROOT=${Boost_INCLUDE_DIR}/../" "SDPA_INCLUDE=${CMAKE_SOURCE_DIR}/pnet/src/"
+    add_custom_target(pnet-${PNET_NAME}-build
+      "${_make_cmd}" -C ${PNET_GENERATE} "BOOST_ROOT=${Boost_INCLUDE_DIR}/../" "SDPA_INCLUDE=${CMAKE_SOURCE_DIR}/pnet/src/"
       COMMENT "Building modules for petri-net ${PNET_NAME}"
+      DEPENDS pnet-${PNET_NAME}-gen
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      APPEND
       )
+    add_dependencies(pnet-${PNET_NAME} pnet-${PNET_NAME}-build)
   endif()
-
-  add_custom_target (pnet-${PNET_NAME} ALL DEPENDS ${PNET_GEN_OUTPUTS} ${PNETC_LOCATION})
 
   if (PNET_BUILD)
     set_target_properties(pnet-${PNET_NAME} PROPERTIES PNET_GENERATE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
