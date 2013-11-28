@@ -144,11 +144,10 @@ namespace sdpa
     bool JobManager::noChildJobStalled(const sdpa::job_id_t& jobId) const
     {
       lock_type lock(_job_map_and_requirements_mutex);
-      BOOST_FOREACH(const job_map_t::value_type& jpair, job_map_)
+      BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
       {
-        Job* pJob(jpair.second);
         assert(pJob);
-        if( jpair.second->parent()==jobId && pJob->getStatus()==sdpa::status::STALLED )
+        if( pJob->parent()==jobId && pJob->getStatus()==sdpa::status::STALLED )
             return false;
       }
 
