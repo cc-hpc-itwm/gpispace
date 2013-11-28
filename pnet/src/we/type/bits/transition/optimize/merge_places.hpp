@@ -27,9 +27,7 @@ namespace we { namespace type {
       {
         typedef petri_net::connection_t connection_t;
 
-        typedef std::stack<petri_net::transition_id_type> stack_t;
-
-        stack_t stack;
+        std::stack<petri_net::transition_id_type> stack;
 
         // rewire pid_B -> trans to pid_A -> trans
         BOOST_FOREACH ( const petri_net::transition_id_type& trans_out_B
