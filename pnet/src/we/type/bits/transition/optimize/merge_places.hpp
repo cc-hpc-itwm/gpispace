@@ -25,8 +25,6 @@ namespace we { namespace type {
       , const petri_net::place_id_type & pid_B
       )
       {
-        typedef petri_net::connection_t connection_t;
-
         std::stack<petri_net::transition_id_type> stack;
 
         // rewire pid_B -> trans to pid_A -> trans
@@ -41,13 +39,13 @@ namespace we { namespace type {
           {
             const petri_net::transition_id_type& tid_trans_out_B (stack.top());
 
-            connection_t const connection
+            petri_net::connection_t const connection
               (net.get_connection_in (tid_trans_out_B, pid_B));
 
             net.delete_edge_in (tid_trans_out_B, pid_B);
 
             net.add_connection
-              ( connection_t
+              ( petri_net::connection_t
                 ( is_read ? petri_net::edge::PT_READ : connection.type()
                 , connection.transition_id()
                 , pid_A
@@ -83,16 +81,16 @@ namespace we { namespace type {
           {
             const petri_net::transition_id_type& tid_trans_in_B (stack.top());
 
-            connection_t const connection
+            petri_net::connection_t const connection
               (net.get_connection_out (tid_trans_in_B, pid_B));
 
             net.delete_edge_out (tid_trans_in_B, pid_B);
 
             net.add_connection
-              ( connection_t ( connection.type()
-                             , connection.transition_id()
-                             , pid_A
-                             )
+              ( petri_net::connection_t ( connection.type()
+                                        , connection.transition_id()
+                                        , pid_A
+                                        )
               );
 
             transition_t trans_in_B (net.get_transition (tid_trans_in_B));
