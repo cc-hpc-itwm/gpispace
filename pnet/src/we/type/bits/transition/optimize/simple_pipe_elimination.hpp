@@ -75,7 +75,6 @@ namespace we { namespace type {
       {
         typedef we::type::port_t port_t;
         typedef std::string name_type;
-        typedef petri_net::connection_t connection_t;
         typedef boost::unordered_map<name_type, petri_net::place_id_type> map_type;
         typedef boost::unordered_set<petri_net::transition_id_type> tid_set_type;
 
@@ -220,8 +219,6 @@ namespace we { namespace type {
       , petri_net::net & net
       )
       {
-        typedef petri_net::net pnet_t;
-
         bool modified (false);
 
         typedef std::stack<petri_net::transition_id_type> stack_t;

@@ -25,7 +25,6 @@ namespace we { namespace type {
       , const petri_net::place_id_type & pid_B
       )
       {
-        typedef petri_net::net pnet_t;
         typedef petri_net::connection_t connection_t;
 
         typedef std::stack<petri_net::transition_id_type> stack_t;

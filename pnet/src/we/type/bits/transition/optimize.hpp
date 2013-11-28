@@ -58,8 +58,6 @@ namespace we
           bool operator ()
           (petri_net::net & net) const
           {
-            typedef petri_net::net pnet_t;
-
             bool modified (false);
 
             typedef std::stack<petri_net::transition_id_type> stack_t;
@@ -117,8 +115,6 @@ namespace we
           bool operator ()
           (petri_net::net & net) const
           {
-            typedef petri_net::net pnet_t;
-
             bool modified (false);
 
             modified |= (  options.simple_pipe_elimination()

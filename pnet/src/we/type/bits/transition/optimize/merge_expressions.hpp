@@ -81,7 +81,6 @@ namespace we { namespace type {
       , const petri_net::net & net
       )
       {
-        typedef petri_net::net pnet_t;
         typedef petri_net::connection_t connection_t;
         typedef trans_info::pid_set_type pid_set_type;
 
@@ -251,9 +250,6 @@ namespace we { namespace type {
       , const trans_info::pid_set_type & pid_read
       )
       {
-        typedef we::type::port_t port_t;
-        typedef petri_net::net pnet_t;
-
         expression_t & expression (boost::get<expression_t &> (trans.data()));
 
         BOOST_FOREACH ( const petri_net::place_id_type& place_id
@@ -300,9 +296,6 @@ namespace we { namespace type {
       , const transition_t & other
       )
       {
-        typedef transition_t transition_t;
-        typedef we::type::port_t port_t;
-
         boost::unordered_set<std::string> other_names;
 
         BOOST_FOREACH ( we::type::port_t const& port
@@ -456,8 +449,6 @@ namespace we { namespace type {
       , petri_net::net & net
       )
       {
-        typedef petri_net::net pnet_t;
-
         bool modified (false);
 
         typedef std::stack<petri_net::transition_id_type> stack_t;
