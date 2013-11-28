@@ -29,7 +29,7 @@ To install GPI-Space just unpack the distribution file:
 cd $HOME
 tar xvzf gpispace.tgz
 
-and add `$HOME/gpispace/bin` to your serch path:
+and add `$HOME/gpispace/bin` to your search path:
 
 [source,bash]
 export PATH=$HOME/gpispace/bin:$PATH
