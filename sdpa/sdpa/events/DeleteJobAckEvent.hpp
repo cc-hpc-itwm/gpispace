@@ -26,7 +26,10 @@ namespace sdpa
 
       virtual void handleBy(EventHandler* handler)
       {
-        // Only the client handles this event
+        throw std::runtime_error
+          ( "This method should never be called as only the client should handle"
+            " this event and it does not use the EventHandler interface."
+          );
       }
     };
 
