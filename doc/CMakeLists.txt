@@ -3,7 +3,7 @@ if (ENABLE_DOCUMENTATION)
   include (car_cdr_macros)
 
   find_package (source_highlite REQUIRED QUIET)
-  find_package (asciidoc REQUIRED QUIET)
+  find_package (asciidoc 8.6.7 REQUIRED QUIET)
 
   macro (ADD_ASCIIDOC)
     parse_arguments (DOC
