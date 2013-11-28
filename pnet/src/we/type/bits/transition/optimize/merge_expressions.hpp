@@ -452,8 +452,7 @@ namespace we { namespace type {
       {
         bool modified (false);
 
-        typedef std::stack<petri_net::transition_id_type> stack_t;
-        stack_t stack;
+        std::stack<petri_net::transition_id_type> stack;
 
         BOOST_FOREACH ( const petri_net::transition_id_type& t
                       , net.transitions() | boost::adaptors::map_keys
