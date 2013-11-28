@@ -40,8 +40,7 @@ namespace sdpa
 
       job_requirements_.erase (job_id);
 
-      Job* pJob(findJob(job_id ));
-      delete pJob;
+      delete findJob(job_id );
       if (!job_map_.erase (job_id))
       {
         throw JobNotDeletedException(job_id);
