@@ -186,6 +186,12 @@ namespace pnet
 
               _os << structure::close (_indent);
 
+              _os << _indent
+                  << "bool operator< ("
+                  << s.first << " const&"
+                  << ", " << s.first << " const&"
+                  << ");";
+
               _os << ns::close (_indent);
             }
             void _field (const std::pair<std::string, std::string>&) const
