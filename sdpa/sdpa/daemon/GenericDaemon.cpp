@@ -633,10 +633,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
                           , const we::type::user_data& user_data
                           )
 {
-  // create new job with the job description = workflow (serialize it first)
-  // set the parent_id to ?
-  // add this job into the parent's job list (call parent_job->add_subjob( new job(workflow) ) )
-  // schedule the new job to some worker
+  // check first if the schedule data is valid
   if(schedule_data.num_worker() && schedule_data.num_worker().get()<=0)
   {
       workflowEngine()->we::mgmt::layer::failed( activityId
@@ -646,8 +643,6 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
 
       return;
   }
-
-  // check first if schedule data is valid
 
   job_requirements_t jobReqs(req_list, schedule_data);
 
