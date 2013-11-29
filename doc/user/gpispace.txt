@@ -3,11 +3,9 @@
 :doctype: book
 :toc:
 
-GPI-Space -- a system to develop and execute cluster applications
-=================================================================
+= GPI-Space -- a system to develop and execute cluster applications
 
-Overview
---------
+== Overview
 
 GPI-Space is a system to develop and execute cluster applications. The
 main focus of GPI-Space is to separate communication and coordination.
@@ -22,8 +20,7 @@ GPI-Space consists of three main components:
 * the workflow engine and
 * the virtual memory layer.
 
-Installation
-------------
+== Installation
 
 To install GPI-Space just unpack the distribution file:
 
@@ -57,34 +54,26 @@ test BAR: OKAY
 GPI-Space selftest completed: 0 error(s)
 ----
 
-Distributed runtime system
---------------------------
+== Distributed runtime system
 
 agent, orchestrator, worker, client
 
-Start and Stop
-~~~~~~~~~~~~~~
+=== Start and Stop
 
 topology
 
-Observe, Gantt-Viewer, (gspcmon?)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Observe, Gantt-Viewer, (gspcmon?)
 
-Advanced: fhglog*
-~~~~~~~~~~~~~~~~~
+=== Advanced: fhglog*
 
-Advanced: kvs
-~~~~~~~~~~~~~
+=== Advanced: kvs
 
-Advanced: fhgcfg
-~~~~~~~~~~~~~~~~
+=== Advanced: fhgcfg
 
-Advanced: gspc*
-~~~~~~~~~~~~~~~
+=== Advanced: gspc*
 
 
-Workflows
----------
+== Workflows
 
 === Small example (predefined)
 === Submit
@@ -200,15 +189,13 @@ code above is equivalent to
 === Advanced: Execute (we-exec)
 
 
-Virtual memory
---------------
+== Virtual memory
 === Start and Stop
 === Interface
 === Example
 === Advanced: gpish
 
-Reference
----------
+== Reference
 
 Detailed, technical reference of different formats used in gspc.
 
@@ -228,16 +215,14 @@ grammar, available types, functions, associativity, equals pnet/src/we/expr/, pn
 
 grammar, line based, messages. equals editor/src/pnete/ui/gspc_monitor_client.cpp
 
-Literature and links
---------------------
+== Literature and links
 
 [bibliography]
 .Articles
 - [[[gelernter:1992]]] D. Gelernter, N. Carriero: 'Coordination
 languages and their significance.'  Commun. ACM 35(2), 1992.
 
-Glossary
---------
+== Glossary
 
 DRTS:: Distributed runtime system.
 
