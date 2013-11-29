@@ -180,9 +180,11 @@ namespace sdpa {
       void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
 
       // workflow engine
+    public:
       we::mgmt::layer* workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
+    protected:
       // workflow engine notifications
       OVERWRITTEN_IN_TEST void submitWorkflow(const job_id_t& id);
 
