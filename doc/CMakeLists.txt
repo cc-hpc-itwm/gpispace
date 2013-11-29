@@ -20,7 +20,8 @@ if (ENABLE_DOCUMENTATION)
                 ${ASCIIDOC_EXECUTABLE}
                 -b ${DOC_BACKEND}
                 -o ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
-                ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
+                ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT} ||
+                rm -rf ${CMAKE_CURRENT_BINARY_DIR}/${DOC_OUTPUT}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
       )
       add_custom_target (${DOC_TARGET}
