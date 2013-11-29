@@ -231,9 +231,9 @@ get_target_property(COALLOCATION_TEST_PNET_LOCATION pnet-coallocation_bad_test-w
 get_target_property(__PNET_GEN_OUTPUTS pnet-coallocation_bad_test-wf GEN_OUTPUTS)
 
 set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="1L"
-                                                                        	-p n_workers_A="-1L"
+                                                                        	-p n_workers_A="0L"
                                                                         	-p n_tasks_B="1L"
-                                                                        	-p n_workers_B="0L"
+                                                                        	-p n_workers_B="-1L"
                                 --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_bad_test.pnet")
 
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_bad_test.pnet"
