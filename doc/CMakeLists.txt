@@ -62,24 +62,24 @@ if (ENABLE_DOCUMENTATION)
 
 
   ADD_ASCIIDOC (user-asciidoc-html
-    INPUT user.txt
+    INPUT user/gpispace.txt
     OUTPUT user.html
     BACKEND xhtml11
     )
 
   ADD_ASCIIDOC (user-asciidoc-docbook
-    INPUT user.txt
+    INPUT user/gpispace.txt
     OUTPUT user.docbook
     BACKEND docbook
     )
 
   ADD_A2X (user-a2x-html
-    INPUT user.txt
+    INPUT user/gpispace.txt
     FORMAT xhtml
     )
 
   ADD_A2X (user-a2x-pdf
-    INPUT user.txt
+    INPUT user/gpispace.txt
     FORMAT pdf
     OPTION --fop
     )
