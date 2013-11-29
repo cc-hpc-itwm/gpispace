@@ -59,11 +59,15 @@ GPI-Space selftest completed: 0 error(s)
 Distributed runtime system
 --------------------------
 
+agent, orchestrator, worker, client
+
 Start and Stop
 ~~~~~~~~~~~~~~
 
-Observe, Gantt-Viewer
-~~~~~~~~~~~~~~~~~~~~~
+topology
+
+Observe, Gantt-Viewer, (gspcmon?)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Advanced: fhglog*
 ~~~~~~~~~~~~~~~~~
@@ -85,6 +89,36 @@ Workflows
 === Submit
 === Extract results
 === Workflow description language
+every workflow is a function with inputs and outputs.
+every function is either a small expression, a net (sub-workflow), or
+a c++ module call.
+typed, tokens in nets on places, consumed and produced by
+transitions. behavior of transitions defined by functions,
+i.e. workflows again.
+
+small workflow, being a module call below:
+
+[source,xml]
+----
+<defun> <!-- <1> -->
+  <in name="in" type="string"/> <!-- <2> -->
+  <out name="out" type="string"/>
+
+  <module name="hello" function="out assemble (in)"> <!-- <3> -->
+    <cinclude href="string"/> <!-- <5> -->
+    <code> <!-- <4> -->
+      <![CDATA[ return std::string ("Hello ") + in; ]]>
+    </code>
+  </module>
+</defun>
+----
+
+<1> Top level function of the workflow.
+<2> Inputs and outputs of the function.
+<3> The function is implemented as a call to a C++ module.
+<4> C++ code can be inlined into a module.
+<5> Compilation flags for the module may be given.
+
 ==== Place, Token, Transition, Port, Type
 ==== Simple networks
 ==== Expressions
@@ -171,6 +205,27 @@ Virtual memory
 === Interface
 === Example
 === Advanced: gpish
+
+Reference
+---------
+
+Detailed, technical reference of different formats used in gspc.
+
+=== Petri-net Structure
+
+equals xsd | pnet/src/xml/parse/parser.cpp,
+[source,python]
+-----
+include::../intern/xml_internal_structure.dot[]
+-----
+
+=== Expression Language Syntax
+
+grammar, available types, functions, associativity, equals pnet/src/we/expr/, pnet/src/we/type/
+
+=== gspcmon Protocol
+
+grammar, line based, messages. equals editor/src/pnete/ui/gspc_monitor_client.cpp
 
 Literature and links
 --------------------
