@@ -26,18 +26,24 @@ Installation
 To install GPI-Space just unpack the distribution file:
 
 [source,bash]
+----
 cd $HOME
 tar xvzf gpispace.tgz
+----
 
 and add `$HOME/gpispace/bin` to your search path:
 
 [source,bash]
+----
 export PATH=$HOME/gpispace/bin:$PATH
+----
 
 To test the installation run
 
 [source,bash]
+----
 gspc selftest
+----
 
 When GPI-Space is installed correctly the output will be something
 like
@@ -91,6 +97,7 @@ that evaluates to `true`.
 For example, the transition `collatz_even`
 
 [source,xml]
+----
 <transition name="collatz_even">
   <defun>
     <in name="a" type="unsigned long"/>
@@ -105,6 +112,7 @@ For example, the transition `collatz_even`
   <connect-in port="a" place="a"/>
   <connect-out port="f" place="f"/>
 </transition>
+----
 
 is activated only for even values on place `a`.
 
