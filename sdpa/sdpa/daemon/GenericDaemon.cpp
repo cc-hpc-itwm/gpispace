@@ -633,17 +633,6 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
                           , const we::type::user_data& user_data
                           )
 {
-  // check first if the schedule data is valid
-  if(schedule_data.num_worker() && schedule_data.num_worker().get()<=0)
-  {
-      workflowEngine()->we::mgmt::layer::failed( activityId
-                                                , desc
-                                                , fhg::error::UNEXPECTED_ERROR
-                                                , "Invalid number of workers required!");
-
-      return;
-  }
-
   job_requirements_t jobReqs(req_list, schedule_data);
 
   DMLOG(TRACE, "workflow engine submitted "<<activityId);
