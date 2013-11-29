@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION "2.8.9" FATAL_ERROR)
+
 include(cmake_parse_arguments)
 include(car_cdr_macros)
 
@@ -86,10 +88,8 @@ macro(PNET_COMPILE)
     set (PNET_GENERATE "${PNET_NAME}.gen")
   endif ()
 
-  if (PNET_GENERATE)
-    set (PNETC_ARGS ${PNETC_ARGS} -g ${PNET_GENERATE})
-    set (PNET_GEN_OUTPUTS ${PNET_GEN_OUTPUTS} ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
-  endif()
+  set (PNETC_ARGS ${PNETC_ARGS} -g ${PNET_GENERATE})
+  set (PNET_GEN_OUTPUTS ${PNET_GEN_OUTPUTS} ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
 
   add_custom_target(pnet-${PNET_NAME}-gen
     ${PNETC_LOCATION} ${PNETC_ARGS} -o ${PNET_OUTPUT}
@@ -98,16 +98,14 @@ macro(PNET_COMPILE)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 
-  if (PNET_BUILD AND NOT PNET_GENERATE)
-    message(FATAL_ERROR "** pnet_compile: cannot build pnet without generating code")
-  endif()
-
   add_custom_target (pnet-${PNET_NAME} ALL DEPENDS pnet-${PNET_NAME}-gen ${PNETC_LOCATION})
 
   if (PNET_BUILD)
     set (_make_cmd make)
     if ("${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
       set (_make_cmd "$(MAKE)")
+    else()
+      message (FATAL_ERROR "CMake Generator '${CMAKE_GENERATOR}' not supported by pnet_compile")
     endif()
 
     # the call to $(MAKE) does currently only work when the gernator is make as
