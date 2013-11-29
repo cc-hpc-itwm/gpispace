@@ -3,6 +3,7 @@ GPI-Space -- a system to develop and execute cluster applications
 :Author: Mirko Rahn
 :Email: rahn@itwm.fhg.de
 :doctype: book
+:toc:
 
 Overview
 --------
