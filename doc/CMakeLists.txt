@@ -46,11 +46,11 @@ if (ENABLE_DOCUMENTATION)
         OUTPUT ${OUTPUT_FOLDER}
         COMMAND mkdir -p ${OUTPUT_FOLDER} &&
                 ${A2X_EXECUTABLE}
-               -f ${DOC_FORMAT} ${DOC_OPTION}
-               --no-xmllint
-               --destination-dir=${OUTPUT_FOLDER}
-               ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT} ||
-               rm -rf ${OUTPUT_FOLDER}
+                -f ${DOC_FORMAT} ${DOC_OPTION}
+                --no-xmllint
+                --destination-dir=${OUTPUT_FOLDER}
+                ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT} ||
+                rm -rf ${OUTPUT_FOLDER}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${DOC_INPUT}
       )
       add_custom_target (${DOC_TARGET}
