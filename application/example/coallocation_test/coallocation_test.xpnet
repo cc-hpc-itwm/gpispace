@@ -99,7 +99,6 @@
     	}
     	else
 		{	
-  			sleep(1);
   			LOG(INFO, "<<< finished task A_" << id << " on " << nw << " workers ...");
   		}
   		return we::type::literal::control();
@@ -176,7 +175,6 @@
 	    	}
 	    	else
 			{	
-	  			sleep(1);
 	  			LOG(INFO, "<<< finished task B_" << id << " on " << nw << " workers ...");
 	  		}
 	  		return we::type::literal::control();
