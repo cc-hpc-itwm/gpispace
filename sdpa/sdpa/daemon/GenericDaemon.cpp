@@ -637,6 +637,18 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
   // set the parent_id to ?
   // add this job into the parent's job list (call parent_job->add_subjob( new job(workflow) ) )
   // schedule the new job to some worker
+  if(schedule_data.num_worker() && schedule_data.num_worker().get()<=0)
+  {
+      workflowEngine()->we::mgmt::layer::failed( activityId
+                                                , desc
+                                                , fhg::error::UNEXPECTED_ERROR
+                                                , "Invalid number of workers required!");
+
+      return;
+  }
+
+  // check first if schedule data is valid
+
   job_requirements_t jobReqs(req_list, schedule_data);
 
   DMLOG(TRACE, "workflow engine submitted "<<activityId);
