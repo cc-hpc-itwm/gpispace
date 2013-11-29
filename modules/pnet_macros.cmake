@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION "2.8.9" FATAL_ERROR)
+
 include(cmake_parse_arguments)
 include(car_cdr_macros)
 
