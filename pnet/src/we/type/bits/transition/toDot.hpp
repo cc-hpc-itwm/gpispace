@@ -410,15 +410,11 @@ namespace we { namespace type {
         std::string operator ()
         (const petri_net::net & net) const
         {
-          typedef petri_net::net pnet_t;
-          typedef petri_net::connection_t connection_t;
           typedef transition_t::port_map_t::value_type pmv_t;
-          typedef std::string place_dot_name_type;
-          typedef std::pair< place_dot_name_type
+          typedef std::pair< std::string
                            , petri_net::port_id_type
                            > extra_connection_type;
-          typedef std::string transition_name_type;
-          typedef boost::unordered_map< transition_name_type
+          typedef boost::unordered_map< std::string
                                       , std::list<extra_connection_type>
                                       > extra_connection_by_transition_type;
 
@@ -437,7 +433,7 @@ namespace we { namespace type {
             {
               const petri_net::place_id_type& place_id (ip.first);
               const place::type& place (ip.second);
-              const place_dot_name_type place_dot_name
+              const std::string place_dot_name
                 (name (id_net, "place_" + fhg::util::show (place_id)));
 
               std::ostringstream token;
@@ -643,8 +639,6 @@ namespace we { namespace type {
       , const petri_net::priority_type & prio
       )
       {
-        typedef transition_t trans_t;
-
         std::ostringstream s;
 
         const id_type id_trans (id);
@@ -693,7 +687,7 @@ namespace we { namespace type {
                   )
           ;
 
-        BOOST_FOREACH ( typename trans_t::port_map_t::value_type const& p
+        BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
                       , t.ports()
                       )
         {
@@ -713,7 +707,7 @@ namespace we { namespace type {
             s << boost::apply_visitor
                  (transition_visitor_dot<Pred> (id, l + 1, opts), t.data());
 
-            BOOST_FOREACH ( typename trans_t::port_map_t::value_type const& p
+            BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
                           , t.ports()
                           )
             {

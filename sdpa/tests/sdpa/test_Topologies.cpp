@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
 {
   // O
   // |
-  // A-\
+  // A-+
   // | |
   // A A
   // | |
@@ -118,11 +118,11 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
 
 BOOST_AUTO_TEST_CASE (one_worker_with_multiple_master_agents)
 {
-  // O-+-\
+  // O-+-+
   // | | |
   // A ? A -> variable agents #
   // | | |
-  // W-+-/
+  // W-+-+
 
   const std::string workflow
     (utils::require_and_read_file ("workflows/transform_file.pnet"));

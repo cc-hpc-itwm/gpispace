@@ -81,8 +81,6 @@ namespace we { namespace type {
       , const petri_net::net & net
       )
       {
-        typedef petri_net::net pnet_t;
-        typedef petri_net::connection_t connection_t;
         typedef trans_info::pid_set_type pid_set_type;
 
         typedef std::pair<const transition_t, const petri_net::transition_id_type> pair_type;
@@ -140,11 +138,13 @@ namespace we { namespace type {
         pid_set_type pid_read;
         std::size_t max_successors_of_pred = 0;
 
-        typedef std::pair<petri_net::place_id_type, connection_t> pc_type;
+        typedef std::pair< petri_net::place_id_type
+                         , petri_net::connection_t
+                         > pc_type;
 
         BOOST_FOREACH (const pc_type& pc, net.in_to_transition (tid))
         {
-          const connection_t& connection (pc.second);
+          const petri_net::connection_t& connection (pc.second);
           const petri_net::place_id_type& place_id (pc.first);
 
           if (petri_net::edge::is_pt_read (connection.type()))
@@ -251,9 +251,6 @@ namespace we { namespace type {
       , const trans_info::pid_set_type & pid_read
       )
       {
-        typedef we::type::port_t port_t;
-        typedef petri_net::net pnet_t;
-
         expression_t & expression (boost::get<expression_t &> (trans.data()));
 
         BOOST_FOREACH ( const petri_net::place_id_type& place_id
@@ -300,9 +297,6 @@ namespace we { namespace type {
       , const transition_t & other
       )
       {
-        typedef transition_t transition_t;
-        typedef we::type::port_t port_t;
-
         boost::unordered_set<std::string> other_names;
 
         BOOST_FOREACH ( we::type::port_t const& port
@@ -340,8 +334,6 @@ namespace we { namespace type {
       , const trans_info::pid_set_type pid_read
       )
       {
-        typedef petri_net::connection_t connection_t;
-
         BOOST_FOREACH
           ( we::type::transition_t::port_map_t::value_type const& p
           , trans.ports()
@@ -354,16 +346,17 @@ namespace we { namespace type {
                 const petri_net::place_id_type pid
                   (trans.inner_to_outer().at (p.first).first);
 
-                connection_t const connection
+                petri_net::connection_t const connection
                   (net.get_connection_out (tid_trans, pid));
 
                 net.delete_edge_out (tid_trans, pid);
 
-                net.add_connection (connection_t ( connection.type()
-                                                 , tid_pred
-                                                 , connection.place_id()
-                                                 )
-                                   );
+                net.add_connection
+                  (petri_net::connection_t ( connection.type()
+                                           , tid_pred
+                                           , connection.place_id()
+                                           )
+                  );
 
                 pred.add_connection (p.second.name(), pid, p.second.property());
               }
@@ -378,16 +371,17 @@ namespace we { namespace type {
                 {
                   pred.add_port (p.second);
 
-                  connection_t const connection
+                  petri_net::connection_t const connection
                     (net.get_connection_in (tid_trans, *pid));
 
                   net.delete_edge_in (tid_trans, *pid);
 
-                  net.add_connection (connection_t ( connection.type()
-                                                   , tid_pred
-                                                   , connection.place_id()
-                                                   )
-                                     );
+                  net.add_connection
+                    (petri_net::connection_t ( connection.type()
+                                             , tid_pred
+                                             , connection.place_id()
+                                             )
+                    );
 
                   pred.add_connection
                     (*pid, p.second.name(), p.second.property())
@@ -456,12 +450,9 @@ namespace we { namespace type {
       , petri_net::net & net
       )
       {
-        typedef petri_net::net pnet_t;
-
         bool modified (false);
 
-        typedef std::stack<petri_net::transition_id_type> stack_t;
-        stack_t stack;
+        std::stack<petri_net::transition_id_type> stack;
 
         BOOST_FOREACH ( const petri_net::transition_id_type& t
                       , net.transitions() | boost::adaptors::map_keys
@@ -479,8 +470,6 @@ namespace we { namespace type {
                && trans.condition().is_const_true()
                )
               {
-                typedef trans_info::pid_set_type pid_set_type;
-
                 const boost::optional<trans_info>
                   maybe_pred (expression_predecessor (trans, tid_trans, net));
 
@@ -489,7 +478,7 @@ namespace we { namespace type {
                     transition_t pred ((*maybe_pred).pred);
                     petri_net::transition_id_type tid_pred ((*maybe_pred).tid_pred);
 
-                    pid_set_type pid_read ((*maybe_pred).pid_read);
+                    trans_info::pid_set_type pid_read ((*maybe_pred).pid_read);
 
                     rename_ports (trans, pred);
 
