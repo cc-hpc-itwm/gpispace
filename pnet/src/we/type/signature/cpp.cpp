@@ -184,13 +184,10 @@ namespace pnet
               ctor_default (s);
               ctor (s);
 
-              _os << structure::close (_indent);
-
               _os << _indent
-                  << "bool operator< ("
-                  << s.first << " const&"
-                  << ", " << s.first << " const&"
-                  << ");";
+                  << "bool operator< (" << s.first << " const&" << ") const;";
+
+              _os << structure::close (_indent);
 
               _os << ns::close (_indent);
             }
