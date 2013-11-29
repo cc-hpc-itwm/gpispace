@@ -102,6 +102,8 @@ macro(PNET_COMPILE)
     set (_make_cmd make)
     if ("${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
       set (_make_cmd "$(MAKE)")
+    else()
+      message (FATAL_ERROR "CMake Generator '${CMAKE_GENERATOR}' not supported by pnet_compile")
     endif()
 
     # the call to $(MAKE) does currently only work when the gernator is make as
