@@ -86,10 +86,8 @@ macro(PNET_COMPILE)
     set (PNET_GENERATE "${PNET_NAME}.gen")
   endif ()
 
-  if (PNET_GENERATE)
-    set (PNETC_ARGS ${PNETC_ARGS} -g ${PNET_GENERATE})
-    set (PNET_GEN_OUTPUTS ${PNET_GEN_OUTPUTS} ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
-  endif()
+  set (PNETC_ARGS ${PNETC_ARGS} -g ${PNET_GENERATE})
+  set (PNET_GEN_OUTPUTS ${PNET_GEN_OUTPUTS} ${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE})
 
   add_custom_target(pnet-${PNET_NAME}-gen
     ${PNETC_LOCATION} ${PNETC_ARGS} -o ${PNET_OUTPUT}
@@ -97,10 +95,6 @@ macro(PNET_COMPILE)
     COMMENT "Compiling petri-net ${PNET_NAME}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
-
-  if (PNET_BUILD AND NOT PNET_GENERATE)
-    message(FATAL_ERROR "** pnet_compile: cannot build pnet without generating code")
-  endif()
 
   add_custom_target (pnet-${PNET_NAME} ALL DEPENDS pnet-${PNET_NAME}-gen ${PNETC_LOCATION})
 
