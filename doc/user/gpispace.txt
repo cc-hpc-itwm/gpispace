@@ -1,5 +1,3 @@
-:Author: Mirko Rahn
-:Email: rahn@itwm.fhg.de
 :doctype: book
 :toc:
 
