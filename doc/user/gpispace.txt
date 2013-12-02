@@ -77,7 +77,7 @@ topology
 === Submit
 === Extract results
 === Workflow description language
-every workflow is a function with inputs and outputs.
+every workflow is a function with inputs and outputs, which are named ports.
 every function is either a small expression, a net (sub-workflow), or
 a c++ module call.
 typed, tokens in nets on places, consumed and produced by
