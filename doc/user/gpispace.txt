@@ -1,0 +1,322 @@
+:doctype: book
+:toc:
+
+= GPI-Space -- a system to develop and execute cluster applications
+
+== Overview
+
+GPI-Space is a system to develop and execute cluster applications. The
+main focus of GPI-Space is to separate communication and coordination.
+(see <<gelernter:1992>>)
+
+This manual is written for users that want to implement applications
+within GPI-Space.
+
+GPI-Space consists of three main components:
+
+* the distributed runtime system,
+* the workflow engine and
+* the virtual memory layer.
+
+== Installation
+
+To install GPI-Space just unpack the distribution file:
+
+[source,bash]
+----
+cd $HOME
+tar xvzf gpispace.tgz
+----
+
+and add `$HOME/gpispace/bin` to your search path:
+
+[source,bash]
+----
+export PATH=$HOME/gpispace/bin:$PATH
+----
+
+To test the installation run
+
+[source,bash]
+----
+gspc selftest
+----
+
+When GPI-Space is installed correctly the output will be something
+like
+
+----
+GPI-Space selftest started...
+test FOO: OKAY
+test BAR: OKAY
+GPI-Space selftest completed: 0 error(s)
+----
+
+== Distributed runtime system
+
+agent, orchestrator, worker, client
+übersicht über entwicklungsablauf
+
+=== Start and Stop
+
+topology
+
+=== Observe, Gantt-Viewer, (gspcmon?)
+
+=== Advanced: fhglog*
+
+=== Advanced: kvs
+
+=== Advanced: fhgcfg
+
+=== Advanced: gspc*
+
+
+== Workflows
+
+=== Small example (predefined)
+=== Submit
+=== Extract results
+=== Workflow description language
+every workflow is a function with inputs and outputs, which are named ports.
+every function is either a small expression, a net (sub-workflow), or
+a c++ module call.
+typed, tokens in nets on places, consumed and produced by
+transitions. behavior of transitions defined by functions,
+i.e. workflows again.
+
+small workflow, being a module call below:
+
+[source,xml]
+----
+<defun> <!-- <1> -->
+  <in name="in" type="string"/> <!-- <2> -->
+  <out name="out" type="string"/>
+
+  <module name="hello" function="out assemble (in)"> <!-- <3> -->
+    <cinclude href="hello_world.hpp"/> <!-- <5> -->
+    <link href="hello_world.o"/>
+    <code> <!-- <4> -->
+      <![CDATA[ return hello_world::greet (in); ]]>
+    </code>
+  </module>
+</defun>
+----
+
+<1> Top level function of the workflow.
+<2> Inputs and outputs of the function.
+<3> The function is implemented as a call to a C++ module.
+<4> C++ code can be inlined into a module.
+<5> Compilation flags for the module may be given. In this case: a
+legacy library.
+
+==== Place, Token, Transition, Port, Type
+Including legacy / external code is important, but obviously not the
+thing to do at top level of a workflow. In GPI-Space, workflows are
+based on Petri nets. Petri nets consist of places and transitions
+where transitions represent module calls / algorithms / functions.
+Places can be compared to checkpoints with intermediate results, which
+again may be inputs to other transitions. Transitions and places are
+connected by directed edges.  Data is represented by tokens which are
+stored on places and may be consumed by transitions.
+
+Transitions may only consume tokens if there is one for every
+connected input and will produce exactly one new token on each
+outwards-connected place. If there is more than one token on a
+connected place, which token is consumed will be random. Each
+transition is defined as a sub-workflow, thus contains a function as
+defined above, which may be given in-line or in an included file.
+
+In addition to the basic concepts of Petri nets, GPI-Space uses
+"colored" tokens, meaning that every token, place and port has a type
+and connections may only be made between places and ports of the same
+type. Being typed, tokens also have a value which may be read and
+modified by a transition.
+
+[source,xml]
+----
+<place name="foo" type="string"> <!-- <1> -->
+  <token><value>"World"</value></token>
+</place>
+<place name="baz" type="string"/> <!-- <2> -->
+
+<transition name="hello"> <!-- <3> -->
+  <include-function href="other_workflow.xpnet"> <!-- <4> -->
+  <connect-in port="foo" place="foo"/> <!-- <5> -->
+  <connect-out port="bar" place="baz"/>
+</transition>
+----
+
+<1> A place of type `string`, containing a token with value `"World"`.
+<2> A second, empty place.
+<3> A transition with name `hello`.
+<4> The transition includes a second workflow, defined in
+`other_workflow.xpnet`. Alternatively, the sub-workflow may be defined
+in-line.
+<5> Place `foo` is inbound-connected to the functions port `foo`. The
+output produced on port `bar` is produced onto place `baz`.
+
+==== Simple networks
+==== Expressions
+The third type of a function besides module calls and sub-nets are
+expressions. Expressions are a light-weight alternative to module
+calls if you need to modify token values or create new tokens based on
+your input only, without having any side effects. The expression
+language is small, but powerful and a lot faster than calling native
+code.
+[source,xml]
+----
+<defun name="get_top_of_stack">
+  <inout name="stack" type="Stack : long"/>
+  <out name="value" type="long"/>
+  <expression>
+    ${value} := stack_top (${stack});
+    ${stack} := stack_pop (${stack});
+  </expression>
+</defun>
+----
+NOTE: All functions provided do not modify the given variable but return a modified copy!
+
+
+[source,xml]
+----
+<defun name="get_top_of_stack">
+  <inout name="stack" type="Stack : long"/>
+  <out name="value" type="long"/>
+  <module name="stack_mod" function="value top_and_pop (stack)">
+    <code><![CDATA[
+      long value const (stack.top());
+      stack.pop();
+      return value;
+    ]]></code>
+  </module>
+</defun>
+----
+
+==== Conditions
+
+Use conditions to make the activation of a transition depend on the
+input token(s). Conditions are boolean expressions that are evaluated until an
+activating combination of input tokens is found, that is a combination
+that evaluates to `true`.
+
+For example, the transition `collatz_even`
+
+[source,xml]
+----
+<transition name="collatz_even">
+  <defun>
+    <in name="a" type="unsigned long"/>
+    <out name="f" type="unsigned long"/>
+    <expression>
+      ${f} := ${a} div 2UL
+    </expression>
+    <condition>
+      ${a} mod 2UL :eq: 0UL
+    </condition>
+  </defun>
+  <connect-in port="a" place="a"/>
+  <connect-out port="f" place="f"/>
+</transition>
+----
+
+is activated only for even values on place `a`.
+
+NOTE: Let 'T' be a transition with input places 'p~1~,...,p~n~' and
+let 'k~i~' be the number of tokens on the place 'p~i~'. Let 'c' be the
+condition attached to 'T'. Then 'c' gets evaluated at most
+'k~1~ · k~2~ ·...· k~n~' times, that is the product of the number of
+tokens on each input place.
+
+Conditions can be attached either to transitions or to functions. The
+code above is equivalent to
+
+[source,xml]
+----
+<defun name="half">
+  <in name="a" type="unsigned long"/>
+  <out name="f" type="unsigned long"/>
+  <expression>
+    ${f} := ${a} div 2UL
+  </expression>
+</defun>
+
+<transition name="collatz_even">
+  <use name="half"/>
+  <condition>
+    ${a} mod 2UL :eq: 0UL
+  </condition>
+  <connect-in port="a" place="a"/>
+  <connect-out port="f" place="f"/>
+</transition>
+----
+
+==== Hierarchies
+==== External modules
+==== Advanced: Virtual Places
+==== Advanced: Templates
+==== Advanced: Make
+==== Advanced: Verify (pnetv)
+
+=== Compile, pnetc
+==== Wrapper
+
+=== Display, pnet2dot
+=== Big example (superbinning)
+=== Library
+=== Editor
+=== Advanced: Execute (we-exec)
+=== Advanced: Debugging
+
+== Virtual memory
+=== Start and Stop
+=== Interface
+=== Example
+=== Advanced: gpish
+
+== Reference
+
+Detailed, technical reference of different formats used in gspc.
+
+=== Petri-net Structure
+
+equals xsd | pnet/src/xml/parse/parser.cpp,
+[source,python]
+-----
+include::../intern/xml_internal_structure.dot[]
+-----
+
+=== Expression Language Syntax
+
+grammar, available types, functions, associativity, equals pnet/src/we/expr/, pnet/src/we/type/
+
+=== gspcmon Protocol
+
+grammar, line based, messages. equals editor/src/pnete/ui/gspc_monitor_client.cpp
+
+== Literature and links
+
+[bibliography]
+.Articles
+- [[[gelernter:1992]]] D. Gelernter, N. Carriero: 'Coordination
+languages and their significance.'  Commun. ACM 35(2), 1992.
+
+== Glossary
+
+DRTS:: Distributed runtime system.
+
+Place:: In a Petri net: Placeholder for meta data, drawn as a
+  circle. Each place has a type and cannot contain token of another
+  type.
+
+Token:: In a Petri net: The representation of meta data, typically
+  drawn as a small circle. The meta data has a type.
+
+Transition:: In a Petri net: Placeholder for an action, drawn as a
+   rectangle. If all input places contain at least one token, then the
+   transition is 'enabled' and can 'fire'. A transition that fires
+   consumes one token from each input place and produces one token on
+   each output place.
+
+Petri net:: A bipartite directed graph. The members of the two node
+  sets are called places and transitions.

@@ -68,7 +68,7 @@ void CoallocationScheduler::assignJobsToWorkers()
             sdpa::worker_id_list_t list_invalid_workers = checkReservationIsValid(*pReservation);
             if(list_invalid_workers.empty())
             {
-              LOG(INFO, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<list_reserved_workers);
+              DMLOG(DEBUG, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<list_reserved_workers);
               // serve the same job to all reserved workers!!!!
 
               ptr_comm_handler_->serveJob(list_reserved_workers, jobId);
@@ -172,7 +172,7 @@ void CoallocationScheduler::releaseReservation(const sdpa::job_id_t& jobId)
         }
         catch (WorkerNotFoundException const& ex)
         {
-          LOG(WARN, "The worker "<<workerId<<" was not found, it was already released!");
+          DLOG(WARN, "The worker "<<workerId<<" was not found, it was already released!");
         }
       }
 
@@ -182,7 +182,7 @@ void CoallocationScheduler::releaseReservation(const sdpa::job_id_t& jobId)
   }
   catch(JobNotFoundException const& ex2)
   {
-      LOG(WARN, "The job "<<jobId<<" was not found!");
+      DLOG(WARN, "The job "<<jobId<<" was not found!");
   }
 }
 
@@ -229,7 +229,7 @@ void CoallocationScheduler::checkAllocations()
       worker_cnt_map[wid]++;
       if(worker_cnt_map[wid]>1)
         {
-          LOG(FATAL, "Error! The worker "<<wid<<" was allocated to two different jobs!");
+          DLOG(FATAL, "Error! The worker "<<wid<<" was allocated to two different jobs!");
           throw;
         }
     }
@@ -240,7 +240,7 @@ void CoallocationScheduler::checkAllocations()
   {
     oss<<worker_id<<":"<<worker_cnt_map[worker_id]<<" ";
   }
-  LOG(INFO, oss.str());
+  DLOG(TRACE, oss.str());
 }
 
 sdpa::worker_id_list_t CoallocationScheduler::getListAllocatedWorkers(const sdpa::job_id_t& jobId)

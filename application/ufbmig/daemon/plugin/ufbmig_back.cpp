@@ -353,17 +353,22 @@ public:
       int rc = 0;
 
       rc += sdpa_ctl->start ("gpi")  ? 1 : 0;
+      MLOG(DEBUG, "start(gpi) = " << rc);
       update_progress (20);
 
       rc += sdpa_ctl->start ("orch") ? 2 : 0;
+      MLOG(DEBUG, "start(orch) = " << rc);
       update_progress (40);
 
       rc += sdpa_ctl->start ("agg")  ? 4 : 0;
+      MLOG(DEBUG, "start(agg) = " << rc);
       update_progress (60);
 
       rc += sdpa_ctl->start ("drts") ? 8 : 0;
+      MLOG(DEBUG, "start(drts) = " << rc);
       update_progress (80);
 
+      /*
       if (rc != 0)
       {
         MLOG (WARN, "start of SDPA failed: " << rc);
@@ -375,6 +380,7 @@ public:
         MLOG (ERROR, "gpi failed to start, giving up");
         return fhg::error::GPI_UNAVAILABLE;
       }
+      */
     }
 
     const std::string wf (read_workflow_from_file(m_wf_path_prepare));
@@ -994,27 +1000,27 @@ private:
     MLOG (INFO, "checking worker status...");
     int ec = 0;
     ec += sdpa_ctl->status ("orch");
+    MLOG (DEBUG, "status(orch) = " << ec);
     ec += sdpa_ctl->status ("agg");
+    MLOG (DEBUG, "status(agg) = " << ec);
     ec += sdpa_ctl->status ("drts");
+    MLOG (DEBUG, "status(drts) = " << ec);
     ec += sdpa_ctl->status ("gpi");
+    MLOG (DEBUG, "status(gpi) = " << ec);
 
     if (0 != ec)
     {
-      MLOG (ERROR, "worker check failed: " << ec);
+      MLOG (WARN, "worker check failed: " << ec);
       if (m_frontend)
-        m_frontend->send_logoutput ("worker check failed, terminating...");
+        m_frontend->send_logoutput ("worker check failed...");
+    }
 
-      sdpa_ctl->stop();
-    }
-    else
-    {
-      fhg_kernel()->schedule ( "check_worker"
-                             , boost::bind( &UfBMigBackImpl::check_worker
-                                          , this
-                                          )
-                             , m_check_interval
-                             );
-    }
+    fhg_kernel()->schedule ( "check_worker"
+                           , boost::bind( &UfBMigBackImpl::check_worker
+                                        , this
+                                        )
+                           , m_check_interval
+                           );
   }
 
   void update_job_states ()

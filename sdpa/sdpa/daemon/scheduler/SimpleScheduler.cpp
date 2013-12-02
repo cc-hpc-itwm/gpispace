@@ -38,7 +38,7 @@ void SimpleScheduler::assignJobsToWorkers()
 
     if( !matchingWorkerId.empty() )
     { // matching found
-        LOG(INFO, "Serve the job "<<jobId<<" to the worker "<<matchingWorkerId);
+        DMLOG(TRACE, "Serve the job "<<jobId<<" to the worker "<<matchingWorkerId);
 
         try {
            Worker::ptr_t pWorker(findWorker(matchingWorkerId));
