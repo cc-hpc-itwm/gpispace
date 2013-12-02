@@ -74,9 +74,9 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
-      DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus()<<". Change its status to \"SDPA::Finished\"!");
+      DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<sdpa::status::show(pJob->getStatus())<<". Change its status to \"SDPA::Finished\"!");
       pJob->JobFinished(pEvt);
-      DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
+      DMLOG (TRACE, "The current state of the job "<<pEvt->job_id()<<" is: "<<sdpa::status::show(pJob->getStatus()));
   }
   else
   {
