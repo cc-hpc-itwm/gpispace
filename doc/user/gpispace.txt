@@ -99,6 +99,7 @@ topology
 === Submit
 === Extract results
 === Workflow description language
+
 every workflow is a function with inputs and outputs, which are named ports.
 every function is either a small expression, a net (sub-workflow), or
 a c++ module call.
@@ -132,6 +133,7 @@ small workflow, being a module call below:
 legacy library.
 
 ==== Place, Token, Transition, Port, Type
+
 Including legacy / external code is important, but obviously not the
 thing to do at top level of a workflow. In GPI-Space, workflows are
 based on Petri nets. Petri nets consist of places and transitions
@@ -179,6 +181,7 @@ output produced on port `bar` is produced onto place `baz`.
 
 ==== Simple networks
 ==== Expressions
+
 The third type of a function besides module calls and sub-nets are
 expressions. Expressions are a light-weight alternative to module
 calls if you need to modify token values or create new tokens based on
@@ -312,6 +315,7 @@ include::../intern/xml_internal_structure.dot[]
 
 === Expression Language Syntax
 [[section:reference_expression]]
+
 grammar, available types, functions, associativity, equals pnet/src/we/expr/, pnet/src/we/type/
 
 === gspcmon Protocol
