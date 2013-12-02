@@ -93,9 +93,10 @@ small workflow, being a module call below:
   <out name="out" type="string"/>
 
   <module name="hello" function="out assemble (in)"> <!-- <3> -->
-    <cinclude href="string"/> <!-- <5> -->
+    <cinclude href="hello_world.hpp"/> <!-- <5> -->
+    <link href="hello_world.o"/>
     <code> <!-- <4> -->
-      <![CDATA[ return std::string ("Hello ") + in; ]]>
+      <![CDATA[ return hello_world::greet (in); ]]>
     </code>
   </module>
 </defun>
@@ -105,7 +106,8 @@ small workflow, being a module call below:
 <2> Inputs and outputs of the function.
 <3> The function is implemented as a call to a C++ module.
 <4> C++ code can be inlined into a module.
-<5> Compilation flags for the module may be given.
+<5> Compilation flags for the module may be given. In this case: a
+legacy library.
 
 ==== Place, Token, Transition, Port, Type
 ==== Simple networks
