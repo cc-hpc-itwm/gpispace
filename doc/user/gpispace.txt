@@ -1,5 +1,6 @@
 :doctype: book
 :toc:
+:imagesdir: {indir}/images
 
 = GPI-Space -- a system to develop and execute cluster applications
 
@@ -55,7 +56,27 @@ GPI-Space selftest completed: 0 error(s)
 == Distributed runtime system
 
 agent, orchestrator, worker, client
-übersicht über entwicklungsablauf
+
+image:gpi_space_workflow_notext.png[Schematic overview of development
+and execution of GPI-Space workflows]
+
+[source,tex]
+----
+\put(23,23){Editor}
+\put(60,270){\acs{XML}}
+\put(260,270){pnetc}
+\put(320,395){gen}
+\put(320,493){c++}
+\put(275,605){modules}
+\put(523,633){\ac{DRTS}}
+\put(505,435){sdpa submit}
+\put(472,270){pnet}
+\put(644,270){pnet}
+\put(450,50){pnetput}
+\put(620,50){pnetget}
+\put(833,633){\acs{GUI}}
+\put(800,580){Monitoring}
+----
 
 === Start and Stop
 
