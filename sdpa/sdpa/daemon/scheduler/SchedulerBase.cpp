@@ -251,7 +251,7 @@ void SchedulerBase::feedWorkers()
 
     if (ptr_comm_handler_->hasJobs())
     {
-      assignJobsToWorkers();
+        assignJobsToWorkers();
     }
   }
 }
@@ -347,7 +347,14 @@ void SchedulerBase::getWorkerList(sdpa::worker_id_list_t& workerList)
 
 bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
-  return _worker_manager.addCapabilities(worker_id, cpbset);
+  lock_type lock(mtx_);
+  if(_worker_manager.addCapabilities(worker_id, cpbset))
+  {
+    cond_feed_workers.notify_one();
+    return true;
+  }
+  else
+    return false;
 }
 
 void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
