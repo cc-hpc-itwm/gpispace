@@ -174,8 +174,6 @@ code above is equivalent to
 ==== External modules
 ==== Advanced: Virtual Places
 ==== Advanced: Templates
-==== Advanced: Complete XML language description
-==== Advanced: Complete expression language description
 ==== Advanced: Make
 ==== Advanced: Verify (pnetv)
 
