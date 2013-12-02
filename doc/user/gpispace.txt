@@ -164,6 +164,8 @@ calls if you need to modify token values or create new tokens based on
 your input only, without having any side effects. The expression
 language is small, but powerful and a lot faster than calling native
 code.
+
+The expression
 [source,xml]
 ----
 <defun name="get_top_of_stack">
@@ -175,9 +177,7 @@ code.
   </expression>
 </defun>
 ----
-NOTE: All functions provided do not modify the given variable but return a modified copy!
-
-
+is equivalent to the following module call.
 [source,xml]
 ----
 <defun name="get_top_of_stack">
@@ -192,6 +192,12 @@ NOTE: All functions provided do not modify the given variable but return a modif
   </module>
 </defun>
 ----
+
+For a full reference of language syntax as well as available
+functions, see <<section:reference_expression>>.
+
+NOTE: All functions provided do not modify the given variable but
+return a modified copy!
 
 ==== Conditions
 
@@ -287,7 +293,7 @@ include::../intern/xml_internal_structure.dot[]
 -----
 
 === Expression Language Syntax
-
+[[section:reference_expression]]
 grammar, available types, functions, associativity, equals pnet/src/we/expr/, pnet/src/we/type/
 
 === gspcmon Protocol
