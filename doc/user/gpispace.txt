@@ -218,7 +218,8 @@ return a modified copy!
 
 ==== Conditions
 
-Use conditions to make the activation of a transition depend on the
+To further control, if a transition is activated, use conditions to
+let activation of a transition depend on the value of the
 input token(s). Conditions are boolean expressions that are evaluated until an
 activating combination of input tokens is found, that is a combination
 that evaluates to `true`.
