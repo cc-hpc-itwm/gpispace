@@ -186,11 +186,11 @@ your input only, without having any side effects. The expression
 language is small, but powerful and a lot faster than calling native
 code.
 
-The expression
+The expression in
 [source,xml]
 ----
 <defun name="get_top_of_stack">
-  <inout name="stack" type="Stack : long"/>
+  <inout name="stack" type="Stack : long"/> <!-- stack of longs -->
   <out name="value" type="long"/>
   <expression>
     ${value} := stack_top (${stack});
@@ -198,20 +198,16 @@ The expression
   </expression>
 </defun>
 ----
-is equivalent to the following module call.
+is equivalent to the module call
 [source,xml]
 ----
-<defun name="get_top_of_stack">
-  <inout name="stack" type="Stack : long"/>
-  <out name="value" type="long"/>
-  <module name="stack_mod" function="value top_and_pop (stack)">
-    <code><![CDATA[
-      long value const (stack.top());
-      stack.pop();
-      return value;
-    ]]></code>
-  </module>
-</defun>
+<module name="stack_mod" function="value top_and_pop (stack)">
+  <code><![CDATA[
+    long value const (stack.top());
+    stack.pop();
+    return value;
+  ]]></code>
+</module>
 ----
 
 For a full reference of language syntax as well as available
