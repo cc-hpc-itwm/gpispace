@@ -116,7 +116,7 @@ legacy library.
 
 Use conditions to make the activation of a transition depend on the
 input token(s). Conditions are boolean expressions that are evaluated until an
-avtivating combination of input tokens is found, that is a combination
+activating combination of input tokens is found, that is a combination
 that evaluates to `true`.
 
 For example, the transition `collatz_even`
