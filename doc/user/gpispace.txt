@@ -111,8 +111,88 @@ small workflow, being a module call below:
 legacy library.
 
 ==== Place, Token, Transition, Port, Type
+Including legacy / external code is important, but obviously not the
+thing to do at top level of a workflow. In GPI-Space, workflows are
+based on Petri nets. Petri nets consist of places and transitions
+where transitions represent module calls / algorithms / functions.
+Places can be compared to checkpoints with intermediate results, which
+again may be inputs to other transitions. Transitions and places are
+connected by directed edges.  Data is represented by tokens which are
+stored on places and may be consumed by transitions.
+
+Transitions may only consume tokens if there is one for every
+connected input and will produce exactly one new token on each
+outwards-connected place. If there is more than one token on a
+connected place, which token is consumed will be random. Each
+transition is defined as a sub-workflow, thus contains a function as
+defined above, which may be given in-line or in an included file.
+
+In addition to the basic concepts of Petri nets, GPI-Space uses
+"colored" tokens, meaning that every token, place and port has a type
+and connections may only be made between places and ports of the same
+type. Being typed, tokens also have a value which may be read and
+modified by a transition.
+
+[source,xml]
+----
+<place name="foo" type="string"> <!-- <1> -->
+  <token><value>"World"</value></token>
+</place>
+<place name="baz" type="string"/> <!-- <2> -->
+
+<transition name="hello"> <!-- <3> -->
+  <include-function href="other_workflow.xpnet"> <!-- <4> -->
+  <connect-in port="foo" place="foo"/> <!-- <5> -->
+  <connect-out port="bar" place="baz"/>
+</transition>
+----
+
+<1> A place of type `string`, containing a token with value `"World"`.
+<2> A second, empty place.
+<3> A transition with name `hello`.
+<4> The transition includes a second workflow, defined in
+`other_workflow.xpnet`. Alternatively, the sub-workflow may be defined
+in-line.
+<5> Place `foo` is inbound-connected to the functions port `foo`. The
+output produced on port `bar` is produced onto place `baz`.
+
 ==== Simple networks
 ==== Expressions
+The third type of a function besides module calls and sub-nets are
+expressions. Expressions are a light-weight alternative to module
+calls if you need to modify token values or create new tokens based on
+your input only, without having any side effects. The expression
+language is small, but powerful and a lot faster than calling native
+code.
+[source,xml]
+----
+<defun name="get_top_of_stack">
+  <inout name="stack" type="Stack : long"/>
+  <out name="value" type="long"/>
+  <expression>
+    ${value} := stack_top (${stack});
+    ${stack} := stack_pop (${stack});
+  </expression>
+</defun>
+----
+NOTE: All functions provided do not modify the given variable but return a modified copy!
+
+
+[source,xml]
+----
+<defun name="get_top_of_stack">
+  <inout name="stack" type="Stack : long"/>
+  <out name="value" type="long"/>
+  <module name="stack_mod" function="value top_and_pop (stack)">
+    <code><![CDATA[
+      long value const (stack.top());
+      stack.pop();
+      return value;
+    ]]></code>
+  </module>
+</defun>
+----
+
 ==== Conditions
 
 Use conditions to make the activation of a transition depend on the
