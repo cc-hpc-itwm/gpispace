@@ -10,6 +10,7 @@
 
 #include <fhg/util/indenter.hpp>
 #include <fhg/util/join.hpp>
+#include <fhg/util/first_then.hpp>
 #include <fhg/util/cpp/block.hpp>
 #include <fhg/util/cpp/namespace.hpp>
 #include <fhg/util/cpp/struct.hpp>
@@ -161,6 +162,61 @@ namespace pnet
 
           typedef printer_for_field<impl_ctor_default, bool&> print_ctor_default;
 
+          class impl_operator_less
+          {
+          public:
+            void operator() ( std::ostream& os
+                            , fhg::util::indenter& indent
+                            , const std::string& name
+                            , const std::string& type
+                            , std::set<std::string>& prefix
+                            ) const
+            {
+              os << fhg::util::deeper (indent)
+                 << (prefix.empty() ? "  " : "||")
+                 << " (";
+
+              fhg::util::first_then<std::string> _and ("", " && ");
+
+              BOOST_FOREACH (std::string const& p, prefix)
+              {
+                os << _and << "(this->" << p << " == rhs." << p << ")";
+              }
+
+              os << _and << "(this->" << name << " < rhs." << name << ")";
+
+              os << ")";
+
+              prefix.insert (name);
+            }
+          };
+
+          typedef printer_for_field< impl_operator_less
+                                   , std::set<std::string>&
+                                   > print_field_operator_less;
+
+          class impl_operator_eq
+          {
+          public:
+            void operator() ( std::ostream& os
+                            , fhg::util::indenter& indent
+                            , const std::string& name
+                            , const std::string& type
+                            , bool& first
+                            ) const
+            {
+              os << fhg::util::deeper (indent)
+                 << (first ? "   " : "&& ")
+                 << "(this->" << name << " == rhs." << name << ")";
+
+              first = false;
+            }
+          };
+
+          typedef printer_for_field< impl_operator_eq
+                                   , bool&
+                                   > print_field_operator_eq;
+
           class print_header : public printer
           {
           public:
@@ -183,6 +239,8 @@ namespace pnet
 
               ctor_default (s);
               ctor (s);
+              operator_eq (s);
+              operator_less (s);
 
               _os << structure::close (_indent);
 
@@ -197,6 +255,38 @@ namespace pnet
             }
 
           private:
+            void operator_less
+              (const std::pair<std::string, structure_type>& s) const
+            {
+              std::set<std::string> prefix;
+
+              _os << _indent << "bool operator< ("
+                  << s.first << " const& rhs) const"
+                  << fhg::util::cpp::block::open (_indent)
+                  << _indent << "return";
+
+              traverse (print_field_operator_less (_os, _indent, prefix), s);
+
+              _os << fhg::util::deeper (_indent) << ";"
+                  << fhg::util::cpp::block::close (_indent);
+            }
+
+            void operator_eq
+              (const std::pair<std::string, structure_type>& s) const
+            {
+              bool first (true);
+
+              _os << _indent << "bool operator== ("
+                  << s.first << " const& rhs) const"
+                  << fhg::util::cpp::block::open (_indent)
+                  << _indent << "return";
+
+              traverse (print_field_operator_eq (_os, _indent, first), s);
+
+              _os << fhg::util::deeper (_indent) << ";"
+                  << fhg::util::cpp::block::close (_indent);
+            }
+
             void ctor_default
               (const std::pair<std::string, structure_type>& s) const
             {
