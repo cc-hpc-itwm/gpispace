@@ -19,6 +19,7 @@
 #include <boost/foreach.hpp>
 
 #include <set>
+#include <list>
 #include <iostream>
 #include <sstream>
 
@@ -169,7 +170,7 @@ namespace pnet
                             , fhg::util::indenter& indent
                             , const std::string& name
                             , const std::string& type
-                            , std::set<std::string>& prefix
+                            , std::list<std::string>& prefix
                             ) const
             {
               os << fhg::util::deeper (indent)
@@ -187,12 +188,12 @@ namespace pnet
 
               os << ")";
 
-              prefix.insert (name);
+              prefix.push_back (name);
             }
           };
 
           typedef printer_for_field< impl_operator_less
-                                   , std::set<std::string>&
+                                   , std::list<std::string>&
                                    > print_field_operator_less;
 
           class impl_operator_eq
@@ -258,7 +259,7 @@ namespace pnet
             void operator_less
               (const std::pair<std::string, structure_type>& s) const
             {
-              std::set<std::string> prefix;
+              std::list<std::string> prefix;
 
               _os << _indent << "bool operator< ("
                   << s.first << " const& rhs) const"
