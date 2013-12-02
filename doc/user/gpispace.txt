@@ -55,6 +55,7 @@ GPI-Space selftest completed: 0 error(s)
 == Distributed runtime system
 
 agent, orchestrator, worker, client
+übersicht über entwicklungsablauf
 
 === Start and Stop
 
