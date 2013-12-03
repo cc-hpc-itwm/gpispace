@@ -307,11 +307,10 @@ Detailed, technical reference of different formats used in gspc.
 === Petri-net Structure
 
 equals xsd | pnet/src/xml/parse/parser.cpp,
-[source,python]
------
+[graphviz]
+----
 include::../intern/xml_internal_structure.dot[]
------
-
+----
 === Expression Language Syntax
 [[section:reference_expression]]
 
