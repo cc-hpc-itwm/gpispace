@@ -921,7 +921,7 @@ private:
                         )
         );
 
-      notify_capability_gained (m_capabilities[cap].first);
+      notify_capability_gained (m_virtual_capabilities[cap].first);
     }
   }
 
