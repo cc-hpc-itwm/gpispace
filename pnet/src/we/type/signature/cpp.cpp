@@ -173,20 +173,15 @@ namespace pnet
                             , std::list<std::string>& prefix
                             ) const
             {
-              os << fhg::util::deeper (indent)
-                 << (prefix.empty() ? "  " : "||")
-                 << " (";
-
-              fhg::util::first_then<std::string> _and ("", " && ");
-
-              BOOST_FOREACH (std::string const& p, prefix)
+              if (not prefix.empty())
               {
-                os << _and << "(this->" << p << " == rhs." << p << ")";
+                os << " || ("
+                   << "(this->" << prefix.back() << " == rhs." << prefix.back() << ")"
+                   << " && ("
+                  ;
               }
 
-              os << _and << "(this->" << name << " < rhs." << name << ")";
-
-              os << ")";
+              os << "(this->" << name << " < rhs." << name << ")";
 
               prefix.push_back (name);
             }
@@ -264,11 +259,16 @@ namespace pnet
               _os << _indent << "bool operator< ("
                   << s.first << " const& rhs) const"
                   << fhg::util::cpp::block::open (_indent)
-                  << _indent << "return";
+                  << _indent << "return ";
 
               traverse (print_field_operator_less (_os, _indent, prefix), s);
 
-              _os << fhg::util::deeper (_indent) << ";"
+              if (not prefix.empty())
+              {
+                _os << std::string (2 * (prefix.size() - 1), ')');
+              }
+
+              _os << ";"
                   << fhg::util::cpp::block::close (_indent);
             }
 
