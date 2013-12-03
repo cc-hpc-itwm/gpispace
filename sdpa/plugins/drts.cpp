@@ -375,21 +375,7 @@ public:
       MLOG(INFO, "lost capability: " << plugin);
       MLOG(WARN, "TODO: make sure none of jobs make use of this capability");
 
-      for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
-          ; master_it != m_masters.end()
-          ; ++master_it
-          )
-      {
-        if (not master_it->second->is_connected())
-          continue;
-
-        send_event
-          (new sdpa::events::CapabilitiesLostEvent( m_my_name
-                                                  , master_it->first
-                                                  , cap->second.first
-                                                  )
-          );
-      }
+      notify_capability_lost (cap->second.first);
 
       m_capabilities.erase(cap);
     }
@@ -935,20 +921,7 @@ private:
                         )
         );
 
-      for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
-          ; master_it != m_masters.end()
-          ; ++master_it
-          )
-      {
-        if (not master_it->second->is_connected())
-          continue;
-
-        send_event
-          (new sdpa::events::CapabilitiesGainedEvent( m_my_name
-                                                    , master_it->first
-                                                    , m_capabilities[cap].first
-                                                    ));
-      }
+      notify_capability_gained (m_capabilities[cap].first);
     }
   }
 
@@ -960,21 +933,7 @@ private:
     cap_it_t cap_it = m_virtual_capabilities.find (cap);
     if (cap_it != m_virtual_capabilities.end ())
     {
-      for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
-          ; master_it != m_masters.end()
-          ; ++master_it
-          )
-      {
-        if (not master_it->second->is_connected())
-          continue;
-
-        send_event
-          (new sdpa::events::CapabilitiesLostEvent( m_my_name
-                                                  , master_it->first
-                                                  , cap_it->second.first
-                                                  )
-          );
-      }
+      notify_capability_lost (cap_it->second.first);
 
       delete cap_it->second.second;
       m_virtual_capabilities.erase (cap);
@@ -1083,6 +1042,43 @@ private:
                                                           , caps
                                                           )
                 );
+    }
+  }
+
+  void notify_capability_gained (sdpa::Capability const &cap)
+  {
+    for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
+        ; master_it != m_masters.end()
+        ; ++master_it
+        )
+    {
+      if (not master_it->second->is_connected())
+        continue;
+
+      send_event
+        (new sdpa::events::CapabilitiesGainedEvent( m_my_name
+                                                  , master_it->first
+                                                  , cap
+                                                  ));
+    }
+  }
+
+  void notify_capability_lost (sdpa::Capability const &cap)
+  {
+    for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
+        ; master_it != m_masters.end()
+        ; ++master_it
+        )
+    {
+      if (not master_it->second->is_connected())
+        continue;
+
+      send_event
+        (new sdpa::events::CapabilitiesLostEvent( m_my_name
+                                                , master_it->first
+                                                , cap
+                                                )
+        );
     }
   }
 
