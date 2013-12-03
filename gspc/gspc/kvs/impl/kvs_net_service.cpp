@@ -177,7 +177,7 @@ namespace gspc
           , "empty body"
           );
 
-      int ttl = fhg::util::read<int>
+      int ttl = fhg::util::read_int
         (fhg::util::parse::require::plain_string (pos, ' '));
 
       api_t::key_type key =
@@ -198,7 +198,7 @@ namespace gspc
           , "empty body"
           );
 
-      const int ttl = fhg::util::read<int>
+      const int ttl = fhg::util::read_int
         (fhg::util::parse::require::plain_string (pos, ' '));
 
       const std::string regex =
@@ -232,7 +232,7 @@ namespace gspc
           , "empty body"
           );
 
-      int events = fhg::util::read<int>
+      int events = fhg::util::read_int
         (fhg::util::parse::require::plain_string (pos, ' '));
 
       api_t::key_type key =
@@ -283,7 +283,7 @@ namespace gspc
           , "empty body"
           );
 
-      int val = fhg::util::read<int>
+      int val = fhg::util::read_int
         (fhg::util::parse::require::plain_string (pos, ' '));
 
       api_t::key_type key =
@@ -304,7 +304,7 @@ namespace gspc
           , "empty body"
           );
 
-      int delta = fhg::util::read<int>
+      int delta = fhg::util::read_int
         (fhg::util::parse::require::plain_string (pos, ' '));
 
       api_t::key_type key =

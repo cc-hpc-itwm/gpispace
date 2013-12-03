@@ -118,7 +118,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      return fhg::util::read<int> (rply);
+      return fhg::util::read_int (rply);
     }
 
     int kvs_net_frontend_t::do_get (key_type const &key, value_type &val) const
@@ -131,7 +131,7 @@ namespace gspc
 
       fhg::util::parse::position_string pos (rply);
 
-      rc = fhg::util::read<int>
+      rc = fhg::util::read_int
         (fhg::util::parse::require::plain_string (pos, '\n'));
 
       if (0 == rc)
@@ -155,7 +155,7 @@ namespace gspc
         return rc;
 
       fhg::util::parse::position_string pos (rply);
-      rc = fhg::util::read<int>
+      rc = fhg::util::read_int
         (fhg::util::parse::require::plain_string (pos, '\n'));
 
       if (rc != 0)
@@ -189,7 +189,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      rc = fhg::util::read<int> (rply);
+      rc = fhg::util::read_int (rply);
       return rc;
     }
 
@@ -203,7 +203,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      rc = fhg::util::read<int> (rply);
+      rc = fhg::util::read_int (rply);
       return rc;
     }
 
@@ -220,7 +220,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      rc = fhg::util::read<int> (rply);
+      rc = fhg::util::read_int (rply);
       return rc;
     }
 
@@ -237,7 +237,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      rc = fhg::util::read<int> (rply);
+      rc = fhg::util::read_int (rply);
       return rc;
     }
 
@@ -251,7 +251,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      return fhg::util::read<int> (rply);
+      return fhg::util::read_int (rply);
     }
 
     int kvs_net_frontend_t::do_try_pop (key_type const &key, value_type &val)
@@ -264,7 +264,7 @@ namespace gspc
 
       fhg::util::parse::position_string pos (rply);
 
-      rc = fhg::util::read<int>
+      rc = fhg::util::read_int
         (fhg::util::parse::require::plain_string (pos, '\n'));
 
       if (0 == rc)
@@ -286,7 +286,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      return fhg::util::read<int> (rply);
+      return fhg::util::read_int (rply);
     }
 
     int kvs_net_frontend_t::do_counter_change (key_type const &key, int &val, int delta)
@@ -331,7 +331,7 @@ namespace gspc
 
       fhg::util::parse::position_string pos (rply);
 
-      rc = fhg::util::read<int>
+      rc = fhg::util::read_int
         (fhg::util::parse::require::plain_string (pos, '\n'));
 
       return rc;

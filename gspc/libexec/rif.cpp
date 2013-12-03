@@ -170,7 +170,7 @@ public:
           {
             try
             {
-              child.timeout = fhg::util::read<int> (mode);
+              child.timeout = fhg::util::read_int (mode);
               child.shutdown_mode = gspc::rif::child_descriptor_t::SHUTDOWN_WITH_TIMEOUT;
             }
             catch (std::exception const &)
