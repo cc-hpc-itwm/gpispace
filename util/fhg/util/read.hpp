@@ -29,14 +29,6 @@ namespace fhg
       return x;
     }
 
-    template<>
-    inline std::string read ( const std::string & s
-                            , std::ios_base::fmtflags flgs
-                            )
-    {
-      return s;
-    }
-
     template <typename T>
     struct reader
     {
