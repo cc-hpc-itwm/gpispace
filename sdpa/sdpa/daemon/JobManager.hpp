@@ -48,6 +48,7 @@ namespace sdpa
       void resubmitResults (GenericDaemon*) const;
 
       bool noChildJobStalled(const sdpa::job_id_t& jobId) const;
+      bool noChildJobRunning(const sdpa::job_id_t& jobId) const;
 
   protected:
       mutable mutex_type _job_map_and_requirements_mutex;
