@@ -3,6 +3,9 @@
 #ifndef _FHG_UTIL_READ_HPP
 #define _FHG_UTIL_READ_HPP 1
 
+#include <fhg/util/num.hpp>
+#include <fhg/util/parse/position.hpp>
+
 #include <sstream>
 #include <stdexcept>
 #include <ios>
@@ -24,6 +27,13 @@ namespace fhg
           ("fhg::util::read (" + showed + "): could not be read as " + typeid(T).name ());
       }
       return x;
+    }
+
+    inline int read_int (const std::string& showed)
+    {
+      parse::position_string pos (showed);
+
+      return read_int (pos);
     }
   }
 }
