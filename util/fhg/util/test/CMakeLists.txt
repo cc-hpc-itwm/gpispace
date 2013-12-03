@@ -1,5 +1,9 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
+fhg_add_test (alphanum.cpp
+  LINK_LIBRARIES fhg-util
+)
+
 fhg_add_test (test_xml_stream.cpp
   LINK_LIBRARIES fhg-util
   DESCRIPTION "Tests the xml stream implementation"
