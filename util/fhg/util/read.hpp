@@ -15,20 +15,6 @@ namespace fhg
 {
   namespace util
   {
-    template<typename T>
-    inline T read (const std::string & showed)
-    {
-      T x;
-      std::istringstream i (showed);
-      i >> x;
-      if (i.fail ())
-      {
-        throw std::invalid_argument
-          ("fhg::util::read (" + showed + "): could not be read as " + typeid(T).name ());
-      }
-      return x;
-    }
-
     inline int read_int (const std::string& showed)
     {
       parse::position_string pos (showed);
