@@ -131,8 +131,8 @@ namespace gspc
 
       fhg::util::parse::position_string pos (rply);
 
-      rc = fhg::util::read_int
-        (fhg::util::parse::require::plain_string (pos, '\n'));
+      rc = fhg::util::read_int (pos);
+      fhg::util::parse::require::require (pos, '\n');
 
       if (0 == rc)
       {
@@ -155,8 +155,8 @@ namespace gspc
         return rc;
 
       fhg::util::parse::position_string pos (rply);
-      rc = fhg::util::read_int
-        (fhg::util::parse::require::plain_string (pos, '\n'));
+      rc = fhg::util::read_int (pos);
+      fhg::util::parse::require::require (pos, '\n');
 
       if (rc != 0)
         return rc;
@@ -264,8 +264,8 @@ namespace gspc
 
       fhg::util::parse::position_string pos (rply);
 
-      rc = fhg::util::read_int
-        (fhg::util::parse::require::plain_string (pos, '\n'));
+      rc = fhg::util::read_int (pos);
+      fhg::util::parse::require::require (pos, '\n');
 
       if (0 == rc)
       {
@@ -331,8 +331,8 @@ namespace gspc
 
       fhg::util::parse::position_string pos (rply);
 
-      rc = fhg::util::read_int
-        (fhg::util::parse::require::plain_string (pos, '\n'));
+      rc = fhg::util::read_int (pos);
+      fhg::util::parse::require::require (pos, '\n');
 
       return rc;
     }
