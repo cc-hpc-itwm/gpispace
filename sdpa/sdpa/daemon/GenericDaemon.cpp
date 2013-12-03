@@ -1419,3 +1419,8 @@ bool GenericDaemon::noChildJobStalled(const sdpa::job_id_t& jobId) const
 {
   return jobManager().noChildJobStalled(jobId);
 }
+
+bool GenericDaemon::noChildJobRunning(const sdpa::job_id_t& jobId) const
+{
+  return jobManager().noChildJobRunning(jobId);
+}
