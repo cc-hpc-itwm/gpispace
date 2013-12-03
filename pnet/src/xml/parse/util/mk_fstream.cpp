@@ -4,7 +4,6 @@
 
 #include <xml/parse/error.hpp>
 
-#include <fhg/util/filesystem.hpp>
 #include <boost/filesystem.hpp>
 
 namespace xml
