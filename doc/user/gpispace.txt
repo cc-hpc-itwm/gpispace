@@ -218,7 +218,8 @@ For a full reference of language syntax as well as available
 functions, see <<section:reference_expression>>.
 
 NOTE: All functions provided do not modify the given variable but
-return a modified copy!
+return a modified copy, i.e. all functions are pass-by-value, not
+pass-by-reference.
 
 ==== Conditions
 
