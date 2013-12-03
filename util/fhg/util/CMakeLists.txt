@@ -24,8 +24,6 @@ set (hdrs
   starts_with.hpp
   warnings.hpp
 
-  filesystem.hpp
-
   ini-parser.hpp
   ini-parser.tcc
   ini-parser-except.hpp
@@ -115,7 +113,6 @@ install (TARGETS fhg-util-shared
 
 add_subdirectory (boost)
 add_subdirectory(thread)
-add_subdirectory(filesystem)
 if (BUILD_TESTING)
   add_subdirectory(test)
 endif ()
