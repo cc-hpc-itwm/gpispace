@@ -117,23 +117,29 @@ namespace sdpa {
 
     void Job::action_job_stalled(const MSMStalledEvent& evt)
     {
-      LOG(INFO, "The job "<<id()<<" changed its status from RUNNING to STALLED");
+      DMLOG(TRACE, "The job "<<id()<<" changed its status from RUNNING to STALLED");
       if(evt.ptrAgent()) {
-        // notify the the job owner that the job has subtasks that are stalling
-        events::JobStalledEvent::Ptr pEvt(new events::JobStalledEvent(evt.ptrAgent()->name(),
-                                                                                  owner(),
-                                                                                  id()));
-        evt.ptrAgent()->sendEventToMaster(pEvt);
+        // notify the the job owner that the job has no subtasks running
+        // and at least one is in pending or stalled
+        if( evt.ptrAgent()->noChildJobRunning(id()) )
+        {
+            DMLOG(TRACE, "Send  JobStalledEvent for the job "<<id()<<" to the master "<<owner());
+            events::JobStalledEvent::Ptr pEvt(new events::JobStalledEvent( evt.ptrAgent()->name()
+                                                                           , owner()
+                                                                           , id()));
+            evt.ptrAgent()->sendEventToMaster(pEvt);
+        }
       }
     }
 
     void Job::action_resume_job(const MSMResumeJobEvent& evt)
     {
-      LOG(INFO, "The job "<<id()<<" changed its status from STALLED to RUNNING");
+      DMLOG(TRACE, "The job "<<id()<<" changed its status from STALLED to RUNNING");
       if(evt.ptrAgent())
       {
-        if( evt.ptrAgent()->noChildJobStalled(id()) )
+        //if( evt.ptrAgent()->noChildJobStalled(id()) )
         {
+          DMLOG(TRACE, "Send  JobRunningEvent for the job "<<id()<<" to the master "<<owner());
             // notify the the job owner that the job makes progress
             sdpa::events::JobRunningEvent::Ptr pEvt(
                 new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
