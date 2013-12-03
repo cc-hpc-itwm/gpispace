@@ -224,9 +224,16 @@ namespace we
                                    );
         del_child (child.id());
 
-        // TODO: add to log of tuples: (childname, code, message)?
-        set_error_code(error_code);
-        set_error_message(error_message);
+        if (not m_error_code)
+        {
+          activity_.set_failed (true);
+          activity_.set_finished (false);
+          ++failure_counter_;
+
+          // TODO: add to log of tuples: (childname, code, message)?
+          set_error_code(error_code);
+          set_error_message(error_message);
+        }
       }
 
       void descriptor::child_canceled ( descriptor const& child
