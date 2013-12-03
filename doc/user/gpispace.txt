@@ -131,7 +131,7 @@ small workflow, being a module call below:
 <5> Compilation flags for the module may be given. In this case: a
 legacy library.
 
-==== Place, Token, Transition, Port, Type
+==== Place, Token, Transition, Port
 
 Including legacy / external code is important, but obviously not the
 thing to do at top level of a workflow. In GPI-Space, workflows are
@@ -177,6 +177,38 @@ modified by a transition.
 in-line.
 <5> Place `foo` is inbound-connected to the functions port `foo`. The
 output produced on port `bar` is produced onto place `baz`.
+
+==== Type
+
+As tokens, places and ports are typed, user defined types are required
+in addition to the already existing built-in types. User defined types
+are a structure of named fields of built-in or other user defined
+types and may be defined within any function (`<defun>`) or net (`<net>`).
+
+[source,xml]
+----
+<defun name="2d_geometry">
+  <struct name="point2d">
+    <field name="x" type="double"/>
+    <field name="y" type="double"/>
+  </struct>
+  <struct name="rect2d">
+    <field name="position" type="point2d"/>
+    <field name="width" type="double"/>
+    <field name="height" type="double"/>
+  </struct>
+  <!-- … -->
+</defun>
+----
+
+Built-in types include `control` (an empty token), `bool`, `int`,
+`long`, `unsigned int` and `unsigned long`, `float` and `double`, but
+also more complex type like `string`, `bitset`, `bytearray`, `list`,
+`set` or `map`. For a full list of available types, their attributes,
+behavior and functions, see
+<<section:reference_builtintypes>>. Generic built-in types
+(e.g. collections like `list`) can be parameterized using `Type : U`
+(e.g. `List : rect2d`).
 
 ==== Simple networks
 ==== Expressions
@@ -316,6 +348,7 @@ include::../intern/xml_internal_structure.dot[]
 ----
 === Expression Language Syntax
 [[section:reference_expression]]
+[[section:reference_builtintypes]]
 
 grammar, available types, functions, associativity, equals pnet/src/we/expr/, pnet/src/we/type/
 
