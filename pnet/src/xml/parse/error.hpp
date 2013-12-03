@@ -916,7 +916,7 @@ namespace xml
                    )
             : formatted ( name
                         , function
-                        , "expected " + fhg::util::show (what)
+                        , "expected " + what
                         , k
                         , path
                         )
