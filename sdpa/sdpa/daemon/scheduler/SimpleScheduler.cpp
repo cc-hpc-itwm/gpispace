@@ -42,9 +42,9 @@ void SimpleScheduler::assignJobsToWorkers()
 
         try {
            Worker::ptr_t pWorker(findWorker(matchingWorkerId));
+           ptr_comm_handler_->resume(jobId);
            ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
            pWorker->submit(jobId);
-           ptr_comm_handler_->resume(jobId);
         }
         catch(const WorkerNotFoundException&) {
            DMLOG (TRACE, "The worker " << matchingWorkerId << " is not registered! Sending a notification ...");
@@ -54,8 +54,8 @@ void SimpleScheduler::assignJobsToWorkers()
         }
     }
     else { // put it back into the common queue
-        nonmatching_jobs_queue.push(jobId);
         ptr_comm_handler_->pause(jobId);
+        nonmatching_jobs_queue.push(jobId);
     }
   }
 
