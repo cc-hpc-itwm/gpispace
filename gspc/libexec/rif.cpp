@@ -102,7 +102,7 @@ public:
 
           try
           {
-            child.max_restarts = fhg::util::read<size_t> (value);
+            child.max_restarts = fhg::util::read_size_t (value);
           }
           catch (std::exception const &)
           {
@@ -122,7 +122,7 @@ public:
 
           try
           {
-            child.max_start_time = fhg::util::read<size_t> (value);
+            child.max_start_time = fhg::util::read_size_t (value);
           }
           catch (std::exception const &)
           {
