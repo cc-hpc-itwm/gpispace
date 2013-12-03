@@ -13,13 +13,10 @@ namespace fhg
   namespace util
   {
     template<typename T>
-    inline T read ( const std::string & showed
-                  , std::ios_base::fmtflags flags=std::ios_base::fmtflags ()
-                  )
+    inline T read (const std::string & showed)
     {
       T x;
       std::istringstream i (showed);
-      i.flags (flags);
       i >> x;
       if (i.fail ())
       {
