@@ -71,12 +71,13 @@ void CoallocationScheduler::assignJobsToWorkers()
               DMLOG(DEBUG, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<list_reserved_workers);
               // serve the same job to all reserved workers!!!!
 
+              ptr_comm_handler_->resume(jobId);
               ptr_comm_handler_->serveJob(list_reserved_workers, jobId);
               _worker_manager.markJobSubmitted(pReservation->getWorkerList(), jobId);
-              ptr_comm_handler_->resume(jobId);
             }
             else
             {
+              ptr_comm_handler_->pause(jobId);
               // delete the invalid workers
               BOOST_FOREACH(const Worker::worker_id_t& wid, list_reserved_workers)
               {
@@ -88,12 +89,13 @@ void CoallocationScheduler::assignJobsToWorkers()
         }
         else
         {
-          schedule_first(jobId);
-          ptr_comm_handler_->pause(jobId);
+            ptr_comm_handler_->pause(jobId);
+            schedule_first(jobId);
         }
     }
     else // put it back into the common queue
     {
+        ptr_comm_handler_->pause(jobId);
         nonmatching_jobs_queue.push(jobId);
     }
   }
