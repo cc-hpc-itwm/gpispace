@@ -29,15 +29,6 @@ namespace fhg
           return boost::none;
         }
       }
-
-      template<typename T>
-        void fmap (void (*f)(const T &), const optional<T> & m)
-      {
-        if (m)
-        {
-          f (*m);
-        }
-      }
     }
   }
 }
