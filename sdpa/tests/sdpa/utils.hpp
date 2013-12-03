@@ -268,6 +268,21 @@ namespace utils
       return c.wait_for_terminal_state (id, job_info);
     }
 
+    sdpa::status::code wait_for_state_polling
+      ( sdpa::client::Client& c
+        , const sdpa::job_id_t& id
+        , const sdpa::status::code& exp_status )
+    {
+      static const boost::posix_time::milliseconds sleep_duration (1000);
+      sdpa::status::code curr_status (c.queryJob (id));
+      while(curr_status!=exp_status)
+      {
+        boost::this_thread::sleep (sleep_duration);
+        curr_status = c.queryJob (id);
+      }
+      return curr_status;
+    }
+
     namespace
     {
       sdpa::status::code wait_for_termination_impl
