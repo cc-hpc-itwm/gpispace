@@ -28,22 +28,6 @@ namespace fhg
       }
       return x;
     }
-
-    template <typename T>
-    struct reader
-    {
-      inline static T read ( std::string const & s
-                           , std::ios_base::fmtflags flags
-                           )
-      {
-        return fhg::util::read<T>(s, flags);
-      }
-
-      inline static T read (std::string const & s)
-      {
-        return fhg::util::read<T>(s, std::ios_base::fmtflags ());
-      }
-    };
   }
 }
 
