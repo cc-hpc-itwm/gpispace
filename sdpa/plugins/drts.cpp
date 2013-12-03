@@ -920,6 +920,8 @@ private:
                               , gspc::net::user_ptr user
                               )
   {
+    lock_type cap_lock(m_capabilities_mutex);
+
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
     std::string virtual_capabilities (rqst.get_body ());
@@ -957,6 +959,8 @@ private:
                               , gspc::net::user_ptr user
                               )
   {
+    lock_type cap_lock(m_capabilities_mutex);
+
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
     std::string virtual_capabilities (rqst.get_body ());
@@ -1001,6 +1005,8 @@ private:
                               , gspc::net::user_ptr user
                               )
   {
+    lock_type cap_lock(m_capabilities_mutex);
+
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
     typedef map_of_capabilities_t::const_iterator const_cap_it_t;
