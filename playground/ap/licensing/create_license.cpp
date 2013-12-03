@@ -49,7 +49,7 @@ int main (int ac, char *argv[])
   license_t lic;
   memset (&lic, 0, sizeof(lic));
 
-  lic.valid_until = time (NULL) + 86400*fhg::util::read<int> (argv [2]);
+  lic.valid_until = time (NULL) + 86400*fhg::util::read_int (argv [2]);
 
   {
     std::string hash =
