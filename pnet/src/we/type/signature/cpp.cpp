@@ -19,6 +19,7 @@
 #include <boost/foreach.hpp>
 
 #include <set>
+#include <list>
 #include <iostream>
 #include <sstream>
 
@@ -169,30 +170,25 @@ namespace pnet
                             , fhg::util::indenter& indent
                             , const std::string& name
                             , const std::string& type
-                            , std::set<std::string>& prefix
+                            , std::list<std::string>& prefix
                             ) const
             {
-              os << fhg::util::deeper (indent)
-                 << (prefix.empty() ? "  " : "||")
-                 << " (";
-
-              fhg::util::first_then<std::string> _and ("", " && ");
-
-              BOOST_FOREACH (std::string const& p, prefix)
+              if (not prefix.empty())
               {
-                os << _and << "(this->" << p << " == rhs." << p << ")";
+                os << " || ("
+                   << "(this->" << prefix.back() << " == rhs." << prefix.back() << ")"
+                   << " && ("
+                  ;
               }
 
-              os << _and << "(this->" << name << " < rhs." << name << ")";
+              os << "(this->" << name << " < rhs." << name << ")";
 
-              os << ")";
-
-              prefix.insert (name);
+              prefix.push_back (name);
             }
           };
 
           typedef printer_for_field< impl_operator_less
-                                   , std::set<std::string>&
+                                   , std::list<std::string>&
                                    > print_field_operator_less;
 
           class impl_operator_eq
@@ -258,16 +254,21 @@ namespace pnet
             void operator_less
               (const std::pair<std::string, structure_type>& s) const
             {
-              std::set<std::string> prefix;
+              std::list<std::string> prefix;
 
               _os << _indent << "bool operator< ("
                   << s.first << " const& rhs) const"
                   << fhg::util::cpp::block::open (_indent)
-                  << _indent << "return";
+                  << _indent << "return ";
 
               traverse (print_field_operator_less (_os, _indent, prefix), s);
 
-              _os << fhg::util::deeper (_indent) << ";"
+              if (not prefix.empty())
+              {
+                _os << std::string (2 * (prefix.size() - 1), ')');
+              }
+
+              _os << ";"
                   << fhg::util::cpp::block::close (_indent);
             }
 
