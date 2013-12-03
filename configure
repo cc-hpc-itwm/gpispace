@@ -17,6 +17,7 @@ cd "${build_dir}"
 
 build_type=Release
 build_static=false
+build_bundle=false
 
 with_tests=false
 with_apps=true
@@ -74,6 +75,7 @@ if [ -r "CMakeCache.txt" ] ; then
     get_cmake_cache_entry FHGLOG_STRIP_LEVEL strip_log
 
     get_cmake_cache_entry FHG_ASSERT_MODE fhg_assert_mode
+    get_cmake_cache_entry INSTALL_AS_BUNDLE build_bundle
 fi
 
 build_rev=$( cd "$src" && git rev-parse HEAD 2>/dev/null )
@@ -147,6 +149,7 @@ cat >&2 <<EOF
 #       source: $src
 #        build: $build_dir
 #     revision: $build_rev
+#       bundle: $build_bundle
 #
 #  optional components:
 #
@@ -181,6 +184,7 @@ general options:
 modify behavior:
 ----------------
 
+         --bundle : install libraries that we depend on
     --strip-log=N : strip log level up to and including N
   --assert-mode=M : set the assert mode to one of:
 
@@ -225,6 +229,14 @@ do
             ;;
         --revision=*)
             build_rev="${1#*=}"
+            shift
+            ;;
+        --bundle)
+            build_bundle=true
+            shift
+            ;;
+        --bundle=*)
+            build_bundle=$(read_bool "${1#*=}")
             shift
             ;;
         --assert-mode=*)
@@ -306,6 +318,12 @@ fi
 
 if [ -n "$build_type" ] ; then
     cmake_flags+=("-DCMAKE_BUILD_TYPE=$build_type")
+fi
+
+if $build_bundle ; then
+    cmake_flags+=("-DINSTALL_AS_BUNDLE=ON")
+else
+    cmake_flags+=("-DINSTALL_AS_BUNDLE=OFF")
 fi
 
 if $with_tests ; then
