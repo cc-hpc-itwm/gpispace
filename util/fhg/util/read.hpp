@@ -35,6 +35,12 @@ namespace fhg
 
       return read_int (pos);
     }
+    inline size_t read_size_t (const std::string& showed)
+    {
+      parse::position_string pos (showed);
+
+      return read_uint (pos);
+    }
   }
 }
 
