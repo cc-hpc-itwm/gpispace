@@ -15,10 +15,8 @@ namespace fhg
   {
     namespace boost
     {
-      using namespace ::boost;
-
       template<typename T, typename U>
-        boost::optional<U> fmap (U (*f)(const T &), const optional<T>& m)
+      boost::optional<U> fmap (U (*f)(const T &), const boost::optional<T>& m)
       {
         if (m)
         {
