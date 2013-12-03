@@ -38,6 +38,8 @@ namespace drts
     virtual int cancel (job_id_t const & jobid) = 0;
     virtual int results (job_id_t const & jobid, std::string &) = 0;
     virtual int remove (job_id_t const & jobid) = 0;
+    virtual void add_virtual_capability (std::string const &cap) = 0;
+    virtual void del_virtual_capability (std::string const &cap) = 0;
     // virtual capabilities_t capabilities() const = 0;
   };
 }
