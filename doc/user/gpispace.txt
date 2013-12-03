@@ -196,7 +196,9 @@ The expression in
   <out name="value" type="long"/>
   <expression>
     ${value} := stack_top (${stack});
-    ${stack} := stack_pop (${stack});
+    ${stack} := stack_pop (${stack}); /* stack_pop does not modify
+                                         given stack, but returns
+                                         the modified stack! */
   </expression>
 </defun>
 ----
