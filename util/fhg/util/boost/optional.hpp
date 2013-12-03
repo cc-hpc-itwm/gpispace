@@ -3,11 +3,7 @@
 #ifndef FHG_UTIL_BOOST_OPTIONAL_HPP
 #define FHG_UTIL_BOOST_OPTIONAL_HPP
 
-#include <fhg/util/show.hpp>
-
 #include <boost/optional.hpp>
-
-#include <ostream>
 
 namespace fhg
 {
