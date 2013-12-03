@@ -1,6 +1,5 @@
 :doctype: book
 :toc:
-:imagesdir: {indir}/images
 
 = GPI-Space -- a system to develop and execute cluster applications
 
@@ -57,7 +56,7 @@ GPI-Space selftest completed: 0 error(s)
 
 agent, orchestrator, worker, client
 
-image:gpi_space_workflow_notext.png[Schematic overview of development
+image:{indir}/images/gpi_space_workflow_notext.png[Schematic overview of development
 and execution of GPI-Space workflows]
 
 [source,tex]
