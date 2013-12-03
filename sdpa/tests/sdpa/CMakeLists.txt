@@ -211,24 +211,6 @@ add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_te
                    COMMENT "putting tokens into coallocation_test workflow: ${command}"
                    DEPENDS pnet-coallocation_test-wf-gen
 )
-add_dependencies(pnet-coallocation_test-wf pnetput)
-################################################################################################
-#coallocation_bad_test
-pnet_compile(coallocation_bad_test-wf ${CMAKE_SOURCE_DIR}/application/example/coallocation_test/coallocation_test.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
-  GENERATE coallocation_test
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
-  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
-           -I${CMAKE_BINARY_DIR}/fhglog
-           -I${CMAKE_SOURCE_DIR}/fvm-pc
-           -I${CMAKE_SOURCE_DIR}/application/example/coallocation_test
-           -O3
-  BUILD
-  COMPONENT tests
-)
-
-get_target_property(COALLOCATION_TEST_PNET_LOCATION pnet-coallocation_bad_test-wf LOCATION)
-get_target_property(__PNET_GEN_OUTPUTS pnet-coallocation_bad_test-wf GEN_OUTPUTS)
 
 set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="1L"
                                                                         	-p n_workers_A="0L"
@@ -239,9 +221,22 @@ set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_bad_test.pnet"
                    COMMAND ${command}
                    COMMENT "putting tokens into coallocation_bad_test workflow: ${command}"
-                   DEPENDS pnet-coallocation_bad_test-wf-gen
+                   DEPENDS pnet-coallocation_test-wf-gen
 )
-add_dependencies(pnet-coallocation_bad_test-wf pnetput)
+
+set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="1L"
+                                                                        	-p n_workers_A="2L"
+                                                                        	-p n_tasks_B="1L"
+                                                                        	-p n_workers_B="3L"
+                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet")
+
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"
+                   COMMAND ${command}
+                   COMMENT "putting tokens into stalled_workflow net: ${command}"
+                   DEPENDS pnet-coallocation_test-wf-gen
+)
+
+add_dependencies(pnet-coallocation_test-wf pnetput)
 ################################################################################################
 set (tests
   test_Atomic.cpp
@@ -259,6 +254,7 @@ set (tests
   test_SubmitJobFails.cpp
   test_TransformFile.cpp
   test_wfe_plugin.cpp
+  test_Stalled.cpp
 )
 
 foreach (test ${tests})
@@ -299,4 +295,5 @@ add_custom_target(sdpa-test-workflows ALL
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"
 )
