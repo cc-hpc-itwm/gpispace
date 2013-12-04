@@ -495,9 +495,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
             if(masterInfo.getConsecRegAttempts()< _max_consecutive_registration_attempts)
             {
-              DMLOG (TRACE, "Wait " << boost::posix_time::to_simple_string (_registration_timeout) << " before trying to re-register ...");
-              boost::this_thread::sleep (_registration_timeout);
-              requestRegistration(masterInfo);
+              request_registration_soon (masterInfo);
             }
             else
               listDeadMasters.push_back( masterInfo.name() );
@@ -558,9 +556,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
               if( masterInfo.getConsecNetFailCnt() < _max_consecutive_network_faults)
               {
-                DMLOG (TRACE, "Wait " << boost::posix_time::to_simple_string (_registration_timeout) << " before trying to re-register ...");
-                boost::this_thread::sleep (_registration_timeout);
-                requestRegistration(masterInfo);
+                request_registration_soon (masterInfo);
               }
               else
                 listDeadMasters.push_back( masterInfo.name() );
@@ -1017,6 +1013,16 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 {
   to_slave_stage()->send(pEvt);
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+}
+
+void GenericDaemon::request_registration_soon (const MasterInfo& info)
+{
+  DMLOG ( TRACE
+        , "Wait " << boost::posix_time::to_simple_string (_registration_timeout)
+        << " before trying to register with master " << info.name()
+        );
+  boost::this_thread::sleep (_registration_timeout);
+  requestRegistration (info);
 }
 
 void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)

@@ -173,6 +173,8 @@ namespace sdpa {
 
       // registration
       void requestRegistration(const MasterInfo& masterInfo);
+      void request_registration_soon (const MasterInfo& info);
+
     protected:
       void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
 
