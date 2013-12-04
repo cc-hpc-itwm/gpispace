@@ -95,9 +95,6 @@ namespace sdpa {
 
       void shutdown();
 
-      void addMaster(const agent_id_t& );
-      void addMasters(const agent_id_list_t& );
-      void removeMaster(const agent_id_t& masterId);
       void removeMasters(const agent_id_list_t& );
       size_t numberOfMasterAgents() { return m_arrMasterInfo.size(); }
 

@@ -1037,37 +1037,9 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
   }
 }
 
-void GenericDaemon::addMaster(const agent_id_t& newMasterId )
-{
-  lock_type lock(mtx_master_);
-  MasterInfo mInfo(newMasterId);
-  m_arrMasterInfo.push_back(mInfo);
-  requestRegistration(mInfo);
-}
-
-void GenericDaemon::addMasters(const agent_id_list_t& listMasters )
-{
-  lock_type lock(mtx_master_);
-  for( sdpa::agent_id_list_t::const_iterator it = listMasters.begin(); it != listMasters.end(); it ++ )
-  {
-    MasterInfo mInfo(*it);
-    m_arrMasterInfo.push_back(mInfo);
-    requestRegistration(mInfo);
-  }
-}
-
 bool hasId(sdpa::MasterInfo& info, sdpa::agent_id_t& agId)
 {
   return info.name() == agId;
-}
-
-void GenericDaemon::removeMaster( const agent_id_t& id )
-{
-  lock_type lock(mtx_master_);
-
-  master_info_list_t::iterator it = find_if( m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasId, _1, id) );
-  if( it != m_arrMasterInfo.end() )
-    m_arrMasterInfo.erase(it);
 }
 
 void GenericDaemon::removeMasters(const agent_id_list_t& listMasters)
