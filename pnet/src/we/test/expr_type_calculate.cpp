@@ -90,8 +90,8 @@ namespace
              , pnet::type::signature::signature_type const& s
              )
   {
-    BOOST_CHECK
-      (s == pnet::expr::type::calculate (m, ::expr::parse::parser (p).front()));
+    BOOST_CHECK_EQUAL
+      (s, pnet::expr::type::calculate (m, ::expr::parse::parser (p).front()));
   }
 
   void BIN_REQUIRE ( std::string const& exp

@@ -37,30 +37,34 @@ namespace
   };
 }
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::signature::signature_type)
+BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::value::value_type)
+BOOST_TEST_DONT_PRINT_LOG_VALUE (std::list<std::string>)
+
 BOOST_FIXTURE_TEST_CASE (type_mismatch, fix)
 {
   const  pnet::exception::type_mismatch e (signature(), value(), path());
 
-  BOOST_CHECK (e.signature() == signature());
-  BOOST_CHECK (e.value() == value());
-  BOOST_CHECK (e.path() == path());
-  BOOST_CHECK (e.what() == std::string ("type error: type mismatch for field 'p.p': expected type 'struct :: [e :: unsigned long, c :: char]', value 'Struct [e := 42UL, c := 'c']' has type 'struct :: [e :: unsigned long, c :: char]'"));
+  BOOST_CHECK_EQUAL (e.signature(), signature());
+  BOOST_CHECK_EQUAL (e.value(), value());
+  BOOST_CHECK_EQUAL (e.path(), path());
+  BOOST_CHECK_EQUAL (e.what(), std::string ("type error: type mismatch for field 'p.p': expected type 'struct :: [e :: unsigned long, c :: char]', value 'Struct [e := 42UL, c := 'c']' has type 'struct :: [e :: unsigned long, c :: char]'"));
 }
 
 BOOST_FIXTURE_TEST_CASE (missing_field, fix)
 {
   const pnet::exception::missing_field e (signature(), value(), path());
 
-  BOOST_CHECK (e.signature() == signature());
-  BOOST_CHECK (e.path() == path());
-  BOOST_CHECK (e.what() == std::string ("type error: missing field 'p.p' of type 'struct :: [e :: unsigned long, c :: char]' in value 'Struct [e := 42UL, c := 'c']'"));
+  BOOST_CHECK_EQUAL (e.signature(), signature());
+  BOOST_CHECK_EQUAL (e.path(), path());
+  BOOST_CHECK_EQUAL (e.what(), std::string ("type error: missing field 'p.p' of type 'struct :: [e :: unsigned long, c :: char]' in value 'Struct [e := 42UL, c := 'c']'"));
 }
 
 BOOST_FIXTURE_TEST_CASE (unknown_field, fix)
 {
   const pnet::exception::unknown_field e (value(), path());
 
-  BOOST_CHECK (e.value() == value());
-  BOOST_CHECK (e.path() == path());
-  BOOST_CHECK (e.what() == std::string ("type error: unknown field 'p.p' with value 'Struct [e := 42UL, c := 'c']' of type 'struct :: [e :: unsigned long, c :: char]'"));
+  BOOST_CHECK_EQUAL (e.value(), value());
+  BOOST_CHECK_EQUAL (e.path(), path());
+  BOOST_CHECK_EQUAL (e.what(), std::string ("type error: unknown field 'p.p' with value 'Struct [e := 42UL, c := 'c']' of type 'struct :: [e :: unsigned long, c :: char]'"));
 }
