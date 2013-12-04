@@ -19,6 +19,8 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::signature::signature_type)
+
 BOOST_AUTO_TEST_CASE (signature_show)
 {
 #define CHECK(_expected,_sig...)                \
@@ -536,7 +538,7 @@ BOOST_AUTO_TEST_CASE (name_signature)
     f (std::make_pair (std::string ("name"), std::string ("type")));
 
   BOOST_CHECK_EQUAL (std::string ("name"), name (f));
-  BOOST_CHECK (signature_type (std::string ("type")) == signature (f));
+  BOOST_CHECK_EQUAL (signature_type (std::string ("type")), signature (f));
 
   structure_type s;
   s.push_back (f);
@@ -544,7 +546,7 @@ BOOST_AUTO_TEST_CASE (name_signature)
   const field_type fs (ss);
 
   BOOST_CHECK_EQUAL (std::string ("s"), name (fs));
-  BOOST_CHECK (signature_type (ss) == signature (fs));
+  BOOST_CHECK_EQUAL (signature_type (ss), signature (fs));
 }
 
 namespace
@@ -627,7 +629,7 @@ BOOST_AUTO_TEST_CASE (resolve)
 
   resolver_map.insert (std::make_pair (std::string ("point"), point));
 
-  BOOST_REQUIRE (  signature_type (circle_resolved)
-                == resolve (circle,resolver (resolver_map))
-                );
+  BOOST_REQUIRE_EQUAL ( signature_type (circle_resolved)
+                      , resolve (circle,resolver (resolver_map))
+                      );
 }
