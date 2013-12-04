@@ -7,6 +7,7 @@ set (hdrs
   poll.hpp
   pollable.hpp
   pool.hpp
+  set.hpp
 )
 
 install(FILES ${hdrs}
