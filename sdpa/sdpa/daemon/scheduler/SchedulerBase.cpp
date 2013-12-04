@@ -1,28 +1,10 @@
-/*
- * =====================================================================================
- *
- *       Filename:  SchedulerBase.hpp
- *
- *    Description:  Implements a simple scheduler
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+//tiberiu.rotaru@itwm.fraunhofer.de
 
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
-
 #include <sdpa/daemon/GenericDaemon.hpp>
 
-using namespace sdpa::daemon;
-using namespace sdpa::events;
-using namespace std;
+namespace sdpa {
+   namespace daemon {
 
 SchedulerBase::SchedulerBase(GenericDaemon* pCommHandler)
   : _worker_manager()
@@ -153,8 +135,8 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
       //send a JobFailed event
       sdpa::job_result_t result(ex.what());
 
-      JobFailedEvent::Ptr pEvtJobFailed
-            (new JobFailedEvent(  m_agent_name
+      sdpa::events::JobFailedEvent::Ptr pEvtJobFailed
+            (new sdpa::events::JobFailedEvent(  m_agent_name
                                   , m_agent_name
                                   , jobId
                                   , result
@@ -169,7 +151,7 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
   {
     sdpa::job_result_t result("Inexsitent job: "+jobId.str());
 
-    JobFailedEvent::Ptr pEvtJobFailed(new JobFailedEvent(m_agent_name
+    sdpa::events::JobFailedEvent::Ptr pEvtJobFailed(new sdpa::events::JobFailedEvent(m_agent_name
                                                          , m_agent_name
                                                          , jobId
                                                          , result
@@ -385,3 +367,5 @@ void SchedulerBase::schedule_first(const sdpa::job_id_t& jid)
 {
   _worker_manager.common_queue_.push_front(jid);
 }
+
+}}
