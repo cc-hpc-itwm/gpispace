@@ -120,13 +120,5 @@ BOOST_AUTO_TEST_CASE ( test_input_invalid )
   std::istringstream iss ("invalidinput");
   bool_t b;
 
-  try
-  {
-    iss >> b;
-    BOOST_ERROR ("invalid input must throw");
-  }
-  catch (...)
-  {
-    // everything fine
-  }
+  BOOST_REQUIRE_THROW (iss >> b, std::exception);
 }

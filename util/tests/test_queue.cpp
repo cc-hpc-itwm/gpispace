@@ -40,16 +40,10 @@ BOOST_AUTO_TEST_CASE (thread_queue_timed_get_empty_queue)
 {
   items_t items;
 
-  try
-  {
-    BOOST_REQUIRE (items.empty ());
-    items.get (boost::posix_time::milliseconds (500));
-    BOOST_ERROR ("thread::queue::get(500ms) did not timeout");
-  }
-  catch (fhg::thread::operation_timedout const &)
-  {
-    // expected
-  }
+  BOOST_REQUIRE (items.empty ());
+  BOOST_REQUIRE_THROW ( items.get (boost::posix_time::milliseconds (500))
+                      , fhg::thread::operation_timedout
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (thread_queue_timed_get_nonempty_queue)
@@ -208,19 +202,12 @@ BOOST_AUTO_TEST_CASE (thread_queue_timed_put_full_queue)
 {
   items_t items (1);
 
-  try
-  {
-    BOOST_REQUIRE (items.empty ());
+  BOOST_REQUIRE (items.empty ());
 
-    items.put (0, boost::posix_time::milliseconds (500));
-    BOOST_REQUIRE_EQUAL (items.size (), 1u);
+  items.put (0, boost::posix_time::milliseconds (500));
+  BOOST_REQUIRE_EQUAL (items.size (), 1u);
 
-    items.put (1, boost::posix_time::milliseconds (500));
-
-    BOOST_ERROR ("thread::queue::put(1, 500ms) did not timeout");
-  }
-  catch (fhg::thread::operation_timedout const &)
-  {
-    // expected
-  }
+  BOOST_REQUIRE_THROW ( items.put (1, boost::posix_time::milliseconds (500))
+                      , fhg::thread::operation_timedout
+                      );
 }
