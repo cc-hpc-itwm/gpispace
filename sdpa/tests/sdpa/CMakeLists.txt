@@ -55,7 +55,7 @@ pnet_compile(capabilities-test-wf ${CMAKE_SOURCE_DIR}/application/example/capabi
 
 get_target_property(CAPABILITY_PNET_LOCATION pnet-capabilities-test-wf LOCATION)
 get_target_property(__PNET_GEN_OUTPUTS pnet-capabilities-test-wf GEN_OUTPUTS)
-set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_PNET_LOCATION}" -p n_A=100L -p time_A=50000L -p n_B=50L -p time_B=50000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet")
+set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_PNET_LOCATION}" -p n_A=20L -p time_A=5000L -p n_B=10L -p time_B=5000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet")
 
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
                    COMMAND ${command}
@@ -78,7 +78,7 @@ pnet_compile(capabilities_no_mandatory-test-wf ${CMAKE_SOURCE_DIR}/application/e
 
 get_target_property(CAPABILITY_NO_MANDATORY_PNET_LOCATION pnet-capabilities_no_mandatory-test-wf LOCATION)
 get_target_property(__PNET_GEN_OUTPUTS pnet-capabilities_no_mandatory-test-wf GEN_OUTPUTS)
-set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_NO_MANDATORY_PNET_LOCATION}" -p n_A=10L -p time_A=50000L -p n_B=10L -p time_B=50000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet")
+set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_NO_MANDATORY_PNET_LOCATION}" -p n_A=10L -p time_A=5000L -p n_B=10L -p time_B=5000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet")
 
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
                    COMMAND ${command}
