@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE (test_serve_client_connection_refused)
   BOOST_REQUIRE_EQUAL (rc, 0);
 
   rc = client->start ();
-  BOOST_REQUIRE (rc < 0);
+  BOOST_REQUIRE_LT (rc, 0);
 
   rc = client->stop ();
   BOOST_REQUIRE_EQUAL (rc, 0);
