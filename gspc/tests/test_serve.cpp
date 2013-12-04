@@ -231,7 +231,6 @@ BOOST_AUTO_TEST_CASE (test_serve_client_connection_refused)
   gspc::net::initializer _net_init;
 
   boost::system::error_code ec;
-  int rc;
 
   gspc::net::client_ptr_t client
     (gspc::net::dial ("unix://this.socket.does.not.exist", ec));
@@ -240,14 +239,11 @@ BOOST_AUTO_TEST_CASE (test_serve_client_connection_refused)
   BOOST_REQUIRE (ec);
   BOOST_REQUIRE (not client->is_connected ());
 
-  rc = client->stop ();
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (client->stop(), 0);
 
-  rc = client->start ();
-  BOOST_REQUIRE_LT (rc, 0);
+  BOOST_REQUIRE_LT (client->start(), 0);
 
-  rc = client->stop ();
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (client->stop(), 0);
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_send_unix)
@@ -303,7 +299,6 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 
   using namespace gspc::net::tests;
 
-  int rc;
   gspc::net::server::queue_manager_t qmgr;
   mock::user subscriber;
   qmgr.subscribe (&subscriber, "/test/send", "mock-1", gspc::net::frame ());
@@ -317,11 +312,12 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 
   client->disconnect ();
 
-  rc = client->send_sync ( "/test/send"
-                         , "hello world!"
-                         , boost::posix_time::pos_infin
-                         );
-  BOOST_REQUIRE_EQUAL (rc, gspc::net::E_UNAUTHORIZED);
+  BOOST_REQUIRE_EQUAL ( client->send_sync ( "/test/send"
+                                          , "hello world!"
+                                          , boost::posix_time::pos_infin
+                                          )
+                      , gspc::net::E_UNAUTHORIZED
+                      );
 
   server->stop ();
   client->stop ();
@@ -398,12 +394,13 @@ BOOST_AUTO_TEST_CASE (test_request_success)
   for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
   {
     gspc::net::frame rply;
-    int rc = client->request ( "/service/echo-1"
-                             , "hello world!"
-                             , rply
-                             , boost::posix_time::seconds (1)
-                             );
-    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL ( client->request ( "/service/echo-1"
+                                         , "hello world!"
+                                         , rply
+                                         , boost::posix_time::seconds (1)
+                                         )
+                        , 0
+                        );
     BOOST_REQUIRE_EQUAL (rply.get_body (), "hello world!");
   }
 
@@ -429,12 +426,13 @@ BOOST_AUTO_TEST_CASE (test_request_no_such_service)
   BOOST_REQUIRE (client);
 
   gspc::net::frame rply;
-  int rc = client->request ( "/service/unknown"
-                           , "hello world!"
-                           , rply
-                           , boost::posix_time::seconds (1)
-                           );
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL ( client->request ( "/service/unknown"
+                                        , "hello world!"
+                                        , rply
+                                        , boost::posix_time::seconds (1)
+                                        )
+                      , 0
+                      );
   BOOST_REQUIRE_EQUAL (rply.get_command (), "ERROR");
   BOOST_REQUIRE (rply.has_header ("code"));
   BOOST_REQUIRE_EQUAL (*rply.get_header ("code"), "404");
