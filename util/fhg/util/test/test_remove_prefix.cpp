@@ -52,10 +52,6 @@ BOOST_AUTO_TEST_CASE (longer_prefix_than_input)
     BOOST_REQUIRE_EQUAL (f.word(), "");
     BOOST_REQUIRE_EQUAL (f.prefix(), "ab");
   }
-  catch (...)
-  {
-    BOOST_FAIL ("should throw fhg::util::remove_prefix_failed");
-  }
 }
 
 BOOST_AUTO_TEST_CASE (non_matched_prefix)
@@ -72,9 +68,5 @@ BOOST_AUTO_TEST_CASE (non_matched_prefix)
   {
     BOOST_REQUIRE_EQUAL (f.word(), "ababab");
     BOOST_REQUIRE_EQUAL (f.prefix(), "A");
-  }
-  catch (...)
-  {
-    BOOST_FAIL ("should throw fhg::util::remove_prefix_failed");
   }
 }
