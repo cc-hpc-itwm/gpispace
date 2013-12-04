@@ -227,8 +227,8 @@ BOOST_AUTO_TEST_CASE (test_invalid_header)
                         );
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FAILED);
-  BOOST_REQUIRE (result.consumed > 0);
-  BOOST_REQUIRE (result.consumed < strlen (input));
+  BOOST_REQUIRE_GT (result.consumed, 0);
+  BOOST_REQUIRE_LT (result.consumed, strlen (input));
 }
 
 BOOST_AUTO_TEST_CASE (test_header_empty_value)
@@ -245,8 +245,8 @@ BOOST_AUTO_TEST_CASE (test_header_empty_value)
                         );
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
-  BOOST_REQUIRE (result.consumed > 0);
-  BOOST_REQUIRE (result.consumed == sizeof(input));
+  BOOST_REQUIRE_GT (result.consumed, 0);
+  BOOST_REQUIRE_EQUAL (result.consumed, sizeof(input));
   BOOST_REQUIRE (frame.has_header ("foo"));
   BOOST_REQUIRE_EQUAL (*frame.get_header ("foo"), "");
 }
@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE (test_empty_body_with_content_length)
                         );
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
-  BOOST_REQUIRE (result.consumed == sizeof(input));
+  BOOST_REQUIRE_EQUAL (result.consumed, sizeof(input));
   BOOST_REQUIRE (frame.has_header ("content-length"));
   BOOST_REQUIRE_EQUAL (*frame.get_header ("content-length"), "0");
 }
@@ -284,8 +284,8 @@ BOOST_AUTO_TEST_CASE (test_header_value_with_spaces)
                         );
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
-  BOOST_REQUIRE (result.consumed > 0);
-  BOOST_REQUIRE (result.consumed == sizeof(input));
+  BOOST_REQUIRE_GT (result.consumed, 0);
+  BOOST_REQUIRE_EQUAL (result.consumed, sizeof(input));
   BOOST_REQUIRE (frame.has_header ("foo"));
   BOOST_REQUIRE_EQUAL (*frame.get_header ("foo"), " 1  2   3    4 ");
 }
@@ -304,8 +304,8 @@ BOOST_AUTO_TEST_CASE (test_content_length)
                         );
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
-  BOOST_REQUIRE (result.consumed > 0);
-  BOOST_REQUIRE (result.consumed == sizeof (input) - 5);
+  BOOST_REQUIRE_GT (result.consumed, 0);
+  BOOST_REQUIRE_EQUAL (result.consumed, sizeof (input) - 5);
 
   BOOST_REQUIRE_EQUAL (frame.get_body (), "12345");
 }
@@ -324,7 +324,7 @@ BOOST_AUTO_TEST_CASE (test_content_length_body_too_long)
                         );
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FAILED);
-  BOOST_REQUIRE (result.consumed > 0);
+  BOOST_REQUIRE_GT (result.consumed, 0);
   BOOST_REQUIRE_EQUAL (result.consumed, sizeof (input) - 2);
 }
 
@@ -345,8 +345,8 @@ BOOST_AUTO_TEST_CASE (test_binary_body)
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
 
   // the trailing 0 is not consumed
-  BOOST_CHECK (result.consumed == sizeof (bytes));
-  BOOST_CHECK (result.consumed == 26);
+  BOOST_CHECK_EQUAL (result.consumed, sizeof (bytes));
+  BOOST_CHECK_EQUAL (result.consumed, 26);
 
   BOOST_REQUIRE_EQUAL (bytes [result.consumed-1], '\x00');
 
@@ -423,7 +423,7 @@ BOOST_AUTO_TEST_CASE (test_parse_performance)
                           , f
                           );
     BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
-    BOOST_CHECK (result.consumed == bytes.size ());
+    BOOST_CHECK_EQUAL (result.consumed, bytes.size ());
     parser.reset ();
   }
   duration += fhg::util::now ();
