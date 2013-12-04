@@ -24,6 +24,8 @@ struct handler_t : gspc::rif::process_handler_t
   gspc::rif::process_state_t state;
 };
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE (gspc::rif::env_t::const_iterator)
+
 BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
@@ -247,7 +249,7 @@ BOOST_AUTO_TEST_CASE (test_environment_default)
   argv.push_back ("/usr/bin/env");
   gspc::rif::process_t proc (0, argv.front (), argv);
 
-  BOOST_REQUIRE (proc.env ().find ("GSPC_RIF_TEST_ENV") != proc.env ().end ());
+  BOOST_REQUIRE_NE (proc.env ().find ("GSPC_RIF_TEST_ENV"), proc.env ().end ());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
