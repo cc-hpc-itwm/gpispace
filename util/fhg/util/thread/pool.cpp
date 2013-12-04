@@ -26,6 +26,14 @@ namespace fhg
           ("fhg::thread::pool_t: nthreads needs to be > 0");
     }
 
+    pool_t::~pool_t()
+    {
+      if (!m_stop)
+      {
+        stop();
+      }
+    }
+
     void pool_t::start ()
     {
       unique_lock lock (m_mutex);

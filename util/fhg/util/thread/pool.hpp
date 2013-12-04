@@ -21,6 +21,7 @@ namespace fhg
 
       explicit
       pool_t (std::size_t nthread, std::string const &name="threadpool");
+      ~pool_t();
 
       void start ();
       void stop ();
