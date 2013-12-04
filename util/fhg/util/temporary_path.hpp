@@ -9,7 +9,7 @@ namespace fhg
 {
   namespace util
   {
-    class temporary_path
+    class temporary_path : boost::noncopyable
     {
     public:
       temporary_path()
