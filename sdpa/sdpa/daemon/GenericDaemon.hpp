@@ -60,6 +60,8 @@
 #include <sdpa/types.hpp>
 #include <sdpa/capability.hpp>
 
+#include <fhg/util/thread/set.hpp>
+
 #define OVERWRITTEN_IN_TEST virtual
 
 namespace sdpa {
@@ -284,6 +286,9 @@ namespace sdpa {
       unsigned int _max_consecutive_registration_attempts;
       unsigned int _max_consecutive_network_faults;
       boost::posix_time::time_duration _registration_timeout;
+      fhg::thread::set _registration_threads;
+
+      void do_registration_after_sleep (const MasterInfo);
     };
   }
 }

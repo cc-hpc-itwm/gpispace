@@ -176,6 +176,8 @@ void GenericDaemon::shutdown( )
   delete ptr_workflow_engine_;
   ptr_workflow_engine_ = NULL;
 
+  _registration_threads.stop_all();
+
   BOOST_REVERSE_FOREACH (std::string stage, _stages_to_remove)
   {
     seda::StageRegistry::instance().remove (stage);
@@ -1016,6 +1018,12 @@ void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
 }
 
 void GenericDaemon::request_registration_soon (const MasterInfo& info)
+{
+  _registration_threads.start
+    (boost::bind (&GenericDaemon::do_registration_after_sleep, this, info));
+}
+
+void GenericDaemon::do_registration_after_sleep (const MasterInfo info)
 {
   DMLOG ( TRACE
         , "Wait " << boost::posix_time::to_simple_string (_registration_timeout)
