@@ -384,7 +384,6 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
         m_guiService->notify (evt);
       }
 
-      //scheduler()->schedule_local(job_id);
       submitWorkflow(job_id);
     }
     else
