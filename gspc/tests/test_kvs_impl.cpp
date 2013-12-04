@@ -258,8 +258,7 @@ BOOST_AUTO_TEST_CASE (test_impl_get_regex)
 
   while (it != end)
   {
-    if (it->first == "foo.bar")
-      BOOST_ERROR ("key 'foo.bar' must not be in the result set");
+    BOOST_REQUIRE_NE (it->first, "foo.bar");
     ++it;
   }
 }
@@ -287,7 +286,7 @@ BOOST_AUTO_TEST_CASE (test_impl_del_regex)
 
   rc = kvs.get ("foo.bar", val);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE (boost::get<std::string>(val) == "bar");
+  BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
 }
 
 BOOST_AUTO_TEST_CASE (test_impl_expiry)
