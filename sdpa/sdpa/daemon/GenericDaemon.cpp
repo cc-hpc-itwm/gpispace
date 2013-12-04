@@ -757,7 +757,7 @@ bool GenericDaemon::canceled(const we::mgmt::layer::id_type& workflowId)
 }
 
 /*
-        Schedule a job locally, send the job to WE
+   Submit a workflow to the workflow engine
 */
 void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 {
