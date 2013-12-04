@@ -4,15 +4,20 @@
 #include <sstream>
 #include <sdpa/JobId.hpp>
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::JobId)
+
 BOOST_AUTO_TEST_CASE (default_constructor)
 {
   const sdpa::JobId jid1;
   const sdpa::JobId jid2;
   const sdpa::JobId jid3;
 
-  BOOST_REQUIRE (jid1 != jid2);
-  BOOST_REQUIRE (jid1 != jid3);
-  BOOST_REQUIRE (jid2 != jid3);
+  BOOST_REQUIRE_NE (jid1, jid2);
+  BOOST_REQUIRE_NE (jid1, jid3);
+  BOOST_REQUIRE_NE (jid2, jid3);
+  BOOST_REQUIRE_EQUAL (jid1, jid1);
+  BOOST_REQUIRE_EQUAL (jid2, jid2);
+  BOOST_REQUIRE_EQUAL (jid3, jid3);
 }
 
 BOOST_AUTO_TEST_CASE (conversion_from_string)
