@@ -11,31 +11,19 @@ typedef fhg::util::ini::parser::flat_map_parser_t <boost::unordered_map<std::str
 
 BOOST_AUTO_TEST_CASE ( parse_no_such_file )
 {
-  try
-  {
-    parse_into_map_t m;
-    fhg::util::ini::parse ("/this/file/does/not/exist", boost::ref(m));
-    BOOST_CHECK (false);
-  }
-  catch (fhg::util::ini::exception::parse_error const &)
-  {
-    // ok
-  }
+  parse_into_map_t m;
+  BOOST_REQUIRE_THROW ( fhg::util::ini::parse ("/this/file/does/not/exist", boost::ref(m))
+                      , fhg::util::ini::exception::parse_error
+                      );
 }
 
 BOOST_AUTO_TEST_CASE ( no_section )
 {
   parse_into_map_t m;
   std::stringstream sstr ("foo = bar");
-  try
-  {
-    fhg::util::ini::parse (sstr, boost::ref(m));
-    BOOST_CHECK (false);
-  }
-  catch (fhg::util::ini::exception::parse_error const &)
-  {
-    // ok
-  }
+  BOOST_REQUIRE_THROW ( fhg::util::ini::parse (sstr, boost::ref(m))
+                      , fhg::util::ini::exception::parse_error
+                      );
 }
 
 BOOST_AUTO_TEST_CASE ( parse_key_value_with_spaces )
@@ -129,13 +117,7 @@ BOOST_AUTO_TEST_CASE ( parse_invalid_line )
 {
   parse_into_map_t m;
   std::stringstream sstr ("illegal line here");
-  try
-  {
-    fhg::util::ini::parse (sstr, boost::ref(m));
-    BOOST_CHECK(false);
-  }
-  catch (fhg::util::ini::exception::parse_error const &)
-  {
-    // ok
-  }
+  BOOST_REQUIRE_THROW ( fhg::util::ini::parse (sstr, boost::ref(m))
+                      , fhg::util::ini::exception::parse_error
+                      );
 }
