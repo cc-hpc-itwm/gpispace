@@ -20,9 +20,9 @@ BOOST_AUTO_TEST_CASE (ba_char)
 
   std::fill (buf, buf + 10, 0);
 
-  BOOST_CHECK (x.copy (buf, 10) == 10);
-  BOOST_CHECK (std::string (buf, buf + 10) == "abcdefghij");
-  BOOST_CHECK (x.copy (buf, 12) == 10);
+  BOOST_CHECK_EQUAL (x.copy (buf, 10), 10);
+  BOOST_CHECK_EQUAL (std::string (buf, buf + 10), "abcdefghij");
+  BOOST_CHECK_EQUAL (x.copy (buf, 12), 10);
 }
 BOOST_AUTO_TEST_CASE (ba_uint64_t)
 {
@@ -32,8 +32,8 @@ BOOST_AUTO_TEST_CASE (ba_uint64_t)
 
   v = 0;
 
-  BOOST_CHECK (x.copy (&v) == sizeof (uint64_t));
-  BOOST_CHECK (v == (1UL << 63));
+  BOOST_CHECK_EQUAL (x.copy (&v), sizeof (uint64_t));
+  BOOST_CHECK_EQUAL (v, (1UL << 63));
 }
 BOOST_AUTO_TEST_CASE (ba_convert)
 {
@@ -41,24 +41,24 @@ BOOST_AUTO_TEST_CASE (ba_convert)
 
   const bytearray::type x (&v);
 
-  BOOST_REQUIRE (sizeof (uint64_t) == 8);
+  BOOST_REQUIRE_EQUAL (sizeof (uint64_t), 8);
 
   char buf[8];
 
-  BOOST_CHECK (x.copy (buf, 8) == 8);
-  BOOST_CHECK (buf[0] == 0);
-  BOOST_CHECK (buf[1] == 0);
-  BOOST_CHECK (buf[2] == 0);
-  BOOST_CHECK (buf[3] == 0);
-  BOOST_CHECK (buf[4] == 0);
-  BOOST_CHECK (buf[5] == 0);
-  BOOST_CHECK (buf[6] == 0);
-  BOOST_CHECK (buf[7] == -128);
+  BOOST_CHECK_EQUAL (x.copy (buf, 8), 8);
+  BOOST_CHECK_EQUAL (buf[0], 0);
+  BOOST_CHECK_EQUAL (buf[1], 0);
+  BOOST_CHECK_EQUAL (buf[2], 0);
+  BOOST_CHECK_EQUAL (buf[3], 0);
+  BOOST_CHECK_EQUAL (buf[4], 0);
+  BOOST_CHECK_EQUAL (buf[5], 0);
+  BOOST_CHECK_EQUAL (buf[6], 0);
+  BOOST_CHECK_EQUAL (buf[7], -128);
 
   v = 0;
 
-  BOOST_CHECK (x.copy (&v) == 8);
-  BOOST_CHECK (v == (1UL << 63));
+  BOOST_CHECK_EQUAL (x.copy (&v), 8);
+  BOOST_CHECK_EQUAL (v, (1UL << 63));
 }
 
 #include <sstream>
@@ -135,9 +135,9 @@ BOOST_AUTO_TEST_CASE (ba_assign_from_ba)
 
   std::fill (buf, buf + 10, 0);
 
-  BOOST_CHECK (y.copy (buf, 10) == 10);
-  BOOST_CHECK (std::string (buf, buf + 10) == "abcdefghij");
-  BOOST_CHECK (y.copy (buf, 12) == 10);
+  BOOST_CHECK_EQUAL (y.copy (buf, 10), 10);
+  BOOST_CHECK_EQUAL (std::string (buf, buf + 10), "abcdefghij");
+  BOOST_CHECK_EQUAL (y.copy (buf, 12), 10);
 }
 
 BOOST_AUTO_TEST_CASE (ba_assign_from_alien)
@@ -148,6 +148,6 @@ BOOST_AUTO_TEST_CASE (ba_assign_from_alien)
 
   float f;
 
-  BOOST_CHECK (ba.copy (&f) == sizeof(float));
-  BOOST_CHECK (f == 1.0f);
+  BOOST_CHECK_EQUAL (ba.copy (&f), sizeof(float));
+  BOOST_CHECK_EQUAL (f, 1.0f);
 }
