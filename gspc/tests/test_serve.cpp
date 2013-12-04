@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 
   for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
   {
-    BOOST_REQUIRE (0 == client->send ("/test/send", "hello world!"));
+    BOOST_REQUIRE_EQUAL (0, client->send ("/test/send", "hello world!"));
   }
 
   while (subscriber.frames.size () != NUM_MSGS_TO_SEND)
@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
 
   for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
   {
-    BOOST_REQUIRE (0 == client->send ("/test/send", "hello world!"));
+    BOOST_REQUIRE_EQUAL (0, client->send ("/test/send", "hello world!"));
   }
 
   while (subscriber.frames.size () != NUM_MSGS_TO_SEND)

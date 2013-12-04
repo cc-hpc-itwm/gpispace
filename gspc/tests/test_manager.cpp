@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE (test_proc_info)
   rc = manager.proc_info (p, info);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (info.id (), p);
-  BOOST_REQUIRE (info.pid () == -1);
+  BOOST_REQUIRE_EQUAL (info.pid (), -1);
   BOOST_REQUIRE_EQUAL (info.argv (), argv);
   BOOST_REQUIRE (info.env ().empty ());
   BOOST_REQUIRE (info.status ());
