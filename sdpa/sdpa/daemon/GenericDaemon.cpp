@@ -539,7 +539,6 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
           // if there still are registered workers, otherwise declare the remaining
           // jobs failed
-          //scheduler()->reschedule(worker_id);
           scheduler()->deleteWorker(worker_id); // do a re-scheduling here
         }
       }
