@@ -39,15 +39,7 @@ void test_permission_denied ()
 {
   using namespace fhg::plugin::core;
 
-  try
-  {
-    FileStorage s ("/");
-    BOOST_REQUIRE (false);
-  }
-  catch (std::exception const &ex)
-  {
-    BOOST_REQUIRE (true);
-  }
+  BOOST_REQUIRE_THROW (FileStorage s ("/"), std::exception);
 }
 
 void test_save_load_delete ()
