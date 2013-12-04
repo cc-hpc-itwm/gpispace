@@ -3,6 +3,8 @@
 #ifndef FHG_UTIL_PRINT_CONTAINER_HPP
 #define FHG_UTIL_PRINT_CONTAINER_HPP
 
+#include <fhg/util/first_then.hpp>
+
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
 
@@ -22,16 +24,14 @@ namespace fhg
       )
     {
       os << header << open;
-      bool first (true);
+
+      const first_then<std::string> pre ("", sep + " ");
       BOOST_FOREACH (const typename C::value_type& x, c)
       {
-        if (!first)
-        {
-          os << sep << " ";
-        }
+        pre (os);
         f (x);
-        first = false;
       }
+
       return os << close;
     }
   }
