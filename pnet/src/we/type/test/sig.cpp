@@ -10,6 +10,8 @@
 #include <we/type/value.hpp>
 #include <we/type/value/poke.hpp>
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::value::value_type)
+
 BOOST_AUTO_TEST_CASE (sig_value)
 {
   namespace value = pnet::type::value;
@@ -39,7 +41,7 @@ BOOST_AUTO_TEST_CASE (sig_value)
   value::poke ("p", vl, vp);
   value::poke ("q", vl, vq);
 
-  BOOST_CHECK (vq == line2D::q::to_value (line2D::q::from_value (vq)));
-  BOOST_CHECK (vp == point2D::to_value (point2D::from_value (vp)));
-  BOOST_CHECK (vl == line2D::to_value (line2D::from_value (vl)));
+  BOOST_CHECK_EQUAL (vq, line2D::q::to_value (line2D::q::from_value (vq)));
+  BOOST_CHECK_EQUAL (vp, point2D::to_value (point2D::from_value (vp)));
+  BOOST_CHECK_EQUAL (vl, line2D::to_value (line2D::from_value (vl)));
 }
