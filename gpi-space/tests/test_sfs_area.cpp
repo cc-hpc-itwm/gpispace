@@ -94,11 +94,11 @@ BOOST_AUTO_TEST_CASE (create_sfs_segment)
   int fd = open ( ((path_to_shared_file / "data").string ().c_str ())
                 , O_RDONLY
                 );
-  BOOST_REQUIRE (fd >= 0);
+  BOOST_REQUIRE_GE (fd, 0);
 
   char buf [size];
   int read_bytes (read (fd, buf, size));
-  BOOST_REQUIRE (read_bytes >= 0);
+  BOOST_REQUIRE_GE (read_bytes, 0);
   BOOST_CHECK_EQUAL (size, gpi::pc::type::size_t (read_bytes));
   close (fd);
 
