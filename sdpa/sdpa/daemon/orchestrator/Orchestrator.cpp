@@ -202,17 +202,34 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
   pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
-      // send immediately an acknowledgment to the component that requested the cancellation
-      CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
+      if(pJob->getStatus() == sdpa::status::CANCELED)
+      {
+          sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                              , pEvt->from()
+                                                              , ErrorEvent::SDPA_EJOBALREADYCANCELED
+                                                              , "Job already canceled" )
+                                                   ));
+          return;
+      }
+      else
+      {
+        // send immediately an acknowledgment to the component that requested the cancellation
+        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
 
-      if(!isSubscriber(pJob->owner()))
-        sendEventToMaster(pCancelAckEvt);
+        if(!isSubscriber(pJob->owner()))
+          sendEventToMaster(pCancelAckEvt);
 
-      notifySubscribers(pCancelAckEvt);
+        notifySubscribers(pCancelAckEvt);
+      }
   }
   else
   {
-      SDPA_LOG_WARN("Job "<<pEvt->job_id()<<" not found!");
+      DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
+      sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                         , pEvt->from()
+                                                         , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                         , "No such job found" )
+                                                        ));
       return;
   }
 
