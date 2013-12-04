@@ -1,12 +1,10 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
-
 #include <sdpa/daemon/GenericDaemon.hpp>
 
-using namespace std;
-using namespace sdpa::events;
-using namespace sdpa::daemon;
+namespace sdpa {
+  namespace daemon {
 
 CoallocationScheduler::CoallocationScheduler(GenericDaemon* pCommHandler)
   : SchedulerBase(pCommHandler)
@@ -237,7 +235,7 @@ void CoallocationScheduler::checkAllocations()
     }
   }
 
-  ostringstream oss;
+  std::ostringstream oss;
   BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
   {
     oss<<worker_id<<":"<<worker_cnt_map[worker_id]<<" ";
@@ -304,3 +302,5 @@ bool CoallocationScheduler::groupFinished(const sdpa::job_id_t& jid)
   else
     throw JobNotFoundException(jid);
 }
+
+}}
