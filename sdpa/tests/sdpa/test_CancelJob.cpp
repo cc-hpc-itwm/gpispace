@@ -92,3 +92,47 @@ BOOST_AUTO_TEST_CASE (Test2)
     , sdpa::status::CANCELED
     );
 }
+
+BOOST_AUTO_TEST_CASE (TestCancelTwice)
+{
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/transform_file.pnet"));
+
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1");
+  const utils::agent agent
+    ("agent_0", "127.0.0.1", orchestrator);
+
+  const utils::drts_worker worker_0
+    ( "drts_0", agent
+    , ""
+    , TESTS_TRANSFORM_FILE_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
+  const utils::drts_worker worker_1
+    ( "drts_1", agent
+    , ""
+    , TESTS_TRANSFORM_FILE_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
+
+  sdpa::job_id_t job_id;
+  BOOST_REQUIRE_EQUAL
+    ( utils::client::submit_job_and_cancel_and_wait_for_termination
+      (workflow, orchestrator, job_id)
+    , sdpa::status::CANCELED
+    );
+
+  sdpa::client::Client client (orchestrator.name());
+  bool b_job_already_canceled(true);
+  try {
+      client.cancelJob(job_id);
+      b_job_already_canceled = false;
+  }
+  catch(const std::runtime_error&)
+  {
+      DMLOG(TRACE, "The job "<<job_id<<" was already canceled!");
+  }
+
+  BOOST_REQUIRE(b_job_already_canceled);
+}
