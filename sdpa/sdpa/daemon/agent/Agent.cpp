@@ -490,8 +490,28 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
       DMLOG (TRACE, "Job "<<pEvt->job_id()<<" not found!");
       if (pEvt->from () == sdpa::daemon::WE)
         workflowEngine()->canceled (pEvt->job_id ());
+      else
+      {
+        DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
+        sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                          , pEvt->from()
+                                                          , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                          , "No such job found" )
+                                                         ));
+      }
+
      return;
    }
+
+  if(pJob->getStatus() == sdpa::status::CANCELED)
+  {
+      sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                          , pEvt->from()
+                                                          , ErrorEvent::SDPA_EJOBALREADYCANCELED
+                                                          , "Job already canceled" )
+                                               ));
+      return;
+  }
 
   if( isTop() )
   {
