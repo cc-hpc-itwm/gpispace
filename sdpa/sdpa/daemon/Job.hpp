@@ -124,8 +124,8 @@ namespace sdpa {
         //      +---------------+---------------------------------------+--------------+---------------------+-----
         _row<   Pending,        MSMResumeJobEvent,                      Running >,
         _row<   Pending,        events::CancelJobEvent, 		Canceled>,
-        a_row<  Pending,        events::JobFinishedEvent,         Finished,       &sm::action_job_finished >,
-        a_row<  Pending,        events::JobFailedEvent,           Failed,         &sm::action_job_failed >,
+        a_row<  Pending,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished >,
+        a_row<  Pending,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
         a_row<  Pending,        MSMStalledEvent,                        Stalled,        &sm::action_job_stalled >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_row<  Stalled,        MSMResumeJobEvent,        		Running,        &sm::action_resume_job >,
@@ -133,9 +133,9 @@ namespace sdpa {
         _irow<  Stalled,        MSMStalledEvent>,
         _row<   Stalled,        sdpa::events::CancelJobEvent,           Canceling>,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
-        a_row<  Running,        events::JobFinishedEvent,         Finished,       &sm::action_job_finished>,
-        a_row<  Running,        events::JobFailedEvent,           Failed,         &sm::action_job_failed >,
-        _row<   Running,        events::CancelJobEvent,           Canceling>,
+        a_row<  Running,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished>,
+        a_row<  Running,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
+        _row<   Running,        events::CancelJobEvent,                 Canceling>,
         a_row<  Running,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
         a_row<  Running,        MSMStalledEvent,        		Stalled,        &sm::action_job_stalled >,
         _irow<  Running,        MSMResumeJobEvent>,
