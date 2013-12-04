@@ -1,11 +1,9 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 #include <sdpa/daemon/scheduler/SimpleScheduler.hpp>
-
 #include <sdpa/daemon/GenericDaemon.hpp>
 
-using namespace sdpa::daemon;
-using namespace sdpa::events;
-using namespace std;
+namespace sdpa {
+  namespace daemon {
 
 SimpleScheduler::SimpleScheduler(GenericDaemon* pCommHandler)
   : SchedulerBase (pCommHandler)
@@ -48,7 +46,11 @@ void SimpleScheduler::assignJobsToWorkers()
         }
         catch(const WorkerNotFoundException&) {
            DMLOG (TRACE, "The worker " << matchingWorkerId << " is not registered! Sending a notification ...");
-           ErrorEvent::Ptr pErrorEvt(new ErrorEvent(m_agent_name, matchingWorkerId, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
+           sdpa::events::ErrorEvent::Ptr pErrorEvt(
+               new sdpa::events::ErrorEvent(m_agent_name,
+                                             matchingWorkerId,
+                                             sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG,
+                                             "not registered") );
            ptr_comm_handler_->sendEventToSlave(pErrorEvt);
            ptr_comm_handler_->pause(jobId);
         }
@@ -89,3 +91,5 @@ boost::optional<sdpa::worker_id_t> SimpleScheduler::getAssignedWorker(const sdpa
       return boost::optional<sdpa::worker_id_t>();
   }
 }
+
+}}
