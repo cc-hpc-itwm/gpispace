@@ -190,6 +190,7 @@ install (FILES
   we/type/value/show.hpp
   we/type/value/to_value.hpp
   we/type/value/wrap.hpp
+  we/type/value/unwrap.hpp
   DESTINATION include/we/type/value
   COMPONENT sdk
 )

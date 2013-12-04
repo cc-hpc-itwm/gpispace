@@ -12,6 +12,7 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 #include <we/type/value/wrap.hpp>
+#include <we/type/value/unwrap.hpp>
 #include <we/type/value/to_value.hpp>
 #include <we/field.hpp>
 
@@ -391,6 +392,31 @@ BOOST_AUTO_TEST_CASE (signature_name_of)
   CHECK (MAP, m);
 
 #undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (unwrap)
+{
+  namespace value = pnet::type::value;
+
+  //! \todo implement me
+  {
+    std::list<value::value_type> lv;
+    std::list<long> lt;
+
+    BOOST_CHECK (lt == value::unwrap<long> (lv));
+  }
+
+  {
+    std::list<value::value_type> lv;
+    lv.push_back (0L);
+    lv.push_back (1L);
+
+    std::list<long> lt;
+    lt.push_back (0L);
+    lt.push_back (1L);
+
+    BOOST_CHECK (lt == value::unwrap<long> (lv));
+  }
 }
 
 BOOST_AUTO_TEST_CASE (wrap)
