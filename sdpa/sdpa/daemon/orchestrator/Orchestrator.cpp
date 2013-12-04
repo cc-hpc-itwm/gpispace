@@ -151,7 +151,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   if(pJob)
   {
       pJob->JobFailed(pEvt);
-      SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+      SDPA_LOG_DEBUG("The job state is: "<<sdpa::status::show(pJob->getStatus()));
   }
   else
   {
