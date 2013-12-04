@@ -23,7 +23,7 @@ namespace
   public:
     fixture()
     {
-      BOOST_REQUIRE (boost::unit_test::framework::master_test_suite().argc >= 2);
+      BOOST_REQUIRE_GE (boost::unit_test::framework::master_test_suite().argc, 2);
       path_to_pnets = boost::unit_test::framework::master_test_suite().argv[1];
     }
 
