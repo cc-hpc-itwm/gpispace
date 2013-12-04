@@ -761,7 +761,7 @@ bool GenericDaemon::canceled(const we::mgmt::layer::id_type& workflowId)
 */
 void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 {
-  DMLOG (TRACE, "Schedule the job "<<jobId.str()<<" to the workflow engine!");
+  DMLOG (TRACE, "Submit the job "<<jobId<<" to the workflow engine");
 
   we::mgmt::layer::id_type wf_id = jobId.str();
 
