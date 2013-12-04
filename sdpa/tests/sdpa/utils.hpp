@@ -8,6 +8,7 @@
 #include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <sdpa/plugins/drts.hpp>
 
 #include <fhg/plugin/core/kernel.hpp>
 #include <fhg/plugin/plugin.hpp>
@@ -203,6 +204,13 @@ namespace utils
         _thread.join();
       }
       _kernel->unload_all();
+    }
+
+    void add_capability(std::string const &cap)
+    {
+      drts::DRTS *drts_plugin = _kernel->lookup_plugin_as<drts::DRTS>("drts");
+      BOOST_REQUIRE(drts_plugin);
+      drts_plugin->add_virtual_capability(cap);
     }
 
     boost::shared_ptr<fhg::core::kernel_t> _kernel;
