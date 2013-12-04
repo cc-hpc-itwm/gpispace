@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
     usleep (100);
   }
 
-  BOOST_REQUIRE (clients_created > 0);
+  BOOST_REQUIRE_GT (clients_created, 0);
   BOOST_REQUIRE_EQUAL (clients.size (), clients_created);
   BOOST_REQUIRE_EQUAL (subscriber.frames.size (), clients_created);
 

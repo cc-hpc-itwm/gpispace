@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE (test_exec)
   argv.push_back ("world");
 
   p = manager.exec (argv);
-  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_GT (p, 0);
   BOOST_REQUIRE_EQUAL (handler.proc, p);
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
 
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (test_echo_no_newline)
   argv.push_back ("world");
 
   p = manager.exec (argv);
-  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_GT (p, 0);
 
   rc = manager.wait (p, &status);
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE (test_no_output)
   argv.push_back ("/bin/true");
 
   p = manager.exec (argv);
-  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_GT (p, 0);
 
   rc = manager.wait (p, &status);
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE (test_cat)
   argv.push_back ("/proc/cpuinfo");
 
   p = manager.exec (argv);
-  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_GT (p, 0);
 
   rc = manager.wait (p, &status);
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE (test_many_processes)
     argv.push_back ("/bin/true");
 
     p = manager.exec (argv);
-    BOOST_REQUIRE (p > 0);
+    BOOST_REQUIRE_GT (p, 0);
 
     rc = manager.wait (p, &status);
     BOOST_REQUIRE_EQUAL (rc, 0);
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE (test_sigterm)
   argv.push_back ("/bin/cat");
 
   p = manager.exec (argv);
-  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_GT (p, 0);
 
   rc = manager.kill (p, SIGTERM);
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -275,12 +275,12 @@ BOOST_AUTO_TEST_CASE (test_proc_info)
   argv.push_back ("/bin/cat");
 
   p = manager.exec (argv, gspc::rif::env_t ());
-  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_GT (p, 0);
 
   rc = manager.proc_info (p, info);
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_EQUAL (info.id (), p);
-  BOOST_REQUIRE (info.pid () > 1);
+  BOOST_REQUIRE_GT (info.pid (), 1);
   BOOST_REQUIRE_EQUAL (info.argv (), argv);
   BOOST_REQUIRE (info.env ().empty ());
   BOOST_REQUIRE (not info.status ());
@@ -327,12 +327,12 @@ BOOST_AUTO_TEST_CASE (test_communicate)
   argv.push_back ("/bin/cat");
 
   p = manager.exec (argv);
-  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_GT (p, 0);
 
   const std::string text = "hello world!";
 
   rc = manager.write (p, STDIN_FILENO, text.c_str (), text.size (), ec);
-  BOOST_REQUIRE (rc > 0);
+  BOOST_REQUIRE_GT (rc, 0);
   BOOST_REQUIRE_EQUAL ((std::size_t)rc, text.size ());
 
   do
@@ -342,7 +342,7 @@ BOOST_AUTO_TEST_CASE (test_communicate)
       usleep (500);
   }
   while (rc <= 0);
-  BOOST_REQUIRE (rc > 0);
+  BOOST_REQUIRE_GT (rc, 0);
   BOOST_REQUIRE_EQUAL ((std::size_t)rc, text.size ());
 
   rc = manager.read (p, STDOUT_FILENO, buf, sizeof(buf), ec);
@@ -379,7 +379,7 @@ BOOST_AUTO_TEST_CASE (test_async_handler)
   argv.push_back ("1");
 
   p = manager.exec (argv);
-  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_GT (p, 0);
   BOOST_REQUIRE_EQUAL (handler.proc, p);
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
 
@@ -413,7 +413,7 @@ BOOST_AUTO_TEST_CASE (test_wait_twice)
   argv.push_back ("/bin/cat");
 
   p = manager.exec (argv);
-  BOOST_REQUIRE (p > 0);
+  BOOST_REQUIRE_GT (p, 0);
   BOOST_REQUIRE_EQUAL (handler.proc, p);
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
 

@@ -453,7 +453,7 @@ BOOST_AUTO_TEST_CASE (test_supervise_terminate_start)
   {
     gspc::rif::supervisor_t::child_info_t info =
       sup.get_child_info ("cat");
-    BOOST_REQUIRE (info.proc > 0);
+    BOOST_REQUIRE_GT (info.proc, 0);
   }
 
   sem.P ();
@@ -465,7 +465,7 @@ BOOST_AUTO_TEST_CASE (test_supervise_terminate_start)
   {
     gspc::rif::supervisor_t::child_info_t info =
       sup.get_child_info ("cat");
-    BOOST_REQUIRE (info.proc <= 0);
+    BOOST_REQUIRE_LE (info.proc, 0);
   }
 
   sem.P ();
@@ -480,7 +480,7 @@ BOOST_AUTO_TEST_CASE (test_supervise_terminate_start)
   {
     gspc::rif::supervisor_t::child_info_t info =
       sup.get_child_info ("cat");
-    BOOST_REQUIRE (info.proc > 0);
+    BOOST_REQUIRE_GT (info.proc, 0);
   }
 
   sup.stop ();

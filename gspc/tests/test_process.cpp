@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
 
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE (proc.pid () > 0);
+  BOOST_REQUIRE_GT (proc.pid (), 0);
 
   std::string text ("hello world\n");
   BOOST_REQUIRE_EQUAL ( proc.write (text.c_str (), text.size ())
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE (test_echo)
   rc = proc.fork_and_exec ();
 
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE (proc.pid () > 0);
+  BOOST_REQUIRE_GT (proc.pid (), 0);
 
   std::string text ("hello world\n");
   BOOST_REQUIRE_EQUAL ( proc.read (buf, sizeof(buf))
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE (test_echo_no_newline)
   rc = proc.fork_and_exec ();
 
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE (proc.pid () > 0);
+  BOOST_REQUIRE_GT (proc.pid (), 0);
 
   std::string text ("hello world");
   BOOST_REQUIRE_EQUAL ( proc.read (buf, sizeof (buf))
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE (test_no_such_file_or_directory)
   rc = proc.fork_and_exec ();
 
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE (proc.pid () > 0);
+  BOOST_REQUIRE_GT (proc.pid (), 0);
 
   rc = proc.waitpid ();
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE (test_permission_denied)
   rc = proc.fork_and_exec ();
 
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE (proc.pid () > 0);
+  BOOST_REQUIRE_GT (proc.pid (), 0);
 
   rc = proc.waitpid ();
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE (test_environment)
   rc = proc.fork_and_exec ();
 
   BOOST_REQUIRE_EQUAL (rc, 0);
-  BOOST_REQUIRE (proc.pid () > 0);
+  BOOST_REQUIRE_GT (proc.pid (), 0);
 
   proc.read (buf, sizeof(buf));
 
