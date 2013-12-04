@@ -3,11 +3,7 @@
 #ifndef FHG_UTIL_BOOST_OPTIONAL_HPP
 #define FHG_UTIL_BOOST_OPTIONAL_HPP
 
-#include <fhg/util/show.hpp>
-
 #include <boost/optional.hpp>
-
-#include <ostream>
 
 namespace fhg
 {
@@ -15,10 +11,8 @@ namespace fhg
   {
     namespace boost
     {
-      using namespace ::boost;
-
       template<typename T, typename U>
-        boost::optional<U> fmap (U (*f)(const T &), const optional<T>& m)
+      boost::optional<U> fmap (U (*f)(const T &), const boost::optional<T>& m)
       {
         if (m)
         {
@@ -27,15 +21,6 @@ namespace fhg
         else
         {
           return boost::none;
-        }
-      }
-
-      template<typename T>
-        void fmap (void (*f)(const T &), const optional<T> & m)
-      {
-        if (m)
-        {
-          f (*m);
         }
       }
     }

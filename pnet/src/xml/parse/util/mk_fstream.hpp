@@ -12,8 +12,6 @@
 
 #include <xml/parse/error.hpp>
 
-#include <fhg/util/filesystem.hpp>
-
 namespace xml
 {
   namespace parse

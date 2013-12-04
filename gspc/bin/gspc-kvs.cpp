@@ -253,7 +253,7 @@ int main (int argc, char *argv [], char *envp [])
 
       try
       {
-        timeout = fhg::util::read<int> (argv [i++]);
+        timeout = fhg::util::read_int (argv [i++]);
       }
       catch (std::exception const &ex)
       {
@@ -436,7 +436,7 @@ int main (int argc, char *argv [], char *envp [])
       int ttl;
       try
       {
-        ttl = fhg::util::read<int>(argv [i++]);
+        ttl = fhg::util::read_int(argv [i++]);
       }
       catch (std::exception const &ex)
       {
@@ -458,7 +458,7 @@ int main (int argc, char *argv [], char *envp [])
       int ttl;
       try
       {
-        ttl = fhg::util::read<int>(argv [i++]);
+        ttl = fhg::util::read_int(argv [i++]);
       }
       catch (std::exception const &ex)
       {
@@ -516,7 +516,7 @@ int main (int argc, char *argv [], char *envp [])
       int mask;
       try
       {
-        mask = fhg::util::read<int>(mask_string);
+        mask = fhg::util::read_int(mask_string);
       }
       catch (std::exception const &ex)
       {

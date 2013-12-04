@@ -102,7 +102,7 @@ public:
 
           try
           {
-            child.max_restarts = fhg::util::read<size_t> (value);
+            child.max_restarts = fhg::util::read_size_t (value);
           }
           catch (std::exception const &)
           {
@@ -122,7 +122,7 @@ public:
 
           try
           {
-            child.max_start_time = fhg::util::read<size_t> (value);
+            child.max_start_time = fhg::util::read_size_t (value);
           }
           catch (std::exception const &)
           {
@@ -170,7 +170,7 @@ public:
           {
             try
             {
-              child.timeout = fhg::util::read<int> (mode);
+              child.timeout = fhg::util::read_int (mode);
               child.shutdown_mode = gspc::rif::child_descriptor_t::SHUTDOWN_WITH_TIMEOUT;
             }
             catch (std::exception const &)

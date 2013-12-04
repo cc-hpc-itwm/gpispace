@@ -3,8 +3,6 @@
 #ifndef _REWRITE_VALID_PREFIX_HPP
 #define _REWRITE_VALID_PREFIX_HPP 1
 
-#include <boost/filesystem/path.hpp>
-
 #include <fhg/util/starts_with.hpp>
 
 namespace rewrite

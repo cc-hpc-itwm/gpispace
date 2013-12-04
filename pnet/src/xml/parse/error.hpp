@@ -17,7 +17,6 @@
 
 #include <fhg/util/join.hpp>
 #include <fhg/util/backtracing_exception.hpp>
-#include <fhg/util/boost/optional.hpp>
 
 #include <xml/parse/rapidxml/1.13/rapidxml.hpp>
 
@@ -916,7 +915,7 @@ namespace xml
                    )
             : formatted ( name
                         , function
-                        , "expected " + fhg::util::show (what)
+                        , "expected " + what
                         , k
                         , path
                         )

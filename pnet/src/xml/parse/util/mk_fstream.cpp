@@ -4,7 +4,7 @@
 
 #include <xml/parse/error.hpp>
 
-#include <fhg/util/filesystem.hpp>
+#include <boost/filesystem.hpp>
 
 namespace xml
 {
@@ -21,7 +21,10 @@ namespace xml
 
         path.remove_filename();
 
-        if (!fhg::util::mkdirs (path))
+        if (not (  boost::filesystem::is_directory (path)
+                || boost::filesystem::create_directories (path)
+                )
+           )
           {
             throw error::could_not_create_directory (path);
           }
@@ -112,7 +115,10 @@ namespace xml
 
         path.remove_filename();
 
-        if (!fhg::util::mkdirs (path))
+        if (not (  boost::filesystem::is_directory (path)
+                || boost::filesystem::create_directories (path)
+                )
+           )
           {
             throw error::could_not_create_directory (path);
           }

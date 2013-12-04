@@ -85,7 +85,7 @@ namespace gspc
       if (frame.get_command () == "ERROR" && frame.get_header ("code"))
       {
         error_code_t e =
-          static_cast<error_code_t>(fhg::util::read<int>(*frame.get_header ("code")));
+          static_cast<error_code_t>(fhg::util::read_int(*frame.get_header ("code")));
         if (e != E_OK)
         {
           return make_error_code (e);
