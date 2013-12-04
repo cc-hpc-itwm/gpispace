@@ -6,6 +6,8 @@
 
 #include "mock_user.hpp"
 
+#include <iostream>
+
 BOOST_AUTO_TEST_CASE (test_initialize_shutdown)
 {
   gspc::net::initializer _net_init;

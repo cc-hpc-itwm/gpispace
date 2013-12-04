@@ -17,6 +17,8 @@
 
 #include <boost/scoped_ptr.hpp>
 
+#include <iostream>
+
 namespace fs = boost::filesystem;
 
 namespace gspc

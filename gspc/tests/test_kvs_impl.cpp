@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include <algorithm>    // std::sort
+#include <iostream>
 
 #include <fhg/util/now.hpp>
 #include <boost/format.hpp>

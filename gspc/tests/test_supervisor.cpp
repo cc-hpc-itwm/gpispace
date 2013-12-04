@@ -11,6 +11,8 @@
 
 #include <boost/foreach.hpp>
 
+#include <iostream>
+
 struct F
 {
   F ()
