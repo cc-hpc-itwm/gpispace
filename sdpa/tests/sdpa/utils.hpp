@@ -323,11 +323,11 @@ namespace utils
     }
 
     sdpa::status::code submit_job_and_cancel_and_wait_for_termination
-      (std::string workflow, const orchestrator& orch)
+      (std::string workflow, const orchestrator& orch, sdpa::job_id_t job_id_user = sdpa::job_id_t())
     {
       sdpa::client::Client c (orch.name());
 
-      const sdpa::job_id_t job_id_user (submit_job (c, workflow));
+      job_id_user = submit_job (c, workflow);
       //! \todo There should not be a requirement for this!
       boost::this_thread::sleep (boost::posix_time::seconds (1));
       cancel_job (c, job_id_user);
