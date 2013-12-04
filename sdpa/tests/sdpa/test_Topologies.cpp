@@ -156,11 +156,11 @@ BOOST_AUTO_TEST_CASE (one_worker_with_multiple_master_agents)
 
 BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
 {
-  // O-\
+  // O-+
   // | |
   // A A
   // | |
-  // A-/
+  // A-+
   // |
   // W
 
