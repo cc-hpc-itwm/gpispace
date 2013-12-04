@@ -553,13 +553,14 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
             if( error.from() == masterInfo.name() )
             {
               DMLOG (WARN, "The connection to the master " << masterInfo.name() << " is broken!");
+              masterInfo.set_registered(false);
               masterInfo.incConsecNetFailCnt();
 
               if( masterInfo.getConsecNetFailCnt() < _max_consecutive_network_faults)
               {
+                DMLOG (TRACE, "Wait " << boost::posix_time::to_simple_string (_registration_timeout) << " before trying to re-register ...");
                 boost::this_thread::sleep (_registration_timeout);
-
-                masterInfo.set_registered(false);
+                requestRegistration(masterInfo);
               }
               else
                 listDeadMasters.push_back( masterInfo.name() );
