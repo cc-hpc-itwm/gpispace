@@ -377,14 +377,14 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addCapabilities(lastWorkerId, cpbSet);
 
-  BOOST_REQUIRE(_scheduler.findWorker(lastWorkerId)->nbAllocatedJobs()==0);
+  BOOST_REQUIRE_EQUAL (_scheduler.findWorker(lastWorkerId)->nbAllocatedJobs(), 0);
 
   _scheduler.assignJobsToWorkers();
 
   sdpa::job_id_t jobId = listJobIds.front();
   // check if the job was assigned to any worker
   boost::optional<sdpa::worker_id_t> assgnWid = _scheduler.getAssignedWorker(jobId);
-  BOOST_REQUIRE(*assgnWid == lastWorkerId);
+  BOOST_REQUIRE_EQUAL (*assgnWid, lastWorkerId);
   workerList.remove(*assgnWid);
   listJobIds.pop_front();
 
@@ -438,7 +438,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   BOOST_FOREACH(const sdpa::worker_id_t& wid, arrWorkerIds)
   {
-    BOOST_REQUIRE(_scheduler.findWorker(wid)->nbAllocatedJobs()==1);
+    BOOST_REQUIRE_EQUAL (_scheduler.findWorker(wid)->nbAllocatedJobs(), 1);
   }
 
   osstr.str("");
@@ -452,14 +452,14 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addWorker(lastWorkerId, 1, cpbSet);
 
-  BOOST_REQUIRE(_scheduler.findWorker(lastWorkerId)->nbAllocatedJobs()==0);
+  BOOST_REQUIRE_EQUAL (_scheduler.findWorker(lastWorkerId)->nbAllocatedJobs(), 0);
 
   LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
   _scheduler.assignJobsToWorkers();
 
   BOOST_FOREACH(const sdpa::worker_id_t& wid, arrWorkerIds)
   {
-    BOOST_REQUIRE(_scheduler.findWorker(wid)->nbAllocatedJobs()==1);
+    BOOST_REQUIRE_EQUAL (_scheduler.findWorker(wid)->nbAllocatedJobs(), 1);
   }
 }
 
