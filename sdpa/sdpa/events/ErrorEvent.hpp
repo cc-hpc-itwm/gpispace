@@ -21,6 +21,7 @@ namespace sdpa
           SDPA_EJOBEXISTS,
           SDPA_EJOBREJECTED,
           SDPA_EJOBNOTDELETED,
+          SDPA_EJOBALREADYCANCELED,
           SDPA_EWORKERNOTREG,
           SDPA_ENODE_SHUTDOWN,
           SDPA_EBUSY,
