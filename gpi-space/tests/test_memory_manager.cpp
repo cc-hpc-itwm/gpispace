@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   BOOST_CHECK_EQUAL (2048U, area.descriptor().avail);
 
   gpi::pc::type::handle_t hdl (area.alloc(1, 64, "scratch", 0));
-  BOOST_CHECK (hdl != 0);
+  BOOST_CHECK_NE (hdl, gpi::pc::type::handle_t());
   BOOST_CHECK_EQUAL (2048u, area.descriptor().local_size);
   BOOST_CHECK_EQUAL (2048u - 64, area.descriptor().avail);
 
