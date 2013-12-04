@@ -362,11 +362,10 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_no_mmap)
   }
   catch (std::exception const &ex)
   {
-    BOOST_CHECK_MESSAGE ( false
-                        , "could not allocate sfs segment of size: " << size
-                        << ": " << ex.what ()
-                        << " - please check 'ulimit -v'"
-                        );
+    BOOST_ERROR ( "could not allocate sfs segment of size: " << size
+                << ": " << ex.what ()
+                << " - please check 'ulimit -v'"
+                );
   }
 }
 
@@ -414,11 +413,10 @@ BOOST_AUTO_TEST_CASE (test_read)
   }
   catch (std::exception const &ex)
   {
-    BOOST_CHECK_MESSAGE ( false
-                        , "could not allocate sfs segment of size: " << size
-                        << ": " << ex.what ()
-                        << " - please check 'ulimit -v'"
-                        );
+    BOOST_ERROR ( "could not allocate sfs segment of size: " << size
+                << ": " << ex.what ()
+                << " - please check 'ulimit -v'"
+                );
   }
 }
 
