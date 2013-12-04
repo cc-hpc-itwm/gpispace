@@ -173,20 +173,14 @@ BOOST_AUTO_TEST_CASE (too_new_segment_version)
     ofs << "SFS version " << (sfs_area_t::SFS_VERSION + 1) << std::endl;
   }
 
-  try
-  {
-    sfs_area_t area ( 0
-                    , path_to_shared_file
-                    , size
-                    , gpi::pc::F_PERSISTENT
-                    , topology
-                    );
-    BOOST_CHECK_MESSAGE (false, "succeeded to open a newer sfs area version!");
-  }
-  catch (std::exception const &ex)
-  {
-    // ok
-  }
+  BOOST_REQUIRE_THROW ( sfs_area_t ( 0
+                                   , path_to_shared_file
+                                   , size
+                                   , gpi::pc::F_PERSISTENT
+                                   , topology
+                                   )
+                      , std::exception
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (garbage_segment_version)
@@ -214,21 +208,14 @@ BOOST_AUTO_TEST_CASE (garbage_segment_version)
     ofs << "garbage" << std::endl;
   }
 
-  try
-  {
-    sfs_area_t area ( 0
-                    , path_to_shared_file
-                    , size
-                    , gpi::pc::F_PERSISTENT
-                    , topology
-                    );
-    BOOST_CHECK_MESSAGE
-      (false, "succeeded to open an sfs area with an invalid version!");
-  }
-  catch (std::exception const &ex)
-  {
-    // ok
-  }
+  BOOST_REQUIRE_THROW ( sfs_area_t ( 0
+                                   , path_to_shared_file
+                                   , size
+                                   , gpi::pc::F_PERSISTENT
+                                   , topology
+                                   )
+                      , std::exception
+                      );
 }
 
 BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
@@ -446,34 +433,25 @@ BOOST_AUTO_TEST_CASE (test_already_open)
 
   const gpi::pc::type::size_t size = (1L << 20); // 1 MB
 
-  try
-  {
-    sfs_area_t area ( 0
-                    , path_to_shared_file
-                    , size
-                    , gpi::pc::F_PERSISTENT
-                    + gpi::pc::F_NOMMAP
-                    , topology
-                    );
-    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
-    area.set_id (2);
+  sfs_area_t area ( 0
+                  , path_to_shared_file
+                  , size
+                  , gpi::pc::F_PERSISTENT
+                  + gpi::pc::F_NOMMAP
+                  , topology
+                  );
+  BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
+  area.set_id (2);
 
-    sfs_area_t area_51 ( 0
-                       , path_to_shared_file
-                       , size
-                       , gpi::pc::F_PERSISTENT
-                       + gpi::pc::F_NOMMAP
-                       , topology
-                       );
-
-    BOOST_CHECK_MESSAGE ( false
-                        , "it was possible to open the same sfs segment twice!"
-                        );
-  }
-  catch (std::exception const &ex)
-  {
-    // ok
-  }
+  BOOST_REQUIRE_THROW ( sfs_area_t ( 0
+                                   , path_to_shared_file
+                                   , size
+                                   , gpi::pc::F_PERSISTENT
+                                   + gpi::pc::F_NOMMAP
+                                   , topology
+                                   )
+                      , std::exception
+                      );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
