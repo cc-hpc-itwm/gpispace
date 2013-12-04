@@ -138,15 +138,10 @@ BOOST_AUTO_TEST_CASE ( parse_peer_info_wo_port )
   using namespace fhg::com;
 
   const std::string url ("localhost");
-  try
-  {
-    peer_info_t pi = peer_info_t::from_string (url);
-    BOOST_ERROR ("peer_info instantiation without port specification should fail");
-  }
-  catch (...)
-  {
-    // ok
-  }
+
+  BOOST_REQUIRE_THROW ( peer_info_t::from_string (url)
+                      , std::runtime_error
+                      );
 }
 
 BOOST_AUTO_TEST_CASE ( parse_peer_info_wi_name )
@@ -322,15 +317,9 @@ BOOST_AUTO_TEST_CASE ( send_to_nonexisting_peer )
 
   peer_1.start();
 
-  try
-  {
-    peer_1.send("some-unknown-peer", "hello world!");
-    BOOST_ERROR ( "send to unknown peer did not fail with an exception!" );
-  }
-  catch (std::exception const & ex)
-  {
-    // ok
-  }
+  BOOST_CHECK_THROW ( peer_1.send("some-unknown-peer", "hello world!")
+                    , std::exception
+                    );
 
   peer_1.stop();
   thrd_1.join ();
