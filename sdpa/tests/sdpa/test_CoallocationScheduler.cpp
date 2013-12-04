@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   {
       sdpa::worker_id_list_t listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId);
 
-      BOOST_CHECK(listJobAssignedWorkers.size() <= 1);
+      BOOST_CHECK_LE (listJobAssignedWorkers.size(), 1);
       if(!listJobAssignedWorkers.empty())
       {
           // delete the job
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _scheduler.getListNotAllocatedWorkers(workerList);
   // all workers should be assigned a job, excepting the last one,
   // which doesn't fit with the job reqs
-  BOOST_CHECK(workerList.size()==1);
+  BOOST_CHECK_EQUAL (workerList.size(), 1);
 
   // the last worker gains now the missing capability
   //and will eventually receive one job ...
