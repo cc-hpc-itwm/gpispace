@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
       }
 
       std::cerr << "failed: " << strerror (-rc) << std::endl;
-      BOOST_REQUIRE (rc != 0);
+      BOOST_REQUIRE_NE (rc, 0);
     }
 
     rc = client->send_sync ("/test", "", boost::posix_time::seconds (3));

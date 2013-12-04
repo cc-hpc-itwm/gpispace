@@ -94,7 +94,7 @@ void test_hierachy ()
   using namespace fhg::plugin::core;
   NullStorage s;
 
-  BOOST_REQUIRE (s.remove ("dummy") != -EISDIR);
+  BOOST_REQUIRE_NE (s.remove ("dummy"), -EISDIR);
   BOOST_REQUIRE_EQUAL (s.save("dummy", "dummy"), 0);
 
   BOOST_REQUIRE_EQUAL (s.add_storage ("dummy"), -ENOTDIR);
