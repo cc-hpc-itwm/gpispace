@@ -7,6 +7,8 @@
 
 #include <we/type/value/poke.hpp>
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::signature::signature_type)
+
 BOOST_AUTO_TEST_CASE (signature)
 {
   using pnet::type::value::value_type;
@@ -17,7 +19,7 @@ BOOST_AUTO_TEST_CASE (signature)
   using pnet::signature_of;
 
 #define SIG(_s,_v...)                                                   \
-  BOOST_CHECK (signature_type (_s) == signature_of (value_type (_v)))
+  BOOST_CHECK_EQUAL (signature_type (_s), signature_of (value_type (_v)))
 #define SIG_LITERAL(_s,_v...) SIG (std::string (_s), _v)
 
   SIG_LITERAL ("control", we::type::literal::control());
