@@ -10,6 +10,8 @@
 
 #include <sstream>
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::value::value_type)
+
 BOOST_AUTO_TEST_CASE (basic)
 {
   typedef expr::eval::context context_t;
@@ -45,11 +47,11 @@ BOOST_AUTO_TEST_CASE (basic)
   c.bind ("y", y);
   c.bind ("z", z);
 
-  BOOST_REQUIRE (c.value ("x") == x);
-  BOOST_REQUIRE (c.value ("y") == y);
-  BOOST_REQUIRE (c.value ("z") == z);
-  BOOST_REQUIRE (c.value (key_z_x) == z_x);
-  BOOST_REQUIRE (c.value (key_z_y) == z_y);
+  BOOST_REQUIRE_EQUAL (c.value ("x"), x);
+  BOOST_REQUIRE_EQUAL (c.value ("y"), y);
+  BOOST_REQUIRE_EQUAL (c.value ("z"), z);
+  BOOST_REQUIRE_EQUAL (c.value (key_z_x), z_x);
+  BOOST_REQUIRE_EQUAL (c.value (key_z_y), z_y);
 
   BOOST_REQUIRE_THROW (c.value (key_z_a), std::runtime_error);
   BOOST_REQUIRE_THROW (c.value (key_a_b), std::runtime_error);
@@ -59,7 +61,7 @@ BOOST_AUTO_TEST_CASE (basic)
 
     c.bind ("z.x", pnet::type::value::value_type (z_x_new));
 
-    BOOST_REQUIRE (c.value (key_z_x) == value_type (z_x_new));
+    BOOST_REQUIRE_EQUAL (c.value (key_z_x), value_type (z_x_new));
   }
 
   {
@@ -67,11 +69,11 @@ BOOST_AUTO_TEST_CASE (basic)
 
     c.bind ("z", pnet::type::value::value_type (z_new));
 
-    BOOST_REQUIRE (c.value ("z") == value_type (z_new));
+    BOOST_REQUIRE_EQUAL (c.value ("z"), value_type (z_new));
   }
 
-  BOOST_REQUIRE (c.value ("x") == x);
-  BOOST_REQUIRE (c.value ("y") == y);
+  BOOST_REQUIRE_EQUAL (c.value ("x"), x);
+  BOOST_REQUIRE_EQUAL (c.value ("y"), y);
 
   BOOST_REQUIRE_THROW (c.value (key_z_a), std::runtime_error);
   BOOST_REQUIRE_THROW (c.value (key_a_b), std::runtime_error);
@@ -98,9 +100,9 @@ BOOST_AUTO_TEST_CASE (reference)
   c.bind_ref (key_b, value_b);
   c.bind_ref (key_c, value_c);
 
-  BOOST_REQUIRE (c.value (key_a) == value_a);
-  BOOST_REQUIRE (c.value (key_b) == value_b);
-  BOOST_REQUIRE (c.value (key_c) == value_c);
+  BOOST_REQUIRE_EQUAL (c.value (key_a), value_a);
+  BOOST_REQUIRE_EQUAL (c.value (key_b), value_b);
+  BOOST_REQUIRE_EQUAL (c.value (key_c), value_c);
 
   std::list<std::string> key_c_x;
   key_c_x.push_back ("c");
@@ -114,9 +116,9 @@ BOOST_AUTO_TEST_CASE (reference)
   key_c_y_b.push_back ("y");
   key_c_y_b.push_back ("b");
 
-  BOOST_REQUIRE (c.value (key_c_x) == value_type (1L));
-  BOOST_REQUIRE (c.value (key_c_y_a) == value_type (2L));
-  BOOST_REQUIRE (c.value (key_c_y_b) == value_type (3L));
+  BOOST_REQUIRE_EQUAL (c.value (key_c_x), value_type (1L));
+  BOOST_REQUIRE_EQUAL (c.value (key_c_y_a), value_type (2L));
+  BOOST_REQUIRE_EQUAL (c.value (key_c_y_b), value_type (3L));
 }
 
 BOOST_AUTO_TEST_CASE (show_and_bind_and_discard_ref)
@@ -148,6 +150,6 @@ BOOST_AUTO_TEST_CASE (show_and_bind_and_discard_ref)
 
     oss << c;
 
-    BOOST_REQUIRE (oss.str() == std::string ("s := Struct [x := 1.00000, y := \"s\"]\n"));
+    BOOST_REQUIRE_EQUAL (oss.str(), std::string ("s := Struct [x := 1.00000, y := \"s\"]\n"));
   }
 }
