@@ -756,14 +756,6 @@ bool GenericDaemon::canceled(const we::mgmt::layer::id_type& workflowId)
   return true;
 }
 
-/*void GenericDaemon::submitWorkflow(const we::mgmt::layer::id_type& wf_id, const we::mgmt::layer::encoded_type& desc )
-{
-  if(!hasWorkflowEngine())
-    throw NoWorkflowEngine();
-
-  workflowEngine()->submit (wf_id, desc, we::type::user_data ());
-}*/
-
 /*
         Schedule a job locally, send the job to WE
 */
