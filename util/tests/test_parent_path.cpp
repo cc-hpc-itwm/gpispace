@@ -35,6 +35,6 @@ BOOST_AUTO_TEST_CASE(strip_filename)
 
       path_without_filename.remove_filename();
 
-      BOOST_REQUIRE (path_without_filename == cmp);
+      BOOST_REQUIRE_EQUAL (path_without_filename, cmp);
     }
 }
