@@ -129,8 +129,6 @@ namespace sdpa {
       boost::weak_ptr<seda::Stage> daemon_stage() const { return ptr_daemon_stage_ ; }
 
       // masters and subscribers
-      sdpa::master_info_list_t& getListMasterInfo() { return m_arrMasterInfo; }
-
       void unsubscribe(const sdpa::agent_id_t&);
       void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
       bool isSubscriber(const sdpa::agent_id_t&);
