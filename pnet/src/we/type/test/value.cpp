@@ -770,14 +770,6 @@ namespace
   {
     return by_x() (a, b);
   }
-
-  s_type s_from_value (pnet::type::value::value_type const& v)
-  {
-    return s_type
-      ( pnet::field_as<int> ("x", v, std::string ("int"))
-      , pnet::field_as<int> ("y", v, std::string ("int"))
-      );
-  }
 }
 
 namespace pnet
