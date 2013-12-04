@@ -51,24 +51,8 @@ BOOST_AUTO_TEST_CASE (basic)
   BOOST_REQUIRE (c.value (key_z_x) == z_x);
   BOOST_REQUIRE (c.value (key_z_y) == z_y);
 
-  try
-  {
-    c.value (key_z_a);
-    BOOST_FAIL ("should throw");
-  }
-  catch (const std::runtime_error&)
-  {
-    /* expected */
-  }
-  try
-  {
-    c.value (key_a_b);
-    BOOST_FAIL ("should throw");
-  }
-  catch (const std::runtime_error&)
-  {
-    /* expected */
-  }
+  BOOST_REQUIRE_THROW (c.value (key_z_a), std::runtime_error);
+  BOOST_REQUIRE_THROW (c.value (key_a_b), std::runtime_error);
 
   {
     const double z_x_new (1.0);
@@ -89,24 +73,8 @@ BOOST_AUTO_TEST_CASE (basic)
   BOOST_REQUIRE (c.value ("x") == x);
   BOOST_REQUIRE (c.value ("y") == y);
 
-  try
-  {
-    c.value (key_z_a);
-    BOOST_FAIL ("should throw");
-  }
-  catch (const std::runtime_error&)
-  {
-    /* expected */
-  }
-  try
-  {
-    c.value (key_a_b);
-    BOOST_FAIL ("should throw");
-  }
-  catch (const std::runtime_error&)
-  {
-    /* expected */
-  }
+  BOOST_REQUIRE_THROW (c.value (key_z_a), std::runtime_error);
+  BOOST_REQUIRE_THROW (c.value (key_a_b), std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE (reference)
