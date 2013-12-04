@@ -42,30 +42,14 @@ BOOST_AUTO_TEST_CASE (test_invalid_type)
 {
   using namespace fhg::util;
 
-  try
-  {
-    url_t url ("://foo");
-    BOOST_ERROR ("invalid (empty) type specified");
-  }
-  catch (std::invalid_argument const &)
-  {
-    // OK
-  }
+  BOOST_REQUIRE_THROW (url_t ("://foo"), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE (test_empty_param)
 {
   using namespace fhg::util;
 
-  try
-  {
-    url_t url ("file://bar?=baz");
-    BOOST_ERROR ("invalid (empty) param specified");
-  }
-  catch (std::invalid_argument const &)
-  {
-    // OK
-  }
+  BOOST_REQUIRE_THROW (url_t ("file://bar?=baz"), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE (parse_file_url)
