@@ -17,7 +17,7 @@ namespace fhg
     }
 
     pool_t::pool_t (std::size_t nthread, std::string const &name)
-      : m_stop (false)
+      : m_stop (true)
       , m_nthread (nthread)
       , m_pool_name (name)
     {
