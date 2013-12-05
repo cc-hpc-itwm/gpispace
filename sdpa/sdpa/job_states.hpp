@@ -32,6 +32,11 @@ namespace sdpa
       return c == FINISHED || c == FAILED || c == CANCELED;
     }
 
+    inline bool is_canceled (code c)
+    {
+      return c == CANCELED;
+    }
+
     inline std::string show(int code)
     {
       switch (code)
