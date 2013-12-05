@@ -4,7 +4,6 @@ include (SDPAFindBoost)
 find_package (FhgLog REQUIRED QUIET)
 find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
-find_package (UTIL REQUIRED QUIET)
 find_package (FhgKernel REQUIRED QUIET)
 find_package (SDPA REQUIRED QUIET)
 

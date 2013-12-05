@@ -71,7 +71,6 @@ include_directories(${FhgLog_INCLUDE_DIR})
 find_package (FhgCom REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${FhgCom_INCLUDE_DIR})
 
-find_package (UTIL REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${UTIL_INCLUDE_DIR})
 
 find_package (FhgKernel REQUIRED ${QUIET_FIND_PACKAGE})

@@ -12,8 +12,6 @@ option(DEBUG_FHGLOG "Additional debug output from fhglog self" OFF)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
-
-find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
 include(CheckIncludeFiles)

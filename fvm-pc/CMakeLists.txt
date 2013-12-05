@@ -38,7 +38,6 @@ include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
-find_package (UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
 add_subdirectory (fvm)
