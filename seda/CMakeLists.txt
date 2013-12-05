@@ -52,7 +52,6 @@ if (ENABLE_LOGGING)
 endif (ENABLE_LOGGING)
 
 ## check for threads
-Include(FindThreads)
 
 include(SDPAFindBoost)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})

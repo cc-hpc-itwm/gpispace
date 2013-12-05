@@ -4,11 +4,6 @@ include_directories (${CMAKE_SOURCE_DIR}) # sdpa/plugins/
 include_directories (${CMAKE_SOURCE_DIR}/gspc)
 include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 
-include (FindThreads)
-if (CMAKE_USE_PTHREADS_INIT)
-  link_libraries (${CMAKE_THREAD_LIBS_INIT})
-endif()
-
 find_package (UTIL REQUIRED QUIET)
 include_directories (${UTIL_INCLUDE_DIR})
 
