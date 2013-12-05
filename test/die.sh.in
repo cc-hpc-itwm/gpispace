@@ -30,7 +30,7 @@ die()
           print_fail_reason "EX_ERR_STOP"
           ;;
       *)
-          print_fail_reason "UNKNOWN"
+          print_fail_reason "UNKNOWN-$1"
           ;;
   esac
 
