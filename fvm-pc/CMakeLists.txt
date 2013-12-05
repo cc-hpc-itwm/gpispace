@@ -9,7 +9,7 @@ set (FVM_FAKE_SHM_SIZE "52428800" CACHE STRING "Default fake shared memory segme
 set (FVM_MSQ_FILE "${CMAKE_INSTALL_PREFIX}/etc/gpi/key"  CACHE STRING "Default MSQ file")
 set (FVM_SHM_FILE "${CMAKE_INSTALL_PREFIX}/etc/gpi/shm" CACHE STRING "Default SHM file")
 
-include_directories (${${PROJECT_NAME}_SOURCE_DIR})
+include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 add_definitions (-DSHMEM -DNDEBUGALLOC -DNDEBUG -DNDEBUGCOMM -DNDEBUGMSG)
 
