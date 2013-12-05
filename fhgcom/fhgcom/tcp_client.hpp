@@ -56,7 +56,6 @@ namespace fhg
       std::string host_;
       std::string port_;
       bool auto_reconnect_;
-      std::size_t connection_attempts_;
       std::size_t max_connection_attempts_;
       boost::posix_time::time_duration timeout_;
     };

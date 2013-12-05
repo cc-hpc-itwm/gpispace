@@ -21,7 +21,6 @@ namespace fhg
       : socket_(io_service_)
       , deadline_(io_service_)
       , auto_reconnect_ (false)
-      , connection_attempts_(0)
       , max_connection_attempts_(0)
     {
       deadline_.expires_at (boost::posix_time::pos_infin);
@@ -51,7 +50,6 @@ namespace fhg
       host_ = host;
       port_ = port;
       auto_reconnect_ = auto_reconnect;
-      connection_attempts_ = 0;
       max_connection_attempts_ = max_connection_attempts;
       timeout_ = timeout;
 
@@ -60,26 +58,22 @@ namespace fhg
 
     void tcp_client::reconnect ()
     {
-      connection_attempts_ = 0;
-
-      for (;;)
+      for (std::size_t attempt = 1 ; ; ++attempt)
       {
         try
         {
           connect ();
-          break;
+          return;
         }
         catch (std::exception const & ex)
         {
-          ++connection_attempts_;
-
           LOG( TRACE
              , "connecting to [" << host_ << "]:" << port_
              << " failed: " << ex.what()
-             << " attempt: " << (connection_attempts_) << "/" << max_connection_attempts_
+             << " attempt: " << attempt << "/" << max_connection_attempts_
              );
 
-          if (max_connection_attempts_ && connection_attempts_ >= max_connection_attempts_)
+          if (max_connection_attempts_ && attempt >= max_connection_attempts_)
           {
             throw;
           }
@@ -144,9 +138,15 @@ namespace fhg
         // though the connect operation notionally succeeded. Therefore we must
         // check whether the socket is still open before deciding that the we
         // were successful.
+
+        // use the  side effect to  check if  we are really  connected..., works
+        // around a strange bug that happens  with boost 1.52. the socket is not
+        // connected but we get a success from async_connect.
+        socket_.remote_endpoint (ec);
+
         if (!ec && socket_.is_open())
         {
-          MLOG (TRACE, "connected to " << socket_.remote_endpoint());
+          MLOG (TRACE, "connected to " << socket_.remote_endpoint(ec));
           return;
         }
       }
