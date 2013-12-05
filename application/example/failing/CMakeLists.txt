@@ -7,7 +7,6 @@ set(CMAKE_MODULE_PATH
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
-include_directories(${CMAKE_INCLUDE_PATH})
 
 # generate the xml document
 
