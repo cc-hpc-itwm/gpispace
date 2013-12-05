@@ -781,10 +781,8 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
     Job* pJob = findJob(jobId);
 
     // Should set the workflow_id here, or send it together with the workflow description
-    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
-    DMLOG (TRACE, "Submit the workflow attached to the job "<<jobId<<" to WE. ");
     pJob->Dispatch();
-    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<pJob->getStatus());
+    DMLOG (TRACE, "The status of the job "<<jobId<<" is "<<sdpa::status::show(pJob->getStatus()));
 
     if(pJob->description().empty() )
     {
