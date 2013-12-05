@@ -1,8 +1,4 @@
 # -*- mode: cmake; -*-
-if(POLICY CMP0011)
-  cmake_policy(SET CMP0011 NEW)
-endif(POLICY CMP0011)
-
 project(seda)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 

@@ -1,7 +1,3 @@
-if(POLICY CMP0011)
-  cmake_policy(SET CMP0011 NEW)
-endif(POLICY CMP0011)
-
 include (SDPAFindBoost)
 find_package(Threads REQUIRED QUIET)
 find_package(UTIL REQUIRED QUIET)
