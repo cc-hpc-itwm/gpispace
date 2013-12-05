@@ -16,7 +16,6 @@ include_directories (${UTIL_INCLUDE_DIR})
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp)
 
-link_directories (${CMAKE_LIBRARY_PATH})
 link_directories (${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory (fhgcom)
