@@ -1,9 +1,7 @@
-project (libfhgcom)
-
 set (FHG_COM_NS_UUID "c9fe00cb-d9f7-432e-9235-66b7929b6e2a" CACHE STRING "The unique namespace uuid for this installation")
 
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
-include_directories (${${PROJECT_NAME}_SOURCE_DIR})
+include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 include (FindThreads)
 if (CMAKE_USE_PTHREADS_INIT)
@@ -25,7 +23,7 @@ include_directories (${UTIL_INCLUDE_DIR})
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp.in ${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp)
 
 link_directories (${CMAKE_LIBRARY_PATH})
-link_directories (${${PROJECT_NAME}_BINARY_DIR})
+link_directories (${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory (fhgcom)
 add_subdirectory (bin)
