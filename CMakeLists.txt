@@ -154,7 +154,7 @@ include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/json_spirit)
 
 # sdpa needs boost::mpl::vector with more than $default elements for state machine
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
-add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=30")
+add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 include (CTest)
 add_subdirectory (fhglog)
