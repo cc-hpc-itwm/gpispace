@@ -156,6 +156,10 @@ include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/json_spirit)
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=30")
 
+# replacement for find_package (<one of our subprojects>)
+set (UTIL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/util;${CMAKE_BINARY_DIR}/util")
+set (UTIL_LIBRARIES fhg-revision fhg-util)
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (pnet)
