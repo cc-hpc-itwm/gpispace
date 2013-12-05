@@ -1,5 +1,4 @@
 # -*- mode: cmake; -*-
-cmake_policy(VERSION 2.6)
 if(POLICY CMP0011)
   cmake_policy(SET CMP0011 NEW)
 endif(POLICY CMP0011)
