@@ -7,12 +7,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-# threads
-find_package(Threads REQUIRED QUIET)
-if(CMAKE_USE_PTHREADS_INIT)
-    link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif(CMAKE_USE_PTHREADS_INIT)
-
 include(SDPAFindBoost)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 

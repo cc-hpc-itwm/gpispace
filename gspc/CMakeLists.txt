@@ -1,5 +1,4 @@
 include (SDPAFindBoost)
-find_package(Threads REQUIRED QUIET)
 find_package(UTIL REQUIRED QUIET)
 
 find_package (FhgLog REQUIRED QUIET)
