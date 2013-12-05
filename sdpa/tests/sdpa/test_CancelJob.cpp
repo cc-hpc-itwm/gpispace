@@ -8,29 +8,21 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-//! \todo This test requires a sleep before canceling the job after
-//! submission and is stuck in an endless loop without the sleep. This
-//! seems broken.
-
-//! \todo This test uses a coallocation workflow, but has one worker
-//! only. Is this intended?
-BOOST_AUTO_TEST_CASE (TestCancelCoallocation)
+BOOST_AUTO_TEST_CASE (test_cancel_no_agent)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+    (utils::require_and_read_file ("workflows/stalled_workflow.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
 
-  const utils::drts_worker worker_0
-    ( "drts_0", agent
-    , ""
-    //! \todo This is most likely the wrong path!
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
+   sdpa::client::Client client (orchestrator.name());
+   sdpa::job_id_t job_id(client.submitJob (workflow));
+   //! \todo There should not be a requirement for this!
+   client.cancelJob(job_id);
+   sdpa::client::job_info_t job_info;
+   sdpa::status::code status = client.wait_for_terminal_state (job_id, job_info);
+   LOG(INFO, "The job "<<job_id<<" has the status "<<sdpa::status::show(status));
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_cancel_and_wait_for_termination
@@ -39,7 +31,7 @@ BOOST_AUTO_TEST_CASE (TestCancelCoallocation)
     );
 }
 
-BOOST_AUTO_TEST_CASE (Test1)
+BOOST_AUTO_TEST_CASE (test_cance_orch_and_agent_no_worker)
 {
   const std::string workflow
     (utils::require_and_read_file ("workflows/transform_file.pnet"));
@@ -49,13 +41,6 @@ BOOST_AUTO_TEST_CASE (Test1)
   const utils::agent agent
     ("agent_0", "127.0.0.1", orchestrator);
 
-  const utils::drts_worker worker_0
-    ( "drts_0", agent
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_cancel_and_wait_for_termination
       (workflow, orchestrator)
@@ -63,10 +48,10 @@ BOOST_AUTO_TEST_CASE (Test1)
     );
 }
 
-BOOST_AUTO_TEST_CASE (Test2)
+BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/transform_file.pnet"));
+    (utils::require_and_read_file ("workflows/stalled_workflow.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");
@@ -84,55 +69,52 @@ BOOST_AUTO_TEST_CASE (Test2)
     , ""
     , TESTS_TRANSFORM_FILE_MODULES_PATH
     , kvs_host(), kvs_port()
-    );
-
-  BOOST_REQUIRE_EQUAL
-    ( utils::client::submit_job_and_cancel_and_wait_for_termination
-      (workflow, orchestrator)
-    , sdpa::status::CANCELED
-    );
-}
-
-BOOST_AUTO_TEST_CASE (TestCancelTwice)
-{
-  const std::string workflow
-    (utils::require_and_read_file ("workflows/transform_file.pnet"));
-
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
-
-  const utils::drts_worker worker_0
-    ( "drts_0", agent
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-  const utils::drts_worker worker_1
-    ( "drts_1", agent
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-
-  sdpa::job_id_t job_id;
-  BOOST_REQUIRE_EQUAL
-    ( utils::client::submit_job_and_cancel_and_wait_for_termination
-      (workflow, orchestrator, job_id)
-    , sdpa::status::CANCELED
     );
 
   sdpa::client::Client client (orchestrator.name());
-  bool b_job_already_canceled(true);
-  try {
-      client.cancelJob(job_id);
-      b_job_already_canceled = false;
-  }
-  catch(const std::runtime_error&)
-  {
-      DMLOG(TRACE, "The job "<<job_id<<" was already canceled!");
-  }
+  sdpa::job_id_t job_id(client.submitJob (workflow));
+  client.cancelJob(job_id);
+  sdpa::client::job_info_t job_info;
+  sdpa::status::code status = client.wait_for_terminal_state (job_id, job_info);
+  LOG(INFO, "The job "<<job_id<<" has the status "<<sdpa::status::show(status));
 
-  BOOST_REQUIRE(b_job_already_canceled);
+  BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
+}
+
+BOOST_AUTO_TEST_CASE (test_cancel_terminated_job)
+{
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/capabilities.pnet"));
+
+  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
+  const utils::agent agent
+    ("agent_0", "127.0.0.1", orchestrator);
+
+  const utils::drts_worker worker_0
+    ( "drts_0", agent
+    , "A"
+    , TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
+  const utils::drts_worker worker_1
+    ( "drts_1", agent
+    , "B"
+    , TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
+  const utils::drts_worker worker_2
+    ( "drts_2", agent
+    , "A"
+    , TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
+
+  sdpa::client::Client client (orchestrator.name());
+  sdpa::job_id_t job_id(client.submitJob (workflow));
+
+  sdpa::client::job_info_t job_info;
+  sdpa::status::code status = client.wait_for_terminal_state (job_id, job_info);
+  LOG(INFO, "The job "<<job_id<<" has the status "<<sdpa::status::show(status));
+
+  BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
 }
