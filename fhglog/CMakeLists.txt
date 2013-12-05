@@ -33,7 +33,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FindFhgLog.cmake.in    ${CMAKE_CURREN
 
 # this file is installed and contains all necessary information about the installed libseda,
 # it also loads the file with the exported targets
-configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+configure_file(libfhglogConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/libfhglogConfig.cmake" @ONLY)
 
 if (DEBUG_FHGLOG)
   add_definitions("-DFHGLOG_DEBUG_CONFIG")

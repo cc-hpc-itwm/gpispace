@@ -35,7 +35,7 @@ OPTION(ENABLE_SEDA_COMM_LIB
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${${PROJECT_NAME}_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ## add doxygen support
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
@@ -44,11 +44,11 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## logging
 if (ENABLE_LOGGING)
-  set(${UPPER_PROJECT_NAME}_ENABLE_LOGGING ${ENABLE_LOGGING})
+  set(SEDA_ENABLE_LOGGING ${ENABLE_LOGGING})
 
 	find_package (FhgLog REQUIRED QUIET)
     include_directories(${FhgLog_INCLUDE_DIR})
-    set(${UPPER_PROJECT_NAME}_HAVE_FHGLOG 1)
+    set(SEDA_HAVE_FHGLOG 1)
 endif (ENABLE_LOGGING)
 
 ## check for threads
@@ -67,7 +67,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINAR
 
 # this file is installed and contains all necessary information about the installed libseda,
 # it also loads the file with the exported targets
-configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+configure_file(sedaConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/sedaConfig.cmake" @ONLY)
 
 # Make sure all subdirectories include correctly
 
