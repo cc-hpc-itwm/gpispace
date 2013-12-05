@@ -4,12 +4,12 @@ source "@CMAKE_BINARY_DIR@/test/env.sh"
 
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
-DUMMY_NET="$(mktemp --tmpdir="${DIR_TEST}" empty_dummy_network.XXXXX.pnet)" || die $EX_ERR_ENV
+DUMMY_NET="$(mktemp --tmpdir="${DIR_TEST}" empty_dummy_network.pnet.XXXXX)" || die $EX_ERR_ENV
 
-KVS_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" kvs.XXXXX.pid)" || die $EX_ERR_ENV
-ORCHESTRATOR_1_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" orch1.XXXXX.pid)" || die $EX_ERR_ENV
-AGENT_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" agent.XXXXX.pid)" || die $EX_ERR_ENV
-ORCHESTRATOR_2_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" orch2.XXXXX.pid)" || die $EX_ERR_ENV
+KVS_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" kvs.pid.XXXXX)" || die $EX_ERR_ENV
+ORCHESTRATOR_1_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" orch1.pid.XXXXX)" || die $EX_ERR_ENV
+AGENT_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" agent.pid.XXXXX)" || die $EX_ERR_ENV
+ORCHESTRATOR_2_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" orch2.pid.XXXXX)" || die $EX_ERR_ENV
 
 # TODO: needs some policy or fixes to work without
 TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST=2
