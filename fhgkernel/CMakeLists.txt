@@ -5,16 +5,13 @@ if(POLICY CMP0011)
   cmake_policy(SET CMP0011 NEW)
 endif(POLICY CMP0011)
 
-project(libfhgutil)
-string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
-
 # don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${${PROJECT_NAME}_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_INCLUDE_PATH})
 
 include(CheckCompiler)
