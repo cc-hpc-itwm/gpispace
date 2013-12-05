@@ -23,6 +23,12 @@ die()
       $EX_ERR_OTHER)
           print_fail_reason "EX_ERR_OTHER"
           ;;
+      $EX_ERR_BOOT)
+          print_fail_reason "EX_ERR_BOOT"
+          ;;
+      $EX_ERR_STOP)
+          print_fail_reason "EX_ERR_STOP"
+          ;;
       *)
           print_fail_reason "UNKNOWN"
           ;;
