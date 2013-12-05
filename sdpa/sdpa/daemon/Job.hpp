@@ -131,7 +131,7 @@ namespace sdpa {
         a_row<  Stalled,        MSMResumeJobEvent,        		Running,        &sm::action_resume_job >,
         a_row<  Stalled,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
         _irow<  Stalled,        MSMStalledEvent>,
-        _row<   Stalled,        sdpa::events::CancelJobEvent,           Canceling>,
+        _row<   Stalled,        sdpa::events::CancelJobEvent,           Canceled>,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished>,
         a_row<  Running,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
@@ -157,7 +157,11 @@ namespace sdpa {
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Canceled,       MSMDeleteJobEvent,                                      &sm::action_delete_job>,
         a_irow< Canceled,       MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
-        _irow<  Canceled,       events::CancelJobAckEvent>
+        _irow<  Canceled,       events::CancelJobAckEvent>,
+        _irow<  Canceled,       events::JobFinishedEvent>,
+        _irow<  Canceled,       events::JobFailedEvent>,
+        _irow<  Canceled,       MSMResumeJobEvent>,
+        _irow<  Canceled,       MSMStalledEvent>
         >{};
 
       //! \note This table refers to the order in which states are
@@ -225,9 +229,11 @@ namespace sdpa {
       worker_id_t owner() const;
 
       status::code getStatus() const;
+      std::string  showStatus() const;
 
       bool completed() const;
       bool is_running() const;
+      bool is_canceled() const;
 
       // job FSM actions
       virtual void action_job_failed(const events::JobFailedEvent&);

@@ -80,6 +80,11 @@ namespace sdpa {
       return state_code (*current_state());
     }
 
+    std::string Job::showStatus() const
+    {
+      return sdpa::status::show(getStatus());
+    }
+
     bool Job::completed() const
     {
       return status::is_terminal (getStatus());
@@ -88,6 +93,11 @@ namespace sdpa {
     bool Job::is_running() const
     {
       return status::is_running (getStatus());
+    }
+
+    bool Job::is_canceled() const
+    {
+      return status::is_canceled (getStatus());
     }
 
     bool Job::isMasterJob() const
