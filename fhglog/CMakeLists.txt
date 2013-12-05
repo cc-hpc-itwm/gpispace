@@ -13,11 +13,6 @@ option(DEBUG_FHGLOG "Additional debug output from fhglog self" OFF)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${${PROJECT_NAME}_SOURCE_DIR})
 
-include(CheckCompiler)
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include (CompilerFlags)
-endif()
-
 find_package(Threads REQUIRED QUIET)
 if(CMAKE_USE_PTHREADS_INIT)
     link_libraries(${CMAKE_THREAD_LIBS_INIT})

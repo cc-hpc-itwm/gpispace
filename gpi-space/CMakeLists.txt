@@ -42,11 +42,6 @@ int main ()
   endif()
 endif()
 
-include (CheckCompiler)
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include (CompilerFlags)
-endif()
-
 include (CheckIncludeFile)
 check_include_file (sys/types.h HAVE_SYS_TYPES_H)
 if (HAVE_SYS_TYPES_H)
