@@ -35,8 +35,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FindFhgLog.cmake.in    ${CMAKE_CURREN
 # it also loads the file with the exported targets
 configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
 
-link_directories(${${PROJECT_NAME}_BINARY_DIR})
-
 if (DEBUG_FHGLOG)
   add_definitions("-DFHGLOG_DEBUG_CONFIG")
 else (DEBUG_FHGLOG)

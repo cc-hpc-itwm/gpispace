@@ -11,8 +11,6 @@ set (FVM_SHM_FILE "${CMAKE_INSTALL_PREFIX}/etc/gpi/shm" CACHE STRING "Default SH
 
 include_directories (${${PROJECT_NAME}_SOURCE_DIR})
 
-link_directories (${${PROJECT_NAME}_BINARY_DIR})
-
 add_definitions (-DSHMEM -DNDEBUGALLOC -DNDEBUG -DNDEBUGCOMM -DNDEBUGMSG)
 
 if (ENABLE_FAKE_PC)
