@@ -1,7 +1,5 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-cmake_minimum_required (VERSION "2.6" FATAL_ERROR)
-
 include (SDPAFindBoost)
 find_package (FhgLog REQUIRED QUIET)
 find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
