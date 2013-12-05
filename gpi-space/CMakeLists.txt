@@ -108,6 +108,5 @@ if (ENABLE_COMPATIBILITY_API)
 endif()
 
 if (BUILD_TESTING)
-  include(CTest)
   add_subdirectory (tests)
 endif()

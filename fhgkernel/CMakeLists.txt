@@ -53,7 +53,6 @@ endif()
 add_subdirectory(fhg)
 add_subdirectory(bin)
 
-include(CTest)
 if (BUILD_TESTING)
   add_subdirectory(tests)
 endif (BUILD_TESTING)

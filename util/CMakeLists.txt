@@ -23,6 +23,5 @@ add_subdirectory (fhg)
 add_subdirectory (bin)
 
 if (BUILD_TESTING)
-  include (CTest)
   add_subdirectory (tests)
 endif (BUILD_TESTING)

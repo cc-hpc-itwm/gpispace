@@ -44,6 +44,5 @@ add_subdirectory (bin)
 add_subdirectory (etc)
 
 if (BUILD_TESTING)
-  include (CTest)
   add_subdirectory (tests)
 endif (BUILD_TESTING)
