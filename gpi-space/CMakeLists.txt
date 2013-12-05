@@ -1,5 +1,3 @@
-project (gpi-space)
-
 OPTION (ENABLE_REAL_GPI "Provide api for the *real* GPI" ON)
 OPTION (ENABLE_COMPATIBILITY_API "Provide a transitional api compatible with the old fvm-pc" ON)
 

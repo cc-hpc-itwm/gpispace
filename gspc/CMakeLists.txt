@@ -4,9 +4,6 @@ if(POLICY CMP0011)
   cmake_policy(SET CMP0011 NEW)
 endif(POLICY CMP0011)
 
-project(gspc)
-string (TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
-
 include (SDPAFindBoost)
 find_package(Threads REQUIRED QUIET)
 find_package(UTIL REQUIRED QUIET)

@@ -2,14 +2,6 @@
 
 cmake_minimum_required (VERSION "2.6" FATAL_ERROR)
 
-project (pnete)
-string (TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
-
-set (PROJECT_DESCRIPTION "Petri Net Editor")
-set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM")
-set (PROJECT_COPYRIGHT   "Copyright 2011 Fraunhofer ITWM")
-set (PROJECT_CONTACT     "Bernd Lörwald <bernd.loerwald@itwm.fraunhofer.de>")
-
 include (SDPAFindBoost)
 find_package (FhgLog REQUIRED QUIET)
 find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
