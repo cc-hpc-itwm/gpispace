@@ -142,7 +142,7 @@ namespace fhg
         // use the  side effect to  check if  we are really  connected..., works
         // around a strange bug that happens  with boost 1.52. the socket is not
         // connected but we get a success from async_connect.
-        socket_.remote_endpoint (ec);
+        if (!ec) socket_.remote_endpoint (ec);
 
         if (!ec && socket_.is_open())
         {
