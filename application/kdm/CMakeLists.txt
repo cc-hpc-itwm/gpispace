@@ -59,7 +59,6 @@ add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM  -DSHMEM)
 include(SDPAFindBoost)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-find_package(FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 
 include_directories(${CMAKE_SOURCE_DIR}/pnet/src)

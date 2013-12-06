@@ -3,7 +3,6 @@ include (fhg_plugin_macros)
 
 add_subdirectory(workflows)
 
-find_package(FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/application/transform_file)
 
