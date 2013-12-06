@@ -1,5 +1,4 @@
 # -*- mode: cmake; -*-
-# don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
