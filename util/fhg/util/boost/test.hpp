@@ -33,4 +33,10 @@
   void boost::test_tools::print_log_value<SPEC_PARAM >::operator()      \
     (std::ostream& OS_NAME, const SPEC_PARAM& VAL_NAME) const
 
+#define FHG_BOOST_TEST_LOG_VALUE_PRINTER_WRAPPED(SPEC_PARAM, WRAPPER)   \
+  FHG_BOOST_TEST_LOG_VALUE_PRINTER (SPEC_PARAM, os, val)                \
+  {                                                                     \
+    os << WRAPPER (val);                                                \
+  }
+
 #endif
