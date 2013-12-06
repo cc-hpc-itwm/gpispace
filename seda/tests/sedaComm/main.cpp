@@ -5,23 +5,13 @@
 #include <cppunit/CompilerOutputter.h>
 
 #ifdef SEDA_ENABLE_LOGGING
-#  if defined(SEDA_HAVE_FHGLOG)
 #    include <fhglog/Configuration.hpp>
-#  elif defined(SEDA_HAVE_LOG4CPP)
-#    include <log4cpp/BasicConfigurator.hh>
-#    include <log4cpp/Priority.hh>
-#  endif
 #endif
 
 int
 main(int, char **) {
 #ifdef SEDA_ENABLE_LOGGING
-#  if defined (SEDA_HAVE_FHGLOG)
-  ::fhg::log::Configurator::configure();  
-#  elif defined (SEDA_HAVE_LOG4CPP)
-  ::log4cpp::BasicConfigurator::configure();
-  ::log4cpp::Category::setRootPriority(::log4cpp::Priority::DEBUG);
-#  endif
+  ::fhg::log::Configurator::configure();
 #endif
   CppUnit::TextUi::TestRunner runner;
   CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
@@ -37,5 +27,5 @@ main(int, char **) {
 				  true,  // doPrintResult
 				  true   // doPrintProgress
 				  );
-  return !wasSuccessful;  
+  return !wasSuccessful;
 }

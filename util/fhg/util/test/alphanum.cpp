@@ -13,6 +13,10 @@ BOOST_AUTO_TEST_CASE (compare_less)
 {
   fhg::util::alphanum::less pred;
 
+  BOOST_REQUIRE_EQUAL (pred ("", "_"), true);
+  BOOST_REQUIRE_EQUAL (pred ("", ""), false);
+  BOOST_REQUIRE_EQUAL (pred ("_", ""), false);
+
   BOOST_REQUIRE_EQUAL (pred ("2", "10"), true);
   BOOST_REQUIRE_EQUAL (pred ("2", "2"), false);
   BOOST_REQUIRE_EQUAL (pred ("10", "2"), false);
@@ -34,6 +38,10 @@ BOOST_AUTO_TEST_CASE (compare_less)
 BOOST_AUTO_TEST_CASE (compare_less_equal)
 {
   fhg::util::alphanum::less_equal pred;
+
+  BOOST_REQUIRE_EQUAL (pred ("", "_"), true);
+  BOOST_REQUIRE_EQUAL (pred ("", ""), true);
+  BOOST_REQUIRE_EQUAL (pred ("_", ""), false);
 
   BOOST_REQUIRE_EQUAL (pred ("2", "10"), true);
   BOOST_REQUIRE_EQUAL (pred ("2", "2"), true);

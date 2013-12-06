@@ -11,19 +11,7 @@ option(DEBUG_FHGLOG "Additional debug output from fhglog self" OFF)
 # don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${${PROJECT_NAME}_SOURCE_DIR})
-
-include(CheckCompiler)
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include (CompilerFlags)
-endif()
-
-find_package(Threads REQUIRED QUIET)
-if(CMAKE_USE_PTHREADS_INIT)
-    link_libraries(${CMAKE_THREAD_LIBS_INIT})
-endif()
-
-find_package(UTIL REQUIRED QUIET)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${UTIL_INCLUDE_DIR})
 
 include(CheckIncludeFiles)
@@ -41,14 +29,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp
   DESTINATION include/fhglog
   COMPONENT runtime-headers)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FindFhgLog.cmake.in    ${CMAKE_CURRENT_BINARY_DIR}/FindFhgLog.cmake)
-
 # this file is installed and contains all necessary information about the installed libseda,
 # it also loads the file with the exported targets
-configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
-
-link_directories(${CMAKE_LIBRARY_PATH})
-link_directories(${${PROJECT_NAME}_BINARY_DIR})
+configure_file(libfhglogConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/libfhglogConfig.cmake" @ONLY)
 
 if (DEBUG_FHGLOG)
   add_definitions("-DFHGLOG_DEBUG_CONFIG")

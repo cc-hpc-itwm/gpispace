@@ -9,7 +9,6 @@ include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
 find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
-find_package(FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
 add_library(kdm_mod_fake SHARED kdm_complex_mod.cpp)

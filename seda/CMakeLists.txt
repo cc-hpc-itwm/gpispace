@@ -1,10 +1,4 @@
 # -*- mode: cmake; -*-
-cmake_minimum_required(VERSION 2.6)
-cmake_policy(VERSION 2.6)
-if(POLICY CMP0011)
-  cmake_policy(SET CMP0011 NEW)
-endif(POLICY CMP0011)
-
 project(seda)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
@@ -24,14 +18,6 @@ OPTION(ENABLE_LOGGING
   "Build the project with logging enabled"
   1)
 
-OPTION(WITH_FHGLOG
-  "Build the project with fhglog"
-  1)
-
-OPTION(WITH_LOG4CPP
-  "Build the project with log4cpp"
-  0)
-
 OPTION(ENABLE_SEDA_COMM_LIB
   "Build communication library"
   OFF)
@@ -41,13 +27,7 @@ OPTION(ENABLE_SEDA_COMM_LIB
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${${PROJECT_NAME}_SOURCE_DIR})
-
-include(CheckCompiler)
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include (UseCodeCoverage)
-  include (CompilerFlags)
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ## add doxygen support
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
@@ -56,15 +36,12 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## logging
 if (ENABLE_LOGGING)
-  set(${UPPER_PROJECT_NAME}_ENABLE_LOGGING ${ENABLE_LOGGING})
+  set(SEDA_ENABLE_LOGGING ${ENABLE_LOGGING})
 
-	find_package (FhgLog REQUIRED QUIET)
-    include_directories(${FhgLog_INCLUDE_DIR})
-    set(${UPPER_PROJECT_NAME}_HAVE_FHGLOG 1)
+  include_directories(${FhgLog_INCLUDE_DIR})
 endif (ENABLE_LOGGING)
 
 ## check for threads
-Include(FindThreads)
 
 include(SDPAFindBoost)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
@@ -80,7 +57,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINAR
 
 # this file is installed and contains all necessary information about the installed libseda,
 # it also loads the file with the exported targets
-configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+configure_file(sedaConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/sedaConfig.cmake" @ONLY)
 
 # Make sure all subdirectories include correctly
 

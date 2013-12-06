@@ -9,15 +9,7 @@ set (FVM_FAKE_SHM_SIZE "52428800" CACHE STRING "Default fake shared memory segme
 set (FVM_MSQ_FILE "${CMAKE_INSTALL_PREFIX}/etc/gpi/key"  CACHE STRING "Default MSQ file")
 set (FVM_SHM_FILE "${CMAKE_INSTALL_PREFIX}/etc/gpi/shm" CACHE STRING "Default SHM file")
 
-include (CheckCompiler)
-if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include (CompilerFlags)
-endif()
-
-include_directories (${${PROJECT_NAME}_SOURCE_DIR})
-
-link_directories (${CMAKE_LIBRARY_PATH})
-link_directories (${${PROJECT_NAME}_BINARY_DIR})
+include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
 add_definitions (-DSHMEM -DNDEBUGALLOC -DNDEBUG -DNDEBUGCOMM -DNDEBUGMSG)
 
@@ -40,10 +32,8 @@ include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 include_directories (${CMAKE_SOURCE_DIR}/gspc)
 include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 
-find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
-find_package (UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
 add_subdirectory (fvm)

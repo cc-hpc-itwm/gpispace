@@ -94,7 +94,7 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/packages.list.cmake.in
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/modules.sdpa.in    ${CMAKE_CURRENT_BINARY_DIR}/module.sdpa     @ONLY)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/configure          ${CMAKE_CURRENT_BINARY_DIR}/configure       @ONLY)
 
-cmake_minimum_required (VERSION "2.6.7" FATAL_ERROR)
+cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
@@ -137,7 +137,7 @@ endif()
 
 set (BUILDING_FROM_MAIN 1)
 
-include (FindThreads)
+find_package (Threads REQUIRED QUIET)
 if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
 endif()
@@ -155,6 +155,14 @@ include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/json_spirit)
 # sdpa needs boost::mpl::vector with more than $default elements for state machine
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
+
+# replacement for find_package (<one of our subprojects>)
+set (UTIL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/util;${CMAKE_BINARY_DIR}/util")
+set (UTIL_LIBRARIES fhg-revision fhg-util)
+
+set (FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog ${CMAKE_BINARY_DIR}/fhglog)
+set (FhgLog_LIBRARY fhglog)
+set (FhgLog_LIBRARY_SHARED fhglog-shared)
 
 include (CTest)
 add_subdirectory (fhglog)

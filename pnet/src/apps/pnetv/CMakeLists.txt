@@ -21,7 +21,6 @@ install (TARGETS pnetv
 add_subdirectory(jpn)
 add_subdirectory(jpna)
 
-include(CTest)
 if (BUILD_TESTING)
 	add_subdirectory(tests)
 endif()

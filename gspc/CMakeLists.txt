@@ -1,17 +1,5 @@
-cmake_minimum_required (VERSION "2.6" FATAL_ERROR)
-cmake_policy(VERSION 2.6)
-if(POLICY CMP0011)
-  cmake_policy(SET CMP0011 NEW)
-endif(POLICY CMP0011)
-
-project(gspc)
-string (TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
-
 include (SDPAFindBoost)
-find_package(Threads REQUIRED QUIET)
-find_package(UTIL REQUIRED QUIET)
 
-find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
 include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
