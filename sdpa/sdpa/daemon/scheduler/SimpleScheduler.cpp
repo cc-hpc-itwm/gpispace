@@ -40,7 +40,7 @@ void SimpleScheduler::assignJobsToWorkers()
 
         try {
            Worker::ptr_t pWorker(findWorker(matchingWorkerId));
-           ptr_comm_handler_->resume(jobId);
+           //ptr_comm_handler_->resume(jobId);
            ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
            pWorker->submit(jobId);
         }
