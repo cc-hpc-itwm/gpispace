@@ -19,8 +19,6 @@
 
 #include <stdexcept>
 
-BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::expr::type::resolver_map_type::iterator)
-
 namespace
 {
   std::list<std::string> init_tnames()
@@ -239,8 +237,8 @@ BOOST_AUTO_TEST_CASE (lookup)
   OKAY (m, "${a.a}", std::string ("Bar"));
 
   BOOST_CHECK_EQUAL (m.size(), 2);
-  BOOST_CHECK_NE (m.find (path ("a")), m.end());
-  BOOST_CHECK_NE (m.find (path ("a.a")), m.end());
+  BOOST_CHECK_EQUAL (m.count (path ("a")), 0);
+  BOOST_CHECK_EQUAL (m.count (path ("a.a")), 0);
   BOOST_CHECK_EQUAL ( m.at (path ("a"))
                     , pnet::type::signature::signature_type (std::string ("Foo"))
                     );
