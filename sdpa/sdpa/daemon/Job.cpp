@@ -80,11 +80,6 @@ namespace sdpa {
       return state_code (*current_state());
     }
 
-    std::string Job::showStatus() const
-    {
-      return sdpa::status::show(getStatus());
-    }
-
     bool Job::completed() const
     {
       return status::is_terminal (getStatus());

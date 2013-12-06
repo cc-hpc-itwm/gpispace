@@ -581,10 +581,10 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
     we::mgmt::layer::id_type workflowId = pEvt->job_id();
     //! \todo "No reason"?! We've got a CancelJobEvent, which has a reason.
     we::mgmt::layer::reason_type reason("No reason");
-    DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->showStatus());
+    DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<sdpa::status::show(pJob->getStatus()));
     workflowEngine()->cancel(workflowId, reason);
     pJob->CancelJob(pEvt);
-    DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<pJob->showStatus());
+    DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<sdpa::status::show(pJob->getStatus()));
   }
 }
 

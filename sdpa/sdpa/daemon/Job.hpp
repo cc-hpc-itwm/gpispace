@@ -229,7 +229,6 @@ namespace sdpa {
       worker_id_t owner() const;
 
       status::code getStatus() const;
-      std::string  showStatus() const;
 
       bool completed() const;
       bool is_running() const;
