@@ -2,6 +2,7 @@
 
 set (hdrs
   optional.hpp
+  test.hpp
   tuple.hpp
   variant.hpp
 )
