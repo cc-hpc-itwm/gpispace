@@ -2,9 +2,8 @@
 #define SEDA_CONFIG_H
 
 #cmakedefine SEDA_ENABLE_LOGGING 1
-#cmakedefine SEDA_HAVE_FHGLOG 1
 
-#ifdef SEDA_HAVE_FHGLOG
+#ifdef SEDA_ENABLE_LOGGING
 #   include <fhglog/fhglog-config.hpp>
 #endif
 

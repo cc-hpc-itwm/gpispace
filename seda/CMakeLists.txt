@@ -18,10 +18,6 @@ OPTION(ENABLE_LOGGING
   "Build the project with logging enabled"
   1)
 
-OPTION(WITH_FHGLOG
-  "Build the project with fhglog"
-  1)
-
 OPTION(ENABLE_SEDA_COMM_LIB
   "Build communication library"
   OFF)
@@ -44,7 +40,6 @@ if (ENABLE_LOGGING)
 
 	find_package (FhgLog REQUIRED QUIET)
     include_directories(${FhgLog_INCLUDE_DIR})
-    set(SEDA_HAVE_FHGLOG 1)
 endif (ENABLE_LOGGING)
 
 ## check for threads
