@@ -187,33 +187,33 @@ add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 # replacement for find_package (<one of our subprojects>)
-set (UTIL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/util;${CMAKE_BINARY_DIR}/util")
+set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util ${CMAKE_BINARY_DIR}/util)
 set (UTIL_LIBRARIES fhg-revision fhg-util)
 
 set (FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog ${CMAKE_BINARY_DIR}/fhglog)
 set (FhgLog_LIBRARY fhglog)
 set (FhgLog_LIBRARY_SHARED fhglog-shared)
 
-set (MMGR_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/mmgr;${CMAKE_BINARY_DIR}/mmgr")
+set (MMGR_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/mmgr ${CMAKE_BINARY_DIR}/mmgr)
 set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
 
-set (SEDA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/seda;${CMAKE_BINARY_DIR}/seda")
+set (SEDA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/seda ${CMAKE_BINARY_DIR}/seda)
 set (SEDA_LIBRARY seda)
 
-set (FhgKernel_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fhgkernel;${CMAKE_BINARY_DIR}/fhgkernel")
+set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgkernel ${CMAKE_BINARY_DIR}/fhgkernel)
 
 set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
 
 set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgcom ${CMAKE_BINARY_DIR}/fhgcom)
 set (FhgCom_LIBRARY fhgcom)
 
-set (FVM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fvm-pc;${CMAKE_BINARY_DIR}/fvm-pc")
+set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc ${CMAKE_BINARY_DIR}/fvm-pc)
 
-set (GPI_SPACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/gpi-space;${CMAKE_BINARY_DIR}/gpi-space")
+set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/gpi-space ${CMAKE_BINARY_DIR}/gpi-space)
 set (GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
 
-set (GSPC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/gspc;${CMAKE_BINARY_DIR}/gspc")
+set (GSPC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/gspc ${CMAKE_BINARY_DIR}/gspc)
 set (GSPC_LIBRARY_SHARED libgspc.shared)
 
 include (CTest)
