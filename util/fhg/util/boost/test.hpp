@@ -39,4 +39,7 @@
     os << WRAPPER (val);                                                \
   }
 
+#define FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER(VALUE)  \
+  ::boost::test_tools::tt_detail::print_helper (VALUE)
+
 #endif
