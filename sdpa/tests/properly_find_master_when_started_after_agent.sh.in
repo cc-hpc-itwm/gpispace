@@ -4,11 +4,11 @@ source "@CMAKE_BINARY_DIR@/test/env.sh"
 
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
-DUMMY_NET="$(mktemp --tmpdir="${DIR_TEST}" empty_dummy_network.pnet.XXXXX)" || die $EX_ERR_ENV
+DUMMY_NET="$(mktemp --tmpdir="${DIR_TEST}" empty_dummy_network.pnet.XXXXX)" || die ${EX_ERR_ENV}
 
-KVS_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" kvs.pid.XXXXX)" || die $EX_ERR_ENV
-ORCHESTRATOR_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" orch.pid.XXXXX)" || die $EX_ERR_ENV
-AGENT_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" agent.pid.XXXXX)" || die $EX_ERR_ENV
+KVS_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" kvs.pid.XXXXX)" || die ${EX_ERR_ENV}
+ORCHESTRATOR_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" orch.pid.XXXXX)" || die ${EX_ERR_ENV}
+AGENT_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" agent.pid.XXXXX)" || die ${EX_ERR_ENV}
 
 # TODO: needs some policy or fixes to work without
 TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST=2
@@ -17,36 +17,36 @@ TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN=1
 
 cleanup()
 {
-  [[ -s "$AGENT_PID_FILE" ]] && kill $(cat "$AGENT_PID_FILE")
-  [[ -s "$ORCHESTRATOR_PID_FILE" ]] && kill $(cat "$ORCHESTRATOR_PID_FILE")
-  [[ -s "$KVS_PID_FILE" ]] && kill $(cat "$KVS_PID_FILE")
+  [[ -s "${AGENT_PID_FILE}" ]] && kill $(cat "${AGENT_PID_FILE}")
+  [[ -s "${ORCHESTRATOR_PID_FILE}" ]] && kill $(cat "${ORCHESTRATOR_PID_FILE}")
+  [[ -s "${KVS_PID_FILE}" ]] && kill $(cat "${KVS_PID_FILE}")
   rm -f "${DUMMY_NET}"
   rm -f "${KVS_PID_FILE}" "${ORCHESTRATOR_PID_FILE}" "${AGENT_PID_FILE}"
 }
 
 trap 'cleanup' EXIT
 
-echo "<defun/>" | pnetc > "${DUMMY_NET}"                        || die $EX_ERR_RUN
+echo "<defun/>" | pnetc > "${DUMMY_NET}"                        || die ${EX_ERR_RUN}
 
 KVS_PORT=4102 # todo: random port until free port is found?
 KVS_URL="$(hostname):${KVS_PORT}"
 
 fhgkvsd --port ${KVS_PORT} \
-        --pidfile "${KVS_PID_FILE}" --daemonize                 || die $EX_ERR_BOOT
+        --pidfile "${KVS_PID_FILE}" --daemonize                 || die ${EX_ERR_BOOT}
 
 agent --kvs_url "${KVS_URL}" --master "orchestrator" --name "agent" \
-      --pidfile "${AGENT_PID_FILE}" --daemonize                 || die $EX_ERR_BOOT
+      --pidfile "${AGENT_PID_FILE}" --daemonize                 || die ${EX_ERR_BOOT}
 
 sleep ${TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST}
 
 orchestrator --kvs_url "${KVS_URL}" --name "orchestrator" \
-             --pidfile "${ORCHESTRATOR_PID_FILE}" --daemonize || die $EX_ERR_BOOT
+             --pidfile "${ORCHESTRATOR_PID_FILE}" --daemonize || die ${EX_ERR_BOOT}
 
 sleep ${TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN}
 
-JOB_ID=$(sdpac --kvs "${KVS_URL}" submit "${DUMMY_NET}")        || die $EX_ERR_RUN
+JOB_ID=$(sdpac --kvs "${KVS_URL}" submit "${DUMMY_NET}")        || die ${EX_ERR_RUN}
 timeout ${TIMEOUT_UNTIL_A_REREGISTRATION_SHOULD_BE_DONE} \
-  sdpac --kvs "${KVS_URL}" wait "${JOB_ID}"                     || die $EX_ERR_RUN
-JOB_STATUS=$(sdpac --kvs "${KVS_URL}" status "${JOB_ID}")       || die $EX_ERR_RUN
+  sdpac --kvs "${KVS_URL}" wait "${JOB_ID}"                     || die ${EX_ERR_RUN}
+JOB_STATUS=$(sdpac --kvs "${KVS_URL}" status "${JOB_ID}")       || die ${EX_ERR_RUN}
 
-[[ "x${JOB_STATUS}" == "xSDPA::Finished" ]]                     || die $EX_ERR_RUN
+[[ "x${JOB_STATUS}" == "xSDPA::Finished" ]]                     || die ${EX_ERR_RUN}
