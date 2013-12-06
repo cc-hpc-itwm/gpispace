@@ -7,7 +7,7 @@
 
 #include <we/type/value/poke.hpp>
 
-BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::signature::signature_type)
+#include <we/type/signature/boost/test/printer.hpp>
 
 BOOST_AUTO_TEST_CASE (signature)
 {

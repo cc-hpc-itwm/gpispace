@@ -16,20 +16,19 @@
 #include <we/type/value/to_value.hpp>
 #include <we/field.hpp>
 
+#include <we/type/value/boost/test/printer.hpp>
+
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/indenter.hpp>
 
+#include <fhg/util/boost/test/printer/list.hpp>
+#include <fhg/util/boost/test/printer/set.hpp>
+#include <fhg/util/boost/test/printer/map.hpp>
+
 #include <sstream>
 
 using pnet::type::value::structured_type;
-
-BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::value::value_type)
-BOOST_TEST_DONT_PRINT_LOG_VALUE (std::list<long>)
-BOOST_TEST_DONT_PRINT_LOG_VALUE (std::list<pnet::type::value::value_type>)
-typedef std::map<pnet::type::value::value_type, pnet::type::value::value_type> dont_print_map_t;
-BOOST_TEST_DONT_PRINT_LOG_VALUE (dont_print_map_t)
-BOOST_TEST_DONT_PRINT_LOG_VALUE (std::set<pnet::type::value::value_type>)
 
 namespace
 {

@@ -8,9 +8,9 @@
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
 
-#include <sstream>
+#include <we/type/value/boost/test/printer.hpp>
 
-BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::value::value_type)
+#include <sstream>
 
 BOOST_AUTO_TEST_CASE (basic)
 {

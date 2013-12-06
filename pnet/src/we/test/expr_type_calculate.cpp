@@ -9,6 +9,8 @@
 #include <we/type/value/name.hpp>
 #include <we/exception.hpp>
 
+#include <we/type/signature/boost/test/printer.hpp>
+
 #include <fhg/util/split.hpp>
 
 #include <boost/format.hpp>
@@ -16,9 +18,6 @@
 #include <boost/unordered_map.hpp>
 
 #include <stdexcept>
-
-BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::expr::type::resolver_map_type::iterator)
-BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::signature::signature_type)
 
 namespace
 {
@@ -238,8 +237,8 @@ BOOST_AUTO_TEST_CASE (lookup)
   OKAY (m, "${a.a}", std::string ("Bar"));
 
   BOOST_CHECK_EQUAL (m.size(), 2);
-  BOOST_CHECK_NE (m.find (path ("a")), m.end());
-  BOOST_CHECK_NE (m.find (path ("a.a")), m.end());
+  BOOST_CHECK_EQUAL (m.count (path ("a")), 0);
+  BOOST_CHECK_EQUAL (m.count (path ("a.a")), 0);
   BOOST_CHECK_EQUAL ( m.at (path ("a"))
                     , pnet::type::signature::signature_type (std::string ("Foo"))
                     );

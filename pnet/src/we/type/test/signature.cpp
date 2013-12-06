@@ -12,14 +12,14 @@
 #include <we/type/signature/resolve.hpp>
 #include <we/type/signature/signature.hpp>
 
+#include <we/type/signature/boost/test/printer.hpp>
+
 #include <we/exception.hpp>
 
 #include <sstream>
 
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
-
-BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::signature::signature_type)
 
 BOOST_AUTO_TEST_CASE (signature_show)
 {
