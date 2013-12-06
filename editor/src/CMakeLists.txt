@@ -3,7 +3,6 @@
 include (SDPAFindBoost)
 find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
-find_package (SDPA REQUIRED QUIET)
 
 include_directories ( ${CMAKE_CURRENT_BINARY_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}

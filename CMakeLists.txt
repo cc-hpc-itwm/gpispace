@@ -173,6 +173,8 @@ set (SEDA_LIBRARY seda)
 
 set (FhgKernel_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fhgkernel;${CMAKE_BINARY_DIR}/fhgkernel")
 
+set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (pnet)

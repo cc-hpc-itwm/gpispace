@@ -10,7 +10,6 @@ include_directories(${UTIL_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
 
 # for usage of the sdpac plugin
-find_package(SDPA REQUIRED QUIET)
 include_directories(${SDPA_INCLUDE_DIR})
 
 # plugin headers
