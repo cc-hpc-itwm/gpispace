@@ -2,7 +2,7 @@
 
 source "@CMAKE_BINARY_DIR@/test/env.sh"
 
-DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
+DIR_TEST="@CMAKE_CURRENT_BINARY_DIR@"
 
 DUMMY_NET="$(mktemp --tmpdir="${DIR_TEST}" empty_dummy_network.pnet.XXXXX)" || die ${EX_ERR_ENV}
 
