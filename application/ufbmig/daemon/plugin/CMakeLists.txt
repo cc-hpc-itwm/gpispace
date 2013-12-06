@@ -14,7 +14,6 @@ find_package(SDPA REQUIRED QUIET)
 include_directories(${SDPA_INCLUDE_DIR})
 
 # plugin headers
-find_package(FhgKernel REQUIRED QUIET)
 include_directories(${FhgKernel_INCLUDE_DIR})
 
 # add include directory to sdpa-plugin directory

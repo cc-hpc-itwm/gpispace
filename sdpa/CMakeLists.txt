@@ -6,7 +6,6 @@ include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 
 include_directories (${UTIL_INCLUDE_DIR})
 
-find_package (FhgKernel REQUIRED QUIET)
 include_directories (${FhgKernel_INCLUDE_DIR})
 
 include_directories (${SEDA_INCLUDE_DIR})

@@ -1,6 +1,5 @@
 include(fhg_plugin_macros)
 
-find_package (FhgKernel REQUIRED QUIET)
 include_directories (${FhgKernel_INCLUDE_DIR})
 
 include_directories (${FhgLog_INCLUDE_DIR})
