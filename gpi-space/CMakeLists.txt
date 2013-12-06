@@ -3,10 +3,8 @@ OPTION (ENABLE_COMPATIBILITY_API "Provide a transitional api compatible with the
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
-set (QUIET_FIND_PACKAGE QUIET)
-
 if (ENABLE_REAL_GPI)
-  find_package (IBVerbs ${QUIET_FIND_PACKAGE})
+  find_package (IBVerbs QUIET)
   if (IBverbs_FOUND)
     include_directories (SYSTEM ${IBverbs_INCLUDE_DIR})
 
@@ -75,15 +73,15 @@ include_directories(${FhgKernel_INCLUDE_DIR})
 
 include_directories(${MMGR_INCLUDE_DIR})
 
-find_package (LibRT REQUIRED ${QUIET_FIND_PACKAGE})
+find_package (LibRT REQUIRED QUIET)
 include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
 
-find_package (ZMQ ${QUIET_FIND_PACKAGE})
+find_package (ZMQ QUIET)
 if (ZMQ_FOUND)
   include_directories (SYSTEM ${ZMQ_INCLUDE_DIR})
 endif ()
 
-find_package (CZMQ ${QUIET_FIND_PACKAGE})
+find_package (CZMQ QUIET)
 if (CZMQ_FOUND)
   include_directories (SYSTEM ${CZMQ_INCLUDE_DIR})
 endif()
