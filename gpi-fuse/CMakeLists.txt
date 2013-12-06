@@ -21,7 +21,6 @@ include_directories (SYSTEM ${FUSE_INCLUDE_DIR})
 include (SDPAFindBoost)
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
-find_package (GPISpace REQUIRED QUIET)
 include_directories (${GPI_SPACE_INCLUDE_DIR})
 
 include_directories (${FhgLog_INCLUDE_DIR})

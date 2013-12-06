@@ -180,6 +180,9 @@ set (FhgCom_LIBRARY fhgcom)
 
 set (FVM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fvm-pc;${CMAKE_BINARY_DIR}/fvm-pc")
 
+set (GPI_SPACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/gpi-space;${CMAKE_BINARY_DIR}/gpi-space")
+set (GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (pnet)
