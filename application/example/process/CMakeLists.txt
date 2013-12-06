@@ -13,7 +13,6 @@ include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
 
 include_directories(${UTIL_INCLUDE_DIR})
 
-find_package(FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
 add_library(exec_mod SHARED process.cpp exec_mod.cpp)

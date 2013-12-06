@@ -65,7 +65,6 @@ endif()
 include (SDPAFindBoost)
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
-find_package (FhgLog REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${FhgLog_INCLUDE_DIR})
 
 find_package (FhgCom REQUIRED ${QUIET_FIND_PACKAGE})

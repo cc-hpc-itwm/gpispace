@@ -38,8 +38,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 if (ENABLE_LOGGING)
   set(SEDA_ENABLE_LOGGING ${ENABLE_LOGGING})
 
-	find_package (FhgLog REQUIRED QUIET)
-    include_directories(${FhgLog_INCLUDE_DIR})
+  include_directories(${FhgLog_INCLUDE_DIR})
 endif (ENABLE_LOGGING)
 
 ## check for threads

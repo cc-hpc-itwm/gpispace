@@ -21,7 +21,6 @@ include_directories(${GSPC_INCLUDE_DIR})
 include (SDPAFindBoost)
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
-find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
 find_package (FhgCom REQUIRED QUIET)

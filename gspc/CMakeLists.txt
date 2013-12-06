@@ -1,6 +1,5 @@
 include (SDPAFindBoost)
 
-find_package (FhgLog REQUIRED QUIET)
 include_directories (${FhgLog_INCLUDE_DIR})
 
 include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
