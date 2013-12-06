@@ -69,7 +69,9 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
   sdpa::job_id_t job_id(client.submitJob (workflow));
   client.cancelJob(job_id);
   sdpa::client::job_info_t job_info;
-  client.wait_for_terminal_state (job_id, job_info);
+  BOOST_REQUIRE_EQUAL
+    ( client.wait_for_terminal_state (job_id, job_info)
+    , sdpa::status::CANCELED );
 
   BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
 }
@@ -106,7 +108,9 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_with_timeout)
 
   client.cancelJob(job_id);
   sdpa::client::job_info_t job_info;
-  client.wait_for_terminal_state (job_id, job_info);
+  BOOST_REQUIRE_EQUAL
+    ( client.wait_for_terminal_state (job_id, job_info)
+        , sdpa::status::CANCELED );
 
   BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
 }
@@ -143,7 +147,9 @@ BOOST_AUTO_TEST_CASE (test_cancel_terminated_job)
   sdpa::job_id_t job_id(client.submitJob (workflow));
 
   sdpa::client::job_info_t job_info;
-  client.wait_for_terminal_state (job_id, job_info);
+  BOOST_REQUIRE_EQUAL
+    ( client.wait_for_terminal_state (job_id, job_info)
+        , sdpa::status::FINISHED );
 
   BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
 }
