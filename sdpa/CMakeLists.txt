@@ -9,7 +9,6 @@ include_directories (${UTIL_INCLUDE_DIR})
 find_package (FhgKernel REQUIRED QUIET)
 include_directories (${FhgKernel_INCLUDE_DIR})
 
-find_package (SEDA REQUIRED QUIET)
 include_directories (${SEDA_INCLUDE_DIR})
 
 find_package(ZLIB REQUIRED QUIET)

@@ -168,6 +168,9 @@ set (MMGR_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/mmgr;${CMAKE_BINARY_DIR}/mmgr")
 set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
 
+set (SEDA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/seda;${CMAKE_BINARY_DIR}/seda")
+set (SEDA_LIBRARY seda)
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (pnet)

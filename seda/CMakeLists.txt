@@ -12,7 +12,6 @@ endif (V_MAJOR)
 ###################################################################################################
 # No user settings below
 ###################################################################################################
-# don't forget to add the configuration option inc libsedaConfig.cmake.in
 
 OPTION(ENABLE_LOGGING
   "Build the project with logging enabled"
@@ -50,10 +49,6 @@ endif( NOT WIN32)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/seda/seda-config.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINARY_DIR}/libseda.pc @ONLY)
-
-# this file is installed and contains all necessary information about the installed libseda,
-# it also loads the file with the exported targets
-configure_file(sedaConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/sedaConfig.cmake" @ONLY)
 
 # Make sure all subdirectories include correctly
 
