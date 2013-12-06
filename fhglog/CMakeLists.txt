@@ -1,6 +1,8 @@
 project(libfhglog)
 
-include (./version.cmake)
+set(FHGLOG_MAJOR 1)
+set(FHGLOG_MINOR 4)
+set(FHGLOG_PATCH 0)
 
 option(ENABLE_REMOTE_LOGGING "Build fhglog with remote logging support" YES)
 set(FHGLOG_EXIT_ON_ERROR Yes CACHE BOOL "Exit on error or not")
