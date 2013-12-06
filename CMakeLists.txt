@@ -135,8 +135,6 @@ else()
   add_definitions ("-DNSTATISTICS")
 endif()
 
-set (BUILDING_FROM_MAIN 1)
-
 find_package (Threads REQUIRED QUIET)
 if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
