@@ -160,6 +160,10 @@ add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=30")
 set (UTIL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/util;${CMAKE_BINARY_DIR}/util")
 set (UTIL_LIBRARIES fhg-revision fhg-util)
 
+set (FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog ${CMAKE_BINARY_DIR}/fhglog)
+set (FhgLog_LIBRARY fhglog)
+set (FhgLog_LIBRARY_SHARED fhglog-shared)
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (pnet)
