@@ -24,13 +24,11 @@
 
 #include <fhg/util/boost/test/printer/list.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
+#include <fhg/util/boost/test/printer/map.hpp>
 
 #include <sstream>
 
 using pnet::type::value::structured_type;
-
-typedef std::map<pnet::type::value::value_type, pnet::type::value::value_type> dont_print_map_t;
-BOOST_TEST_DONT_PRINT_LOG_VALUE (dont_print_map_t)
 
 namespace
 {
