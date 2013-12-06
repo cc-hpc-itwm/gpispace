@@ -13,7 +13,6 @@ include_directories (${SEDA_INCLUDE_DIR})
 find_package(ZLIB REQUIRED QUIET)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 
-find_package(GSPC REQUIRED QUIET)
 include_directories(${GSPC_INCLUDE_DIR})
 
 include (SDPAFindBoost)

@@ -183,6 +183,9 @@ set (FVM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fvm-pc;${CMAKE_BINARY_DIR}/fvm-pc")
 set (GPI_SPACE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/gpi-space;${CMAKE_BINARY_DIR}/gpi-space")
 set (GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
 
+set (GSPC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/gspc;${CMAKE_BINARY_DIR}/gspc")
+set (GSPC_LIBRARY_SHARED libgspc.shared)
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (pnet)
