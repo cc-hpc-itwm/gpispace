@@ -75,7 +75,6 @@ include_directories(${UTIL_INCLUDE_DIR})
 find_package (FhgKernel REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${FhgKernel_INCLUDE_DIR})
 
-find_package (MMGR REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${MMGR_INCLUDE_DIR})
 
 find_package (LibRT REQUIRED ${QUIET_FIND_PACKAGE})

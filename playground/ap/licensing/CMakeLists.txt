@@ -2,7 +2,6 @@ find_package (NACL QUIET)
 if (NACL_FOUND)
   include_directories (${NACL_INCLUDE_DIR})
 
-  find_package (UTIL QUIET REQUIRED)
   include_directories (${UTIL_INCLUDE_DIR})
 
   add_executable (create-license create_license.cpp)

@@ -164,6 +164,10 @@ set (FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog ${CMAKE_BINARY_DIR}/fhglog)
 set (FhgLog_LIBRARY fhglog)
 set (FhgLog_LIBRARY_SHARED fhglog-shared)
 
+set (MMGR_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/mmgr;${CMAKE_BINARY_DIR}/mmgr")
+set (MMGR_LIBRARY mmgr)
+set (MMGR_LIBRARY_SHARED mmgr.shared)
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (pnet)

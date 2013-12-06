@@ -1,5 +1,4 @@
 # -*- mode: cmake; -*-
-find_package (MMGR REQUIRED QUIET)
 include_directories (${MMGR_INCLUDE_DIR})
 
 set (pc-srcs pc.cpp)
