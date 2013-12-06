@@ -70,7 +70,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   Job* pJob = jobManager().findJob(pEvt->job_id());
   if(!pJob)
   {
-      SDPA_LOG_WARN( "got finished message for old/unknown Job "<< pEvt->job_id());
+      DMLOG(WARN,  "got finished message for old/unknown Job "<< pEvt->job_id());
       return;
   }
 
@@ -127,7 +127,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       }
       catch(const JobNotDeletedException&)
       {
-        SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+        DMLOG(ERROR, "Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
       }
 
       try {
@@ -139,7 +139,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
       }
       catch(JobNotDeletedException const &)
       {
-          SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+          DMLOG(ERROR, "The JobManager could not delete the job "<<pEvt->job_id());
           throw;
       }
   }
@@ -156,7 +156,7 @@ bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::layer
   Job* pJob = jobManager().findJob(id);
   if(!pJob)
   {
-    SDPA_LOG_WARN( "got finished message for old/unknown Job "<<id.str());
+    DMLOG(WARN,  "got finished message for old/unknown Job "<<id.str());
     return false;
   }
 
@@ -244,7 +244,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   Job* pJob = jobManager().findJob(pEvt->job_id());
   if(!pJob)
   {
-    SDPA_LOG_WARN( "got failed message for old/unknown Job "<< pEvt->job_id());
+    DMLOG(WARN,  "got failed message for old/unknown Job "<< pEvt->job_id());
     return;
   }
 
@@ -309,7 +309,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
       }
       catch(const JobNotDeletedException&)
       {
-        SDPA_LOG_ERROR("Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
+        DMLOG(ERROR, "Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
       }
 
       try {
@@ -321,7 +321,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
       }
       catch(JobNotDeletedException const &ex)
       {
-        SDPA_LOG_ERROR("The JobManager could not delete the job "<<pEvt->job_id());
+        DMLOG(ERROR, "The JobManager could not delete the job "<<pEvt->job_id());
         throw ex;
       }
   }
@@ -341,7 +341,7 @@ bool Agent::failed( const we::mgmt::layer::id_type& wfid
   Job* pJob = jobManager().findJob(id);
   if(!pJob)
   {
-    SDPA_LOG_WARN( "got failed message for old/unknown Job "<<id.str());
+    DMLOG(WARN,  "got failed message for old/unknown Job "<<id.str());
     return false;
   }
 
@@ -455,7 +455,7 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
   }
   else
   {
-    SDPA_LOG_WARN( "The job "<< evt.job_id() << "could not be canceled! Exception occurred: couln't find it!");
+    DMLOG(WARN,  "The job "<< evt.job_id() << "could not be canceled! Exception occurred: couln't find it!");
   }
 }
 
@@ -542,7 +542,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
     {
       sdpa::worker_id_t worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
 
-      SDPA_LOG_DEBUG("Tell the worker "<<worker_id<<" to cancel the job "<<pEvt->job_id());
+      DMLOG(TRACE, "Tell the worker "<<worker_id<<" to cancel the job "<<pEvt->job_id());
       CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
                                                           , worker_id
                                                           , pEvt->job_id()
@@ -551,7 +551,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
       // change the job status to "Canceling"
       pJob->CancelJob(pEvt);
-      SDPA_LOG_DEBUG("The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
+      DMLOG(TRACE, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
     }
     catch(const NoWorkerFoundException&)
     {
@@ -569,10 +569,10 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
     we::mgmt::layer::id_type workflowId = pEvt->job_id();
     //! \todo "No reason"?! We've got a CancelJobEvent, which has a reason.
     we::mgmt::layer::reason_type reason("No reason");
-    DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
+    DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->showStatus());
     workflowEngine()->cancel(workflowId, reason);
     pJob->CancelJob(pEvt);
-    DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());
+    DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<pJob->showStatus());
   }
 }
 
@@ -592,7 +592,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     {
         // update the job status to "Canceled"
         pJob->CancelJobAck(pEvt);
-        SDPA_LOG_DEBUG("The job state is: "<<pJob->getStatus());
+        DMLOG(TRACE, "The job state is: "<<status::show(pJob->getStatus()));
     }
 
     _.dont();
