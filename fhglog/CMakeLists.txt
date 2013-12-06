@@ -10,8 +10,6 @@ set(FHGLOG_EXIT_ON_ERROR_CODE "42" CACHE STRING "The exit code with which fhglog
 
 option(DEBUG_FHGLOG "Additional debug output from fhglog self" OFF)
 
-# don't forget to add the configuration option inc libfhglogConfig.cmake.in
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${UTIL_INCLUDE_DIR})
@@ -30,10 +28,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINA
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp
   DESTINATION include/fhglog
   COMPONENT runtime-headers)
-
-# this file is installed and contains all necessary information about the installed libseda,
-# it also loads the file with the exported targets
-configure_file(libfhglogConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/libfhglogConfig.cmake" @ONLY)
 
 if (DEBUG_FHGLOG)
   add_definitions("-DFHGLOG_DEBUG_CONFIG")
