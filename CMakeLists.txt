@@ -172,19 +172,22 @@ get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH CACHE)
 
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
+# sdpa needs boost::mpl::vector with more than $default elements for state machine
+add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
+add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
+
+set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
+
+
 # RPATH configuration
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../../../lib/")
 
-set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
 
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/json_spirit)
 
-# sdpa needs boost::mpl::vector with more than $default elements for state machine
-add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
-add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 # replacement for find_package (<one of our subprojects>)
 set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util ${CMAKE_BINARY_DIR}/util)
