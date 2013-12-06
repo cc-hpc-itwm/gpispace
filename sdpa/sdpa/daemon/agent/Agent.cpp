@@ -513,6 +513,18 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
       return;
   }
 
+  if(pJob->completed())
+  {
+    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                        , pEvt->from()
+                                                        , ErrorEvent::SDPA_EJOBTERMINATED
+                                                        , "Cannot cancel an already terminated job, its current status is: "
+                                                           + sdpa::status::show(pJob->getStatus()) )
+                                             ));
+    return;
+  }
+
+
   if( isTop() )
   {
     // send immediately an acknowledgment to the component that requested the cancellation
