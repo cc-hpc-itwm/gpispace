@@ -67,7 +67,6 @@ include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
 include_directories(${FhgLog_INCLUDE_DIR})
 
-find_package (FhgCom REQUIRED ${QUIET_FIND_PACKAGE})
 include_directories(${FhgCom_INCLUDE_DIR})
 
 include_directories(${UTIL_INCLUDE_DIR})

@@ -175,6 +175,9 @@ set (FhgKernel_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fhgkernel;${CMAKE_BINARY_DIR}/fh
 
 set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
 
+set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgcom ${CMAKE_BINARY_DIR}/fhgcom)
+set (FhgCom_LIBRARY fhgcom)
+
 include (CTest)
 add_subdirectory (fhglog)
 add_subdirectory (pnet)
