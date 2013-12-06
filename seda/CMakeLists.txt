@@ -22,10 +22,6 @@ OPTION(WITH_FHGLOG
   "Build the project with fhglog"
   1)
 
-OPTION(WITH_LOG4CPP
-  "Build the project with log4cpp"
-  0)
-
 OPTION(ENABLE_SEDA_COMM_LIB
   "Build communication library"
   OFF)
