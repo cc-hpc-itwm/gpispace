@@ -211,16 +211,36 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
                                                    ));
           return;
       }
-      else
+
+      if(pJob->completed())
       {
-        // send immediately an acknowledgment to the component that requested the cancellation
-        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
+         sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+                                                             , pEvt->from()
+                                                             , ErrorEvent::SDPA_EJOBTERMINATED
+                                                             , "Cannot cancel an already terminated job, its current status is: "
+                                                                + pJob->getStatus() )
+                                                  ));
+         return;
+      }
+
+      // send immediately an acknowledgment to the component that requested the cancellation
+      CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
         if(!isSubscriber(pJob->owner()))
           sendEventToMaster(pCancelAckEvt);
 
         notifySubscribers(pCancelAckEvt);
+
+      // if the job is in pending or stalled, put it already on canceled
+      if(!pJob->is_running())
+      {
+          pJob->CancelJob(pEvt);
+          DMLOG(TRACE, "The job status is: "<<pJob->getStatus());
+          return;
       }
+
+      pJob->CancelJob(pEvt);
+      pJob->CancelJobAck(pCancelAckEvt.get());
   }
   else
   {
@@ -244,16 +264,11 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
                                                       , pEvt->reason() ) );
     sendEventToSlave(pCancelEvt);
 
-    // change the job status to "Canceling"
-    pJob->CancelJob(pEvt);
     DMLOG(TRACE, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
   }
   catch(const NoWorkerFoundException&)
   {
-    we::mgmt::layer::id_type workflowId = pEvt->job_id();
-    DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<pJob->getStatus());
-    pJob->CancelJob(pEvt);
-    DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<pJob->getStatus());
+      DMLOG (WARN, "No cancel message is to be forwarded as no worker was sent the job "<<pEvt->job_id());
   }
 }
 
