@@ -8,6 +8,7 @@
 #include <we/type/value/poke.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
+#include <we/type/signature/boost/test/printer.hpp>
 
 #include <we/signature_of.hpp>
 
@@ -40,7 +41,6 @@ namespace
   };
 }
 
-BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::signature::signature_type)
 BOOST_TEST_DONT_PRINT_LOG_VALUE (std::list<std::string>)
 
 BOOST_FIXTURE_TEST_CASE (type_mismatch, fix)

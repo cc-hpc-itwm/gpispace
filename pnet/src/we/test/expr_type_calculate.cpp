@@ -9,6 +9,8 @@
 #include <we/type/value/name.hpp>
 #include <we/exception.hpp>
 
+#include <we/type/signature/boost/test/printer.hpp>
+
 #include <fhg/util/split.hpp>
 
 #include <boost/format.hpp>
@@ -18,7 +20,6 @@
 #include <stdexcept>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::expr::type::resolver_map_type::iterator)
-BOOST_TEST_DONT_PRINT_LOG_VALUE (pnet::type::signature::signature_type)
 
 namespace
 {
