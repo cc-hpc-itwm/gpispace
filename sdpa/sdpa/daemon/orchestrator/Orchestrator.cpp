@@ -223,10 +223,10 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
          return;
       }
 
-      // send immediately an acknowledgment to the component that requested the cancellation
-      CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
+        // send immediately an acknowledgment to the component that requested the cancellation
+        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from (), pEvt->job_id()));
 
-        if(!isSubscriber(pJob->owner()))
+        if(!isSubscriber(pEvt->from ()))
           sendEventToMaster(pCancelAckEvt);
 
         notifySubscribers(pCancelAckEvt);

@@ -293,7 +293,7 @@ public:
     {
       _notification_service->notify
         ( sdpa::daemon::NotificationEvent
-           (task.workers, task.id, state, task.activity, task.meta)
+           (fhg_kernel()->get_name (), task.id, state, task.activity, task.meta)
         );
     }
   }
