@@ -6,7 +6,6 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 find_package(FhgLog REQUIRED QUIET)
 include_directories(${FhgLog_INCLUDE_DIR})
 
-find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
 include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
