@@ -2,7 +2,6 @@ if (NOT BOOST_ROOT)
   set (BOOST_ROOT $ENV{BOOST_ROOT})
 endif()
 
-set (Boost_FIND_QUIETLY YES)
 set (Boost_USE_STATIC_LIBS ON)
 set (COMPONENTS
   thread
@@ -17,7 +16,7 @@ set (COMPONENTS
   test_exec_monitor
   unit_test_framework
 )
-find_package (Boost 1.47 REQUIRED COMPONENTS ${COMPONENTS})
+find_package (Boost 1.47 REQUIRED COMPONENTS ${COMPONENTS} QUIET)
 
 if (Boost_MAJOR_VERSION EQUAL 1)
   if (Boost_MINOR_VERSION EQUAL 48)
