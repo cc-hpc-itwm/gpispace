@@ -64,7 +64,6 @@ include_directories(${FVM_INCLUDE_DIR})
 
 include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
 
-find_package(UTIL REQUIRED QUIET)
 include_directories(${UTIL_INCLUDE_DIR})
 
 find_package(FhgLog REQUIRED QUIET)

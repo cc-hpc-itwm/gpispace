@@ -5,7 +5,6 @@ include (SDPAFindBoost)
 
 include (${QT_USE_FILE})
 
-find_package (UTIL REQUIRED QUIET)
 include_directories (${UTIL_INCLUDE_DIR})
 
 include_directories (${CMAKE_SOURCE_DIR}/editor/src ${Boost_INCLUDE_DIR})
