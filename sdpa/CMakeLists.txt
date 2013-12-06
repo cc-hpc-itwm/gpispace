@@ -26,7 +26,6 @@ include_directories (${FhgLog_INCLUDE_DIR})
 find_package (FhgCom REQUIRED QUIET)
 include_directories (${FhgCom_INCLUDE_DIR})
 
-find_package (MMGR REQUIRED QUIET)
 include_directories (${MMGR_INCLUDE_DIR})
 
 add_subdirectory (sdpa)
