@@ -178,11 +178,7 @@ set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
 set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgcom ${CMAKE_BINARY_DIR}/fhgcom)
 set (FhgCom_LIBRARY fhgcom)
 
-set(FVM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fvm-pc;${CMAKE_BINARY_DIR}/fvm-pc")
-set(FVM_FAKE_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/fake/libfvm-pc.so")
-set(FVM_FAKE_STATIC_LIBRARY "${CMAKE_BINARY_DIR}/fvm-pc/fvm-pc/fake/libfvm-pc.a")
-get_target_property(FVM_LIBRARY fvm-pc-fake.shared LOCATION)
-get_target_property(FVM_STATIC_LIBRARY fvm-pc-fake LOCATION)
+set (FVM_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/fvm-pc;${CMAKE_BINARY_DIR}/fvm-pc")
 
 include (CTest)
 add_subdirectory (fhglog)
