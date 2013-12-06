@@ -67,8 +67,7 @@ include_directories(${UTIL_INCLUDE_DIR})
 
 include_directories (${FhgLog_INCLUDE_DIR})
 
-find_package(Process REQUIRED QUIET)
-include_directories (${PROCESS_INCLUDE_DIR})
+include_directories ("${CMAKE_SOURCE_DIR}/application/example")
 
 set(KDM_MOD_INITIALIZE_SRCS
 	./src/structures/migrationjob.cpp
