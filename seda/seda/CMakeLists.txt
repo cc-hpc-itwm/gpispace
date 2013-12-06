@@ -58,8 +58,8 @@ set (srcs
 
 ADD_LIBRARY(seda STATIC ${srcs})
 
-if (WITH_FHGLOG AND FhgLog_FOUND)
+if (SEDA_ENABLE_LOGGING)
   target_link_libraries(seda ${FhgLog_LIBRARY})
-endif (WITH_FHGLOG AND FhgLog_FOUND)
+endif (SEDA_ENABLE_LOGGING)
 
 target_link_libraries(seda ${Boost_LIBRARIES})

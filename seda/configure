@@ -4,7 +4,7 @@
 #
 case "$1" in
   -h|-?|--help)
-    echo "usage: $0 -DCMAKE_BUILD_TYPE={Debug,Release,Profile} -DWITH_FHGLOG=YES|NO -DENABLE_SEDA_COMM_LIB=YES|NO"
+    echo "usage: $0 -DCMAKE_BUILD_TYPE={Debug,Release,Profile} -DENABLE_SEDA_COMM_LIB=YES|NO"
     exit 0
   ;;
   *)
