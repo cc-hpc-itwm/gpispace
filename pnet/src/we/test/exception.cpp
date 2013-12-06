@@ -12,6 +12,8 @@
 
 #include <we/signature_of.hpp>
 
+#include <fhg/util/boost/test/printer/list.hpp>
+
 namespace
 {
   struct fix
@@ -40,8 +42,6 @@ namespace
     }
   };
 }
-
-BOOST_TEST_DONT_PRINT_LOG_VALUE (std::list<std::string>)
 
 BOOST_FIXTURE_TEST_CASE (type_mismatch, fix)
 {
