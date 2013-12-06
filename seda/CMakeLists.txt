@@ -22,10 +22,6 @@ OPTION(ENABLE_SEDA_COMM_LIB
   "Build communication library"
   OFF)
 
-# Where are the additional libraries installed? Note: provide includes
-# path here, subsequent checks will resolve everything else
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
