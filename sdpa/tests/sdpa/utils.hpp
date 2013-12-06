@@ -328,7 +328,6 @@ namespace utils
       sdpa::client::Client c (orch.name());
 
       sdpa::job_id_t job_id_user(submit_job (c, workflow));
-      //! \todo There should not be a requirement for this!
       cancel_job (c, job_id_user);
       return wait_for_termination_impl (job_id_user, c);
     }
