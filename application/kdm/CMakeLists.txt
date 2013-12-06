@@ -56,9 +56,6 @@ set(SRC ./src/main.cpp
 # sdpa kdm module
 add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM  -DSHMEM)
 
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
 include_directories(${FVM_INCLUDE_DIR})
 
 include_directories(${CMAKE_SOURCE_DIR}/pnet/src)

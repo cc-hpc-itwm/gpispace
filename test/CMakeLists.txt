@@ -1,6 +1,4 @@
 if (BUILD_TESTING)
-  include(SDPAFindBoost)
-
   find_package (HWLOC REQUIRED QUIET)
 
   set (prefixes

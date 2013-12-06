@@ -60,9 +60,6 @@ else()
   message (FATAL_ERROR "_SC_GETPW_R_SIZE_MAX doesn't seem to be defined on this machine")
 endif()
 
-include (SDPAFindBoost)
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
-
 include_directories(${FhgLog_INCLUDE_DIR})
 
 include_directories(${FhgCom_INCLUDE_DIR})

@@ -36,11 +36,6 @@ if (ENABLE_LOGGING)
   include_directories(${FhgLog_INCLUDE_DIR})
 endif (ENABLE_LOGGING)
 
-## check for threads
-
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
 ## find zlib
 if( NOT WIN32)
   find_package(ZLIB REQUIRED QUIET)

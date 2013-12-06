@@ -15,9 +15,6 @@ include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 
 include_directories(${GSPC_INCLUDE_DIR})
 
-include (SDPAFindBoost)
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
-
 include_directories (${FhgLog_INCLUDE_DIR})
 
 include_directories (${FhgCom_INCLUDE_DIR})

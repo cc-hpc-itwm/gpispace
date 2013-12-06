@@ -21,9 +21,6 @@ if (ENABLE_REMOTE_LOGGING)
   set(FHGLOG_WITH_REMOTE_LOGGING 1)
 endif (ENABLE_REMOTE_LOGGING)
 
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp
   DESTINATION include/fhglog

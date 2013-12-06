@@ -3,9 +3,6 @@ set (FHG_COM_NS_UUID "c9fe00cb-d9f7-432e-9235-66b7929b6e2a" CACHE STRING "The un
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
-include (SDPAFindBoost)
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
-
 find_package (ZLIB REQUIRED QUIET)
 include_directories (SYSTEM ${ZLIB_INCLUDE_DIRS})
 

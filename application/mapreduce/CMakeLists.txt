@@ -1,6 +1,3 @@
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
 include_directories(${FVM_INCLUDE_DIR})
 
 include_directories (${FhgLog_INCLUDE_DIR})

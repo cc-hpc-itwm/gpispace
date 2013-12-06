@@ -140,6 +140,9 @@ if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
 endif()
 
+include (SDPAFindBoost)
+include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
+
 # RPATH configuration
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)

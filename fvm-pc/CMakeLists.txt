@@ -26,9 +26,6 @@ if (ENABLE_FAKE_PC)
   add_definitions (-DMAX_FVM_SIZE=${MAX_FVM_SIZE})
 endif()
 
-include (SDPAFindBoost)
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
-
 include_directories (${CMAKE_SOURCE_DIR}/gspc)
 include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
 
