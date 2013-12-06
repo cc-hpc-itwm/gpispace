@@ -3,20 +3,9 @@ if (NOT BOOST_ROOT)
 endif()
 
 set (Boost_USE_STATIC_LIBS ON)
-set (COMPONENTS
-  thread
-  system
-  filesystem
-  serialization
-  program_options
-  regex
-  signals
-  iostreams
-  date_time
-  test_exec_monitor
-  unit_test_framework
-)
-find_package (Boost 1.47 REQUIRED COMPONENTS ${COMPONENTS} QUIET)
+find_package (Boost 1.47 REQUIRED QUIET COMPONENTS
+  thread system filesystem serialization program_options
+  regex signals iostreams date_time test_exec_monitor unit_test_framework)
 
 if (Boost_MAJOR_VERSION EQUAL 1)
   if (Boost_MINOR_VERSION EQUAL 48)
