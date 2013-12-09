@@ -1,5 +1,5 @@
 add_executable(fhgcfg fhgcfg.cpp)
-target_link_libraries(fhgcfg ${Boost_LIBRARIES})
+target_link_libraries(fhgcfg ${Boost_LIBRARIES} ${Boost_REGEX_LIBRARY})
 
 install (TARGETS fhgcfg
   RUNTIME
