@@ -28,4 +28,5 @@ fhg_add_test (test_peer.cpp
                  ${FhgLog_LIBRARY}
                  ${Boost_LIBRARIES}
                  ${Boost_UNIT_TEST_LIBRARIES}
+                 ${Boost_FILESYSTEM_LIBRARY}
 )

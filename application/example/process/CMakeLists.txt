@@ -21,6 +21,8 @@ set (hdrs
 add_library(process ${hdrs} process.cpp)
 add_library(process.shared SHARED ${hdrs} process.cpp)
 set_target_properties(process.shared PROPERTIES OUTPUT_NAME process)
+target_link_libraries (process ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries (process.shared ${Boost_FILESYSTEM_SHARED_LIBRARY})
 
 set (xmls
   exec.xml

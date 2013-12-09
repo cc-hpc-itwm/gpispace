@@ -47,6 +47,7 @@ fhg_add_test(test_services.cpp
 
 fhg_add_test(test_serve.cpp
   LINK_LIBRARIES libgspc
+                 ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}
@@ -80,6 +81,7 @@ fhg_add_test(test_heartbeat_info.cpp
 
 fhg_add_test(test_io.cpp
   LINK_LIBRARIES libgspc
+                 ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}
@@ -90,12 +92,13 @@ fhg_add_test(test_io.cpp
 )
 
 fhg_add_test(test_parse_command_line.cpp
-  LINK_LIBRARIES libgspc
+  LINK_LIBRARIES libgspc ${Boost_FILESYSTEM_LIBRARY}
   DESCRIPTION "GSPCRif - command line parser tests"
 )
 
 fhg_add_test(test_process.cpp
   LINK_LIBRARIES libgspc
+                 ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
@@ -105,6 +108,7 @@ fhg_add_test(test_process.cpp
 
 fhg_add_test(test_manager.cpp
   LINK_LIBRARIES libgspc
+                 ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
@@ -115,6 +119,7 @@ fhg_add_test(test_manager.cpp
 fhg_add_test(test_supervisor.cpp
   LINK_LIBRARIES libgspc
                  fhg-util
+                 ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SIGNALS_SHARED_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
@@ -129,6 +134,7 @@ fhg_add_test(test_kvs_impl.cpp
   LINK_LIBRARIES libgspc
                  fhg-util
                  we-dev
+                 ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SIGNALS_SHARED_LIBRARY}
                  ${Boost_DATE_TIME_SHARED_LIBRARY}
@@ -141,6 +147,7 @@ fhg_add_test(test_kvs_net.cpp
   LINK_LIBRARIES libgspc
                  fhg-util
                  we-dev
+                 ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_SHARED_LIBRARY}
                  ${Boost_SIGNALS_SHARED_LIBRARY}
                  ${Boost_DATE_TIME_SHARED_LIBRARY}

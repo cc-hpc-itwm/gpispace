@@ -5,4 +5,4 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../util)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable (test_merge_and_reduce_buff test_merge_and_reduce_buff.cpp)
-target_link_libraries(test_merge_and_reduce_buff ${FhgLog_LIBRARY} ${Boost_LIBRARIES} ${Boost_REGEX_LIBRARY})
+target_link_libraries(test_merge_and_reduce_buff ${FhgLog_LIBRARY} ${Boost_LIBRARIES} ${Boost_REGEX_LIBRARY} ${Boost_FILESYSTEM_LIBRARY})

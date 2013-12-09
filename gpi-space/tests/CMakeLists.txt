@@ -85,6 +85,7 @@ fhg_add_test (test_sfs_area.cpp dummy_topology.cpp
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
                  ${Boost_LIBRARIES}
+                 ${Boost_FILESYSTEM_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
