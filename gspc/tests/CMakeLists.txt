@@ -99,20 +99,20 @@ fhg_add_test(test_parse_command_line.cpp
 fhg_add_test(test_process.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
-                 ${Boost_DATE_TIME_SHARED_LIBRARY}
-                 ${Boost_SYSTEM_SHARED_LIBRARY}
+                 ${Boost_DATE_TIME_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
   DESCRIPTION "GSPCRif - process tests"
 )
 
 fhg_add_test(test_manager.cpp
   LINK_LIBRARIES libgspc
                  ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_SHARED_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
-                 ${Boost_DATE_TIME_SHARED_LIBRARY}
-                 ${Boost_SYSTEM_SHARED_LIBRARY}
+                 ${Boost_DATE_TIME_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
   DESCRIPTION "GSPCRif - process manager tests"
 )
 
@@ -120,11 +120,11 @@ fhg_add_test(test_supervisor.cpp
   LINK_LIBRARIES libgspc
                  fhg-util
                  ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_SHARED_LIBRARY}
-                 ${Boost_SIGNALS_SHARED_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
-                 ${Boost_DATE_TIME_SHARED_LIBRARY}
-                 ${Boost_SYSTEM_SHARED_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
+                 ${Boost_DATE_TIME_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
   DESCRIPTION "GSPCRif - process supervisor tests"
 )
 
@@ -135,10 +135,10 @@ fhg_add_test(test_kvs_impl.cpp
                  fhg-util
                  we-dev
                  ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_SHARED_LIBRARY}
-                 ${Boost_SIGNALS_SHARED_LIBRARY}
-                 ${Boost_DATE_TIME_SHARED_LIBRARY}
-                 ${Boost_SYSTEM_SHARED_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
+                 ${Boost_DATE_TIME_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
                  ${CMAKE_DL_LIBS}
   DESCRIPTION "GSPCKvs - KVS implementation tests"
 )
@@ -148,10 +148,10 @@ fhg_add_test(test_kvs_net.cpp
                  fhg-util
                  we-dev
                  ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_SHARED_LIBRARY}
-                 ${Boost_SIGNALS_SHARED_LIBRARY}
-                 ${Boost_DATE_TIME_SHARED_LIBRARY}
-                 ${Boost_SYSTEM_SHARED_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
+                 ${Boost_SIGNALS_LIBRARY}
+                 ${Boost_DATE_TIME_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
                  ${CMAKE_DL_LIBS}
   DESCRIPTION "GSPCKvs - KVS network tests"
 )

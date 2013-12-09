@@ -10,8 +10,8 @@ fhg_add_plugin(gpi gpi.cpp
     gpi-space-pc-segment
     gpi-space-static
     ${FhgLog_LIBRARY_SHARED}
-    ${Boost_SERIALIZATION_SHARED_LIBRARY}
-    ${Boost_SYSTEM_SHARED_LIBRARY}
+    ${Boost_SERIALIZATION_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS gpi.hpp
   HEADER_DESTINATION include/fhg/plugins
@@ -22,7 +22,7 @@ fhg_add_plugin(gpi gpi.cpp
 fhg_add_plugin(gpi_compat gpi_compat.cpp
   EXPORTS GPI
   LINK_LIBRARIES
-    ${Boost_SERIALIZATION_SHARED_LIBRARY}
+    ${Boost_SERIALIZATION_LIBRARY}
     fhg-util
   INSTALL
   PLUGIN_DESTINATION libexec/fhg/plugins

@@ -22,7 +22,7 @@ set (core_srcs
 
 add_library(fhg-plugin-core ${core_srcs})
 add_library(fhg-plugin-shared SHARED ${core_srcs})
-target_link_libraries(fhg-plugin-shared ${Boost_FILESYSTEM_SHARED_LIBRARY})
+target_link_libraries(fhg-plugin-shared ${Boost_FILESYSTEM_LIBRARY})
 set_target_properties(fhg-plugin-shared
   PROPERTIES OUTPUT_NAME fhg-plugin
              VERSION     1
