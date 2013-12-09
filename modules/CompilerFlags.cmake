@@ -1,11 +1,11 @@
 # definitions
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Release")
-  add_definitions("-DNDEBUG")
+  add_definitions ("-DNDEBUG")
 endif()
 
 if (NOT ENABLE_BACKTRACE_ON_PARSE_ERROR)
-  add_definitions("-DNO_BACKTRACE_ON_PARSE_ERROR")
+  add_definitions ("-DNO_BACKTRACE_ON_PARSE_ERROR")
 endif()
 
 
