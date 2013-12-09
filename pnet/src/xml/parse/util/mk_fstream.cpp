@@ -21,10 +21,9 @@ namespace xml
 
         path.remove_filename();
 
-        if (not (  boost::filesystem::is_directory (path)
-                || boost::filesystem::create_directories (path)
-                )
-           )
+        boost::filesystem::create_directories (path);
+
+        if (not boost::filesystem::is_directory (path))
           {
             throw error::could_not_create_directory (path);
           }
@@ -115,10 +114,9 @@ namespace xml
 
         path.remove_filename();
 
-        if (not (  boost::filesystem::is_directory (path)
-                || boost::filesystem::create_directories (path)
-                )
-           )
+        boost::filesystem::create_directories (path);
+
+        if (not boost::filesystem::is_directory (path))
           {
             throw error::could_not_create_directory (path);
           }
