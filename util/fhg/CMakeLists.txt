@@ -1,5 +1,3 @@
-configure_file(assert_config.hpp.in assert_config.hpp @ONLY)
-
 add_subdirectory(util)
 
 execute_process(COMMAND hostname -f
