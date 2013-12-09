@@ -33,7 +33,7 @@ add_library (we-dev SHARED
 set_target_properties(we-dev
   PROPERTIES VERSION 1
 )
-target_link_libraries(we-dev fhg-util dl)
+target_link_libraries(we-dev fhg-util ${CMAKE_DL_LIBS})
 
 install (TARGETS we-dev
   LIBRARY DESTINATION lib
