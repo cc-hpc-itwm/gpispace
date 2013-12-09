@@ -48,8 +48,6 @@ endif (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 add_definitions ("-fno-strict-aliasing")
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-  include (CheckCXXSourceCompiles)
-
   set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -fpic -fPIC ${FLAGS_WARNING}")
   set(CMAKE_C_FLAGS "$ENV{CFLAGS} -fpic -fPIC ${FLAGS_WARNING}")
 
