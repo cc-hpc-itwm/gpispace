@@ -237,8 +237,8 @@ BOOST_AUTO_TEST_CASE (lookup)
   OKAY (m, "${a.a}", std::string ("Bar"));
 
   BOOST_CHECK_EQUAL (m.size(), 2);
-  BOOST_CHECK_EQUAL (m.count (path ("a")), 0);
-  BOOST_CHECK_EQUAL (m.count (path ("a.a")), 0);
+  BOOST_CHECK_EQUAL (m.count (path ("a")), 1);
+  BOOST_CHECK_EQUAL (m.count (path ("a.a")), 1);
   BOOST_CHECK_EQUAL ( m.at (path ("a"))
                     , pnet::type::signature::signature_type (std::string ("Foo"))
                     );
