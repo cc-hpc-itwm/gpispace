@@ -1,14 +1,14 @@
 project(libfhglog)
 
-include (./version.cmake)
+set(FHGLOG_MAJOR 1)
+set(FHGLOG_MINOR 4)
+set(FHGLOG_PATCH 0)
 
 option(ENABLE_REMOTE_LOGGING "Build fhglog with remote logging support" YES)
 set(FHGLOG_EXIT_ON_ERROR Yes CACHE BOOL "Exit on error or not")
 set(FHGLOG_EXIT_ON_ERROR_CODE "42" CACHE STRING "The exit code with which fhglog will exit on FATAL messages")
 
 option(DEBUG_FHGLOG "Additional debug output from fhglog self" OFF)
-
-# don't forget to add the configuration option inc libfhglogConfig.cmake.in
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -21,17 +21,10 @@ if (ENABLE_REMOTE_LOGGING)
   set(FHGLOG_WITH_REMOTE_LOGGING 1)
 endif (ENABLE_REMOTE_LOGGING)
 
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp
   DESTINATION include/fhglog
   COMPONENT runtime-headers)
-
-# this file is installed and contains all necessary information about the installed libseda,
-# it also loads the file with the exported targets
-configure_file(libfhglogConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/libfhglogConfig.cmake" @ONLY)
 
 if (DEBUG_FHGLOG)
   add_definitions("-DFHGLOG_DEBUG_CONFIG")

@@ -31,9 +31,14 @@
 
    the message is optional but if given, must be a C-string
  */
+#define FHG_ASSERT_DISABLED  0 //! \note ignore asserts
+#define FHG_ASSERT_ENABLED   1 //! \note enable asserts
+#define FHG_ASSERT_LEGACY    2 //! \note fall back to assert()
+#define FHG_ASSERT_EXCEPTION 3 //! \note throw fhg::assertion_failed
+#define FHG_ASSERT_LOG       4 //! \note just log
+#define FHG_ASSERT_LOG_ABORT 5 //! \note log and abort
 
 #include <sstream>
-#include <fhg/assert_modes.hpp>
 #include <fhg/assert_helper.hpp>
 
 #define FHG_ASSERT_STR_(x) #x

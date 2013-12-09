@@ -70,8 +70,8 @@ set (gspc_src
 
 add_library (libgspc        STATIC ${gspc_src})
 add_library (libgspc.shared SHARED ${gspc_src})
-target_link_libraries (libgspc ${UTIL_LIBRARIES})
-target_link_libraries (libgspc.shared ${UTIL_LIBRARIES})
+target_link_libraries (libgspc ${UTIL_LIBRARIES} ${Boost_REGEX_LIBRARY})
+target_link_libraries (libgspc.shared ${UTIL_LIBRARIES} ${Boost_REGEX_LIBRARY})
 set_target_properties (libgspc
   PROPERTIES OUTPUT_NAME gspc
              VERSION 0.1

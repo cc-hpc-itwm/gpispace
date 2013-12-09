@@ -25,7 +25,8 @@ fhg_add_test(test_ini_parser.cpp
   DESCRIPTION "Tests the ini-parser"
 )
 
-fhg_add_test(test_parent_path.cpp)
+fhg_add_test(test_parent_path.cpp
+  LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARY})
 
 fhg_add_test(test_assert.cpp
   COMPILE_FLAGS "-UFHG_ASSERT_MODE -DFHG_ASSERT_MODE=3 -UFHG_ASSERT_REPLACE_LEGACY -DFHG_ASSERT_REPLACE_LEGACY"

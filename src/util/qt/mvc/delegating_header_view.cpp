@@ -179,8 +179,9 @@ namespace fhg
           case QEvent::Wheel:
             wheelEvent (static_cast<QWheelEvent*> (event));
             return event->isAccepted();
+          default:
+            return QHeaderView::event (event);
           }
-          return QHeaderView::event (event);
         }
 
         void delegating_header_view::sections_inserted

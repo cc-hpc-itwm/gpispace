@@ -13,6 +13,7 @@ pnet_compile( mapreduce mapreduce.xpnet
            -I${CMAKE_SOURCE_DIR}/sdpa/plugin
            -I${CMAKE_SOURCE_DIR}/sdpa
            -O3
+  LDFLAGS "-L${BOOST_ROOT}/lib"
   BUILD
   COMPONENT applications
 )

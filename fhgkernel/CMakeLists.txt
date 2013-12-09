@@ -1,14 +1,8 @@
 # -*- mode: cmake; -*-
-# don't forget to add the configuration option inc libfhglogConfig.cmake.in
-
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
 
 # Make sure all subdirectories include correctly
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 include_directories(${FhgLog_INCLUDE_DIR})
 

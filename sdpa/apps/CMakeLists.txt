@@ -44,7 +44,7 @@ set ( client_libs
 # Client
 #
 add_executable(sdpac sdpac.cpp)
-target_link_libraries(sdpac ${client_libs})
+target_link_libraries(sdpac ${client_libs} ${Boost_FILESYSTEM_LIBRARY})
 install(TARGETS sdpac
   RUNTIME
   DESTINATION bin

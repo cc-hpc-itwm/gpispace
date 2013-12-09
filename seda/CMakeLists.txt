@@ -12,7 +12,6 @@ endif (V_MAJOR)
 ###################################################################################################
 # No user settings below
 ###################################################################################################
-# don't forget to add the configuration option inc libsedaConfig.cmake.in
 
 OPTION(ENABLE_LOGGING
   "Build the project with logging enabled"
@@ -22,17 +21,8 @@ OPTION(ENABLE_SEDA_COMM_LIB
   "Build communication library"
   OFF)
 
-# Where are the additional libraries installed? Note: provide includes
-# path here, subsequent checks will resolve everything else
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-## add doxygen support
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  include(TargetDoc.cmake OPTIONAL)
-endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## logging
 if (ENABLE_LOGGING)
@@ -40,11 +30,6 @@ if (ENABLE_LOGGING)
 
   include_directories(${FhgLog_INCLUDE_DIR})
 endif (ENABLE_LOGGING)
-
-## check for threads
-
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 ## find zlib
 if( NOT WIN32)
@@ -54,10 +39,6 @@ endif( NOT WIN32)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/seda/seda-config.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINARY_DIR}/libseda.pc @ONLY)
-
-# this file is installed and contains all necessary information about the installed libseda,
-# it also loads the file with the exported targets
-configure_file(sedaConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/sedaConfig.cmake" @ONLY)
 
 # Make sure all subdirectories include correctly
 

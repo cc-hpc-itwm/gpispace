@@ -2,10 +2,6 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-include(SDPAFindBoost)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-
-find_package(FVM REQUIRED QUIET)
 include_directories(${FVM_INCLUDE_DIR})
 
 include_directories(${CMAKE_SOURCE_DIR}/gspc)
@@ -25,6 +21,8 @@ set (hdrs
 add_library(process ${hdrs} process.cpp)
 add_library(process.shared SHARED ${hdrs} process.cpp)
 set_target_properties(process.shared PROPERTIES OUTPUT_NAME process)
+target_link_libraries (process ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries (process.shared ${Boost_FILESYSTEM_LIBRARY})
 
 set (xmls
   exec.xml

@@ -10,6 +10,7 @@ target_link_libraries (gpi-space
   gpi-space-gpiapi
   gpi-space-pc-server
   ${CMAKE_THREAD_LIBS_INIT}
+  ${Boost_FILESYSTEM_LIBRARY}
   fhg-revision
 )
 
@@ -31,6 +32,7 @@ target_link_libraries (gpish
   ${Boost_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   fhg-revision
+  ${Boost_FILESYSTEM_LIBRARY}
 )
 
 set_target_properties(gpi-space

@@ -58,10 +58,18 @@ main (int argc, char **argv)
 
   for (Count_t i = 0; i < alloc; ++i)
     {
-      tmmgr_alloc
-        (&tmmgr,
-         (Handle_t) (use_rand ? rand () : (use_gen ? gen_key () : i)),
-         (size / alloc));
+      if (use_rand)
+      {
+        tmmgr_alloc (&tmmgr, rand (), size / alloc);
+      }
+      else if (use_gen)
+      {
+        tmmgr_alloc (&tmmgr, gen_key(), size / alloc);
+      }
+      else
+      {
+        tmmgr_alloc (&tmmgr, i, size / alloc);
+      }
     }
 
   t += current_time ();
@@ -78,9 +86,18 @@ main (int argc, char **argv)
 
   for (Count_t i = 0; i < alloc; ++i)
     {
-      tmmgr_free
-        (&tmmgr,
-         (Handle_t) (use_rand ? rand () : (use_gen ? gen_key () : i)));
+      if (use_rand)
+      {
+        tmmgr_free (&tmmgr, rand ());
+      }
+      else if (use_gen)
+      {
+        tmmgr_free (&tmmgr, gen_key());
+      }
+      else
+      {
+        tmmgr_free (&tmmgr, i);
+      }
     }
 
   t += current_time ();
@@ -95,10 +112,18 @@ main (int argc, char **argv)
 
   for (Count_t i = 0; i < alloc; ++i)
     {
-      tmmgr_alloc
-        (&tmmgr,
-         (Handle_t) (use_rand ? rand () : (use_gen ? gen_key () : i)),
-         (size / alloc));
+      if (use_rand)
+      {
+        tmmgr_alloc (&tmmgr, rand (), size / alloc);
+      }
+      else if (use_gen)
+      {
+        tmmgr_alloc (&tmmgr, gen_key(), size / alloc);
+      }
+      else
+      {
+        tmmgr_alloc (&tmmgr, i, size / alloc);
+      }
     }
 
   srand (31415926);
@@ -106,9 +131,18 @@ main (int argc, char **argv)
 
   for (Count_t i = 0; i < alloc / 2; ++i)
     {
-      tmmgr_free
-        (&tmmgr,
-         (Handle_t) (use_rand ? rand () : (use_gen ? gen_key () : i)));
+      if (use_rand)
+      {
+        tmmgr_free (&tmmgr, rand ());
+      }
+      else if (use_gen)
+      {
+        tmmgr_free (&tmmgr, gen_key());
+      }
+      else
+      {
+        tmmgr_free (&tmmgr, i);
+      }
     }
 
   tmmgr_info (tmmgr, NULL);

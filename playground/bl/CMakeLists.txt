@@ -1,13 +1,12 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
 find_package (Qt4 4.7.1 COMPONENTS QtCore QtGui QtNetwork REQUIRED QUIET)
-include (SDPAFindBoost)
 
 include (${QT_USE_FILE})
 
 include_directories (${UTIL_INCLUDE_DIR})
 
-include_directories (${CMAKE_SOURCE_DIR}/editor/src ${Boost_INCLUDE_DIR})
+include_directories (${CMAKE_SOURCE_DIR}/editor/src)
 
 qt4_wrap_cpp (wrapped_cpps_server dummy_server.hpp OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 

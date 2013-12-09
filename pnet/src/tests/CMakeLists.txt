@@ -15,7 +15,6 @@ set(tests
     test_expr_simplify.cpp
     test_layer_atomics.cpp
     test_layer_cancel.cpp
-    test_load_module.cpp
     test_port.cpp
     test_property.cpp
     test_queue.cpp
@@ -38,16 +37,28 @@ foreach (test ${tests})
   )
 endforeach()
 
+fhg_add_test (test_load_module.cpp
+  PROJECT we
+  LINK_LIBRARIES pnet
+                 ${FhgLog_LIBRARY}
+                 ${UTIL_LIBRARIES}
+                 ${Boost_UNIT_TEST_LIBRARIES}
+                 ${Boost_LIBRARIES}
+                 ${Boost_FILESYSTEM_LIBRARY}
+                 ${LibReadline_LIBRARY}
+                 ${CMAKE_DL_LIBS}
+)
+
 fhg_add_test (evaluate_net.cpp
   PROJECT test_we
-  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
+  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARY}
   DESCRIPTION "evaluate various nets and compare the results with given reference nets"
   ARGS ${CMAKE_CURRENT_SOURCE_DIR}/pnets
 )
 
 fhg_add_test (test_loader.cpp
   PROJECT we
-  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS}
+  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARY}
   DEPENDS question answer
 )
 

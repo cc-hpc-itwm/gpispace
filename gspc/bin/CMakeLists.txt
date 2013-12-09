@@ -81,7 +81,7 @@ target_link_libraries (gspc-kvs
   ${Boost_SIGNALS_LIBRARY}
   ${Boost_SERIALIZATION_LIBRARY} # fhglog
   ${Boost_SYSTEM_LIBRARY}
-  dl
+  ${CMAKE_DL_LIBS}
 )
 
 add_executable (gspcd gspcd.cpp)
@@ -97,7 +97,7 @@ target_link_libraries (gspcd
   ${Boost_SIGNALS_LIBRARY}
   ${Boost_SERIALIZATION_LIBRARY} # fhglog
   ${Boost_SYSTEM_LIBRARY}
-  dl
+  ${CMAKE_DL_LIBS}
 )
 
 install (TARGETS gspcd gspc-kvs

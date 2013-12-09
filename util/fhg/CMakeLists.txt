@@ -1,5 +1,3 @@
-configure_file(assert_config.hpp.in assert_config.hpp @ONLY)
-
 add_subdirectory(util)
 
 execute_process(COMMAND hostname -f
@@ -88,7 +86,6 @@ add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
 
 install (FILES revision.hpp
                assert.hpp
-               assert_modes.hpp
                assert_helper.hpp
                assertion_failed.hpp
                error_codes.hpp

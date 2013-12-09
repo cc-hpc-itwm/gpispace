@@ -15,6 +15,7 @@ ORCHESTRATOR_2_PID_FILE="$(mktemp --tmpdir="${DIR_TEST}" orch2.pid.XXXXX)" || di
 TIMEOUT_UNTIL_A_REGISTRATION_SHOULD_BE_LOST=2
 TIMEOUT_UNTIL_A_REREGISTRATION_SHOULD_BE_DONE=5
 TIMEOUT_UNTIL_A_STARTED_ORCHESTRATOR_SHOULD_LISTEN=1
+TIMEOUT_UNTIL_FHGKVSD_SHOULD_BE_SETUP=5
 
 cleanup()
 {
@@ -35,6 +36,8 @@ KVS_URL="$(hostname):${KVS_PORT}"
 
 fhgkvsd --port ${KVS_PORT} \
         --pidfile "${KVS_PID_FILE}" --daemonize                 || die ${EX_ERR_BOOT}
+
+sleep ${TIMEOUT_UNTIL_FHGKVSD_SHOULD_BE_SETUP}
 
 orchestrator --kvs_url "${KVS_URL}" --name "orchestrator" \
              --pidfile "${ORCHESTRATOR_1_PID_FILE}" --daemonize || die ${EX_ERR_BOOT}

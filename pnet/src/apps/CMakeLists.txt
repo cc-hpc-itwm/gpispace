@@ -21,6 +21,7 @@ foreach (target ${simple_targets})
   target_link_libraries(${target} ${UTIL_LIBRARIES})
   target_link_libraries(${target} ${FhgLog_LIBRARY})
   target_link_libraries(${target} ${Boost_LIBRARIES})
+  target_link_libraries(${target} ${Boost_FILESYSTEM_LIBRARY}) #we-eval, we-exec only
   target_link_libraries(${target} pthread)
   target_link_libraries(${target} ${CMAKE_DL_LIBS})
 
@@ -37,6 +38,7 @@ foreach (target ${simple_targets})
     target_link_libraries(${target}.static pnet)
     target_link_libraries(${target}.static ${FhgLog_LIBRARY})
     target_link_libraries(${target}.static ${Boost_LIBRARIES})
+    target_link_libraries(${target}.static ${Boost_FILESYSTEM_LIBRARY}) #we-eval, we-exec only
     target_link_libraries(${target}.static pthread)
     target_link_libraries(${target}.static ${CMAKE_DL_LIBS})
     target_link_libraries(${target}.static fhg-revision)

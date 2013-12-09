@@ -4,9 +4,6 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
 include_directories (${CMAKE_SOURCE_DIR}/gspc)
 
-include (SDPAFindBoost)
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
-
 include_directories (${FhgLog_INCLUDE_DIR})
 
 include_directories (${UTIL_INCLUDE_DIR})
@@ -36,7 +33,7 @@ add_library (we-dev SHARED
 set_target_properties(we-dev
   PROPERTIES VERSION 1
 )
-target_link_libraries(we-dev fhg-util dl)
+target_link_libraries(we-dev fhg-util ${CMAKE_DL_LIBS})
 
 install (TARGETS we-dev
   LIBRARY DESTINATION lib
@@ -237,7 +234,7 @@ endif (BUILD_TESTING)
 add_executable(pnetc xml/parse/pnetc.cpp)
 target_link_libraries(pnetc fhg-revision)
 target_link_libraries(pnetc pnet)
-target_link_libraries(pnetc ${Boost_LIBRARIES})
+target_link_libraries(pnetc ${Boost_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY})
 
 install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
 
