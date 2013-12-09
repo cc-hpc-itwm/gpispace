@@ -379,40 +379,6 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     // the job job_id is in the Pending state now!
     bool b_master_job(e.from() != sdpa::daemon::WE && hasWorkflowEngine());
     jobManager().addJob(job_id, e.description(), e.parent_id(), b_master_job, e.from());
-
-    // check if the message comes from outside/slave or from WFE
-    // if it comes from outside set it as local
-    if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() )
-    {
-      DMLOG (TRACE, "got new job from " << e.from() << " = " << job_id);
-
-      if (m_guiService)
-      {
-        std::list<std::string> workers; workers.push_back (name());
-        const we::mgmt::type::activity_t act (e.description());
-        const sdpa::daemon::NotificationEvent evt
-          ( workers
-          , job_id.str()
-          , NotificationEvent::STATE_STARTED
-          , act
-          );
-
-        m_guiService->notify (evt);
-      }
-
-      submitWorkflow(job_id);
-    }
-    else
-      scheduler()->enqueueJob(job_id);
-
-    if( e.from() != sdpa::daemon::WE )
-    {
-      // send back to the user a SubmitJobAckEvent
-      SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
-
-      // There is a problem with this if uncommented
-      sendEventToMaster(pSubmitJobAckEvt);
-    }
   }
   catch(JobNotAddedException const &ex)
   {
@@ -420,6 +386,26 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     // the worker should register first, before posting a job request
     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, ex.what()) );
     sendEventToMaster(pErrorEvt);
+    return;
+  }
+
+  // check if the message comes from outside/slave or from WFE
+  // if it comes from outside set it as local
+  if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() )
+  {
+    DMLOG (TRACE, "got new job from " << e.from() << " = " << job_id);
+    submitWorkflow(job_id);
+  }
+  else
+    scheduler()->enqueueJob(job_id);
+
+  if( e.from() != sdpa::daemon::WE )
+  {
+    // send back to the user a SubmitJobAckEvent
+    SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
+
+    // There is a problem with this if uncommented
+    sendEventToMaster(pSubmitJobAckEvt);
   }
 }
 
@@ -808,7 +794,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
                                  , jobId
                                  , ""
                                  , fhg::error::UNEXPECTED_ERROR
-                                 , "The job has an empty workflow attached!"
+                                 , "the job has an empty workflow attached!"
                                  )
               );
 
@@ -816,6 +802,20 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
     }
     else
     {
+      if (m_guiService)
+      {
+       std::list<std::string> workers; workers.push_back (name());
+       const we::mgmt::type::activity_t act (pJob->description());
+       const sdpa::daemon::NotificationEvent evt
+       ( workers
+          , jobId.str()
+          , NotificationEvent::STATE_STARTED
+          , act
+       );
+
+       m_guiService->notify (evt);
+      }
+
       we::type::user_data job_data;
       job_data.set_user_job_identification(jobId);
       // actually, this information redundant because wf_id == job_data.get_user_job_identification()!
@@ -855,6 +855,24 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 
     sendEventToSelf(pEvtJobFailed);
   }
+  catch(const std::exception& ex)
+  {
+     SDPA_LOG_ERROR("Exception occurred. Failed to submit the job "<<jobId<<" to the workflow!");
+     sdpa::job_result_t result(ex.what());
+
+     JobFailedEvent::Ptr pEvtJobFailed
+       (new JobFailedEvent( sdpa::daemon::WE
+                          , name()
+                          , jobId
+                          , result
+                          , fhg::error::UNEXPECTED_ERROR
+                          , ex.what()
+                          )
+     );
+
+     sendEventToSelf(pEvtJobFailed);
+   }
+
 
   _.dont();
 }
