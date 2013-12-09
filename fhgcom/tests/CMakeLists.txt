@@ -1,17 +1,31 @@
-set (tests
-  test_peer.cpp
-  test_message.cpp
-  test_connection.cpp
-
-  test_p2p.cpp
+fhg_add_test (test_connection.cpp
+  PROJECT fhgcom
+  LINK_LIBRARIES fhgcom
+                 ${FhgLog_LIBRARY}
+                 ${Boost_LIBRARIES}
+                 ${Boost_UNIT_TEST_LIBRARIES}
 )
 
-foreach (test ${tests})
-  fhg_add_test (${test}
-    PROJECT fhgcom
-    LINK_LIBRARIES fhgcom
-                   ${FhgLog_LIBRARY}
-                   ${Boost_LIBRARIES}
-                   ${Boost_UNIT_TEST_LIBRARIES}
-  )
-endforeach()
+fhg_add_test (test_message.cpp
+  PROJECT fhgcom
+  LINK_LIBRARIES fhgcom
+                 ${FhgLog_LIBRARY}
+                 ${Boost_LIBRARIES}
+                 ${Boost_UNIT_TEST_LIBRARIES}
+)
+
+fhg_add_test (test_p2p.cpp
+  PROJECT fhgcom
+  LINK_LIBRARIES fhgcom
+                 ${FhgLog_LIBRARY}
+                 ${Boost_LIBRARIES}
+                 ${Boost_UNIT_TEST_LIBRARIES}
+)
+
+fhg_add_test (test_peer.cpp
+  PROJECT fhgcom
+  LINK_LIBRARIES fhgcom
+                 ${FhgLog_LIBRARY}
+                 ${Boost_LIBRARIES}
+                 ${Boost_UNIT_TEST_LIBRARIES}
+)
