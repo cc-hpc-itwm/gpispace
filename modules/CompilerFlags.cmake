@@ -8,11 +8,6 @@ if (NOT ENABLE_BACKTRACE_ON_PARSE_ERROR)
   add_definitions("-DNO_BACKTRACE_ON_PARSE_ERROR")
 endif()
 
-set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS_INIT} $ENV{LDFLAGS}
-  CACHE STRING "Flags used by the linker during the creation of shared libraries")
-set(CMAKE_MODULE_LINKER_FLAGS ${CMAKE_MODULE_LINKER_FLAGS_INIT} $ENV{LDFLAGS}
-  CACHE STRING "Flags used by the linker during the creation of modules")
-
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -W")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wall")
 set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wextra")
