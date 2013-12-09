@@ -39,10 +39,10 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
 endif()
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -wd191")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -wd1170")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -wd1292")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -wd2196")
+  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -diag-disable 191")
+  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -diag-disable 1170")
+  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -diag-disable 1292")
+  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -diag-disable 2196")
 endif()
 
 # to avoid warnings when using gcc 4.5
