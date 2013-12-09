@@ -240,6 +240,20 @@ void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
   Job* pJob = jobManager().findJob(e.job_id());
   if(pJob)
   {
+      // the job must be in a non-terminal state
+      if(!pJob->completed())
+      {
+         DMLOG(TRACE, "Cannot delete a job in a non-terminal state. Send back an error message to "<<evt->from()<<" from "<<name());
+         sdpa::events::ErrorEvent::Ptr pErrorEvt(
+              new sdpa::events::ErrorEvent( evt->to(),
+                                            evt->from(),
+                                            sdpa::events::ErrorEvent::SDPA_EJOBNOTDELETED,
+                                            "Cannot delete a job which is in a non-terminal state. Please, cancel it first!")
+                                            );
+          sendEventToMaster(pErrorEvt);
+          return;
+      }
+
       try{
           pJob->DeleteJob(&e, this);
           jobManager().deleteJob(e.job_id());
