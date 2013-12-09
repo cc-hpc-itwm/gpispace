@@ -30,24 +30,6 @@ namespace sdpa
       return it != job_map_.end() ? it->second : NULL;
     }
 
-    /*void JobManager::addJob ( const sdpa::job_id_t& job_id
-                              , const job_desc_t desc
-                              , const job_id_t &parent
-                              , bool is_master_job
-                              , const worker_id_t& owner
-                              , const job_requirements_t& job_req_list
-                            )
-    {
-      lock_type _ (_job_map_and_requirements_mutex);
-      Job* pJob = new Job( job_id, desc, parent, is_master_job, owner );
-
-      if (!job_map_.insert(std::make_pair (job_id, pJob)).second)
-        throw JobNotAddedException(job_id);
-
-      if (!job_req_list.empty())
-        job_requirements_.insert(std::make_pair(job_id, job_req_list));
-    }*/
-
     void JobManager::addJob ( const sdpa::job_id_t& job_id
                                  , const job_desc_t desc
                                  , const job_id_t &parent
