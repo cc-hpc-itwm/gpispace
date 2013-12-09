@@ -21,6 +21,8 @@
 #include <fhg/assert.hpp>
 #include <sdpa/daemon/Job.hpp>
 
+#include <sdpa/job_states.hpp>
+
 #include <seda/StageRegistry.hpp>
 
 using namespace std;
@@ -218,7 +220,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
                                                              , pEvt->from()
                                                              , ErrorEvent::SDPA_EJOBTERMINATED
                                                              , "Cannot cancel an already terminated job, its current status is: "
-                                                                + pJob->getStatus() )
+                                                           + sdpa::status::show (pJob->getStatus()) )
                                                   ));
          return;
       }
