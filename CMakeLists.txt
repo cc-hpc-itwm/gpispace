@@ -240,7 +240,7 @@ endif (ENABLE_GPI_FUSE)
 if (ENABLE_APPLICATION)
   add_subdirectory (application)
 endif (ENABLE_APPLICATION)
-add_subdirectory (editor/src)
+add_subdirectory (src)
 
 include (TargetDoc)
 
