@@ -14,7 +14,6 @@ set(tests
     signal.cpp
     trans.cpp
     unordered_map.cpp
-    context.cpp
    )
 
 foreach (test ${tests})
