@@ -147,11 +147,7 @@ namespace fhg
             // convert tstamp_type to time_t
             const time_t tm = static_cast<time_t>(e.tstamp ());
             ctime_r (&tm, buf);
-            for (char * p = (buf + sizeof(buf) - 1) ; p != buf ; --p)
-            {
-              if (*p == '\n') *p = 0;
-              if (*p != 0) break;
-            }
+            buf[std::find (buf, buf + sizeof (buf), '\n') - buf] = 0;
             return os << buf;
           }
         };
