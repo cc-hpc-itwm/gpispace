@@ -24,11 +24,6 @@ namespace we
 	  targets_.push_back(f);
 	}
 
-        bool connected () const
-        {
-          return ! targets_.empty();
-        }
-
 	void operator() ()
 	{
           BOOST_FOREACH (boost::function<F> const& f, targets_)
