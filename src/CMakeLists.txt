@@ -1,16 +1,18 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
+include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (${CMAKE_CURRENT_BINARY_DIR})
+include_directories (${CMAKE_SOURCE_DIR}/gspc)
+
+include_directories (${FhgLog_INCLUDE_DIR})
+
+include_directories (${UTIL_INCLUDE_DIR})
+
 if (ENABLE_PNET_EDITOR OR ENABLE_SDPA_GUI)
   find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
   find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
 
-  include_directories ( ${CMAKE_CURRENT_BINARY_DIR}
-                        ${CMAKE_CURRENT_SOURCE_DIR}
-                        ${FhgLog_INCLUDE_DIR}
-                        ${UTIL_INCLUDE_DIR}
-                        ${CMAKE_SOURCE_DIR}/sdpa
-                        ${CMAKE_SOURCE_DIR}/gspc
-                        ${CMAKE_SOURCE_DIR}/src
+  include_directories ( ${CMAKE_SOURCE_DIR}/sdpa
                         ${FhgKernel_INCLUDE_DIR}
                         ${CMAKE_SOURCE_DIR} # to have sdpa plugins in sdpa/plugins, not plugins/
                       )
@@ -23,14 +25,6 @@ if (ENABLE_PNET_EDITOR OR ENABLE_SDPA_GUI)
   add_subdirectory (pnete)
   add_subdirectory (util)
 endif()
-
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
-include_directories (${CMAKE_SOURCE_DIR}/gspc)
-
-include_directories (${FhgLog_INCLUDE_DIR})
-
-include_directories (${UTIL_INCLUDE_DIR})
 
 add_library (we-dev SHARED
   we/exception.cpp
