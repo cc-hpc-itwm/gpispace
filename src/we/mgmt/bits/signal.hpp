@@ -29,11 +29,6 @@ namespace we
 	  targets_.push_back(f);
 	}
 
-        void clear ()
-        {
-          targets_.clear();
-        }
-
         bool connected () const
         {
           return ! targets_.empty();
