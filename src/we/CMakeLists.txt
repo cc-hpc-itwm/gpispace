@@ -88,6 +88,9 @@ target_link_libraries (generate_parser_action_table pnet)
 
 add_subdirectory (util)
 
+find_package (LibReadline REQUIRED QUIET)
+include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
+
 add_subdirectory (container/test)
 add_subdirectory (expr/parse/test)
 add_subdirectory (expr/test)
