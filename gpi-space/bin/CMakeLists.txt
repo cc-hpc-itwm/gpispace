@@ -14,7 +14,6 @@ target_link_libraries (gpi-space
   ${gpi_space_Boost_FILESYSTEM_LIBRARY}
   ${gpi_space_Boost_SERIALIZATION_LIBRARY}
   ${gpi_space_Boost_THREAD_LIBRARY}
-  ${gpi_space_boost_libs}
 )
 
 # search for libreadline
@@ -35,7 +34,7 @@ target_link_libraries (gpish
   ${gpi_space_Boost_PROGRAM_OPTIONS_LIBRARY}
   ${gpi_space_Boost_SERIALIZATION_LIBRARY}
   ${gpi_space_Boost_THREAD_LIBRARY}
-  ${gpi_space_boost_libs}
+  ${gpi_space_Boost_FILESYSTEM_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
   fhg-revision
 )

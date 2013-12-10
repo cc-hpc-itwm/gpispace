@@ -6,7 +6,6 @@ set (daemon_libs
   ${SEDA_LIBRARY}
   pnet
   ${Boost_PROGRAM_OPTIONS_LIBRARY} # orchestrator, agent
-  ${Boost_LIBRARIES}
 )
 
 #
@@ -40,7 +39,6 @@ set ( client_libs
       ${SEDA_LIBRARY}
       ${Boost_FILESYSTEM_LIBRARY}
       ${Boost_PROGRAM_OPTIONS_LIBRARY}
-      ${Boost_LIBRARIES}
 )
 
 #

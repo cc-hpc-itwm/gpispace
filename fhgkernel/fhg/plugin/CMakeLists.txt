@@ -35,8 +35,8 @@ install (TARGETS fhg-plugin-shared
 )
 
 add_subdirectory(builtin)
-target_link_libraries (fhg-plugin ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
-target_link_libraries (fhg-plugin-shared ${FhgLog_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries (fhg-plugin ${FhgLog_LIBRARY})
+target_link_libraries (fhg-plugin-shared ${FhgLog_LIBRARY})
 
 if (ENABLE_LICENSE_CHECK)
   target_link_libraries (fhg-plugin ${NACL_LIBRARY})

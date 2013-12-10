@@ -16,7 +16,7 @@ macro(FHG_ADD_TEST)
     endif()
 
     if (NOT TEST_STANDALONE)
-      set(TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} ${Boost_UNIT_TEST_LIBRARIES} ${Boost_LIBRARIES})
+      set(TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} ${Boost_UNIT_TEST_LIBRARIES})
     endif()
 
     # get the filename without extension

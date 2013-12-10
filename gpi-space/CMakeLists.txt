@@ -83,13 +83,11 @@ if (CZMQ_FOUND)
   include_directories (SYSTEM ${CZMQ_INCLUDE_DIR})
 endif()
 
-set (gpi_space_boost_libs
-  "${Boost_LIBRARY_DIRS}/libboost_system.a"
-)
 set (gpi_space_Boost_PROGRAM_OPTIONS_LIBRARY "${Boost_LIBRARY_DIRS}/libboost_program_options.a")
 set (gpi_space_Boost_FILESYSTEM_LIBRARY "${Boost_LIBRARY_DIRS}/libboost_filesystem.a")
 set (gpi_space_Boost_SERIALIZATION_LIBRARY "${Boost_LIBRARY_DIRS}/libboost_serialization.a")
 set (gpi_space_Boost_THREAD_LIBRARY "${Boost_LIBRARY_DIRS}/libboost_thread.a")
+set (gpi_space_Boost_SYSTEM_LIBRARY "${Boost_LIBRARY_DIRS}/libboost_system.a")
 
 add_subdirectory (gpi-space)
 add_subdirectory (bin)

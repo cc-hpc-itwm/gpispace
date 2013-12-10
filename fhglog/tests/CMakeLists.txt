@@ -27,7 +27,6 @@ foreach (test ${tests})
     LINK_LIBRARIES fhglog
                    ${Boost_UNIT_TEST_LIBRARIES}
                    ${Boost_THREAD_LIBRARY} # default_config, logging, perf, synch_appender, threaded only
-                   ${Boost_LIBRARIES}
   )
 endforeach()
 
