@@ -1,21 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  signal.hpp
- *
- *    Description:  signal wrapper to implement observer pattern
- *
- *        Version:  1.0
- *        Created:  03/13/2010 03:03:32 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
-
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef WE_MGMT_BITS_SIGNAL_HPP
 #define WE_MGMT_BITS_SIGNAL_HPP 1
