@@ -33,12 +33,6 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
   private:
 	handler_type handler;
   };
-
-  template <typename H>
-  inline command_t make_cmd(std::string const &n, petri_net::activity_id_type d, H h)
-  {
-        return command_t (n, d, h);
-  }
 }}}}
 
 #endif
