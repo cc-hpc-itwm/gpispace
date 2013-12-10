@@ -1,29 +1,5 @@
 include (fhg_executable_macros)
 
-set (simple_targets
-    )
-
-foreach (target ${simple_targets})
-
-  add_executable (${target} "${target}.cpp")
-
-  target_link_libraries(${target} fhg-revision)
-  target_link_libraries(${target} pnet)
-  target_link_libraries(${target} we-dev)
-  target_link_libraries(${target} ${UTIL_LIBRARIES})
-  target_link_libraries(${target} ${FhgLog_LIBRARY})
-  target_link_libraries(${target} ${Boost_FILESYSTEM_LIBRARY}) #we-eval, we-exec only
-  target_link_libraries(${target} ${Boost_LIBRARIES})
-  target_link_libraries(${target} pthread)
-  target_link_libraries(${target} ${CMAKE_DL_LIBS})
-
-  install (TARGETS ${target}
-           RUNTIME
-           DESTINATION bin
-           COMPONENT runtime
-          )
-endforeach (target ${simple_targets})
-
 fhg_add_runtime_executable (
   we-exec.cpp
   LINK_LIBRARIES fhg-revision
