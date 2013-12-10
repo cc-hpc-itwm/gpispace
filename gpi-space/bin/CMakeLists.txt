@@ -11,7 +11,7 @@ target_link_libraries (gpi-space
   gpi-space-pc-server
   ${CMAKE_THREAD_LIBS_INIT}
   fhg-revision
-  ${Boost_STATIC_LIBRARIES}
+  ${gpi_space_boost_libs}
 )
 
 # search for libreadline
@@ -31,7 +31,7 @@ target_link_libraries (gpish
   ${FhgLog_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
   fhg-revision
-  ${Boost_STATIC_LIBRARIES}
+  ${gpi_space_boost_libs}
 )
 
 set_target_properties(gpi-space

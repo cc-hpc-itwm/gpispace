@@ -12,10 +12,10 @@ add_subdirectory (plugin)
 
 include(libutils)
 
-merge_static_libs(gpi-space-pc gpi-space-pc "gpi-space-pc-client-static;gpi-space-pc-segment;gpi-space-static;${FhgLog_LIBRARY};fhg-util;${Boost_STATIC_LIBRARIES}")
+merge_static_libs(gpi-space-pc gpi-space-pc "gpi-space-pc-client-static;gpi-space-pc-segment;gpi-space-static;${FhgLog_LIBRARY};fhg-util")
 merge_static_libs(gpi-space-pc-server
   gpi-space-pc-server
-  "gpi-space-pc-container;gpi-space-pc-global;gpi-space-pc-memory;gpi-space-pc-segment;gpi-space-static;${MMGR_LIBRARY};${FhgCom_LIBRARY};${FhgLog_LIBRARY};fhg-util;${Boost_STATIC_LIBRARIES}"
+  "gpi-space-pc-container;gpi-space-pc-global;gpi-space-pc-memory;gpi-space-pc-segment;gpi-space-static;${MMGR_LIBRARY};${FhgCom_LIBRARY};${FhgLog_LIBRARY};fhg-util"
 )
 
 install(TARGETS gpi-space-pc
