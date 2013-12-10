@@ -38,68 +38,40 @@ namespace we
 
 	void operator() ()
 	{
-          try
+          typedef typename std::vector<boost::function<F> > funcs_t;
+          for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
           {
-            typedef typename std::vector<boost::function<F> > funcs_t;
-            for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
-            {
-              (*t)();
-            }
-          }
-          catch (const std::exception & ex)
-          {
-            std::cerr << "E: exception during signal("+name()+"): " << ex.what() << std::endl;
+            (*t)();
           }
 	}
 
 	template <typename Arg1>
 	void operator() (Arg1 a1)
 	{
-          try
+          typedef typename std::vector<boost::function<F> > funcs_t;
+          for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
           {
-            typedef typename std::vector<boost::function<F> > funcs_t;
-            for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
-            {
-              (*t)(a1);
-            }
-          }
-          catch (const std::exception & ex)
-          {
-            std::cerr << "E: exception during signal("+name()+"): " << ex.what() << std::endl;
+            (*t)(a1);
           }
 	}
 
 	template <typename Arg1, typename Arg2>
 	void operator() (Arg1 a1, Arg2 a2)
 	{
-          try
+          typedef typename std::vector<boost::function<F> > funcs_t;
+          for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
           {
-            typedef typename std::vector<boost::function<F> > funcs_t;
-            for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
-            {
-              (*t)(a1, a2);
-            }
-          }
-          catch (const std::exception & ex)
-          {
-            std::cerr << "E: exception during signal("+name()+"): " << ex.what() << std::endl;
+            (*t)(a1, a2);
           }
 	}
 
 	template <typename Arg1, typename Arg2, typename Arg3>
 	void operator() (Arg1 a1, Arg2 a2, Arg3 a3)
 	{
-          try
+          typedef typename std::vector<boost::function<F> > funcs_t;
+          for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
           {
-            typedef typename std::vector<boost::function<F> > funcs_t;
-            for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
-            {
-              (*t)(a1, a2, a3);
-            }
-          }
-          catch (const std::exception & ex)
-          {
-            std::cerr << "E: exception during signal("+name()+"): " << ex.what() << std::endl;
+            (*t)(a1, a2, a3);
           }
 	}
 
