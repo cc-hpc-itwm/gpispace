@@ -99,12 +99,10 @@ install (FILES
 add_executable (generate_parser_action_table expr/parse/table.cpp)
 target_link_libraries (generate_parser_action_table pnet)
 
-if (BUILD_TESTING)
-  add_executable (test_we_type_bytearray type/test/test_bytearray.cpp)
-  target_link_libraries(test_we_type_bytearray pnet)
-  target_link_libraries(test_we_type_bytearray ${Boost_UNIT_TEST_LIBRARIES})
-  add_test ("test_we_type_bytearray" test_we_type_bytearray)
-endif (BUILD_TESTING)
+fhg_add_test (type/test/test_bytearray.cpp
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES pnet
+)
 
 fhg_add_test (type/test/value.cpp
   PROJECT test_we_type
