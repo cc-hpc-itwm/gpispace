@@ -8,7 +8,6 @@ fhg_add_test(test_semaphore.cpp
 fhg_add_test(test_atomic.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-  DESCRIPTION "Tests the semaphore implementation"
 )
 
 fhg_add_test(test_event.cpp
