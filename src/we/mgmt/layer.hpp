@@ -63,7 +63,7 @@ namespace we { namespace mgmt {
 
       // extractor
       //! \todo is it necessary to use a locked data structure?
-      typedef detail::set<internal_id_type, 0> active_nets_t;
+      typedef detail::set<internal_id_type> active_nets_t;
 
       typedef boost::unique_lock<boost::recursive_mutex> lock_t;
     public:
