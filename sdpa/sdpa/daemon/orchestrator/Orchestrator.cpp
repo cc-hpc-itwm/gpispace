@@ -17,18 +17,15 @@
  */
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-
 #include <fhg/assert.hpp>
 #include <sdpa/daemon/Job.hpp>
-
 #include <sdpa/job_states.hpp>
 
 #include <seda/StageRegistry.hpp>
 
-using namespace std;
-using namespace sdpa::daemon;
-using namespace sdpa::events;
 
+namespace sdpa {
+  namespace daemon {
 
 template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
@@ -52,7 +49,7 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
   }
 }
 
-void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
+void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 {
   assert (pEvt);
 
@@ -65,7 +62,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   if (pEvt->from() != sdpa::daemon::WE)
   {
       // send a JobFinishedAckEvent back to the worker/slave
-      JobFinishedAckEvent::Ptr ptrAckEvt(new JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
+      events::JobFinishedAckEvent::Ptr ptrAckEvt(new  events::JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
       // send ack to the slave
       DMLOG (TRACE, "Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
@@ -94,7 +91,7 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
 
     try {
       DMLOG (TRACE, "Notify the subscribers that the job "<<act_id<<" finished");
-      JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
+      events::JobFinishedEvent::Ptr ptrEvtJobFinished(new  events::JobFinishedEvent(*pEvt));
       notifySubscribers(ptrEvtJobFinished);
 
       try {
@@ -121,12 +118,12 @@ void Orchestrator::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   else
   {
     SDPA_LOG_INFO("Notify the subscribers that the job "<<pEvt->job_id()<<" has finished!");
-    JobFinishedEvent::Ptr ptrEvtJobFinished(new JobFinishedEvent(*pEvt));
+    events::JobFinishedEvent::Ptr ptrEvtJobFinished(new  events::JobFinishedEvent(*pEvt));
     notifySubscribers(ptrEvtJobFinished);
   }
 }
 
-void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
+void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
 {
   assert (pEvt);
 
@@ -139,8 +136,8 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   if (pEvt->from() != sdpa::daemon::WE)
   {
       // send a JobFinishedAckEvent back to the worker/slave
-      JobFailedAckEvent::Ptr evt
-          (new JobFailedAckEvent ( name()
+      events::JobFailedAckEvent::Ptr evt
+          (new  events::JobFailedAckEvent ( name()
                                    , pEvt->from()
                                    , pEvt->job_id() ) );
 
@@ -168,7 +165,7 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
       we::mgmt::layer::id_type actId = pJob->id().str();
 
       try {
-        JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
+        events::JobFailedEvent::Ptr ptrEvtJobFailed(new  events::JobFailedEvent(*pEvt));
         DMLOG(TRACE, "Notify the subscribers that the job "<<actId<<" has failed");
         notifySubscribers(ptrEvtJobFailed);
 
@@ -192,12 +189,12 @@ void Orchestrator::handleJobFailedEvent(const JobFailedEvent* pEvt )
   else
   {
       SDPA_LOG_INFO("Notify the subscribers that the job "<<pEvt->job_id()<<" has failed!");
-      JobFailedEvent::Ptr ptrEvtJobFailed(new JobFailedEvent(*pEvt));
+      events::JobFailedEvent::Ptr ptrEvtJobFailed(new  events::JobFailedEvent(*pEvt));
       notifySubscribers(ptrEvtJobFailed);
   }
 }
 
-void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
+void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
 {
   Job* pJob;
 
@@ -206,9 +203,9 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
   {
       if(pJob->getStatus() == sdpa::status::CANCELED)
       {
-          sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+          sendEventToMaster( events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                               , pEvt->from()
-                                                              , ErrorEvent::SDPA_EJOBALREADYCANCELED
+                                                              ,  events::ErrorEvent::SDPA_EJOBALREADYCANCELED
                                                               , "Job already canceled" )
                                                    ));
           return;
@@ -216,9 +213,9 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
       if(pJob->completed())
       {
-         sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+         sendEventToMaster(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                              , pEvt->from()
-                                                             , ErrorEvent::SDPA_EJOBTERMINATED
+                                                             ,  events::ErrorEvent::SDPA_EJOBTERMINATED
                                                              , "Cannot cancel an already terminated job, its current status is: "
                                                            + sdpa::status::show (pJob->getStatus()) )
                                                   ));
@@ -226,7 +223,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
       }
 
         // send immediately an acknowledgment to the component that requested the cancellation
-        CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from (), pEvt->job_id()));
+      events::CancelJobAckEvent::Ptr pCancelAckEvt(new  events::CancelJobAckEvent(name(), pEvt->from (), pEvt->job_id()));
 
         if(!isSubscriber(pEvt->from ()))
           sendEventToMaster(pCancelAckEvt);
@@ -247,9 +244,9 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
   else
   {
       DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
-      sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+      sendEventToMaster(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                          , pEvt->from()
-                                                         , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                         ,  events::ErrorEvent::SDPA_EJOBNOTFOUND
                                                          , "No such job found" )
                                                         ));
       return;
@@ -260,7 +257,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
     sdpa::worker_id_t worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
 
     DMLOG(TRACE, "Tell the worker "<<worker_id<<" to cancel the job "<<pEvt->job_id());
-    CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
+    events::CancelJobEvent::Ptr pCancelEvt( new  events::CancelJobEvent( name()
                                                       , worker_id
                                                       , pEvt->job_id()
                                                       , pEvt->reason() ) );
@@ -274,7 +271,7 @@ void Orchestrator::handleCancelJobEvent(const CancelJobEvent* pEvt )
   }
 }
 
-void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
+void Orchestrator::handleCancelJobAckEvent(const  events::CancelJobAckEvent* pEvt)
 {
   DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
@@ -286,7 +283,7 @@ void Orchestrator::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     DMLOG(TRACE, "The job state is: "<<pJob->getStatus());
     // just send an acknowledgment to the master
     // send an acknowledgment to the component that requested the cancellation
-    CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
+    events::CancelJobAckEvent::Ptr pCancelAckEvt(new  events::CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
     notifySubscribers(pCancelAckEvt);
     return;
   }
@@ -318,16 +315,16 @@ namespace
   };
 }
 
-void Orchestrator::handleDeleteJobEvent (const DeleteJobEvent* evt)
+void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
 {
-  const DeleteJobEvent& e (*evt);
+  const  events::DeleteJobEvent& e (*evt);
 
   DMLOG (TRACE, e.from() << " requesting to delete job " << e.job_id() );
 
   on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToMaster, this
-                                , ErrorEvent::Ptr ( new ErrorEvent ( name()
+                                ,  events::ErrorEvent::Ptr ( new  events::ErrorEvent ( name()
                                                                    , e.from()
-                                                                   , ErrorEvent::SDPA_EUNKNOWN
+                                                                   ,  events::ErrorEvent::SDPA_EUNKNOWN
                                                                    , "unknown"
                                                                    )
                                                   )
@@ -342,10 +339,10 @@ void Orchestrator::handleDeleteJobEvent (const DeleteJobEvent* evt)
       if(!pJob->completed())
       {
          DMLOG(TRACE, "Cannot delete a job in a non-terminal state. Send back an error message to "<<evt->from()<<" from "<<name());
-         sdpa::events::ErrorEvent::Ptr pErrorEvt(
-              new sdpa::events::ErrorEvent( evt->to(),
+         events::ErrorEvent::Ptr pErrorEvt(
+              new events::ErrorEvent( evt->to(),
                                             evt->from(),
-                                            sdpa::events::ErrorEvent::SDPA_EJOBNOTDELETED,
+                                            events::ErrorEvent::SDPA_EJOBNOTDELETED,
                                             "Cannot delete a job which is in a non-terminal state. Please, cancel it first!")
                                             );
           sendEventToMaster(pErrorEvt);
@@ -354,16 +351,16 @@ void Orchestrator::handleDeleteJobEvent (const DeleteJobEvent* evt)
 
       try{
           jobManager().deleteJob(e.job_id());
-          sendEventToMaster(DeleteJobAckEvent::Ptr( new events::DeleteJobAckEvent(e.to(),
+          sendEventToMaster( events::DeleteJobAckEvent::Ptr( new events::DeleteJobAckEvent(e.to(),
                                                                                   e.from(),
                                                                                   e.job_id())) );
       }
       catch(JobNotDeletedException const & ex)
       {
           DMLOG (WARN, "Job " << e.job_id() << " could not be deleted!");
-          sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+          sendEventToMaster(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                               , e.from()
-                                                              , ErrorEvent::SDPA_EUNKNOWN
+                                                              ,  events::ErrorEvent::SDPA_EUNKNOWN
                                                               , ex.what()
                                                             )
                                             ));
@@ -372,9 +369,9 @@ void Orchestrator::handleDeleteJobEvent (const DeleteJobEvent* evt)
   else
   {
       DMLOG (WARN, "Job " << e.job_id() << " could not be found!");
-      sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+      sendEventToMaster(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                           , e.from()
-                                                          , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                          ,  events::ErrorEvent::SDPA_EJOBNOTFOUND
                                                           , "no such job"
                                                          )
                                         ));
@@ -419,3 +416,5 @@ Orchestrator::ptr_t Orchestrator::create
   pOrch->start_agent();
   return pOrch;
 }
+
+}} // end namespaces
