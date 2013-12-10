@@ -1,22 +1,22 @@
 # -*- mode: cmake; -*-
 
 fhg_add_test(test_semaphore.cpp
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   DESCRIPTION "Tests the semaphore implementation"
 )
 
 fhg_add_test(test_atomic.cpp
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   DESCRIPTION "Tests the semaphore implementation"
 )
 
 fhg_add_test(test_event.cpp
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   DESCRIPTION "Tests the thread event implementation"
 )
 
 fhg_add_test(test_queue.cpp
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
   DESCRIPTION "Tests the synchronized queue implementation"
 )
 
@@ -30,7 +30,7 @@ fhg_add_test(test_ini_parser.cpp
 )
 
 fhg_add_test(test_parent_path.cpp
-  LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARY})
+  LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY})
 
 fhg_add_test(test_assert.cpp
   COMPILE_FLAGS "-UFHG_ASSERT_MODE -DFHG_ASSERT_MODE=3 -UFHG_ASSERT_REPLACE_LEGACY -DFHG_ASSERT_REPLACE_LEGACY"
