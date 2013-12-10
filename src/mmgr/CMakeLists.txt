@@ -1,9 +1,5 @@
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Werror")
 
-set (CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
-set (CMAKE_C_FLAGS_DEBUG "-O0 -g -ggdb")
-set (CMAKE_C_FLAGS_PROFILE "-O0 -g -pg")
-
 include_directories (${CMAKE_SOURCEX_DIR}/mmgr)
 
 set (sources
