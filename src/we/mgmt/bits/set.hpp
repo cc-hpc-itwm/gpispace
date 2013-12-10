@@ -21,7 +21,6 @@ namespace we {
       {
       public:
 	typedef boost::unordered_set<T> container_type;
-	typedef typename container_type::size_type size_type;
 	typedef typename container_type::value_type value_type;
 	typedef typename boost::call_traits<value_type>::param_type param_type;
 
