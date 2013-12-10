@@ -1,9 +1,6 @@
 include (fhg_executable_macros)
 
 set (simple_targets
-     we-exec
-     we-eval
-     pnetget
     )
 
 foreach (target ${simple_targets})
@@ -26,6 +23,39 @@ foreach (target ${simple_targets})
            COMPONENT runtime
           )
 endforeach (target ${simple_targets})
+
+fhg_add_runtime_executable (
+  we-exec.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 ${FhgLog_LIBRARY}
+                 ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
+                 ${CMAKE_DL_LIBS}
+)
+
+fhg_add_runtime_executable (
+  we-eval.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 ${FhgLog_LIBRARY}
+                 ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
+                 ${CMAKE_DL_LIBS}
+)
+
+fhg_add_runtime_executable (
+  pnetget.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+)
 
 fhg_add_runtime_executable (
   pnetput.cpp
