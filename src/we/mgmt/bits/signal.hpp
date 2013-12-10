@@ -5,7 +5,6 @@
 
 #include <boost/function.hpp>
 
-#include <iostream>
 #include <vector>
 
 namespace we
