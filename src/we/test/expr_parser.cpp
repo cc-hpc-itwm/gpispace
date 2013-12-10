@@ -1,22 +1,17 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/expr/parse/parser.hpp>
-#include <we/expr/eval/context.hpp>
-
 #include <we/exception.hpp>
-
+#include <we/expr/eval/context.hpp>
+#include <we/expr/parse/parser.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/show.hpp>
 
 #include <sys/time.h>
 
+#include <cstdlib>
+#include <iomanip>
 #include <iostream>
 #include <string>
-
-#include <iostream>
-#include <iomanip>
-
-#include <cstdlib>
 
 struct Timer_t
 {
