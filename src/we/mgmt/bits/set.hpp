@@ -67,7 +67,6 @@ namespace we {
 
       private:
 	inline bool is_not_empty() const { return container_.size() > 0; }
-	inline bool is_not_full() const { return true; }
 
 	container_type container_;
 	boost::mutex mutex_;
