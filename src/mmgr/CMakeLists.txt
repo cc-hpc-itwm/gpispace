@@ -1,7 +1,5 @@
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Werror")
 
-include_directories (${CMAKE_SOURCEX_DIR}/mmgr)
-
 set (sources
   dtmmgr.c
   fseg.c
