@@ -60,12 +60,6 @@ namespace we
 
 	void operator() ()
 	{
-          if (false && targets_.empty())
-          {
-            std::cerr << "W: " << name() << " not connected!" << std::endl;
-            return;
-          }
-
           try
           {
             typedef typename std::vector<boost::function<F> > funcs_t;
@@ -83,12 +77,6 @@ namespace we
 	template <typename Arg1>
 	void operator() (Arg1 a1)
 	{
-          if (false && targets_.empty())
-          {
-            std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
-            return;
-          }
-
           try
           {
             typedef typename std::vector<boost::function<F> > funcs_t;
@@ -106,12 +94,6 @@ namespace we
 	template <typename Arg1, typename Arg2>
 	void operator() (Arg1 a1, Arg2 a2)
 	{
-          if (false && targets_.empty())
-          {
-            std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
-            return;
-          }
-
           try
           {
             typedef typename std::vector<boost::function<F> > funcs_t;
@@ -129,11 +111,6 @@ namespace we
 	template <typename Arg1, typename Arg2, typename Arg3>
 	void operator() (Arg1 a1, Arg2 a2, Arg3 a3)
 	{
-          if (false && targets_.empty())
-          {
-            std::cerr << "W: " << name() << " not connected to anybody!" << std::endl;
-          }
-
           try
           {
             typedef typename std::vector<boost::function<F> > funcs_t;
