@@ -92,6 +92,8 @@ fhg_add_runtime_executable (
                  ${Boost_SYSTEM_LIBRARY}
 )
 
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+
 add_executable (iheapsort iheapsort.c)
 target_link_libraries (iheapsort mmgr)
 
