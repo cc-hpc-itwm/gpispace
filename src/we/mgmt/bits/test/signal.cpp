@@ -5,41 +5,47 @@
 
 #include <we/mgmt/bits/signal.hpp>
 
-static int counter = 0;
-static std::string text;
+#include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace
 {
-  void count (void)
+  void count (int& counter)
   {
-    counter ++;
+    ++counter;
   }
 
-  void m (int id, const std::string & s)
+  void m (std::string& accu, int id, const std::string& s)
   {
-    text += s;
+    accu += boost::lexical_cast<std::string> (id) + " " + s;
   }
 }
 
 BOOST_AUTO_TEST_CASE (sig_count)
 {
+  int counter (0);
+
   we::mgmt::util::signal<> sig_cnt;
-  sig_cnt.connect ( &count );
+  sig_cnt.connect (boost::bind (count, boost::ref (counter)));
 
+  BOOST_REQUIRE_EQUAL (counter, 0);
   sig_cnt();
+  BOOST_REQUIRE_EQUAL (counter, 1);
   sig_cnt();
-
   BOOST_REQUIRE_EQUAL (counter, 2);
 }
 
 BOOST_AUTO_TEST_CASE (accu)
 {
+  std::string text;
+
   we::mgmt::util::signal<void (int, const std::string &)> sig_sig;
-  text = "";
 
-  sig_sig.connect ( &m );
-  sig_sig ( 1, "Hallo " );
-  sig_sig ( 2, "Welt!" );
+  sig_sig.connect (boost::bind (m, boost::ref (text), _1, _2));
 
-  BOOST_REQUIRE_EQUAL (text, "Hallo Welt!");
+  BOOST_REQUIRE_EQUAL (text, "");
+  sig_sig (1, "Hallo ");
+  BOOST_REQUIRE_EQUAL (text, "1 Hallo ");
+  sig_sig (2, "Welt!");
+  BOOST_REQUIRE_EQUAL (text, "1 Hallo 2 Welt!");
 }
