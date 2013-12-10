@@ -6,7 +6,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(tests
     activity.cpp
     bitset.cpp
-    bitsetofint.cpp
     execute_activity.cpp
     expr_parser.cpp
     expr_rename.cpp

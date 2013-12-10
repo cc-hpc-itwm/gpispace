@@ -10,8 +10,6 @@ typedef bitsetofint::type set_t;
 
 #include <boost/bind.hpp>
 
-#include "timer.hpp"
-
 using std::cout;
 using std::cerr;
 using std::endl;

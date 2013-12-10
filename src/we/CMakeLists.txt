@@ -116,6 +116,11 @@ fhg_add_test (type/test/signature.cpp
   LINK_LIBRARIES pnet
 )
 
+fhg_add_test (type/test/bitsetofint.cpp
+  PROJECT test_we_type
+  LINK_LIBRARIES pnet
+)
+
 fhg_add_test (test/require_type.cpp
   BOOST_UNIT_TEST
   PROJECT test_we
