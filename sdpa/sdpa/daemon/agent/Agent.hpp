@@ -50,6 +50,8 @@ namespace sdpa {
 
         virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt );
         virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* pEvt);
+        virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* )
+          { throw std::runtime_error("Not implemented.The agent should not call handleDeleteJobEvent!"); }
 
         void cancelPendingJob (const sdpa::events::CancelJobEvent& evt);
 

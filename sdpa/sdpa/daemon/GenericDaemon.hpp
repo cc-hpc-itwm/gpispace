@@ -148,7 +148,7 @@ namespace sdpa {
       virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*) = 0;
       virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
       virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*);
-      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
+      virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* )=0;
       virtual void handleErrorEvent(const sdpa::events::ErrorEvent* );
       virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent* );
       virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* ) = 0;

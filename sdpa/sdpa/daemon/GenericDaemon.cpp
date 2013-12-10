@@ -219,69 +219,6 @@ namespace
   };
 }
 
-//actions
-void GenericDaemon::handleDeleteJobEvent (const DeleteJobEvent* evt)
-{
-  const DeleteJobEvent& e (*evt);
-
-  DMLOG (TRACE, e.from() << " requesting to delete job " << e.job_id() );
-
-  on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToMaster, this
-                                , ErrorEvent::Ptr ( new ErrorEvent ( name()
-                                                                   , e.from()
-                                                                   , ErrorEvent::SDPA_EUNKNOWN
-                                                                   , "unknown"
-                                                                   )
-                                                  )
-                               )
-                  );
-
-
-  Job* pJob = jobManager().findJob(e.job_id());
-  if(pJob)
-  {
-      // the job must be in a non-terminal state
-      if(!pJob->completed())
-      {
-         DMLOG(TRACE, "Cannot delete a job in a non-terminal state. Send back an error message to "<<evt->from()<<" from "<<name());
-         sdpa::events::ErrorEvent::Ptr pErrorEvt(
-              new sdpa::events::ErrorEvent( evt->to(),
-                                            evt->from(),
-                                            sdpa::events::ErrorEvent::SDPA_EJOBNOTDELETED,
-                                            "Cannot delete a job which is in a non-terminal state. Please, cancel it first!")
-                                            );
-          sendEventToMaster(pErrorEvt);
-          return;
-      }
-
-      try{
-          pJob->DeleteJob(&e, this);
-          jobManager().deleteJob(e.job_id());
-      }
-      catch(JobNotDeletedException const & ex)
-      {
-          DMLOG (WARN, "Job " << e.job_id() << " could not be deleted!");
-          sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
-                                                              , e.from()
-                                                              , ErrorEvent::SDPA_EUNKNOWN
-                                                              , ex.what()
-                                                            )
-                                            ));
-      }
-  }
-  else
-  {
-      DMLOG (WARN, "Job " << e.job_id() << " could not be found!");
-      sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
-                                                          , e.from()
-                                                          , ErrorEvent::SDPA_EJOBNOTFOUND
-                                                          , "no such job"
-                                                         )
-                                        ));
-  }
-
-  _.dont();
-}
 
 void GenericDaemon::serveJob(const Worker::worker_id_t& worker_id, const job_id_t& jobId )
 {
