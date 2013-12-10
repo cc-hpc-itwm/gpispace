@@ -44,7 +44,7 @@ namespace we {
 	void get (value_type & item)
 	{
 	  boost::mutex::scoped_lock lock( mutex_ );
-          while (! is_not_empty())
+          while (! container_.size())
           {
             not_empty_.wait (lock);
           }
@@ -66,8 +66,6 @@ namespace we {
         }
 
       private:
-	inline bool is_not_empty() const { return container_.size() > 0; }
-
 	container_type container_;
 	boost::mutex mutex_;
 	boost::condition not_empty_;
