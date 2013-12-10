@@ -17,9 +17,6 @@ namespace we
       template <typename F = void (void)>
       class signal
       {
-      private:
-        typedef typename std::vector<boost::function<F> > funs_type;
-
       public:
 	template <typename C>
 	void connect(C f)
