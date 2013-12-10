@@ -83,6 +83,7 @@ install (FILES
 )
 
 add_library (wfhd SHARED util/wfhd.c)
+set_target_properties (wfhd PROPERTIES OUTPUT_NAME wfhd VERSION 1)
 
 install (TARGETS wfhd
   LIBRARY DESTINATION lib
