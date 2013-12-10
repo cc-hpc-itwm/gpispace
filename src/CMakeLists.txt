@@ -142,10 +142,8 @@ target_link_libraries(pnetc ${Boost_FILESYSTEM_LIBRARY} ${Boost_LIBRARIES})
 
 install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
 
-if (BUILD_TESTING)
-  add_subdirectory (tests)
-  add_subdirectory (xml/tests)
-endif()
+add_subdirectory (tests)
+add_subdirectory (xml/tests)
 
 add_subdirectory (apps)
 
