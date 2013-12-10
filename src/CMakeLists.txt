@@ -142,3 +142,4 @@ add_subdirectory (apps)
 
 add_subdirectory(pnetv)
 add_subdirectory (we)
+add_subdirectory (mmgr)

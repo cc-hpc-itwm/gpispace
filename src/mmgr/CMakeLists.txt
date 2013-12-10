@@ -4,16 +4,16 @@ set (CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
 set (CMAKE_C_FLAGS_DEBUG "-O0 -g -ggdb")
 set (CMAKE_C_FLAGS_PROFILE "-O0 -g -pg")
 
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (${CMAKE_SOURCEX_DIR}/mmgr)
 
 set (sources
-  mmgr/dtmmgr.c
-  mmgr/fseg.c
-  mmgr/heap.c
-  mmgr/ostab.c
-  mmgr/smap.c
-  mmgr/tmmgr.c
-  mmgr/trie.c
+  dtmmgr.c
+  fseg.c
+  heap.c
+  ostab.c
+  smap.c
+  tmmgr.c
+  trie.c
 )
 
 add_library (mmgr ${sources})
