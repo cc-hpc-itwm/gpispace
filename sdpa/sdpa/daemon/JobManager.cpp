@@ -142,6 +142,14 @@ namespace sdpa
             pComm->sendEventToMaster(pSubmitJobAckEvt);
           }
           break;
+
+        case sdpa::status::RUNNING:
+        case sdpa::status::STALLED:
+        case sdpa::status::CANCELING:
+          // don't send anything to the master if the job is not completed or in a pending state
+          break;
+        default:
+          throw std::runtime_error("The job "+job->id().str()+" has an invalid/unknown state");
         }
       }
     }
