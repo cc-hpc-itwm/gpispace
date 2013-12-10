@@ -1,48 +1,36 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
 
-#include <stdint.h>
-#include <fhglog/fhglog.hpp>
-#include <fhg/util/split.hpp>
-#include <fhg/util/getenv.hpp>
-
-#include <we/mgmt/type/activity.hpp>
-#include <we/mgmt/layer.hpp>
-
-#include <fhg/revision.hpp>
-
-#include <boost/program_options.hpp>
-#include <boost/thread.hpp>
-#include <boost/foreach.hpp>
-
-#include <fhg/util/stat.hpp>
-
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <boost/unordered_map.hpp>
-#include <fhg/util/show.hpp>
-#include <fhg/error_codes.hpp>
-#include <we/mgmt/layer.hpp>
-#include <we/mgmt/bits/queue.hpp>
-
-#include <we/mgmt/type/activity.hpp>
 #include <we/loader/loader.hpp>
-#include <we/mgmt/context.hpp>
-
 #include <we/loader/module_call.hpp>
+#include <we/mgmt/bits/queue.hpp>
+#include <we/mgmt/context.hpp>
+#include <we/mgmt/layer.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/module_call.fwd.hpp>
+#include <we/type/net.fwd.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
-
-#include <we/type/module_call.fwd.hpp>
-#include <we/type/expression.fwd.hpp>
-#include <we/type/net.fwd.hpp>
-
 #include <we/type/value/show.hpp>
 
-#include <boost/foreach.hpp>
+#include <fhg/error_codes.hpp>
+#include <fhg/revision.hpp>
+#include <fhg/util/getenv.hpp>
+#include <fhg/util/show.hpp>
+#include <fhg/util/split.hpp>
+#include <fhg/util/stat.hpp>
+#include <fhglog/fhglog.hpp>
 
+#include <boost/bind.hpp>
+#include <boost/foreach.hpp>
+#include <boost/program_options.hpp>
+#include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
+
+#include <fstream>
+#include <iostream>
 #include <list>
+#include <sstream>
+#include <stdint.h>
 
 namespace test {
   namespace detail
