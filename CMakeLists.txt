@@ -169,6 +169,12 @@ endif()
 
 set (Boost_LIBRARIES "${Boost_PROGRAM_OPTIONS_LIBRARY};${Boost_SERIALIZATION_LIBRARY};${Boost_DATE_TIME_LIBRARY};${Boost_THREAD_LIBRARY};${Boost_SYSTEM_LIBRARY}")
 set (Boost_UNIT_TEST_LIBRARIES "${Boost_TEST_EXEC_MONITOR_LIBRARY};${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
+set (Boost_STATIC_LIBRARIES
+  "${Boost_LIBRARY_DIRS}/libboost_filesystem.a"
+  "${Boost_LIBRARY_DIRS}/libboost_serialization.a"
+  "${Boost_LIBRARY_DIRS}/libboost_thread.a"
+  "${Boost_LIBRARY_DIRS}/libboost_system.a"
+  )
 get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH CACHE)
 
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
