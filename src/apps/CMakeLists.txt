@@ -4,6 +4,7 @@ fhg_add_runtime_executable (
   we-exec.cpp
   LINK_LIBRARIES fhg-revision
                  pnet
+                 we-dev # for the client only
                  ${FhgLog_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -16,6 +17,7 @@ fhg_add_runtime_executable (
   we-eval.cpp
   LINK_LIBRARIES fhg-revision
                  pnet
+                 we-dev # for the client only
                  ${FhgLog_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
