@@ -234,7 +234,7 @@ endif (BUILD_TESTING)
 add_executable(pnetc xml/parse/pnetc.cpp)
 target_link_libraries(pnetc fhg-revision)
 target_link_libraries(pnetc pnet)
-target_link_libraries(pnetc ${Boost_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries(pnetc ${Boost_FILESYSTEM_LIBRARY} ${Boost_LIBRARIES})
 
 install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
 

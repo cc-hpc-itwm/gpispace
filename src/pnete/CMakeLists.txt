@@ -148,8 +148,8 @@ if (ENABLE_PNET_EDITOR)
                           fhg-util
                           ${FhgLog_LIBRARY}
                           ${UTIL_LIBRARIES}
-                          ${Boost_LIBRARIES}
                           ${Boost_FILESYSTEM_LIBRARY}
+                          ${Boost_LIBRARIES}
                           ${QT_LIBRARIES}
                           fhg-plugin)
 

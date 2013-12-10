@@ -26,7 +26,7 @@ fhg_add_test (test_peer.cpp
   PROJECT fhgcom
   LINK_LIBRARIES fhgcom
                  ${FhgLog_LIBRARY}
+                 ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_LIBRARIES}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_FILESYSTEM_LIBRARY}
 )

@@ -43,15 +43,15 @@ fhg_add_test (test_load_module.cpp
                  ${FhgLog_LIBRARY}
                  ${UTIL_LIBRARIES}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_LIBRARIES}
                  ${LibReadline_LIBRARY}
                  ${CMAKE_DL_LIBS}
 )
 
 fhg_add_test (evaluate_net.cpp
   PROJECT test_we
-  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARY}
+  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${CMAKE_DL_LIBS}
   DESCRIPTION "evaluate various nets and compare the results with given reference nets"
   ARGS ${CMAKE_CURRENT_SOURCE_DIR}/pnets
 )
