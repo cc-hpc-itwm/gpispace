@@ -3,27 +3,27 @@
 #ifndef WE_MGMT_BITS_COMMANDS_HPP
 #define WE_MGMT_BITS_COMMANDS_HPP 1
 
+#include <we/type/id.hpp>
+
 #include <boost/function.hpp>
 
 namespace we { namespace mgmt { namespace detail { namespace commands {
-  template <typename D>
   struct command_t
   {
-	typedef command_t<D> this_type;
-	typedef boost::function<void (this_type const &)> handler_type;
+    typedef boost::function<void (command_t const &)> handler_type;
 
         command_t ()
         {}
 
 	template <typename H>
-	command_t(std::string const & n, D d, H h)
+	command_t(std::string const & n, petri_net::activity_id_type d, H h)
           : name(n)
 	  , dat(d)
 	  , handler(h)
 	{}
 
         std::string name;
-	D dat;
+        petri_net::activity_id_type dat;
 
 	void handle()
 	{
@@ -34,10 +34,10 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
 	handler_type handler;
   };
 
-  template <typename D, typename H>
-  inline command_t<D> make_cmd(std::string const &n, D d, H h)
+  template <typename H>
+  inline command_t make_cmd(std::string const &n, petri_net::activity_id_type d, H h)
   {
-        return command_t<D>(n, d, h);
+        return command_t (n, d, h);
   }
 }}}}
 

@@ -58,7 +58,7 @@ namespace we { namespace mgmt {
       typedef boost::unordered_map<internal_id_type, descriptor_ptr> activities_t;
 
       // manager thread
-      typedef detail::commands::command_t<internal_id_type> cmd_t;
+      typedef detail::commands::command_t cmd_t;
       typedef detail::queue<cmd_t, 0> cmd_q_t;
 
       // extractor
