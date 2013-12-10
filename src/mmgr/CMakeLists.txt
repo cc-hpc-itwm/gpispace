@@ -42,14 +42,3 @@ set (tests
 foreach (test ${tests})
   fhg_add_test (tests/${test}.c PROJECT test_mmgr LINK_LIBRARIES mmgr)
 endforeach()
-
-set (apps
-  iheapsort
-  trie_vs_smap
-  perftmmgr
-)
-
-foreach (app ${apps})
-  add_executable (${app} app/${app}.c)
-  target_link_libraries (${app} mmgr)
-endforeach()
