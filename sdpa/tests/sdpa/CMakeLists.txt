@@ -259,6 +259,7 @@ set (tests
 foreach (test ${tests})
     fhg_add_test (${test}
       PROJECT sdpa
+      BOOST_UNIT_TEST # all of them?
       LINK_LIBRARIES sdpa-daemon
                      sdpa-com
                      sdpa-client
@@ -271,7 +272,6 @@ foreach (test ${tests})
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_UNIT_TEST_LIBRARIES}
                      ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Atomic, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Stalled, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS drts-plugin

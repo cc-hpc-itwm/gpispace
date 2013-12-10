@@ -24,8 +24,8 @@ set (tests
 foreach (test ${tests})
   fhg_add_test (${test}
     PROJECT fhglog
+    BOOST_UNIT_TEST # all of them?
     LINK_LIBRARIES fhglog
-                   ${Boost_UNIT_TEST_LIBRARIES}
                    ${Boost_THREAD_LIBRARY} # default_config, logging, perf, synch_appender, threaded only
   )
 endforeach()
