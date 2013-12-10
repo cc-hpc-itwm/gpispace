@@ -3,6 +3,7 @@
 #ifndef WE_MGMT_BITS_SIGNAL_HPP
 #define WE_MGMT_BITS_SIGNAL_HPP 1
 
+#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 
 #include <vector>
@@ -33,36 +34,36 @@ namespace we
 
 	void operator() ()
 	{
-          for (typename funs_type::iterator t = targets_.begin(); t != targets_.end(); ++t)
+          BOOST_FOREACH (boost::function<F> const& f, targets_)
           {
-            (*t)();
+            f();
           }
 	}
 
 	template <typename Arg1>
 	void operator() (Arg1 a1)
 	{
-          for (typename funs_type::iterator t = targets_.begin(); t != targets_.end(); ++t)
+          BOOST_FOREACH (boost::function<F> const& f, targets_)
           {
-            (*t)(a1);
+            f(a1);
           }
 	}
 
 	template <typename Arg1, typename Arg2>
 	void operator() (Arg1 a1, Arg2 a2)
 	{
-          for (typename funs_type::iterator t = targets_.begin(); t != targets_.end(); ++t)
+          BOOST_FOREACH (boost::function<F> const& f, targets_)
           {
-            (*t)(a1, a2);
+            f(a1, a2);
           }
 	}
 
 	template <typename Arg1, typename Arg2, typename Arg3>
 	void operator() (Arg1 a1, Arg2 a2, Arg3 a3)
 	{
-          for (typename funs_type::iterator t = targets_.begin(); t != targets_.end(); ++t)
+          BOOST_FOREACH (boost::function<F> const& f, targets_)
           {
-            (*t)(a1, a2, a3);
+            f(a1, a2, a3);
           }
 	}
 
