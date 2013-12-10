@@ -3,8 +3,6 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
-#include "timer.hpp"
-
 #include <iostream>
 
 #include <cstdlib>
