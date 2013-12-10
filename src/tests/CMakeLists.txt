@@ -1,6 +1,3 @@
-find_package (LibReadline REQUIRED QUIET)
-include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 fhg_add_test (evaluate_net.cpp
