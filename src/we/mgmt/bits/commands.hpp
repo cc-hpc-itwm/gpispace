@@ -35,32 +35,31 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
   struct command_t
   {
 	typedef command_t<C,D> this_type;
-        typedef std::string name_type;
 	typedef boost::function<void (this_type const &)> handler_type;
 
         command_t ()
         {}
 
         explicit
-        command_t(name_type const & n)
+        command_t(std::string const & n)
           : name(n)
 	{}
 
-        command_t(name_type const & n, C c, D d)
+        command_t(std::string const & n, C c, D d)
           : name(n)
 	  , cmd(c)
 	  , dat(d)
 	{}
 
 	template <typename H>
-	command_t(name_type const & n, C c, D d, H h)
+	command_t(std::string const & n, C c, D d, H h)
           : name(n)
           , cmd(c)
 	  , dat(d)
 	  , handler(h)
 	{}
 
-        name_type name;
+        std::string name;
 	C cmd;
 	D dat;
 
