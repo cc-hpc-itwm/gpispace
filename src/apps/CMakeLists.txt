@@ -94,11 +94,11 @@ fhg_add_runtime_executable (
 
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
-add_executable (iheapsort iheapsort.c)
+add_executable (iheapsort iheapsort.cpp)
 target_link_libraries (iheapsort mmgr)
 
-add_executable (trie_vs_smap trie_vs_smap.c)
+add_executable (trie_vs_smap trie_vs_smap.cpp)
 target_link_libraries (trie_vs_smap mmgr)
 
-add_executable (perftmmgr perftmmgr.c)
+add_executable (perftmmgr perftmmgr.cpp)
 target_link_libraries (perftmmgr mmgr)
