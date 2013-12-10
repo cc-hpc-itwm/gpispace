@@ -4,17 +4,20 @@
 static int counter = 0;
 static std::string text;
 
-static void count (void)
+namespace
 {
-  std::cerr << "counting" << std::endl;
+  void count (void)
+  {
+    std::cerr << "counting" << std::endl;
 
-  counter ++;
-}
+    counter ++;
+  }
 
-static void m (int id, const std::string & s)
-{
-  std::cerr << "got signal: " << id << ": " << s << std::endl;
-  text += s;
+  void m (int id, const std::string & s)
+  {
+    std::cerr << "got signal: " << id << ": " << s << std::endl;
+    text += s;
+  }
 }
 
 int main ()
