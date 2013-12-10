@@ -1127,6 +1127,25 @@ bool GenericDaemon::subscribedFor(const sdpa::agent_id_t& agId, const sdpa::job_
 void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::job_id_list_t& listJobIds)
 {
   lock_type lock(mtx_subscriber_);
+
+  // check if all the request jobs still exist
+  BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
+  {
+    // if the list contains at least one invalid job,
+    // send back an error message
+    if(!jobManager().findJob(jobId))
+    {
+        std::ostringstream oss("Could not subscribe for the job");
+        oss<<jobId<<". The job does not exist!";
+        ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name(),
+                                                  subscriber,
+                                                  ErrorEvent::SDPA_EJOBNOTFOUND,
+                                                  oss.str()));
+        sendEventToMaster(pErrorEvt);
+        return;
+    }
+  }
+
   // allow to subscribe multiple times with different lists of job ids
   if(isSubscriber(subscriber))
   {
