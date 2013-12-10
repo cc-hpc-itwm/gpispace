@@ -818,7 +818,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
   }
   catch(const NoWorkflowEngine& ex)
   {
-    SDPA_LOG_ERROR("No workflow engine!");
+    SDPA_LOG_ERROR("No workflow engine is available!");
     sdpa::job_result_t result(ex.what());
 
     JobFailedEvent::Ptr pEvtJobFailed
@@ -834,7 +834,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
   }
   catch(const JobNotFoundException& ex)
   {
-    SDPA_LOG_ERROR("Job not found! Could not schedule locally the job "<<ex.job_id().str());
+    SDPA_LOG_ERROR("Couldn't find the job "<<ex.job_id());
     sdpa::job_result_t result(ex.what());
 
     JobFailedEvent::Ptr pEvtJobFailed
@@ -851,7 +851,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
   }
   catch(const std::exception& ex)
   {
-     SDPA_LOG_ERROR("Exception occurred. Failed to submit the job "<<jobId<<" to the workflow!");
+     SDPA_LOG_ERROR("Exception occurred. Failed to submit the job "<<jobId<<" to the workflow engine!");
      sdpa::job_result_t result(ex.what());
 
      JobFailedEvent::Ptr pEvtJobFailed
