@@ -310,11 +310,11 @@ namespace we { namespace mgmt {
        * Constructor calls
        */
       layer()
-        : sig_submitted("sig_submitted")
-        , sig_finished("sig_finished")
-        , sig_failed("sig_failed")
-        , sig_canceled("sig_canceled")
-        , sig_executing("sig_executing")
+        : sig_submitted()
+        , sig_finished()
+        , sig_failed()
+        , sig_canceled()
+        , sig_executing()
         , internal_id_gen_(&petri_net::activity_id_generate)
       {
         start();
@@ -322,11 +322,11 @@ namespace we { namespace mgmt {
 
       template <class E, typename G>
       layer(E * exec_layer, G gen)
-        : sig_submitted("sig_submitted")
-        , sig_finished("sig_finished")
-        , sig_failed("sig_failed")
-        , sig_canceled("sig_canceled")
-        , sig_executing("sig_executing")
+        : sig_submitted()
+        , sig_finished()
+        , sig_failed()
+        , sig_canceled()
+        , sig_executing()
         , external_id_gen_(gen)
         , internal_id_gen_(&petri_net::activity_id_generate)
       {

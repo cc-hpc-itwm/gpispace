@@ -18,10 +18,6 @@ namespace we
       class signal
       {
       public:
-        explicit
-        signal(const std::string&)
-        {}
-
 	template <typename C>
 	void connect(C f)
 	{
