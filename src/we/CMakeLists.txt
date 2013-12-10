@@ -201,9 +201,6 @@ fhg_add_test (type/test/sig.cpp
   LINK_LIBRARIES sig_op pnet
 )
 
-if (BUILD_TESTING)
-  add_subdirectory (container/test)
-  add_subdirectory (util/test)
-endif()
-
+add_subdirectory (container/test)
+add_subdirectory (util/test)
 add_subdirectory (test)
