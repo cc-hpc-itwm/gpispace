@@ -67,12 +67,6 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
         return command_t<CMD_ID,D>(n, GENERIC, d, h);
   }
 
-  template <typename C, typename D, typename H>
-  inline command_t<C,D> make_cmd(std::string const &n, C c, D d, H h)
-  {
-        return command_t<C,D>(n, c,d, h);
-  }
-
   template <typename Stream, typename C, typename D>
   inline Stream & operator << (Stream & s, const command_t<C, D> & c)
   {
