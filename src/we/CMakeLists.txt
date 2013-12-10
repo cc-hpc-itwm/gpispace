@@ -209,6 +209,11 @@ add_library (question SHARED loader/test/question.cpp)
 target_link_libraries (question answer)
 target_link_libraries (answer pnet)
 
+fhg_add_test (test/activity.cpp
+  PROJECT test_we
+  LINK_LIBRARIES pnet
+)
+
 add_executable (mk_cpp type/test/mk_cpp.cpp)
 target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
