@@ -22,15 +22,6 @@
 #include <boost/function.hpp>
 
 namespace we { namespace mgmt { namespace detail { namespace commands {
-  enum CMD_ID
-  {
-	GENERIC
-  ,	NET_NEEDS_ATTENTION
-  , NET_SUSPEND
-  , NET_RESUME
-  , NET_CANCEL
-  };
-
   template <typename D>
   struct command_t
   {
