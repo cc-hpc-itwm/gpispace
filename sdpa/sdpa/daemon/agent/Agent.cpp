@@ -23,10 +23,9 @@
 #include <seda/StageRegistry.hpp>
 #include <sstream>
 
-using namespace std;
-using namespace sdpa::daemon;
-using namespace sdpa::events;
 
+namespace sdpa {
+  namespace daemon {
 
 Agent::Agent ( const std::string& name
              , const std::string& url
@@ -48,7 +47,7 @@ Agent::Agent ( const std::string& name
   }
 }
 
-void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
+void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 {
   assert (pEvt);
 
@@ -59,7 +58,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   DMLOG (TRACE, "Called handleJobFinished for the job " << pEvt->job_id());
 
   // send a JobFinishedAckEvent back to the worker/slave
-  JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new JobFinishedAckEvent( name()
+  events::JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new events::JobFinishedAckEvent( name()
                                                                           , pEvt->from()
                                                                           , pEvt->job_id()
                                                                          ));
@@ -79,7 +78,7 @@ void Agent::handleJobFinishedEvent(const JobFinishedEvent* pEvt )
   if( !hasWorkflowEngine() )
   {
       // forward it up
-      JobFinishedEvent::Ptr pEvtJobFinished(new JobFinishedEvent( name()
+      events::JobFinishedEvent::Ptr pEvtJobFinished(new events::JobFinishedEvent( name()
                                                                   , pJob->owner()
                                                                   , pEvt->job_id()
                                                                   , pEvt->result()
@@ -161,8 +160,8 @@ bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::layer
   }
 
   // forward it up
-  JobFinishedEvent::Ptr pEvtJobFinished
-                (new JobFinishedEvent( name()
+  events::JobFinishedEvent::Ptr pEvtJobFinished
+                (new events::JobFinishedEvent( name()
                                      , pJob->owner()
                                      , id
                                      , result
@@ -195,8 +194,8 @@ bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::layer
   {
     if(subscribedFor(pair_subscr_joblist.first, id))
     {
-      sdpa::events::SDPAEvent::Ptr ptrEvt
-        ( new JobFinishedEvent ( name()
+      events::SDPAEvent::Ptr ptrEvt
+        ( new events::JobFinishedEvent ( name()
                                , pair_subscr_joblist.first
                                , pEvtJobFinished->job_id()
                                , pEvtJobFinished->result()
@@ -210,7 +209,7 @@ bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::layer
   return true;
 }
 
-void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
+void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 {
   assert (pEvt);
 
@@ -234,7 +233,7 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   }
 
   // send a JobFailedAckEvent back to the worker/slave
-  JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new JobFailedAckEvent( name()
+  events::JobFailedAckEvent::Ptr pEvtJobFailedAckEvt(new events::JobFailedAckEvent( name()
                                                                     , pEvt->from()
                                                                     , pEvt->job_id() ));
   // send the event to the slave
@@ -253,8 +252,8 @@ void Agent::handleJobFailedEvent(const JobFailedEvent* pEvt)
   if( !hasWorkflowEngine() )
   {
       // forward it up
-      JobFailedEvent::Ptr pEvtJobFailed
-        (new JobFailedEvent ( name()
+      events::JobFailedEvent::Ptr pEvtJobFailed
+        (new events::JobFailedEvent ( name()
                             , pJob->owner()
                             , pEvt->job_id()
                             , pEvt->result()
@@ -346,8 +345,8 @@ bool Agent::failed( const we::mgmt::layer::id_type& wfid
   }
 
   // forward it up
-  JobFailedEvent::Ptr pEvtJobFailed
-    (new JobFailedEvent ( name()
+  events::JobFailedEvent::Ptr pEvtJobFailed
+    (new events::JobFailedEvent ( name()
                         , pJob->owner()
                         , id
                         , result
@@ -380,8 +379,8 @@ bool Agent::failed( const we::mgmt::layer::id_type& wfid
   {
     if(subscribedFor(pair_subscr_joblist.first, id))
     {
-      JobFailedEvent::Ptr ptrEvt
-        ( new JobFailedEvent ( name()
+        events::JobFailedEvent::Ptr ptrEvt
+        ( new events::JobFailedEvent ( name()
                              , pair_subscr_joblist.first
                              , pEvtJobFailed->job_id()
                              , pEvtJobFailed->result()
@@ -439,9 +438,9 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
     {
       on_scope_exit _ ( boost::bind ( &Agent::sendEventToMaster
                                     , this
-                                    , ErrorEvent::Ptr ( new ErrorEvent ( name()
+                                    , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
                                                                        , evt.from()
-                                                                       , ErrorEvent::SDPA_EUNKNOWN
+                                                                       , events::ErrorEvent::SDPA_EUNKNOWN
                                                                        , "Exception in Agent::cancelPendingJob"
                                                                        )
                                                       )
@@ -480,7 +479,7 @@ void Agent::notifySubscribers(const T& ptrEvt)
   }
 }
 
-void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
+void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 {
   Job* pJob;
 
@@ -493,9 +492,9 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
       else
       {
         DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
-        sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+        sendEventToMaster( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , pEvt->from()
-                                                          , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                          , events::ErrorEvent::SDPA_EJOBNOTFOUND
                                                           , "No such job found" )
                                                          ));
       }
@@ -505,9 +504,9 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
   if(pJob->getStatus() == sdpa::status::CANCELED)
   {
-      sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+      sendEventToMaster( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , pEvt->from()
-                                                          , ErrorEvent::SDPA_EJOBALREADYCANCELED
+                                                          , events::ErrorEvent::SDPA_EJOBALREADYCANCELED
                                                           , "Job already canceled" )
                                                ));
       return;
@@ -515,9 +514,9 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
 
   if(pJob->completed())
   {
-    sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+    sendEventToMaster( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                         , pEvt->from()
-                                                        , ErrorEvent::SDPA_EJOBTERMINATED
+                                                        , events::ErrorEvent::SDPA_EJOBTERMINATED
                                                         , "Cannot cancel an already terminated job, its current status is: "
                                                            + sdpa::status::show(pJob->getStatus()) )
                                              ));
@@ -528,7 +527,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
   if( isTop() )
   {
     // send immediately an acknowledgment to the component that requested the cancellation
-    CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
+      events::CancelJobAckEvent::Ptr pCancelAckEvt(new events::CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
 
     if(!isSubscriber(pJob->owner()))
       sendEventToMaster(pCancelAckEvt);
@@ -540,9 +539,9 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
   {
     on_scope_exit _ ( boost::bind ( &Agent::sendEventToMaster
                                   , this
-                                  , ErrorEvent::Ptr ( new ErrorEvent ( name()
+                                  , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
                                                                      , pEvt->from()
-                                                                     , ErrorEvent::SDPA_EUNKNOWN
+                                                                     , events::ErrorEvent::SDPA_EUNKNOWN
                                                                      , "Exception in Agent::handleCancelJobEvent"
                                                                      )
                                                     )
@@ -555,7 +554,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
       sdpa::worker_id_t worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
 
       DMLOG(TRACE, "Tell the worker "<<worker_id<<" to cancel the job "<<pEvt->job_id());
-      CancelJobEvent::Ptr pCancelEvt( new CancelJobEvent( name()
+      events::CancelJobEvent::Ptr pCancelEvt( new events::CancelJobEvent( name()
                                                           , worker_id
                                                           , pEvt->job_id()
                                                           , pEvt->reason() ) );
@@ -588,7 +587,7 @@ void Agent::handleCancelJobEvent(const CancelJobEvent* pEvt )
   }
 }
 
-void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
+void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 {
   DMLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
@@ -617,7 +616,7 @@ void Agent::handleCancelJobAckEvent(const CancelJobAckEvent* pEvt)
     // send an acknowledgment to the component that requested the cancellation
     if(!isTop())
     {
-      CancelJobAckEvent::Ptr pCancelAckEvt(new CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id() ));
+        events::CancelJobAckEvent::Ptr pCancelAckEvt(new events::CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id() ));
       // only if the job was already submitted
       sendEventToMaster(pCancelAckEvt);
 
@@ -740,3 +739,5 @@ Agent::ptr_t Agent::create ( const std::string& name
   pAgent->start_agent();
   return pAgent;
 }
+
+}} // end namespaces
