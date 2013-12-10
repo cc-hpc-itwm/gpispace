@@ -27,7 +27,7 @@ if (ENABLE_FAKE_PC)
 endif()
 
 include_directories (${CMAKE_SOURCE_DIR}/gspc)
-include_directories (${CMAKE_SOURCE_DIR}/pnet/src)
+include_directories (${CMAKE_SOURCE_DIR}/src)
 
 include_directories (${FhgLog_INCLUDE_DIR})
 

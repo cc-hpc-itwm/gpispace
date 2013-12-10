@@ -4,7 +4,7 @@ include_directories(${FhgLog_INCLUDE_DIR})
 
 include_directories(${UTIL_INCLUDE_DIR})
 
-include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
 # for usage of the sdpac plugin
 include_directories(${SDPA_INCLUDE_DIR})

@@ -61,8 +61,18 @@ main (int argc, char **argv)
         {
           Bool_t was_there;
 
-          trie_ins (&tm, use_rand ? rand () : (use_gen ? gen_key () : i),
-                    &was_there);
+          if (use_rand)
+          {
+            trie_ins (&tm, rand(), &was_there);
+          }
+          else if (use_gen)
+          {
+            trie_ins (&tm, gen_key(), &was_there);
+          }
+          else
+          {
+            trie_ins (&tm, i, &was_there);
+          }
 
           dups += (was_there == True) ? 1 : 0;
         }
@@ -71,9 +81,20 @@ main (int argc, char **argv)
     {
       for (Size_t i = 0; i < size; ++i)
         {
-          Bool_t was_there =
-            smap_ins (&sm, use_rand ? rand () : (use_gen ? gen_key () : i),
-                      i);
+          Bool_t was_there;
+
+          if (use_rand)
+          {
+            was_there = smap_ins (&tm, rand(), i);
+          }
+          else if (use_gen)
+          {
+            was_there = smap_ins (&tm, gen_key(), i);
+          }
+          else
+          {
+            was_there = smap_ins (&tm, i, i);
+          }
 
           dups += (was_there == True) ? 1 : 0;
         }
@@ -105,14 +126,36 @@ main (int argc, char **argv)
         {
           for (Size_t i = 0; i < size; ++i)
             {
-              trie_get (tm, use_rand ? rand () : (use_gen ? gen_key () : i));
+              if (use_gen)
+              {
+                trie_get (tm, rand());
+              }
+              else if (use_gen)
+              {
+                trie_get (tm, gen_key());
+              }
+              else
+              {
+                trie_get (tm, i);
+              }
             }
         }
       else
         {
           for (Size_t i = 0; i < size; ++i)
             {
-              smap_get (sm, use_rand ? rand () : (use_gen ? gen_key () : i));
+              if (use_gen)
+              {
+                smap_get (tm, rand());
+              }
+              else if (use_gen)
+              {
+                smap_get (tm, gen_key());
+              }
+              else
+              {
+                smap_get (tm, i);
+              }
             }
         }
     }

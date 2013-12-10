@@ -6,7 +6,7 @@ fhg_add_test (test_config.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
+                 ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -19,7 +19,7 @@ fhg_add_test (test_handle_generator.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
+                 ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -32,7 +32,7 @@ fhg_add_test (test_memory_manager.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
+                 ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -45,7 +45,7 @@ fhg_add_test (test_pc_types.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
+                 ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -58,7 +58,7 @@ fhg_add_test (test_program_opts.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
+                 ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -71,7 +71,7 @@ fhg_add_test (test_segment.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
+                 ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -84,8 +84,8 @@ fhg_add_test (test_sfs_area.cpp dummy_topology.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARY}
+                 ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -98,7 +98,7 @@ fhg_add_test (test_signal_handler.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
+                 ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -111,7 +111,7 @@ fhg_add_test (test_signal_handler_standalone.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
+                 ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )
@@ -124,7 +124,7 @@ fhg_add_test (test_task.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
+                 ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
 )

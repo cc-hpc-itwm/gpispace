@@ -4,24 +4,24 @@ include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(tests
-    test_activity.cpp
-    test_adjacency.cpp
-    test_bitset.cpp
-    test_bitsetofint.cpp
-    test_execute_activity.cpp
-    test_expr_parser.cpp
-    test_expr_rename.cpp
-    test_expr_get_names.cpp
-    test_expr_simplify.cpp
-    test_layer_atomics.cpp
-    test_layer_cancel.cpp
-    test_port.cpp
-    test_property.cpp
-    test_queue.cpp
-    test_signal.cpp
-    test_trans.cpp
-    test_unordered_map.cpp
-    test_context.cpp
+    activity.cpp
+    adjacency.cpp
+    bitset.cpp
+    bitsetofint.cpp
+    execute_activity.cpp
+    expr_parser.cpp
+    expr_rename.cpp
+    expr_get_names.cpp
+    expr_simplify.cpp
+    layer_atomics.cpp
+    layer_cancel.cpp
+    port.cpp
+    property.cpp
+    queue.cpp
+    signal.cpp
+    trans.cpp
+    unordered_map.cpp
+    context.cpp
    )
 
 foreach (test ${tests})
@@ -37,26 +37,26 @@ foreach (test ${tests})
   )
 endforeach()
 
-fhg_add_test (test_load_module.cpp
-  PROJECT we
+fhg_add_test (load_module.cpp
+  PROJECT test_we
   LINK_LIBRARIES pnet
                  ${FhgLog_LIBRARY}
                  ${UTIL_LIBRARIES}
                  ${Boost_UNIT_TEST_LIBRARIES}
-                 ${Boost_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_LIBRARIES}
                  ${LibReadline_LIBRARY}
                  ${CMAKE_DL_LIBS}
 )
 
 fhg_add_test (evaluate_net.cpp
-  PROJECT test_we
-  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARY}
+  PROJECT we
+  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${CMAKE_DL_LIBS}
   DESCRIPTION "evaluate various nets and compare the results with given reference nets"
   ARGS ${CMAKE_CURRENT_SOURCE_DIR}/pnets
 )
 
-fhg_add_test (test_loader.cpp
+fhg_add_test (loader.cpp
   PROJECT we
   LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARY}
   DEPENDS question answer
