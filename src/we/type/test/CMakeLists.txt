@@ -9,29 +9,29 @@ fhg_add_test (test_bytearray.cpp
 
 fhg_add_test (value.cpp
   BOOST_UNIT_TEST
-  PROJECT test_we_type
+  PROJECT we_type
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (signature.cpp
   BOOST_UNIT_TEST
-  PROJECT test_we_type
+  PROJECT we_type
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (bitsetofint.cpp
-  PROJECT test_we_type
+  PROJECT we_type
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (property.cpp
   BOOST_UNIT_TEST
-  PROJECT test_we_type
+  PROJECT we_type
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (trans.cpp
-  PROJECT test_we_type
+  PROJECT we_type
   LINK_LIBRARIES pnet
 )
 
@@ -49,6 +49,6 @@ add_library (sig_op ${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp)
 
 fhg_add_test (sig.cpp
   BOOST_UNIT_TEST
-  PROJECT test_we
+  PROJECT we
   LINK_LIBRARIES sig_op pnet
 )

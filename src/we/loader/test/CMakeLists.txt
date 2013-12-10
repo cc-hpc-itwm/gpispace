@@ -1,7 +1,7 @@
 # mirko.rahn@itwm.fraunhofer.de
 
 fhg_add_test (loader.cpp
-  PROJECT test_we_loader
+  PROJECT we_loader
   LINK_LIBRARIES pnet
                  ${FhgLog_LIBRARY}
                  ${CMAKE_DL_LIBS}
@@ -11,7 +11,7 @@ fhg_add_test (loader.cpp
 )
 
 fhg_add_test (load_module.cpp
-  PROJECT test_we_loader
+  PROJECT we_loader
   BOOST_UNIT_TEST
   LINK_LIBRARIES pnet
                  ${FhgLog_LIBRARY}
