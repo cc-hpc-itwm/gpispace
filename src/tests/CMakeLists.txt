@@ -7,8 +7,6 @@ set(tests
     activity.cpp
     execute_activity.cpp
     expr_rename.cpp
-    expr_get_names.cpp
-    expr_simplify.cpp
     layer_atomics.cpp
     layer_cancel.cpp
     port.cpp
