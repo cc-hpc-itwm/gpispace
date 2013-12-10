@@ -3,12 +3,12 @@
 include(fhg_plugin_macros)
 
 fhg_add_test(test_file_storage.cpp
-  LINK_LIBRARIES fhg-plugin ${Boost_FILESYSTEM_LIBRARY}
+  LINK_LIBRARIES fhg-plugin ${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary
   DESCRIPTION "Tests the file-storage backend"
 )
 fhg_add_test(test_null_storage.cpp
-  LINK_LIBRARIES fhg-plugin
+  LINK_LIBRARIES fhg-plugin ${Boost_SERIALIZATION_LIBRARY}
   DESCRIPTION "Tests the null-storage backend"
 )
 

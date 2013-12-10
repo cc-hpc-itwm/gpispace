@@ -7,10 +7,10 @@ add_executable(fhgcomc fhgcomc.cpp)
 target_link_libraries(fhgcomc fhgcom ${FhgLog_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(fhgkvsd fhgkvsd.cpp)
-target_link_libraries(fhgkvsd fhgcom ${FhgLog_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(fhgkvsd fhgcom ${FhgLog_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_SERIALIZATION_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(fhgkvsc fhgkvsc.cpp)
-target_link_libraries(fhgkvsc fhgcom ${FhgLog_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(fhgkvsc fhgcom ${FhgLog_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_SERIALIZATION_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(fhgaddr fhgaddr.cpp)
 target_link_libraries(fhgaddr fhgcom ${FhgLog_LIBRARY} ${Boost_LIBRARIES})

@@ -11,6 +11,8 @@ target_link_libraries (gpi-space
   gpi-space-pc-server
   ${CMAKE_THREAD_LIBS_INIT}
   fhg-revision
+  ${gpi_space_Boost_FILESYSTEM_LIBRARY}
+  ${gpi_space_Boost_SERIALIZATION_LIBRARY}
   ${gpi_space_boost_libs}
 )
 
@@ -30,6 +32,7 @@ target_link_libraries (gpish
   ${LibReadline_LIBRARY}
   ${FhgLog_LIBRARY}
   ${gpi_space_Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${gpi_space_Boost_SERIALIZATION_LIBRARY}
   ${gpi_space_boost_libs}
   ${CMAKE_THREAD_LIBS_INIT}
   fhg-revision

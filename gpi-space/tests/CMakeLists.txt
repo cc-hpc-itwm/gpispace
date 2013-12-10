@@ -6,6 +6,7 @@ fhg_add_test (test_config.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
+                 ${gpi_space_Boost_SERIALIZATION_LIBRARY}
                  ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
