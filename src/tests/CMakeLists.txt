@@ -1,5 +1,3 @@
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 fhg_add_test (evaluate_net.cpp
   BOOST_UNIT_TEST
   PROJECT we
