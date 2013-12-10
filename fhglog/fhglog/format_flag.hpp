@@ -144,11 +144,15 @@ namespace fhg
                                       )
           {
             char buf[128]; memset (buf, 0, sizeof(buf));
-            time_t tm = (e.tstamp()); // / 1000 / 1000);
+            // convert tstamp_type to time_t
+            const time_t tm = static_cast<time_t>(e.tstamp ());
             ctime_r (&tm, buf);
-            std::string tmp (buf);
-            boost::trim (tmp);
-            return os << tmp;
+            for (char * p = (buf + sizeof(buf) - 1) ; p != buf ; --p)
+            {
+              if (*p == '\n') *p = 0;
+              if (*p != 0) break;
+            }
+            return os << buf;
           }
         };
         struct TSTAMP
@@ -160,7 +164,12 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << e.tstamp();
+            std::ios_base::fmtflags flags(os.flags());
+            os.unsetf (std::ios_base::scientific);
+            os.setf (std::ios_base::fixed);
+            os << e.tstamp();
+            os.flags(flags);
+            return os;
           }
         };
         struct TID

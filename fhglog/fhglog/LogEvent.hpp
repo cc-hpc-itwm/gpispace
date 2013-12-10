@@ -30,7 +30,7 @@ namespace fhg { namespace log {
       typedef std::size_t line_type;
       typedef std::string message_type;
       typedef std::string module_type;
-      typedef unsigned long long tstamp_type;
+      typedef double tstamp_type;
       typedef pid_t         pid_type;
       typedef unsigned long tid_type;
       typedef std::vector<std::string> trace_type;
