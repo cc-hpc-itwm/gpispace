@@ -183,6 +183,32 @@ fhg_add_test (mgmt/bits/test/signal.cpp
   PROJECT test_we_mgmt_bits
 )
 
+fhg_add_test (loader/test/loader.cpp
+  PROJECT test_we_loader
+  LINK_LIBRARIES pnet
+                 ${FhgLog_LIBRARY}
+                 ${CMAKE_DL_LIBS}
+                 ${Boost_FILESYSTEM_LIBRARY}
+  DEPENDS question
+          answer
+)
+
+fhg_add_test (loader/test/load_module.cpp
+  PROJECT test_we_loader
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES pnet
+                 ${FhgLog_LIBRARY}
+                 ${UTIL_LIBRARIES}
+                 ${Boost_FILESYSTEM_LIBRARY}
+                 ${LibReadline_LIBRARY}
+                 ${CMAKE_DL_LIBS}
+)
+
+add_library (answer SHARED loader/test/answer.cpp)
+add_library (question SHARED loader/test/question.cpp)
+target_link_libraries (question answer)
+target_link_libraries (answer pnet)
+
 add_executable (mk_cpp type/test/mk_cpp.cpp)
 target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
 

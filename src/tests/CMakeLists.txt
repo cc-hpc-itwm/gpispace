@@ -26,17 +26,6 @@ foreach (test ${tests})
   )
 endforeach()
 
-fhg_add_test (load_module.cpp
-  PROJECT test_we
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES pnet
-                 ${FhgLog_LIBRARY}
-                 ${UTIL_LIBRARIES}
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${LibReadline_LIBRARY}
-                 ${CMAKE_DL_LIBS}
-)
-
 fhg_add_test (evaluate_net.cpp
   BOOST_UNIT_TEST
   PROJECT we
@@ -44,14 +33,3 @@ fhg_add_test (evaluate_net.cpp
   DESCRIPTION "evaluate various nets and compare the results with given reference nets"
   ARGS ${CMAKE_CURRENT_SOURCE_DIR}/pnets
 )
-
-fhg_add_test (loader.cpp
-  PROJECT we
-  LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARY}
-  DEPENDS question answer
-)
-
-add_library (answer SHARED answer.cpp)
-add_library (question SHARED question.cpp)
-target_link_libraries (question answer)
-target_link_libraries (answer pnet)
