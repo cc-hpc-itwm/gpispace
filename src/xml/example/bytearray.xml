@@ -19,12 +19,8 @@
         <in name="p" type="point"/>
         <out name="ba" type="bytearray"/>
         <module name="test_bytearray" function="ba produce(p)">
-          <cinclude href="iostream"/>
           <code><![CDATA[
             ::bytearray::type ba (&p);
-
-            std::cout << "input " << p << std::endl;
-            std::cout << "constructed bytearray: " << ba << std::endl;
 
             return ba;
           ]]></code>
@@ -39,14 +35,10 @@
         <in name="ba" type="bytearray"/>
         <out name="p" type="point"/>
         <module name="test_bytearray" function="p consume(ba)">
-          <cinclude href="iostream"/>
           <code><![CDATA[
             ::pnetc::type::point::point p;
 
             ba.copy (&p);
-
-            std::cout << "input " << ba << std::endl;
-            std::cout << "reconstructed: " << p << std::endl;
 
             return p;
           ]]></code>
