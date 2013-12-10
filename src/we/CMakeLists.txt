@@ -99,10 +99,7 @@ fhg_add_test (expr/parse/test/simplify.cpp
   LINK_LIBRARIES pnet
 )
 
-fhg_add_test (expr/test/rename.cpp
-  PROJECT test_we_expr
-  LINK_LIBRARIES pnet
-)
+add_subdirectory (expr/test)
 
 add_subdirectory (mgmt/bits/test)
 
