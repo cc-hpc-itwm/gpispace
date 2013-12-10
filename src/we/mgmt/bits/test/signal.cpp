@@ -1,3 +1,8 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE expr_type_calculate
+#include <boost/test/unit_test.hpp>
+
 #include <we/mgmt/bits/signal.hpp>
 #include <iostream>
 
@@ -20,18 +25,19 @@ namespace
   }
 }
 
-int main ()
+BOOST_AUTO_TEST_CASE (sig_count)
 {
   we::mgmt::util::signal<> sig_cnt;
   sig_cnt.connect ( &count );
 
   sig_cnt();
   sig_cnt();
-  if (2 != counter)
-  {
-    return EXIT_FAILURE;
-  }
 
+  BOOST_REQUIRE_EQUAL (counter, 2);
+}
+
+BOOST_AUTO_TEST_CASE (accu)
+{
   we::mgmt::util::signal<void (int, const std::string &)> sig_sig;
   text = "";
 
@@ -39,10 +45,5 @@ int main ()
   sig_sig ( 1, "Hallo " );
   sig_sig ( 2, "Welt!" );
 
-  if (text != "Hallo Welt!")
-  {
-    return EXIT_FAILURE;
-  }
-
-  return EXIT_SUCCESS;
+  BOOST_REQUIRE_EQUAL (text, "Hallo Welt!");
 }
