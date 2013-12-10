@@ -99,28 +99,6 @@ install (FILES
 add_executable (generate_parser_action_table expr/parse/table.cpp)
 target_link_libraries (generate_parser_action_table pnet)
 
-fhg_add_test (type/test/test_bytearray.cpp
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (type/test/value.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we_type
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (type/test/signature.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we_type
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (type/test/bitsetofint.cpp
-  PROJECT test_we_type
-  LINK_LIBRARIES pnet
-)
-
 fhg_add_test (expr/parse/test/get_names.cpp
   PROJECT test_we_expr_parse
   LINK_LIBRARIES pnet
@@ -172,35 +150,7 @@ add_library (question SHARED loader/test/question.cpp)
 target_link_libraries (question answer)
 target_link_libraries (answer pnet)
 
-fhg_add_test (type/test/property.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we_type
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (type/test/trans.cpp
-  PROJECT test_we_type
-  LINK_LIBRARIES pnet
-)
-
-add_executable (mk_cpp type/test/mk_cpp.cpp)
-target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
-
-add_custom_command (
-  OUTPUT sig_struct.hpp sig_op.hpp sig_op.cpp
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mk_cpp -H sig_struct.hpp -O sig_op.hpp -I sig_op.cpp
-  DEPENDS mk_cpp
-)
-
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
-add_library (sig_op ${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp)
-
-fhg_add_test (type/test/sig.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES sig_op pnet
-)
-
 add_subdirectory (container/test)
 add_subdirectory (util/test)
 add_subdirectory (test)
+add_subdirectory (type/test)
