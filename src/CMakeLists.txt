@@ -322,3 +322,7 @@ if (BUILD_TESTING)
 endif()
 
 add_subdirectory (apps)
+
+if (ENABLE_PNETV)
+  add_subdirectory(pnetv)
+endif ()
