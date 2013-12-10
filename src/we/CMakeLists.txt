@@ -83,20 +83,16 @@ install (FILES
   COMPONENT sdk
 )
 
-add_subdirectory (util)
-
 add_executable (generate_parser_action_table expr/parse/table.cpp)
 target_link_libraries (generate_parser_action_table pnet)
 
-add_subdirectory (expr/parse/test)
-
-add_subdirectory (expr/test)
-
-add_subdirectory (mgmt/bits/test)
-
-add_subdirectory (loader/test)
+add_subdirectory (util)
 
 add_subdirectory (container/test)
-add_subdirectory (util/test)
+add_subdirectory (expr/parse/test)
+add_subdirectory (expr/test)
+add_subdirectory (loader/test)
+add_subdirectory (mgmt/bits/test)
 add_subdirectory (test)
 add_subdirectory (type/test)
+add_subdirectory (util/test)
