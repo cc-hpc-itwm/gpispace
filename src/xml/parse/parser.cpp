@@ -3,11 +3,20 @@
 #include <xml/parse/parser.hpp>
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/state.hpp>
-#include <xml/parse/util.hpp>
-#include <xml/parse/warning.hpp>
-
 #include <xml/parse/id/types.hpp>
+#include <xml/parse/state.hpp>
+#include <xml/parse/util/cdata.hpp>
+#include <xml/parse/util/expect.hpp>
+#include <xml/parse/util/name_element.hpp>
+#include <xml/parse/util/optional.hpp>
+#include <xml/parse/util/property.hpp>
+#include <xml/parse/util/required.hpp>
+#include <xml/parse/util/show_node_type.hpp>
+#include <xml/parse/util/skip.hpp>
+#include <xml/parse/util/valid_name.hpp>
+#include <xml/parse/util/validprefix.hpp>
+#include <xml/parse/util/validstructfield.hpp>
+#include <xml/parse/warning.hpp>
 
 #include <xml/parse/rapidxml/types.hpp>
 
