@@ -3,22 +3,6 @@ include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(tests
-   )
-
-foreach (test ${tests})
-  fhg_add_test (${test}
-    PROJECT we
-    BOOST_UNIT_TEST # all of them?
-    LINK_LIBRARIES pnet
-                   ${FhgLog_LIBRARY}
-                   ${UTIL_LIBRARIES}
-                   ${Boost_THREAD_LIBRARY} # layer_atomics, layer_cancel, queue
-                   ${LibReadline_LIBRARY}
-                   ${CMAKE_DL_LIBS}
-  )
-endforeach()
-
 fhg_add_test (evaluate_net.cpp
   BOOST_UNIT_TEST
   PROJECT we
