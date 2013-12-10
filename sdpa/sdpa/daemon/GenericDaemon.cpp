@@ -374,16 +374,12 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
 
   try {
     // One should parse the workflow in order to be able to create a valid job
-    // if the event comes from Gwes parent_id is the owner_workflow_id
-
-    // the job job_id is in the Pending state now!
     bool b_master_job(e.from() != sdpa::daemon::WE && hasWorkflowEngine());
     jobManager().addJob(job_id, e.description(), e.parent_id(), b_master_job, e.from());
   }
   catch(JobNotAddedException const &ex)
   {
     DMLOG (WARN, "job " << job_id << " could not be added: " << ex.what());
-    // the worker should register first, before posting a job request
     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBNOTADDED, ex.what()) );
     sendEventToMaster(pErrorEvt);
     return;
