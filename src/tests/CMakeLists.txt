@@ -13,7 +13,6 @@ set(tests
     queue.cpp
     signal.cpp
     trans.cpp
-    unordered_map.cpp
    )
 
 foreach (test ${tests})
