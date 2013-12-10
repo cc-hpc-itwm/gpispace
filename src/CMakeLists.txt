@@ -26,35 +26,6 @@ if (ENABLE_PNET_EDITOR OR ENABLE_SDPA_GUI)
   add_subdirectory (util)
 endif()
 
-add_library (we-dev SHARED
-  we/exception.cpp
-  we/expr/token/type.cpp
-  we/field.cpp
-  we/signature_of.cpp
-  we/type/bitsetofint.cpp
-  we/type/bytearray.cpp
-  we/type/literal/control.cpp
-  we/type/signature/show.cpp
-  we/type/value/name.cpp
-  we/type/value/name_of.cpp
-  we/type/value/path/append.cpp
-  we/type/value/path/join.cpp
-  we/type/value/path/split.cpp
-  we/type/value/peek.cpp
-  we/type/value/poke.cpp
-  we/type/value/show.cpp
-  we/type/value/read.cpp
-
-  we/loader/Module.cpp
-)
-
-target_link_libraries(we-dev fhg-util ${CMAKE_DL_LIBS})
-
-install (TARGETS we-dev
-  LIBRARY DESTINATION lib
-  COMPONENT runtime
-)
-
 add_library (pnet
   we/container/priostore.cpp
   we/exception.cpp
@@ -164,82 +135,6 @@ add_library (pnet
 
 target_link_libraries (pnet fhg-util)
 
-install (FILES
-  we/expr/eval/context.hpp
-  DESTINATION include/we/expr/eval
-  COMPONENT sdk
-)
-install (FILES
-  we/expr/token/type.hpp
-  DESTINATION include/we/expr/token
-  COMPONENT sdk
-)
-install (FILES
-  we/loader/IModule.hpp
-  we/loader/api-guard.hpp
-  we/loader/macros.hpp
-  DESTINATION include/we/loader
-  COMPONENT sdk
-)
-install (FILES
-  we/type/bitsetofint.hpp
-  we/type/bytearray.hpp
-  we/type/value.hpp
-  we/type/signature.hpp
-  DESTINATION include/we/type
-  COMPONENT sdk
-)
-install (FILES
-  we/type/value/poke.hpp
-  we/type/value/read.hpp
-  we/type/value/show.hpp
-  we/type/value/to_value.hpp
-  we/type/value/wrap.hpp
-  we/type/value/unwrap.hpp
-  DESTINATION include/we/type/value
-  COMPONENT sdk
-)
-install (FILES
-  we/type/value/path/append.hpp
-  DESTINATION include/we/type/value/path
-  COMPONENT sdk
-)
-install (FILES
-  we/field.hpp
-  we/signature_of.hpp
-  we/exception.hpp
-  DESTINATION include/we/
-  COMPONENT sdk
-)
-install (FILES
-  we/type/literal/control.hpp
-  DESTINATION include/we/type/literal
-  COMPONENT sdk
-)
-
-add_library (wfhd SHARED we/util/wfhd.c)
-
-install (TARGETS wfhd
-  LIBRARY DESTINATION lib
-  COMPONENT runtime
-  )
-install (FILES
-  we/util/wfhd.h
-  DESTINATION include/we/util
-  COMPONENT runtime-headers
-)
-
-add_executable (generate_parser_action_table we/expr/parse/table.cpp)
-target_link_libraries (generate_parser_action_table pnet)
-
-if (BUILD_TESTING)
-  add_executable (test_we_type_bytearray we/type/test/test_bytearray.cpp)
-  target_link_libraries(test_we_type_bytearray pnet)
-  target_link_libraries(test_we_type_bytearray ${Boost_UNIT_TEST_LIBRARIES})
-  target_link_libraries(test_we_type_bytearray ${Boost_LIBRARIES})
-  add_test ("test_we_type_bytearray" test_we_type_bytearray)
-endif (BUILD_TESTING)
-
 add_executable(pnetc xml/parse/pnetc.cpp)
 target_link_libraries(pnetc fhg-revision)
 target_link_libraries(pnetc pnet)
@@ -258,60 +153,12 @@ if (ENABLE_STATIC_BINARIES)
   install (TARGETS pnetc.static RUNTIME DESTINATION bin COMPONENT runtime)
 endif (ENABLE_STATIC_BINARIES)
 
-fhg_add_test (we/type/test/value.cpp
-  PROJECT test_we_type
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (we/type/test/signature.cpp
-  PROJECT test_we_type
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (we/test/require_type.cpp
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (we/test/signature_of.cpp
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (we/test/exception.cpp
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (we/test/expr_type_calculate.cpp
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-add_executable (mk_cpp we/type/test/mk_cpp.cpp)
-target_link_libraries (mk_cpp pnet ${Boost_LIBRARIES})
-
-add_custom_command (
-  OUTPUT sig_struct.hpp sig_op.hpp sig_op.cpp
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mk_cpp -H sig_struct.hpp -O sig_op.hpp -I sig_op.cpp
-  DEPENDS mk_cpp
-)
-
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
-add_library (sig_op ${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp)
-
-fhg_add_test (we/type/test/sig.cpp
-  PROJECT test_we
-  LINK_LIBRARIES sig_op pnet
-)
-
 if (BUILD_TESTING)
   add_subdirectory (tests)
   add_subdirectory (xml/tests)
-  add_subdirectory (we/container/test)
-  add_subdirectory (we/util/test)
 endif()
 
 add_subdirectory (apps)
 
 add_subdirectory(pnetv)
+add_subdirectory (we)
