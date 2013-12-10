@@ -149,6 +149,7 @@ if (ENABLE_PNET_EDITOR)
                           ${FhgLog_LIBRARY}
                           ${UTIL_LIBRARIES}
                           ${Boost_FILESYSTEM_LIBRARY}
+                          ${Boost_PROGRAM_OPTIONS_LIBRARY}
                           ${Boost_LIBRARIES}
                           ${QT_LIBRARIES}
                           fhg-plugin)

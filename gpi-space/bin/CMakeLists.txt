@@ -29,9 +29,10 @@ target_link_libraries (gpish
   gpi-space-static
   ${LibReadline_LIBRARY}
   ${FhgLog_LIBRARY}
+  ${gpi_space_Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${gpi_space_boost_libs}
   ${CMAKE_THREAD_LIBS_INIT}
   fhg-revision
-  ${gpi_space_boost_libs}
 )
 
 set_target_properties(gpi-space

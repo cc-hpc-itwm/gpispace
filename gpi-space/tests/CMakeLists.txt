@@ -58,6 +58,7 @@ fhg_add_test (test_program_opts.cpp
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_UNIT_TEST_LIBRARIES}
+                 ${gpi_space_Boost_PROGRAM_OPTIONS_LIBRARY}
                  ${gpi_space_boost_libs}
                  ${CMAKE_THREAD_LIBS_INIT}
                  fhg-util
