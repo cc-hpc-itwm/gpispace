@@ -829,11 +829,11 @@ namespace we { namespace mgmt {
           throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (*desc));
         }
 
-        if (sig_finished.connected())
-          sig_finished ( this
-                       , desc->id()
-                       , desc->activity().to_string()
-                       );
+        sig_finished ( this
+                     , desc->id()
+                     , desc->activity().to_string()
+                     );
+
         remove_activity (desc);
       }
 
@@ -880,11 +880,10 @@ namespace we { namespace mgmt {
                 << desc->error_message ()
                 );
 
-          if (sig_failed.connected())
-            sig_failed ( this
-                       , internal_id
-                       , desc->activity().to_string()
-                       );
+          sig_failed ( this
+                     , internal_id
+                     , desc->activity().to_string()
+                     );
 
           if (desc->has_parent ())
           {
@@ -965,11 +964,10 @@ namespace we { namespace mgmt {
             throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (*desc));
           }
 
-          if (sig_canceled.connected())
-            sig_canceled ( this
-                          , internal_id
-                          , desc->activity().to_string()
-                          );
+          sig_canceled ( this
+                       , internal_id
+                       , desc->activity().to_string()
+                       );
 
           remove_activity (desc);
         }
