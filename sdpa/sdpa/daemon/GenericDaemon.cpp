@@ -384,7 +384,7 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
   {
     DMLOG (WARN, "job " << job_id << " could not be added: " << ex.what());
     // the worker should register first, before posting a job request
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EUNKNOWN, ex.what()) );
+    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBNOTADDED, ex.what()) );
     sendEventToMaster(pErrorEvt);
     return;
   }
