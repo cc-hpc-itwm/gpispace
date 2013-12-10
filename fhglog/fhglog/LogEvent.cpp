@@ -232,7 +232,7 @@ namespace
         return os;
       }
     private:
-      fhg::log::LogEvent::tstamp_type _t;
+      fhg::log::LogEvent::tstamp_type const& _t;
     };
     std::ostream& operator<< (std::ostream& os, tstamp const& t)
     {
