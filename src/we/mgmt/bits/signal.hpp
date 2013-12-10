@@ -3,10 +3,10 @@
 #ifndef WE_MGMT_BITS_SIGNAL_HPP
 #define WE_MGMT_BITS_SIGNAL_HPP 1
 
-#include <vector>
-#include <ostream>
-#include <iostream>
 #include <boost/function.hpp>
+
+#include <iostream>
+#include <vector>
 
 namespace we
 {
