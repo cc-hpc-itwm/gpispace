@@ -5,7 +5,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(tests
     activity.cpp
-    adjacency.cpp
     bitset.cpp
     bitsetofint.cpp
     execute_activity.cpp
