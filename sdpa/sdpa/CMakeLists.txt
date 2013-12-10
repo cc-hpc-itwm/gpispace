@@ -16,6 +16,6 @@ set (srcs
 )
 
 ADD_LIBRARY(sdpa ${hdrs} ${srcs})
-target_link_libraries (sdpa ${Boost_SERIALIZATION_LIBRARY})
+target_link_libraries (sdpa ${Boost_SERIALIZATION_LIBRARY} ${Boost_DATE_TIME_LIBRARY})
 
 add_subdirectory (com)
