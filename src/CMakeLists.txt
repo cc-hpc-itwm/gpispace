@@ -320,6 +320,4 @@ endif()
 
 add_subdirectory (apps)
 
-if (ENABLE_PNETV)
-  add_subdirectory(pnetv)
-endif ()
+add_subdirectory(pnetv)
