@@ -6,12 +6,10 @@ fhg_add_test(test_file_storage.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-plugin ${Boost_FILESYSTEM_LIBRARY} ${Boost_SERIALIZATION_LIBRARY}
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary
-  DESCRIPTION "Tests the file-storage backend"
 )
 fhg_add_test(test_null_storage.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-plugin ${Boost_SERIALIZATION_LIBRARY}
-  DESCRIPTION "Tests the null-storage backend"
 )
 
 get_target_property(HELLO_PLUGIN_LOCATION hello-plugin LOCATION)
@@ -20,7 +18,6 @@ fhg_add_test(test_kernel.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-plugin ${Boost_FILESYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
   ARGS ${BUILTIN_PLUGINS_PATH}
-  DESCRIPTION "Tests the plugin kernel"
 )
 
 fhg_add_plugin(test-good-magic good-magic.cpp)
