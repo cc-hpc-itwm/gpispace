@@ -135,13 +135,6 @@ add_library (pnet
 
 target_link_libraries (pnet fhg-util)
 
-add_executable(pnetc xml/parse/pnetc.cpp)
-target_link_libraries(pnetc fhg-revision)
-target_link_libraries(pnetc pnet)
-target_link_libraries(pnetc ${Boost_FILESYSTEM_LIBRARY} ${Boost_LIBRARIES})
-
-install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
-
 add_subdirectory (tests)
 add_subdirectory (xml/tests)
 

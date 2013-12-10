@@ -29,3 +29,10 @@ foreach (target ${simple_targets})
            COMPONENT runtime
           )
 endforeach (target ${simple_targets})
+
+add_executable(pnetc pnetc.cpp)
+target_link_libraries(pnetc fhg-revision)
+target_link_libraries(pnetc pnet)
+target_link_libraries(pnetc ${Boost_FILESYSTEM_LIBRARY} ${Boost_LIBRARIES})
+
+install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
