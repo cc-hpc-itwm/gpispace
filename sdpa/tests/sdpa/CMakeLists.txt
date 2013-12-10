@@ -39,8 +39,6 @@ include(pnet_macros)
 
 get_target_property(PNETPUT_LOCATION pnetput LOCATION)
 
-message (STATUS "${PNETPUT_LOCATION}")
-
 ###########################################################################################
 pnet_compile(capabilities-test-wf ${CMAKE_SOURCE_DIR}/application/example/capabilities/capabilities.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
