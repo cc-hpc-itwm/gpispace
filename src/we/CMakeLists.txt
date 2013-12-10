@@ -121,37 +121,6 @@ fhg_add_test (type/test/bitsetofint.cpp
   LINK_LIBRARIES pnet
 )
 
-fhg_add_test (test/require_type.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/signature_of.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/exception.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/expr_type_calculate.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/expr_parser.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-                 ${LibReadline_LIBRARY}
-)
-
 fhg_add_test (expr/parse/test/get_names.cpp
   PROJECT test_we_expr_parse
   LINK_LIBRARIES pnet
@@ -165,12 +134,6 @@ fhg_add_test (expr/parse/test/simplify.cpp
 
 fhg_add_test (expr/test/rename.cpp
   PROJECT test_we_expr
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/context.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
   LINK_LIBRARIES pnet
 )
 
@@ -209,33 +172,6 @@ add_library (question SHARED loader/test/question.cpp)
 target_link_libraries (question answer)
 target_link_libraries (answer pnet)
 
-fhg_add_test (test/activity.cpp
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/execute_activity.cpp
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/layer_atomics.cpp
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-                 ${FhgLog_LIBRARY}
-)
-
-fhg_add_test (test/layer_cancel.cpp
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-                 ${FhgLog_LIBRARY}
-)
-
-fhg_add_test (test/port.cpp
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
 fhg_add_test (type/test/property.cpp
   BOOST_UNIT_TEST
   PROJECT test_we_type
@@ -269,3 +205,5 @@ if (BUILD_TESTING)
   add_subdirectory (container/test)
   add_subdirectory (util/test)
 endif()
+
+add_subdirectory (test)
