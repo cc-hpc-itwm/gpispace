@@ -403,8 +403,6 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
   {
     // send back to the user a SubmitJobAckEvent
     SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
-
-    // There is a problem with this if uncommented
     sendEventToMaster(pSubmitJobAckEvt);
   }
 }
@@ -892,9 +890,6 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
       it->set_registered(true);
       bFound=true;
     }
-
-  // for all jobs that are in a terminal state and not yet acknowledged by the  master
-  // re-submit  them to the master, after registration
 
   if(!isTop())
     jobManager().resubmitResults(this);
