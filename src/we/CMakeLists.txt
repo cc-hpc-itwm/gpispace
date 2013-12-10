@@ -163,6 +163,11 @@ fhg_add_test (expr/parse/test/simplify.cpp
   LINK_LIBRARIES pnet
 )
 
+fhg_add_test (expr/test/rename.cpp
+  PROJECT test_we_expr
+  LINK_LIBRARIES pnet
+)
+
 add_executable (mk_cpp type/test/mk_cpp.cpp)
 target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
