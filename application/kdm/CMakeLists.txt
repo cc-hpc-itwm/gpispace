@@ -58,7 +58,7 @@ add_definitions(-DSHMEM -DDEBUGALLOC -DDEBUGCOMM  -DSHMEM)
 
 include_directories(${FVM_INCLUDE_DIR})
 
-include_directories(${CMAKE_SOURCE_DIR}/pnet/src)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
 include_directories(${UTIL_INCLUDE_DIR})
 
