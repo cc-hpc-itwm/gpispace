@@ -40,17 +40,6 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
         command_t ()
         {}
 
-        explicit
-        command_t(std::string const & n)
-          : name(n)
-	{}
-
-        command_t(std::string const & n, C c, D d)
-          : name(n)
-	  , cmd(c)
-	  , dat(d)
-	{}
-
 	template <typename H>
 	command_t(std::string const & n, C c, D d, H h)
           : name(n)
