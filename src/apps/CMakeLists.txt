@@ -1,3 +1,5 @@
+include (fhg_executable_macros)
+
 set (simple_targets
      we-exec
      we-eval
@@ -6,7 +8,6 @@ set (simple_targets
      pnet2dot
      pneti
      pnetsc
-     pnetlt
     )
 
 foreach (target ${simple_targets})
@@ -30,11 +31,20 @@ foreach (target ${simple_targets})
           )
 endforeach (target ${simple_targets})
 
-add_executable (pnetc pnetc.cpp)
-target_link_libraries (pnetc fhg-revision)
-target_link_libraries (pnetc pnet)
-target_link_libraries (pnetc ${Boost_FILESYSTEM_LIBRARY})
-target_link_libraries (pnetc ${Boost_PROGRAM_OPTIONS_LIBRARY})
-target_link_libraries (pnetc ${Boost_SERIALIZATION_LIBRARY})
+fhg_add_runtime_executable (
+  pnetlt.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+)
 
-install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
+fhg_add_runtime_executable (
+  pnetc.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+)
