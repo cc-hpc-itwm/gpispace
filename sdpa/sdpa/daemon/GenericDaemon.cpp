@@ -45,9 +45,8 @@ namespace
   };
 }
 
-using namespace std;
-using namespace sdpa::daemon;
-using namespace sdpa::events;
+namespace sdpa {
+  namespace daemon {
 
 //constructor
 GenericDaemon::GenericDaemon( const std::string name,
@@ -156,9 +155,9 @@ void GenericDaemon::shutdown( )
     if (!masterInfo.name().empty() && masterInfo.is_registered())
     {
       sendEventToMaster
-        ( ErrorEvent::Ptr ( new ErrorEvent ( name()
+        ( events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
                                            , masterInfo.name()
-                                           , ErrorEvent::SDPA_ENODE_SHUTDOWN
+                                           , events::ErrorEvent::SDPA_ENODE_SHUTDOWN
                                            , "node shutdown"
                                            )
                           )
@@ -189,7 +188,7 @@ void GenericDaemon::shutdown( )
 
 void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
 {
-  SDPAEvent* pSdpaEvt = dynamic_cast<SDPAEvent*>(pEvent.get());
+  events::SDPAEvent* pSdpaEvt = dynamic_cast<events::SDPAEvent*>(pEvent.get());
   assert (pSdpaEvt);
   pSdpaEvt->handleBy(this);
 }
@@ -236,7 +235,7 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
 
       BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
       {
-        SubmitJobEvent::Ptr pSubmitEvt(new SubmitJobEvent(name(),
+        events::SubmitJobEvent::Ptr pSubmitEvt(new events::SubmitJobEvent(name(),
                                                           worker_id,
                                                           ptrJob->id(),
                                                           ptrJob->description(),
@@ -257,9 +256,9 @@ bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
   return masterInfo.name() == name;
 }
 
-void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
+void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 {
-  const SubmitJobEvent& e (*evt);
+  const events::SubmitJobEvent& e (*evt);
 
   DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
 
@@ -274,9 +273,9 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
           <<". No job from this master will be accepted as long as no registration confirmation has been received!");
 
     //send job rejected error event back to the master
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name(),
+    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name(),
                                               e.from(),
-                                              ErrorEvent::SDPA_EPERM,
+                                              events::ErrorEvent::SDPA_EPERM,
                                               "Waiting for registration confirmation. No job submission is allowed!",
                                               e.job_id()) );
     sendEventToMaster(pErrorEvt);
@@ -295,7 +294,7 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     DMLOG (WARN, "The job with job-id: " << e.job_id()<<" does already exist! (possibly recovered)");
     if( e.from() != sdpa::daemon::WE ) //e.to())
     {
-        ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
+        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
         sendEventToMaster(pErrorEvt);
     }
 
@@ -317,7 +316,7 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
   catch(JobNotAddedException const &ex)
   {
     DMLOG (WARN, "job " << job_id << " could not be added: " << ex.what());
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), e.from(), ErrorEvent::SDPA_EJOBNOTADDED, ex.what()) );
+    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBNOTADDED, ex.what()) );
     sendEventToMaster(pErrorEvt);
     return;
   }
@@ -335,14 +334,14 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
 
   if( e.from() != sdpa::daemon::WE )
   {
-    SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
+    events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new events::SubmitJobAckEvent(name(), e.from(), job_id));
     sendEventToMaster(pSubmitJobAckEvt);
   }
 }
 
-void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent* evt)
+void GenericDaemon::handleWorkerRegistrationEvent (const events::WorkerRegistrationEvent* evt)
 {
-  const WorkerRegistrationEvent& evtRegWorker (*evt);
+  const events::WorkerRegistrationEvent& evtRegWorker (*evt);
 
   worker_id_t worker_id (evtRegWorker.from());
 
@@ -380,15 +379,15 @@ void GenericDaemon::handleWorkerRegistrationEvent (const WorkerRegistrationEvent
 
       // just answer back with an acknowledgment
       DMLOG (TRACE, "Send registration ack to the agent " << worker_id );
-      WorkerRegistrationAckEvent::Ptr const pWorkerRegAckEvt
-        (new WorkerRegistrationAckEvent ( name(), evtRegWorker.from()));
+      events::WorkerRegistrationAckEvent::Ptr const pWorkerRegAckEvt
+        (new events::WorkerRegistrationAckEvent ( name(), evtRegWorker.from()));
 
       sendEventToSlave(pWorkerRegAckEvt);
     }
   }
 }
 
-void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
+void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
 {
   const sdpa::events::ErrorEvent& error (*evt);
 
@@ -401,7 +400,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
   {
     // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
     // 'reason' should not be reused for important information
-    case ErrorEvent::SDPA_EJOBREJECTED:
+    case events::ErrorEvent::SDPA_EJOBREJECTED:
     {
       sdpa::job_id_t jobId(error.job_id());
       sdpa::worker_id_t worker_id(error.from());
@@ -410,7 +409,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
       scheduler()->rescheduleWorkerJob(worker_id, jobId);
       break;
     }
-    case ErrorEvent::SDPA_EWORKERNOTREG:
+    case events::ErrorEvent::SDPA_EWORKERNOTREG:
     {
       DMLOG (TRACE, "New instance of the master is up, sending new registration request!");
       // mark the agen as not-registered
@@ -439,8 +438,8 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
       removeMasters(listDeadMasters);
       break;
     }
-    case ErrorEvent::SDPA_ENODE_SHUTDOWN:
-    case ErrorEvent::SDPA_ENETWORKFAILURE:
+    case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
+    case events::ErrorEvent::SDPA_ENETWORKFAILURE:
     {
       if( isSubscriber(error.from()) )
         unsubscribe(error.from());
@@ -459,8 +458,8 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
           lock_type lock(mtx_master_);
           BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
           {
-            sdpa::events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
-                                  new sdpa::events::CapabilitiesLostEvent( name(),
+            events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
+                                  new events::CapabilitiesLostEvent( name(),
                                                                            masterInfo.name(),
                                                                            ptrWorker->capabilities()
                                                                            ));
@@ -501,7 +500,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
       }
       break;
     }
-    case ErrorEvent::SDPA_EJOBEXISTS:
+    case events::ErrorEvent::SDPA_EJOBEXISTS:
     {
       DMLOG (TRACE, "The worker managed to recover the job "<<error.job_id()<<", it already has it!");
       // do the same as when receiving a SubmitJobAckEvent
@@ -530,7 +529,7 @@ void GenericDaemon::handleErrorEvent (const ErrorEvent* evt)
 
       break;
     }
-    case ErrorEvent::SDPA_EPERM:
+    case events::ErrorEvent::SDPA_EPERM:
     {
     	sdpa::job_id_t jobId(error.job_id());
     	sdpa::worker_id_t worker_id(error.from());
@@ -579,7 +578,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
   jobManager().addJobRequirements(job_id, jobReqs);
 
   // don't forget to set here the job's preferences
-  SubmitJobEvent::Ptr pEvtSubmitJob( new SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
+  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
   sendEventToSelf(pEvtSubmitJob);
 
   _.dont();
@@ -601,8 +600,8 @@ bool GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId, const we:
   // call job.CancelJob(event);
 
   job_id_t job_id(activityId);
-  CancelJobEvent::Ptr pEvtCancelJob
-          (new CancelJobEvent( sdpa::daemon::WE
+  events::CancelJobEvent::Ptr pEvtCancelJob
+          (new events::CancelJobEvent( sdpa::daemon::WE
                               , name()
                               , job_id
                               , reason )
@@ -627,7 +626,7 @@ bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const w
   // call job.JobFinished(event);
 
   job_id_t job_id(workflowId);
-  JobFinishedEvent::Ptr pEvtJobFinished( new JobFinishedEvent( sdpa::daemon::WE, name(), job_id, result ));
+  events::JobFinishedEvent::Ptr pEvtJobFinished( new events::JobFinishedEvent( sdpa::daemon::WE, name(), job_id, result ));
   sendEventToSelf(pEvtJobFinished);
 
   // notify the GUI that the activity finished
@@ -654,8 +653,8 @@ bool GenericDaemon::failed( const we::mgmt::layer::id_type& workflowId
 
   job_id_t job_id(workflowId);
 
-  JobFailedEvent::Ptr pEvtJobFailed
-    (new JobFailedEvent ( sdpa::daemon::WE
+  events::JobFailedEvent::Ptr pEvtJobFailed
+    (new events::JobFailedEvent ( sdpa::daemon::WE
                         , name()
                         , job_id
                         , result
@@ -680,7 +679,7 @@ bool GenericDaemon::canceled(const we::mgmt::layer::id_type& workflowId)
 
   job_id_t job_id(workflowId);
 
-  CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent(sdpa::daemon::WE, name(), job_id ));
+  events::CancelJobAckEvent::Ptr pEvtCancelJobAck( new events::CancelJobAckEvent(sdpa::daemon::WE, name(), job_id ));
   sendEventToSelf(pEvtCancelJobAck);
 
   return true;
@@ -697,7 +696,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 
   on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToSelf
                                 , this
-                                , JobFailedEvent::Ptr ( new JobFailedEvent ( sdpa::daemon::WE
+                                , events::JobFailedEvent::Ptr ( new events::JobFailedEvent ( sdpa::daemon::WE
                                                                            , name()
                                                                            , jobId
                                                                            , "exception"
@@ -719,8 +718,8 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
     {
         SDPA_LOG_ERROR("Empty Workflow!");
         // declare job as failed
-        JobFailedEvent::Ptr pEvtJobFailed
-              (new JobFailedEvent( sdpa::daemon::WE
+        events::JobFailedEvent::Ptr pEvtJobFailed
+              (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
                                  , jobId
                                  , ""
@@ -758,8 +757,8 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
     SDPA_LOG_ERROR("No workflow engine is available!");
     sdpa::job_result_t result(ex.what());
 
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent( sdpa::daemon::WE
+    events::JobFailedEvent::Ptr pEvtJobFailed
+      (new events::JobFailedEvent( sdpa::daemon::WE
                          , name()
                          , jobId
                          , result
@@ -774,8 +773,8 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
     SDPA_LOG_ERROR("Couldn't find the job "<<ex.job_id());
     sdpa::job_result_t result(ex.what());
 
-    JobFailedEvent::Ptr pEvtJobFailed
-      (new JobFailedEvent( sdpa::daemon::WE
+    events::JobFailedEvent::Ptr pEvtJobFailed
+      (new events::JobFailedEvent( sdpa::daemon::WE
                          , name()
                          , jobId
                          , result
@@ -791,8 +790,8 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
      SDPA_LOG_ERROR("Exception occurred. Failed to submit the job "<<jobId<<" to the workflow engine!");
      sdpa::job_result_t result(ex.what());
 
-     JobFailedEvent::Ptr pEvtJobFailed
-       (new JobFailedEvent( sdpa::daemon::WE
+     events::JobFailedEvent::Ptr pEvtJobFailed
+       (new events::JobFailedEvent( sdpa::daemon::WE
                           , name()
                           , jobId
                           , result
@@ -828,7 +827,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
     jobManager().resubmitResults(this);
 }
 
-void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
+void GenericDaemon::registerWorker(const events::WorkerRegistrationEvent& evtRegWorker)
 {
   worker_id_t worker_id (evtRegWorker.from());
 
@@ -853,7 +852,7 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
 
   // send back an acknowledgment
   DMLOG (TRACE, "Send back to the worker " << worker_id << " a registration acknowledgment!" );
-  WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new WorkerRegistrationAckEvent(name(), worker_id));
+  events::WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new events::WorkerRegistrationAckEvent(name(), worker_id));
 
   sendEventToSlave(pWorkerRegAckEvt);
 
@@ -864,13 +863,13 @@ void GenericDaemon::registerWorker(const WorkerRegistrationEvent& evtRegWorker)
     for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
       if (it->is_registered() && it->name() != worker_id  )
       {
-        CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new CapabilitiesGainedEvent(name(), it->name(), workerCpbSet));
+        events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new events::CapabilitiesGainedEvent(name(), it->name(), workerCpbSet));
         sendEventToMaster(shpCpbGainEvt);
       }
   }
 }
 
-void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent* pCpbGainEvt)
+void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGainedEvent* pCpbGainEvt)
 {
 	// tell the scheduler to add the capabilities of the worker pCpbGainEvt->from
   sdpa::worker_id_t worker_id = pCpbGainEvt->from();
@@ -912,7 +911,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
           for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
             if( it->is_registered() && it->name() != worker_id  )
             {
-              CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new CapabilitiesGainedEvent(name(), it->name(), newWorkerCpbSet));
+                events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new events::CapabilitiesGainedEvent(name(), it->name(), newWorkerCpbSet));
               sendEventToMaster(shpCpbGainEvt);
             }
         }
@@ -925,7 +924,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
   }
 }
 
-void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent* pCpbLostEvt)
+void GenericDaemon::handleCapabilitiesLostEvent(const events::CapabilitiesLostEvent* pCpbLostEvt)
 {
   DMLOG(TRACE, "Received CapabilitiesLostEvent!");
   // tell the scheduler to remove the capabilities of the worker pCpbLostEvt->from
@@ -940,7 +939,7 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
     for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
       if (it->is_registered() && it->name() != worker_id )
       {
-        CapabilitiesLostEvent::Ptr shpCpbLostEvt(new CapabilitiesLostEvent(name(), it->name(), pCpbLostEvt->capabilities()));
+        events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(new events::CapabilitiesLostEvent(name(), it->name(), pCpbLostEvt->capabilities()));
         sendEventToMaster(shpCpbLostEvt);
       }
   }
@@ -950,25 +949,25 @@ void GenericDaemon::handleCapabilitiesLostEvent(const sdpa::events::Capabilities
   }
 }
 
-void GenericDaemon::handleSubscribeEvent( const sdpa::events::SubscribeEvent* pEvt )
+void GenericDaemon::handleSubscribeEvent( const events::SubscribeEvent* pEvt )
 {
   DMLOG(TRACE, "Received subscribe event!");
   subscribe(pEvt->subscriber(), pEvt->listJobIds());
 }
 
-void GenericDaemon::sendEventToSelf(const SDPAEvent::Ptr& pEvt)
+void GenericDaemon::sendEventToSelf(const events::SDPAEvent::Ptr& pEvt)
 {
   ptr_daemon_stage_.lock()->send(pEvt);
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
-void GenericDaemon::sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
+void GenericDaemon::sendEventToMaster(const events::SDPAEvent::Ptr& pEvt)
 {
   to_master_stage()->send(pEvt);
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
-void GenericDaemon::sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
+void GenericDaemon::sendEventToSlave(const events::SDPAEvent::Ptr& pEvt)
 {
   to_slave_stage()->send(pEvt);
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
@@ -1003,7 +1002,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 
     //std::cout<<cpbSet;
 
-    WorkerRegistrationEvent::Ptr pEvtWorkerReg(new WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet,  rank(), agent_uuid()));
+    events::WorkerRegistrationEvent::Ptr pEvtWorkerReg(new events::WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet,  rank(), agent_uuid()));
     sendEventToMaster(pEvtWorkerReg);
   }
 }
@@ -1070,9 +1069,9 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
     {
         std::ostringstream oss("Could not subscribe for the job");
         oss<<jobId<<". The job does not exist!";
-        ErrorEvent::Ptr pErrorEvt(new ErrorEvent( name(),
+        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name(),
                                                   subscriber,
-                                                  ErrorEvent::SDPA_EJOBNOTFOUND,
+                                                  events::ErrorEvent::SDPA_EJOBNOTFOUND,
                                                   oss.str()));
         sendEventToMaster(pErrorEvt);
         return;
@@ -1108,8 +1107,8 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
       {
         case sdpa::status::FINISHED:
         {
-          JobFinishedEvent::Ptr pEvtJobFinished
-            (new JobFinishedEvent( name()
+          events::JobFinishedEvent::Ptr pEvtJobFinished
+            (new events::JobFinishedEvent( name()
                                  , subscriber
                                  , pJob->id()
                                  , pJob->result()
@@ -1120,8 +1119,8 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 
         case sdpa::status::FAILED:
         {
-          JobFailedEvent::Ptr pEvtJobFailed
-            (new JobFailedEvent( name()
+          events::JobFailedEvent::Ptr pEvtJobFailed
+            (new events::JobFailedEvent( name()
                                , subscriber
                                , pJob->id()
                                , pJob->result()
@@ -1135,7 +1134,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 
         case sdpa::status::CANCELED:
         {
-          CancelJobAckEvent::Ptr pEvtCancelJobAck( new CancelJobAckEvent( name(), subscriber, pJob->id() ));
+          events::CancelJobAckEvent::Ptr pEvtCancelJobAck( new events::CancelJobAckEvent( name(), subscriber, pJob->id() ));
           sendEventToMaster(pEvtCancelJobAck);
         }
         break;
@@ -1157,9 +1156,9 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
       strErr+=" could not be found!";
 
       DMLOG (ERROR, strErr);
-      sendEventToMaster( ErrorEvent::Ptr( new ErrorEvent( name()
+      sendEventToMaster( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , subscriber
-                                                          , ErrorEvent::SDPA_EJOBNOTFOUND
+                                                          , events::ErrorEvent::SDPA_EJOBNOTFOUND
                                                           , strErr
                                                           )
       ));
@@ -1184,7 +1183,7 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
  *           an error message
  * Postcondition: is either into the Running state or inexistent
  */
-void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
+void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEvent)
 {
   assert (pEvent);
 
@@ -1211,7 +1210,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
               );
 
         // the worker should register first, before posting a job request
-        ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
+        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
         sendEventToSlave(pErrorEvt);
       }
       catch(std::exception const &ex2)
@@ -1222,7 +1221,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
                         << ex2.what()
                         );
 
-        ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()) );
+        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, ex2.what()) );
         sendEventToMaster(pErrorEvt);
       }
   }
@@ -1234,17 +1233,17 @@ void GenericDaemon::handleSubmitJobAckEvent(const SubmitJobAckEvent* pEvent)
                         << " not found!"
                         );
 
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, "Could not acknowledge job") );
+    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTFOUND, "Could not acknowledge job") );
     sendEventToMaster(pErrorEvt);
   }
 }
 
 // respond to a worker that the JobFinishedEvent was received
-void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
+void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent* pEvt)
 {
   // The result was successfully delivered by the worker and the WE was notified
   // therefore, I can delete the job from the job map
-  ostringstream os;
+  std::ostringstream os;
   Worker::worker_id_t worker_id = pEvt->from();
   DMLOG (TRACE, "Got acknowledgment for the finished job " << pEvt->job_id() << "!");
 
@@ -1259,7 +1258,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
     {
       SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
 
-      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
       sendEventToMaster(pErrorEvt);
     }
     catch(std::exception const &ex2)
@@ -1270,7 +1269,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
                       << ex2.what()
                      );
 
-      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
       sendEventToMaster(pErrorEvt);
     }
   }
@@ -1278,15 +1277,15 @@ void GenericDaemon::handleJobFinishedAckEvent(const JobFinishedAckEvent* pEvt)
   {
      SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
-     ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
+     events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
      sendEventToMaster(pErrorEvt);
   }
 }
 
 // respond to a worker that the JobFailedEvent was received
-void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
+void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEvt )
 {
-  ostringstream os;
+  std::ostringstream os;
   Worker::worker_id_t worker_id = pEvt->from();
 
   if(jobManager().findJob(pEvt->job_id()))
@@ -1299,7 +1298,7 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
     {
       SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
 
-      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
       sendEventToMaster(pErrorEvt);
     }
     catch(std::exception const &ex2)
@@ -1310,7 +1309,7 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
                       << ex2.what()
                      );
 
-      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
       sendEventToMaster(pErrorEvt);
     }
   }
@@ -1318,20 +1317,20 @@ void GenericDaemon::handleJobFailedAckEvent(const JobFailedAckEvent* pEvt )
   {
     SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), worker_id, ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
+    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
     sendEventToMaster(pErrorEvt);
   }
 }
 
-void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
+void GenericDaemon::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* pEvt )
 {
   sdpa::job_id_t jobId = pEvt->job_id();
 
   Job* pJob (jobManager().findJob(jobId));
   if(pJob)
   {
-      sdpa::events::JobStatusReplyEvent::Ptr const pStatReply
-        (new sdpa::events::JobStatusReplyEvent ( pEvt->to()
+      events::JobStatusReplyEvent::Ptr const pStatReply
+        (new events::JobStatusReplyEvent ( pEvt->to()
                                                , pEvt->from()
                                                , pJob->id()
                                                , pJob->getStatus()
@@ -1346,12 +1345,12 @@ void GenericDaemon::handleQueryJobStatusEvent(const QueryJobStatusEvent* pEvt )
   {
       SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
-      ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
       sendEventToMaster(pErrorEvt);
   }
 }
 
-void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent* pEvt )
+void GenericDaemon::handleRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt )
 {
   Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
@@ -1362,17 +1361,17 @@ void GenericDaemon::handleRetrieveJobResultsEvent(const RetrieveJobResultsEvent*
   {
     SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
-    ErrorEvent::Ptr pErrorEvt(new ErrorEvent(name(), pEvt->from(), ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
+    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
     sendEventToMaster(pErrorEvt);
   }
 }
 
-void GenericDaemon::handleJobStalledEvent (const sdpa::events::JobStalledEvent *pEvt)
+void GenericDaemon::handleJobStalledEvent (const events::JobStalledEvent *pEvt)
 {
   pause(pEvt->job_id());
 }
 
-void GenericDaemon::handleJobRunningEvent (const sdpa::events::JobRunningEvent *pEvt)
+void GenericDaemon::handleJobRunningEvent (const events::JobRunningEvent *pEvt)
 {
   resume(pEvt->job_id());
 }
@@ -1386,3 +1385,5 @@ bool GenericDaemon::noChildJobRunning(const sdpa::job_id_t& jobId) const
 {
   return jobManager().noChildJobRunning(jobId);
 }
+
+}}
