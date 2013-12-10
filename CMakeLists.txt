@@ -144,6 +144,10 @@ if (NOT BOOST_ROOT)
   set (BOOST_ROOT $ENV{BOOST_ROOT})
 endif()
 
+if (BOOST_ROOT)
+  set (Boost_NO_SYSTEM_PATHS ON)
+endif()
+
 find_package (Boost 1.47 REQUIRED QUIET COMPONENTS
   thread system filesystem serialization program_options
   regex signals date_time test_exec_monitor unit_test_framework)
