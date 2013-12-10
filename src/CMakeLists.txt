@@ -217,20 +217,14 @@ install (FILES
   COMPONENT sdk
 )
 
-set (wfhd_srcs
-  we/util/wfhd.c
-)
-set (wfhd_hdrs
-  we/util/wfhd.h
-)
-
-add_library (wfhd SHARED ${wfhd_srcs})
+add_library (wfhd SHARED we/util/wfhd.c)
 set_target_properties (wfhd PROPERTIES VERSION 1)
 install (TARGETS wfhd
   LIBRARY DESTINATION lib
   COMPONENT runtime
   )
-install (FILES ${wfhd_hdrs}
+install (FILES
+  we/util/wfhd.h
   DESTINATION include/we/util
   COMPONENT runtime-headers
 )
