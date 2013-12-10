@@ -401,7 +401,6 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
 
   if( e.from() != sdpa::daemon::WE )
   {
-    // send back to the user a SubmitJobAckEvent
     SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new SubmitJobAckEvent(name(), e.from(), job_id));
     sendEventToMaster(pSubmitJobAckEvt);
   }
