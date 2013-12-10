@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 set (simple_targets
      we-exec
      we-eval
