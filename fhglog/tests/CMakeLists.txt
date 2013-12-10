@@ -34,6 +34,7 @@ if (ENABLE_REMOTE_LOGGING)
 endif (ENABLE_REMOTE_LOGGING)
 
 fhg_add_test (dump_event dump_event.cpp
+  BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog
 )
