@@ -1187,6 +1187,15 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
           sendEventToMaster(pEvtCancelJobAck);
         }
         break;
+
+        case sdpa::status::PENDING:
+        case sdpa::status::RUNNING:
+        case sdpa::status::STALLED:
+        case sdpa::status::CANCELING:
+          // send nothing to the master if the job is not completed
+          break;
+        default:
+           throw std::runtime_error("The job "+jobId.str()+" has an invalid/unknown state");
       }
     }
     else
