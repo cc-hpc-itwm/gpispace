@@ -4,7 +4,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include <we/mgmt/bits/signal.hpp>
-#include <iostream>
 
 static int counter = 0;
 static std::string text;
@@ -13,14 +12,11 @@ namespace
 {
   void count (void)
   {
-    std::cerr << "counting" << std::endl;
-
     counter ++;
   }
 
   void m (int id, const std::string & s)
   {
-    std::cerr << "got signal: " << id << ": " << s << std::endl;
     text += s;
   }
 }
