@@ -105,31 +105,37 @@ fhg_add_test (type/test/test_bytearray.cpp
 )
 
 fhg_add_test (type/test/value.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we_type
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (type/test/signature.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we_type
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (test/require_type.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (test/signature_of.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (test/exception.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (test/expr_type_calculate.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES pnet
 )
@@ -147,6 +153,7 @@ include_directories (${CMAKE_CURRENT_BINARY_DIR})
 add_library (sig_op ${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp)
 
 fhg_add_test (type/test/sig.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES sig_op pnet
 )
