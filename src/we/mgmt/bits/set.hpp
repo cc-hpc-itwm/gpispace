@@ -53,12 +53,6 @@ namespace we {
           container_.erase (i);
 	}
 
-        inline
-        size_type size (void) const
-        {
-          return container_.size();
-        }
-
         void erase (const value_type & item)
         {
 	  boost::mutex::scoped_lock lock( mutex_ );
