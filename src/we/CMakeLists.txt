@@ -115,14 +115,7 @@ fhg_add_test (expr/test/rename.cpp
   LINK_LIBRARIES pnet
 )
 
-fhg_add_test (mgmt/bits/test/queue.cpp
-  PROJECT test_we_mgmt_bits
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
-)
-
-fhg_add_test (mgmt/bits/test/signal.cpp
-  PROJECT test_we_mgmt_bits
-)
+add_subdirectory (mgmt/bits/test)
 
 fhg_add_test (loader/test/loader.cpp
   PROJECT test_we_loader
