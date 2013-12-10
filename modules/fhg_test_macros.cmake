@@ -11,10 +11,6 @@ macro(FHG_ADD_TEST)
   CDR(TEST_ADDITIONAL_SOURCES ${TEST_DEFAULT_ARGS})
 
   if (BUILD_TESTING)
-    if (NOT TEST_PROJECT)
-      set(TEST_PROJECT "${PROJECT_NAME}")
-    endif()
-
     if (NOT TEST_STANDALONE)
       set(TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} ${Boost_UNIT_TEST_LIBRARIES})
     endif()
@@ -22,8 +18,13 @@ macro(FHG_ADD_TEST)
       set(TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} ${Boost_UNIT_TEST_LIBRARIES})
     endif()
 
+    set (TEST_PREFIX "")
+    if (TEST_PROJECT)
+      set(TEST_PREFIX "${TEST_PROJECT}_")
+    endif()
+
     # get the filename without extension
-    string(REGEX REPLACE "(.*/)?(.*)\\.c.*" "${TEST_PROJECT}_\\2" tc_name ${TEST_SOURCE})
+    string(REGEX REPLACE "(.*/)?(.*)\\.c.*" "${TEST_PREFIX}\\2" tc_name ${TEST_SOURCE})
 
     if (TEST_VERBOSE)
       message (STATUS "adding test ${tc_name} ${TEST_ARGS} (${TEST_DESCRIPTION})")
