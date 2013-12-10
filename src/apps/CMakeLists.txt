@@ -7,7 +7,6 @@ set (simple_targets
      pnetput
      pnet2dot
      pneti
-     pnetsc
     )
 
 foreach (target ${simple_targets})
@@ -30,6 +29,15 @@ foreach (target ${simple_targets})
            COMPONENT runtime
           )
 endforeach (target ${simple_targets})
+
+fhg_add_runtime_executable (
+  pnetsc.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+)
 
 fhg_add_runtime_executable (
   pnetlt.cpp
