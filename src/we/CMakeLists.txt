@@ -88,16 +88,7 @@ add_subdirectory (util)
 add_executable (generate_parser_action_table expr/parse/table.cpp)
 target_link_libraries (generate_parser_action_table pnet)
 
-fhg_add_test (expr/parse/test/get_names.cpp
-  PROJECT test_we_expr_parse
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (expr/parse/test/simplify.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we_expr_parse
-  LINK_LIBRARIES pnet
-)
+add_subdirectory (expr/parse/test)
 
 add_subdirectory (expr/test)
 
