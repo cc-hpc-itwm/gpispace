@@ -19,9 +19,8 @@ namespace we
       {
       public:
         explicit
-        signal(const std::string & name = "sig_noname")
-          : name_(name)
-        { }
+        signal(const std::string&)
+        {}
 
 	template <typename C>
 	void connect(C f)
@@ -74,7 +73,6 @@ namespace we
 	}
 
       private:
-        const std::string name_;
 	std::vector<boost::function<F> > targets_;
       };
     }
