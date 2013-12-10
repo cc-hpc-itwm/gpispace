@@ -34,8 +34,6 @@ namespace we
           return ! targets_.empty();
         }
 
-        const std::string &name() const { return name_; }
-
 	void operator() ()
 	{
           typedef typename std::vector<boost::function<F> > funcs_t;
