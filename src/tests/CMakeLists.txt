@@ -4,12 +4,6 @@ include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(tests
-    execute_activity.cpp
-    layer_atomics.cpp
-    layer_cancel.cpp
-    port.cpp
-    property.cpp
-    trans.cpp
    )
 
 foreach (test ${tests})

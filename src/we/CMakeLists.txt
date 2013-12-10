@@ -214,6 +214,39 @@ fhg_add_test (test/activity.cpp
   LINK_LIBRARIES pnet
 )
 
+fhg_add_test (test/execute_activity.cpp
+  PROJECT test_we
+  LINK_LIBRARIES pnet
+)
+
+fhg_add_test (test/layer_atomics.cpp
+  PROJECT test_we
+  LINK_LIBRARIES pnet
+                 ${FhgLog_LIBRARY}
+)
+
+fhg_add_test (test/layer_cancel.cpp
+  PROJECT test_we
+  LINK_LIBRARIES pnet
+                 ${FhgLog_LIBRARY}
+)
+
+fhg_add_test (test/port.cpp
+  PROJECT test_we
+  LINK_LIBRARIES pnet
+)
+
+fhg_add_test (type/test/property.cpp
+  BOOST_UNIT_TEST
+  PROJECT test_we_type
+  LINK_LIBRARIES pnet
+)
+
+fhg_add_test (type/test/trans.cpp
+  PROJECT test_we_type
+  LINK_LIBRARIES pnet
+)
+
 add_executable (mk_cpp type/test/mk_cpp.cpp)
 target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
