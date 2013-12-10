@@ -168,7 +168,7 @@ fhg_add_test (expr/test/rename.cpp
   LINK_LIBRARIES pnet
 )
 
-fhg_adD_test (test/context.cpp
+fhg_add_test (test/context.cpp
   BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES pnet
