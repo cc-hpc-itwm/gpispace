@@ -27,5 +27,4 @@ fhg_add_test(test_plugin_version.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-plugin ${Boost_FILESYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}
   ARGS ${CMAKE_CURRENT_BINARY_DIR}
-  DESCRIPTION "Tests the plugin kernel"
 )
