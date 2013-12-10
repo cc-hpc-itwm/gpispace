@@ -112,13 +112,6 @@ namespace we
         const std::string name_;
 	std::vector<boost::function<F> > targets_;
       };
-
-      template <typename F>
-      inline std::ostream & operator << (std::ostream & os, const signal<F> & sig)
-      {
-        os << "SIG_" << sig.name();
-        return os;
-      }
     }
   }
 }
