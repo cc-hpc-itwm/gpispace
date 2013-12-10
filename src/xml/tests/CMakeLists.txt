@@ -35,3 +35,5 @@ fhg_add_test (diagnostics.cpp
   LINK_LIBRARIES pnet ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
   DESCRIPTION "check parser diagnostics"
 )
+
+add_subdirectory (bytearray)
