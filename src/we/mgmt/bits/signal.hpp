@@ -16,6 +16,9 @@ namespace we
       template <typename F = void (void)>
       class signal
       {
+      private:
+        typedef typename std::vector<boost::function<F> > funs_type;
+
       public:
 	template <typename C>
 	void connect(C f)
@@ -30,8 +33,7 @@ namespace we
 
 	void operator() ()
 	{
-          typedef typename std::vector<boost::function<F> > funcs_t;
-          for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
+          for (typename funs_type::iterator t = targets_.begin(); t != targets_.end(); ++t)
           {
             (*t)();
           }
@@ -40,8 +42,7 @@ namespace we
 	template <typename Arg1>
 	void operator() (Arg1 a1)
 	{
-          typedef typename std::vector<boost::function<F> > funcs_t;
-          for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
+          for (typename funs_type::iterator t = targets_.begin(); t != targets_.end(); ++t)
           {
             (*t)(a1);
           }
@@ -50,8 +51,7 @@ namespace we
 	template <typename Arg1, typename Arg2>
 	void operator() (Arg1 a1, Arg2 a2)
 	{
-          typedef typename std::vector<boost::function<F> > funcs_t;
-          for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
+          for (typename funs_type::iterator t = targets_.begin(); t != targets_.end(); ++t)
           {
             (*t)(a1, a2);
           }
@@ -60,8 +60,7 @@ namespace we
 	template <typename Arg1, typename Arg2, typename Arg3>
 	void operator() (Arg1 a1, Arg2 a2, Arg3 a3)
 	{
-          typedef typename std::vector<boost::function<F> > funcs_t;
-          for (typename funcs_t::iterator t = targets_.begin(); t != targets_.end(); ++t)
+          for (typename funs_type::iterator t = targets_.begin(); t != targets_.end(); ++t)
           {
             (*t)(a1, a2, a3);
           }
