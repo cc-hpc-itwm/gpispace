@@ -11,7 +11,6 @@
 #include <xml/parse/util/optional.hpp>
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/required.hpp>
-#include <xml/parse/util/show_node_type.hpp>
 #include <xml/parse/util/skip.hpp>
 #include <xml/parse/util/valid_name.hpp>
 #include <xml/parse/util/validprefix.hpp>
