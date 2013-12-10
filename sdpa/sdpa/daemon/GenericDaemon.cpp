@@ -905,7 +905,6 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const sdpa::events::Capabiliti
       {
         sdpa::capabilities_set_t newWorkerCpbSet;
         getWorkerCapabilities(worker_id, newWorkerCpbSet);
-        //getCapabilities(newWorkerCpbSet);
 
         if( !newWorkerCpbSet.empty() )
         {
