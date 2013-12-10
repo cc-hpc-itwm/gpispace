@@ -23,16 +23,10 @@ install (TARGETS mmgr.shared
   COMPONENT runtime
 )
 
-set (tests
-  heap
-  dtmmgr
-  fseg
-  ostab
-  smap
-  tmmgr
-  trie
-)
-
-foreach (test ${tests})
-  fhg_add_test (tests/${test}.c PROJECT test_mmgr LINK_LIBRARIES mmgr)
-endforeach()
+fhg_add_test (tests/dtmmgr.c PROJECT test_mmgr LINK_LIBRARIES mmgr)
+fhg_add_test (tests/fseg.c PROJECT test_mmgr LINK_LIBRARIES mmgr)
+fhg_add_test (tests/heap.c PROJECT test_mmgr LINK_LIBRARIES mmgr)
+fhg_add_test (tests/ostab.c PROJECT test_mmgr LINK_LIBRARIES mmgr)
+fhg_add_test (tests/smap.c PROJECT test_mmgr LINK_LIBRARIES mmgr)
+fhg_add_test (tests/tmmgr.c PROJECT test_mmgr LINK_LIBRARIES mmgr)
+fhg_add_test (tests/trie.c PROJECT test_mmgr LINK_LIBRARIES mmgr)
