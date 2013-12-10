@@ -8,13 +8,11 @@ fhg_add_test (alphanum.cpp
 fhg_add_test (test_xml_stream.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-util
-  DESCRIPTION "Tests the xml stream implementation"
 )
 
 fhg_add_test (test_remove_prefix.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-util
-  DESCRIPTION "Tests the remove_prefix implementation"
 )
 
 fhg_add_test (num.cpp
