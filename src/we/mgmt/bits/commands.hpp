@@ -31,25 +31,23 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
   , NET_CANCEL
   };
 
-  template <typename C, typename D>
+  template <typename D>
   struct command_t
   {
-	typedef command_t<C,D> this_type;
+	typedef command_t<D> this_type;
 	typedef boost::function<void (this_type const &)> handler_type;
 
         command_t ()
         {}
 
 	template <typename H>
-	command_t(std::string const & n, C c, D d, H h)
+	command_t(std::string const & n, D d, H h)
           : name(n)
-          , cmd(c)
 	  , dat(d)
 	  , handler(h)
 	{}
 
         std::string name;
-	C cmd;
 	D dat;
 
 	void handle()
@@ -62,15 +60,9 @@ namespace we { namespace mgmt { namespace detail { namespace commands {
   };
 
   template <typename D, typename H>
-  inline command_t<CMD_ID, D> make_cmd(std::string const &n, D d, H h)
+  inline command_t<D> make_cmd(std::string const &n, D d, H h)
   {
-        return command_t<CMD_ID,D>(n, GENERIC, d, h);
-  }
-
-  template <typename Stream, typename C, typename D>
-  inline Stream & operator << (Stream & s, const command_t<C, D> & c)
-  {
-	return s << "cmd[" << c.cmd << ", " << c.dat << "]";
+        return command_t<D>(n, d, h);
   }
 }}}}
 
