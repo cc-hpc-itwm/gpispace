@@ -10,8 +10,6 @@ set(tests
     layer_cancel.cpp
     port.cpp
     property.cpp
-    queue.cpp
-    signal.cpp
     trans.cpp
    )
 

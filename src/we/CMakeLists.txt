@@ -174,6 +174,15 @@ fhg_adD_test (test/context.cpp
   LINK_LIBRARIES pnet
 )
 
+fhg_add_test (mgmt/bits/test/queue.cpp
+  PROJECT test_we_mgmt_bits
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
+)
+
+fhg_add_test (mgmt/bits/test/signal.cpp
+  PROJECT test_we_mgmt_bits
+)
+
 add_executable (mk_cpp type/test/mk_cpp.cpp)
 target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
