@@ -10,12 +10,7 @@
 
   <net>
 
-    <place name="in" type="point">
-      <token>
-        <field name="x"><value>1.0</value></field>
-        <field name="y"><value>-2.0</value></field>
-      </token>
-    </place>
+    <place name="in" type="point"/>
     <place name="ba" type="bytearray"/>
     <place name="out" type="point"/>
 
