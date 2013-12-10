@@ -392,8 +392,9 @@ void GenericDaemon::handleSubmitJobEvent (const SubmitJobEvent* evt)
     DMLOG (TRACE, "got new job from " << e.from() << " = " << job_id);
     submitWorkflow(job_id);
   }
-  else
+  else {
     scheduler()->enqueueJob(job_id);
+  }
 
   if( e.from() != sdpa::daemon::WE )
   {
