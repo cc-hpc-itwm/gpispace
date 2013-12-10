@@ -218,7 +218,7 @@ install (FILES
 )
 
 add_library (wfhd SHARED we/util/wfhd.c)
-set_target_properties (wfhd PROPERTIES VERSION 1)
+
 install (TARGETS wfhd
   LIBRARY DESTINATION lib
   COMPONENT runtime
