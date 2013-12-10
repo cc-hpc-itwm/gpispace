@@ -78,19 +78,6 @@ namespace sdpa {
         GenericDaemon* m_pAgent;
       };
 
-      struct MSMDeleteJobEvent
-      {
-        MSMDeleteJobEvent(const events::DeleteJobEvent* pEvt, GenericDaemon* pAgent)
-        : m_pDelEvt(pEvt), m_pAgent(pAgent)
-        {}
-        events::SDPAEvent::address_t to() const { return m_pDelEvt->from();}
-        events::SDPAEvent::address_t from() const { return m_pDelEvt->to();}
-        GenericDaemon* ptrAgent() const { return m_pAgent; }
-      private:
-        const events::DeleteJobEvent* m_pDelEvt;
-        GenericDaemon* m_pAgent;
-      };
-
       struct MSMRetrieveJobResultsEvent
       {
         MSMRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt, GenericDaemon* pAgent)
@@ -113,7 +100,6 @@ namespace sdpa {
       virtual void action_reschedule_job(const MSMRescheduleEvent&) = 0;
       virtual void action_job_stalled(const MSMStalledEvent&) = 0;
       virtual void action_resume_job(const MSMResumeJobEvent&) = 0;
-      virtual void action_delete_job(const MSMDeleteJobEvent&) = 0;
       virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&) = 0;
 
       typedef JobFSM_ sm; // makes transition table cleaner
@@ -140,11 +126,9 @@ namespace sdpa {
         a_row<  Running,        MSMStalledEvent,        		Stalled,        &sm::action_job_stalled >,
         _irow<  Running,        MSMResumeJobEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
-        a_irow< Finished,       MSMDeleteJobEvent,                                      &sm::action_delete_job >,
         a_irow< Finished,   	MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Finished,       events::JobFinishedEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
-        a_irow< Failed,     	MSMDeleteJobEvent,                                      &sm::action_delete_job>,
         a_irow< Failed,     	MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Failed,         events::JobFailedEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
@@ -155,7 +139,6 @@ namespace sdpa {
         _irow<  Canceling,      MSMResumeJobEvent>,
         _irow<  Canceling,      MSMStalledEvent>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        a_irow< Canceled,       MSMDeleteJobEvent,                                      &sm::action_delete_job>,
         a_irow< Canceled,       MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Canceled,       events::CancelJobAckEvent>,
         _irow<  Canceled,       events::JobFinishedEvent>,
@@ -240,7 +223,6 @@ namespace sdpa {
       virtual void action_reschedule_job(const MSMRescheduleEvent&);
       virtual void action_job_stalled(const MSMStalledEvent&);
       virtual void action_resume_job(const MSMResumeJobEvent&);
-      virtual void action_delete_job(const MSMDeleteJobEvent&);
       virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&);
 
       //transitions
@@ -249,7 +231,6 @@ namespace sdpa {
       void JobFailed(const events::JobFailedEvent*);
       void JobFinished(const events::JobFinishedEvent*);
 
-      void DeleteJob(const events::DeleteJobEvent*, GenericDaemon*);
       void RetrieveJobResults(const events::RetrieveJobResultsEvent* pEvt, GenericDaemon*);
       void Reschedule(SchedulerBase*);
 

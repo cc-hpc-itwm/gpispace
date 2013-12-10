@@ -156,14 +156,6 @@ namespace sdpa {
       }
     }
 
-    void Job::action_delete_job(const MSMDeleteJobEvent& e)
-    {
-      events::DeleteJobAckEvent::Ptr pDelJobReply(new events::DeleteJobAckEvent( e.from()
-                                                                                             , e.to()
-                                                                                             , id()) );
-      e.ptrAgent()->sendEventToMaster(pDelJobReply);
-    }
-
     void Job::action_retrieve_job_results(const MSMRetrieveJobResultsEvent& e)
     {
       const events::JobResultsReplyEvent::Ptr pResReply(
@@ -197,12 +189,6 @@ namespace sdpa {
     {
       lock_type lock(mtx_);
       process_event(*pEvt);
-    }
-
-    void Job::DeleteJob(const events::DeleteJobEvent* pEvt, GenericDaemon* pAgent)
-    {
-      lock_type lock(mtx_);
-      process_event(MSMDeleteJobEvent(pEvt, pAgent));
     }
 
     void Job::RetrieveJobResults(const events::RetrieveJobResultsEvent* pEvt, GenericDaemon* pAgent)
