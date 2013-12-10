@@ -6,7 +6,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(tests
     activity.cpp
     execute_activity.cpp
-    expr_parser.cpp
     expr_rename.cpp
     expr_get_names.cpp
     expr_simplify.cpp

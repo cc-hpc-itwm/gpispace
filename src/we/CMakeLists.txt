@@ -145,6 +145,13 @@ fhg_add_test (test/expr_type_calculate.cpp
   LINK_LIBRARIES pnet
 )
 
+fhg_add_test (test/expr_parser.cpp
+  BOOST_UNIT_TEST
+  PROJECT test_we
+  LINK_LIBRARIES pnet
+                 ${LibReadline_LIBRARY}
+)
+
 add_executable (mk_cpp type/test/mk_cpp.cpp)
 target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
