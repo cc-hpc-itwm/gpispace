@@ -16,4 +16,4 @@ set (srcs
 add_library (sdpa-daemon ${srcs})
 
 target_link_libraries (sdpa-daemon
-  ${UTIL_LIBRARIES} ${ZLIB_LIBRARIES} pnet sdpa-com sdpa-daemon)
+  ${UTIL_LIBRARIES} ${ZLIB_LIBRARIES} pnet sdpa-com sdpa-daemon ${Boost_THREAD_LIBRARY})

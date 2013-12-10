@@ -1,18 +1,22 @@
 # -*- mode: cmake; -*-
 
 fhg_add_test(test_semaphore.cpp
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
   DESCRIPTION "Tests the semaphore implementation"
 )
 
 fhg_add_test(test_atomic.cpp
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
   DESCRIPTION "Tests the semaphore implementation"
 )
 
 fhg_add_test(test_event.cpp
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
   DESCRIPTION "Tests the thread event implementation"
 )
 
 fhg_add_test(test_queue.cpp
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
   DESCRIPTION "Tests the synchronized queue implementation"
 )
 

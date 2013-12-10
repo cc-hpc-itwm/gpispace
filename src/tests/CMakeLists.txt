@@ -31,6 +31,7 @@ foreach (test ${tests})
                    ${FhgLog_LIBRARY}
                    ${UTIL_LIBRARIES}
                    ${Boost_UNIT_TEST_LIBRARIES}
+                   ${Boost_THREAD_LIBRARY} # layer_atomics, layer_cancel, queue
                    ${Boost_LIBRARIES}
                    ${LibReadline_LIBRARY}
                    ${CMAKE_DL_LIBS}

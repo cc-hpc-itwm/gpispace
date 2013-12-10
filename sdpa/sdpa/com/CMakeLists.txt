@@ -9,4 +9,4 @@ set (srcs
   )
 
 ADD_LIBRARY(sdpa-com ${srcs} ${hdrs})
-target_link_libraries(sdpa-com ${FhgCom_LIBRARY})
+target_link_libraries(sdpa-com ${FhgCom_LIBRARY} ${Boost_THREAD_LIBRARY})

@@ -29,6 +29,7 @@ fhg_add_test (test_peer.cpp
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
                  ${Boost_LIBRARIES}
                  ${Boost_UNIT_TEST_LIBRARIES}
 )

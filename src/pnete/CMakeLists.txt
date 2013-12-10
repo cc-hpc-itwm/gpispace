@@ -150,6 +150,7 @@ if (ENABLE_PNET_EDITOR)
                           ${UTIL_LIBRARIES}
                           ${Boost_FILESYSTEM_LIBRARY}
                           ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                          ${Boost_THREAD_LIBRARY}
                           ${Boost_LIBRARIES}
                           ${QT_LIBRARIES}
                           fhg-plugin)
@@ -174,6 +175,7 @@ if (ENABLE_SDPA_GUI)
                           "fhg_util_qt"
                           fhg-revision
                           ${FhgLog_LIBRARY}
+                          ${Boost_THREAD_LIBRARY}
                           ${Boost_LIBRARIES}
                           ${QT_LIBRARIES})
 
@@ -184,6 +186,7 @@ if (ENABLE_SDPA_GUI)
                           "fhg_util_qt"
                           fhg-util
                           ${FhgLog_LIBRARY}
+                          ${Boost_THREAD_LIBRARY}
                           ${Boost_LIBRARIES}
                           ${QT_LIBRARIES})
 

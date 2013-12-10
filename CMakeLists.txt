@@ -167,7 +167,7 @@ if (Boost_MAJOR_VERSION EQUAL 1)
   endif()
 endif()
 
-set (Boost_LIBRARIES "${Boost_THREAD_LIBRARY};${Boost_SYSTEM_LIBRARY}")
+set (Boost_LIBRARIES "${Boost_SYSTEM_LIBRARY}")
 set (Boost_UNIT_TEST_LIBRARIES "${Boost_TEST_EXEC_MONITOR_LIBRARY};${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
 get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH CACHE)
 

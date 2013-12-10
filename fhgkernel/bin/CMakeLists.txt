@@ -2,7 +2,7 @@ add_executable(fhgmodinfo fhg-modinfo.cpp)
 target_link_libraries(fhgmodinfo fhg-plugin)
 
 add_executable(fhgkernel fhgkernel.cpp)
-target_link_libraries(fhgkernel fhg-plugin we-dev ${UTIL_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY})
+target_link_libraries(fhgkernel fhg-plugin we-dev ${UTIL_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_THREAD_LIBRARY})
 
 install (TARGETS fhgmodinfo fhgkernel
   RUNTIME
