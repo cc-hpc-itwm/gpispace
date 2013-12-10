@@ -27,11 +27,11 @@ set(tests
 foreach (test ${tests})
   fhg_add_test (${test}
     PROJECT we
+    BOOST_UNIT_TEST # all of them?
     LINK_LIBRARIES pnet
                    ${FhgLog_LIBRARY}
                    ${UTIL_LIBRARIES}
-                   ${Boost_UNIT_TEST_LIBRARIES}
-                   ${Boost_LIBRARIES}
+                   ${Boost_THREAD_LIBRARY} # layer_atomics, layer_cancel, queue
                    ${LibReadline_LIBRARY}
                    ${CMAKE_DL_LIBS}
   )
@@ -39,17 +39,17 @@ endforeach()
 
 fhg_add_test (load_module.cpp
   PROJECT test_we
+  BOOST_UNIT_TEST
   LINK_LIBRARIES pnet
                  ${FhgLog_LIBRARY}
                  ${UTIL_LIBRARIES}
-                 ${Boost_UNIT_TEST_LIBRARIES}
                  ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_LIBRARIES}
                  ${LibReadline_LIBRARY}
                  ${CMAKE_DL_LIBS}
 )
 
 fhg_add_test (evaluate_net.cpp
+  BOOST_UNIT_TEST
   PROJECT we
   LINK_LIBRARIES pnet ${FhgLog_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${CMAKE_DL_LIBS}
   DESCRIPTION "evaluate various nets and compare the results with given reference nets"

@@ -1,62 +1,67 @@
 # -*- mode: cmake; -*-
 
 fhg_add_test(test_semaphore.cpp
-  DESCRIPTION "Tests the semaphore implementation"
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
 )
 
 fhg_add_test(test_atomic.cpp
-  DESCRIPTION "Tests the semaphore implementation"
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
 )
 
 fhg_add_test(test_event.cpp
-  DESCRIPTION "Tests the thread event implementation"
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
 )
 
 fhg_add_test(test_queue.cpp
-  DESCRIPTION "Tests the synchronized queue implementation"
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
 )
 
 fhg_add_test(test_channel.cpp
-  DESCRIPTION "Tests the channel implementation"
+  BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-util
 )
 
 fhg_add_test(test_ini_parser.cpp
-  DESCRIPTION "Tests the ini-parser"
+  BOOST_UNIT_TEST
 )
 
 fhg_add_test(test_parent_path.cpp
-  LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARY})
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY})
 
 fhg_add_test(test_assert.cpp
+  BOOST_UNIT_TEST
   COMPILE_FLAGS "-UFHG_ASSERT_MODE -DFHG_ASSERT_MODE=3 -UFHG_ASSERT_REPLACE_LEGACY -DFHG_ASSERT_REPLACE_LEGACY"
-  DESCRIPTION "Tests fhg_assert"
   )
 
 fhg_add_test(test_bool.cpp
+  BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-util
-  DESCRIPTION "Tests the bool_t wrapper around bool"
 )
 
 fhg_add_test(test_counter.cpp
-  DESCRIPTION "Tests the unique value generating counter"
+  BOOST_UNIT_TEST
 )
 
 fhg_add_test(test_url.cpp
-  DESCRIPTION "Tests the url parser"
+  BOOST_UNIT_TEST
 )
 
 fhg_add_test(test_hex.cpp
+  BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-util
-  DESCRIPTION "Tests the hex coder"
 )
 
 fhg_add_test(test_read_show.cpp
+  BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-util
-  DESCRIPTION "Tests the read/show functions"
 )
 
 fhg_add_test(test_pool.cpp
+  BOOST_UNIT_TEST
   LINK_LIBRARIES fhg-util
-  DESCRIPTION "Tests the thread pool implementation"
 )

@@ -10,7 +10,7 @@ target_link_libraries(pnetv fhg-revision)
 target_link_libraries(pnetv pnetv-jpna)
 target_link_libraries(pnetv pnetv-jpn)
 target_link_libraries(pnetv pnet)
-target_link_libraries(pnetv ${Boost_LIBRARIES})
+target_link_libraries(pnetv ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
 install (TARGETS pnetv
 	RUNTIME

@@ -24,7 +24,8 @@ set (tests
 foreach (test ${tests})
   fhg_add_test (${test}
     PROJECT fhglog
-    LINK_LIBRARIES fhglog ${Boost_UNIT_TEST_LIBRARIES} ${Boost_LIBRARIES}
+    LINK_LIBRARIES fhglog
+                   ${Boost_THREAD_LIBRARY} # default_config, logging, perf, synch_appender, threaded only
   )
 endforeach()
 
@@ -33,6 +34,7 @@ if (ENABLE_REMOTE_LOGGING)
 endif (ENABLE_REMOTE_LOGGING)
 
 fhg_add_test (dump_event dump_event.cpp
+  BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog
 )

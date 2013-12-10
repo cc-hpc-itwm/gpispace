@@ -133,7 +133,7 @@ add_library (pnet
   xml/parse/warning.cpp
 )
 
-target_link_libraries (pnet fhg-util)
+target_link_libraries (pnet fhg-util ${Boost_SERIALIZATION_LIBRARY})
 
 add_subdirectory (tests)
 add_subdirectory (xml/tests)

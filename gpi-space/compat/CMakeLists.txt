@@ -17,7 +17,6 @@ target_link_libraries (fvm-pc-compat
   gpi-space-static
   ${LibReadline_LIBRARY}
   ${FhgLog_LIBRARY}
-  ${Boost_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
 )
 

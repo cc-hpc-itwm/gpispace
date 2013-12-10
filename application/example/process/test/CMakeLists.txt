@@ -19,7 +19,6 @@ foreach (test ${tests})
   add_executable (${test} "${test}.cpp")
   target_link_libraries(${test} process)
   target_link_libraries(${test} ${FhgLog_LIBRARY})
-  target_link_libraries(${test} ${Boost_LIBRARIES})
   target_link_libraries(${test} pthread)
 endforeach (test ${tests})
 
@@ -42,5 +41,6 @@ add_test ("test_process_redefine" test_process_redefine)
 add_test ("test_process_big" test_process_big 1048576)
 
 fhg_add_test (test_basics.cpp
-  LINK_LIBRARIES process ${FhgLog_LIBRARY} ${Boost_LIBRARIES} pthread
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES process ${FhgLog_LIBRARY} pthread
 )

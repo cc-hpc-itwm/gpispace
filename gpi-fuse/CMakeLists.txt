@@ -40,7 +40,6 @@ target_link_libraries (gpifs gpi-fuse)
 target_link_libraries (gpifs ${FUSE_LIBRARIES})
 target_link_libraries (gpifs ${GPI_SPACE_LIBRARY})
 target_link_libraries (gpifs ${FhgLog_LIBRARY})
-target_link_libraries (gpifs ${Boost_LIBRARIES})
 set_target_properties (gpifs PROPERTIES COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}")
 
 install (TARGETS gpifs

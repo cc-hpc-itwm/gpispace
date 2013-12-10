@@ -5,7 +5,7 @@ set (daemon_libs
   ${FhgLog_LIBRARY}
   ${SEDA_LIBRARY}
   pnet
-  ${Boost_LIBRARIES}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY} # orchestrator, agent
 )
 
 #
@@ -37,14 +37,15 @@ set ( client_libs
       fhg-revision
       ${FhgLog_LIBRARY}
       ${SEDA_LIBRARY}
-      ${Boost_LIBRARIES}
+      ${Boost_FILESYSTEM_LIBRARY}
+      ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 
 #
 # Client
 #
 add_executable(sdpac sdpac.cpp)
-target_link_libraries(sdpac ${client_libs} ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries(sdpac ${client_libs})
 install(TARGETS sdpac
   RUNTIME
   DESTINATION bin

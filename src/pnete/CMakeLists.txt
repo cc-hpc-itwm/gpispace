@@ -149,7 +149,8 @@ if (ENABLE_PNET_EDITOR)
                           ${FhgLog_LIBRARY}
                           ${UTIL_LIBRARIES}
                           ${Boost_FILESYSTEM_LIBRARY}
-                          ${Boost_LIBRARIES}
+                          ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                          ${Boost_THREAD_LIBRARY}
                           ${QT_LIBRARIES}
                           fhg-plugin)
 
@@ -173,7 +174,7 @@ if (ENABLE_SDPA_GUI)
                           "fhg_util_qt"
                           fhg-revision
                           ${FhgLog_LIBRARY}
-                          ${Boost_LIBRARIES}
+                          ${Boost_THREAD_LIBRARY}
                           ${QT_LIBRARIES})
 
   install (TARGETS sdpa-gui RUNTIME DESTINATION bin COMPONENT runtime)
@@ -183,7 +184,7 @@ if (ENABLE_SDPA_GUI)
                           "fhg_util_qt"
                           fhg-util
                           ${FhgLog_LIBRARY}
-                          ${Boost_LIBRARIES}
+                          ${Boost_THREAD_LIBRARY}
                           ${QT_LIBRARIES})
 
   install (TARGETS sdpa-gui RUNTIME DESTINATION bin COMPONENT runtime)

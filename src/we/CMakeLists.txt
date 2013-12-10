@@ -99,46 +99,49 @@ install (FILES
 add_executable (generate_parser_action_table expr/parse/table.cpp)
 target_link_libraries (generate_parser_action_table pnet)
 
-if (BUILD_TESTING)
-  add_executable (test_we_type_bytearray type/test/test_bytearray.cpp)
-  target_link_libraries(test_we_type_bytearray pnet)
-  target_link_libraries(test_we_type_bytearray ${Boost_UNIT_TEST_LIBRARIES})
-  target_link_libraries(test_we_type_bytearray ${Boost_LIBRARIES})
-  add_test ("test_we_type_bytearray" test_we_type_bytearray)
-endif (BUILD_TESTING)
+fhg_add_test (type/test/test_bytearray.cpp
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES pnet
+)
 
 fhg_add_test (type/test/value.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we_type
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (type/test/signature.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we_type
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (test/require_type.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (test/signature_of.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (test/exception.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES pnet
 )
 
 fhg_add_test (test/expr_type_calculate.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES pnet
 )
 
 add_executable (mk_cpp type/test/mk_cpp.cpp)
-target_link_libraries (mk_cpp pnet ${Boost_LIBRARIES})
+target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
 add_custom_command (
   OUTPUT sig_struct.hpp sig_op.hpp sig_op.cpp
@@ -150,6 +153,7 @@ include_directories (${CMAKE_CURRENT_BINARY_DIR})
 add_library (sig_op ${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp)
 
 fhg_add_test (type/test/sig.cpp
+  BOOST_UNIT_TEST
   PROJECT test_we
   LINK_LIBRARIES sig_op pnet
 )
