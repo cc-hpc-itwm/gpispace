@@ -28,25 +28,4 @@ foreach (target ${simple_targets})
            DESTINATION bin
            COMPONENT runtime
           )
-
-  if (ENABLE_STATIC_BINARIES)
-
-    add_executable(${target}.static "${target}.cpp")
-
-    target_link_libraries(${target}.static pnet)
-    target_link_libraries(${target}.static ${FhgLog_LIBRARY})
-    target_link_libraries(${target}.static ${Boost_FILESYSTEM_LIBRARY}) #we-eval, we-exec only
-    target_link_libraries(${target}.static ${Boost_LIBRARIES})
-    target_link_libraries(${target}.static pthread)
-    target_link_libraries(${target}.static ${CMAKE_DL_LIBS})
-    target_link_libraries(${target}.static fhg-revision)
-
-    set_target_properties(${target}.static PROPERTIES LINK_FLAGS "-static")
-
-    install (TARGETS ${target}.static
-             RUNTIME
-             DESTINATION bin
-             COMPONENT runtime
-            )
-  endif (ENABLE_STATIC_BINARIES)
 endforeach (target ${simple_targets})

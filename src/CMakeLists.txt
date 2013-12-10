@@ -142,17 +142,6 @@ target_link_libraries(pnetc ${Boost_FILESYSTEM_LIBRARY} ${Boost_LIBRARIES})
 
 install (TARGETS pnetc RUNTIME DESTINATION bin COMPONENT runtime)
 
-if (ENABLE_STATIC_BINARIES)
-  add_executable(pnetc.static xml/parse/pnetc.cpp)
-  target_link_libraries(pnetc.static fhg-revision)
-  target_link_libraries(pnetc.static pnet)
-  target_link_libraries(pnetc.static ${Boost_LIBRARIES})
-
-  set_target_properties(pnetc.static PROPERTIES LINK_FLAGS "-static")
-
-  install (TARGETS pnetc.static RUNTIME DESTINATION bin COMPONENT runtime)
-endif (ENABLE_STATIC_BINARIES)
-
 if (BUILD_TESTING)
   add_subdirectory (tests)
   add_subdirectory (xml/tests)
