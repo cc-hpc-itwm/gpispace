@@ -20,8 +20,6 @@ namespace we {
       class set : boost::noncopyable
       {
       public:
-        typedef set<T> this_type;
-
 	typedef boost::unordered_set<T> container_type;
 	typedef typename container_type::size_type size_type;
 	typedef typename container_type::value_type value_type;
