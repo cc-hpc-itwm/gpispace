@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  commands.hpp
- *
- *    Description:
- *
- *        Version:  1.0
- *        Created:  03/05/2010 04:05:14 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef WE_MGMT_BITS_COMMANDS_HPP
 #define WE_MGMT_BITS_COMMANDS_HPP 1
