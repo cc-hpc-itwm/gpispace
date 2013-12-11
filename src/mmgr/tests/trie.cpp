@@ -169,18 +169,17 @@ BOOST_AUTO_TEST_CASE (dups)
   {
     Bool_t was_there;
 
-    trie_ins (&tm, rand(), &was_there);
+    BOOST_REQUIRE_NE ( trie_ins (&tm, rand(), &was_there)
+                     , (unsigned long*) NULL
+                     );
 
     dups += (was_there == True) ? 1 : 0;
   }
 
-  Size_t Size = trie_size (tm);
-  Size_t Bytes = trie_memused (tm, fUserNone);
+  BOOST_REQUIRE_EQUAL (dups, 4207);
+  BOOST_REQUIRE_EQUAL (trie_size (tm), 4190097);
 
-  printf ("dups = " FMT_Word_t ", size = " FMT_Size_t ", memused = "
-          FMT_Size_t "\n", dups, Size, Bytes);
+  Size_t const Bytes (trie_memused (tm, fUserNone));
 
-  Bytes = trie_free (&tm, fUserNone);
-
-  printf ("tm = %p, Bytes = " FMT_Size_t "\n", tm, Bytes);
+  BOOST_REQUIRE_EQUAL (Bytes, trie_free (&tm, fUserNone));
 }
