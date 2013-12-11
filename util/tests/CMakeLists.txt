@@ -1,9 +1,3 @@
-fhg_add_test(semaphore.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-)
-
 fhg_add_test(atomic.cpp
   BOOST_UNIT_TEST
   PROJECT util

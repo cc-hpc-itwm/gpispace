@@ -1,5 +1,4 @@
 set (hdrs
-  semaphore.hpp
   event.hpp
   queue.hpp
   channel.hpp
