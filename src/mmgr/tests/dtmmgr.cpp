@@ -104,14 +104,10 @@ BOOST_AUTO_TEST_CASE (dtmmgr)
   BOOST_REQUIRE_EQUAL (dtmmgr_free (&dtmmgr, 7, ARENA_DOWN), RET_SUCCESS);
   BOOST_REQUIRE_EQUAL (dtmmgr_free (&dtmmgr, 8, ARENA_UP), RET_SUCCESS);
 
-  dtmmgr_status (dtmmgr);
-
   unsigned long callback_count = 0;
 
   dtmmgr_defrag (&dtmmgr, ARENA_UP, &fMemmove, NULL, &callback_count);
   dtmmgr_defrag (&dtmmgr, ARENA_DOWN, &fMemmove, NULL, &callback_count);
-
-  dtmmgr_status (dtmmgr);
 
   {
     printf ("%p %p\n", &dtmmgr, dtmmgr);
