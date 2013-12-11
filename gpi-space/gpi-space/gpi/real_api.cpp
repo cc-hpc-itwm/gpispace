@@ -294,7 +294,7 @@ namespace gpi
       {
         const char * hostname = getHostnameGPI(i);
         int error_code = clearFileCacheGPI(hostname);
-        if (1 == error_code)
+        if (0 == error_code)
         {
           LOG(DEBUG, hostname << " - ok");
         }
