@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static const char *showArena[2] = { "ARENA_UP", "ARENA_DOWN" };
 static const Arena_t Other[2] = { ARENA_DOWN, ARENA_UP };
 
 namespace
