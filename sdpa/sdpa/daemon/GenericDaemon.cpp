@@ -263,7 +263,6 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
 
   // check if the incoming event was produced by a master to which the current agent has already registered
-  //BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
   lock_type lock(mtx_master_);
   master_info_list_t::iterator itMaster = find_if(m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasName, _1, e.from()));
 
