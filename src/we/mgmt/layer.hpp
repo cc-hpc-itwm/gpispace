@@ -21,7 +21,6 @@
 #include <boost/unordered_set.hpp>
 
 #include <we/mgmt/exception.hpp>
-#include <we/mgmt/bits/commands.hpp>
 #include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
