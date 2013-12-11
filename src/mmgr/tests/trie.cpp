@@ -87,9 +87,20 @@ BOOST_AUTO_TEST_CASE (trie)
   BOOST_REQUIRE_EQUAL (trie_getany (tm), (unsigned long*) NULL);
   BOOST_REQUIRE_EQUAL (tm, (TrieMap_t) NULL);
 
-  ins (&tm, 23, 23);
-  ins (&tm, 23, 23);
-  ins (&tm, 23, 23);
+  Bool_t was_there;
+  const PValue_t PVal = trie_ins (&tm, 23, &was_there);
+
+  BOOST_REQUIRE_NE (tm, (TrieMap_t) NULL);
+  BOOST_REQUIRE_NE (PVal, (unsigned long*) NULL);
+  BOOST_REQUIRE_EQUAL (was_there, False);
+
+  *PVal = 23;
+
+  const PValue_t PVal2 = trie_ins (&tm, 23, &was_there);
+
+  BOOST_REQUIRE_EQUAL (was_there, True);
+  BOOST_REQUIRE_EQUAL (PVal, PVal2);
+
   get (tm, 23);
   del (&tm, 23);
   get (tm, 23);
