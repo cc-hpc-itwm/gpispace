@@ -84,3 +84,5 @@ if (ENABLE_DOCUMENTATION)
     OPTION --fop
     )
 endif()
+
+add_subdirectory (tutorial)
