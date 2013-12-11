@@ -23,8 +23,6 @@ namespace fhg
       typedef queue<T, Container, Allocator> this_type;
 
     public:
-      typedef boost::condition_variable_any condition;
-
       typedef T                                  value_type;
       typedef Container<T, Allocator>            container_type;
       typedef typename container_type::size_type size_type;
@@ -98,7 +96,7 @@ namespace fhg
       }
 
       mutable mutex     m_mtx;
-      mutable condition m_get_cond;
+      mutable boost::condition_variable_any m_get_cond;
 
       container_type m_container;
     };
