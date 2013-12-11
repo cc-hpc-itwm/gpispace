@@ -8,42 +8,6 @@
 
 #include <mmgr/ostab.h>
 
-static void
-try_look (OStab_t ostab, const Key_t Key)
-{
-  printf (FMT_Key_t " => ", Key);
-
-  Offset_t offset;
-  Size_t size;
-
-  if (ostab_get (ostab, Key, &offset, &size) == True)
-    {
-      printf ("Just (" FMT_Offset_t "," FMT_Size_t ")\n", offset, size);
-    }
-  else
-    {
-      printf ("Nothing\n");
-    }
-}
-
-static void
-fPrint (const Key_t Key, const Offset_t Offset, const Size_t Size, void*)
-{
-  printf (" " FMT_Key_t "-(" FMT_Offset_t "," FMT_Size_t ")", Key, Offset,
-          Size);
-}
-
-
-static void
-print (const OStab_t ostab)
-{
-  printf ("elems = [");
-
-  ostab_work (ostab, &fPrint, NULL);
-
-  printf ("]\n");
-}
-
 BOOST_AUTO_TEST_CASE (ostab)
 {
   OStab_t ostab = NULL;
