@@ -14,17 +14,16 @@ namespace fhg
              , template < typename
                         , typename
                         > class Container
-             , typename Allocator = std::allocator<T>
              >
     class queue : public boost::noncopyable
     {
       typedef boost::recursive_mutex            mutex;
       typedef boost::unique_lock<mutex>     lock_type;
-      typedef queue<T, Container, Allocator> this_type;
+      typedef queue<T, Container> this_type;
 
     public:
       typedef T                                  value_type;
-      typedef Container<T, Allocator>            container_type;
+      typedef Container<T, std::allocator<T> > container_type;
       typedef typename container_type::size_type size_type;
 
       T get()
