@@ -13,7 +13,7 @@ namespace fhg
   namespace thread
   {
     template<typename T>
-    class queue : public boost::noncopyable
+      class queue : public boost::noncopyable
     {
     public:
       typedef std::list<T> container_type;
@@ -48,11 +48,11 @@ namespace fhg
       bool empty() const
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-    	  return m_container.empty();
+        return m_container.empty();
       }
 
       template <typename Pred>
-      size_t remove_if (Pred pred)
+        size_t remove_if (Pred pred)
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
         size_t cnt (0);
@@ -61,7 +61,7 @@ namespace fhg
             ;
             )
         {
-          if (pred(*it))
+          if (pred (*it))
           {
             it = m_container.erase(it);
             ++cnt;
@@ -75,13 +75,13 @@ namespace fhg
         return cnt;
       }
 
-      void clear ()
+      void clear()
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
         m_container.clear();
       }
     private:
-      bool is_element_available () const
+      bool is_element_available() const
       {
         return not m_container.empty ();
       }
