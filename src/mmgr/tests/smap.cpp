@@ -1,3 +1,7 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE mmgr_smap
+#include <boost/test/unit_test.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -115,8 +119,7 @@ smap_print_max (const SMap_t sm, const Level_t MaxLevel)
   smap_work_preorder (sm, &fPrintCut, &L);
 }
 
-int
-main ()
+BOOST_AUTO_TEST_CASE (smap)
 {
   SMap_t sm = NULL;
 
@@ -209,6 +212,4 @@ main ()
   Bytes = smap_free (&sm);
 
   printf ("sm = %p, Bytes = " FMT_Size_t "\n", sm, Bytes);
-
-  return EXIT_SUCCESS;
 }
