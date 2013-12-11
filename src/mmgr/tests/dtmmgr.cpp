@@ -13,46 +13,6 @@ static const Arena_t Other[2] = { ARENA_DOWN, ARENA_UP };
 
 namespace
 {
-  void do_alloc (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena, Size_t Size)
-  {
-    AllocReturn_t AllocReturn = dtmmgr_alloc (&DTmmgr, Handle, Arena, Size);
-
-    printf ("ALLOC: (Handle = " FMT_Handle_t ", Arena = %s, Size = " FMT_Size_t
-           ") => ", Handle, showArena[Arena], Size);
-
-    switch (AllocReturn)
-    {
-    case ALLOC_SUCCESS:
-      printf ("Success");
-      {
-        Offset_t Offset = -1;
-
-        dtmmgr_offset_size (DTmmgr, Handle, Arena, &Offset, NULL);
-
-        printf (", Offset = " FMT_Offset_t, Offset);
-      }
-      break;
-    case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
-      printf ("INSUFFICIENT_CONTIGUOUS_MEMORY");
-      break;
-    case ALLOC_DUPLICATE_HANDLE:
-      printf ("ALLOC_DUPLICATE_HANDLE");
-      break;
-    case ALLOC_INSUFFICIENT_MEMORY:
-      printf ("ALLOC_INSUFFICIENT_MEMORY");
-      break;
-    case ALLOC_FAILURE:
-      printf ("ALLOC_FAILURE");
-      break;
-    default:
-      fprintf (stderr, "STRANGE\n");
-      exit (EXIT_FAILURE);
-      break;
-    }
-
-    printf ("\n");
-  }
-
   void do_free (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena)
   {
     if (DTmmgr == NULL)
@@ -112,16 +72,60 @@ BOOST_AUTO_TEST_CASE (dtmmgr)
   BOOST_REQUIRE_EQUAL (dtmmgr_sumalloc (dtmmgr, ARENA_DOWN), 0);
   BOOST_REQUIRE_EQUAL (dtmmgr_sumfree (dtmmgr, ARENA_DOWN), 0);
 
-  Arena_t Arena = ARENA_UP;
+  BOOST_REQUIRE_EQUAL (dtmmgr_alloc (&dtmmgr, 0, ARENA_UP, 1), ALLOC_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_alloc (&dtmmgr, 1, ARENA_DOWN, 1), ALLOC_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_alloc (&dtmmgr, 2, ARENA_UP, 1), ALLOC_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_alloc (&dtmmgr, 3, ARENA_DOWN, 1), ALLOC_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_alloc (&dtmmgr, 4, ARENA_UP, 1), ALLOC_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_alloc (&dtmmgr, 5, ARENA_DOWN, 1), ALLOC_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_alloc (&dtmmgr, 6, ARENA_UP, 1), ALLOC_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_alloc (&dtmmgr, 7, ARENA_DOWN, 1), ALLOC_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_alloc (&dtmmgr, 8, ARENA_UP, 1), ALLOC_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_alloc (&dtmmgr, 9, ARENA_DOWN, 1), ALLOC_SUCCESS);
 
-  for (Word_t i = 0; i < 10; ++i)
-    {
-      do_alloc (dtmmgr, (Handle_t) i, Arena, (MemSize_t) 1);
+  {
+    Offset_t Offset = -1;
 
-      Arena = Other[Arena];
-    }
+    dtmmgr_offset_size (dtmmgr, 0, ARENA_UP, &Offset, NULL);
 
-  dtmmgr_info (dtmmgr);
+    BOOST_REQUIRE_EQUAL (Offset, 0);
+
+    dtmmgr_offset_size (dtmmgr, 2, ARENA_UP, &Offset, NULL);
+
+    BOOST_REQUIRE_EQUAL (Offset, 2);
+
+    dtmmgr_offset_size (dtmmgr, 4, ARENA_UP, &Offset, NULL);
+
+    BOOST_REQUIRE_EQUAL (Offset, 4);
+
+    dtmmgr_offset_size (dtmmgr, 6, ARENA_UP, &Offset, NULL);
+
+    BOOST_REQUIRE_EQUAL (Offset, 6);
+
+    dtmmgr_offset_size (dtmmgr, 8, ARENA_UP, &Offset, NULL);
+
+    BOOST_REQUIRE_EQUAL (Offset, 8);
+
+    dtmmgr_offset_size (dtmmgr, 1, ARENA_DOWN, &Offset, NULL);
+
+    BOOST_REQUIRE_EQUAL (Offset, 42);
+
+    dtmmgr_offset_size (dtmmgr, 3, ARENA_DOWN, &Offset, NULL);
+
+    BOOST_REQUIRE_EQUAL (Offset, 40);
+
+    dtmmgr_offset_size (dtmmgr, 5, ARENA_DOWN, &Offset, NULL);
+
+    BOOST_REQUIRE_EQUAL (Offset, 38);
+
+    dtmmgr_offset_size (dtmmgr, 7, ARENA_DOWN, &Offset, NULL);
+
+    BOOST_REQUIRE_EQUAL (Offset, 36);
+
+    dtmmgr_offset_size (dtmmgr, 9, ARENA_DOWN, &Offset, NULL);
+
+    BOOST_REQUIRE_EQUAL (Offset, 34);
+  }
 
   do_free (dtmmgr, 2, ARENA_UP);
   do_free (dtmmgr, 6, ARENA_UP);
