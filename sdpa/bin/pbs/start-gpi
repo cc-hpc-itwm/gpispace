@@ -128,11 +128,14 @@ if [ -z "$gpi_bin_path" ] ; then
     log "could not deduce GPI_PRIV_DIR, please export GPI_PRIV_DIR or pass via commandline!"
     exit 1
 fi
+gpi_app_path="${gpi_bin_path}/gpi-space.app"
+gpi_bin_path="${gpi_app_path}/bin"
+gpi_lib_path="${gpi_app_path}/lib"
 
 log_file="${state_dir}/log/gpi-space.log"
 
 if [ -z "$gpi_exe" ] ; then
-    gpi_exe=$(which gpi-space)
+    gpi_exe="${SDPA_HOME}/bin/gpi-space"
 fi
 
 if [ ! -x "${gpi_exe}" ] ; then
@@ -170,32 +173,36 @@ if [ $need_copy = "true" -a $do_copy = "false" ] ; then
 fi
 
 if [ $do_copy = "true" ] ; then
-    if [ ! -d "$gpi_bin_path" ] ; then
+    if [ ! -d "${gpi_bin_path}" ] ; then
         tmp=$( mkdir -p "$gpi_bin_path" 2>&1 )
         if [ $? -ne 0 ] ; then
             log "could not create $gpi_bin_path: $tmp"
             exit 1
         fi
     fi
-    if [ -w "$gpi_bin_path" ] ; then
-        test -e "${gpi_bin_path}/${gpi_bin}" && {
-            log "I: creating backup of old ${gpi_bin}"
-            mv -f "${gpi_bin_path}/${gpi_bin}" "${gpi_bin_path}/${gpi_bin}~"
-        }
+    if [ ! -d "${gpi_lib_path}" ] ; then
+        tmp=$( mkdir -p "$gpi_lib_path" 2>&1 )
+        if [ $? -ne 0 ] ; then
+            log "could not create $gpi_lib_path: $tmp"
+            exit 1
+        fi
+    fi
+    if [ ! -w "${gpi_bin_path}" -o ! -w "${gpi_lib_path}" ] ; then
+        log "W: I am not allowed to write to '${gpi_bin_path}' or '${gpi_lib_path}'"
+    else
         cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}" && {
             log "I: installed new ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
-
-            # AP:  in rare cases,  it can  happen that  the filesystem  cache is
-            # corrupted by starting GPI too  fast after updating the binary. So,
-            # give the filesystem some time  to transfer the binary. Not sure if
-            # this helps, though - maybe a sync() or would be better
-            sleep 2
         } || {
-            log "W: could not update ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
+            log "E: could not update ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
+            exit 1
         }
-        chmod ug=rx,o= "${gpi_bin_path}/${gpi_bin}"
-    else
-        log "W: privileged path $gpi_bin_path does not exist, or i am not allowed to write to it!"
+        "${SDPA_HOME}/libexec/sdpa/scripts/bundle.sh" -o "${gpi_lib_path}" "${gpi_bin_path}/${gpi_bin}" && {
+            log "I: bundled ${gpi_bin} in ${gpi_app_path}"
+        } || {
+            log "E: could not install ${gpi_bin} in ${gpi_app_path}"
+            rm -rf "${gpi_app_path}"
+            exit 1
+        }
     fi
 fi
 
