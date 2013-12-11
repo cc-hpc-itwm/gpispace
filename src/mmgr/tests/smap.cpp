@@ -9,23 +9,6 @@
 #include <mmgr/smap.h>
 
 static void
-get (const SMap_t sm, const Key_t key)
-{
-  const PValue_t PVal = smap_get (sm, key);
-
-  printf ("get " FMT_Key_t ": sm = %p, PVal = %p", key, sm, PVal);
-
-  if (PVal != NULL)
-    {
-      printf (", Just (*Pval = " FMT_Value_t ")\n", *PVal);
-    }
-  else
-    {
-      printf (", Nothing\n");
-    }
-}
-
-static void
 get_atleast (const SMap_t sm, const Key_t key)
 {
   Key_t key_got = key;
@@ -64,24 +47,6 @@ get_atleast (const SMap_t sm, const Key_t key)
         printf (", Nothing\n");
       }
   }
-}
-
-static void
-ins (PSMap_t sm, const Key_t key, const Value_t val)
-{
-  const Bool_t was_there = smap_ins (sm, key, val);
-
-  printf ("ins (" FMT_Key_t "," FMT_Value_t "): sm = %p, was_there = %s\n",
-          key, val, sm, (was_there == True) ? "True" : "False");
-}
-
-static void
-del (PSMap_t sm, const Key_t key)
-{
-  const Bool_t was_there = smap_del (sm, key, SMAP_DEL_DEFAULT);
-
-  printf ("del " FMT_Key_t ": sm = %p, was_there = %s\n", key, sm,
-          (was_there == True) ? "True" : "False");
 }
 
 static void
