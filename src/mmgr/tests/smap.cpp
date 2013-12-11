@@ -90,7 +90,7 @@ del (PSMap_t sm, const Key_t key)
 }
 
 static void
-fPrint (const Key_t Key, const Value_t Value, void UNUSED (*Pdat))
+fPrint (const Key_t Key, const Value_t Value, void*)
 {
   printf (" (" FMT_Key_t "," FMT_Value_t ")", Key, Value);
 }

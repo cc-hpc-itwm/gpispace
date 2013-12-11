@@ -32,8 +32,7 @@ try_look (OStab_t ostab, const Key_t Key)
 }
 
 static void
-fPrint (const Key_t Key, const Offset_t Offset, const Size_t Size,
-        void UNUSED (*Pdat))
+fPrint (const Key_t Key, const Offset_t Offset, const Size_t Size, void*)
 {
   printf (" " FMT_Key_t "-(" FMT_Offset_t "," FMT_Size_t ")", Key, Offset,
           Size);

@@ -72,7 +72,7 @@ del (PTrieMap_t tm, const Value_t key)
 }
 
 static void
-fPrint (const Key_t Key, const PValue_t PVal, void UNUSED (*Pdat))
+fPrint (const Key_t Key, const PValue_t PVal, void*)
 {
   printf (" " FMT_Key_t "-" FMT_Value_t, Key, *PVal);
 }
