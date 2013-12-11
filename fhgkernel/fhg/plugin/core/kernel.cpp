@@ -17,7 +17,6 @@
 
 #include <fhg/util/split.hpp>
 #include <fhg/util/threadname.hpp>
-#include <fhg/util/thread/async.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
