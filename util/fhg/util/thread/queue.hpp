@@ -44,7 +44,8 @@ namespace fhg
       void put (T const & t)
       {
         lock_type lock(m_mtx);
-        _put_impl (t);
+        m_container.push_back(t);
+        m_get_cond.notify_one();
       }
 
       size_type size() const
@@ -90,12 +91,6 @@ namespace fhg
           m_container.pop_front();
       }
     private:
-      void _put_impl (T const & t)
-      {
-        m_container.push_back(t);
-        m_get_cond.notify_one();
-      }
-
       bool is_element_available () const
       {
         return not m_container.empty ();
