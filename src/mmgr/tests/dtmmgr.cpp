@@ -15,9 +15,27 @@ namespace
   void fMemmove ( const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc
                 , const MemSize_t Size, void *PDat)
   {
-    printf ("CALLBACK-%lu: Moving " FMT_MemSize_t " Byte(s) from " FMT_Offset_t
-           " to " FMT_Offset_t "\n", (*(unsigned long *) PDat)++, Size,
-           OffsetSrc, OffsetDest);
+    BOOST_REQUIRE_EQUAL (Size, 2);
+
+    unsigned long* count (static_cast<unsigned long*> (PDat));
+
+    switch (*count)
+    {
+    case 0:
+      BOOST_REQUIRE_EQUAL (OffsetDest, 2);
+      BOOST_REQUIRE_EQUAL (OffsetSrc, 4);
+      break;
+    case 1:
+      BOOST_REQUIRE_EQUAL (OffsetDest, 42);
+      BOOST_REQUIRE_EQUAL (OffsetSrc, 40);
+      break;
+    case 2:
+      BOOST_REQUIRE_EQUAL (OffsetDest, 40);
+      BOOST_REQUIRE_EQUAL (OffsetSrc, 36);
+      break;
+    }
+
+    ++ (*count);
   }
 }
 
@@ -109,19 +127,8 @@ BOOST_AUTO_TEST_CASE (dtmmgr)
   dtmmgr_defrag (&dtmmgr, ARENA_UP, &fMemmove, NULL, &callback_count);
   dtmmgr_defrag (&dtmmgr, ARENA_DOWN, &fMemmove, NULL, &callback_count);
 
-  {
-    printf ("%p %p\n", &dtmmgr, dtmmgr);
+  BOOST_REQUIRE_EQUAL (callback_count, 3);
 
-    Size_t Bytes = dtmmgr_finalize (&dtmmgr);
-
-    printf ("Bytes = " FMT_Size_t "\n", Bytes);
-  }
-
-  {
-    printf ("%p %p\n", &dtmmgr, dtmmgr);
-
-    Size_t Bytes = dtmmgr_finalize (&dtmmgr);
-
-    printf ("Bytes = " FMT_Size_t "\n", Bytes);
-  }
+  BOOST_REQUIRE_EQUAL (dtmmgr_finalize (&dtmmgr), 2320);
+  BOOST_REQUIRE_EQUAL (dtmmgr_finalize (&dtmmgr), 0);
 }
