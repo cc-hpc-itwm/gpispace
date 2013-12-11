@@ -54,12 +54,6 @@ namespace fhg
         _put_impl (t);
       }
 
-      this_type & operator << (T const & t)
-      {
-        put (t);
-        return *this;
-      }
-
       size_type size() const
       {
         lock_type lock(m_mtx);
