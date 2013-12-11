@@ -21,7 +21,6 @@ set (hdrs
   show.hpp
   split.hpp
   starts_with.hpp
-  warnings.hpp
 
   ini-parser.hpp
   ini-parser.tcc
