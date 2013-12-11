@@ -96,7 +96,7 @@ namespace fhg
       }
 
       mutable mutex     m_mtx;
-      mutable boost::condition_variable_any m_get_cond;
+      boost::condition_variable_any m_get_cond;
 
       container_type m_container;
     };
