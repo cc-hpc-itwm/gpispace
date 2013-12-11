@@ -282,14 +282,3 @@ dtmmgr_info (const DTmmgr_t DTmmgr)
 
   FOR_ARENA (Arena) tmmgr_info (pdtmmgr->arena[Arena], showArena[Arena]);
 }
-
-void
-dtmmgr_status (const DTmmgr_t DTmmgr)
-{
-  if (DTmmgr == NULL)
-    return;
-
-  pdtmmgr_t pdtmmgr = DTmmgr;
-
-  FOR_ARENA (Arena) tmmgr_status (pdtmmgr->arena[Arena], showArena[Arena]);
-}
