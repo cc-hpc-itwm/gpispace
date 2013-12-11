@@ -1,3 +1,7 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE expr_type_calculate
+#include <boost/test/unit_test.hpp>
 
 #include <mmgr/dtmmgr.h>
 
@@ -89,8 +93,7 @@ namespace
   }
 }
 
-int
-main ()
+BOOST_AUTO_TEST_CASE (dtmmgr)
 {
   DTmmgr_t dtmmgr = NULL;
 
@@ -139,6 +142,4 @@ main ()
 
     printf ("Bytes = " FMT_Size_t "\n", Bytes);
   }
-
-  return EXIT_SUCCESS;
 }
