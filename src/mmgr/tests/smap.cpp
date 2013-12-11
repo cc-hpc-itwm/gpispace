@@ -14,47 +14,6 @@
 #include <sstream>
 #include <string>
 
-static void
-get_atleast (const SMap_t sm, const Key_t key)
-{
-  Key_t key_got = key;
-
-  {
-    const PValue_t PVal = smap_get_atleast (sm, &key_got);
-
-    printf ("get_atleast " FMT_Key_t ": sm = %p, PVal = %p", key, sm, PVal);
-
-    if (PVal != NULL)
-      {
-        printf (", Just (*Pval = " FMT_Value_t ", key_got = " FMT_Key_t ")\n",
-                *PVal, key_got);
-      }
-    else
-      {
-        printf (", Nothing\n");
-      }
-  }
-
-  {
-    key_got = key;
-
-    const PValue_t PVal = smap_get_atleast_minimal (sm, &key_got);
-
-    printf ("get_atleast_minimal " FMT_Key_t ": sm = %p, PVal = %p", key, sm,
-            PVal);
-
-    if (PVal != NULL)
-      {
-        printf (", Just (*Pval = " FMT_Value_t ", key_got = " FMT_Key_t ")\n",
-                *PVal, key_got);
-      }
-    else
-      {
-        printf (", Nothing\n");
-      }
-  }
-}
-
 namespace
 {
   struct print_sorted_state
@@ -313,11 +272,11 @@ BOOST_AUTO_TEST_CASE (dups)
   srand (31415926);
 
   for (Word_t i = 0; i < (1 << 20); ++i)
-    {
-      Bool_t was_there = smap_ins (&sm, (Key_t) rand (), (Value_t) i);
+  {
+    Bool_t was_there = smap_ins (&sm, (Key_t) rand (), (Value_t) i);
 
-      dups += (was_there == True) ? 1 : 0;
-    }
+    dups += (was_there == True) ? 1 : 0;
+  }
 
   {
     std::ostringstream oss;
