@@ -1,11 +1,14 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE expr_type_calculate
+#include <boost/test/unit_test.hpp>
 
 #include <mmgr/heap.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 
-int
-main ()
+BOOST_AUTO_TEST_CASE (heap)
 {
   Heap_t h = NULL;
 
@@ -80,6 +83,4 @@ main ()
   printf ("\n");
 
   printf ("free = " FMT_Size_t "\n", heap_free (&h));
-
-  return EXIT_SUCCESS;
 }
