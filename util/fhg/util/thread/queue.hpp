@@ -15,8 +15,7 @@ namespace fhg
     template<typename T>
     class queue : public boost::noncopyable
     {
-      typedef boost::recursive_mutex            mutex;
-      typedef boost::unique_lock<mutex>     lock_type;
+      typedef boost::unique_lock<boost::recursive_mutex> lock_type;
       typedef queue<T> this_type;
 
     public:
@@ -91,7 +90,7 @@ namespace fhg
         return not m_container.empty ();
       }
 
-      mutable mutex     m_mtx;
+      mutable boost::recursive_mutex m_mtx;
       boost::condition_variable_any m_get_cond;
 
       container_type m_container;
