@@ -52,26 +52,6 @@ namespace fhg
         return _get_impl ();
       }
 
-      T get (boost::posix_time::time_duration duration)
-      {
-        boost::system_time const timeout = boost::get_system_time() + duration;
-        lock_type lock (m_mtx);
-        if (m_get_cond.timed_wait ( lock
-                                  , timeout
-                                  , boost::bind ( &this_type::is_element_available
-                                                , this
-                                                )
-                                  )
-           )
-        {
-          return _get_impl ();
-        }
-        else
-        {
-          throw operation_timedout ("get");
-        }
-      }
-
       void put (T const & t)
       {
         lock_type lock(m_mtx);

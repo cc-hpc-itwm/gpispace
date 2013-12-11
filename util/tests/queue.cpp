@@ -36,33 +36,6 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_get)
   }
 }
 
-BOOST_AUTO_TEST_CASE (thread_queue_timed_get_empty_queue)
-{
-  items_t items;
-
-  BOOST_REQUIRE (items.empty ());
-  BOOST_REQUIRE_THROW ( items.get (boost::posix_time::milliseconds (500))
-                      , fhg::thread::operation_timedout
-                      );
-}
-
-BOOST_AUTO_TEST_CASE (thread_queue_timed_get_nonempty_queue)
-{
-  items_t items;
-  items.put (0);
-
-  try
-  {
-    BOOST_REQUIRE (not items.empty ());
-    int item = items.get (boost::posix_time::milliseconds (500));
-    BOOST_REQUIRE_EQUAL (item, 0);
-  }
-  catch (fhg::thread::operation_timedout const &)
-  {
-    BOOST_ERROR ("thread::queue::get(500ms) from empty queue timed out");
-  }
-}
-
 BOOST_AUTO_TEST_CASE (thread_queue_put_by_other_thread)
 {
   static const int NUM_ITEMS_TO_PUT = 10000;
