@@ -6,7 +6,7 @@
 ###     source anything
 ###
 ###
-gpi_bin_path=""
+gpi_priv_dir=""
 gpi_exe=""
 debug=false
 mem_size=
@@ -55,7 +55,7 @@ while getopts ":hd:x:gm:p:P:fDk:K:l:L:vs:F:S:" opt; do
             exit 0
             ;;
         d)
-            gpi_bin_path=$OPTARG
+            gpi_priv_dir=$OPTARG
             ;;
         x)
             gpi_exe=$OPTARG
@@ -112,11 +112,11 @@ done
 
 test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
 
-if [ -z "$gpi_bin_path" ] ; then
+if [ -z "$gpi_priv_dir" ] ; then
     if [ -n "$GPI_PRIV_DIR" ] ; then
-        gpi_bin_path="$GPI_PRIV_DIR"
+        gpi_priv_dir="$GPI_PRIV_DIR"
     else
-        gpi_bin_path=$(fhgcfg -f "${config_file}" -g gpi.priv_dir)
+        gpi_priv_dir=$(fhgcfg -f "${config_file}" -g gpi.priv_dir)
     fi
 fi
 
@@ -128,7 +128,7 @@ if [ -z "$gpi_bin_path" ] ; then
     log "could not deduce GPI_PRIV_DIR, please export GPI_PRIV_DIR or pass via commandline!"
     exit 1
 fi
-gpi_app_path="${gpi_bin_path}/gpi-space.app"
+gpi_app_path="${gpi_priv_dir}/gpi-space.app"
 gpi_bin_path="${gpi_app_path}/bin"
 gpi_lib_path="${gpi_app_path}/lib"
 
