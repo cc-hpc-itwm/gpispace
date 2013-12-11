@@ -283,8 +283,6 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   }
   lock.unlock();
 
-  static const JobId job_id_empty ("");
-
   // First, check if the job 'job_id' wasn't already submitted!
   if(jobManager().findJob(e.job_id()))
   {
@@ -302,8 +300,9 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
   DMLOG (TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
 
-  JobId job_id; //already assigns an unique job_id (i.e. the constructor calls the generator)
-  if(e.job_id() != job_id_empty)  // use the job_id already  assigned by the master
+  JobId job_id;
+  //already assigns an unique job_id (i.e. the constructor calls the generator)
+  if( !JobId::is_invalid_job_id(e.job_id()) )  // use the job_id already  assigned by the master
     job_id = e.job_id();          // the orchestrator will assign a new job_id for the user jobs,
                                   // the Agg/NRE will use the job_id assigned by the master
 
