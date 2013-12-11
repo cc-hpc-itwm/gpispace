@@ -4,8 +4,6 @@
 #include <sdpa/common.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
-#include <sdpa/events/DeleteJobAckEvent.hpp>
-#include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
