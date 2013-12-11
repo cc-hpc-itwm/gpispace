@@ -82,7 +82,6 @@ extern "C"
 
   /* *********************************************************************** */
 
-  extern void tmmgr_status (const Tmmgr_t, const char *);
   extern void tmmgr_info (const Tmmgr_t, const char *); /* short */
 
   /* *********************************************************************** */

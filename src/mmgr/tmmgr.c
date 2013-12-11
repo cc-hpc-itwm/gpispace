@@ -544,38 +544,6 @@ HAVE_ENOUGH:
   heap_free (&HeapOffUsed);
 }
 
-static void
-fPrintOStab (const Handle_t Handle, const Offset_t Offset,
-             const MemSize_t Size, void UNUSED (*Pdat))
-{
-  printf (" " FMT_Handle_t "-(" FMT_Offset_t "," FMT_MemSize_t ")", Handle,
-          Offset, Size);
-}
-
-static void
-fPrintTrie (const Offset_t Offset, const PHandle_t PHandle,
-            void UNUSED (*Pdat))
-{
-  printf (" " FMT_Offset_t "-" FMT_Offset_t, Offset, *PHandle);
-}
-
-static void
-fPrintTrieHandle (const Handle_t Handle, const PValue_t UNUSED (PVal),
-                  void UNUSED (*Pdat))
-{
-  printf (" " FMT_Handle_t, Handle);
-}
-
-static void
-fPrintFSeg (const Handle_t Handle, const Value_t Value, void UNUSED (*Pdat))
-{
-  printf (" " FMT_Handle_t "-[", Handle);
-
-  trie_work ((TrieMap_t) Value, &fPrintTrieHandle, NULL);
-
-  printf ("]");
-}
-
 void
 tmmgr_info (const Tmmgr_t Tmmgr, const char *msg)
 {
@@ -611,45 +579,4 @@ tmmgr_info (const Tmmgr_t Tmmgr, const char *msg)
           ptmmgr->mem_size - ptmmgr->mem_free, ptmmgr->mem_free,
           ptmmgr->mem_size, nhandle, nalloc, nfree, salloc, sfree, mfree,
           mused, mmin, hwater);
-}
-
-void
-tmmgr_status (const Tmmgr_t Tmmgr, const char *msg)
-{
-  if (Tmmgr == NULL)
-    return;
-
-  ptmmgr_t ptmmgr = Tmmgr;
-
-  tmmgr_info (ptmmgr, msg);
-
-  printf ("allocs (handle-(offset,size)) =\n[");
-
-  ostab_work (ptmmgr->handle_to_offset_and_size, &fPrintOStab, NULL);
-
-  printf ("]\n");
-
-  printf ("allocs (offset-handle) =\n[");
-
-  trie_work (ptmmgr->offset_to_handle, &fPrintTrie, NULL);
-
-  printf ("]\n");
-
-  printf ("free_seg_by_size (size-[offset]) =\n[");
-
-  smap_work (ptmmgr->free_offset_by_size, fPrintFSeg, NULL);
-
-  printf ("]\n");
-
-  printf ("free_seg_start (offset-size) =\n[");
-
-  trie_work (ptmmgr->free_segment_start, &fPrintTrie, NULL);
-
-  printf ("]\n");
-
-  printf ("free_seg_end (offset-size) =\n[");
-
-  trie_work (ptmmgr->free_segment_end, &fPrintTrie, NULL);
-
-  printf ("]\n");
 }
