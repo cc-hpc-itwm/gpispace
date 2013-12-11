@@ -30,10 +30,10 @@ namespace sdpa {
     static bool is_invalid_job_id(const JobId &job_id) { return job_id == "-"; }
 
     template <class Archive>
-	void serialize(Archive& ar, unsigned int /* version */)
-	{
-    	ar &  boost::serialization::make_nvp("JobID", id_);
-	}
+    void serialize(Archive& ar, unsigned int /* version */)
+    {
+      ar &  boost::serialization::make_nvp("JobID", id_);
+    }
 
 
   private:
