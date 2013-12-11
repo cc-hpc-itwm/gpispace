@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE expr_type_calculate
+#define BOOST_TEST_MODULE mmgr_heap
 #include <boost/test/unit_test.hpp>
 
 #include <mmgr/heap.h>
