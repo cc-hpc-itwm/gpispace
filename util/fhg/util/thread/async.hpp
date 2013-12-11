@@ -12,12 +12,6 @@ namespace fhg
     {
       global_pool ().execute (f);
     }
-
-    template <typename Fun, typename Callback>
-    void async (Fun f, Callback cb)
-    {
-      global_pool ().execute (f, cb);
-    }
   }
 }
 

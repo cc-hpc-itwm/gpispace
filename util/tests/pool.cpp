@@ -44,19 +44,3 @@ BOOST_AUTO_TEST_CASE (simple_pool)
 
   BOOST_REQUIRE_EQUAL (s_work_count, NUM_ITERATIONS);
 }
-
-BOOST_AUTO_TEST_CASE (async_test)
-{
-  static const size_t NUM_ITERATIONS = 100;
-
-  using namespace fhg::thread;
-
-  s_work_count = 0;
-  for (size_t i = 0 ; i < NUM_ITERATIONS; ++i)
-    async (s_work, s_work_callback);
-
-  while (s_work_count != NUM_ITERATIONS)
-    usleep (10);
-
-  BOOST_REQUIRE_EQUAL (s_work_count, NUM_ITERATIONS);
-}
