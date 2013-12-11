@@ -41,7 +41,6 @@ set (hdrs
   backtracing_exception.fwd.hpp
 
   url.hpp
-  setproctitle.h
   threadname.hpp
 
   remove_prefix.hpp
@@ -57,7 +56,6 @@ set (hdrs
 
 set (srcs
   backtracing_exception.cpp
-  setproctitle.c
   program_info.c
   threadname.cpp
   remove_prefix.cpp
