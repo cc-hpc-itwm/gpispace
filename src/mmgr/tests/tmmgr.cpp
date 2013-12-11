@@ -8,51 +8,56 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void
-fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
-          const MemSize_t Size, void *PDat)
+namespace
 {
-  unsigned long* count (static_cast<unsigned long*> (PDat));
-
-  switch (*count)
+  void fMemmove ( const OffsetDest_t OffsetDest
+                , const OffsetSrc_t OffsetSrc
+                , const MemSize_t Size
+                , void *PDat
+                )
   {
-  case 0:
-    BOOST_REQUIRE_EQUAL (OffsetDest, 6);
-    BOOST_REQUIRE_EQUAL (OffsetSrc, 9);
-    BOOST_REQUIRE_EQUAL (Size, 1);
-    break;
-  case 1:
-    BOOST_REQUIRE_EQUAL (OffsetDest, 7);
-    BOOST_REQUIRE_EQUAL (OffsetSrc, 10);
-    BOOST_REQUIRE_EQUAL (Size, 4);
-    break;
+    unsigned long* count (static_cast<unsigned long*> (PDat));
 
-  case 2:
-    BOOST_REQUIRE_EQUAL (OffsetDest, 11);
-    BOOST_REQUIRE_EQUAL (OffsetSrc, 16);
-    BOOST_REQUIRE_EQUAL (Size, 5);
-    break;
+    switch (*count)
+    {
+    case 0:
+      BOOST_REQUIRE_EQUAL (OffsetDest, 6);
+      BOOST_REQUIRE_EQUAL (OffsetSrc, 9);
+      BOOST_REQUIRE_EQUAL (Size, 1);
+      break;
+    case 1:
+      BOOST_REQUIRE_EQUAL (OffsetDest, 7);
+      BOOST_REQUIRE_EQUAL (OffsetSrc, 10);
+      BOOST_REQUIRE_EQUAL (Size, 4);
+      break;
 
-  case 3:
-    BOOST_REQUIRE_EQUAL (OffsetDest, 16);
-    BOOST_REQUIRE_EQUAL (OffsetSrc, 31);
-    BOOST_REQUIRE_EQUAL (Size, 5);
-    break;
+    case 2:
+      BOOST_REQUIRE_EQUAL (OffsetDest, 11);
+      BOOST_REQUIRE_EQUAL (OffsetSrc, 16);
+      BOOST_REQUIRE_EQUAL (Size, 5);
+      break;
 
-  case 4:
-    BOOST_REQUIRE_EQUAL (OffsetDest, 21);
-    BOOST_REQUIRE_EQUAL (OffsetSrc, 36);
-    BOOST_REQUIRE_EQUAL (Size, 14);
-    break;
+    case 3:
+      BOOST_REQUIRE_EQUAL (OffsetDest, 16);
+      BOOST_REQUIRE_EQUAL (OffsetSrc, 31);
+      BOOST_REQUIRE_EQUAL (Size, 5);
+      break;
 
-  default:
-    BOOST_REQUIRE_EQUAL (OffsetDest, ((*count) - 5) * 16);
-    BOOST_REQUIRE_EQUAL (OffsetSrc, ((*count) - 4) * 16);
-    BOOST_REQUIRE_EQUAL (Size, 16);
-    break;
+    case 4:
+      BOOST_REQUIRE_EQUAL (OffsetDest, 21);
+      BOOST_REQUIRE_EQUAL (OffsetSrc, 36);
+      BOOST_REQUIRE_EQUAL (Size, 14);
+      break;
+
+    default:
+      BOOST_REQUIRE_EQUAL (OffsetDest, ((*count) - 5) * 16);
+      BOOST_REQUIRE_EQUAL (OffsetSrc, ((*count) - 4) * 16);
+      BOOST_REQUIRE_EQUAL (Size, 16);
+      break;
+    }
+
+    ++ (*count);
   }
-
-  ++ (*count);
 }
 
 #define REQUIRE_ALLOC_SUCCESS(h,s,o,g)                                  \
