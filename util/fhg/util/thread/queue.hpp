@@ -20,7 +20,6 @@ namespace fhg
       typedef queue<T> this_type;
 
     public:
-      typedef T                                  value_type;
       typedef std::list<T> container_type;
       typedef typename container_type::size_type size_type;
 
