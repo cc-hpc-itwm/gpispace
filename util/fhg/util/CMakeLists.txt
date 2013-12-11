@@ -67,7 +67,6 @@ set (srcs
 
   ostream_modifier.cpp
 
-  thread/poll.cpp
   thread/pool.cpp
 
   parse/position.cpp

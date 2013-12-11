@@ -4,8 +4,6 @@ set (hdrs
   event.hpp
   queue.hpp
   channel.hpp
-  poll.hpp
-  pollable.hpp
   pool.hpp
   set.hpp
 )

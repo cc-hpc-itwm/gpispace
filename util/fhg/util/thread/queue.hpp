@@ -6,8 +6,6 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/utility.hpp>
 
-#include <fhg/util/thread/pollable.hpp>
-
 namespace fhg
 {
   namespace thread
@@ -27,7 +25,7 @@ namespace fhg
                         > class Container
              , typename Allocator = std::allocator<T>
              >
-    class queue : public virtual pollable, boost::noncopyable
+    class queue : public boost::noncopyable
     {
     public:
       typedef queue<T, Container, Allocator> this_type;
@@ -172,19 +170,6 @@ namespace fhg
         while (not m_container.empty())
           m_container.pop_front();
         m_put_cond.notify_one ();
-      }
-
-      int poll () const
-      {
-        lock_type lock(m_mtx);
-        int mask = 0;
-
-        if (is_element_available ())
-          mask |= fhg::thread::FHG_POLLIN;
-        if (is_free_slot_available ())
-          mask |= fhg::thread::FHG_POLLOUT;
-
-        return mask;
       }
 
       // expose mutex
