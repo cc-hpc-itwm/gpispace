@@ -10,15 +10,6 @@ namespace fhg
 {
   namespace thread
   {
-    struct operation_timedout : std::runtime_error
-    {
-      operation_timedout (std::string const &op)
-        : std::runtime_error ("'" + op + "' timedout")
-      {}
-
-      ~operation_timedout () throw() {}
-    };
-
     template < typename T
              , template < typename
                         , typename
