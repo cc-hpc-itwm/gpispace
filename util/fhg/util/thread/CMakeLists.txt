@@ -1,7 +1,6 @@
 set (hdrs
   event.hpp
   queue.hpp
-  channel.hpp
   pool.hpp
   set.hpp
 )

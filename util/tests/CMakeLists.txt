@@ -16,12 +16,6 @@ fhg_add_test(queue.cpp
   LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
 )
 
-fhg_add_test(channel.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES fhg-util
-)
-
 fhg_add_test(ini_parser.cpp
   BOOST_UNIT_TEST
   PROJECT util
