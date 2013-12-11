@@ -16,7 +16,6 @@ namespace sdpa
 
       enum error_code_t
         {
-          SDPA_ENOJOBAVAIL,
           SDPA_EJOBNOTFOUND,
           SDPA_EJOBEXISTS,
           SDPA_EJOBREJECTED,
@@ -26,8 +25,6 @@ namespace sdpa
           SDPA_EJOBTERMINATED,
           SDPA_EWORKERNOTREG,
           SDPA_ENODE_SHUTDOWN,
-          SDPA_EBUSY,
-          SDPA_EAGAIN,
           SDPA_EUNKNOWN,
           SDPA_EPERM,
           SDPA_ENETWORKFAILURE
