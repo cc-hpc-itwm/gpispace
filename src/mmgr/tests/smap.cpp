@@ -245,21 +245,68 @@ BOOST_AUTO_TEST_CASE (smap)
       );
   }
 
-  for (Key_t k = 5; k < 110; k += 5)
-    get_atleast (sm, 1000 + k);
+  Key_t Key;
 
-  get_atleast (sm, 1013);
-  get_atleast (sm, 1023);
-  get_atleast (sm, 1044);
-  get_atleast (sm, 1099);
+  Key = 1013;
+  PVal = smap_get_atleast (sm, &Key);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (Key, 1023);
+  BOOST_REQUIRE_EQUAL (*PVal, 23);
 
-  Size_t Bytes = smap_memused (sm);
+  Key = 1013;
+  PVal = smap_get_atleast_minimal (sm, &Key);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (Key, 1013);
+  BOOST_REQUIRE_EQUAL (*PVal, 13);
 
-  printf ("sm = %p, Bytes = " FMT_Size_t "\n", sm, Bytes);
+  Key = 1023;
+  PVal = smap_get_atleast (sm, &Key);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (Key, 1023);
+  BOOST_REQUIRE_EQUAL (*PVal, 23);
 
-  Bytes = smap_free (&sm);
+  Key = 1023;
+  PVal = smap_get_atleast_minimal (sm, &Key);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (Key, 1023);
+  BOOST_REQUIRE_EQUAL (*PVal, 23);
 
-  printf ("sm = %p, Bytes = " FMT_Size_t "\n", sm, Bytes);
+  Key = 1044;
+  PVal = smap_get_atleast (sm, &Key);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (Key, 1099);
+  BOOST_REQUIRE_EQUAL (*PVal, 99);
+
+  Key = 1044;
+  PVal = smap_get_atleast_minimal (sm, &Key);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (Key, 1044);
+  BOOST_REQUIRE_EQUAL (*PVal, 44);
+
+  Key = 1099;
+  PVal = smap_get_atleast (sm, &Key);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (Key, 1099);
+  BOOST_REQUIRE_EQUAL (*PVal, 99);
+
+  Key = 1099;
+  PVal = smap_get_atleast_minimal (sm, &Key);
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (Key, 1099);
+  BOOST_REQUIRE_EQUAL (*PVal, 99);
+
+  Key = 1100;
+  PVal = smap_get_atleast_minimal (sm, &Key);
+  BOOST_REQUIRE_EQUAL (PVal, (PValue_t) NULL);
+
+  Size_t const memused (smap_memused (sm));
+
+  BOOST_REQUIRE_EQUAL (smap_free (&sm), memused);
+}
+
+BOOST_AUTO_TEST_CASE (dups)
+{
+  SMap_t sm = NULL;
 
   Word_t dups = 0;
 
@@ -345,7 +392,7 @@ BOOST_AUTO_TEST_CASE (smap)
   }
 
   Size_t Size = smap_size (sm);
-  Bytes = smap_memused (sm);
+  Size_t Bytes = smap_memused (sm);
 
   printf ("dups = " FMT_Word_t ", size = " FMT_Size_t ", mem = " FMT_Size_t
           "\n", dups, Size, Bytes);
