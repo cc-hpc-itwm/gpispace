@@ -69,26 +69,6 @@ namespace fhg
         return *this;
       }
 
-      void put (const T & t, boost::posix_time::time_duration duration)
-      {
-        boost::system_time const timeout = boost::get_system_time() + duration;
-        lock_type lock (m_mtx);
-        if (m_put_cond.timed_wait ( lock
-                                  , timeout
-                                  , boost::bind ( &this_type::is_free_slot_available
-                                                , this
-                                                )
-                                  )
-           )
-        {
-          return _put_impl (t);
-        }
-        else
-        {
-          throw operation_timedout ("put");
-        }
-      }
-
       size_type size() const
       {
         lock_type lock(m_mtx);
