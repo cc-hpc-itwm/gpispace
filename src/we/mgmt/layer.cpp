@@ -2,6 +2,8 @@
 
 #include <we/mgmt/layer.hpp>
 
+#include <fhg/util/warnings.hpp>
+
 namespace we
 {
   namespace mgmt
