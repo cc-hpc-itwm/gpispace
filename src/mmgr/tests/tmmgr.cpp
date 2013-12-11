@@ -139,7 +139,6 @@ BOOST_AUTO_TEST_CASE (tmmgr)
 
   unsigned long callback_count = 0;
 
-  /* complete defragmentation */
   tmmgr_defrag (&tmmgr, &fMemmove, NULL, &callback_count);
 
   BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 34);
@@ -186,7 +185,6 @@ BOOST_AUTO_TEST_CASE (tmmgr)
                       , ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY
                       );
 
-  /* only up to a free chunk of size 12 */
   MemSize_t FreeSizeWanted = 12;
   tmmgr_defrag (&tmmgr, &fMemmove, &FreeSizeWanted, &callback_count);
 
