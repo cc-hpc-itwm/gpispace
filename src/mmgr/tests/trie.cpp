@@ -83,7 +83,10 @@ BOOST_AUTO_TEST_CASE (trie)
 {
   TrieMap_t tm = NULL;
 
-  get (tm, 23);
+  BOOST_REQUIRE_EQUAL (trie_get (tm, 23), (unsigned long*) NULL);
+  BOOST_REQUIRE_EQUAL (trie_getany (tm), (unsigned long*) NULL);
+  BOOST_REQUIRE_EQUAL (tm, (TrieMap_t) NULL);
+
   ins (&tm, 23, 23);
   ins (&tm, 23, 23);
   ins (&tm, 23, 23);
