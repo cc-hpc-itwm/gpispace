@@ -1,3 +1,7 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE mmgr_tmmgr
+#include <boost/test/unit_test.hpp>
 
 #include <mmgr/tmmgr.h>
 
@@ -117,8 +121,7 @@ fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
 
 }
 
-int
-main ()
+BOOST_AUTO_TEST_CASE (tmmgr)
 {
   Tmmgr_t tmmgr = NULL;
 
@@ -290,6 +293,4 @@ main ()
   tmmgr_status (tmmgrAligned, NULL);
 
   tmmgr_finalize (&tmmgrAligned);
-
-  return EXIT_SUCCESS;
 }
