@@ -350,11 +350,14 @@ namespace fhg
       return 0;
     }
 
-    static bool is_owner_of_task ( const std::string & p
-                                 , const task_info_t & info
-                                 )
+    namespace
     {
-      return p == info.owner;
+      bool is_owner_of_task ( const std::string & p
+                            , const task_info_t & info
+                            )
+      {
+        return p == info.owner;
+      }
     }
 
     void kernel_t::remove_pending_tasks(std::string const &owner)
