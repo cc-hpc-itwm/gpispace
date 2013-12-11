@@ -1,3 +1,7 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE mmgr_ostab
+#include <boost/test/unit_test.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,8 +44,7 @@ print (const OStab_t ostab)
   printf ("]\n");
 }
 
-int
-main ()
+BOOST_AUTO_TEST_CASE (ostab)
 {
   OStab_t ostab = NULL;
 
@@ -99,6 +102,4 @@ main ()
     }
 
   printf ("Bytes = " FMT_Size_t "\n", ostab_free (&ostab));
-
-  return EXIT_SUCCESS;
 }
