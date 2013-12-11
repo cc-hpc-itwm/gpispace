@@ -49,7 +49,7 @@ install (TARGETS gpifs
 )
 
 fhg_add_test (test/test_split.cpp
-  PROJECT test_gpi-fuse
+  PROJECT gpi-fuse
   LINK_LIBRARIES gpi-fuse
                  ${FUSE_LIBRARIES}
                  ${GPI_SPACE_LIBRARY}

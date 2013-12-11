@@ -91,3 +91,12 @@ fhg_add_runtime_executable (
                  ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
 )
+
+add_executable (iheapsort iheapsort.cpp)
+target_link_libraries (iheapsort mmgr)
+
+add_executable (trie_vs_smap trie_vs_smap.cpp)
+target_link_libraries (trie_vs_smap mmgr)
+
+add_executable (perftmmgr perftmmgr.cpp)
+target_link_libraries (perftmmgr mmgr)

@@ -83,82 +83,19 @@ install (FILES
   COMPONENT sdk
 )
 
-add_library (wfhd SHARED util/wfhd.c)
-set_target_properties (wfhd PROPERTIES OUTPUT_NAME wfhd VERSION 1)
-
-install (TARGETS wfhd
-  LIBRARY DESTINATION lib
-  COMPONENT runtime
-  )
-install (FILES
-  util/wfhd.h
-  DESTINATION include/we/util
-  COMPONENT runtime-headers
-)
-
 add_executable (generate_parser_action_table expr/parse/table.cpp)
 target_link_libraries (generate_parser_action_table pnet)
 
-fhg_add_test (type/test/test_bytearray.cpp
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES pnet
-)
+add_subdirectory (util)
 
-fhg_add_test (type/test/value.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we_type
-  LINK_LIBRARIES pnet
-)
+find_package (LibReadline REQUIRED QUIET)
+include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 
-fhg_add_test (type/test/signature.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we_type
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/require_type.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/signature_of.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/exception.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-fhg_add_test (test/expr_type_calculate.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES pnet
-)
-
-add_executable (mk_cpp type/test/mk_cpp.cpp)
-target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
-
-add_custom_command (
-  OUTPUT sig_struct.hpp sig_op.hpp sig_op.cpp
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mk_cpp -H sig_struct.hpp -O sig_op.hpp -I sig_op.cpp
-  DEPENDS mk_cpp
-)
-
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
-add_library (sig_op ${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp)
-
-fhg_add_test (type/test/sig.cpp
-  BOOST_UNIT_TEST
-  PROJECT test_we
-  LINK_LIBRARIES sig_op pnet
-)
-
-if (BUILD_TESTING)
-  add_subdirectory (container/test)
-  add_subdirectory (util/test)
-endif()
+add_subdirectory (container/test)
+add_subdirectory (expr/parse/test)
+add_subdirectory (expr/test)
+add_subdirectory (loader/test)
+add_subdirectory (mgmt/bits/test)
+add_subdirectory (test)
+add_subdirectory (type/test)
+add_subdirectory (util/test)

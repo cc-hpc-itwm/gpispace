@@ -155,14 +155,12 @@ fvmAllocHandle_t fvmGlobalAlloc(fvmSize_t size)
         case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
 #ifndef NDEBUG
           fprintf(stderr, "fvm-pc: global alloc failed: not enough contigiuous memory of size %lu!\n", size);
-      dtmmgr_status (dtmmgr);
 #endif
           // FIXME: set errno!
           return 0;
         default:
 #ifndef NDEBUG
           fprintf(stderr, "fvm-pc: global alloc of size %lu failed!\n", size);
-      dtmmgr_status (dtmmgr);
 #endif
           return 0;
   }
@@ -175,20 +173,11 @@ int fvmGlobalFree(fvmAllocHandle_t ptr)
         case RET_SUCCESS:
           return 0;
         case RET_HANDLE_UNKNOWN:
-#ifndef NDEBUG
-          dtmmgr_status (dtmmgr);
-#endif
           return FVM_ESRCH;
         case RET_FAILURE:
-#ifndef NDEBUG
-          dtmmgr_status (dtmmgr);
-#endif
           return FVM_EGENERAL;
         default:
           fprintf(stderr, "fvm-pc: global free failed: unknown return code: %d\n", ret);
-#ifndef NDEBUG
-          dtmmgr_status (dtmmgr);
-#endif
           return FVM_EGENERAL;
   }
 }
@@ -211,14 +200,12 @@ fvmAllocHandle_t fvmLocalAlloc(fvmSize_t size)
         case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
 #ifndef NDEBUG
           fprintf(stderr, "fvm-pc: local alloc failed: not enough contigiuous memory of size %lu!\n", size);
-          dtmmgr_status (dtmmgr);
 #endif
           // FIXME: set errno!
           return 0;
         default:
 #ifndef NDEBUG
           fprintf(stderr, "fvm-pc: local alloc of size %lu failed!\n", size);
-          dtmmgr_status (dtmmgr);
 #endif
           return 0;
   }
@@ -231,19 +218,10 @@ int fvmLocalFree(fvmAllocHandle_t ptr)
         case RET_SUCCESS:
           return 0;
         case RET_HANDLE_UNKNOWN:
-#ifndef NDEBUG
-          dtmmgr_status (dtmmgr);
-#endif
           return FVM_ESRCH;
         case RET_FAILURE:
-#ifndef NDEBUG
-          dtmmgr_status (dtmmgr);
-#endif
           return FVM_EGENERAL;
         default:
-#ifndef NDEBUG
-          dtmmgr_status (dtmmgr);
-#endif
           // FIXME: set errno instead!
           fprintf(stderr, "fvm-pc: local free failed: unknown return code: %d\n", ret);
           return FVM_EGENERAL;

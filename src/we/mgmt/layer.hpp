@@ -21,7 +21,6 @@
 #include <boost/unordered_set.hpp>
 
 #include <we/mgmt/exception.hpp>
-#include <we/mgmt/bits/commands.hpp>
 #include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
@@ -58,12 +57,12 @@ namespace we { namespace mgmt {
       typedef boost::unordered_map<internal_id_type, descriptor_ptr> activities_t;
 
       // manager thread
-      typedef detail::commands::command_t<detail::commands::CMD_ID, internal_id_type> cmd_t;
+      typedef boost::function<void ()> cmd_t;
       typedef detail::queue<cmd_t, 0> cmd_q_t;
 
       // extractor
       //! \todo is it necessary to use a locked data structure?
-      typedef detail::set<internal_id_type, 0> active_nets_t;
+      typedef detail::set<internal_id_type> active_nets_t;
 
       typedef boost::unique_lock<boost::recursive_mutex> lock_t;
     public:
@@ -310,11 +309,11 @@ namespace we { namespace mgmt {
        * Constructor calls
        */
       layer()
-        : sig_submitted("sig_submitted")
-        , sig_finished("sig_finished")
-        , sig_failed("sig_failed")
-        , sig_canceled("sig_canceled")
-        , sig_executing("sig_executing")
+        : sig_submitted()
+        , sig_finished()
+        , sig_failed()
+        , sig_canceled()
+        , sig_executing()
         , internal_id_gen_(&petri_net::activity_id_generate)
       {
         start();
@@ -322,11 +321,11 @@ namespace we { namespace mgmt {
 
       template <class E, typename G>
       layer(E * exec_layer, G gen)
-        : sig_submitted("sig_submitted")
-        , sig_finished("sig_finished")
-        , sig_failed("sig_failed")
-        , sig_canceled("sig_canceled")
-        , sig_executing("sig_executing")
+        : sig_submitted()
+        , sig_finished()
+        , sig_failed()
+        , sig_canceled()
+        , sig_executing()
         , external_id_gen_(gen)
         , internal_id_gen_(&petri_net::activity_id_generate)
       {
@@ -436,24 +435,10 @@ namespace we { namespace mgmt {
 
       void manager()
       {
-        using namespace we::mgmt::detail::commands;
         DLOG(TRACE, "manager thread started...");
         for (;;)
         {
-          cmd_t cmd = cmd_q_.get();
-          try
-          {
-            cmd.handle();
-          }
-          catch (std::exception const& ex)
-          {
-            LOG( WARN
-               , "error during manager command handling: command: "
-               << cmd.name
-               << " failed: "
-               << ex.what()
-               );
-          }
+          cmd_q_.get()();
         }
         DLOG(TRACE, "manager thread stopped...");
       }
@@ -502,7 +487,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(make_cmd("activity_failed", id, boost::bind(&layer::activity_failed, this, _1)));
+          cmd_q_.put (boost::bind (&layer::activity_failed, this, id));
         }
         else
         {
@@ -515,7 +500,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(make_cmd("activity_canceled", id, boost::bind(&layer::activity_canceled, this, _1)));
+          cmd_q_.put (boost::bind (&layer::activity_canceled, this, id));
         }
         else
         {
@@ -528,7 +513,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put (make_cmd("cancel_activity", id, boost::bind(&layer::cancel_activity, this, _1)));
+          cmd_q_.put (boost::bind (&layer::cancel_activity, this, id));
         }
         else
         {
@@ -829,11 +814,11 @@ namespace we { namespace mgmt {
           throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (*desc));
         }
 
-        if (sig_finished.connected())
-          sig_finished ( this
-                       , desc->id()
-                       , desc->activity().to_string()
-                       );
+        sig_finished ( this
+                     , desc->id()
+                     , desc->activity().to_string()
+                     );
+
         remove_activity (desc);
       }
 
@@ -867,9 +852,8 @@ namespace we { namespace mgmt {
         return internal_id_gen_();
       }
 
-      void activity_failed(const cmd_t & cmd)
+      void activity_failed (internal_id_type const internal_id)
       {
-        const internal_id_type internal_id (cmd.dat);
         try
         {
           descriptor_ptr desc (lookup(internal_id));
@@ -880,11 +864,10 @@ namespace we { namespace mgmt {
                 << desc->error_message ()
                 );
 
-          if (sig_failed.connected())
-            sig_failed ( this
-                       , internal_id
-                       , desc->activity().to_string()
-                       );
+          sig_failed ( this
+                     , internal_id
+                     , desc->activity().to_string()
+                     );
 
           if (desc->has_parent ())
           {
@@ -922,9 +905,8 @@ namespace we { namespace mgmt {
         }
       }
 
-      void activity_canceled(const cmd_t & cmd)
+      void activity_canceled (internal_id_type const internal_id)
       {
-        const internal_id_type internal_id (cmd.dat);
         try
         {
           descriptor_ptr desc (lookup(internal_id));
@@ -965,11 +947,10 @@ namespace we { namespace mgmt {
             throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (*desc));
           }
 
-          if (sig_canceled.connected())
-            sig_canceled ( this
-                          , internal_id
-                          , desc->activity().to_string()
-                          );
+          sig_canceled ( this
+                       , internal_id
+                       , desc->activity().to_string()
+                       );
 
           remove_activity (desc);
         }
@@ -979,9 +960,8 @@ namespace we { namespace mgmt {
         }
       }
 
-      void cancel_activity(const cmd_t & cmd)
+      void cancel_activity (internal_id_type const internal_id)
       {
-        const internal_id_type internal_id (cmd.dat);
         try
         {
           descriptor_ptr desc (lookup(internal_id));

@@ -14,6 +14,7 @@ target_link_libraries (gpi-space
   ${gpi_space_Boost_FILESYSTEM_LIBRARY}
   ${gpi_space_Boost_SERIALIZATION_LIBRARY}
   ${gpi_space_Boost_THREAD_LIBRARY}
+  ${gpi_space_Boost_SYSTEM_LIBRARY}
 )
 
 # search for libreadline
@@ -35,13 +36,14 @@ target_link_libraries (gpish
   ${gpi_space_Boost_SERIALIZATION_LIBRARY}
   ${gpi_space_Boost_THREAD_LIBRARY}
   ${gpi_space_Boost_FILESYSTEM_LIBRARY}
+  ${gpi_space_Boost_SYSTEM_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
   fhg-revision
 )
 
 set_target_properties(gpi-space
   PROPERTIES
-  INSTALL_RPATH ""
+  INSTALL_RPATH "${CMAKE_INSTALL_RPATH}"
   )
 install (TARGETS gpi-space gpish
   RUNTIME
