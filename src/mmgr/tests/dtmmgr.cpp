@@ -5,11 +5,6 @@
 
 #include <mmgr/dtmmgr.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-
-static const Arena_t Other[2] = { ARENA_DOWN, ARENA_UP };
-
 namespace
 {
   void fMemmove ( const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc
