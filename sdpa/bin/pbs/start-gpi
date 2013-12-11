@@ -124,7 +124,7 @@ if [ -z "$socket_path" ] ; then
     socket_path=$(fhgcfg -f "${config_file}" -g gpi.socket_path -v "/tmp")
 fi
 
-if [ -z "$gpi_bin_path" ] ; then
+if [ -z "$gpi_priv_dir" ] ; then
     log "could not deduce GPI_PRIV_DIR, please export GPI_PRIV_DIR or pass via commandline!"
     exit 1
 fi
