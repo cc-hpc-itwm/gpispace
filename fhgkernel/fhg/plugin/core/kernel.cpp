@@ -360,7 +360,6 @@ namespace fhg
     void kernel_t::remove_pending_tasks(std::string const &owner)
     {
       lock_type lock_pending (m_mtx_pending_tasks);
-      task_queue_t::lock_type lock_task_q (m_task_queue.get_mutex());
 
       m_task_queue.remove_if
         (boost::bind (&is_owner_of_task, owner, _1));
