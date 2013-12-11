@@ -58,7 +58,7 @@ namespace we { namespace mgmt {
       typedef boost::unordered_map<internal_id_type, descriptor_ptr> activities_t;
 
       // manager thread
-      typedef detail::commands::command_t cmd_t;
+      typedef boost::function<void ()> cmd_t;
       typedef detail::queue<cmd_t, 0> cmd_q_t;
 
       // extractor
@@ -439,7 +439,7 @@ namespace we { namespace mgmt {
         DLOG(TRACE, "manager thread started...");
         for (;;)
         {
-          cmd_q_.get().handle();
+          cmd_q_.get()();
         }
         DLOG(TRACE, "manager thread stopped...");
       }
@@ -488,7 +488,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(cmd_t(boost::bind(&layer::activity_failed, this, id, _1)));
+          cmd_q_.put (boost::bind (&layer::activity_failed, this, id));
         }
         else
         {
@@ -501,7 +501,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(cmd_t(boost::bind(&layer::activity_canceled, this, id, _1)));
+          cmd_q_.put (boost::bind (&layer::activity_canceled, this, id));
         }
         else
         {
@@ -514,7 +514,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put (cmd_t(boost::bind(&layer::cancel_activity, this, id, _1)));
+          cmd_q_.put (boost::bind (&layer::cancel_activity, this, id));
         }
         else
         {
@@ -853,9 +853,7 @@ namespace we { namespace mgmt {
         return internal_id_gen_();
       }
 
-      void activity_failed ( internal_id_type const internal_id
-                           , const cmd_t & cmd
-                           )
+      void activity_failed (internal_id_type const internal_id)
       {
         try
         {
@@ -908,9 +906,7 @@ namespace we { namespace mgmt {
         }
       }
 
-      void activity_canceled ( internal_id_type const internal_id
-                             , const cmd_t & cmd
-                             )
+      void activity_canceled (internal_id_type const internal_id)
       {
         try
         {
@@ -965,9 +961,7 @@ namespace we { namespace mgmt {
         }
       }
 
-      void cancel_activity ( internal_id_type const internal_id
-                           , const cmd_t & cmd
-                           )
+      void cancel_activity (internal_id_type const internal_id)
       {
         try
         {
