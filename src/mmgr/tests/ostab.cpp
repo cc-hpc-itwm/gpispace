@@ -3,9 +3,6 @@
 #define BOOST_TEST_MODULE mmgr_ostab
 #include <boost/test/unit_test.hpp>
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include <mmgr/ostab.h>
 
 BOOST_AUTO_TEST_CASE (ostab)
