@@ -320,6 +320,12 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     return;
   }
 
+  if( e.from() != sdpa::daemon::WE )
+  {
+    events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new events::SubmitJobAckEvent(name(), e.from(), job_id));
+    sendEventToMaster(pSubmitJobAckEvt);
+  }
+
   // check if the message comes from outside/slave or from WFE
   // if it comes from outside set it as local
   if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() )
@@ -329,12 +335,6 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   }
   else {
     scheduler()->enqueueJob(job_id);
-  }
-
-  if( e.from() != sdpa::daemon::WE )
-  {
-    events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new events::SubmitJobAckEvent(name(), e.from(), job_id));
-    sendEventToMaster(pSubmitJobAckEvt);
   }
 }
 
