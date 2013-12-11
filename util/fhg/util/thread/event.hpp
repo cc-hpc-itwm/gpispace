@@ -2,7 +2,6 @@
 #define FHG_UTIL_EVENT_HPP 1
 
 #include <boost/thread.hpp>
-#include <fhg/util/thread/semaphore.hpp>
 
 namespace fhg
 {
