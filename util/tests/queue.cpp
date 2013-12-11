@@ -11,7 +11,7 @@
 
 #include <fhg/util/thread/queue.hpp>
 
-typedef fhg::thread::queue<int, std::list> items_t;
+typedef fhg::thread::queue<int> items_t;
 
 static void fill_items (items_t & items, int NUM)
 {

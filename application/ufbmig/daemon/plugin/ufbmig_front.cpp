@@ -69,7 +69,7 @@ namespace transfer
   };
 
   typedef boost::shared_ptr<request_t> request_ptr_t;
-  typedef fhg::thread::queue<request_ptr_t, std::list> request_queue_t;
+  typedef fhg::thread::queue<request_ptr_t> request_queue_t;
 }
 
 class UfBMigFrontImpl : FHG_PLUGIN

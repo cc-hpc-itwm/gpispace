@@ -9,10 +9,10 @@ namespace fhg
   namespace thread
   {
     template <typename T>
-    class channel : public fhg::thread::queue<T, std::list>
+    class channel : public fhg::thread::queue<T>
     {
     public:
-      typedef queue<T, std::list>           super_type;
+      typedef queue<T>           super_type;
       typedef typename super_type::size_type size_type;
 
       channel ()

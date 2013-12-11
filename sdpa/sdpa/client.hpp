@@ -46,8 +46,7 @@ namespace sdpa
     private:
       std::string _name;
 
-      fhg::thread::queue<sdpa::events::SDPAEvent::Ptr, std::list>
-        m_incoming_events;
+      fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> m_incoming_events;
 
       // config variables
       std::string orchestrator_;

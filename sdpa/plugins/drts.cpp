@@ -43,9 +43,7 @@ class DRTSImpl : FHG_PLUGIN
   typedef boost::condition_variable condition_type;
   typedef boost::unique_lock<mutex_type> lock_type;
 
-  typedef fhg::thread::queue< sdpa::events::SDPAEvent::Ptr
-                            , std::list
-                            > event_queue_t;
+  typedef fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> event_queue_t;
 
   typedef boost::shared_ptr<drts::Master> master_ptr;
   typedef std::map< std::string
@@ -56,9 +54,7 @@ class DRTSImpl : FHG_PLUGIN
   typedef std::map< std::string
                   , job_ptr_t
                   > map_of_jobs_t;
-  typedef fhg::thread::queue< job_ptr_t
-                            , std::list
-                            > job_queue_t;
+  typedef fhg::thread::queue<job_ptr_t> job_queue_t;
 
   typedef std::pair<sdpa::Capability, fhg::plugin::Capability*> capability_info_t;
   typedef std::map<std::string, capability_info_t> map_of_capabilities_t;
