@@ -78,8 +78,7 @@ namespace fhg
       void clear ()
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        while (not m_container.empty())
-          m_container.pop_front();
+        m_container.clear();
       }
     private:
       bool is_element_available () const
