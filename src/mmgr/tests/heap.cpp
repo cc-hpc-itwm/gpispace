@@ -12,75 +12,96 @@ BOOST_AUTO_TEST_CASE (heap)
 {
   Heap_t h = NULL;
 
-  heap_out (h);
+  BOOST_REQUIRE_EQUAL (heap_size (h), 0);
 
   heap_ins (&h, 12);
-  heap_out (h);
+
+  BOOST_REQUIRE_EQUAL (heap_size (h), 1);
+  BOOST_REQUIRE_EQUAL (heap_min (h), 12);
+
   heap_ins (&h, 13);
-  heap_out (h);
 
+  BOOST_REQUIRE_EQUAL (heap_size (h), 2);
+  BOOST_REQUIRE_EQUAL (heap_min (h), 12);
   heap_delmin (&h);
-  heap_out (h);
 
+  BOOST_REQUIRE_EQUAL (heap_size (h), 1);
+  BOOST_REQUIRE_EQUAL (heap_min (h), 13);
   heap_delmin (&h);
-  heap_out (h);
+
+  BOOST_REQUIRE_EQUAL (heap_size (h), 0);
 
   heap_ins (&h, 10);
-  heap_out (h);
   heap_ins (&h, 11);
-  heap_out (h);
   heap_ins (&h, 12);
-  heap_out (h);
   heap_ins (&h, 9);
-  heap_out (h);
   heap_ins (&h, 8);
-  heap_out (h);
   heap_ins (&h, 7);
-  heap_out (h);
 
-  while (heap_size (h) > 0)
-    {
-      printf (" " FMT_Offset_t " ", heap_min (h));
+  BOOST_REQUIRE_EQUAL (heap_min (h), 7);
+  heap_delmin (&h);
 
-      heap_delmin (&h);
-      heap_out (h);
-    }
+  BOOST_REQUIRE_EQUAL (heap_min (h), 8);
+  heap_delmin (&h);
+
+  BOOST_REQUIRE_EQUAL (heap_min (h), 9);
+  heap_delmin (&h);
+
+  BOOST_REQUIRE_EQUAL (heap_min (h), 10);
+  heap_delmin (&h);
+
+  BOOST_REQUIRE_EQUAL (heap_min (h), 11);
+  heap_delmin (&h);
+
+  BOOST_REQUIRE_EQUAL (heap_min (h), 12);
+  heap_delmin (&h);
+
+  BOOST_REQUIRE_EQUAL (heap_size (h), 0);
 
   heap_ins (&h, 10);
-  heap_out (h);
   heap_ins (&h, 11);
-  heap_out (h);
   heap_ins (&h, 12);
-  heap_out (h);
   heap_ins (&h, 9);
-  heap_out (h);
   heap_ins (&h, 8);
-  heap_out (h);
   heap_ins (&h, 7);
-  heap_out (h);
-
   heap_ins (&h, 10);
-  heap_out (h);
   heap_ins (&h, 11);
-  heap_out (h);
   heap_ins (&h, 12);
-  heap_out (h);
   heap_ins (&h, 9);
-  heap_out (h);
   heap_ins (&h, 8);
-  heap_out (h);
   heap_ins (&h, 7);
-  heap_out (h);
 
-  while (heap_size (h) > 0)
-    {
-      printf (" " FMT_Offset_t " ", heap_min (h));
+  BOOST_REQUIRE_EQUAL (heap_min (h), 7);
+  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (heap_min (h), 7);
+  heap_delmin (&h);
 
-      heap_delmin (&h);
-      heap_out (h);
-    }
+  BOOST_REQUIRE_EQUAL (heap_min (h), 8);
+  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (heap_min (h), 8);
+  heap_delmin (&h);
 
-  printf ("\n");
+  BOOST_REQUIRE_EQUAL (heap_min (h), 9);
+  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (heap_min (h), 9);
+  heap_delmin (&h);
 
-  printf ("free = " FMT_Size_t "\n", heap_free (&h));
+  BOOST_REQUIRE_EQUAL (heap_min (h), 10);
+  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (heap_min (h), 10);
+  heap_delmin (&h);
+
+  BOOST_REQUIRE_EQUAL (heap_min (h), 11);
+  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (heap_min (h), 11);
+  heap_delmin (&h);
+
+  BOOST_REQUIRE_EQUAL (heap_min (h), 12);
+  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (heap_min (h), 12);
+  heap_delmin (&h);
+
+  BOOST_REQUIRE_EQUAL (heap_size (h), 0);
+
+  BOOST_REQUIRE_EQUAL (heap_free (&h), 152);
 }
