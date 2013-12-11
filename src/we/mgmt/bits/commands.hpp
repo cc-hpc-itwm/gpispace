@@ -26,12 +26,10 @@ namespace we
                     , petri_net::activity_id_type const& d
                     , handler_type h
                     )
-            : name (n)
-            , dat (d)
+            : dat (d)
             , handler (h)
           {}
 
-          std::string name;
           petri_net::activity_id_type dat;
 
           void handle()
