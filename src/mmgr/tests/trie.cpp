@@ -3,9 +3,6 @@
 #define BOOST_TEST_MODULE mmgr_trie
 #include <boost/test/unit_test.hpp>
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include <mmgr/trie.h>
 
 BOOST_AUTO_TEST_CASE (trie)
