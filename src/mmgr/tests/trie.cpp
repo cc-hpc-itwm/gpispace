@@ -11,7 +11,6 @@ void malloc_stats() { }
 #include <stdlib.h>
 
 #include <mmgr/trie.h>
-#include <mmgr/unused.h>
 
 static void
 getany (const TrieMap_t tm)

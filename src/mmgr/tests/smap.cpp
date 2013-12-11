@@ -11,7 +11,6 @@ void malloc_stats() { }
 #include <stdlib.h>
 
 #include <mmgr/smap.h>
-#include <mmgr/unused.h>
 
 static void
 get (const SMap_t sm, const Key_t key)

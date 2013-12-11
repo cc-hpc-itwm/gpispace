@@ -11,7 +11,6 @@ void malloc_stats() { }
 #include <stdlib.h>
 
 #include <mmgr/ostab.h>
-#include <mmgr/unused.h>
 
 static void
 try_look (OStab_t ostab, const Key_t Key)
