@@ -436,7 +436,6 @@ namespace we { namespace mgmt {
 
       void manager()
       {
-        using namespace we::mgmt::detail::commands;
         DLOG(TRACE, "manager thread started...");
         for (;;)
         {
