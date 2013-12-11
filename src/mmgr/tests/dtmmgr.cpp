@@ -80,40 +80,6 @@ do_free (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena)
   printf ("\n");
 }
 
-/*
-static void
-do_resize (PTmmgr_t PTmmgr, MemSize_t NewSize)
-{
-  if (PTmmgr == NULL)
-    return;
-
-  printf ("RESIZE: NewSize = " FMT_MemSize_t " => ", NewSize);
-
-  switch (tmmgr_resize (&PTmmgr, NewSize))
-    {
-    case RESIZE_SUCCESS:
-      printf ("RESIZE_SUCCESS");
-      break;
-    case RESIZE_BELOW_HIGHWATER:
-      printf ("RESIZE_BELOW_HIGHWATER");
-      break;
-    case RESIZE_BELOW_MEMUSED:
-      printf ("RESIZE_BELOW_MEMUSED");
-      break;
-    case RESIZE_FAILURE:
-      printf ("RESIZE_FAILURE");
-      break;
-    default:
-      fprintf (stderr, "STRANGE\n");
-      exit (EXIT_FAILURE);
-      break;
-    }
-
-  printf ("\n");
-}
-
-*/
-
 static void
 fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
           const MemSize_t Size, void *PDat)
