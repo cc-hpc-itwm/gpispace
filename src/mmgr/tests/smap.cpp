@@ -278,6 +278,9 @@ BOOST_AUTO_TEST_CASE (dups)
     dups += (was_there == True) ? 1 : 0;
   }
 
+  BOOST_REQUIRE_EQUAL (dups, 266);
+  BOOST_REQUIRE_EQUAL (smap_size (sm), 1048310);
+
   {
     std::ostringstream oss;
     smap_print_max (oss, sm, 5);
@@ -350,27 +353,24 @@ BOOST_AUTO_TEST_CASE (dups)
       );
   }
 
-  Size_t Size = smap_size (sm);
-  Size_t Bytes = smap_memused (sm);
-
-  printf ("dups = " FMT_Word_t ", size = " FMT_Size_t ", mem = " FMT_Size_t
-          "\n", dups, Size, Bytes);
-
   srand (31415926);
 
   for (Word_t i = 0; i < (1 << 20); ++i)
-    {
-      smap_del (&sm, (Key_t) rand (), SMAP_DEL_INORDER_SUCC);
-    }
+  {
+    smap_del (&sm, (Key_t) rand (), SMAP_DEL_INORDER_SUCC);
+  }
+
+  BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
+  BOOST_REQUIRE_EQUAL (smap_memused (sm), 0);
 
   srand (27182818);
 
   for (Word_t i = 0; i < (1 << 20); ++i)
-    {
-      smap_ins (&sm, (Key_t) rand (), (Value_t) i);
-    }
+  {
+    smap_ins (&sm, (Key_t) rand (), (Value_t) i);
+  }
 
-  Bytes = smap_free (&sm);
+  Size_t const memused (smap_memused (sm));
 
-  printf ("sm = %p, Bytes = " FMT_Size_t "\n", sm, Bytes);
+  BOOST_REQUIRE_EQUAL (smap_free (&sm), memused);
 }
