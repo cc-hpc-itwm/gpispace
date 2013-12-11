@@ -106,9 +106,6 @@ namespace fhg
           m_container.pop_front();
         m_put_cond.notify_one ();
       }
-
-      // expose mutex
-      mutex & get_mutex () { return m_mtx; }
     private:
       T _get_impl ()
       {
