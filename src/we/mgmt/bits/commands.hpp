@@ -22,10 +22,9 @@ namespace we
           command_t ()
           {}
 
-          template <typename H>
           command_t ( std::string const& n
                     , petri_net::activity_id_type const& d
-                    , H h
+                    , handler_type h
                     )
             : name (n)
             , dat (d)
