@@ -117,17 +117,13 @@ namespace fhg
 
       bool is_free_slot_available () const
       {
-        if (m_buffer_size)
-          return m_container.size () < m_buffer_size;
-        else
-          return true;
+        return true;
       }
 
       mutable mutex     m_mtx;
       mutable condition m_put_cond;
       mutable condition m_get_cond;
 
-      size_type      m_buffer_size;
       container_type m_container;
     };
   }
