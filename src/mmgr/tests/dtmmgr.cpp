@@ -15,9 +15,6 @@ namespace
 {
   void do_alloc (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena, Size_t Size)
   {
-    if (DTmmgr == NULL)
-      return;
-
     AllocReturn_t AllocReturn = dtmmgr_alloc (&DTmmgr, Handle, Arena, Size);
 
     printf ("ALLOC: (Handle = " FMT_Handle_t ", Arena = %s, Size = " FMT_Size_t
