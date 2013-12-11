@@ -50,7 +50,6 @@ namespace sdpa
         m_incoming_events;
 
       // config variables
-      boost::posix_time::time_duration timeout_;
       std::string orchestrator_;
 
       fhg::com::message_t message_for_event (const sdpa::events::SDPAEvent*);
