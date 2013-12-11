@@ -26,8 +26,8 @@ namespace sdpa {
     const std::string &str() const { return id_; }
     std::string &str() { return id_; }
 
-    static JobId invalid_job_id() { return "-"; }
-    static bool is_invalid_job_id(const JobId &job_id) { return job_id == "-"; }
+    static JobId invalid_job_id() { return ""; }
+    static bool is_invalid_job_id(const JobId &job_id) { return job_id.str().empty(); }
 
     template <class Archive>
     void serialize(Archive& ar, unsigned int /* version */)
