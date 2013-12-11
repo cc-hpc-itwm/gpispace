@@ -48,53 +48,63 @@ BOOST_AUTO_TEST_CASE (ostab)
 {
   OStab_t ostab = NULL;
 
-  printf ("Bytes = " FMT_Size_t "\n", ostab_memused (ostab));
+  BOOST_REQUIRE_EQUAL (ostab_memused (ostab), 0);
+  BOOST_REQUIRE_EQUAL (ostab_size (ostab), 0);
 
-  print (ostab);
+  BOOST_REQUIRE_EQUAL (ostab_ins (&ostab, 23, 0xfff, 1 << 20), False);
+  BOOST_REQUIRE_EQUAL (ostab_ins (&ostab, 42, 0xaff, 1 << 12), False);
 
-  ostab_ins (&ostab, 23, 0xfff, 1 << 20);
-  ostab_ins (&ostab, 42, 0xaff, 1 << 12);
+  BOOST_REQUIRE_EQUAL (ostab_size (ostab), 2);
 
-  printf ("Bytes = " FMT_Size_t "\n", ostab_memused (ostab));
+  Offset_t Offset;
+  Size_t Size;
 
-  print (ostab);
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 23, &Offset, &Size), True);
+  BOOST_REQUIRE_EQUAL (Offset, 0xfff);
+  BOOST_REQUIRE_EQUAL (Size, 1 << 20);
 
-  try_look (ostab, 23);
-  try_look (ostab, 42);
-  try_look (ostab, 99);
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 42, &Offset, &Size), True);
+  BOOST_REQUIRE_EQUAL (Offset, 0xaff);
+  BOOST_REQUIRE_EQUAL (Size, 1 << 12);
+
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 99, &Offset, &Size), False);
 
   ostab_del (&ostab, 99);
+
+  BOOST_REQUIRE_EQUAL (ostab_size (ostab), 2);
+
   ostab_del (&ostab, 23);
 
-  printf ("Bytes = " FMT_Size_t "\n", ostab_memused (ostab));
+  BOOST_REQUIRE_EQUAL (ostab_size (ostab), 1);
 
-  try_look (ostab, 23);
-  try_look (ostab, 42);
-  try_look (ostab, 99);
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 23, &Offset, &Size), False);
 
-  printf ("Bytes = " FMT_Size_t "\n", ostab_free (&ostab));
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 42, &Offset, &Size), True);
+  BOOST_REQUIRE_EQUAL (Offset, 0xaff);
+  BOOST_REQUIRE_EQUAL (Size, 1 << 12);
 
-  try_look (ostab, 23);
-  try_look (ostab, 42);
-  try_look (ostab, 99);
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 99, &Offset, &Size), False);
 
-  srand (31415926);
+  Size_t const memused (ostab_memused (ostab));
 
-  for (Word_t i = 0; i < (1 << 20); ++i)
-    {
-      ostab_ins (&ostab, (Key_t) i, (Offset_t) i, (Size_t) i);
-    }
+  BOOST_REQUIRE_EQUAL (ostab_free (&ostab), memused);
+}
 
-  printf ("Bytes = " FMT_Size_t "\n", ostab_free (&ostab));
-
-  srand (31415926);
+BOOST_AUTO_TEST_CASE (ostab_mega)
+{
+  OStab_t ostab = NULL;
 
   for (Word_t i = 0; i < (1 << 20); ++i)
     {
       ostab_ins (&ostab, (Key_t) i, (Offset_t) i, (Size_t) i);
     }
 
-  srand (31415926);
+  printf ("Bytes = " FMT_Size_t "\n", ostab_free (&ostab));
+
+  for (Word_t i = 0; i < (1 << 20); ++i)
+    {
+      ostab_ins (&ostab, (Key_t) i, (Offset_t) i, (Size_t) i);
+    }
 
   for (Word_t i = 0; i < (1 << 20); ++i)
     {
