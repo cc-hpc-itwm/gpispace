@@ -22,8 +22,7 @@ namespace we
           command_t ()
           {}
 
-          command_t ( std::string const& n
-                    , petri_net::activity_id_type const& d
+          command_t ( petri_net::activity_id_type const& d
                     , handler_type h
                     )
             : dat (d)
