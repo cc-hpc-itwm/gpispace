@@ -101,7 +101,9 @@ BOOST_AUTO_TEST_CASE (trie)
   BOOST_REQUIRE_EQUAL (was_there, True);
   BOOST_REQUIRE_EQUAL (PVal, PVal2);
 
-  get (tm, 23);
+  BOOST_REQUIRE_EQUAL (trie_get (tm, 23), PVal);
+  BOOST_REQUIRE_EQUAL (trie_getany (tm), PVal);
+
   del (&tm, 23);
   get (tm, 23);
   del (&tm, 23);
