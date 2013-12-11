@@ -16,7 +16,7 @@ BOOST_TEST_DONT_PRINT_LOG_VALUE (std::vector<int>::iterator)
 
 BOOST_AUTO_TEST_CASE (thread_channel_in_out)
 {
-  int_channel_t chan (1);
+  int_channel_t chan;
 
   const int in = 1;
   short    out = 0;

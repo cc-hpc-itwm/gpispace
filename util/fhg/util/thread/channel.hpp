@@ -18,10 +18,6 @@ namespace fhg
       channel ()
         : super_type ()
       {}
-
-      channel (size_type buffer_size)
-        : super_type (buffer_size)
-      {}
     };
 
     struct drop
