@@ -360,7 +360,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
           DMLOG (WARN, "Job " << e.job_id() << " could not be deleted!");
           sendEventToMaster(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                               , e.from()
-                                                              ,  events::ErrorEvent::SDPA_EUNKNOWN
+                                                              , events::ErrorEvent::SDPA_EJOBNOTDELETED
                                                               , ex.what()
                                                             )
                                             ));
