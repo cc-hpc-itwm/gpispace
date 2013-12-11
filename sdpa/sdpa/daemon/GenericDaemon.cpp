@@ -313,7 +313,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   }
   catch(JobNotAddedException const &ex)
   {
-    DMLOG (WARN, "job " << job_id << " could not be added: " << ex.what());
+    DMLOG (WARN, "Couldn't create a new job out of the submitted description. Check if it corresponds to a valid workflow!");
     events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBNOTADDED, ex.what()) );
     sendEventToMaster(pErrorEvt);
     return;
