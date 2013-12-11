@@ -2,8 +2,6 @@
 
 #include <we/mgmt/layer.hpp>
 
-#include <fhg/util/warnings.hpp>
-
 namespace we
 {
   namespace mgmt
@@ -32,8 +30,6 @@ namespace we
     }
     bool layer::cancel (const external_id_type& id, const reason_type& reason)
     {
-      fhg::util::remove_unused_variable_warning (reason);
-
       MLOG (WARN, "cancel ( " << id << " ) := " << reason);
 
       try
@@ -76,8 +72,6 @@ namespace we
                        , const std::string& error_message
                        )
     {
-      fhg::util::remove_unused_variable_warning (result);
-
       try
       {
         descriptor_ptr d = lookup (map_to_internal (id));
