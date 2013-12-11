@@ -28,10 +28,6 @@ namespace fhg
       typedef Container<T, Allocator>            container_type;
       typedef typename container_type::size_type size_type;
 
-      explicit queue (size_type buffer_size = 0)
-        : m_buffer_size (buffer_size)
-      {}
-
       T get()
       {
         lock_type lock(m_mtx);
