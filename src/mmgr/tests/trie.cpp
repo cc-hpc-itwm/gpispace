@@ -88,75 +88,94 @@ BOOST_AUTO_TEST_CASE (trie)
   BOOST_REQUIRE_EQUAL (tm, (TrieMap_t) NULL);
 
   Bool_t was_there;
-  const PValue_t PVal = trie_ins (&tm, 23, &was_there);
 
-  BOOST_REQUIRE_NE (tm, (TrieMap_t) NULL);
-  BOOST_REQUIRE_NE (PVal, (unsigned long*) NULL);
-  BOOST_REQUIRE_EQUAL (was_there, False);
+  {
+    const PValue_t PVal = trie_ins (&tm, 23, &was_there);
 
-  *PVal = 23;
+    BOOST_REQUIRE_NE (tm, (TrieMap_t) NULL);
+    BOOST_REQUIRE_NE (PVal, (unsigned long*) NULL);
+    BOOST_REQUIRE_EQUAL (was_there, False);
 
-  const PValue_t PVal2 = trie_ins (&tm, 23, &was_there);
+    *PVal = 23;
 
-  BOOST_REQUIRE_EQUAL (was_there, True);
-  BOOST_REQUIRE_EQUAL (PVal, PVal2);
+    const PValue_t PVal2 = trie_ins (&tm, 23, &was_there);
 
-  BOOST_REQUIRE_EQUAL (trie_get (tm, 23), PVal);
-  BOOST_REQUIRE_EQUAL (trie_getany (tm), PVal);
+    BOOST_REQUIRE_EQUAL (was_there, True);
+    BOOST_REQUIRE_EQUAL (PVal, PVal2);
 
-  del (&tm, 23);
-  get (tm, 23);
-  del (&tm, 23);
-  get (tm, 23);
-  ins (&tm, 23, 23);
-  ins (&tm, 99, 99);
-  get (tm, 23);
-  get (tm, 99);
-  get (tm, 44);
-  del (&tm, 44);
-  get (tm, 23);
-  get (tm, 99);
-  get (tm, 44);
-  del (&tm, 23);
-  get (tm, 23);
-  get (tm, 99);
-  get (tm, 44);
-  del (&tm, 99);
-  get (tm, 23);
-  get (tm, 99);
-  get (tm, 44);
-  ins (&tm, 23, 23);
-  ins (&tm, 99, 99);
-  ins (&tm, 44, 44);
-  ins (&tm, 13, 13);
+    BOOST_REQUIRE_EQUAL (trie_get (tm, 23), PVal);
+    BOOST_REQUIRE_EQUAL (trie_getany (tm), PVal);
+  }
 
-  Size_t Bytes = trie_memused (tm, fUserNone);
+  BOOST_REQUIRE_EQUAL (trie_size (tm), 1);
 
-  printf ("tm = %p, Bytes = " FMT_Size_t "\n", tm, Bytes);
+  trie_del (&tm, 23, fUserNone);
 
-  print (tm);
+  BOOST_REQUIRE_EQUAL (trie_size (tm), 0);
 
-  Bytes = trie_free (&tm, fUserNone);
+  BOOST_REQUIRE_EQUAL (trie_get (tm, 23), (unsigned long*) NULL);
+  BOOST_REQUIRE_EQUAL (trie_getany (tm), (unsigned long*) NULL);
 
-  printf ("tm = %p, Bytes = " FMT_Size_t "\n", tm, Bytes);
+  trie_del (&tm, 23, fUserNone);
 
-  print (tm);
+  BOOST_REQUIRE_EQUAL (trie_size (tm), 0);
+
+  BOOST_REQUIRE_EQUAL (trie_get (tm, 23), (unsigned long*) NULL);
+  BOOST_REQUIRE_EQUAL (trie_getany (tm), (unsigned long*) NULL);
+
+  *trie_ins (&tm, 23, &was_there) = 23;
+  *trie_ins (&tm, 99, &was_there) = 99;
+
+  BOOST_REQUIRE_EQUAL (trie_size (tm), 2);
+
+  BOOST_REQUIRE_EQUAL (*trie_get (tm, 23), 23);
+  BOOST_REQUIRE_EQUAL (*trie_get (tm, 99), 99);
+  BOOST_REQUIRE_EQUAL (*trie_getany (tm), 99);
+  BOOST_REQUIRE_EQUAL (trie_get (tm, 44), (unsigned long*) NULL);
+
+  trie_del (&tm, 23, fUserNone);
+
+  BOOST_REQUIRE_EQUAL (trie_get (tm, 23), (unsigned long*) NULL);
+
+  BOOST_REQUIRE_EQUAL (*trie_get (tm, 99), 99);
+  BOOST_REQUIRE_EQUAL (*trie_getany (tm), 99);
+
+  trie_del (&tm, 99, fUserNone);
+
+  BOOST_REQUIRE_EQUAL (trie_get (tm, 99), (unsigned long*) NULL);
+  BOOST_REQUIRE_EQUAL (trie_getany (tm), (unsigned long*) NULL);
+
+  BOOST_REQUIRE_EQUAL (trie_size (tm), 0);
+
+  *trie_ins (&tm, 23, &was_there) = 23;
+  *trie_ins (&tm, 99, &was_there) = 99;
+  *trie_ins (&tm, 44, &was_there) = 44;
+  *trie_ins (&tm, 13, &was_there) = 13;
+
+  Size_t size (trie_memused (tm, fUserNone));
+
+  BOOST_REQUIRE_EQUAL (trie_free (&tm, fUserNone), size);
+}
+
+BOOST_AUTO_TEST_CASE (dups)
+{
+  TrieMap_t tm = NULL;
 
   srand (31415926);
 
   Word_t dups = 0;
 
   for (Size_t i = 0; i < (1 << 22); ++i)
-    {
-      Bool_t was_there;
+  {
+    Bool_t was_there;
 
-      trie_ins (&tm, rand (), &was_there);
+    trie_ins (&tm, rand(), &was_there);
 
-      dups += (was_there == True) ? 1 : 0;
-    }
+    dups += (was_there == True) ? 1 : 0;
+  }
 
   Size_t Size = trie_size (tm);
-  Bytes = trie_memused (tm, fUserNone);
+  Size_t Bytes = trie_memused (tm, fUserNone);
 
   printf ("dups = " FMT_Word_t ", size = " FMT_Size_t ", memused = "
           FMT_Size_t "\n", dups, Size, Bytes);
