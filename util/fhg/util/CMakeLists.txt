@@ -34,8 +34,6 @@ set (hdrs
   bool.hpp
   bool_io.hpp
 
-  random.hpp
-
   counter.hpp
   backtracing_exception.hpp
   backtracing_exception.fwd.hpp
