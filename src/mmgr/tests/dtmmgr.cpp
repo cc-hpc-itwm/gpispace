@@ -13,34 +13,6 @@ static const Arena_t Other[2] = { ARENA_DOWN, ARENA_UP };
 
 namespace
 {
-  void do_free (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena)
-  {
-    if (DTmmgr == NULL)
-      return;
-
-    printf ("FREE: (Handle = " FMT_Handle_t ", Arena = %s) => ", Handle,
-           showArena[Arena]);
-
-    switch (dtmmgr_free (&DTmmgr, Handle, Arena))
-    {
-    case RET_SUCCESS:
-      printf ("RET_SUCCESS");
-      break;
-    case RET_HANDLE_UNKNOWN:
-      printf ("RET_HANDLE_UNKNOWN");
-      break;
-    case RET_FAILURE:
-      printf ("RET_FAILURE");
-      break;
-    default:
-      fprintf (stderr, "STRANGE\n");
-      exit (EXIT_FAILURE);
-      break;
-    }
-
-    printf ("\n");
-  }
-
   void fMemmove ( const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc
                 , const MemSize_t Size, void *PDat)
   {
@@ -127,11 +99,11 @@ BOOST_AUTO_TEST_CASE (dtmmgr)
     BOOST_REQUIRE_EQUAL (Offset, 34);
   }
 
-  do_free (dtmmgr, 2, ARENA_UP);
-  do_free (dtmmgr, 6, ARENA_UP);
-  do_free (dtmmgr, 3, ARENA_DOWN);
-  do_free (dtmmgr, 7, ARENA_DOWN);
-  do_free (dtmmgr, 8, ARENA_UP);
+  BOOST_REQUIRE_EQUAL (dtmmgr_free (&dtmmgr, 2, ARENA_UP), RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_free (&dtmmgr, 6, ARENA_UP), RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_free (&dtmmgr, 3, ARENA_DOWN), RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_free (&dtmmgr, 7, ARENA_DOWN), RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (dtmmgr_free (&dtmmgr, 8, ARENA_UP), RET_SUCCESS);
 
   dtmmgr_status (dtmmgr);
 
