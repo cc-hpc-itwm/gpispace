@@ -58,3 +58,7 @@ install(CODE "
      message(FATAL_ERROR \"Could not bundle dependencies: \${__err}\")
   endif()
   " COMPONENT dependencies)
+
+install (PROGRAMS bundle.sh
+  DESTINATION libexec/sdpa/scripts
+  COMPONENT runtime)
