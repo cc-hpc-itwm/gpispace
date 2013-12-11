@@ -42,11 +42,6 @@ namespace fhg
       void put (T const & t)
       {
         lock_type lock(m_mtx);
-        m_put_cond.wait ( lock
-                        , boost::bind ( &this_type::is_free_slot_available
-                                      , this
-                                      )
-                        );
         _put_impl (t);
       }
 
@@ -113,11 +108,6 @@ namespace fhg
       bool is_element_available () const
       {
         return not m_container.empty ();
-      }
-
-      bool is_free_slot_available () const
-      {
-        return true;
       }
 
       mutable mutex     m_mtx;
