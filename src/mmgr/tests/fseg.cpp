@@ -1,3 +1,7 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE mmgr_fseg
+#include <boost/test/unit_test.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,8 +77,7 @@ get (const FSeg_t FSeg, const Key_t Key)
   get_atleast_minimal (FSeg, Key);
 }
 
-int
-main ()
+BOOST_AUTO_TEST_CASE (fseg)
 {
   FSeg_t FSeg = NULL;
 
@@ -137,6 +140,4 @@ main ()
   printf ("memused = " FMT_Size_t "\n", fseg_memused (FSeg));
 
   fseg_free (&FSeg);
-
-  return EXIT_SUCCESS;
 }
