@@ -7,18 +7,19 @@
 static const char *showArena[2] = { "ARENA_UP", "ARENA_DOWN" };
 static const Arena_t Other[2] = { ARENA_DOWN, ARENA_UP };
 
-static void
-do_alloc (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena, Size_t Size)
+namespace
 {
-  if (DTmmgr == NULL)
-    return;
+  void do_alloc (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena, Size_t Size)
+  {
+    if (DTmmgr == NULL)
+      return;
 
-  AllocReturn_t AllocReturn = dtmmgr_alloc (&DTmmgr, Handle, Arena, Size);
+    AllocReturn_t AllocReturn = dtmmgr_alloc (&DTmmgr, Handle, Arena, Size);
 
-  printf ("ALLOC: (Handle = " FMT_Handle_t ", Arena = %s, Size = " FMT_Size_t
-          ") => ", Handle, showArena[Arena], Size);
+    printf ("ALLOC: (Handle = " FMT_Handle_t ", Arena = %s, Size = " FMT_Size_t
+           ") => ", Handle, showArena[Arena], Size);
 
-  switch (AllocReturn)
+    switch (AllocReturn)
     {
     case ALLOC_SUCCESS:
       printf ("Success");
@@ -48,19 +49,18 @@ do_alloc (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena, Size_t Size)
       break;
     }
 
-  printf ("\n");
-}
+    printf ("\n");
+  }
 
-static void
-do_free (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena)
-{
-  if (DTmmgr == NULL)
-    return;
+  void do_free (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena)
+  {
+    if (DTmmgr == NULL)
+      return;
 
-  printf ("FREE: (Handle = " FMT_Handle_t ", Arena = %s) => ", Handle,
-          showArena[Arena]);
+    printf ("FREE: (Handle = " FMT_Handle_t ", Arena = %s) => ", Handle,
+           showArena[Arena]);
 
-  switch (dtmmgr_free (&DTmmgr, Handle, Arena))
+    switch (dtmmgr_free (&DTmmgr, Handle, Arena))
     {
     case RET_SUCCESS:
       printf ("RET_SUCCESS");
@@ -77,16 +77,16 @@ do_free (DTmmgr_t DTmmgr, Handle_t Handle, Arena_t Arena)
       break;
     }
 
-  printf ("\n");
-}
+    printf ("\n");
+  }
 
-static void
-fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
-          const MemSize_t Size, void *PDat)
-{
-  printf ("CALLBACK-%lu: Moving " FMT_MemSize_t " Byte(s) from " FMT_Offset_t
-          " to " FMT_Offset_t "\n", (*(unsigned long *) PDat)++, Size,
-          OffsetSrc, OffsetDest);
+  void fMemmove ( const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc
+                , const MemSize_t Size, void *PDat)
+  {
+    printf ("CALLBACK-%lu: Moving " FMT_MemSize_t " Byte(s) from " FMT_Offset_t
+           " to " FMT_Offset_t "\n", (*(unsigned long *) PDat)++, Size,
+           OffsetSrc, OffsetDest);
+  }
 }
 
 int
