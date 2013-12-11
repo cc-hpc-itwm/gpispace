@@ -123,38 +123,86 @@ BOOST_AUTO_TEST_CASE (smap)
 {
   SMap_t sm = NULL;
 
-  printf ("sm = %p\n", sm);
+  BOOST_REQUIRE_EQUAL (smap_memused (sm), 0);
+  BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
 
-  get (sm, 23);
-  ins (&sm, 1023, 23);
-  ins (&sm, 1023, 23);
-  ins (&sm, 1023, 23);
-  get (sm, 1023);
-  del (&sm, 1023);
-  get (sm, 1023);
-  del (&sm, 1023);
-  get (sm, 1023);
-  ins (&sm, 1023, 23);
-  ins (&sm, 1099, 99);
-  get (sm, 1023);
-  get (sm, 1099);
-  get (sm, 1044);
-  del (&sm, 1044);
-  get (sm, 1023);
-  get (sm, 1099);
-  get (sm, 1044);
-  del (&sm, 1023);
-  get (sm, 1023);
-  get (sm, 1099);
-  get (sm, 1044);
-  del (&sm, 1099);
-  get (sm, 1023);
-  get (sm, 1099);
-  get (sm, 1044);
-  ins (&sm, 1023, 23);
-  ins (&sm, 1099, 99);
-  ins (&sm, 1044, 44);
-  ins (&sm, 1013, 13);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 23), (PValue_t) NULL);
+
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), False);
+  BOOST_REQUIRE_EQUAL (smap_size (sm), 1);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), True);
+  BOOST_REQUIRE_EQUAL (smap_size (sm), 1);
+
+  PValue_t PVal;
+
+  PVal = smap_get (sm, 1023);
+
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (*PVal, 23);
+
+  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), True);
+  BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) NULL);
+
+  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), False);
+  BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) NULL);
+
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), False);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1099, 99), False);
+
+  PVal = smap_get (sm, 1023);
+
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (*PVal, 23);
+
+  PVal = smap_get (sm, 1099);
+
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (*PVal, 99);
+
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) NULL);
+
+  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1044, SMAP_DEL_DEFAULT), False);
+  BOOST_REQUIRE_EQUAL (smap_size (sm), 2);
+
+  PVal = smap_get (sm, 1023);
+
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (*PVal, 23);
+
+  PVal = smap_get (sm, 1099);
+
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (*PVal, 99);
+
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) NULL);
+
+  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), True);
+
+  BOOST_REQUIRE_EQUAL (smap_size (sm), 1);
+
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) NULL);
+
+  PVal = smap_get (sm, 1099);
+
+  BOOST_REQUIRE_NE (PVal, (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (*PVal, 99);
+
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) NULL);
+
+  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1099, SMAP_DEL_DEFAULT), True);
+
+  BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
+
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1099), (PValue_t) NULL);
+  BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) NULL);
+
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), False);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1099, 99), False);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1044, 44), False);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1013, 13), False);
 
   smap_print_max (sm, 5);
   smap_print_sorted (sm);
