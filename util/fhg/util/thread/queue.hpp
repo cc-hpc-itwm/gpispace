@@ -15,8 +15,6 @@ namespace fhg
     template<typename T>
     class queue : public boost::noncopyable
     {
-      typedef queue<T> this_type;
-
     public:
       typedef std::list<T> container_type;
       typedef typename container_type::size_type size_type;
@@ -25,7 +23,7 @@ namespace fhg
       {
         boost::unique_lock<boost::recursive_mutex> lock(m_mtx);
         m_get_cond.wait ( lock
-                        , boost::bind ( &this_type::is_element_available
+                        , boost::bind ( &queue<T>::is_element_available
                                       , this
                                       )
                         );
