@@ -8,6 +8,8 @@
 
 #include <mmgr/smap.h>
 
+#include <fhg/util/first_then.hpp>
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -53,20 +55,45 @@ get_atleast (const SMap_t sm, const Key_t key)
   }
 }
 
-static void
-fPrint (const Key_t Key, const Value_t Value, void*)
-{
-  printf (" (" FMT_Key_t "," FMT_Value_t ")", Key, Value);
-}
-
-static void
-smap_print_sorted (const SMap_t PCTree)
-{
-  smap_work_inorder (PCTree, &fPrint, NULL);
-}
-
 namespace
 {
+  struct print_sorted_state
+  {
+  public:
+    print_sorted_state (std::ostream& os)
+      : _os (os)
+      , _sep ("", ", ")
+    {}
+
+    void operator() ( const Key_t Key
+                    , const Value_t Value
+                    ) const
+    {
+      _os << _sep << "(" << Key << ", " << Value << ")";
+    }
+
+  private:
+    std::ostream& _os;
+    fhg::util::first_then<std::string> _sep;
+  };
+
+  void fPrintSorted ( const Key_t Key
+                    , const Value_t Value
+                    , void* PDat
+                    )
+  {
+    return static_cast<print_sorted_state*> (PDat)->operator() (Key, Value);
+  }
+
+  void smap_print_sorted ( std::ostream& os
+                         , const SMap_t sm
+                         )
+  {
+    print_sorted_state s (os);
+
+    smap_work_inorder (sm, &fPrintSorted, &s);
+  }
+
   struct print_cut_state
   {
   public:
@@ -208,8 +235,15 @@ BOOST_AUTO_TEST_CASE (smap)
       );
   }
 
-  smap_print_sorted (sm);
-  printf ("\n");
+  {
+    std::ostringstream oss;
+    smap_print_sorted (oss, sm);
+
+    BOOST_REQUIRE_EQUAL
+      ( "(1013, 13), (1023, 23), (1044, 44), (1099, 99)"
+      , oss.str()
+      );
+  }
 
   for (Key_t k = 5; k < 110; k += 5)
     get_atleast (sm, 1000 + k);
