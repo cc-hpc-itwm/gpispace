@@ -325,8 +325,8 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     sendEventToMaster(pSubmitJobAckEvt);
   }
 
-  // check if the message comes from outside/slave or from WFE
-  // if it comes from outside set it as local
+  // check if the message comes from outside or from WFE
+  // if it comes from outside and the agent has an WFE, submit it to it
   if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() )
   {
     DMLOG (TRACE, "got new job from " << e.from() << " = " << job_id);
