@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 set (hdrs
   semaphore.hpp
   event.hpp
