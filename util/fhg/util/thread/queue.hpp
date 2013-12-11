@@ -20,8 +20,9 @@ namespace fhg
     {
       typedef boost::recursive_mutex            mutex;
       typedef boost::unique_lock<mutex>     lock_type;
-    public:
       typedef queue<T, Container, Allocator> this_type;
+
+    public:
       typedef boost::condition_variable_any condition;
 
       typedef T                                  value_type;
