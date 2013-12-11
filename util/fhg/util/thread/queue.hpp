@@ -36,7 +36,10 @@ namespace fhg
                                       , this
                                       )
                         );
-        return _get_impl ();
+
+        T t (m_container.front()); m_container.pop_front();
+        m_put_cond.notify_one ();
+        return t;
       }
 
       void put (T const & t)
@@ -92,13 +95,6 @@ namespace fhg
         m_put_cond.notify_one ();
       }
     private:
-      T _get_impl ()
-      {
-        T t (m_container.front()); m_container.pop_front();
-        m_put_cond.notify_one ();
-        return t;
-      }
-
       void _put_impl (T const & t)
       {
         m_container.push_back(t);
