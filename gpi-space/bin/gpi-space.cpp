@@ -135,8 +135,8 @@ static void long_usage()
   fprintf(stderr, "    --gpi-timeout SECONDS (%u)\n", gpi_timeout);
   fprintf(stderr, "    --no-gpi-checks\n");
   fprintf(stderr, "      do not perform checks before gpi startup\n");
-  fprintf(stderr, "    --clear-file-caches\n");
-  fprintf(stderr, "      clear file caches on all nodes\n");
+  fprintf(stderr, "    --no-clear-file-cache\n");
+  fprintf(stderr, "      do not clear file caches on all nodes\n");
 }
 
 // exit codes
@@ -173,7 +173,7 @@ int main (int ac, char *av[])
   bool daemonize = false;
   bool is_master = true;
   bool gpi_perform_checks = true;
-  bool gpi_clear_caches = false;
+  bool gpi_clear_caches = true;
   snprintf (pidfile, sizeof(pidfile), "%s", "");
   snprintf (api_name, sizeof(api_name), "%s", "auto");
   snprintf (socket_path, sizeof(socket_path), "/var/tmp");
@@ -558,10 +558,10 @@ int main (int ac, char *av[])
       ++i;
       gpi_perform_checks = false;
     }
-    else if (strcmp(av[i], "--clear-file-caches") == 0)
+    else if (strcmp(av[i], "--no-clear-file-cache") == 0)
     {
       ++i;
-      gpi_clear_caches = true;
+      gpi_clear_caches = false;
     }
     else if (strcmp(av[i], "--") == 0)
     {
