@@ -72,22 +72,6 @@ namespace fhg
     	  return m_container.empty();
       }
 
-      size_t erase (T const &t)
-      {
-        lock_type lock(m_mtx);
-        size_t cnt (0);
-        for ( typename container_type::iterator it (m_container.begin())
-            ; it != m_container.end()
-            ;
-            )
-        {
-          if (*it == t) { it = m_container.erase(it); ++cnt; }
-          else          ++it;
-        }
-
-        return cnt;
-      }
-
       template <typename Pred>
       size_t remove_if (Pred pred)
       {

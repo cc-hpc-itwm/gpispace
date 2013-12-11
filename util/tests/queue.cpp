@@ -116,28 +116,6 @@ BOOST_AUTO_TEST_CASE (thread_queue_remove_if)
                       );
 }
 
-BOOST_AUTO_TEST_CASE (thread_queue_erase)
-{
-  static const int NUM_ITEMS_TO_PUT = 10000;
-
-  items_t items;
-  fill_items (items, NUM_ITEMS_TO_PUT);
-
-  BOOST_REQUIRE_EQUAL ( items.size ()
-                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT)
-                      );
-
-  for (int i = 0 ; i < NUM_ITEMS_TO_PUT ; i++)
-  {
-    size_t num_erased = items.erase (i);
-    BOOST_REQUIRE_EQUAL (num_erased, 1u);
-    BOOST_REQUIRE_EQUAL
-      ( items.size ()
-      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT - i - 1)
-      );
-  }
-}
-
 BOOST_AUTO_TEST_CASE (thread_queue_clear)
 {
   static const int NUM_ITEMS_TO_PUT = 10000;
