@@ -225,10 +225,10 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
         // send immediately an acknowledgment to the component that requested the cancellation
       events::CancelJobAckEvent::Ptr pCancelAckEvt(new  events::CancelJobAckEvent(name(), pEvt->from (), pEvt->job_id()));
 
-        if(!isSubscriber(pEvt->from ()))
-          sendEventToMaster(pCancelAckEvt);
+      if(!isSubscriber(pEvt->from ()))
+        sendEventToMaster(pCancelAckEvt);
 
-        notifySubscribers(pCancelAckEvt);
+      notifySubscribers(pCancelAckEvt);
 
       // if the job is in pending or stalled, put it already on canceled
       if(!pJob->is_running())
