@@ -267,7 +267,6 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
                                                          ,  events::ErrorEvent::SDPA_EJOBNOTFOUND
                                                          , "No such job found" )
                                                         ));
-      return;
   }
 }
 
