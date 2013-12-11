@@ -440,20 +440,7 @@ namespace we { namespace mgmt {
         DLOG(TRACE, "manager thread started...");
         for (;;)
         {
-          cmd_t cmd = cmd_q_.get();
-          try
-          {
-            cmd.handle();
-          }
-          catch (std::exception const& ex)
-          {
-            LOG( WARN
-               , "error during manager command handling: command: "
-               << cmd.name
-               << " failed: "
-               << ex.what()
-               );
-          }
+          cmd_q_.get().handle();
         }
         DLOG(TRACE, "manager thread stopped...");
       }
