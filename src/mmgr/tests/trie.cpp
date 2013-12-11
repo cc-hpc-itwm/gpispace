@@ -83,8 +83,6 @@ BOOST_AUTO_TEST_CASE (trie)
 {
   TrieMap_t tm = NULL;
 
-  printf ("tm = %p\n", tm);
-
   get (tm, 23);
   ins (&tm, 23, 23);
   ins (&tm, 23, 23);
