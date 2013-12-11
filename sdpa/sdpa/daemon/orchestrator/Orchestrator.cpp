@@ -230,6 +230,24 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
 
       notifySubscribers(pCancelAckEvt);
 
+      try
+      {
+         sdpa::worker_id_t worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
+
+         DMLOG(TRACE, "Tell the worker "<<worker_id<<" to cancel the job "<<pEvt->job_id());
+         events::CancelJobEvent::Ptr pCancelEvt( new  events::CancelJobEvent( name()
+                                                           , worker_id
+                                                           , pEvt->job_id()
+                                                           , pEvt->reason() ) );
+         sendEventToSlave(pCancelEvt);
+
+         DMLOG(TRACE, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
+      }
+      catch(const NoWorkerFoundException&)
+      {
+          DMLOG (WARN, "No cancel message is to be forwarded as no worker was sent the job "<<pEvt->job_id());
+      }
+
       // if the job is in pending or stalled, put it already on canceled
       if(!pJob->is_running())
       {
@@ -250,24 +268,6 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
                                                          , "No such job found" )
                                                         ));
       return;
-  }
-
-  try
-  {
-    sdpa::worker_id_t worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
-
-    DMLOG(TRACE, "Tell the worker "<<worker_id<<" to cancel the job "<<pEvt->job_id());
-    events::CancelJobEvent::Ptr pCancelEvt( new  events::CancelJobEvent( name()
-                                                      , worker_id
-                                                      , pEvt->job_id()
-                                                      , pEvt->reason() ) );
-    sendEventToSlave(pCancelEvt);
-
-    DMLOG(TRACE, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
-  }
-  catch(const NoWorkerFoundException&)
-  {
-      DMLOG (WARN, "No cancel message is to be forwarded as no worker was sent the job "<<pEvt->job_id());
   }
 }
 
