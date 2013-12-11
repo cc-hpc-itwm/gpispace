@@ -1,3 +1,7 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE mmgr_trie
+#include <boost/test/unit_test.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,8 +82,7 @@ print (const TrieMap_t tm)
   printf ("]\n");
 }
 
-int
-main ()
+BOOST_AUTO_TEST_CASE (trie)
 {
   TrieMap_t tm = NULL;
 
@@ -150,6 +153,4 @@ main ()
   Bytes = trie_free (&tm, fUserNone);
 
   printf ("tm = %p, Bytes = " FMT_Size_t "\n", tm, Bytes);
-
-  return EXIT_SUCCESS;
 }
