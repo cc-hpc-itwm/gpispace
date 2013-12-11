@@ -3,9 +3,6 @@
 #define BOOST_TEST_MODULE mmgr_smap
 #include <boost/test/unit_test.hpp>
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include <mmgr/smap.h>
 
 #include <fhg/util/first_then.hpp>
