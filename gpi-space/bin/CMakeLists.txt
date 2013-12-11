@@ -43,7 +43,7 @@ target_link_libraries (gpish
 
 set_target_properties(gpi-space
   PROPERTIES
-  INSTALL_RPATH ""
+  INSTALL_RPATH "${CMAKE_INSTALL_RPATH}"
   )
 install (TARGETS gpi-space gpish
   RUNTIME
