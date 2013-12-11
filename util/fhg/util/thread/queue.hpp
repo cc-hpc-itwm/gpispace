@@ -39,27 +39,27 @@ namespace fhg
 
       void put (T const & t)
       {
-        lock_type lock(m_mtx);
+        lock_type const _ (m_mtx);
         m_container.push_back(t);
         m_get_cond.notify_one();
       }
 
       size_type size() const
       {
-        lock_type lock(m_mtx);
+        lock_type const _ (m_mtx);
         return m_container.size();
       }
 
       bool empty() const
       {
-    	  lock_type lock(m_mtx);
+    	  lock_type const _ (m_mtx);
     	  return m_container.empty();
       }
 
       template <typename Pred>
       size_t remove_if (Pred pred)
       {
-        lock_type lock(m_mtx);
+        lock_type const _ (m_mtx);
         size_t cnt (0);
         for ( typename container_type::iterator it (m_container.begin())
             ; it != m_container.end()
@@ -82,7 +82,7 @@ namespace fhg
 
       void clear ()
       {
-        lock_type lock(m_mtx);
+        lock_type const _ (m_mtx);
         while (not m_container.empty())
           m_container.pop_front();
       }
