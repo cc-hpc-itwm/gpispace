@@ -147,16 +147,18 @@ fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
     BOOST_REQUIRE_EQUAL (OffsetSrc, 36);
     BOOST_REQUIRE_EQUAL (Size, 14);
     break;
-  }
 
-  printf ("CALLBACK-%lu: Moving " FMT_MemSize_t " Byte(s) from " FMT_Offset_t
-          " to " FMT_Offset_t "\n", *count, Size,
-          OffsetSrc, OffsetDest);
+  default:
+    BOOST_REQUIRE_EQUAL (OffsetDest, ((*count) - 5) * 16);
+    BOOST_REQUIRE_EQUAL (OffsetSrc, ((*count) - 4) * 16);
+    BOOST_REQUIRE_EQUAL (Size, 16);
+    break;
+  }
 
   ++ (*count);
 }
 
-#define REQUIRE_ALLOC_SUCCESS(h,s,o)                                    \
+#define REQUIRE_ALLOC_SUCCESS(h,s,o,g)                                  \
   {                                                                     \
     BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, h, s), ALLOC_SUCCESS);    \
                                                                         \
@@ -165,14 +167,14 @@ fMemmove (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
                                                                         \
     tmmgr_offset_size (tmmgr, h, &Offset, &Size);                       \
     BOOST_REQUIRE_EQUAL (Offset, o);                                    \
-    BOOST_REQUIRE_EQUAL (Size, s);                                      \
+    BOOST_REQUIRE_EQUAL (Size, g);                                      \
   }
 
 BOOST_AUTO_TEST_CASE (tmmgr)
 {
   Tmmgr_t tmmgr = NULL;
 
-  tmmgr_init (&tmmgr, 45, 1);
+  BOOST_REQUIRE_EQUAL (tmmgr_init (&tmmgr, 45, 1), 45);
 
   BOOST_REQUIRE_EQUAL (tmmgr_memsize (tmmgr), 45);
   BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 45);
@@ -187,7 +189,7 @@ BOOST_AUTO_TEST_CASE (tmmgr)
 
   for (int i (0); i < 10; ++i)
   {
-    REQUIRE_ALLOC_SUCCESS (i, 1, i);
+    REQUIRE_ALLOC_SUCCESS (i, 1, i, 1);
   }
 
   BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 2), RET_SUCCESS);
@@ -209,10 +211,10 @@ BOOST_AUTO_TEST_CASE (tmmgr)
   BOOST_REQUIRE_EQUAL (tmmgr_sumalloc (tmmgr), 10);
   BOOST_REQUIRE_EQUAL (tmmgr_sumfree (tmmgr), 8);
 
-  REQUIRE_ALLOC_SUCCESS (1, 1, 1);
+  REQUIRE_ALLOC_SUCCESS (1, 1, 1, 1);
 
-  REQUIRE_ALLOC_SUCCESS (11, 4, 2);
-  REQUIRE_ALLOC_SUCCESS (12, 4, 10);
+  REQUIRE_ALLOC_SUCCESS (11, 4, 2, 4);
+  REQUIRE_ALLOC_SUCCESS (12, 4, 10, 4);
 
   BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 11, 4), ALLOC_DUPLICATE_HANDLE);
   BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 12, 4), ALLOC_DUPLICATE_HANDLE);
@@ -248,11 +250,11 @@ BOOST_AUTO_TEST_CASE (tmmgr)
   BOOST_REQUIRE_EQUAL (tmmgr_sumalloc (tmmgr), 19);
   BOOST_REQUIRE_EQUAL (tmmgr_sumfree (tmmgr), 8);
 
-  REQUIRE_ALLOC_SUCCESS (26, 5, 11);
-  REQUIRE_ALLOC_SUCCESS (27, 5, 16);
-  REQUIRE_ALLOC_SUCCESS (28, 5, 21);
-  REQUIRE_ALLOC_SUCCESS (29, 5, 26);
-  REQUIRE_ALLOC_SUCCESS (30, 5, 31);
+  REQUIRE_ALLOC_SUCCESS (26, 5, 11, 5);
+  REQUIRE_ALLOC_SUCCESS (27, 5, 16, 5);
+  REQUIRE_ALLOC_SUCCESS (28, 5, 21, 5);
+  REQUIRE_ALLOC_SUCCESS (29, 5, 26, 5);
+  REQUIRE_ALLOC_SUCCESS (30, 5, 31, 5);
 
   BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 9);
   BOOST_REQUIRE_EQUAL (tmmgr_memused (tmmgr), 36);
@@ -286,7 +288,7 @@ BOOST_AUTO_TEST_CASE (tmmgr)
   MemSize_t FreeSizeWanted = 12;
   tmmgr_defrag (&tmmgr, &fMemmove, &FreeSizeWanted, &callback_count);
 
-  REQUIRE_ALLOC_SUCCESS (99, 12, 16);
+  REQUIRE_ALLOC_SUCCESS (99, 12, 16, 12);
   BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 99), RET_SUCCESS);
 
   BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 50), RESIZE_SUCCESS);
@@ -301,7 +303,7 @@ BOOST_AUTO_TEST_CASE (tmmgr)
   BOOST_REQUIRE_EQUAL (tmmgr_sumalloc (tmmgr), 56);
   BOOST_REQUIRE_EQUAL (tmmgr_sumfree (tmmgr), 35);
 
-  REQUIRE_ALLOC_SUCCESS (101, 14, 36);
+  REQUIRE_ALLOC_SUCCESS (101, 14, 36, 14);
 
   BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 15);
   BOOST_REQUIRE_EQUAL (tmmgr_memused (tmmgr), 35);
@@ -371,43 +373,109 @@ BOOST_AUTO_TEST_CASE (tmmgr)
 
 BOOST_AUTO_TEST_CASE (tmmgr_aligned)
 {
-  Tmmgr_t tmmgrAligned = NULL;
+  Tmmgr_t tmmgr = NULL;
 
-  tmmgr_init (&tmmgrAligned, 45, (1 << 4));
+  BOOST_REQUIRE_EQUAL (tmmgr_init (&tmmgr, 45, (1 << 4)), 32);
 
-  tmmgr_status (tmmgrAligned, NULL);
+  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 32);
+  BOOST_REQUIRE_EQUAL (tmmgr_memused (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_minfree (tmmgr), 32);
+  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_numalloc (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_numfree (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumalloc (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumfree (tmmgr), 0);
 
-  do_resize (tmmgrAligned, 67);
-  tmmgr_status (tmmgrAligned, NULL);
+  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 67), RESIZE_SUCCESS);
 
-  do_resize (tmmgrAligned, 64);
-  tmmgr_status (tmmgrAligned, NULL);
+  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 64);
+  BOOST_REQUIRE_EQUAL (tmmgr_memused (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_minfree (tmmgr), 32);
+  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_numalloc (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_numfree (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumalloc (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumfree (tmmgr), 0);
 
-  for (Word_t i = 0; i < 10; ++i)
-    do_alloc (tmmgrAligned, (Handle_t) i, (MemSize_t) 1);
+  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 64), RESIZE_SUCCESS);
 
-  tmmgr_status (tmmgrAligned, NULL);
+  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 64);
+  BOOST_REQUIRE_EQUAL (tmmgr_memused (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_minfree (tmmgr), 32);
+  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_numalloc (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_numfree (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumalloc (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumfree (tmmgr), 0);
 
-  do_resize (tmmgrAligned, 1000);
+  REQUIRE_ALLOC_SUCCESS (0, 1, 0, 16);
+  REQUIRE_ALLOC_SUCCESS (1, 1, 16, 16);
+  REQUIRE_ALLOC_SUCCESS (2, 1, 32, 16);
+  REQUIRE_ALLOC_SUCCESS (3, 1, 48, 16);
+  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 4, 1), ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 5, 1), ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 6, 1), ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 7, 1), ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 8, 1), ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 9, 1), ALLOC_INSUFFICIENT_MEMORY);
 
-  for (Word_t i = 0; i < 10; ++i)
-    do_alloc (tmmgrAligned, (Handle_t) i, (MemSize_t) 1);
+  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_memused (tmmgr), 64);
+  BOOST_REQUIRE_EQUAL (tmmgr_minfree (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 64);
+  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 4);
+  BOOST_REQUIRE_EQUAL (tmmgr_numalloc (tmmgr), 4);
+  BOOST_REQUIRE_EQUAL (tmmgr_numfree (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumalloc (tmmgr), 64);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumfree (tmmgr), 0);
 
-  tmmgr_status (tmmgrAligned, NULL);
+  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 1000), RESIZE_SUCCESS);
 
-  do_resize (tmmgrAligned, 150);
+  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 0, 1), ALLOC_DUPLICATE_HANDLE);
+  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 1, 1), ALLOC_DUPLICATE_HANDLE);
+  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 2, 1), ALLOC_DUPLICATE_HANDLE);
+  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 3, 1), ALLOC_DUPLICATE_HANDLE);
+  REQUIRE_ALLOC_SUCCESS (4, 1, 64, 16);
+  REQUIRE_ALLOC_SUCCESS (5, 1, 80, 16);
+  REQUIRE_ALLOC_SUCCESS (6, 1, 96, 16);
+  REQUIRE_ALLOC_SUCCESS (7, 1, 112, 16);
+  REQUIRE_ALLOC_SUCCESS (8, 1, 128, 16);
+  REQUIRE_ALLOC_SUCCESS (9, 1, 144, 16);
 
-  do_free (tmmgrAligned, 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 832);
+  BOOST_REQUIRE_EQUAL (tmmgr_memused (tmmgr), 160);
+  BOOST_REQUIRE_EQUAL (tmmgr_minfree (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 160);
+  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 10);
+  BOOST_REQUIRE_EQUAL (tmmgr_numalloc (tmmgr), 10);
+  BOOST_REQUIRE_EQUAL (tmmgr_numfree (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumalloc (tmmgr), 160);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumfree (tmmgr), 0);
 
-  do_resize (tmmgrAligned, 150);
+  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 150), RESIZE_BELOW_MEMUSED);
+
+  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 0), RET_SUCCESS);
+
+  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 150), RESIZE_BELOW_HIGHWATER);
 
   unsigned long callback_count = 5;
 
-  tmmgr_defrag (&tmmgrAligned, &fMemmove, NULL, &callback_count);
+  tmmgr_defrag (&tmmgr, &fMemmove, NULL, &callback_count);
 
-  do_resize (tmmgrAligned, 150);
+  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 150), RESIZE_SUCCESS);
 
-  tmmgr_status (tmmgrAligned, NULL);
+  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_memused (tmmgr), 144);
+  BOOST_REQUIRE_EQUAL (tmmgr_minfree (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 144);
+  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 9);
+  BOOST_REQUIRE_EQUAL (tmmgr_numalloc (tmmgr), 10);
+  BOOST_REQUIRE_EQUAL (tmmgr_numfree (tmmgr), 1);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumalloc (tmmgr), 160);
+  BOOST_REQUIRE_EQUAL (tmmgr_sumfree (tmmgr), 16);
 
-  tmmgr_finalize (&tmmgrAligned);
+  BOOST_REQUIRE_NE (tmmgr_finalize (&tmmgr), 0);
 }
