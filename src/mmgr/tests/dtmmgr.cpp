@@ -99,7 +99,21 @@ BOOST_AUTO_TEST_CASE (dtmmgr)
 
   dtmmgr_init (&dtmmgr, 45, 2);
 
-  dtmmgr_info (dtmmgr);
+  BOOST_REQUIRE_EQUAL (dtmmgr_memsize (dtmmgr), 44);
+  BOOST_REQUIRE_EQUAL (dtmmgr_memfree (dtmmgr), 44);
+  BOOST_REQUIRE_EQUAL (dtmmgr_memused (dtmmgr), 0);
+
+  BOOST_REQUIRE_EQUAL (dtmmgr_numalloc (dtmmgr, ARENA_UP), 0);
+  BOOST_REQUIRE_EQUAL (dtmmgr_numfree (dtmmgr, ARENA_UP), 0);
+  BOOST_REQUIRE_EQUAL (dtmmgr_numhandle (dtmmgr, ARENA_UP), 0);
+  BOOST_REQUIRE_EQUAL (dtmmgr_sumalloc (dtmmgr, ARENA_UP), 0);
+  BOOST_REQUIRE_EQUAL (dtmmgr_sumfree (dtmmgr, ARENA_UP), 0);
+
+  BOOST_REQUIRE_EQUAL (dtmmgr_numalloc (dtmmgr, ARENA_DOWN), 0);
+  BOOST_REQUIRE_EQUAL (dtmmgr_numfree (dtmmgr, ARENA_DOWN), 0);
+  BOOST_REQUIRE_EQUAL (dtmmgr_numhandle (dtmmgr, ARENA_DOWN), 0);
+  BOOST_REQUIRE_EQUAL (dtmmgr_sumalloc (dtmmgr, ARENA_DOWN), 0);
+  BOOST_REQUIRE_EQUAL (dtmmgr_sumfree (dtmmgr, ARENA_DOWN), 0);
 
   Arena_t Arena = ARENA_UP;
 
