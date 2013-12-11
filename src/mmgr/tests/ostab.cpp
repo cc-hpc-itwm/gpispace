@@ -95,21 +95,34 @@ BOOST_AUTO_TEST_CASE (ostab_mega)
   OStab_t ostab = NULL;
 
   for (Word_t i = 0; i < (1 << 20); ++i)
-    {
-      ostab_ins (&ostab, (Key_t) i, (Offset_t) i, (Size_t) i);
-    }
+  {
+    ostab_ins (&ostab, (Key_t) i, (Offset_t) i, (Size_t) i);
+  }
 
-  printf ("Bytes = " FMT_Size_t "\n", ostab_free (&ostab));
+  BOOST_REQUIRE_EQUAL (ostab_size (ostab), 1 << 20);
+
+  {
+    Size_t const memused (ostab_memused (ostab));
+
+    BOOST_REQUIRE_EQUAL (ostab_free (&ostab), memused);
+  }
+
+  BOOST_REQUIRE_EQUAL (ostab_size (ostab), 0);
+  BOOST_REQUIRE_EQUAL (ostab_memused (ostab), 0);
 
   for (Word_t i = 0; i < (1 << 20); ++i)
-    {
-      ostab_ins (&ostab, (Key_t) i, (Offset_t) i, (Size_t) i);
-    }
+  {
+    ostab_ins (&ostab, (Key_t) i, (Offset_t) i, (Size_t) i);
+  }
+
+  BOOST_REQUIRE_EQUAL (ostab_size (ostab), 1 << 20);
 
   for (Word_t i = 0; i < (1 << 20); ++i)
-    {
-      ostab_del (&ostab, (Key_t) i);
-    }
+  {
+    ostab_del (&ostab, (Key_t) i);
+  }
 
-  printf ("Bytes = " FMT_Size_t "\n", ostab_free (&ostab));
+  BOOST_REQUIRE_EQUAL (ostab_size (ostab), 0);
+  BOOST_REQUIRE_EQUAL (ostab_memused (ostab), 0);
+  BOOST_REQUIRE_EQUAL (ostab_free (&ostab), 0);
 }
