@@ -10,7 +10,6 @@
 #include <fhg/util/thread/atomic.hpp>
 #include <fhg/util/get_cpucount.h>
 #include <fhg/util/thread/pool.hpp>
-#include <fhg/util/thread/async.hpp>
 
 static fhg::thread::atomic<int> s_work_count (0);
 
