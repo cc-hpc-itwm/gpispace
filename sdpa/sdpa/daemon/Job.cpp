@@ -1,13 +1,6 @@
 #include "Job.hpp"
 
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/scheduler/SchedulerBase.hpp>
-#include <sdpa/events/CancelJobEvent.hpp>
-#include <sdpa/events/DeleteJobAckEvent.hpp>
-#include <sdpa/events/JobResultsReplyEvent.hpp>
-#include <sdpa/events/JobResultsReplyEvent.hpp>
-#include <sdpa/events/JobStatusReplyEvent.hpp>
-#include <sdpa/events/JobStatusReplyEvent.hpp>
 
 using namespace std;
 using namespace sdpa::events;
