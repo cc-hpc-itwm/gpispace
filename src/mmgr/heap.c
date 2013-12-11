@@ -13,26 +13,6 @@ typedef struct
   Size_t size;
 } heap_t, *pheap_t;
 
-void
-heap_out (const Heap_t Heap)
-{
-  printf ("[");
-
-  if (Heap != NULL)
-    {
-      const pheap_t pheap = Heap;
-
-      printf ("|" FMT_Size_t " " FMT_Size_t "|", pheap->pos, pheap->size);
-
-      for (Size_t i = 0; i < pheap->pos; ++i)
-        {
-          printf (" " FMT_Offset_t, pheap->arr[i]);
-        }
-    }
-
-  printf ("]\n");
-}
-
 Size_t
 heap_size (const Heap_t Heap)
 {

@@ -20,8 +20,6 @@ extern "C"
   extern void heap_delmin (PHeap_t);
   extern Size_t heap_free (PHeap_t);
 
-  extern void heap_out (const Heap_t);
-
   /* *********************************************************************** */
 
 #ifndef HEAP_ERROR_HANDLER
