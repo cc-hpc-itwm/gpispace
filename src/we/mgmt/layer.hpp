@@ -488,7 +488,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(cmd_t(id, boost::bind(&layer::activity_failed, this, _1)));
+          cmd_q_.put(cmd_t(id, boost::bind(&layer::activity_failed, this, id, _1)));
         }
         else
         {
@@ -501,7 +501,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(cmd_t(id, boost::bind(&layer::activity_canceled, this, _1)));
+          cmd_q_.put(cmd_t(id, boost::bind(&layer::activity_canceled, this, id, _1)));
         }
         else
         {
@@ -514,7 +514,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put (cmd_t(id, boost::bind(&layer::cancel_activity, this, _1)));
+          cmd_q_.put (cmd_t(id, boost::bind(&layer::cancel_activity, this, id, _1)));
         }
         else
         {
@@ -853,9 +853,10 @@ namespace we { namespace mgmt {
         return internal_id_gen_();
       }
 
-      void activity_failed(const cmd_t & cmd)
+      void activity_failed ( internal_id_type const internal_id
+                           , const cmd_t & cmd
+                           )
       {
-        const internal_id_type internal_id (cmd.dat);
         try
         {
           descriptor_ptr desc (lookup(internal_id));
@@ -907,9 +908,10 @@ namespace we { namespace mgmt {
         }
       }
 
-      void activity_canceled(const cmd_t & cmd)
+      void activity_canceled ( internal_id_type const internal_id
+                             , const cmd_t & cmd
+                             )
       {
-        const internal_id_type internal_id (cmd.dat);
         try
         {
           descriptor_ptr desc (lookup(internal_id));
@@ -963,9 +965,10 @@ namespace we { namespace mgmt {
         }
       }
 
-      void cancel_activity(const cmd_t & cmd)
+      void cancel_activity ( internal_id_type const internal_id
+                           , const cmd_t & cmd
+                           )
       {
-        const internal_id_type internal_id (cmd.dat);
         try
         {
           descriptor_ptr desc (lookup(internal_id));
