@@ -2,9 +2,6 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
-using namespace std;
-using namespace sdpa::events;
-
 namespace sdpa {
   namespace daemon {
     Job::Job( const job_id_t id
