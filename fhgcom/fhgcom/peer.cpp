@@ -18,7 +18,8 @@ using boost::lambda::var;
 #include "peer.hpp"
 #include "kvs/kvsc.hpp"
 #include <fhg/util/thread/event.hpp>
-#include <fhg/util/random.hpp>
+
+#include <cstdlib>
 
 namespace fhg
 {
@@ -673,7 +674,7 @@ namespace fhg
       }
 
       m_renew_kvs_entries_timer.expires_from_now
-        (boost::posix_time::seconds (fhg::util::random::rand_in (60, 90)));
+        (boost::posix_time::seconds (60 + rand() % 30));
 
       m_renew_kvs_entries_timer.async_wait
         (boost::bind (&peer_t::renew_kvs_entries, this));
