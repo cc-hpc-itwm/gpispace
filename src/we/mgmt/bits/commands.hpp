@@ -7,32 +7,45 @@
 
 #include <boost/function.hpp>
 
-namespace we { namespace mgmt { namespace detail { namespace commands {
-  struct command_t
+namespace we
+{
+  namespace mgmt
   {
-    typedef boost::function<void (command_t const &)> handler_type;
+    namespace detail
+    {
+      namespace commands
+      {
+        struct command_t
+        {
+          typedef boost::function<void (command_t const &)> handler_type;
 
-        command_t ()
-        {}
+          command_t ()
+          {}
 
-	template <typename H>
-	command_t(std::string const & n, petri_net::activity_id_type d, H h)
-          : name(n)
-	  , dat(d)
-	  , handler(h)
-	{}
+          template <typename H>
+          command_t ( std::string const& n
+                    , petri_net::activity_id_type const& d
+                    , H h
+                    )
+            : name (n)
+            , dat (d)
+            , handler (h)
+          {}
 
-        std::string name;
-        petri_net::activity_id_type dat;
+          std::string name;
+          petri_net::activity_id_type dat;
 
-	void handle()
-	{
-	  handler(*this);
-	}
+          void handle()
+          {
+            handler (*this);
+          }
 
-  private:
-	handler_type handler;
-  };
-}}}}
+        private:
+          handler_type handler;
+        };
+      }
+    }
+  }
+}
 
 #endif
