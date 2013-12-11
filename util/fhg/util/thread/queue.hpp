@@ -38,7 +38,6 @@ namespace fhg
                         );
 
         T t (m_container.front()); m_container.pop_front();
-        m_put_cond.notify_one ();
         return t;
       }
 
@@ -81,9 +80,6 @@ namespace fhg
           }
         }
 
-        if (cnt)
-          m_put_cond.notify_one ();
-
         return cnt;
       }
 
@@ -92,7 +88,6 @@ namespace fhg
         lock_type lock(m_mtx);
         while (not m_container.empty())
           m_container.pop_front();
-        m_put_cond.notify_one ();
       }
     private:
       void _put_impl (T const & t)
@@ -107,7 +102,6 @@ namespace fhg
       }
 
       mutable mutex     m_mtx;
-      mutable condition m_put_cond;
       mutable condition m_get_cond;
 
       container_type m_container;
