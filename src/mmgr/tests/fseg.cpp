@@ -3,9 +3,6 @@
 #define BOOST_TEST_MODULE mmgr_fseg
 #include <boost/test/unit_test.hpp>
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include <mmgr/fseg.h>
 
 BOOST_AUTO_TEST_CASE (fseg)
