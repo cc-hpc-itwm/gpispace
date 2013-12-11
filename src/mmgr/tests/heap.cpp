@@ -5,9 +5,6 @@
 
 #include <mmgr/heap.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-
 BOOST_AUTO_TEST_CASE (heap)
 {
   Heap_t h = NULL;
