@@ -488,7 +488,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(cmd_t(id, boost::bind(&layer::activity_failed, this, id, _1)));
+          cmd_q_.put(cmd_t(boost::bind(&layer::activity_failed, this, id, _1)));
         }
         else
         {
@@ -501,7 +501,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put(cmd_t(id, boost::bind(&layer::activity_canceled, this, id, _1)));
+          cmd_q_.put(cmd_t(boost::bind(&layer::activity_canceled, this, id, _1)));
         }
         else
         {
@@ -514,7 +514,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          cmd_q_.put (cmd_t(id, boost::bind(&layer::cancel_activity, this, id, _1)));
+          cmd_q_.put (cmd_t(boost::bind(&layer::cancel_activity, this, id, _1)));
         }
         else
         {

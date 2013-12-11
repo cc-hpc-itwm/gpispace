@@ -22,14 +22,9 @@ namespace we
           command_t ()
           {}
 
-          command_t ( petri_net::activity_id_type const& d
-                    , handler_type h
-                    )
-            : dat (d)
-            , handler (h)
+          command_t (handler_type h)
+            : handler (h)
           {}
-
-          petri_net::activity_id_type dat;
 
           void handle()
           {
