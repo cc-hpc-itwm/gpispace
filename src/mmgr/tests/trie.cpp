@@ -1,12 +1,4 @@
 
-#ifndef __APPLE__
-// malloc.h is deprecated on OSX.
-#include <malloc.h>
-#else
-// malloc_stats() is missing on OSX / FreeBSD / Solaris / ...
-void malloc_stats() { }
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -91,8 +83,6 @@ main ()
 {
   TrieMap_t tm = NULL;
 
-  malloc_stats ();
-
   printf ("tm = %p\n", tm);
 
   get (tm, 23);
@@ -157,13 +147,9 @@ main ()
   printf ("dups = " FMT_Word_t ", size = " FMT_Size_t ", memused = "
           FMT_Size_t "\n", dups, Size, Bytes);
 
-  malloc_stats ();
-
   Bytes = trie_free (&tm, fUserNone);
 
   printf ("tm = %p, Bytes = " FMT_Size_t "\n", tm, Bytes);
-
-  malloc_stats ();
 
   return EXIT_SUCCESS;
 }

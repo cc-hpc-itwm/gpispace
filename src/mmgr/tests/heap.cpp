@@ -4,14 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef __APPLE__
-// malloc.h is deprecated on OSX.
-#include <malloc.h>
-#else
-// malloc_stats() is missing on OSX / FreeBSD / Solaris / ...
-void malloc_stats() { }
-#endif
-
 int
 main ()
 {
@@ -88,8 +80,6 @@ main ()
   printf ("\n");
 
   printf ("free = " FMT_Size_t "\n", heap_free (&h));
-
-  malloc_stats ();
 
   return EXIT_SUCCESS;
 }

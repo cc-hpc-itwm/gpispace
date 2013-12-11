@@ -2,14 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef __APPLE__
-// malloc.h is deprecated on OSX.
-#include <malloc.h>
-#else
-// malloc_stats() is missing on OSX / FreeBSD / Solaris / ...
-void malloc_stats() { }
-#endif
-
 #include <mmgr/fseg.h>
 
 static void
@@ -144,11 +136,7 @@ main ()
   printf ("size = " FMT_Size_t "\n", fseg_size (FSeg));
   printf ("memused = " FMT_Size_t "\n", fseg_memused (FSeg));
 
-  malloc_stats ();
-
   fseg_free (&FSeg);
-
-  malloc_stats ();
 
   return EXIT_SUCCESS;
 }

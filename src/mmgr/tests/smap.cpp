@@ -1,12 +1,4 @@
 
-#ifndef __APPLE__
-// malloc.h is deprecated on OSX.
-#include <malloc.h>
-#else
-// malloc_stats() is missing on OSX / FreeBSD / Solaris / ...
-void malloc_stats() { }
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -128,8 +120,6 @@ main ()
 {
   SMap_t sm = NULL;
 
-  malloc_stats ();
-
   printf ("sm = %p\n", sm);
 
   get (sm, 23);
@@ -183,8 +173,6 @@ main ()
 
   printf ("sm = %p, Bytes = " FMT_Size_t "\n", sm, Bytes);
 
-  malloc_stats ();
-
   Word_t dups = 0;
 
   srand (31415926);
@@ -197,8 +185,6 @@ main ()
     }
 
   smap_print_max (sm, 5);
-
-  malloc_stats ();
 
   Size_t Size = smap_size (sm);
   Bytes = smap_memused (sm);
@@ -213,8 +199,6 @@ main ()
       smap_del (&sm, (Key_t) rand (), SMAP_DEL_INORDER_SUCC);
     }
 
-  malloc_stats ();
-
   srand (27182818);
 
   for (Word_t i = 0; i < (1 << 20); ++i)
@@ -222,13 +206,9 @@ main ()
       smap_ins (&sm, (Key_t) rand (), (Value_t) i);
     }
 
-  malloc_stats ();
-
   Bytes = smap_free (&sm);
 
   printf ("sm = %p, Bytes = " FMT_Size_t "\n", sm, Bytes);
-
-  malloc_stats ();
 
   return EXIT_SUCCESS;
 }

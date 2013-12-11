@@ -4,14 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef __APPLE__
-// malloc.h is deprecated on OSX.
-#include <malloc.h>
-#else
-// malloc_stats() is missing on OSX / FreeBSD / Solaris / ...
-void malloc_stats() { }
-#endif
-
 static void
 do_alloc (PTmmgr_t PTmmgr, Handle_t Handle, Size_t Size)
 {
@@ -261,8 +253,6 @@ main ()
     printf ("Bytes = " FMT_Size_t "\n", Bytes);
   }
 
-  malloc_stats ();
-
   Tmmgr_t tmmgrAligned = NULL;
 
   tmmgr_init (&tmmgrAligned, 45, (1 << 4));
@@ -300,8 +290,6 @@ main ()
   tmmgr_status (tmmgrAligned, NULL);
 
   tmmgr_finalize (&tmmgrAligned);
-
-  malloc_stats ();
 
   return EXIT_SUCCESS;
 }
