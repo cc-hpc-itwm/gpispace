@@ -95,57 +95,6 @@ namespace we
 	boost::condition not_empty_;
 	boost::condition not_full_;
       };
-
-      template <typename T>
-      class queue<T, 0> : boost::noncopyable
-      {
-      private:
-        typedef queue<T, 0> this_type;
-      public:
-	typedef std::deque<T> container_type;
-	typedef typename container_type::size_type size_type;
-	typedef typename container_type::value_type value_type;
-	typedef typename boost::call_traits<value_type>::param_type param_type;
-
-	void put (param_type item)
-	{
-	  boost::mutex::scoped_lock lock( mutex_ );
-	  container_.push_back (item);
-	  not_empty_.notify_one();
-	}
-
-	value_type get ()
-	{
-	  value_type v;
-	  get(&v);
-	  return v;
-	}
-
-	void get (value_type *item)
-	{
-	  boost::mutex::scoped_lock lock( mutex_ );
-          while (! is_not_empty())
-          {
-            not_empty_.wait(lock);
-          }
-	  *item = container_.front(); container_.pop_front();
-	}
-
-        inline
-        size_type size (void) const
-        {
-	  boost::mutex::scoped_lock lock( mutex_ );
-          return container_.size();
-        }
-
-      private:
-	inline bool is_not_empty() const { return ! container_.empty(); }
-	inline bool is_not_full() const { return true; }
-
-	container_type container_;
-	boost::mutex mutex_;
-	boost::condition not_empty_;
-      };
     }
   }
 }
