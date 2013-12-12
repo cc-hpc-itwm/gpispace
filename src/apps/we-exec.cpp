@@ -33,6 +33,8 @@
 #include <stdint.h>
 
 namespace test {
+  struct sdpa_daemon;
+
   namespace detail
   {
     struct id_generator
@@ -48,63 +50,22 @@ namespace test {
       unsigned long _n;
     };
 
-    template <typename Daemon>
     struct context : public we::mgmt::context
     {
-      virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n)
-      {
-        return handle_externally (act, n);
-      }
+      virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n);
+      virtual int handle_internally (we::mgmt::type::activity_t&, mod_t&);
+      virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&);
+      virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&);
+      virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod);
+      virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&);
 
-      virtual int handle_internally (we::mgmt::type::activity_t&, mod_t&)
-      {
-        throw std::runtime_error ("NO internal mod here!");
-      }
-
-      virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
-      {
-        throw std::runtime_error ("NO internal expr here!");
-      }
-
-      virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&)
-      {
-        we::mgmt::layer::id_type const new_id (daemon.gen_id());
-        daemon.add_mapping (id, new_id);
-        daemon.layer().submit (new_id,  act, we::type::user_data());
-        return 0;
-      }
-
-      virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
-      {
-        try
-        {
-          //!\todo pass a real gspc::drts::context
-          module::call (daemon.loader(), 0, act, mod);
-          daemon.layer().finished (id, act.to_string());
-        }
-        catch (std::exception const & ex)
-        {
-          daemon.layer().failed (id
-                                , act.to_string()
-                                , fhg::error::MODULE_CALL_FAILED
-                                , ex.what()
-                               );
-        }
-        return 0;
-      }
-
-      virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&)
-      {
-        throw std::runtime_error ("NO external expr here!");
-      }
-
-      context (Daemon & d, const we::mgmt::layer::id_type& an_id)
+      context (sdpa_daemon& d, const we::mgmt::layer::id_type& an_id)
         : daemon (d)
         , id(an_id)
      {}
 
     private:
-      Daemon& daemon;
+      sdpa_daemon& daemon;
       we::mgmt::layer::id_type id;
     };
   }
@@ -177,7 +138,7 @@ namespace test {
              , "worker-" << rank << " busy with " << act.transition ().name ()
              );
 
-        detail::context<sdpa_daemon> ctxt (*this, job.id);
+        detail::context ctxt (*this, job.id);
         act.execute (&ctxt);
       }
 
@@ -316,6 +277,51 @@ namespace test {
     worker_list_t worker_;
     we::loader::loader loader_;
   };
+
+  namespace detail
+  {
+    int context::handle_internally (we::mgmt::type::activity_t& act, net_t& n)
+    {
+      return handle_externally (act, n);
+    }
+    int context::handle_internally (we::mgmt::type::activity_t&, mod_t&)
+    {
+      throw std::runtime_error ("NO internal mod here!");
+    }
+    int context::handle_internally (we::mgmt::type::activity_t&, expr_t&)
+    {
+      throw std::runtime_error ("NO internal expr here!");
+    }
+    int context::handle_externally (we::mgmt::type::activity_t& act, net_t&)
+    {
+      we::mgmt::layer::id_type const new_id (daemon.gen_id());
+      daemon.add_mapping (id, new_id);
+      daemon.layer().submit (new_id,  act, we::type::user_data());
+      return 0;
+    }
+    int context::handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+    {
+      try
+      {
+        //!\todo pass a real gspc::drts::context
+        module::call (daemon.loader(), 0, act, mod);
+        daemon.layer().finished (id, act.to_string());
+      }
+      catch (std::exception const & ex)
+      {
+        daemon.layer().failed (id
+                              , act.to_string()
+                              , fhg::error::MODULE_CALL_FAILED
+                              , ex.what()
+                              );
+      }
+      return 0;
+    }
+    int context::handle_externally (we::mgmt::type::activity_t&, expr_t&)
+    {
+      throw std::runtime_error ("NO external expr here!");
+    }
+  }
 }
 
 typedef std::string id_type;
