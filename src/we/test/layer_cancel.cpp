@@ -50,7 +50,6 @@ struct daemon_t
               )
   {
     std::cout << "submitted id = " << id << std::endl;
-    layer.print_statistics (std::cerr);
     layer.failed (id, enc, fhg::error::UNEXPECTED_ERROR, "test_layer_cancel");
   }
 
@@ -107,7 +106,6 @@ int main ()
     layer.submit (generate_id(), act, we::type::user_data ());
 
     sleep (1);
-    layer.print_statistics (std::cerr);
   }
 
   {
@@ -122,7 +120,6 @@ int main ()
     layer.submit (generate_id(), act, we::type::user_data ());
 
     sleep (1);
-    layer.print_statistics (std::cerr);
   }
 
   return EXIT_SUCCESS;

@@ -174,42 +174,6 @@ namespace we { namespace mgmt {
       {
         return fhg::util::show (*lookup (map_to_internal(id)));
       }
-
-      void print_statistics (std::ostream & s) const
-      {
-        s << "==== begin layer statistics ====" << std::endl;
-
-        lock_t lock (mutex_);
-        s << "   #activities := " << activities_.size() << std::endl;
-        s << "   ext -> int := " << fhg::util::show (ext_to_int_.begin(), ext_to_int_.end());
-        s << std::endl;
-        s << std::endl;
-
-        std::vector <internal_id_type> ids;
-        ids.reserve (activities_.size());
-
-        for ( activities_t::const_iterator desc (activities_.begin())
-            ; desc != activities_.end()
-            ; ++desc
-            )
-        {
-          ids.push_back (desc->first);
-        }
-
-        std::sort (ids.begin(), ids.end());
-
-        for ( std::vector<internal_id_type>::const_iterator id (ids.begin())
-            ; id != ids.end()
-            ; ++id
-            )
-        {
-          s << *activities_.at(*id);
-          s << std::endl;
-        }
-
-        s << std::endl;
-        s << "==== end layer statistics ====" << std::endl;
-      }
     private:
       // handle execution layer
       boost::function<void ( external_id_type const &

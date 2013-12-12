@@ -46,7 +46,6 @@ struct daemon_t
               , const we::type::user_data& = we::type::user_data ()
               )
   {
-    layer.print_statistics (std::cerr);
     layer.finished (id, enc);
   }
 
@@ -94,7 +93,6 @@ int main ()
     layer.submit (generate_id(), act, we::type::user_data ());
 
     sleep (1);
-    layer.print_statistics (std::cerr);
   }
 
   {
@@ -109,7 +107,6 @@ int main ()
     layer.submit (generate_id(), act, we::type::user_data ());
 
     sleep (1);
-    layer.print_statistics (std::cerr);
   }
 
   return EXIT_SUCCESS;
