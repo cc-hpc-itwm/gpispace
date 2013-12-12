@@ -327,7 +327,6 @@ namespace we { namespace mgmt {
                       , boost::bind (&layer::extractor, this)
                       );
 
-        inj_q_ = new active_nets_t;
         start_threads ( "we-inject"
                       , injector_
                       , boost::bind (&layer::injector, this)
@@ -373,9 +372,6 @@ namespace we { namespace mgmt {
         DLOG(TRACE, "cleaning up extractor threads...");
         stop_threads (extractor_);
         DLOG(TRACE, "done.");
-
-        delete inj_q_;
-        inj_q_ = NULL;
       }
 
       void manager()
@@ -406,7 +402,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          inj_q_->put ( id );
+          inj_q_.put ( id );
         }
         else
         {
@@ -419,7 +415,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          inj_q_->put ( id );
+          inj_q_.put ( id );
         }
         else
         {
@@ -661,7 +657,7 @@ namespace we { namespace mgmt {
         DLOG (TRACE, "injector thread started...");
         for (;;)
         {
-          const internal_id_type act_id = inj_q_->get();
+          const internal_id_type act_id = inj_q_.get();
 
           if ( ! is_valid (act_id))
           {
@@ -776,7 +772,7 @@ namespace we { namespace mgmt {
 
       cmd_q_t cmd_q_;
       active_nets_t active_nets_;
-      active_nets_t *inj_q_;
+      active_nets_t inj_q_;
 
       external_to_internal_map_t ext_to_int_;
 
