@@ -447,7 +447,6 @@ try
     return EXIT_SUCCESS;
   }
 
-  // instantiate daemon and layer
   sdpa_daemon daemon (num_worker);
 
   BOOST_FOREACH (std::string const& m, mods_to_load)
