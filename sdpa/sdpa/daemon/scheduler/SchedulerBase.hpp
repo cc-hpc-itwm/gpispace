@@ -64,7 +64,7 @@ namespace sdpa {
       Worker::worker_id_t findWorker(const sdpa::job_id_t&);
       bool hasWorker(const Worker::worker_id_t&) const;
       Worker::ptr_t findWorker(const Worker::worker_id_t&);
-      const Worker::worker_id_t& findSubmOrAckWorker(const sdpa::job_id_t& job_id);
+      const boost::optional<Worker::worker_id_t> findSubmOrAckWorker(const sdpa::job_id_t& job_id) const;
 
       void addWorker( const Worker::worker_id_t& workerId,
                               const boost::optional<unsigned int>& capacity = boost::none,

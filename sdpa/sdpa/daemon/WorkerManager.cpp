@@ -79,7 +79,7 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
   throw NoWorkerFoundException();
 }
 
-const Worker::worker_id_t& WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id)
+const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
 {
   lock_type lock(mtx_);
 
@@ -91,7 +91,7 @@ const Worker::worker_id_t& WorkerManager::findSubmOrAckWorker(const sdpa::job_id
     return worker->name();
   }
 
-  throw NoWorkerFoundException();
+  return boost::none;
 }
 
 void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,

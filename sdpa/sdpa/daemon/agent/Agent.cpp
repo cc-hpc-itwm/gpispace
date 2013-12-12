@@ -549,13 +549,13 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
                     );
     if (isTop()) _.dont();
 
-    try
-    {
-      sdpa::worker_id_t worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
+    boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
 
-      DMLOG(TRACE, "Tell the worker "<<worker_id<<" to cancel the job "<<pEvt->job_id());
+    if(worker_id)
+    {
+      DMLOG(TRACE, "Tell the worker "<<*worker_id<<" to cancel the job "<<pEvt->job_id());
       events::CancelJobEvent::Ptr pCancelEvt( new events::CancelJobEvent( name()
-                                                          , worker_id
+                                                          , *worker_id
                                                           , pEvt->job_id()
                                                           , pEvt->reason() ) );
       sendEventToSlave(pCancelEvt);
@@ -564,7 +564,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
       pJob->CancelJob(pEvt);
       DMLOG(TRACE, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
     }
-    catch(const NoWorkerFoundException&)
+    else
     {
       // possible situations:
       // 1) the job wasn't yet assigned to any worker
