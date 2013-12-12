@@ -803,15 +803,7 @@ namespace we
       {
         lock_t const _ (mutex_);
 
-        activities_t::iterator a (activities_.find(id));
-
-        if (a == activities_.end())
-        {
-          throw exception::activity_not_found
-            ("lookup (" + fhg::util::show (id) + ") failed!", id);
-        }
-
-        return a->second;
+        return activities_.at (id);
       }
     };
   }
