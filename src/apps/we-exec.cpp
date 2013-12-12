@@ -115,11 +115,6 @@ namespace test {
     job_t ()
     {}
 
-    job_t (const job_t& other)
-      : id (other.id)
-      , desc(other.desc)
-    { }
-
     job_t (const we::mgmt::layer::id_type& id_, const std::string & desc_)
       : id (id_)
       , desc(desc_)
