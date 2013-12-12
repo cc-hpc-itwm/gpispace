@@ -335,7 +335,7 @@ namespace observe
 {
   void submitted (const we::mgmt::layer *l, layer_id_type const & id)
   {
-    lock_t lock(mutex);
+    lock_t const _ (mutex);
 
     std::cerr << "submitted: " << id << std::endl;
     layer_jobs.insert (id);
@@ -343,7 +343,7 @@ namespace observe
 
   void finished (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    lock_t lock(mutex);
+    lock_t const _ (mutex);
 
     if (layer_jobs.find (id) != layer_jobs.end())
     {
@@ -355,7 +355,7 @@ namespace observe
   }
   void failed (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    lock_t lock(mutex);
+    lock_t const _ (mutex);
 
     if (layer_jobs.find (id) != layer_jobs.end())
     {
@@ -367,7 +367,7 @@ namespace observe
   }
   void canceled (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    lock_t lock(mutex);
+    lock_t const _ (mutex);
 
     if (layer_jobs.find (id) != layer_jobs.end())
     {
