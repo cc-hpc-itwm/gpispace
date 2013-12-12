@@ -356,8 +356,11 @@ namespace observe
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::mgmt::type::activity_t act (s);
-      std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
+
+      std::cerr << "job finished: "
+                << we::mgmt::type::activity_t (s).transition().name()
+                << "-" << id << std::endl;
+
       encoded_result = s;
     }
   }
@@ -371,8 +374,11 @@ namespace observe
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::mgmt::type::activity_t act (s);
-      std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
+
+      std::cerr << "job failed: "
+                << we::mgmt::type::activity_t (s).transition().name()
+                << "-" << id << std::endl;
+
       encoded_result = s;
     }
   }
@@ -386,8 +392,11 @@ namespace observe
     if (layer_jobs.find (id) != layer_jobs.end())
     {
       layer_jobs.erase (id);
-      we::mgmt::type::activity_t act (s);
-      std::cerr << "job canceled: " << act.transition().name() << "-" << id << std::endl;
+
+      std::cerr << "job canceled: "
+                << we::mgmt::type::activity_t (s).transition().name()
+                << "-" << id << std::endl;
+
       encoded_result = s;
     }
   }
