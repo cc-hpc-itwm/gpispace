@@ -350,7 +350,7 @@ namespace we
       {
         if (is_valid(id))
         {
-          inj_q_.put ( id );
+          inj_q_.put (id);
         }
         else
         {
