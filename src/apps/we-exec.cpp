@@ -215,14 +215,13 @@ namespace
       {
         job_t const job (jobs_.get());
 
-        we::mgmt::type::activity_t act (job.desc);
-
         context ctxt ( job.id
                      , _loader
                      , &mgmt_layer_
                      , boost::bind (&sdpa_daemon::add_mapping, this, _1)
                      );
-        act.execute (&ctxt);
+
+        we::mgmt::type::activity_t (job.desc).execute (&ctxt);
       }
 
       MLOG (INFO, "SDPA layer worker-" << rank << " stopped");
