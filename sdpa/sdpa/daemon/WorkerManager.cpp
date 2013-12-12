@@ -79,6 +79,21 @@ const Worker::worker_id_t &WorkerManager::findWorker(const sdpa::job_id_t& job_i
   throw NoWorkerFoundException();
 }
 
+const boost::optional<Worker::worker_id_t> WorkerManager::getAssignedWorker(const sdpa::job_id_t& job_id)
+{
+  lock_type lock(mtx_);
+
+  BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
+                | boost::adaptors::filtered
+                  (boost::bind (&Worker::has_job, _1, job_id))
+                )
+  {
+    return worker->name();
+  }
+
+  return boost::none;
+}
+
 const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
 {
   lock_type lock(mtx_);

@@ -44,6 +44,7 @@ namespace sdpa { namespace daemon {
     bool isDisconnectedWorker(const Worker::worker_id_t& worker_id) const;
     const Worker::worker_id_t& findWorker(const sdpa::job_id_t& job_id);
     const boost::optional<Worker::worker_id_t> findSubmOrAckWorker(const sdpa::job_id_t& job_id) const;
+    const boost::optional<Worker::worker_id_t> getAssignedWorker(const sdpa::job_id_t& job_id);
 
     void addWorker( const Worker::worker_id_t& workerId,
                 boost::optional<unsigned int> capacity,
