@@ -425,8 +425,6 @@ namespace we
             continue;
           }
 
-          try
-          {
             detail::descriptor& desc (lookup(active_id));
 
             if (desc.activity().is_canceling())
@@ -474,11 +472,6 @@ namespace we
               desc.set_result (desc.activity().to_string());
               post_failed_notification (desc.id());
             }
-          }
-          catch (const exception::activity_not_found& ex)
-          {
-            LOG(WARN, "extractor: activity could not be found: " << ex.id());
-          }
         }
         DLOG(INFO, "extractor thread stopped...");
       }
@@ -661,8 +654,6 @@ namespace we
 
       void activity_failed (internal_id_type const internal_id)
       {
-        try
-        {
           detail::descriptor& desc (lookup(internal_id));
           desc.failed();
 
@@ -699,17 +690,10 @@ namespace we
           }
 
           remove_activity (desc);
-        }
-        catch (const exception::activity_not_found&)
-        {
-          LOG(WARN, "got failed notification for old activity: " << internal_id);
-        }
       }
 
       void activity_canceled (internal_id_type const internal_id)
       {
-        try
-        {
           detail::descriptor& desc (lookup(internal_id));
           desc.canceled();
 
@@ -747,17 +731,10 @@ namespace we
           }
 
           remove_activity (desc);
-        }
-        catch (const exception::activity_not_found&)
-        {
-          DLOG(WARN, "got canceled notification for old activity: " << internal_id);
-        }
       }
 
       void cancel_activity (internal_id_type const internal_id)
       {
-        try
-        {
           detail::descriptor& desc (lookup(internal_id));
 
           if (desc.has_children())
@@ -787,11 +764,6 @@ namespace we
           {
             post_canceled_notification (desc.id());
           }
-        }
-        catch (const exception::activity_not_found&)
-        {
-          DMLOG (WARN, "got cancel request for old activity: " << internal_id);
-        }
       }
 
       inline void insert_activity(const detail::descriptor & desc)
