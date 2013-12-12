@@ -451,10 +451,10 @@ try
   po::notify (vm);
 
   if (vm.count("help"))
-    {
-      std::cout << desc << std::endl;
-      return EXIT_SUCCESS;
-    }
+  {
+    std::cout << desc << std::endl;
+    return EXIT_SUCCESS;
+  }
 
   if (vm.count("version"))
   {
@@ -484,10 +484,10 @@ try
   }
   we::mgmt::layer& mgmt_layer = daemon.layer();
 
-  mgmt_layer.sig_submitted.connect ( &observe_submitted );
-  mgmt_layer.sig_finished.connect  ( &observe_finished );
-  mgmt_layer.sig_failed.connect    ( &observe_failed );
-  mgmt_layer.sig_canceled.connect ( &observe_canceled );
+  mgmt_layer.sig_submitted.connect (&observe_submitted);
+  mgmt_layer.sig_finished.connect (&observe_finished);
+  mgmt_layer.sig_failed.connect (&observe_failed);
+  mgmt_layer.sig_canceled.connect (&observe_canceled);
 
   if (vm.count ("verbose"))
   {
@@ -515,10 +515,10 @@ try
     }
 #else
   while (layer_jobs.size() > 0)
-    {
-      if (show_dots) { std::cerr << "." << std::flush; }
-      sleep (1);
-    }
+  {
+    if (show_dots) { std::cerr << "." << std::flush; }
+    sleep (1);
+  }
 #endif
 
   std::cerr << "Everything done." << std::endl;
