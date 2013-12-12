@@ -110,23 +110,22 @@ namespace test {
     };
   }
 
-  template <typename IdType>
   struct job_t
   {
     job_t ()
     {}
 
-    job_t (const job_t<IdType> & other)
+    job_t (const job_t& other)
       : id (other.id)
       , desc(other.desc)
     { }
 
-    job_t (const IdType & id_, const std::string & desc_)
+    job_t (const we::mgmt::layer::id_type& id_, const std::string & desc_)
       : id (id_)
       , desc(desc_)
     { }
 
-    IdType id;
+    we::mgmt::layer::id_type id;
     std::string desc;
   };
 
@@ -134,7 +133,7 @@ namespace test {
   {
     typedef we::mgmt::layer::id_type id_type;
     typedef boost::unordered_map<id_type, id_type> id_map_t;
-    typedef job_t<id_type> job_type;
+    typedef job_t job_type;
     typedef we::mgmt::detail::queue<job_type, 8> job_q_t;
     typedef std::vector<boost::thread*> worker_list_t;
 
