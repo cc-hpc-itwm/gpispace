@@ -133,24 +133,24 @@ namespace
 
     we::mgmt::layer::id_type gen_id()
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
       return boost::lexical_cast<std::string> (++_id);
     }
     void add_mapping ( const we::mgmt::layer::id_type& old_id
                      , const we::mgmt::layer::id_type& new_id
                      )
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
       id_map_[new_id] = old_id;
     }
     we::mgmt::layer::id_type get_mapping (const we::mgmt::layer::id_type& id)
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
       return id_map_.at (id);
     }
     void del_mapping (const we::mgmt::layer::id_type& id)
     {
-      boost::unique_lock<boost::recursive_mutex> lock (mutex_);
+      boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
       id_map_.erase (id);
     }
 
