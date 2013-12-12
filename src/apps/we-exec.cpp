@@ -42,7 +42,7 @@ namespace observe
       , _result()
     {}
 
-    void insert()
+    void insert (we::mgmt::detail::descriptor)
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
 
@@ -54,12 +54,12 @@ namespace observe
 
       return !_jobs;
     }
-    void erase (std::string const& result)
+    void remove (we::mgmt::detail::descriptor d)
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
 
       --_jobs;
-      _result = result;
+      _result = d.activity().to_string();
     }
     std::string const& result() const
     {
@@ -76,20 +76,6 @@ namespace observe
     unsigned long _jobs;
     boost::optional<std::string> _result;
   };
-
-  void insert ( state_type& state
-              , we::mgmt::detail::descriptor
-              )
-  {
-    state.insert();
-  }
-
-  void remove ( state_type& state
-              , we::mgmt::detail::descriptor d
-              )
-  {
-    state.erase (d.activity().to_string());
-  }
 }
 
 namespace
@@ -150,7 +136,7 @@ namespace
 
     sdpa_daemon ( std::size_t num_worker
                 , we::loader::loader* loader
-                , observe::state_type& observer
+                , observe::state_type* observer
                 , we::mgmt::type::activity_t const act
                 )
         : _mutex_id()
@@ -163,9 +149,9 @@ namespace
         , _loader (loader)
     {
       mgmt_layer_.sig_insert.connect
-        (boost::bind (&observe::insert, boost::ref (observer), _1));
+        (boost::bind (&observe::state_type::insert, observer, _1));
       mgmt_layer_.sig_remove.connect
-        (boost::bind (&observe::remove, boost::ref (observer), _1));
+        (boost::bind (&observe::state_type::remove, observer, _1));
 
       for (std::size_t n (0); n < num_worker; ++n)
       {
@@ -478,7 +464,7 @@ try
   sdpa_daemon const daemon
     ( num_worker
     , &loader
-    , observer
+    , &observer
     , path_to_act == "-"
     ? we::mgmt::type::activity_t (std::cin)
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
