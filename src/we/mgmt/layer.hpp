@@ -269,10 +269,6 @@ namespace we { namespace mgmt {
         }
       }
     public:
-      /**
-       * Constructor calls
-       */
-
       template <class E, typename G>
       layer(E * exec_layer, G gen)
         : sig_submitted()
