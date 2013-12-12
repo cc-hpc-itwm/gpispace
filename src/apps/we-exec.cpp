@@ -199,7 +199,7 @@ namespace
       stop();
     }
 
-    void start (const std::size_t num_worker = 1)
+    void start (const std::size_t num_worker)
     {
       for (std::size_t n (0); n < num_worker; ++n)
       {
