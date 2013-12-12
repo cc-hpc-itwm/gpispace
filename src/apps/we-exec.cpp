@@ -134,7 +134,7 @@ namespace
 
     we::mgmt::layer::id_type gen_id()
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id);
 
       return boost::lexical_cast<std::string> (++_id);
     }
@@ -142,19 +142,19 @@ namespace
                      , const we::mgmt::layer::id_type& new_id
                      )
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
 
       id_map_[new_id] = old_id;
     }
     we::mgmt::layer::id_type get_mapping (const we::mgmt::layer::id_type& id)
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
 
       return id_map_.at (id);
     }
     void del_mapping (const we::mgmt::layer::id_type& id)
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
 
       id_map_.erase (id);
     }
@@ -264,9 +264,10 @@ namespace
     }
 
   private:
-    boost::recursive_mutex mutex_;
+    boost::recursive_mutex _mutex_id;
     unsigned long _id;
     we::mgmt::layer mgmt_layer_;
+    boost::recursive_mutex _mutex_id_map;
     id_map_t  id_map_;
     job_q_t jobs_;
     worker_list_t worker_;
