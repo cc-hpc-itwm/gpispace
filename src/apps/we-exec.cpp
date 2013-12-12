@@ -144,7 +144,6 @@ namespace test {
 
   struct sdpa_daemon
   {
-    typedef we::mgmt::layer layer_type;
     typedef sdpa_daemon this_type;
     typedef we::mgmt::layer::id_type id_type;
     typedef boost::unordered_map<id_type, id_type> id_map_t;
@@ -508,7 +507,7 @@ try
       daemon.loader().append_search_path (p);
     }
   }
-  daemon_type::layer_type & mgmt_layer = daemon.layer();
+  we::mgmt::layer& mgmt_layer = daemon.layer();
 
   mgmt_layer.sig_submitted.connect ( &observe_submitted );
   mgmt_layer.sig_finished.connect  ( &observe_finished );
