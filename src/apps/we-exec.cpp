@@ -482,7 +482,7 @@ try
       daemon.loader().append_search_path (p);
     }
   }
-  we::mgmt::layer& mgmt_layer = daemon.layer();
+  we::mgmt::layer& mgmt_layer (daemon.layer());
 
   mgmt_layer.sig_submitted.connect (&observe_submitted);
   mgmt_layer.sig_finished.connect (&observe_finished);
