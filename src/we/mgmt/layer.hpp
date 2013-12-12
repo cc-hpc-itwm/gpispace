@@ -55,8 +55,9 @@ namespace we
 
       typedef std::vector<boost::thread *> thread_list_t;
 
-      typedef boost::shared_ptr<detail::descriptor> descriptor_ptr;
-      typedef boost::unordered_map<internal_id_type, descriptor_ptr> activities_t;
+      typedef boost::unordered_map< internal_id_type
+                                  , detail::descriptor
+                                  > activities_t;
 
       typedef boost::function<void ()> cmd_t;
       typedef fhg::thread::queue<cmd_t> cmd_q_t;
@@ -189,11 +190,11 @@ namespace we
                            )>  ext_failed;
       boost::function<void (external_id_type const &)> ext_canceled;
 
-      void submit (const descriptor_ptr & desc)
+      void submit (const detail::descriptor & desc)
       {
         insert_activity(desc);
 
-        post_execute_notification (desc->id());
+        post_execute_notification (desc.id());
       }
 
       void add_map_to_internal ( const external_id_type & external_id
@@ -397,13 +398,13 @@ namespace we
       inline
         void execute_externally (const internal_id_type & int_id)
       {
-        descriptor_ptr desc (lookup (int_id));
+        detail::descriptor& desc (lookup (int_id));
 
         external_id_type ext_id ( generate_external_id() );
-        desc->sent_to_external_as (ext_id);
+        desc.sent_to_external_as (ext_id);
         add_map_to_internal (ext_id, int_id);
 
-        we::mgmt::type::activity_t ext_act (desc->activity());
+        we::mgmt::type::activity_t ext_act (desc.activity());
         ext_act.transition().set_internal(true);
 
         DLOG(DEBUG, "submitting internal activity " << int_id << " to external with id " << ext_id);
@@ -417,7 +418,7 @@ namespace we
                    , ext_act.to_string()
                    , ext_act.transition().requirements()
                    , schedule_data
-                   , desc->get_user_data ()
+                   , desc.get_user_data ()
                    );
       }
 
@@ -437,11 +438,11 @@ namespace we
 
           try
           {
-            descriptor_ptr desc (lookup(active_id));
+            detail::descriptor& desc (lookup(active_id));
 
-            if (desc->activity().is_canceling())
+            if (desc.activity().is_canceling())
             {
-              if (!desc->has_children())
+              if (!desc.has_children())
               {
                 post_canceled_notification (active_id);
               }
@@ -450,9 +451,9 @@ namespace we
             }
 
             //! \todo: check status flags
-            if (! desc->is_alive ())
+            if (! desc.is_alive ())
             {
-              LOG(DEBUG, "activity (" << desc->name() << ")-" << active_id << " is on hold");
+              LOG(DEBUG, "activity (" << desc.name() << ")-" << active_id << " is on hold");
               continue;
             }
 
@@ -472,17 +473,17 @@ namespace we
             {
               LOG( ERROR
                  , "extractor: something went wrong during execution of: "
-                 << desc->name() << ": " << ex.what()
+                 << desc.name() << ": " << ex.what()
                  );
-              desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
-              desc->set_error_message
+              desc.set_error_code (fhg::error::UNEXPECTED_ERROR);
+              desc.set_error_message
                 ( std::string ("in: '")
-                + desc->name ()
+                + desc.name ()
                 + std::string ("' ")
                 + ex.what ()
                 );
-              desc->set_result (desc->activity().to_string());
-              post_failed_notification (desc->id());
+              desc.set_result (desc.activity().to_string());
+              post_failed_notification (desc.id());
             }
           }
           catch (const exception::activity_not_found& ex)
@@ -494,42 +495,42 @@ namespace we
       }
 
       inline
-        void do_execute (descriptor_ptr desc)
+        void do_execute (detail::descriptor& desc)
       {
         policy::execution_policy exec_policy;
 
-        switch (desc->execute (&exec_policy))
+        switch (desc.execute (&exec_policy))
         {
         case policy::execution_policy::EXTRACT:
           {
-            while (desc->is_alive () && desc->enabled())
+            while (desc.is_alive () && desc.enabled())
             {
-              descriptor_ptr child (new detail::descriptor(desc->extract(generate_internal_id())));
-              child->inject_input ();
-              child->set_user_data (desc->get_user_data ());
+              detail::descriptor child (desc.extract(generate_internal_id()));
+              child.inject_input ();
+              child.set_user_data (desc.get_user_data ());
 
-              switch (child->execute (&exec_policy))
+              switch (child.execute (&exec_policy))
               {
               case policy::execution_policy::EXTRACT:
                 insert_activity(child);
-                post_execute_notification (child->id());
+                post_execute_notification (child.id());
                 break;
               case policy::execution_policy::INJECT:
-                child->finished();
-                desc->inject (*child);
+                child.finished();
+                desc.inject (child);
                 break;
               case policy::execution_policy::EXTERNAL:
                 insert_activity (child);
-                execute_externally (child->id());
+                execute_externally (child.id());
                 break;
               default:
-                throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (*child));
+                throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (child));
               }
             }
 
-            if (desc->is_done ())
+            if (desc.is_done ())
             {
-              DLOG(DEBUG, "extractor: activity (" << desc->name() << ")-" << desc->id() << " is done");
+              DLOG(DEBUG, "extractor: activity (" << desc.name() << ")-" << desc.id() << " is done");
               do_inject (desc);
             }
           }
@@ -538,10 +539,10 @@ namespace we
           do_inject (desc);
           break;
         case policy::execution_policy::EXTERNAL:
-          execute_externally (desc->id());
+          execute_externally (desc.id());
           break;
         default:
-          LOG(FATAL, "extractor: got strange classification for activity (" << desc->name() << ")-" << desc->id());
+          LOG(FATAL, "extractor: got strange classification for activity (" << desc.name() << ")-" << desc.id());
           throw std::runtime_error ("extractor got strange classification for activity");
         }
       }
@@ -565,16 +566,7 @@ namespace we
             continue;
           }
 
-          descriptor_ptr desc;
-          try
-          {
-            desc = lookup (act_id);
-          }
-          catch (std::exception const &ex)
-          {
-            MLOG (ERROR, "internal error: activity not valid anymore");
-            continue;
-          }
+          detail::descriptor& desc (lookup (act_id));
 
           try
           {
@@ -584,66 +576,66 @@ namespace we
           {
             LOG(ERROR, "injector got exception during injecting: " << ex.what());
 
-            desc->set_error_code (fhg::error::UNEXPECTED_ERROR);
-            desc->set_error_message (ex.what ());
-            desc->set_result (desc->activity ().to_string());
+            desc.set_error_code (fhg::error::UNEXPECTED_ERROR);
+            desc.set_error_message (ex.what ());
+            desc.set_result (desc.activity ().to_string());
 
-            post_failed_notification (desc->id ());
+            post_failed_notification (desc.id ());
           }
         }
         DLOG(INFO, "injector thread stopped...");
       }
 
-      void do_inject (descriptor_ptr desc)
+      void do_inject (detail::descriptor& desc)
       {
-        desc->finished();
+        desc.finished();
 
-        if (desc->has_parent())
+        if (desc.has_parent())
         {
-          lookup (desc->parent())->inject
-            ( *desc
+          lookup (desc.parent()).inject
+            ( desc
             , boost::bind ( &layer::post_activity_notification
                           , this
                           , _1
                           )
             );
         }
-        else if (desc->came_from_external())
+        else if (desc.came_from_external())
         {
-          if (desc->activity ().is_failed ())
+          if (desc.activity ().is_failed ())
           {
             DLOG ( INFO
-                 , "failed (" << desc->name() << ")-" << desc->id()
-                 << " external-id := " << desc->from_external_id()
+                 , "failed (" << desc.name() << ")-" << desc.id()
+                 << " external-id := " << desc.from_external_id()
                  );
-            ext_failed ( desc->from_external_id()
-                       , desc->activity().to_string()
-                       , desc->error_code()
-                       , desc->error_message()
+            ext_failed ( desc.from_external_id()
+                       , desc.activity().to_string()
+                       , desc.error_code()
+                       , desc.error_message()
                        );
           }
-          else if (desc->activity ().is_canceled ())
+          else if (desc.activity ().is_canceled ())
           {
             DLOG ( INFO
-                 , "canceled (" << desc->name() << ")-" << desc->id()
-                 << " external-id := " << desc->from_external_id()
+                 , "canceled (" << desc.name() << ")-" << desc.id()
+                 << " external-id := " << desc.from_external_id()
                  );
-            ext_canceled (desc->from_external_id());
+            ext_canceled (desc.from_external_id());
           }
           else
           {
             DLOG ( INFO
-                 , "finished (" << desc->name() << ")-" << desc->id()
-                 << " external-id := " << desc->from_external_id()
+                 , "finished (" << desc.name() << ")-" << desc.id()
+                 << " external-id := " << desc.from_external_id()
                  );
-            ext_finished ( desc->from_external_id()
-                         , desc->activity().to_string()
+            ext_finished ( desc.from_external_id()
+                         , desc.activity().to_string()
                          );
           }
         }
         else
         {
-          throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (*desc));
+          throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (desc));
         }
 
         remove_activity (desc);
@@ -682,35 +674,34 @@ namespace we
       {
         try
         {
-          descriptor_ptr desc (lookup(internal_id));
-          desc->failed();
+          detail::descriptor& desc (lookup(internal_id));
+          desc.failed();
 
           DMLOG ( WARN
-                , "failed (" << desc->name() << ")-" << desc->id() << " : "
-                << desc->error_message ()
+                , "failed (" << desc.name() << ")-" << desc.id() << " : "
+                << desc.error_message ()
                 );
 
-          if (desc->has_parent ())
+          if (desc.has_parent ())
           {
-            descriptor_ptr parent_desc =
-              lookup (desc->parent());
+            detail::descriptor& parent_desc (lookup (desc.parent()));
 
-            parent_desc->child_failed( *desc
-                                     , desc->error_code()
-                                     , desc->error_message()
+            parent_desc.child_failed ( desc
+                                     , desc.error_code()
+                                     , desc.error_message()
                                      );
             //! \fixme: handle failure in a meaningful way:
             //     - check failure reason
             //         - EAGAIN reschedule (had not been submitted yet)
             //         - ECRASH activity crashed (idempotence criteria)
-            post_cancel_activity_notification (parent_desc->id ());
+            post_cancel_activity_notification (parent_desc.id ());
           }
-          else if (desc->came_from_external ())
+          else if (desc.came_from_external ())
           {
-            ext_failed ( desc->from_external_id()
-                       , desc->activity().to_string()
-                       , desc->error_code()
-                       , desc->error_message()
+            ext_failed ( desc.from_external_id()
+                       , desc.activity().to_string()
+                       , desc.error_code()
+                       , desc.error_message()
                        );
           }
           else
@@ -730,40 +721,40 @@ namespace we
       {
         try
         {
-          descriptor_ptr desc (lookup(internal_id));
-          desc->canceled();
+          detail::descriptor& desc (lookup(internal_id));
+          desc.canceled();
 
-          if (desc->has_parent ())
+          if (desc.has_parent ())
           {
             DLOG ( INFO, "activity "
-                 << desc->name ()
+                 << desc.name ()
                  << " canceled and has a parent: reason := "
-                 << desc->error_message ()
+                 << desc.error_message ()
                  );
 
-            descriptor_ptr parent (lookup (desc->parent()));
-            parent->child_canceled(*desc, "TODO: child canceled reason");
+            detail::descriptor& parent (lookup (desc.parent()));
+            parent.child_canceled(desc, "TODO: child canceled reason");
 
-            if (! parent->has_children ())
+            if (! parent.has_children ())
             {
-              post_canceled_notification (parent->id());
+              post_canceled_notification (parent.id());
             }
             else
             {
-              post_cancel_activity_notification (parent->id ());
+              post_cancel_activity_notification (parent.id ());
             }
           }
-          else if (desc->came_from_external ())
+          else if (desc.came_from_external ())
           {
-            ext_failed ( desc->from_external_id()
-                       , desc->activity().to_string()
-                       , desc->error_code()
-                       , desc->error_message()
+            ext_failed ( desc.from_external_id()
+                       , desc.activity().to_string()
+                       , desc.error_code()
+                       , desc.error_message()
                        );
           }
           else
           {
-            throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (*desc));
+            throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (desc));
           }
 
           remove_activity (desc);
@@ -778,34 +769,34 @@ namespace we
       {
         try
         {
-          descriptor_ptr desc (lookup(internal_id));
+          detail::descriptor& desc (lookup(internal_id));
 
-          if (desc->has_children())
+          if (desc.has_children())
           {
-            desc->cancel
+            desc.cancel
               ( boost::bind ( &layer::post_cancel_activity_notification
                             , this
                             , _1
                             )
               );
           }
-          else if (desc->sent_to_external())
+          else if (desc.sent_to_external())
           {
-            if (! (  desc->activity().is_canceling()
-                  || desc->activity().is_failed()
-                  || desc->activity().is_canceled()
-                  || desc->activity().is_finished()
+            if (! (  desc.activity().is_canceling()
+                  || desc.activity().is_failed()
+                  || desc.activity().is_canceled()
+                  || desc.activity().is_finished()
                   )
                )
             {
-              ext_cancel ( desc->to_external_id()
+              ext_cancel ( desc.to_external_id()
                          , "WFE policy cancel-on-failure in place"
                          );
             }
           }
           else
           {
-            post_canceled_notification (desc->id());
+            post_canceled_notification (desc.id());
           }
         }
         catch (const exception::activity_not_found&)
@@ -814,40 +805,40 @@ namespace we
         }
       }
 
-      inline void insert_activity(const descriptor_ptr & desc)
+      inline void insert_activity(const detail::descriptor & desc)
       {
         lock_t lock (mutex_);
 
-        activities_.insert(std::make_pair(desc->id(), desc));
-        if (desc->came_from_external())
+        activities_.insert(std::make_pair(desc.id(), desc));
+        if (desc.came_from_external())
         {
-          add_map_to_internal (desc->from_external_id(), desc->id());
+          add_map_to_internal (desc.from_external_id(), desc.id());
         }
 
-        sig_insert (*desc);
+        sig_insert (desc);
       }
 
-      inline void remove_activity(const descriptor_ptr & desc)
+      inline void remove_activity(const detail::descriptor & desc)
       {
         lock_t lock (mutex_);
 
-        sig_remove (*desc);
+        sig_remove (desc);
 
-        if (desc->has_children())
+        if (desc.has_children())
           throw std::runtime_error("cannot remove non-leaf: " + fhg::util::show (desc));
-        if (desc->sent_to_external())
+        if (desc.sent_to_external())
         {
-          del_map_to_internal (desc->to_external_id(), desc->id());
+          del_map_to_internal (desc.to_external_id(), desc.id());
         }
-        if (desc->came_from_external())
+        if (desc.came_from_external())
         {
-          del_map_to_internal (desc->from_external_id(), desc->id());
+          del_map_to_internal (desc.from_external_id(), desc.id());
         }
 
-        activities_.erase (desc->id());
+        activities_.erase (desc.id());
       }
 
-      inline descriptor_ptr lookup (const internal_id_type& id)
+      inline detail::descriptor& lookup (const internal_id_type& id)
       {
         lock_t (mutex_);
 
