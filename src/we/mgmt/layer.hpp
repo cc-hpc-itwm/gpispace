@@ -838,7 +838,7 @@ namespace we
 
       inline detail::descriptor& lookup (const internal_id_type& id)
       {
-        lock_t (mutex_);
+        lock_t const _ (mutex_);
 
         activities_t::iterator a (activities_.find(id));
 
