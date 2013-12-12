@@ -45,14 +45,19 @@ namespace
     virtual int handle_externally (we::mgmt::type::activity_t&, mod_t&);
     virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&);
 
-    context (sdpa_daemon& d, const we::mgmt::layer::id_type& an_id)
+    context ( sdpa_daemon& d
+            , const we::mgmt::layer::id_type& an_id
+            , we::loader::loader* loader
+            )
       : daemon (d)
       , id (an_id)
+      , _loader (loader)
     {}
 
   private:
     sdpa_daemon& daemon;
     we::mgmt::layer::id_type id;
+    we::loader::loader* _loader;
   };
 
   struct job_t
@@ -78,8 +83,9 @@ namespace
     typedef std::vector<boost::thread*> worker_list_t;
 
     explicit
-    sdpa_daemon (std::size_t num_worker)
+      sdpa_daemon (std::size_t num_worker, we::loader::loader* loader)
       : mgmt_layer_ (this, boost::bind (&sdpa_daemon::gen_id, this))
+      , _loader (loader)
     {
       start (num_worker);
     }
@@ -125,7 +131,7 @@ namespace
              , "worker-" << rank << " busy with " << act.transition().name()
              );
 
-        context ctxt (*this, job.id);
+        context ctxt (*this, job.id, _loader);
         act.execute (&ctxt);
       }
 
@@ -146,7 +152,8 @@ namespace
 
       id_map_[new_id] = old_id;
     }
-    we::mgmt::layer::id_type get_mapping (const we::mgmt::layer::id_type& id)
+    we::mgmt::layer::id_type
+      get_mapping (const we::mgmt::layer::id_type& id) const
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
 
@@ -258,20 +265,16 @@ namespace
     {
       return mgmt_layer_;
     }
-    inline we::loader::loader& loader()
-    {
-      return loader_;
-    }
 
   private:
     boost::recursive_mutex _mutex_id;
     unsigned long _id;
     we::mgmt::layer mgmt_layer_;
-    boost::recursive_mutex _mutex_id_map;
+    mutable boost::recursive_mutex _mutex_id_map;
     id_map_t  id_map_;
     job_q_t jobs_;
     worker_list_t worker_;
-    we::loader::loader loader_;
+    we::loader::loader* _loader;
   };
 
   int context::handle_internally (we::mgmt::type::activity_t& act, net_t& n)
@@ -298,7 +301,7 @@ namespace
     try
     {
       //!\todo pass a real gspc::drts::context
-      module::call (daemon.loader(), 0, act, mod);
+      module::call (*_loader, 0, act, mod);
       daemon.layer().finished (id, act.to_string());
     }
     catch (std::exception const & ex)
@@ -452,11 +455,11 @@ try
     return EXIT_SUCCESS;
   }
 
-  sdpa_daemon daemon (num_worker);
+  we::loader::loader loader;
 
   BOOST_FOREACH (std::string const& m, mods_to_load)
   {
-    daemon.loader().load (m);
+    loader.load (m);
   }
 
   {
@@ -464,9 +467,11 @@ try
     fhg::log::split (mod_path, ":", std::back_inserter (search_path));
     BOOST_FOREACH (std::string const &p, search_path)
     {
-      daemon.loader().append_search_path (p);
+      loader.append_search_path (p);
     }
   }
+  sdpa_daemon daemon (num_worker, &loader);
+
   we::mgmt::layer& mgmt_layer (daemon.layer());
 
   mgmt_layer.sig_submitted.connect (&observe::submitted);
