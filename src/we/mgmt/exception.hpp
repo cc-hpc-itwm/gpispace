@@ -13,16 +13,6 @@ namespace we
   {
     namespace exception
     {
-      struct validation_error : public std::runtime_error
-      {
-        validation_error (const std::string & msg)
-          : std::runtime_error (msg)
-        {}
-
-        ~validation_error () throw ()
-        {}
-      };
-
       struct already_there : public std::runtime_error
       {
       public:
