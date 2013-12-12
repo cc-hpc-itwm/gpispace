@@ -66,10 +66,10 @@ namespace sdpa {
       const boost::optional<Worker::worker_id_t> findSubmOrAckWorker(const sdpa::job_id_t& job_id) const;
 
       void addWorker( const Worker::worker_id_t& workerId,
-                              const boost::optional<unsigned int>& capacity = boost::none,
-			      const capabilities_set_t& cpbset = capabilities_set_t(),
-			      const unsigned int& agent_rank = 0,
-                    const sdpa::worker_id_t& agent_uuid = "");
+                      const boost::optional<unsigned int>& capacity = boost::none,
+                      const capabilities_set_t& cpbset = capabilities_set_t(),
+                      const unsigned int& agent_rank = 0,
+                      const sdpa::worker_id_t& agent_uuid = "");
 
       void deleteWorker( const Worker::worker_id_t& workerId);
 
