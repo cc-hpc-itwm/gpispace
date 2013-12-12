@@ -246,13 +246,16 @@ namespace
       return boost::lexical_cast<std::string> (++_id);
     }
 
-    void add_mapping ( const we::mgmt::layer::id_type& old_id
-                     , const we::mgmt::layer::id_type& new_id
-                     )
+    we::mgmt::layer::id_type
+      add_mapping (const we::mgmt::layer::id_type& old_id)
     {
+      we::mgmt::layer::id_type new_id (gen_id());
+
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
 
       id_map_[new_id] = old_id;
+
+      return new_id;
     }
     we::mgmt::layer::id_type
       get_mapping (const we::mgmt::layer::id_type& id) const
@@ -388,8 +391,7 @@ namespace
   }
   int context::handle_externally (we::mgmt::type::activity_t& act, net_t&)
   {
-    we::mgmt::layer::id_type const new_id (daemon.gen_id());
-    daemon.add_mapping (id, new_id);
+    we::mgmt::layer::id_type const new_id (daemon.add_mapping (id));
     _layer->submit (new_id,  act, we::type::user_data());
     return 0;
   }
