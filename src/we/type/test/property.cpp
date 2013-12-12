@@ -10,6 +10,8 @@
 #include <boost/optional.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <fhg/util/boost/test/printer/map.hpp>
+
 namespace prop = we::type::property;
 
 namespace
@@ -569,7 +571,6 @@ namespace we
 }
 
 typedef std::map<int,int> map_type;
-BOOST_TEST_DONT_PRINT_LOG_VALUE (map_type);
 
 BOOST_AUTO_TEST_CASE (store_map)
 {
