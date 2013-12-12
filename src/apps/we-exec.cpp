@@ -508,13 +508,11 @@ try
   mgmt_layer.sig_canceled.connect
     (boost::bind (&observe::generic, boost::ref (observer), std::string ("cancelled"), _1, _2, _3));
 
-  we::mgmt::type::activity_t act
+  daemon.submit
     ( path_to_act == "-"
     ? we::mgmt::type::activity_t (std::cin)
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     );
-
-  daemon.submit (act);
 
   while (not observer.done())
   {
