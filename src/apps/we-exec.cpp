@@ -228,6 +228,12 @@ namespace
 
       return boost::lexical_cast<std::string> (++_id);
     }
+
+    void submit (we::mgmt::type::activity_t const& act)
+    {
+      mgmt_layer_.submit (gen_id(), act, we::type::user_data());
+    }
+
     void add_mapping ( const we::mgmt::layer::id_type& old_id
                      , const we::mgmt::layer::id_type& new_id
                      )
