@@ -37,19 +37,6 @@ namespace test {
 
   namespace detail
   {
-    struct id_generator
-    {
-      id_generator() : _n (0) {}
-
-      inline const std::string operator++()
-      {
-        return boost::lexical_cast<std::string> (++_n);
-      }
-
-    private:
-      unsigned long _n;
-    };
-
     struct context : public we::mgmt::context
     {
       virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n);
@@ -148,7 +135,7 @@ namespace test {
     id_type gen_id()
     {
       boost::unique_lock<boost::recursive_mutex> lock (mutex_);
-      return ++id_;
+      return boost::lexical_cast<std::string> (++_id);
     }
     void add_mapping ( const id_type & old_id, const id_type & new_id)
     {
@@ -270,7 +257,7 @@ namespace test {
 
   private:
     boost::recursive_mutex mutex_;
-    detail::id_generator id_;
+    unsigned long _id;
     we::mgmt::layer mgmt_layer_;
     id_map_t  id_map_;
     job_q_t jobs_;
