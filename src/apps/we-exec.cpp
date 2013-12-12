@@ -256,7 +256,7 @@ namespace
     we::mgmt::layer::id_type
       add_mapping (const we::mgmt::layer::id_type& old_id)
     {
-      we::mgmt::layer::id_type new_id (gen_id());
+      we::mgmt::layer::id_type const new_id (gen_id());
 
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
 
@@ -294,7 +294,7 @@ namespace
 
       try
       {
-        we::mgmt::layer::id_type mapped_id (get_mapping (id));
+        we::mgmt::layer::id_type const mapped_id (get_mapping (id));
         del_mapping (id);
 
         mgmt_layer_.canceled (mapped_id);
@@ -310,14 +310,14 @@ namespace
     {
       try
       {
-        we::mgmt::layer::id_type mapped_id (get_mapping (id));
+        we::mgmt::layer::id_type const mapped_id (get_mapping (id));
         del_mapping (id);
 
         mgmt_layer_.finished (mapped_id, desc);
       }
       catch (std::out_of_range const &)
       {
-        we::mgmt::type::activity_t act (desc);
+        we::mgmt::type::activity_t const act (desc);
 
         std::cout << "finished [" << id << "]" << std::endl;
         BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
@@ -339,14 +339,14 @@ namespace
     {
       try
       {
-        we::mgmt::layer::id_type mapped_id (get_mapping (id));
+        we::mgmt::layer::id_type const mapped_id (get_mapping (id));
         del_mapping (id);
 
         mgmt_layer_.failed (mapped_id, desc, error_code, reason);
       }
       catch (std::out_of_range const &)
       {
-        we::mgmt::type::activity_t act (desc);
+        we::mgmt::type::activity_t const act (desc);
 
         std::cout << "failed [" << id << "] = ";
         act.print (std::cout, act.output());
@@ -361,7 +361,7 @@ namespace
     {
       try
       {
-        we::mgmt::layer::id_type mapped_id (get_mapping (id));
+        we::mgmt::layer::id_type const mapped_id (get_mapping (id));
         del_mapping (id);
 
         mgmt_layer_.canceled (mapped_id);
@@ -512,7 +512,7 @@ try
 
   observe::state_type observer;
 
-  sdpa_daemon daemon
+  sdpa_daemon const daemon
     ( num_worker
     , &loader
     , observer
