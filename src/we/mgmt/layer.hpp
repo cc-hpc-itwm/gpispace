@@ -276,6 +276,11 @@ namespace we
           , sig_failed()
           , sig_canceled()
           , sig_executing()
+          , ext_submit (boost::bind (& E::submit, exec_layer, _1, _2, _3, _4, _5))
+          , ext_cancel (boost::bind (& E::cancel, exec_layer, _1, _2))
+          , ext_finished (boost::bind (& E::finished, exec_layer, _1, _2))
+          , ext_failed (boost::bind (& E::failed, exec_layer, _1, _2, _3, _4))
+          , ext_canceled (boost::bind (& E::canceled, exec_layer, _1))
           , external_id_gen_(gen)
           , internal_id_gen_(&petri_net::activity_id_generate)
           , manager_ (boost::bind (&layer::manager, this))
@@ -285,12 +290,6 @@ namespace we
         fhg::util::set_threadname (manager_, "[we-mgr]");
         fhg::util::set_threadname (extractor_, "[we-extract]");
         fhg::util::set_threadname (injector_, "[we-inject]");
-
-        ext_submit = (boost::bind (& E::submit, exec_layer, _1, _2, _3, _4, _5));
-        ext_cancel = (boost::bind (& E::cancel, exec_layer, _1, _2));
-        ext_finished = (boost::bind (& E::finished, exec_layer, _1, _2));
-        ext_failed = (boost::bind (& E::failed, exec_layer, _1, _2, _3, _4));
-        ext_canceled = (boost::bind (& E::canceled, exec_layer, _1));
       }
 
       ~layer()
