@@ -34,12 +34,11 @@ namespace we
     void layer::finished (const external_id_type& id, const result_type& result)
     {
       internal_id_type int_id (map_to_internal (id));
+
       {
         lock_t const _ (mutex_);
-        detail::descriptor& desc (lookup (int_id));
-        {
-          desc.output (we::mgmt::type::activity_t (result).output());
-        }
+
+        lookup (int_id).output (we::mgmt::type::activity_t (result).output());
       }
 
       inj_q_.put (int_id);
