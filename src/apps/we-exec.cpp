@@ -332,82 +332,78 @@ typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 static bool verbose (false);
 static std::string encoded_result;
 
-// observe workflow engine
-static
-  void observe_submitted (const we::mgmt::layer *l, layer_id_type const & id)
+namespace observe
 {
+  void submitted (const we::mgmt::layer *l, layer_id_type const & id)
   {
-    lock_t lock(mutex);
-
-    std::cerr << "submitted: " << id << std::endl;
-    layer_jobs.insert (id);
-  }
-
-  if (verbose)
-    l->print_statistics(std::cerr);
-}
-
-static
-  void observe_finished (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
-{
-  {
-    lock_t lock(mutex);
-
-    if (layer_jobs.find (id) != layer_jobs.end())
     {
-      layer_jobs.erase (id);
-      we::mgmt::type::activity_t act (s);
-      std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
-      encoded_result = s;
+      lock_t lock(mutex);
+
+      std::cerr << "submitted: " << id << std::endl;
+      layer_jobs.insert (id);
     }
+
+    if (verbose)
+      l->print_statistics(std::cerr);
   }
 
-  if (verbose)
-    l->print_statistics(std::cerr);
-}
-static
-void observe_failed (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
-{
+  void finished (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    lock_t lock(mutex);
-
-    if (layer_jobs.find (id) != layer_jobs.end())
     {
-      layer_jobs.erase (id);
-      we::mgmt::type::activity_t act (s);
-      std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
-      encoded_result = s;
-    }
-  }
+      lock_t lock(mutex);
 
-  if (verbose)
-    l->print_statistics(std::cerr);
-}
-static
-void observe_canceled (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
-{
+      if (layer_jobs.find (id) != layer_jobs.end())
+      {
+        layer_jobs.erase (id);
+        we::mgmt::type::activity_t act (s);
+        std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
+        encoded_result = s;
+      }
+    }
+
+    if (verbose)
+      l->print_statistics(std::cerr);
+  }
+  void failed (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    lock_t lock(mutex);
-
-    if (layer_jobs.find (id) != layer_jobs.end())
     {
-      layer_jobs.erase (id);
-      we::mgmt::type::activity_t act (s);
-      std::cerr << "job canceled: " << act.transition().name() << "-" << id << std::endl;
-      encoded_result = s;
+      lock_t lock(mutex);
+
+      if (layer_jobs.find (id) != layer_jobs.end())
+      {
+        layer_jobs.erase (id);
+        we::mgmt::type::activity_t act (s);
+        std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
+        encoded_result = s;
+      }
     }
+
+    if (verbose)
+      l->print_statistics(std::cerr);
   }
+  void canceled (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
+  {
+    {
+      lock_t lock(mutex);
 
-  if (verbose)
-    l->print_statistics(std::cerr);
-}
+      if (layer_jobs.find (id) != layer_jobs.end())
+      {
+        layer_jobs.erase (id);
+        we::mgmt::type::activity_t act (s);
+        std::cerr << "job canceled: " << act.transition().name() << "-" << id << std::endl;
+        encoded_result = s;
+      }
+    }
 
-static
-void observe_executing (const we::mgmt::layer *l, layer_id_type const & id)
-{
-  std::cerr << "activity executing: id := " << id << std::endl;
-  if (verbose)
-    l->print_statistics(std::cerr);
+    if (verbose)
+      l->print_statistics(std::cerr);
+  }
+  void executing (const we::mgmt::layer *l, layer_id_type const & id)
+  {
+    std::cerr << "activity executing: id := " << id << std::endl;
+    if (verbose)
+      l->print_statistics(std::cerr);
+  }
 }
 
 int main (int argc, char **argv)
@@ -481,15 +477,15 @@ try
   }
   we::mgmt::layer& mgmt_layer (daemon.layer());
 
-  mgmt_layer.sig_submitted.connect (&observe_submitted);
-  mgmt_layer.sig_finished.connect (&observe_finished);
-  mgmt_layer.sig_failed.connect (&observe_failed);
-  mgmt_layer.sig_canceled.connect (&observe_canceled);
+  mgmt_layer.sig_submitted.connect (&observe::submitted);
+  mgmt_layer.sig_finished.connect (&observe::finished);
+  mgmt_layer.sig_failed.connect (&observe::failed);
+  mgmt_layer.sig_canceled.connect (&observe::canceled);
 
   if (vm.count ("verbose"))
   {
     verbose = true;
-    mgmt_layer.sig_executing.connect ( &observe_executing );
+    mgmt_layer.sig_executing.connect (&observe::executing);
   }
 
   we::mgmt::type::activity_t act
