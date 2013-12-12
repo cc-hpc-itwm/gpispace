@@ -502,21 +502,11 @@ try
   jobs.push_back(id);
   mgmt_layer.submit(id, act, we::type::user_data ());
 
-#if 0
-  size_t max_wait (5);
-
-  while (jobs.size() > 0 && (--max_wait > 0))
-    {
-      if (show_dots) { std::cerr << "." << std::flush; }
-      sleep (1);
-    }
-#else
   while (layer_jobs.size() > 0)
   {
     if (show_dots) { std::cerr << "." << std::flush; }
     sleep (1);
   }
-#endif
 
   std::cerr << "Everything done." << std::endl;
 
