@@ -331,20 +331,6 @@ namespace we
       }
 
       inline
-        void post_inject_activity_results (const internal_id_type & id)
-      {
-        if (is_valid(id))
-        {
-          inj_q_.put ( id );
-        }
-        else
-        {
-          throw std::runtime_error
-            ("post_inject_activity_results: id is not valid anymore");
-        }
-      }
-
-      inline
         void post_finished_notification (const internal_id_type & id)
       {
         if (is_valid(id))
