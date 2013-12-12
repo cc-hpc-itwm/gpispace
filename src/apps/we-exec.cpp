@@ -189,7 +189,11 @@ namespace
       mgmt_layer_.sig_canceled.connect
         (boost::bind (&observe::generic, boost::ref (observer), std::string ("cancelled"), _1, _2, _3));
 
-      start (num_worker);
+      for (std::size_t n (0); n < num_worker; ++n)
+      {
+        worker_.push_back
+          (new boost::thread (boost::bind (&sdpa_daemon::worker, this, n)));
+      }
 
       mgmt_layer_.submit (gen_id(), act, we::type::user_data());
     }
@@ -197,15 +201,6 @@ namespace
     ~sdpa_daemon()
     {
       stop();
-    }
-
-    void start (const std::size_t num_worker)
-    {
-      for (std::size_t n (0); n < num_worker; ++n)
-      {
-        worker_.push_back
-          (new boost::thread (boost::bind (&sdpa_daemon::worker, this, n)));
-      }
     }
 
     void stop()
