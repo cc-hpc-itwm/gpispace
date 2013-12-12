@@ -144,7 +144,6 @@ namespace test {
 
   struct sdpa_daemon
   {
-    typedef sdpa_daemon this_type;
     typedef we::mgmt::layer::id_type id_type;
     typedef boost::unordered_map<id_type, id_type> id_map_t;
     typedef job_t<id_type> job_type;
@@ -167,7 +166,7 @@ namespace test {
     {
       for (std::size_t n (0); n < num_worker; ++n)
       {
-        worker_.push_back( new boost::thread( boost::bind(&this_type::worker, this, n)));
+        worker_.push_back( new boost::thread( boost::bind(&sdpa_daemon::worker, this, n)));
       }
     }
 
@@ -198,7 +197,7 @@ namespace test {
              , "worker-" << rank << " busy with " << act.transition ().name ()
              );
 
-        detail::context<this_type, id_type> ctxt (*this, job.id);
+        detail::context<sdpa_daemon, id_type> ctxt (*this, job.id);
         act.execute (&ctxt);
       }
 
