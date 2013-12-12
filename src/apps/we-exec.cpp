@@ -164,6 +164,7 @@ namespace
       sdpa_daemon ( std::size_t num_worker
                   , we::loader::loader* loader
                   , observe::state_type& observer
+                  , we::mgmt::type::activity_t const act
                   )
         : _mutex_id()
         , _id (0)
@@ -184,6 +185,8 @@ namespace
         (boost::bind (&observe::generic, boost::ref (observer), std::string ("cancelled"), _1, _2, _3));
 
       start (num_worker);
+
+      mgmt_layer_.submit (gen_id(), act, we::type::user_data());
     }
 
     ~sdpa_daemon()
@@ -239,11 +242,6 @@ namespace
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id);
 
       return boost::lexical_cast<std::string> (++_id);
-    }
-
-    void submit (we::mgmt::type::activity_t const& act)
-    {
-      mgmt_layer_.submit (gen_id(), act, we::type::user_data());
     }
 
     void add_mapping ( const we::mgmt::layer::id_type& old_id
@@ -509,10 +507,11 @@ try
 
   observe::state_type observer;
 
-  sdpa_daemon daemon (num_worker, &loader, observer);
-
-  daemon.submit
-    ( path_to_act == "-"
+  sdpa_daemon daemon
+    ( num_worker
+    , &loader
+    , observer
+    , path_to_act == "-"
     ? we::mgmt::type::activity_t (std::cin)
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     );
