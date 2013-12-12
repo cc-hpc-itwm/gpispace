@@ -363,11 +363,6 @@ namespace
       return true;
     }
 
-    inline we::mgmt::layer& layer()
-    {
-      return mgmt_layer_;
-    }
-
   private:
     boost::recursive_mutex _mutex_id;
     unsigned long _id;
