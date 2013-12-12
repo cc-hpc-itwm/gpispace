@@ -318,8 +318,6 @@ namespace test {
   };
 }
 
-namespace po = boost::program_options;
-
 typedef std::string id_type;
 
 typedef test::sdpa_daemon daemon_type;
@@ -382,6 +380,8 @@ namespace observe
 int main (int argc, char **argv)
 try
 {
+  namespace po = boost::program_options;
+
   fhg::log::Configurator::configure();
 
   po::options_description desc("options");
