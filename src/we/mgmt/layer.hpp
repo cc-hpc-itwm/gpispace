@@ -203,21 +203,6 @@ namespace we
       {
         lock_t const _ (mutex_);
 
-        external_to_internal_map_t::const_iterator mapping
-          (ext_to_int_.find(external_id));
-        if (  mapping == ext_to_int_.end()
-           || mapping->second != internal_id
-           )
-        {
-          throw exception::no_such_mapping
-            ( "no_such_mapping: ext := "
-            + fhg::util::show(external_id)
-            + " -> int := "
-            + fhg::util::show(internal_id)
-            , external_id
-            );
-        }
-
         ext_to_int_.erase (external_id);
       }
 
