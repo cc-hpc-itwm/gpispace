@@ -419,12 +419,10 @@ namespace mgmt
     {
       descriptor_ptr desc (lookup (int_id));
 
-      // create external id
       external_id_type ext_id ( generate_external_id() );
       desc->sent_to_external_as (ext_id);
       add_map_to_internal (ext_id, int_id);
 
-      // copy the activity and let it be handled internally on the next level
       we::mgmt::type::activity_t ext_act (desc->activity());
       ext_act.transition().set_internal(true);
 
@@ -443,7 +441,7 @@ namespace mgmt
                  );
     }
 
-    // WORK HERE: rewrite!
+    //! \todo WORK HERE: rewrite!
     void extractor()
     {
       for (;;)
@@ -471,7 +469,7 @@ namespace mgmt
             continue;
           }
 
-          // TODO: check status flags
+          //! \todo: check status flags
           if (! desc->is_alive ())
           {
             LOG(DEBUG, "activity (" << desc->name() << ")-" << active_id << " is on hold");
@@ -682,7 +680,6 @@ namespace mgmt
       remove_activity (desc);
     }
 
-    /** Member variables **/
   private:
     boost::function<external_id_type()> external_id_gen_;
     boost::function<internal_id_type()> internal_id_gen_;
@@ -738,7 +735,7 @@ namespace mgmt
                                    , desc->error_code()
                                    , desc->error_message()
                                    );
-          // FIXME: handle failure in a meaningful way:
+          //! \fixme: handle failure in a meaningful way:
           //     - check failure reason
           //         - EAGAIN reschedule (had not been submitted yet)
           //         - ECRASH activity crashed (idempotence criteria)
