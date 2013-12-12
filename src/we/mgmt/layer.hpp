@@ -278,16 +278,18 @@ namespace we { namespace mgmt {
         , external_id_gen_(gen)
         , internal_id_gen_(&petri_net::activity_id_generate)
         , manager_ (boost::bind (&layer::manager, this))
+        , extractor_ (boost::bind (&layer::extractor, this))
+        , injector_ (boost::bind (&layer::injector, this))
       {
         fhg::util::set_threadname (manager_, "[we-mgr]");
+        fhg::util::set_threadname (extractor_, "[we-extract]");
+        fhg::util::set_threadname (injector_, "[we-inject]");
 
         ext_submit = (boost::bind (& E::submit, exec_layer, _1, _2, _3, _4, _5));
         ext_cancel = (boost::bind (& E::cancel, exec_layer, _1, _2));
         ext_finished = (boost::bind (& E::finished, exec_layer, _1, _2));
         ext_failed = (boost::bind (& E::failed, exec_layer, _1, _2, _3, _4));
         ext_canceled = (boost::bind (& E::canceled, exec_layer, _1));
-
-        start();
       }
 
       void set_id_generator (boost::function<external_id_type()> gen)
@@ -299,81 +301,26 @@ namespace we { namespace mgmt {
 
       ~layer()
       {
-        // stop threads
-        stop();
-
-        // cancel external activities
-
-        {
-          lock_t lock (mutex_);
-          // clean up all activities
-          while (! activities_.empty())
-          {
-            DLOG(WARN, "removing remaining activity: " << activities_.begin()->second);
-            activities_.erase (activities_.begin());
-          }
-          ext_to_int_.clear();
-        }
-      }
-
-      /* internal functions */
-    private:
-      void start()
-      {
-        lock_t lock (mutex_);
-
-        start_threads ( "we-extract"
-                      , extractor_
-                      , boost::bind (&layer::extractor, this)
-                      );
-
-        start_threads ( "we-inject"
-                      , injector_
-                      , boost::bind (&layer::injector, this)
-                      );
-      }
-
-      void start_threads ( std::string const & tag
-                         , thread_list_t& list
-                         , boost::function<void ()> tf
-                         )
-      {
-        std::stringstream sstr;
-        sstr << "[" << tag << "]";
-        boost::thread *thrd (new boost::thread (tf));
-        fhg::util::set_threadname (*thrd, sstr.str());
-        list.push_back (thrd);
-      }
-
-      void stop_threads (thread_list_t& list)
-      {
-        BOOST_FOREACH (boost::thread* t, list)
-        {
-          t->interrupt();
-          t->join();
-          delete t;
-        }
-        list.clear();
-      }
-
-      void stop()
-      {
-        DMLOG(TRACE, "Workflow Management layer stopping...");
-
-        DLOG(TRACE, "cleaning up manager thread...");
         manager_.interrupt();
-        manager_.join();
-        DLOG(TRACE, "done.");
+        if (manager_.joinable())
+        {
+          manager_.join();
+        }
 
-        DLOG(TRACE, "cleaning up injector threads...");
-        stop_threads (injector_);
-        DLOG(TRACE, "done.");
+        injector_.interrupt();
+        if (injector_.joinable())
+        {
+          injector_.join();
+        }
 
-        DLOG(TRACE, "cleaning up extractor threads...");
-        stop_threads (extractor_);
-        DLOG(TRACE, "done.");
+        extractor_.interrupt();
+        if (extractor_.joinable())
+        {
+          extractor_.join();
+        }
       }
 
+    private:
       void manager()
       {
         DLOG(TRACE, "manager thread started...");
@@ -777,8 +724,8 @@ namespace we { namespace mgmt {
       external_to_internal_map_t ext_to_int_;
 
       boost::thread manager_;
-      thread_list_t extractor_;
-      thread_list_t injector_;
+      boost::thread extractor_;
+      boost::thread injector_;
 
       external_id_type generate_external_id (void) const
       {
