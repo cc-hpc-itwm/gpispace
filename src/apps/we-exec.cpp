@@ -12,7 +12,6 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/value/show.hpp>
 
-#include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
@@ -29,8 +28,6 @@
 #include <fstream>
 #include <iostream>
 #include <list>
-#include <sstream>
-#include <stdint.h>
 
 namespace observe
 {
