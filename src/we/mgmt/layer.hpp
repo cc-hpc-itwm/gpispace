@@ -637,7 +637,6 @@ namespace we { namespace mgmt {
             if (desc->is_done ())
             {
               DLOG(DEBUG, "extractor: activity (" << desc->name() << ")-" << desc->id() << " is done");
-              active_nets_->erase (desc->id());
               do_inject (desc);
             }
           }
