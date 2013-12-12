@@ -466,12 +466,9 @@ try
   // instantiate daemon and layer
   daemon_type daemon(num_worker);
 
-  for ( std::vector<std::string>::const_iterator m (mods_to_load.begin())
-      ; m != mods_to_load.end()
-      ; ++m
-      )
+  BOOST_FOREACH (std::string const& m, mods_to_load)
   {
-    daemon.loader().load (*m);
+    daemon.loader().load (m);
   }
 
   {
