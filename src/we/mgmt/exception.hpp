@@ -13,26 +13,6 @@ namespace we
   {
     namespace exception
     {
-      struct already_there : public std::runtime_error
-      {
-      public:
-        typedef std::string external_id_type;
-
-        already_there ( const std::string& msg
-                      , const external_id_type& ext_id
-                      )
-          : std::runtime_error (msg)
-          , _id (ext_id)
-        {}
-        ~already_there () throw ()
-        {}
-
-        const external_id_type& id() const { return _id; }
-
-      private:
-        const external_id_type _id;
-      };
-
       struct no_such_mapping : public std::runtime_error
       {
       public:
