@@ -316,14 +316,13 @@ typedef we::mgmt::layer::internal_id_type layer_id_type;
 static std::vector<id_type> jobs;
 static std::set<layer_id_type> layer_jobs;
 static boost::recursive_mutex mutex;
-typedef boost::unique_lock<boost::recursive_mutex> lock_t;
 static std::string encoded_result;
 
 namespace observe
 {
   void submitted (const we::mgmt::layer *l, layer_id_type const & id)
   {
-    lock_t const _ (mutex);
+    boost::unique_lock<boost::recursive_mutex> const _ (mutex);
 
     std::cerr << "submitted: " << id << std::endl;
     layer_jobs.insert (id);
@@ -331,7 +330,7 @@ namespace observe
 
   void finished (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    lock_t const _ (mutex);
+    boost::unique_lock<boost::recursive_mutex> const _ (mutex);
 
     if (layer_jobs.find (id) != layer_jobs.end())
     {
@@ -343,7 +342,7 @@ namespace observe
   }
   void failed (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    lock_t const _ (mutex);
+    boost::unique_lock<boost::recursive_mutex> const _ (mutex);
 
     if (layer_jobs.find (id) != layer_jobs.end())
     {
@@ -355,7 +354,7 @@ namespace observe
   }
   void canceled (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    lock_t const _ (mutex);
+    boost::unique_lock<boost::recursive_mutex> const _ (mutex);
 
     if (layer_jobs.find (id) != layer_jobs.end())
     {
