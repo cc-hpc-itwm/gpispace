@@ -214,9 +214,7 @@ namespace test {
                , const we::type::user_data& = we::type::user_data ()
                )
     {
-      job_t job (id, desc);
-
-      jobs_.put (job);
+      jobs_.put (job_t (id, desc));
     }
 
     bool cancel(const id_type & id, const std::string & desc)
