@@ -20,7 +20,6 @@
 #include <boost/unordered_set.hpp>
 
 #include <we/mgmt/exception.hpp>
-#include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
 #include <we/mgmt/bits/descriptor.hpp>
@@ -30,6 +29,8 @@
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 #include <we/mgmt/type/activity.hpp>
+
+#include <fhg/util/thread/queue.hpp>
 
 #include <boost/foreach.hpp>
 
@@ -57,7 +58,7 @@ namespace we { namespace mgmt {
 
       // manager thread
       typedef boost::function<void ()> cmd_t;
-      typedef detail::queue<cmd_t, 0> cmd_q_t;
+      typedef fhg::thread::queue<cmd_t> cmd_q_t;
 
       // extractor
       //! \todo is it necessary to use a locked data structure?
