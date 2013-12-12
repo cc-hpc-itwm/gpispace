@@ -391,8 +391,7 @@ namespace
   }
   int context::handle_externally (we::mgmt::type::activity_t& act, net_t&)
   {
-    we::mgmt::layer::id_type const new_id (daemon.add_mapping (id));
-    _layer->submit (new_id,  act, we::type::user_data());
+    _layer->submit (daemon.add_mapping (id),  act, we::type::user_data());
     return 0;
   }
   int context::handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
