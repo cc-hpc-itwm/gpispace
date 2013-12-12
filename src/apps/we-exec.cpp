@@ -206,12 +206,11 @@ namespace test {
       id_map_.erase (id);
     }
 
-    typedef std::list<we::type::requirement_t> requirement_list_t;
     void submit( const id_type & id
                , const std::string & desc
-               , requirement_list_t req_list = requirement_list_t()
-               , const we::type::schedule_data& = we::type::schedule_data()
-               , const we::type::user_data& = we::type::user_data ()
+               , std::list<we::type::requirement_t> const&
+               , const we::type::schedule_data&
+               , const we::type::user_data&
                )
     {
       jobs_.put (job_t (id, desc));
