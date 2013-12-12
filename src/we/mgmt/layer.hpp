@@ -613,10 +613,6 @@ namespace we
 
             post_failed_notification (desc->id ());
           }
-          catch (...)
-          {
-            LOG(ERROR, "injector got unexpected exception during injecting!");
-          }
         }
         DLOG(INFO, "injector thread stopped...");
       }
