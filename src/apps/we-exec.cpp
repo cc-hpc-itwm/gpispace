@@ -47,7 +47,7 @@ namespace
 
     context (sdpa_daemon& d, const we::mgmt::layer::id_type& an_id)
       : daemon (d)
-      , id(an_id)
+      , id (an_id)
     {}
 
   private:
@@ -62,8 +62,8 @@ namespace
 
     job_t (const we::mgmt::layer::id_type& id_, const std::string & desc_)
       : id (id_)
-      , desc(desc_)
-    { }
+      , desc (desc_)
+    {}
 
     we::mgmt::layer::id_type id;
     std::string desc;
@@ -79,9 +79,9 @@ namespace
 
     explicit
     sdpa_daemon (std::size_t num_worker)
-      : mgmt_layer_(this, boost::bind(&sdpa_daemon::gen_id, this))
+      : mgmt_layer_ (this, boost::bind (&sdpa_daemon::gen_id, this))
     {
-      start(num_worker);
+      start (num_worker);
     }
 
     ~sdpa_daemon()
@@ -93,7 +93,8 @@ namespace
     {
       for (std::size_t n (0); n < num_worker; ++n)
       {
-        worker_.push_back( new boost::thread( boost::bind(&sdpa_daemon::worker, this, n)));
+        worker_.push_back
+          (new boost::thread (boost::bind (&sdpa_daemon::worker, this, n)));
       }
     }
 
@@ -108,7 +109,7 @@ namespace
       worker_.clear();
     }
 
-    void worker(const std::size_t rank)
+    void worker (const std::size_t rank)
     {
       MLOG (INFO, "SDPA layer worker-" << rank << " started");
 
@@ -121,7 +122,7 @@ namespace
         we::mgmt::type::activity_t act (job.desc);
 
         MLOG ( TRACE
-             , "worker-" << rank << " busy with " << act.transition ().name ()
+             , "worker-" << rank << " busy with " << act.transition().name()
              );
 
         context ctxt (*this, job.id);
@@ -154,17 +155,17 @@ namespace
       id_map_.erase (id);
     }
 
-    void submit( const we::mgmt::layer::id_type& id
-               , const std::string & desc
-               , std::list<we::type::requirement_t> const&
-               , const we::type::schedule_data&
-               , const we::type::user_data&
-               )
+    void submit ( const we::mgmt::layer::id_type& id
+                , const std::string & desc
+                , std::list<we::type::requirement_t> const&
+                , const we::type::schedule_data&
+                , const we::type::user_data&
+                )
     {
       jobs_.put (job_t (id, desc));
     }
 
-    bool cancel(const we::mgmt::layer::id_type& id, const std::string & desc)
+    bool cancel (const we::mgmt::layer::id_type& id, const std::string & desc)
     {
       std::cout << "cancel[" << id << "] = " << desc << std::endl;
 
@@ -182,7 +183,7 @@ namespace
       }
     }
 
-    bool finished(const we::mgmt::layer::id_type& id, const std::string & desc)
+    bool finished (const we::mgmt::layer::id_type& id, const std::string & desc)
     {
       try
       {
@@ -207,11 +208,11 @@ namespace
       return true;
     }
 
-    bool failed( const we::mgmt::layer::id_type& id
-               , const std::string & desc
-               , const int error_code
-               , const std::string & reason
-               )
+    bool failed ( const we::mgmt::layer::id_type& id
+                , const std::string & desc
+                , const int error_code
+                , const std::string & reason
+                )
     {
       try
       {
@@ -233,7 +234,7 @@ namespace
       return true;
     }
 
-    bool canceled(const we::mgmt::layer::id_type& id)
+    bool canceled (const we::mgmt::layer::id_type& id)
     {
       try
       {
@@ -249,8 +250,14 @@ namespace
       return true;
     }
 
-    inline we::mgmt::layer & layer() { return mgmt_layer_; }
-    inline we::loader::loader & loader() { return loader_; }
+    inline we::mgmt::layer& layer()
+    {
+      return mgmt_layer_;
+    }
+    inline we::loader::loader& loader()
+    {
+      return loader_;
+    }
 
   private:
     boost::recursive_mutex mutex_;
@@ -291,7 +298,7 @@ namespace
     }
     catch (std::exception const & ex)
     {
-      daemon.layer().failed (id
+      daemon.layer().failed ( id
                             , act.to_string()
                             , fhg::error::MODULE_CALL_FAILED
                             , ex.what()
@@ -324,7 +331,10 @@ namespace observe
     layer_jobs.insert (id);
   }
 
-  void finished (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
+  void finished ( const we::mgmt::layer *l
+                , layer_id_type const& id
+                , std::string const& s
+                )
   {
     boost::unique_lock<boost::recursive_mutex> const _ (mutex);
 
@@ -336,7 +346,10 @@ namespace observe
       encoded_result = s;
     }
   }
-  void failed (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
+  void failed ( const we::mgmt::layer *l
+              , layer_id_type const& id
+              , std::string const& s
+              )
   {
     boost::unique_lock<boost::recursive_mutex> const _ (mutex);
 
@@ -348,7 +361,10 @@ namespace observe
       encoded_result = s;
     }
   }
-  void canceled (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
+  void canceled ( const we::mgmt::layer *l
+                , layer_id_type const& id
+                , std::string const& s
+                )
   {
     boost::unique_lock<boost::recursive_mutex> const _ (mutex);
 
@@ -369,7 +385,7 @@ try
 
   fhg::log::Configurator::configure();
 
-  po::options_description desc("options");
+  po::options_description desc ("options");
 
   std::string path_to_act;
   std::string mod_path;
@@ -381,35 +397,50 @@ try
   desc.add_options()
     ("help,h", "this message")
     ("version,V", "print version information")
-    ("net", po::value<std::string>(&path_to_act)->default_value("-"), "path to encoded activity or - for stdin")
+    ( "net"
+    , po::value<std::string>(&path_to_act)->default_value("-")
+    , "path to encoded activity or - for stdin"
+    )
     ( "mod-path,L"
     , po::value<std::string>(&mod_path)->default_value
         (fhg::util::getenv("PC_LIBRARY_PATH", "."))
     , "where can modules be located"
     )
-    ("worker", po::value<std::size_t>(&num_worker)->default_value(num_worker), "number of workers")
-    ("load", po::value<std::vector<std::string> >(&mods_to_load), "modules to load a priori")
-    ("output,o", po::value<std::string>(&output)->default_value(output), "where to write the result pnet to")
-    ("show-dots,d", po::value<bool>(&show_dots)->default_value(show_dots), "show dots while waiting for progress")
+    ( "worker"
+    , po::value<std::size_t>(&num_worker)->default_value(num_worker)
+    , "number of workers"
+    )
+    ( "load"
+    , po::value<std::vector<std::string> >(&mods_to_load)
+    , "modules to load a priori"
+    )
+    ( "output,o"
+    , po::value<std::string>(&output)->default_value(output)
+    , "where to write the result pnet to"
+    )
+    ( "show-dots,d"
+    , po::value<bool>(&show_dots)->default_value(show_dots)
+    , "show dots while waiting for progress"
+    )
     ;
 
   po::positional_options_description p;
-  p.add("input", -1);
+  p.add ("input", -1);
 
   po::variables_map vm;
-  po::store( po::command_line_parser(argc, argv)
-           . options(desc).positional(p).run()
-           , vm
-           );
+  po::store ( po::command_line_parser(argc, argv)
+            . options(desc).positional(p).run()
+            , vm
+            );
   po::notify (vm);
 
-  if (vm.count("help"))
+  if (vm.count ("help"))
   {
     std::cout << desc << std::endl;
     return EXIT_SUCCESS;
   }
 
-  if (vm.count("version"))
+  if (vm.count ("version"))
   {
     std::cout << fhg::project_info ("Parallel Workflow Execution");
 
@@ -417,7 +448,7 @@ try
   }
 
   // instantiate daemon and layer
-  sdpa_daemon daemon(num_worker);
+  sdpa_daemon daemon (num_worker);
 
   BOOST_FOREACH (std::string const& m, mods_to_load)
   {
@@ -445,13 +476,16 @@ try
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     );
 
-  we::mgmt::layer::id_type id = daemon.gen_id();
-  jobs.push_back(id);
-  mgmt_layer.submit(id, act, we::type::user_data ());
+  we::mgmt::layer::id_type id (daemon.gen_id());
+  jobs.push_back (id);
+  mgmt_layer.submit (id, act, we::type::user_data());
 
   while (layer_jobs.size() > 0)
   {
-    if (show_dots) { std::cerr << "." << std::flush; }
+    if (show_dots)
+    {
+      std::cerr << "." << std::flush;
+    }
     sleep (1);
   }
 
