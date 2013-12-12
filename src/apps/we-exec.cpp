@@ -125,16 +125,19 @@ namespace
     context ( sdpa_daemon& d
             , const we::mgmt::layer::id_type& an_id
             , we::loader::loader* loader
+            , we::mgmt::layer* layer
             )
       : daemon (d)
       , id (an_id)
       , _loader (loader)
+      , _layer (layer)
     {}
 
   private:
     sdpa_daemon& daemon;
     we::mgmt::layer::id_type id;
     we::loader::loader* _loader;
+    we::mgmt::layer* _layer;
   };
 
   struct job_t
@@ -229,7 +232,7 @@ namespace
              , "worker-" << rank << " busy with " << act.transition().name()
              );
 
-        context ctxt (*this, job.id, _loader);
+        context ctxt (*this, job.id, _loader, &mgmt_layer_);
         act.execute (&ctxt);
       }
 
@@ -392,7 +395,7 @@ namespace
   {
     we::mgmt::layer::id_type const new_id (daemon.gen_id());
     daemon.add_mapping (id, new_id);
-    daemon.layer().submit (new_id,  act, we::type::user_data());
+    _layer->submit (new_id,  act, we::type::user_data());
     return 0;
   }
   int context::handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
@@ -401,15 +404,15 @@ namespace
     {
       //!\todo pass a real gspc::drts::context
       module::call (*_loader, 0, act, mod);
-      daemon.layer().finished (id, act.to_string());
+      _layer->finished (id, act.to_string());
     }
     catch (std::exception const & ex)
     {
-      daemon.layer().failed ( id
-                            , act.to_string()
-                            , fhg::error::MODULE_CALL_FAILED
-                            , ex.what()
-                            );
+      _layer->failed ( id
+                     , act.to_string()
+                     , fhg::error::MODULE_CALL_FAILED
+                     , ex.what()
+                     );
     }
     return 0;
   }
