@@ -831,6 +831,8 @@ namespace we
       {
         lock_t lock (mutex_);
 
+        sig_remove (*desc);
+
         if (desc->has_children())
           throw std::runtime_error("cannot remove non-leaf: " + fhg::util::show (desc));
         if (desc->sent_to_external())
@@ -841,8 +843,6 @@ namespace we
         {
           del_map_to_internal (desc->from_external_id(), desc->id());
         }
-
-        sig_remove (*desc);
 
         activities_.erase (desc->id());
       }
