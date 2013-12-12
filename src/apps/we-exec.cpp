@@ -326,8 +326,6 @@ namespace
   }
 }
 
-typedef std::string id_type;
-
 typedef we::mgmt::layer::internal_id_type layer_id_type;
 
 static boost::recursive_mutex mutex;
