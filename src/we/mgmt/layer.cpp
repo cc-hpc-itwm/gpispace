@@ -28,97 +28,59 @@ namespace we
 
       submit (desc);
     }
-    bool layer::cancel (const external_id_type& id, const reason_type& reason)
+    void layer::cancel (const external_id_type& id, const reason_type& reason)
     {
       MLOG (WARN, "cancel ( " << id << " ) := " << reason);
 
-      try
-      {
-        post_cancel_activity_notification (map_to_internal (id));
-      }
-      catch (std::exception const &)
-      {
-        return false;
-      }
-      return true;
+      post_cancel_activity_notification (map_to_internal (id));
     }
-    bool layer::finished (const external_id_type& id, const result_type& result)
+    void layer::finished (const external_id_type& id, const result_type& result)
     {
-      try
+      internal_id_type int_id (map_to_internal (id));
       {
-        internal_id_type int_id (map_to_internal (id));
+        lock_t lock(mutex_);
+        descriptor_ptr desc (lookup (int_id));
         {
-          lock_t lock(mutex_);
-          descriptor_ptr desc (lookup (int_id));
-          {
-            desc->output (we::mgmt::type::activity_t (result).output());
+          desc->output (we::mgmt::type::activity_t (result).output());
 
-            DLOG (TRACE, "finished" << " (" << desc->name() << ")-" << id);
-          }
+          DLOG (TRACE, "finished" << " (" << desc->name() << ")-" << id);
         }
-
-        post_finished_notification (int_id);
-      }
-      catch (const std::exception&ex)
-      {
-        DMLOG (ERROR, "layer could not handle finished(" << id << "): " << ex.what ());
-        throw;
       }
 
-      return true;
+      post_finished_notification (int_id);
     }
-    bool layer::failed ( const external_id_type& id
+    void layer::failed ( const external_id_type& id
                        , const result_type& result
                        , const int error_code
                        , const std::string& error_message
                        )
     {
-      try
-      {
-        descriptor_ptr d = lookup (map_to_internal (id));
+      descriptor_ptr d = lookup (map_to_internal (id));
 
-        d->set_error_code (error_code);
-        d->set_error_message (d->name () + ": " + error_message);
-        d->set_result (result);
+      d->set_error_code (error_code);
+      d->set_error_message (d->name () + ": " + error_message);
+      d->set_result (result);
 
-        MLOG (TRACE, "failed ( " << id << " ) := " << error_message);
+      MLOG (TRACE, "failed ( " << id << " ) := " << error_message);
 
-        // TODO:
-        //    lookup activity
-        //    mark as failed
-        //    store result + reason
+      // TODO:
+      //    lookup activity
+      //    mark as failed
+      //    store result + reason
 
-        //    let the "parent" fail as well
-        //        -> mark the parent's *outcome* as "failed"
-        //        -> store the reasons, i.e. a list of childfailures
-        //        -> cancel all children
-        //        -> wait until all children are done
-        //        -> inform parent and so on
-        post_failed_notification (d->id ());
-        return true;
-      }
-      catch (const std::exception &ex)
-      {
-        MLOG (ERROR, "could not mark activity as failed: " << ex.what ());
-        throw;
-        //          return false;
-      }
+      //    let the "parent" fail as well
+      //        -> mark the parent's *outcome* as "failed"
+      //        -> store the reasons, i.e. a list of childfailures
+      //        -> cancel all children
+      //        -> wait until all children are done
+      //        -> inform parent and so on
+      post_failed_notification (d->id ());
     }
-    bool layer::canceled (const external_id_type& id)
+    void layer::canceled (const external_id_type& id)
     {
       DLOG(TRACE, "canceled (" << id << ")");
 
-      try
-      {
-        post_canceled_notification (map_to_internal (id));
-        return true;
-      }
-      catch (const std::exception&)
-      {
-        DMLOG (WARN, "tried to notify canceled for unknown activity " << id);
-
-        return false;
-      }
+      post_canceled_notification (map_to_internal (id));
     }
   }
 }

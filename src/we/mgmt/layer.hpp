@@ -108,7 +108,7 @@ namespace we { namespace mgmt {
        *                  CANCELING
        *                - all children of the network will be terminated
        */
-      bool cancel (const external_id_type&, const reason_type&);
+      void cancel (const external_id_type&, const reason_type&);
 
       /**
        * Inform the management  layer that an execution finished  with the given
@@ -127,7 +127,7 @@ namespace we { namespace mgmt {
        *
        *               - the node belonging to this is activity is removed
        **/
-      bool finished (const external_id_type&, const result_type&);
+      void finished (const external_id_type&, const result_type&);
 
       /**
        * Inform the  management layer  that an execution  failed with  the given
@@ -146,7 +146,7 @@ namespace we { namespace mgmt {
        *
        *                - the node belonging to this activity is removed
        **/
-      bool failed ( const external_id_type&
+      void failed ( const external_id_type&
                   , const result_type&
                   , const int error_code
                   , const std::string&
@@ -165,7 +165,7 @@ namespace we { namespace mgmt {
        *          post-conditions:
        *                  - the node belonging to this activity is removed
        **/
-      bool canceled (const external_id_type&);
+      void canceled (const external_id_type&);
 
       // END: EXTERNAL API
 
@@ -181,18 +181,18 @@ namespace we { namespace mgmt {
                            , const we::type::schedule_data&
                            , const we::type::user_data &
                            )> ext_submit;
-      boost::function<bool ( external_id_type const &
+      boost::function<void ( external_id_type const &
                            , reason_type const &
                            )>  ext_cancel;
-      boost::function<bool ( external_id_type const &
+      boost::function<void ( external_id_type const &
                            , result_type const &
                            )>  ext_finished;
-      boost::function<bool ( external_id_type const &
+      boost::function<void ( external_id_type const &
                            , result_type const &
                            , const int error_code
                            , std::string const & reason
                            )>  ext_failed;
-      boost::function<bool (external_id_type const &)>                       ext_canceled;
+      boost::function<void (external_id_type const &)>                       ext_canceled;
 
       void submit (const descriptor_ptr & desc)
       {
