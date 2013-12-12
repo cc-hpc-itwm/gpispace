@@ -35,27 +35,18 @@
 namespace test {
   namespace detail
   {
-    template <typename I>
     struct id_generator
     {
-      explicit
-      id_generator(I initial=0) : id(initial) {}
+      id_generator() : _n (0) {}
 
-      inline I operator++() { return ++id; }
-    private:
-      I id;
-    };
-
-    template <>
-    struct id_generator<std::string>
-    {
       inline const std::string operator++()
       {
         unsigned long id = ++number;
         return fhg::util::show ( id );
+
       }
     private:
-      id_generator<unsigned long> number;
+      unsigned long _n;
     };
 
     template <typename Daemon>
@@ -330,7 +321,7 @@ namespace test {
 
   private:
     boost::recursive_mutex mutex_;
-    detail::id_generator<id_type> id_;
+    detail::id_generator id_;
     we::mgmt::layer mgmt_layer_;
     id_map_t  id_map_;
     job_q_t jobs_;
