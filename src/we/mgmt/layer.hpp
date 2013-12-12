@@ -20,7 +20,6 @@
 #include <boost/unordered_set.hpp>
 
 #include <we/mgmt/exception.hpp>
-#include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
 #include <we/mgmt/bits/descriptor.hpp>
 #include <we/mgmt/bits/execution_policy.hpp>
@@ -62,7 +61,7 @@ namespace we { namespace mgmt {
 
       // extractor
       //! \todo is it necessary to use a locked data structure?
-      typedef detail::set<internal_id_type> active_nets_t;
+      typedef fhg::thread::queue<internal_id_type> active_nets_t;
 
       typedef boost::unique_lock<boost::recursive_mutex> lock_t;
     public:
