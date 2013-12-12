@@ -38,11 +38,11 @@ namespace
 
   struct context : public we::mgmt::context
   {
-    virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n);
+    virtual int handle_internally (we::mgmt::type::activity_t&, net_t&);
     virtual int handle_internally (we::mgmt::type::activity_t&, mod_t&);
     virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&);
-    virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&);
-    virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod);
+    virtual int handle_externally (we::mgmt::type::activity_t&, net_t&);
+    virtual int handle_externally (we::mgmt::type::activity_t&, mod_t&);
     virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&);
 
     context (sdpa_daemon& d, const we::mgmt::layer::id_type& an_id)
