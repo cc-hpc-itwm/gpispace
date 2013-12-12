@@ -152,11 +152,11 @@ namespace test {
 
     void stop()
     {
-      for (std::vector<boost::thread*>::iterator it (worker_.begin()); it != worker_.end(); ++it)
+      BOOST_FOREACH (boost::thread* t, worker_)
       {
-        (*it)->interrupt();
-        (*it)->join();
-        delete (*it);
+        t->interrupt();
+        t->join();
+        delete t;
       }
       worker_.clear();
     }
