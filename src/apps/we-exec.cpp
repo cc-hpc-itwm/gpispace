@@ -333,7 +333,6 @@ typedef we::mgmt::layer::internal_id_type layer_id_type;
 static std::vector<id_type> jobs;
 static std::set<layer_id_type> layer_jobs;
 static boost::recursive_mutex mutex;
-static std::string encoded_result;
 
 namespace observe
 {
@@ -346,7 +345,8 @@ namespace observe
     layer_jobs.insert (id);
   }
 
-  void generic ( std::string const& msg
+  void generic ( std::string& encoded_result
+               , std::string const& msg
                , const we::mgmt::layer*
                , layer_id_type const& id
                , std::string const& s
@@ -453,15 +453,16 @@ try
   }
   sdpa_daemon daemon (num_worker, &loader);
 
+  std::string encoded_result;
   we::mgmt::layer& mgmt_layer (daemon.layer());
 
   mgmt_layer.sig_submitted.connect (&observe::submitted);
   mgmt_layer.sig_finished.connect
-    (boost::bind (&observe::generic, std::string ("finished"), _1, _2, _3));
+    (boost::bind (&observe::generic, boost::ref (encoded_result), std::string ("finished"), _1, _2, _3));
   mgmt_layer.sig_failed.connect
-    (boost::bind (&observe::generic, std::string ("failed"), _1, _2, _3));
+    (boost::bind (&observe::generic, boost::ref (encoded_result), std::string ("failed"), _1, _2, _3));
   mgmt_layer.sig_canceled.connect
-    (boost::bind (&observe::generic, std::string ("cancelled"), _1, _2, _3));
+    (boost::bind (&observe::generic, boost::ref (encoded_result), std::string ("cancelled"), _1, _2, _3));
 
   we::mgmt::type::activity_t act
     ( path_to_act == "-"
