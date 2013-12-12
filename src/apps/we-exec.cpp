@@ -36,25 +36,29 @@ namespace observe
   class state_type
   {
   public:
-    void insert (we::mgmt::layer::internal_id_type const& id)
+    state_type ()
+      : _mutex_jobs ()
+      , _jobs (0)
+      , _result()
+    {}
+
+    void insert()
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
 
-      _jobs.insert (id);
+      ++_jobs;
     }
     bool done() const
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
 
-      return _jobs.empty();
+      return !_jobs;
     }
-    void erase ( we::mgmt::layer::internal_id_type const& id
-               , std::string const& result
-               )
+    void erase (std::string const& result)
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
 
-      _jobs.erase (id);
+      --_jobs;
       _result = result;
     }
     std::string const& result() const
@@ -69,26 +73,26 @@ namespace observe
 
   private:
     mutable boost::recursive_mutex _mutex_jobs;
-    std::set<we::mgmt::layer::internal_id_type> _jobs;
+    unsigned long _jobs;
     boost::optional<std::string> _result;
   };
 
   void submitted ( state_type& state
                  , const we::mgmt::layer*
-                 , we::mgmt::layer::internal_id_type const& id
+                 , we::mgmt::layer::internal_id_type const&
                  )
   {
-    state.insert (id);
+    state.insert();
   }
 
   void generic ( state_type& state
                , std::string const& msg
                , const we::mgmt::layer*
-               , we::mgmt::layer::internal_id_type const& id
+               , we::mgmt::layer::internal_id_type const&
                , std::string const& s
                )
   {
-    state.erase (id, s);
+    state.erase (s);
   }
 }
 
