@@ -191,19 +191,6 @@ namespace we
                                )
       {
         lock_t const _ (mutex_);
-        external_to_internal_map_t::const_iterator mapping
-          (ext_to_int_.find(external_id));
-
-        if (mapping != ext_to_int_.end())
-        {
-          throw exception::already_there
-            ( "already_there: ext_id := "
-            + fhg::util::show(external_id)
-            + " -> int_id := "
-            + fhg::util::show(mapping->second)
-            , external_id
-            );
-        }
 
         ext_to_int_.insert ( external_to_internal_map_t::value_type
                            (external_id, internal_id)
