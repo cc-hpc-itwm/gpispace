@@ -7,7 +7,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/utility.hpp>
 
-BOOST_TEST_DONT_PRINT_LOG_VALUE (std::list<pnet::type::value::value_type>::iterator)
+#include <iterator>
 
 BOOST_AUTO_TEST_CASE (iterators_cons_list_empty)
 {
@@ -15,7 +15,9 @@ BOOST_AUTO_TEST_CASE (iterators_cons_list_empty)
 
   we::util::iterators_type i (l);
 
-  BOOST_REQUIRE_EQUAL (i.pos_and_distance().first, l.begin());
+  BOOST_REQUIRE_EQUAL ( std::distance (i.pos_and_distance().first, l.begin())
+                      , 0
+                      );
   BOOST_REQUIRE_EQUAL (i.pos_and_distance().second, std::size_t (0));
   BOOST_REQUIRE_EQUAL (i.end(), true);
 }
@@ -26,7 +28,9 @@ BOOST_AUTO_TEST_CASE (iterators_cons_iterator_empty)
 
   we::util::iterators_type i (l.begin());
 
-  BOOST_REQUIRE_EQUAL (i.pos_and_distance().first, l.begin());
+  BOOST_REQUIRE_EQUAL ( std::distance (i.pos_and_distance().first, l.begin())
+                      , 0
+                      );
   BOOST_REQUIRE_EQUAL (i.pos_and_distance().second, std::size_t (0));
   BOOST_REQUIRE_EQUAL (i.end(), true);
 }
@@ -39,7 +43,9 @@ BOOST_AUTO_TEST_CASE (iterators_cons_list)
 
   we::util::iterators_type i (l);
 
-  BOOST_REQUIRE_EQUAL (i.pos_and_distance().first, l.begin());
+  BOOST_REQUIRE_EQUAL ( std::distance (i.pos_and_distance().first, l.begin())
+                      , 0
+                      );
   BOOST_REQUIRE_EQUAL (i.pos_and_distance().second, std::size_t (0));
   BOOST_REQUIRE_EQUAL (i.end(), false);
 }
@@ -52,7 +58,9 @@ BOOST_AUTO_TEST_CASE (iterators_cons_iterator)
 
   we::util::iterators_type i (l.begin());
 
-  BOOST_REQUIRE_EQUAL (i.pos_and_distance().first, l.begin());
+  BOOST_REQUIRE_EQUAL ( std::distance (i.pos_and_distance().first, l.begin())
+                      , 0
+                      );
   BOOST_REQUIRE_EQUAL (i.pos_and_distance().second, std::size_t (0));
   BOOST_REQUIRE_EQUAL (i.end(), false);
 }
@@ -67,7 +75,12 @@ BOOST_AUTO_TEST_CASE (iterators_operator_plus)
 
   ++i;
 
-  BOOST_REQUIRE_EQUAL (i.pos_and_distance().first, boost::next (l.begin()));
+  BOOST_REQUIRE_EQUAL ( std::distance ( i.pos_and_distance().first
+                                      , boost::next (l.begin())
+                                      )
+                      , 0
+                      )
+                      ;
   BOOST_REQUIRE_EQUAL (i.pos_and_distance().second, std::size_t (1));
   BOOST_REQUIRE_EQUAL (i.end(), true);
 }
@@ -84,7 +97,9 @@ BOOST_AUTO_TEST_CASE (iterators_rewind)
 
   i.rewind();
 
-  BOOST_REQUIRE_EQUAL (i.pos_and_distance().first, l.begin());
+  BOOST_REQUIRE_EQUAL ( std::distance (i.pos_and_distance().first, l.begin())
+                      , 0
+                      );
   BOOST_REQUIRE_EQUAL (i.pos_and_distance().second, std::size_t (0));
   BOOST_REQUIRE_EQUAL (i.end(), false);
 }
