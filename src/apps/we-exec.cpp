@@ -326,8 +326,6 @@ namespace
   }
 }
 
-typedef we::mgmt::layer::internal_id_type layer_id_type;
-
 namespace observe
 {
   class state_type
@@ -382,7 +380,7 @@ namespace observe
 
   void submitted ( state_type& state
                  , const we::mgmt::layer*
-                 , layer_id_type const& id
+                 , we::mgmt::layer::internal_id_type const& id
                  )
   {
     state.insert (id);
@@ -393,7 +391,7 @@ namespace observe
   void generic ( state_type& state
                , std::string const& msg
                , const we::mgmt::layer*
-               , layer_id_type const& id
+               , we::mgmt::layer::internal_id_type const& id
                , std::string const& s
                )
   {
