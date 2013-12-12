@@ -385,10 +385,6 @@ namespace observe
       }
     }
   }
-  void executing (const we::mgmt::layer *l, layer_id_type const & id)
-  {
-    std::cerr << "activity executing: id := " << id << std::endl;
-  }
 }
 
 int main (int argc, char **argv)
