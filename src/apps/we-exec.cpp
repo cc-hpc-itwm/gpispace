@@ -328,41 +328,80 @@ namespace
 
 typedef we::mgmt::layer::internal_id_type layer_id_type;
 
-static boost::recursive_mutex mutex;
-
 namespace observe
 {
-  void submitted ( std::set<layer_id_type>& layer_jobs
+  class state_type
+  {
+  public:
+    void insert (we::mgmt::layer::internal_id_type const& id)
+    {
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
+
+      _jobs.insert (id);
+    }
+    bool done() const
+    {
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
+
+      return _jobs.empty();
+    }
+    bool erase ( we::mgmt::layer::internal_id_type const& id
+               , std::string const& result
+               )
+    {
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
+
+      std::set<we::mgmt::layer::internal_id_type>::iterator const pos
+        (_jobs.find (id));
+
+      bool const was_there (pos != _jobs.end());
+
+      if (was_there)
+      {
+        _jobs.erase (pos);
+        _result = result;
+      }
+
+      return was_there;
+    }
+    std::string const& result() const
+    {
+      if (not _result)
+      {
+        throw std::runtime_error ("missing result");
+      }
+
+      return *_result;
+    }
+
+  private:
+    mutable boost::recursive_mutex _mutex_jobs;
+    std::set<we::mgmt::layer::internal_id_type> _jobs;
+    boost::optional<std::string> _result;
+  };
+
+  void submitted ( state_type& state
                  , const we::mgmt::layer*
                  , layer_id_type const& id
                  )
   {
-    boost::unique_lock<boost::recursive_mutex> const _ (mutex);
+    state.insert (id);
 
     std::cerr << "submitted: " << id << std::endl;
-
-    layer_jobs.insert (id);
   }
 
-  void generic ( std::set<layer_id_type>& layer_jobs
-               , std::string& encoded_result
+  void generic ( state_type& state
                , std::string const& msg
                , const we::mgmt::layer*
                , layer_id_type const& id
                , std::string const& s
                )
   {
-    boost::unique_lock<boost::recursive_mutex> const _ (mutex);
-
-    if (layer_jobs.find (id) != layer_jobs.end())
+    if (state.erase (id, s))
     {
-      layer_jobs.erase (id);
-
       std::cerr << "job " << msg << ": "
                 << we::mgmt::type::activity_t (s).transition().name()
                 << "-" << id << std::endl;
-
-      encoded_result = s;
     }
   }
 }
@@ -453,18 +492,17 @@ try
   }
   sdpa_daemon daemon (num_worker, &loader);
 
-  std::set<layer_id_type> layer_jobs;
-  std::string encoded_result;
+  observe::state_type observer;
   we::mgmt::layer& mgmt_layer (daemon.layer());
 
   mgmt_layer.sig_submitted.connect
-    (boost::bind (&observe::submitted, boost::ref (layer_jobs), _1, _2));
+    (boost::bind (&observe::submitted, boost::ref (observer), _1, _2));
   mgmt_layer.sig_finished.connect
-    (boost::bind (&observe::generic, boost::ref (layer_jobs), boost::ref (encoded_result), std::string ("finished"), _1, _2, _3));
+    (boost::bind (&observe::generic, boost::ref (observer), std::string ("finished"), _1, _2, _3));
   mgmt_layer.sig_failed.connect
-    (boost::bind (&observe::generic, boost::ref (layer_jobs), boost::ref (encoded_result), std::string ("failed"), _1, _2, _3));
+    (boost::bind (&observe::generic, boost::ref (observer), std::string ("failed"), _1, _2, _3));
   mgmt_layer.sig_canceled.connect
-    (boost::bind (&observe::generic, boost::ref (layer_jobs), boost::ref (encoded_result), std::string ("cancelled"), _1, _2, _3));
+    (boost::bind (&observe::generic, boost::ref (observer), std::string ("cancelled"), _1, _2, _3));
 
   we::mgmt::type::activity_t act
     ( path_to_act == "-"
@@ -475,7 +513,7 @@ try
   we::mgmt::layer::id_type id (daemon.gen_id());
   mgmt_layer.submit (id, act, we::type::user_data());
 
-  while (layer_jobs.size() > 0)
+  while (not observer.done())
   {
     if (show_dots)
     {
@@ -492,12 +530,12 @@ try
   {
     if (output == "=")
     {
-      std::cout << encoded_result;
+      std::cout << observer.result();
     }
     else
     {
       std::ofstream ofs (output.c_str ());
-      ofs << encoded_result;
+      ofs << observer.result();
     }
   }
 
