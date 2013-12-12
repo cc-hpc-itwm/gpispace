@@ -171,11 +171,6 @@ namespace we
 
       // END: EXTERNAL API
 
-      status_type status (const external_id_type & id)
-      {
-        return fhg::util::show (*lookup (map_to_internal(id)));
-      }
-
     private:
       // handle execution layer
       boost::function<void ( external_id_type const &
