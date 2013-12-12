@@ -133,7 +133,7 @@ namespace test {
     typedef std::vector<boost::thread*> worker_list_t;
 
     explicit
-    sdpa_daemon(std::size_t num_worker = 1)
+    sdpa_daemon (std::size_t num_worker)
       : mgmt_layer_(this, boost::bind(&sdpa_daemon::gen_id, this))
     {
       start(num_worker);
