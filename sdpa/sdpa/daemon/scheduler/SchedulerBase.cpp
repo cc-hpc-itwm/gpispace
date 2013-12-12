@@ -178,11 +178,6 @@ bool SchedulerBase::hasWorker(const Worker::worker_id_t& worker_id) const
   return _worker_manager.hasWorker(worker_id);
 }
 
-Worker::worker_id_t SchedulerBase::findWorker(const sdpa::job_id_t& job_id)
-{
-  return _worker_manager.findWorker(job_id);
-}
-
 const boost::optional<Worker::worker_id_t> SchedulerBase::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
 {
   return _worker_manager.findSubmOrAckWorker(job_id);

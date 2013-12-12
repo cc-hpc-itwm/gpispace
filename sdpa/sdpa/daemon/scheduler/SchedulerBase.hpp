@@ -61,7 +61,6 @@ namespace sdpa {
       void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
       bool has_job(const sdpa::job_id_t&);
 
-      Worker::worker_id_t findWorker(const sdpa::job_id_t&);
       bool hasWorker(const Worker::worker_id_t&) const;
       Worker::ptr_t findWorker(const Worker::worker_id_t&);
       const boost::optional<Worker::worker_id_t> findSubmOrAckWorker(const sdpa::job_id_t& job_id) const;
