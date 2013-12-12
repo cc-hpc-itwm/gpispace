@@ -83,13 +83,7 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
 
 boost::optional<sdpa::worker_id_t> SimpleScheduler::getAssignedWorker(const sdpa::job_id_t& jid)
 {
-  try {
-      return boost::optional<sdpa::worker_id_t>(findWorker(jid));
-  }
-  catch(const NoWorkerFoundException& )
-  {
-      return boost::optional<sdpa::worker_id_t>();
-  }
+  return _worker_manager.getAssignedWorker(jid);
 }
 
 }}
