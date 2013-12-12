@@ -33,7 +33,7 @@ namespace we
     }
     void layer::finished (const external_id_type& id, const result_type& result)
     {
-      internal_id_type int_id (map_to_internal (id));
+      internal_id_type const int_id (map_to_internal (id));
 
       {
         lock_t const _ (mutex_);
