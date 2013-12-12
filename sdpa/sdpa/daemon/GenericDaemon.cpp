@@ -49,9 +49,9 @@ namespace sdpa {
   namespace daemon {
 
 //constructor
-GenericDaemon::GenericDaemon( const std::string name,
-                              const master_info_list_t arrMasterInfo,
-                              unsigned int rank
+GenericDaemon::GenericDaemon( const std::string name
+                            , const master_info_list_t arrMasterInfo
+                            , unsigned int rank
                             , const boost::optional<std::string>& guiUrl
                             , bool create_wfe
                             )
