@@ -7,6 +7,7 @@
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
 #include <fhg/util/thread/atomic.hpp>
+#include <fhg/util/now.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
@@ -23,11 +24,6 @@ namespace fhg
   {
     namespace
     {
-      LogEvent::tstamp_type now()
-      {
-        return time(NULL);
-      }
-
       uint64_t next_id()
       {
         static fhg::thread::atomic<uint64_t> counter;
@@ -59,7 +55,7 @@ namespace fhg
       , function_(a_function)
       , line_(a_line)
       , message_(a_message)
-      , tstamp_(now())
+      , tstamp_(fhg::util::now())
       , pid_(getpid())
       , tid_(gettid())
       , host_ (get_hostname ())
@@ -165,7 +161,7 @@ namespace fhg
       , function_ ((++pos, read_string (pos)))
       , line_ ((++pos, read_integral<line_type> (pos)))
       , message_ ((++pos, read_string (pos)))
-      , tstamp_ ((++pos, read_integral<tstamp_type> (pos)))
+      , tstamp_ ((++pos, fhg::util::read_double (pos)))
       , pid_ ((++pos, read_integral<pid_t> (pos)))
       , tid_ ((++pos, read_integral<unsigned long> (pos)))
       , host_ ((++pos, read_string (pos)))
@@ -217,6 +213,31 @@ namespace
 
       throw std::runtime_error ("unknown log level");
     }
+
+    class tstamp
+    {
+    public:
+      explicit
+      tstamp (fhg::log::LogEvent::tstamp_type const &t)
+        : _t (t)
+      {}
+      std::ostream& operator() (std::ostream& os) const
+      {
+        std::ios_base::fmtflags flags(os.flags());
+        os.unsetf (std::ios_base::scientific);
+        os.setf (std::ios_base::fixed);
+        os << _t;
+        os.flags(flags);
+
+        return os;
+      }
+    private:
+      fhg::log::LogEvent::tstamp_type const& _t;
+    };
+    std::ostream& operator<< (std::ostream& os, tstamp const& t)
+    {
+      return t (os);
+    }
   }
 }
 
@@ -228,7 +249,7 @@ std::ostream& operator<< (std::ostream& os, const fhg::log::LogEvent& event)
   os << ',' << encode::string (event.function());
   os << ',' << event.line();
   os << ',' << encode::string (event.message());
-  os << ',' << event.tstamp();
+  os << ',' << encode::tstamp (event.tstamp());
   os << ',' << event.pid();
   os << ',' << event.tid();
   os << ',' << encode::string (event.host());
