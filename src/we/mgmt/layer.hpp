@@ -73,11 +73,11 @@ namespace we
        *****************************/
 
       // observe
-      util::signal<void (const layer*, internal_id_type const&)> sig_submitted;
-      util::signal<void (const layer*, internal_id_type const&, std::string const&)> sig_finished;
-      util::signal<void (const layer*, internal_id_type const&, std::string const&)> sig_failed;
-      util::signal<void (const layer*, internal_id_type const&, std::string const&)> sig_canceled;
-      util::signal<void (const layer*, internal_id_type const&)> sig_executing;
+      util::signal<void (internal_id_type const&)> sig_submitted;
+      util::signal<void (internal_id_type const&, std::string const&)> sig_finished;
+      util::signal<void (internal_id_type const&, std::string const&)> sig_failed;
+      util::signal<void (internal_id_type const&, std::string const&)> sig_canceled;
+      util::signal<void (internal_id_type const&)> sig_executing;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -462,7 +462,7 @@ namespace we
               continue;
             }
 
-            sig_executing (this, desc->id());
+            sig_executing (desc->id());
 
             try
             {
@@ -654,8 +654,7 @@ namespace we
           throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (*desc));
         }
 
-        sig_finished ( this
-                     , desc->id()
+        sig_finished ( desc->id()
                      , desc->activity().to_string()
                      );
 
@@ -703,8 +702,7 @@ namespace we
                 << desc->error_message ()
                 );
 
-          sig_failed ( this
-                     , internal_id
+          sig_failed ( internal_id
                      , desc->activity().to_string()
                      );
 
@@ -784,8 +782,7 @@ namespace we
             throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (*desc));
           }
 
-          sig_canceled ( this
-                       , internal_id
+          sig_canceled ( internal_id
                        , desc->activity().to_string()
                        );
 
@@ -847,7 +844,7 @@ namespace we
           add_map_to_internal (desc->from_external_id(), desc->id());
         }
 
-        sig_submitted (this, desc->id());
+        sig_submitted (desc->id());
       }
 
       inline void remove_activity(const descriptor_ptr & desc)

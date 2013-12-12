@@ -78,7 +78,6 @@ namespace observe
   };
 
   void submitted ( state_type& state
-                 , const we::mgmt::layer*
                  , we::mgmt::layer::internal_id_type const&
                  )
   {
@@ -86,7 +85,6 @@ namespace observe
   }
 
   void generic ( state_type& state
-               , const we::mgmt::layer*
                , we::mgmt::layer::internal_id_type const&
                , std::string const& s
                )
@@ -166,13 +164,13 @@ namespace
         , _loader (loader)
     {
       mgmt_layer_.sig_submitted.connect
-        (boost::bind (&observe::submitted, boost::ref (observer), _1, _2));
+        (boost::bind (&observe::submitted, boost::ref (observer), _1));
       mgmt_layer_.sig_finished.connect
-        (boost::bind (&observe::generic, boost::ref (observer), _1, _2, _3));
+        (boost::bind (&observe::generic, boost::ref (observer), _1, _2));
       mgmt_layer_.sig_failed.connect
-        (boost::bind (&observe::generic, boost::ref (observer), _1, _2, _3));
+        (boost::bind (&observe::generic, boost::ref (observer), _1, _2));
       mgmt_layer_.sig_canceled.connect
-        (boost::bind (&observe::generic, boost::ref (observer), _1, _2, _3));
+        (boost::bind (&observe::generic, boost::ref (observer), _1, _2));
 
       for (std::size_t n (0); n < num_worker; ++n)
       {
