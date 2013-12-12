@@ -71,8 +71,9 @@ namespace
 
   struct sdpa_daemon
   {
-    typedef we::mgmt::layer::id_type id_type;
-    typedef boost::unordered_map<id_type, id_type> id_map_t;
+    typedef boost::unordered_map< we::mgmt::layer::id_type
+                                , we::mgmt::layer::id_type
+                                > id_map_t;
     typedef we::mgmt::detail::queue<job_t, 8> job_q_t;
     typedef std::vector<boost::thread*> worker_list_t;
 
@@ -130,28 +131,30 @@ namespace
       MLOG (INFO, "SDPA layer worker-" << rank << " stopped");
     }
 
-    id_type gen_id()
+    we::mgmt::layer::id_type gen_id()
     {
       boost::unique_lock<boost::recursive_mutex> lock (mutex_);
       return boost::lexical_cast<std::string> (++_id);
     }
-    void add_mapping ( const id_type & old_id, const id_type & new_id)
+    void add_mapping ( const we::mgmt::layer::id_type& old_id
+                     , const we::mgmt::layer::id_type& new_id
+                     )
     {
       boost::unique_lock<boost::recursive_mutex> lock (mutex_);
       id_map_[new_id] = old_id;
     }
-    id_type get_mapping (const id_type & id)
+    we::mgmt::layer::id_type get_mapping (const we::mgmt::layer::id_type& id)
     {
       boost::unique_lock<boost::recursive_mutex> lock (mutex_);
       return id_map_.at (id);
     }
-    void del_mapping (const id_type & id)
+    void del_mapping (const we::mgmt::layer::id_type& id)
     {
       boost::unique_lock<boost::recursive_mutex> lock (mutex_);
       id_map_.erase (id);
     }
 
-    void submit( const id_type & id
+    void submit( const we::mgmt::layer::id_type& id
                , const std::string & desc
                , std::list<we::type::requirement_t> const&
                , const we::type::schedule_data&
@@ -161,13 +164,13 @@ namespace
       jobs_.put (job_t (id, desc));
     }
 
-    bool cancel(const id_type & id, const std::string & desc)
+    bool cancel(const we::mgmt::layer::id_type& id, const std::string & desc)
     {
       std::cout << "cancel[" << id << "] = " << desc << std::endl;
 
       try
       {
-        id_type mapped_id (get_mapping (id));
+        we::mgmt::layer::id_type mapped_id (get_mapping (id));
         del_mapping (id);
 
         // inform layer
@@ -180,11 +183,11 @@ namespace
       }
     }
 
-    bool finished(const id_type & id, const std::string & desc)
+    bool finished(const we::mgmt::layer::id_type& id, const std::string & desc)
     {
       try
       {
-        id_type mapped_id (get_mapping (id));
+        we::mgmt::layer::id_type mapped_id (get_mapping (id));
         del_mapping (id);
 
         // inform layer
@@ -206,7 +209,7 @@ namespace
       return true;
     }
 
-    bool failed( const id_type & id
+    bool failed( const we::mgmt::layer::id_type& id
                , const std::string & desc
                , const int error_code
                , const std::string & reason
@@ -214,7 +217,7 @@ namespace
     {
       try
       {
-        id_type mapped_id (get_mapping (id));
+        we::mgmt::layer::id_type mapped_id (get_mapping (id));
         del_mapping (id);
 
         // inform layer
@@ -233,11 +236,11 @@ namespace
       return true;
     }
 
-    bool canceled(const id_type & id)
+    bool canceled(const we::mgmt::layer::id_type& id)
     {
       try
       {
-        id_type mapped_id (get_mapping (id));
+        we::mgmt::layer::id_type mapped_id (get_mapping (id));
         del_mapping (id);
 
         // inform layer
@@ -447,7 +450,7 @@ try
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     );
 
-  sdpa_daemon::id_type id = daemon.gen_id();
+  we::mgmt::layer::id_type id = daemon.gen_id();
   jobs.push_back(id);
   mgmt_layer.submit(id, act, we::type::user_data ());
 
