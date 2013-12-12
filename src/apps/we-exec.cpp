@@ -508,8 +508,7 @@ try
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     );
 
-  we::mgmt::layer::id_type id (daemon.gen_id());
-  mgmt_layer.submit (id, act, we::type::user_data());
+  mgmt_layer.submit (daemon.gen_id(), act, we::type::user_data());
 
   while (not observer.done())
   {
