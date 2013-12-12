@@ -53,8 +53,6 @@ namespace we
     private:
       typedef boost::unordered_map<external_id_type, internal_id_type> external_to_internal_map_t;
 
-      typedef std::vector<boost::thread *> thread_list_t;
-
       typedef boost::unordered_map< internal_id_type
                                   , detail::descriptor
                                   > activities_t;
