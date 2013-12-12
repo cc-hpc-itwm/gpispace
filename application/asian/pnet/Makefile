@@ -7,20 +7,11 @@ XML = $(CURDIR)/xml/$(MAIN).xml
 
 ###############################################################################
 
-ifndef SDPA_HOME
-  $(error variable SDPA_HOME not set)
-endif
-
-include $(SDPA_HOME)/share/sdpa/make/common.mk
-
-###############################################################################
-
 XML_MAIN = xml/wrapper.xml
 MK_XML = $(CURDIR)/mk.xml
 
 DEP += Makefile
 DEP += xml/wrapper.xml
-DEP += xml/collect.xml
 DEP += xml/asian.xml
 DEP += xml/run.xml
 DEP += run_impl.hpp
@@ -44,4 +35,12 @@ CXXLIBRARYPATHS += $(SDPA_HOME)/libexec/sdpa
 
 WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/libprocess.so
 
-PUT_PORT += param=Struct[S:=0.1,K:=0.1,T:=0.1,sigma:=0.1,r:=0.1,r:=0.1,d:=0.1,FirstFixing:=1,FixingsProJahr:=3.0,AnzahlderDividende:=10,n:=10,rowID:=10,bin:=\"bin\",epsilon:=0.1,delta:=0.1,iterations_per_run:=10,nThreads:=1]
+PUT_PORT += param=Struct[S:=0.1,K:=0.1,T:=0.1,sigma:=0.1,r:=0.1,d:=0.1,FirstFixing:=1L,FixingsProJahr:=3.0,AnzahlderDividende:=10L,n:=10L,rowID:=10L,bin:=\"bin\",epsilon:=0.1,delta:=0.1,iterations_per_run:=10L,nThreads:=1L]
+
+###############################################################################
+
+ifndef SDPA_HOME
+  $(error variable SDPA_HOME not set)
+endif
+
+include $(SDPA_HOME)/share/sdpa/make/common.mk
