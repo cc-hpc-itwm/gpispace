@@ -330,7 +330,6 @@ typedef std::string id_type;
 
 typedef we::mgmt::layer::internal_id_type layer_id_type;
 
-static std::vector<id_type> jobs;
 static boost::recursive_mutex mutex;
 
 namespace observe
@@ -476,7 +475,6 @@ try
     );
 
   we::mgmt::layer::id_type id (daemon.gen_id());
-  jobs.push_back (id);
   mgmt_layer.submit (id, act, we::type::user_data());
 
   while (layer_jobs.size() > 0)
@@ -505,7 +503,7 @@ try
     }
   }
 
-  return ((jobs.size() == 0) ? EXIT_SUCCESS : EXIT_FAILURE);
+  return EXIT_FAILURE;
 }
 catch (const std::exception& e)
 {
