@@ -269,8 +269,8 @@ namespace we
       }
 
     public:
-      template <class E, typename G>
-        layer(E * exec_layer, G gen)
+      template <class E>
+        layer (E* exec_layer, boost::function<external_id_type()> gen)
           : sig_submitted()
           , sig_finished()
           , sig_failed()
