@@ -503,7 +503,7 @@ try
     }
   }
 
-  return EXIT_FAILURE;
+  return EXIT_SUCCESS;
 }
 catch (const std::exception& e)
 {
