@@ -292,13 +292,6 @@ namespace we { namespace mgmt {
         ext_canceled = (boost::bind (& E::canceled, exec_layer, _1));
       }
 
-      void set_id_generator (boost::function<external_id_type()> gen)
-      {
-        lock_t gen_lock (id_gen_mutex_);
-
-        external_id_gen_ = gen;
-      }
-
       ~layer()
       {
         manager_.interrupt();
