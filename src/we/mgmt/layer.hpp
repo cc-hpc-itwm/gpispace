@@ -12,12 +12,9 @@
 
 #include <we/type/net.hpp>
 
-#include <boost/random.hpp>
 #include <boost/function.hpp>
-#include <boost/functional/hash.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 
 #include <we/mgmt/exception.hpp>
 #include <we/mgmt/bits/signal.hpp>
