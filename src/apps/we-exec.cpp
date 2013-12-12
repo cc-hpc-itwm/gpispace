@@ -32,6 +32,84 @@
 #include <sstream>
 #include <stdint.h>
 
+namespace observe
+{
+  class state_type
+  {
+  public:
+    void insert (we::mgmt::layer::internal_id_type const& id)
+    {
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
+
+      _jobs.insert (id);
+    }
+    bool done() const
+    {
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
+
+      return _jobs.empty();
+    }
+    bool erase ( we::mgmt::layer::internal_id_type const& id
+               , std::string const& result
+               )
+    {
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
+
+      std::set<we::mgmt::layer::internal_id_type>::iterator const pos
+        (_jobs.find (id));
+
+      bool const was_there (pos != _jobs.end());
+
+      if (was_there)
+      {
+        _jobs.erase (pos);
+        _result = result;
+      }
+
+      return was_there;
+    }
+    std::string const& result() const
+    {
+      if (not _result)
+      {
+        throw std::runtime_error ("missing result");
+      }
+
+      return *_result;
+    }
+
+  private:
+    mutable boost::recursive_mutex _mutex_jobs;
+    std::set<we::mgmt::layer::internal_id_type> _jobs;
+    boost::optional<std::string> _result;
+  };
+
+  void submitted ( state_type& state
+                 , const we::mgmt::layer*
+                 , we::mgmt::layer::internal_id_type const& id
+                 )
+  {
+    state.insert (id);
+
+    std::cerr << "submitted: " << id << std::endl;
+  }
+
+  void generic ( state_type& state
+               , std::string const& msg
+               , const we::mgmt::layer*
+               , we::mgmt::layer::internal_id_type const& id
+               , std::string const& s
+               )
+  {
+    if (state.erase (id, s))
+    {
+      std::cerr << "job " << msg << ": "
+                << we::mgmt::type::activity_t (s).transition().name()
+                << "-" << id << std::endl;
+    }
+  }
+}
+
 namespace
 {
   struct sdpa_daemon;
@@ -323,84 +401,6 @@ namespace
   int context::handle_externally (we::mgmt::type::activity_t&, expr_t&)
   {
     throw std::runtime_error ("NO external expr here!");
-  }
-}
-
-namespace observe
-{
-  class state_type
-  {
-  public:
-    void insert (we::mgmt::layer::internal_id_type const& id)
-    {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
-
-      _jobs.insert (id);
-    }
-    bool done() const
-    {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
-
-      return _jobs.empty();
-    }
-    bool erase ( we::mgmt::layer::internal_id_type const& id
-               , std::string const& result
-               )
-    {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
-
-      std::set<we::mgmt::layer::internal_id_type>::iterator const pos
-        (_jobs.find (id));
-
-      bool const was_there (pos != _jobs.end());
-
-      if (was_there)
-      {
-        _jobs.erase (pos);
-        _result = result;
-      }
-
-      return was_there;
-    }
-    std::string const& result() const
-    {
-      if (not _result)
-      {
-        throw std::runtime_error ("missing result");
-      }
-
-      return *_result;
-    }
-
-  private:
-    mutable boost::recursive_mutex _mutex_jobs;
-    std::set<we::mgmt::layer::internal_id_type> _jobs;
-    boost::optional<std::string> _result;
-  };
-
-  void submitted ( state_type& state
-                 , const we::mgmt::layer*
-                 , we::mgmt::layer::internal_id_type const& id
-                 )
-  {
-    state.insert (id);
-
-    std::cerr << "submitted: " << id << std::endl;
-  }
-
-  void generic ( state_type& state
-               , std::string const& msg
-               , const we::mgmt::layer*
-               , we::mgmt::layer::internal_id_type const& id
-               , std::string const& s
-               )
-  {
-    if (state.erase (id, s))
-    {
-      std::cerr << "job " << msg << ": "
-                << we::mgmt::type::activity_t (s).transition().name()
-                << "-" << id << std::endl;
-    }
   }
 }
 
