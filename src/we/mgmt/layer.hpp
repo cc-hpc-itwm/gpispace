@@ -199,7 +199,7 @@ namespace we
                                , const internal_id_type & internal_id
                                )
       {
-        lock_t lock (mutex_);
+        lock_t const _ (mutex_);
         external_to_internal_map_t::const_iterator mapping
           (ext_to_int_.find(external_id));
 
@@ -223,7 +223,7 @@ namespace we
                                , const internal_id_type & internal_id
                                )
       {
-        lock_t lock (mutex_);
+        lock_t const _ (mutex_);
 
         external_to_internal_map_t::const_iterator mapping
           (ext_to_int_.find(external_id));
@@ -245,7 +245,7 @@ namespace we
 
       external_to_internal_map_t::mapped_type map_to_internal ( const external_id_type & external_id ) const
       {
-        lock_t lock (mutex_);
+        lock_t const _ (mutex_);
 
         external_to_internal_map_t::const_iterator mapping (ext_to_int_.find(external_id));
         if (mapping != ext_to_int_.end())
@@ -548,7 +548,7 @@ namespace we
       inline
         bool is_valid (const internal_id_type & id) const
       {
-        lock_t lock (mutex_);
+        lock_t const _ (mutex_);
         return activities_.find(id) != activities_.end();
       }
 
@@ -805,7 +805,7 @@ namespace we
 
       inline void insert_activity(const detail::descriptor & desc)
       {
-        lock_t lock (mutex_);
+        lock_t const _ (mutex_);
 
         activities_.insert(std::make_pair(desc.id(), desc));
         if (desc.came_from_external())
@@ -818,7 +818,7 @@ namespace we
 
       inline void remove_activity(const detail::descriptor & desc)
       {
-        lock_t lock (mutex_);
+        lock_t const _ (mutex_);
 
         sig_remove (desc);
 

@@ -35,7 +35,7 @@ namespace we
     {
       internal_id_type int_id (map_to_internal (id));
       {
-        lock_t lock(mutex_);
+        lock_t const _ (mutex_);
         detail::descriptor& desc (lookup (int_id));
         {
           desc.output (we::mgmt::type::activity_t (result).output());
