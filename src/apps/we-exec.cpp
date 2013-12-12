@@ -48,24 +48,14 @@ namespace observe
 
       return _jobs.empty();
     }
-    bool erase ( we::mgmt::layer::internal_id_type const& id
+    void erase ( we::mgmt::layer::internal_id_type const& id
                , std::string const& result
                )
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
 
-      std::set<we::mgmt::layer::internal_id_type>::iterator const pos
-        (_jobs.find (id));
-
-      bool const was_there (pos != _jobs.end());
-
-      if (was_there)
-      {
-        _jobs.erase (pos);
-        _result = result;
-      }
-
-      return was_there;
+      _jobs.erase (id);
+      _result = result;
     }
     std::string const& result() const
     {
@@ -100,12 +90,11 @@ namespace observe
                , std::string const& s
                )
   {
-    if (state.erase (id, s))
-    {
-      std::cerr << "job " << msg << ": "
-                << we::mgmt::type::activity_t (s).transition().name()
-                << "-" << id << std::endl;
-    }
+    state.erase (id, s);
+
+    std::cerr << "job " << msg << ": "
+              << we::mgmt::type::activity_t (s).transition().name()
+              << "-" << id << std::endl;
   }
 }
 
