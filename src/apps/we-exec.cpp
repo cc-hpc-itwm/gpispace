@@ -1,7 +1,6 @@
 
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
-#include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/type/activity.hpp>
@@ -16,6 +15,7 @@
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/stat.hpp>
+#include <fhg/util/thread/queue.hpp>
 #include <fhglog/fhglog.hpp>
 
 #include <boost/bind.hpp>
@@ -162,7 +162,7 @@ namespace
     typedef boost::unordered_map< we::mgmt::layer::id_type
                                 , we::mgmt::layer::id_type
                                 > id_map_t;
-    typedef we::mgmt::detail::queue<job_t, 8> job_q_t;
+    typedef fhg::thread::queue<job_t> job_q_t;
     typedef std::vector<boost::thread*> worker_list_t;
 
     sdpa_daemon ( std::size_t num_worker
