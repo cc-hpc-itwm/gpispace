@@ -3,32 +3,28 @@
 #ifndef WE_MGMT_LAYER_HPP
 #define WE_MGMT_LAYER_HPP 1
 
-#include <fhglog/fhglog.hpp>
+#include <we/mgmt/bits/descriptor.hpp>
+#include <we/mgmt/bits/execution_policy.hpp>
+#include <we/mgmt/bits/signal.hpp>
+#include <we/mgmt/exception.hpp>
+#include <we/mgmt/type/activity.hpp>
+#include <we/type/id.hpp>
+#include <we/type/net.hpp>
+#include <we/type/requirement.hpp>
+#include <we/type/schedule_data.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/error_codes.hpp>
 #include <fhg/util/show.hpp>
+#include <fhg/util/thread/queue.hpp>
 #include <fhg/util/threadname.hpp>
 
-#include <we/type/net.hpp>
+#include <fhglog/fhglog.hpp>
 
+#include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
-
-#include <we/mgmt/exception.hpp>
-#include <we/mgmt/bits/signal.hpp>
-#include <we/mgmt/bits/descriptor.hpp>
-#include <we/mgmt/bits/execution_policy.hpp>
-
-#include <we/type/id.hpp>
-#include <we/type/requirement.hpp>
-#include <we/type/schedule_data.hpp>
-#include <we/mgmt/type/activity.hpp>
-
-#include <fhg/util/thread/queue.hpp>
-
-#include <boost/foreach.hpp>
 
 namespace we
 {
