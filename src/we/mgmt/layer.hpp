@@ -272,16 +272,6 @@ namespace we { namespace mgmt {
       /**
        * Constructor calls
        */
-      layer()
-        : sig_submitted()
-        , sig_finished()
-        , sig_failed()
-        , sig_canceled()
-        , sig_executing()
-        , internal_id_gen_(&petri_net::activity_id_generate)
-      {
-        start();
-      }
 
       template <class E, typename G>
       layer(E * exec_layer, G gen)
