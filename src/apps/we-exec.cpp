@@ -308,7 +308,6 @@ namespace
 
 typedef std::string id_type;
 
-typedef sdpa_daemon daemon_type;
 typedef we::mgmt::layer::internal_id_type layer_id_type;
 
 static std::vector<id_type> jobs;
@@ -420,7 +419,7 @@ try
   }
 
   // instantiate daemon and layer
-  daemon_type daemon(num_worker);
+  sdpa_daemon daemon(num_worker);
 
   BOOST_FOREACH (std::string const& m, mods_to_load)
   {
@@ -448,7 +447,7 @@ try
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     );
 
-  daemon_type::id_type id = daemon.gen_id();
+  sdpa_daemon::id_type id = daemon.gen_id();
   jobs.push_back(id);
   mgmt_layer.submit(id, act, we::type::user_data ());
 
