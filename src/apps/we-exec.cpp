@@ -346,10 +346,11 @@ namespace observe
     layer_jobs.insert (id);
   }
 
-  void finished ( const we::mgmt::layer*
-                , layer_id_type const& id
-                , std::string const& s
-                )
+  void generic ( std::string const& msg
+               , const we::mgmt::layer*
+               , layer_id_type const& id
+               , std::string const& s
+               )
   {
     boost::unique_lock<boost::recursive_mutex> const _ (mutex);
 
@@ -357,43 +358,7 @@ namespace observe
     {
       layer_jobs.erase (id);
 
-      std::cerr << "job finished: "
-                << we::mgmt::type::activity_t (s).transition().name()
-                << "-" << id << std::endl;
-
-      encoded_result = s;
-    }
-  }
-  void failed ( const we::mgmt::layer*
-              , layer_id_type const& id
-              , std::string const& s
-              )
-  {
-    boost::unique_lock<boost::recursive_mutex> const _ (mutex);
-
-    if (layer_jobs.find (id) != layer_jobs.end())
-    {
-      layer_jobs.erase (id);
-
-      std::cerr << "job failed: "
-                << we::mgmt::type::activity_t (s).transition().name()
-                << "-" << id << std::endl;
-
-      encoded_result = s;
-    }
-  }
-  void canceled ( const we::mgmt::layer*
-                , layer_id_type const& id
-                , std::string const& s
-                )
-  {
-    boost::unique_lock<boost::recursive_mutex> const _ (mutex);
-
-    if (layer_jobs.find (id) != layer_jobs.end())
-    {
-      layer_jobs.erase (id);
-
-      std::cerr << "job canceled: "
+      std::cerr << "job " << msg << ": "
                 << we::mgmt::type::activity_t (s).transition().name()
                 << "-" << id << std::endl;
 
@@ -491,9 +456,12 @@ try
   we::mgmt::layer& mgmt_layer (daemon.layer());
 
   mgmt_layer.sig_submitted.connect (&observe::submitted);
-  mgmt_layer.sig_finished.connect (&observe::finished);
-  mgmt_layer.sig_failed.connect (&observe::failed);
-  mgmt_layer.sig_canceled.connect (&observe::canceled);
+  mgmt_layer.sig_finished.connect
+    (boost::bind (&observe::generic, std::string ("finished"), _1, _2, _3));
+  mgmt_layer.sig_failed.connect
+    (boost::bind (&observe::generic, std::string ("failed"), _1, _2, _3));
+  mgmt_layer.sig_canceled.connect
+    (boost::bind (&observe::generic, std::string ("cancelled"), _1, _2, _3));
 
   we::mgmt::type::activity_t act
     ( path_to_act == "-"
