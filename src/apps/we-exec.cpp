@@ -142,12 +142,11 @@ namespace test {
     std::string desc;
   };
 
-  template <typename Layer>
   struct sdpa_daemon
   {
-    typedef Layer layer_type;
-    typedef sdpa_daemon<Layer> this_type;
-    typedef typename layer_type::id_type id_type;
+    typedef we::mgmt::layer layer_type;
+    typedef sdpa_daemon this_type;
+    typedef we::mgmt::layer::id_type id_type;
     typedef boost::unordered_map<id_type, id_type> id_map_t;
     typedef job_t<id_type> job_type;
     typedef we::mgmt::detail::queue<job_type, 8> job_q_t;
@@ -330,13 +329,13 @@ namespace test {
       return true;
     }
 
-    inline layer_type & layer() { return mgmt_layer_; }
+    inline we::mgmt::layer & layer() { return mgmt_layer_; }
     inline we::loader::loader & loader() { return loader_; }
 
   private:
     boost::recursive_mutex mutex_;
     detail::id_generator<id_type> id_;
-    layer_type mgmt_layer_;
+    we::mgmt::layer mgmt_layer_;
     id_map_t  id_map_;
     job_q_t jobs_;
     worker_list_t worker_;
@@ -349,7 +348,7 @@ namespace po = boost::program_options;
 
 typedef std::string id_type;
 
-typedef sdpa_daemon<we::mgmt::layer> daemon_type;
+typedef sdpa_daemon daemon_type;
 typedef we::mgmt::layer::internal_id_type layer_id_type;
 
 static std::vector<id_type> jobs;
