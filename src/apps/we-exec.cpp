@@ -128,8 +128,7 @@ namespace test {
   {
     typedef we::mgmt::layer::id_type id_type;
     typedef boost::unordered_map<id_type, id_type> id_map_t;
-    typedef job_t job_type;
-    typedef we::mgmt::detail::queue<job_type, 8> job_q_t;
+    typedef we::mgmt::detail::queue<job_t, 8> job_q_t;
     typedef std::vector<boost::thread*> worker_list_t;
 
     explicit
@@ -171,7 +170,7 @@ namespace test {
       {
         MLOG (TRACE, "worker-" << rank << " idle");
 
-        job_type job (jobs_.get());
+        job_t job (jobs_.get());
 
         we::mgmt::type::activity_t act (job.desc);
 
@@ -215,7 +214,7 @@ namespace test {
                , const we::type::user_data& = we::type::user_data ()
                )
     {
-      job_type job (id, desc);
+      job_t job (id, desc);
 
       jobs_.put (job);
     }
