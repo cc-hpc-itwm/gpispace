@@ -335,54 +335,46 @@ namespace observe
 {
   void submitted (const we::mgmt::layer *l, layer_id_type const & id)
   {
-    {
-      lock_t lock(mutex);
+    lock_t lock(mutex);
 
-      std::cerr << "submitted: " << id << std::endl;
-      layer_jobs.insert (id);
-    }
+    std::cerr << "submitted: " << id << std::endl;
+    layer_jobs.insert (id);
   }
 
   void finished (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    {
-      lock_t lock(mutex);
+    lock_t lock(mutex);
 
-      if (layer_jobs.find (id) != layer_jobs.end())
-      {
-        layer_jobs.erase (id);
-        we::mgmt::type::activity_t act (s);
-        std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
-        encoded_result = s;
-      }
+    if (layer_jobs.find (id) != layer_jobs.end())
+    {
+      layer_jobs.erase (id);
+      we::mgmt::type::activity_t act (s);
+      std::cerr << "job finished: " << act.transition().name() << "-" << id << std::endl;
+      encoded_result = s;
     }
   }
   void failed (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    {
-      lock_t lock(mutex);
+    lock_t lock(mutex);
 
-      if (layer_jobs.find (id) != layer_jobs.end())
-      {
-        layer_jobs.erase (id);
-        we::mgmt::type::activity_t act (s);
-        std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
-        encoded_result = s;
-      }
+    if (layer_jobs.find (id) != layer_jobs.end())
+    {
+      layer_jobs.erase (id);
+      we::mgmt::type::activity_t act (s);
+      std::cerr << "job failed: " << act.transition().name() << "-" << id << std::endl;
+      encoded_result = s;
     }
   }
   void canceled (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
-    {
-      lock_t lock(mutex);
+    lock_t lock(mutex);
 
-      if (layer_jobs.find (id) != layer_jobs.end())
-      {
-        layer_jobs.erase (id);
-        we::mgmt::type::activity_t act (s);
-        std::cerr << "job canceled: " << act.transition().name() << "-" << id << std::endl;
-        encoded_result = s;
-      }
+    if (layer_jobs.find (id) != layer_jobs.end())
+    {
+      layer_jobs.erase (id);
+      we::mgmt::type::activity_t act (s);
+      std::cerr << "job canceled: " << act.transition().name() << "-" << id << std::endl;
+      encoded_result = s;
     }
   }
 }
