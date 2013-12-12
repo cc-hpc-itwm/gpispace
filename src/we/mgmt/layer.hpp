@@ -73,11 +73,11 @@ namespace we
        *****************************/
 
       // observe
-      util::signal<void (const layer *, internal_id_type const &)> sig_submitted;
-      util::signal<void (const layer *, internal_id_type const &, std::string const &)> sig_finished;
-      util::signal<void (const layer *, internal_id_type const &, std::string const &)> sig_failed;
-      util::signal<void (const layer *, internal_id_type const &, std::string const &)> sig_canceled;
-      util::signal<void (const layer *, internal_id_type const &)> sig_executing;
+      util::signal<void (const layer*, internal_id_type const&)> sig_submitted;
+      util::signal<void (const layer*, internal_id_type const&, std::string const&)> sig_finished;
+      util::signal<void (const layer*, internal_id_type const&, std::string const&)> sig_failed;
+      util::signal<void (const layer*, internal_id_type const&, std::string const&)> sig_canceled;
+      util::signal<void (const layer*, internal_id_type const&)> sig_executing;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -276,13 +276,13 @@ namespace we
           , sig_failed()
           , sig_canceled()
           , sig_executing()
-          , ext_submit (boost::bind (& E::submit, exec_layer, _1, _2, _3, _4, _5))
-          , ext_cancel (boost::bind (& E::cancel, exec_layer, _1, _2))
-          , ext_finished (boost::bind (& E::finished, exec_layer, _1, _2))
-          , ext_failed (boost::bind (& E::failed, exec_layer, _1, _2, _3, _4))
-          , ext_canceled (boost::bind (& E::canceled, exec_layer, _1))
-          , external_id_gen_(gen)
-          , internal_id_gen_(&petri_net::activity_id_generate)
+          , ext_submit (boost::bind (&E::submit, exec_layer, _1, _2, _3, _4, _5))
+          , ext_cancel (boost::bind (&E::cancel, exec_layer, _1, _2))
+          , ext_finished (boost::bind (&E::finished, exec_layer, _1, _2))
+          , ext_failed (boost::bind (&E::failed, exec_layer, _1, _2, _3, _4))
+          , ext_canceled (boost::bind (&E::canceled, exec_layer, _1))
+          , external_id_gen_ (gen)
+          , internal_id_gen_ (&petri_net::activity_id_generate)
           , manager_ (boost::bind (&layer::manager, this))
           , extractor_ (boost::bind (&layer::extractor, this))
           , injector_ (boost::bind (&layer::injector, this))
