@@ -165,12 +165,11 @@ namespace
     typedef we::mgmt::detail::queue<job_t, 8> job_q_t;
     typedef std::vector<boost::thread*> worker_list_t;
 
-    explicit
-      sdpa_daemon ( std::size_t num_worker
-                  , we::loader::loader* loader
-                  , observe::state_type& observer
-                  , we::mgmt::type::activity_t const act
-                  )
+    sdpa_daemon ( std::size_t num_worker
+                , we::loader::loader* loader
+                , observe::state_type& observer
+                , we::mgmt::type::activity_t const act
+                )
         : _mutex_id()
         , _id (0)
         , mgmt_layer_ (this, boost::bind (&sdpa_daemon::gen_id, this))
