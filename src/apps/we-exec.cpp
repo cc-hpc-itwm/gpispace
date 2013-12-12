@@ -28,6 +28,8 @@
 #include <fstream>
 #include <iostream>
 #include <list>
+#include <set>
+#include <vector>
 
 namespace observe
 {
