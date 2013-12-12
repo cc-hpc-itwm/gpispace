@@ -42,7 +42,7 @@ namespace we
         }
       }
 
-      post_finished_notification (int_id);
+      inj_q_.put (int_id);
     }
     void layer::failed ( const external_id_type& id
                        , const result_type& result
