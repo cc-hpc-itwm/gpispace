@@ -49,8 +49,7 @@ namespace we
                                   , detail::descriptor
                                   > activities_t;
 
-      typedef boost::function<void ()> cmd_t;
-      typedef fhg::thread::queue<cmd_t> cmd_q_t;
+      typedef fhg::thread::queue<boost::function<void ()> > cmd_q_t;
 
       //! \todo is it necessary to use a locked data structure?
       typedef fhg::thread::queue<internal_id_type> active_nets_t;
