@@ -196,7 +196,6 @@ namespace we
       {
         insert_activity(desc);
 
-        sig_submitted (this, desc->id());
         post_execute_notification (desc->id());
       }
 
@@ -861,6 +860,8 @@ namespace we
         {
           add_map_to_internal (desc->from_external_id(), desc->id());
         }
+
+        sig_submitted (this, desc->id());
       }
 
       inline void remove_activity(const descriptor_ptr & desc)
