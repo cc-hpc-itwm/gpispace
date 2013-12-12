@@ -13,7 +13,7 @@ namespace we
     {
       DLOG (TRACE, "submit (" << id << ", ...)");
 
-      return submit (id, we::mgmt::type::activity_t (bytes), data);
+      submit (id, we::mgmt::type::activity_t (bytes), data);
     }
     void layer::submit ( const external_id_type& id
                        , const we::mgmt::type::activity_t& act
