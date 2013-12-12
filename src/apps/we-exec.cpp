@@ -161,7 +161,10 @@ namespace
     typedef std::vector<boost::thread*> worker_list_t;
 
     explicit
-      sdpa_daemon (std::size_t num_worker, we::loader::loader* loader)
+      sdpa_daemon ( std::size_t num_worker
+                  , we::loader::loader* loader
+                  , observe::state_type& observer
+                  )
         : _mutex_id()
         , _id (0)
         , mgmt_layer_ (this, boost::bind (&sdpa_daemon::gen_id, this))
@@ -171,6 +174,15 @@ namespace
         , worker_()
         , _loader (loader)
     {
+      mgmt_layer_.sig_submitted.connect
+        (boost::bind (&observe::submitted, boost::ref (observer), _1, _2));
+      mgmt_layer_.sig_finished.connect
+        (boost::bind (&observe::generic, boost::ref (observer), std::string ("finished"), _1, _2, _3));
+      mgmt_layer_.sig_failed.connect
+        (boost::bind (&observe::generic, boost::ref (observer), std::string ("failed"), _1, _2, _3));
+      mgmt_layer_.sig_canceled.connect
+        (boost::bind (&observe::generic, boost::ref (observer), std::string ("cancelled"), _1, _2, _3));
+
       start (num_worker);
     }
 
@@ -494,19 +506,10 @@ try
       loader.append_search_path (p);
     }
   }
-  sdpa_daemon daemon (num_worker, &loader);
 
   observe::state_type observer;
-  we::mgmt::layer& mgmt_layer (daemon.layer());
 
-  mgmt_layer.sig_submitted.connect
-    (boost::bind (&observe::submitted, boost::ref (observer), _1, _2));
-  mgmt_layer.sig_finished.connect
-    (boost::bind (&observe::generic, boost::ref (observer), std::string ("finished"), _1, _2, _3));
-  mgmt_layer.sig_failed.connect
-    (boost::bind (&observe::generic, boost::ref (observer), std::string ("failed"), _1, _2, _3));
-  mgmt_layer.sig_canceled.connect
-    (boost::bind (&observe::generic, boost::ref (observer), std::string ("cancelled"), _1, _2, _3));
+  sdpa_daemon daemon (num_worker, &loader, observer);
 
   daemon.submit
     ( path_to_act == "-"
