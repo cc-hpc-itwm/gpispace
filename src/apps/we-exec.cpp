@@ -97,13 +97,11 @@ namespace test {
         }
         catch (std::exception const & ex)
         {
-          std::cerr << "handle-ext(" << act.transition ().name () << ") failed: " << ex.what () << std::endl;
-          daemon.layer ().failed (id
-                                 , act.to_string()
-                                 , fhg::error::MODULE_CALL_FAILED
-                                 , ex.what()
-                                 );
-          return 0;
+          daemon.layer().failed (id
+                                , act.to_string()
+                                , fhg::error::MODULE_CALL_FAILED
+                                , ex.what()
+                               );
         }
         return 0;
       }
@@ -310,7 +308,6 @@ namespace test {
         act.print (std::cout, act.output());
         std::cout << " error-code := " << error_code
                   << " reason := " << reason
-                  << " activity := " << act.transition ().name ()
                   << std::endl;
       }
       return true;
