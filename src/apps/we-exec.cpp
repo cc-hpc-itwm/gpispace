@@ -35,27 +35,24 @@
 namespace test {
   struct sdpa_daemon;
 
-  namespace detail
+  struct context : public we::mgmt::context
   {
-    struct context : public we::mgmt::context
-    {
-      virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n);
-      virtual int handle_internally (we::mgmt::type::activity_t&, mod_t&);
-      virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&);
-      virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&);
-      virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod);
-      virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&);
+    virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n);
+    virtual int handle_internally (we::mgmt::type::activity_t&, mod_t&);
+    virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&);
+    virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&);
+    virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod);
+    virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&);
 
-      context (sdpa_daemon& d, const we::mgmt::layer::id_type& an_id)
-        : daemon (d)
-        , id(an_id)
-     {}
+    context (sdpa_daemon& d, const we::mgmt::layer::id_type& an_id)
+      : daemon (d)
+      , id(an_id)
+    {}
 
-    private:
-      sdpa_daemon& daemon;
-      we::mgmt::layer::id_type id;
-    };
-  }
+  private:
+    sdpa_daemon& daemon;
+    we::mgmt::layer::id_type id;
+  };
 
   struct job_t
   {
@@ -125,7 +122,7 @@ namespace test {
              , "worker-" << rank << " busy with " << act.transition ().name ()
              );
 
-        detail::context ctxt (*this, job.id);
+        context ctxt (*this, job.id);
         act.execute (&ctxt);
       }
 
@@ -265,49 +262,46 @@ namespace test {
     we::loader::loader loader_;
   };
 
-  namespace detail
+  int context::handle_internally (we::mgmt::type::activity_t& act, net_t& n)
   {
-    int context::handle_internally (we::mgmt::type::activity_t& act, net_t& n)
+    return handle_externally (act, n);
+  }
+  int context::handle_internally (we::mgmt::type::activity_t&, mod_t&)
+  {
+    throw std::runtime_error ("NO internal mod here!");
+  }
+  int context::handle_internally (we::mgmt::type::activity_t&, expr_t&)
+  {
+    throw std::runtime_error ("NO internal expr here!");
+  }
+  int context::handle_externally (we::mgmt::type::activity_t& act, net_t&)
+  {
+    we::mgmt::layer::id_type const new_id (daemon.gen_id());
+    daemon.add_mapping (id, new_id);
+    daemon.layer().submit (new_id,  act, we::type::user_data());
+    return 0;
+  }
+  int context::handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+  {
+    try
     {
-      return handle_externally (act, n);
+      //!\todo pass a real gspc::drts::context
+      module::call (daemon.loader(), 0, act, mod);
+      daemon.layer().finished (id, act.to_string());
     }
-    int context::handle_internally (we::mgmt::type::activity_t&, mod_t&)
+    catch (std::exception const & ex)
     {
-      throw std::runtime_error ("NO internal mod here!");
+      daemon.layer().failed (id
+                            , act.to_string()
+                            , fhg::error::MODULE_CALL_FAILED
+                            , ex.what()
+                            );
     }
-    int context::handle_internally (we::mgmt::type::activity_t&, expr_t&)
-    {
-      throw std::runtime_error ("NO internal expr here!");
-    }
-    int context::handle_externally (we::mgmt::type::activity_t& act, net_t&)
-    {
-      we::mgmt::layer::id_type const new_id (daemon.gen_id());
-      daemon.add_mapping (id, new_id);
-      daemon.layer().submit (new_id,  act, we::type::user_data());
-      return 0;
-    }
-    int context::handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
-    {
-      try
-      {
-        //!\todo pass a real gspc::drts::context
-        module::call (daemon.loader(), 0, act, mod);
-        daemon.layer().finished (id, act.to_string());
-      }
-      catch (std::exception const & ex)
-      {
-        daemon.layer().failed (id
-                              , act.to_string()
-                              , fhg::error::MODULE_CALL_FAILED
-                              , ex.what()
-                              );
-      }
-      return 0;
-    }
-    int context::handle_externally (we::mgmt::type::activity_t&, expr_t&)
-    {
-      throw std::runtime_error ("NO external expr here!");
-    }
+    return 0;
+  }
+  int context::handle_externally (we::mgmt::type::activity_t&, expr_t&)
+  {
+    throw std::runtime_error ("NO external expr here!");
   }
 }
 
