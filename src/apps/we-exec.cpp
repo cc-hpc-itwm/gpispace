@@ -32,7 +32,8 @@
 #include <sstream>
 #include <stdint.h>
 
-namespace test {
+namespace
+{
   struct sdpa_daemon;
 
   struct context : public we::mgmt::context
@@ -307,7 +308,7 @@ namespace test {
 
 typedef std::string id_type;
 
-typedef test::sdpa_daemon daemon_type;
+typedef sdpa_daemon daemon_type;
 typedef we::mgmt::layer::internal_id_type layer_id_type;
 
 static std::vector<id_type> jobs;
