@@ -44,6 +44,7 @@ namespace sdpa
 
       virtual std::string str() const = 0;
       virtual void handleBy (EventHandler*) = 0;
+      bool is_external() const { return from() != sdpa::daemon::WE; }
 
     protected:
       SDPAEvent (const address_t & a_from, const address_t &a_to)
