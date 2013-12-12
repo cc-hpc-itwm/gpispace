@@ -41,7 +41,6 @@ namespace we
       typedef std::string encoded_type;
       typedef std::string reason_type;
       typedef std::string result_type;
-      typedef std::string status_type;
 
     private:
       typedef boost::unordered_map<external_id_type, internal_id_type> external_to_internal_map_t;
