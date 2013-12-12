@@ -13,22 +13,6 @@ namespace we
   {
     namespace exception
     {
-      class activity_not_found : std::runtime_error
-      {
-      public:
-        activity_not_found ( const std::string& msg
-                           , const petri_net::activity_id_type& id
-                           )
-          : std::runtime_error (msg)
-          , _id (id)
-        {}
-        virtual ~activity_not_found() throw() {}
-        const petri_net::activity_id_type& id() const { return _id; }
-
-      private:
-        const petri_net::activity_id_type _id;
-      };
-
       struct validation_error : public std::runtime_error
       {
         validation_error (const std::string & msg)
