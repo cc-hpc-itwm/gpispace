@@ -15,13 +15,13 @@
 #include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
 #include <fhg/util/getenv.hpp>
-#include <fhg/util/show.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/stat.hpp>
 #include <fhglog/fhglog.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
@@ -41,10 +41,9 @@ namespace test {
 
       inline const std::string operator++()
       {
-        unsigned long id = ++number;
-        return fhg::util::show ( id );
-
+        return boost::lexical_cast<std::string> (++_n);
       }
+
     private:
       unsigned long _n;
     };
