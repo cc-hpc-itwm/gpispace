@@ -12,6 +12,8 @@
 
 namespace sdpa
 {
+  namespace daemon {  const std::string WE("WE"); }
+
   namespace events
   {
     class SDPAEvent : public seda::IEvent

@@ -66,8 +66,6 @@
 
 namespace sdpa {
   namespace daemon {
-    const std::string WE("WE");
-
     class GenericDaemon : public seda::Strategy,
                           public sdpa::events::EventHandler,
                           boost::noncopyable
