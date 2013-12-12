@@ -58,11 +58,9 @@ namespace test {
       id_generator<unsigned long> number;
     };
 
-    template <typename Daemon, typename IdType>
+    template <typename Daemon>
     struct context : public we::mgmt::context
     {
-      typedef IdType id_type;
-
       virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n)
       {
         return handle_externally (act, n);
@@ -80,7 +78,7 @@ namespace test {
 
       virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&)
       {
-        id_type new_id (daemon.gen_id());
+        we::mgmt::layer::id_type new_id (daemon.gen_id());
         daemon.add_mapping (id, new_id);
         we::type::user_data ud;
         daemon.layer().submit (new_id,  act, ud);
@@ -111,14 +109,14 @@ namespace test {
         throw std::runtime_error ("NO external expr here!");
       }
 
-      context (Daemon & d, const id_type & an_id)
+      context (Daemon & d, const we::mgmt::layer::id_type& an_id)
         : daemon (d)
         , id(an_id)
      {}
 
     private:
       Daemon& daemon;
-      id_type id;
+      we::mgmt::layer::id_type id;
     };
   }
 
@@ -197,7 +195,7 @@ namespace test {
              , "worker-" << rank << " busy with " << act.transition ().name ()
              );
 
-        detail::context<sdpa_daemon, id_type> ctxt (*this, job.id);
+        detail::context<sdpa_daemon> ctxt (*this, job.id);
         act.execute (&ctxt);
       }
 
