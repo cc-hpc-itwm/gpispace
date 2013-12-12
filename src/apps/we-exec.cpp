@@ -200,18 +200,12 @@ namespace
 
     ~sdpa_daemon()
     {
-      stop();
-    }
-
-    void stop()
-    {
       BOOST_FOREACH (boost::thread* t, worker_)
       {
         t->interrupt();
         t->join();
         delete t;
       }
-      worker_.clear();
     }
 
     void worker (const std::size_t rank)
