@@ -342,6 +342,7 @@ namespace observe
     boost::unique_lock<boost::recursive_mutex> const _ (mutex);
 
     std::cerr << "submitted: " << id << std::endl;
+
     layer_jobs.insert (id);
   }
 
