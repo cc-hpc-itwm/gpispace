@@ -291,7 +291,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     // The job already exists -> generate an error message that the job already exists
 
     DMLOG (WARN, "The job with job-id: " << e.job_id()<<" does already exist! (possibly recovered)");
-    if( e.is_external() ) //e.to())
+    if( e.is_external() )
     {
         events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
         sendEventToMaster(pErrorEvt);
