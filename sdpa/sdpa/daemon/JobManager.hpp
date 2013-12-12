@@ -25,10 +25,6 @@ namespace sdpa
       typedef job_map_t::iterator iterator;
 
       Job* findJob (const sdpa::job_id_t&) const;
-      /*void addJob ( const sdpa::job_id_t&
-                  , Job*
-                  , const job_requirements_t& = job_requirements_t()
-                  );*/
 
       void addJob ( const sdpa::job_id_t& job_id
                                , const job_desc_t desc
