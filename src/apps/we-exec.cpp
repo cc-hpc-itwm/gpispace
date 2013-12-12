@@ -213,15 +213,9 @@ namespace
 
       for (;;)
       {
-        MLOG (TRACE, "worker-" << rank << " idle");
-
         job_t const job (jobs_.get());
 
         we::mgmt::type::activity_t act (job.desc);
-
-        MLOG ( TRACE
-             , "worker-" << rank << " busy with " << act.transition().name()
-             );
 
         context ctxt ( job.id
                      , _loader
