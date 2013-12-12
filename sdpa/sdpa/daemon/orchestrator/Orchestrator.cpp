@@ -59,7 +59,7 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 
   MLOG (TRACE, "The job " << pEvt->job_id() << " has finished!");
 
-  if (pEvt->from() != sdpa::daemon::WE)
+  if (pEvt->is_external())
   {
       // send a JobFinishedAckEvent back to the worker/slave
       events::JobFinishedAckEvent::Ptr ptrAckEvt(new  events::JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
@@ -84,7 +84,7 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   }
 
   // It's an worker who has sent the message
-  if( (pEvt->from() != sdpa::daemon::WE) )
+  if( (pEvt->is_external()) )
   {
     Worker::worker_id_t worker_id = pEvt->from();
     we::mgmt::layer::id_type act_id = pEvt->job_id();
@@ -133,7 +133,7 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
 
   //SDPA_LOG_INFO( "handle JobFailed event (job " << pEvt->job_id() << ") received from "<<pEvt->from());
 
-  if (pEvt->from() != sdpa::daemon::WE)
+  if (pEvt->is_external())
   {
       // send a JobFinishedAckEvent back to the worker/slave
       events::JobFailedAckEvent::Ptr evt
@@ -159,7 +159,7 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
   }
 
   // It's an worker who has sent the message
-  if( (pEvt->from() != sdpa::daemon::WE) )
+  if( pEvt->is_external() )
   {
       Worker::worker_id_t worker_id = pEvt->from();
       we::mgmt::layer::id_type actId = pJob->id().str();

@@ -262,7 +262,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
   DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
 
-  if(e.from()!=sdpa::daemon::WE)
+  if(e.is_external())
   {
     lock_type lock(mtx_master_);
     // check if the incoming event was produced by a master to which the current agent has already registered
@@ -291,7 +291,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     // The job already exists -> generate an error message that the job already exists
 
     DMLOG (WARN, "The job with job-id: " << e.job_id()<<" does already exist! (possibly recovered)");
-    if( e.from() != sdpa::daemon::WE ) //e.to())
+    if( e.is_external() ) //e.to())
     {
         events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
         sendEventToMaster(pErrorEvt);
@@ -310,12 +310,12 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
   try {
     // One should parse the workflow in order to be able to create a valid job
-    bool b_master_job(e.from() != sdpa::daemon::WE && hasWorkflowEngine());
+    bool b_master_job(e.is_external() && hasWorkflowEngine());
     jobManager().addJob(job_id, e.description(), e.parent_id(), b_master_job, e.from());
   }
   catch(JobNotAddedException const &ex)
   {
-    if( e.from() != sdpa::daemon::WE )
+    if( e.is_external() )
     {
         DMLOG (WARN, "Couldn't allocate memory for a new job!");
         // the user may try again later, after some of the exiting jobs have terminated
@@ -329,7 +329,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     return;
   }
 
-  if( e.from() != sdpa::daemon::WE )
+  if( e.is_external())
   {
     events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new events::SubmitJobAckEvent(name(), e.from(), job_id));
     sendEventToMaster(pSubmitJobAckEvt);
@@ -337,7 +337,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
   // check if the message comes from outside or from WFE
   // if it comes from outside and the agent has an WFE, submit it to it
-  if( e.from() != sdpa::daemon::WE && hasWorkflowEngine() )
+  if( e.is_external() && hasWorkflowEngine() )
   {
     DMLOG (TRACE, "got new job from " << e.from() << " = " << job_id);
     submitWorkflow(job_id);

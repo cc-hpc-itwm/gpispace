@@ -222,7 +222,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
   // if the event comes from the workflow engine (e.g. submission failed,
   // see the scheduler
 
-  if( pEvt->from() == sdpa::daemon::WE )
+  if( !pEvt->is_external() )
   {
     failed( pEvt->job_id()
             , pEvt->result()
@@ -487,7 +487,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   if(!pJob)
   {
       DMLOG (TRACE, "Job "<<pEvt->job_id()<<" not found!");
-      if (pEvt->from () == sdpa::daemon::WE)
+      if (!pEvt->is_external())
         workflowEngine()->canceled (pEvt->job_id ());
       else
       {
@@ -535,7 +535,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
     notifySubscribers(pCancelAckEvt);
   }
 
-  if(pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine())
+  if(!pEvt->is_external() || !hasWorkflowEngine())
   {
     on_scope_exit _ ( boost::bind ( &Agent::sendEventToMaster
                                   , this
@@ -610,7 +610,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
   }
 
   // the acknowledgment comes from WE or from a slave and there is no WE
-  if( pEvt->from() == sdpa::daemon::WE || !hasWorkflowEngine() )
+  if( !pEvt->is_external() || !hasWorkflowEngine() )
   {
     // just send an acknowledgment to the master
     // send an acknowledgment to the component that requested the cancellation
