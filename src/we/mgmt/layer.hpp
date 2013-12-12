@@ -277,7 +277,10 @@ namespace we { namespace mgmt {
         , sig_executing()
         , external_id_gen_(gen)
         , internal_id_gen_(&petri_net::activity_id_generate)
+        , manager_ (boost::bind (&layer::manager, this))
       {
+        fhg::util::set_threadname (manager_, "[we-mgr]");
+
         ext_submit = (boost::bind (& E::submit, exec_layer, _1, _2, _3, _4, _5));
         ext_cancel = (boost::bind (& E::cancel, exec_layer, _1, _2));
         ext_finished = (boost::bind (& E::finished, exec_layer, _1, _2));
@@ -319,10 +322,6 @@ namespace we { namespace mgmt {
       {
         lock_t lock (mutex_);
 
-        manager_   = boost::thread(boost::bind(&layer::manager, this));
-        fhg::util::set_threadname (manager_, "[we-mgr]");
-
-        active_nets_ = new active_nets_t;
         start_threads ( "we-extract"
                       , extractor_
                       , boost::bind (&layer::extractor, this)
