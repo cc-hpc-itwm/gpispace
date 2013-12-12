@@ -326,7 +326,8 @@ namespace we
         }
         else
         {
-          LOG(ERROR, "id is not valid anymore: " << id);
+          throw std::runtime_error
+            ("post_activity_notification: id is not valid anymore");
         }
       }
 
@@ -339,7 +340,8 @@ namespace we
         }
         else
         {
-          LOG(ERROR, "id is not valid anymore: " << id);
+          throw std::runtime_error
+            ("post_inject_activity_results: id is not valid anymore");
         }
       }
 
@@ -352,7 +354,8 @@ namespace we
         }
         else
         {
-          LOG(ERROR, "id is not valid anymore: " << id);
+          throw std::runtime_error
+            ("post_finished_notification: id is not valid anymore");
         }
       }
 
@@ -365,7 +368,8 @@ namespace we
         }
         else
         {
-          LOG(ERROR, "id is not valid anymore: " << id);
+          throw std::runtime_error
+            ("post_failed_notification: id is not valid anymore");
         }
       }
 
@@ -378,7 +382,8 @@ namespace we
         }
         else
         {
-          LOG(ERROR, "id is not valid anymore: " << id);
+          throw std::runtime_error
+            ("post_canceled_notification: id is not valid anymore");
         }
       }
 
@@ -391,7 +396,8 @@ namespace we
         }
         else
         {
-          LOG(ERROR, "id is not valid anymore: " << id);
+          throw std::runtime_error
+            ("post_cancel_activity_notification: id is not valid anymore");
         }
       }
 
@@ -404,7 +410,8 @@ namespace we
         }
         else
         {
-          LOG(ERROR, "id is not valid anymore: " << id);
+          throw std::runtime_error
+            ("post_execute_notification: id is not valid anymore");
         }
       }
 
