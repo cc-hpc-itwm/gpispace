@@ -8,7 +8,6 @@
 #include <fhg/assert.hpp>
 #include <fhg/error_codes.hpp>
 #include <fhg/util/show.hpp>
-#include <fhg/util/warnings.hpp>
 #include <fhg/util/threadname.hpp>
 
 #include <we/type/net.hpp>
@@ -21,7 +20,6 @@
 #include <boost/unordered_set.hpp>
 
 #include <we/mgmt/exception.hpp>
-#include <we/mgmt/bits/queue.hpp>
 #include <we/mgmt/bits/set.hpp>
 #include <we/mgmt/bits/signal.hpp>
 #include <we/mgmt/bits/descriptor.hpp>
@@ -31,6 +29,8 @@
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 #include <we/mgmt/type/activity.hpp>
+
+#include <fhg/util/thread/queue.hpp>
 
 #include <boost/foreach.hpp>
 
@@ -58,7 +58,7 @@ namespace we { namespace mgmt {
 
       // manager thread
       typedef boost::function<void ()> cmd_t;
-      typedef detail::queue<cmd_t, 0> cmd_q_t;
+      typedef fhg::thread::queue<cmd_t> cmd_q_t;
 
       // extractor
       //! \todo is it necessary to use a locked data structure?
@@ -174,42 +174,6 @@ namespace we { namespace mgmt {
       {
         return fhg::util::show (*lookup (map_to_internal(id)));
       }
-
-      void print_statistics (std::ostream & s) const
-      {
-        s << "==== begin layer statistics ====" << std::endl;
-
-        lock_t lock (mutex_);
-        s << "   #activities := " << activities_.size() << std::endl;
-        s << "   ext -> int := " << fhg::util::show (ext_to_int_.begin(), ext_to_int_.end());
-        s << std::endl;
-        s << std::endl;
-
-        std::vector <internal_id_type> ids;
-        ids.reserve (activities_.size());
-
-        for ( activities_t::const_iterator desc (activities_.begin())
-            ; desc != activities_.end()
-            ; ++desc
-            )
-        {
-          ids.push_back (desc->first);
-        }
-
-        std::sort (ids.begin(), ids.end());
-
-        for ( std::vector<internal_id_type>::const_iterator id (ids.begin())
-            ; id != ids.end()
-            ; ++id
-            )
-        {
-          s << *activities_.at(*id);
-          s << std::endl;
-        }
-
-        s << std::endl;
-        s << "==== end layer statistics ====" << std::endl;
-      }
     private:
       // handle execution layer
       boost::function<void ( external_id_type const &
@@ -305,20 +269,6 @@ namespace we { namespace mgmt {
         }
       }
     public:
-      /**
-       * Constructor calls
-       */
-      layer()
-        : sig_submitted()
-        , sig_finished()
-        , sig_failed()
-        , sig_canceled()
-        , sig_executing()
-        , internal_id_gen_(&petri_net::activity_id_generate)
-      {
-        start();
-      }
-
       template <class E, typename G>
       layer(E * exec_layer, G gen)
         : sig_submitted()

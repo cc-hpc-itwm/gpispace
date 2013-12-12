@@ -36,7 +36,7 @@ namespace fhg
 
       typedef std::vector<boost::thread *>    thread_list_t;
       typedef std::pair<work_t, callback_t>   work_item_t;
-      typedef fhg::thread::queue<work_item_t, std::list> work_queue_t;
+      typedef fhg::thread::queue<work_item_t> work_queue_t;
 
       mutable mutex_type m_mutex;
       bool          m_stop;

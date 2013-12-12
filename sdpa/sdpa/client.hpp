@@ -46,11 +46,9 @@ namespace sdpa
     private:
       std::string _name;
 
-      fhg::thread::queue<sdpa::events::SDPAEvent::Ptr, std::list>
-        m_incoming_events;
+      fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> m_incoming_events;
 
       // config variables
-      boost::posix_time::time_duration timeout_;
       std::string orchestrator_;
 
       fhg::com::message_t message_for_event (const sdpa::events::SDPAEvent*);

@@ -9,7 +9,6 @@ namespace fhg
   namespace util
   {
     extern int set_threadname (boost::thread & thrd, std::string const &name);
-    extern int get_threadname (boost::thread & thrd, std::string &name);
   }
 }
 

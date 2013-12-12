@@ -190,7 +190,7 @@ namespace fhg
 
       typedef boost::shared_ptr<PluginKernelMediator> mediator_ptr;
       typedef std::map<std::string, mediator_ptr> plugin_map_t;
-      typedef fhg::thread::queue<task_info_t, std::list> task_queue_t;
+      typedef fhg::thread::queue<task_info_t> task_queue_t;
       typedef std::list<task_info_t> task_list_t;
       typedef std::map<std::string, std::string> config_t;
 

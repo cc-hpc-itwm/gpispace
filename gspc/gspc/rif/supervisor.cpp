@@ -4,7 +4,7 @@
 
 #include <boost/bind.hpp>
 
-#include <fhg/util/thread/async.hpp>
+#include <fhg/util/thread/pool.hpp>
 
 #include "supervisor.hpp"
 #include "manager.hpp"
@@ -160,11 +160,12 @@ namespace gspc
 
           if (child->info.restart)
           {
-            fhg::thread::async (boost::bind ( &supervisor_t::start_child
-                                            , this
-                                            , child->info.descriptor.name
-                                            )
-                               );
+            fhg::thread::global_pool().execute
+              (boost::bind ( &supervisor_t::start_child
+                           , this
+                           , child->info.descriptor.name
+                           )
+              );
           }
         }
       }
@@ -198,11 +199,12 @@ namespace gspc
 
       if (s == gspc::rif::PROCESS_TERMINATED)
       {
-        fhg::thread::async (boost::bind ( &supervisor_t::handle_terminated_child
-                                        , this
-                                        , child
-                                        )
-                           );
+        fhg::thread::global_pool().execute
+          (boost::bind ( &supervisor_t::handle_terminated_child
+                       , this
+                       , child
+                       )
+          );
       }
     }
 

@@ -6,7 +6,6 @@
 
 #include <boost/thread.hpp>
 
-#include <fhg/util/thread/semaphore.hpp>
 #include <gpi-space/pc/proto/message.hpp>
 
 namespace gpi

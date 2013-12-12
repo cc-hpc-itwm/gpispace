@@ -166,9 +166,7 @@ class WFEImpl : FHG_PLUGIN
   typedef boost::mutex mutex_type;
   typedef boost::lock_guard<mutex_type> lock_type;
 
-  typedef fhg::thread::queue< wfe_task_t *
-                            , std::list
-                            > task_list_t;
+  typedef fhg::thread::queue<wfe_task_t*> task_list_t;
   typedef std::map<std::string, wfe_task_t *> map_of_tasks_t;
 public:
 

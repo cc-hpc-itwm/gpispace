@@ -30,18 +30,16 @@ namespace we
     }
     bool layer::cancel (const external_id_type& id, const reason_type& reason)
     {
-      fhg::util::remove_unused_variable_warning (reason);
-
       MLOG (WARN, "cancel ( " << id << " ) := " << reason);
 
       try
-        {
-          post_cancel_activity_notification (map_to_internal (id));
-        }
+      {
+        post_cancel_activity_notification (map_to_internal (id));
+      }
       catch (std::exception const &)
-        {
-          return false;
-        }
+      {
+        return false;
+      }
       return true;
     }
     bool layer::finished (const external_id_type& id, const result_type& result)
@@ -61,9 +59,10 @@ namespace we
 
         post_finished_notification (int_id);
       }
-      catch (const std::exception&)
+      catch (const std::exception&ex)
       {
-        return false;
+        DMLOG (ERROR, "layer could not handle finished(" << id << "): " << ex.what ());
+        throw;
       }
 
       return true;
@@ -74,8 +73,6 @@ namespace we
                        , const std::string& error_message
                        )
     {
-      fhg::util::remove_unused_variable_warning (result);
-
       try
       {
         descriptor_ptr d = lookup (map_to_internal (id));

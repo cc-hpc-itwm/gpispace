@@ -4,12 +4,12 @@
 #include <errno.h>
 #include <signal.h>
 
-#include <fhg/util/thread/semaphore.hpp>
 #include <gspc/rif/manager.hpp>
 #include <gspc/rif/supervisor.hpp>
 #include <gspc/rif/util.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/thread.hpp>
 
 #include <iostream>
 
@@ -21,6 +21,37 @@ struct F
     signal (SIGCHLD, SIG_DFL);
   }
 };
+
+namespace
+{
+  class semaphore : boost::noncopyable
+  {
+    std::size_t               m_count;
+    boost::mutex              m_mutex;
+    boost::condition_variable m_available;
+  public:
+    semaphore()
+      : m_count (0)
+    {}
+
+    void P()
+    {
+      boost::unique_lock<boost::mutex> lock(m_mutex);
+      while (0 == m_count)
+      {
+        m_available.wait (lock);
+      }
+      --m_count;
+    }
+
+    void V()
+    {
+      boost::unique_lock<boost::mutex> lock(m_mutex);
+      ++m_count;
+      m_available.notify_one();
+    }
+  };
+}
 
 BOOST_FIXTURE_TEST_SUITE (suite, F)
 
@@ -59,7 +90,7 @@ static void s_child_started ( gspc::rif::supervisor_t *sup
   std::cout << "child (" << info.descriptor.name << ") started" << std::endl;
 }
 
-static void s_wakeup (fhg::thread::semaphore *sem)
+static void s_wakeup (semaphore *sem)
 {
   sem->V ();
 }
@@ -70,10 +101,7 @@ BOOST_AUTO_TEST_CASE (test_supervise_basics)
   gspc::rif::env_t env;
   int rc;
   bool done;
-  char buf [4096];
-  fhg::thread::semaphore sem (0);
-
-  memset (buf, 0, sizeof(buf));
+  semaphore sem;
 
   argv.push_back ("/bin/cat");
 
@@ -151,10 +179,7 @@ BOOST_AUTO_TEST_CASE (test_supervise_cat)
   gspc::rif::env_t env;
   int rc;
   bool done;
-  char buf [4096];
-  fhg::thread::semaphore sem (0);
-
-  memset (buf, 0, sizeof(buf));
+  semaphore sem;
 
   argv.push_back ("/bin/cat");
 
@@ -218,11 +243,8 @@ BOOST_AUTO_TEST_CASE (test_supervise_sleep)
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
   int rc;
-  char buf [4096];
   bool done;
-  fhg::thread::semaphore sem (0);
-
-  memset (buf, 0, sizeof(buf));
+  semaphore sem;
 
   argv.push_back ("/bin/sleep");
   argv.push_back ("2");
@@ -278,11 +300,8 @@ BOOST_AUTO_TEST_CASE (test_supervise_failing_ls)
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
   int rc;
-  char buf [4096];
   bool done;
-  fhg::thread::semaphore sem (0);
-
-  memset (buf, 0, sizeof(buf));
+  semaphore sem;
 
   argv.push_back ("/bin/ls");
   argv.push_back ("/nosuchdirectory");
@@ -338,10 +357,7 @@ BOOST_AUTO_TEST_CASE (test_supervise_temporary)
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
   int rc;
-  char buf [4096];
-  fhg::thread::semaphore sem (0);
-
-  memset (buf, 0, sizeof(buf));
+  semaphore sem;
 
   argv.push_back ("/bin/sleep");
   argv.push_back ("1");
@@ -390,11 +406,8 @@ BOOST_AUTO_TEST_CASE (test_supervise_terminate_start)
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
   int rc;
-  char buf [4096];
   bool done;
-  fhg::thread::semaphore sem (0);
-
-  memset (buf, 0, sizeof(buf));
+  semaphore sem;
 
   argv.push_back ("/bin/cat");
 

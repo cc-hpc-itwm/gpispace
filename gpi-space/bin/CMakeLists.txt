@@ -19,10 +19,10 @@ target_link_libraries (gpi-space
   ${FhgCom_LIBRARY}
   ${FhgLog_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
-  ${gpi_space_Boost_FILESYSTEM_LIBRARY}
-  ${gpi_space_Boost_SERIALIZATION_LIBRARY}
-  ${gpi_space_Boost_THREAD_LIBRARY}
-  ${gpi_space_Boost_SYSTEM_LIBRARY}
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SERIALIZATION_LIBRARY}
+  ${Boost_THREAD_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
 )
 
 # search for libreadline
@@ -40,16 +40,20 @@ target_link_libraries (gpish
   gpi-space-static
   ${LibReadline_LIBRARY}
   ${FhgLog_LIBRARY}
-  ${gpi_space_Boost_PROGRAM_OPTIONS_LIBRARY}
-  ${gpi_space_Boost_SERIALIZATION_LIBRARY}
-  ${gpi_space_Boost_THREAD_LIBRARY}
-  ${gpi_space_Boost_FILESYSTEM_LIBRARY}
-  ${gpi_space_Boost_SYSTEM_LIBRARY}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_SERIALIZATION_LIBRARY}
+  ${Boost_THREAD_LIBRARY}
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
   fhg-revision
 )
 
 set_target_properties(gpi-space
+  PROPERTIES
+  INSTALL_RPATH "${CMAKE_INSTALL_RPATH}"
+  )
+set_target_properties(gpish
   PROPERTIES
   INSTALL_RPATH "${CMAKE_INSTALL_RPATH}"
   )

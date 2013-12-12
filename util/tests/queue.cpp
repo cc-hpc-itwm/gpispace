@@ -11,7 +11,7 @@
 
 #include <fhg/util/thread/queue.hpp>
 
-typedef fhg::thread::queue<int, std::list> items_t;
+typedef fhg::thread::queue<int> items_t;
 
 static void fill_items (items_t & items, int NUM)
 {
@@ -33,33 +33,6 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_get)
   {
     int item = items.get ();
     BOOST_REQUIRE_EQUAL (i, item);
-  }
-}
-
-BOOST_AUTO_TEST_CASE (thread_queue_timed_get_empty_queue)
-{
-  items_t items;
-
-  BOOST_REQUIRE (items.empty ());
-  BOOST_REQUIRE_THROW ( items.get (boost::posix_time::milliseconds (500))
-                      , fhg::thread::operation_timedout
-                      );
-}
-
-BOOST_AUTO_TEST_CASE (thread_queue_timed_get_nonempty_queue)
-{
-  items_t items;
-  items.put (0);
-
-  try
-  {
-    BOOST_REQUIRE (not items.empty ());
-    int item = items.get (boost::posix_time::milliseconds (500));
-    BOOST_REQUIRE_EQUAL (item, 0);
-  }
-  catch (fhg::thread::operation_timedout const &)
-  {
-    BOOST_ERROR ("thread::queue::get(500ms) from empty queue timed out");
   }
 }
 
@@ -143,28 +116,6 @@ BOOST_AUTO_TEST_CASE (thread_queue_remove_if)
                       );
 }
 
-BOOST_AUTO_TEST_CASE (thread_queue_erase)
-{
-  static const int NUM_ITEMS_TO_PUT = 10000;
-
-  items_t items;
-  fill_items (items, NUM_ITEMS_TO_PUT);
-
-  BOOST_REQUIRE_EQUAL ( items.size ()
-                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT)
-                      );
-
-  for (int i = 0 ; i < NUM_ITEMS_TO_PUT ; i++)
-  {
-    size_t num_erased = items.erase (i);
-    BOOST_REQUIRE_EQUAL (num_erased, 1u);
-    BOOST_REQUIRE_EQUAL
-      ( items.size ()
-      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT - i - 1)
-      );
-  }
-}
-
 BOOST_AUTO_TEST_CASE (thread_queue_clear)
 {
   static const int NUM_ITEMS_TO_PUT = 10000;
@@ -181,33 +132,4 @@ BOOST_AUTO_TEST_CASE (thread_queue_clear)
 
   BOOST_REQUIRE_EQUAL (items.size (), 0u);
   BOOST_REQUIRE       (items.empty ());
-}
-
-BOOST_AUTO_TEST_CASE (thread_queue_timed_put_empty_queue)
-{
-  items_t items (1);
-
-  try
-  {
-    BOOST_REQUIRE (items.empty ());
-    items.put (0, boost::posix_time::milliseconds (500));
-  }
-  catch (fhg::thread::operation_timedout const &)
-  {
-    BOOST_ERROR ("thread::queue::put(0, 500ms) timed out");
-  }
-}
-
-BOOST_AUTO_TEST_CASE (thread_queue_timed_put_full_queue)
-{
-  items_t items (1);
-
-  BOOST_REQUIRE (items.empty ());
-
-  items.put (0, boost::posix_time::milliseconds (500));
-  BOOST_REQUIRE_EQUAL (items.size (), 1u);
-
-  BOOST_REQUIRE_THROW ( items.put (1, boost::posix_time::milliseconds (500))
-                      , fhg::thread::operation_timedout
-                      );
 }

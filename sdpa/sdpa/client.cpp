@@ -37,7 +37,6 @@ namespace sdpa
                    , boost::optional<boost::posix_time::time_duration> timeout
                    )
       : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
-      , timeout_ (timeout.get_value_or (boost::posix_time::seconds (5)))
       , orchestrator_ (orchestrator)
       , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
@@ -134,7 +133,7 @@ namespace sdpa
 
       m_peer.send (&msg);
 
-      const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get (timeout_));
+      const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
       if (Expected* e = dynamic_cast<Expected*> (reply.get()))
       {
         return *e;
@@ -148,8 +147,7 @@ namespace sdpa
     {
       send_and_wait_for_reply<sdpa::events::SubscribeAckEvent>
         (sdpa::events::SubscribeEvent (_name, orchestrator_, job_id_list_t (1, id)));
-
-      sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
+     sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
 
       if ( sdpa::events::JobFinishedEvent* evt
          = dynamic_cast<sdpa::events::JobFinishedEvent*> (reply.get())

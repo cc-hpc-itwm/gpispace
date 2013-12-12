@@ -21,7 +21,6 @@ set (hdrs
   show.hpp
   split.hpp
   starts_with.hpp
-  warnings.hpp
 
   ini-parser.hpp
   ini-parser.tcc
@@ -34,14 +33,11 @@ set (hdrs
   bool.hpp
   bool_io.hpp
 
-  random.hpp
-
   counter.hpp
   backtracing_exception.hpp
   backtracing_exception.fwd.hpp
 
   url.hpp
-  setproctitle.h
   threadname.hpp
 
   remove_prefix.hpp
@@ -57,7 +53,6 @@ set (hdrs
 
 set (srcs
   backtracing_exception.cpp
-  setproctitle.c
   program_info.c
   threadname.cpp
   remove_prefix.cpp
@@ -67,7 +62,6 @@ set (srcs
 
   ostream_modifier.cpp
 
-  thread/poll.cpp
   thread/pool.cpp
 
   parse/position.cpp

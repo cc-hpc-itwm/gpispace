@@ -17,7 +17,6 @@
 
 #include <fhg/util/split.hpp>
 #include <fhg/util/threadname.hpp>
-#include <fhg/util/thread/async.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
@@ -350,17 +349,19 @@ namespace fhg
       return 0;
     }
 
-    static bool is_owner_of_task ( const std::string & p
-                                 , const task_info_t & info
-                                 )
+    namespace
     {
-      return p == info.owner;
+      bool is_owner_of_task ( const std::string & p
+                            , const task_info_t & info
+                            )
+      {
+        return p == info.owner;
+      }
     }
 
     void kernel_t::remove_pending_tasks(std::string const &owner)
     {
       lock_type lock_pending (m_mtx_pending_tasks);
-      task_queue_t::lock_type lock_task_q (m_task_queue.get_mutex());
 
       m_task_queue.remove_if
         (boost::bind (&is_owner_of_task, owner, _1));
