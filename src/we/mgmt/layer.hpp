@@ -210,15 +210,7 @@ namespace we
       {
         lock_t const _ (mutex_);
 
-        external_to_internal_map_t::const_iterator mapping (ext_to_int_.find(external_id));
-        if (mapping != ext_to_int_.end())
-        {
-          return mapping->second;
-        }
-        else
-        {
-          throw exception::no_such_mapping ("no_such_mapping: ext_id := " + fhg::util::show (external_id), external_id);
-        }
+        return ext_to_int_.at (external_id);
       }
 
     public:
