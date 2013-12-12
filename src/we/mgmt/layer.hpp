@@ -447,7 +447,7 @@ namespace we
       {
         for (;;)
         {
-          internal_id_type active_id = active_nets_.get();
+          internal_id_type const active_id (active_nets_.get());
           if (! is_valid (active_id))
           {
             DLOG( WARN
