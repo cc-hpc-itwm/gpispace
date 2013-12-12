@@ -1,23 +1,7 @@
+// alexander.petry@itwm.fraunhofer.de
+
 #ifndef WE_MGMT_LAYER_BITS_HPP
 #define WE_MGMT_LAYER_BITS_HPP 1
-
-/*
- * =====================================================================================
- *
- *       Filename:  queue.hpp
- *
- *    Description:
- *
- *        Version:  1.0
- *        Created:  03/10/2010 11:28:22 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
