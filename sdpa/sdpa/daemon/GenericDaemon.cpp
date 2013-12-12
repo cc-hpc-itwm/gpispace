@@ -315,9 +315,17 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   }
   catch(JobNotAddedException const &ex)
   {
-    DMLOG (WARN, "Couldn't create a new job out of the submitted description. Check if it corresponds to a valid workflow!");
-    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBNOTADDED, ex.what()) );
-    sendEventToMaster(pErrorEvt);
+    if( e.from() != sdpa::daemon::WE )
+    {
+        DMLOG (WARN, "Couldn't allocate memory for a new job!");
+        // the user may try again later, after some of the exiting jobs have terminated
+        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBNOTADDED, ex.what()) );
+        sendEventToMaster(pErrorEvt);
+    }
+    else
+    {
+        workflowEngine()->failed(job_id, "",  fhg::error::UNEXPECTED_ERROR, ex.what());
+    }
     return;
   }
 
