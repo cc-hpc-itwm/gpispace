@@ -148,10 +148,10 @@ namespace
         , worker_()
         , _loader (loader)
     {
-      mgmt_layer_.sig_insert.connect
-        (boost::bind (&observe::state_type::insert, observer, _1));
-      mgmt_layer_.sig_remove.connect
-        (boost::bind (&observe::state_type::remove, observer, _1));
+      mgmt_layer_.sig_insert =
+        boost::bind (&observe::state_type::insert, observer, _1);
+      mgmt_layer_.sig_remove =
+        boost::bind (&observe::state_type::remove, observer, _1);
 
       for (std::size_t n (0); n < num_worker; ++n)
       {

@@ -5,7 +5,6 @@
 
 #include <we/mgmt/bits/descriptor.hpp>
 #include <we/mgmt/bits/execution_policy.hpp>
-#include <we/mgmt/bits/signal.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
@@ -22,6 +21,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
+#include <boost/optional.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -62,8 +62,8 @@ namespace we
        *****************************/
 
       // observe
-      util::signal<void (detail::descriptor)> sig_insert;
-      util::signal<void (detail::descriptor)> sig_remove;
+      boost::optional<boost::function<void (detail::descriptor)> > sig_insert;
+      boost::optional<boost::function<void (detail::descriptor)> > sig_remove;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -739,14 +739,20 @@ namespace we
           add_map_to_internal (desc.from_external_id(), desc.id());
         }
 
-        sig_insert (desc);
+        if (sig_insert)
+        {
+          (*sig_insert) (desc);
+        }
       }
 
       inline void remove_activity(const detail::descriptor & desc)
       {
         lock_t const _ (mutex_);
 
-        sig_remove (desc);
+        if (sig_remove)
+        {
+          (*sig_remove) (desc);
+        }
 
         if (desc.has_children())
           throw std::runtime_error("cannot remove non-leaf: " + fhg::util::show (desc));
