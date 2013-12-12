@@ -224,7 +224,6 @@ namespace we { namespace mgmt {
         ext_to_int_.insert ( external_to_internal_map_t::value_type
                            (external_id, internal_id)
                            );
-        DLOG(TRACE, "added mapping " << external_id << " -> " << internal_id);
       }
 
       void del_map_to_internal ( const external_id_type & external_id
@@ -249,8 +248,6 @@ namespace we { namespace mgmt {
         }
 
         ext_to_int_.erase (external_id);
-
-        DLOG(TRACE, "deleted mapping " << external_id << " -> " << internal_id);
       }
 
       external_to_internal_map_t::mapped_type map_to_internal ( const external_id_type & external_id ) const
@@ -316,12 +313,10 @@ namespace we { namespace mgmt {
     private:
       void manager()
       {
-        DLOG(TRACE, "manager thread started...");
         for (;;)
         {
           cmd_q_.get()();
         }
-        DLOG(TRACE, "manager thread stopped...");
       }
 
       inline
@@ -447,7 +442,6 @@ namespace we { namespace mgmt {
       // WORK HERE: rewrite!
       void extractor()
       {
-        DLOG (TRACE, "extractor thread started...");
         for (;;)
         {
           internal_id_type active_id = active_nets_.get();
@@ -462,7 +456,6 @@ namespace we { namespace mgmt {
           try
           {
             descriptor_ptr desc (lookup(active_id));
-            DLOG(TRACE, "extractor puts attention to activity " << active_id);
 
             if (desc->activity().is_canceling())
             {
@@ -529,16 +522,11 @@ namespace we { namespace mgmt {
         {
         case policy::execution_policy::EXTRACT:
           {
-            DLOG(TRACE, "extractor extracting from net: " << desc->name());
-
             while (desc->is_alive () && desc->enabled())
             {
               descriptor_ptr child (new detail::descriptor(desc->extract(generate_internal_id())));
               child->inject_input ();
               child->set_user_data (desc->get_user_data ());
-
-              DLOG (TRACE, "extractor: extracted from (" << desc->name() << ")-" << desc->id()
-                  << ": (" << child->name() << ")-" << child->id());
 
               switch (child->execute (&exec_policy))
               {
@@ -548,7 +536,6 @@ namespace we { namespace mgmt {
                 break;
               case policy::execution_policy::INJECT:
                 child->finished();
-                DLOG (TRACE, "extractor: finished (" << child->name() << ")-" << child->id());
                 desc->inject (*child);
                 break;
               case policy::execution_policy::EXTERNAL:
@@ -558,12 +545,7 @@ namespace we { namespace mgmt {
               default:
                 throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (*child));
               }
-
-              DLOG(TRACE, "extractor done with child: " << child->id());
             }
-
-            DLOG(TRACE, "extractor done extracting (#children = " << desc->child_count() << ")");
-
 
             if (desc->is_done ())
             {
@@ -576,7 +558,6 @@ namespace we { namespace mgmt {
           do_inject (desc);
           break;
         case policy::execution_policy::EXTERNAL:
-          DLOG(TRACE, "extractor: executing externally: " << desc->id());
           execute_externally (desc->id());
           break;
         default:
@@ -594,7 +575,6 @@ namespace we { namespace mgmt {
 
       void injector()
       {
-        DLOG (TRACE, "injector thread started...");
         for (;;)
         {
           const internal_id_type act_id = inj_q_.get();
@@ -641,13 +621,9 @@ namespace we { namespace mgmt {
       void do_inject (descriptor_ptr desc)
       {
         desc->finished();
-        DLOG (TRACE, "finished (" << desc->name() << ")-" << desc->id());
 
         if (desc->has_parent())
         {
-          DLOG (TRACE, "injecting (" << desc->name() << ")-" << desc->id()
-              << " into (" << lookup(desc->parent())->name() << ")-" << desc->parent()
-               );
           lookup (desc->parent())->inject
             ( *desc
             , boost::bind ( &layer::post_activity_notification
@@ -814,8 +790,6 @@ namespace we { namespace mgmt {
           }
           else if (desc->came_from_external ())
           {
-            DMLOG (TRACE, "notifying agent: failed (" << desc->name() << ")-" << desc->id());
-
             ext_failed ( desc->from_external_id()
                        , desc->activity().to_string()
                        , desc->error_code()
@@ -864,12 +838,6 @@ namespace we { namespace mgmt {
                   )
                )
             {
-              DMLOG ( TRACE
-                    , "canceling external activity " << desc->to_external_id ()
-                    << " name: " << desc->name ()
-                    << " reason: " << desc->error_message ()
-                    );
-
               ext_cancel ( desc->to_external_id()
                          , "WFE policy cancel-on-failure in place"
                          );
@@ -889,7 +857,6 @@ namespace we { namespace mgmt {
       inline void insert_activity(const descriptor_ptr & desc)
       {
         lock_t lock (mutex_);
-        DLOG(TRACE, "inserting activity " << desc->id());
 
         activities_.insert(std::make_pair(desc->id(), desc));
         if (desc->came_from_external())
@@ -901,7 +868,6 @@ namespace we { namespace mgmt {
       inline void remove_activity(const descriptor_ptr & desc)
       {
         lock_t lock (mutex_);
-        DLOG(TRACE, "removing activity " << desc->id());
 
         if (desc->has_children())
           throw std::runtime_error("cannot remove non-leaf: " + fhg::util::show (desc));

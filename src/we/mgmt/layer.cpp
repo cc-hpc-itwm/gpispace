@@ -11,8 +11,6 @@ namespace we
                        , const we::type::user_data & data
                        )
     {
-      DLOG (TRACE, "submit (" << id << ", ...)");
-
       submit (id, we::mgmt::type::activity_t (bytes), data);
     }
     void layer::submit ( const external_id_type& id
@@ -42,8 +40,6 @@ namespace we
         descriptor_ptr desc (lookup (int_id));
         {
           desc->output (we::mgmt::type::activity_t (result).output());
-
-          DLOG (TRACE, "finished" << " (" << desc->name() << ")-" << id);
         }
       }
 
@@ -61,8 +57,6 @@ namespace we
       d->set_error_message (d->name () + ": " + error_message);
       d->set_result (result);
 
-      MLOG (TRACE, "failed ( " << id << " ) := " << error_message);
-
       // TODO:
       //    lookup activity
       //    mark as failed
@@ -78,8 +72,6 @@ namespace we
     }
     void layer::canceled (const external_id_type& id)
     {
-      DLOG(TRACE, "canceled (" << id << ")");
-
       post_canceled_notification (map_to_internal (id));
     }
   }
