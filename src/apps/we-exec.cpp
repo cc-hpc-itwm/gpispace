@@ -84,8 +84,14 @@ namespace
 
     explicit
       sdpa_daemon (std::size_t num_worker, we::loader::loader* loader)
-      : mgmt_layer_ (this, boost::bind (&sdpa_daemon::gen_id, this))
-      , _loader (loader)
+        : _mutex_id()
+        , _id (0)
+        , mgmt_layer_ (this, boost::bind (&sdpa_daemon::gen_id, this))
+        , _mutex_id_map()
+        , id_map_()
+        , jobs_()
+        , worker_()
+        , _loader (loader)
     {
       start (num_worker);
     }
