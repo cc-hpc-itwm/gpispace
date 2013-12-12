@@ -329,7 +329,6 @@ static std::vector<id_type> jobs;
 static std::set<layer_id_type> layer_jobs;
 static boost::recursive_mutex mutex;
 typedef boost::unique_lock<boost::recursive_mutex> lock_t;
-static bool verbose (false);
 static std::string encoded_result;
 
 namespace observe
@@ -342,9 +341,6 @@ namespace observe
       std::cerr << "submitted: " << id << std::endl;
       layer_jobs.insert (id);
     }
-
-    if (verbose)
-      l->print_statistics(std::cerr);
   }
 
   void finished (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
@@ -360,9 +356,6 @@ namespace observe
         encoded_result = s;
       }
     }
-
-    if (verbose)
-      l->print_statistics(std::cerr);
   }
   void failed (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
@@ -377,9 +370,6 @@ namespace observe
         encoded_result = s;
       }
     }
-
-    if (verbose)
-      l->print_statistics(std::cerr);
   }
   void canceled (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
   {
@@ -394,15 +384,10 @@ namespace observe
         encoded_result = s;
       }
     }
-
-    if (verbose)
-      l->print_statistics(std::cerr);
   }
   void executing (const we::mgmt::layer *l, layer_id_type const & id)
   {
     std::cerr << "activity executing: id := " << id << std::endl;
-    if (verbose)
-      l->print_statistics(std::cerr);
   }
 }
 
@@ -423,7 +408,6 @@ try
   desc.add_options()
     ("help,h", "this message")
     ("version,V", "print version information")
-    ("verbose,v", "be verbose")
     ("net", po::value<std::string>(&path_to_act)->default_value("-"), "path to encoded activity or - for stdin")
     ( "mod-path,L"
     , po::value<std::string>(&mod_path)->default_value
@@ -481,12 +465,6 @@ try
   mgmt_layer.sig_finished.connect (&observe::finished);
   mgmt_layer.sig_failed.connect (&observe::failed);
   mgmt_layer.sig_canceled.connect (&observe::canceled);
-
-  if (vm.count ("verbose"))
-  {
-    verbose = true;
-    mgmt_layer.sig_executing.connect (&observe::executing);
-  }
 
   we::mgmt::type::activity_t act
     ( path_to_act == "-"
