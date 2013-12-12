@@ -73,8 +73,8 @@ namespace we
        *****************************/
 
       // observe
-      util::signal<void (internal_id_type const&)> sig_insert;
-      util::signal<void (internal_id_type const&, std::string const&)> sig_remove;
+      util::signal<void (detail::descriptor)> sig_insert;
+      util::signal<void (detail::descriptor)> sig_remove;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -824,7 +824,7 @@ namespace we
           add_map_to_internal (desc->from_external_id(), desc->id());
         }
 
-        sig_insert (desc->id());
+        sig_insert (*desc);
       }
 
       inline void remove_activity(const descriptor_ptr & desc)
@@ -842,9 +842,7 @@ namespace we
           del_map_to_internal (desc->from_external_id(), desc->id());
         }
 
-        sig_remove ( desc->id()
-                   , desc->activity().to_string()
-                   );
+        sig_remove (*desc);
 
         activities_.erase (desc->id());
       }

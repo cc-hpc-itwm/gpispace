@@ -78,18 +78,17 @@ namespace observe
   };
 
   void insert ( state_type& state
-              , we::mgmt::layer::internal_id_type const&
+              , we::mgmt::detail::descriptor
               )
   {
     state.insert();
   }
 
   void remove ( state_type& state
-              , we::mgmt::layer::internal_id_type const&
-              , std::string const& s
+              , we::mgmt::detail::descriptor d
               )
   {
-    state.erase (s);
+    state.erase (d.activity().to_string());
   }
 }
 
@@ -166,7 +165,7 @@ namespace
       mgmt_layer_.sig_insert.connect
         (boost::bind (&observe::insert, boost::ref (observer), _1));
       mgmt_layer_.sig_remove.connect
-        (boost::bind (&observe::remove, boost::ref (observer), _1, _2));
+        (boost::bind (&observe::remove, boost::ref (observer), _1));
 
       for (std::size_t n (0); n < num_worker; ++n)
       {
