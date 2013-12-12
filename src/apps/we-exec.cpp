@@ -173,7 +173,6 @@ namespace
         we::mgmt::layer::id_type mapped_id (get_mapping (id));
         del_mapping (id);
 
-        // inform layer
         mgmt_layer_.canceled (mapped_id);
         return true;
       }
@@ -190,7 +189,6 @@ namespace
         we::mgmt::layer::id_type mapped_id (get_mapping (id));
         del_mapping (id);
 
-        // inform layer
         mgmt_layer_.finished (mapped_id, desc);
       }
       catch (std::out_of_range const &)
@@ -220,7 +218,6 @@ namespace
         we::mgmt::layer::id_type mapped_id (get_mapping (id));
         del_mapping (id);
 
-        // inform layer
         mgmt_layer_.failed (mapped_id, desc, error_code, reason);
       }
       catch (std::out_of_range const &)
@@ -243,7 +240,6 @@ namespace
         we::mgmt::layer::id_type mapped_id (get_mapping (id));
         del_mapping (id);
 
-        // inform layer
         mgmt_layer_.canceled (mapped_id);
       }
       catch (std::out_of_range const &)
