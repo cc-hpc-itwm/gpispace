@@ -337,7 +337,7 @@ static std::string encoded_result;
 
 namespace observe
 {
-  void submitted (const we::mgmt::layer *l, layer_id_type const & id)
+  void submitted (const we::mgmt::layer*, layer_id_type const& id)
   {
     boost::unique_lock<boost::recursive_mutex> const _ (mutex);
 
@@ -346,7 +346,7 @@ namespace observe
     layer_jobs.insert (id);
   }
 
-  void finished ( const we::mgmt::layer *l
+  void finished ( const we::mgmt::layer*
                 , layer_id_type const& id
                 , std::string const& s
                 )
@@ -364,7 +364,7 @@ namespace observe
       encoded_result = s;
     }
   }
-  void failed ( const we::mgmt::layer *l
+  void failed ( const we::mgmt::layer*
               , layer_id_type const& id
               , std::string const& s
               )
@@ -382,7 +382,7 @@ namespace observe
       encoded_result = s;
     }
   }
-  void canceled ( const we::mgmt::layer *l
+  void canceled ( const we::mgmt::layer*
                 , layer_id_type const& id
                 , std::string const& s
                 )
