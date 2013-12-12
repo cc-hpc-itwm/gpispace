@@ -33,13 +33,13 @@ namespace we
       MLOG (WARN, "cancel ( " << id << " ) := " << reason);
 
       try
-        {
-          post_cancel_activity_notification (map_to_internal (id));
-        }
+      {
+        post_cancel_activity_notification (map_to_internal (id));
+      }
       catch (std::exception const &)
-        {
-          return false;
-        }
+      {
+        return false;
+      }
       return true;
     }
     bool layer::finished (const external_id_type& id, const result_type& result)
