@@ -68,7 +68,7 @@ namespace test {
 
       virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&)
       {
-        we::mgmt::layer::id_type new_id (daemon.gen_id());
+        we::mgmt::layer::id_type const new_id (daemon.gen_id());
         daemon.add_mapping (id, new_id);
         daemon.layer().submit (new_id,  act, we::type::user_data());
         return 0;
