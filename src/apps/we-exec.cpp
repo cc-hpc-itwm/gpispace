@@ -122,22 +122,25 @@ namespace
     virtual int handle_externally (we::mgmt::type::activity_t&, mod_t&);
     virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&);
 
-    context ( sdpa_daemon& d
-            , const we::mgmt::layer::id_type& id
+    context ( const we::mgmt::layer::id_type& id
             , we::loader::loader* loader
             , we::mgmt::layer* layer
+            , boost::function<we::mgmt::layer::id_type
+                               (we::mgmt::layer::id_type const&)
+                             > const& new_id
             )
-      : daemon (d)
-      , _id (id)
+      : _id (id)
       , _loader (loader)
       , _layer (layer)
+      , _new_id (new_id)
     {}
 
   private:
-    sdpa_daemon& daemon;
     we::mgmt::layer::id_type _id;
     we::loader::loader* _loader;
     we::mgmt::layer* _layer;
+    boost::function<we::mgmt::layer::id_type (we::mgmt::layer::id_type const&)>
+      _new_id;
   };
 
   struct job_t
@@ -232,7 +235,11 @@ namespace
              , "worker-" << rank << " busy with " << act.transition().name()
              );
 
-        context ctxt (*this, job.id, _loader, &mgmt_layer_);
+        context ctxt ( job.id
+                     , _loader
+                     , &mgmt_layer_
+                     , boost::bind (&sdpa_daemon::add_mapping, this, _1)
+                     );
         act.execute (&ctxt);
       }
 
@@ -391,7 +398,7 @@ namespace
   }
   int context::handle_externally (we::mgmt::type::activity_t& act, net_t&)
   {
-    _layer->submit (daemon.add_mapping (_id),  act, we::type::user_data());
+    _layer->submit (_new_id (_id),  act, we::type::user_data());
     return 0;
   }
   int context::handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
