@@ -169,7 +169,7 @@ namespace test {
       {
         MLOG (TRACE, "worker-" << rank << " idle");
 
-        job_t job (jobs_.get());
+        job_t const job (jobs_.get());
 
         we::mgmt::type::activity_t act (job.desc);
 
