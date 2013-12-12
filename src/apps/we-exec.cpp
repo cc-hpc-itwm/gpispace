@@ -79,8 +79,6 @@ namespace observe
                  )
   {
     state.insert (id);
-
-    std::cerr << "submitted: " << id << std::endl;
   }
 
   void generic ( state_type& state
@@ -91,10 +89,6 @@ namespace observe
                )
   {
     state.erase (id, s);
-
-    std::cerr << "job " << msg << ": "
-              << we::mgmt::type::activity_t (s).transition().name()
-              << "-" << id << std::endl;
   }
 }
 
