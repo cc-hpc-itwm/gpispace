@@ -318,12 +318,11 @@ namespace test {
   };
 }
 
-using namespace test;
 namespace po = boost::program_options;
 
 typedef std::string id_type;
 
-typedef sdpa_daemon daemon_type;
+typedef test::sdpa_daemon daemon_type;
 typedef we::mgmt::layer::internal_id_type layer_id_type;
 
 static std::vector<id_type> jobs;
