@@ -77,17 +77,17 @@ namespace observe
     boost::optional<std::string> _result;
   };
 
-  void submitted ( state_type& state
-                 , we::mgmt::layer::internal_id_type const&
-                 )
+  void insert ( state_type& state
+              , we::mgmt::layer::internal_id_type const&
+              )
   {
     state.insert();
   }
 
-  void generic ( state_type& state
-               , we::mgmt::layer::internal_id_type const&
-               , std::string const& s
-               )
+  void remove ( state_type& state
+              , we::mgmt::layer::internal_id_type const&
+              , std::string const& s
+              )
   {
     state.erase (s);
   }
@@ -163,14 +163,10 @@ namespace
         , worker_()
         , _loader (loader)
     {
-      mgmt_layer_.sig_submitted.connect
-        (boost::bind (&observe::submitted, boost::ref (observer), _1));
-      mgmt_layer_.sig_finished.connect
-        (boost::bind (&observe::generic, boost::ref (observer), _1, _2));
-      mgmt_layer_.sig_failed.connect
-        (boost::bind (&observe::generic, boost::ref (observer), _1, _2));
-      mgmt_layer_.sig_canceled.connect
-        (boost::bind (&observe::generic, boost::ref (observer), _1, _2));
+      mgmt_layer_.sig_insert.connect
+        (boost::bind (&observe::insert, boost::ref (observer), _1));
+      mgmt_layer_.sig_remove.connect
+        (boost::bind (&observe::remove, boost::ref (observer), _1, _2));
 
       for (std::size_t n (0); n < num_worker; ++n)
       {

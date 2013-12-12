@@ -73,11 +73,8 @@ namespace we
        *****************************/
 
       // observe
-      util::signal<void (internal_id_type const&)> sig_submitted;
-      util::signal<void (internal_id_type const&, std::string const&)> sig_finished;
-      util::signal<void (internal_id_type const&, std::string const&)> sig_failed;
-      util::signal<void (internal_id_type const&, std::string const&)> sig_canceled;
-      util::signal<void (internal_id_type const&)> sig_executing;
+      util::signal<void (internal_id_type const&)> sig_insert;
+      util::signal<void (internal_id_type const&, std::string const&)> sig_remove;
 
       /**
        * Submit a new petri net to the petri-net management layer
@@ -265,11 +262,8 @@ namespace we
     public:
       template <class E>
         layer (E* exec_layer, boost::function<external_id_type()> gen)
-          : sig_submitted()
-          , sig_finished()
-          , sig_failed()
-          , sig_canceled()
-          , sig_executing()
+          : sig_insert()
+          , sig_remove()
           , ext_submit (boost::bind (&E::submit, exec_layer, _1, _2, _3, _4, _5))
           , ext_cancel (boost::bind (&E::cancel, exec_layer, _1, _2))
           , ext_finished (boost::bind (&E::finished, exec_layer, _1, _2))
@@ -462,8 +456,6 @@ namespace we
               continue;
             }
 
-            sig_executing (desc->id());
-
             try
             {
               // classify/execute
@@ -654,10 +646,6 @@ namespace we
           throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (*desc));
         }
 
-        sig_finished ( desc->id()
-                     , desc->activity().to_string()
-                     );
-
         remove_activity (desc);
       }
 
@@ -701,10 +689,6 @@ namespace we
                 , "failed (" << desc->name() << ")-" << desc->id() << " : "
                 << desc->error_message ()
                 );
-
-          sig_failed ( internal_id
-                     , desc->activity().to_string()
-                     );
 
           if (desc->has_parent ())
           {
@@ -782,10 +766,6 @@ namespace we
             throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (*desc));
           }
 
-          sig_canceled ( internal_id
-                       , desc->activity().to_string()
-                       );
-
           remove_activity (desc);
         }
         catch (const exception::activity_not_found&)
@@ -844,7 +824,7 @@ namespace we
           add_map_to_internal (desc->from_external_id(), desc->id());
         }
 
-        sig_submitted (desc->id());
+        sig_insert (desc->id());
       }
 
       inline void remove_activity(const descriptor_ptr & desc)
@@ -861,6 +841,10 @@ namespace we
         {
           del_map_to_internal (desc->from_external_id(), desc->id());
         }
+
+        sig_remove ( desc->id()
+                   , desc->activity().to_string()
+                   );
 
         activities_.erase (desc->id());
       }
