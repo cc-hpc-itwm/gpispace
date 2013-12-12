@@ -59,9 +59,10 @@ namespace we
 
         post_finished_notification (int_id);
       }
-      catch (const std::exception&)
+      catch (const std::exception&ex)
       {
-        return false;
+        DMLOG (ERROR, "layer could not handle finished(" << id << "): " << ex.what ());
+        throw;
       }
 
       return true;
