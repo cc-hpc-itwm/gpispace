@@ -70,8 +70,7 @@ namespace test {
       {
         we::mgmt::layer::id_type new_id (daemon.gen_id());
         daemon.add_mapping (id, new_id);
-        we::type::user_data ud;
-        daemon.layer().submit (new_id,  act, ud);
+        daemon.layer().submit (new_id,  act, we::type::user_data());
         return 0;
       }
 
