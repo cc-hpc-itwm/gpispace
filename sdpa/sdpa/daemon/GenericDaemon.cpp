@@ -262,26 +262,28 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
   DLOG(TRACE, "got job submission from " << e.from() << ": job-id := " << e.job_id());
 
-  // check if the incoming event was produced by a master to which the current agent has already registered
-  lock_type lock(mtx_master_);
-  master_info_list_t::iterator itMaster = find_if(m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasName, _1, e.from()));
-
-  if( itMaster != m_arrMasterInfo.end() && !itMaster->is_registered() )
+  if(e.from()!=sdpa::daemon::WE)
   {
-    DMLOG (TRACE, "The agent "<<name()<<" is not yet registered with the master "<<itMaster->name()
-          <<". No job from this master will be accepted as long as no registration confirmation has been received!");
+    lock_type lock(mtx_master_);
+    // check if the incoming event was produced by a master to which the current agent has already registered
+    master_info_list_t::iterator itMaster = find_if(m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasName, _1, e.from()));
 
-    //send job rejected error event back to the master
-    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name(),
-                                              e.from(),
-                                              events::ErrorEvent::SDPA_EPERM,
-                                              "Waiting for registration confirmation. No job submission is allowed!",
-                                              e.job_id()) );
-    sendEventToMaster(pErrorEvt);
+    if( itMaster != m_arrMasterInfo.end() && !itMaster->is_registered() )
+    {
+      DMLOG (TRACE, "The agent "<<name()<<" is not yet registered with the master "<<itMaster->name()
+            <<". No job from this master will be accepted as long as no registration confirmation has been received!");
 
-    return;
+      //send job rejected error event back to the master
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name(),
+                                                e.from(),
+                                                events::ErrorEvent::SDPA_EPERM,
+                                                "Waiting for registration confirmation. No job submission is allowed!",
+                                                e.job_id()) );
+      sendEventToMaster(pErrorEvt);
+
+      return;
+    }
   }
-  lock.unlock();
 
   // First, check if the job 'job_id' wasn't already submitted!
   if(jobManager().findJob(e.job_id()))
