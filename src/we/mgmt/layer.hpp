@@ -374,9 +374,6 @@ namespace we { namespace mgmt {
         stop_threads (extractor_);
         DLOG(TRACE, "done.");
 
-        delete active_nets_;
-        active_nets_ = NULL;
-
         delete inj_q_;
         inj_q_ = NULL;
       }
@@ -396,7 +393,7 @@ namespace we { namespace mgmt {
       {
         if (is_valid(id))
         {
-          active_nets_->put(id);
+          active_nets_.put(id);
         }
         else
         {
@@ -517,7 +514,7 @@ namespace we { namespace mgmt {
         DLOG (TRACE, "extractor thread started...");
         for (;;)
         {
-          internal_id_type active_id = active_nets_->get();
+          internal_id_type active_id = active_nets_.get();
           if (! is_valid (active_id))
           {
             DLOG( WARN
@@ -778,7 +775,7 @@ namespace we { namespace mgmt {
       activities_t activities_;
 
       cmd_q_t cmd_q_;
-      active_nets_t *active_nets_;
+      active_nets_t active_nets_;
       active_nets_t *inj_q_;
 
       external_to_internal_map_t ext_to_int_;
