@@ -349,9 +349,8 @@ namespace po = boost::program_options;
 
 typedef std::string id_type;
 
-typedef we::mgmt::layer layer_t;
-typedef sdpa_daemon<layer_t> daemon_type;
-typedef layer_t::internal_id_type layer_id_type;
+typedef sdpa_daemon<we::mgmt::layer> daemon_type;
+typedef we::mgmt::layer::internal_id_type layer_id_type;
 
 static std::vector<id_type> jobs;
 static std::set<layer_id_type> layer_jobs;
@@ -362,7 +361,7 @@ static std::string encoded_result;
 
 // observe workflow engine
 static
-void observe_submitted (const layer_t *l, layer_id_type const & id)
+  void observe_submitted (const we::mgmt::layer *l, layer_id_type const & id)
 {
   {
     lock_t lock(mutex);
@@ -376,7 +375,7 @@ void observe_submitted (const layer_t *l, layer_id_type const & id)
 }
 
 static
-void observe_finished (const layer_t *l, layer_id_type const & id, std::string const &s)
+  void observe_finished (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
 {
   {
     lock_t lock(mutex);
@@ -394,7 +393,7 @@ void observe_finished (const layer_t *l, layer_id_type const & id, std::string c
     l->print_statistics(std::cerr);
 }
 static
-void observe_failed (const layer_t *l, layer_id_type const & id, std::string const &s)
+void observe_failed (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
 {
   {
     lock_t lock(mutex);
@@ -412,7 +411,7 @@ void observe_failed (const layer_t *l, layer_id_type const & id, std::string con
     l->print_statistics(std::cerr);
 }
 static
-void observe_canceled (const layer_t *l, layer_id_type const & id, std::string const &s)
+void observe_canceled (const we::mgmt::layer *l, layer_id_type const & id, std::string const &s)
 {
   {
     lock_t lock(mutex);
@@ -431,7 +430,7 @@ void observe_canceled (const layer_t *l, layer_id_type const & id, std::string c
 }
 
 static
-void observe_executing (const layer_t *l, layer_id_type const & id)
+void observe_executing (const we::mgmt::layer *l, layer_id_type const & id)
 {
   std::cerr << "activity executing: id := " << id << std::endl;
   if (verbose)
