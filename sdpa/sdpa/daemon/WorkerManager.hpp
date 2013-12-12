@@ -46,10 +46,10 @@ namespace sdpa { namespace daemon {
     const boost::optional<Worker::worker_id_t> getAssignedWorker(const sdpa::job_id_t& job_id);
 
     void addWorker( const Worker::worker_id_t& workerId,
-                boost::optional<unsigned int> capacity,
-                const capabilities_set_t& cpbset = capabilities_set_t(),
-                const unsigned int& agent_rank = 0,
-                  const sdpa::worker_id_t& agent_uuid = "" );
+                    boost::optional<unsigned int> capacity,
+                    const capabilities_set_t& cpbset = capabilities_set_t(),
+                    const unsigned int& agent_rank = 0,
+                    const sdpa::worker_id_t& agent_uuid = "" );
 
     void deleteWorker( const Worker::worker_id_t& workerId);
 
