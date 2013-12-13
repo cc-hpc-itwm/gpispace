@@ -193,13 +193,6 @@ namespace we
         activity_.inject_input();
       }
 
-      void descriptor::inject (const descriptor& child, fun_t cb)
-      {
-        lock_t lock(mutex_);
-        this->inject (child);
-        cb (id());
-      }
-
       void descriptor::inject (descriptor const& child)
       {
         lock_t lock(mutex_);

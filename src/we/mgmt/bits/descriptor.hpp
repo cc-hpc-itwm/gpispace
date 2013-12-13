@@ -57,7 +57,6 @@ namespace we
         void output (const we::mgmt::type::activity_t::output_t&);
 
         void inject_input();
-        void inject (const descriptor&, fun_t);
         void inject (descriptor const& child);
 
         void child_failed ( descriptor const&
