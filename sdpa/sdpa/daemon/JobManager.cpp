@@ -38,27 +38,17 @@ namespace sdpa
                             , const job_requirements_t& job_req_list
                             )
     {
-     lock_type _ (_job_map_and_requirements_mutex);
+      lock_type _ (_job_map_and_requirements_mutex);
 
-     DMLOG (TRACE, "Add new job into the job manager");
+      DMLOG (TRACE, "Add new job into the job manager");
 
-     Job* pJob(NULL);
-     try {
-         pJob = new Job( job_id, desc, parent, is_master_job, owner );
+      Job* pJob = new Job( job_id, desc, parent, is_master_job, owner );
 
-         if (!job_map_.insert(std::make_pair (job_id, pJob)).second)
-           throw JobNotAddedException(job_id);
+      job_map_.insert(std::make_pair (job_id, pJob));
 
-         if (!job_req_list.empty() &&
-             !job_requirements_.insert(std::make_pair(job_id, job_req_list)).second)
-           throw JobNotAddedException(job_id);
-     }
-     catch(std::bad_alloc&)
-     {
-         throw JobNotAddedException(job_id);
-     }
+      if (!job_req_list.empty())
+        job_requirements_.insert(std::make_pair(job_id, job_req_list));
     }
-
 
     void JobManager::deleteJob (const sdpa::job_id_t& job_id)
     {
