@@ -313,7 +313,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     bool b_master_job(e.is_external() && hasWorkflowEngine());
     jobManager().addJob(job_id, e.description(), e.parent_id(), b_master_job, e.from());
   }
-  catch(std::exception const &ex)
+  catch(std::bad_alloc const &ex)
   {
     if( e.is_external() )
     {
