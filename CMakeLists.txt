@@ -219,6 +219,10 @@ set (GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
 set (GSPC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/gspc ${CMAKE_BINARY_DIR}/gspc)
 set (GSPC_LIBRARY_SHARED libgspc.shared)
 
+set (PNETC_LIB_DIR "share/sdpa/xml/lib")
+set (PNETC_EXAMPLES_DIR "share/sdpa/xml/examples")
+set (SDPA_APPS_DIR "libexec/sdpa/apps")
+
 include (CTest)
 add_subdirectory (fhglog)
 if (ENABLE_FVM_PC)
