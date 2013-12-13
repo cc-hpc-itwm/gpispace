@@ -1,8 +1,0 @@
-<defun name="sum">
-  <in name="a" type="long"/>
-  <in name="b" type="long"/>
-  <out name="s" type="long"/>
-  <expression>
-    ${s} := ${a} + ${b}
-  </expression>
-</defun>
