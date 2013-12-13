@@ -416,6 +416,8 @@ namespace boost
 typedef std::vector<std::pair<std::vector<std::string>, std::string> >
   correct_type;
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE (correct_type::iterator);
+
 BOOST_AUTO_TEST_CASE (visit_all_leafs)
 {
   prop::traverse::stack_type stack (prop::traverse::dfs (p));
