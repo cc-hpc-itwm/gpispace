@@ -767,12 +767,12 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 
     events::JobFailedEvent::Ptr pEvtJobFailed
       (new events::JobFailedEvent( sdpa::daemon::WE
-                         , name()
-                         , jobId
-                         , result
-                         , fhg::error::UNEXPECTED_ERROR
-                         , "no workflow engine attached!"
-                         )
+                                 , name()
+                                 , jobId
+                                 , result
+                                 , fhg::error::UNEXPECTED_ERROR
+                                 , "no workflow engine attached!"
+                                 )
       );
     sendEventToSelf(pEvtJobFailed);
   }
@@ -783,12 +783,12 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 
     events::JobFailedEvent::Ptr pEvtJobFailed
       (new events::JobFailedEvent( sdpa::daemon::WE
-                         , name()
-                         , jobId
-                         , result
-                         , fhg::error::UNEXPECTED_ERROR
-                         , "job could not be found"
-                         )
+                                 , name()
+                                 , jobId
+                                 , result
+                                 , fhg::error::UNEXPECTED_ERROR
+                                 , "job could not be found"
+                                 )
       );
 
     sendEventToSelf(pEvtJobFailed);
@@ -800,12 +800,12 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 
      events::JobFailedEvent::Ptr pEvtJobFailed
        (new events::JobFailedEvent( sdpa::daemon::WE
-                          , name()
-                          , jobId
-                          , result
-                          , fhg::error::UNEXPECTED_ERROR
-                          , ex.what()
-                          )
+                                  , name()
+                                  , jobId
+                                  , result
+                                  , fhg::error::UNEXPECTED_ERROR
+                                  , ex.what()
+                                  )
      );
 
      sendEventToSelf(pEvtJobFailed);
@@ -1078,9 +1078,9 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
         std::ostringstream oss("Could not subscribe for the job");
         oss<<jobId<<". The job does not exist!";
         events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name(),
-                                                  subscriber,
-                                                  events::ErrorEvent::SDPA_EJOBNOTFOUND,
-                                                  oss.str()));
+                                                                  subscriber,
+                                                                  events::ErrorEvent::SDPA_EJOBNOTFOUND,
+                                                                  oss.str()));
         sendEventToMaster(pErrorEvt);
         return;
     }
@@ -1117,10 +1117,10 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
         {
           events::JobFinishedEvent::Ptr pEvtJobFinished
             (new events::JobFinishedEvent( name()
-                                 , subscriber
-                                 , pJob->id()
-                                 , pJob->result()
-                                 ));
+                                         , subscriber
+                                         , pJob->id()
+                                         , pJob->result()
+                                         ));
           sendEventToMaster(pEvtJobFinished);
         }
         break;
@@ -1129,12 +1129,12 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
         {
           events::JobFailedEvent::Ptr pEvtJobFailed
             (new events::JobFailedEvent( name()
-                               , subscriber
-                               , pJob->id()
-                               , pJob->result()
-                               , fhg::error::UNASSIGNED_ERROR
-                               , "TODO: take the error message from the job pointer somehow"
-                               )
+                                       , subscriber
+                                       , pJob->id()
+                                       , pJob->result()
+                                       , fhg::error::UNASSIGNED_ERROR
+                                       , "TODO: take the error message from the job pointer somehow"
+                                       )
             );
           sendEventToMaster(pEvtJobFailed);
         }
@@ -1339,12 +1339,12 @@ void GenericDaemon::handleQueryJobStatusEvent(const events::QueryJobStatusEvent*
   {
       events::JobStatusReplyEvent::Ptr const pStatReply
         (new events::JobStatusReplyEvent ( pEvt->to()
-                                               , pEvt->from()
-                                               , pJob->id()
-                                               , pJob->getStatus()
-                                               , pJob->error_code()
-                                               , pJob->error_message()
-                                               )
+                                         , pEvt->from()
+                                         , pJob->id()
+                                         , pJob->getStatus()
+                                         , pJob->error_code()
+                                         , pJob->error_message()
+                                         )
       );
 
       sendEventToMaster (pStatReply);
