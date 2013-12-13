@@ -59,7 +59,11 @@ namespace observe
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
 
       --_jobs;
-      _result = d.activity().to_string();
+
+      if (done())
+      {
+        _result = d.activity().to_string();
+      }
     }
     std::string const& result() const
     {
