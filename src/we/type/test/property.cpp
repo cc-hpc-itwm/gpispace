@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE (visit_all_leafs)
 
     // BOOST_REQUIRE_EQUAL (elem.first, elem_req.first);
     // BOOST_REQUIRE_EQUAL (elem.second, elem_req.second);
-    BOOST_REQUIRE_NE (std::distance (it, correct.end()), 0);
+    BOOST_REQUIRE_NE (it, correct.end());
     BOOST_REQUIRE_EQUAL (elem.first, it->first);
     BOOST_REQUIRE_EQUAL (elem.second, it->second);
 
