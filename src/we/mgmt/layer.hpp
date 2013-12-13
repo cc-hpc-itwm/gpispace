@@ -661,7 +661,10 @@ namespace we
             throw std::runtime_error ("activity failed, but I don't know what to do with it: " + fhg::util::show (desc));
           }
 
-          remove_activity (desc);
+          if (not desc.has_children ())
+          {
+            remove_activity (desc);
+          }
       }
 
       void activity_canceled (internal_id_type const internal_id)
