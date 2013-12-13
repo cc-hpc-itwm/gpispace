@@ -181,8 +181,7 @@ namespace we
       void submit (const detail::descriptor & desc)
       {
         insert_activity(desc);
-
-        post_execute_notification (desc.id());
+        active_nets_.put (desc.id ());
       }
 
       void add_map_to_internal ( const external_id_type & external_id
@@ -264,20 +263,6 @@ namespace we
       }
 
       inline
-        void post_activity_notification (const internal_id_type & id)
-      {
-        if (is_valid(id))
-        {
-          active_nets_.put(id);
-        }
-        else
-        {
-          throw std::runtime_error
-            ("post_activity_notification: id is not valid anymore");
-        }
-      }
-
-      inline
         void post_finished_notification (const internal_id_type & id)
       {
         if (is_valid(id))
@@ -330,20 +315,6 @@ namespace we
         {
           throw std::runtime_error
             ("post_cancel_activity_notification: id is not valid anymore");
-        }
-      }
-
-      inline
-        void post_execute_notification (const internal_id_type & id)
-      {
-        if (is_valid(id))
-        {
-          post_activity_notification (id);
-        }
-        else
-        {
-          throw std::runtime_error
-            ("post_execute_notification: id is not valid anymore");
         }
       }
 
@@ -457,8 +428,8 @@ namespace we
               switch (child.execute (&exec_policy))
               {
               case policy::execution_policy::EXTRACT:
-                insert_activity(child);
-                post_execute_notification (child.id());
+                insert_activity (child);
+                active_nets_.put (child.id ());
                 break;
               case policy::execution_policy::INJECT:
                 child.finished();
@@ -537,13 +508,8 @@ namespace we
 
         if (desc.has_parent())
         {
-          lookup (desc.parent()).inject
-            ( desc
-            , boost::bind ( &layer::post_activity_notification
-                          , this
-                          , _1
-                          )
-            );
+          lookup (desc.parent()).inject (desc);
+          active_nets_.put (desc.parent ());
         }
         else if (desc.came_from_external())
         {
