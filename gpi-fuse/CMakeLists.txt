@@ -38,8 +38,16 @@ add_executable (gpifs src/gpifs/gpifs.cpp)
 
 target_link_libraries (gpifs gpi-fuse)
 target_link_libraries (gpifs ${FUSE_LIBRARIES})
-target_link_libraries (gpifs ${GPI_SPACE_LIBRARY})
+target_link_libraries (gpifs
+  gpi-space-pc-client-static
+  gpi-space-pc-segment
+  gpi-space-static
+  )
 target_link_libraries (gpifs ${FhgLog_LIBRARY})
+target_link_libraries (gpifs ${Boost_THREAD_LIBRARY})
+target_link_libraries (gpifs ${Boost_SERIALIZATION_LIBRARY})
+target_link_libraries (gpifs ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries (gpifs ${Boost_SYSTEM_LIBRARY})
 set_target_properties (gpifs PROPERTIES COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}")
 
 install (TARGETS gpifs
@@ -52,8 +60,14 @@ fhg_add_test (test/test_split.cpp
   PROJECT gpi-fuse
   LINK_LIBRARIES gpi-fuse
                  ${FUSE_LIBRARIES}
-                 ${GPI_SPACE_LIBRARY}
+                 gpi-space-pc-client-static
+                 gpi-space-pc-segment
+                 gpi-space-static
                  ${FhgLog_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
   COMPILE_FLAGS "${PC_FUSE_CFLAGS_OTHER}"
 )
 
