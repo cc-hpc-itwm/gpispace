@@ -22,8 +22,8 @@
         <out name="wait" type="wait"/>
         <out name="accu" type="sums"/>
         <expression>
-          ${state.param} := ${param};
           ${state.its} := 0L;
+          ${state.param} := ${param};
           ${wait.n} := (${param.iterations_per_run} + ${param.n} - 1L)
                        div ${param.iterations_per_run};
           ${accu.sum1} := 0.0;
