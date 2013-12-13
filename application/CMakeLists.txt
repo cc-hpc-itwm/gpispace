@@ -16,8 +16,3 @@ option(ENABLE_APPLICATION_UFBMIG "Compile UfbMig Application" ON)
 if (ENABLE_APPLICATION_UFBMIG)
    add_subdirectory(ufbmig)
 endif()
-
-install ( FILES common.mk
-          DESTINATION share/sdpa/make
-          COMPONENT sdk
-        )
