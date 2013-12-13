@@ -1,7 +1,7 @@
 include(pnet_macros)
 
 pnet_compile( transform_file transform_file.xpnet
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   OUTPUT transform_file.pnet
   GENERATE transform_file
   CXXFLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/..

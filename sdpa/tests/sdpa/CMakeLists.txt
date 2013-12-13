@@ -43,7 +43,7 @@ get_target_property(PNETPUT_LOCATION pnetput LOCATION)
 pnet_compile(capabilities-test-wf ${CMAKE_SOURCE_DIR}/application/example/capabilities/capabilities.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
   GENERATE capabilities
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/application/example
@@ -66,7 +66,7 @@ add_dependencies(pnet-capabilities-test-wf pnetput)
 pnet_compile(capabilities_no_mandatory-test-wf ${CMAKE_SOURCE_DIR}/application/example/capabilities_no_mandatory/capabilities_no_mandatory.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory-test-wf.in.pnet
   GENERATE capabilities_no_mandatory
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/application/example
@@ -89,7 +89,7 @@ add_dependencies(pnet-capabilities_no_mandatory-test-wf pnetput)
 pnet_compile(atomic-test-wf ${CMAKE_SOURCE_DIR}/application/example/atomic/atomic.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic-test-wf.in.pnet
   GENERATE atomic
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/application/example
@@ -133,7 +133,7 @@ add_dependencies(pnet-atomic-test-wf pnetput)
 pnet_compile(inotify-test-wf ${CMAKE_SOURCE_DIR}/application/example/inotify/inotify.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
   GENERATE inotify
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/application/example
@@ -157,7 +157,7 @@ add_dependencies(pnet-inotify-test-wf pnetput)
 pnet_compile(transform_file-test-wf ${CMAKE_SOURCE_DIR}/application/transform_file/xml/transform_file.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file-test-wf.in.pnet
   GENERATE transform_file
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc
@@ -187,7 +187,7 @@ add_dependencies(pnet-transform_file-test-wf pnetput)
 pnet_compile(coallocation_test-wf ${CMAKE_SOURCE_DIR}/application/example/coallocation_test/coallocation_test.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
   GENERATE coallocation_test
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc

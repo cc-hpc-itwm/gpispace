@@ -13,7 +13,7 @@ install(FILES ${xml}
 
 # pnet_compile(parsu_shrink shrink.xml.in
 #   INCLUDES generate
-#            ${CMAKE_SOURCE_DIR}/application/lib
+#            ${CMAKE_SOURCE_DIR}/share/lib
 #   GENERATE parsu_shrink
 #   LDFLAGS "-L${CMAKE_BINARY_DIR}/application/example/process"
 #   CXXFLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/../util

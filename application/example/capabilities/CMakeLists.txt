@@ -4,7 +4,7 @@ pnet_compile(capabilities capabilities.xpnet
   OUTPUT capabilities.pnet
   GENERATE capabilities
   INSTALL ${SDPA_APPS_DIR}/capabilities
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/application/example

@@ -1,7 +1,7 @@
 include(pnet_macros)
 
 pnet_compile (kdm kdm.xpnet
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   OUTPUT kdm.pnet
   GENERATE kdm
   INSTALL ${SDPA_APPS_DIR}/kdm
@@ -17,7 +17,7 @@ pnet_compile (kdm kdm.xpnet
 )
 
 pnet_compile (kdmopt kdmopt.xpnet
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   OUTPUT kdmopt.pnet
   GENERATE kdm
   INSTALL ${SDPA_APPS_DIR}/kdm

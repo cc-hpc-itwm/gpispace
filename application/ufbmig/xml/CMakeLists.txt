@@ -38,7 +38,7 @@ pnet_compile(ufbmig_init init.xml
 #)
 
 pnet_compile(ufbmig_calc calc.xml
-  INCLUDES ${CMAKE_SOURCE_DIR}/application
+  INCLUDES ${CMAKE_SOURCE_DIR}/share
   OUTPUT ufbmig_calc.pnet
   GENERATE ufbmig_calc
   CXXFLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/..

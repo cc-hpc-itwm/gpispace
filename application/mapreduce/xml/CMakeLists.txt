@@ -1,7 +1,7 @@
 include(pnet_macros)
 
 pnet_compile( mapreduce mapreduce.xpnet
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   OUTPUT mapreduce.pnet
   GENERATE mapreduce
   INSTALL ${SDPA_APPS_DIR}/mapreduce

@@ -4,7 +4,7 @@ pnet_compile(atomic atomic.xpnet
   OUTPUT atomic.pnet
   GENERATE atomic
   INSTALL ${SDPA_APPS_DIR}/atomic
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/application/example

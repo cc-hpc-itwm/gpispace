@@ -4,7 +4,7 @@ pnet_compile(coallocation_test coallocation_test.xml
   OUTPUT coallocation_test.pnet
   GENERATE coallocation_test
   INSTALL ${SDPA_APPS_DIR}/coallocation_test
-  INCLUDES ${CMAKE_SOURCE_DIR}/application/lib
+  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/application/example

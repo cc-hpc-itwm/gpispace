@@ -13,7 +13,7 @@ install(FILES ${xml}
 
 # pnet_compile(parsu_tracebytrace tracebytrace.xml.in
 #   INCLUDES generate
-#            ${CMAKE_SOURCE_DIR}/application/lib
+#            ${CMAKE_SOURCE_DIR}/share/lib
 #   GENERATE parsu_tracebytrace
 #   LDFLAGS "-L${CMAKE_BINARY_DIR}/application/example/process"
 #   CXXFLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/../util
