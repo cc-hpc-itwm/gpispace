@@ -292,6 +292,7 @@ add_custom_target(sdpa-test-workflows ALL
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic_wfe_plugin_test.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"
