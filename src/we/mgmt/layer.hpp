@@ -625,6 +625,15 @@ namespace we
                 << desc.error_message ()
                 );
 
+          if (desc.has_children())
+          {
+            desc.cancel
+              ( boost::bind ( &layer::post_cancel_activity_notification
+                            , this
+                            , _1
+                            )
+              );
+          }
           if (desc.has_parent ())
           {
             detail::descriptor& parent_desc (lookup (desc.parent()));
