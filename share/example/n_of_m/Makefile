@@ -17,11 +17,11 @@ CXXLIBRARYPATHS += $(SDPA_HOME)/libexec/sdpa
 
 PUT_PORT += m=25L
 PUT_PORT += parallel=2L
-PUT_PORT += cmd=\"$(CURDIR)/demo.bin\"
+PUT_PORT += cmd=\"$(BUILDDIR)/demo.bin\"
 
 ###############################################################################
 
-DEP += demo.bin
+DEP += $(BUILDDIR)/demo.bin
 CLEAN += clean-demo
 
 ###############################################################################
@@ -32,10 +32,10 @@ endif
 
 include $(SDPA_HOME)/share/sdpa/make/common.mk
 
-demo.bin: demo.c
+$(BUILDDIR)/demo.bin: demo.c
 	$(CC) $(CFLAGS) demo.c -o $@ $(LDFLAGS)
 
 .PHONY: clean-demo
 
 clean-demo:
-	$(RM) demo.bin
+	$(RM) $(BUILDDIR)/demo.bin
