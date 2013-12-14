@@ -24,9 +24,10 @@ cleanup()
 trap 'cleanup' EXIT
 
 measured "build-wrapper" ${make_src} lib                    || die $EX_ERR_RUN
-measured "run" WE_EXEC_WORKER=1 ${make_src} run             || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=4 ${make_src} run             || die $EX_ERR_RUN
 
 grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
 test 1 -eq $(grep ^done "${OUT}" | wc -l)                   || die $EX_ERR_RES
-cat "${OUT}" | grep OUTPUT | sed 's/.*OUTPUT //' > "${CMP}" || die $EX_ERR_OTHER
+cat "${OUT}" | grep OUTPUT | sed 's/.*OUTPUT //' \
+                           | sort -n -k +2 > "${CMP}"       || die $EX_ERR_OTHER
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
