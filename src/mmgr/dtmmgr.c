@@ -7,7 +7,6 @@
 
 #define FOR_ARENA(id) for (Arena_t id = ARENA_UP; id <= ARENA_DOWN; ++id)
 
-static const char *showArena[2] = { "ARENA_UP", "ARENA_DOWN" };
 static const Arena_t Other[2] = { ARENA_DOWN, ARENA_UP };
 
 typedef struct
@@ -263,22 +262,4 @@ dtmmgr_defrag (PDTmmgr_t PDTmmgr, const Arena_t Arena,
 
   tmmgr_resize (pdtmmgr->arena + Other[Arena],
                 pdtmmgr->mem_size - tmmgr_highwater (pdtmmgr->arena[Arena]));
-}
-
-void
-dtmmgr_info (const DTmmgr_t DTmmgr)
-{
-  if (DTmmgr == NULL)
-    return;
-
-  pdtmmgr_t pdtmmgr = DTmmgr;
-
-  MemSize_t memsize = dtmmgr_memsize (DTmmgr);
-  MemSize_t memused = dtmmgr_memused (DTmmgr);
-  MemSize_t memfree = dtmmgr_memfree (DTmmgr);
-
-  printf ("*****BOTH: used = " FMT_MemSize_t " free = " FMT_MemSize_t
-          " size = " FMT_MemSize_t "\n", memused, memfree, memsize);
-
-  FOR_ARENA (Arena) tmmgr_info (pdtmmgr->arena[Arena], showArena[Arena]);
 }

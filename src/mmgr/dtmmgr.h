@@ -48,10 +48,6 @@ extern "C"
 
   /* *********************************************************************** */
 
-  extern void dtmmgr_info (const DTmmgr_t);     /* short */
-
-  /* *********************************************************************** */
-
 #ifndef DTMMGR_ERROR_HANDLER
 #include <mmgr/error.h>
 #define DTMMGR_ERROR_HANDLER(file,line,fun) GEN_ERROR_HANDLER(file,line,"DTmmgr",fun)
