@@ -74,8 +74,6 @@ main (int argc, char **argv)
 
   t += current_time ();
 
-  tmmgr_info (tmmgr, NULL);
-
   printf (FMT_Size_t " time alloc = %g (%g us per alloc)\n", alloc, t,
           1e6 * t / (double) alloc);
 
@@ -101,8 +99,6 @@ main (int argc, char **argv)
     }
 
   t += current_time ();
-
-  tmmgr_info (tmmgr, NULL);
 
   printf (FMT_Size_t " time free = %g (%g us per free)\n", alloc, t,
           1e6 * t / (double) alloc);
@@ -145,15 +141,11 @@ main (int argc, char **argv)
       }
     }
 
-  tmmgr_info (tmmgr, NULL);
-
   t = -current_time ();
 
   tmmgr_defrag (&tmmgr, NULL, NULL, NULL);
 
   t += current_time ();
-
-  tmmgr_info (tmmgr, NULL);
 
   printf (FMT_Size_t " time defrag = %g\n", alloc, t);
 
