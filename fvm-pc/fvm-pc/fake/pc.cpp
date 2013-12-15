@@ -120,7 +120,6 @@ int fvmConnect(fvm_pc_config_t cfg)
     fprintf(stderr, "fvm-pc: using %lu bytes of VM memory\n", pcFVMSize);
 
     dtmmgr_init (&dtmmgr, pcFVMSize, 2 /* aligned to 2-byte boundary */);
-        dtmmgr_info (dtmmgr);
 
     return 0;
   }
