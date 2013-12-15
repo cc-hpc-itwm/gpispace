@@ -82,10 +82,6 @@ extern "C"
 
   /* *********************************************************************** */
 
-  extern void tmmgr_info (const Tmmgr_t, const char *); /* short */
-
-  /* *********************************************************************** */
-
 #ifndef TMMGR_ERROR_HANDLER
 #include <mmgr/error.h>
 #define TMMGR_ERROR_HANDLER(file,line,fun) GEN_ERROR_HANDLER(file,line,"Tmmgr",fun)
