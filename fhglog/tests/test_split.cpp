@@ -1,4 +1,4 @@
-#include <fhglog/util.hpp>
+#include <fhg/util/split.hpp>
 #include <iterator>
 #include <iostream>
 #include <vector>
@@ -61,7 +61,7 @@ int main()
     std::cout << "*** Testing split(\"\")" << std::endl;
     std::string path_string;
     std::vector<std::string> path;
-    fhg::log::split (path_string, ".", std::back_inserter(path));
+    fhg::util::split (path_string, ".", std::back_inserter(path));
     std::vector<std::string> expected;
     errcount += check_sequence ( path.begin(), path.end()
                                , expected.begin(), expected.end()
@@ -74,7 +74,7 @@ int main()
     std::cout << "*** Testing split(\".\")" << std::endl;
     std::string path_string(".");
     std::vector<std::string> path;
-    fhg::log::split (path_string, ".", std::back_inserter(path));
+    fhg::util::split (path_string, ".", std::back_inserter(path));
     std::vector<std::string> expected;
     expected.push_back("");
     errcount += check_sequence ( path.begin(), path.end()
@@ -87,7 +87,7 @@ int main()
     std::cout << "*** Testing split(\"foo.\")" << std::endl;
     std::string path_string("foo.");
     std::vector<std::string> path;
-    fhg::log::split (path_string, ".", std::back_inserter(path));
+    fhg::util::split (path_string, ".", std::back_inserter(path));
     std::vector<std::string> expected;
     expected.push_back("foo");
     errcount += check_sequence ( path.begin(), path.end()
@@ -100,7 +100,7 @@ int main()
     std::cout << "*** Testing split(\"fhg.log.logger.1\")" << std::endl;
     std::string path_string ("fhg.log.logger.1");
     std::vector<std::string> path;
-    fhg::log::split (path_string, ".", std::back_inserter(path));
+    fhg::util::split (path_string, ".", std::back_inserter(path));
     std::vector<std::string> expected;
     expected.push_back("fhg");
     expected.push_back("log");
