@@ -11,24 +11,6 @@
 
 namespace
 {
-  class counting_appender : public fhg::log::Appender
-  {
-  public:
-    counting_appender (std::size_t* counter)
-      : fhg::log::Appender ("counting_appender")
-      , _counter (counter)
-    {}
-
-    void append (const fhg::log::LogEvent &evt)
-    {
-      ++(*_counter);
-    }
-
-    void flush () {}
-  private:
-    std::size_t* _counter;
-  };
-
   template<typename T> T divru (T a, T b) { return (a + b - 1) / b; }
 }
 
@@ -37,7 +19,7 @@ BOOST_FIXTURE_TEST_CASE (every_ ## N, utils::logger_with_minimum_log_level) \
 {                                                                       \
   std::size_t messages_logged;                                          \
   log.addAppender ( fhg::log::Appender::ptr_t                           \
-                    (new counting_appender (&messages_logged))          \
+                    (new utils::counting_appender (&messages_logged))   \
                   );                                                    \
                                                                         \
   for (size_t i (0); i < iterations; ++i)                               \
