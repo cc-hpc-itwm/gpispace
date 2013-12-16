@@ -1,50 +1,29 @@
 // alexander.petry@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE threaded
+#include <boost/test/unit_test.hpp>
+
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/StreamAppender.hpp>
-#include <fhglog/CompoundAppender.hpp>
 #include <fhglog/ThreadedAppender.hpp>
 
-int main (int , char **)
+#include <tests/utils.hpp>
+
+BOOST_FIXTURE_TEST_CASE (threaded_appender, utils::logger_with_minimum_log_level)
 {
-  using namespace fhg::log;
-
-  int errcount(0);
-  logger_t log(getLogger());
-  log.setLevel(LogLevel::MIN_LEVEL);
-
   std::ostringstream logstream;
 
-  {
-    std::clog << "** testing event appending (one appender, threaded)...";
+  fhg::log::ThreadedAppender::ptr_t threaded_appender
+    ( new fhg::log::ThreadedAppender
+      (new fhg::log::StreamAppender ("s1", logstream, "%m"))
+    );
 
-        Appender::ptr_t s1(new StreamAppender("s1", logstream, "%m"));
+	log.addAppender (threaded_appender);
 
-	ThreadedAppender::ptr_t threaded_appender(new ThreadedAppender(s1));
+  log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
 
-	log.addAppender(threaded_appender);
+	threaded_appender->flush();
 
-	const std::string msg("hello world!");
-    log.log(FHGLOG_MKEVENT_HERE(DEBUG, msg));
-
-	threaded_appender->flush(); // wait for completion
-
-    if (logstream.str() != msg)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlogged message: \"" << logstream.str() << "\"" << std::endl;
-      std::clog << "\texpected: \"" << msg << "\"" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-    logstream.str("");
-	log.removeAppender(threaded_appender->name());
-  }
-
-  log.removeAllAppenders();
-  return errcount;
+  BOOST_REQUIRE_EQUAL (logstream.str(), "hello world!");
 }
