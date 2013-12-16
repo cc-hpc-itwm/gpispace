@@ -5,9 +5,9 @@
 #include <fhglog/SynchronizedAppender.hpp>
 #include <fhglog/NullAppender.hpp>
 
+#include <boost/foreach.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <tests/utils.hpp>
 
@@ -33,19 +33,22 @@ int main (int , char **)
   const std::size_t thread_count (100);
   const std::size_t message_count (1000);
 
-  typedef std::vector<boost::shared_ptr<boost::thread> >  threads;
-  for (std::size_t i (0); i < thread_count; ++i)
   {
-    threads.push_back
-      (boost::shared_ptr<boost::thread>(new boost::thread (boost::bind (worker, message_count, &log))));
-  }
+    boost::ptr_vector<boost::thread> threads;
 
-  for (std::size_t i (0); i < thread_count; ++i)
-  {
-    threads[i]->join();
-  }
+    for (std::size_t i (0); i < thread_count; ++i)
+    {
+      threads.push_back (new boost::thread (worker, message_count, &log));
+    }
 
-  threads.clear();
+    BOOST_FOREACH (boost::thread& thread, threads)
+    {
+      if (thread.joinable())
+      {
+        thread.join();
+      }
+    }
+  }
 
   std::cout << "total count = " << messages_logged << std::endl;
   std::cout << "expected    = " << (thread_count * message_count) << std::endl;
