@@ -1,96 +1,52 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#include <sstream> // ostringstream
-#include <vector>
+#define BOOST_TEST_MODULE every_n
+#include <boost/test/unit_test.hpp>
 
 #include <fhglog/fhglog.hpp>
-#include <fhglog/StreamAppender.hpp>
-#include <fhglog/format.hpp>
 
-class VectorAppender : public fhg::log::Appender
+#include <tests/utils.hpp>
+
+#include <boost/preprocessor/repetition/repeat.hpp>
+
+namespace
 {
-public:
-  typedef std::vector<std::string> container_type;
-
-  VectorAppender(const std::string &a_name, container_type & vec, const std::string & fmt)
-    : fhg::log::Appender(a_name)
-    , vec_ (vec)
-    , fmt_(fmt)
-  {}
-
-  void append(const fhg::log::LogEvent &evt)
+  class counting_appender : public fhg::log::Appender
   {
-    vec_.push_back (fhg::log::format(fmt_, evt));
-  }
+  public:
+    counting_appender (std::size_t* counter)
+      : fhg::log::Appender ("counting_appender")
+      , _counter (counter)
+    {}
 
-  const container_type & list () const
-  {
-    return vec_;
-  }
+    void append (const fhg::log::LogEvent &evt)
+    {
+      ++(*_counter);
+    }
 
-  void flush () {}
-private:
-  container_type & vec_;
-  std::string fmt_;
-};
+    void flush () {}
+  private:
+    std::size_t* _counter;
+  };
 
-template <typename T>
-T calc_expected ( T N, T n )
-{
-  return N / n;
+  template<typename T> T divru (T a, T b) { return (a + b - 1) / b; }
 }
 
-static int test_every_n (const size_t N, const size_t Num = 100)
-{
-  using namespace fhg::log;
-  const size_t expected (calc_expected (Num, N));
-  logger_t log(getLogger());
-  log.removeAllAppenders();
-  log.setLevel (LogLevel::MIN_LEVEL);
-
-  VectorAppender::container_type vec;
-  log.addAppender(Appender::ptr_t(new VectorAppender("vectorappender", vec, "%m")));
-
-  {
-    std::clog << "** testing appending only every " << N << " events...";
-    for (size_t i(0); i < Num; ++i)
-    {
-      FHGLOG_DO_EVERY_N(N, LLOG(INFO, log, "iteration #" << i));
-    }
-    if (vec.size() != expected)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tmessages logged: " << vec.size() << std::endl;
-      std::clog << "\texpected: " << expected << std::endl;
-      return 1;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-    vec.clear();
-  }
-
-  log.removeAllAppenders();
-  return 0;
+#define TEST_CASE_EVERY_N(IGNORE, N, iterations)                        \
+BOOST_FIXTURE_TEST_CASE (every_ ## N, utils::logger_with_minimum_log_level) \
+{                                                                       \
+  std::size_t messages_logged;                                          \
+  log.addAppender ( fhg::log::Appender::ptr_t                           \
+                    (new counting_appender (&messages_logged))          \
+                  );                                                    \
+                                                                        \
+  for (size_t i (0); i < iterations; ++i)                               \
+  {                                                                     \
+    FHGLOG_DO_EVERY_N (N, LLOG (INFO, log, "iteration #" << i));        \
+  }                                                                     \
+                                                                        \
+  BOOST_REQUIRE_EQUAL (messages_logged, divru (iterations, N));         \
 }
 
-int main (int , char **)
-{
-  using namespace fhg::log;
 
-  int errcount(0);
-  logger_t log(getLogger());
-  log.removeAllAppenders();
-  log.setLevel (LogLevel::MIN_LEVEL);
-
-  VectorAppender::container_type vec;
-  log.addAppender(Appender::ptr_t(new VectorAppender("vectorappender", vec, "%m")));
-
-  for (size_t i = (1); i <= 50; ++i)
-  {
-    errcount += test_every_n (i, 50);
-  }
-
-  return errcount;
-}
+BOOST_PP_REPEAT_FROM_TO (1, 51, TEST_CASE_EVERY_N, 50)
