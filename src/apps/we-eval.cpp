@@ -171,7 +171,7 @@ try
 
   {
     std::vector<std::string> search_path;
-    fhg::log::split (mod_path, ":", std::back_inserter (search_path));
+    fhg::util::split (mod_path, ":", std::back_inserter (search_path));
     BOOST_FOREACH (const std::string& path, search_path)
     {
       loader.append_search_path (path);
