@@ -23,3 +23,8 @@ fhg_add_test (num.cpp
   PROJECT fhg_util
   LINK_LIBRARIES fhg-util
 )
+
+fhg_add_test (split.cpp
+  PROJECT fhg_util
+  LINK_LIBRARIES fhg-util
+)

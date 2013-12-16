@@ -4,7 +4,6 @@ set (tests
    test_logger_config.cpp
    test_logging.cpp
    test_perf.cpp
-   test_split.cpp
 )
 
 foreach (test ${tests})
