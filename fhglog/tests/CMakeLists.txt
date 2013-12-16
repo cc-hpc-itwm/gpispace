@@ -34,6 +34,11 @@ fhg_add_test (disabled_logging.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
+fhg_add_test (dump_event.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
 fhg_add_test (error_handler.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
@@ -67,9 +72,3 @@ fhg_add_test (once.cpp
 if (ENABLE_REMOTE_LOGGING)
   add_subdirectory(remote)
 endif (ENABLE_REMOTE_LOGGING)
-
-fhg_add_test (dump_event dump_event.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhglog
-  LINK_LIBRARIES fhglog
-)
