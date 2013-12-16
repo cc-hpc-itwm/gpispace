@@ -3,7 +3,7 @@
 
 #include <fhglog/fhglog.hpp>
 
-#include <sys/time.h>
+#include <fhg/util/now.hpp>
 
 namespace
 {
@@ -31,18 +31,6 @@ BOOST_AUTO_TEST_CASE (encode_decode)
   BOOST_REQUIRE_EQUAL (fhg::log::LogEvent::from_string (evts).encoded(), evts);
 }
 
-namespace
-{
-  double current_time()
-  {
-    struct timeval tv;
-
-    gettimeofday (&tv, NULL);
-
-    return ((double)(tv.tv_sec) + (double)(tv.tv_usec) * 1e-6);
-  }
-}
-
 BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
 {
   fhg::log::LogEvent evt (gen_event());
@@ -52,14 +40,14 @@ BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
 
   int count (0);
 
-  double t (-current_time());
+  double t (-fhg::util::now());
 
   for (std::size_t i (0); i < max; ++i)
   {
     count += *evt.encoded().begin();
   }
 
-  t += current_time();
+  t += fhg::util::now();
 
   BOOST_REQUIRE_EQUAL (count, max * int (first_encoded_char));
 #ifndef NDEBUG
@@ -79,14 +67,14 @@ BOOST_AUTO_TEST_CASE (decode_with_time_constraint)
 
   std::size_t count (0);
 
-  double t (-current_time());
+  double t (-fhg::util::now());
 
   for (std::size_t i (0); i < max; ++i)
   {
     count += fhg::log::LogEvent::from_string (evts).id();
   }
 
-  t += current_time();
+  t += fhg::util::now();
 
   BOOST_REQUIRE_EQUAL (count, max * id);
 #ifndef NDEBUG
