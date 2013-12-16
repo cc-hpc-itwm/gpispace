@@ -82,16 +82,10 @@ namespace fhg
         const std::pair<std::string, std::string> key_value
           (fhg::util::split_string (*env_p, "="));
 
-        std::string key (key_value.first);
-        if (key.find ("FHGLOG_") != std::string::npos)
+        if (key_value.first.find ("FHGLOG_") != std::string::npos)
         {
-          // strip key and make lowercase
-          key = key.substr(7);
-          std::transform( key.begin()
-                        , key.end()
-                        , key.begin()
-                        , tolower
-                        );
+          std::string key (key_value.first.substr (7));
+          std::transform (key.begin(), key.end(), key.begin(), tolower);
           parse_key_value(key, key_value.second);
         }
       }
