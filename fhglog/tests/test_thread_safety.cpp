@@ -3,12 +3,10 @@
 #define BOOST_TEST_MODULE thread_safety
 #include <boost/test/unit_test.hpp>
 
-#include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
 #include <fhglog/StreamAppender.hpp>
 #include <fhglog/SynchronizedAppender.hpp>
-#include <unistd.h> // usleep
 
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
