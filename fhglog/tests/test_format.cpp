@@ -1,55 +1,22 @@
 #include <fhglog/format.hpp>
 
-int main()
+#define BOOST_TEST_MODULE format
+#include <boost/test/unit_test.hpp>
+
+BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
 {
-  int errcount (0);
-
-  using namespace fhg::log;
-
-  {
-    const std::string fmt("test %%");
-    try
-    {
-      std::string msg (fhg::log::format(fmt, LogEvent()));
-      if (msg != "test %")
-      {
-        throw std::runtime_error ("format error, expected \"test %\", got \""+msg+"\"");
-      }
-    }
-    catch (std::exception const &ex)
-    {
-      ++errcount;
-      std::cerr << "execption: " << ex.what() << std::endl;
-    }
-  }
-
-  {
-    try
-    {
-      fhg::log::check_format("test %-");
-      ++errcount;
-      std::cerr << "expected invalid format error!" << std::endl;
-    }
-    catch (std::exception const &ex)
-    {
-      // ok
-    }
-  }
-
-  {
-    try
-    {
-      std::string msg (fhg::log::format( fhg::log::default_format::SHORT()
-                                       , LogEvent()
-                                       )
-                      );
-    }
-    catch (std::exception const &ex)
-    {
-      ++errcount;
-      std::cerr << "execption: " << ex.what() << std::endl;
-    }
-  }
-
-  return errcount;
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("test %%", fhg::log::LogEvent()), "test %");
 }
+
+BOOST_AUTO_TEST_CASE (throw_on_invalid_escaped_sequence)
+{
+  BOOST_REQUIRE_THROW (fhg::log::check_format ("test %-"), std::runtime_error);
+}
+
+//! \todo This does not test
+BOOST_AUTO_TEST_CASE (NOTEST_use_short_format)
+{
+  fhg::log::format (fhg::log::default_format::SHORT(), fhg::log::LogEvent());
+}
+
+//! \todo This should test all format flags!
