@@ -1,6 +1,8 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#include <sstream> // ostringstream
+#define BOOST_TEST_MODULE synchronized_appender
+#include <boost/test/unit_test.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fhglog/SynchronizedAppender.hpp>
 #include <fhglog/NullAppender.hpp>
@@ -25,16 +27,14 @@ namespace
   }
 }
 
-int main (int , char **)
+BOOST_FIXTURE_TEST_CASE (synchronized_appender, utils::logger_with_minimum_log_level)
 {
-  using namespace fhg::log;
-
-  int errcount(0);
-  logger_t log(getLogger());
-  log.setLevel(LogLevel::MIN_LEVEL);
-
   std::size_t messages_logged (0);
-  log.addAppender(Appender::ptr_t(new SynchronizedAppender(new utils::counting_appender (&messages_logged))));
+  log.addAppender ( fhg::log::Appender::ptr_t
+                    ( new fhg::log::SynchronizedAppender
+                      (new utils::counting_appender (&messages_logged))
+                    )
+                  );
 
   {
     boost::ptr_vector<boost::thread> threads;
@@ -53,7 +53,5 @@ int main (int , char **)
     }
   }
 
-  errcount += (messages_logged != (thread_count * message_count));
-
-  return errcount;
+  BOOST_REQUIRE_EQUAL (messages_logged, thread_count * message_count);
 }

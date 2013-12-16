@@ -6,7 +6,6 @@ set (tests
    test_path.cpp
    test_perf.cpp
    test_split.cpp
-   test_synch_appender.cpp
 )
 
 foreach (test ${tests})
@@ -68,6 +67,11 @@ fhg_add_test (once.cpp
   LINK_LIBRARIES fhglog)
 
 fhg_add_test (remote_logging.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (test_synch_appender.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
