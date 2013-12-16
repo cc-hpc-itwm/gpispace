@@ -1,13 +1,5 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#ifdef WIN32
-int main()
-{
-  return 0;
-}
-
-#else
-
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/StreamAppender.hpp>
@@ -95,5 +87,3 @@ int main (int , char **)
 
   return errcount;
 }
-
-#endif
