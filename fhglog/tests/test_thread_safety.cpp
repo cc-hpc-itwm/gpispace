@@ -5,74 +5,48 @@
 #include <fhglog/StreamAppender.hpp>
 #include <fhglog/SynchronizedAppender.hpp>
 #include <unistd.h> // usleep
-#include <pthread.h>
 
-struct t_param
-{
-  char id;
-  std::size_t loop_count;
-};
+#include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
 
-void *thread(void *arg)
+namespace
 {
-  using namespace fhg::log;
-  t_param *p = static_cast<t_param*>(arg);
-  LOG(DEBUG, "t" << p->id << " started");
-#ifdef __APPLE__
-  pthread_yield_np(); // apple only allows you to force yielding.
-#else
-  pthread_yield();
-#endif
-  for (std::size_t i(0); i < p->loop_count; ++i)
+  void thread_function (std::string logger_name, std::size_t loop_count)
   {
-    logger_t log(getLogger(std::string("t") + p->id));
-    LOG_DEBUG(log, "loop count " << i);
-    if (0 == (i % 50))
+    boost::this_thread::yield();
+
+    for (std::size_t i (0); i < loop_count; ++i)
     {
-      LOG(DEBUG, "t" << p->id << " sleeping");
-      usleep(100);
+      fhg::log::getLogger (logger_name).log
+        (FHGLOG_MKEVENT_HERE (DEBUG, boost::lexical_cast<std::string> (i)));
+
+      if (0 == (i % 50))
+      {
+        boost::this_thread::sleep (boost::posix_time::microseconds (100));
+      }
     }
   }
-  LOG(DEBUG, "t" << p->id << " finished");
-  return arg;
 }
-
-static std::ostringstream logstream;
 
 int main (int , char **)
 {
-  using namespace fhg::log;
+  std::ostringstream logstream;
 
-  int errcount(0);
-  logger_t root(getLogger());
-
-  root.addAppender(Appender::ptr_t(new SynchronizedAppender(new StreamAppender("stringstream", logstream, "%m"))));
+  fhg::log::logger_t root (fhg::log::getLogger());
+  root.addAppender(fhg::log::Appender::ptr_t(new fhg::log::SynchronizedAppender(new fhg::log::StreamAppender("stringstream", logstream, "%m"))));
 
   {
     std::clog << "** testing multiple threads...";
     std::size_t loop_count = 1000;
 
-    struct t_param pt0 = { '0', loop_count };
-    struct t_param pt1 = { '1', loop_count };
-    struct t_param pt2 = { '2', loop_count };
+    boost::thread t0 (&thread_function, "0", loop_count);
+    boost::thread t1 (&thread_function, "0", loop_count);
+    boost::thread t2 (&thread_function, "0", loop_count);
 
-    pthread_t t0;
-    pthread_t t1;
-    pthread_t t2;
-
-    LOG(DEBUG, "starting threads...");
-    pthread_create(&t0, NULL, &thread, &pt0);
-    pthread_create(&t1, NULL, &thread, &pt1);
-    pthread_create(&t2, NULL, &thread, &pt2);
-
-    LOG(DEBUG, "joining...");
-    pthread_join(t2, NULL);
-    pthread_join(t1, NULL);
-    pthread_join(t0, NULL);
+    if (t2.joinable()) { t2.join(); }
+    if (t1.joinable()) { t1.join(); }
+    if (t0.joinable()) { t0.join(); }
 
     // didn't segfault...
-    std::clog << "OK!" << std::endl;
   }
-
-  return errcount;
 }
