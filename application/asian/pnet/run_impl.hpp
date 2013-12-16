@@ -95,6 +95,7 @@ namespace asian
       {
         if (isnan(sums[tid].sum1) || isnan(sums[tid].sum2))
         {
+          delete [] sums;
           throw std::runtime_error ("execution failed: got NaN");
         }
 
