@@ -37,8 +37,6 @@ private:
 template <typename T>
 T calc_expected ( T N, T n )
 {
-  //  echo $(( (50 - (50 % 3 + 1)) / 3 + 1 ))
-  //  return ( (N - (N % n + 1)) / n + 1 );
   return N / n;
 }
 
@@ -88,107 +86,6 @@ int main (int , char **)
 
   VectorAppender::container_type vec;
   log.addAppender(Appender::ptr_t(new VectorAppender("vectorappender", vec, "%m")));
-
-//   {
-//     const size_t N (1);
-//     const size_t Num (50);
-
-//     const size_t expected (calc_expected(Num, N));
-
-//     std::clog << "** testing appending only every " << N << " events...";
-//     for (size_t i(1); i <= Num; ++i)
-//     {
-//       FHGLOG_DO_EVERY_N(N, LLOG(INFO, log, "iteration #" << i));
-//     }
-//     if (vec.size() != expected)
-//     {
-//       std::clog << "FAILED!" << std::endl;
-//       std::clog << "\tmessages logged: " << vec.size() << std::endl;
-//       std::clog << "\texpected: " << expected << std::endl;
-//       ++errcount;
-//     }
-//     else
-//     {
-//       std::clog << "OK!" << std::endl;
-//     }
-//     vec.clear();
-//   }
-
-//   {
-//     const size_t N (2);
-//     const size_t Num (50);
-
-//     const size_t expected (calc_expected(Num, N));
-
-//     std::clog << "** testing appending only every " << N << " events...";
-//     for (size_t i(1); i <= Num; ++i)
-//     {
-//       FHGLOG_DO_EVERY_N(N, LLOG(INFO, log, "iteration #" << i));
-//     }
-//     if (vec.size() != expected)
-//     {
-//       std::clog << "FAILED!" << std::endl;
-//       std::clog << "\tmessages logged: " << vec.size() << std::endl;
-//       std::clog << "\texpected: " << expected << std::endl;
-//       ++errcount;
-//     }
-//     else
-//     {
-//       std::clog << "OK!" << std::endl;
-//     }
-//     vec.clear();
-//   }
-
-//   {
-//     const size_t N (3);
-//     const size_t Num (50);
-
-//     const size_t expected (calc_expected(Num, N));
-
-//     std::clog << "** testing appending only every " << N << " events...";
-//     for (size_t i(1); i <= Num; ++i)
-//     {
-//       FHGLOG_DO_EVERY_N(N, LLOG(INFO, log, "iteration #" << i));
-//     }
-//     if (vec.size() != expected)
-//     {
-//       std::clog << "FAILED!" << std::endl;
-//       std::clog << "\tmessages logged: " << vec.size() << std::endl;
-//       std::clog << "\texpected: " << expected << std::endl;
-//       ++errcount;
-//     }
-//     else
-//     {
-//       std::clog << "OK!" << std::endl;
-//     }
-//     vec.clear();
-//   }
-
-//   {
-//     const size_t N (4);
-//     const size_t Num (50);
-
-//     const size_t expected (calc_expected(Num, N));
-
-//     std::clog << "** testing appending only every " << N << " events...";
-
-//     for (size_t i(1); i <= Num; ++i)
-//     {
-//       FHGLOG_DO_EVERY_N(N, LLOG(INFO, log, "iteration #" << i));
-//     }
-//     if (vec.size() != expected)
-//     {
-//       std::clog << "FAILED!" << std::endl;
-//       std::clog << "\tmessages logged: " << vec.size() << std::endl;
-//       std::clog << "\texpected: " << expected << std::endl;
-//       ++errcount;
-//     }
-//     else
-//     {
-//       std::clog << "OK!" << std::endl;
-//     }
-//     vec.clear();
-//   }
 
   for (size_t i = (1); i <= 50; ++i)
   {
