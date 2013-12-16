@@ -1,45 +1,34 @@
+// alexander.petry@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE path
+#include <boost/test/unit_test.hpp>
+
 #include <fhglog/logger_path.hpp>
 #include <iostream>
 
-int main()
+BOOST_AUTO_TEST_CASE (to_string)
 {
-  int errcount (0);
+  BOOST_REQUIRE_EQUAL
+    (fhg::log::logger_path ("fhg.logger.test").str(), "fhg.logger.test");
+  BOOST_REQUIRE_EQUAL
+    (fhg::log::logger_path ("fhg.logger.test"), std::string ("fhg.logger.test"));
+}
 
-  using namespace fhg::log;
+BOOST_AUTO_TEST_CASE (operator_slash)
+{
+  BOOST_REQUIRE_EQUAL
+    (fhg::log::logger_path ("fhg") / "test" / 1, std::string ("fhg.test.1"));
+}
 
-  logger_path p("fhg.logger.test");
+BOOST_AUTO_TEST_CASE (iostreaming)
+{
+  const fhg::log::logger_path p ("fhg.logger.test");
 
-  {
-    std::string expected ("fhg.logger.test");
-    if (p.str() != expected)
-    {
-      std::cerr << "*** failed: expected: " << expected << " got: " << p.str() << std::endl;
-      errcount += 1;
-    }
-  }
+  std::stringstream sstr;
+  sstr << p;
 
-  {
-    std::string expected ("fhg.logger.test.id.1");
-    logger_path p_id ( p / "id" / 1 );
-    if (p_id.str() != expected)
-    {
-      std::cerr << "*** failed: expected: " << expected << " got: " << p_id.str() << std::endl;
-      errcount += 1;
-    }
-  }
+  fhg::log::logger_path p_in;
+  sstr >> p_in;
 
-  {
-    std::stringstream sstr;
-    sstr << p;
-    logger_path p_in;
-    sstr >> p_in;
-
-    if (p_in != p)
-    {
-      std::cerr << "*** failed: expected: " << p << " got: " << p_in << std::endl;
-      errcount += 1;
-    }
-  }
-
-  return errcount;
+  BOOST_REQUIRE_EQUAL (p, p_in);
 }
