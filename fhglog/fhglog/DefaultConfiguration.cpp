@@ -69,12 +69,15 @@ namespace fhg
 
     void DefaultConfiguration::parse_environment()
     {
+      for ( char** env_p
 #ifdef __APPLE__
-      char ** env_p = *_NSGetEnviron();
+              (*_NSGetEnviron())
 #else
-      char ** env_p = environ;
+              (environ)
 #endif
-      while (env_p != NULL && (*env_p != NULL))
+          ; env_p != NULL && (*env_p != NULL)
+          ; ++env_p
+          )
       {
         const std::pair<std::string, std::string> key_value
           (fhg::util::split_string (*env_p, "="));
@@ -91,8 +94,6 @@ namespace fhg
                         );
           parse_key_value(key, key_value.second);
         }
-
-        ++env_p;
       }
     }
 
