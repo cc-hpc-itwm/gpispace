@@ -14,11 +14,14 @@
 
 BOOST_FIXTURE_TEST_CASE (logging_disabled_should_add_nothing_to_stream, utils::logger_with_minimum_log_level)
 {
-  std::ostringstream logstream;
-  log.addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ("stringstream", logstream, "%m")));
+  std::size_t messages_logged (0);
+  log.addAppender ( fhg::log::Appender::ptr_t
+                    (new utils::counting_appender (&messages_logged))
+                  );
 
   log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
-  BOOST_REQUIRE (logstream.str().empty());
+
+  BOOST_REQUIRE_EQUAL (messages_logged, 0);
 }
 
 namespace
