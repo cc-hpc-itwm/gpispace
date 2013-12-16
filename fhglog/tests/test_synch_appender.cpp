@@ -11,18 +11,11 @@
 
 #include <tests/utils.hpp>
 
-struct thread_data_t
+void worker (std::size_t count, fhg::log::logger_t* logger)
 {
-  std::size_t rank;
-  std::size_t count;
-  fhg::log::logger_t * logger;
-};
-
-void worker (thread_data_t * data)
-{
-  for (std::size_t i (0); i < data->count; ++i)
+  for (std::size_t i (0); i < count; ++i)
   {
-    data->logger->log (FHGLOG_MKEVENT_HERE(INFO, "hello"));
+    logger->log (FHGLOG_MKEVENT_HERE (INFO, "hello"));
   }
 }
 
@@ -41,18 +34,12 @@ int main (int , char **)
   const std::size_t message_count (1000);
 
   typedef std::vector<boost::shared_ptr<boost::thread> > thread_list_t;
-  typedef std::vector<thread_data_t> thread_data_list_t;
 
   thread_list_t threads;
-  thread_data_list_t thread_data (thread_count);
-
   for (std::size_t i (0); i < thread_count; ++i)
   {
-    thread_data[i].rank   = i;
-    thread_data[i].logger = &log;
-    thread_data[i].count  = message_count;
     threads.push_back
-      (boost::shared_ptr<boost::thread>(new boost::thread (boost::bind (worker, &thread_data[i]))));
+      (boost::shared_ptr<boost::thread>(new boost::thread (boost::bind (worker, message_count, &log))));
   }
 
   for (std::size_t i (0); i < thread_count; ++i)
