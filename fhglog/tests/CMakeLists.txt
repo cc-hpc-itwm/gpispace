@@ -1,6 +1,5 @@
 set (tests
    test_default_config.cpp
-   test_disabled_logging.cpp
    test_error_handler.cpp
    test_event.cpp
    test_every_n.cpp
@@ -33,6 +32,11 @@ fhg_add_test (test_append.cpp
   LINK_LIBRARIES fhglog)
 
 fhg_add_test (test_compound.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (test_disabled_logging.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)

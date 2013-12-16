@@ -1,147 +1,52 @@
 // alexander.petry@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE disabled_logging
+#include <boost/test/unit_test.hpp>
+
 #include <sstream> // ostringstream
 #include <ctime>   // time
-#include <unistd.h> // sleep
 
 #define FHGLOG_DISABLE_LOGGING 1
 #include <fhglog/fhglog.hpp>
 #include <fhglog/StreamAppender.hpp>
 
-// UNUSED
-// static std::string simulate_computation(std::size_t time = 5)
-// {
-//   sleep(time);
-//   return "";
-// }
+#include <tests/utils.hpp>
 
-int main (int, char **)
+BOOST_FIXTURE_TEST_CASE (logging_disabled_should_add_nothing_to_stream, utils::logger_with_minimum_log_level)
 {
-  using namespace fhg::log;
-
-  int errcount(0);
-  logger_t log(getLogger());
-
   std::ostringstream logstream;
-  log.addAppender(Appender::ptr_t(new StreamAppender("stringstream", logstream, "%m")));
+  log.addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ("stringstream", logstream, "%m")));
 
-  {
-    std::clog << "** testing manual event appending...";
-    log.log(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
-    if (! logstream.str().empty())
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlogged message: " << logstream.str() << std::endl;
-      std::clog << "\tempty string expected" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-    logstream.str("");
-  }
+  log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
+  BOOST_REQUIRE (logstream.str().empty());
+}
 
+namespace
+{
+  struct bad_timer
   {
-    std::clog << "** testing TRACE macro...";
-    std::time_t start(time(NULL));
-    LOG_TRACE(log, simulate_computation(10));
-    std::time_t end(time(NULL));
-    if ((end -start) > 1)
+    bad_timer()
+      : _start (time (NULL))
+    {}
+    std::time_t elapsed() const
     {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlog string should not be built!" << std::endl;
-      ++errcount;
+      return time (NULL) - _start;
     }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-  }
 
-  {
-    std::clog << "** testing DEBUG macro...";
-    std::time_t start(time(NULL));
-    LOG_DEBUG(log, simulate_computation(10));
-    std::time_t end(time(NULL));
-    if ((end -start) > 1)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlog string should not be built!" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-  }
+  private:
+    std::time_t _start;
+  };
+}
 
-  {
-    std::clog << "** testing INFO macro...";
-    std::time_t start(time(NULL));
-    LOG_INFO(log, simulate_computation(10));
-    std::time_t end(time(NULL));
-    if ((end -start) > 1)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlog string should not be built!" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-  }
+BOOST_FIXTURE_TEST_CASE (logging_disabled_should_use_less_than_a_second_and_not_execute_code, utils::logger_with_minimum_log_level)
+{
+  const bad_timer timer;
 
-  {
-    std::clog << "** testing WARN macro...";
-    std::time_t start(time(NULL));
-    LOG_WARN(log, simulate_computation(10));
-    std::time_t end(time(NULL));
-    if ((end -start) > 1)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlog string should not be built!" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-  }
+  LOG_TRACE (log, sleep (10));
+  LOG_INFO (log, sleep (10));
+  LOG_WARN (log, sleep (10));
+  LOG_ERROR (log, sleep (10));
+  LOG_FATAL (log, sleep (10));
 
-  {
-    std::clog << "** testing ERROR macro...";
-    std::time_t start(time(NULL));
-    LOG_ERROR(log, simulate_computation(10));
-    std::time_t end(time(NULL));
-    if ((end -start) > 1)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlog string should not be built!" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-  }
-
-  {
-    std::clog << "** testing FATAL macro...";
-    std::time_t start(time(NULL));
-    LOG_FATAL(log, simulate_computation(10));
-    std::time_t end(time(NULL));
-    if ((end -start) > 1)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlog string should not be built!" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-  }
-  return errcount;
+  BOOST_REQUIRE_LE (timer.elapsed(), 1);
 }
