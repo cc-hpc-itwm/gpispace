@@ -67,36 +67,19 @@ namespace fhg
       std::clog.flush();
     }
 
-    namespace
-    {
-      typedef std::pair<std::string, std::string> env_value_t;
-      typedef std::list<env_value_t> environment_t;
-
-      environment_t get_environment_variables()
-      {
-        environment_t env;
-#ifdef __APPLE__
-        char ** env_p = *_NSGetEnviron();
-#else
-        char ** env_p = environ;
-#endif
-        while (env_p != NULL && (*env_p != NULL))
-        {
-          env.push_back(fhg::util::split_string(*env_p, "="));
-          ++env_p;
-        }
-        return env;
-      }
-    }
-
     void DefaultConfiguration::parse_environment()
     {
-      environment_t env = get_environment_variables();
-
-      for (environment_t::const_iterator entry(env.begin()); entry != env.end(); ++entry)
+#ifdef __APPLE__
+      char ** env_p = *_NSGetEnviron();
+#else
+      char ** env_p = environ;
+#endif
+      while (env_p != NULL && (*env_p != NULL))
       {
-        std::string key(entry->first);
-        std::string val(entry->second);
+        const std::pair<std::string, std::string> key_value
+          (fhg::util::split_string (*env_p, "="));
+
+        std::string key (key_value.first);
         if (key.find ("FHGLOG_") != std::string::npos)
         {
           // strip key and make lowercase
@@ -106,8 +89,10 @@ namespace fhg
                         , key.begin()
                         , tolower
                         );
-          parse_key_value(key, val);
+          parse_key_value(key, key_value.second);
         }
+
+        ++env_p;
       }
     }
 
