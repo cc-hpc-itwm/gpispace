@@ -23,6 +23,7 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 #include <boost/lexical_cast.hpp>
+#include <fhg/util/split.hpp>
 
 using namespace fhg::log::remote;
 
@@ -30,7 +31,7 @@ RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &loc
   : Appender(a_name)
   , socket_(NULL)
 {
-  std::pair<std::string, std::string> host_port = fhg::log::split_string(location, ":");
+  std::pair<std::string, std::string> host_port = fhg::util::split_string(location, ":");
   host_ = host_port.first;
   if (host_port.second.empty())
   {
