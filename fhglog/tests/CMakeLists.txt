@@ -48,7 +48,7 @@ fhg_add_test (every_n.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_file_appender.cpp
+fhg_add_test (file_appender.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog ${Boost_FILESYSTEM_LIBRARY})
