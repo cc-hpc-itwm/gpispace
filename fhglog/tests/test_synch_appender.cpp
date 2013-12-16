@@ -53,9 +53,6 @@ int main (int , char **)
     }
   }
 
-  std::cout << "total count = " << messages_logged << std::endl;
-  std::cout << "expected    = " << (thread_count * message_count) << std::endl;
-
   errcount += (messages_logged != (thread_count * message_count));
 
   return errcount;
