@@ -15,9 +15,6 @@ extern "C"
   typedef Word_t MemSize_t, *PMemSize_t;
   typedef Word_t Align_t;
 
-#define FMT_MemSize_t FMT_Word_t
-#define FMT_Align_t FMT_Word_t
-
   extern MemSize_t tmmgr_init (PTmmgr_t, const MemSize_t, const Align_t);
   extern MemSize_t tmmgr_finalize (PTmmgr_t);
 
@@ -59,8 +56,6 @@ extern "C"
 
   typedef Word_t Count_t;
 
-#define FMT_Count_t FMT_Word_t
-
   extern Count_t tmmgr_numhandle (const Tmmgr_t);
   extern Count_t tmmgr_numalloc (const Tmmgr_t);
   extern Count_t tmmgr_numfree (const Tmmgr_t);
@@ -69,9 +64,6 @@ extern "C"
 
   typedef Offset_t OffsetDest_t;
   typedef Offset_t OffsetSrc_t;
-
-#define FMT_OffsetDest_t FMT_Offset_t
-#define FMT_OffsetSrc_t FMT_Offset_t
 
   typedef void (*fMemmove_t) (const OffsetDest_t, const OffsetSrc_t,
                               const MemSize_t, void *);
