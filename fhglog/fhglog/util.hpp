@@ -69,35 +69,6 @@ namespace fhg { namespace log {
     }
   }
 
-
-  template <typename Iterator>
-  inline std::string join ( Iterator begin
-                          , Iterator end
-                          , const std::string & separator
-                          , const std::string & lead_in = ""
-                          , const std::string & lead_out = ""
-                          )
-  {
-    std::ostringstream os;
-
-    os << lead_in;
-
-    Iterator it = begin;
-    while (it != end)
-    {
-      if (it != begin)
-      {
-        os << separator;
-      }
-      os << *it;
-      ++it;
-    }
-
-    os << lead_out;
-
-    return os.str();
-  }
-
     environment_t get_environment_variables();
     unsigned int gettid();
 }}
