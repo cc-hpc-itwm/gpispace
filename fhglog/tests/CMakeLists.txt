@@ -4,13 +4,13 @@ set (tests
    test_formatter.cpp
    test_logger_config.cpp
    test_logging.cpp
+   test_once.cpp
    test_path.cpp
    test_perf.cpp
    test_split.cpp
    test_synch_appender.cpp
-   test_threaded.cpp
    test_thread_safety.cpp
-   test_once.cpp
+   test_threaded.cpp
 )
 
 foreach (test ${tests})
