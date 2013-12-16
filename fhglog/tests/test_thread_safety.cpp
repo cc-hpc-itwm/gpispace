@@ -72,17 +72,6 @@ int main (int , char **)
 
     // didn't segfault...
     std::clog << "OK!" << std::endl;
-//    if (logstream.str() != "hello world!")
-//    {
-//      std::clog << "FAILED!" << std::endl;
-//      std::clog << "\tlogged message: " << logstream.str() << std::endl;
-//      std::clog << "\texpected: " << "hello world!" << std::endl;
-//      ++errcount;
-//    }
-//    else
-//    {
-//      std::clog << "OK!" << std::endl;
-//    }
   }
 
   return errcount;
