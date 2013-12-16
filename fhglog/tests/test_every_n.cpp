@@ -17,7 +17,7 @@ namespace
 #define TEST_CASE_EVERY_N(IGNORE, N, iterations)                        \
 BOOST_FIXTURE_TEST_CASE (every_ ## N, utils::logger_with_minimum_log_level) \
 {                                                                       \
-  std::size_t messages_logged;                                          \
+  std::size_t messages_logged (0);                                      \
   log.addAppender ( fhg::log::Appender::ptr_t                           \
                     (new utils::counting_appender (&messages_logged))   \
                   );                                                    \
