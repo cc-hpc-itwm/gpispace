@@ -2,7 +2,6 @@ set (tests
    test_default_config.cpp
    test_logger_config.cpp
    test_logging.cpp
-   test_perf.cpp
 )
 
 foreach (test ${tests})
@@ -69,6 +68,11 @@ fhg_add_test (once.cpp
   LINK_LIBRARIES fhglog)
 
 fhg_add_test (path.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (performance.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
