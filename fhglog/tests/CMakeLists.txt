@@ -19,47 +19,47 @@ foreach (test ${tests})
   )
 endforeach()
 
-fhg_add_test (test_append.cpp
+fhg_add_test (appenders.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_compound.cpp
+fhg_add_test (compound_appender.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_disabled_logging.cpp
+fhg_add_test (disabled_logging.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_error_handler.cpp
+fhg_add_test (error_handler.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_event.cpp
+fhg_add_test (event.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_every_n.cpp
+fhg_add_test (every_n.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_filtering_appender.cpp
+fhg_add_test (filtering_appender.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_format.cpp
+fhg_add_test (format.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_once.cpp
+fhg_add_test (once.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
