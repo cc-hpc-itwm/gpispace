@@ -388,7 +388,7 @@ try
   po::options_description desc ("options");
 
   std::string path_to_act;
-  std::string mod_path;
+  std::vector<std::string> mod_path;
   std::vector<std::string> mods_to_load;
   std::size_t num_worker (8);
   std::string output;
@@ -402,8 +402,7 @@ try
     , "path to encoded activity or - for stdin"
     )
     ( "mod-path,L"
-    , po::value<std::string>(&mod_path)->default_value
-        (fhg::util::getenv("PC_LIBRARY_PATH", "."))
+    , po::value<std::vector<std::string> >(&mod_path)
     , "where can modules be located"
     )
     ( "worker"
@@ -455,9 +454,7 @@ try
   }
 
   {
-    std::vector<std::string> search_path;
-    fhg::util::split (mod_path, ":", std::back_inserter (search_path));
-    BOOST_FOREACH (std::string const &p, search_path)
+    BOOST_FOREACH (std::string const &p, mod_path)
     {
       loader.append_search_path (p);
     }
