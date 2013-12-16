@@ -11,6 +11,7 @@
 #include <fhglog/StreamAppender.hpp>
 
 #include <fhg/util/getenv.hpp>
+#include <fhg/util/split.hpp>
 
 #include <sdpa/job_states.hpp>
 #include <sdpa/client.hpp>
@@ -425,7 +426,7 @@ int main (int argc, char **argv) {
       LOG(INFO, "initializing KVS at " << kvs_url);
 
       std::vector<std::string> parts;
-      fhg::log::split(kvs_url, ":", std::back_inserter(parts));
+      fhg::util::split(kvs_url, ":", std::back_inserter(parts));
       if (parts.size() != 2)
       {
         LOG(ERROR, "invalid kvs url: expected host:port, got: " << kvs_url);
