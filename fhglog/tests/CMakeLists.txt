@@ -1,15 +1,3 @@
-set (tests
-   test_logging.cpp
-)
-
-foreach (test ${tests})
-  fhg_add_test (${test}
-    PROJECT fhglog
-    LINK_LIBRARIES fhglog
-                   ${Boost_THREAD_LIBRARY} # default_config, logging, perf, synch_appender, threaded only
-  )
-endforeach()
-
 fhg_add_test (appenders.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
