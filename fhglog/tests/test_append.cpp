@@ -9,6 +9,8 @@
 #include <fhglog/format.hpp>
 #include <fhglog/NullAppender.hpp>
 
+#include <tests/utils.hpp>
+
 namespace
 {
   using namespace fhg::log;
@@ -30,20 +32,9 @@ namespace
   private:
     std::string fmt_;
   };
-
-  struct logger_with_minimum_log_level
-  {
-    logger_with_minimum_log_level()
-      : log (getLogger())
-    {
-      log.setLevel (LogLevel::MIN_LEVEL);
-    }
-
-    logger_t log;
-  };
 }
 
-BOOST_FIXTURE_TEST_CASE (add_and_remove_appender, logger_with_minimum_log_level)
+BOOST_FIXTURE_TEST_CASE (add_and_remove_appender, utils::logger_with_minimum_log_level)
 {
   const Appender::ptr_t appender (new NullAppender("null"));
   log.addAppender (appender);
@@ -55,7 +46,7 @@ BOOST_FIXTURE_TEST_CASE (add_and_remove_appender, logger_with_minimum_log_level)
   BOOST_REQUIRE_THROW (log.getAppender ("null"), std::runtime_error);
 }
 
-BOOST_FIXTURE_TEST_CASE (add_and_remove_all_appenders, logger_with_minimum_log_level)
+BOOST_FIXTURE_TEST_CASE (add_and_remove_all_appenders, utils::logger_with_minimum_log_level)
 {
   const Appender::ptr_t null_0 (new NullAppender("null-0"));
   const Appender::ptr_t null_1 (new NullAppender("null-1"));
@@ -81,7 +72,7 @@ BOOST_FIXTURE_TEST_CASE (add_and_remove_all_appenders, logger_with_minimum_log_l
 }
 
 //! \todo This is not a test!
-BOOST_FIXTURE_TEST_CASE (NOTEST_formatting_performance, logger_with_minimum_log_level)
+BOOST_FIXTURE_TEST_CASE (NOTEST_formatting_performance, utils::logger_with_minimum_log_level)
 {
   log.addAppender (Appender::ptr_t (new FormattingNullAppender ("null", default_format::LONG())));
   for (std::size_t count(0); count < 100000; ++count)
@@ -90,7 +81,7 @@ BOOST_FIXTURE_TEST_CASE (NOTEST_formatting_performance, logger_with_minimum_log_
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (stream_appender, logger_with_minimum_log_level)
+BOOST_FIXTURE_TEST_CASE (stream_appender, utils::logger_with_minimum_log_level)
 {
   std::ostringstream logstream;
   log.addAppender (Appender::ptr_t (new StreamAppender ("stringstream", logstream, "%m")));
@@ -100,7 +91,7 @@ BOOST_FIXTURE_TEST_CASE (stream_appender, logger_with_minimum_log_level)
   BOOST_REQUIRE_EQUAL (logstream.str(), "hello world!");
 }
 
-BOOST_FIXTURE_TEST_CASE (two_stream_appenders, logger_with_minimum_log_level)
+BOOST_FIXTURE_TEST_CASE (two_stream_appenders, utils::logger_with_minimum_log_level)
 {
   std::ostringstream logstream_0;
   std::ostringstream logstream_1;
