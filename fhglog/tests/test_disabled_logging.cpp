@@ -41,7 +41,7 @@ namespace
   };
 }
 
-BOOST_FIXTURE_TEST_CASE (logging_disabled_should_use_less_than_a_second_and_not_execute_code, utils::logger_with_minimum_log_level)
+BOOST_FIXTURE_TEST_CASE (logging_disabled_should_use_less_than_a_second_and_not_assemble_message, utils::logger_with_minimum_log_level)
 {
   const bad_timer timer;
 
