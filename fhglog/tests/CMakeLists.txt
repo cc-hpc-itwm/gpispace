@@ -80,12 +80,12 @@ fhg_add_test (synchronized_appender.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (thread_safety.cpp
+fhg_add_test (threaded_appender.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (threaded_appender.cpp
+fhg_add_test (thread_safety.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
