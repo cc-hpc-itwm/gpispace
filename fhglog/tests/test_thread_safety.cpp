@@ -88,3 +88,31 @@ BOOST_AUTO_TEST_CASE (different_loggers)
   BOOST_REQUIRE_EQUAL_COLLECTIONS
     (output_2.begin(), output_2.end(), reference.begin(), reference.end());
 }
+
+BOOST_AUTO_TEST_CASE (same_logger)
+{
+  std::vector<std::string> reference (3 * loop_count);
+  std::generate_n (reference.begin() + 0 * loop_count, loop_count, counter());
+  std::generate_n (reference.begin() + 1 * loop_count, loop_count, counter());
+  std::generate_n (reference.begin() + 2 * loop_count, loop_count, counter());
+  std::sort (reference.begin(), reference.end());
+
+  std::vector<std::string> output;
+
+  fhg::log::Appender::ptr_t sync_appender
+    (new fhg::log::SynchronizedAppender (new pushback_appender (&output)));
+  fhg::log::getLogger ("log").addAppender (sync_appender);
+
+  boost::thread t0 (&thread_function, "log");
+  boost::thread t1 (&thread_function, "log");
+  boost::thread t2 (&thread_function, "log");
+
+  if (t2.joinable()) { t2.join(); }
+  if (t1.joinable()) { t1.join(); }
+  if (t0.joinable()) { t0.join(); }
+
+  std::sort (output.begin(), output.end());
+
+  BOOST_REQUIRE_EQUAL_COLLECTIONS
+    (output.begin(), output.end(), reference.begin(), reference.end());
+}
