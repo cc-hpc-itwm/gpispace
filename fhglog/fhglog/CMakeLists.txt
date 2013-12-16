@@ -18,7 +18,6 @@ set (hdrs
   format.hpp
   LogEvent.hpp
   LoggerApi.hpp
-  logger_config.hpp
   Logger.hpp
   logger_path.hpp
   LogLevel.hpp

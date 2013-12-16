@@ -1,6 +1,5 @@
 set (tests
    test_default_config.cpp
-   test_logger_config.cpp
    test_logging.cpp
 )
 
