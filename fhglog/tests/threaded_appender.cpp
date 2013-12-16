@@ -14,16 +14,11 @@ BOOST_FIXTURE_TEST_CASE (threaded_appender, utils::logger_with_minimum_log_level
 {
   std::ostringstream logstream;
 
-  fhg::log::ThreadedAppender::ptr_t threaded_appender
-    ( new fhg::log::ThreadedAppender
-      (new fhg::log::StreamAppender ("s1", logstream, "%m"))
-    );
+  fhg::log::ThreadedAppender appender
+    (new fhg::log::StreamAppender ("s1", logstream, "%m"));
 
-	log.addAppender (threaded_appender);
-
-  log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
-
-	threaded_appender->flush();
+  appender.append (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
+	appender.flush();
 
   BOOST_REQUIRE_EQUAL (logstream.str(), "hello world!");
 }

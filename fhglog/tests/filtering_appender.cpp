@@ -14,19 +14,17 @@
 BOOST_FIXTURE_TEST_CASE (filter_levels_below, utils::logger_with_minimum_log_level)
 {
   std::ostringstream logstream;
-  fhg::log::Appender::ptr_t streamAppender
-    (new fhg::log::StreamAppender ("stream", logstream, "%m"));
 
-  const fhg::log::Filter::ptr_t filter
-    (new fhg::log::LevelFilter (fhg::log::LogLevel::ERROR));
-  fhg::log::Appender::ptr_t appender
-    (new fhg::log::FilteringAppender (streamAppender, filter));
+  fhg::log::FilteringAppender appender
+    ( new fhg::log::StreamAppender ("stream", logstream, "%m")
+    , fhg::log::Filter::ptr_t (new fhg::log::LevelFilter (fhg::log::LogLevel::ERROR))
+    );
 
-  appender->append (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
+  appender.append (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
 
   BOOST_REQUIRE (logstream.str().empty());
 
-  appender->append (FHGLOG_MKEVENT_HERE (ERROR, "hello world!"));
+  appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello world!"));
 
   BOOST_REQUIRE_EQUAL (logstream.str(), "hello world!");
 }

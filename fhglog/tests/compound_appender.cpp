@@ -12,16 +12,13 @@
 
 BOOST_FIXTURE_TEST_CASE (compound_appender, utils::logger_with_minimum_log_level)
 {
-  fhg::log::CompoundAppender::ptr_t compound
-    (new fhg::log::CompoundAppender ("compound-appender"));
+  fhg::log::CompoundAppender compound ("compound-appender");
 
   std::ostringstream logstream;
-  compound->addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ("s1", logstream, "%m")));
-  compound->addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ("s2", logstream, "%m")));
+  compound.addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ("s1", logstream, "%m")));
+  compound.addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ("s2", logstream, "%m")));
 
-  log.addAppender (compound);
-
-  log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
+  compound.append (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
 
   BOOST_REQUIRE_EQUAL (logstream.str(), "hello world!hello world!");
 }
