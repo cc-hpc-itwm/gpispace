@@ -170,6 +170,7 @@ endif()
 get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH CACHE)
 
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
+# TODO : Remove again?
 link_directories (${Boost_LIBRARY_DIRS})
 
 # sdpa needs boost::mpl::vector with more than $default elements for state machine
