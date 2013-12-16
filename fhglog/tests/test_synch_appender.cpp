@@ -33,9 +33,7 @@ int main (int , char **)
   const std::size_t thread_count (100);
   const std::size_t message_count (1000);
 
-  typedef std::vector<boost::shared_ptr<boost::thread> > thread_list_t;
-
-  thread_list_t threads;
+  typedef std::vector<boost::shared_ptr<boost::thread> >  threads;
   for (std::size_t i (0); i < thread_count; ++i)
   {
     threads.push_back
