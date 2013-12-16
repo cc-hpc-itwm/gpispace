@@ -14,8 +14,16 @@
 #include <fhglog/MemoryAppender.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 
+#include <fhg/util/split.hpp>
+
 #include <algorithm> // std::transform
 #include <cctype>    // std::tolower
+
+#ifdef __APPLE__
+#include <crt_externs.h> // _NSGetEnviron
+#else
+#include <unistd.h> // char **environ
+#endif
 
 namespace fhg
 {
@@ -57,6 +65,28 @@ namespace fhg
         std::clog << "E: Could not configure the logging environment: " << "unknown error" << std::endl;
       }
       std::clog.flush();
+    }
+
+    namespace
+    {
+      typedef std::pair<std::string, std::string> env_value_t;
+      typedef std::list<env_value_t> environment_t;
+
+      environment_t get_environment_variables()
+      {
+        environment_t env;
+#ifdef __APPLE__
+        char ** env_p = *_NSGetEnviron();
+#else
+        char ** env_p = environ;
+#endif
+        while (env_p != NULL && (*env_p != NULL))
+        {
+          env.push_back(fhg::util::split_string(*env_p, "="));
+          ++env_p;
+        }
+        return env;
+      }
     }
 
     void DefaultConfiguration::parse_environment()

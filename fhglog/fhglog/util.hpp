@@ -27,12 +27,8 @@
 #include <string>
 #include <sstream> // stringstream
 #include <utility> // std::pair
-#include <unistd.h> // char **environ
 
 namespace fhg { namespace log {
-  typedef std::pair<std::string, std::string> env_value_t;
-  typedef std::list<env_value_t> environment_t;
-
   inline std::string get_filename_from_path(const std::string &a_path)
   {
     // TODO: the following should be coded with boost::filesystem due to platform
@@ -69,7 +65,6 @@ namespace fhg { namespace log {
     }
   }
 
-    environment_t get_environment_variables();
     unsigned int gettid();
 }}
 
