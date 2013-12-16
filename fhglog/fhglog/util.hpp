@@ -140,7 +140,7 @@ namespace fhg { namespace log {
 #endif
       while (env_p != NULL && (*env_p != NULL))
       {
-        env.push_back(split_string(*env_p, "="));
+        env.push_back(fhg::util::split_string(*env_p, "="));
         ++env_p;
       }
       return env;
