@@ -71,7 +71,7 @@ fhg_add_test (remote_logging.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_synch_appender.cpp
+fhg_add_test (synchronized_appender.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
