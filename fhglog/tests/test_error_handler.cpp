@@ -1,20 +1,23 @@
 #include <fhglog/fhglog.hpp>
 
-static bool error_flag (false);
+#define BOOST_TEST_MODULE error_handler
+#include <boost/test/unit_test.hpp>
 
-static void handle_error ()
+namespace
 {
-  error_flag = true;
+  bool error_flag (false);
+
+  void handle_error()
+  {
+    error_flag = true;
+  }
 }
 
-int main()
+BOOST_AUTO_TEST_CASE (error_handler_should_be_called_on_fatal)
 {
-  fhg::log::install_error_handler ( &handle_error );
+  fhg::log::install_error_handler (&handle_error);
 
-  LOG(FATAL, "testing error handler");
+  LOG (FATAL, "testing error handler");
 
-  if (error_flag)
-    return EXIT_SUCCESS;
-  else
-    return EXIT_FAILURE;
+  BOOST_REQUIRE (error_flag);
 }
