@@ -16,9 +16,9 @@ namespace
   const std::size_t thread_count (100);
   const std::size_t message_count (1000);
 
-  void worker (std::size_t count, fhg::log::logger_t* logger)
+  void worker (fhg::log::logger_t* logger)
   {
-    for (std::size_t i (0); i < count; ++i)
+    for (std::size_t i (0); i < message_count; ++i)
     {
       logger->log (FHGLOG_MKEVENT_HERE (INFO, "hello"));
     }
@@ -41,7 +41,7 @@ int main (int , char **)
 
     for (std::size_t i (0); i < thread_count; ++i)
     {
-      threads.push_back (new boost::thread (worker, message_count, &log));
+      threads.push_back (new boost::thread (worker, &log));
     }
 
     BOOST_FOREACH (boost::thread& thread, threads)
