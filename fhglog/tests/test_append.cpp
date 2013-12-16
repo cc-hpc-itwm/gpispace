@@ -9,24 +9,27 @@
 #include <fhglog/format.hpp>
 #include <fhglog/NullAppender.hpp>
 
-class FormattingNullAppender : public fhg::log::Appender
+namespace
 {
-  public:
-  FormattingNullAppender(const std::string &a_name, const std::string & fmt) : fhg::log::Appender(a_name), fmt_(fmt) {}
+  using namespace fhg::log;
 
-    void append(const fhg::log::LogEvent &evt)
+  class FormattingNullAppender : public Appender
+  {
+  public:
+    FormattingNullAppender (const std::string &a_name, const std::string & fmt)
+      : Appender (a_name)
+      , fmt_ (fmt)
+    {}
+
+    void append (const LogEvent &evt)
     {
       format (fmt_, evt);
     }
 
-  void flush () {}
-private:
-  std::string fmt_;
-};
-
-namespace
-{
-  using namespace fhg::log;
+    void flush () {}
+  private:
+    std::string fmt_;
+  };
 
   struct logger_with_minimum_log_level
   {
