@@ -9,23 +9,7 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
-class CountingAppender : public fhg::log::Appender
-{
-public:
-  CountingAppender ()
-    : fhg::log::Appender ("counter")
-    , count (0)
-  {}
-
-  void append (const fhg::log::LogEvent &evt)
-  {
-    ++count;
-  }
-
-  void flush () {}
-
-  std::size_t count;
-};
+#include <tests/utils.hpp>
 
 struct thread_data_t
 {
@@ -50,8 +34,8 @@ int main (int , char **)
   logger_t log(getLogger());
   log.setLevel(LogLevel::MIN_LEVEL);
 
-  CountingAppender *total_count (new CountingAppender());
-  log.addAppender(Appender::ptr_t(new SynchronizedAppender(total_count)));
+  std::size_t messages_logged (0);
+  log.addAppender(Appender::ptr_t(new SynchronizedAppender(new utils::counting_appender (&messages_logged))));
 
   const std::size_t thread_count (100);
   const std::size_t message_count (1000);
@@ -78,10 +62,10 @@ int main (int , char **)
 
   threads.clear();
 
-  std::cout << "total count = " << total_count->count << std::endl;
+  std::cout << "total count = " << messages_logged << std::endl;
   std::cout << "expected    = " << (thread_count * message_count) << std::endl;
 
-  errcount += (total_count->count != (thread_count * message_count));
+  errcount += (messages_logged != (thread_count * message_count));
 
   return errcount;
 }
