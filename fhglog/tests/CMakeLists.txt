@@ -1,7 +1,6 @@
 set (tests
    test_default_config.cpp
    test_file_appender.cpp
-   test_formatter.cpp
    test_logger_config.cpp
    test_logging.cpp
    test_once.cpp
@@ -57,6 +56,11 @@ fhg_add_test (test_filtering_appender.cpp
   LINK_LIBRARIES fhglog)
 
 fhg_add_test (test_format.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (test_formatter.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)

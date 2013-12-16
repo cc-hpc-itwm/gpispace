@@ -1,92 +1,84 @@
 // alexander.petry@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE formatter
+#include <boost/test/unit_test.hpp>
+
 #include <sstream> // std::ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
 
-static int test_format(const fhg::log::LogEvent &evt
-              , const std::string &fmt
-              , const std::string &expected
-              , bool does_throw)
+BOOST_AUTO_TEST_CASE (short_severity)
 {
-  using namespace fhg::log;
-  std::clog << "** testing format string '" << fmt << "'...";
+#define CHECK(SEV, SEV_STR)                                             \
+  BOOST_REQUIRE_EQUAL                                                   \
+    (fhg::log::format ("%s", FHGLOG_MKEVENT_HERE (SEV, "")), SEV_STR)
 
-  if (! does_throw)
-  {
-    try
-    {
-      const std::string actual(format(fmt, evt));
-      if (expected != actual)
-      {
-        std::clog << "FAILED!" << std::endl;
-        std::clog << "\texpected: " << expected << std::endl;
-        std::clog << "\tactual: " << actual << std::endl;
-        return 1;
-      }
-      else
-      {
-        std::clog << "OK!" << std::endl;
-      }
-    }
-    catch (const std::exception &ex)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\texception: " << ex.what() << std::endl;
-      return 1;
-    }
-    catch (...)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tunknown exception!" << std::endl;
-      return 1;
-    }
-  }
-  else
-  {
-    try {
-      const std::string actual(format(fmt, evt));
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\texception expected!" << std::endl;
-      std::clog << "\tactual: " << actual << std::endl;
-    } catch(...) {
-      std::clog << "OK!" << std::endl;
-    }
-  }
-  return 0;
+  CHECK (TRACE, "T");
+  CHECK (DEBUG, "D");
+  CHECK (INFO, "I");
+  CHECK (WARN, "W");
+  CHECK (ERROR, "E");
+  CHECK (FATAL, "F");
+
+#undef CHECK
 }
 
-int main (int, char **)
+BOOST_AUTO_TEST_CASE (long_severity)
 {
-  using namespace fhg::log;
-  int errcount(0);
+#define CHECK(SEV, SEV_STR)                                             \
+  BOOST_REQUIRE_EQUAL                                                   \
+    (fhg::log::format ("%S", FHGLOG_MKEVENT_HERE (SEV, "")), SEV_STR)
 
-  errcount += test_format(FHGLOG_MKEVENT_HERE(TRACE, "hello"), "%s", "T", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(TRACE, "hello"), "%S", "TRACE", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%s", "D", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%S", "DEBUG", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(INFO, "hello"), "%s", "I", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(INFO, "hello"), "%S", "INFO", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(WARN, "hello"), "%s", "W", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(WARN, "hello"), "%S", "WARN", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(ERROR, "hello"), "%s", "E", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(ERROR, "hello"), "%S", "ERROR", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(FATAL, "hello"), "%s", "F", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(FATAL, "hello"), "%S", "FATAL", false);
+  CHECK (TRACE, "TRACE");
+  CHECK (DEBUG, "DEBUG");
+  CHECK (INFO, "INFO");
+  CHECK (WARN, "WARN");
+  CHECK (ERROR, "ERROR");
+  CHECK (FATAL, "FATAL");
 
-  errcount += test_format(LogEvent(LogLevel::DEBUG, "tests/test_formatter.cpp", "main", __LINE__, "hello"), "%P", "tests/test_formatter.cpp", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%p", "test_formatter.cpp", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%L", FHGLOG_TOSTRING(__LINE__), false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%l", "", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%m", "hello", false);
-  {
-    std::ostringstream ostr;
-    ostr << std::endl;
-    errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%n", ostr.str(), false);
-  }
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%%", "%", false);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%U", "not-used", true);
-  errcount += test_format(FHGLOG_MKEVENT_HERE(DEBUG, "hello"), "%", "not-used", true);
+#undef CHECK
+}
 
-  return errcount;
+BOOST_AUTO_TEST_CASE (path)
+{
+  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+                                 , "tests/test_formatter.cpp"
+                                 , "main", __LINE__, "hello"
+                                 );
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%P", event), "tests/test_formatter.cpp");
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%p", event), "test_formatter.cpp");
+}
+
+BOOST_AUTO_TEST_CASE (line)
+{
+  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+                                 , "tests/test_formatter.cpp"
+                                 , "main", 1002, "hello"
+                                 );
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%L", event), "1002");
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%l", event), "");
+}
+
+BOOST_AUTO_TEST_CASE (message)
+{
+  BOOST_REQUIRE_EQUAL
+    (fhg::log::format ("%m", FHGLOG_MKEVENT_HERE (DEBUG, "hello")), "hello");
+}
+
+BOOST_AUTO_TEST_CASE (newline)
+{
+  std::ostringstream ostr;
+  ostr << std::endl;
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%n", fhg::log::LogEvent()), ostr.str());
+}
+
+BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
+{
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%%", fhg::log::LogEvent()), "%");
+}
+
+BOOST_AUTO_TEST_CASE (throw_on_invalid_escaped_sequence)
+{
+  BOOST_REQUIRE_THROW (fhg::log::check_format ("%U"), std::runtime_error);
+  BOOST_REQUIRE_THROW (fhg::log::check_format ("%"), std::runtime_error);
 }
