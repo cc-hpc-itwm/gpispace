@@ -4,6 +4,7 @@
 #include <fhglog/util.hpp>
 #include <vector>
 #include <boost/lexical_cast.hpp>
+#include <fhg/util/split.hpp>
 
 namespace fhg
 {
@@ -29,10 +30,10 @@ namespace fhg
       template <typename T>
       logger_path & operator/(T const & t)
       {
-        fhg::log::split( boost::lexical_cast<std::string>(t)
-                       , SEPERATOR()
-                       , std::back_inserter (path_)
-                       );
+        fhg::util::split( boost::lexical_cast<std::string>(t)
+                        , SEPERATOR()
+                        , std::back_inserter (path_)
+                        );
         return *this;
       }
 
