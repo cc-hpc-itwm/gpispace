@@ -69,6 +69,7 @@ fhg_add_test (once.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-if (ENABLE_REMOTE_LOGGING)
-  add_subdirectory(remote)
-endif (ENABLE_REMOTE_LOGGING)
+fhg_add_test (remote/test_remote_logging.cpp
+  PROJECT fhglog-remote
+  LINK_LIBRARIES fhglog
+)

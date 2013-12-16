@@ -12,11 +12,7 @@
 #include <fhglog/FileAppender.hpp>
 #include <fhglog/CompoundAppender.hpp>
 #include <fhglog/MemoryAppender.hpp>
-
-#if defined(FHGLOG_WITH_REMOTE_LOGGING)
-#   include <fhglog/remote/RemoteAppender.hpp>
-#endif
-
+#include <fhglog/remote/RemoteAppender.hpp>
 
 #include <algorithm> // std::transform
 #include <cctype>    // std::tolower
@@ -208,7 +204,6 @@ namespace fhg
         }
       }
 
-#if defined(FHGLOG_WITH_REMOTE_LOGGING)
       if (to_server_.size())
       {
         try
@@ -224,7 +219,6 @@ namespace fhg
           std::clog << "E: could not create remote logger to: " << to_server_ << ": " << ex.what() << std::endl;
         }
       }
-#endif
 
 #ifdef FHGLOG_DEBUG_CONFIG
       std::clog << "D: loglevel set to " << level_ << std::endl;

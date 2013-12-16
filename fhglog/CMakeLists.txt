@@ -4,7 +4,6 @@ set(FHGLOG_MAJOR 1)
 set(FHGLOG_MINOR 4)
 set(FHGLOG_PATCH 0)
 
-option(ENABLE_REMOTE_LOGGING "Build fhglog with remote logging support" YES)
 set(FHGLOG_EXIT_ON_ERROR Yes CACHE BOOL "Exit on error or not")
 set(FHGLOG_EXIT_ON_ERROR_CODE "42" CACHE STRING "The exit code with which fhglog will exit on FATAL messages")
 
@@ -16,10 +15,6 @@ include_directories(${UTIL_INCLUDE_DIR})
 
 include(CheckIncludeFiles)
 CHECK_INCLUDE_FILES(syslog.h HAVE_SYSLOG_H)
-
-if (ENABLE_REMOTE_LOGGING)
-  set(FHGLOG_WITH_REMOTE_LOGGING 1)
-endif (ENABLE_REMOTE_LOGGING)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in    ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fhglog/fhglog-config.hpp
