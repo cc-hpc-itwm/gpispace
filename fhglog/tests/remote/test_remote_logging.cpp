@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_remote_logging.cpp
- *
- *    Description:
- *
- *        Version:  1.0
- *        Created:  10/19/2009 02:24:52 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>

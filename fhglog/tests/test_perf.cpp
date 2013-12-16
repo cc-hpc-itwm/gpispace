@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_perf.cpp
- *
- *    Description:  Tests the performance of appending serialized vs threaded
- *
- *        Version:  1.0
- *        Created:  09/18/2009 04:38:15 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>

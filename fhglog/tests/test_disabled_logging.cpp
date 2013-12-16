@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_disabled_logging.cpp
- *
- *    Description:  Tests the logging framework when logging has been disabled
- *
- *        Version:  1.0
- *        Created:  09/21/2009 04:46:15 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #include <sstream> // ostringstream
 #include <ctime>   // time

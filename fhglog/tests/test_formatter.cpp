@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_formatter.cpp
- *
- *    Description:  Tests the formatting flags of the Formatter
- *
- *        Version:  1.0
- *        Created:  09/21/2009 04:46:15 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #include <sstream> // std::ostringstream
 #include <fhglog/fhglog.hpp>

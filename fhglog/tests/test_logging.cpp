@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_logging.cpp
- *
- *    Description:  testing tool for the logging framework
- *
- *        Version:  1.0
- *        Created:  08/11/2009 11:26:47 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #include <iostream>
 #include    <sstream>

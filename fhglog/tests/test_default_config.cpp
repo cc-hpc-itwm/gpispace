@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_default_config.cpp
- *
- *    Description:  manually test the default config and its effects
- *
- *        Version:  1.0
- *        Created:  11/14/2009 01:44:13 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #include <fhglog/fhglog.hpp>
 #include <sstream>

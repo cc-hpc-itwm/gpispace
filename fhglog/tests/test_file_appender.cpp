@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_file_appender.cpp
- *
- *    Description:  Tests the file appender for the fhglog logger
- *
- *        Version:  1.0
- *        Created:  09/18/2009 04:38:15 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/FileAppender.hpp>
