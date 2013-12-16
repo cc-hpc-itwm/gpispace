@@ -1,6 +1,5 @@
 set (tests
    test_default_config.cpp
-   test_file_appender.cpp
    test_logger_config.cpp
    test_logging.cpp
    test_perf.cpp
@@ -48,6 +47,11 @@ fhg_add_test (every_n.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
+
+fhg_add_test (test_file_appender.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog ${Boost_FILESYSTEM_LIBRARY})
 
 fhg_add_test (filtering_appender.cpp
   BOOST_UNIT_TEST

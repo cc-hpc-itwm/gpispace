@@ -1,147 +1,94 @@
 // alexander.petry@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE file_appender
+#include <boost/test/unit_test.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fhglog/FileAppender.hpp>
 
-#include <unistd.h> // unlink
 #include <fstream> // ifstream
 
-int main (int , char **)
+#include <boost/filesystem.hpp>
+
+namespace
 {
-  using namespace fhg::log;
-
-  int errcount(0);
-  logger_t log(getLogger());
-  log.setLevel(LogLevel::MIN_LEVEL);
-
-  FileAppender::ptr_t file_app(new FileAppender("logfile"
-                                              , "test_file_appender.cpp.log"
-                                               , "%m"));
-  log.addAppender(file_app);
-
+  std::string content_of_file (const std::string file)
   {
-    std::clog << "** testing file appender (simple append)...";
-    log.log(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
-    file_app->flush();
-
-    const std::string expected("hello world!");
-    std::ifstream ifs("test_file_appender.cpp.log");
-    std::string actual;
-    std::getline(ifs, actual);
-
-    if (expected != actual)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlogged message: " << actual << std::endl;
-      std::clog << "\texpected: " << expected << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
+    std::ifstream ifs (file.c_str());
+    std::string content;
+    std::getline (ifs, content);
+    return content;
   }
 
+  struct remove_on_scope_exit
   {
-    std::clog << "** testing file appender creation with file-open error...";
-    try
+    remove_on_scope_exit (boost::filesystem::path filename)
+      : _filename (filename)
+    {}
+    ~remove_on_scope_exit()
     {
-      FileAppender::ptr_t app(new FileAppender("no-perm", "/non-existing-dir/test.log"));
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\topening '/non-existing-dir/test.log' for writing did not fail!" << std::endl;
-      std::clog << "\texpected an exception" << std::endl;
-      ++errcount;
+      boost::filesystem::remove (_filename);
     }
-    catch (const std::exception &ex)
-    {
-      std::clog << "OK!" << std::endl;
-    }
+  private:
+    const boost::filesystem::path _filename;
+  };
+}
+
+BOOST_AUTO_TEST_CASE (throw_on_unwritable_file)
+{
+  BOOST_REQUIRE_THROW
+    ( fhg::log::FileAppender ("no-perm", "/non-existing-dir/test.log")
+    , std::exception
+    );
+}
+
+BOOST_AUTO_TEST_CASE (remaining)
+{
+  const remove_on_scope_exit delete_logfile ("test_file_appender.cpp.log");
+
+  fhg::log::FileAppender appender ("logfile", "test_file_appender.cpp.log", "%m");
+
+  appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello world!"));
+  appender.flush();
+
+  BOOST_REQUIRE_EQUAL
+    (content_of_file ("test_file_appender.cpp.log"), "hello world!");
+}
+
+BOOST_AUTO_TEST_CASE (reopen)
+{
+  const remove_on_scope_exit delete_logfile ("test_file_appender.cpp.log");
+
+  fhg::log::FileAppender appender ("logfile", "test_file_appender.cpp.log", "%m");
+
+  appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello world!"));
+  appender.flush();
+
+  appender.reopen();
+  appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello world!"));
+  appender.flush();
+
+  BOOST_REQUIRE_EQUAL
+    (content_of_file ("test_file_appender.cpp.log"), "hello world!hello world!");
+}
+
+BOOST_AUTO_TEST_CASE (reopen_with_different_path)
+{
+  const remove_on_scope_exit delete_foo ("foo.log");
+  const remove_on_scope_exit delete_bar ("bar.log");
+
+  fhg::log::FileAppender appender ("appender-to-foo", "foo.log", "%m");
+
+  {
+    std::ifstream ifs ("foo.log");
+    BOOST_REQUIRE (ifs.is_open());
+    BOOST_REQUIRE (ifs.good());
   }
 
-  {
-    std::clog << "** testing reopening file appender with same path...";
-    try
-    {
-      file_app->reopen();
-    }
-    catch (const std::exception &ex)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\treopening should not fail!" << std::endl;
-      ++errcount;
-    }
+  appender.set_path ("bar.log");
+  appender.reopen();
+  appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello world!"));
+  appender.flush();
 
-    const std::string expected("hello world!");
-    std::ifstream ifs("test_file_appender.cpp.log");
-    std::string actual;
-    std::getline(ifs, actual);
-
-    if (expected != actual)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tfile content after reopen: " << actual << std::endl;
-      std::clog << "\texpected: " << expected << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-  }
-
-  {
-    std::clog << "** testing reopening file appender with different path...";
-    try
-    {
-      FileAppender::ptr_t foo(new FileAppender("appender-to-foo", "foo.log", "%m"));
-
-      {
-        std::ifstream ifs("foo.log");
-        if ( ! (ifs.is_open() && ifs.good()) )
-        {
-          std::clog << "FAILED!" << std::endl;
-          std::clog << "\topening 'foo.log' for writing failed!" << std::endl;
-          ++errcount;
-        }
-      }
-
-      foo->set_path("bar.log");
-      foo->reopen();
-      foo->append(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
-      foo->flush();
-
-      {
-        const std::string expected("hello world!");
-        std::ifstream ifs("bar.log");
-        std::string actual;
-        std::getline(ifs, actual);
-
-        if (expected != actual)
-        {
-          std::clog << "FAILED!" << std::endl;
-          std::clog << "\tbar.log contained: " << actual << std::endl;
-          std::clog << "\texpected: " << expected << std::endl;
-          ++errcount;
-        }
-        else
-        {
-          std::clog << "OK!" << std::endl;
-        }
-      }
-
-      unlink("foo.log");
-      unlink("bar.log");
-    }
-    catch (const std::exception &ex)
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\treopen failed!" << std::endl;
-      ++errcount;
-    }
-  }
-
-  file_app->close();
-  unlink("test_file_appender.cpp.log");
-
-  return errcount;
+  BOOST_REQUIRE_EQUAL (content_of_file ("bar.log"), "hello world!");
 }
