@@ -69,7 +69,6 @@ fhg_add_test (once.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (remote/test_remote_logging.cpp
-  PROJECT fhglog-remote
-  LINK_LIBRARIES fhglog
-)
+fhg_add_test (remote_logging.cpp
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
