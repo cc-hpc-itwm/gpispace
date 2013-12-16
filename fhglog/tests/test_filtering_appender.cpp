@@ -1,39 +1,32 @@
 // alexander.petry@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE filtering_appender
+#include <boost/test/unit_test.hpp>
+
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/StreamAppender.hpp>
 #include <fhglog/FilteringAppender.hpp>
 #include <fhglog/Filter.hpp>
 
-int main (int , char **)
+#include <tests/utils.hpp>
+
+BOOST_FIXTURE_TEST_CASE (filter_levels_below, utils::logger_with_minimum_log_level)
 {
-  using namespace fhg::log;
-
-  int errcount(0);
-
   std::ostringstream logstream;
-  Appender::ptr_t streamAppender(new StreamAppender("stream", logstream, "%m"));
+  fhg::log::Appender::ptr_t streamAppender
+    (new fhg::log::StreamAppender ("stream", logstream, "%m"));
 
-  {
-    std::clog << "** testing level filter with filtering appender...";
-    Filter::ptr_t filter(new LevelFilter(LogLevel::ERROR));
-    Appender::ptr_t appender(new FilteringAppender(streamAppender, filter));
+  const fhg::log::Filter::ptr_t filter
+    (new fhg::log::LevelFilter (fhg::log::LogLevel::ERROR));
+  fhg::log::Appender::ptr_t appender
+    (new fhg::log::FilteringAppender (streamAppender, filter));
 
-    appender->append(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
-    if (! logstream.str().empty())
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlogged message: " << logstream.str() << std::endl;
-      std::clog << "\tnothing expected!" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-    logstream.str("");
-  }
+  appender->append (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
 
-  return errcount;
+  BOOST_REQUIRE (logstream.str().empty());
+
+  appender->append (FHGLOG_MKEVENT_HERE (ERROR, "hello world!"));
+
+  BOOST_REQUIRE_EQUAL (logstream.str(), "hello world!");
 }
