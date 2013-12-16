@@ -1,5 +1,4 @@
 set (tests
-   test_append.cpp
    test_compound.cpp
    test_default_config.cpp
    test_disabled_logging.cpp
@@ -28,6 +27,11 @@ foreach (test ${tests})
                    ${Boost_THREAD_LIBRARY} # default_config, logging, perf, synch_appender, threaded only
   )
 endforeach()
+
+fhg_add_test (test_append.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
 
 if (ENABLE_REMOTE_LOGGING)
   add_subdirectory(remote)

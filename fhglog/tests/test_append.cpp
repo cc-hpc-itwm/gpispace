@@ -1,5 +1,8 @@
 // alexander.petry@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE append
+#include <boost/test/unit_test.hpp>
+
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/StreamAppender.hpp>
@@ -21,118 +24,89 @@ private:
   std::string fmt_;
 };
 
-int main (int , char **)
+namespace
 {
   using namespace fhg::log;
 
-  int errcount(0);
-  logger_t log(getLogger());
-  log.setLevel (LogLevel::MIN_LEVEL);
-
+  struct logger_with_minimum_log_level
   {
-    std::clog << "** testing adding and removing appender...";
-    log.addAppender(Appender::ptr_t(new NullAppender("null")));
-    try {
-      log.getAppender("null");
-    } catch(...) {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tappender has not been added!" << std::endl;
-      ++errcount;
-    }
-    log.removeAppender("null");
-    try {
-      log.getAppender("null");
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tappender has not been removed correctly!" << std::endl;
-      ++errcount;
-    } catch (...) {
-      std::clog << "OK!" << std::endl;
-    }
-  }
-
-  {
-    std::clog << "** testing adding and removing all appender...";
-    log.addAppender(Appender::ptr_t(new NullAppender("null-0")));
-    log.addAppender(Appender::ptr_t(new NullAppender("null-1")));
-    log.addAppender(Appender::ptr_t(new NullAppender("null-2")));
-    log.addAppender(Appender::ptr_t(new NullAppender("null-3")));
-    try {
-      log.getAppender("null-0");
-      log.getAppender("null-1");
-      log.getAppender("null-2");
-      log.getAppender("null-3");
-    } catch(...) {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tappender has not been added!" << std::endl;
-      ++errcount;
-    }
-    log.removeAllAppenders();
-    try {
-      log.getAppender("null-0");
-      log.getAppender("null-1");
-      log.getAppender("null-2");
-      log.getAppender("null-3");
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tappender has not been removed correctly!" << std::endl;
-      ++errcount;
-    } catch (...) {
-      std::clog << "OK!" << std::endl;
-    }
-  }
-
-  {
-    std::clog << "** testing formatting performance...";
-    log.addAppender(Appender::ptr_t(new FormattingNullAppender("null", default_format::LONG())));
-    for (std::size_t count(0); count < 100000; ++count)
+    logger_with_minimum_log_level()
+      : log (getLogger())
     {
-      log.log(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
+      log.setLevel (LogLevel::MIN_LEVEL);
     }
-    std::clog << "OK!" << std::endl;
-    log.removeAppender("null");
-  }
 
+    logger_t log;
+  };
+}
 
-  std::ostringstream logstream;
-  log.addAppender(Appender::ptr_t(new StreamAppender("stringstream", logstream, "%m")));
+BOOST_FIXTURE_TEST_CASE (add_and_remove_appender, logger_with_minimum_log_level)
+{
+  const Appender::ptr_t appender (new NullAppender("null"));
+  log.addAppender (appender);
 
-  {
-    std::clog << "** testing event appending (one appender)...";
-    log.log(FHGLOG_MKEVENT_HERE(DEBUG, "hello world!"));
-    if (logstream.str() != "hello world!")
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlogged message: " << logstream.str() << std::endl;
-      std::clog << "\texpected: " << "hello world!" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-    logstream.str("");
-  }
+  BOOST_REQUIRE_EQUAL (log.getAppender ("null"), appender);
 
-  {
-    std::clog << "** testing event appending (two appender)...";
-    std::ostringstream logstream2;
-    log.addAppender(Appender::ptr_t(new StreamAppender("stringstream-2", logstream2, "%m")));
-    FHGLOG_MKEVENT(evt, DEBUG, "hello world!");
-    log.log(evt);
-    if (logstream.str() != "hello world!" || logstream2.str() != "hello world!")
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlogged message: " << logstream.str() << std::endl;
-      std::clog << "\texpected: " << "hello world!" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-    log.removeAppender("stringstream-2");
-    logstream.str("");
-  }
+  log.removeAppender ("null");
+
+  BOOST_REQUIRE_THROW (log.getAppender ("null"), std::runtime_error);
+}
+
+BOOST_FIXTURE_TEST_CASE (add_and_remove_all_appenders, logger_with_minimum_log_level)
+{
+  const Appender::ptr_t null_0 (new NullAppender("null-0"));
+  const Appender::ptr_t null_1 (new NullAppender("null-1"));
+  const Appender::ptr_t null_2 (new NullAppender("null-2"));
+  const Appender::ptr_t null_3 (new NullAppender("null-3"));
+
+  log.addAppender (null_0);
+  log.addAppender (null_1);
+  log.addAppender (null_2);
+  log.addAppender (null_3);
+
+  BOOST_REQUIRE_EQUAL (log.getAppender ("null-0"), null_0);
+  BOOST_REQUIRE_EQUAL (log.getAppender ("null-1"), null_1);
+  BOOST_REQUIRE_EQUAL (log.getAppender ("null-2"), null_2);
+  BOOST_REQUIRE_EQUAL (log.getAppender ("null-3"), null_3);
 
   log.removeAllAppenders();
-  return errcount;
+
+  BOOST_REQUIRE_THROW (log.getAppender ("null-0"), std::runtime_error);
+  BOOST_REQUIRE_THROW (log.getAppender ("null-1"), std::runtime_error);
+  BOOST_REQUIRE_THROW (log.getAppender ("null-2"), std::runtime_error);
+  BOOST_REQUIRE_THROW (log.getAppender ("null-3"), std::runtime_error);
+}
+
+//! \todo This is not a test!
+BOOST_FIXTURE_TEST_CASE (NOTEST_formatting_performance, logger_with_minimum_log_level)
+{
+  log.addAppender (Appender::ptr_t (new FormattingNullAppender ("null", default_format::LONG())));
+  for (std::size_t count(0); count < 100000; ++count)
+  {
+    log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE (stream_appender, logger_with_minimum_log_level)
+{
+  std::ostringstream logstream;
+  log.addAppender (Appender::ptr_t (new StreamAppender ("stringstream", logstream, "%m")));
+
+  log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
+
+  BOOST_REQUIRE_EQUAL (logstream.str(), "hello world!");
+}
+
+BOOST_FIXTURE_TEST_CASE (two_stream_appenders, logger_with_minimum_log_level)
+{
+  std::ostringstream logstream_0;
+  std::ostringstream logstream_1;
+
+  log.addAppender (Appender::ptr_t (new StreamAppender ("stringstream-0", logstream_0, "%m")));
+  log.addAppender (Appender::ptr_t (new StreamAppender ("stringstream-1", logstream_1, "%m")));
+
+  log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
+
+  BOOST_REQUIRE_EQUAL (logstream_0.str(), "hello world!");
+  BOOST_REQUIRE_EQUAL (logstream_1.str(), "hello world!");
 }
