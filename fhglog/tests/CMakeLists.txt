@@ -1,5 +1,4 @@
 set (tests
-   test_compound.cpp
    test_default_config.cpp
    test_disabled_logging.cpp
    test_error_handler.cpp
@@ -29,6 +28,11 @@ foreach (test ${tests})
 endforeach()
 
 fhg_add_test (test_append.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (test_compound.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)

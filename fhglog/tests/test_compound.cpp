@@ -1,46 +1,27 @@
 // alexander.petry@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE compound
+#include <boost/test/unit_test.hpp>
+
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/StreamAppender.hpp>
 #include <fhglog/CompoundAppender.hpp>
 
-int main (int , char **)
-{
-  using namespace fhg::log;
+#include <tests/utils.hpp>
 
-  int errcount(0);
-  logger_t log(getLogger());
-  log.setLevel(LogLevel::MIN_LEVEL);
+BOOST_FIXTURE_TEST_CASE (compound_appender, utils::logger_with_minimum_log_level)
+{
+  fhg::log::CompoundAppender::ptr_t compound
+    (new fhg::log::CompoundAppender ("compound-appender"));
 
   std::ostringstream logstream;
+  compound->addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ("s1", logstream, "%m")));
+  compound->addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ("s2", logstream, "%m")));
 
-  {
-	CompoundAppender::ptr_t compound(new CompoundAppender("compound-appender"));
+  log.addAppender (compound);
 
-	compound->addAppender(Appender::ptr_t(new StreamAppender("s1", logstream, "%m")));
-	compound->addAppender(Appender::ptr_t(new StreamAppender("s2", logstream, "%m")));
+  log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
 
-	log.addAppender(compound);
-
-    std::clog << "** testing event appending (two appender combined)...";
-	const std::string msg("hello world!");
-    log.log(FHGLOG_MKEVENT_HERE(DEBUG, msg));
-    if (logstream.str() != (msg + msg))
-    {
-      std::clog << "FAILED!" << std::endl;
-      std::clog << "\tlogged message: \"" << logstream.str() << "\"" << std::endl;
-      std::clog << "\texpected: \"" << msg << msg << "\"" << std::endl;
-      ++errcount;
-    }
-    else
-    {
-      std::clog << "OK!" << std::endl;
-    }
-    logstream.str("");
-	log.removeAppender("compound-appender");
-  }
-
-  log.removeAllAppenders();
-  return errcount;
+  BOOST_REQUIRE_EQUAL (logstream.str(), "hello world!hello world!");
 }
