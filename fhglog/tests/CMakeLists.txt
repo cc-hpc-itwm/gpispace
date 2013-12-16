@@ -3,7 +3,6 @@ set (tests
    test_file_appender.cpp
    test_logger_config.cpp
    test_logging.cpp
-   test_once.cpp
    test_path.cpp
    test_perf.cpp
    test_split.cpp
@@ -56,6 +55,11 @@ fhg_add_test (test_filtering_appender.cpp
   LINK_LIBRARIES fhglog)
 
 fhg_add_test (test_format.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (test_once.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
