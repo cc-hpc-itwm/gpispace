@@ -72,7 +72,7 @@ fhg_add_test (remote_logging.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_thread_safety.cpp
+fhg_add_test (thread_safety.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
