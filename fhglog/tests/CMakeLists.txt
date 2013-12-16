@@ -60,11 +60,6 @@ fhg_add_test (test_format.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (test_formatter.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhglog
-  LINK_LIBRARIES fhglog)
-
 if (ENABLE_REMOTE_LOGGING)
   add_subdirectory(remote)
 endif (ENABLE_REMOTE_LOGGING)
