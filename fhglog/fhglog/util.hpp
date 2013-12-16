@@ -64,8 +64,6 @@ namespace fhg { namespace log {
       return filename.substr(0, ext_start_idx);
     }
   }
-
-    unsigned int gettid();
 }}
 
 #endif
