@@ -11,11 +11,17 @@
 
 #include <tests/utils.hpp>
 
-void worker (std::size_t count, fhg::log::logger_t* logger)
+namespace
 {
-  for (std::size_t i (0); i < count; ++i)
+  const std::size_t thread_count (100);
+  const std::size_t message_count (1000);
+
+  void worker (std::size_t count, fhg::log::logger_t* logger)
   {
-    logger->log (FHGLOG_MKEVENT_HERE (INFO, "hello"));
+    for (std::size_t i (0); i < count; ++i)
+    {
+      logger->log (FHGLOG_MKEVENT_HERE (INFO, "hello"));
+    }
   }
 }
 
@@ -29,9 +35,6 @@ int main (int , char **)
 
   std::size_t messages_logged (0);
   log.addAppender(Appender::ptr_t(new SynchronizedAppender(new utils::counting_appender (&messages_logged))));
-
-  const std::size_t thread_count (100);
-  const std::size_t message_count (1000);
 
   {
     boost::ptr_vector<boost::thread> threads;
