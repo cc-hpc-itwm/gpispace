@@ -41,7 +41,7 @@ namespace fhg
         DefaultConfiguration();
 
         void parse_environment();
-        void configure();
+        void configure() const;
         void parse_key_value(const std::string &key, const std::string &val);
 
         fhg::log::LogLevel level_;
@@ -92,7 +92,7 @@ namespace fhg
         }
       }
 
-      void DefaultConfiguration::configure()
+      void DefaultConfiguration::configure() const
       {
         CompoundAppender::ptr_t compound_appender(new CompoundAppender());
 
