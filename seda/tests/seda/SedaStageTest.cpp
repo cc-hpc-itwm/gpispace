@@ -11,9 +11,17 @@
 #include <seda/EventCountStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
 #include <seda/ForwardStrategy.hpp>
-#include <seda/StringEvent.hpp>
+#include <seda/UserEvent.hpp>
 
 using namespace seda::tests;
+
+namespace
+{
+  struct dummy_event : seda::IEvent
+  {
+    virtual std::string str() const { return "dummy"; }
+  };
+}
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SedaStageTest );
 
@@ -38,7 +46,7 @@ SedaStageTest::testSendFoo() {
 
     const std::size_t numMsgs(1000);
     for (std::size_t i=0; i < numMsgs; ++i) {
-        stage->send(seda::IEvent::Ptr(new seda::StringEvent("foo")));
+        stage->send(seda::IEvent::Ptr(new dummy_event));
     }
 
     stage->waitUntilEmpty();
@@ -64,7 +72,7 @@ SedaStageTest::testStartStop() {
     stage->start();
 
     for (std::size_t i=0; i < numMsgs; ++i) {
-        stage->send(seda::IEvent::Ptr(new seda::StringEvent("foo")));
+        stage->send(seda::IEvent::Ptr(new dummy_event));
     }
     stage->waitUntilEmpty(100);
     ecs->wait(numMsgs, 1000);
@@ -78,7 +86,7 @@ SedaStageTest::testStartStop() {
 
     stage->start();
     for (std::size_t i=0; i < numMsgs; ++i) {
-        stage->send(seda::IEvent::Ptr(new seda::StringEvent("bar")));
+        stage->send(seda::IEvent::Ptr(new dummy_event));
     }
     stage->waitUntilEmpty(100);
     ecs->wait(numMsgs, 1000);
@@ -105,7 +113,7 @@ SedaStageTest::testForwardEvents() {
 
     const std::size_t numMsgs(5);
     for (std::size_t i=0; i < numMsgs; ++i) {
-        first->send(seda::IEvent::Ptr(new seda::StringEvent("foo")));
+        first->send(seda::IEvent::Ptr(new dummy_event));
     }
 
     first->waitUntilEmpty(100);

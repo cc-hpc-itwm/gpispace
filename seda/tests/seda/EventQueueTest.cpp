@@ -3,9 +3,17 @@
 #include <string>
 
 #include <seda/EventQueue.hpp>
-#include <seda/StringEvent.hpp>
+#include <seda/UserEvent.hpp>
 
 using namespace seda::tests;
+
+namespace
+{
+  struct dummy_event : seda::IEvent
+  {
+    virtual std::string str() const { return "dummy"; }
+  };
+}
 
 CPPUNIT_TEST_SUITE_REGISTRATION( EventQueueTest );
 
@@ -28,7 +36,7 @@ void
 EventQueueTest::testPushPop() {
   CPPUNIT_ASSERT(_queue->empty());
 
-  seda::IEvent::Ptr in(new seda::StringEvent("test"));
+  seda::IEvent::Ptr in(new dummy_event);
   _queue->push(in);
   CPPUNIT_ASSERT(!_queue->empty());
   CPPUNIT_ASSERT_EQUAL((std::size_t)1, _queue->size());
