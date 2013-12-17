@@ -14,6 +14,7 @@
 #include <fhglog/MemoryAppender.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 
+#include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
 
 #include <algorithm> // std::transform
@@ -220,7 +221,7 @@ namespace fhg
       {
         to_server_ = val;
       }
-      else if (key == "threaded" && (val == "yes" || val == "true" || val == "1"))
+      else if (key == "threaded" && fhg::util::read_bool (val))
       {
         threaded_ = true;
       }
