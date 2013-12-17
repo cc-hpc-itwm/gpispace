@@ -8,7 +8,6 @@ set (hdrs
   EventDecorator.hpp
   EventFactory.hpp
   EventQueue.hpp
-  EventPrioQueue.hpp
   ForwardStrategy.hpp
   IEvent.hpp
   IEventQueue.hpp

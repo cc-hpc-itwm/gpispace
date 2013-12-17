@@ -19,7 +19,6 @@
 #include <sdpa/daemon/Job.hpp>
 #include <seda/StageRegistry.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
-#include <seda/EventPrioQueue.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
