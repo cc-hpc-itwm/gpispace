@@ -35,7 +35,7 @@ StageRegistry& StageRegistry::instance() {
     return _instance;
 }
 
-void StageRegistry::insert(const std::string& name, const Stage::Ptr& stage) throw(StageAlreadyRegistered) {
+void StageRegistry::insert(const std::string& name, const Stage::Ptr& stage) {
     lock_type lock (m_mutex);
 
     if (_stages.find(name) != _stages.end()) {
@@ -46,14 +46,14 @@ void StageRegistry::insert(const std::string& name, const Stage::Ptr& stage) thr
     _stage_names.push_back (name);
     DMLOG (TRACE, "added stage `" << name << "'");
 }
-void StageRegistry::insert(const std::string& name, Stage* stage) throw(StageAlreadyRegistered) {
+void StageRegistry::insert(const std::string& name, Stage* stage) {
     insert(name, Stage::Ptr(stage));
 }
 
-void StageRegistry::insert(const Stage::Ptr& stage) throw(StageAlreadyRegistered) {
+void StageRegistry::insert(const Stage::Ptr& stage) {
     insert(stage->name(), stage);
 }
-void StageRegistry::insert(Stage* stage) throw(StageAlreadyRegistered) {
+void StageRegistry::insert(Stage* stage) {
     insert(stage->name(), Stage::Ptr(stage));
 }
 
@@ -74,7 +74,7 @@ bool StageRegistry::remove(const std::string &name) {
     }
 }
 
-const Stage::Ptr StageRegistry::lookup(const std::string& name) const throw (StageNotFound) {
+const Stage::Ptr StageRegistry::lookup(const std::string& name) const {
     stage_map_t::const_iterator it(_stages.find(name));
     if (it == _stages.end()) {
         throw StageNotFound(name);

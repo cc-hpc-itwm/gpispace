@@ -47,27 +47,27 @@ namespace seda {
         /**
          * Register a new stage with the supplied name.
          */
-        void insert(const std::string& name, const Stage::Ptr& stage) throw(StageAlreadyRegistered);
+        void insert(const std::string& name, const Stage::Ptr& stage);
 
         /**
          * Register a new stage and take over the ownership of it.
          */
-        void insert(const std::string& name, Stage* stage) throw(StageAlreadyRegistered);
+        void insert(const std::string& name, Stage* stage);
 
         /**
          * Register a new stage with the name of the stage.
          */
-        void insert(const Stage::Ptr& stage) throw(StageAlreadyRegistered);
+        void insert(const Stage::Ptr& stage);
 
         /**
          * Register a new stage and take over the ownership of it.
          */
-        void insert(Stage* stage) throw(StageAlreadyRegistered);
+        void insert(Stage* stage);
 
         /**
          * Lookup a stage by its name.
          */
-        const Stage::Ptr lookup(const std::string& name) const throw(StageNotFound);
+        const Stage::Ptr lookup(const std::string& name) const;
 
         /**
          * Remove a stage from the registry
