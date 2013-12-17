@@ -13,10 +13,6 @@ endif (V_MAJOR)
 # No user settings below
 ###################################################################################################
 
-OPTION(ENABLE_LOGGING
-  "Build the project with logging enabled"
-  1)
-
 OPTION(ENABLE_SEDA_COMM_LIB
   "Build communication library"
   OFF)
@@ -24,12 +20,7 @@ OPTION(ENABLE_SEDA_COMM_LIB
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-## logging
-if (ENABLE_LOGGING)
-  set(SEDA_ENABLE_LOGGING ${ENABLE_LOGGING})
-
-  include_directories(${FhgLog_INCLUDE_DIR})
-endif (ENABLE_LOGGING)
+include_directories(${FhgLog_INCLUDE_DIR})
 
 ## find zlib
 if( NOT WIN32)

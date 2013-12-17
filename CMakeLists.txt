@@ -12,7 +12,6 @@ set (PROJECT_COPYRIGHT   "Copyright 2009-2012 Fraunhofer ITWM" CACHE STRING "Cop
 set (PROJECT_CONTACT     "SDPA Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION (WITH_MANPAGES "Build manpages" YES)
-OPTION (ENABLE_LOGGING "Build the project with logging enabled" YES)
 OPTION (ENABLE_APPLICATION "Build with application" YES)
 OPTION (ENABLE_FVM_PC "Build the deprecated fvm-pc libraries" ON)
 OPTION (ENABLE_SDPA_GUI "Build the monitor gui" YES)

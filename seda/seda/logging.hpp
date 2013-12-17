@@ -25,9 +25,6 @@
 
 #include <seda/seda-config.hpp>
 
-/* Logging */
-#if defined(SEDA_ENABLE_LOGGING)
-
 #include <fhglog/fhglog.hpp>
 
 #define SEDA_LDECLARE_LOGGER(logger)           ::fhg::log::logger_t logger
@@ -49,29 +46,5 @@
 #define SEDA_LOG_WARN(msg)  SEDA_LLOG_WARN(seda_logger, msg)
 #define SEDA_LOG_ERROR(msg) SEDA_LLOG_ERROR(seda_logger, msg)
 #define SEDA_LOG_FATAL(msg) SEDA_LLOG_FATAL(seda_logger, msg)
-
-#else
-
-#define SEDA_LDECLARE_LOGGER(logger)   void* __seda_unused_##logger
-#define SEDA_LDEFINE_LOGGER(logger, h)
-#define SEDA_LINIT_LOGGER(logger, h)   __seda_unused_##logger(0)
-
-#define SEDA_DECLARE_LOGGER()          SEDA_LDECLARE_LOGGER(logger)
-#define SEDA_DEFINE_LOGGER(hierarchy)  SEDA_LDEFINE_LOGGER(logger, hierarchy)
-#define SEDA_INIT_LOGGER(hierarchy)    SEDA_LINIT_LOGGER(logger, hierarchy)
-
-#define SEDA_LLOG_DEBUG(logger, msg)
-#define SEDA_LLOG_INFO(logger, msg)
-#define SEDA_LLOG_WARN(logger, msg)
-#define SEDA_LLOG_ERROR(logger, msg)
-#define SEDA_LLOG_FATAL(logger, msg)
-
-#define SEDA_LOG_DEBUG(msg)
-#define SEDA_LOG_INFO(msg)
-#define SEDA_LOG_WARN(msg)
-#define SEDA_LOG_ERROR(msg)
-#define SEDA_LOG_FATAL(msg)
-
-#endif
 
 #endif // !SEDA_LOGGING_HPP

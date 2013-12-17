@@ -4,15 +4,9 @@
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/CompilerOutputter.h>
 
-#ifdef SEDA_ENABLE_LOGGING
-#    include <fhglog/Configuration.hpp>
-#endif
-
 int
 main(int, char **) {
-#ifdef SEDA_ENABLE_LOGGING
   FHGLOG_SETUP();
-#endif
   CppUnit::TextUi::TestRunner runner;
   CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
   runner.addTest( registry.makeTest() );

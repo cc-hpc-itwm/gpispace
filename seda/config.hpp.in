@@ -1,6 +1,4 @@
 #ifndef SEDA_CONFIG_H
 #define SEDA_CONFIG_H
 
-#cmakedefine SEDA_ENABLE_LOGGING 1
-
 #endif
