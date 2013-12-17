@@ -211,20 +211,6 @@ const Filter::ptr_t &Logger::getFilter() const
   return filter_;
 }
 
-const Appender::ptr_t &Logger::getAppender(const std::string &appender_name) const
-{
-  for (appender_list_t::const_iterator it(appenders_.begin());
-       it != appenders_.end();
-       ++it)
-  {
-    if (appender_name == (*it)->name())
-    {
-      return *it;
-    }
-  }
-  throw std::runtime_error("no matching appender could be found!");
-}
-
 void Logger::removeAllAppenders()
 {
   appenders_.clear();
