@@ -89,19 +89,27 @@ BOOST_AUTO_TEST_CASE (line)
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%L", event), "1002");
 }
 
+BOOST_AUTO_TEST_CASE (message)
+{
+  BOOST_REQUIRE_EQUAL
+    (fhg::log::format ("%m", FHGLOG_MKEVENT_HERE (DEBUG, "hello")), "hello");
+}
+
+//! \todo date
+//! \todo tstamp
+//! \todo tid
+//! \todo pid
+//! \todo tags
+
 BOOST_AUTO_TEST_CASE (logger)
 {
+  //! \todo This should actually test something:
+  //! put mutiple loggers in a chain, send event through
   const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
                                  , "tests/test_formatter.cpp"
                                  , "main", 1002, "hello"
                                  );
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%l", event), "");
-}
-
-BOOST_AUTO_TEST_CASE (message)
-{
-  BOOST_REQUIRE_EQUAL
-    (fhg::log::format ("%m", FHGLOG_MKEVENT_HERE (DEBUG, "hello")), "hello");
 }
 
 BOOST_AUTO_TEST_CASE (newline)
