@@ -10,7 +10,6 @@ set (hdrs
   EventNotSupported.hpp
   EventQueue.hpp
   EventPrioQueue.hpp
-  FilterStrategy.hpp
   ForwardStrategy.hpp
   IEvent.hpp
   IEventQueue.hpp
