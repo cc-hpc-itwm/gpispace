@@ -40,9 +40,6 @@ namespace fhg
       public:
         DefaultConfiguration();
 
-        void operator()();
-
-      private:
         /*
          * This configuration takes the following environment variables into account (case sensitive):
          *
@@ -83,29 +80,6 @@ namespace fhg
         , disabled_(false)
         , synchronize_(false)
       {}
-
-      void DefaultConfiguration::operator()()
-      {
-#ifdef FHGLOG_DEBUG_CONFIG
-        std::clog << "I: performing default logging configuration" << std::endl;
-#endif
-
-        getLogger().removeAllAppenders();
-
-        parse_environment();
-
-        if (disabled_)
-        {
-          return;
-        }
-
-        if (to_console_.empty() && to_server_.empty() && to_file_.empty())
-        {
-          to_console_ = "stderr";
-        }
-
-        configure();
-      }
 
       void DefaultConfiguration::parse_environment()
       {
@@ -282,7 +256,29 @@ namespace fhg
     void configure()
     {
 #if FHGLOG_DISABLE_LOGGING != 1
-      DefaultConfiguration()();
+
+      DefaultConfiguration conf;
+
+#ifdef FHGLOG_DEBUG_CONFIG
+      std::clog << "I: performing default logging configuration" << std::endl;
+#endif
+
+      getLogger().removeAllAppenders();
+
+      conf.parse_environment();
+
+      if (conf.disabled_)
+      {
+        return;
+      }
+
+      if (conf.to_console_.empty() && conf.to_server_.empty() && conf.to_file_.empty())
+      {
+        conf.to_console_ = "stderr";
+      }
+
+      conf.configure();
+
 #endif
     }
 
