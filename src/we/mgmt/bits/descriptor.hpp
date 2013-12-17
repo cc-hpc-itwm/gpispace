@@ -69,7 +69,7 @@ namespace we
         descriptor extract (id_type const&);
 
         void cancel (fun_t);
-       int execute (policy::execution_policy*);
+        int execute (policy::execution_policy*);
         void finished();
         void failed();
         void canceled();
