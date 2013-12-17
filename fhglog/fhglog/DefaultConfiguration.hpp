@@ -36,7 +36,6 @@ namespace fhg { namespace log {
        *  FHGLOG_synch={anything}          make logging synchronized (very expensive!)
        */
       void parse_environment();
-      bool check_config();
       void configure();
       void default_configuration();
       void fallback_configuration();

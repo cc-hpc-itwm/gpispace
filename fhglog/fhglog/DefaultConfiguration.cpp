@@ -49,7 +49,7 @@ namespace fhg
         getLogger().removeAllAppenders();
 
         parse_environment();
-        if (! check_config())
+        if (!(disabled_ || !(to_console_.empty() && to_server_.empty() && to_file_.empty())))
         {
           fallback_configuration();
         }
@@ -89,12 +89,6 @@ namespace fhg
           parse_key_value(key, key_value.second);
         }
       }
-    }
-
-    bool DefaultConfiguration::check_config()
-    {
-      return disabled_
-        || !(to_console_.empty() && to_server_.empty() && to_file_.empty());
     }
 
     void DefaultConfiguration::configure()
