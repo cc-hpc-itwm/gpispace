@@ -1358,35 +1358,6 @@ void GenericDaemon::handleQueryJobStatusEvent(const events::QueryJobStatusEvent*
   }
 }
 
-void GenericDaemon::handleRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt )
-{
-  Job* pJob = jobManager().findJob(pEvt->job_id());
-  if(pJob)
-  {
-      if(pJob->completed())
-      {
-          pJob->RetrieveJobResults(pEvt, this);
-      }
-      else
-      {
-          events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name()
-                                                                    , pEvt->from()
-                                                                    , events::ErrorEvent::SDPA_EJOBTERMINATED
-                                                                    , "Not allowed to request results for a non-terminated job, its current status is : "
-                                                                    +  sdpa::status::show(pJob->getStatus()) )
-                                            );
-          sendEventToMaster(pErrorEvt);
-      }
-  }
-  else
-  {
-    SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
-
-    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
-    sendEventToMaster(pErrorEvt);
-  }
-}
-
 void GenericDaemon::handleJobStalledEvent (const events::JobStalledEvent *pEvt)
 {
   pause(pEvt->job_id());

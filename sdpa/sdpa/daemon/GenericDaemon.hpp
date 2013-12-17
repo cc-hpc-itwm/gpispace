@@ -156,7 +156,6 @@ namespace sdpa {
       virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *);
       virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *);
       virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
-      virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
       virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
       virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
       //virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) ?!
