@@ -121,7 +121,7 @@ namespace seda {
     }
 
     void
-    Stage::send(const std::string& stageName, const seda::IEvent::Ptr& e) throw (QueueFull, StageNotFound) {
+    Stage::send(const std::string& stageName, const seda::IEvent::Ptr& e) {
         StageRegistry::instance().lookup(stageName)->send(e);
     }
 }
