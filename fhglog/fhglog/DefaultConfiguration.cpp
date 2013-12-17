@@ -59,8 +59,6 @@ namespace fhg
       }
 
       configure();
-
-      std::clog.flush();
     }
 
     void DefaultConfiguration::parse_environment()
