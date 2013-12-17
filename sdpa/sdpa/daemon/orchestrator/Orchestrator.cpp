@@ -446,4 +446,32 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
   }
 }
 
+void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* pEvt )
+{
+  sdpa::job_id_t jobId = pEvt->job_id();
+
+  Job* pJob (jobManager().findJob(jobId));
+  if(pJob)
+  {
+      events::JobStatusReplyEvent::Ptr const pStatReply
+        (new events::JobStatusReplyEvent ( pEvt->to()
+                                         , pEvt->from()
+                                         , pJob->id()
+                                         , pJob->getStatus()
+                                         , pJob->error_code()
+                                         , pJob->error_message()
+                                         )
+      );
+
+      sendEventToMaster (pStatReply);
+  }
+  else
+  {
+      SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
+
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
+      sendEventToMaster(pErrorEvt);
+  }
+}
+
 }} // end namespaces
