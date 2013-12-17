@@ -39,7 +39,7 @@ void StageRegistry::insert(const std::string& name, const Stage::Ptr& stage) {
     lock_type lock (m_mutex);
 
     if (_stages.find(name) != _stages.end()) {
-        throw StageAlreadyRegistered(name);
+      throw SedaException ("stage already registered: " + name);
     }
 
     _stages.insert(std::make_pair(name, stage));

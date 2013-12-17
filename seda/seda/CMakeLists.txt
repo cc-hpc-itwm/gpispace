@@ -16,7 +16,6 @@ set (hdrs
   logging.hpp
   SedaException.hpp
   shared_ptr.hpp
-  StageAlreadyRegistered.hpp
   StageFactory.hpp
   Stage.hpp
   StageNotFound.hpp

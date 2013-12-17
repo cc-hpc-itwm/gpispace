@@ -25,7 +25,7 @@
 
 #include <seda/Stage.hpp>
 #include <seda/StageNotFound.hpp>
-#include <seda/StageAlreadyRegistered.hpp>
+#include <seda/SedaException.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
