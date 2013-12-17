@@ -7,6 +7,11 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
 
+BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
+{
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%%", fhg::log::LogEvent()), "%");
+}
+
 BOOST_AUTO_TEST_CASE (short_severity)
 {
 #define CHECK(SEV, SEV_STR)                                             \
@@ -72,10 +77,14 @@ BOOST_AUTO_TEST_CASE (newline)
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%n", fhg::log::LogEvent()), ostr.str());
 }
 
-BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
+BOOST_AUTO_TEST_CASE (format_flags_work_everywhere_in_string)
 {
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%%", fhg::log::LogEvent()), "%");
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%%%%", fhg::log::LogEvent()), "%%");
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%%_%%", fhg::log::LogEvent()), "%_%");
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%% test", fhg::log::LogEvent()), "% test");
   BOOST_REQUIRE_EQUAL (fhg::log::format ("test %%", fhg::log::LogEvent()), "test %");
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("test %% test", fhg::log::LogEvent()), "test % test");
 }
 
 BOOST_AUTO_TEST_CASE (throw_on_invalid_escaped_sequence)
