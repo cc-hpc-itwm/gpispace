@@ -26,12 +26,6 @@
 #include <stdexcept>
 
 namespace sdpa { namespace daemon {
-  class QueueFull : public std::runtime_error
-  {
-    public:
-      QueueFull() : std::runtime_error("queue is full") {}
-  };
-
   class QueueEmpty : public std::runtime_error
   {
     public:
