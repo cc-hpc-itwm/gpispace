@@ -10,7 +10,7 @@ namespace fhg { namespace log {
   class Configurator {
     public:
       static void configure() {
-        configure(DefaultConfiguration());
+        DefaultConfiguration()();
       }
       static void configure(int , char *[]) {
         // parameters currently ignored
