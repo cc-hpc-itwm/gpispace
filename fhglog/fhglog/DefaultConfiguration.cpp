@@ -93,17 +93,8 @@ namespace fhg
 
     bool DefaultConfiguration::check_config()
     {
-      if (disabled_) return true;
-
-      if (to_console_.empty()
-         && to_server_.empty()
-         && to_file_.empty()
-         )
-      {
-        return false;
-      }
-
-      return true;
+      return disabled_
+        || !(to_console_.empty() && to_server_.empty() && to_file_.empty());
     }
 
     void DefaultConfiguration::configure()
