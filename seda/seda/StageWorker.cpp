@@ -23,7 +23,6 @@
 #include "StageWorker.hpp"
 #include "Stage.hpp"
 #include "IEvent.hpp"
-#include "SystemEvent.hpp"
 #include "StageRegistry.hpp"
 
 #include <csignal>
