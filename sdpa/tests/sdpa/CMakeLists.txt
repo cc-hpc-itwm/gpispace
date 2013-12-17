@@ -254,6 +254,7 @@ set (tests
   test_TransformFile.cpp
   test_wfe_plugin.cpp
   test_Stalled.cpp
+  test_InvalidNbWorkersReq.cpp
 )
 
 foreach (test ${tests})
