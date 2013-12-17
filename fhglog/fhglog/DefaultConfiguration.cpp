@@ -203,6 +203,7 @@ namespace fhg
     }
 
     void DefaultConfiguration::parse_key_value(const std::string &key, const std::string &val)
+    try
     {
       if (key == "level")
       {
@@ -249,6 +250,10 @@ namespace fhg
         std::clog << "D: ignoring key: " << key << std::endl;
 #endif
       }
+    }
+    catch (const std::exception& ex)
+    {
+      std::clog << "E: invalid value '" << val << "' for key '" << key << "':" << ex.what() << std::endl;
     }
   }
 }
