@@ -66,15 +66,8 @@ Timer::operator()() {
         try {
             boost::this_thread::sleep(boost::get_system_time() + interval());
 
-            try {
-                seda::Stage::Ptr stage(StageRegistry::instance().lookup(targetStage()));
-                stage->send(seda::TimerEvent::Ptr(new seda::TimerEvent(tag())));
-            } catch(const seda::StageNotFound& ) {
-                std::clog << "stage `" << targetStage() << "' could not be found!" << std::endl;
-                break;
-            } catch(...) {
-               // ignore any failures during send
-            }
+            seda::Stage::Ptr stage(StageRegistry::instance().lookup(targetStage()));
+            stage->send(seda::TimerEvent::Ptr(new seda::TimerEvent(tag())));
         } catch (const boost::thread_interrupted& ) {
             break;
         }
