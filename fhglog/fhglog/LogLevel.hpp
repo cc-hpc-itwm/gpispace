@@ -23,9 +23,6 @@
 #include <string>
 #include <stdexcept>
 
-// serialization
-#include <boost/serialization/nvp.hpp>
-
 namespace fhg { namespace log {
   class LogLevel {
     public:
@@ -60,13 +57,6 @@ namespace fhg { namespace log {
       inline const Level &lvl() const { return lvl_; }
       inline Level &lvl() { return lvl_; }
       operator Level () const { return lvl_; }
-
-    friend class boost::serialization::access;
-    template<typename Archive>
-    void serialize (Archive & ar, const unsigned int /* version */ )
-    {
-      ar & BOOST_SERIALIZATION_NVP( lvl_ );
-    }
 
     private:
       Level lvl_;
