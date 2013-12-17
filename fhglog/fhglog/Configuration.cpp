@@ -40,9 +40,9 @@ namespace fhg
       public:
         DefaultConfiguration()
           : level_ (LogLevel::DEF_LEVEL)
-          , to_console_ ("")
-          , to_file_ ("")
-          , to_server_ ("")
+          , to_console_()
+          , to_file_()
+          , to_server_()
           , fmt_string_ (default_format::SHORT())
             // FIXME: broken if set to true
           , threaded_ (false)
