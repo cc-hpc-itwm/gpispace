@@ -207,9 +207,9 @@ namespace fhg
       {
         to_server_ = val;
       }
-      else if (key == "threaded" && fhg::util::read_bool (val))
+      else if (key == "threaded")
       {
-        threaded_ = true;
+        threaded_ = fhg::util::read_bool (val);
       }
       else if (key == "color")
       {
