@@ -11,7 +11,6 @@
 #include <seda/EventCountStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
 #include <seda/ForwardStrategy.hpp>
-#include <seda/LoggingStrategy.hpp>
 #include <seda/LossyDaemonStrategy.hpp>
 #include <seda/TimerEvent.hpp>
 #include <seda/StringEvent.hpp>

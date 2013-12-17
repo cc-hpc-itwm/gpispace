@@ -10,7 +10,6 @@
 
 #include <seda/DiscardStrategy.hpp>
 #include <seda/EventCountStrategy.hpp>
-#include <seda/LoggingStrategy.hpp>
 
 using namespace seda::tests;
 
@@ -29,7 +28,6 @@ void
 TimerTest::testTimer() {
   seda::Strategy::Ptr discard(new seda::DiscardStrategy());
   seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
-  discard = seda::Strategy::Ptr(new seda::LoggingStrategy(discard));
   discard = seda::Strategy::Ptr(ecs);
   seda::Stage::Ptr stage(new seda::Stage("discard", discard, 1));
 

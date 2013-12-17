@@ -14,7 +14,6 @@ set (hdrs
   IEvent.hpp
   IEventQueue.hpp
   logging.hpp
-  LoggingStrategy.hpp
   LossyDaemonStrategy.hpp
   SedaException.hpp
   shared_ptr.hpp
