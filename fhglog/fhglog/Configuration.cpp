@@ -86,8 +86,6 @@ namespace fhg
 
       void DefaultConfiguration::operator()()
       {
-#if FHGLOG_DISABLE_LOGGING != 1
-
 #ifdef FHGLOG_DEBUG_CONFIG
         std::clog << "I: performing default logging configuration" << std::endl;
 #endif
@@ -107,7 +105,6 @@ namespace fhg
         }
 
         configure();
-#endif
       }
 
       void DefaultConfiguration::parse_environment()
@@ -284,7 +281,9 @@ namespace fhg
 
     void configure()
     {
+#if FHGLOG_DISABLE_LOGGING != 1
       DefaultConfiguration()();
+#endif
     }
 
     void configure (int ac, char *av[])
