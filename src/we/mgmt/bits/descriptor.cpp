@@ -25,6 +25,7 @@ namespace we
         , m_error_code(0)
         , m_error_message()
         , m_result()
+        , m_user_data ()
       {}
 
       descriptor::descriptor ( id_type const& a_id
@@ -39,6 +40,7 @@ namespace we
         , m_error_code(0)
         , m_error_message()
         , m_result()
+        , m_user_data ()
       {
         activity_.set_id (a_id);
       }
@@ -57,6 +59,7 @@ namespace we
         , m_error_code(0)
         , m_error_message()
         , m_result()
+        , m_user_data ()
       {
         activity_.set_id (a_id);
       }
@@ -75,6 +78,7 @@ namespace we
         , m_error_code(other.m_error_code)
         , m_error_message(other.m_error_message)
         , m_result(other.m_result)
+        , m_user_data (other.m_user_data)
       {}
 
       descriptor& descriptor::operator= (const descriptor& other)
@@ -97,6 +101,7 @@ namespace we
             m_error_code = other.m_error_code;
             m_error_message = other.m_error_message;
             m_result = other.m_result;
+            m_user_data = other.m_user_data;
           }
 
         return *this;
