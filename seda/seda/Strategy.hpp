@@ -25,7 +25,6 @@
 
 #include <seda/common.hpp>
 #include <seda/shared_ptr.hpp>
-#include <seda/EventNotSupported.hpp>
 
 #include <seda/IEvent.hpp>
 
@@ -35,9 +34,9 @@ namespace seda {
     class Strategy {
     public:
         typedef seda::shared_ptr<Strategy> Ptr;
-    
+
         virtual ~Strategy() {}
-        virtual void perform(const IEvent::Ptr&) = 0; //{ throw seda::EventNotSupported(e); }
+        virtual void perform(const IEvent::Ptr&) = 0;
         virtual void onStageStart(const std::string&) {}
         virtual void onStageStop(const std::string&)  {}
         const std::string& name() const { return _name; }
