@@ -7,7 +7,6 @@ set (hdrs
   EventCountStrategy.hpp
   EventDecorator.hpp
   EventFactory.hpp
-  EventNotSupported.hpp
   EventQueue.hpp
   EventPrioQueue.hpp
   ForwardStrategy.hpp
