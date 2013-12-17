@@ -20,8 +20,6 @@ if( NOT WIN32)
   include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 endif( NOT WIN32)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libseda.pc.in   ${CMAKE_CURRENT_BINARY_DIR}/libseda.pc @ONLY)
-
 # Make sure all subdirectories include correctly
 
 # Reflect the package structure
