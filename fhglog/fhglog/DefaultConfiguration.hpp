@@ -11,10 +11,7 @@ namespace fhg { namespace log {
     public:
       DefaultConfiguration();
 
-      void operator() () throw()
-      {
-        default_configuration ();
-    }
+      void operator()();
 
     private:
       /*
@@ -32,7 +29,6 @@ namespace fhg { namespace log {
        */
       void parse_environment();
       void configure();
-      void default_configuration();
       void parse_key_value(const std::string &key, const std::string &val);
 
       fhg::log::LogLevel level_;

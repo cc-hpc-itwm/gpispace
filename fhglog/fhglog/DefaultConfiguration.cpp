@@ -42,7 +42,7 @@ namespace fhg
       , synchronize_(false)
     {}
 
-    void DefaultConfiguration::default_configuration ()
+    void DefaultConfiguration::operator()()
     {
 #if FHGLOG_DISABLE_LOGGING != 1
 
