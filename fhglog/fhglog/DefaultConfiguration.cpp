@@ -221,6 +221,10 @@ namespace fhg
       }
       else if (key == "color")
       {
+        if (val != "auto" && val != "on" && val != "off")
+        {
+          throw std::runtime_error ("expected: 'auto', 'on' or 'off'");
+        }
         color_ = val;
       }
       else if (key == "synch")
