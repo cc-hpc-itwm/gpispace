@@ -254,6 +254,19 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
 
       notifySubscribers(pCancelAckEvt);
 
+      on_scope_exit _ ( boost::bind ( &Orchestrator::sendEventToMaster
+                                     , this
+                                     , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
+                                                                        , pEvt->from()
+                                                                        , events::ErrorEvent::SDPA_EUNKNOWN
+                                                                        , "Exception in Agent::handleCancelJobEvent"
+                                                                        )
+                                                       )
+                                     )
+                       );
+
+      pJob->CancelJob(pEvt);
+
       boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
       if(worker_id)
       {
@@ -269,18 +282,13 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
       else
       {
           DMLOG (WARN, "No cancel message is to be forwarded as no worker was sent the job "<<pEvt->job_id());
+          // the job was not yet assigned to any worker
+
+          pJob->CancelJobAck(pCancelAckEvt.get());
+          ptr_scheduler_->delete_job (pEvt->job_id());
       }
 
-      // if the job is in pending or stalled, put it already on canceled
-      if(!pJob->is_running())
-      {
-          pJob->CancelJob(pEvt);
-          DMLOG(TRACE, "The job status is: "<<pJob->getStatus());
-          return;
-      }
-
-      pJob->CancelJob(pEvt);
-      pJob->CancelJobAck(pCancelAckEvt.get());
+      _.dont();
   }
   else
   {
