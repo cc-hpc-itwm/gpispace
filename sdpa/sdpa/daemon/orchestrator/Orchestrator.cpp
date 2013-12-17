@@ -27,6 +27,30 @@
 namespace sdpa {
   namespace daemon {
 
+  namespace
+  {
+    struct on_scope_exit
+    {
+      on_scope_exit (boost::function<void()> what)
+        : _what (what)
+        , _dont (false)
+      {}
+      ~on_scope_exit()
+      {
+        if (!_dont)
+        {
+          _what();
+        }
+      }
+      void dont()
+      {
+        _dont = true;
+      }
+      boost::function<void()> _what;
+      bool _dont;
+    };
+  }
+
 template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
@@ -287,30 +311,6 @@ void Orchestrator::handleCancelJobAckEvent(const  events::CancelJobAckEvent* pEv
   }
 
   DMLOG(WARN, "could not find job: " << pEvt->job_id());
-}
-
-namespace
-{
-  struct on_scope_exit
-  {
-    on_scope_exit (boost::function<void()> what)
-      : _what (what)
-      , _dont (false)
-    {}
-    ~on_scope_exit()
-    {
-      if (!_dont)
-      {
-        _what();
-      }
-    }
-    void dont()
-    {
-      _dont = true;
-    }
-    boost::function<void()> _what;
-    bool _dont;
-  };
 }
 
 void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
