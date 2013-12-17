@@ -5,7 +5,6 @@ set (hdrs
   DiscardStrategy.hpp
   ErrorEvent.hpp
   EventCountStrategy.hpp
-  EventDecorator.hpp
   EventQueue.hpp
   ForwardStrategy.hpp
   IEvent.hpp
