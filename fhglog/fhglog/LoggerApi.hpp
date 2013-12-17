@@ -89,7 +89,7 @@ logger_t getLogger(const std::string &name, const std::string & base);
       const std::string &name() const { static std::string name_(""); return name_; }
 
       inline void setLevel(const LogLevel &) {}
-      inline const LogLevel & getLevel() const { static LogLevel level_; return level_; }
+      inline const LogLevel & getLevel() const { static LogLevel level_ (LogLevel::DEF_LEVEL); return level_; }
       inline bool isLevelEnabled(const LogLevel &) const { return false; }
 
       inline void setFilter(const Filter::ptr_t &) { }

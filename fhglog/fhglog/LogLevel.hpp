@@ -40,7 +40,7 @@ namespace fhg { namespace log {
         , MAX_LEVEL = FATAL
       };
 
-      LogLevel(Level level = DEF_LEVEL)
+      LogLevel(Level level)
         : lvl_(level)
       {
         if (lvl_ < MIN_LEVEL || lvl_ > MAX_LEVEL)

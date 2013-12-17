@@ -82,7 +82,7 @@ namespace fhg
 
     LogEvent::LogEvent()
       : id_ (next_id ())
-      , severity_()
+      , severity_ (LogLevel::DEF_LEVEL)
       , path_()
       , function_()
       , line_()
