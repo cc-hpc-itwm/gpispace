@@ -101,10 +101,6 @@ int main (int argc, char *argv [], char *envp [])
       std::cout << fhg::project_revision () << std::endl;
       return EX_OK;
     }
-    else if (arg == "--no-alias")
-    {
-      ++i;
-    }
     else if (arg == "--prefix-path")
     {
       ++i;
