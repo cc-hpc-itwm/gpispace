@@ -6,11 +6,9 @@
 
 static void DefaultErrorHandler (void)
 {
-#if defined(FHGLOG_EXIT_ON_ERROR) && FHGLOG_EXIT_ON_ERROR == 1
   std::clog << "Program termination triggered by FhgLog..." << std::endl;
   fflush(NULL);
-  _exit (FHGLOG_EXIT_ON_ERROR_CODE);
-#endif
+  _exit (42);
 }
 
 static fhg::log::ErrorHandler fhg_error_handler (&DefaultErrorHandler);
