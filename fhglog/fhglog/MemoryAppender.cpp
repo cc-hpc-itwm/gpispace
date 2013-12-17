@@ -8,9 +8,6 @@ namespace fhg
       : m_backlog_length (len)
     {}
 
-    MemoryAppender::~MemoryAppender() throw ()
-    {}
-
     void MemoryAppender::flush()
     {
       unique_lock lock (m_mutex);

@@ -18,8 +18,6 @@ namespace fhg { namespace log {
     explicit
     MemoryAppender (size_t backlog);
 
-    virtual ~MemoryAppender() throw();
-
     virtual void flush();
     virtual void append (const LogEvent &evt);
 
