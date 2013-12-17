@@ -7,7 +7,6 @@
 #include <fhglog/CompoundAppender.hpp>
 #include <fhglog/ThreadedAppender.hpp>
 #include <fhglog/SynchronizedAppender.hpp>
-#include <fhglog/StreamAppender.hpp>
 #include <fhglog/SynchronizedAppender.hpp>
 #include <fhglog/FileAppender.hpp>
 #include <fhglog/CompoundAppender.hpp>
@@ -38,7 +37,7 @@ namespace fhg
       , fmt_string_("")
         // FIXME: broken if set to true
       , threaded_(false)
-      , color_("auto")
+      , color_(StreamAppender::COLOR_AUTO)
       , disabled_(false)
       , synchronize_(false)
     {}
@@ -92,13 +91,6 @@ namespace fhg
     {
       std::string fmt (default_format::SHORT());
 
-      StreamAppender::ColorMode color_mode (StreamAppender::COLOR_OFF);
-      if (color_ == "auto")
-        color_mode = StreamAppender::COLOR_AUTO;
-      if (color_ == "off")
-        color_mode = StreamAppender::COLOR_OFF;
-      if (color_ == "on")
-        color_mode = StreamAppender::COLOR_ON;
 
       if (fmt_string_.size())
       {
@@ -124,7 +116,7 @@ namespace fhg
                                              : "stdlog" == to_console_ ? std::clog
                                              : std::cerr
                                              , fmt
-                                             , color_mode
+                                             , color_
                                              )
                           )
           );
@@ -221,11 +213,10 @@ namespace fhg
       }
       else if (key == "color")
       {
-        if (val != "auto" && val != "on" && val != "off")
-        {
-          throw std::runtime_error ("expected: 'auto', 'on' or 'off'");
-        }
-        color_ = val;
+        color_ = val == "auto" ? StreamAppender::COLOR_AUTO
+               : val == "off" ? StreamAppender::COLOR_OFF
+               : val == "on" ? StreamAppender::COLOR_ON
+               : throw std::runtime_error ("expected: 'auto', 'on' or 'off'");
       }
       else if (key == "synch")
       {

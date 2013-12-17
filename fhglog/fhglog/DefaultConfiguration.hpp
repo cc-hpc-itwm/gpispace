@@ -3,6 +3,7 @@
 
 #include <fhglog/fhglog-config.hpp>
 #include <fhglog/LogLevel.hpp>
+#include <fhglog/StreamAppender.hpp>
 
 #include <iostream>
 namespace fhg { namespace log {
@@ -46,7 +47,7 @@ namespace fhg { namespace log {
       std::string to_server_;
       std::string fmt_string_;
       bool threaded_;
-      std::string color_;
+      StreamAppender::ColorMode color_;
       bool disabled_;
       bool synchronize_;
     };
