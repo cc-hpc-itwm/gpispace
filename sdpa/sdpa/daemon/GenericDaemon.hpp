@@ -240,8 +240,6 @@ namespace sdpa {
     protected:
       const JobManager& jobManager() const { return _job_manager; }
       JobManager& jobManager() { return _job_manager; }
-      //! \todo type of Scheduler should be template parameter
-      virtual void createScheduler() = 0;
 
       // data members
     protected:
