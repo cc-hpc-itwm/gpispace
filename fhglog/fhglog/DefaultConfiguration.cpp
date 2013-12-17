@@ -50,7 +50,13 @@ namespace fhg
         getLogger().removeAllAppenders();
 
         parse_environment();
-        if (!disabled_ && to_console_.empty() && to_server_.empty() && to_file_.empty())
+
+        if (disabled_)
+        {
+          return;
+        }
+
+        if (to_console_.empty() && to_server_.empty() && to_file_.empty())
         {
           to_console_ = "stderr";
         }
@@ -94,9 +100,6 @@ namespace fhg
 
     void DefaultConfiguration::configure()
     {
-      if (disabled_)
-        return;
-
       std::string fmt (default_format::SHORT());
 
       StreamAppender::ColorMode color_mode (StreamAppender::COLOR_OFF);
