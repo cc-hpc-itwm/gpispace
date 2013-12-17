@@ -736,6 +736,8 @@ Agent::ptr_t Agent::create ( const std::string& name
   pAgent->setStage(daemon_stage);
   seda::StageRegistry::instance().insert(daemon_stage);
 
+  pAgent->createScheduler();
+
   pAgent->start_agent();
   return pAgent;
 }
