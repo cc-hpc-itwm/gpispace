@@ -411,6 +411,8 @@ Orchestrator::ptr_t Orchestrator::create
   pOrch->setStage (daemon_stage);
   seda::StageRegistry::instance().insert (daemon_stage);
 
+  pOrch->createScheduler();
+
   pOrch->start_agent();
   return pOrch;
 }
