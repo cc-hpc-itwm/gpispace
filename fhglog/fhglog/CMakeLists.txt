@@ -69,8 +69,8 @@ set_target_properties (fhglog-shared
              VERSION     2
 )
 
-target_link_libraries (fhglog fhg-util)
-target_link_libraries (fhglog-shared fhg-util)
+target_link_libraries (fhglog fhg-util ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries (fhglog-shared fhg-util ${Boost_FILESYSTEM_LIBRARY})
 
 install(FILES ${hdrs}
   DESTINATION include/fhglog
