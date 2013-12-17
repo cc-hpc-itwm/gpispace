@@ -49,7 +49,7 @@ namespace fhg
         getLogger().removeAllAppenders();
 
         parse_environment();
-        if (!(disabled_ || !(to_console_.empty() && to_server_.empty() && to_file_.empty())))
+        if (!disabled_ && to_console_.empty() && to_server_.empty() && to_file_.empty())
         {
           fallback_configuration();
         }
