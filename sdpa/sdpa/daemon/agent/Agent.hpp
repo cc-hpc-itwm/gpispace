@@ -70,8 +70,8 @@ namespace sdpa {
         virtual void createScheduler()
         {
           ptr_scheduler_ = SchedulerBase::ptr_t (new CoallocationScheduler (this));
-          ptr_scheduler_->start_threads();
         }
+
         CoallocationScheduler::ptr_t scheduler() const
         {
           return boost::static_pointer_cast<CoallocationScheduler> (ptr_scheduler_);
