@@ -1,6 +1,5 @@
 # -*- mode: cmake; -*-
 set (hdrs
-  AccumulateStrategy.hpp
   common.hpp
   constants.hpp
   DiscardStrategy.hpp
@@ -37,7 +36,6 @@ set (hdrs
 )
 
 set (srcs
-  AccumulateStrategy.cpp
   constants.cpp
   ErrorEvent.cpp
   ForwardStrategy.cpp
