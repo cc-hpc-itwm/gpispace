@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE (short_severity)
 #undef CHECK
 }
 
-BOOST_AUTO_TEST_CASE (long_severity)
+BOOST_AUTO_TEST_CASE (severity)
 {
 #define CHECK(SEV, SEV_STR)                                             \
   BOOST_REQUIRE_EQUAL                                                   \
