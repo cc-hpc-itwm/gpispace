@@ -34,7 +34,7 @@ namespace fhg
       , to_console_("")
       , to_file_("")
       , to_server_("")
-      , fmt_string_("")
+      , fmt_string_(default_format::SHORT())
         // FIXME: broken if set to true
       , threaded_(false)
       , color_(StreamAppender::COLOR_AUTO)
@@ -87,22 +87,6 @@ namespace fhg
 
     void DefaultConfiguration::configure()
     {
-      std::string fmt (default_format::SHORT());
-
-
-      if (fmt_string_.size())
-      {
-#ifdef FHGLOG_DEBUG_CONFIG
-        std::clog << "D: setting format to \"" << fmt_string_ << "\"" << std::endl;
-#endif
-        if      (fmt_string_ == "full")    fmt = default_format::LONG();
-        else if (fmt_string_ == "short")   fmt = default_format::SHORT();
-        else if (fmt_string_ == "default") fmt = default_format::SHORT();
-        else                               fmt = fmt_string_;
-
-        check_format (fmt);
-      }
-
       CompoundAppender::ptr_t compound_appender(new CompoundAppender());
 
       compound_appender->addAppender (global_memory_appender());
@@ -113,7 +97,7 @@ namespace fhg
           (Appender::ptr_t(new StreamAppender( "stdout" == to_console_ ? std::cout
                                              : "stdlog" == to_console_ ? std::clog
                                              : std::cerr
-                                             , fmt
+                                             , fmt_string_
                                              , color_
                                              )
                           )
@@ -140,7 +124,7 @@ namespace fhg
         {
           compound_appender->addAppender
             (Appender::ptr_t(new FileAppender( to_file_
-                                             , fmt
+                                             , fmt_string_
                                              )
                             )
             );
@@ -191,7 +175,16 @@ namespace fhg
       }
       else if (key == "format")
       {
-        fmt_string_ = val;
+        fmt_string_ = val == "full" ? default_format::LONG()
+                    : val == "short" ? default_format::SHORT()
+                    : val == "default" ? default_format::SHORT()
+                    : val;
+
+        check_format (fmt_string_);
+
+#ifdef FHGLOG_DEBUG_CONFIG
+        std::clog << "D: setting format to \"" << val << "\"" << std::endl;
+#endif
       }
       else if (key == "to_console")
       {
