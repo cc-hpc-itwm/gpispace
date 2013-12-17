@@ -303,10 +303,6 @@ void Orchestrator::handleCancelJobAckEvent(const  events::CancelJobAckEvent* pEv
     // update the job status to "Canceled"
     pJob->CancelJobAck(pEvt);
     DMLOG(TRACE, "The job state is: "<<pJob->getStatus());
-    // just send an acknowledgment to the master
-    // send an acknowledgment to the component that requested the cancellation
-    events::CancelJobAckEvent::Ptr pCancelAckEvt(new  events::CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
-    notifySubscribers(pCancelAckEvt);
     return;
   }
 
