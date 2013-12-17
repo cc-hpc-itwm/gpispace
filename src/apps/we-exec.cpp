@@ -383,7 +383,7 @@ try
 {
   namespace po = boost::program_options;
 
-  fhg::log::Configurator::configure();
+  FHGLOG_SETUP();
 
   po::options_description desc ("options");
 
