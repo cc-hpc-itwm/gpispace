@@ -51,7 +51,9 @@ namespace fhg
         parse_environment();
         if (!disabled_ && to_console_.empty() && to_server_.empty() && to_file_.empty())
         {
-          fallback_configuration();
+          to_console_ = "stderr";
+          to_file_ = "";
+          to_server_ = "";
         }
 
         configure();
@@ -196,13 +198,6 @@ namespace fhg
         : synchronize_ ? Appender::ptr_t (new SynchronizedAppender (compound_appender))
         : compound_appender
         );
-    }
-
-    void DefaultConfiguration::fallback_configuration()
-    {
-      to_console_ = "stderr";
-      to_file_ = "";
-      to_server_ = "";
     }
 
     void DefaultConfiguration::parse_key_value(const std::string &key, const std::string &val)

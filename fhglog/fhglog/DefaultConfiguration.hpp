@@ -38,7 +38,6 @@ namespace fhg { namespace log {
       void parse_environment();
       void configure();
       void default_configuration();
-      void fallback_configuration();
       void parse_key_value(const std::string &key, const std::string &val);
     private:
       // internal config variables
