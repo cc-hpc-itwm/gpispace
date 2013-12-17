@@ -58,7 +58,6 @@ namespace sdpa {
       virtual void createScheduler()
       {
         ptr_scheduler_ = SchedulerBase::ptr_t (new SimpleScheduler (this));
-        ptr_scheduler_->start_threads();
       }
 
       std::string url_;
