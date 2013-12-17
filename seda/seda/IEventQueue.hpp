@@ -48,9 +48,9 @@ namespace seda {
 
     virtual IEvent::Ptr pop() throw (QueueEmpty, boost::thread_interrupted) = 0;
     virtual IEvent::Ptr pop(unsigned long millis) throw (QueueEmpty, boost::thread_interrupted) = 0;
-    
-    virtual void push(const IEvent::Ptr& e) throw (QueueFull) = 0;
-    
+
+    virtual void push(const IEvent::Ptr& e) = 0;
+
     virtual void clear() = 0;
 
     virtual std::size_t size() const = 0;

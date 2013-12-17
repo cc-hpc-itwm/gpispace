@@ -104,13 +104,12 @@ namespace seda {
                 return e;
             }
 
-            virtual void push(const IEvent::Ptr& e) throw(QueueFull)
+            virtual void push(const IEvent::Ptr& e)
 			{
                 boost::unique_lock<boost::mutex> lock(_mtx);
 
                 while (size() >= _maxQueueSize)
                 {
-                  // throw QueueFull
                   _notFullCond.wait (lock);
                 }
 
