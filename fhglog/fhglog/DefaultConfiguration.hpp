@@ -13,13 +13,7 @@ namespace fhg { namespace log {
 
       void operator() () throw()
       {
-#if FHGLOG_DISABLE_LOGGING != 1
-
-#ifdef FHGLOG_DEBUG_CONFIG
-        std::clog << "I: performing default logging configuration" << std::endl;
-#  endif
         default_configuration ();
-#endif
     }
 
     private:
