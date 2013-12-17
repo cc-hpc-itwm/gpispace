@@ -527,9 +527,9 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   if( isTop() )
   {
     // send immediately an acknowledgment to the component that requested the cancellation
-      events::CancelJobAckEvent::Ptr pCancelAckEvt(new events::CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id()));
-
-    if(!isSubscriber(pJob->owner()))
+    events::CancelJobAckEvent::Ptr pCancelAckEvt(new events::CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
+    sendEventToMaster(pCancelAckEvt);
+    if(!isSubscriber(pEvt->from()))
       sendEventToMaster(pCancelAckEvt);
 
     notifySubscribers(pCancelAckEvt);
