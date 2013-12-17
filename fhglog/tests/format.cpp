@@ -44,6 +44,15 @@ BOOST_AUTO_TEST_CASE (severity)
 #undef CHECK
 }
 
+BOOST_AUTO_TEST_CASE (file)
+{
+  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+                                 , "tests/test_formatter.cpp"
+                                 , "main", __LINE__, "hello"
+                                 );
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%p", event), "test_formatter.cpp");
+}
+
 BOOST_AUTO_TEST_CASE (path)
 {
   const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
@@ -51,7 +60,6 @@ BOOST_AUTO_TEST_CASE (path)
                                  , "main", __LINE__, "hello"
                                  );
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%P", event), "tests/test_formatter.cpp");
-  BOOST_REQUIRE_EQUAL (fhg::log::format ("%p", event), "test_formatter.cpp");
 }
 
 BOOST_AUTO_TEST_CASE (line)
