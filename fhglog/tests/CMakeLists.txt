@@ -8,11 +8,6 @@ fhg_add_test (compound_appender.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (disabled_logging.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhglog
-  LINK_LIBRARIES fhglog)
-
 fhg_add_test (dump_event.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
