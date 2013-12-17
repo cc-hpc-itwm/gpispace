@@ -1,9 +1,5 @@
 project(libfhglog)
 
-set(FHGLOG_MAJOR 1)
-set(FHGLOG_MINOR 4)
-set(FHGLOG_PATCH 0)
-
 set(FHGLOG_EXIT_ON_ERROR Yes CACHE BOOL "Exit on error or not")
 set(FHGLOG_EXIT_ON_ERROR_CODE "42" CACHE STRING "The exit code with which fhglog will exit on FATAL messages")
 
