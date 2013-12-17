@@ -30,11 +30,6 @@ namespace fhg { namespace log {
     public:
 	  typedef shared_ptr<CompoundAppender> ptr_t;
 
-	  explicit
-      CompoundAppender()
-        : Appender()
-      { }
-
       virtual void append(const LogEvent &evt)
       {
 		for (appender_list::iterator a(appenders_.begin()); a != appenders_.end(); ++a)
