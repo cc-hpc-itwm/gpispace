@@ -329,7 +329,6 @@ namespace mapreduce
   	  {
   		 // to do: use regex here
 		 std::string w;
-		 bool bMatching = false;
 
 		 // further checks are necessary
 		 key_val_pair_t kvp_v = str2kvpair(str_item);
@@ -365,7 +364,6 @@ namespace mapreduce
 			 if( v0 + v1 == u0 + u1 )
 			 {
 				 w = (u0<v0)?kvp_u.second + kvp_v.second : w = kvp_v.second + kvp_u.second;
-				 bMatching = true;
 				 break;
 			 }
 
