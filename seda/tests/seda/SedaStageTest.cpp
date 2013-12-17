@@ -9,7 +9,6 @@
 #include <seda/StageFactory.hpp>
 #include <seda/StageRegistry.hpp>
 #include <seda/EventCountStrategy.hpp>
-#include <seda/CompositeStrategy.hpp>
 #include <seda/AccumulateStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
 #include <seda/ForwardStrategy.hpp>
@@ -121,35 +120,6 @@ SedaStageTest::testForwardEvents() {
     CPPUNIT_ASSERT(first->empty());
     CPPUNIT_ASSERT(final->empty());
     CPPUNIT_ASSERT_EQUAL(numMsgs, ecs->count());
-
-    seda::StageRegistry::instance().stopAll();
-}
-
-void
-SedaStageTest::testCompositeStrategy() {
-    seda::StageFactory::Ptr factory(new seda::StageFactory());
-
-    seda::Strategy::Ptr discard(new seda::DiscardStrategy());
-    seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
-    discard = seda::Strategy::Ptr(ecs);
-    seda::Stage::Ptr final(factory->createStage("discard", discard, 2));
-
-    seda::CompositeStrategy::Ptr composite(new seda::CompositeStrategy("composite"));
-    composite->add(seda::Strategy::Ptr(new seda::ForwardStrategy("discard")));
-    composite->add(seda::Strategy::Ptr(new seda::ForwardStrategy("discard")));
-    seda::Stage::Ptr first(factory->createStage("fwd", composite));
-
-    seda::StageRegistry::instance().startAll();
-
-    first->send(seda::IEvent::Ptr(new seda::StringEvent("foo")));
-
-    first->waitUntilEmpty(100);
-    final->waitUntilEmpty(100);
-    ecs->wait(2, 1000); // event should have been duplicated
-
-    CPPUNIT_ASSERT(first->empty());
-    CPPUNIT_ASSERT(final->empty());
-    CPPUNIT_ASSERT_EQUAL((std::size_t)2, ecs->count());
 
     seda::StageRegistry::instance().stopAll();
 }

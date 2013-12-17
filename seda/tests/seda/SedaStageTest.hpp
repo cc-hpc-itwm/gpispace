@@ -12,7 +12,6 @@ namespace seda {
       CPPUNIT_TEST( testSendFoo );
       CPPUNIT_TEST( testStartStop );
       CPPUNIT_TEST( testForwardEvents );
-      CPPUNIT_TEST( testCompositeStrategy );
       CPPUNIT_TEST( testAccumulateStrategy );
       CPPUNIT_TEST( testLossyDaemonStrategy );
       CPPUNIT_TEST( testFilterStrategy );
@@ -32,7 +31,6 @@ namespace seda {
       void testSendFoo();
       void testStartStop();
       void testForwardEvents();
-      void testCompositeStrategy();
       void testAccumulateStrategy();
       void testLossyDaemonStrategy();
       void testFilterStrategy();

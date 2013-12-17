@@ -2,7 +2,6 @@
 set (hdrs
   AccumulateStrategy.hpp
   common.hpp
-  CompositeStrategy.hpp
   constants.hpp
   DiscardStrategy.hpp
   ErrorEvent.hpp
@@ -39,7 +38,6 @@ set (hdrs
 
 set (srcs
   AccumulateStrategy.cpp
-  CompositeStrategy.cpp
   constants.cpp
   ErrorEvent.cpp
   ForwardStrategy.cpp
