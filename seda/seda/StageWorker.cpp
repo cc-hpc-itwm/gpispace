@@ -23,7 +23,6 @@
 #include "StageWorker.hpp"
 #include "Stage.hpp"
 #include "IEvent.hpp"
-#include "EventNotSupported.hpp"
 #include "SystemEvent.hpp"
 #include "StageRegistry.hpp"
 
@@ -45,7 +44,6 @@ namespace seda {
                 IEvent::Ptr e = _stage->recv(_stage->timeout());
                 _busy = true;
 
-                try {
                   //DLOG(TRACE, "handling event in stage " << _stage->name());
                   //                  SEDA_LOG_DEBUG("handling event in stage " << _stage->name());
 
@@ -53,14 +51,6 @@ namespace seda {
 
                   //DLOG(TRACE, "handled event in stage " << _stage->name());
                   //SEDA_LOG_DEBUG("handled event in stage " << _stage->name());
-                } catch (const seda::EventNotSupported&) {
-                    Stage::Ptr systemEventHandler(StageRegistry::instance().lookup(_stage->getErrorHandler()));
-                    if (systemEventHandler.get() != _stage) {
-                        systemEventHandler->send(e);
-                    } else {
-                        SEDA_LOG_FATAL("received a SystemEvent, but it could not be handled!");
-                    }
-                }
 
                 _busy = false;
             } catch (const seda::QueueEmpty&) {
