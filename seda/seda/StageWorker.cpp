@@ -44,13 +44,7 @@ namespace seda {
                 IEvent::Ptr e = _stage->recv();
                 _busy = true;
 
-                  //DLOG(TRACE, "handling event in stage " << _stage->name());
-                  //                  SEDA_LOG_DEBUG("handling event in stage " << _stage->name());
-
-                    _stage->strategy()->perform(e);
-
-                  //DLOG(TRACE, "handled event in stage " << _stage->name());
-                  //SEDA_LOG_DEBUG("handled event in stage " << _stage->name());
+                _stage->strategy()->perform(e);
 
                 _busy = false;
             } catch (const boost::thread_interrupted &irq) {
