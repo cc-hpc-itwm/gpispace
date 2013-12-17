@@ -21,8 +21,6 @@ set (hdrs
   StringEvent.hpp
   Synchronizable.hpp
   SystemEvent.hpp
-  TimerEvent.hpp
-  Timer.hpp
   UserEvent.hpp
 )
 
@@ -34,7 +32,6 @@ set (srcs
   StageRegistry.cpp
   StageWorker.cpp
   StrategyDecorator.cpp
-  Timer.cpp
   )
 
 ADD_LIBRARY(seda STATIC ${srcs})

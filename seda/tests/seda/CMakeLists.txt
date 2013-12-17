@@ -3,7 +3,6 @@
 set(sedatest_src main.cpp
    EventQueueTest.cpp EventQueueTest.hpp
    SedaStageTest.cpp  SedaStageTest.hpp
-   TimerTest.cpp TimerTest.hpp
 )
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
