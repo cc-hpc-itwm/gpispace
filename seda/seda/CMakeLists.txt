@@ -36,12 +36,10 @@ set (hdrs
   TimerEvent.hpp
   Timer.hpp
   UserEvent.hpp
-  util.hpp
 )
 
 set (srcs
   AccumulateStrategy.cpp
-  common.cpp
   CompositeStrategy.cpp
   constants.cpp
   CoutStrategy.cpp
@@ -53,7 +51,6 @@ set (srcs
   StageWorker.cpp
   StrategyDecorator.cpp
   Timer.cpp
-  util.cpp
   )
 
 ADD_LIBRARY(seda STATIC ${srcs})
