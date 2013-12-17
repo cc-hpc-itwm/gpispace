@@ -12,7 +12,6 @@
 #include <seda/CompositeStrategy.hpp>
 #include <seda/AccumulateStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
-#include <seda/CoutStrategy.hpp>
 #include <seda/ForwardStrategy.hpp>
 #include <seda/LoggingStrategy.hpp>
 #include <seda/LossyDaemonStrategy.hpp>

@@ -4,7 +4,6 @@ set (hdrs
   common.hpp
   CompositeStrategy.hpp
   constants.hpp
-  CoutStrategy.hpp
   DiscardStrategy.hpp
   ErrorEvent.hpp
   EventCountStrategy.hpp
@@ -42,7 +41,6 @@ set (srcs
   AccumulateStrategy.cpp
   CompositeStrategy.cpp
   constants.cpp
-  CoutStrategy.cpp
   ErrorEvent.cpp
   ForwardStrategy.cpp
   LossyDaemonStrategy.cpp
