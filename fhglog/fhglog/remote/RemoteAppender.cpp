@@ -19,7 +19,6 @@
 #include <boost/array.hpp>
 #include <sstream>
 
-#include <fhglog/util.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 #include <boost/lexical_cast.hpp>

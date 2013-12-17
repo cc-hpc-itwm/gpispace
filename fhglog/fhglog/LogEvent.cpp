@@ -1,7 +1,6 @@
 #define BOOST_SPIRIT_THREADSAFE
 
 #include "LogEvent.hpp"
-#include "util.hpp"
 
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>

@@ -2,7 +2,6 @@
 #define FHGLOG_DEFAULT_CONFIGURATION_HPP 1
 
 #include <fhglog/fhglog-config.hpp>
-#include <fhglog/util.hpp> // environment parser
 #include <fhglog/LogLevel.hpp>
 
 #include <iostream>
