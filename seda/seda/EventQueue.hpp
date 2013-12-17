@@ -67,28 +67,6 @@ namespace seda {
                 return e;
             }
 
-            virtual IEvent::Ptr pop(unsigned long millis) throw(QueueEmpty, boost::thread_interrupted) {
-                boost::unique_lock<boost::mutex> lock(_mtx);
-
-                while (empty()) {
-                    boost::system_time const timeout=boost::get_system_time() + boost::posix_time::milliseconds(millis);
-                    if (! _notEmptyCond.timed_wait(lock, timeout)) {
-                        _emptyCond.notify_one();
-                        throw QueueEmpty();
-                    }
-                }
-                assert(! empty());
-
-                IEvent::Ptr e = _list.front(); _list.pop_front();
-                if (empty()) {
-                    _emptyCond.notify_one();
-                } else {
-                    _notEmptyCond.notify_one();
-                }
-                _notFullCond.notify_one();
-                return e;
-            }
-
             virtual void push(const IEvent::Ptr& e) {
                 boost::unique_lock<boost::mutex> lock(_mtx);
 

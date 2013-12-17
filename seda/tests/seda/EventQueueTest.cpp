@@ -33,21 +33,8 @@ EventQueueTest::testPushPop() {
   CPPUNIT_ASSERT(!_queue->empty());
   CPPUNIT_ASSERT_EQUAL((std::size_t)1, _queue->size());
 
-  seda::IEvent::Ptr out(_queue->pop(10));
+  seda::IEvent::Ptr out(_queue->pop());
   CPPUNIT_ASSERT( in == out );
   CPPUNIT_ASSERT_EQUAL((std::size_t)0, _queue->size());
   CPPUNIT_ASSERT(_queue->empty());
-}
-
-void
-EventQueueTest::testQueueEmpty() {
-  try
-  {
-    _queue->pop(10);
-    CPPUNIT_ASSERT_MESSAGE("QueueEmpty exception expected!", false);
-  }
-  catch (const QueueEmpty &)
-  {
-    // ok
-  }
 }

@@ -10,7 +10,6 @@ namespace seda {
     class EventQueueTest : public CppUnit::TestFixture {
       CPPUNIT_TEST_SUITE( seda::tests::EventQueueTest );
       CPPUNIT_TEST( testPushPop );
-      CPPUNIT_TEST( testQueueEmpty );
       CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -23,7 +22,6 @@ namespace seda {
     protected:
       SEDA_DECLARE_LOGGER();
       void testPushPop();
-      void testQueueEmpty();
 
       seda::IEventQueue::Ptr _queue;
     };
