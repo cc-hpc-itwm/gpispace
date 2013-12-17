@@ -14,7 +14,6 @@ set (hdrs
   IEvent.hpp
   IEventQueue.hpp
   logging.hpp
-  LossyDaemonStrategy.hpp
   SedaException.hpp
   shared_ptr.hpp
   StageAlreadyRegistered.hpp
@@ -37,7 +36,6 @@ set (srcs
   constants.cpp
   ErrorEvent.cpp
   ForwardStrategy.cpp
-  LossyDaemonStrategy.cpp
   Stage.cpp
   StageRegistry.cpp
   StageWorker.cpp

@@ -11,7 +11,6 @@
 #include <seda/EventCountStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
 #include <seda/ForwardStrategy.hpp>
-#include <seda/LossyDaemonStrategy.hpp>
 #include <seda/TimerEvent.hpp>
 #include <seda/StringEvent.hpp>
 
@@ -119,28 +118,4 @@ SedaStageTest::testForwardEvents() {
     CPPUNIT_ASSERT_EQUAL(numMsgs, ecs->count());
 
     seda::StageRegistry::instance().stopAll();
-}
-
-void SedaStageTest::testLossyDaemonStrategy() {
-    SEDA_LOG_DEBUG("Testing LossyDaemonStrategy");
-    seda::StageFactory::Ptr factory(new seda::StageFactory());
-
-    seda::Strategy::Ptr discard(new seda::DiscardStrategy());
-    seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
-    discard = seda::Strategy::Ptr(new seda::LossyDaemonStrategy(ecs, 0.5));
-    seda::Stage::Ptr first(factory->createStage("lossy", discard));
-
-    first->start();
-
-    for (size_t i = 0; i < 100; i++) {
-        seda::IEvent::Ptr sendEvent(new seda::StringEvent("foo"));
-        first->send(sendEvent);
-    }
-    first->waitUntilEmpty(4000);
-
-    CPPUNIT_ASSERT(first->empty());
-    CPPUNIT_ASSERT(std::size_t(0)   < ecs->count());
-    CPPUNIT_ASSERT(std::size_t(100) > ecs->count());
-
-    first->stop();
 }
