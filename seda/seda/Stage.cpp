@@ -39,8 +39,7 @@ namespace seda {
           _strategy(a_strategy),
           _name(a_name),
           _error_handler(a_errorHandler),
-          _maxPoolSize(a_maxPoolSize),
-          _timeout(SEDA_DEFAULT_TIMEOUT)
+          _maxPoolSize(a_maxPoolSize)
     {
     }
 
@@ -50,8 +49,7 @@ namespace seda {
           _strategy(a_strategy),
           _name(a_name),
           _error_handler(a_errorHandler),
-          _maxPoolSize(a_maxPoolSize),
-          _timeout(SEDA_DEFAULT_TIMEOUT)
+          _maxPoolSize(a_maxPoolSize)
     {
     }
 

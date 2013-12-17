@@ -71,14 +71,12 @@ namespace seda {
         virtual void send(const IEvent::Ptr& e) {
             queue()->push(e);
         }
-        virtual IEvent::Ptr recv(unsigned long millis) {
-            return queue()->pop(millis);
+        virtual IEvent::Ptr recv() {
+            return queue()->pop(SEDA_DEFAULT_TIMEOUT);
         }
 
         void setErrorHandler(const std::string& eh) { _error_handler = eh; }
         const std::string& getErrorHandler() const { return _error_handler; }
-        unsigned long timeout() const { return _timeout; }
-        void timeout(unsigned long millis) { _timeout = millis; }
     private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -92,7 +90,6 @@ namespace seda {
         std::string _name;
         std::string _error_handler;
         std::size_t _maxPoolSize;
-        unsigned long _timeout;
         ThreadPool _threadPool;
         mutable mutex_type m_mutex;
     };

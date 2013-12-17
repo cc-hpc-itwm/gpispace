@@ -41,7 +41,7 @@ namespace seda {
 
         while (!stopped()) {
             try {
-                IEvent::Ptr e = _stage->recv(_stage->timeout());
+                IEvent::Ptr e = _stage->recv();
                 _busy = true;
 
                   //DLOG(TRACE, "handling event in stage " << _stage->name());
