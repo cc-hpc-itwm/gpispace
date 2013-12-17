@@ -185,8 +185,6 @@ namespace we
 
         detail::descriptor& desc (lookup(active_id));
 
-
-
         if (desc.activity().is_canceling())
         {
           if (!desc.has_children())
