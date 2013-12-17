@@ -34,7 +34,6 @@ int main (int argc, char *argv [], char *envp [])
   int i;
   int verbose = 0;
   int help = 0;
-  bool resolve_alias = true;
 
   std::string exec_path = gspc::ctl::exec_path ();
 
@@ -105,7 +104,6 @@ int main (int argc, char *argv [], char *envp [])
     else if (arg == "--no-alias")
     {
       ++i;
-      resolve_alias = false;
     }
     else if (arg == "--prefix-path")
     {
