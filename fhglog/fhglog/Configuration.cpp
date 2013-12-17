@@ -41,8 +41,9 @@ namespace fhg
         DefaultConfiguration();
 
         void parse_environment();
+        void parse_key_value (const std::string& key, const std::string& val);
+
         void configure() const;
-        void parse_key_value(const std::string &key, const std::string &val);
 
         fhg::log::LogLevel level_;
         std::string to_console_;
@@ -56,16 +57,16 @@ namespace fhg
       };
 
       DefaultConfiguration::DefaultConfiguration()
-        : level_(LogLevel::DEF_LEVEL)
-        , to_console_("")
-        , to_file_("")
-        , to_server_("")
-        , fmt_string_(default_format::SHORT())
+        : level_ (LogLevel::DEF_LEVEL)
+        , to_console_ ("")
+        , to_file_ ("")
+        , to_server_ ("")
+        , fmt_string_ (default_format::SHORT())
           // FIXME: broken if set to true
-        , threaded_(false)
-        , color_(StreamAppender::COLOR_AUTO)
-        , disabled_(false)
-        , synchronize_(false)
+        , threaded_ (false)
+        , color_ (StreamAppender::COLOR_AUTO)
+        , disabled_ (false)
+        , synchronize_ (false)
       {}
 
       void DefaultConfiguration::parse_environment()
@@ -92,93 +93,13 @@ namespace fhg
         }
       }
 
-      void DefaultConfiguration::configure() const
-      {
-        CompoundAppender::ptr_t compound_appender(new CompoundAppender());
-
-        compound_appender->addAppender (global_memory_appender());
-
-        if (to_console_.size() > 0)
-        {
-          compound_appender->addAppender
-            (Appender::ptr_t(new StreamAppender( "stdout" == to_console_ ? std::cout
-                                               : "stdlog" == to_console_ ? std::clog
-                                               : std::cerr
-                                               , fmt_string_
-                                               , color_
-                                               )
-                            )
-            );
-
-          if (  "stderr" != to_console_
-             && "stdout" != to_console_
-             && "stdlog" != to_console_
-             )
-          {
-            std::clog << "W: invalid value for configuration value to_console: " << to_console_ << " assuming stderr" << std::endl;
-          }
-#ifdef FHGLOG_DEBUG_CONFIG
-          else
-          {
-            std::clog << "D: logging to console: " << to_console_ << std::endl;
-          }
-#endif
-        }
-
-        if (to_file_.size())
-        {
-          try
-          {
-            compound_appender->addAppender
-              (Appender::ptr_t(new FileAppender( to_file_
-                                               , fmt_string_
-                                               )
-                              )
-              );
-#ifdef FHGLOG_DEBUG_CONFIG
-            std::clog << "D: logging to file: " << to_file_ << std::endl;
-#endif
-          }
-          catch (const std::exception &ex)
-          {
-            std::clog << "E: could not open log-file " << to_file_ << ": " << ex.what() << std::endl;
-          }
-        }
-
-        if (to_server_.size())
-        {
-          try
-          {
-            // TODO: split to_remote_ into host and port
-            compound_appender->addAppender(Appender::ptr_t(new remote::RemoteAppender(to_server_)));
-#ifdef FHGLOG_DEBUG_CONFIG
-            std::clog << "D: logging to server: " << to_server_ << std::endl;
-#endif
-          }
-          catch (const std::exception &ex)
-          {
-            std::clog << "E: could not create remote logger to: " << to_server_ << ": " << ex.what() << std::endl;
-          }
-        }
-
-#ifdef FHGLOG_DEBUG_CONFIG
-        std::clog << "D: loglevel set to " << level_ << std::endl;
-#endif
-        getLogger().setLevel(level_);
-
-        getLogger().addAppender
-          ( threaded_ ? Appender::ptr_t (new ThreadedAppender (compound_appender))
-          : synchronize_ ? Appender::ptr_t (new SynchronizedAppender (compound_appender))
-          : compound_appender
-          );
-      }
-
-      void DefaultConfiguration::parse_key_value(const std::string &key, const std::string &val)
+      void DefaultConfiguration::parse_key_value
+        (const std::string& key, const std::string& val)
       try
       {
         if (key == "level")
         {
-          level_ = LogLevel(val);
+          level_ = LogLevel (val);
         }
         else if (key == "format")
         {
@@ -223,7 +144,8 @@ namespace fhg
         else if (key == "disabled")
         {
 #ifdef FHGLOG_DEBUG_CONFIG
-          std::clog << "D: logging disabled due to environment FHGLOG_disabled" << std::endl;
+          std::clog << "D: logging disabled due to environment FHGLOG_disabled"
+                    << std::endl;
 #endif
           disabled_ = true;
         }
@@ -236,7 +158,91 @@ namespace fhg
       }
       catch (const std::exception& ex)
       {
-        std::clog << "E: invalid value '" << val << "' for key '" << key << "':" << ex.what() << std::endl;
+        std::clog << "E: invalid value '" << val << "' for key '" << key
+                  << "':" << ex.what() << std::endl;
+      }
+
+
+      void DefaultConfiguration::configure() const
+      {
+        CompoundAppender::ptr_t compound_appender (new CompoundAppender);
+
+        compound_appender->addAppender (global_memory_appender());
+
+        if (to_console_.size())
+        {
+          compound_appender->addAppender
+            ( Appender::ptr_t ( new StreamAppender
+                                ( "stdout" == to_console_ ? std::cout
+                                : "stdlog" == to_console_ ? std::clog
+                                : std::cerr
+                                , fmt_string_
+                                , color_
+                                )
+                            )
+            );
+
+          if (  "stderr" != to_console_
+             && "stdout" != to_console_
+             && "stdlog" != to_console_
+             )
+          {
+            std::clog << "W: invalid value for configuration value to_console: "
+                      << to_console_ << " assuming stderr" << std::endl;
+          }
+#ifdef FHGLOG_DEBUG_CONFIG
+          else
+          {
+            std::clog << "D: logging to console: " << to_console_ << std::endl;
+          }
+#endif
+        }
+
+        if (to_file_.size())
+        {
+          try
+          {
+            compound_appender->addAppender
+              (Appender::ptr_t (new FileAppender (to_file_, fmt_string_)));
+#ifdef FHGLOG_DEBUG_CONFIG
+            std::clog << "D: logging to file: " << to_file_ << std::endl;
+#endif
+          }
+          catch (const std::exception& ex)
+          {
+            std::clog << "E: could not open log-file " << to_file_ << ": "
+                      << ex.what() << std::endl;
+          }
+        }
+
+        if (to_server_.size())
+        {
+          try
+          {
+            // TODO: split to_remote_ into host and port
+            compound_appender->addAppender
+              (Appender::ptr_t (new remote::RemoteAppender (to_server_)));
+#ifdef FHGLOG_DEBUG_CONFIG
+            std::clog << "D: logging to server: " << to_server_ << std::endl;
+#endif
+          }
+          catch (const std::exception &ex)
+          {
+            std::clog << "E: could not create remote logger to: "
+                      << to_server_ << ": " << ex.what() << std::endl;
+          }
+        }
+
+#ifdef FHGLOG_DEBUG_CONFIG
+        std::clog << "D: loglevel set to " << level_ << std::endl;
+#endif
+        getLogger().setLevel (level_);
+
+        getLogger().addAppender
+          ( threaded_ ? Appender::ptr_t (new ThreadedAppender (compound_appender))
+          : synchronize_ ? Appender::ptr_t (new SynchronizedAppender (compound_appender))
+          : compound_appender
+          );
       }
     }
 
