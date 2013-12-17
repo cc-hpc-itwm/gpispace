@@ -106,13 +106,6 @@ namespace fhg
       return true;
     }
 
-    namespace
-    {
-      const std::string & STDOUT() { static std::string const s("stdout"); return s; }
-      const std::string & STDERR() { static std::string const s("stderr"); return s; }
-      const std::string & STDLOG() { static std::string const s("stdlog"); return s; }
-    }
-
     void DefaultConfiguration::configure()
     {
       if (disabled_)
@@ -145,7 +138,7 @@ namespace fhg
 
       compound_appender->addAppender (global_memory_appender());
 
-      if (STDERR() == to_console_)
+      if ("stderr" == to_console_)
       {
         compound_appender->addAppender
           (Appender::ptr_t(new StreamAppender( std::cerr
@@ -158,7 +151,7 @@ namespace fhg
         std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
       }
-      else if (STDOUT() == to_console_)
+      else if ("stdout" == to_console_)
       {
         compound_appender->addAppender
           (Appender::ptr_t(new StreamAppender( std::cout
@@ -171,7 +164,7 @@ namespace fhg
         std::clog << "D: logging to console: " << to_console_ << std::endl;
 #endif
       }
-      else if (STDLOG() == to_console_)
+      else if ("stdlog" == to_console_)
       {
         compound_appender->addAppender
           (Appender::ptr_t(new StreamAppender( std::clog
