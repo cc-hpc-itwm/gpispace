@@ -24,12 +24,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_when_the_agent_has_no_worker)
   sdpa::status::code status(utils::client::wait_for_state_polling(client, job_id, sdpa::status::STALLED));
   BOOST_REQUIRE_EQUAL(status, sdpa::status::STALLED);
   DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
-
-  client.cancelJob(job_id);
-
-  status = utils::client::wait_for_state_polling(client, job_id, sdpa::status::CANCELED);
-  BOOST_REQUIRE_EQUAL(status, sdpa::status::CANCELED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 }
 
 BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_new_worker_registers)
