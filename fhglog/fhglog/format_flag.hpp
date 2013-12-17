@@ -100,7 +100,7 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << boost::filesystem::path (e.path()).stem();
+            return os << boost::filesystem::path (e.path()).stem().string();
           }
         };
         struct LINE
