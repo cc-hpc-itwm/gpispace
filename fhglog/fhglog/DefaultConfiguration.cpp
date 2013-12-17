@@ -138,55 +138,31 @@ namespace fhg
 
       compound_appender->addAppender (global_memory_appender());
 
-      if ("stderr" == to_console_)
+      if (to_console_.size() > 0)
       {
         compound_appender->addAppender
-          (Appender::ptr_t(new StreamAppender( std::cerr
+          (Appender::ptr_t(new StreamAppender( "stdout" == to_console_ ? std::cout
+                                             : "stdlog" == to_console_ ? std::clog
+                                             : std::cerr
                                              , fmt
                                              , color_mode
                                              )
                           )
           );
+
+        if (  "stderr" != to_console_
+           && "stdout" != to_console_
+           && "stdlog" != to_console_
+           )
+        {
+          std::clog << "W: invalid value for configuration value to_console: " << to_console_ << " assuming stderr" << std::endl;
+        }
 #ifdef FHGLOG_DEBUG_CONFIG
-        std::clog << "D: logging to console: " << to_console_ << std::endl;
+        else
+        {
+          std::clog << "D: logging to console: " << to_console_ << std::endl;
+        }
 #endif
-      }
-      else if ("stdout" == to_console_)
-      {
-        compound_appender->addAppender
-          (Appender::ptr_t(new StreamAppender( std::cout
-                                             , fmt
-                                             , color_mode
-                                             )
-                          )
-          );
-#ifdef FHGLOG_DEBUG_CONFIG
-        std::clog << "D: logging to console: " << to_console_ << std::endl;
-#endif
-      }
-      else if ("stdlog" == to_console_)
-      {
-        compound_appender->addAppender
-          (Appender::ptr_t(new StreamAppender( std::clog
-                                             , fmt
-                                             , color_mode
-                                             )
-                          )
-          );
-#ifdef FHGLOG_DEBUG_CONFIG
-        std::clog << "D: logging to console: " << to_console_ << std::endl;
-#endif
-      }
-      else if (to_console_.size() > 0)
-      {
-        std::clog << "W: invalid value for configuration value to_console: " << to_console_ << " assuming stderr" << std::endl;
-        compound_appender->addAppender
-          (Appender::ptr_t(new StreamAppender( std::cerr
-                                             , fmt
-                                             , color_mode
-                                             )
-                          )
-          );
       }
 
       if (to_file_.size())
