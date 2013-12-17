@@ -55,6 +55,5 @@ namespace seda {
                 SEDA_LOG_ERROR("strategy execution failed: unknown reason");
             }
         }
-        DMLOG (TRACE, "terminating");
     }
 }
