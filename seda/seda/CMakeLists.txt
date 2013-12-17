@@ -19,7 +19,6 @@ set (hdrs
   StrategyDecorator.hpp
   Strategy.hpp
   StringEvent.hpp
-  Synchronizable.hpp
   SystemEvent.hpp
   UserEvent.hpp
 )
