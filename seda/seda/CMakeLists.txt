@@ -3,7 +3,6 @@ set (hdrs
   common.hpp
   constants.hpp
   DiscardStrategy.hpp
-  ErrorEvent.hpp
   EventCountStrategy.hpp
   EventQueue.hpp
   ForwardStrategy.hpp
@@ -25,7 +24,6 @@ set (hdrs
 
 set (srcs
   constants.cpp
-  ErrorEvent.cpp
   ForwardStrategy.cpp
   Stage.cpp
   StageRegistry.cpp
