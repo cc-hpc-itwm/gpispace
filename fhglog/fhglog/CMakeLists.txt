@@ -27,7 +27,6 @@ set (hdrs
   StreamAppender.hpp
   SynchronizedAppender.hpp
   ThreadedAppender.hpp
-  types.hpp
   util.hpp
   minimal.hpp
   )
