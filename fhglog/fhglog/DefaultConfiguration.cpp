@@ -206,21 +206,11 @@ namespace fhg
 #endif
       getLogger().setLevel(level_);
 
-      if (threaded_)
-      {
-        getLogger().addAppender(Appender::ptr_t(new ThreadedAppender(compound_appender)));
-      }
-      else
-      {
-        if (synchronize_)
-        {
-          getLogger().addAppender(Appender::ptr_t(new SynchronizedAppender (compound_appender)));
-        }
-        else
-        {
-          getLogger().addAppender(compound_appender);
-        }
-      }
+      getLogger().addAppender
+        ( threaded_ ? Appender::ptr_t (new ThreadedAppender (compound_appender))
+        : synchronize_ ? Appender::ptr_t (new SynchronizedAppender (compound_appender))
+        : compound_appender
+        );
     }
 
     void DefaultConfiguration::fallback_configuration()
