@@ -170,7 +170,7 @@ namespace we
     }
 
     //! \todo WORK HERE: rewrite!
-    void layer::extractor()
+    void layer::executor ()
     {
       for (;;)
       {
@@ -178,7 +178,7 @@ namespace we
         if (! is_valid (active_id))
         {
           DMLOG( WARN
-               , "extractor woken up by old activity id " << active_id
+               , "executor woken up by old activity id " << active_id
                );
           continue;
         }
@@ -219,7 +219,7 @@ namespace we
         catch (const std::exception & ex)
         {
           MLOG( ERROR
-              , "extractor: something went wrong during execution of: "
+              , "executor: something went wrong during execution of: "
               << desc.name() << ": " << ex.what()
               );
           desc.set_error_code (fhg::error::UNEXPECTED_ERROR);
@@ -234,7 +234,7 @@ namespace we
           activity_failed (desc.id ());
         }
       }
-      DMLOG(TRACE, "extractor thread stopped...");
+      DMLOG(TRACE, "executor thread stopped...");
     }
 
     detail::descriptor &layer::do_extract (detail::descriptor & parent)
@@ -250,7 +250,7 @@ namespace we
 
       if (desc.is_done ())
       {
-        DMLOG (TRACE, "extractor: activity (" << desc.name() << ")-" << desc.id() << " is done");
+        DMLOG (TRACE, "executor: activity (" << desc.name() << ")-" << desc.id() << " is done");
         do_inject (desc);
       }
       else
@@ -290,8 +290,8 @@ namespace we
           execute_externally (desc.id());
           break;
         default:
-          MLOG (FATAL, "extractor: got strange classification for activity (" << desc.name() << ")-" << desc.id());
-          throw std::runtime_error ("extractor got strange classification for activity");
+          MLOG (FATAL, "executor: got strange classification for activity (" << desc.name() << ")-" << desc.id());
+          throw std::runtime_error ("executor got strange classification for activity");
         }
       }
     }

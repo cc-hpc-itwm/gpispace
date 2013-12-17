@@ -202,17 +202,17 @@ namespace we
           , ext_canceled (boost::bind (&E::canceled, exec_layer, _1))
           , external_id_gen_ (gen)
           , internal_id_gen_ (&petri_net::activity_id_generate)
-          , extractor_ (boost::bind (&layer::extractor, this))
+          , executor_ (boost::bind (&layer::executor, this))
       {
-        fhg::util::set_threadname (extractor_, "[we-extract]");
+        fhg::util::set_threadname (executor_, "[we-execute]");
       }
 
       ~layer()
       {
-        extractor_.interrupt();
-        if (extractor_.joinable())
+        executor_.interrupt();
+        if (executor_.joinable())
         {
-          extractor_.join();
+          executor_.join();
         }
 
         if (not activities_.empty ())
@@ -244,7 +244,7 @@ namespace we
     private:
       void execute_externally (const internal_id_type & int_id);
 
-      void extractor();
+      void executor ();
 
       detail::descriptor & do_extract (detail::descriptor & parent);
 
@@ -264,7 +264,7 @@ namespace we
 
       external_to_internal_map_t ext_to_int_;
 
-      boost::thread extractor_;
+      boost::thread executor_;
 
       external_id_type generate_external_id (void) const
       {
