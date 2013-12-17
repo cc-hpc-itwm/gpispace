@@ -23,8 +23,6 @@
 #ifndef SEDA_LOGGING_HPP
 #define SEDA_LOGGING_HPP 1
 
-#include <seda/seda-config.hpp>
-
 #include <fhglog/fhglog.hpp>
 
 #define SEDA_LDECLARE_LOGGER(logger)           ::fhg::log::logger_t logger

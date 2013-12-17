@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include <sys/wait.h>
 
-#include <seda/seda-config.hpp>
 #include <seda/Stage.hpp>
 #include <seda/StageFactory.hpp>
 #include <seda/AccumulateStrategy.hpp>
