@@ -1,12 +1,12 @@
 #include <pnete/ui/log_monitor.hpp>
 
-#include <fhglog/util.hpp>
 #include <util/qt/boost_connect.hpp>
 
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/mgmt/type/activity.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/serialization/access.hpp>
@@ -119,7 +119,7 @@ namespace detail
     //! \todo get time from outside?
     : time (QTime::currentTime().toString())
     , source (QString ("%1@%2").arg (evt.pid()).arg (evt.host ().c_str()))
-    , location (QString ("%1:%2").arg (fhg::log::get_filename_from_path (evt.path()).c_str()).arg (evt.line()))
+    , location (QString ("%1:%2").arg (boost::filesystem::path (evt.path()).filename().string().c_str()).arg (evt.line()))
     , message (evt.message().c_str())
     , event (evt)
   { }
