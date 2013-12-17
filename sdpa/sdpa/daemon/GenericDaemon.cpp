@@ -100,8 +100,7 @@ void GenericDaemon::start_agent()
 {
   ptr_daemon_stage_.lock()->start();
 
-
-  createScheduler();
+  ptr_scheduler_->start_threads();
 
   const boost::tokenizer<boost::char_separator<char> > tok
     (url(), boost::char_separator<char> (":"));
