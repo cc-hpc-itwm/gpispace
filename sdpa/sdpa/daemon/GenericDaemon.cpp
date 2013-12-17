@@ -1363,7 +1363,20 @@ void GenericDaemon::handleRetrieveJobResultsEvent(const events::RetrieveJobResul
   Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
-    pJob->RetrieveJobResults(pEvt, this);
+      if(pJob->completed())
+      {
+          pJob->RetrieveJobResults(pEvt, this);
+      }
+      else
+      {
+          events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name()
+                                                                    , pEvt->from()
+                                                                    , events::ErrorEvent::SDPA_EJOBTERMINATED
+                                                                    , "Not allowed to request results for a non-terminated job, its current status is : "
+                                                                    +  sdpa::status::show(pJob->getStatus()) )
+                                            );
+          sendEventToMaster(pErrorEvt);
+      }
   }
   else
   {
