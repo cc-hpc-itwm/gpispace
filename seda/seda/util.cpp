@@ -30,5 +30,4 @@ namespace seda {
         return now.tv_sec * 1000 + now.tv_usec;
     }
     */
-    const unsigned long INFINITE_WAITTIME = 0xFFFFffff;
 }

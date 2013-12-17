@@ -79,8 +79,6 @@ extern int errno;
 #  define EXIT_FAILURE 1
 #endif
 
-extern unsigned long INFINITE_WAITTIME;
-
 #include <seda/logging.hpp>
 
 #endif /* !SEDA_COMMON_HPP */
