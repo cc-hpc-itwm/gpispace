@@ -5,10 +5,6 @@ project(seda)
 # No user settings below
 ###################################################################################################
 
-OPTION(ENABLE_SEDA_COMM_LIB
-  "Build communication library"
-  OFF)
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -24,9 +20,6 @@ endif( NOT WIN32)
 
 # Reflect the package structure
 add_subdirectory(seda)
-if (ENABLE_SEDA_COMM_LIB)
-  add_subdirectory(seda/comm)
-endif ()
 
 include(CTest)
 if (BUILD_TESTING)
