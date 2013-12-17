@@ -1,6 +1,5 @@
 # -*- mode: cmake; -*-
 project(seda)
-string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 
 if (V_MAJOR)
 else (V_MAJOR)
