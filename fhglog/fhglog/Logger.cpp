@@ -163,11 +163,11 @@ void Logger::log(const LogEvent &event)
     }
     catch (const std::exception &ex)
     {
-      std::clog << "could not append log event to appender " << (*it)->name() << ": " << ex.what() << std::endl;
+      std::clog << "could not append log event to appender: " << ex.what() << std::endl;
     }
     catch (...)
     {
-      std::clog << "could not append log event to appender " << (*it)->name() << ": unknown errror" << std::endl;
+      std::clog << "could not append log event to appender: unknown errror" << std::endl;
     }
   }
 
@@ -195,7 +195,7 @@ void Logger::flush (void)
     }
     catch (std::exception const & ex)
     {
-      std::clog << "could not flush " << (*it)->name() << ": " << ex.what() << std::endl;
+      std::clog << "could not flush appender: " << ex.what() << std::endl;
     }
   }
 }
