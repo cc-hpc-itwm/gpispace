@@ -42,8 +42,7 @@ namespace fhg { namespace log { namespace remote {
   {
   public:
     explicit
-    RemoteAppender(const std::string &name
-                 , const std::string &location = FHGLOG_DEFAULT_LOCATION);
+    RemoteAppender(const std::string &location = FHGLOG_DEFAULT_LOCATION);
     virtual ~RemoteAppender();
 
     const std::string &host() const { return host_; }

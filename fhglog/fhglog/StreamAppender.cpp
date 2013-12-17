@@ -23,12 +23,11 @@
 
 using namespace fhg::log;
 
-StreamAppender::StreamAppender( const std::string &a_name
-                              , std::ostream &stream
+StreamAppender::StreamAppender( std::ostream &stream
                               , std::string const &fmt
                               , StreamAppender::ColorMode color_mode
                               )
-  : Appender(a_name), stream_(stream), fmt_(fmt), color_mode_(color_mode)
+  : stream_(stream), fmt_(fmt), color_mode_(color_mode)
 {
   if (color_mode_ == COLOR_AUTO)
   {

@@ -79,8 +79,7 @@ namespace fhg
 
           template<typename Append, typename Flush>
             delegating_fhglog_appender (Append append, Flush flush)
-              : log::Appender ("event-handler")
-              , _append (append)
+              : _append (append)
               , _flush (flush)
           { }
 

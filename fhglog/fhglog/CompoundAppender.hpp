@@ -31,8 +31,8 @@ namespace fhg { namespace log {
 	  typedef shared_ptr<CompoundAppender> ptr_t;
 
 	  explicit
-      CompoundAppender(const std::string &name_tag = "compound")
-        : Appender(name_tag)
+      CompoundAppender()
+        : Appender()
       { }
 
       virtual void append(const LogEvent &evt)

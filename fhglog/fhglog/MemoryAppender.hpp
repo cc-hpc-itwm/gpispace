@@ -16,7 +16,7 @@ namespace fhg { namespace log {
     typedef std::deque<LogEvent> backlog_t;
 
     explicit
-    MemoryAppender (std::string const &name, size_t backlog);
+    MemoryAppender (size_t backlog);
 
     virtual ~MemoryAppender() throw();
 
@@ -37,7 +37,7 @@ namespace fhg { namespace log {
     backlog_t m_backlog;
   };
 
-    MemoryAppender::ptr_t global_memory_appender (std::string const &name);
+    MemoryAppender::ptr_t global_memory_appender();
 }}
 
 #endif

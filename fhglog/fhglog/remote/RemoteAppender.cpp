@@ -26,9 +26,8 @@
 
 using namespace fhg::log::remote;
 
-RemoteAppender::RemoteAppender(const std::string &a_name, const std::string &location)
-  : Appender(a_name)
-  , socket_(NULL)
+RemoteAppender::RemoteAppender(const std::string &location)
+  : socket_(NULL)
 {
   std::pair<std::string, std::string> host_port = fhg::util::split_string(location, ":");
   host_ = host_port.first;

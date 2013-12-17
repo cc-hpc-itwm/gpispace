@@ -26,16 +26,14 @@ namespace fhg { namespace log {
   {
     public:
       explicit
-      DecoratingAppender(const Appender::ptr_t &real_appender, const std::string &name_tag = "")
-        : Appender(real_appender->name() + name_tag)
-        , real_appender_(real_appender)
+      DecoratingAppender(const Appender::ptr_t &real_appender)
+        : real_appender_(real_appender)
       {
       }
 
       explicit
-      DecoratingAppender(Appender *real_appender, const std::string &name_tag = "")
-        : Appender(real_appender->name() + name_tag)
-        , real_appender_(real_appender)
+      DecoratingAppender(Appender *real_appender)
+        : real_appender_(real_appender)
       {
       }
 

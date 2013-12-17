@@ -27,8 +27,8 @@ namespace fhg { namespace log {
   {
   public:
     explicit
-    NullAppender(const std::string &a_name = "null")
-      : Appender(a_name) { }
+    NullAppender()
+    { }
 
     void append(const LogEvent &) { }
     void flush () {}

@@ -34,8 +34,7 @@ namespace
   struct pushback_appender : public fhg::log::Appender
   {
     pushback_appender (std::vector<std::string>* container)
-      : fhg::log::Appender ("pushback_appender")
-      , _container (container)
+      : _container (container)
     {}
 
     void append (const fhg::log::LogEvent &evt)

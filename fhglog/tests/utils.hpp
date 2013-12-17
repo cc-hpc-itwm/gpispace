@@ -30,8 +30,7 @@ namespace utils
   {
   public:
     counting_appender (std::size_t* counter)
-      : fhg::log::Appender ("counting_appender")
-      , _counter (counter)
+      : _counter (counter)
     {}
 
     void append (const fhg::log::LogEvent &evt)

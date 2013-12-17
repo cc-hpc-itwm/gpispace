@@ -32,12 +32,12 @@ namespace fhg { namespace log {
   public:
     explicit
     SynchronizedAppender(const Appender::ptr_t &appender)
-      : DecoratingAppender(appender, "-sync")
+      : DecoratingAppender(appender)
     {}
 
     explicit
     SynchronizedAppender(Appender *appender)
-      : DecoratingAppender(appender, "-sync")
+      : DecoratingAppender(appender)
     {}
 
     virtual void append(const LogEvent &evt)

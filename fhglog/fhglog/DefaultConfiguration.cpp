@@ -134,15 +134,14 @@ namespace fhg
         check_format (fmt);
       }
 
-      CompoundAppender::ptr_t compound_appender(new CompoundAppender("auto-config-appender"));
+      CompoundAppender::ptr_t compound_appender(new CompoundAppender());
 
-      compound_appender->addAppender (global_memory_appender ("system"));
+      compound_appender->addAppender (global_memory_appender());
 
       if (STDERR() == to_console_)
       {
         compound_appender->addAppender
-          (Appender::ptr_t(new StreamAppender( "console"
-                                             , std::cerr
+          (Appender::ptr_t(new StreamAppender( std::cerr
                                              , fmt
                                              , color_mode
                                              )
@@ -155,8 +154,7 @@ namespace fhg
       else if (STDOUT() == to_console_)
       {
         compound_appender->addAppender
-          (Appender::ptr_t(new StreamAppender( "console"
-                                             , std::cout
+          (Appender::ptr_t(new StreamAppender( std::cout
                                              , fmt
                                              , color_mode
                                              )
@@ -169,8 +167,7 @@ namespace fhg
       else if (STDLOG() == to_console_)
       {
         compound_appender->addAppender
-          (Appender::ptr_t(new StreamAppender( "console"
-                                             , std::clog
+          (Appender::ptr_t(new StreamAppender( std::clog
                                              , fmt
                                              , color_mode
                                              )
@@ -184,8 +181,7 @@ namespace fhg
       {
         std::clog << "W: invalid value for configuration value to_console: " << to_console_ << " assuming stderr" << std::endl;
         compound_appender->addAppender
-          (Appender::ptr_t(new StreamAppender( "console"
-                                             , std::cerr
+          (Appender::ptr_t(new StreamAppender( std::cerr
                                              , fmt
                                              , color_mode
                                              )
@@ -198,8 +194,7 @@ namespace fhg
         try
         {
           compound_appender->addAppender
-            (Appender::ptr_t(new FileAppender( "log-file"
-                                             , to_file_
+            (Appender::ptr_t(new FileAppender( to_file_
                                              , fmt
                                              )
                             )
@@ -219,7 +214,7 @@ namespace fhg
         try
         {
           // TODO: split to_remote_ into host and port
-          compound_appender->addAppender(Appender::ptr_t(new remote::RemoteAppender("log-server", to_server_)));
+          compound_appender->addAppender(Appender::ptr_t(new remote::RemoteAppender(to_server_)));
 #ifdef FHGLOG_DEBUG_CONFIG
           std::clog << "D: logging to server: " << to_server_ << std::endl;
 #endif

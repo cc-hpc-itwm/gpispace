@@ -114,7 +114,7 @@ int main (int argc, char **argv)
 
   try
   {
-    remote::RemoteAppender r ("remote", url);
+    remote::RemoteAppender r (url);
     r.append (e);
   }
   catch (std::exception const & ex)

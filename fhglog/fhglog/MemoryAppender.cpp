@@ -4,9 +4,8 @@ namespace fhg
 {
   namespace log
   {
-    MemoryAppender::MemoryAppender (std::string const &name, size_t len)
-      : Appender (name)
-      , m_backlog_length (len)
+    MemoryAppender::MemoryAppender (size_t len)
+      : m_backlog_length (len)
     {}
 
     MemoryAppender::~MemoryAppender() throw ()
@@ -38,9 +37,9 @@ namespace fhg
       return m_backlog;
     }
 
-    MemoryAppender::ptr_t global_memory_appender (std::string const &name)
+    MemoryAppender::ptr_t global_memory_appender()
     {
-      static MemoryAppender::ptr_t p (new MemoryAppender (name, 4096));
+      static MemoryAppender::ptr_t p (new MemoryAppender (4096));
       return p;
     }
   }

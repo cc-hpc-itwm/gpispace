@@ -41,8 +41,7 @@ namespace fhg { namespace log {
        * The appender does not take ownership of the stream, i.e. you have to
        * close the stream on your own.
        */
-      StreamAppender( const std::string &a_name
-                    , std::ostream &stream
+      StreamAppender( std::ostream &stream
                     , std::string const & fmt
                     , ColorMode color_mode = COLOR_AUTO
                     );

@@ -19,7 +19,7 @@ namespace sdpa
         : destination_ ( new fhg::log::ThreadedAppender
                          ( fhg::log::Appender::ptr_t
                            ( new fhg::log::remote::RemoteAppender
-                             ("NotificationService", destination_location)
+                             (destination_location)
                            )
                          )
                        )
