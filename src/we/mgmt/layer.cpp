@@ -23,8 +23,6 @@ namespace we
       desc.came_from_external_as (id);
       desc.inject_input ();
 
-      MLOG (INFO, "submitted job with user_data: " << data.get_user_job_identification ());
-
       submit (desc);
     }
     void layer::submit (detail::descriptor const &desc)
@@ -364,7 +362,7 @@ namespace we
 
       if (desc.has_children())
       {
-        MLOG (WARN, "cancelling all children of" << std::endl << desc);
+        DMLOG (WARN, "cancelling all children of" << std::endl << desc);
 
         desc.cancel
           (boost::bind ( &layer::cancel_activity
@@ -440,7 +438,7 @@ namespace we
         // if we were cancelling because of a failed child, notify failed
         if (desc.activity ().is_failed ())
         {
-          MLOG (WARN, "descriptor failed: " << std::endl << desc);
+          DMLOG (WARN, "descriptor failed: " << std::endl << desc);
 
           ext_failed ( desc.from_external_id()
                      , desc.activity().to_string()
@@ -450,7 +448,7 @@ namespace we
         }
         else
         {
-          MLOG (WARN, "descriptor canceled: " << std::endl << desc);
+          DMLOG (WARN, "descriptor canceled: " << std::endl << desc);
 
           ext_canceled (desc.from_external_id());
         }
