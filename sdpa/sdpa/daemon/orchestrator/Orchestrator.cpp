@@ -225,12 +225,12 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
   pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
-      if(pJob->getStatus() == sdpa::status::CANCELED)
+      if(pJob->getStatus() == sdpa::status::CANCELING)
       {
           sendEventToMaster( events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                               , pEvt->from()
-                                                              ,  events::ErrorEvent::SDPA_EJOBALREADYCANCELED
-                                                              , "Job already canceled" )
+                                                              , events::ErrorEvent::SDPA_EJOBALREADYCANCELED
+                                                              , "A cancelation request for this job was already posted!" )
                                                    ));
           return;
       }
