@@ -38,7 +38,18 @@ namespace fhg
       class DefaultConfiguration
       {
       public:
-        DefaultConfiguration();
+        DefaultConfiguration()
+          : level_ (LogLevel::DEF_LEVEL)
+          , to_console_ ("")
+          , to_file_ ("")
+          , to_server_ ("")
+          , fmt_string_ (default_format::SHORT())
+            // FIXME: broken if set to true
+          , threaded_ (false)
+          , color_ (StreamAppender::COLOR_AUTO)
+          , disabled_ (false)
+          , synchronize_ (false)
+        {}
 
         void parse_environment();
         void parse_key_value (const std::string& key, const std::string& val);
@@ -55,19 +66,6 @@ namespace fhg
         bool disabled_;
         bool synchronize_;
       };
-
-      DefaultConfiguration::DefaultConfiguration()
-        : level_ (LogLevel::DEF_LEVEL)
-        , to_console_ ("")
-        , to_file_ ("")
-        , to_server_ ("")
-        , fmt_string_ (default_format::SHORT())
-          // FIXME: broken if set to true
-        , threaded_ (false)
-        , color_ (StreamAppender::COLOR_AUTO)
-        , disabled_ (false)
-        , synchronize_ (false)
-      {}
 
       void DefaultConfiguration::parse_environment()
       {
