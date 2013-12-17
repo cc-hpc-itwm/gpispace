@@ -45,32 +45,22 @@ namespace fhg
 
     void DefaultConfiguration::default_configuration ()
     {
-      try
+      getLogger().removeAllAppenders();
+
+      parse_environment();
+
+      if (disabled_)
       {
-        getLogger().removeAllAppenders();
-
-        parse_environment();
-
-        if (disabled_)
-        {
-          return;
-        }
-
-        if (to_console_.empty() && to_server_.empty() && to_file_.empty())
-        {
-          to_console_ = "stderr";
-        }
-
-        configure();
+        return;
       }
-      catch (const std::exception& ex)
+
+      if (to_console_.empty() && to_server_.empty() && to_file_.empty())
       {
-        std::clog << "E: Could not configure the logging environment: " << ex.what() << std::endl;
+        to_console_ = "stderr";
       }
-      catch (...)
-      {
-        std::clog << "E: Could not configure the logging environment: " << "unknown error" << std::endl;
-      }
+
+      configure();
+
       std::clog.flush();
     }
 
