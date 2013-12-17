@@ -53,8 +53,6 @@ namespace seda {
                   //SEDA_LOG_DEBUG("handled event in stage " << _stage->name());
 
                 _busy = false;
-            } catch (const seda::QueueEmpty&) {
-                // ignore
             } catch (const boost::thread_interrupted &irq) {
                 break;
             } catch (const std::exception& ex) {

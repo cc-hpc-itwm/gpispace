@@ -30,11 +30,6 @@
 #include <seda/SedaException.hpp>
 
 namespace seda {
-  class QueueEmpty : public SedaException {
-  public:
-    QueueEmpty() : SedaException("queue is empty") {}
-  };
-
   class IEventQueue {
   public:
     typedef seda::shared_ptr<IEventQueue> Ptr;
