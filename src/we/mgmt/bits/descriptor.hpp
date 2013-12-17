@@ -76,9 +76,9 @@ namespace we
 
         std::size_t failure_counter() const;
         int error_code() const;
-        void set_error_code(int ec);
+        descriptor &set_error_code(int ec);
         std::string const& error_message() const;
-        void set_error_message (std::string const&);
+        descriptor &set_error_message (std::string const&);
 
         std::string const& result() const;
         void set_result (std::string const&);

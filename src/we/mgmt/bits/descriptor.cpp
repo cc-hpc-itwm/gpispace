@@ -317,10 +317,11 @@ namespace we
         return m_error_code;
       }
 
-      void descriptor::set_error_code(int ec)
+      descriptor &descriptor::set_error_code(int ec)
       {
         lock_t lock(mutex_);
         m_error_code = ec;
+        return *this;
       }
 
       std::string const& descriptor::error_message() const
@@ -329,10 +330,11 @@ namespace we
         return m_error_message;
       }
 
-      void descriptor::set_error_message (std::string const&msg)
+      descriptor &descriptor::set_error_message (std::string const&msg)
       {
         lock_t lock(mutex_);
         m_error_message = msg;
+        return *this;
       }
 
       std::string const& descriptor::result() const
