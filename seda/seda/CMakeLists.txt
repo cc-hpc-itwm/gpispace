@@ -6,7 +6,6 @@ set (hdrs
   ErrorEvent.hpp
   EventCountStrategy.hpp
   EventDecorator.hpp
-  EventFactory.hpp
   EventQueue.hpp
   ForwardStrategy.hpp
   IEvent.hpp
