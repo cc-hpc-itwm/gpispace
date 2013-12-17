@@ -27,7 +27,7 @@ using namespace seda::comm;
 
 int main(int argc, char **argv)
 {
-  fhg::log::Configurator::configure();
+  FHGLOG_SETUP();
   if (argc < 3)
   {
     std::cerr << "usage: " << argv[0] << " name location" << std::endl;
