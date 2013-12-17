@@ -9,7 +9,6 @@
 #include <fhglog/LogEvent.hpp>
 #include <fhglog/Appender.hpp>
 #include <fhglog/Filter.hpp>
-#include <fhglog/util.hpp>
 
 /**
   Common logging framework.

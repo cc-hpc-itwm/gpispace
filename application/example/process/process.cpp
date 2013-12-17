@@ -22,6 +22,7 @@
 
 #include <fhglog/minimal.hpp>
 #include <fhg/util/show.hpp>
+#include <fhg/util/split.hpp>
 
 #include <process.hpp>
 
@@ -602,7 +603,7 @@ namespace process
     DLOG (TRACE, "prepare commandline");
 
     std::vector<std::string> cmdline;
-    fhg::log::split (command, " ", std::back_inserter (cmdline));
+    fhg::util::split (command, " ", std::back_inserter (cmdline));
 
     char ** av = new char*[cmdline.size()+1];
     av[cmdline.size()] = (char*)(NULL);

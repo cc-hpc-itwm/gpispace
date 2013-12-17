@@ -12,14 +12,18 @@
 #include <fhglog/FileAppender.hpp>
 #include <fhglog/CompoundAppender.hpp>
 #include <fhglog/MemoryAppender.hpp>
+#include <fhglog/remote/RemoteAppender.hpp>
 
-#if defined(FHGLOG_WITH_REMOTE_LOGGING)
-#   include <fhglog/remote/RemoteAppender.hpp>
-#endif
-
+#include <fhg/util/split.hpp>
 
 #include <algorithm> // std::transform
 #include <cctype>    // std::tolower
+
+#ifdef __APPLE__
+#include <crt_externs.h> // _NSGetEnviron
+#else
+#include <unistd.h> // char **environ
+#endif
 
 namespace fhg
 {
@@ -65,22 +69,24 @@ namespace fhg
 
     void DefaultConfiguration::parse_environment()
     {
-      environment_t env = get_environment_variables();
-
-      for (environment_t::const_iterator entry(env.begin()); entry != env.end(); ++entry)
+      for ( char** env_p
+#ifdef __APPLE__
+              (*_NSGetEnviron())
+#else
+              (environ)
+#endif
+          ; env_p != NULL && (*env_p != NULL)
+          ; ++env_p
+          )
       {
-        std::string key(entry->first);
-        std::string val(entry->second);
-        if (key.find ("FHGLOG_") != std::string::npos)
+        const std::pair<std::string, std::string> key_value
+          (fhg::util::split_string (*env_p, "="));
+
+        if (key_value.first.find ("FHGLOG_") != std::string::npos)
         {
-          // strip key and make lowercase
-          key = key.substr(7);
-          std::transform( key.begin()
-                        , key.end()
-                        , key.begin()
-                        , tolower
-                        );
-          parse_key_value(key, val);
+          std::string key (key_value.first.substr (7));
+          std::transform (key.begin(), key.end(), key.begin(), tolower);
+          parse_key_value(key, key_value.second);
         }
       }
     }
@@ -208,7 +214,6 @@ namespace fhg
         }
       }
 
-#if defined(FHGLOG_WITH_REMOTE_LOGGING)
       if (to_server_.size())
       {
         try
@@ -224,7 +229,6 @@ namespace fhg
           std::clog << "E: could not create remote logger to: " << to_server_ << ": " << ex.what() << std::endl;
         }
       }
-#endif
 
 #ifdef FHGLOG_DEBUG_CONFIG
       std::clog << "D: loglevel set to " << level_ << std::endl;

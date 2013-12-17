@@ -1,40 +1,79 @@
-set (tests
-   test_append.cpp
-   test_compound.cpp
-   test_default_config.cpp
-   test_disabled_logging.cpp
-   test_error_handler.cpp
-   test_event.cpp
-   test_every_n.cpp
-   test_file_appender.cpp
-   test_filtering_appender.cpp
-   test_format.cpp
-   test_formatter.cpp
-   test_logger_config.cpp
-   test_logging.cpp
-   test_path.cpp
-   test_perf.cpp
-   test_split.cpp
-   test_synch_appender.cpp
-   test_threaded.cpp
-   test_thread_safety.cpp
-   test_once.cpp
-)
-
-foreach (test ${tests})
-  fhg_add_test (${test}
-    PROJECT fhglog
-    LINK_LIBRARIES fhglog
-                   ${Boost_THREAD_LIBRARY} # default_config, logging, perf, synch_appender, threaded only
-  )
-endforeach()
-
-if (ENABLE_REMOTE_LOGGING)
-  add_subdirectory(remote)
-endif (ENABLE_REMOTE_LOGGING)
-
-fhg_add_test (dump_event dump_event.cpp
+fhg_add_test (appenders.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
-  LINK_LIBRARIES fhglog
-)
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (compound_appender.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (disabled_logging.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (dump_event.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (error_handler.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (event.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (every_n.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (file_appender.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog ${Boost_FILESYSTEM_LIBRARY})
+
+fhg_add_test (filtering_appender.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (format.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (once.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (performance.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (remote_logging.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (synchronized_appender.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (threaded_appender.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (thread_safety.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog
+  LINK_LIBRARIES fhglog)

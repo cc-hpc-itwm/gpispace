@@ -4,7 +4,6 @@
 #ifndef HAVE_SYSLOG_H
 #cmakedefine HAVE_SYSLOG_H 1
 #endif
-#cmakedefine FHGLOG_WITH_REMOTE_LOGGING
 #cmakedefine FHGLOG_EXIT_ON_ERROR 1
 #define FHGLOG_EXIT_ON_ERROR_CODE @FHGLOG_EXIT_ON_ERROR_CODE@
 

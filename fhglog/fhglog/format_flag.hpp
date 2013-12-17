@@ -2,11 +2,11 @@
 #define FHG_LOG_FORMAT_FLAG_HPP 1
 
 #include <fhglog/LogEvent.hpp>
-#include <fhglog/util.hpp>
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <cstring>
 #include <ios>
+#include <boost/filesystem.hpp>
 
 namespace fhg
 {
@@ -64,7 +64,7 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << get_filename_from_path (e.path ());
+            return os << boost::filesystem::path (e.path()).filename().string();
           }
         };
         struct PATH
@@ -100,7 +100,7 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << get_module_name_from_path (e.path ());
+            return os << boost::filesystem::path (e.path()).stem();
           }
         };
         struct LINE

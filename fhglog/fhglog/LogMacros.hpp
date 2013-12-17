@@ -2,10 +2,10 @@
 #define  FHG_LOG_LOGMACROS_INC
 
 #if not defined(FHGLOG_DISABLE_LOGGING) || FHGLOG_DISABLE_LOGGING == 0
-#  include <fhglog/util.hpp>
 #  include <fhglog/LoggerApi.hpp>
 #  include <fhglog/Configuration.hpp>
 #  include <sstream>
+#  include <boost/filesystem.hpp>
 #endif
 
 namespace fhg { namespace log {
@@ -202,14 +202,14 @@ namespace fhg { namespace log {
 #define MLOG(level, msg)                                                \
     LLOG( level                                                         \
         , ::fhg::log::getLogger                                         \
-        (::fhg::log::get_module_name_from_path(__FILE__))               \
+          (::boost::filesystem::path (__FILE__).stem().string())        \
         , msg                                                           \
         )
 
 #define MLOG_IF(level, condition, msg)                                  \
     LLOG_IF( level                                                      \
            , ::fhg::log::getLogger                                      \
-             (::fhg::log::get_module_name_from_path(__FILE__))          \
+             (::boost::filesystem::path (__FILE__).stem().string())     \
            , condition                                                  \
            , msg                                                        \
            )
