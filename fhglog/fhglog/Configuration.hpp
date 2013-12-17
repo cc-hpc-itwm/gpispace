@@ -7,27 +7,17 @@
 #include <iostream>
 
 namespace fhg { namespace log {
-  class Configurator {
-    public:
-      static void configure() {
-        DefaultConfiguration()();
-      }
-      static void configure(int , char *[]) {
-        // parameters currently ignored
-        configure();
-      }
-  };
-
   inline
   void configure ()
   {
-    Configurator::configure();
+    DefaultConfiguration()();
   }
 
   inline
   void configure (int ac, char *av[])
   {
-    Configurator::configure(ac, av);
+    // parameters currently ignored
+    configure();
   }
 }}
 
