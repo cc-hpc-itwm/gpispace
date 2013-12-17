@@ -35,11 +35,6 @@ namespace seda {
     QueueEmpty() : SedaException("queue is empty") {}
   };
 
-  class QueueFull : public SedaException {
-  public:
-    QueueFull() : SedaException("queue is full") {}
-  };
-
   class IEventQueue {
   public:
     typedef seda::shared_ptr<IEventQueue> Ptr;
