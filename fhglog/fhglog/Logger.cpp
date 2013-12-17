@@ -200,10 +200,6 @@ void Logger::flush (void)
   }
 }
 
-bool Logger::hasAppender (void) const
-{
-  return ! appenders_.empty();
-}
 const Appender::ptr_t &Logger::addAppender(const Appender::ptr_t &appender)
 {
   appenders_.push_back(appender);
