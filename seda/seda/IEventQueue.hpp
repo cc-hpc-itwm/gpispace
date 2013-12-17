@@ -41,7 +41,7 @@ namespace seda {
     
     virtual ~IEventQueue() {}
 
-    virtual IEvent::Ptr pop() throw (QueueEmpty, boost::thread_interrupted) = 0;
+    virtual IEvent::Ptr pop() = 0;
 
     virtual void push(const IEvent::Ptr& e) = 0;
 

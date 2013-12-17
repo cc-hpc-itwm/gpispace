@@ -60,7 +60,7 @@ namespace seda {
 
             const std::string& name() { return _name; }
 
-            virtual IEvent::Ptr pop() throw(QueueEmpty, boost::thread_interrupted) {
+            virtual IEvent::Ptr pop() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
 
                 while (empty()) {
