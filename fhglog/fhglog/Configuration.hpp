@@ -16,17 +16,7 @@ namespace fhg { namespace log {
         // parameters currently ignored
         configure();
       }
-      template<class CF> static void configure(CF cf) {
-        (cf)();
-      }
   };
-
-  template <typename Fun>
-  inline
-  void configure (Fun fun)
-  {
-    fun();
-  }
 
   inline
   void configure ()
