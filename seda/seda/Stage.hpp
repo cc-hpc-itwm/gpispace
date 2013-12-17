@@ -72,7 +72,7 @@ namespace seda {
             queue()->push(e);
         }
         virtual IEvent::Ptr recv() {
-            return queue()->pop(SEDA_DEFAULT_TIMEOUT);
+            return queue()->pop();
         }
 
         void setErrorHandler(const std::string& eh) { _error_handler = eh; }
