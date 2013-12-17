@@ -1,12 +1,40 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <fhglog/fhglog-config.hpp>
-#include <fhglog/LogLevel.hpp>
-#include <fhglog/StreamAppender.hpp>
+#include <fhglog/Configuration.hpp>
 
+#include <fhglog/fhglog-config.hpp>
+#include <fhglog/Appender.hpp>
+#include <fhglog/CompoundAppender.hpp>
+#include <fhglog/FileAppender.hpp>
+#include <fhglog/Filter.hpp>
+#include <fhglog/LogEvent.hpp>
+#include <fhglog/LogLevel.hpp>
+#include <fhglog/MemoryAppender.hpp>
+#include <fhglog/StreamAppender.hpp>
+#include <fhglog/SynchronizedAppender.hpp>
+#include <fhglog/ThreadedAppender.hpp>
+#include <fhglog/fhglog.hpp>
+#include <fhglog/remote/RemoteAppender.hpp>
+
+#include <fhg/util/read_bool.hpp>
+#include <fhg/util/split.hpp>
+
+#include <algorithm> // std::transform
+#include <cctype>    // std::tolower
 #include <iostream>
-namespace fhg { namespace log {
-    class DefaultConfiguration {
+
+#ifdef __APPLE__
+#include <crt_externs.h> // _NSGetEnviron
+#else
+#include <unistd.h> // char **environ
+#endif
+
+namespace fhg
+{
+  namespace log
+  {
+    class DefaultConfiguration
+    {
     public:
       DefaultConfiguration();
 
@@ -40,38 +68,7 @@ namespace fhg { namespace log {
       bool disabled_;
       bool synchronize_;
     };
-  }
-}
 
-#include <fhglog/fhglog.hpp>
-#include <fhglog/Appender.hpp>
-#include <fhglog/Filter.hpp>
-#include <fhglog/LogEvent.hpp>
-#include <fhglog/CompoundAppender.hpp>
-#include <fhglog/ThreadedAppender.hpp>
-#include <fhglog/SynchronizedAppender.hpp>
-#include <fhglog/SynchronizedAppender.hpp>
-#include <fhglog/FileAppender.hpp>
-#include <fhglog/CompoundAppender.hpp>
-#include <fhglog/MemoryAppender.hpp>
-#include <fhglog/remote/RemoteAppender.hpp>
-
-#include <fhg/util/read_bool.hpp>
-#include <fhg/util/split.hpp>
-
-#include <algorithm> // std::transform
-#include <cctype>    // std::tolower
-
-#ifdef __APPLE__
-#include <crt_externs.h> // _NSGetEnviron
-#else
-#include <unistd.h> // char **environ
-#endif
-
-namespace fhg
-{
-  namespace log
-  {
     DefaultConfiguration::DefaultConfiguration()
       : level_(LogLevel::DEF_LEVEL)
       , to_console_("")
@@ -281,13 +278,8 @@ namespace fhg
     {
       std::clog << "E: invalid value '" << val << "' for key '" << key << "':" << ex.what() << std::endl;
     }
-  }
-}
 
-namespace fhg
-{
-  namespace log
-  {
+
     void configure()
     {
       DefaultConfiguration()();
