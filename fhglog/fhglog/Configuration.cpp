@@ -2,7 +2,6 @@
 
 #include <fhglog/Configuration.hpp>
 
-#include <fhglog/fhglog-config.hpp>
 #include <fhglog/Appender.hpp>
 #include <fhglog/CompoundAppender.hpp>
 #include <fhglog/FileAppender.hpp>

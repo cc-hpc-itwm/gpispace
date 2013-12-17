@@ -1,4 +1,3 @@
-#include <fhglog/fhglog-config.hpp>
 #include <iostream>
 #include <unistd.h>
 #include <cstdio>
