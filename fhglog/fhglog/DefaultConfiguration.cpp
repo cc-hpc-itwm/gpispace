@@ -52,8 +52,6 @@ namespace fhg
         if (!disabled_ && to_console_.empty() && to_server_.empty() && to_file_.empty())
         {
           to_console_ = "stderr";
-          to_file_ = "";
-          to_server_ = "";
         }
 
         configure();
