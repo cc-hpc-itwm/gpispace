@@ -127,13 +127,6 @@ namespace fhg
             return os << e.message();
           }
         };
-
-        inline
-        bool isnewline (const char c)
-        {
-          return c == '\n' || c == '\r';
-        }
-
         struct DATE
         {
           static const char value            = 'd';
