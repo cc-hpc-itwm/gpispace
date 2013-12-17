@@ -11,7 +11,6 @@ namespace fhg
   {
     std::string get_home_dir ()
     {
-      int rc;
       struct passwd pwd;
       struct passwd *result;
 
@@ -19,7 +18,7 @@ namespace fhg
 
       memset (buf, 0, sizeof(buf));
 
-      rc = getpwuid_r (getuid (), &pwd, buf, sizeof(buf), &result);
+      getpwuid_r (getuid (), &pwd, buf, sizeof(buf), &result);
       if (not result || pwd.pw_dir == 0)
       {
         return "/";
