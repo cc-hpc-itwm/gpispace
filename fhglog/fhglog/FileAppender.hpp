@@ -32,8 +32,7 @@ namespace fhg { namespace log {
   public:
     typedef shared_ptr<FileAppender> ptr_t;
 
-    FileAppender( const std::string &a_name
-                , const std::string &a_path
+    FileAppender( const std::string &a_path
                 , const std::string &fmt = default_format::LONG()
                 , int flush_interval = 5
                 , const std::ios_base::openmode &a_mode

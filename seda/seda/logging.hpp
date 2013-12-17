@@ -38,11 +38,11 @@
 #define SEDA_DEFINE_LOGGER(hierarchy) SEDA_LDEFINE_LOGGER(seda_logger, hierarchy)
 #define SEDA_INIT_LOGGER(hierarchy)   SEDA_LINIT_LOGGER(seda_logger, hierarchy)
 
-#define SEDA_LLOG_DEBUG(logger, msg) LOG_DEBUG(logger, msg)
-#define SEDA_LLOG_INFO(logger, msg)  LOG_INFO(logger, msg)
-#define SEDA_LLOG_WARN(logger, msg)  LOG_WARN(logger, msg)
-#define SEDA_LLOG_ERROR(logger, msg) LOG_ERROR(logger, msg)
-#define SEDA_LLOG_FATAL(logger, msg) LOG_FATAL(logger, msg)
+#define SEDA_LLOG_DEBUG(logger, msg) LLOG (DEBUG, logger, msg)
+#define SEDA_LLOG_INFO(logger, msg)  LLOG (INFO, logger, msg)
+#define SEDA_LLOG_WARN(logger, msg)  LLOG (WARN, logger, msg)
+#define SEDA_LLOG_ERROR(logger, msg) LLOG (ERROR, logger, msg)
+#define SEDA_LLOG_FATAL(logger, msg) LLOG (FATAL, logger, msg)
 
 #define SEDA_LOG_DEBUG(msg) SEDA_LLOG_DEBUG(seda_logger, msg)
 #define SEDA_LOG_INFO(msg)  SEDA_LLOG_INFO(seda_logger, msg)

@@ -100,7 +100,7 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << boost::filesystem::path (e.path()).stem();
+            return os << boost::filesystem::path (e.path()).stem().string();
           }
         };
         struct LINE
@@ -127,13 +127,6 @@ namespace fhg
             return os << e.message();
           }
         };
-
-        inline
-        bool isnewline (const char c)
-        {
-          return c == '\n' || c == '\r';
-        }
-
         struct DATE
         {
           static const char value            = 'd';

@@ -15,7 +15,7 @@ BOOST_FIXTURE_TEST_CASE (threaded_appender, utils::logger_with_minimum_log_level
   std::ostringstream logstream;
 
   fhg::log::ThreadedAppender appender
-    (new fhg::log::StreamAppender ("s1", logstream, "%m"));
+    (new fhg::log::StreamAppender (logstream, "%m"));
 
   appender.append (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
 	appender.flush();

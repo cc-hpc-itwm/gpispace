@@ -24,12 +24,11 @@ namespace fhg
                      , int options
                      , int facility
                      )
-        : Appender (ident)
-        , _fmt (fmt)
+        : _fmt (fmt)
         , _options (options)
         , _facility (facility)
       {
-        openlog(name().c_str(), _options, _facility);
+        openlog(ident.c_str(), _options, _facility);
       }
 
       virtual ~SyslogAppender()

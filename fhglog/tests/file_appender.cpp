@@ -37,16 +37,14 @@ namespace
 BOOST_AUTO_TEST_CASE (throw_on_unwritable_file)
 {
   BOOST_REQUIRE_THROW
-    ( fhg::log::FileAppender ("no-perm", "/non-existing-dir/test.log")
-    , std::exception
-    );
+    (fhg::log::FileAppender ("/non-existing-dir/test.log"), std::exception);
 }
 
 BOOST_AUTO_TEST_CASE (remaining)
 {
   const remove_on_scope_exit delete_logfile ("test_file_appender.cpp.log");
 
-  fhg::log::FileAppender appender ("logfile", "test_file_appender.cpp.log", "%m");
+  fhg::log::FileAppender appender ("test_file_appender.cpp.log", "%m");
 
   appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello world!"));
   appender.flush();
@@ -59,7 +57,7 @@ BOOST_AUTO_TEST_CASE (reopen)
 {
   const remove_on_scope_exit delete_logfile ("test_file_appender.cpp.log");
 
-  fhg::log::FileAppender appender ("logfile", "test_file_appender.cpp.log", "%m");
+  fhg::log::FileAppender appender ("test_file_appender.cpp.log", "%m");
 
   appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello world!"));
   appender.flush();
@@ -77,7 +75,7 @@ BOOST_AUTO_TEST_CASE (reopen_with_different_path)
   const remove_on_scope_exit delete_foo ("foo.log");
   const remove_on_scope_exit delete_bar ("bar.log");
 
-  fhg::log::FileAppender appender ("appender-to-foo", "foo.log", "%m");
+  fhg::log::FileAppender appender ("foo.log", "%m");
 
   {
     std::ifstream ifs ("foo.log");

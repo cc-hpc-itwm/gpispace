@@ -361,8 +361,7 @@ int main (int argc, char **argv) {
     {
       fhg::log::getLogger().addAppender
         (fhg::log::Appender::ptr_t
-        (new fhg::log::FileAppender( "logfile"
-                                   , cfg.get<std::string>("logging.file")
+        (new fhg::log::FileAppender( cfg.get<std::string>("logging.file")
                                    , "%t %s: %l %p:%L - %m%n"
                                    )
         )
@@ -377,8 +376,7 @@ int main (int argc, char **argv) {
   if (cfg.is_set("logging.tostderr"))
   {
     fhg::log::getLogger().addAppender
-      (fhg::log::Appender::ptr_t(new fhg::log::StreamAppender( "console"
-                                                             , std::cerr
+      (fhg::log::Appender::ptr_t(new fhg::log::StreamAppender( std::cerr
                                                              , "%s: %p:%L - %m%n"
                                                              )
                                 )

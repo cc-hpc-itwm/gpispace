@@ -36,9 +36,7 @@ public:
     {
       m_destination.reset (new fhg::log::ThreadedAppender
                           (fhg::log::Appender::ptr_t
-                          (new fhg::log::remote::RemoteAppender( "logc"
-                                                               , m_url
-                                                               )
+                          (new fhg::log::remote::RemoteAppender(m_url)
                           )));
     }
     catch (std::exception const &ex)

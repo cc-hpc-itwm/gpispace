@@ -26,7 +26,7 @@
 
 int main(int, char **)
 {
-  fhg::log::Configurator::configure();
+  FHGLOG_SETUP();
 
   seda::comm::Locator loc;
   loc.insert("foo", "1.2.3.4", 42);

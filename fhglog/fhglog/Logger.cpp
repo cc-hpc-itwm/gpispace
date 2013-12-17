@@ -163,11 +163,11 @@ void Logger::log(const LogEvent &event)
     }
     catch (const std::exception &ex)
     {
-      std::clog << "could not append log event to appender " << (*it)->name() << ": " << ex.what() << std::endl;
+      std::clog << "could not append log event to appender: " << ex.what() << std::endl;
     }
     catch (...)
     {
-      std::clog << "could not append log event to appender " << (*it)->name() << ": unknown errror" << std::endl;
+      std::clog << "could not append log event to appender: unknown errror" << std::endl;
     }
   }
 
@@ -195,15 +195,11 @@ void Logger::flush (void)
     }
     catch (std::exception const & ex)
     {
-      std::clog << "could not flush " << (*it)->name() << ": " << ex.what() << std::endl;
+      std::clog << "could not flush appender: " << ex.what() << std::endl;
     }
   }
 }
 
-bool Logger::hasAppender (void) const
-{
-  return ! appenders_.empty();
-}
 const Appender::ptr_t &Logger::addAppender(const Appender::ptr_t &appender)
 {
   appenders_.push_back(appender);
@@ -215,36 +211,12 @@ const Filter::ptr_t &Logger::getFilter() const
   return filter_;
 }
 
-const Appender::ptr_t &Logger::getAppender(const std::string &appender_name) const
-{
-  for (appender_list_t::const_iterator it(appenders_.begin());
-       it != appenders_.end();
-       ++it)
-  {
-    if (appender_name == (*it)->name())
-    {
-      return *it;
-    }
-  }
-  throw std::runtime_error("no matching appender could be found!");
-}
-
 void Logger::removeAllAppenders()
 {
   appenders_.clear();
 }
 
-
-void Logger::removeAppender(const std::string &appender_name)
+void Logger::removeAppender(const Appender::ptr_t& appender)
 {
-  for (appender_list_t::iterator it(appenders_.begin());
-       it != appenders_.end();
-       ++it)
-  {
-    if (appender_name == (*it)->name())
-    {
-      appenders_.erase(it);
-      break;
-    }
-  }
+  appenders_.remove (appender);
 }

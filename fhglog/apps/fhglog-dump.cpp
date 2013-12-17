@@ -92,8 +92,7 @@ int main(int argc, char **argv)
 
   // my own output goes to stderr
   fhg::log::getLogger().addAppender
-    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( "console"
-                                                            , std::clog
+    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( std::clog
                                                             , fhg::log::default_format::SHORT()
                                                             , color_mode
                                                             )
@@ -128,8 +127,7 @@ int main(int argc, char **argv)
 
   // remote messages go to stdout
   fhg::log::Appender::ptr_t appender
-    (new fhg::log::StreamAppender( "console"
-                                 , std::cout
+    (new fhg::log::StreamAppender( std::cout
                                  , fmt
                                  , color_mode
                                  )

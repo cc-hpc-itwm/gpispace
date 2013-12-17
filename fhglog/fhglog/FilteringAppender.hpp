@@ -27,11 +27,11 @@ namespace fhg { namespace log {
   {
     public:
       FilteringAppender(const Appender::ptr_t &real_appender, const Filter::ptr_t &a_filter)
-        : DecoratingAppender(real_appender, "-filtered")
+        : DecoratingAppender(real_appender)
         , filter_(a_filter) { }
 
       FilteringAppender(Appender *real_appender, const Filter::ptr_t &a_filter)
-        : DecoratingAppender(real_appender, "-filtered")
+        : DecoratingAppender(real_appender)
         , filter_(a_filter) { }
 
       virtual void append(const LogEvent &evt)

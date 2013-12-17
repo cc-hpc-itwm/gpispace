@@ -16,11 +16,8 @@ namespace detail
   public:
     typedef boost::function<void (const fhg::log::LogEvent&)> event_handler_t;
 
-    FunctionAppender ( std::string const & n
-                     , event_handler_t h
-                     )
-      : fhg::log::Appender(n)
-      , m_handler (h)
+    FunctionAppender (event_handler_t h)
+      : m_handler (h)
     {}
 
     void append (fhg::log::LogEvent const &evt)
@@ -48,8 +45,7 @@ public:
     m_log_server = logserver_t
       (new fhg::log::remote::LogServer
       ( fhg::log::Appender::ptr_t (new detail::FunctionAppender
-                                  ( "logd-appender"
-                                  , boost::bind( &LogdPluginImpl::emit
+                                  ( boost::bind( &LogdPluginImpl::emit
                                                , this
                                                , _1
                                                )

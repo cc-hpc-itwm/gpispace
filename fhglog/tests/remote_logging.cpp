@@ -16,8 +16,7 @@ namespace
   {
   public:
     StopAppender(boost::asio::io_service & s)
-      : fhg::log::Appender("stop")
-      , service_(s)
+      : service_(s)
     {}
 
     void append(const fhg::log::LogEvent &)
@@ -31,12 +30,11 @@ namespace
 
 BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
 {
-  fhg::log::CompoundAppender::ptr_t compound
-    (new fhg::log::CompoundAppender ("compound"));
+  fhg::log::CompoundAppender::ptr_t compound (new fhg::log::CompoundAppender);
 
   std::ostringstream logstream;
   compound->addAppender
-    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ("s", logstream, "%m")));
+    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream, "%m")));
 
   boost::asio::io_service io_service;
   compound->addAppender
@@ -47,7 +45,7 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
   boost::thread service_thread
     (boost::bind (&boost::asio::io_service::run, &io_service));
 
-  fhg::log::remote::RemoteAppender appender ("remote", FHGLOG_DEFAULT_LOCATION);
+  fhg::log::remote::RemoteAppender appender (FHGLOG_DEFAULT_LOCATION);
   appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello server!"));
 
   if (service_thread.joinable())
@@ -61,7 +59,5 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
 BOOST_AUTO_TEST_CASE (throw_with_unknown_host)
 {
   BOOST_REQUIRE_THROW
-    ( fhg::log::remote::RemoteAppender ("remote", "unknown-host")
-    , std::runtime_error
-    );
+    (fhg::log::remote::RemoteAppender ("unknown-host"), std::runtime_error);
 }

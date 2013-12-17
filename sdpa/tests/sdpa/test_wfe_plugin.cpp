@@ -17,7 +17,7 @@ BOOST_GLOBAL_FIXTURE (KVSSetup);
 
 static int s_load_unload_test ()
 {
-  static const int NUM_ITERATIONS = 50;
+  static const int NUM_ITERATIONS = 10;
 
   int rc = 0;
 

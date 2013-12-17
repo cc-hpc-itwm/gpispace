@@ -21,7 +21,7 @@ namespace
 BOOST_FIXTURE_TEST_CASE (NOTEST_sequential_appending, utils::logger_with_minimum_log_level)
 {
   log.addAppender
-    (fhg::log::Appender::ptr_t (new fhg::log::NullAppender ("null")));
+    (fhg::log::Appender::ptr_t (new fhg::log::NullAppender));
 
   const std::string msg ("hello world!");
 
@@ -38,7 +38,7 @@ BOOST_FIXTURE_TEST_CASE (NOTEST_sequential_appending, utils::logger_with_minimum
 BOOST_FIXTURE_TEST_CASE (NOTEST_threaded_appending, utils::logger_with_minimum_log_level)
 {
   fhg::log::ThreadedAppender::ptr_t threaded_appender
-    (new fhg::log::ThreadedAppender (new fhg::log::NullAppender ("null")));
+    (new fhg::log::ThreadedAppender (new fhg::log::NullAppender));
 
   log.addAppender (threaded_appender);
 

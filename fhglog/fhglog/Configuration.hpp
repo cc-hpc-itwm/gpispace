@@ -1,44 +1,27 @@
 #ifndef FHGLOG_CONFIGURATION_HPP
 #define FHGLOG_CONFIGURATION_HPP 1
 
-#include <fhglog/fhglog-config.hpp>
-#include <fhglog/DefaultConfiguration.hpp>
-
-#include <iostream>
-
-namespace fhg { namespace log {
-  class Configurator {
-    public:
-      static void configure() {
-        configure(DefaultConfiguration());
-      }
-      static void configure(int , char *[]) {
-        // parameters currently ignored
-        configure();
-      }
-      template<class CF> static void configure(CF cf) {
-        (cf)();
-      }
-  };
-
-  template <typename Fun>
-  inline
-  void configure (Fun fun)
+namespace fhg
+{
+  namespace log
   {
-    fun();
-  }
+    /*
+     * This configuration takes the following environment variables into account (case sensitive):
+     *
+     *  FHGLOG_level                     log everything with at least this level, defaults to TRACE
+     *  FHGLOG_color={auto,on,off}       colorized output
+     *  FHGLOG_format=log-format         defaults to the default format in Formatter
+     *  FHGLOG_to_console={stdout,stderr,stdlog} log to stdout, stderr, clog
+     *  FHGLOG_to_file=path to logfile   log to specified file
+     *  FHGLOG_to_server=ip:port         log to the specified server
+     *  FHGLOG_threaded={yes,true,1}     make logging appear from a separate thread (unsafe)
+     *  FHGLOG_disabled={anything}       disable logging if defined
+     *  FHGLOG_synch={anything}          make logging synchronized (very expensive!)
+     */
 
-  inline
-  void configure ()
-  {
-    Configurator::configure();
+    void configure();
+    void configure (int ac, char *av[]);
   }
-
-  inline
-  void configure (int ac, char *av[])
-  {
-    Configurator::configure(ac, av);
-  }
-}}
+}
 
 #endif

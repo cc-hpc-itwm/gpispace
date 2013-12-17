@@ -7,6 +7,11 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
 
+BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
+{
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%%", fhg::log::LogEvent()), "%");
+}
+
 BOOST_AUTO_TEST_CASE (short_severity)
 {
 #define CHECK(SEV, SEV_STR)                                             \
@@ -23,7 +28,7 @@ BOOST_AUTO_TEST_CASE (short_severity)
 #undef CHECK
 }
 
-BOOST_AUTO_TEST_CASE (long_severity)
+BOOST_AUTO_TEST_CASE (severity)
 {
 #define CHECK(SEV, SEV_STR)                                             \
   BOOST_REQUIRE_EQUAL                                                   \
@@ -39,6 +44,15 @@ BOOST_AUTO_TEST_CASE (long_severity)
 #undef CHECK
 }
 
+BOOST_AUTO_TEST_CASE (file)
+{
+  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+                                 , "tests/test_formatter.cpp"
+                                 , "main", __LINE__, "hello"
+                                 );
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%p", event), "test_formatter.cpp");
+}
+
 BOOST_AUTO_TEST_CASE (path)
 {
   const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
@@ -46,7 +60,24 @@ BOOST_AUTO_TEST_CASE (path)
                                  , "main", __LINE__, "hello"
                                  );
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%P", event), "tests/test_formatter.cpp");
-  BOOST_REQUIRE_EQUAL (fhg::log::format ("%p", event), "test_formatter.cpp");
+}
+
+BOOST_AUTO_TEST_CASE (function)
+{
+  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+                                 , "tests/test_formatter.cpp"
+                                 , "main (int ac, char** av)", __LINE__, "hello"
+                                 );
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%F", event), "main (int ac, char** av)");
+}
+
+BOOST_AUTO_TEST_CASE (module)
+{
+  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+                                 , "tests/test_formatter.cpp"
+                                 , "main", __LINE__, "hello"
+                                 );
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%M", event), "test_formatter");
 }
 
 BOOST_AUTO_TEST_CASE (line)
@@ -56,13 +87,29 @@ BOOST_AUTO_TEST_CASE (line)
                                  , "main", 1002, "hello"
                                  );
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%L", event), "1002");
-  BOOST_REQUIRE_EQUAL (fhg::log::format ("%l", event), "");
 }
 
 BOOST_AUTO_TEST_CASE (message)
 {
   BOOST_REQUIRE_EQUAL
     (fhg::log::format ("%m", FHGLOG_MKEVENT_HERE (DEBUG, "hello")), "hello");
+}
+
+//! \todo date
+//! \todo tstamp
+//! \todo tid
+//! \todo pid
+//! \todo tags
+
+BOOST_AUTO_TEST_CASE (logger)
+{
+  //! \todo This should actually test something:
+  //! put mutiple loggers in a chain, send event through
+  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+                                 , "tests/test_formatter.cpp"
+                                 , "main", 1002, "hello"
+                                 );
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%l", event), "");
 }
 
 BOOST_AUTO_TEST_CASE (newline)
@@ -72,10 +119,14 @@ BOOST_AUTO_TEST_CASE (newline)
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%n", fhg::log::LogEvent()), ostr.str());
 }
 
-BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
+BOOST_AUTO_TEST_CASE (format_flags_work_everywhere_in_string)
 {
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%%", fhg::log::LogEvent()), "%");
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%%%%", fhg::log::LogEvent()), "%%");
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%%_%%", fhg::log::LogEvent()), "%_%");
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("%% test", fhg::log::LogEvent()), "% test");
   BOOST_REQUIRE_EQUAL (fhg::log::format ("test %%", fhg::log::LogEvent()), "test %");
+  BOOST_REQUIRE_EQUAL (fhg::log::format ("test %% test", fhg::log::LogEvent()), "test % test");
 }
 
 BOOST_AUTO_TEST_CASE (throw_on_invalid_escaped_sequence)

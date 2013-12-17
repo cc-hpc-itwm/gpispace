@@ -80,7 +80,7 @@ private:
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
     fhg::log::MemoryAppender::backlog_t backlog =
-      fhg::log::global_memory_appender ("system")->backlog ();
+      fhg::log::global_memory_appender()->backlog ();
 
     std::ostringstream oss;
     BOOST_REVERSE_FOREACH (fhg::log::LogEvent const &evt, backlog)

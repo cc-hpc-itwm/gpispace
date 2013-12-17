@@ -55,8 +55,7 @@ namespace
     typedef boost::function<void (const fhg::log::LogEvent&)> event_handler_t;
 
     function_call_appender (const event_handler_t& handler)
-      : fhg::log::Appender ("event-handler")
-      , _handler (handler)
+      : _handler (handler)
     { }
 
     void append (const fhg::log::LogEvent& evt)

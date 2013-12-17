@@ -11,7 +11,7 @@
 int
 main(int, char **) {
 #ifdef SEDA_ENABLE_LOGGING
-  ::fhg::log::Configurator::configure();
+  FHGLOG_SETUP();
 #endif
   CppUnit::TextUi::TestRunner runner;
   CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();

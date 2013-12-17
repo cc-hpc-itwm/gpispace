@@ -42,7 +42,7 @@ private:
 
 int main (int ac, char **av)
 {
-  fhg::log::Configurator::configure();
+  FHGLOG_SETUP();
   seda::comm::initialize(ac, av);
 
   process p1 ("127.0.0.1:5000", "A");

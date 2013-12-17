@@ -45,11 +45,11 @@ BOOST_FIXTURE_TEST_CASE (logging_disabled_should_use_less_than_a_second_and_not_
 {
   const bad_timer timer;
 
-  LOG_TRACE (log, sleep (10));
-  LOG_INFO (log, sleep (10));
-  LOG_WARN (log, sleep (10));
-  LOG_ERROR (log, sleep (10));
-  LOG_FATAL (log, sleep (10));
+  LLOG (TRACE, log, sleep (10));
+  LLOG (INFO, log, sleep (10));
+  LLOG (WARN, log, sleep (10));
+  LLOG (ERROR, log, sleep (10));
+  LLOG (FATAL, log, sleep (10));
 
   BOOST_REQUIRE_LE (timer.elapsed(), 1);
 }

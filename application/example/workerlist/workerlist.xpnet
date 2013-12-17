@@ -19,6 +19,7 @@
         <module name="workerlist" function="run (worker_info)" pass_context="true">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fhg/util/join.hpp"/>
+          <ld flag="-lwe-dev" />
           <code><![CDATA[
             MLOG (INFO, "run ()");
 

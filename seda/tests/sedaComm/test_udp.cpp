@@ -34,7 +34,7 @@
 
 int main(int argc, char **argv)
 {
-  fhg::log::Configurator::configure();
+  FHGLOG_SETUP();
   seda::comm::initialize(argc, argv);
 
   int errcount(0);

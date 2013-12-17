@@ -23,14 +23,12 @@
 
 using namespace fhg::log;
 
-FileAppender::FileAppender( const std::string &a_name
-                          , const std::string &a_path
+FileAppender::FileAppender( const std::string &a_path
                           , const std::string &fmt
                           , int flush_interval
                           , const std::ios_base::openmode &a_mode
                           )
-  : Appender(a_name)
-  , path_(a_path)
+  : path_(a_path)
   , stream_()
   , fmt_(fmt)
   , mode_(a_mode)

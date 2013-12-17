@@ -16,7 +16,7 @@ BOOST_FIXTURE_TEST_CASE (filter_levels_below, utils::logger_with_minimum_log_lev
   std::ostringstream logstream;
 
   fhg::log::FilteringAppender appender
-    ( new fhg::log::StreamAppender ("stream", logstream, "%m")
+    ( new fhg::log::StreamAppender (logstream, "%m")
     , fhg::log::Filter::ptr_t (new fhg::log::LevelFilter (fhg::log::LogLevel::ERROR))
     );
 

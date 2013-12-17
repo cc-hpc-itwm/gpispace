@@ -42,14 +42,14 @@ namespace fhg { namespace log {
 
     explicit
     ThreadedAppender(const Appender::ptr_t &appender)
-      : DecoratingAppender(appender, "-thrd")
+      : DecoratingAppender(appender)
     {
 	  start();
 	}
 
     explicit
     ThreadedAppender(Appender *appender)
-      : DecoratingAppender(appender, "-thrd")
+      : DecoratingAppender(appender)
     {
 	  start();
     }

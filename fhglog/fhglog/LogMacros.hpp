@@ -278,13 +278,5 @@ namespace fhg { namespace log {
 
 #endif
 
-// regular logging messages
-#define LOG_TRACE(logger, msg) LLOG(TRACE, logger, msg)
-#define LOG_DEBUG(logger, msg) LLOG(DEBUG, logger, msg)
-#define LOG_INFO(logger, msg)  LLOG(INFO,  logger, msg)
-#define LOG_WARN(logger, msg)  LLOG(WARN,  logger, msg)
-#define LOG_ERROR(logger, msg) LLOG(ERROR, logger, msg)
-#define LOG_FATAL(logger, msg) LLOG(FATAL, logger, msg)
-
 }}
 #endif   /* ----- #ifndef FHG_LOG_LOGMACROS_INC  ----- */
