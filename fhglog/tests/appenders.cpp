@@ -42,7 +42,7 @@ BOOST_FIXTURE_TEST_CASE (NOTEST_add_and_remove_appender, utils::logger_with_mini
 
   //! \todo Assert being added
 
-  log.removeAppender ("null");
+  log.removeAppender (appender);
 
   //! \todo Assert being removed
 }

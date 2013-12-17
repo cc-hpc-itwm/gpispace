@@ -216,17 +216,7 @@ void Logger::removeAllAppenders()
   appenders_.clear();
 }
 
-
-void Logger::removeAppender(const std::string &appender_name)
+void Logger::removeAppender(const Appender::ptr_t& appender)
 {
-  for (appender_list_t::iterator it(appenders_.begin());
-       it != appenders_.end();
-       ++it)
-  {
-    if (appender_name == (*it)->name())
-    {
-      appenders_.erase(it);
-      break;
-    }
-  }
+  appenders_.remove (appender);
 }

@@ -53,7 +53,7 @@ logger_t getLogger(const std::string &name, const std::string & base);
       inline bool isFiltered(const LogEvent &event) const { return impl_->isFiltered(event); }
 
       inline const Appender::ptr_t &addAppender(Appender::ptr_t appender) { return impl_->addAppender(appender); }
-      inline void removeAppender(const std::string &appender_name) { impl_->removeAppender(appender_name); }
+      inline void removeAppender(const Appender::ptr_t &appender) { impl_->removeAppender(appender); }
       inline void removeAllAppenders() { impl_->removeAllAppenders(); }
 
       inline void log(const LogEvent &event) { impl_->log(event); }
@@ -97,7 +97,7 @@ logger_t getLogger(const std::string &name, const std::string & base);
       inline bool isFiltered(const LogEvent &) const { return true; }
 
       inline const Appender::ptr_t &addAppender(const Appender::ptr_t &appender) { return appender; }
-      inline void removeAppender(const std::string &) {}
+      inline void removeAppender(const Appender::ptr_t &appender) {}
       inline void removeAllAppenders() { }
 
       inline void log(const LogEvent &) const {}
