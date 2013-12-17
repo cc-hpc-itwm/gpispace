@@ -32,6 +32,7 @@ set (hdrs
 
 set (srcs
   DefaultConfiguration.cpp
+  Configuration.cpp
   color_map.cpp
   error_handler.cpp
   FileAppender.cpp
