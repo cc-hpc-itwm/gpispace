@@ -1,5 +1,3 @@
-#define BOOST_SPIRIT_THREADSAFE
-
 #include "LogEvent.hpp"
 
 #include <fhg/util/num.hpp>
