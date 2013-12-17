@@ -246,8 +246,6 @@ namespace fhg
 
     void configure()
     {
-#if FHGLOG_DISABLE_LOGGING != 1
-
       DefaultConfiguration conf;
 
 #ifdef FHGLOG_DEBUG_CONFIG
@@ -269,8 +267,6 @@ namespace fhg
       }
 
       conf.configure();
-
-#endif
     }
 
     void configure (int ac, char *av[])

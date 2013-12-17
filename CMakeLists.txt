@@ -13,7 +13,6 @@ set (PROJECT_CONTACT     "SDPA Developer Team <sdpa-dev@itwm.fraunhofer.de>" CAC
 
 OPTION (WITH_MANPAGES "Build manpages" YES)
 OPTION (ENABLE_LOGGING "Build the project with logging enabled" YES)
-OPTION (DISABLE_FHGLOG "Disable FHGLog completely" NO)
 OPTION (ENABLE_APPLICATION "Build with application" YES)
 OPTION (ENABLE_FVM_PC "Build the deprecated fvm-pc libraries" ON)
 OPTION (ENABLE_SDPA_GUI "Build the monitor gui" YES)
@@ -122,11 +121,7 @@ endif()
 add_definitions ("-DBOOST_FILESYSTEM_VERSION=3")
 add_definitions ("-DBOOST_FILESYSTEM_NO_DEPRECATED")
 
-if (DISABLE_FHGLOG)
-  add_definitions ("-DFHGLOG_DISABLE_LOGGING=1")
-else()
-  add_definitions ("-DFHGLOG_STRIP_LEVEL=${FHGLOG_STRIP_LEVEL}")
-endif()
+add_definitions ("-DFHGLOG_STRIP_LEVEL=${FHGLOG_STRIP_LEVEL}")
 
 if (ENABLE_STATISTICS)
 else()
