@@ -42,7 +42,6 @@ set (srcs
   StreamAppender.cpp
   )
 
-add_subdirectory(remote)
 set (remote_hdrs
   remote/LogServer.hpp
   remote/RemoteAppender.hpp
