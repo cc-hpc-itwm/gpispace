@@ -25,5 +25,4 @@
 #include <limits>
 namespace seda {
     std::size_t SEDA_MAX_QUEUE_SIZE = 1024;
-    unsigned long SEDA_DEFAULT_TIMEOUT = 500;
 }
