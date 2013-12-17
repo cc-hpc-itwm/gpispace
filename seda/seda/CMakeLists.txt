@@ -18,7 +18,6 @@ set (hdrs
   shared_ptr.hpp
   StageFactory.hpp
   Stage.hpp
-  StageNotFound.hpp
   StageRegistry.hpp
   StageWorker.hpp
   StrategyDecorator.hpp

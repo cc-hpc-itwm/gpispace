@@ -77,7 +77,7 @@ bool StageRegistry::remove(const std::string &name) {
 const Stage::Ptr StageRegistry::lookup(const std::string& name) const {
     stage_map_t::const_iterator it(_stages.find(name));
     if (it == _stages.end()) {
-        throw StageNotFound(name);
+        throw SedaException ("stage not found: " + name);
     } else {
         return it->second;
     }
