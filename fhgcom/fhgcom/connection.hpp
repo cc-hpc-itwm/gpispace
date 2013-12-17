@@ -1,6 +1,7 @@
 #ifndef FHGCOM_CONNECTION_HPP
 #define FHGCOM_CONNECTION_HPP 1
 
+#include <list>
 #include <vector>
 #include <string>
 #include <stdint.h>

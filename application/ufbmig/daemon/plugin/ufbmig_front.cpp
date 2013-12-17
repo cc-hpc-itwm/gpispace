@@ -6,6 +6,7 @@
 #include <errno.h>
 
 #include <fhglog/minimal.hpp>
+#include <fhglog/LogEvent.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/threadname.hpp>
