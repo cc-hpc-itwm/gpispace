@@ -53,11 +53,6 @@ fhg_add_test (once.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (path.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhglog
-  LINK_LIBRARIES fhglog)
-
 fhg_add_test (performance.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog

@@ -19,7 +19,6 @@ set (hdrs
   LogEvent.hpp
   LoggerApi.hpp
   Logger.hpp
-  logger_path.hpp
   LogLevel.hpp
   LogMacros.hpp
   macros.hpp
@@ -42,7 +41,6 @@ set (srcs
   fileno.cpp
   LogEvent.cpp
   Logger.cpp
-  logger_path.cpp
   LogLevel.cpp
   StreamAppender.cpp
   )
