@@ -175,6 +175,9 @@ namespace we
       for (;;)
       {
         internal_id_type const active_id (active_nets_.get());
+
+        lock_t const _ (mutex_);
+
         if (! is_valid (active_id))
         {
           DMLOG( WARN
@@ -244,53 +247,49 @@ namespace we
 
     void layer::do_execute (detail::descriptor& desc)
     {
-      lock_t const _ (mutex_);
+      policy::execution_policy exec_policy;
 
-      if (desc.is_done ())
+      switch (desc.execute (&exec_policy))
       {
-        DMLOG (TRACE, "executor: activity (" << desc.name() << ")-" << desc.id() << " is done");
-        do_inject (desc);
-      }
-      else
-      {
-        policy::execution_policy exec_policy;
-
-        switch (desc.execute (&exec_policy))
+      case policy::execution_policy::EXTRACT:
         {
-        case policy::execution_policy::EXTRACT:
+          while (desc.is_alive () && desc.enabled())
           {
-            while (desc.is_alive () && desc.enabled())
-            {
-              detail::descriptor & child (do_extract (desc));
-              child.inject_input ();
+            detail::descriptor & child (do_extract (desc));
+            child.inject_input ();
 
-              switch (child.execute (&exec_policy))
-              {
-              case policy::execution_policy::EXTRACT:
-                active_nets_.put (child.id ());
-                break;
-              case policy::execution_policy::INJECT:
-                do_inject (child);
-                break;
-              case policy::execution_policy::EXTERNAL:
-                execute_externally (child.id());
-                break;
-              default:
-                throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (child));
-              }
+            switch (child.execute (&exec_policy))
+            {
+            case policy::execution_policy::EXTRACT:
+              active_nets_.put (child.id ());
+              break;
+            case policy::execution_policy::INJECT:
+              do_inject (child);
+              break;
+            case policy::execution_policy::EXTERNAL:
+              execute_externally (child.id());
+              break;
+            default:
+              throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (child));
             }
           }
-          break;
-        case policy::execution_policy::INJECT:
-          do_inject (desc);
-          break;
-        case policy::execution_policy::EXTERNAL:
-          execute_externally (desc.id());
-          break;
-        default:
-          MLOG (FATAL, "executor: got strange classification for activity (" << desc.name() << ")-" << desc.id());
-          throw std::runtime_error ("executor got strange classification for activity");
+
+          if (desc.is_done ())
+          {
+            DMLOG (TRACE, "executor: activity (" << desc.name() << ")-" << desc.id() << " is done");
+            do_inject (desc);
+          }
         }
+        break;
+      case policy::execution_policy::INJECT:
+        do_inject (desc);
+        break;
+      case policy::execution_policy::EXTERNAL:
+        execute_externally (desc.id());
+        break;
+      default:
+        MLOG (FATAL, "executor: got strange classification for activity (" << desc.name() << ")-" << desc.id());
+        throw std::runtime_error ("executor got strange classification for activity");
       }
     }
     bool layer::is_valid (const internal_id_type & id) const
