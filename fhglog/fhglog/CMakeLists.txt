@@ -42,11 +42,6 @@ set (srcs
   StreamAppender.cpp
   )
 
-if (HAVE_SYSLOG_H)
-  set(hdrs ${hdrs} "nonportable/SyslogAppender.hpp")
-  set(srcs ${srcs} "nonportable/SyslogAppender.cpp")
-endif (HAVE_SYSLOG_H)
-
 add_subdirectory(remote)
 set (remote_hdrs
   remote/LogServer.hpp

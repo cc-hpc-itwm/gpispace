@@ -1,9 +1,6 @@
 #ifndef FHGLOG_CONFIG_H
 #define FHGLOG_CONFIG_H
 
-#ifndef HAVE_SYSLOG_H
-#cmakedefine HAVE_SYSLOG_H 1
-#endif
 #cmakedefine FHGLOG_EXIT_ON_ERROR 1
 #define FHGLOG_EXIT_ON_ERROR_CODE @FHGLOG_EXIT_ON_ERROR_CODE@
 
