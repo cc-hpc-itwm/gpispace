@@ -64,7 +64,7 @@ namespace fhg
                                       , const char
                                       )
           {
-            return os << boost::filesystem::path (e.path()).filename();
+            return os << boost::filesystem::path (e.path()).filename().string();
           }
         };
         struct PATH
