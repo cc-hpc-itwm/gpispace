@@ -224,19 +224,30 @@ namespace we
 
         if (not m_error_code)
         {
-          activity_.set_failed (true);
-          activity_.set_finished (false);
           ++failure_counter_;
 
           // TODO: add to log of tuples: (childname, code, message)?
           set_error_code(error_code);
           set_error_message(error_message);
         }
+
+        if (children_.empty ())
+        {
+          if (activity_.is_canceling ())
+          {
+            activity_.set_canceled (true);
+          }
+          else
+          {
+            activity_.set_failed (true);
+          }
+        }
       }
 
       void descriptor::child_canceled ( descriptor const& child
-                                       , std::string const& /*reason*/
-                                       )
+                                      , int error_code
+                                      , std::string const &error_message
+                                      )
       {
         lock_t lock(mutex_);
         if (! is_child (child.id()))
@@ -247,6 +258,27 @@ namespace we
                                    + "' which is not my child!"
                                    );
         del_child (child.id());
+
+        if (not m_error_code)
+        {
+          ++failure_counter_;
+
+          // TODO: add to log of tuples: (childname, code, message)?
+          set_error_code(error_code);
+          set_error_message(error_message);
+        }
+
+        if (children_.empty ())
+        {
+          if (activity_.is_canceling ())
+          {
+            activity_.set_canceled (true);
+          }
+          else
+          {
+            activity_.set_failed (true);
+          }
+        }
       }
 
       descriptor descriptor::extract (id_type const& child_id)
@@ -254,6 +286,7 @@ namespace we
         lock_t lock(mutex_);
 
         descriptor child (child_id, activity_.extract(), id());
+        child.set_user_data (m_user_data);
 
         add_child (child_id);
 
@@ -278,6 +311,7 @@ namespace we
         lock_t lock(mutex_);
         activity_.collect_output();
         activity_.set_failed (false);
+        activity_.set_canceled (false);
         activity_.set_finished (true);
       }
 
@@ -286,6 +320,7 @@ namespace we
         lock_t lock(mutex_);
         activity_.collect_output();
         activity_.set_failed (true);
+        activity_.set_canceled (false);
         activity_.set_finished (false);
         ++failure_counter_;
       }
@@ -295,6 +330,7 @@ namespace we
         lock_t lock(mutex_);
         activity_.collect_output();
         activity_.set_canceled (true);
+        activity_.set_failed (false);
         activity_.set_finished (false);
       }
 
@@ -420,6 +456,9 @@ namespace we
         p << "         done := "
           << d.is_done()
           << std::endl;
+        p << "        flags := " << d.activity_.flags () << std::endl;
+        p << "   error-code := " << d.error_code() << std::endl;
+        p << "      message := " << d.error_message() << std::endl;
         if (d.from_external_)
           {
             p << "     from-ext := " << d.from_external_id_ << std::endl;

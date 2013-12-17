@@ -63,7 +63,10 @@ namespace we
                           , int error_code
                           , std::string const& error_message
                           );
-        void child_canceled (descriptor const&, std::string const& /*reason*/);
+        void child_canceled ( descriptor const&
+                            , int error_code
+                            , std::string const &error_message
+                            );
 
         descriptor extract (id_type const&);
 
