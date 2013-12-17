@@ -9,8 +9,6 @@ set(sedatest_src main.cpp
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/testsconfig.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/testsconfig.hpp)
-
 add_executable(sedatestsuite ${sedatest_src})
 add_test(sedatestsuite ${CMAKE_CURRENT_BINARY_DIR}/sedatestsuite)
 target_link_libraries(sedatestsuite seda)
