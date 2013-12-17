@@ -20,8 +20,6 @@ int main(int argc, char **argv)
 
   desc.add_options()
     ("help,h", "this message")
-    ("version,V", "print version information")
-    ("dumpversion", "dump version information")
     ("filter,F", po::value<int>(&filter)->default_value(filter), "filter events with a smaller level")
     ("color,c", po::value<std::string>()->default_value("auto"), "colored output")
     ( "format,f", po::value<std::string>()->default_value("short")
@@ -58,18 +56,6 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
   po::notify(vm);
-
-  if (vm.count("version"))
-  {
-    std::cerr << "FhgLog v" << FHGLOG_VERSION << std::endl;
-    return EXIT_SUCCESS;
-  }
-
-  if (vm.count("dumpversion"))
-  {
-    std::cerr << FHGLOG_VERSION << std::endl;
-    return EXIT_SUCCESS;
-  }
 
   if (vm.count("help"))
   {

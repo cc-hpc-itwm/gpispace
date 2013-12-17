@@ -48,8 +48,6 @@ int main (int argc, char **argv)
     ("file,f", po::value<std::string>(&file)->default_value(file), "filename of the event")
     ("function,F", po::value<std::string>(&function)->default_value(function), "ffunction to set")
     ("line,L", po::value<int>(&line)->default_value(line), "line number of the event")
-    ("version,V", "print version information")
-    ("dumpversion", "dump version information")
     ;
 
   po::variables_map vm;
@@ -64,18 +62,6 @@ int main (int argc, char **argv)
     return EXIT_FAILURE;
   }
   po::notify(vm);
-
-  if (vm.count("version"))
-  {
-    std::cerr << "FhgLog Client v" << FHGLOG_VERSION << std::endl;
-    return EXIT_SUCCESS;
-  }
-
-  if (vm.count("dumpversion"))
-  {
-    std::cerr << FHGLOG_VERSION << std::endl;
-    return EXIT_SUCCESS;
-  }
 
   if (vm.count("help"))
   {

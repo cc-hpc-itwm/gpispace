@@ -42,8 +42,6 @@ int main(int argc, char **argv)
   desc.add_options()
     ("help,h", "this message")
     ("port,p", po::value<unsigned short>()->default_value(FHGLOG_DEFAULT_PORT), "port to listen on")
-    ("version,V", "print version information")
-    ("dumpversion", "dump version information")
     ("quiet,q", "be quiet")
     ("verbose,v", po::value<unsigned int>()->default_value(0), "verbosity level")
     ("color,c", po::value<std::string>()->default_value("auto"), "colored output")
@@ -81,18 +79,6 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
   po::notify(vm);
-
-  if (vm.count("version"))
-  {
-    std::cerr << "FhgLog Server v" << FHGLOG_VERSION << std::endl;
-    return EXIT_SUCCESS;
-  }
-
-  if (vm.count("dumpversion"))
-  {
-    std::cerr << FHGLOG_VERSION << std::endl;
-    return EXIT_SUCCESS;
-  }
 
   if (vm.count("help"))
   {
