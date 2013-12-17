@@ -8,10 +8,6 @@
 namespace fhg { namespace log {
     class DefaultConfiguration {
     public:
-      static const std::string & STDOUT() { static std::string const s("stdout"); return s; }
-      static const std::string & STDERR() { static std::string const s("stderr"); return s; }
-      static const std::string & STDLOG() { static std::string const s("stdlog"); return s; }
-
       DefaultConfiguration();
 
       void operator() () throw()

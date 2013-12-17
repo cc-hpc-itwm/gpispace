@@ -106,6 +106,13 @@ namespace fhg
       return true;
     }
 
+    namespace
+    {
+      const std::string & STDOUT() { static std::string const s("stdout"); return s; }
+      const std::string & STDERR() { static std::string const s("stderr"); return s; }
+      const std::string & STDLOG() { static std::string const s("stdlog"); return s; }
+    }
+
     void DefaultConfiguration::configure()
     {
       if (disabled_)
