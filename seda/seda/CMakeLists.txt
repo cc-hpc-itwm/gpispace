@@ -1,6 +1,5 @@
 # -*- mode: cmake; -*-
 set (hdrs
-  EventCountStrategy.hpp
   IEvent.hpp
   logging.hpp
   shared_ptr.hpp
