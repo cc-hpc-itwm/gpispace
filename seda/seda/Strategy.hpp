@@ -23,17 +23,11 @@
 #ifndef SEDA_STRATEGY_HPP
 #define SEDA_STRATEGY_HPP 1
 
-#include <seda/shared_ptr.hpp>
-
 #include <seda/IEvent.hpp>
 
 namespace seda {
-    class IEvent;
-  
     class Strategy {
     public:
-        typedef seda::shared_ptr<Strategy> Ptr;
-
         virtual ~Strategy() {}
         virtual void perform(const IEvent::Ptr&) = 0;
     };

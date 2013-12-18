@@ -2,7 +2,6 @@
 set (hdrs
   IEvent.hpp
   logging.hpp
-  shared_ptr.hpp
   Stage.hpp
   Strategy.hpp
 )
