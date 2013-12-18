@@ -123,7 +123,6 @@ namespace sdpa {
 
       // stages
       void setStage(const seda::Stage::Ptr& stage){ ptr_daemon_stage_ = stage; }
-      seda::Stage::Ptr daemon_stage() const { return ptr_daemon_stage_ ; }
 
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
