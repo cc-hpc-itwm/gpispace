@@ -6,7 +6,6 @@
 #include <seda/Stage.hpp>
 #include <seda/EventQueue.hpp>
 #include <seda/IEvent.hpp>
-#include <seda/StageFactory.hpp>
 #include <seda/StageRegistry.hpp>
 #include <seda/EventCountStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
@@ -20,6 +19,14 @@ namespace
   {
     virtual std::string str() const { return "dummy"; }
   };
+
+  seda::Stage::Ptr createStage
+    (const std::string &name, seda::Strategy::Ptr strategy, int pool_size)
+  {
+    seda::Stage::Ptr stage (new seda::Stage (name, strategy, pool_size));
+    seda::StageRegistry::instance().insert (stage);
+    return stage;
+  }
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SedaStageTest );
@@ -34,12 +41,10 @@ SedaStageTest::tearDown() {
 
 void
 SedaStageTest::testSendFoo() {
-    seda::StageFactory::Ptr factory(new seda::StageFactory());
-
     seda::Strategy::Ptr discard(new seda::DiscardStrategy());
     seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
     discard = seda::Strategy::Ptr(ecs);
-    seda::Stage::Ptr stage(factory->createStage("discard", discard, 2));
+    seda::Stage::Ptr stage(createStage("discard", discard, 2));
 
     stage->start();
 
@@ -59,12 +64,10 @@ SedaStageTest::testSendFoo() {
 
 void
 SedaStageTest::testStartStop() {
-    seda::StageFactory::Ptr factory(new seda::StageFactory());
-
     seda::Strategy::Ptr discard(new seda::DiscardStrategy());
     seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
     discard = seda::Strategy::Ptr(ecs);
-    seda::Stage::Ptr stage(factory->createStage("discard", discard, 2));
+    seda::Stage::Ptr stage(createStage("discard", discard, 2));
 
     const std::size_t numMsgs(10);
 
@@ -98,15 +101,13 @@ SedaStageTest::testStartStop() {
 
 void
 SedaStageTest::testForwardEvents() {
-    seda::StageFactory::Ptr factory(new seda::StageFactory());
-
     seda::Strategy::Ptr discard(new seda::DiscardStrategy());
     seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
     discard = seda::Strategy::Ptr(ecs);
-    seda::Stage::Ptr final(factory->createStage("final", discard, 2));
+    seda::Stage::Ptr final(createStage("final", discard, 2));
 
     seda::Strategy::Ptr fwdStrategy(new seda::ForwardStrategy("final"));
-    seda::Stage::Ptr first(factory->createStage("first", fwdStrategy));
+    seda::Stage::Ptr first(createStage("first", fwdStrategy, 1));
 
     seda::StageRegistry::instance().startAll();
 
