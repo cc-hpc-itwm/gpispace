@@ -37,10 +37,11 @@ namespace seda {
   }
 
     Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy)
-        : SEDA_INIT_LOGGER("seda.stage."+a_name),
-          _queue(),
-          _strategy(a_strategy),
-          _name(a_name)
+        : SEDA_INIT_LOGGER("seda.stage."+a_name)
+        , _event_handler_thread (NULL)
+        , _queue()
+        , _strategy(a_strategy)
+        , _name(a_name)
     {
     }
 
@@ -58,32 +59,28 @@ namespace seda {
     void
     Stage::start() {
       lock_type lock (m_mutex);
-        if (_threadPool.empty()) {
-            _strategy->onStageStart(name());
 
-            // initialize and start worker threads
-            for (std::size_t tId = 0; tId < 1; ++tId) {
-                _threadPool.push_back
-                  (new boost::thread (&Stage::receive_and_perform, this));
-            }
-        } // else == noop
+      if (!_event_handler_thread)
+      {
+        _strategy->onStageStart (name());
+
+        _event_handler_thread =
+          new boost::thread (&Stage::receive_and_perform, this);
+      } // else == noop
     }
 
     void
     Stage::stop() {
       lock_type lock (m_mutex);
-        if (_threadPool.empty()) {
-            return;
-        }
 
-        BOOST_FOREACH (boost::thread* thread, _threadPool)
-        {
-          thread->interrupt();
-          thread->join();
-          delete thread;
-        }
-        _threadPool.clear();
+      if (_event_handler_thread)
+      {
+        _event_handler_thread->interrupt();
+        _event_handler_thread->join();
+        delete _event_handler_thread;
+        _event_handler_thread = NULL;
 
-        _strategy->onStageStop(name());
+        _strategy->onStageStop (name());
+      }
     }
 }

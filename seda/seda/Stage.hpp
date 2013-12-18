@@ -35,10 +35,7 @@
 #include <seda/Strategy.hpp>
 
 namespace seda {
-    struct ThreadInfo;
     class Stage {
-    private:
-      typedef std::list<boost::thread*> ThreadPool;
     public:
         typedef seda::shared_ptr<Stage> Ptr;
 
@@ -57,6 +54,7 @@ namespace seda {
 
     private:
       void receive_and_perform();
+      boost::thread* _event_handler_thread;
 
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -65,7 +63,6 @@ namespace seda {
         EventQueue _queue;
         Strategy::Ptr _strategy;
         std::string _name;
-        ThreadPool _threadPool;
         mutable mutex_type m_mutex;
     };
 }
