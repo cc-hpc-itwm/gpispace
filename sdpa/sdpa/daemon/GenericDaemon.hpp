@@ -85,6 +85,7 @@ namespace sdpa {
       virtual ~GenericDaemon() {}
 
       SDPA_DECLARE_LOGGER();
+      const std::string& name() const;
 
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
@@ -241,6 +242,8 @@ namespace sdpa {
 
       // data members
     protected:
+      std::string _name;
+
       mutex_type mtx_;
 
       sdpa::master_info_list_t m_arrMasterInfo;
