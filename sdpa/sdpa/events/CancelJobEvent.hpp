@@ -30,10 +30,6 @@ namespace sdpa
       {
         return _reason;
       }
-      int priority() const
-      {
-        return 1;
-      }
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleCancelJobEvent (this);

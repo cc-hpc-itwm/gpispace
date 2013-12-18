@@ -33,8 +33,6 @@ namespace seda {
         typedef boost::shared_ptr<IEvent> Ptr;
 
         virtual ~IEvent() {}
-
-        virtual int priority() const { return 0; }
     };
 }
 

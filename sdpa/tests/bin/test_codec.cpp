@@ -29,8 +29,6 @@ namespace
     BOOST_REQUIRE_EQUAL (r->from(), e.from());
     BOOST_REQUIRE_EQUAL (r->to(), e.to());
 
-    BOOST_REQUIRE_EQUAL (r->priority(), e.priority());
-
     return r;
   }
 
