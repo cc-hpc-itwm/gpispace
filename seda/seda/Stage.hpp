@@ -53,11 +53,6 @@ namespace seda {
 
         virtual bool empty() const { return _queue->empty(); }
         virtual std::size_t size() const { return _queue->size(); }
-        virtual void waitUntilEmpty() const { _queue->waitUntilEmpty(); }
-        virtual void waitUntilEmpty(unsigned long millis) { _queue->waitUntilEmpty(millis); }
-
-        virtual void waitUntilNonEmpty() const { _queue->waitUntilNotEmpty(); }
-        virtual void waitUntilNonEmpty(unsigned long millis) { _queue->waitUntilNotEmpty(millis); }
 
         virtual const std::string& name() const { return _name; }
 
