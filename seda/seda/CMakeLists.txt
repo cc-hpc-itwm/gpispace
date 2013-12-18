@@ -6,7 +6,6 @@ set (hdrs
   EventQueue.hpp
   ForwardStrategy.hpp
   IEvent.hpp
-  IEventQueue.hpp
   logging.hpp
   SedaException.hpp
   shared_ptr.hpp

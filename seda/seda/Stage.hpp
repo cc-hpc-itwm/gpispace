@@ -32,7 +32,7 @@
 #include <seda/shared_ptr.hpp>
 #include <seda/SedaException.hpp>
 #include <seda/IEvent.hpp>
-#include <seda/IEventQueue.hpp>
+#include <seda/EventQueue.hpp>
 #include <seda/Strategy.hpp>
 
 namespace seda {
@@ -45,7 +45,7 @@ namespace seda {
         typedef seda::shared_ptr<Stage> Ptr;
 
         Stage(const std::string& name, Strategy::Ptr strategy, std::size_t maxPoolSize=1, const std::string& errorHandler="system-event-handler");
-        Stage(const std::string& name, IEventQueue::Ptr queue, Strategy::Ptr strategy, std::size_t maxPoolSize=1, const std::string& errorHandler="system-event-handler");
+        Stage(const std::string& name, EventQueue::Ptr queue, Strategy::Ptr strategy, std::size_t maxPoolSize=1, const std::string& errorHandler="system-event-handler");
 
         virtual ~Stage();
 
@@ -80,11 +80,11 @@ namespace seda {
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
 
-        IEventQueue::Ptr queue() { return _queue; }
-        const IEventQueue::Ptr queue() const { return _queue; }
+        EventQueue::Ptr queue() { return _queue; }
+        const EventQueue::Ptr queue() const { return _queue; }
 
         SEDA_DECLARE_LOGGER();
-        IEventQueue::Ptr _queue;
+        EventQueue::Ptr _queue;
         Strategy::Ptr _strategy;
         std::string _name;
         std::string _error_handler;

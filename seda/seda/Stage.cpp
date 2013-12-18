@@ -43,7 +43,7 @@ namespace seda {
     {
     }
 
-    Stage::Stage(const std::string& a_name, IEventQueue::Ptr a_queue, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize, const std::string& a_errorHandler)
+    Stage::Stage(const std::string& a_name, EventQueue::Ptr a_queue, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize, const std::string& a_errorHandler)
         : SEDA_INIT_LOGGER("seda.stage."+a_name),
           _queue(a_queue),
           _strategy(a_strategy),
