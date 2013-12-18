@@ -28,7 +28,6 @@
 
 #include <boost/thread.hpp>
 
-#include <seda/shared_ptr.hpp>
 #include <seda/IEvent.hpp>
 #include <seda/Strategy.hpp>
 
@@ -37,8 +36,6 @@
 namespace seda {
     class Stage {
     public:
-        typedef seda::shared_ptr<Stage> Ptr;
-
         Stage(Strategy* strategy);
 
         virtual ~Stage();
