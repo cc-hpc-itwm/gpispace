@@ -28,14 +28,11 @@
 #include <boost/foreach.hpp>
 
 namespace seda {
-  namespace
+  void Stage::receive_and_perform()
   {
-    void receive_and_perform (Stage* stage)
+    while (true)
     {
-      while (true)
-      {
-        stage->strategy()->perform (stage->recv());
-      }
+      strategy()->perform (recv());
     }
   }
 
@@ -68,7 +65,7 @@ namespace seda {
             // initialize and start worker threads
             for (std::size_t tId = 0; tId < _maxPoolSize; ++tId) {
                 _threadPool.push_back
-                  (new boost::thread (&receive_and_perform, this));
+                  (new boost::thread (&Stage::receive_and_perform, this));
             }
         } // else == noop
     }

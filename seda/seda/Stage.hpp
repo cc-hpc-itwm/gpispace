@@ -62,6 +62,8 @@ namespace seda {
         }
 
     private:
+      void receive_and_perform();
+
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
 
