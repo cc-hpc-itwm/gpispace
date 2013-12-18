@@ -27,6 +27,7 @@
 #include <list>
 
 #include <boost/thread.hpp>
+#include <boost/function.hpp>
 
 #include <seda/IEvent.hpp>
 #include <seda/Strategy.hpp>
@@ -36,7 +37,8 @@
 namespace seda {
     class Stage {
     public:
-        Stage(Strategy* strategy);
+      Stage (Strategy* strategy);
+      Stage (boost::function<void (const IEvent::Ptr&)> strategy);
 
         virtual ~Stage();
 
@@ -51,7 +53,7 @@ namespace seda {
 
       fhg::thread::queue<IEvent::Ptr> _queue;
 
-      Strategy* _strategy;
+      boost::function<void (const IEvent::Ptr&)> _strategy;
 
       void receive_and_perform();
       boost::thread* _event_handler_thread;

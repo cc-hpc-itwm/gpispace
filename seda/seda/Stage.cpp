@@ -24,19 +24,27 @@
 #include "IEvent.hpp"
 
 #include <boost/foreach.hpp>
+#include <boost/bind.hpp>
 
 namespace seda {
   void Stage::receive_and_perform()
   {
     while (true)
     {
-      _strategy->perform (_queue.get());
+      _strategy (_queue.get());
     }
   }
 
     Stage::Stage(Strategy* a_strategy)
         : _queue()
-        , _strategy(a_strategy)
+        , _strategy (boost::bind (&Strategy::perform, a_strategy, _1))
+        , _event_handler_thread
+          (new boost::thread (&Stage::receive_and_perform, this))
+    {}
+
+    Stage::Stage (boost::function<void (const IEvent::Ptr&)> strategy)
+        : _queue()
+        , _strategy (strategy)
         , _event_handler_thread
           (new boost::thread (&Stage::receive_and_perform, this))
     {}
