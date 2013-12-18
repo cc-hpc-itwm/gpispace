@@ -39,8 +39,7 @@ namespace seda {
 
             explicit
                 EventQueue(const std::string& a_name)
-                : SEDA_INIT_LOGGER("seda.queue."+a_name),
-                _name(a_name) {}
+                  : _name(a_name) {}
 
             const std::string& name() { return _name; }
 
@@ -131,7 +130,6 @@ namespace seda {
             bool empty() const { return _list.empty(); }
 
         protected:
-            SEDA_DECLARE_LOGGER();
             boost::mutex _mtx;
             boost::condition_variable _emptyCond;
             boost::condition_variable _notEmptyCond;
