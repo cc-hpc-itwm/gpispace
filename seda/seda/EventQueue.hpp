@@ -37,12 +37,6 @@ namespace seda {
         public:
             typedef seda::shared_ptr< EventQueue > Ptr;
 
-            explicit
-                EventQueue(const std::string& a_name)
-                  : _name(a_name) {}
-
-            const std::string& name() { return _name; }
-
             IEvent::Ptr pop() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
 
@@ -135,8 +129,6 @@ namespace seda {
             boost::condition_variable _notEmptyCond;
 
             std::list< IEvent::Ptr > _list;
-        private:
-            std::string _name;
     };
 }
 
