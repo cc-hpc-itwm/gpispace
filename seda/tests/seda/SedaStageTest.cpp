@@ -10,11 +10,6 @@ using namespace seda::tests;
 
 namespace
 {
-  struct dummy_event : seda::IEvent
-  {
-    virtual std::string str() const { return "dummy"; }
-  };
-
   struct wait_for_n_events_strategy
   {
     wait_for_n_events_strategy (unsigned int expected)
@@ -70,7 +65,7 @@ SedaStageTest::testSendFoo() {
       (boost::bind (&wait_for_n_events_strategy::perform, &counter, _1));
 
     for (std::size_t i=0; i < numMsgs; ++i) {
-        stage.send(seda::IEvent::Ptr(new dummy_event));
+        stage.send(seda::IEvent::Ptr(new IEvent));
     }
 
     counter.wait();
