@@ -8,7 +8,6 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <seda/Stage.hpp>
-#include <seda/DiscardStrategy.hpp>
 #include <seda/EventCountStrategy.hpp>
 
 #include <boost/thread.hpp>
@@ -72,12 +71,21 @@ struct F
   boost::thread *m_thrd;
 };
 
+namespace
+{
+  struct discard_strategy : public Strategy
+  {
+    discard_strategy() : Strategy ("discard") {}
+    void perform (const IEvent::Ptr&) {}
+  };
+}
+
 BOOST_FIXTURE_TEST_SUITE( s, F )
 
 BOOST_AUTO_TEST_CASE ( perform_test )
 {
   seda::EventCountStrategy *ecs (0);
-  seda::Strategy::Ptr discard (new seda::DiscardStrategy());
+  seda::Strategy::Ptr discard (new discard_strategy);
   ecs = new seda::EventCountStrategy(discard);
   discard = seda::Strategy::Ptr(ecs);
   seda::Stage::Ptr final (seda::Stage::Ptr (new seda::Stage ("count", discard)));

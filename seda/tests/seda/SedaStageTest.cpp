@@ -6,7 +6,6 @@
 #include <seda/Stage.hpp>
 #include <seda/IEvent.hpp>
 #include <seda/EventCountStrategy.hpp>
-#include <seda/DiscardStrategy.hpp>
 
 using namespace seda::tests;
 
@@ -15,6 +14,12 @@ namespace
   struct dummy_event : seda::IEvent
   {
     virtual std::string str() const { return "dummy"; }
+  };
+
+  struct discard_strategy : public Strategy
+  {
+    discard_strategy() : Strategy ("discard") {}
+    void perform (const IEvent::Ptr&) {}
   };
 }
 
@@ -28,7 +33,7 @@ SedaStageTest::tearDown() {}
 
 void
 SedaStageTest::testSendFoo() {
-    seda::Strategy::Ptr discard(new seda::DiscardStrategy());
+    seda::Strategy::Ptr discard(new discard_strategy);
     seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
     discard = seda::Strategy::Ptr(ecs);
     seda::Stage::Ptr stage(seda::Stage::Ptr (new seda::Stage ("discard", discard)));
@@ -49,7 +54,7 @@ SedaStageTest::testSendFoo() {
 
 void
 SedaStageTest::testStartStop() {
-    seda::Strategy::Ptr discard(new seda::DiscardStrategy());
+    seda::Strategy::Ptr discard(new discard_strategy);
     seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
     discard = seda::Strategy::Ptr(ecs);
     seda::Stage::Ptr stage(seda::Stage::Ptr (new seda::Stage("discard", discard)));
