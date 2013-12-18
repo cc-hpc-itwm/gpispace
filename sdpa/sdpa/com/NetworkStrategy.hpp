@@ -18,7 +18,7 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<NetworkStrategy> ptr_t;
 
-      NetworkStrategy ( std::string const & next_stage
+      NetworkStrategy ( seda::Stage::Ptr fallback_stage
                       , std::string const & peer_name
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
@@ -32,7 +32,6 @@ namespace sdpa
       void handle_send (seda::IEvent::Ptr const & e, boost::system::error_code const & ec);
       void handle_recv (boost::system::error_code const & ec);
 
-      std::string _fallback_stage_name;
       seda::Stage::Ptr _fallback_stage;
 
       const std::string m_name;

@@ -6,8 +6,6 @@
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <seda/StageRegistry.hpp>
-
 #include <boost/lexical_cast.hpp>
 
 namespace sdpa
@@ -20,14 +18,13 @@ namespace sdpa
       kill (getpid (), SIGTERM);
     }
 
-    NetworkStrategy::NetworkStrategy ( std::string const & next_stage
+    NetworkStrategy::NetworkStrategy ( seda::Stage::Ptr fallback_stage
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
-      : seda::Strategy ("network_stage_with_fallback_to" + next_stage)
-      , _fallback_stage_name (next_stage)
-      , _fallback_stage()
+      : seda::Strategy ("network_stage_with_fallback_to" + fallback_stage->name())
+      , _fallback_stage (fallback_stage)
       , m_name (peer_name)
       , m_host (host)
       , m_port (port)
@@ -75,8 +72,6 @@ namespace sdpa
 
     void NetworkStrategy::onStageStart (std::string const &s)
     {
-      _fallback_stage = StageRegistry::instance().lookup (_fallback_stage_name);
-
       m_shutting_down = false;
 
       m_peer.reset (new fhg::com::peer_t ( m_name
