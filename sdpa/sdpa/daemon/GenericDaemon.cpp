@@ -161,6 +161,7 @@ void GenericDaemon::shutdown( )
   delete ptr_workflow_engine_;
   ptr_workflow_engine_ = NULL;
 
+  _network_stage.reset();
   ptr_daemon_stage_.reset();
 
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
