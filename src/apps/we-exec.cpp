@@ -19,6 +19,8 @@
 #include <fhg/util/thread/queue.hpp>
 #include <fhglog/fhglog.hpp>
 
+#include <sdpa/job_states.hpp>
+
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
@@ -152,6 +154,7 @@ namespace
         , jobs_()
         , worker_()
         , _loader (loader)
+        , _job_status (sdpa::status::RUNNING)
     {
       mgmt_layer_.sig_insert =
         boost::bind (&observe::state_type::insert, observer, _1);
@@ -229,6 +232,11 @@ namespace
       id_map_.erase (id);
     }
 
+    sdpa::status::code job_status () const
+    {
+      return _job_status;
+    }
+
     void submit ( const we::mgmt::layer::id_type& id
                 , const std::string & desc
                 , std::list<we::type::requirement_t> const&
@@ -278,6 +286,8 @@ namespace
           std::cout << act.transition().get_port (top.second).name()
                     << " => " << pnet::type::value::show (top.first) << std::endl;
         }
+
+        _job_status = sdpa::status::FINISHED;
       }
       return true;
     }
@@ -305,6 +315,7 @@ namespace
                   << " reason := " << reason
                   << " activity := " << act.transition ().name ()
                   << std::endl;
+        _job_status = sdpa::status::FAILED;
       }
       return true;
     }
@@ -321,6 +332,7 @@ namespace
       catch (std::out_of_range const &)
       {
         std::cout << "canceled [" << id << "]" << std::endl;
+        _job_status = sdpa::status::CANCELED;
       }
       return true;
     }
@@ -334,6 +346,7 @@ namespace
     job_q_t jobs_;
     worker_list_t worker_;
     we::loader::loader* _loader;
+    sdpa::status::code _job_status;
   };
 
   int context::handle_internally (we::mgmt::type::activity_t& act, net_t& n)
@@ -481,24 +494,44 @@ try
     sleep (1);
   }
 
-  std::cerr << "Everything done." << std::endl;
-
   FHG_UTIL_STAT_OUT (std::cerr);
 
-  if (output.size ())
+  if (sdpa::status::FINISHED == daemon.job_status ())
   {
-    if (output == "=")
+    std::cerr << "Workflow finished." << std::endl;
+
+    if (output.size ())
     {
-      std::cout << observer.result();
+      if (output == "=")
+      {
+        std::cout << observer.result();
+      }
+      else
+      {
+        std::ofstream ofs (output.c_str ());
+        ofs << observer.result();
+      }
     }
-    else
+  }
+  else if (sdpa::status::FAILED == daemon.job_status ())
+  {
+    std::cerr << "Workflow failed!" << std::endl;
+
+    if (output.size ())
     {
-      std::ofstream ofs (output.c_str ());
-      ofs << observer.result();
+      if (output == "=")
+      {
+        std::cout << observer.result();
+      }
+      else
+      {
+        std::ofstream ofs (output.c_str ());
+        ofs << observer.result();
+      }
     }
   }
 
-  return EXIT_SUCCESS;
+  return daemon.job_status();
 }
 catch (const std::exception& e)
 {
