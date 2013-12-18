@@ -2,7 +2,6 @@
 set (hdrs
   DiscardStrategy.hpp
   EventCountStrategy.hpp
-  EventQueue.hpp
   ForwardStrategy.hpp
   IEvent.hpp
   logging.hpp
