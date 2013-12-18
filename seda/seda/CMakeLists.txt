@@ -1,6 +1,5 @@
 # -*- mode: cmake; -*-
 set (hdrs
-  DiscardStrategy.hpp
   EventCountStrategy.hpp
   IEvent.hpp
   logging.hpp
