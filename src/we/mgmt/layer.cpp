@@ -394,7 +394,7 @@ namespace we
         //     - check failure reason
         //         - EAGAIN reschedule (had not been submitted yet)
         //         - ECRASH activity crashed (idempotence criteria)
-        if (not parent_desc.activity ().is_canceling () && not parent_desc.activity ().is_failed ())
+        if (not parent_desc.activity ().is_canceling ())
         {
           cancel_activity (parent_desc.id ());
         }
