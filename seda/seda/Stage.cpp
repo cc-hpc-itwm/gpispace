@@ -35,27 +35,11 @@ namespace seda {
         stage->strategy()->perform (stage->recv());
       }
     }
-
-    class StageWorker {
-    public:
-        StageWorker(Stage* s) :
-            _stage(s)
-        { }
-
-        void operator()()
-        {
-          receive_and_perform (_stage);
-        }
-
-    private:
-        Stage* _stage;
-    };
   }
 
   struct ThreadInfo
   {
     boost::thread *thread;
-    StageWorker  *worker;
   };
 
     Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize)
@@ -99,8 +83,7 @@ namespace seda {
             // initialize and start worker threads
             for (std::size_t tId = 0; tId < _maxPoolSize; ++tId) {
                 ThreadInfo *i = new ThreadInfo;
-                i->worker = new StageWorker(this);
-                i->thread = new boost::thread(boost::ref(*i->worker));
+                i->thread = new boost::thread (&receive_and_perform, this);
                 _threadPool.push_back(i);
             }
         } // else == noop
@@ -122,7 +105,6 @@ namespace seda {
 
             i->thread->join();
             delete i->thread;
-            delete i->worker;
             delete i;
         }
         _strategy->onStageStop(name());
