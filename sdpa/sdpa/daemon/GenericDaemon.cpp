@@ -87,7 +87,7 @@ GenericDaemon::GenericDaemon( const std::string name
     DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
   }
 
-  ptr_daemon_stage_ = boost::shared_ptr<seda::Stage> (new seda::Stage (this));
+  ptr_daemon_stage_ = boost::shared_ptr<seda::Stage> (new seda::Stage (boost::bind (&GenericDaemon::perform, this, _1)));
 }
 
 const std::string& GenericDaemon::name() const
@@ -118,7 +118,7 @@ void GenericDaemon::start_agent()
                                      )
     );
 
-  _network_stage = boost::shared_ptr<seda::Stage> (new seda::Stage (_network_strategy.get()));
+  _network_stage = boost::shared_ptr<seda::Stage> (new seda::Stage (boost::bind (&sdpa::com::NetworkStrategy::perform, _network_strategy.get(), _1)));
 
   if (!isTop())
   {

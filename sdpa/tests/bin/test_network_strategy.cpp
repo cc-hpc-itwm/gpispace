@@ -115,7 +115,8 @@ BOOST_AUTO_TEST_CASE ( perform_test )
 {
   wait_for_n_events_strategy counter (1);
 
-  seda::Stage final (&counter);
+  seda::Stage final
+    (boost::bind (&wait_for_n_events_strategy::perform, &counter, _1));
 
   sdpa::com::NetworkStrategy net ( &final
                                  , "peer-1"

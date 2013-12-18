@@ -66,7 +66,8 @@ SedaStageTest::testSendFoo() {
 
     wait_for_n_events_strategy counter (numMsgs);
 
-    seda::Stage stage (&counter);
+    seda::Stage stage
+      (boost::bind (&wait_for_n_events_strategy::perform, &counter, _1));
 
     for (std::size_t i=0; i < numMsgs; ++i) {
         stage.send(seda::IEvent::Ptr(new dummy_event));
