@@ -274,17 +274,9 @@ namespace we
         {
           while (desc.is_alive () && desc.enabled())
           {
-            try
-            {
-              detail::descriptor & child (do_extract (desc));
-              child.inject_input ();
-              active_nets_.put (child.id ());
-            }
-            catch (std::exception const &ex)
-            {
-              throw std::runtime_error
-                (desc.name () + ": extraction failed: " + ex.what ());
-            }
+            detail::descriptor & child (do_extract (desc));
+            child.inject_input ();
+            active_nets_.put (child.id ());
           }
 
           if (desc.is_done ())
