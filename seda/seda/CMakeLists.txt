@@ -4,13 +4,11 @@ set (hdrs
   logging.hpp
   shared_ptr.hpp
   Stage.hpp
-  StrategyDecorator.hpp
   Strategy.hpp
 )
 
 set (srcs
   Stage.cpp
-  StrategyDecorator.cpp
   )
 
 ADD_LIBRARY(seda STATIC ${srcs})
