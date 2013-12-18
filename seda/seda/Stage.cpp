@@ -52,7 +52,7 @@ namespace seda {
 
       if (!_event_handler_thread)
       {
-        _strategy->onStageStart (name());
+        _strategy->onStageStart();
 
         _event_handler_thread =
           new boost::thread (&Stage::receive_and_perform, this);
@@ -73,7 +73,7 @@ namespace seda {
         delete _event_handler_thread;
         _event_handler_thread = NULL;
 
-        _strategy->onStageStop (name());
+        _strategy->onStageStop();
       }
     }
 }

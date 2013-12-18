@@ -26,8 +26,8 @@ namespace sdpa
 
       void perform (seda::IEvent::Ptr const & to_send);
 
-      void onStageStart (std::string const & s);
-      void onStageStop  (std::string const & s);
+      void onStageStart();
+      void onStageStop();
     private:
       void handle_send (seda::IEvent::Ptr const & e, boost::system::error_code const & ec);
       void handle_recv (boost::system::error_code const & ec);

@@ -37,8 +37,8 @@ namespace seda {
 
         virtual ~Strategy() {}
         virtual void perform(const IEvent::Ptr&) = 0;
-        virtual void onStageStart(const std::string&) {}
-        virtual void onStageStop(const std::string&)  {}
+        virtual void onStageStart() {}
+        virtual void onStageStop()  {}
         const std::string& name() const { return _name; }
 
         virtual std::string str() const { return name(); }

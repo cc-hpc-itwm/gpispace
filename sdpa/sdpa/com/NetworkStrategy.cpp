@@ -70,7 +70,7 @@ namespace sdpa
       }
     }
 
-    void NetworkStrategy::onStageStart (std::string const &s)
+    void NetworkStrategy::onStageStart()
     {
       m_shutting_down = false;
 
@@ -85,7 +85,7 @@ namespace sdpa
       m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
     }
 
-    void NetworkStrategy::onStageStop (std::string const & s)
+    void NetworkStrategy::onStageStop()
     {
       m_shutting_down = true;
 
