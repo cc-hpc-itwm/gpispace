@@ -60,20 +60,7 @@ namespace seda {
                 }
                 return true;
             }
-            bool wait(std::size_t targetValue, unsigned long millis) {
-                boost::unique_lock<boost::mutex> lock(_mtx);
 
-                while (count() < targetValue) {
-                    boost::system_time const timeout=boost::get_system_time() + boost::posix_time::milliseconds(millis);
-                    if (!_cond.timed_wait(lock, timeout)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            bool waitNoneZero() { return wait(1); }
-            bool waitNoneZero(unsigned long millis) { return wait(1, millis); }
         private:
             std::size_t _count;
             boost::mutex _mtx;
