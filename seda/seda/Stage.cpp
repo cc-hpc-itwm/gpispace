@@ -25,6 +25,8 @@
 #include "EventQueue.hpp"
 #include "StageRegistry.hpp"
 
+#include <boost/foreach.hpp>
+
 namespace seda {
   namespace
   {
@@ -90,17 +92,14 @@ namespace seda {
             return;
         }
 
-        for (ThreadPool::iterator it(_threadPool.begin()); it != _threadPool.end(); ++it) {
-            (*it)->interrupt();
+        BOOST_FOREACH (boost::thread* thread, _threadPool)
+        {
+          thread->interrupt();
+          thread->join();
+          delete thread;
         }
+        _threadPool.clear();
 
-        while (!_threadPool.empty()) {
-            boost::thread *i(_threadPool.front()); _threadPool.pop_front();
-
-            i->join();
-
-            delete i;
-        }
         _strategy->onStageStop(name());
     }
 
