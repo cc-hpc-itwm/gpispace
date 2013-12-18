@@ -122,7 +122,6 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                  , fhg::com::host_t ("localhost")
                                  , fhg::com::port_t ("0")
                                  );
-  seda::Stage net_stage (&net);
 
   net.perform (seda::IEvent::Ptr(new sdpa::events::ErrorEvent( "peer-1"
                                                               , "peer-1"
