@@ -53,20 +53,12 @@ namespace seda {
 
     void StageWorker::run() {
         while (!stopped()) {
-            try {
                 IEvent::Ptr e = _stage->recv();
                 _busy = true;
 
                 _stage->strategy()->perform(e);
 
                 _busy = false;
-            } catch (const boost::thread_interrupted &irq) {
-                break;
-            } catch (const std::exception& ex) {
-                SEDA_LOG_ERROR("strategy execution failed: " << ex.what());
-            } catch (...) {
-                SEDA_LOG_ERROR("strategy execution failed: unknown reason");
-            }
         }
     }
   }
