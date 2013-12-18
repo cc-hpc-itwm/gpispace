@@ -83,8 +83,6 @@ SedaStageTest::testSendFoo() {
     }
 
     counter->wait();
-
-    stage->stop();
 }
 
 void
@@ -114,6 +112,4 @@ SedaStageTest::testStartStop() {
     }
 
     counter->wait();
-
-    stage->stop();
 }

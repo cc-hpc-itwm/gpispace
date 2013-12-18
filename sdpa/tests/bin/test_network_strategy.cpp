@@ -140,9 +140,6 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                );
 
   counter->wait();
-
-  net_stage->stop();
-  final->stop();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
