@@ -38,7 +38,13 @@ namespace seda {
 
         void stop() { _stopped = true; }
         void operator()() { run(); }
-        void run();
+        void run()
+        {
+          while (!stopped())
+          {
+            _stage->strategy()->perform (_stage->recv());
+          }
+        }
 
     private:
         SEDA_DECLARE_LOGGER();
@@ -47,13 +53,6 @@ namespace seda {
         Stage* _stage;
         bool _stopped;
     };
-
-    void StageWorker::run() {
-        while (!stopped()) {
-                IEvent::Ptr e = _stage->recv();
-                _stage->strategy()->perform(e);
-        }
-    }
   }
 
   struct ThreadInfo
