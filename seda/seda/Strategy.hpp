@@ -23,7 +23,6 @@
 #ifndef SEDA_STRATEGY_HPP
 #define SEDA_STRATEGY_HPP 1
 
-#include <seda/logging.hpp>
 #include <seda/shared_ptr.hpp>
 
 #include <seda/IEvent.hpp>
@@ -42,10 +41,9 @@ namespace seda {
 
     protected:
         explicit
-        Strategy(const std::string& a_name) 
-            : SEDA_INIT_LOGGER(a_name), _name(a_name)
+        Strategy(const std::string& a_name)
+            : _name(a_name)
         {}
-        SEDA_DECLARE_LOGGER();
     private:
         std::string _name;
     };
