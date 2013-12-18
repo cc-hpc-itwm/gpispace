@@ -1167,6 +1167,17 @@ namespace xml
         stream << "CXXFLAGS += -isystem $(SDPA_INCLUDE)"           << std::endl;
         stream << "CXXFLAGS += -isystem $(BOOST_ROOT)/include"     << std::endl;
         stream                                                     << std::endl;
+        stream << "ifndef SDPA_LDPATH"                             << std::endl;
+        stream << "  ifndef SDPA_HOME"                             << std::endl;
+        stream << "    $(error Neither SDPA_LDPATH nor SDPA_HOME are set)"
+                                                                   << std::endl;
+        stream << "  else"                                         << std::endl;
+        stream << "    SDPA_LDPATH := $(SDPA_HOME)/lib"            << std::endl;
+        stream << "  endif"                                        << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "LDFLAGS += -L$(SDPA_LDPATH)"                    << std::endl;
+        stream                                                     << std::endl;
         stream << "ifndef CP"                                      << std::endl;
         stream << "  CP := $(shell which cp 2>/dev/null)"          << std::endl;
         stream << "endif"                                          << std::endl;
@@ -1405,7 +1416,8 @@ namespace xml
                    << ", $^)"
                    << " -o $@"
                    << " $(" << ldflags << ")"
-                   << " $(LDFLAGS)"                                << std::endl;
+                   << " $(LDFLAGS)"
+                   << " -lwe-dev"                                  << std::endl;
             stream                                                 << std::endl;
           }
 
