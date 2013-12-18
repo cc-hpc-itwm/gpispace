@@ -43,7 +43,6 @@ namespace seda {
 
         virtual ~Stage();
 
-        virtual void start();
         virtual void stop();
 
         virtual void send(const IEvent::Ptr& e) {
@@ -59,6 +58,7 @@ namespace seda {
       fhg::thread::queue<IEvent::Ptr> _queue;
 
         Strategy::Ptr _strategy;
+        virtual void start();
     };
 }
 

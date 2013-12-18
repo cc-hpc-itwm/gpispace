@@ -39,6 +39,7 @@ namespace seda {
         , _queue()
         , _strategy(a_strategy)
     {
+      start();
     }
 
     Stage::~Stage() {

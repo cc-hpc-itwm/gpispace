@@ -118,7 +118,6 @@ void GenericDaemon::start_agent()
     );
 
   _network_stage = seda::Stage::Ptr (new seda::Stage (net));
-  _network_stage->start();
 
   if (!isTop())
   {

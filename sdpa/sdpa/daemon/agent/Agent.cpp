@@ -727,7 +727,6 @@ Agent::ptr_t Agent::create ( const std::string& name
   Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
 
   seda::Stage::Ptr daemon_stage (new seda::Stage (pAgent));
-  daemon_stage->start();
   pAgent->setStage(daemon_stage);
 
   pAgent->createScheduler();

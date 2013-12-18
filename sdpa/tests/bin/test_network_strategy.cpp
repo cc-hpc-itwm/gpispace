@@ -117,7 +117,6 @@ BOOST_AUTO_TEST_CASE ( perform_test )
   seda::Strategy::Ptr counter_shared (counter);
 
   seda::Stage::Ptr final (seda::Stage::Ptr (new seda::Stage (counter_shared)));
-  final->start();
 
   sdpa::com::NetworkStrategy::Ptr net
     (new sdpa::com::NetworkStrategy( final
@@ -127,7 +126,6 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                    )
     );
   seda::Stage::Ptr net_stage (seda::Stage::Ptr (new seda::Stage (net)));
-  net_stage->start();
 
   net->perform (seda::IEvent::Ptr(new sdpa::events::ErrorEvent( "peer-1"
                                                               , "peer-1"

@@ -68,7 +68,6 @@ SedaStageTest::testSendFoo() {
     seda::Strategy::Ptr counter_shared (counter);
 
     seda::Stage::Ptr stage (seda::Stage::Ptr (new seda::Stage (counter_shared)));
-    stage->start();
 
     for (std::size_t i=0; i < numMsgs; ++i) {
         stage->send(seda::IEvent::Ptr(new dummy_event));
