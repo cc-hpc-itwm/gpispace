@@ -56,14 +56,12 @@ namespace seda {
       void receive_and_perform();
       boost::thread* _event_handler_thread;
 
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
+      mutable boost::mutex _start_stop_mutex;
 
         SEDA_DECLARE_LOGGER();
         EventQueue _queue;
         Strategy::Ptr _strategy;
         std::string _name;
-        mutable mutex_type m_mutex;
     };
 }
 

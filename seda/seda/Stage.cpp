@@ -51,7 +51,7 @@ namespace seda {
 
     void
     Stage::start() {
-      lock_type lock (m_mutex);
+      boost::mutex::scoped_lock _ (_start_stop_mutex);
 
       if (!_event_handler_thread)
       {
@@ -64,7 +64,7 @@ namespace seda {
 
     void
     Stage::stop() {
-      lock_type lock (m_mutex);
+      boost::mutex::scoped_lock _ (_start_stop_mutex);
 
       if (_event_handler_thread)
       {
