@@ -37,10 +37,9 @@ namespace seda {
         { }
 
         void stop() { _stopped = true; }
-        void operator()() { run(); }
-        void run()
+        void operator()()
         {
-          while (!stopped())
+          while (!_stopped)
           {
             _stage->strategy()->perform (_stage->recv());
           }
@@ -48,7 +47,6 @@ namespace seda {
 
     private:
         SEDA_DECLARE_LOGGER();
-        bool stopped() { return _stopped; }
 
         Stage* _stage;
         bool _stopped;
