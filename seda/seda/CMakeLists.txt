@@ -1,7 +1,6 @@
 # -*- mode: cmake; -*-
 set (hdrs
   common.hpp
-  constants.hpp
   DiscardStrategy.hpp
   EventCountStrategy.hpp
   EventQueue.hpp
@@ -19,7 +18,6 @@ set (hdrs
 )
 
 set (srcs
-  constants.cpp
   ForwardStrategy.cpp
   Stage.cpp
   StageRegistry.cpp
