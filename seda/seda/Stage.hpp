@@ -51,14 +51,8 @@ namespace seda {
 
         virtual const std::string& name() const { return _name; }
 
-        virtual Strategy::Ptr strategy() { return _strategy; }
-        virtual const Strategy::Ptr strategy() const { return _strategy; }
-
         virtual void send(const IEvent::Ptr& e) {
             _queue.push(e);
-        }
-        virtual IEvent::Ptr recv() {
-            return _queue.pop();
         }
 
     private:

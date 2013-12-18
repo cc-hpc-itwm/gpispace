@@ -32,7 +32,7 @@ namespace seda {
   {
     while (true)
     {
-      strategy()->perform (recv());
+      _strategy->perform (_queue.pop());
     }
   }
 
