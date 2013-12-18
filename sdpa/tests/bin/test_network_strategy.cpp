@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                  )
                );
 
-  ecs->wait (1, 1000);
+  ecs->wait (1);
 
   BOOST_CHECK_EQUAL (1u, ecs->count());
 
