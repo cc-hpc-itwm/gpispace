@@ -244,9 +244,9 @@ namespace sdpa {
       sdpa::subscriber_map_t m_listSubscribers;
 
     private:
-      seda::Stage::Ptr ptr_daemon_stage_;
+      boost::shared_ptr<seda::Stage> ptr_daemon_stage_;
       sdpa::com::NetworkStrategy::ptr_t _network_strategy;
-      seda::Stage::Ptr _network_stage;
+      boost::shared_ptr<seda::Stage> _network_stage;
 
     protected:
       JobManager _job_manager;
