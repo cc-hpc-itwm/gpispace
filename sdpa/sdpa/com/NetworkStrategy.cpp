@@ -24,6 +24,7 @@ namespace sdpa
                                      , fhg::com::port_t const & port
                                      )
       : seda::Strategy ("network_stage_with_fallback_to" + fallback_stage->name())
+      , SDPA_INIT_LOGGER ("NetworkStrategy " + peer_name)
       , _fallback_stage (fallback_stage)
       , m_name (peer_name)
       , m_host (host)

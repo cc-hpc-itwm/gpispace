@@ -1,6 +1,8 @@
 #ifndef SDPA_COM_NETWORK_STRATEGY_HPP
 #define SDPA_COM_NETWORK_STRATEGY_HPP 1
 
+#include <sdpa/logging.hpp>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
@@ -31,6 +33,8 @@ namespace sdpa
     private:
       void handle_send (seda::IEvent::Ptr const & e, boost::system::error_code const & ec);
       void handle_recv (boost::system::error_code const & ec);
+
+      SDPA_DECLARE_LOGGER();
 
       seda::Stage::Ptr _fallback_stage;
 
