@@ -55,10 +55,10 @@ namespace seda {
         virtual const Strategy::Ptr strategy() const { return _strategy; }
 
         virtual void send(const IEvent::Ptr& e) {
-            _queue->push(e);
+            _queue.push(e);
         }
         virtual IEvent::Ptr recv() {
-            return _queue->pop();
+            return _queue.pop();
         }
 
     private:
@@ -66,7 +66,7 @@ namespace seda {
         typedef boost::unique_lock<mutex_type> lock_type;
 
         SEDA_DECLARE_LOGGER();
-        EventQueue::Ptr _queue;
+        EventQueue _queue;
         Strategy::Ptr _strategy;
         std::string _name;
         std::size_t _maxPoolSize;
