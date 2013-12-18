@@ -2,14 +2,15 @@
 #define SDPA_COM_NETWORK_STRATEGY_HPP 1
 
 #include <sdpa/logging.hpp>
+#include <sdpa/events/SDPAEvent.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
+#include <boost/function.hpp>
 
 #include <fhgcom/peer.hpp>
 
 #include <seda/Strategy.hpp>
-#include <seda/Stage.hpp>
 
 namespace sdpa
 {
@@ -18,7 +19,7 @@ namespace sdpa
     class NetworkStrategy : public seda::Strategy
     {
     public:
-      NetworkStrategy ( seda::Stage* fallback_stage
+      NetworkStrategy ( boost::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
                       , std::string const & peer_name
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
@@ -33,7 +34,7 @@ namespace sdpa
 
       SDPA_DECLARE_LOGGER();
 
-      seda::Stage* _fallback_stage;
+      boost::function<void (sdpa::events::SDPAEvent::Ptr)> _event_handler;
 
       const std::string m_port;
 

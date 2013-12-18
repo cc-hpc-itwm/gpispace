@@ -18,13 +18,13 @@ namespace sdpa
       kill (getpid (), SIGTERM);
     }
 
-    NetworkStrategy::NetworkStrategy ( seda::Stage* fallback_stage
+    NetworkStrategy::NetworkStrategy ( boost::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
       : SDPA_INIT_LOGGER ("NetworkStrategy " + peer_name)
-      , _fallback_stage (fallback_stage)
+      , _event_handler (event_handler)
       , m_peer ( new fhg::com::peer_t ( peer_name
                                       , fhg::com::host_t (host)
                                       , fhg::com::port_t (port)
@@ -82,7 +82,7 @@ namespace sdpa
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                        , sdpa_event->str())
           );
-        _fallback_stage->send (ptrErrEvt);
+        _event_handler (ptrErrEvt);
       }
     }
 
@@ -113,7 +113,7 @@ namespace sdpa
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                        , sdpa_event->str())
           );
-        _fallback_stage->send (ptrErrEvt);
+        _event_handler (ptrErrEvt);
       }
     }
 
@@ -129,7 +129,7 @@ namespace sdpa
           sdpa::events::SDPAEvent::Ptr evt
             (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
           DLOG(TRACE, "received event: " << evt->str());
-          _fallback_stage->send (evt);
+          _event_handler (evt);
         }
         catch (std::exception const & ex)
         {
@@ -150,7 +150,7 @@ namespace sdpa
                                                , boost::lexical_cast<std::string>(ec)
                                                )
                  );
-          _fallback_stage->send (error);
+          _event_handler (error);
           m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
         }
       }
