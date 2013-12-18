@@ -725,7 +725,6 @@ Agent::ptr_t Agent::create ( const std::string& name
                            )
 {
   Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
-  pAgent->setStage();
 
   pAgent->createScheduler();
 

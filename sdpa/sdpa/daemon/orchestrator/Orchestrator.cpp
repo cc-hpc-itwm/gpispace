@@ -407,7 +407,6 @@ Orchestrator::ptr_t Orchestrator::create
   (const std::string& name, const std::string& url)
 {
   Orchestrator::ptr_t pOrch (new Orchestrator (name, url));
-  pOrch->setStage();
 
   pOrch->createScheduler();
 

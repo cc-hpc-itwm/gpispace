@@ -86,6 +86,8 @@ GenericDaemon::GenericDaemon( const std::string name
   {
     DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
   }
+
+  ptr_daemon_stage_ = seda::Stage::Ptr (new seda::Stage (this));
 }
 
 const std::string& GenericDaemon::name() const

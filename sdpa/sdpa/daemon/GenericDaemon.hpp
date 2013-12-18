@@ -121,13 +121,6 @@ namespace sdpa {
 
       SchedulerBase::ptr_t scheduler() const {return ptr_scheduler_;}
     protected:
-
-      // stages
-      void setStage()
-      {
-        ptr_daemon_stage_ = seda::Stage::Ptr (new seda::Stage (this));
-      }
-
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
       void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
