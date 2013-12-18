@@ -411,7 +411,7 @@ Orchestrator::ptr_t Orchestrator::create
 {
   Orchestrator::ptr_t pOrch (new Orchestrator (name, url));
 
-  seda::Stage::Ptr daemon_stage (new seda::Stage (name, pOrch, 1));
+  seda::Stage::Ptr daemon_stage (new seda::Stage (name, pOrch));
   pOrch->setStage (daemon_stage);
   seda::StageRegistry::instance().insert (daemon_stage);
 

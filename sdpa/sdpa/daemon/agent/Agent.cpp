@@ -727,11 +727,7 @@ Agent::ptr_t Agent::create ( const std::string& name
 {
   Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
 
-  seda::Stage::Ptr daemon_stage (new seda::Stage( name
-                                                , pAgent
-                                                , 1
-                                                )
-                                );
+  seda::Stage::Ptr daemon_stage (new seda::Stage (name, pAgent));
 
   pAgent->setStage(daemon_stage);
   seda::StageRegistry::instance().insert(daemon_stage);
