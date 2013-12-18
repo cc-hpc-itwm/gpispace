@@ -36,7 +36,6 @@
 #include <seda/Strategy.hpp>
 
 namespace seda {
-    class StageWorker;
     struct ThreadInfo;
     class Stage {
     private:

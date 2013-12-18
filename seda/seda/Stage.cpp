@@ -22,15 +22,71 @@
 
 #include "Stage.hpp"
 #include "IEvent.hpp"
-#include "StageWorker.hpp"
 #include "EventQueue.hpp"
 #include "StageRegistry.hpp"
 
+#include <csignal>
+#include <pthread.h>
+
+
 namespace seda {
+  namespace
+  {
+    class StageWorker {
+    public:
+        StageWorker(const std::string& id, Stage* s) :
+            SEDA_INIT_LOGGER(id),
+            _stage(s),
+            _busy(false),
+            _stopped(false)
+        { }
+
+        void stop() { _stopped = true; }
+        void operator()() { run(); }
+        void run();
+        bool busy() const { return _busy; }
+
+    private:
+        SEDA_DECLARE_LOGGER();
+        bool stopped() { return _stopped; }
+
+        Stage* _stage;
+        bool _busy;
+        bool _stopped;
+    };
+
+    void StageWorker::run() {
+      sigset_t signals_to_block;
+      sigaddset (&signals_to_block, SIGTERM);
+      sigaddset (&signals_to_block, SIGSEGV);
+      sigaddset (&signals_to_block, SIGHUP);
+      sigaddset (&signals_to_block, SIGPIPE);
+      sigaddset (&signals_to_block, SIGINT);
+      pthread_sigmask (SIG_BLOCK, &signals_to_block, NULL);
+
+        while (!stopped()) {
+            try {
+                IEvent::Ptr e = _stage->recv();
+                _busy = true;
+
+                _stage->strategy()->perform(e);
+
+                _busy = false;
+            } catch (const boost::thread_interrupted &irq) {
+                break;
+            } catch (const std::exception& ex) {
+                SEDA_LOG_ERROR("strategy execution failed: " << ex.what());
+            } catch (...) {
+                SEDA_LOG_ERROR("strategy execution failed: unknown reason");
+            }
+        }
+    }
+  }
+
   struct ThreadInfo
   {
     boost::thread *thread;
-    seda::StageWorker  *worker;
+    StageWorker  *worker;
   };
 
     Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize)
@@ -76,7 +132,7 @@ namespace seda {
                 std::ostringstream sstr;
                 sstr << "seda.stage." << name() << ".worker." << tId;
                 ThreadInfo *i = new ThreadInfo;
-                i->worker = new seda::StageWorker(sstr.str(), this);
+                i->worker = new StageWorker(sstr.str(), this);
                 i->thread = new boost::thread(boost::ref(*i->worker));
                 _threadPool.push_back(i);
             }

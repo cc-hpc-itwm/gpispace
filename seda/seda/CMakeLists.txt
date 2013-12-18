@@ -11,7 +11,6 @@ set (hdrs
   shared_ptr.hpp
   Stage.hpp
   StageRegistry.hpp
-  StageWorker.hpp
   StrategyDecorator.hpp
   Strategy.hpp
 )
@@ -20,7 +19,6 @@ set (srcs
   ForwardStrategy.cpp
   Stage.cpp
   StageRegistry.cpp
-  StageWorker.cpp
   StrategyDecorator.cpp
   )
 
