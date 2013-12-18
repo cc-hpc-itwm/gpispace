@@ -8,7 +8,6 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <seda/Stage.hpp>
-#include <seda/StageFactory.hpp>
 #include <seda/StageRegistry.hpp>
 #include <seda/DiscardStrategy.hpp>
 #include <seda/EventCountStrategy.hpp>
@@ -74,17 +73,25 @@ struct F
   boost::thread *m_thrd;
 };
 
+namespace
+{
+  seda::Stage::Ptr createStage (const std::string &name, seda::Strategy::Ptr strategy)
+  {
+    seda::Stage::Ptr stage (new seda::Stage (name, strategy));
+    seda::StageRegistry::instance().insert (stage);
+    return stage;
+  }
+}
+
 BOOST_FIXTURE_TEST_SUITE( s, F )
 
 BOOST_AUTO_TEST_CASE ( perform_test )
 {
-  seda::StageFactory::Ptr sFactory(new seda::StageFactory());
-
   seda::EventCountStrategy *ecs (0);
   seda::Strategy::Ptr discard (new seda::DiscardStrategy());
   ecs = new seda::EventCountStrategy(discard);
   discard = seda::Strategy::Ptr(ecs);
-  seda::Stage::Ptr final (sFactory->createStage("count", discard));
+  seda::Stage::Ptr final (createStage ("count", discard));
 
   sdpa::com::NetworkStrategy::Ptr net
     (new sdpa::com::NetworkStrategy( "count"
@@ -93,7 +100,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                    , fhg::com::port_t ("0")
                                    )
     );
-  seda::Stage::Ptr net_stage (sFactory->createStage ("net", net));
+  seda::Stage::Ptr net_stage (createStage ("net", net));
 
   seda::StageRegistry::instance().startAll();
 
