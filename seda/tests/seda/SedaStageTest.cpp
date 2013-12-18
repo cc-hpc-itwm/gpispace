@@ -66,10 +66,10 @@ SedaStageTest::testSendFoo() {
 
     wait_for_n_events_strategy counter (numMsgs);
 
-    seda::Stage::Ptr stage (seda::Stage::Ptr (new seda::Stage (&counter)));
+    seda::Stage stage (&counter);
 
     for (std::size_t i=0; i < numMsgs; ++i) {
-        stage->send(seda::IEvent::Ptr(new dummy_event));
+        stage.send(seda::IEvent::Ptr(new dummy_event));
     }
 
     counter.wait();

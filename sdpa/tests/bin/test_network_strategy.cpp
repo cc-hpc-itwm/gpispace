@@ -115,14 +115,14 @@ BOOST_AUTO_TEST_CASE ( perform_test )
 {
   wait_for_n_events_strategy counter (1);
 
-  seda::Stage::Ptr final (seda::Stage::Ptr (new seda::Stage (&counter)));
+  seda::Stage final (&counter);
 
-  sdpa::com::NetworkStrategy net ( final.get()
+  sdpa::com::NetworkStrategy net ( &final
                                  , "peer-1"
                                  , fhg::com::host_t ("localhost")
                                  , fhg::com::port_t ("0")
                                  );
-  seda::Stage::Ptr net_stage (seda::Stage::Ptr (new seda::Stage (&net)));
+  seda::Stage net_stage (&net);
 
   net.perform (seda::IEvent::Ptr(new sdpa::events::ErrorEvent( "peer-1"
                                                               , "peer-1"
