@@ -102,7 +102,8 @@ BOOST_AUTO_TEST_CASE ( perform_test )
     );
   seda::Stage::Ptr net_stage (createStage ("net", net));
 
-  seda::StageRegistry::instance().startAll();
+  final->start();
+  net_stage->start();
 
   net->perform (seda::IEvent::Ptr(new sdpa::events::ErrorEvent( "peer-1"
                                                               , "peer-1"
@@ -116,7 +117,8 @@ BOOST_AUTO_TEST_CASE ( perform_test )
 
   BOOST_CHECK_EQUAL (1u, ecs->count());
 
-  seda::StageRegistry::instance().stopAll();
+  net_stage->stop();
+  final->stop();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
