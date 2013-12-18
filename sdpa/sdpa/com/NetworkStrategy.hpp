@@ -28,7 +28,6 @@ namespace sdpa
 
       void perform (seda::IEvent::Ptr const & to_send);
 
-      void onStageStart();
       void onStageStop();
     private:
       void handle_send (seda::IEvent::Ptr const & e, boost::system::error_code const & ec);
@@ -38,13 +37,12 @@ namespace sdpa
 
       seda::Stage::Ptr _fallback_stage;
 
-      const std::string m_name;
-      const std::string m_host;
       const std::string m_port;
 
       boost::shared_ptr<fhg::com::peer_t> m_peer;
       fhg::com::message_t m_message;
-      boost::shared_ptr<boost::thread> m_thread;
+      boost::thread m_thread;
+
       bool m_shutting_down;
     };
   }

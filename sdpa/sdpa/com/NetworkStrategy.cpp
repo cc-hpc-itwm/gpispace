@@ -25,11 +25,19 @@ namespace sdpa
                                      )
       : SDPA_INIT_LOGGER ("NetworkStrategy " + peer_name)
       , _fallback_stage (fallback_stage)
-      , m_name (peer_name)
-      , m_host (host)
-      , m_port (port)
+      , m_peer ( new fhg::com::peer_t ( peer_name
+                                      , fhg::com::host_t (host)
+                                      , fhg::com::port_t (port)
+                                      )
+               )
+      , m_message()
+      , m_thread (&fhg::com::peer_t::run, m_peer)
       , m_shutting_down (false)
-    {}
+    {
+      m_peer->set_kvs_error_handler (kvs_error_handler);
+      m_peer->start ();
+      m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
+    }
 
     void NetworkStrategy::perform (seda::IEvent::Ptr const & e)
     {
@@ -70,27 +78,12 @@ namespace sdpa
       }
     }
 
-    void NetworkStrategy::onStageStart()
-    {
-      m_shutting_down = false;
-
-      m_peer.reset (new fhg::com::peer_t ( m_name
-                                         , fhg::com::host_t (m_host)
-                                         , fhg::com::port_t (m_port)
-                                         )
-                   );
-      m_thread.reset (new boost::thread(boost::bind(&fhg::com::peer_t::run, m_peer)));
-      m_peer->set_kvs_error_handler (kvs_error_handler);
-      m_peer->start ();
-      m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
-    }
-
     void NetworkStrategy::onStageStop()
     {
       m_shutting_down = true;
 
       m_peer->stop();
-      m_thread->join();
+      m_thread.join();
       m_peer.reset();
 
       _fallback_stage.reset();
