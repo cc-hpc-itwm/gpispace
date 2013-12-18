@@ -46,14 +46,7 @@ namespace seda {
     }
 
     Stage::~Stage() {
-        try {
-            // stop the running threads and delete them
-            stop();
-        } catch (const std::exception& e) {
-            SEDA_LOG_ERROR("stopping failed: " << e.what());
-        } catch (...) {
-            SEDA_LOG_ERROR("stopping failed: unknown reason");
-        }
+      stop();
     }
 
     void
