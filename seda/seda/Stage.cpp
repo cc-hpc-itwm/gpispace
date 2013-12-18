@@ -102,9 +102,4 @@ namespace seda {
 
         _strategy->onStageStop(name());
     }
-
-    void
-    Stage::send(const std::string& stageName, const seda::IEvent::Ptr& e) {
-        StageRegistry::instance().lookup(stageName)->send(e);
-    }
 }

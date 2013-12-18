@@ -58,8 +58,6 @@ namespace seda {
         virtual Strategy::Ptr strategy() { return _strategy; }
         virtual const Strategy::Ptr strategy() const { return _strategy; }
 
-        static void send(const std::string& stageName, const IEvent::Ptr& e);
-
         virtual void send(const IEvent::Ptr& e) {
             _queue->push(e);
         }
