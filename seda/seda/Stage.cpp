@@ -41,8 +41,6 @@ namespace seda {
     {
       boost::mutex::scoped_lock _ (_start_stop_mutex);
 
-      _strategy->onStageStart();
-
       _event_handler_thread =
         new boost::thread (&Stage::receive_and_perform, this);
     }
