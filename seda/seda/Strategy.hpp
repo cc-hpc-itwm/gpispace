@@ -36,7 +36,6 @@ namespace seda {
 
         virtual ~Strategy() {}
         virtual void perform(const IEvent::Ptr&) = 0;
-        virtual void onStageStop()  {}
     };
 }
 
