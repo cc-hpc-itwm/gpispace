@@ -6,6 +6,8 @@
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
+#include <seda/StageRegistry.hpp>
+
 #include <boost/lexical_cast.hpp>
 
 namespace sdpa
@@ -23,7 +25,9 @@ namespace sdpa
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
-      : seda::ForwardStrategy (next_stage)
+      : seda::Strategy ("network_stage_with_fallback_to" + next_stage)
+      , _fallback_stage_name (next_stage)
+      , _fallback_stage()
       , m_name (peer_name)
       , m_host (host)
       , m_port (port)
@@ -65,13 +69,13 @@ namespace sdpa
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                        , sdpa_event->str())
           );
-        seda::ForwardStrategy::perform (ptrErrEvt);
+        _fallback_stage->send (ptrErrEvt);
       }
     }
 
     void NetworkStrategy::onStageStart (std::string const &s)
     {
-      seda::ForwardStrategy::onStageStart (s);
+      _fallback_stage = StageRegistry::instance().lookup (_fallback_stage_name);
 
       m_shutting_down = false;
 
@@ -94,7 +98,7 @@ namespace sdpa
       m_thread->join();
       m_peer.reset();
 
-      seda::ForwardStrategy::onStageStop (s);
+      _fallback_stage.reset();
     }
 
     void NetworkStrategy::handle_send ( seda::IEvent::Ptr const &e
@@ -124,7 +128,7 @@ namespace sdpa
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                        , sdpa_event->str())
           );
-        seda::ForwardStrategy::perform (ptrErrEvt);
+        _fallback_stage->send (ptrErrEvt);
       }
     }
 
@@ -140,7 +144,7 @@ namespace sdpa
           sdpa::events::SDPAEvent::Ptr evt
             (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
           DLOG(TRACE, "received event: " << evt->str());
-          seda::ForwardStrategy::perform (evt);
+          _fallback_stage->send (evt);
         }
         catch (std::exception const & ex)
         {
@@ -161,7 +165,7 @@ namespace sdpa
                                                , boost::lexical_cast<std::string>(ec)
                                                )
                  );
-          seda::ForwardStrategy::perform (error);
+          _fallback_stage->send (error);
           m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
         }
       }

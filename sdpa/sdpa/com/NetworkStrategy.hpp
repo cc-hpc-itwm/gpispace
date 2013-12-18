@@ -4,14 +4,16 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
-#include <seda/ForwardStrategy.hpp>
 #include <fhgcom/peer.hpp>
+
+#include <seda/Strategy.hpp>
+#include <seda/Stage.hpp>
 
 namespace sdpa
 {
   namespace com
   {
-    class NetworkStrategy : public seda::ForwardStrategy
+    class NetworkStrategy : public seda::Strategy
     {
     public:
       typedef boost::shared_ptr<NetworkStrategy> ptr_t;
@@ -29,6 +31,9 @@ namespace sdpa
     private:
       void handle_send (seda::IEvent::Ptr const & e, boost::system::error_code const & ec);
       void handle_recv (boost::system::error_code const & ec);
+
+      std::string _fallback_stage_name;
+      seda::Stage::Ptr _fallback_stage;
 
       const std::string m_name;
       const std::string m_host;
