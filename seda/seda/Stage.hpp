@@ -45,7 +45,7 @@ namespace seda {
     public:
         typedef seda::shared_ptr<Stage> Ptr;
 
-        Stage(const std::string& name, Strategy::Ptr strategy, std::size_t maxPoolSize=1, std::size_t maxQueueSize=SEDA_MAX_QUEUE_SIZE, const std::string& errorHandler="system-event-handler");
+        Stage(const std::string& name, Strategy::Ptr strategy, std::size_t maxPoolSize=1, const std::string& errorHandler="system-event-handler");
         Stage(const std::string& name, IEventQueue::Ptr queue, Strategy::Ptr strategy, std::size_t maxPoolSize=1, const std::string& errorHandler="system-event-handler");
 
         virtual ~Stage();

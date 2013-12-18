@@ -24,5 +24,4 @@
 
 #include <limits>
 namespace seda {
-    std::size_t SEDA_MAX_QUEUE_SIZE = 1024;
 }

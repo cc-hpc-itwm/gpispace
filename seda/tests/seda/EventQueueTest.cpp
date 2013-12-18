@@ -22,7 +22,7 @@ EventQueueTest::EventQueueTest()
 
 void
 EventQueueTest::setUp() {
-  _queue = seda::EventQueue::Ptr(new seda::EventQueue("tests.seda.testqueue", 5));
+  _queue = seda::EventQueue::Ptr(new seda::EventQueue("tests.seda.testqueue"));
 }
 
 void

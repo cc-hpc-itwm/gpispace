@@ -26,7 +26,6 @@
 #include <string>
 
 namespace seda {
-    extern std::size_t SEDA_MAX_QUEUE_SIZE;
 }
 
 #endif // !SEDA_CONSTANTS_HPP

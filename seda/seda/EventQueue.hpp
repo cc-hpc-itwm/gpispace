@@ -42,10 +42,9 @@ namespace seda {
             typedef seda::shared_ptr< EventQueue > Ptr;
 
             explicit
-                EventQueue(const std::string& a_name, std::size_t a_maxQueueSize=SEDA_MAX_QUEUE_SIZE)
+                EventQueue(const std::string& a_name)
                 : SEDA_INIT_LOGGER("seda.queue."+a_name),
-                _name(a_name),
-                _maxQueueSize(a_maxQueueSize) {}
+                _name(a_name) {}
 
             const std::string& name() { return _name; }
 
@@ -63,17 +62,11 @@ namespace seda {
                 } else {
                     _notEmptyCond.notify_one();
                 }
-                _notFullCond.notify_one();
                 return e;
             }
 
             virtual void push(const IEvent::Ptr& e) {
                 boost::unique_lock<boost::mutex> lock(_mtx);
-
-                while (size() >= _maxQueueSize)
-                {
-                  _notFullCond.wait (lock);
-                }
 
                 _list.push_back(e);
                 _notEmptyCond.notify_one();
@@ -130,32 +123,26 @@ namespace seda {
                     _list.pop_front();
                 }
                 _emptyCond.notify_one();
-                _notFullCond.notify_all();
             }
 
             virtual void wakeUpAll() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
                 _notEmptyCond.notify_all();
                 _emptyCond.notify_all();
-                _notFullCond.notify_all();
             }
 
             virtual std::size_t size() const { return _list.size(); }
             bool empty() const { return _list.empty(); }
 
-            std::size_t maxQueueSize() const { return _maxQueueSize; }
-            void maxQueueSize(const std::size_t& max) { _maxQueueSize = max; }
         protected:
             SEDA_DECLARE_LOGGER();
             boost::mutex _mtx;
             boost::condition_variable _emptyCond;
             boost::condition_variable _notEmptyCond;
-            boost::condition_variable _notFullCond;
 
             std::list< IEvent::Ptr > _list;
         private:
             std::string _name;
-            std::size_t _maxQueueSize;
     };
 }
 

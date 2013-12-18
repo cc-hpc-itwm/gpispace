@@ -44,8 +44,6 @@ namespace seda {
 
     virtual std::size_t size() const = 0;
     virtual bool empty() const = 0;
-    virtual std::size_t maxQueueSize() const = 0;
-    virtual void maxQueueSize(const std::size_t& max) = 0;
 
     virtual bool waitUntilEmpty() = 0;
     virtual bool waitUntilEmpty(unsigned long millis) = 0;
