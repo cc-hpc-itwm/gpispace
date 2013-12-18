@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include <seda/Stage.hpp>
-#include <seda/EventQueue.hpp>
 #include <seda/IEvent.hpp>
 #include <seda/StageRegistry.hpp>
 #include <seda/EventCountStrategy.hpp>
