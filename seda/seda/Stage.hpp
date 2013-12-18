@@ -29,7 +29,6 @@
 #include <boost/thread.hpp>
 
 #include <seda/shared_ptr.hpp>
-#include <seda/SedaException.hpp>
 #include <seda/IEvent.hpp>
 #include <seda/Strategy.hpp>
 

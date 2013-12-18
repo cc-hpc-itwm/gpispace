@@ -4,7 +4,6 @@ set (hdrs
   EventCountStrategy.hpp
   IEvent.hpp
   logging.hpp
-  SedaException.hpp
   shared_ptr.hpp
   Stage.hpp
   StrategyDecorator.hpp
