@@ -255,22 +255,16 @@ namespace we
         {
           while (desc.is_alive () && desc.enabled())
           {
-            detail::descriptor & child (do_extract (desc));
-            child.inject_input ();
-
-            switch (child.execute (&exec_policy))
+            try
             {
-            case policy::execution_policy::EXTRACT:
+              detail::descriptor & child (do_extract (desc));
+              child.inject_input ();
               active_nets_.put (child.id ());
-              break;
-            case policy::execution_policy::INJECT:
-              do_inject (child);
-              break;
-            case policy::execution_policy::EXTERNAL:
-              execute_externally (child.id());
-              break;
-            default:
-              throw std::runtime_error ("invalid classification during execution of activity: " + fhg::util::show (child));
+            }
+            catch (std::exception const &ex)
+            {
+              throw std::runtime_error
+                (desc.name () + ": extraction failed: " + ex.what ());
             }
           }
 
