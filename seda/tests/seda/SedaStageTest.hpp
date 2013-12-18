@@ -11,7 +11,6 @@ namespace seda {
       //      CPPUNIT_TEST_EXCEPTION( testStart_illegal_URI_Throws, cms::CMSException );
       CPPUNIT_TEST( testSendFoo );
       CPPUNIT_TEST( testStartStop );
-      CPPUNIT_TEST( testForwardEvents );
       //      CPPUNIT_TEST( testSendReply );
       //      CPPUNIT_TEST_EXCEPTION( testStart_Timeout_Throws, cms::CMSException );
       CPPUNIT_TEST_SUITE_END();
@@ -27,7 +26,6 @@ namespace seda {
     protected:
       void testSendFoo();
       void testStartStop();
-      void testForwardEvents();
     };
   }
 }

@@ -8,7 +8,6 @@
 #include <seda/StageRegistry.hpp>
 #include <seda/EventCountStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
-#include <seda/ForwardStrategy.hpp>
 
 using namespace seda::tests;
 
@@ -90,28 +89,4 @@ SedaStageTest::testStartStop() {
     CPPUNIT_ASSERT_EQUAL(numMsgs, ecs->count());
 
     stage->stop();
-}
-
-void
-SedaStageTest::testForwardEvents() {
-    seda::Strategy::Ptr discard(new seda::DiscardStrategy());
-    seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
-    discard = seda::Strategy::Ptr(ecs);
-    seda::Stage::Ptr final(createStage("final", discard));
-
-    seda::Strategy::Ptr fwdStrategy(new seda::ForwardStrategy("final"));
-    seda::Stage::Ptr first(createStage("first", fwdStrategy));
-
-    seda::StageRegistry::instance().startAll();
-
-    const std::size_t numMsgs(5);
-    for (std::size_t i=0; i < numMsgs; ++i) {
-        first->send(seda::IEvent::Ptr(new dummy_event));
-    }
-
-    ecs->wait(numMsgs);
-
-    CPPUNIT_ASSERT_EQUAL(numMsgs, ecs->count());
-
-    seda::StageRegistry::instance().stopAll();
 }

@@ -2,7 +2,6 @@
 set (hdrs
   DiscardStrategy.hpp
   EventCountStrategy.hpp
-  ForwardStrategy.hpp
   IEvent.hpp
   logging.hpp
   SedaException.hpp
@@ -14,7 +13,6 @@ set (hdrs
 )
 
 set (srcs
-  ForwardStrategy.cpp
   Stage.cpp
   StageRegistry.cpp
   StrategyDecorator.cpp
