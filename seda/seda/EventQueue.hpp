@@ -46,7 +46,7 @@ namespace seda {
 
             const std::string& name() { return _name; }
 
-            virtual IEvent::Ptr pop() {
+            IEvent::Ptr pop() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
 
                 while (empty()) {
@@ -63,14 +63,14 @@ namespace seda {
                 return e;
             }
 
-            virtual void push(const IEvent::Ptr& e) {
+            void push(const IEvent::Ptr& e) {
                 boost::unique_lock<boost::mutex> lock(_mtx);
 
                 _list.push_back(e);
                 _notEmptyCond.notify_one();
             }
 
-            virtual bool waitUntilEmpty() {
+            bool waitUntilEmpty() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
                 while (! empty()) {
                     _emptyCond.wait(lock);
@@ -78,7 +78,7 @@ namespace seda {
                 return true;
             }
 
-            virtual bool waitUntilEmpty(unsigned long millis) {
+            bool waitUntilEmpty(unsigned long millis) {
                 boost::unique_lock<boost::mutex> lock(_mtx);
 
                 while (! empty()) {
@@ -90,7 +90,7 @@ namespace seda {
                 return true;
             }
 
-            virtual bool waitUntilNotEmpty() {
+            bool waitUntilNotEmpty() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
                 while (empty()) {
                     _notEmptyCond.wait(lock);
@@ -98,7 +98,7 @@ namespace seda {
                 return true;
             }
 
-            virtual bool waitUntilNotEmpty(unsigned long millis) {
+            bool waitUntilNotEmpty(unsigned long millis) {
                 boost::unique_lock<boost::mutex> lock(_mtx);
 
                 while (empty()) {
@@ -114,7 +114,7 @@ namespace seda {
              * Removes all elements from the queue.
              * Warning: elements will be deleted!
              */
-            virtual void clear() {
+            void clear() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
                 while (!empty()) {
                     IEvent::Ptr e = _list.front();
@@ -123,13 +123,13 @@ namespace seda {
                 _emptyCond.notify_one();
             }
 
-            virtual void wakeUpAll() {
+            void wakeUpAll() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
                 _notEmptyCond.notify_all();
                 _emptyCond.notify_all();
             }
 
-            virtual std::size_t size() const { return _list.size(); }
+            std::size_t size() const { return _list.size(); }
             bool empty() const { return _list.empty(); }
 
         protected:
