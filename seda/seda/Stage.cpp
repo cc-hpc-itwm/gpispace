@@ -94,7 +94,6 @@ namespace seda {
             (*it)->worker->stop(); // signal threads to stop
             (*it)->thread->interrupt();
         }
-//        _queue->wakeUpAll(); // release blocked threads
 
         while (!_threadPool.empty()) {
             ThreadInfo *i(_threadPool.front()); _threadPool.pop_front();

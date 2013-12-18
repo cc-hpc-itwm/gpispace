@@ -71,11 +71,6 @@ namespace seda {
                 }
             }
 
-            void wakeUpAll() {
-                boost::unique_lock<boost::mutex> lock(_mtx);
-                _notEmptyCond.notify_all();
-            }
-
             std::size_t size() const { return _list.size(); }
             bool empty() const { return _list.empty(); }
 
