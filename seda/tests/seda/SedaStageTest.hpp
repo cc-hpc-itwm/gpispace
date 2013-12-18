@@ -1,7 +1,7 @@
 #ifndef SEDA_TESTS_STAGE_TEST_HPP
 #define SEDA_TESTS_STAGE_TEST_HPP 1
 
-#include <seda/common.hpp>
+#include <seda/logging.hpp>
 #include <cppunit/extensions/HelperMacros.h>
 
 namespace seda {

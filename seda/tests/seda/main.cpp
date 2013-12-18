@@ -1,4 +1,4 @@
-#include <seda/common.hpp>
+#include <seda/logging.hpp>
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>

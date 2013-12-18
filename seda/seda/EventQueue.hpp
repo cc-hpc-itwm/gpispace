@@ -28,7 +28,6 @@
 
 #include <boost/thread.hpp>
 
-#include <seda/common.hpp>
 #include <seda/shared_ptr.hpp>
 #include <seda/IEvent.hpp>
 

@@ -23,7 +23,7 @@
 #ifndef SEDA_STRATEGY_HPP
 #define SEDA_STRATEGY_HPP 1
 
-#include <seda/common.hpp>
+#include <seda/logging.hpp>
 #include <seda/shared_ptr.hpp>
 
 #include <seda/IEvent.hpp>
