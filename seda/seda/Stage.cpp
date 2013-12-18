@@ -35,13 +35,6 @@ namespace seda {
     }
   }
 
-    Stage::Stage(Strategy* a_strategy)
-        : _queue()
-        , _strategy (boost::bind (&Strategy::perform, a_strategy, _1))
-        , _event_handler_thread
-          (new boost::thread (&Stage::receive_and_perform, this))
-    {}
-
     Stage::Stage (boost::function<void (const IEvent::Ptr&)> strategy)
         : _queue()
         , _strategy (strategy)

@@ -37,7 +37,6 @@
 namespace seda {
     class Stage {
     public:
-      Stage (Strategy* strategy);
       Stage (boost::function<void (const IEvent::Ptr&)> strategy);
 
         virtual ~Stage();
