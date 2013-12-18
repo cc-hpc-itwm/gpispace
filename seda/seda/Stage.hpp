@@ -53,7 +53,7 @@ namespace seda {
       void receive_and_perform();
       boost::thread* _event_handler_thread;
 
-      mutable boost::mutex _start_stop_mutex;
+      mutable boost::mutex _stop_mutex;
 
       fhg::thread::queue<IEvent::Ptr> _queue;
 
