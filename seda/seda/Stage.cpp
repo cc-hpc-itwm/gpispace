@@ -76,7 +76,10 @@ namespace seda {
       if (_event_handler_thread)
       {
         _event_handler_thread->interrupt();
-        _event_handler_thread->join();
+        if (_event_handler_thread->joinable())
+        {
+          _event_handler_thread->join();
+        }
         delete _event_handler_thread;
         _event_handler_thread = NULL;
 
