@@ -33,12 +33,11 @@ namespace seda {
     seda::StageWorker  *worker;
   };
 
-    Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize, const std::string& a_errorHandler)
+    Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize)
         : SEDA_INIT_LOGGER("seda.stage."+a_name),
           _queue(new EventQueue),
           _strategy(a_strategy),
           _name(a_name),
-          _error_handler(a_errorHandler),
           _maxPoolSize(a_maxPoolSize)
     {
     }

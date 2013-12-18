@@ -44,7 +44,7 @@ namespace seda {
     public:
         typedef seda::shared_ptr<Stage> Ptr;
 
-        Stage(const std::string& name, Strategy::Ptr strategy, std::size_t maxPoolSize=1, const std::string& errorHandler="system-event-handler");
+        Stage(const std::string& name, Strategy::Ptr strategy, std::size_t maxPoolSize=1);
 
         virtual ~Stage();
 
@@ -73,8 +73,6 @@ namespace seda {
             return _queue->pop();
         }
 
-        void setErrorHandler(const std::string& eh) { _error_handler = eh; }
-        const std::string& getErrorHandler() const { return _error_handler; }
     private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -83,7 +81,6 @@ namespace seda {
         EventQueue::Ptr _queue;
         Strategy::Ptr _strategy;
         std::string _name;
-        std::string _error_handler;
         std::size_t _maxPoolSize;
         ThreadPool _threadPool;
         mutable mutex_type m_mutex;
