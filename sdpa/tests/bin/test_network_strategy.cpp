@@ -116,8 +116,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
   wait_for_n_events_strategy* counter (new wait_for_n_events_strategy (1));
   seda::Strategy::Ptr counter_shared (counter);
 
-  seda::Stage::Ptr final
-    (seda::Stage::Ptr (new seda::Stage ("count", counter_shared)));
+  seda::Stage::Ptr final (seda::Stage::Ptr (new seda::Stage (counter_shared)));
 
   sdpa::com::NetworkStrategy::Ptr net
     (new sdpa::com::NetworkStrategy( final
@@ -126,7 +125,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                    , fhg::com::port_t ("0")
                                    )
     );
-  seda::Stage::Ptr net_stage (seda::Stage::Ptr (new seda::Stage ("net", net)));
+  seda::Stage::Ptr net_stage (seda::Stage::Ptr (new seda::Stage (net)));
 
   final->start();
   net_stage->start();

@@ -67,8 +67,7 @@ SedaStageTest::testSendFoo() {
     wait_for_n_events_strategy* counter (new wait_for_n_events_strategy (numMsgs));
     seda::Strategy::Ptr counter_shared (counter);
 
-    seda::Stage::Ptr stage
-      (seda::Stage::Ptr (new seda::Stage ("discard", counter_shared)));
+    seda::Stage::Ptr stage (seda::Stage::Ptr (new seda::Stage (counter_shared)));
 
     stage->start();
 

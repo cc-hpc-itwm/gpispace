@@ -251,8 +251,6 @@ namespace sdpa {
 
     private:
       seda::Stage::Ptr ptr_daemon_stage_;
-      std::string m_to_master_stage_name_;
-      std::string m_to_slave_stage_name_;
       seda::Stage::Ptr ptr_to_master_stage_;
       seda::Stage::Ptr ptr_to_slave_stage_;
 

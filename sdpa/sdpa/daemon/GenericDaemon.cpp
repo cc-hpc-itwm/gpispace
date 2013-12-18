@@ -56,9 +56,6 @@ GenericDaemon::GenericDaemon( const std::string name
   : SDPA_INIT_LOGGER(name)
   , _name (name)
   , m_arrMasterInfo(arrMasterInfo),
-    m_to_master_stage_name_(name+".net"),
-    m_to_slave_stage_name_ (name+".net"),
-
     _job_manager(),
     ptr_scheduler_(),
     ptr_workflow_engine_ ( create_wfe
@@ -122,8 +119,7 @@ void GenericDaemon::start_agent()
                                      )
     );
 
-  seda::Stage::Ptr network_stage
-    (new seda::Stage (m_to_master_stage_name_, net));
+  seda::Stage::Ptr network_stage (new seda::Stage (net));
 
   ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 

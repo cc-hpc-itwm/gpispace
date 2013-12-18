@@ -34,11 +34,10 @@ namespace seda {
     }
   }
 
-    Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy)
+    Stage::Stage(Strategy::Ptr a_strategy)
         : _event_handler_thread (NULL)
         , _queue()
         , _strategy(a_strategy)
-        , _name(a_name)
     {
     }
 

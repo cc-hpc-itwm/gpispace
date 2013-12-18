@@ -39,14 +39,12 @@ namespace seda {
     public:
         typedef seda::shared_ptr<Stage> Ptr;
 
-        Stage(const std::string& name, Strategy::Ptr strategy);
+        Stage(Strategy::Ptr strategy);
 
         virtual ~Stage();
 
         virtual void start();
         virtual void stop();
-
-        virtual const std::string& name() const { return _name; }
 
         virtual void send(const IEvent::Ptr& e) {
             _queue.put (e);
@@ -61,7 +59,6 @@ namespace seda {
       fhg::thread::queue<IEvent::Ptr> _queue;
 
         Strategy::Ptr _strategy;
-        std::string _name;
     };
 }
 
