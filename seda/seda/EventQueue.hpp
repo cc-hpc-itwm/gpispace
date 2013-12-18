@@ -61,46 +61,6 @@ namespace seda {
                 _notEmptyCond.notify_one();
             }
 
-            bool waitUntilEmpty() {
-                boost::unique_lock<boost::mutex> lock(_mtx);
-                while (! empty()) {
-                    _emptyCond.wait(lock);
-                }
-                return true;
-            }
-
-            bool waitUntilEmpty(unsigned long millis) {
-                boost::unique_lock<boost::mutex> lock(_mtx);
-
-                while (! empty()) {
-                    boost::system_time const timeout=boost::get_system_time() + boost::posix_time::milliseconds(millis);
-                    if (!_emptyCond.timed_wait(lock, timeout)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            bool waitUntilNotEmpty() {
-                boost::unique_lock<boost::mutex> lock(_mtx);
-                while (empty()) {
-                    _notEmptyCond.wait(lock);
-                }
-                return true;
-            }
-
-            bool waitUntilNotEmpty(unsigned long millis) {
-                boost::unique_lock<boost::mutex> lock(_mtx);
-
-                while (empty()) {
-                    boost::system_time const timeout=boost::get_system_time() + boost::posix_time::milliseconds(millis);
-                    if (!_notEmptyCond.timed_wait(lock, timeout)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
             /**
              * Removes all elements from the queue.
              * Warning: elements will be deleted!
