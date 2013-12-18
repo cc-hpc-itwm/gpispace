@@ -50,14 +50,14 @@ namespace seda {
         }
 
     private:
-      void receive_and_perform();
-      boost::thread* _event_handler_thread;
-
       mutable boost::mutex _stop_mutex;
 
       fhg::thread::queue<IEvent::Ptr> _queue;
 
         Strategy::Ptr _strategy;
+
+      void receive_and_perform();
+      boost::thread* _event_handler_thread;
     };
 }
 

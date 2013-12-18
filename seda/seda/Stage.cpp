@@ -35,9 +35,9 @@ namespace seda {
   }
 
     Stage::Stage(Strategy::Ptr a_strategy)
-        : _event_handler_thread (NULL)
-        , _queue()
+        : _queue()
         , _strategy(a_strategy)
+        , _event_handler_thread (NULL)
     {
       _event_handler_thread =
         new boost::thread (&Stage::receive_and_perform, this);
