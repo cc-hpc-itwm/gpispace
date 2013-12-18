@@ -55,10 +55,10 @@ namespace seda {
 
         try {
             /* log input queue if not empty */
-            if (!queue()->empty()) {
+            if (!_queue->empty()) {
                 DMLOG (TRACE, "cleaning up input queue");
-                while (!queue()->empty()) {
-                    IEvent::Ptr e(queue()->pop());
+                while (!_queue->empty()) {
+                    IEvent::Ptr e(_queue->pop());
                     DMLOG (TRACE, "removed incoming event: " << e->str());
                 }
                 DMLOG (TRACE, "done");
@@ -95,7 +95,7 @@ namespace seda {
             (*it)->worker->stop(); // signal threads to stop
             (*it)->thread->interrupt();
         }
-//        queue()->wakeUpAll(); // release blocked threads
+//        _queue->wakeUpAll(); // release blocked threads
 
         while (!_threadPool.empty()) {
             ThreadInfo *i(_threadPool.front()); _threadPool.pop_front();

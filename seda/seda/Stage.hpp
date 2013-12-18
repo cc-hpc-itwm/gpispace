@@ -51,13 +51,13 @@ namespace seda {
         virtual void start();
         virtual void stop();
 
-        virtual bool empty() const { return queue()->empty(); }
-        virtual std::size_t size() const { return queue()->size(); }
-        virtual void waitUntilEmpty() const { queue()->waitUntilEmpty(); }
-        virtual void waitUntilEmpty(unsigned long millis) { queue()->waitUntilEmpty(millis); }
+        virtual bool empty() const { return _queue->empty(); }
+        virtual std::size_t size() const { return _queue->size(); }
+        virtual void waitUntilEmpty() const { _queue->waitUntilEmpty(); }
+        virtual void waitUntilEmpty(unsigned long millis) { _queue->waitUntilEmpty(millis); }
 
-        virtual void waitUntilNonEmpty() const { queue()->waitUntilNotEmpty(); }
-        virtual void waitUntilNonEmpty(unsigned long millis) { queue()->waitUntilNotEmpty(millis); }
+        virtual void waitUntilNonEmpty() const { _queue->waitUntilNotEmpty(); }
+        virtual void waitUntilNonEmpty(unsigned long millis) { _queue->waitUntilNotEmpty(millis); }
 
         virtual const std::string& name() const { return _name; }
 
@@ -67,10 +67,10 @@ namespace seda {
         static void send(const std::string& stageName, const IEvent::Ptr& e);
 
         virtual void send(const IEvent::Ptr& e) {
-            queue()->push(e);
+            _queue->push(e);
         }
         virtual IEvent::Ptr recv() {
-            return queue()->pop();
+            return _queue->pop();
         }
 
         void setErrorHandler(const std::string& eh) { _error_handler = eh; }
@@ -78,9 +78,6 @@ namespace seda {
     private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
-
-        EventQueue::Ptr queue() { return _queue; }
-        const EventQueue::Ptr queue() const { return _queue; }
 
         SEDA_DECLARE_LOGGER();
         EventQueue::Ptr _queue;
