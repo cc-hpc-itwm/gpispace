@@ -2,7 +2,6 @@
 set (hdrs
   IEvent.hpp
   Stage.hpp
-  Strategy.hpp
 )
 
 set (srcs

@@ -30,7 +30,6 @@
 #include <boost/function.hpp>
 
 #include <seda/IEvent.hpp>
-#include <seda/Strategy.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 
