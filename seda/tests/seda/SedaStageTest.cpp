@@ -44,12 +44,6 @@ namespace
 
       CPPUNIT_ASSERT_EQUAL (_counter, _expected);
     }
-    void reset()
-    {
-      boost::mutex::scoped_lock _ (_counter_mutex);
-
-      _counter = 0;
-    }
 
     mutable boost::mutex _counter_mutex;
     mutable boost::condition_variable _expected_count_reached;
@@ -76,35 +70,6 @@ SedaStageTest::testSendFoo() {
     seda::Stage::Ptr stage
       (seda::Stage::Ptr (new seda::Stage ("discard", counter_shared)));
 
-    stage->start();
-
-    for (std::size_t i=0; i < numMsgs; ++i) {
-        stage->send(seda::IEvent::Ptr(new dummy_event));
-    }
-
-    counter->wait();
-}
-
-void
-SedaStageTest::testStartStop() {
-    const std::size_t numMsgs(10);
-
-    wait_for_n_events_strategy* counter (new wait_for_n_events_strategy (numMsgs));
-    seda::Strategy::Ptr counter_shared (counter);
-
-    seda::Stage::Ptr stage
-      (seda::Stage::Ptr (new seda::Stage("discard", counter_shared)));
-
-    stage->start();
-
-    for (std::size_t i=0; i < numMsgs; ++i) {
-        stage->send(seda::IEvent::Ptr(new dummy_event));
-    }
-
-    counter->wait();
-
-    stage->stop();
-    counter->reset();
     stage->start();
 
     for (std::size_t i=0; i < numMsgs; ++i) {
