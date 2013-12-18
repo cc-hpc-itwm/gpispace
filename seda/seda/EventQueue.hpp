@@ -40,13 +40,12 @@ namespace seda {
             IEvent::Ptr pop() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
 
-                while (empty()) {
+                while (_list.empty()) {
                     _notEmptyCond.wait(lock);
                 }
-                assert(! empty());
 
                 IEvent::Ptr e = _list.front(); _list.pop_front();
-                if (!empty()) {
+                if (!_list.empty()) {
                     _notEmptyCond.notify_one();
                 }
                 return e;
@@ -58,21 +57,6 @@ namespace seda {
                 _list.push_back(e);
                 _notEmptyCond.notify_one();
             }
-
-            /**
-             * Removes all elements from the queue.
-             * Warning: elements will be deleted!
-             */
-            void clear() {
-                boost::unique_lock<boost::mutex> lock(_mtx);
-                while (!empty()) {
-                    IEvent::Ptr e = _list.front();
-                    _list.pop_front();
-                }
-            }
-
-            std::size_t size() const { return _list.size(); }
-            bool empty() const { return _list.empty(); }
 
         protected:
             boost::mutex _mtx;
