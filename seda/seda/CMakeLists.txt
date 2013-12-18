@@ -11,7 +11,6 @@ set (hdrs
   logging.hpp
   SedaException.hpp
   shared_ptr.hpp
-  StageFactory.hpp
   Stage.hpp
   StageRegistry.hpp
   StageWorker.hpp
