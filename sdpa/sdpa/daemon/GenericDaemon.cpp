@@ -120,10 +120,9 @@ void GenericDaemon::start_agent()
     );
 
   seda::Stage::Ptr network_stage (new seda::Stage (net));
+  to_master_stage()->start();
 
   ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
-
-  to_master_stage()->start();
 
 
   if (!isTop())
