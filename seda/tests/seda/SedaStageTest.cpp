@@ -16,13 +16,6 @@ namespace
   {
     virtual std::string str() const { return "dummy"; }
   };
-
-  seda::Stage::Ptr createStage
-    (const std::string &name, seda::Strategy::Ptr strategy)
-  {
-    seda::Stage::Ptr stage (new seda::Stage (name, strategy));
-    return stage;
-  }
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SedaStageTest );
@@ -38,7 +31,7 @@ SedaStageTest::testSendFoo() {
     seda::Strategy::Ptr discard(new seda::DiscardStrategy());
     seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
     discard = seda::Strategy::Ptr(ecs);
-    seda::Stage::Ptr stage(createStage("discard", discard));
+    seda::Stage::Ptr stage(seda::Stage::Ptr (new seda::Stage ("discard", discard)));
 
     stage->start();
 
@@ -59,7 +52,7 @@ SedaStageTest::testStartStop() {
     seda::Strategy::Ptr discard(new seda::DiscardStrategy());
     seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
     discard = seda::Strategy::Ptr(ecs);
-    seda::Stage::Ptr stage(createStage("discard", discard));
+    seda::Stage::Ptr stage(seda::Stage::Ptr (new seda::Stage("discard", discard)));
 
     const std::size_t numMsgs(10);
 
