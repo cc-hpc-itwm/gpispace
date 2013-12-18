@@ -37,11 +37,6 @@ namespace seda {
     }
   }
 
-  struct ThreadInfo
-  {
-    boost::thread *thread;
-  };
-
     Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize)
         : SEDA_INIT_LOGGER("seda.stage."+a_name),
           _queue(new EventQueue),
@@ -82,9 +77,8 @@ namespace seda {
 
             // initialize and start worker threads
             for (std::size_t tId = 0; tId < _maxPoolSize; ++tId) {
-                ThreadInfo *i = new ThreadInfo;
-                i->thread = new boost::thread (&receive_and_perform, this);
-                _threadPool.push_back(i);
+                _threadPool.push_back
+                  (new boost::thread (&receive_and_perform, this));
             }
         } // else == noop
     }
@@ -97,14 +91,14 @@ namespace seda {
         }
 
         for (ThreadPool::iterator it(_threadPool.begin()); it != _threadPool.end(); ++it) {
-            (*it)->thread->interrupt();
+            (*it)->interrupt();
         }
 
         while (!_threadPool.empty()) {
-            ThreadInfo *i(_threadPool.front()); _threadPool.pop_front();
+            boost::thread *i(_threadPool.front()); _threadPool.pop_front();
 
-            i->thread->join();
-            delete i->thread;
+            i->join();
+
             delete i;
         }
         _strategy->onStageStop(name());

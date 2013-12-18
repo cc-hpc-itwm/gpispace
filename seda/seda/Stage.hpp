@@ -39,7 +39,7 @@ namespace seda {
     struct ThreadInfo;
     class Stage {
     private:
-      typedef std::list<ThreadInfo*> ThreadPool;
+      typedef std::list<boost::thread*> ThreadPool;
     public:
         typedef seda::shared_ptr<Stage> Ptr;
 
