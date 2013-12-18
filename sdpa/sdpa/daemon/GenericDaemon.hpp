@@ -123,9 +123,9 @@ namespace sdpa {
     protected:
 
       // stages
-      void setStage(const seda::Stage::Ptr& stage)
+      void setStage()
       {
-        ptr_daemon_stage_ = stage;
+        ptr_daemon_stage_ = seda::Stage::Ptr (new seda::Stage (this));
       }
 
       // masters and subscribers
