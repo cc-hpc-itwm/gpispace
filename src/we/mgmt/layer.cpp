@@ -188,20 +188,39 @@ namespace we
 
         detail::descriptor& desc (lookup(active_id));
 
-        if (desc.activity().is_canceling())
-        {
-          if (!desc.has_children())
-          {
-            activity_canceled (active_id);
-          }
-
-          continue;
-        }
-
-        //! \todo: check status flags
         if (! desc.is_alive ())
         {
-          DMLOG (DEBUG, "activity (" << desc.name() << ")-" << active_id << " is on hold");
+          if (desc.activity ().is_failed ())
+          {
+            activity_failed (desc.id ());
+          }
+          else if (desc.activity().is_canceling() || desc.activity ().is_canceled ())
+          {
+            if (!desc.has_children())
+            {
+              activity_canceled (desc.id ());
+            }
+          }
+          else if (desc.activity ().is_canceled ())
+          {
+            activity_canceled (desc.id ());
+          }
+          else if (desc.activity ().is_finished ())
+          {
+            do_inject (desc);
+          }
+          else if (desc.activity ().is_suspended ())
+          {
+            // nothing to do
+          }
+          else
+          {
+            throw std::runtime_error
+              ( desc.name ()
+              + " is not alive but neither finished, nor failed nor canceled nor suspended"
+              );
+          }
+
           continue;
         }
 
