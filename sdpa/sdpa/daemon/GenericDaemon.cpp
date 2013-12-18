@@ -119,11 +119,8 @@ void GenericDaemon::start_agent()
                                      )
     );
 
-  seda::Stage::Ptr network_stage (new seda::Stage (net));
-  to_master_stage()->start();
-
-  ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
-
+  _network_stage = seda::Stage::Ptr (new seda::Stage (net));
+  _network_stage->start();
 
   if (!isTop())
   {
@@ -157,7 +154,7 @@ void GenericDaemon::shutdown( )
     }
   }
 
-  ptr_to_master_stage_->stop();
+  _network_stage->stop();
   ptr_daemon_stage_->stop();
 
   ptr_scheduler_.reset();
@@ -959,13 +956,13 @@ void GenericDaemon::sendEventToSelf(const events::SDPAEvent::Ptr& pEvt)
 
 void GenericDaemon::sendEventToMaster(const events::SDPAEvent::Ptr& pEvt)
 {
-  to_master_stage()->send(pEvt);
+  _network_stage->send(pEvt);
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
 void GenericDaemon::sendEventToSlave(const events::SDPAEvent::Ptr& pEvt)
 {
-  to_slave_stage()->send(pEvt);
+  _network_stage->send(pEvt);
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
