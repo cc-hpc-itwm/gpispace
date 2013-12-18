@@ -7,14 +7,12 @@ set (hdrs
   SedaException.hpp
   shared_ptr.hpp
   Stage.hpp
-  StageRegistry.hpp
   StrategyDecorator.hpp
   Strategy.hpp
 )
 
 set (srcs
   Stage.cpp
-  StageRegistry.cpp
   StrategyDecorator.cpp
   )
 

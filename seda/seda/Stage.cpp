@@ -22,7 +22,6 @@
 
 #include "Stage.hpp"
 #include "IEvent.hpp"
-#include "StageRegistry.hpp"
 
 #include <boost/foreach.hpp>
 
