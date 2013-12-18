@@ -368,6 +368,7 @@ namespace we
       DMLOG ( WARN
             , "failed (" << desc.name() << ")-" << desc.id() << " : "
             << desc.error_message ()
+            << ": " << std::endl << desc
             );
 
       if (desc.has_children())
@@ -425,14 +426,21 @@ namespace we
 
       if (desc.has_parent ())
       {
-        DLOG ( INFO, "activity "
-             << desc.name ()
-             << " canceled and has a parent: reason := "
+        DLOG ( TRACE, "activity canceled: "
+             << std::endl
+             << desc
+             << std::endl
+             << " error-code := "
+             << desc.error_code ()
+             << " error-message := "
              << desc.error_message ()
+             << ": informing parent"
              );
 
         detail::descriptor& parent (lookup (desc.parent()));
         parent.child_canceled (desc, desc.error_code (), desc.error_message ());
+
+        DLOG ( TRACE, "parent is: " << std::endl << parent);
 
         if (! parent.has_children () && not parent.activity ().is_failed ())
         {
@@ -475,9 +483,9 @@ namespace we
     {
       lock_t const _ (mutex_);
 
-      DMLOG (WARN, "cancel_activity(" << internal_id << ")");
-
       detail::descriptor& desc (lookup(internal_id));
+
+      DMLOG (WARN, "cancel_activity(" << internal_id << "): " << std::endl << desc);
 
       if (desc.activity ().is_canceling ())
         return;
