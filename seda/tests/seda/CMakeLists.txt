@@ -1,7 +1,6 @@
 # -*- mode: cmake; -*-
 
 set(sedatest_src main.cpp
-   EventQueueTest.cpp EventQueueTest.hpp
    SedaStageTest.cpp  SedaStageTest.hpp
 )
 
