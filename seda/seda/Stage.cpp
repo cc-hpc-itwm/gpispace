@@ -28,6 +28,14 @@
 namespace seda {
   namespace
   {
+    void receive_and_perform (Stage* stage, bool* stop)
+    {
+      while (!*stop)
+      {
+        stage->strategy()->perform (stage->recv());
+      }
+    }
+
     class StageWorker {
     public:
         StageWorker(Stage* s) :
@@ -38,10 +46,7 @@ namespace seda {
         void stop() { _stopped = true; }
         void operator()()
         {
-          while (!_stopped)
-          {
-            _stage->strategy()->perform (_stage->recv());
-          }
+          receive_and_perform (_stage, &stop);
         }
 
     private:
