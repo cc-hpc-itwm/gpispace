@@ -110,9 +110,9 @@ macro(PNET_COMPILE)
     # well, ninja for example doesn't know about $(MAKE) (and wants it quoted
     # as $$(MAKE) anyways)
     add_custom_target(pnet-${PNET_NAME}-build
-      "${_make_cmd}" -C ${PNET_GENERATE} "BOOST_ROOT=${BOOST_ROOT}" "SDPA_INCLUDE=${CMAKE_SOURCE_DIR}/src/"
+      "${_make_cmd}" -C ${PNET_GENERATE} "BOOST_ROOT=${BOOST_ROOT}" "SDPA_INCLUDE=${CMAKE_SOURCE_DIR}/src/" "SDPA_LDPATH=${CMAKE_BINARY_DIR}/src/we"
       COMMENT "Building modules for petri-net ${PNET_NAME}"
-      DEPENDS pnet-${PNET_NAME}-gen
+      DEPENDS pnet-${PNET_NAME}-gen we-dev
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       )
     add_dependencies(pnet-${PNET_NAME} pnet-${PNET_NAME}-build)
