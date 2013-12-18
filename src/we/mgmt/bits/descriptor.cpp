@@ -242,6 +242,13 @@ namespace we
             activity_.set_failed (true);
           }
         }
+        else
+        {
+          if (not activity_.is_canceling ())
+          {
+            activity_.set_failed (true);
+          }
+        }
       }
 
       void descriptor::child_canceled ( descriptor const& child
