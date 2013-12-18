@@ -110,8 +110,8 @@ void GenericDaemon::start_agent()
     throw std::runtime_error ("configuration of network failed: invalid url");
   }
 
-   _network_strategy = sdpa::com::NetworkStrategy::ptr_t
-     ( new sdpa::com::NetworkStrategy ( ptr_daemon_stage_.get() /*fallback stage = agent*/
+  _network_strategy = boost::shared_ptr<sdpa::com::NetworkStrategy>
+    ( new sdpa::com::NetworkStrategy ( ptr_daemon_stage_.get() /*fallback stage = agent*/
                                      , name() /*name for peer*/
                                      , fhg::com::host_t (vec[0])
                                      , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")

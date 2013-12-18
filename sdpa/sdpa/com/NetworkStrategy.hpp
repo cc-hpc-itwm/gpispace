@@ -18,8 +18,6 @@ namespace sdpa
     class NetworkStrategy : public seda::Strategy
     {
     public:
-      typedef boost::shared_ptr<NetworkStrategy> ptr_t;
-
       NetworkStrategy ( seda::Stage* fallback_stage
                       , std::string const & peer_name
                       , fhg::com::host_t const & host

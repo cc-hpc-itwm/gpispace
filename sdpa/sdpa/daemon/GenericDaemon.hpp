@@ -245,7 +245,7 @@ namespace sdpa {
 
     private:
       boost::shared_ptr<seda::Stage> ptr_daemon_stage_;
-      sdpa::com::NetworkStrategy::ptr_t _network_strategy;
+      boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
       boost::shared_ptr<seda::Stage> _network_stage;
 
     protected:
