@@ -1,3 +1,4 @@
+#include <sysexits.h>
 
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
@@ -502,5 +503,5 @@ try
 catch (const std::exception& e)
 {
   std::cerr << e.what() << std::endl;
-  return EXIT_FAILURE;
+  return EX_SOFTWARE;
 }
