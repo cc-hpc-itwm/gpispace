@@ -42,7 +42,7 @@ namespace seda {
     public:
         typedef seda::shared_ptr<Stage> Ptr;
 
-        Stage(const std::string& name, Strategy::Ptr strategy, std::size_t maxPoolSize=1);
+        Stage(const std::string& name, Strategy::Ptr strategy);
 
         virtual ~Stage();
 
@@ -65,7 +65,6 @@ namespace seda {
         EventQueue _queue;
         Strategy::Ptr _strategy;
         std::string _name;
-        std::size_t _maxPoolSize;
         ThreadPool _threadPool;
         mutable mutex_type m_mutex;
     };

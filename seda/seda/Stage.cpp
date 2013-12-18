@@ -36,12 +36,11 @@ namespace seda {
     }
   }
 
-    Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize)
+    Stage::Stage(const std::string& a_name, Strategy::Ptr a_strategy)
         : SEDA_INIT_LOGGER("seda.stage."+a_name),
           _queue(),
           _strategy(a_strategy),
-          _name(a_name),
-          _maxPoolSize(a_maxPoolSize)
+          _name(a_name)
     {
     }
 
@@ -63,7 +62,7 @@ namespace seda {
             _strategy->onStageStart(name());
 
             // initialize and start worker threads
-            for (std::size_t tId = 0; tId < _maxPoolSize; ++tId) {
+            for (std::size_t tId = 0; tId < 1; ++tId) {
                 _threadPool.push_back
                   (new boost::thread (&Stage::receive_and_perform, this));
             }
