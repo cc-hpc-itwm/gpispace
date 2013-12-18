@@ -72,7 +72,7 @@ struct F
 
 namespace
 {
-  struct wait_for_n_events_strategy : public seda::Strategy
+  struct wait_for_n_events_strategy
   {
     wait_for_n_events_strategy (unsigned int expected)
       : _counter (0)

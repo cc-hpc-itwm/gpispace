@@ -21,7 +21,6 @@
 #include <fhg/assert.hpp>
 
 #include <seda/Stage.hpp>
-#include <seda/Strategy.hpp>
 
 #include <sdpa/capability.hpp>
 #include <sdpa/logging.hpp>
@@ -67,8 +66,7 @@
 
 namespace sdpa {
   namespace daemon {
-    class GenericDaemon : public seda::Strategy,
-                          public sdpa::events::EventHandler,
+    class GenericDaemon : public sdpa::events::EventHandler,
                           boost::noncopyable
     {
     public:

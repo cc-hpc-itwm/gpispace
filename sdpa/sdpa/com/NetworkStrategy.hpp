@@ -10,13 +10,11 @@
 
 #include <fhgcom/peer.hpp>
 
-#include <seda/Strategy.hpp>
-
 namespace sdpa
 {
   namespace com
   {
-    class NetworkStrategy : public seda::Strategy
+    class NetworkStrategy
     {
     public:
       NetworkStrategy ( boost::function<void (sdpa::events::SDPAEvent::Ptr)> event_handler
