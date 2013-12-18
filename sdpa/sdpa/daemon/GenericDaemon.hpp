@@ -273,8 +273,6 @@ namespace sdpa {
       boost::optional<NotificationService> m_guiService;
 
     private:
-      std::vector<std::string> _stages_to_remove;
-
       unsigned int _max_consecutive_registration_attempts;
       unsigned int _max_consecutive_network_faults;
       boost::posix_time::time_duration _registration_timeout;
