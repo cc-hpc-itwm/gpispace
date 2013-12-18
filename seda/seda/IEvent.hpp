@@ -33,16 +33,8 @@ namespace seda {
         typedef boost::shared_ptr<IEvent> Ptr;
 
         virtual ~IEvent() {}
-        virtual std::string str() const = 0;
-        std::ostream& operator<<(std::ostream& os) {
-            return os << str();
-        }
 
         virtual int priority() const { return 0; }
-
-        /* TODO: introduce timeouts to preserve the ordering of events? */
-    protected:
-        IEvent() {}
     };
 }
 
