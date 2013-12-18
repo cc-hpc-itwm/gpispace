@@ -5,7 +5,6 @@
 
 #include <seda/Stage.hpp>
 #include <seda/IEvent.hpp>
-#include <seda/StageRegistry.hpp>
 #include <seda/EventCountStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
 
@@ -22,7 +21,6 @@ namespace
     (const std::string &name, seda::Strategy::Ptr strategy)
   {
     seda::Stage::Ptr stage (new seda::Stage (name, strategy));
-    seda::StageRegistry::instance().insert (stage);
     return stage;
   }
 }
@@ -33,9 +31,7 @@ void
 SedaStageTest::setUp() {}
 
 void
-SedaStageTest::tearDown() {
-    StageRegistry::instance().clear(); // remove all registered stages
-}
+SedaStageTest::tearDown() {}
 
 void
 SedaStageTest::testSendFoo() {
