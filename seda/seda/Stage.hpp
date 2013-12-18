@@ -58,7 +58,6 @@ namespace seda {
       fhg::thread::queue<IEvent::Ptr> _queue;
 
         Strategy::Ptr _strategy;
-        virtual void start();
     };
 }
 

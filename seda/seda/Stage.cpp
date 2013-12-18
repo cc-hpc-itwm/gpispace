@@ -39,25 +39,18 @@ namespace seda {
         , _queue()
         , _strategy(a_strategy)
     {
-      start();
+      boost::mutex::scoped_lock _ (_start_stop_mutex);
+
+      _strategy->onStageStart();
+
+      _event_handler_thread =
+        new boost::thread (&Stage::receive_and_perform, this);
     }
 
     Stage::~Stage() {
       stop();
     }
 
-    void
-    Stage::start() {
-      boost::mutex::scoped_lock _ (_start_stop_mutex);
-
-      if (!_event_handler_thread)
-      {
-        _strategy->onStageStart();
-
-        _event_handler_thread =
-          new boost::thread (&Stage::receive_and_perform, this);
-      } // else == noop
-    }
 
     void
     Stage::stop() {
