@@ -58,7 +58,6 @@ namespace seda {
 
       mutable boost::mutex _start_stop_mutex;
 
-        SEDA_DECLARE_LOGGER();
         EventQueue _queue;
         Strategy::Ptr _strategy;
         std::string _name;
