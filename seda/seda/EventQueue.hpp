@@ -32,8 +32,6 @@
 #include <seda/shared_ptr.hpp>
 #include <seda/IEvent.hpp>
 
-#define WAIT_INFINITE 0xFFFFffff
-
 namespace seda {
     class EventQueue {
         public:
