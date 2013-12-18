@@ -3,7 +3,6 @@
 #include <string>
 
 #include <seda/EventQueue.hpp>
-#include <seda/UserEvent.hpp>
 
 using namespace seda::tests;
 

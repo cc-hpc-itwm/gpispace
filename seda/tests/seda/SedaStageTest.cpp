@@ -11,7 +11,6 @@
 #include <seda/EventCountStrategy.hpp>
 #include <seda/DiscardStrategy.hpp>
 #include <seda/ForwardStrategy.hpp>
-#include <seda/UserEvent.hpp>
 
 using namespace seda::tests;
 

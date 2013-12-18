@@ -17,7 +17,6 @@ set (hdrs
   StageWorker.hpp
   StrategyDecorator.hpp
   Strategy.hpp
-  UserEvent.hpp
 )
 
 set (srcs
