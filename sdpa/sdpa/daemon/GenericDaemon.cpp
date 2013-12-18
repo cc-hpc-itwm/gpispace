@@ -151,6 +151,8 @@ void GenericDaemon::shutdown( )
     }
   }
 
+  _registration_threads.stop_all();
+
   _network_stage->stop();
   ptr_daemon_stage_->stop();
 
@@ -158,8 +160,6 @@ void GenericDaemon::shutdown( )
 
   delete ptr_workflow_engine_;
   ptr_workflow_engine_ = NULL;
-
-  _registration_threads.stop_all();
 
   ptr_daemon_stage_.reset();
 
