@@ -20,9 +20,9 @@ namespace
   };
 
   seda::Stage::Ptr createStage
-    (const std::string &name, seda::Strategy::Ptr strategy, int pool_size)
+    (const std::string &name, seda::Strategy::Ptr strategy)
   {
-    seda::Stage::Ptr stage (new seda::Stage (name, strategy, pool_size));
+    seda::Stage::Ptr stage (new seda::Stage (name, strategy));
     seda::StageRegistry::instance().insert (stage);
     return stage;
   }
@@ -43,7 +43,7 @@ SedaStageTest::testSendFoo() {
     seda::Strategy::Ptr discard(new seda::DiscardStrategy());
     seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
     discard = seda::Strategy::Ptr(ecs);
-    seda::Stage::Ptr stage(createStage("discard", discard, 2));
+    seda::Stage::Ptr stage(createStage("discard", discard));
 
     stage->start();
 
@@ -64,7 +64,7 @@ SedaStageTest::testStartStop() {
     seda::Strategy::Ptr discard(new seda::DiscardStrategy());
     seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
     discard = seda::Strategy::Ptr(ecs);
-    seda::Stage::Ptr stage(createStage("discard", discard, 2));
+    seda::Stage::Ptr stage(createStage("discard", discard));
 
     const std::size_t numMsgs(10);
 
@@ -97,10 +97,10 @@ SedaStageTest::testForwardEvents() {
     seda::Strategy::Ptr discard(new seda::DiscardStrategy());
     seda::EventCountStrategy::Ptr ecs(new seda::EventCountStrategy(discard));
     discard = seda::Strategy::Ptr(ecs);
-    seda::Stage::Ptr final(createStage("final", discard, 2));
+    seda::Stage::Ptr final(createStage("final", discard));
 
     seda::Strategy::Ptr fwdStrategy(new seda::ForwardStrategy("final"));
-    seda::Stage::Ptr first(createStage("first", fwdStrategy, 1));
+    seda::Stage::Ptr first(createStage("first", fwdStrategy));
 
     seda::StageRegistry::instance().startAll();
 
