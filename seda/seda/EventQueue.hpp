@@ -46,9 +46,7 @@ namespace seda {
                 assert(! empty());
 
                 IEvent::Ptr e = _list.front(); _list.pop_front();
-                if (empty()) {
-                    _emptyCond.notify_one();
-                } else {
+                if (!empty()) {
                     _notEmptyCond.notify_one();
                 }
                 return e;
@@ -71,13 +69,11 @@ namespace seda {
                     IEvent::Ptr e = _list.front();
                     _list.pop_front();
                 }
-                _emptyCond.notify_one();
             }
 
             void wakeUpAll() {
                 boost::unique_lock<boost::mutex> lock(_mtx);
                 _notEmptyCond.notify_all();
-                _emptyCond.notify_all();
             }
 
             std::size_t size() const { return _list.size(); }
@@ -85,7 +81,6 @@ namespace seda {
 
         protected:
             boost::mutex _mtx;
-            boost::condition_variable _emptyCond;
             boost::condition_variable _notEmptyCond;
 
             std::list< IEvent::Ptr > _list;
