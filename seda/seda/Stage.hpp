@@ -31,8 +31,9 @@
 #include <seda/shared_ptr.hpp>
 #include <seda/SedaException.hpp>
 #include <seda/IEvent.hpp>
-#include <seda/EventQueue.hpp>
 #include <seda/Strategy.hpp>
+
+#include <fhg/util/thread/queue.hpp>
 
 namespace seda {
     class Stage {
@@ -49,7 +50,7 @@ namespace seda {
         virtual const std::string& name() const { return _name; }
 
         virtual void send(const IEvent::Ptr& e) {
-            _queue.push(e);
+            _queue.put (e);
         }
 
     private:
@@ -58,7 +59,8 @@ namespace seda {
 
       mutable boost::mutex _start_stop_mutex;
 
-        EventQueue _queue;
+      fhg::thread::queue<IEvent::Ptr> _queue;
+
         Strategy::Ptr _strategy;
         std::string _name;
     };

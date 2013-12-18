@@ -22,7 +22,6 @@
 
 #include "Stage.hpp"
 #include "IEvent.hpp"
-#include "EventQueue.hpp"
 #include "StageRegistry.hpp"
 
 #include <boost/foreach.hpp>
@@ -32,7 +31,7 @@ namespace seda {
   {
     while (true)
     {
-      _strategy->perform (_queue.pop());
+      _strategy->perform (_queue.get());
     }
   }
 
