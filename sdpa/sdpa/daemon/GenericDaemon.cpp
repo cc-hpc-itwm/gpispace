@@ -53,8 +53,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             , const boost::optional<std::string>& guiUrl
                             , bool create_wfe
                             )
-  : Strategy(name)
-  , SDPA_INIT_LOGGER(name)
+  : SDPA_INIT_LOGGER(name)
   , _name (name)
   , m_arrMasterInfo(arrMasterInfo),
     m_to_master_stage_name_(name+".net"),

@@ -18,8 +18,7 @@ namespace
   struct wait_for_n_events_strategy : public seda::Strategy
   {
     wait_for_n_events_strategy (unsigned int expected)
-      : seda::Strategy ("wait_for_n_events")
-      , _counter (0)
+      : _counter (0)
       , _expected (expected)
     {}
 

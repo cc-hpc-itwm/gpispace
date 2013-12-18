@@ -38,14 +38,6 @@ namespace seda {
         virtual void perform(const IEvent::Ptr&) = 0;
         virtual void onStageStart() {}
         virtual void onStageStop()  {}
-
-    protected:
-        explicit
-        Strategy(const std::string& a_name)
-            : _name(a_name)
-        {}
-    private:
-        std::string _name;
     };
 }
 
