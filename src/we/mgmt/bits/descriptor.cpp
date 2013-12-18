@@ -421,7 +421,8 @@ namespace we
       void descriptor::apply_to_children (fun_t f) const
       {
         lock_t lock (mutex_);
-        std::for_each (children_.begin(), children_.end(), f);
+        const children_t children_copy (children_);
+        std::for_each (children_copy.begin(), children_copy.end(), f);
       }
 
       void descriptor::add_child (id_type const& child)
