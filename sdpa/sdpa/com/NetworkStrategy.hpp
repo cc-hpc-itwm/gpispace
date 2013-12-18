@@ -25,10 +25,10 @@ namespace sdpa
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
                       );
+      ~NetworkStrategy();
 
       void perform (seda::IEvent::Ptr const & to_send);
 
-      void onStageStop();
     private:
       void handle_send (seda::IEvent::Ptr const & e, boost::system::error_code const & ec);
       void handle_recv (boost::system::error_code const & ec);

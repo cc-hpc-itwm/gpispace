@@ -39,6 +39,14 @@ namespace sdpa
       m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
     }
 
+    NetworkStrategy::~NetworkStrategy()
+    {
+      m_shutting_down = true;
+
+      m_peer->stop();
+      m_thread.join();
+    }
+
     void NetworkStrategy::perform (seda::IEvent::Ptr const & e)
     {
       static sdpa::events::Codec codec;
@@ -76,17 +84,6 @@ namespace sdpa
           );
         _fallback_stage->send (ptrErrEvt);
       }
-    }
-
-    void NetworkStrategy::onStageStop()
-    {
-      m_shutting_down = true;
-
-      m_peer->stop();
-      m_thread.join();
-      m_peer.reset();
-
-      _fallback_stage.reset();
     }
 
     void NetworkStrategy::handle_send ( seda::IEvent::Ptr const &e
