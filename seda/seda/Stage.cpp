@@ -57,18 +57,6 @@ namespace seda {
         } catch (...) {
             SEDA_LOG_ERROR("stopping failed: unknown reason");
         }
-
-        try {
-            /* log input queue if not empty */
-            if (!_queue->empty()) {
-                DMLOG (TRACE, "cleaning up input queue");
-                while (!_queue->empty()) {
-                    IEvent::Ptr e(_queue->pop());
-                    DMLOG (TRACE, "removed incoming event: " << e->str());
-                }
-                DMLOG (TRACE, "done");
-            }
-        } catch (...) {}
     }
 
     void
