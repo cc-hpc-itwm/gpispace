@@ -30,8 +30,7 @@ namespace seda {
   {
     class StageWorker {
     public:
-        StageWorker(const std::string& id, Stage* s) :
-            SEDA_INIT_LOGGER(id),
+        StageWorker(Stage* s) :
             _stage(s),
             _stopped(false)
         { }
@@ -46,8 +45,6 @@ namespace seda {
         }
 
     private:
-        SEDA_DECLARE_LOGGER();
-
         Stage* _stage;
         bool _stopped;
     };
@@ -99,10 +96,8 @@ namespace seda {
 
             // initialize and start worker threads
             for (std::size_t tId = 0; tId < _maxPoolSize; ++tId) {
-                std::ostringstream sstr;
-                sstr << "seda.stage." << name() << ".worker." << tId;
                 ThreadInfo *i = new ThreadInfo;
-                i->worker = new StageWorker(sstr.str(), this);
+                i->worker = new StageWorker(this);
                 i->thread = new boost::thread(boost::ref(*i->worker));
                 _threadPool.push_back(i);
             }
