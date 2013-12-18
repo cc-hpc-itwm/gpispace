@@ -54,7 +54,6 @@ SedaStageTest::testSendFoo() {
 
     ecs->wait(numMsgs);
 
-    CPPUNIT_ASSERT_EQUAL(std::size_t(0), stage->size());
     CPPUNIT_ASSERT_EQUAL(numMsgs, ecs->count());
 
     stage->stop();
@@ -76,7 +75,6 @@ SedaStageTest::testStartStop() {
     }
     ecs->wait(numMsgs);
 
-    CPPUNIT_ASSERT_EQUAL(std::size_t(0), stage->size());
     CPPUNIT_ASSERT_EQUAL(numMsgs, ecs->count());
 
     stage->stop();
@@ -89,7 +87,6 @@ SedaStageTest::testStartStop() {
     }
     ecs->wait(numMsgs);
 
-    CPPUNIT_ASSERT_EQUAL(std::size_t(0), stage->size());
     CPPUNIT_ASSERT_EQUAL(numMsgs, ecs->count());
 
     stage->stop();
@@ -114,8 +111,6 @@ SedaStageTest::testForwardEvents() {
 
     ecs->wait(numMsgs);
 
-    CPPUNIT_ASSERT(first->empty());
-    CPPUNIT_ASSERT(final->empty());
     CPPUNIT_ASSERT_EQUAL(numMsgs, ecs->count());
 
     seda::StageRegistry::instance().stopAll();

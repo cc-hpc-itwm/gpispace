@@ -50,9 +50,6 @@ namespace seda {
         virtual void start();
         virtual void stop();
 
-        virtual bool empty() const { return _queue->empty(); }
-        virtual std::size_t size() const { return _queue->size(); }
-
         virtual const std::string& name() const { return _name; }
 
         virtual Strategy::Ptr strategy() { return _strategy; }
