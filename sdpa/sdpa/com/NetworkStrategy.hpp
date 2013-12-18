@@ -20,7 +20,7 @@ namespace sdpa
     public:
       typedef boost::shared_ptr<NetworkStrategy> ptr_t;
 
-      NetworkStrategy ( seda::Stage::Ptr fallback_stage
+      NetworkStrategy ( seda::Stage* fallback_stage
                       , std::string const & peer_name
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
@@ -35,7 +35,7 @@ namespace sdpa
 
       SDPA_DECLARE_LOGGER();
 
-      seda::Stage::Ptr _fallback_stage;
+      seda::Stage* _fallback_stage;
 
       const std::string m_port;
 

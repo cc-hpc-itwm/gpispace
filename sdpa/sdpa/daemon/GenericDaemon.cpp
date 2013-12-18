@@ -109,7 +109,7 @@ void GenericDaemon::start_agent()
   }
 
    _network_strategy = sdpa::com::NetworkStrategy::ptr_t
-     ( new sdpa::com::NetworkStrategy ( ptr_daemon_stage_ /*fallback stage = agent*/
+     ( new sdpa::com::NetworkStrategy ( ptr_daemon_stage_.get() /*fallback stage = agent*/
                                      , name() /*name for peer*/
                                      , fhg::com::host_t (vec[0])
                                      , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")

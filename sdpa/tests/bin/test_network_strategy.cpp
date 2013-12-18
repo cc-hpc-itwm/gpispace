@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
 
   seda::Stage::Ptr final (seda::Stage::Ptr (new seda::Stage (&counter)));
 
-  sdpa::com::NetworkStrategy net ( final
+  sdpa::com::NetworkStrategy net ( final.get()
                                  , "peer-1"
                                  , fhg::com::host_t ("localhost")
                                  , fhg::com::port_t ("0")

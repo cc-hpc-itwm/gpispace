@@ -18,7 +18,7 @@ namespace sdpa
       kill (getpid (), SIGTERM);
     }
 
-    NetworkStrategy::NetworkStrategy ( seda::Stage::Ptr fallback_stage
+    NetworkStrategy::NetworkStrategy ( seda::Stage* fallback_stage
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
