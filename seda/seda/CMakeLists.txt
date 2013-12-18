@@ -1,7 +1,6 @@
 # -*- mode: cmake; -*-
 set (hdrs
   IEvent.hpp
-  logging.hpp
   Stage.hpp
   Strategy.hpp
 )
