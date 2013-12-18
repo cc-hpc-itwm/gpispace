@@ -34,7 +34,7 @@ namespace seda {
     }
   }
 
-    Stage::Stage(Strategy::Ptr a_strategy)
+    Stage::Stage(Strategy* a_strategy)
         : _queue()
         , _strategy(a_strategy)
         , _event_handler_thread

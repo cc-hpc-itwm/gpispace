@@ -39,7 +39,7 @@ namespace seda {
     public:
         typedef seda::shared_ptr<Stage> Ptr;
 
-        Stage(Strategy::Ptr strategy);
+        Stage(Strategy* strategy);
 
         virtual ~Stage();
 
@@ -54,7 +54,7 @@ namespace seda {
 
       fhg::thread::queue<IEvent::Ptr> _queue;
 
-        Strategy::Ptr _strategy;
+      Strategy* _strategy;
 
       void receive_and_perform();
       boost::thread* _event_handler_thread;

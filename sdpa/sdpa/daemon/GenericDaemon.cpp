@@ -116,7 +116,7 @@ void GenericDaemon::start_agent()
                                      )
     );
 
-  _network_stage = seda::Stage::Ptr (new seda::Stage (_network_strategy));
+  _network_stage = seda::Stage::Ptr (new seda::Stage (_network_strategy.get()));
 
   if (!isTop())
   {

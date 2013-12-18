@@ -64,14 +64,13 @@ void
 SedaStageTest::testSendFoo() {
     const std::size_t numMsgs(1000);
 
-    wait_for_n_events_strategy* counter (new wait_for_n_events_strategy (numMsgs));
-    seda::Strategy::Ptr counter_shared (counter);
+    wait_for_n_events_strategy counter (numMsgs);
 
-    seda::Stage::Ptr stage (seda::Stage::Ptr (new seda::Stage (counter_shared)));
+    seda::Stage::Ptr stage (seda::Stage::Ptr (new seda::Stage (&counter)));
 
     for (std::size_t i=0; i < numMsgs; ++i) {
         stage->send(seda::IEvent::Ptr(new dummy_event));
     }
 
-    counter->wait();
+    counter.wait();
 }

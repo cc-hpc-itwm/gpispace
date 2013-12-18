@@ -113,21 +113,18 @@ BOOST_FIXTURE_TEST_SUITE( s, F )
 
 BOOST_AUTO_TEST_CASE ( perform_test )
 {
-  wait_for_n_events_strategy* counter (new wait_for_n_events_strategy (1));
-  seda::Strategy::Ptr counter_shared (counter);
+  wait_for_n_events_strategy counter (1);
 
-  seda::Stage::Ptr final (seda::Stage::Ptr (new seda::Stage (counter_shared)));
+  seda::Stage::Ptr final (seda::Stage::Ptr (new seda::Stage (&counter)));
 
-  sdpa::com::NetworkStrategy::Ptr net
-    (new sdpa::com::NetworkStrategy( final
-                                   , "peer-1"
-                                   , fhg::com::host_t ("localhost")
-                                   , fhg::com::port_t ("0")
-                                   )
-    );
-  seda::Stage::Ptr net_stage (seda::Stage::Ptr (new seda::Stage (net)));
+  sdpa::com::NetworkStrategy net ( final
+                                 , "peer-1"
+                                 , fhg::com::host_t ("localhost")
+                                 , fhg::com::port_t ("0")
+                                 );
+  seda::Stage::Ptr net_stage (seda::Stage::Ptr (new seda::Stage (&net)));
 
-  net->perform (seda::IEvent::Ptr(new sdpa::events::ErrorEvent( "peer-1"
+  net.perform (seda::IEvent::Ptr(new sdpa::events::ErrorEvent( "peer-1"
                                                               , "peer-1"
                                                               , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                               , "success"
@@ -135,7 +132,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                  )
                );
 
-  counter->wait();
+  counter.wait();
 }
 
 BOOST_AUTO_TEST_SUITE_END()
