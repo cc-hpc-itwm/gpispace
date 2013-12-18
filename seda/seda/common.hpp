@@ -49,36 +49,6 @@
 #  include <unistd.h>
 #endif
 
-#if HAVE_ERRNO_H
-#  include <errno.h>
-#endif /*HAVE_ERRNO_H*/
-#ifndef errno
-/* Some systems #define this! */
-extern int errno;
-#endif
-
-/* provide a replacement for bzero if it is not available */
-#if !HAVE_BZERO && HAVE_MEMSET
-#  define bzero(buf, bytes) ((void) memset(buf, 0, bytes))
-#endif
-
-/* if including C source from within C++ code, the function definitions must be
- * enclosed in "extern "C"" { ... }, so provide a often used macro */
-
-#ifdef __cplusplus
-#  define BEGIN_C_DECLS extern "C" {
-#  define END_C_DECLS   }
-#else /* !__cplusplus */
-#  define BEGIN_C_DECLS
-#  define END_C_DECLS
-#endif /* __cplusplus */
-
-/* for readability of the code, we provide two general defines for exitcodes */
-#ifndef EXIT_SUCCESS
-#  define EXIT_SUCCESS 0
-#  define EXIT_FAILURE 1
-#endif
-
 #include <seda/logging.hpp>
 
 #endif /* !SEDA_COMMON_HPP */
