@@ -8,7 +8,6 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <seda/Stage.hpp>
-#include <seda/EventCountStrategy.hpp>
 
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
@@ -73,10 +72,41 @@ struct F
 
 namespace
 {
-  struct discard_strategy : public Strategy
+  struct wait_for_n_events_strategy : public seda::Strategy
   {
-    discard_strategy() : Strategy ("discard") {}
-    void perform (const IEvent::Ptr&) {}
+    wait_for_n_events_strategy (unsigned int expected)
+      : seda::Strategy ("wait_for_n_events")
+      , _counter (0)
+      , _expected (expected)
+    {}
+
+    void perform (const seda::IEvent::Ptr&)
+    {
+      boost::mutex::scoped_lock _ (_counter_mutex);
+      ++_counter;
+
+      BOOST_REQUIRE_LE (_counter, _expected);
+      if (_counter == _expected)
+      {
+        _expected_count_reached.notify_all();
+      }
+    }
+    void wait() const
+    {
+      boost::mutex::scoped_lock _ (_counter_mutex);
+
+      while (_counter < _expected)
+      {
+        _expected_count_reached.wait (_);
+      }
+
+      BOOST_REQUIRE_EQUAL (_counter, _expected);
+    }
+
+    mutable boost::mutex _counter_mutex;
+    mutable boost::condition_variable _expected_count_reached;
+    unsigned int _counter;
+    unsigned int _expected;
   };
 }
 
@@ -84,11 +114,11 @@ BOOST_FIXTURE_TEST_SUITE( s, F )
 
 BOOST_AUTO_TEST_CASE ( perform_test )
 {
-  seda::EventCountStrategy *ecs (0);
-  seda::Strategy::Ptr discard (new discard_strategy);
-  ecs = new seda::EventCountStrategy(discard);
-  discard = seda::Strategy::Ptr(ecs);
-  seda::Stage::Ptr final (seda::Stage::Ptr (new seda::Stage ("count", discard)));
+  wait_for_n_events_strategy* counter (new wait_for_n_events_strategy (1));
+  seda::Strategy::Ptr counter_shared (counter);
+
+  seda::Stage::Ptr final
+    (seda::Stage::Ptr (new seda::Stage ("count", counter_shared)));
 
   sdpa::com::NetworkStrategy::Ptr net
     (new sdpa::com::NetworkStrategy( final
@@ -110,9 +140,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                  )
                );
 
-  ecs->wait (1);
-
-  BOOST_CHECK_EQUAL (1u, ecs->count());
+  counter->wait();
 
   net_stage->stop();
   final->stop();
