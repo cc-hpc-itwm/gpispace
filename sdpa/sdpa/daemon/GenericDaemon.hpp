@@ -27,6 +27,7 @@
 #include <sdpa/logging.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/daemon/JobManager.hpp>
+#include <sdpa/com/NetworkStrategy.hpp>
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
@@ -251,6 +252,7 @@ namespace sdpa {
 
     private:
       seda::Stage::Ptr ptr_daemon_stage_;
+      sdpa::com::NetworkStrategy::ptr_t _network_strategy;
       seda::Stage::Ptr _network_stage;
 
     protected:

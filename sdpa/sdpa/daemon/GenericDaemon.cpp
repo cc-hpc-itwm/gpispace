@@ -23,7 +23,6 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
-#include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
@@ -109,15 +108,15 @@ void GenericDaemon::start_agent()
     throw std::runtime_error ("configuration of network failed: invalid url");
   }
 
-  sdpa::com::NetworkStrategy::ptr_t net
-    ( new sdpa::com::NetworkStrategy ( ptr_daemon_stage_ /*fallback stage = agent*/
+   _network_strategy = sdpa::com::NetworkStrategy::ptr_t
+     ( new sdpa::com::NetworkStrategy ( ptr_daemon_stage_ /*fallback stage = agent*/
                                      , name() /*name for peer*/
                                      , fhg::com::host_t (vec[0])
                                      , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
                                      )
     );
 
-  _network_stage = seda::Stage::Ptr (new seda::Stage (net));
+  _network_stage = seda::Stage::Ptr (new seda::Stage (_network_strategy));
 
   if (!isTop())
   {
@@ -162,6 +161,7 @@ void GenericDaemon::shutdown( )
   ptr_workflow_engine_ = NULL;
 
   _network_stage.reset();
+  _network_strategy.reset();
   ptr_daemon_stage_.reset();
 
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
