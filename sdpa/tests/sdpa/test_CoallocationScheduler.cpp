@@ -66,7 +66,7 @@ public:
   void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
   {
     DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the daemon stage");
-    BOOST_REQUIRE(daemon_stage().lock());
+    BOOST_REQUIRE(daemon_stage());
   }
 
   void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)

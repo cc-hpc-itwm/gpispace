@@ -20,7 +20,6 @@
 
 #include <sdpa/daemon/Job.hpp>
 #include <fhg/assert.hpp>
-#include <seda/StageRegistry.hpp>
 #include <sstream>
 
 
@@ -730,7 +729,6 @@ Agent::ptr_t Agent::create ( const std::string& name
   seda::Stage::Ptr daemon_stage (new seda::Stage (name, pAgent));
 
   pAgent->setStage(daemon_stage);
-  seda::StageRegistry::instance().insert(daemon_stage);
 
   pAgent->createScheduler();
 

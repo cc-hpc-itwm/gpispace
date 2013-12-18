@@ -21,9 +21,6 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/job_states.hpp>
 
-#include <seda/StageRegistry.hpp>
-
-
 namespace sdpa {
   namespace daemon {
 
@@ -413,7 +410,6 @@ Orchestrator::ptr_t Orchestrator::create
 
   seda::Stage::Ptr daemon_stage (new seda::Stage (name, pOrch));
   pOrch->setStage (daemon_stage);
-  seda::StageRegistry::instance().insert (daemon_stage);
 
   pOrch->createScheduler();
 

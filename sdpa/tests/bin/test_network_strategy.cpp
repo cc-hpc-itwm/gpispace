@@ -8,7 +8,6 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <seda/Stage.hpp>
-#include <seda/StageRegistry.hpp>
 #include <seda/DiscardStrategy.hpp>
 #include <seda/EventCountStrategy.hpp>
 
@@ -78,7 +77,6 @@ namespace
   seda::Stage::Ptr createStage (const std::string &name, seda::Strategy::Ptr strategy)
   {
     seda::Stage::Ptr stage (new seda::Stage (name, strategy));
-    seda::StageRegistry::instance().insert (stage);
     return stage;
   }
 }

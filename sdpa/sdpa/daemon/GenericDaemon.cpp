@@ -17,7 +17,6 @@
  */
 
 #include <sdpa/daemon/Job.hpp>
-#include <seda/StageRegistry.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
@@ -95,7 +94,7 @@ GenericDaemon::GenericDaemon( const std::string name
 
 void GenericDaemon::start_agent()
 {
-  ptr_daemon_stage_.lock()->start();
+  ptr_daemon_stage_->start();
 
   ptr_scheduler_->start_threads();
 
@@ -111,7 +110,7 @@ void GenericDaemon::start_agent()
   }
 
   sdpa::com::NetworkStrategy::ptr_t net
-    ( new sdpa::com::NetworkStrategy ( ptr_daemon_stage_.lock() /*fallback stage = agent*/
+    ( new sdpa::com::NetworkStrategy ( ptr_daemon_stage_ /*fallback stage = agent*/
                                      , name() /*name for peer*/
                                      , fhg::com::host_t (vec[0])
                                      , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
@@ -120,8 +119,6 @@ void GenericDaemon::start_agent()
 
   seda::Stage::Ptr network_stage
     (new seda::Stage (m_to_master_stage_name_, net));
-
-  seda::StageRegistry::instance().insert (network_stage);
 
   ptr_to_master_stage_ = ptr_to_slave_stage_ = network_stage;
 
@@ -161,7 +158,7 @@ void GenericDaemon::shutdown( )
   }
 
   ptr_to_master_stage_->stop();
-  ptr_daemon_stage_.lock()->stop();
+  ptr_daemon_stage_->stop();
 
   ptr_scheduler_.reset();
 
@@ -170,8 +167,7 @@ void GenericDaemon::shutdown( )
 
   _registration_threads.stop_all();
 
-  seda::StageRegistry::instance().remove (ptr_to_master_stage_);
-  seda::StageRegistry::instance().remove (ptr_daemon_stage_.lock());
+  ptr_daemon_stage_.reset();
 
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
 }
@@ -957,7 +953,7 @@ void GenericDaemon::handleSubscribeEvent( const events::SubscribeEvent* pEvt )
 
 void GenericDaemon::sendEventToSelf(const events::SDPAEvent::Ptr& pEvt)
 {
-  ptr_daemon_stage_.lock()->send(pEvt);
+  ptr_daemon_stage_->send(pEvt);
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
