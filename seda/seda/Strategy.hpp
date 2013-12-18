@@ -39,13 +39,7 @@ namespace seda {
         virtual void perform(const IEvent::Ptr&) = 0;
         virtual void onStageStart() {}
         virtual void onStageStop()  {}
-        const std::string& name() const { return _name; }
 
-        virtual std::string str() const { return name(); }
-        /* TODO:  introduce a notation  for maximum  number of  threads this
-           strategy supports.  It may be that particular  strategies must be
-           executed sequentially. Can also be solved by acquiring a mutex from
-           withing the perform method. */
     protected:
         explicit
         Strategy(const std::string& a_name) 
