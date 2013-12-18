@@ -43,16 +43,6 @@ namespace seda {
     {
     }
 
-    Stage::Stage(const std::string& a_name, EventQueue::Ptr a_queue, Strategy::Ptr a_strategy, std::size_t a_maxPoolSize, const std::string& a_errorHandler)
-        : SEDA_INIT_LOGGER("seda.stage."+a_name),
-          _queue(a_queue),
-          _strategy(a_strategy),
-          _name(a_name),
-          _error_handler(a_errorHandler),
-          _maxPoolSize(a_maxPoolSize)
-    {
-    }
-
     Stage::~Stage() {
         try {
             // stop the running threads and delete them
