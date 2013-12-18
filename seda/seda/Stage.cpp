@@ -28,9 +28,9 @@
 namespace seda {
   namespace
   {
-    void receive_and_perform (Stage* stage, bool* stop)
+    void receive_and_perform (Stage* stage)
     {
-      while (!*stop)
+      while (true)
       {
         stage->strategy()->perform (stage->recv());
       }
@@ -39,19 +39,16 @@ namespace seda {
     class StageWorker {
     public:
         StageWorker(Stage* s) :
-            _stage(s),
-            _stopped(false)
+            _stage(s)
         { }
 
-        void stop() { _stopped = true; }
         void operator()()
         {
-          receive_and_perform (_stage, &stop);
+          receive_and_perform (_stage);
         }
 
     private:
         Stage* _stage;
-        bool _stopped;
     };
   }
 
@@ -117,7 +114,6 @@ namespace seda {
         }
 
         for (ThreadPool::iterator it(_threadPool.begin()); it != _threadPool.end(); ++it) {
-            (*it)->worker->stop(); // signal threads to stop
             (*it)->thread->interrupt();
         }
 
