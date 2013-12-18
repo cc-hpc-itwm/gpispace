@@ -72,15 +72,6 @@ struct F
   boost::thread *m_thrd;
 };
 
-namespace
-{
-  seda::Stage::Ptr createStage (const std::string &name, seda::Strategy::Ptr strategy)
-  {
-    seda::Stage::Ptr stage (new seda::Stage (name, strategy));
-    return stage;
-  }
-}
-
 BOOST_FIXTURE_TEST_SUITE( s, F )
 
 BOOST_AUTO_TEST_CASE ( perform_test )
@@ -89,7 +80,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
   seda::Strategy::Ptr discard (new seda::DiscardStrategy());
   ecs = new seda::EventCountStrategy(discard);
   discard = seda::Strategy::Ptr(ecs);
-  seda::Stage::Ptr final (createStage ("count", discard));
+  seda::Stage::Ptr final (seda::Stage::Ptr (new seda::Stage ("count", discard)));
 
   sdpa::com::NetworkStrategy::Ptr net
     (new sdpa::com::NetworkStrategy( final
@@ -98,7 +89,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                    , fhg::com::port_t ("0")
                                    )
     );
-  seda::Stage::Ptr net_stage (createStage ("net", net));
+  seda::Stage::Ptr net_stage (seda::Stage::Ptr (new seda::Stage ("net", net)));
 
   final->start();
   net_stage->start();
