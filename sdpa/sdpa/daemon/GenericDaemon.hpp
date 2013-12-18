@@ -122,7 +122,11 @@ namespace sdpa {
     protected:
 
       // stages
-      void setStage(const seda::Stage::Ptr& stage){ ptr_daemon_stage_ = stage; }
+      void setStage(const seda::Stage::Ptr& stage)
+      {
+        ptr_daemon_stage_ = stage;
+        ptr_daemon_stage_->start();
+      }
 
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);

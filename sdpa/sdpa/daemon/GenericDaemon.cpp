@@ -96,8 +96,6 @@ const std::string& GenericDaemon::name() const
 
 void GenericDaemon::start_agent()
 {
-  ptr_daemon_stage_->start();
-
   ptr_scheduler_->start_threads();
 
   const boost::tokenizer<boost::char_separator<char> > tok
