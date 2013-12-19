@@ -12,9 +12,12 @@ namespace
       , _expected (expected)
     {}
 
-    void perform (const boost::shared_ptr<int>&)
+    void perform (const boost::shared_ptr<int>& event)
     {
       boost::mutex::scoped_lock _ (_counter_mutex);
+
+      BOOST_REQUIRE_EQUAL (*event, _counter);
+
       ++_counter;
 
       BOOST_REQUIRE_LE (_counter, _expected);
