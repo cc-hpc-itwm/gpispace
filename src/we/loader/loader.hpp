@@ -61,9 +61,6 @@ namespace we {
       loader(const loader&);
       loader & operator = (const loader &);
 
-      boost::optional<boost::filesystem::path>
-        locate (const std::string & module);
-
       void unload_all();
 
       module_table_t::iterator unload(module_table_t::iterator mod);

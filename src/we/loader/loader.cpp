@@ -49,13 +49,17 @@ namespace we {
       if (mod != module_table_.end()) {
         return mod->second;
       } else {
-        boost::optional<boost::filesystem::path>
-          module_file_path (locate (module));
+        const  boost::filesystem::path file_name ("lib" + module + ".so");
 
-        if (module_file_path)
-          return load (module, *module_file_path);
-        else
-          throw ModuleLoadFailed("module '" + module + "' could not be located", module, "[not-found]");
+        BOOST_FOREACH (boost::filesystem::path const& p, search_path_)
+        {
+          if (boost::filesystem::exists (p / file_name))
+          {
+            return load (module, p / file_name);
+          }
+        }
+
+        throw ModuleLoadFailed("module '" + module + "' could not be located", module, "[not-found]");
       }
     }
 
@@ -170,24 +174,6 @@ namespace we {
         }
       }
       return ec;
-    }
-
-    boost::optional<boost::filesystem::path>
-      loader::locate (const std::string & module)
-    {
-      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-
-      const  boost::filesystem::path file_name ("lib" + module + ".so");
-
-      BOOST_FOREACH (boost::filesystem::path const& p, search_path_)
-      {
-        if (boost::filesystem::exists (p / file_name))
-        {
-          return p / file_name;
-        }
-      }
-
-      return boost::none;
     }
 
     void loader::unload_all()
