@@ -47,8 +47,6 @@ namespace seda {
         }
 
     private:
-      mutable boost::mutex _stop_mutex;
-
       fhg::thread::queue<IEvent::Ptr> _queue;
 
       boost::function<void (const IEvent::Ptr&)> _strategy;

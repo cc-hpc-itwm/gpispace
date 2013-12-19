@@ -49,8 +49,6 @@ namespace seda {
 
     void
     Stage::stop() {
-      boost::mutex::scoped_lock _ (_stop_mutex);
-
       if (_event_handler_thread)
       {
         _event_handler_thread->interrupt();
