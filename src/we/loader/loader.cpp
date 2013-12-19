@@ -176,8 +176,8 @@ namespace we {
       loader::locate (const std::string & module)
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-      namespace fs = boost::filesystem;
-      const fs::path file_name ("lib" + module + ".so");
+
+      const  boost::filesystem::path file_name ("lib" + module + ".so");
 
       BOOST_FOREACH (boost::filesystem::path const& p, search_path_)
       {
