@@ -486,16 +486,7 @@ namespace we
       if (desc.activity ().is_canceling ())
         return;
 
-      if (desc.has_children ())
-      {
-        desc.cancel
-          ( boost::bind ( &layer::cancel_activity
-                        , this
-                        , _1
-                        )
-          );
-      }
-      else if (desc.sent_to_external())
+      if (desc.sent_to_external())
       {
         if (! (  desc.activity().is_canceling()
               || desc.activity().is_failed()
@@ -511,7 +502,16 @@ namespace we
       }
       else
       {
-        activity_canceled (desc.id ());
+        desc.cancel
+          ( boost::bind ( &layer::cancel_activity
+                        , this
+                        , _1
+                        )
+          );
+        if (not desc.has_children ())
+        {
+          active_nets_.put (desc.id ());
+        }
       }
     }
 
