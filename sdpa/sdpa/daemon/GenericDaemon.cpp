@@ -119,6 +119,8 @@ GenericDaemon::GenericDaemon( const std::string name
   , _max_consecutive_registration_attempts (360)
   , _max_consecutive_network_faults (360)
   , _registration_timeout (boost::posix_time::seconds (1))
+  , _event_queue()
+  , _event_handler_thread (new boost::thread (&GenericDaemon::handle_events, this))
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -133,8 +135,6 @@ GenericDaemon::GenericDaemon( const std::string name
   {
     DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
   }
-
-  ptr_daemon_stage_ = boost::shared_ptr<Stage> (new Stage (boost::bind (&GenericDaemon::perform, this, _1)));
 }
 
 const std::string& GenericDaemon::name() const
@@ -202,7 +202,16 @@ void GenericDaemon::shutdown( )
   _registration_threads.stop_all();
 
   _network_stage->stop();
-  ptr_daemon_stage_->stop();
+
+  if (_event_handler_thread)
+  {
+    _event_handler_thread->interrupt();
+    if (_event_handler_thread->joinable())
+    {
+      _event_handler_thread->join();
+    }
+    _event_handler_thread.reset();
+  }
 
   ptr_scheduler_.reset();
 
@@ -211,7 +220,6 @@ void GenericDaemon::shutdown( )
 
   _network_stage.reset();
   _network_strategy.reset();
-  ptr_daemon_stage_.reset();
 
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
 }
@@ -995,8 +1003,15 @@ void GenericDaemon::handleSubscribeEvent( const events::SubscribeEvent* pEvt )
 
 void GenericDaemon::sendEventToSelf(const events::SDPAEvent::Ptr& pEvt)
 {
-  ptr_daemon_stage_->send(pEvt);
+  _event_queue.put (pEvt);
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
+}
+void GenericDaemon::handle_events()
+{
+  while (true)
+  {
+    perform (_event_queue.get());
+  }
 }
 
 void GenericDaemon::sendEventToMaster(const events::SDPAEvent::Ptr& pEvt)

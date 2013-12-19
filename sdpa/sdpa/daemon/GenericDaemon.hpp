@@ -244,7 +244,6 @@ namespace sdpa {
       sdpa::subscriber_map_t m_listSubscribers;
 
     private:
-      boost::shared_ptr<Stage> ptr_daemon_stage_;
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
       boost::shared_ptr<Stage> _network_stage;
 
@@ -274,6 +273,11 @@ namespace sdpa {
       fhg::thread::set _registration_threads;
 
       void do_registration_after_sleep (const MasterInfo);
+
+
+      fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _event_queue;
+      boost::scoped_ptr<boost::thread> _event_handler_thread;
+      void handle_events();
     };
   }
 }
