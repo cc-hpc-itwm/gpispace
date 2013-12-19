@@ -42,10 +42,9 @@ namespace utils
   {
     orchestrator (const std::string& name, const std::string& url)
       : _ (sdpa::daemon::Orchestrator::create (name, url))
-      , _name (name)
     {}
     sdpa::daemon::Orchestrator::ptr_t _;
-    std::string _name; std::string name() const { return _name; }
+    std::string name() const { return _->name(); }
   };
 
   struct agent;
@@ -68,7 +67,6 @@ namespace utils
       : _ ( sdpa::daemon::Agent::create
             (name, url, assemble_master_info_list (masters), rank, gui_url)
           )
-      , _name (name)
     {}
     agent ( const std::string& name
           , const std::string& url
@@ -82,7 +80,6 @@ namespace utils
             , rank, gui_url
             )
           )
-      , _name (name)
     {}
     agent ( const std::string& name
           , const std::string& url
@@ -96,10 +93,9 @@ namespace utils
             , rank, gui_url
             )
           )
-      , _name (name)
     {}
     sdpa::daemon::Agent::ptr_t _;
-    std::string _name; std::string name() const { return _name; }
+    std::string name() const { return _->name(); }
   };
 
   namespace
