@@ -47,7 +47,7 @@ namespace sdpa
       m_thread.join();
     }
 
-    void NetworkStrategy::perform (seda::IEvent::Ptr const & e)
+    void NetworkStrategy::perform (boost::shared_ptr<seda::IEvent> const & e)
     {
       static sdpa::events::Codec codec;
 
@@ -86,7 +86,7 @@ namespace sdpa
       }
     }
 
-    void NetworkStrategy::handle_send ( seda::IEvent::Ptr const &e
+    void NetworkStrategy::handle_send ( boost::shared_ptr<seda::IEvent> const &e
                                       , boost::system::error_code const & ec
                                       )
     {

@@ -170,7 +170,7 @@ void GenericDaemon::shutdown( )
 }
 
 
-void GenericDaemon::perform(const seda::IEvent::Ptr& pEvent)
+void GenericDaemon::perform(const boost::shared_ptr<seda::IEvent>& pEvent)
 {
   events::SDPAEvent* pSdpaEvt = dynamic_cast<events::SDPAEvent*>(pEvent.get());
   assert (pSdpaEvt);

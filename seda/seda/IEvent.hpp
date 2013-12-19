@@ -8,8 +8,6 @@ namespace seda
   class IEvent
   {
   public:
-    typedef boost::shared_ptr<IEvent> Ptr;
-
     virtual ~IEvent() {}
   };
 }

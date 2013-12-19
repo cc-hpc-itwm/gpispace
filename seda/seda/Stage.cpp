@@ -10,7 +10,7 @@ namespace seda
     }
   }
 
-  Stage::Stage (boost::function<void (const IEvent::Ptr&)> strategy)
+  Stage::Stage (boost::function<void (const boost::shared_ptr<IEvent>&)> strategy)
     : _queue()
     , _strategy (strategy)
     , _event_handler_thread

@@ -17,7 +17,7 @@ namespace
       , _expected (expected)
     {}
 
-    void perform (const seda::IEvent::Ptr&)
+    void perform (const boost::shared_ptr<seda::IEvent>&)
     {
       boost::mutex::scoped_lock _ (_counter_mutex);
       ++_counter;
@@ -65,7 +65,7 @@ SedaStageTest::testSendFoo() {
       (boost::bind (&wait_for_n_events_strategy::perform, &counter, _1));
 
     for (std::size_t i=0; i < numMsgs; ++i) {
-        stage.send(seda::IEvent::Ptr(new IEvent));
+        stage.send(boost::shared_ptr<seda::IEvent>(new IEvent));
     }
 
     counter.wait();

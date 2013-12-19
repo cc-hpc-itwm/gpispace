@@ -13,20 +13,20 @@ namespace seda
   class Stage
   {
   public:
-    Stage (boost::function<void (const IEvent::Ptr&)> strategy);
+    Stage (boost::function<void (const boost::shared_ptr<IEvent>&)> strategy);
 
     virtual ~Stage();
 
     virtual void stop();
 
-    virtual void send(const IEvent::Ptr& e) {
+    virtual void send(const boost::shared_ptr<IEvent>& e) {
       _queue.put (e);
     }
 
   private:
-    fhg::thread::queue<IEvent::Ptr> _queue;
+    fhg::thread::queue<boost::shared_ptr<IEvent> > _queue;
 
-    boost::function<void (const IEvent::Ptr&)> _strategy;
+    boost::function<void (const boost::shared_ptr<IEvent>&)> _strategy;
 
     void receive_and_perform();
     boost::thread* _event_handler_thread;

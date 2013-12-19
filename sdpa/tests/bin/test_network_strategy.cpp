@@ -79,7 +79,7 @@ namespace
       , _expected (expected)
     {}
 
-    void perform (const seda::IEvent::Ptr&)
+    void perform (const boost::shared_ptr<seda::IEvent>&)
     {
       boost::mutex::scoped_lock _ (_counter_mutex);
       ++_counter;
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                  , fhg::com::port_t ("0")
                                  );
 
-  net.perform (seda::IEvent::Ptr(new sdpa::events::ErrorEvent( "peer-1"
+  net.perform (boost::shared_ptr<seda::IEvent>(new sdpa::events::ErrorEvent( "peer-1"
                                                               , "peer-1"
                                                               , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                               , "success"
