@@ -65,11 +65,6 @@ namespace sdpa {
         virtual void resume(const job_id_t& id );
 
       private:
-        virtual void createScheduler()
-        {
-          ptr_scheduler_ = SchedulerBase::ptr_t (new CoallocationScheduler (this));
-        }
-
         CoallocationScheduler::ptr_t scheduler() const
         {
           return boost::static_pointer_cast<CoallocationScheduler> (ptr_scheduler_);

@@ -33,7 +33,7 @@ namespace sdpa {
       : GenericDaemon ( name, url, sdpa::master_info_list_t() /*, NULL*/),
         SDPA_INIT_LOGGER(name)
       {
-        createScheduler();
+        ptr_scheduler_ = SchedulerBase::ptr_t (new SimpleScheduler (this));
         start_agent();
       }
 
@@ -56,12 +56,6 @@ namespace sdpa {
 
       virtual void pause(const job_id_t& id );
       virtual void resume(const job_id_t& id );
-
-      private:
-      virtual void createScheduler()
-      {
-        ptr_scheduler_ = SchedulerBase::ptr_t (new SimpleScheduler (this));
-      }
     };
   }
 }

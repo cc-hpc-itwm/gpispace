@@ -44,7 +44,7 @@ Agent::Agent ( const std::string& name
     addCapability(properCpb);
   }
 
-  createScheduler();
+  ptr_scheduler_ = SchedulerBase::ptr_t (new CoallocationScheduler (this));
   start_agent();
 }
 
