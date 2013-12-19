@@ -44,11 +44,10 @@ namespace
 
 namespace sdpa {
   namespace daemon {
-    template<typename Event>
-      class Stage
+    class Stage
     {
     public:
-      Stage (boost::function<void (const boost::shared_ptr<Event>&)> strategy)
+      Stage (boost::function<void (const boost::shared_ptr<events::SDPAEvent>&)> strategy)
         : _queue()
         , _strategy (strategy)
         , _event_handler_thread
@@ -74,15 +73,15 @@ namespace sdpa {
         }
       }
 
-      void send(const boost::shared_ptr<Event>& e)
+      void send(const boost::shared_ptr<events::SDPAEvent>& e)
       {
         _queue.put (e);
       }
 
     private:
-      fhg::thread::queue<boost::shared_ptr<Event> > _queue;
+      fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _queue;
 
-      boost::function<void (const boost::shared_ptr<Event>&)> _strategy;
+      boost::function<void (const boost::shared_ptr<events::SDPAEvent>&)> _strategy;
 
       void receive_and_perform()
       {
@@ -136,7 +135,7 @@ GenericDaemon::GenericDaemon( const std::string name
     DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
   }
 
-  ptr_daemon_stage_ = boost::shared_ptr<Stage<events::SDPAEvent> > (new Stage<events::SDPAEvent> (boost::bind (&GenericDaemon::perform, this, _1)));
+  ptr_daemon_stage_ = boost::shared_ptr<Stage> (new Stage (boost::bind (&GenericDaemon::perform, this, _1)));
 }
 
 const std::string& GenericDaemon::name() const
@@ -160,14 +159,14 @@ void GenericDaemon::start_agent()
   }
 
   _network_strategy = boost::shared_ptr<sdpa::com::NetworkStrategy>
-    ( new sdpa::com::NetworkStrategy ( boost::bind (&Stage<events::SDPAEvent>::send, ptr_daemon_stage_.get(), _1)
+    ( new sdpa::com::NetworkStrategy ( boost::bind (&Stage::send, ptr_daemon_stage_.get(), _1)
                                      , name() /*name for peer*/
                                      , fhg::com::host_t (vec[0])
                                      , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
                                      )
     );
 
-  _network_stage = boost::shared_ptr<Stage<events::SDPAEvent> > (new Stage<events::SDPAEvent> (boost::bind (&sdpa::com::NetworkStrategy::perform, _network_strategy.get(), _1)));
+  _network_stage = boost::shared_ptr<Stage> (new Stage (boost::bind (&sdpa::com::NetworkStrategy::perform, _network_strategy.get(), _1)));
 
   if (!isTop())
   {
