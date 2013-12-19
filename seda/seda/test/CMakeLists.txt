@@ -1,3 +1,3 @@
-fhg_add_test (SedaStageTest.cpp
+fhg_add_test (Stage.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY})
