@@ -61,7 +61,8 @@ namespace we {
       loader(const loader&);
       loader & operator = (const loader &);
 
-      bool locate (const std::string & module, boost::filesystem::path & path_found);
+      boost::optional<boost::filesystem::path>
+        locate (const std::string & module);
 
       void unload_all();
 

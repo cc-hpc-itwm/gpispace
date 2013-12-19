@@ -49,9 +49,11 @@ namespace we {
       if (mod != module_table_.end()) {
         return mod->second;
       } else {
-        boost::filesystem::path module_file_path;
-        if (locate (module, module_file_path))
-          return load (module, module_file_path);
+        boost::optional<boost::filesystem::path>
+          module_file_path (locate (module));
+
+        if (module_file_path)
+          return load (module, *module_file_path);
         else
           throw ModuleLoadFailed("module '" + module + "' could not be located", module, "[not-found]");
       }
@@ -170,7 +172,8 @@ namespace we {
       return ec;
     }
 
-    bool loader::locate (const std::string & module, boost::filesystem::path & path_found)
+    boost::optional<boost::filesystem::path>
+      loader::locate (const std::string & module)
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
       namespace fs = boost::filesystem;
@@ -180,12 +183,11 @@ namespace we {
       {
         if (boost::filesystem::exists (p / file_name))
         {
-          path_found = p / file_name;
-
-          return true;
+          return p / file_name;
         }
       }
-      return false;
+
+      return boost::none;
     }
 
     void loader::unload_all()
