@@ -543,6 +543,18 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
   job_id_t job_id(activityId);
   job_id_t parent_id(user_data.get_user_job_identification());
 
+  if( schedule_data.num_worker() && schedule_data.num_worker().get()<=0)
+  {
+      workflowEngine()->we::mgmt::layer::failed(  activityId
+                                                  , ""
+                                                  , fhg::error::UNEXPECTED_ERROR
+                                                  , "Invalid number of workers required: "
+                                                  +boost::lexical_cast<std::string>( schedule_data.num_worker().get()));
+
+
+        return;
+    }
+
   on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed, workflowEngine()
                               , activityId, desc
                               , fhg::error::UNEXPECTED_ERROR
