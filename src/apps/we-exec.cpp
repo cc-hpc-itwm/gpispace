@@ -42,7 +42,6 @@ namespace observe
     state_type ()
       : _mutex_jobs ()
       , _jobs (0)
-      , _result()
     {}
 
     void insert (we::mgmt::detail::descriptor)
@@ -62,31 +61,31 @@ namespace observe
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
 
       --_jobs;
-
-      if (done())
-      {
-        _result = d.activity().to_string();
-      }
     }
-    std::string const& result() const
-    {
-      if (not _result)
-      {
-        throw std::runtime_error ("missing result");
-      }
-
-      return *_result;
-    }
-
   private:
     mutable boost::recursive_mutex _mutex_jobs;
     unsigned long _jobs;
-    boost::optional<std::string> _result;
   };
 }
 
 namespace
 {
+  void write_result (std::string const &output, std::string const &result)
+  {
+    if (output.size ())
+    {
+      if (output == "=")
+      {
+        std::cout << result;
+      }
+      else
+      {
+        std::ofstream ofs (output.c_str ());
+        ofs << result;
+      }
+    }
+  }
+
   struct sdpa_daemon;
 
   struct context : public we::mgmt::context
@@ -237,6 +236,16 @@ namespace
       return _job_status;
     }
 
+    std::string const& result() const
+    {
+      if (not _result)
+      {
+        throw std::runtime_error ("missing result");
+      }
+
+      return *_result;
+    }
+
     void submit ( const we::mgmt::layer::id_type& id
                 , const std::string & desc
                 , std::list<we::type::requirement_t> const&
@@ -288,6 +297,7 @@ namespace
         }
 
         _job_status = sdpa::status::FINISHED;
+        _result = desc;
       }
       return true;
     }
@@ -316,6 +326,7 @@ namespace
                   << " activity := " << act.transition ().name ()
                   << std::endl;
         _job_status = sdpa::status::FAILED;
+        _result = desc;
       }
       return true;
     }
@@ -347,6 +358,7 @@ namespace
     worker_list_t worker_;
     we::loader::loader* _loader;
     sdpa::status::code _job_status;
+    boost::optional<std::string> _result;
   };
 
   int context::handle_internally (we::mgmt::type::activity_t& act, net_t& n)
@@ -499,36 +511,12 @@ try
   if (sdpa::status::FINISHED == daemon.job_status ())
   {
     std::cerr << "Workflow finished." << std::endl;
-
-    if (output.size ())
-    {
-      if (output == "=")
-      {
-        std::cout << observer.result();
-      }
-      else
-      {
-        std::ofstream ofs (output.c_str ());
-        ofs << observer.result();
-      }
-    }
+    write_result (output, daemon.result ());
   }
   else if (sdpa::status::FAILED == daemon.job_status ())
   {
     std::cerr << "Workflow failed!" << std::endl;
-
-    if (output.size ())
-    {
-      if (output == "=")
-      {
-        std::cout << observer.result();
-      }
-      else
-      {
-        std::ofstream ofs (output.c_str ());
-        ofs << observer.result();
-      }
-    }
+    write_result (output, daemon.result ());
   }
 
   return daemon.job_status();
