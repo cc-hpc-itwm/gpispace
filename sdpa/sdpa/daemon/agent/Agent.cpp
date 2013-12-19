@@ -606,6 +606,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 {
   DMLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
+  Job* pJob(jobManager().findJob(pEvt->job_id()));
   {
     on_scope_exit _ ( boost::bind ( &we::mgmt::layer::canceled
                                   , workflowEngine()
@@ -613,7 +614,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
                                   )
                     );
 
-    Job* pJob(jobManager().findJob(pEvt->job_id()));
     if(pJob)
     {
         // update the job status to "Canceled"
@@ -631,7 +631,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     // send an acknowledgment to the component that requested the cancellation
     if(!isTop())
     {
-        events::CancelJobAckEvent::Ptr pCancelAckEvt(new events::CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id() ));
+        events::CancelJobAckEvent::Ptr pCancelAckEvt(new events::CancelJobAckEvent(name(), pJob->owner(), pEvt->job_id() ));
       // only if the job was already submitted
       sendEventToOther(pCancelAckEvt);
 
