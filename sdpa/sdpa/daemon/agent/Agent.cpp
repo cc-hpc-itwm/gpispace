@@ -47,6 +47,11 @@ Agent::Agent ( const std::string& name
   ptr_scheduler_ = SchedulerBase::ptr_t (new CoallocationScheduler (this));
   ptr_scheduler_->start_threads(); //! \note: can't do in ctor: vtable not set up yet
 
+  //! \note Can't be moved to GenericDaemon::ctor, as
+  //! requestRegistrations looks at this->capabilities, which are set
+  //! after GenericDaemon::ctor. They should probably be handed down
+  //! to the ctor to allow moving this code there. (it is equivalent
+  //! to the one in orchestrator ctor)
   if (!isTop())
   {
     lock_type lock (mtx_master_);
