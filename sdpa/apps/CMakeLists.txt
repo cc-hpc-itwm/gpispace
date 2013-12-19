@@ -3,7 +3,6 @@ set (daemon_libs
   sdpa-com
   sdpa
   ${FhgLog_LIBRARY}
-  ${SEDA_LIBRARY}
   pnet
   ${Boost_PROGRAM_OPTIONS_LIBRARY} # orchestrator, agent
 )
@@ -36,7 +35,6 @@ set ( client_libs
       sdpa
       fhg-revision
       ${FhgLog_LIBRARY}
-      ${SEDA_LIBRARY}
       ${Boost_FILESYSTEM_LIBRARY}
       ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )

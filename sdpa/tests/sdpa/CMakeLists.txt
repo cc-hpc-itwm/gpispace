@@ -267,7 +267,6 @@ foreach (test ${tests})
                      sdpa
                      fhg-plugin
                      fhg-revision
-                     ${SEDA_LIBRARY}
                      ${FhgLog_LIBRARY}
                      we-dev
                      pnet

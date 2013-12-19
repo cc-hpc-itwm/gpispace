@@ -197,7 +197,6 @@ set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
 
 set (SEDA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/seda ${CMAKE_BINARY_DIR}/seda)
-set (SEDA_LIBRARY seda)
 
 set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgkernel ${CMAKE_BINARY_DIR}/fhgkernel)
 
