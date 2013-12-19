@@ -34,7 +34,16 @@ namespace sdpa {
         SDPA_INIT_LOGGER(name)
       {
         ptr_scheduler_ = SchedulerBase::ptr_t (new SimpleScheduler (this));
-        start_agent();
+        ptr_scheduler_->start_threads(); //! \note: can't do in ctor: vtable not set up yet
+
+        if (!isTop())
+        {
+          lock_type lock (mtx_master_);
+          BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+          {
+            requestRegistration (masterInfo);
+          }
+        }
       }
 
       static Orchestrator::ptr_t create ( const std::string& name,

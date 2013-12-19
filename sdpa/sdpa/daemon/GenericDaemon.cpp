@@ -124,20 +124,6 @@ GenericDaemon::GenericDaemon( const std::string name
   }
 }
 
-void GenericDaemon::start_agent()
-{
-  ptr_scheduler_->start_threads();
-
-  if (!isTop())
-  {
-    lock_type lock (mtx_master_);
-    BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-    {
-      requestRegistration (masterInfo);
-    }
-  }
-}
-
 GenericDaemon::~GenericDaemon()
 {
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");

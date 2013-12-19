@@ -80,7 +80,6 @@ namespace sdpa {
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false
                    );
-      void start_agent();
       virtual ~GenericDaemon();
 
       SDPA_DECLARE_LOGGER();
@@ -246,7 +245,9 @@ namespace sdpa {
       sdpa::worker_id_t m_strAgentUID;
 
       mutex_type mtx_subscriber_;
+    protected:
       mutex_type mtx_master_;
+    private:
       mutex_type mtx_cpb_;
 
       sdpa::capabilities_set_t m_capabilities;

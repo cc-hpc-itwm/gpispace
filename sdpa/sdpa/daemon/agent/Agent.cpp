@@ -45,7 +45,16 @@ Agent::Agent ( const std::string& name
   }
 
   ptr_scheduler_ = SchedulerBase::ptr_t (new CoallocationScheduler (this));
-  start_agent();
+  ptr_scheduler_->start_threads(); //! \note: can't do in ctor: vtable not set up yet
+
+  if (!isTop())
+  {
+    lock_type lock (mtx_master_);
+    BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+    {
+      requestRegistration (masterInfo);
+    }
+  }
 }
 
 void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
