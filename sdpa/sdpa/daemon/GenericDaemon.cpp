@@ -44,54 +44,6 @@ namespace
 
 namespace sdpa {
   namespace daemon {
-    class Stage
-    {
-    public:
-      Stage (boost::function<void (const boost::shared_ptr<events::SDPAEvent>&)> strategy)
-        : _queue()
-        , _strategy (strategy)
-        , _event_handler_thread
-          (new boost::thread (&Stage::receive_and_perform, this))
-      {}
-
-      ~Stage()
-      {
-        stop();
-      }
-
-      void stop()
-      {
-        if (_event_handler_thread)
-        {
-          _event_handler_thread->interrupt();
-          if (_event_handler_thread->joinable())
-          {
-            _event_handler_thread->join();
-          }
-          _event_handler_thread.reset();
-        }
-      }
-
-      void send(const boost::shared_ptr<events::SDPAEvent>& e)
-      {
-        _queue.put (e);
-      }
-
-    private:
-      fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _queue;
-
-      boost::function<void (const boost::shared_ptr<events::SDPAEvent>&)> _strategy;
-
-      void receive_and_perform()
-      {
-        while (true)
-        {
-          _strategy (_queue.get());
-        }
-      }
-      boost::scoped_ptr<boost::thread> _event_handler_thread;
-    };
-
 //constructor
 GenericDaemon::GenericDaemon( const std::string name
                             , const master_info_list_t arrMasterInfo
@@ -182,8 +134,6 @@ void GenericDaemon::start_agent()
                                      )
     );
 
-  _network_stage = boost::shared_ptr<Stage> (new Stage (boost::bind (&sdpa::com::NetworkStrategy::perform, _network_strategy.get(), _1)));
-
   if (!isTop())
   {
     lock_type lock (mtx_master_);
@@ -218,8 +168,6 @@ void GenericDaemon::shutdown( )
 
   _registration_threads.stop_all();
 
-  _network_stage->stop();
-
   if (_event_handler_thread)
   {
     _event_handler_thread->interrupt();
@@ -235,7 +183,6 @@ void GenericDaemon::shutdown( )
   delete ptr_workflow_engine_;
   ptr_workflow_engine_ = NULL;
 
-  _network_stage.reset();
   _network_strategy.reset();
 
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
@@ -1029,13 +976,13 @@ void GenericDaemon::handle_events()
 
 void GenericDaemon::sendEventToMaster(const events::SDPAEvent::Ptr& pEvt)
 {
-  _network_stage->send(pEvt);
+  _network_strategy->perform (pEvt);
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 
 void GenericDaemon::sendEventToSlave(const events::SDPAEvent::Ptr& pEvt)
 {
-  _network_stage->send(pEvt);
+  _network_strategy->perform (pEvt);
   DLOG(TRACE, "Sent " <<pEvt->str()<<" to "<<pEvt->to());
 }
 

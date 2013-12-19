@@ -66,8 +66,6 @@
 
 namespace sdpa {
   namespace daemon {
-    class Stage;
-
     class GenericDaemon : public sdpa::events::EventHandler,
                           boost::noncopyable
     {
@@ -244,7 +242,6 @@ namespace sdpa {
 
     private:
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
-      boost::shared_ptr<Stage> _network_stage;
 
     protected:
       JobManager _job_manager;
