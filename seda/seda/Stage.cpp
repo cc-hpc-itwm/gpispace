@@ -1,32 +1,7 @@
-/*
-   Copyright (C) 2009 Alexander Petry <alexander.petry@itwm.fraunhofer.de>.
+#include <seda/Stage.hpp>
 
-   This file is part of seda.
-
-   seda is free software; you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by the
-   Free Software Foundation; either version 2, or (at your option) any
-   later version.
-
-   seda is distributed in the hope that it will be useful, but WITHOUT
-   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-   for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with seda; see the file COPYING.  If not, write to
-   the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.
-
-*/
-
-#include "Stage.hpp"
-#include "IEvent.hpp"
-
-#include <boost/foreach.hpp>
-#include <boost/bind.hpp>
-
-namespace seda {
+namespace seda
+{
   void Stage::receive_and_perform()
   {
     while (true)
@@ -35,29 +10,30 @@ namespace seda {
     }
   }
 
-    Stage::Stage (boost::function<void (const IEvent::Ptr&)> strategy)
-        : _queue()
-        , _strategy (strategy)
-        , _event_handler_thread
-          (new boost::thread (&Stage::receive_and_perform, this))
-    {}
+  Stage::Stage (boost::function<void (const IEvent::Ptr&)> strategy)
+    : _queue()
+    , _strategy (strategy)
+    , _event_handler_thread
+      (new boost::thread (&Stage::receive_and_perform, this))
+  {}
 
-    Stage::~Stage() {
-      stop();
-    }
+  Stage::~Stage()
+  {
+    stop();
+  }
 
 
-    void
-    Stage::stop() {
-      if (_event_handler_thread)
+  void Stage::stop()
+  {
+    if (_event_handler_thread)
+    {
+      _event_handler_thread->interrupt();
+      if (_event_handler_thread->joinable())
       {
-        _event_handler_thread->interrupt();
-        if (_event_handler_thread->joinable())
-        {
-          _event_handler_thread->join();
-        }
-        delete _event_handler_thread;
-        _event_handler_thread = NULL;
+        _event_handler_thread->join();
       }
+      delete _event_handler_thread;
+      _event_handler_thread = NULL;
     }
+  }
 }
