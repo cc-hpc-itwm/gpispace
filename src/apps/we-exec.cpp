@@ -145,7 +145,6 @@ namespace
 
     sdpa_daemon ( std::size_t num_worker
                 , we::loader::loader* loader
-                , observe::state_type* observer
                 , we::mgmt::type::activity_t const act
                 )
         : _mutex_id()
@@ -160,11 +159,6 @@ namespace
         , _result ()
         , _job_id (gen_id ())
     {
-      mgmt_layer_.sig_insert =
-        boost::bind (&observe::state_type::insert, observer, _1);
-      mgmt_layer_.sig_remove =
-        boost::bind (&observe::state_type::remove, observer, _1);
-
       for (std::size_t n (0); n < num_worker; ++n)
       {
         worker_.push_back
@@ -532,12 +526,9 @@ try
     }
   }
 
-  observe::state_type observer;
-
   sdpa_daemon const daemon
     ( num_worker
     , &loader
-    , &observer
     , path_to_act == "-"
     ? we::mgmt::type::activity_t (std::cin)
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
