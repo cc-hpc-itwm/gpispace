@@ -35,23 +35,6 @@ void CoallocationScheduler::assignJobsToWorkers()
       (ptr_comm_handler_->getJobRequirements (jobId));
 
     long nReqWorkers (job_reqs.numWorkers());
-    if(nReqWorkers<=0)
-    {
-        Job* pJob = ptr_comm_handler_->findJob(jobId);
-        if(!pJob->is_canceled())
-        {
-          ptr_comm_handler_->workflowEngine()->we::mgmt::layer::failed(
-                                                  jobId
-                                                  , ""
-                                                  , fhg::error::UNEXPECTED_ERROR
-                                                  , "Invalid number of workers required: "+boost::lexical_cast<std::string>(nReqWorkers)
-          );
-
-        }
-
-        continue;
-    }
-
     const sdpa::worker_id_t matchingWorkerId
       (findSuitableWorker(job_reqs, listAvailWorkers));
 
