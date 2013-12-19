@@ -49,10 +49,9 @@ measured "install" ${make_src} install                      || die $EX_ERR_RUN
 
 hostname > "${HOSTFILE}"                                    || die $EX_ERR_ENV
 
-sdpa stop
+SDPA_PERFORM_UNATTENDED_SETUP=1 sdpa setup                  || die $EX_ERR_ENV
 
-SDPA_PERFORM_UNATTENDED_SETUP=1 sdpa boot                   \
-                                -M -f "${HOSTFILE}" work:4  || die $EX_ERR_BOOT
+sdpa boot -M -f "${HOSTFILE}" work:4                        || die $EX_ERR_BOOT
 
 measured "submit" ${make_src} submit                        || die $EX_ERR_RUN
 
