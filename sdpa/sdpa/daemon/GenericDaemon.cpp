@@ -82,7 +82,6 @@ GenericDaemon::GenericDaemon( const std::string name
                             )
   : SDPA_INIT_LOGGER(name)
   , _name (name)
-  , _url (url)
   , m_arrMasterInfo(arrMasterInfo),
     _job_manager(),
     ptr_scheduler_(),

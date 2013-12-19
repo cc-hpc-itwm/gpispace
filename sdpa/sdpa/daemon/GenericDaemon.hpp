@@ -89,7 +89,6 @@ namespace sdpa {
 
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
-      const std::string url() const { return _url; }
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
       void start_agent();
@@ -235,7 +234,6 @@ namespace sdpa {
       // data members
     protected:
       std::string _name;
-      std::string _url;
 
       mutex_type mtx_;
 
