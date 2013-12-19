@@ -733,15 +733,4 @@ void Agent::resume(const job_id_t& jobId)
   DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as RUNNING. The job was not found!");
 }
 
-Agent::ptr_t Agent::create ( const std::string& name
-                           , const std::string& url
-                           , const sdpa::master_info_list_t& arrMasterNames
-                           , const unsigned int rank
-                           , const boost::optional<std::string>& appGuiUrl
-                           )
-{
-  Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
-  return pAgent;
-}
-
 }} // end namespaces

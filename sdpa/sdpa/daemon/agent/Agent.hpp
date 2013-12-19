@@ -30,14 +30,6 @@ namespace sdpa {
         typedef boost::shared_ptr<Agent > ptr_t;
         SDPA_DECLARE_LOGGER();
 
-        static Agent::ptr_t create ( const std::string& name
-                                   , const std::string& url
-                                   , const sdpa::master_info_list_t& arrMasterNames
-                                   , const unsigned int rank = 0
-                                   , const boost::optional<std::string>& appGuiUrl = boost::none
-                                   );
-
-      protected:
         Agent ( const std::string& name
               , const std::string& url
               , const sdpa::master_info_list_t arrMasterNames
@@ -45,6 +37,7 @@ namespace sdpa {
               , const boost::optional<std::string>& guiUrl
               );
 
+      protected:
         virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
         virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
 

@@ -403,13 +403,6 @@ void Orchestrator::resume(const job_id_t& jobId)
   DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
 }
 
-Orchestrator::ptr_t Orchestrator::create
-  (const std::string& name, const std::string& url)
-{
-  Orchestrator::ptr_t pOrch (new Orchestrator (name, url));
-  return pOrch;
-}
-
 void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt )
 {
   Job* pJob = jobManager().findJob(pEvt->job_id());

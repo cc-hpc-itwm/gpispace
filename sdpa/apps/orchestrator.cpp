@@ -127,8 +127,7 @@ int main (int argc, char **argv)
     }
 
     try {
-      sdpa::daemon::Orchestrator::ptr_t ptrOrch
-        (sdpa::daemon::Orchestrator::create (orchName, orchUrl));
+      const sdpa::daemon::Orchestrator orchestrator (orchName, orchUrl);
 
       DMLOG (TRACE, "waiting for signals...");
       sigset_t waitset;

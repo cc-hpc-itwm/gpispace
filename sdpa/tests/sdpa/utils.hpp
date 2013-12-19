@@ -41,10 +41,10 @@ namespace utils
   struct orchestrator : boost::noncopyable
   {
     orchestrator (const std::string& name, const std::string& url)
-      : _ (sdpa::daemon::Orchestrator::create (name, url))
+      : _ (name, url)
     {}
-    sdpa::daemon::Orchestrator::ptr_t _;
-    std::string name() const { return _->name(); }
+    sdpa::daemon::Orchestrator _;
+    std::string name() const { return _.name(); }
   };
 
   struct agent;
@@ -64,9 +64,7 @@ namespace utils
           , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
-      : _ ( sdpa::daemon::Agent::create
-            (name, url, assemble_master_info_list (masters), rank, gui_url)
-          )
+      : _ (name, url, assemble_master_info_list (masters), rank, gui_url)
     {}
     agent ( const std::string& name
           , const std::string& url
@@ -74,11 +72,9 @@ namespace utils
           , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
-      : _ ( sdpa::daemon::Agent::create
-            ( name, url
-            , sdpa::master_info_list_t (1, sdpa::MasterInfo (orchestrator.name()))
-            , rank, gui_url
-            )
+      : _ ( name, url
+          , sdpa::master_info_list_t (1, sdpa::MasterInfo (orchestrator.name()))
+          , rank, gui_url
           )
     {}
     agent ( const std::string& name
@@ -87,15 +83,13 @@ namespace utils
           , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
-      : _ ( sdpa::daemon::Agent::create
-            ( name, url
-            , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
-            , rank, gui_url
-            )
+      : _ ( name, url
+          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
+          , rank, gui_url
           )
     {}
-    sdpa::daemon::Agent::ptr_t _;
-    std::string name() const { return _->name(); }
+    sdpa::daemon::Agent _;
+    std::string name() const { return _.name(); }
   };
 
   namespace

@@ -175,10 +175,8 @@ int main (int argc, char **argv)
 
   try
   {
-    sdpa::daemon::Agent::ptr_t ptrAgent
-      ( sdpa::daemon::Agent::create
-        (agentName, agentUrl, listMasterInfo, agentRank, appGuiUrl)
-      );
+    const sdpa::daemon::Agent agent
+      (agentName, agentUrl, listMasterInfo, agentRank, appGuiUrl);
 
     sigset_t waitset;
     int sig(0);
