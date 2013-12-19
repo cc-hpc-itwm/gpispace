@@ -79,7 +79,7 @@ namespace
       , _expected (expected)
     {}
 
-    void perform (const boost::shared_ptr<seda::IEvent>&)
+    void perform (const boost::shared_ptr<sdpa::events::SDPAEvent>&)
     {
       boost::mutex::scoped_lock _ (_counter_mutex);
       ++_counter;
@@ -115,16 +115,16 @@ BOOST_AUTO_TEST_CASE ( perform_test )
 {
   wait_for_n_events_strategy counter (1);
 
-  seda::Stage<seda::IEvent> final
+  seda::Stage<sdpa::events::SDPAEvent> final
     (boost::bind (&wait_for_n_events_strategy::perform, &counter, _1));
 
-  sdpa::com::NetworkStrategy net ( boost::bind (&seda::Stage<seda::IEvent>::send, &final, _1)
+  sdpa::com::NetworkStrategy net ( boost::bind (&seda::Stage<sdpa::events::SDPAEvent>::send, &final, _1)
                                  , "peer-1"
                                  , fhg::com::host_t ("localhost")
                                  , fhg::com::port_t ("0")
                                  );
 
-  net.perform (boost::shared_ptr<seda::IEvent>(new sdpa::events::ErrorEvent( "peer-1"
+  net.perform (boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent( "peer-1"
                                                               , "peer-1"
                                                               , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                               , "success"

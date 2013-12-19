@@ -118,7 +118,7 @@ void GenericDaemon::start_agent()
                                      )
     );
 
-  _network_stage = boost::shared_ptr<seda::Stage<seda::IEvent> > (new seda::Stage<seda::IEvent> (boost::bind (&sdpa::com::NetworkStrategy::perform, _network_strategy.get(), _1)));
+  _network_stage = boost::shared_ptr<seda::Stage<events::SDPAEvent> > (new seda::Stage<events::SDPAEvent> (boost::bind (&sdpa::com::NetworkStrategy::perform, _network_strategy.get(), _1)));
 
   if (!isTop())
   {

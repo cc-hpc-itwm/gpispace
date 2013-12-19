@@ -47,16 +47,9 @@ namespace sdpa
       m_thread.join();
     }
 
-    void NetworkStrategy::perform (boost::shared_ptr<seda::IEvent> const & e)
+    void NetworkStrategy::perform (boost::shared_ptr<events::SDPAEvent> const & sdpa_event)
     {
       static sdpa::events::Codec codec;
-
-      assert (e);
-
-      sdpa::events::SDPAEvent* sdpa_event
-        (dynamic_cast<sdpa::events::SDPAEvent*>(e.get()));
-
-      assert (sdpa_event);
 
       // convert event to fhg::com::message_t
 
@@ -66,13 +59,13 @@ namespace sdpa
       msg.header.dst = m_peer->resolve_name (sdpa_event->to());
       msg.header.src = m_peer->address();
 
-      const std::string encoded_evt (codec.encode(sdpa_event));
+      const std::string encoded_evt (codec.encode(sdpa_event.get()));
       msg.data.assign (encoded_evt.begin(), encoded_evt.end());
       msg.header.length = msg.data.size();
 
       try
       {
-        m_peer->async_send (&msg, boost::bind (&NetworkStrategy::handle_send, this, e, _1));
+        m_peer->async_send (&msg, boost::bind (&NetworkStrategy::handle_send, this, sdpa_event, _1));
       }
       catch (std::exception const & ex)
       {
@@ -86,17 +79,12 @@ namespace sdpa
       }
     }
 
-    void NetworkStrategy::handle_send ( boost::shared_ptr<seda::IEvent> const &e
+    void NetworkStrategy::handle_send ( boost::shared_ptr<events::SDPAEvent> const &sdpa_event
                                       , boost::system::error_code const & ec
                                       )
     {
       if (ec)
       {
-        sdpa::events::SDPAEvent* sdpa_event
-          (dynamic_cast<sdpa::events::SDPAEvent*>(e.get()));
-
-        assert (sdpa_event);
-
         DMLOG ( WARN
               , "send failed:"
               << " ec := " << ec

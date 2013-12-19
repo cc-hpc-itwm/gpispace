@@ -244,7 +244,7 @@ namespace sdpa {
     private:
       boost::shared_ptr<seda::Stage<events::SDPAEvent> > ptr_daemon_stage_;
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
-      boost::shared_ptr<seda::Stage<seda::IEvent> > _network_stage;
+      boost::shared_ptr<seda::Stage<events::SDPAEvent> > _network_stage;
 
     protected:
       JobManager _job_manager;
