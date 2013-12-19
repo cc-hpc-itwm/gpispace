@@ -520,21 +520,11 @@ namespace we
       {
         add_map_to_internal (desc.from_external_id(), desc.id());
       }
-
-      if (sig_insert)
-      {
-        (*sig_insert) (desc);
-      }
     }
 
     void layer::remove_activity(const detail::descriptor & desc)
     {
       lock_t const _ (mutex_);
-
-      if (sig_remove)
-      {
-        (*sig_remove) (desc);
-      }
 
       if (desc.has_children())
         throw std::runtime_error("cannot remove non-leaf: " + fhg::util::show (desc));
