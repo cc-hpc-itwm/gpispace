@@ -163,8 +163,6 @@ int main (int argc, char **argv)
       }
 
       DMLOG (TRACE, "terminating...");
-
-      ptrOrch->shutdown();
     }
     catch( std::exception& )
     {

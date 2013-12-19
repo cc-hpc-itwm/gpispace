@@ -44,10 +44,6 @@ namespace utils
       : _ (sdpa::daemon::Orchestrator::create (name, url))
       , _name (name)
     {}
-    ~orchestrator()
-    {
-      _->shutdown();
-    }
     sdpa::daemon::Orchestrator::ptr_t _;
     std::string _name; std::string name() const { return _name; }
   };
@@ -102,10 +98,6 @@ namespace utils
           )
       , _name (name)
     {}
-    ~agent()
-    {
-      _->shutdown();
-    }
     sdpa::daemon::Agent::ptr_t _;
     std::string _name; std::string name() const { return _name; }
   };

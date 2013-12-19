@@ -223,8 +223,6 @@ int main (int argc, char **argv)
         DMLOG (DEBUG, oss.str());
       }
     }
-
-    ptrAgent->shutdown();
   }
   catch ( std::exception& )
   {
