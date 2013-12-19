@@ -514,6 +514,10 @@ try
     std::cerr << "Workflow failed!" << std::endl;
     write_result (boost::filesystem::path (output), daemon.result ());
   }
+  else if (sdpa::status::CANCELED == daemon.job_status ())
+  {
+    std::cerr << "Workflow canceled!" << std::endl;
+  }
 
   return daemon.job_status();
 }
