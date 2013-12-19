@@ -82,7 +82,7 @@ namespace sdpa {
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false
                    );
-      virtual ~GenericDaemon() {}
+      virtual ~GenericDaemon();
 
       SDPA_DECLARE_LOGGER();
       const std::string& name() const;
@@ -273,6 +273,8 @@ namespace sdpa {
       void handle_events();
 
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
+
+      bool _fake_destructor_already_called;
     };
   }
 }

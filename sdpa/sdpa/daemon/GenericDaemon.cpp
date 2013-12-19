@@ -109,6 +109,7 @@ GenericDaemon::GenericDaemon( const std::string name
                                      , port_from_url (url)
                                      )
     )
+  , _fake_destructor_already_called (false)
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -147,8 +148,16 @@ void GenericDaemon::start_agent()
 /**
  * Shutdown an agent
  */
+GenericDaemon::~GenericDaemon()
+{
+  if (!_fake_destructor_already_called)
+  {
+    shutdown();
+  }
+}
 void GenericDaemon::shutdown( )
 {
+  _fake_destructor_already_called = true;
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");
 
   BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
