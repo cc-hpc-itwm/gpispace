@@ -157,6 +157,8 @@ namespace
         , worker_()
         , _loader (loader)
         , _job_status (sdpa::status::RUNNING)
+        , _result ()
+        , _job_id (gen_id ())
     {
       mgmt_layer_.sig_insert =
         boost::bind (&observe::state_type::insert, observer, _1);
@@ -169,7 +171,7 @@ namespace
           (new boost::thread (boost::bind (&sdpa_daemon::worker, this, n)));
       }
 
-      mgmt_layer_.submit (gen_id(), act, we::type::user_data());
+      mgmt_layer_.submit (_job_id, act, we::type::user_data());
     }
 
     ~sdpa_daemon()
@@ -288,19 +290,26 @@ namespace
       }
       catch (std::out_of_range const &)
       {
-        we::mgmt::type::activity_t const act (desc);
-
-        std::cout << "finished [" << id << "]" << std::endl;
-        BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
-                      , act.output()
-                      )
+        if (id == _job_id)
         {
-          std::cout << act.transition().get_port (top.second).name()
-                    << " => " << pnet::type::value::show (top.first) << std::endl;
-        }
+          we::mgmt::type::activity_t const act (desc);
 
-        _job_status = sdpa::status::FINISHED;
-        _result = desc;
+          std::cout << "finished [" << id << "]" << std::endl;
+          BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
+                        , act.output()
+                        )
+          {
+            std::cout << act.transition().get_port (top.second).name()
+                      << " => " << pnet::type::value::show (top.first) << std::endl;
+          }
+
+          _job_status = sdpa::status::FINISHED;
+          _result = desc;
+        }
+        else
+        {
+          throw std::invalid_argument ("finished(" + id + "): no such id");
+        }
       }
       return true;
     }
@@ -320,16 +329,23 @@ namespace
       }
       catch (std::out_of_range const &)
       {
-        we::mgmt::type::activity_t const act (desc);
+        if (id == _job_id)
+        {
+          we::mgmt::type::activity_t const act (desc);
 
-        std::cout << "failed [" << id << "] = ";
-        act.print (std::cout, act.output());
-        std::cout << " error-code := " << error_code
-                  << " reason := " << reason
-                  << " activity := " << act.transition ().name ()
-                  << std::endl;
-        _job_status = sdpa::status::FAILED;
-        _result = desc;
+          std::cout << "failed [" << id << "] = ";
+          act.print (std::cout, act.output());
+          std::cout << " error-code := " << error_code
+                    << " reason := " << reason
+                    << " activity := " << act.transition ().name ()
+                    << std::endl;
+          _job_status = sdpa::status::FAILED;
+          _result = desc;
+        }
+        else
+        {
+          throw std::invalid_argument ("failed(" + id + "): no such id");
+        }
       }
       return true;
     }
@@ -345,8 +361,15 @@ namespace
       }
       catch (std::out_of_range const &)
       {
-        std::cout << "canceled [" << id << "]" << std::endl;
-        _job_status = sdpa::status::CANCELED;
+        if (id == _job_id)
+        {
+          std::cout << "canceled [" << id << "]" << std::endl;
+          _job_status = sdpa::status::CANCELED;
+        }
+        else
+        {
+          throw std::invalid_argument ("canceled(" + id + "): no such id");
+        }
       }
       return true;
     }
@@ -362,6 +385,7 @@ namespace
     we::loader::loader* _loader;
     sdpa::status::code _job_status;
     boost::optional<std::string> _result;
+    we::mgmt::layer::id_type _job_id;
   };
 
   int context::handle_internally (we::mgmt::type::activity_t& act, net_t& n)
