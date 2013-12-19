@@ -25,6 +25,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -70,17 +71,19 @@ namespace observe
 
 namespace
 {
-  void write_result (std::string const &output, std::string const &result)
+  void write_result ( boost::filesystem::path const &output
+                    , std::string const &result
+                    )
   {
-    if (output.size ())
+    if (output != boost::filesystem::path ())
     {
-      if (output == "=")
+      if (output.string () == "-")
       {
         std::cout << result;
       }
       else
       {
-        std::ofstream ofs (output.c_str ());
+        boost::filesystem::ofstream ofs (output);
         ofs << result;
       }
     }
@@ -511,12 +514,12 @@ try
   if (sdpa::status::FINISHED == daemon.job_status ())
   {
     std::cerr << "Workflow finished." << std::endl;
-    write_result (output, daemon.result ());
+    write_result (boost::filesystem::path (output), daemon.result ());
   }
   else if (sdpa::status::FAILED == daemon.job_status ())
   {
     std::cerr << "Workflow failed!" << std::endl;
-    write_result (output, daemon.result ());
+    write_result (boost::filesystem::path (output), daemon.result ());
   }
 
   return daemon.job_status();
