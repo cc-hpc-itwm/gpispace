@@ -159,7 +159,7 @@ void GenericDaemon::start_agent()
   }
 
   _network_strategy = boost::shared_ptr<sdpa::com::NetworkStrategy>
-    ( new sdpa::com::NetworkStrategy ( boost::bind (&Stage::send, ptr_daemon_stage_.get(), _1)
+    ( new sdpa::com::NetworkStrategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
                                      , name() /*name for peer*/
                                      , fhg::com::host_t (vec[0])
                                      , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
