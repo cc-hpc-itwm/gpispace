@@ -3,8 +3,6 @@
 
 #include <sdpa/events/EventHandler.hpp>
 
-#include <seda/IEvent.hpp>
-
 #include <boost/serialization/access.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -16,12 +14,14 @@ namespace sdpa
 
   namespace events
   {
-    class SDPAEvent : public seda::IEvent
+    class SDPAEvent
     {
     public:
       typedef boost::shared_ptr<SDPAEvent> Ptr;
 
       typedef std::string address_t;
+
+      virtual ~SDPAEvent() {}
 
       const address_t& from() const
       {
