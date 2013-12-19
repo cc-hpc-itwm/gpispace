@@ -20,7 +20,7 @@ cleanup()
 
 run_with_eval_plugin()
 {
-    fhgkernel -s plugin.wfe.library_path="$SDPA_HOME/libexec/sdpa/apps/workerlist" \
+    fhgkernel -s plugin.wfe.library_path="$SDPA_HOME/libexec/sdpa/apps/workerlist/modules" \
               -L "${SDPA_HOME}/libexec/fhg/plugins" \
         wfe wfe_eval < "${DIR_BUILD}/workerlist.pnet.put" > "${OUT}"
 }
