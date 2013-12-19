@@ -75,8 +75,9 @@ namespace sdpa {
       typedef boost::condition_variable_any condition_type;
       typedef boost::shared_ptr<GenericDaemon> ptr_t;
 
-      GenericDaemon(const std::string name,
-                    const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
+      GenericDaemon( const std::string name
+                   , const std::string url
+                   , const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
                     unsigned int rank = 0
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false
@@ -88,7 +89,7 @@ namespace sdpa {
 
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
-      virtual const std::string url() const = 0;
+      const std::string url() const { return _url; }
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
       void start_agent();
@@ -234,6 +235,7 @@ namespace sdpa {
       // data members
     protected:
       std::string _name;
+      std::string _url;
 
       mutex_type mtx_;
 

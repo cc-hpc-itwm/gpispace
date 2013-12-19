@@ -58,8 +58,6 @@ namespace sdpa {
         virtual bool finished(const we::mgmt::layer::id_type & id, const we::mgmt::layer::result_type & result);
         virtual bool failed( const we::mgmt::layer::id_type& workflowId, const we::mgmt::layer::result_type& result, int error_code, std::string const& reason);
 
-        virtual const std::string url() const {return url_;}
-
         template <typename T>
         void notifySubscribers(const T& ptrEvt);
 
@@ -76,9 +74,6 @@ namespace sdpa {
         {
           return boost::static_pointer_cast<CoallocationScheduler> (ptr_scheduler_);
         }
-
-      private:
-        std::string url_;
       };
   }
 }

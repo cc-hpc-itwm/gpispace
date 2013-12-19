@@ -46,6 +46,7 @@ namespace sdpa {
   namespace daemon {
 //constructor
 GenericDaemon::GenericDaemon( const std::string name
+                            , const std::string url
                             , const master_info_list_t arrMasterInfo
                             , unsigned int rank
                             , const boost::optional<std::string>& guiUrl
@@ -53,6 +54,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             )
   : SDPA_INIT_LOGGER(name)
   , _name (name)
+  , _url (url)
   , m_arrMasterInfo(arrMasterInfo),
     _job_manager(),
     ptr_scheduler_(),

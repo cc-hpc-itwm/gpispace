@@ -32,9 +32,8 @@ Agent::Agent ( const std::string& name
              , int rank
              , const boost::optional<std::string>& guiUrl
              )
-  : GenericDaemon (name, arrMasterNames, rank, guiUrl, true),
-    SDPA_INIT_LOGGER(name),
-    url_(url)
+  : GenericDaemon (name, url, arrMasterNames, rank, guiUrl, true),
+    SDPA_INIT_LOGGER(name)
 {
   if(rank>=0)
   {

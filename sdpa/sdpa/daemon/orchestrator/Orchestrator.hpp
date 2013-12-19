@@ -30,9 +30,8 @@ namespace sdpa {
       SDPA_DECLARE_LOGGER();
 
       Orchestrator (const std::string &name, const std::string& url)
-      : GenericDaemon ( name, sdpa::master_info_list_t() /*, NULL*/),
-        SDPA_INIT_LOGGER(name),
-        url_(url)
+      : GenericDaemon ( name, url, sdpa::master_info_list_t() /*, NULL*/),
+        SDPA_INIT_LOGGER(name)
       {}
 
       static Orchestrator::ptr_t create ( const std::string& name,
@@ -47,7 +46,6 @@ namespace sdpa {
       virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
       virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
 
-      virtual const std::string url() const {return url_;}
       virtual bool isTop() { return true; }
 
       template <typename T>
@@ -61,8 +59,6 @@ namespace sdpa {
       {
         ptr_scheduler_ = SchedulerBase::ptr_t (new SimpleScheduler (this));
       }
-
-      std::string url_;
     };
   }
 }
