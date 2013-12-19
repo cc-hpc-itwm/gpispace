@@ -82,6 +82,7 @@ namespace sdpa {
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false
                    );
+      void start_agent();
       virtual ~GenericDaemon();
 
       SDPA_DECLARE_LOGGER();
@@ -90,10 +91,6 @@ namespace sdpa {
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
       const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
-
-      void start_agent();
-
-      void shutdown();
 
       void removeMasters(const agent_id_list_t& );
       size_t numberOfMasterAgents() { return m_arrMasterInfo.size(); }
@@ -273,8 +270,6 @@ namespace sdpa {
       void handle_events();
 
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
-
-      bool _fake_destructor_already_called;
     };
   }
 }
