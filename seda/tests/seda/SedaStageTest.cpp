@@ -1,11 +1,7 @@
-#include "SedaStageTest.hpp"
-
-#include <string>
-#include <iostream>
+#define BOOST_TEST_MODULE SedaStage
+#include <boost/test/unit_test.hpp>
 
 #include <seda/Stage.hpp>
-
-using namespace seda::tests;
 
 namespace
 {
@@ -21,7 +17,7 @@ namespace
       boost::mutex::scoped_lock _ (_counter_mutex);
       ++_counter;
 
-      CPPUNIT_ASSERT (_counter <= _expected);
+      BOOST_REQUIRE_LE (_counter, _expected);
       if (_counter == _expected)
       {
         _expected_count_reached.notify_all();
@@ -36,7 +32,7 @@ namespace
         _expected_count_reached.wait (_);
       }
 
-      CPPUNIT_ASSERT_EQUAL (_counter, _expected);
+      BOOST_REQUIRE_EQUAL (_counter, _expected);
     }
 
     mutable boost::mutex _counter_mutex;
@@ -46,26 +42,18 @@ namespace
   };
 }
 
-CPPUNIT_TEST_SUITE_REGISTRATION( SedaStageTest );
+BOOST_AUTO_TEST_CASE (send_n_messages)
+{
+  const std::size_t numMsgs(1000);
 
-void
-SedaStageTest::setUp() {}
+  wait_for_n_events_strategy counter (numMsgs);
 
-void
-SedaStageTest::tearDown() {}
+  seda::Stage<int> stage
+    (boost::bind (&wait_for_n_events_strategy::perform, &counter, _1));
 
-void
-SedaStageTest::testSendFoo() {
-    const std::size_t numMsgs(1000);
+  for (std::size_t i=0; i < numMsgs; ++i) {
+    stage.send(boost::shared_ptr<int>(new int (i)));
+  }
 
-    wait_for_n_events_strategy counter (numMsgs);
-
-    seda::Stage<int> stage
-      (boost::bind (&wait_for_n_events_strategy::perform, &counter, _1));
-
-    for (std::size_t i=0; i < numMsgs; ++i) {
-        stage.send(boost::shared_ptr<int>(new int (i)));
-    }
-
-    counter.wait();
+  counter.wait();
 }
