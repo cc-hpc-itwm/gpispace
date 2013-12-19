@@ -577,6 +577,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 
       // change the job status to "Canceling"
       pJob->CancelJob(pEvt);
+      ptr_scheduler_->delete_job (pEvt->job_id());
       DMLOG(TRACE, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
     }
     else
