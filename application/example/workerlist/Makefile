@@ -14,8 +14,6 @@ PUT_PORT += trigger=[]
 
 ###############################################################################
 
-WE_EXEC_LIBPATHS = $(SDPA_HOME)/libexec/sdpa/workerlist/modules
-
 ifndef SDPA_HOME
  $(error variable SDPA_HOME not set)
 endif
