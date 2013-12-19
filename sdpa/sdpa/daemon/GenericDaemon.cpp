@@ -44,6 +44,34 @@ namespace
 
 namespace sdpa {
   namespace daemon {
+namespace
+{
+  std::vector<std::string> require_proper_url (std::string url)
+  {
+    const boost::tokenizer<boost::char_separator<char> > tok
+      (url, boost::char_separator<char> (":"));
+
+    const std::vector<std::string> vec (tok.begin(), tok.end());
+
+    if (vec.empty() || vec.size() > 2)
+    {
+      throw std::runtime_error ("configuration of network failed: invalid url: has to be of format 'host[:port]'");
+    }
+
+    return vec;
+  }
+
+  fhg::com::host_t host_from_url (std::string url)
+  {
+    return fhg::com::host_t (require_proper_url (url)[0]);
+  }
+  fhg::com::port_t port_from_url (std::string url)
+  {
+    const std::vector<std::string> vec (require_proper_url (url));
+    return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
+  }
+}
+
 //constructor
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
@@ -75,6 +103,13 @@ GenericDaemon::GenericDaemon( const std::string name
   , _registration_timeout (boost::posix_time::seconds (1))
   , _event_queue()
   , _event_handler_thread (new boost::thread (&GenericDaemon::handle_events, this))
+  , _network_strategy
+    ( new sdpa::com::NetworkStrategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
+                                     , name /*name for peer*/
+                                     , host_from_url (url)
+                                     , port_from_url (url)
+                                     )
+    )
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -96,45 +131,9 @@ const std::string& GenericDaemon::name() const
   return _name;
 }
 
-namespace
-{
-  std::vector<std::string> require_proper_url (std::string url)
-  {
-    const boost::tokenizer<boost::char_separator<char> > tok
-      (url, boost::char_separator<char> (":"));
-
-    const std::vector<std::string> vec (tok.begin(), tok.end());
-
-    if (vec.empty() || vec.size() > 2)
-    {
-      throw std::runtime_error ("configuration of network failed: invalid url: has to be of format 'host[:port]'");
-    }
-
-    return vec;
-  }
-
-  fhg::com::host_t host_from_url (std::string url)
-  {
-    return fhg::com::host_t (require_proper_url (url)[0]);
-  }
-  fhg::com::port_t port_from_url (std::string url)
-  {
-    const std::vector<std::string> vec (require_proper_url (url));
-    return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
-  }
-}
-
 void GenericDaemon::start_agent()
 {
   ptr_scheduler_->start_threads();
-
-  _network_strategy = boost::shared_ptr<sdpa::com::NetworkStrategy>
-    ( new sdpa::com::NetworkStrategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
-                                     , name() /*name for peer*/
-                                     , host_from_url (url())
-                                     , port_from_url (url())
-                                     )
-    );
 
   if (!isTop())
   {
