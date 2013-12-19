@@ -7,8 +7,6 @@
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <seda/Stage.hpp>
-
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
@@ -115,10 +113,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
 {
   wait_for_n_events_strategy counter (1);
 
-  seda::Stage<sdpa::events::SDPAEvent> final
-    (boost::bind (&wait_for_n_events_strategy::perform, &counter, _1));
-
-  sdpa::com::NetworkStrategy net ( boost::bind (&seda::Stage<sdpa::events::SDPAEvent>::send, &final, _1)
+  sdpa::com::NetworkStrategy net ( boost::bind (&wait_for_n_events_strategy::perform, &counter, _1)
                                  , "peer-1"
                                  , fhg::com::host_t ("localhost")
                                  , fhg::com::port_t ("0")
