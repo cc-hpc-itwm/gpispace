@@ -60,10 +60,6 @@ namespace we
        * EXTERNAL API
        *****************************/
 
-      // observe
-      boost::optional<boost::function<void (detail::descriptor)> > sig_insert;
-      boost::optional<boost::function<void (detail::descriptor)> > sig_remove;
-
       /**
        * Submit a new petri net to the petri-net management layer
        *
@@ -193,9 +189,7 @@ namespace we
     public:
       template <class E>
         layer (E* exec_layer, boost::function<external_id_type()> gen)
-          : sig_insert()
-          , sig_remove()
-          , ext_submit (boost::bind (&E::submit, exec_layer, _1, _2, _3, _4, _5))
+          : ext_submit (boost::bind (&E::submit, exec_layer, _1, _2, _3, _4, _5))
           , ext_cancel (boost::bind (&E::cancel, exec_layer, _1, _2))
           , ext_finished (boost::bind (&E::finished, exec_layer, _1, _2))
           , ext_failed (boost::bind (&E::failed, exec_layer, _1, _2, _3, _4))
