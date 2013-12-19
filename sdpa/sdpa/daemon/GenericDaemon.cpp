@@ -167,8 +167,7 @@ GenericDaemon::~GenericDaemon()
 
   ptr_scheduler_.reset();
 
-  delete ptr_workflow_engine_;
-  ptr_workflow_engine_ = NULL;
+  ptr_workflow_engine_.reset();
 
   _network_strategy.reset();
 

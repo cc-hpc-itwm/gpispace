@@ -163,7 +163,7 @@ namespace sdpa {
 
       // workflow engine
     public:
-      we::mgmt::layer* workflowEngine() const { return ptr_workflow_engine_; }
+      we::mgmt::layer* workflowEngine() const { return ptr_workflow_engine_.get(); }
       bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
     protected:
@@ -238,7 +238,7 @@ namespace sdpa {
     protected:
       JobManager _job_manager;
       SchedulerBase::ptr_t ptr_scheduler_;
-      we::mgmt::layer* ptr_workflow_engine_;
+      boost::scoped_ptr<we::mgmt::layer> ptr_workflow_engine_;
 
     private:
 
