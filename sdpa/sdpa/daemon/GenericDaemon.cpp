@@ -225,10 +225,6 @@ void GenericDaemon::shutdown( )
 }
 
 
-void GenericDaemon::perform(const boost::shared_ptr<events::SDPAEvent>& pEvent)
-{
-  pEvent->handleBy(this);
-}
 
 
 namespace
@@ -1010,7 +1006,7 @@ void GenericDaemon::handle_events()
 {
   while (true)
   {
-    perform (_event_queue.get());
+    _event_queue.get()->handleBy (this);
   }
 }
 

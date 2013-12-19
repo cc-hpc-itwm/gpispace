@@ -136,7 +136,6 @@ namespace sdpa {
 
       // event handlers
     public:
-      virtual void perform(const boost::shared_ptr<events::SDPAEvent>&);
       virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* ) = 0;
       virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*) = 0;
       virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
