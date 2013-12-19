@@ -307,7 +307,7 @@ void Orchestrator::handleCancelJobAckEvent(const  events::CancelJobAckEvent* pEv
   {
     // update the job status to "Canceled"
     pJob->CancelJobAck(pEvt);
-    DMLOG(TRACE, "The job state is: "<<pJob->getStatus());
+    DMLOG(TRACE, "The job state is: "<<sdpa::status::show(pJob->getStatus()));
     return;
   }
 
