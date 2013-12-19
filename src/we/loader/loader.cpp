@@ -5,6 +5,8 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/show.hpp>
 
+#include <boost/foreach.hpp>
+
 const int WE_GUARD_SYMBOL = 0xDEADBEEF;
 
 namespace we {
@@ -211,10 +213,15 @@ namespace we {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
       namespace fs = boost::filesystem;
       const fs::path file_name ("lib" + module + ".so");
-      for (search_path_t::const_iterator dir (search_path_.begin()); dir != search_path_.end(); ++dir)
+
+      BOOST_FOREACH (boost::filesystem::path const& p, search_path_)
       {
-        if (search_directory_for_file (*dir, file_name, path_found))
+        if (boost::filesystem::exists (p / file_name))
+        {
+          path_found = p / file_name;
+
           return true;
+        }
       }
       return false;
     }
