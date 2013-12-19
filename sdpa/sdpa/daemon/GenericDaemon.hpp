@@ -75,7 +75,7 @@ namespace sdpa {
       typedef boost::condition_variable_any condition_type;
       typedef boost::shared_ptr<GenericDaemon> ptr_t;
 
-      GenericDaemon(const std::string name = "orchestrator_0",
+      GenericDaemon(const std::string name,
                     const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
                     unsigned int rank = 0
                    , const boost::optional<std::string>& guiUrl = boost::none
