@@ -543,14 +543,7 @@ try
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     );
 
-  while (not observer.done())
-  {
-    if (show_dots)
-    {
-      std::cerr << "." << std::flush;
-    }
-    sleep (1);
-  }
+  daemon.wait_for_job_to_terminate ();
 
   FHG_UTIL_STAT_OUT (std::cerr);
 
