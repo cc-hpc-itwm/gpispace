@@ -68,8 +68,7 @@ namespace sdpa {
           {
             _event_handler_thread->join();
           }
-          delete _event_handler_thread;
-          _event_handler_thread = NULL;
+          _event_handler_thread.reset();
         }
       }
 
@@ -90,7 +89,7 @@ namespace sdpa {
           _strategy (_queue.get());
         }
       }
-      boost::thread* _event_handler_thread;
+      boost::scoped_ptr<boost::thread> _event_handler_thread;
     };
 
 //constructor

@@ -60,6 +60,8 @@
 
 #include <fhg/util/thread/set.hpp>
 
+#include <boost/scoped_ptr.hpp>
+
 #define OVERWRITTEN_IN_TEST virtual
 
 namespace sdpa {
