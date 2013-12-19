@@ -1,8 +1,6 @@
 #ifndef SEDA_STAGE_HPP
 #define SEDA_STAGE_HPP
 
-#include <seda/IEvent.hpp>
-
 #include <fhg/util/thread/queue.hpp>
 
 #include <boost/thread.hpp>
@@ -10,10 +8,11 @@
 
 namespace seda
 {
+  template<typename Event>
   class Stage
   {
   public:
-    Stage (boost::function<void (const boost::shared_ptr<IEvent>&)> strategy)
+    Stage (boost::function<void (const boost::shared_ptr<Event>&)> strategy)
       : _queue()
       , _strategy (strategy)
       , _event_handler_thread
@@ -39,15 +38,15 @@ namespace seda
       }
     }
 
-    void send(const boost::shared_ptr<IEvent>& e)
+    void send(const boost::shared_ptr<Event>& e)
     {
       _queue.put (e);
     }
 
   private:
-    fhg::thread::queue<boost::shared_ptr<IEvent> > _queue;
+    fhg::thread::queue<boost::shared_ptr<Event> > _queue;
 
-    boost::function<void (const boost::shared_ptr<IEvent>&)> _strategy;
+    boost::function<void (const boost::shared_ptr<Event>&)> _strategy;
 
     void receive_and_perform()
     {

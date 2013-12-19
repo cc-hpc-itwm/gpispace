@@ -115,10 +115,10 @@ BOOST_AUTO_TEST_CASE ( perform_test )
 {
   wait_for_n_events_strategy counter (1);
 
-  seda::Stage final
+  seda::Stage<seda::IEvent> final
     (boost::bind (&wait_for_n_events_strategy::perform, &counter, _1));
 
-  sdpa::com::NetworkStrategy net ( boost::bind (&seda::Stage::send, &final, _1)
+  sdpa::com::NetworkStrategy net ( boost::bind (&seda::Stage<seda::IEvent>::send, &final, _1)
                                  , "peer-1"
                                  , fhg::com::host_t ("localhost")
                                  , fhg::com::port_t ("0")
