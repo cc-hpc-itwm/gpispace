@@ -238,7 +238,17 @@ namespace
 
     sdpa::status::code job_status () const
     {
+      boost::unique_lock<boost::mutex> const _ (_mutex_job_status);
       return _job_status;
+    }
+
+    void wait_for_job_to_terminate () const
+    {
+      boost::unique_lock<boost::mutex> _ (_mutex_job_status);
+      while (sdpa::status::is_running (_job_status))
+      {
+        _condition_job_status_changed.wait (_);
+      }
     }
 
     std::string const& result() const
@@ -303,7 +313,7 @@ namespace
                       << " => " << pnet::type::value::show (top.first) << std::endl;
           }
 
-          _job_status = sdpa::status::FINISHED;
+          set_job_status (sdpa::status::FINISHED);
           _result = desc;
         }
         else
@@ -339,7 +349,7 @@ namespace
                     << " reason := " << reason
                     << " activity := " << act.transition ().name ()
                     << std::endl;
-          _job_status = sdpa::status::FAILED;
+          set_job_status (sdpa::status::FAILED);
           _result = desc;
         }
         else
@@ -364,7 +374,7 @@ namespace
         if (id == _job_id)
         {
           std::cout << "canceled [" << id << "]" << std::endl;
-          _job_status = sdpa::status::CANCELED;
+          set_job_status (sdpa::status::CANCELED);
         }
         else
         {
@@ -375,6 +385,15 @@ namespace
     }
 
   private:
+    void set_job_status (sdpa::status::code const c)
+    {
+      boost::unique_lock<boost::mutex> const _ (_mutex_job_status);
+      _job_status = c;
+      _condition_job_status_changed.notify_all ();
+    }
+
+    mutable boost::mutex _mutex_job_status;
+    mutable boost::condition_variable _condition_job_status_changed;
     boost::recursive_mutex _mutex_id;
     unsigned long _id;
     we::mgmt::layer mgmt_layer_;
