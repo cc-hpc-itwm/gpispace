@@ -27,7 +27,6 @@ namespace sdpa {
     class Agent : public GenericDaemon
     {
       public:
-        typedef boost::shared_ptr<Agent > ptr_t;
         SDPA_DECLARE_LOGGER();
 
         Agent ( const std::string& name
