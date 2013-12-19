@@ -72,7 +72,6 @@ namespace
   }
 }
 
-//constructor
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , const master_info_list_t arrMasterInfo
@@ -125,11 +124,6 @@ GenericDaemon::GenericDaemon( const std::string name
   }
 }
 
-const std::string& GenericDaemon::name() const
-{
-  return _name;
-}
-
 void GenericDaemon::start_agent()
 {
   ptr_scheduler_->start_threads();
@@ -144,9 +138,6 @@ void GenericDaemon::start_agent()
   }
 }
 
-/**
- * Shutdown an agent
- */
 GenericDaemon::~GenericDaemon()
 {
   DMLOG (TRACE, "Shutting down the component "<<name()<<" ...");
@@ -188,7 +179,10 @@ GenericDaemon::~GenericDaemon()
 	DMLOG (TRACE, "Succesfully shut down  "<<name()<<" ...");
 }
 
-
+const std::string& GenericDaemon::name() const
+{
+  return _name;
+}
 
 
 namespace
