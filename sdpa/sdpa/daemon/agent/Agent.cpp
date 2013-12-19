@@ -43,6 +43,9 @@ Agent::Agent ( const std::string& name
     sdpa::capability_t properCpb(oss.str(), "rank", name);
     addCapability(properCpb);
   }
+
+  createScheduler();
+  start_agent();
 }
 
 void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
@@ -724,10 +727,6 @@ Agent::ptr_t Agent::create ( const std::string& name
                            )
 {
   Agent::ptr_t pAgent( new Agent( name, url, arrMasterNames, rank, appGuiUrl ) );
-
-  pAgent->createScheduler();
-
-  pAgent->start_agent();
   return pAgent;
 }
 

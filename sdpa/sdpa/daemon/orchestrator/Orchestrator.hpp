@@ -32,7 +32,10 @@ namespace sdpa {
       Orchestrator (const std::string &name, const std::string& url)
       : GenericDaemon ( name, url, sdpa::master_info_list_t() /*, NULL*/),
         SDPA_INIT_LOGGER(name)
-      {}
+      {
+        createScheduler();
+        start_agent();
+      }
 
       static Orchestrator::ptr_t create ( const std::string& name,
                                           const std::string& url);
