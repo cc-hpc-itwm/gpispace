@@ -249,8 +249,6 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
       if(!isSubscriber(pEvt->from ()))
         sendEventToOther(pCancelAckEvt);
 
-      notifySubscribers(pCancelAckEvt);
-
       on_scope_exit _ ( boost::bind ( &Orchestrator::sendEventToOther
                                      , this
                                      , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
@@ -298,7 +296,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
   }
 }
 
-void Orchestrator::handleCancelJobAckEvent(const  events::CancelJobAckEvent* pEvt)
+void Orchestrator::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 {
   DLOG(TRACE, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
@@ -308,6 +306,10 @@ void Orchestrator::handleCancelJobAckEvent(const  events::CancelJobAckEvent* pEv
     // update the job status to "Canceled"
     pJob->CancelJobAck(pEvt);
     DMLOG(TRACE, "The job state is: "<<sdpa::status::show(pJob->getStatus()));
+
+    events::CancelJobAckEvent::Ptr ptrCancelAckEvt(new events::CancelJobAckEvent(*pEvt));
+    notifySubscribers(ptrCancelAckEvt);
+
     return;
   }
 
