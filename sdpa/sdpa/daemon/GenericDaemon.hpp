@@ -134,7 +134,7 @@ namespace sdpa {
 
       // event handlers
     public:
-      virtual void perform(const boost::shared_ptr<seda::IEvent>&);
+      virtual void perform(const boost::shared_ptr<events::SDPAEvent>&);
       virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* ) = 0;
       virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent*) = 0;
       virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
@@ -242,7 +242,7 @@ namespace sdpa {
       sdpa::subscriber_map_t m_listSubscribers;
 
     private:
-      boost::shared_ptr<seda::Stage<seda::IEvent> > ptr_daemon_stage_;
+      boost::shared_ptr<seda::Stage<events::SDPAEvent> > ptr_daemon_stage_;
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
       boost::shared_ptr<seda::Stage<seda::IEvent> > _network_stage;
 

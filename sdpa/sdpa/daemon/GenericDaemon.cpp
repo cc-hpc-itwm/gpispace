@@ -87,7 +87,7 @@ GenericDaemon::GenericDaemon( const std::string name
     DMLOG (TRACE, "Application GUI service at " << *guiUrl << " attached...");
   }
 
-  ptr_daemon_stage_ = boost::shared_ptr<seda::Stage<seda::IEvent> > (new seda::Stage<seda::IEvent> (boost::bind (&GenericDaemon::perform, this, _1)));
+  ptr_daemon_stage_ = boost::shared_ptr<seda::Stage<events::SDPAEvent> > (new seda::Stage<events::SDPAEvent> (boost::bind (&GenericDaemon::perform, this, _1)));
 }
 
 const std::string& GenericDaemon::name() const
@@ -111,7 +111,7 @@ void GenericDaemon::start_agent()
   }
 
   _network_strategy = boost::shared_ptr<sdpa::com::NetworkStrategy>
-    ( new sdpa::com::NetworkStrategy ( boost::bind (&seda::Stage<seda::IEvent>::send, ptr_daemon_stage_.get(), _1)
+    ( new sdpa::com::NetworkStrategy ( boost::bind (&seda::Stage<events::SDPAEvent>::send, ptr_daemon_stage_.get(), _1)
                                      , name() /*name for peer*/
                                      , fhg::com::host_t (vec[0])
                                      , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
@@ -170,11 +170,9 @@ void GenericDaemon::shutdown( )
 }
 
 
-void GenericDaemon::perform(const boost::shared_ptr<seda::IEvent>& pEvent)
+void GenericDaemon::perform(const boost::shared_ptr<events::SDPAEvent>& pEvent)
 {
-  events::SDPAEvent* pSdpaEvt = dynamic_cast<events::SDPAEvent*>(pEvent.get());
-  assert (pSdpaEvt);
-  pSdpaEvt->handleBy(this);
+  pEvent->handleBy(this);
 }
 
 
