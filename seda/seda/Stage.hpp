@@ -13,13 +13,34 @@ namespace seda
   class Stage
   {
   public:
-    Stage (boost::function<void (const boost::shared_ptr<IEvent>&)> strategy);
+    Stage (boost::function<void (const boost::shared_ptr<IEvent>&)> strategy)
+      : _queue()
+      , _strategy (strategy)
+      , _event_handler_thread
+        (new boost::thread (&Stage::receive_and_perform, this))
+    {}
 
-    virtual ~Stage();
+    virtual ~Stage()
+    {
+      stop();
+    }
 
-    virtual void stop();
+    virtual void stop()
+    {
+      if (_event_handler_thread)
+      {
+        _event_handler_thread->interrupt();
+        if (_event_handler_thread->joinable())
+        {
+          _event_handler_thread->join();
+        }
+        delete _event_handler_thread;
+        _event_handler_thread = NULL;
+      }
+    }
 
-    virtual void send(const boost::shared_ptr<IEvent>& e) {
+    virtual void send(const boost::shared_ptr<IEvent>& e)
+    {
       _queue.put (e);
     }
 
@@ -28,7 +49,13 @@ namespace seda
 
     boost::function<void (const boost::shared_ptr<IEvent>&)> _strategy;
 
-    void receive_and_perform();
+    void receive_and_perform()
+    {
+      while (true)
+      {
+        _strategy (_queue.get());
+      }
+    }
     boost::thread* _event_handler_thread;
   };
 }

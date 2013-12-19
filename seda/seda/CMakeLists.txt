@@ -5,7 +5,6 @@ set (hdrs
 )
 
 set (srcs
-  Stage.cpp
   )
 
 ADD_LIBRARY(seda STATIC ${srcs})
