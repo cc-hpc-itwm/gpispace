@@ -35,40 +35,6 @@
 #include <set>
 #include <vector>
 
-namespace observe
-{
-  class state_type
-  {
-  public:
-    state_type ()
-      : _mutex_jobs ()
-      , _jobs (0)
-    {}
-
-    void insert (we::mgmt::detail::descriptor)
-    {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
-
-      ++_jobs;
-    }
-    bool done() const
-    {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
-
-      return !_jobs;
-    }
-    void remove (we::mgmt::detail::descriptor d)
-    {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_jobs);
-
-      --_jobs;
-    }
-  private:
-    mutable boost::recursive_mutex _mutex_jobs;
-    unsigned long _jobs;
-  };
-}
-
 namespace
 {
   void write_result ( boost::filesystem::path const &output
