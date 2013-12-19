@@ -170,44 +170,6 @@ namespace we {
       return ec;
     }
 
-    static bool search_directory_for_file ( const boost::filesystem::path & path
-                                          , const boost::filesystem::path & file
-                                          , boost::filesystem::path & result
-                                          )
-    {
-      namespace fs = boost::filesystem;
-
-      try
-      {
-        fs::recursive_directory_iterator dir_iter =
-          fs::recursive_directory_iterator (path, fs::symlink_option::recurse);
-        const fs::recursive_directory_iterator end =
-          fs::recursive_directory_iterator ();
-        while (dir_iter != end)
-        {
-          const fs::path entry = *dir_iter;
-
-          if (  fs::is_regular_file (entry)
-             && entry.filename () == file
-             )
-          {
-            result = entry;
-            return true;
-          }
-          ++dir_iter;
-        }
-      }
-      catch (fs::filesystem_error const &ex)
-      {
-        MLOG ( ERROR, "exception during directory scan in '"
-             << path << "': " << ex.what ()
-             );
-        return false;
-      }
-
-      return false;
-    }
-
     bool loader::locate (const std::string & module, boost::filesystem::path & path_found)
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
