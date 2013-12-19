@@ -100,7 +100,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _max_consecutive_network_faults (360)
   , _registration_timeout (boost::posix_time::seconds (1))
   , _event_queue()
-  , _event_handler_thread (new boost::thread (&GenericDaemon::handle_events, this))
+  , _event_handler_thread (&GenericDaemon::handle_events, this)
   , _network_strategy
     ( new sdpa::com::NetworkStrategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
                                      , name /*name for peer*/
@@ -159,14 +159,10 @@ GenericDaemon::~GenericDaemon()
 
   _registration_threads.stop_all();
 
-  if (_event_handler_thread)
+  _event_handler_thread.interrupt();
+  if (_event_handler_thread.joinable())
   {
-    _event_handler_thread->interrupt();
-    if (_event_handler_thread->joinable())
-    {
-      _event_handler_thread->join();
-    }
-    _event_handler_thread.reset();
+    _event_handler_thread.join();
   }
 
   ptr_scheduler_.reset();

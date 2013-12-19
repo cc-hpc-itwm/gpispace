@@ -60,8 +60,6 @@
 
 #include <fhg/util/thread/set.hpp>
 
-#include <boost/scoped_ptr.hpp>
-
 #define OVERWRITTEN_IN_TEST virtual
 
 namespace sdpa {
@@ -266,7 +264,7 @@ namespace sdpa {
 
 
       fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _event_queue;
-      boost::scoped_ptr<boost::thread> _event_handler_thread;
+      boost::thread _event_handler_thread;
       void handle_events();
 
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
