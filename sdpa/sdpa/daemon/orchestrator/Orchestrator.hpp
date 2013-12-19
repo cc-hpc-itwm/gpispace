@@ -58,8 +58,6 @@ namespace sdpa {
       virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
       virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
 
-      virtual bool isTop() { return true; }
-
       template <typename T>
       void notifySubscribers(const T& ptrEvt);
 

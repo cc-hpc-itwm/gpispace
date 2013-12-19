@@ -92,7 +92,7 @@ namespace sdpa {
       void removeMasters(const agent_id_list_t& );
       size_t numberOfMasterAgents() { return m_arrMasterInfo.size(); }
 
-      virtual bool isTop() { return false; }
+      bool isTop() { return m_arrMasterInfo.empty(); }
 
       // WE interface
       void submit( const we::mgmt::layer::id_type & id
