@@ -142,26 +142,43 @@ const std::string& GenericDaemon::name() const
   return _name;
 }
 
+namespace
+{
+  std::vector<std::string> require_proper_url (std::string url)
+  {
+    const boost::tokenizer<boost::char_separator<char> > tok
+      (url, boost::char_separator<char> (":"));
+
+    const std::vector<std::string> vec (tok.begin(), tok.end());
+
+    if (vec.empty() || vec.size() > 2)
+    {
+      throw std::runtime_error ("configuration of network failed: invalid url: has to be of format 'host[:port]'");
+    }
+
+    return vec;
+  }
+
+  fhg::com::host_t host_from_url (std::string url)
+  {
+    return fhg::com::host_t (require_proper_url (url)[0]);
+  }
+  fhg::com::port_t port_from_url (std::string url)
+  {
+    const std::vector<std::string> vec (require_proper_url (url));
+    return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
+  }
+}
+
 void GenericDaemon::start_agent()
 {
   ptr_scheduler_->start_threads();
 
-  const boost::tokenizer<boost::char_separator<char> > tok
-    (url(), boost::char_separator<char> (":"));
-
-  const std::vector<std::string> vec (tok.begin(), tok.end());
-
-  if (vec.empty() || vec.size() > 2)
-  {
-    LOG (ERROR, "Invalid daemon url.  Please specify it in the form <hostname (IP)>:<port>!");
-    throw std::runtime_error ("configuration of network failed: invalid url");
-  }
-
   _network_strategy = boost::shared_ptr<sdpa::com::NetworkStrategy>
     ( new sdpa::com::NetworkStrategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
                                      , name() /*name for peer*/
-                                     , fhg::com::host_t (vec[0])
-                                     , fhg::com::port_t (vec.size() == 2 ? vec[1] : "0")
+                                     , host_from_url (url())
+                                     , port_from_url (url())
                                      )
     );
 
