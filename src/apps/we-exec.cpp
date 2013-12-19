@@ -278,8 +278,8 @@ namespace
                       << " => " << pnet::type::value::show (top.first) << std::endl;
           }
 
-          set_job_status (sdpa::status::FINISHED);
           _result = desc;
+          set_job_status (sdpa::status::FINISHED);
         }
         else
         {
@@ -314,8 +314,8 @@ namespace
                     << " reason := " << reason
                     << " activity := " << act.transition ().name ()
                     << std::endl;
-          set_job_status (sdpa::status::FAILED);
           _result = desc;
+          set_job_status (sdpa::status::FAILED);
         }
         else
         {
