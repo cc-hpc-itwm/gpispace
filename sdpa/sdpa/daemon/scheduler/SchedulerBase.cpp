@@ -265,10 +265,6 @@ void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
   lock_type lock(mtx_);
   DLOG(TRACE, "Acknowledge the job "<<job_id.str());
   try {
-    // make sure that the job is erased from the scheduling queue
-
-	// don't need this!
-	//jobs_to_be_scheduled.erase( job_id );
     Worker::ptr_t ptrWorker = findWorker(worker_id);
 
     //put the job into the Running state: do this in acknowledge!
