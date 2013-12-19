@@ -390,6 +390,10 @@ namespace we
         {
           cancel_activity (parent_desc.id ());
         }
+        else
+        {
+          active_nets_.put (parent_desc.id ());
+        }
 
         remove_activity (desc);
       }
