@@ -20,8 +20,6 @@
 
 #include <fhg/assert.hpp>
 
-#include <seda/Stage.hpp>
-
 #include <sdpa/capability.hpp>
 #include <sdpa/logging.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
@@ -66,6 +64,8 @@
 
 namespace sdpa {
   namespace daemon {
+    template<typename E> class Stage;
+
     class GenericDaemon : public sdpa::events::EventHandler,
                           boost::noncopyable
     {
@@ -242,9 +242,9 @@ namespace sdpa {
       sdpa::subscriber_map_t m_listSubscribers;
 
     private:
-      boost::shared_ptr<seda::Stage<events::SDPAEvent> > ptr_daemon_stage_;
+      boost::shared_ptr<Stage<events::SDPAEvent> > ptr_daemon_stage_;
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
-      boost::shared_ptr<seda::Stage<events::SDPAEvent> > _network_stage;
+      boost::shared_ptr<Stage<events::SDPAEvent> > _network_stage;
 
     protected:
       JobManager _job_manager;

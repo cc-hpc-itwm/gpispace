@@ -196,8 +196,6 @@ set (MMGR_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
 
-set (SEDA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/seda)
-
 set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgkernel ${CMAKE_BINARY_DIR}/fhgkernel)
 
 set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
@@ -222,7 +220,6 @@ add_subdirectory (fhglog)
 if (ENABLE_FVM_PC)
   add_subdirectory (fvm-pc)
 endif()
-add_subdirectory (seda)
 add_subdirectory (util)
 add_subdirectory (fhgkernel)
 add_subdirectory (gspc)

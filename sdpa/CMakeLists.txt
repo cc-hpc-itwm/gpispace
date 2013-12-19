@@ -8,8 +8,6 @@ include_directories (${UTIL_INCLUDE_DIR})
 
 include_directories (${FhgKernel_INCLUDE_DIR})
 
-include_directories (${SEDA_INCLUDE_DIR})
-
 find_package(ZLIB REQUIRED QUIET)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 
