@@ -20,12 +20,12 @@ namespace seda
         (new boost::thread (&Stage::receive_and_perform, this))
     {}
 
-    virtual ~Stage()
+    ~Stage()
     {
       stop();
     }
 
-    virtual void stop()
+    void stop()
     {
       if (_event_handler_thread)
       {
@@ -39,7 +39,7 @@ namespace seda
       }
     }
 
-    virtual void send(const boost::shared_ptr<IEvent>& e)
+    void send(const boost::shared_ptr<IEvent>& e)
     {
       _queue.put (e);
     }
