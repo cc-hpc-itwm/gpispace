@@ -240,9 +240,6 @@ namespace sdpa {
       sdpa::master_info_list_t m_arrMasterInfo;
       sdpa::subscriber_map_t m_listSubscribers;
 
-    private:
-      boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
-
     protected:
       JobManager _job_manager;
       SchedulerBase::ptr_t ptr_scheduler_;
@@ -274,6 +271,8 @@ namespace sdpa {
       fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _event_queue;
       boost::scoped_ptr<boost::thread> _event_handler_thread;
       void handle_events();
+
+      boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
     };
   }
 }
