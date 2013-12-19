@@ -20,8 +20,6 @@ endif( NOT WIN32)
 # Make sure all subdirectories include correctly
 
 # Reflect the package structure
-add_subdirectory(seda)
-
 include(CTest)
 if (BUILD_TESTING)
   add_subdirectory(tests)
