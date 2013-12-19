@@ -261,6 +261,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
                        );
 
       pJob->CancelJob(pEvt);
+      ptr_scheduler_->delete_job (pEvt->job_id());
 
       boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
       if(worker_id)
