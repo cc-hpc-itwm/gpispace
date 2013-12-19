@@ -415,6 +415,20 @@ namespace
   }
 }
 
+namespace
+{
+  void maybe_cancel_after_ms ( boost::optional<std::size_t> timeout
+                             , sdpa_daemon* daemon
+                             )
+  {
+    if (timeout)
+    {
+      boost::this_thread::sleep (boost::posix_time::milliseconds (*timeout));
+      daemon->cancel();
+    }
+  }
+}
+
 int main (int argc, char **argv)
 try
 {
@@ -430,6 +444,7 @@ try
   std::size_t num_worker (8);
   std::string output;
   bool show_dots (false);
+  boost::optional<std::size_t> cancel_after;
 
   desc.add_options()
     ("help,h", "this message")
@@ -458,6 +473,10 @@ try
     , po::value<bool>(&show_dots)->default_value(show_dots)
     , "show dots while waiting for progress"
     )
+    ( "cancel-after"
+    , po::value<std::size_t>()
+    , "cancel the workflow after this many milliseconds"
+    )
     ;
 
   po::positional_options_description p;
@@ -483,6 +502,11 @@ try
     return EXIT_SUCCESS;
   }
 
+  if (vm.count ("cancel-after"))
+  {
+    cancel_after = vm ["cancel-after"].as<std::size_t>();
+  }
+
   we::loader::loader loader;
 
   BOOST_FOREACH (std::string const& m, mods_to_load)
@@ -497,7 +521,7 @@ try
     }
   }
 
-  sdpa_daemon const daemon
+  sdpa_daemon daemon
     ( num_worker
     , &loader
     , path_to_act == "-"
@@ -505,7 +529,15 @@ try
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     );
 
+  boost::thread cancel_thread (maybe_cancel_after_ms, cancel_after, &daemon);
+
   daemon.wait_for_job_to_terminate ();
+
+  cancel_thread.interrupt();
+  if (cancel_thread.joinable())
+  {
+    cancel_thread.join();
+  }
 
   FHG_UTIL_STAT_OUT (std::cerr);
 
