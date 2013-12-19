@@ -394,7 +394,7 @@ run: lib $(PUT)
 else
 
 run: lib $(PUT)
-	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT)
+	$(WE_EXEC) --net $(PUT) 2>&1 | $(TEE) $(OUT); exit $${PIPESTATUS[0]}
 
 endif
 
