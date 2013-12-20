@@ -43,13 +43,6 @@ public:
   {
   }
 
-  void serveJob(const sdpa::worker_id_t& wid, const sdpa::job_id_t& jobId)
-  {
-      DLOG(TRACE, "Submit the job "<<jobId<<" to the worker "<<wid
-                                  <<". This message can be ignored.");
-  }
-
-
   void serveJob(const sdpa::worker_id_list_t& worker_list, const sdpa::job_id_t& jobId)
   {
     DLOG(TRACE, "Submit the job "<<jobId<<" to each of these workers: "<<worker_list

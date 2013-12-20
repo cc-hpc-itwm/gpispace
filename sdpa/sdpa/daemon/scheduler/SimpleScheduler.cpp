@@ -41,7 +41,7 @@ void SimpleScheduler::assignJobsToWorkers()
         try {
            Worker::ptr_t pWorker(findWorker(matchingWorkerId));
            //ptr_comm_handler_->resume(jobId);
-           ptr_comm_handler_->serveJob(matchingWorkerId, jobId);
+           ptr_comm_handler_->serveJob(sdpa::worker_id_list_t (1, matchingWorkerId), jobId);
            pWorker->submit(jobId);
         }
         catch(const WorkerNotFoundException&) {

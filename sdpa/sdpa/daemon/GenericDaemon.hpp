@@ -170,7 +170,6 @@ namespace sdpa {
 
     public:
       // workers
-      OVERWRITTEN_IN_TEST void serveJob(const Worker::worker_id_t&, const job_id_t&);
       OVERWRITTEN_IN_TEST void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
     private:
