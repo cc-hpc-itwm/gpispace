@@ -83,12 +83,6 @@ install (TARGETS libgspc ARCHIVE DESTINATION lib COMPONENT libraries)
 install (TARGETS libgspc.shared LIBRARY DESTINATION lib COMPONENT runtime-libraries)
 
 install (FILES
-  drts.hpp
-
-  DESTINATION include/gspc
-  COMPONENT sdk
-)
-install (FILES
   drts/context_fwd.hpp
   drts/context.hpp
 
