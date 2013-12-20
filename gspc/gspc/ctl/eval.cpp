@@ -3,7 +3,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include <gspc/rif.hpp>
+#include <gspc/rif/process.hpp>
 
 namespace gspc
 {

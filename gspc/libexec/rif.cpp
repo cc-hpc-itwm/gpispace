@@ -14,7 +14,10 @@
 #include <signal.h>
 
 #include <gspc/net.hpp>
-#include <gspc/rif.hpp>
+#include <gspc/rif/manager.hpp>
+#include <gspc/rif/proc_info.hpp>
+#include <gspc/rif/supervisor.hpp>
+#include <gspc/rif/util.hpp>
 
 class RifImpl;
 static RifImpl *s_rif = 0;
