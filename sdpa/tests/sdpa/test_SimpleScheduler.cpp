@@ -18,7 +18,6 @@
 #define BOOST_TEST_MODULE TestSimpleScheduler
 #include <boost/test/unit_test.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <sdpa/daemon/scheduler/SimpleScheduler.hpp>
 #include "kvs_setup_fixture.hpp"
 
 #include <fhg/util/boost/test/printer/list.hpp>
