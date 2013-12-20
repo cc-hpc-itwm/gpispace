@@ -21,9 +21,11 @@
 #include <sdpa/daemon/scheduler/SimpleScheduler.hpp>
 #include "kvs_setup_fixture.hpp"
 
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::capabilities_set_t)
+#include <fhg/util/boost/test/printer/list.hpp>
+#include <fhg/util/boost/test/printer/set.hpp>
+
+BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::Capability)
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::job_id_t)
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::worker_id_list_t)
 
 using namespace std;
 using namespace sdpa::daemon;
