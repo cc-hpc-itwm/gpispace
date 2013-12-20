@@ -139,7 +139,6 @@ namespace fhg { namespace log {
 
 #define DLLOG(level, logger, msg)
 #define DMLOG(level, msg)
-#define DCLOG(level, component, msg)
 #define DLOG(level, msg)
 #define DLOG_IF(level, condition, msg)
 
@@ -149,7 +148,6 @@ namespace fhg { namespace log {
 
 #define DLLOG(level, logger, msg) LLOG(level, logger, msg)
 #define DMLOG(level, msg) MLOG(level, msg)
-#define DCLOG(level, component, msg) CLOG(level, component, msg)
 #define DLOG(level, msg) LOG(level, msg)
 #define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
 
