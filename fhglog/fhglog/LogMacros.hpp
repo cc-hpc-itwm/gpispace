@@ -137,7 +137,6 @@ namespace fhg { namespace log {
 
 #ifdef NDEBUG
 
-#define DLLOG(level, logger, msg)
 #define DMLOG(level, msg)
 #define DLOG(level, msg)
 #define DLOG_IF(level, condition, msg)
@@ -146,7 +145,6 @@ namespace fhg { namespace log {
 
 #else
 
-#define DLLOG(level, logger, msg) LLOG(level, logger, msg)
 #define DMLOG(level, msg) MLOG(level, msg)
 #define DLOG(level, msg) LOG(level, msg)
 #define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
