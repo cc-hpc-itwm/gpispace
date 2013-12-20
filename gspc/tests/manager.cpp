@@ -56,8 +56,8 @@ BOOST_AUTO_TEST_CASE (test_exec)
   gspc::rif::proc_t p;
   handler_t handler;
   gspc::rif::manager_t manager;
-  manager.register_handler (&handler);
   manager.start ();
+  manager.register_handler (&handler);
 
   gspc::rif::argv_t argv;
 
@@ -373,8 +373,8 @@ BOOST_AUTO_TEST_CASE (test_async_handler)
   gspc::rif::proc_t p;
   handler_t handler;
   gspc::rif::manager_t manager;
-  manager.register_handler (&handler);
   manager.start ();
+  manager.register_handler (&handler);
 
   gspc::rif::argv_t argv;
 
@@ -408,8 +408,8 @@ BOOST_AUTO_TEST_CASE (test_wait_twice)
   gspc::rif::proc_t p;
   handler_t handler;
   gspc::rif::manager_t manager;
-  manager.register_handler (&handler);
   manager.start ();
+  manager.register_handler (&handler);
 
   gspc::rif::argv_t argv;
 
