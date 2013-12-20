@@ -37,12 +37,12 @@ namespace we
     {
       lock_t const _ (mutex_);
 
-      internal_id_type const int_id (map_to_internal (id));
-
       const std::string message
         (reason.empty () ? "user requested cancellation" : reason.c_str ());
 
       MLOG (WARN, "cancel ( " << id << " ) := " << message);
+
+      internal_id_type const int_id (map_to_internal (id));
 
       {
         lookup (int_id).set_error_code (ECANCELED).set_error_message (message);
