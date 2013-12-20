@@ -10,7 +10,6 @@ set (hdrs
   fhglog.hpp
   FileAppender.hpp
   MemoryAppender.hpp
-  fileno.hpp
   Filter.hpp
   FilteringAppender.hpp
   format_flag.hpp
@@ -33,7 +32,6 @@ set (srcs
   error_handler.cpp
   FileAppender.cpp
   MemoryAppender.cpp
-  fileno.cpp
   LogEvent.cpp
   Logger.cpp
   LogLevel.cpp
