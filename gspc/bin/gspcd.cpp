@@ -16,7 +16,6 @@
 #include <gspc/ctl.hpp>
 #include <gspc/net.hpp>
 #include <gspc/net/util.hpp>
-#include <gspc/kvs.hpp>
 
 #include <gspc/ctl/session.hpp>
 #include <gspc/ctl/session_info.hpp>
