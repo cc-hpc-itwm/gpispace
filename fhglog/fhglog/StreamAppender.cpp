@@ -18,8 +18,6 @@
 
 #include "StreamAppender.hpp"
 #include "format.hpp"
-#include "fileno.hpp" // fileno for streams
-#include "unistd.h"   // isatty
 
 using namespace fhg::log;
 
@@ -27,24 +25,10 @@ StreamAppender::StreamAppender( std::ostream &stream
                               , std::string const &fmt
                               , StreamAppender::ColorMode color_mode
                               )
-  : stream_(stream), fmt_(fmt), color_mode_(color_mode)
-{
-  if (color_mode_ == COLOR_AUTO)
-  {
-    int fd (fileno (stream));
-    if (fd < 0)
-    {
-      color_mode_ = COLOR_OFF;
-    } else if (isatty(fd))
-    {
-      color_mode_ = COLOR_ON;
-    }
-    else
-    {
-      color_mode_ = COLOR_OFF;
-    }
-  }
-}
+  : stream_(stream)
+  , fmt_(fmt)
+  , color_mode_(color_mode)
+{}
 
 void
 StreamAppender::append(const LogEvent &evt)

@@ -45,7 +45,7 @@ namespace fhg
           , fmt_string_ (default_format::SHORT())
             // FIXME: broken if set to true
           , threaded_ (false)
-          , color_ (StreamAppender::COLOR_AUTO)
+          , color_ (StreamAppender::COLOR_OFF)
           , disabled_ (false)
           , synchronize_ (false)
         {}
@@ -129,10 +129,9 @@ namespace fhg
         }
         else if (key == "color")
         {
-          color_ = val == "auto" ? StreamAppender::COLOR_AUTO
-                 : val == "off" ? StreamAppender::COLOR_OFF
+          color_ = val == "off" ? StreamAppender::COLOR_OFF
                  : val == "on" ? StreamAppender::COLOR_ON
-                 : throw std::runtime_error ("expected: 'auto', 'on' or 'off'");
+                 : throw std::runtime_error ("expected: 'on' or 'off'");
         }
         else if (key == "synch")
         {

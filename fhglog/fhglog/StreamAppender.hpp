@@ -29,10 +29,8 @@ namespace fhg { namespace log {
     {
     public:
       enum ColorMode
-        {
-          COLOR_OFF
-          , COLOR_ON
-          , COLOR_AUTO
+        { COLOR_OFF
+        , COLOR_ON
         };
 
       /*
@@ -43,7 +41,7 @@ namespace fhg { namespace log {
        */
       StreamAppender( std::ostream &stream
                     , std::string const & fmt
-                    , ColorMode color_mode = COLOR_AUTO
+                    , ColorMode color_mode = COLOR_OFF
                     );
 
       void append(const LogEvent &evt);

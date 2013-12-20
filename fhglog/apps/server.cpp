@@ -96,10 +96,6 @@ int main(int argc, char **argv)
 
   fhg::log::StreamAppender::ColorMode color_mode
     (fhg::log::StreamAppender::COLOR_OFF);
-  if (color == "auto")
-    color_mode = fhg::log::StreamAppender::COLOR_AUTO;
-  if (color == "off")
-    color_mode = fhg::log::StreamAppender::COLOR_OFF;
   if (color == "on")
     color_mode = fhg::log::StreamAppender::COLOR_ON;
 
