@@ -1215,7 +1215,8 @@ namespace xml
         stream << "include " << file_global_ldflags                << std::endl;
 
         stream                                                     << std::endl;
-        stream << ".PHONY: default modules depend install"         << std::endl;
+        stream << ".PHONY: default modules depend install uninstall"
+                                                                   << std::endl;
         stream                                                     << std::endl;
         stream << "default: depend $(MODULES)"                     << std::endl;
         stream << "modules: depend $(MODULES) objcleandep"         << std::endl;
@@ -1479,6 +1480,8 @@ namespace xml
 
         stream                                                     << std::endl;
         stream << "install: $(MODULES_INSTALL)"                    << std::endl;
+        stream << "uninstall:"                                     << std::endl;
+        stream << "\t-$(RM) $(MODULES_INSTALL)"                    << std::endl;
 
         stream                                                     << std::endl;
         stream << "endif"                                          << std::endl;
