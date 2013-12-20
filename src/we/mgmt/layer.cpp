@@ -188,6 +188,13 @@ namespace we
 
         detail::descriptor& desc (lookup(active_id));
 
+        if (_to_be_removed.find (active_id) != _to_be_removed.end ())
+        {
+          remove_activity (desc);
+          _to_be_removed.erase (active_id);
+          continue;
+        }
+
         if (! desc.is_alive ())
         {
           if (desc.activity ().is_failed ())
@@ -349,7 +356,8 @@ namespace we
         throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (desc));
       }
 
-      remove_activity (desc);
+      _to_be_removed.insert (desc.id ());
+      active_nets_.put (desc.id ());
     }
 
     void layer::activity_failed (internal_id_type const internal_id)
@@ -394,8 +402,6 @@ namespace we
         {
           active_nets_.put (parent_desc.id ());
         }
-
-        remove_activity (desc);
       }
       else if (desc.came_from_external ())
       {
@@ -404,12 +410,14 @@ namespace we
                    , desc.error_code()
                    , desc.error_message()
                    );
-        remove_activity (desc);
       }
       else
       {
         throw std::runtime_error ("activity failed, but I don't know what to do with it: " + fhg::util::show (desc));
       }
+
+      _to_be_removed.insert (internal_id);
+      active_nets_.put (internal_id);
     }
 
     void layer::activity_canceled (internal_id_type const internal_id)
@@ -472,7 +480,8 @@ namespace we
         throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (desc));
       }
 
-      remove_activity (desc);
+      _to_be_removed.insert (internal_id);
+      active_nets_.put (internal_id);
     }
 
     void layer::cancel_activity (internal_id_type const internal_id)

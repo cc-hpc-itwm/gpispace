@@ -257,6 +257,7 @@ namespace we
       active_nets_t active_nets_;
 
       external_to_internal_map_t ext_to_int_;
+      std::set<internal_id_type> _to_be_removed;
 
       boost::thread executor_;
 
