@@ -402,6 +402,9 @@ namespace we
         {
           active_nets_.put (parent_desc.id ());
         }
+
+        _to_be_removed.insert (internal_id);
+        active_nets_.put (internal_id);
       }
       else if (desc.came_from_external ())
       {
@@ -410,14 +413,14 @@ namespace we
                    , desc.error_code()
                    , desc.error_message()
                    );
+
+        _to_be_removed.insert (internal_id);
+        active_nets_.put (internal_id);
       }
       else
       {
         throw std::runtime_error ("activity failed, but I don't know what to do with it: " + fhg::util::show (desc));
       }
-
-      _to_be_removed.insert (internal_id);
-      active_nets_.put (internal_id);
     }
 
     void layer::activity_canceled (internal_id_type const internal_id)
