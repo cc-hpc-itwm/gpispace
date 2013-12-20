@@ -275,10 +275,9 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
     return;
   }
 
-  pJob->JobFailed(pEvt);
-
   if( !hasWorkflowEngine() )
   {
+      pJob->JobFailed(pEvt);
       // forward it up
       events::JobFailedEvent::Ptr pEvtJobFailed
         (new events::JobFailedEvent ( name()
@@ -311,6 +310,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
       bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
 
       if(bTaskGroupComputed) {
+          pJob->JobFailed(pEvt);
           workflowEngine()->failed( actId
                                     , pEvt->result()
                                     , pEvt->error_code()
