@@ -51,7 +51,8 @@ hostname > "${HOSTFILE}"                                    || die $EX_ERR_ENV
 
 SDPA_PERFORM_UNATTENDED_SETUP=1 sdpa setup                  || die $EX_ERR_ENV
 
-sdpa boot -M -f "${HOSTFILE}" work:4                        || die $EX_ERR_BOOT
+measured "boot" sdpa boot -A "${DIR_BUILD}" -M -f "${HOSTFILE}" work:4        \
+                                                            || die $EX_ERR_BOOT
 
 measured "submit" ${make_src} submit                        || die $EX_ERR_RUN
 
