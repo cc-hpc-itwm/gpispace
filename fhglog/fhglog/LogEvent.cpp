@@ -65,7 +65,9 @@ namespace fhg
                       , const file_type &a_path
                       , const function_type &a_function
                       , const line_type &a_line
-                      , const std::string &a_message)
+                      , const std::string &a_message
+                      , tags_type const& tags
+                      )
       : id_ (next_id ())
       , severity_(a_severity)
       , path_(a_path)
@@ -77,7 +79,7 @@ namespace fhg
       , tid_(gettid())
       , host_ (get_hostname ())
       , trace_ ()
-      , tags_ ()
+      , tags_ (tags)
     {}
 
     LogEvent::LogEvent()

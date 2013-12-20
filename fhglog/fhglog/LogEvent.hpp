@@ -43,7 +43,9 @@ namespace fhg { namespace log {
              , const file_type &pa
              , const function_type &function
              , const line_type &line
-             , const message_type &message);
+             , const message_type &message
+             , tags_type const& = tags_type()
+             );
 
       bool operator<(const LogEvent &) const;
 
