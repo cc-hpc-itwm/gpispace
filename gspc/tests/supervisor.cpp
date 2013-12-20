@@ -106,7 +106,6 @@ BOOST_AUTO_TEST_CASE (test_supervise_basics)
   argv.push_back ("/bin/cat");
 
   gspc::rif::manager_t mgr;
-  mgr.start ();
 
   gspc::rif::supervisor_t sup (mgr, 3, 60);
   sup.onChildFailed.connect
@@ -184,7 +183,6 @@ BOOST_AUTO_TEST_CASE (test_supervise_cat)
   argv.push_back ("/bin/cat");
 
   gspc::rif::manager_t mgr;
-  mgr.start ();
 
   gspc::rif::supervisor_t sup (mgr, 3, 60);
   sup.onChildFailed.connect
@@ -250,7 +248,6 @@ BOOST_AUTO_TEST_CASE (test_supervise_sleep)
   argv.push_back ("2");
 
   gspc::rif::manager_t mgr;
-  mgr.start ();
 
   gspc::rif::supervisor_t sup (mgr, 1, 4);
   sup.onChildFailed.connect
@@ -307,7 +304,6 @@ BOOST_AUTO_TEST_CASE (test_supervise_failing_ls)
   argv.push_back ("/nosuchdirectory");
 
   gspc::rif::manager_t mgr;
-  mgr.start ();
 
   gspc::rif::supervisor_t sup (mgr, 2, 4);
   sup.onChildFailed.connect
@@ -363,7 +359,6 @@ BOOST_AUTO_TEST_CASE (test_supervise_temporary)
   argv.push_back ("1");
 
   gspc::rif::manager_t mgr;
-  mgr.start ();
 
   gspc::rif::supervisor_t sup (mgr, 2, 30);
   sup.onChildTerminated.connect
@@ -412,7 +407,6 @@ BOOST_AUTO_TEST_CASE (test_supervise_terminate_start)
   argv.push_back ("/bin/cat");
 
   gspc::rif::manager_t mgr;
-  mgr.start ();
 
   gspc::rif::supervisor_t sup (mgr, 3, 10);
   sup.onChildFailed.connect

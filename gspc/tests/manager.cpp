@@ -43,7 +43,6 @@ BOOST_AUTO_TEST_CASE (test_exec)
   gspc::rif::proc_t p;
   handler_t handler;
   gspc::rif::manager_t manager;
-  manager.start ();
   manager.register_handler (&handler);
 
   gspc::rif::argv_t argv;
@@ -63,8 +62,6 @@ BOOST_AUTO_TEST_CASE (test_exec)
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
   BOOST_REQUIRE_EQUAL (handler.proc, p);
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_TERMINATED);
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_echo_no_newline)
@@ -73,7 +70,6 @@ BOOST_AUTO_TEST_CASE (test_echo_no_newline)
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
-  manager.start ();
 
   gspc::rif::argv_t argv;
 
@@ -89,8 +85,6 @@ BOOST_AUTO_TEST_CASE (test_echo_no_newline)
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_no_output)
@@ -99,7 +93,6 @@ BOOST_AUTO_TEST_CASE (test_no_output)
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
-  manager.start ();
 
   gspc::rif::argv_t argv;
 
@@ -112,8 +105,6 @@ BOOST_AUTO_TEST_CASE (test_no_output)
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_cat)
@@ -122,7 +113,6 @@ BOOST_AUTO_TEST_CASE (test_cat)
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
-  manager.start ();
 
   gspc::rif::argv_t argv;
 
@@ -136,8 +126,6 @@ BOOST_AUTO_TEST_CASE (test_cat)
   BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_many_processes)
@@ -148,7 +136,6 @@ BOOST_AUTO_TEST_CASE (test_many_processes)
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
-  manager.start ();
 
   for (std::size_t i = 0 ; i < NUM_PROCS ; ++i)
   {
@@ -167,8 +154,6 @@ BOOST_AUTO_TEST_CASE (test_many_processes)
     rc = manager.remove (p);
     BOOST_REQUIRE_EQUAL (rc, 0);
   }
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_sigterm)
@@ -177,7 +162,6 @@ BOOST_AUTO_TEST_CASE (test_sigterm)
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
-  manager.start ();
 
   gspc::rif::argv_t argv;
 
@@ -197,8 +181,6 @@ BOOST_AUTO_TEST_CASE (test_sigterm)
 
   rc = manager.remove (p);
   BOOST_REQUIRE_EQUAL (rc, 0);
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_parallel_sleeps)
@@ -208,7 +190,6 @@ BOOST_AUTO_TEST_CASE (test_parallel_sleeps)
   int rc;
   gspc::rif::manager_t manager;
   gspc::rif::proc_list_t ids;
-  manager.start ();
 
   for (size_t i = 0 ; i < NUM_PROCS ; ++i)
   {
@@ -246,8 +227,6 @@ BOOST_AUTO_TEST_CASE (test_parallel_sleeps)
   std::cerr << ids.size () << " processes finished" << std::endl;
 
   BOOST_REQUIRE_EQUAL (manager.processes ().size (), 0);
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_proc_info)
@@ -258,7 +237,6 @@ BOOST_AUTO_TEST_CASE (test_proc_info)
   gspc::rif::manager_t manager;
   gspc::rif::proc_info_t info;
 
-  manager.start ();
 
   gspc::rif::argv_t argv;
 
@@ -297,8 +275,6 @@ BOOST_AUTO_TEST_CASE (test_proc_info)
 
   rc = manager.proc_info (p, info);
   BOOST_REQUIRE_EQUAL (rc, -ESRCH);
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_communicate)
@@ -309,8 +285,6 @@ BOOST_AUTO_TEST_CASE (test_communicate)
   gspc::rif::manager_t manager;
   char buf [4096];
   boost::system::error_code ec;
-
-  manager.start ();
 
   gspc::rif::argv_t argv;
 
@@ -349,8 +323,6 @@ BOOST_AUTO_TEST_CASE (test_communicate)
 
   rc = manager.remove (p);
   BOOST_REQUIRE_EQUAL (rc, 0);
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_async_handler)
@@ -360,7 +332,6 @@ BOOST_AUTO_TEST_CASE (test_async_handler)
   gspc::rif::proc_t p;
   handler_t handler;
   gspc::rif::manager_t manager;
-  manager.start ();
   manager.register_handler (&handler);
 
   gspc::rif::argv_t argv;
@@ -384,8 +355,6 @@ BOOST_AUTO_TEST_CASE (test_async_handler)
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
   BOOST_REQUIRE_EQUAL (handler.proc, p);
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_TERMINATED);
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_CASE (test_wait_twice)
@@ -395,7 +364,6 @@ BOOST_AUTO_TEST_CASE (test_wait_twice)
   gspc::rif::proc_t p;
   handler_t handler;
   gspc::rif::manager_t manager;
-  manager.start ();
   manager.register_handler (&handler);
 
   gspc::rif::argv_t argv;
@@ -419,8 +387,6 @@ BOOST_AUTO_TEST_CASE (test_wait_twice)
     BOOST_REQUIRE_EQUAL (handler.proc, p);
     BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_TERMINATED);
   }
-
-  manager.stop ();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

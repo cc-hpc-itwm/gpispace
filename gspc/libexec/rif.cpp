@@ -230,8 +230,6 @@ public:
   {
     signal (SIGCHLD, SIG_DFL);
 
-    m_mgr.start ();
-
     m_supervisor.onChildFailed.connect
       (boost::bind (&RifImpl::on_child_failed, this, _1));
     m_supervisor.onChildStarted.connect
@@ -256,7 +254,6 @@ public:
       (boost::bind (&RifImpl::on_child_terminated, this, _1));
 
     m_supervisor.stop ();
-    m_mgr.stop ();
 
     FHG_PLUGIN_STOPPED();
   }
