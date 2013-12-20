@@ -48,8 +48,7 @@ public:
 
   void serveJob(const sdpa::worker_id_t& wid, const sdpa::job_id_t& jobId)
   {
-      DLOG(TRACE, "Submit the job "<<jobId<<" to thes worker "<<wid
-                                  <<". This message can be ignored.");
+    throw std::runtime_error ("scheduled job to only one worker, not many");
   }
 
 
@@ -62,7 +61,7 @@ public:
   void submitWorkflow(const we::mgmt::layer::id_type& id, const we::mgmt::layer::encoded_type& )
   {
     DLOG(TRACE, "The agent is trying to forward the master job "<<id<<" to the workflow engine");
-    BOOST_REQUIRE(hasWorkflowEngine());
+    throw std::runtime_error ("trying to submit workflow in test casse which never should");
   }
 
   void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
