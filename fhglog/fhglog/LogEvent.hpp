@@ -62,17 +62,7 @@ namespace fhg { namespace log {
       const std::string& host() const { return host_; }
       const tags_type& tags () const { return tags_; }
 
-      std::size_t &id() { return id_; }
-      severity_type &severity() { return severity_; }
-      file_type &path() { return path_; }
-      function_type &function() { return function_; }
-      line_type &line() { return line_; }
       message_type &message() { return message_; }
-      tstamp_type &tstamp() { return tstamp_; }
-      pid_type &pid() { return pid_; }
-      tid_type &tid() { return tid_; }
-      trace_type &trace() { return trace_; }
-      std::string &host() { return host_; }
 
       void trace (const std::string &name) const
       {
