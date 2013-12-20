@@ -454,7 +454,7 @@ namespace we
         if (d.has_parent())      p << d.parent();
         else                   p << "n/a";
         p << std::endl;
-        p << "     children := " << fhg::util::show (d.children_.begin(), d.children_.end()) << std::endl;
+        p << "     children := #" << d.children_.size () << " " << fhg::util::show (d.children_.begin(), d.children_.end()) << std::endl;
         p << "     internal := "
           << d.activity_.transition().is_internal()
           << std::endl;
