@@ -514,10 +514,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   pJob = jobManager().findJob(pEvt->job_id());
   if(!pJob)
   {
-      DMLOG (TRACE, "Job "<<pEvt->job_id()<<" not found!");
-      if (!pEvt->is_external())
-        workflowEngine()->canceled (pEvt->job_id ());
-      else
+      if (pEvt->is_external())
       {
         DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
         sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
