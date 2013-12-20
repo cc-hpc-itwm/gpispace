@@ -125,14 +125,6 @@ namespace gspc
       }
     }
 
-    void manager_t::start ()
-    {
-    }
-
-    void manager_t::stop ()
-    {
-    }
-
     void manager_t::setenv (std::string const &key, std::string const &val)
     {
       {
