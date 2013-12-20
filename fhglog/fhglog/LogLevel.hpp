@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  LogLevel.hpp
- *
- *    Description:  defines available severity levels
- *
- *        Version:  1.0
- *        Created:  08/11/2009 05:24:16 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef  FHG_LOG_LOGLEVEL_INC
 #define  FHG_LOG_LOGLEVEL_INC
