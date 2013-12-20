@@ -20,13 +20,11 @@ set (hdrs
   Logger.hpp
   LogLevel.hpp
   LogMacros.hpp
-  macros.hpp
   memory.hpp
   NullAppender.hpp
   StreamAppender.hpp
   SynchronizedAppender.hpp
   ThreadedAppender.hpp
-  minimal.hpp
   )
 
 set (srcs
