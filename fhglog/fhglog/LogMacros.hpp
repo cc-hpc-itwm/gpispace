@@ -22,26 +22,6 @@ namespace fhg { namespace log {
 #define FHGLOG_COUNTER FHGLOG_UNIQUE_NAME(counter_, __LINE__)
 #define FHGLOG_ONCE_FLAG FHGLOG_UNIQUE_NAME(once_, __LINE__)
 
-#define FHGLOG_DO_ONCE(thing)                   \
-    do {                                        \
-      static unsigned int FHGLOG_ONCE_FLAG = 0; \
-      if (FHGLOG_ONCE_FLAG == 0)                \
-      {                                         \
-        thing;                                  \
-        FHGLOG_ONCE_FLAG = 1;                   \
-      }                                         \
-    } while (0)
-
-#define FHGLOG_DO_ONCE_IF(condition, thing)      \
-    do {                                         \
-      static unsigned int FHGLOG_ONCE_FLAG = 0;  \
-      if (FHGLOG_ONCE_FLAG == 0 && (condition))  \
-      {                                          \
-        thing;                                   \
-        FHGLOG_ONCE_FLAG = 1;                    \
-      }                                          \
-    } while (0)
-
 #  define FHGLOG_FLUSH()                                                \
     do                                                                  \
     {                                                                   \
@@ -126,9 +106,6 @@ namespace fhg { namespace log {
     }                                                                   \
     while (0)
 
-#define LLOG_ONCE(level, logger, msg) FHGLOG_DO_ONCE(LLOG(level, logger, msg))
-#define LLOG_ONCE_IF(level, logger, condition, msg) FHGLOG_DO_ONCE_IF(condition, LLOG(level, logger, msg))
-
     // log if some condition is true
 #define LOG_IF(level, condition, msg)                                   \
     do                                                                  \
@@ -155,9 +132,6 @@ namespace fhg { namespace log {
     }                                                                   \
     while (0)
 
-#define LOG_ONCE(level, msg) FHGLOG_DO_ONCE(LOG(level, msg))
-#define LOG_ONCE_IF(level, condition, msg) FHGLOG_DO_ONCE_IF(condition, LOG(level, msg))
-
 // log to a logger with the name of the filename the statement is in
 #define MLOG(level, msg)                                                \
     LLOG( level                                                         \
@@ -173,9 +147,6 @@ namespace fhg { namespace log {
            , condition                                                  \
            , msg                                                        \
            )
-
-#define MLOG_ONCE(level, msg) FHGLOG_DO_ONCE(MLOG(level, msg))
-#define MLOG_ONCE_IF(level, N, condition, msg) FHGLOG_DO_ONCE_IF(condition, MLOG(level, msg))
 
     // log to a named logger (component)
 #define CLOG(level, component, msg)                                     \
@@ -201,13 +172,9 @@ namespace fhg { namespace log {
 #define DLOG(level, msg)
 #define DLOG_IF(level, condition, msg)
 #define DLOG_IF_ELSE(level, condition, m1, m2)
-#define DLOG_ONCE(level, msg)
-#define DLOG_ONCE_IF(level, condition, msg)
 
 #define DMLOG_IF(level, condition, msg)
 #define DMLOG_IF_ELSE(level, condition, m1, m2)
-#define DMLOG_ONCE(level, msg)
-#define DMLOG_ONCE_IF(level, condition, msg)
 
 #else
 
@@ -217,13 +184,9 @@ namespace fhg { namespace log {
 #define DLOG(level, msg) LOG(level, msg)
 #define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
 #define DLOG_IF_ELSE(level, condition, msg1, msg2) LOG_IF_ELSE(level, condition, msg1, msg2)
-#define DLOG_ONCE(level, msg) LOG_ONCE(level, msg)
-#define DLOG_ONCE_IF(level, condition, msg) LOG_ONCE_IF(level, condition, msg)
 
 #define DMLOG_IF(level, condition, msg) MLOG_IF(level, condition, msg)
 #define DMLOG_IF_ELSE(level, condition, msg1, msg2) MLOG_IF_ELSE(level, condition, msg1, msg2)
-#define DMLOG_ONCE(level, msg) MLOG_ONCE(level, msg)
-#define DMLOG_ONCE_IF(level, condition, msg) MLOG_ONCE_IF(level, condition, msg)
 
 #endif
 
