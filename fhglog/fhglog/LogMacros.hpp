@@ -92,20 +92,6 @@ namespace fhg { namespace log {
     }                                                                   \
     while (0)
 
-#define LLOG_IF_ELSE(level, logger, condition, msg_if, msg_else)        \
-    do                                                                  \
-    {                                                                   \
-      if (condition)                                                    \
-      {                                                                 \
-        LLOG(level, logger, if_msg);                                    \
-      }                                                                 \
-      else                                                              \
-      {                                                                 \
-        LLOG(level, logger, else_msg);                                  \
-      }                                                                 \
-    }                                                                   \
-    while (0)
-
     // log if some condition is true
 #define LOG_IF(level, condition, msg)                                   \
     do                                                                  \
@@ -113,21 +99,6 @@ namespace fhg { namespace log {
       if (condition)                                                    \
       {                                                                 \
         LOG(level, msg);                                                \
-      }                                                                 \
-    }                                                                   \
-    while (0)
-
-    // log something if a condition is true, something else otherwise
-#define LOG_IF_ELSE(level, condition, if_msg, else_msg)                 \
-    do                                                                  \
-    {                                                                   \
-      if (condition)                                                    \
-      {                                                                 \
-        LOG(level, if_msg);                                             \
-      }                                                                 \
-      else                                                              \
-      {                                                                 \
-        LOG(level, else_msg);                                           \
       }                                                                 \
     }                                                                   \
     while (0)
@@ -171,10 +142,8 @@ namespace fhg { namespace log {
 #define DCLOG(level, component, msg)
 #define DLOG(level, msg)
 #define DLOG_IF(level, condition, msg)
-#define DLOG_IF_ELSE(level, condition, m1, m2)
 
 #define DMLOG_IF(level, condition, msg)
-#define DMLOG_IF_ELSE(level, condition, m1, m2)
 
 #else
 
@@ -183,10 +152,8 @@ namespace fhg { namespace log {
 #define DCLOG(level, component, msg) CLOG(level, component, msg)
 #define DLOG(level, msg) LOG(level, msg)
 #define DLOG_IF(level, condition, msg) LOG_IF(level, condition, msg)
-#define DLOG_IF_ELSE(level, condition, msg1, msg2) LOG_IF_ELSE(level, condition, msg1, msg2)
 
 #define DMLOG_IF(level, condition, msg) MLOG_IF(level, condition, msg)
-#define DMLOG_IF_ELSE(level, condition, msg1, msg2) MLOG_IF_ELSE(level, condition, msg1, msg2)
 
 #endif
 
