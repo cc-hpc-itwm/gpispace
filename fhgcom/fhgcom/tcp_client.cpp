@@ -1,4 +1,4 @@
-#include <fhglog/macros.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhgcom/util/to_hex.hpp>
 
 #include <boost/lambda/bind.hpp>

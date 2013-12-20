@@ -15,7 +15,7 @@
 #include <string>
 
 #include <sys/time.h>
-#include <fhglog/macros.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <iomanip>
 
 namespace condition
