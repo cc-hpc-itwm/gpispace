@@ -71,15 +71,7 @@ namespace gspc
         this->setenv ("GSPC_COOKIE", val);
       if (0 == gspc::rif::getenv ("USER", val))
         this->setenv ("USER", val);
-    }
 
-    manager_t::~manager_t ()
-    {
-      stop ();
-    }
-
-    void manager_t::start ()
-    {
       int rc;
 
       unique_lock lock (m_mutex);
@@ -100,7 +92,7 @@ namespace gspc
                            ));
     }
 
-    void manager_t::stop ()
+    manager_t::~manager_t ()
     {
       {
         unique_lock lock (m_mutex);
@@ -131,6 +123,14 @@ namespace gspc
         unique_lock lock (m_mutex);
         m_stopping = false;
       }
+    }
+
+    void manager_t::start ()
+    {
+    }
+
+    void manager_t::stop ()
+    {
     }
 
     void manager_t::setenv (std::string const &key, std::string const &val)
