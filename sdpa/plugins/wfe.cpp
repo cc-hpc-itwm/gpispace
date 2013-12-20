@@ -28,7 +28,7 @@
 #include <fhg/plugin/capability.hpp>
 
 #include <gspc/net.hpp>
-#include <gspc/drts.hpp>
+#include <gspc/drts/context.hpp>
 
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
