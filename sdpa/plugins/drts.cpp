@@ -1351,9 +1351,9 @@ private:
     }
     catch (std::exception const &ex)
     {
-      DMLOG_EVERY_N( WARN, 10, "could not send "
-                   << evt->str() << " to " << evt->to() << ": " << ex.what()
-                   );
+      DMLOG ( WARN, "could not send "
+            << evt->str() << " to " << evt->to() << ": " << ex.what()
+            );
       return -ESRCH;
     }
 

@@ -121,11 +121,10 @@ private:
     }
     catch (std::exception const & ex)
     {
-      MLOG_EVERY_N (ERROR, 5, "could not connect to KVS: " << ex.what());
-      MLOG_ONCE ( INFO
-                , "HINT: make sure that the KVS is actually started and/or"
+      MLOG (ERROR, "could not connect to KVS: " << ex.what()
+                << "HINT: make sure that the KVS is actually started and/or"
                 << " check the plugin.kvs.host and plugin.kvs.port settings"
-                );
+           );
 
       if (m_terminate_on_connection_failure)
       {
