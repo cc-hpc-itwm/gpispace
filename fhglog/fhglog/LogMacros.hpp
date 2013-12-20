@@ -117,12 +117,6 @@ namespace fhg { namespace log {
         , ::fhg::log::getLogger(component)                              \
         , msg                                                           \
         )
-#define CLOG_IF(level, component, condition, msg)                       \
-    LLOG_IF( level                                                      \
-           , ::fhg::log::getLogger(component)                           \
-           , condition                                                  \
-           , msg                                                        \
-           )
 
     // just log
 #define LOG(level, msg) LLOG(level, ::fhg::log::getLogger(), msg)
