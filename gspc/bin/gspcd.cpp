@@ -13,7 +13,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <gspc/ctl.hpp>
+#include <gspc/ctl/system.hpp>
 #include <gspc/net.hpp>
 #include <gspc/net/util.hpp>
 
