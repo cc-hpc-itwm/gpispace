@@ -229,8 +229,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   workerList.clear();
   _scheduler.getListNotAllocatedWorkers(workerList);
 
-  // check if the list of reserved workers is nJobs - nWorkers
-  BOOST_CHECK_EQUAL(workerList.size(), 5);
+  BOOST_CHECK_EQUAL(workerList.size(), nJobs - nWorkers);
 }
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
