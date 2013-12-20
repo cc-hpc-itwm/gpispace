@@ -8,8 +8,6 @@
 
 namespace fhg { namespace log {
 
-// TODO: perform some magic to discover whether we have __PRETTY_FUNCTION__ or not
-// as it seems it's not macro
 #define FHGLOG_FUNCTION __PRETTY_FUNCTION__
 
 // convenience macro to create an event
