@@ -13,7 +13,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <gspc/rif.hpp>
 #include <gspc/ctl.hpp>
 
 #include <gspc/ctl/exit_code.hpp>
