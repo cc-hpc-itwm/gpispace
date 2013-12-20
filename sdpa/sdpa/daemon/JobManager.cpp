@@ -99,7 +99,7 @@ namespace sdpa
               ( new sdpa::events::JobFinishedEvent
                 (pComm->name(), job->owner(), job->id(), job->result())
               );
-            pComm->sendEventToMaster(pEvtJobFinished);
+            pComm->sendEventToOther(pEvtJobFinished);
           }
           break;
 
@@ -109,7 +109,7 @@ namespace sdpa
               ( new sdpa::events::JobFailedEvent
                 (pComm->name(), job->owner(), job->id(), job->result())
               );
-            pComm->sendEventToMaster(pEvtJobFailed);
+            pComm->sendEventToOther(pEvtJobFailed);
           }
           break;
 
@@ -119,7 +119,7 @@ namespace sdpa
               ( new sdpa::events::CancelJobAckEvent
                 (pComm->name(), job->owner(), job->id())
               );
-            pComm->sendEventToMaster(pEvtJobCanceled);
+            pComm->sendEventToOther(pEvtJobCanceled);
           }
           break;
 
@@ -129,7 +129,7 @@ namespace sdpa
               ( new sdpa::events::SubmitJobAckEvent
                 (pComm->name(), job->owner(), job->id())
               );
-            pComm->sendEventToMaster(pSubmitJobAckEvt);
+            pComm->sendEventToOther(pSubmitJobAckEvt);
           }
           break;
 
@@ -192,4 +192,3 @@ namespace sdpa
     }
   }
 }
-

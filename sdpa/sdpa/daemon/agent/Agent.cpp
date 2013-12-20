@@ -78,7 +78,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
                                                                           , pEvt->job_id()
                                                                          ));
   // send the event to the slave
-  sendEventToSlave(pEvtJobFinishedAckEvt);
+  sendEventToOther(pEvtJobFinishedAckEvt);
 
   // put the job into the state Finished
   Job* pJob = jobManager().findJob(pEvt->job_id());
@@ -100,7 +100,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
                                                                 ));
 
       // send the event to the master
-      sendEventToMaster(pEvtJobFinished);
+      sendEventToOther(pEvtJobFinished);
   }
   else
   {
@@ -188,7 +188,7 @@ bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::layer
   if(!isSubscriber(pJob->owner()))
   {
     DMLOG (TRACE, "Post a JobFinished event to the master "<<pJob->owner());
-    sendEventToMaster(pEvtJobFinished);
+    sendEventToOther(pEvtJobFinished);
   }
 
   if (m_guiService)
@@ -217,7 +217,7 @@ bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::layer
                                )
         );
 
-      sendEventToMaster(ptrEvt);
+      sendEventToOther(ptrEvt);
     }
   }
 
@@ -252,7 +252,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
                                                                     , pEvt->from()
                                                                     , pEvt->job_id() ));
   // send the event to the slave
-  sendEventToSlave(pEvtJobFailedAckEvt);
+  sendEventToOther(pEvtJobFailedAckEvt);
 
   //put the job into the state Failed
   Job* pJob = jobManager().findJob(pEvt->job_id());
@@ -277,7 +277,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
                             ));
 
       // send the event to the master
-      sendEventToMaster(pEvtJobFailed);
+      sendEventToOther(pEvtJobFailed);
   }
   else
   {
@@ -374,7 +374,7 @@ bool Agent::failed( const we::mgmt::layer::id_type& wfid
   pJob->JobFailed(pEvtJobFailed.get());
 
   if(!isSubscriber(pJob->owner()))
-    sendEventToMaster(pEvtJobFailed);
+    sendEventToOther(pEvtJobFailed);
 
   if (m_guiService)
   {
@@ -403,7 +403,7 @@ bool Agent::failed( const we::mgmt::layer::id_type& wfid
                              , reason
                              )
         );
-      sendEventToMaster(ptrEvt);
+      sendEventToOther(ptrEvt);
     }
   }
 
@@ -451,7 +451,7 @@ void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 
     if(!isTop())
     {
-      on_scope_exit _ ( boost::bind ( &Agent::sendEventToMaster
+      on_scope_exit _ ( boost::bind ( &Agent::sendEventToOther
                                     , this
                                     , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
                                                                        , evt.from()
@@ -486,7 +486,7 @@ void Agent::notifySubscribers(const T& ptrEvt)
     if( *it == jobId )
     {
       ptrEvt->to() = pair_subscr_joblist.first;
-      sendEventToMaster(ptrEvt);
+      sendEventToOther(ptrEvt);
 
       DMLOG (TRACE, "Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
       break;
@@ -507,7 +507,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
       else
       {
         DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
-        sendEventToMaster( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
+        sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , pEvt->from()
                                                           , events::ErrorEvent::SDPA_EJOBNOTFOUND
                                                           , "No such job found" )
@@ -519,7 +519,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 
   if(pJob->getStatus() == sdpa::status::CANCELED)
   {
-      sendEventToMaster( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
+      sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , pEvt->from()
                                                           , events::ErrorEvent::SDPA_EJOBALREADYCANCELED
                                                           , "Job already canceled" )
@@ -529,7 +529,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 
   if(pJob->completed())
   {
-    sendEventToMaster( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
+    sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                         , pEvt->from()
                                                         , events::ErrorEvent::SDPA_EJOBTERMINATED
                                                         , "Cannot cancel an already terminated job, its current status is: "
@@ -543,16 +543,16 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   {
     // send immediately an acknowledgment to the component that requested the cancellation
     events::CancelJobAckEvent::Ptr pCancelAckEvt(new events::CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
-    sendEventToMaster(pCancelAckEvt);
+    sendEventToOther(pCancelAckEvt);
     if(!isSubscriber(pEvt->from()))
-      sendEventToMaster(pCancelAckEvt);
+      sendEventToOther(pCancelAckEvt);
 
     notifySubscribers(pCancelAckEvt);
   }
 
   if(!pEvt->is_external() || !hasWorkflowEngine())
   {
-    on_scope_exit _ ( boost::bind ( &Agent::sendEventToMaster
+    on_scope_exit _ ( boost::bind ( &Agent::sendEventToOther
                                   , this
                                   , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
                                                                      , pEvt->from()
@@ -573,7 +573,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
                                                           , *worker_id
                                                           , pEvt->job_id()
                                                           , pEvt->reason() ) );
-      sendEventToSlave(pCancelEvt);
+      sendEventToOther(pCancelEvt);
 
       // change the job status to "Canceling"
       pJob->CancelJob(pEvt);
@@ -633,7 +633,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     {
         events::CancelJobAckEvent::Ptr pCancelAckEvt(new events::CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id() ));
       // only if the job was already submitted
-      sendEventToMaster(pCancelAckEvt);
+      sendEventToOther(pCancelAckEvt);
 
       try
       {

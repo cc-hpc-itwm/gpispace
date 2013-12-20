@@ -150,8 +150,7 @@ namespace sdpa {
 
       // event communication
       OVERWRITTEN_IN_TEST void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
-      OVERWRITTEN_IN_TEST void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
-      OVERWRITTEN_IN_TEST void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& e); // 0 retries, 1 second timeout
+      OVERWRITTEN_IN_TEST void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
 
       // registration
       void requestRegistration(const MasterInfo& masterInfo);

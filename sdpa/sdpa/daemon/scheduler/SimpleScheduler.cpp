@@ -51,7 +51,7 @@ void SimpleScheduler::assignJobsToWorkers()
                                              matchingWorkerId,
                                              sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG,
                                              "not registered") );
-           ptr_comm_handler_->sendEventToSlave(pErrorEvt);
+           ptr_comm_handler_->sendEventToOther(pErrorEvt);
            ptr_comm_handler_->pause(jobId);
         }
     }

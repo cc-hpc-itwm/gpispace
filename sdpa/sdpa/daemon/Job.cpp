@@ -122,7 +122,7 @@ namespace sdpa {
             events::JobStalledEvent::Ptr pEvt(new events::JobStalledEvent( evt.ptrAgent()->name()
                                                                            , owner()
                                                                            , id()));
-            evt.ptrAgent()->sendEventToMaster(pEvt);
+            evt.ptrAgent()->sendEventToOther(pEvt);
         }
       }
     }
@@ -141,7 +141,7 @@ namespace sdpa {
                                                    , owner()
                                                    , id()
                                                   ));
-            evt.ptrAgent()->sendEventToMaster(pEvt);
+            evt.ptrAgent()->sendEventToOther(pEvt);
          }
       }
     }
@@ -153,7 +153,7 @@ namespace sdpa {
                                                  , e.to()
                                                  , id()
                                                  , result() ));
-      e.ptrAgent()->sendEventToMaster(pResReply);
+      e.ptrAgent()->sendEventToOther(pResReply);
     }
 
     //transitions

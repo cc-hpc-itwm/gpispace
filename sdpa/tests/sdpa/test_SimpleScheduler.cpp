@@ -70,15 +70,9 @@ public:
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
-  void sendEventToMaster(const sdpa::events::SDPAEvent::Ptr& pEvt)
+  void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& pEvt)
   {
     DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the master stage");
-    throw std::runtime_error ("trying to send message in test case which should not send messages");
-  }
-
-  void sendEventToSlave(const sdpa::events::SDPAEvent::Ptr& pEvt)
-  {
-    DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the slave stage");
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 };

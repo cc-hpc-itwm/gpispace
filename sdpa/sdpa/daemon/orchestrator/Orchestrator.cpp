@@ -62,7 +62,7 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
     {
       //! \todo eliminate, do not use non-const getter
       ptrEvt->to() = pair_subscr_joblist.first;
-      sendEventToMaster (ptrEvt);
+      sendEventToOther (ptrEvt);
 
       SDPA_LOG_DEBUG ("Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
       break;
@@ -87,7 +87,7 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 
       // send ack to the slave
       DMLOG (TRACE, "Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
-      sendEventToSlave(ptrAckEvt);
+      sendEventToOther(ptrAckEvt);
   }
 
   //put the job into the state Finished or Cancelled
@@ -163,7 +163,7 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
                                    , pEvt->job_id() ) );
 
       // send the event to the slave
-      sendEventToSlave(evt);
+      sendEventToOther(evt);
   }
 
   //put the job into the state Failed or Cancelled
@@ -224,7 +224,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
   {
       if(pJob->getStatus() == sdpa::status::CANCELING)
       {
-          sendEventToMaster( events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
+          sendEventToOther( events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                               , pEvt->from()
                                                               , events::ErrorEvent::SDPA_EJOBALREADYCANCELED
                                                               , "A cancelation request for this job was already posted!" )
@@ -234,7 +234,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
 
       if(pJob->completed())
       {
-         sendEventToMaster(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
+         sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                              , pEvt->from()
                                                              ,  events::ErrorEvent::SDPA_EJOBTERMINATED
                                                              , "Cannot cancel an already terminated job, its current status is: "
@@ -247,11 +247,11 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
       events::CancelJobAckEvent::Ptr pCancelAckEvt(new  events::CancelJobAckEvent(name(), pEvt->from (), pEvt->job_id()));
 
       if(!isSubscriber(pEvt->from ()))
-        sendEventToMaster(pCancelAckEvt);
+        sendEventToOther(pCancelAckEvt);
 
       notifySubscribers(pCancelAckEvt);
 
-      on_scope_exit _ ( boost::bind ( &Orchestrator::sendEventToMaster
+      on_scope_exit _ ( boost::bind ( &Orchestrator::sendEventToOther
                                      , this
                                      , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
                                                                         , pEvt->from()
@@ -272,7 +272,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
                                                            , *worker_id
                                                            , pEvt->job_id()
                                                            , pEvt->reason() ) );
-         sendEventToSlave(pCancelEvt);
+         sendEventToOther(pCancelEvt);
 
          DMLOG(TRACE, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
       }
@@ -290,7 +290,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
   else
   {
       DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
-      sendEventToMaster(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
+      sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                          , pEvt->from()
                                                          ,  events::ErrorEvent::SDPA_EJOBNOTFOUND
                                                          , "No such job found" )
@@ -320,7 +320,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
 
   DMLOG (TRACE, e.from() << " requesting to delete job " << e.job_id() );
 
-  on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToMaster, this
+  on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToOther, this
                                 ,  events::ErrorEvent::Ptr ( new  events::ErrorEvent ( name()
                                                                    , e.from()
                                                                    ,  events::ErrorEvent::SDPA_EUNKNOWN
@@ -344,20 +344,20 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
                                             events::ErrorEvent::SDPA_EJOBNOTDELETED,
                                             "Cannot delete a job which is in a non-terminal state. Please, cancel it first!")
                                             );
-          sendEventToMaster(pErrorEvt);
+          sendEventToOther(pErrorEvt);
           return;
       }
 
       try{
           jobManager().deleteJob(e.job_id());
-          sendEventToMaster( events::DeleteJobAckEvent::Ptr( new events::DeleteJobAckEvent(e.to(),
+          sendEventToOther( events::DeleteJobAckEvent::Ptr( new events::DeleteJobAckEvent(e.to(),
                                                                                   e.from(),
                                                                                   e.job_id())) );
       }
       catch(JobNotDeletedException const & ex)
       {
           DMLOG (WARN, "Job " << e.job_id() << " could not be deleted!");
-          sendEventToMaster(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
+          sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                               , e.from()
                                                               , events::ErrorEvent::SDPA_EJOBNOTDELETED
                                                               , ex.what()
@@ -368,7 +368,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
   else
   {
       DMLOG (WARN, "Job " << e.job_id() << " could not be found!");
-      sendEventToMaster(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
+      sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                           , e.from()
                                                           ,  events::ErrorEvent::SDPA_EJOBNOTFOUND
                                                           , "no such job"
@@ -420,7 +420,7 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
                                                                     , "Not allowed to request results for a non-terminated job, its current status is : "
                                                                     +  sdpa::status::show(pJob->getStatus()) )
                                             );
-          sendEventToMaster(pErrorEvt);
+          sendEventToOther(pErrorEvt);
       }
   }
   else
@@ -428,7 +428,7 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
     SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
     events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
-    sendEventToMaster(pErrorEvt);
+    sendEventToOther(pErrorEvt);
   }
 }
 
@@ -449,14 +449,14 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
                                          )
       );
 
-      sendEventToMaster (pStatReply);
+      sendEventToOther (pStatReply);
   }
   else
   {
       SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
       events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
-      sendEventToMaster(pErrorEvt);
+      sendEventToOther(pErrorEvt);
   }
 }
 
