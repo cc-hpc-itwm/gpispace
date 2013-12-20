@@ -15,7 +15,7 @@ CMP_ORIG="${DIR_TEST}/out.cmp"
 DAT="${DIR_BUILD}/dat"
 HOSTFILE="${DIR_BUILD}/hostfile"
 
-make_src='make BUILDDIR="${DIR_BUILD}" DATFILE="${DAT}" -C "${DIR_SOURCE}"'
+make_src='make BUILDDIR="${DIR_BUILD}" DATFILE="${DAT}" LIB_DESTDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
 make_gen='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
 
 cleanup()
