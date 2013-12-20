@@ -31,18 +31,6 @@ namespace fhg { namespace log {
     }                                                                   \
   } while (0)
 
-#define FHGLOG_DO_EVERY_N_IF(condition, n, thing)                       \
-  do {                                                                  \
-    if (condition)                                                      \
-    {                                                                   \
-      static unsigned int FHGLOG_COUNTER = 0;                           \
-      if ((FHGLOG_COUNTER++ % n) == 0)                                  \
-      {                                                                 \
-        thing;                                                          \
-      }                                                                 \
-    }                                                                   \
-  } while (0)
-
 #define FHGLOG_DO_ONCE(thing)                   \
     do {                                        \
       static unsigned int FHGLOG_ONCE_FLAG = 0; \
