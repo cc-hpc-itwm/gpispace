@@ -1,25 +1,29 @@
 # -*- mode: cmake; -*-
 
-fhg_add_test(test_frame_parser.cpp
+fhg_add_test(frame_parser.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
   DESCRIPTION "GSPCNet - frame parser tests"
 )
 
-fhg_add_test(test_util.cpp
+fhg_add_test(util.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
   DESCRIPTION "GSPCNet - util tests"
 )
 
-fhg_add_test(test_frame_builder.cpp
+fhg_add_test(frame_builder.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
   DESCRIPTION "GSPCNet - frame builder tests"
 )
 
-fhg_add_test(test_queue_manager.cpp
+fhg_add_test(queue_manager.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
@@ -29,8 +33,9 @@ fhg_add_test(test_queue_manager.cpp
   DESCRIPTION "GSPCNet - queue manager tests"
 )
 
-fhg_add_test(test_demux.cpp
+fhg_add_test(demux.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
@@ -40,8 +45,9 @@ fhg_add_test(test_demux.cpp
   DESCRIPTION "GSPCNet - demux tests"
 )
 
-fhg_add_test(test_services.cpp
+fhg_add_test(services.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
@@ -51,8 +57,9 @@ fhg_add_test(test_services.cpp
   DESCRIPTION "GSPCNet - services tests"
 )
 
-fhg_add_test(test_serve.cpp
+fhg_add_test(serve.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
@@ -64,8 +71,9 @@ fhg_add_test(test_serve.cpp
   DESCRIPTION "GSPCNet - serve tests"
 )
 
-fhg_add_test(test_auth.cpp
+fhg_add_test(auth.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
@@ -76,8 +84,9 @@ fhg_add_test(test_auth.cpp
   DESCRIPTION "GSPCNet - auth tests"
 )
 
-fhg_add_test(test_heartbeat_info.cpp
+fhg_add_test(heartbeat_info.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SIGNALS_LIBRARY}
@@ -88,8 +97,9 @@ fhg_add_test(test_heartbeat_info.cpp
   DESCRIPTION "GSPCNet - heartbeat info tests"
 )
 
-fhg_add_test(test_io.cpp
+fhg_add_test(io.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
@@ -101,14 +111,16 @@ fhg_add_test(test_io.cpp
   DESCRIPTION "GSPCNet - test the global io"
 )
 
-fhg_add_test(test_parse_command_line.cpp
+fhg_add_test(parse_command_line.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc ${Boost_FILESYSTEM_LIBRARY}
   DESCRIPTION "GSPCRif - command line parser tests"
 )
 
-fhg_add_test(test_process.cpp
+fhg_add_test(process.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
@@ -118,8 +130,9 @@ fhg_add_test(test_process.cpp
   DESCRIPTION "GSPCRif - process tests"
 )
 
-fhg_add_test(test_manager.cpp
+fhg_add_test(manager.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
@@ -129,8 +142,9 @@ fhg_add_test(test_manager.cpp
   DESCRIPTION "GSPCRif - process manager tests"
 )
 
-fhg_add_test(test_supervisor.cpp
+fhg_add_test(supervisor.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  fhg-util
                  ${Boost_FILESYSTEM_LIBRARY}
@@ -144,8 +158,9 @@ fhg_add_test(test_supervisor.cpp
 
 #### KVS related tests
 
-fhg_add_test(test_kvs_impl.cpp
+fhg_add_test(kvs_impl.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  fhg-util
                  we-dev
@@ -158,8 +173,9 @@ fhg_add_test(test_kvs_impl.cpp
   DESCRIPTION "GSPCKvs - KVS implementation tests"
 )
 
-fhg_add_test(test_kvs_net.cpp
+fhg_add_test(kvs_net.cpp
   BOOST_UNIT_TEST
+  PROJECT gspc
   LINK_LIBRARIES libgspc
                  fhg-util
                  we-dev
