@@ -53,7 +53,6 @@ set (gspc_src
   rif/proc_info.cpp
   rif/process.cpp
   rif/manager.cpp
-  rif/convenience.cpp
   rif/null_process_handler.cpp
   rif/supervisor.cpp
 
