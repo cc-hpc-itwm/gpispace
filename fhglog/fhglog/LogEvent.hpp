@@ -34,7 +34,7 @@ namespace fhg { namespace log {
       typedef pid_t         pid_type;
       typedef unsigned long tid_type;
       typedef std::vector<std::string> trace_type;
-      typedef std::set<std::string> tags_type;
+      typedef std::vector<std::string> tags_type;
 
       LogEvent(util::parse::position&);
       static LogEvent from_string (const std::string&);
@@ -77,14 +77,6 @@ namespace fhg { namespace log {
       void trace (const std::string &name) const
       {
         trace_.push_back (name);
-      }
-      void tag (const std::string &t)
-      {
-        tags_.insert (t);
-      }
-      void untag (const std::string &t)
-      {
-        tags_.erase (t);
       }
 
       std::string encoded() const;

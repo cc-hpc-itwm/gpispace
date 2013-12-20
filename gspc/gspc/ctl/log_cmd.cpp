@@ -169,9 +169,9 @@ namespace gspc
                                , file
                                , function
                                , line
-                               ,  sstr.str().c_str()
+                               , sstr.str().c_str()
+                               , fhg::log::LogEvent::tags_type (1, tag)
                                );
-        evt.tag (tag);
 
         fhg::log::Logger::get ("system")->log (evt);
 

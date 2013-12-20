@@ -92,11 +92,8 @@ int main (int argc, char **argv)
             , function
             , line
             , message
+            , tags
             );
-  BOOST_FOREACH (std::string const &tag, tags)
-  {
-    e.tag (tag);
-  }
 
   try
   {

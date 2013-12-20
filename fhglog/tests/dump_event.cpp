@@ -9,13 +9,15 @@ namespace
 {
   fhg::log::LogEvent gen_event()
   {
+    fhg::log::LogEvent::tags_type tags;
+    tags.push_back ("foo");
+    tags.push_back ("bar");
+
     fhg::log::LogEvent evt ( fhg::log::LogLevel::DEBUG
                            , __FILE__
                            , "main", __LINE__, "hello world!"
+                           , tags
                            );
-
-    evt.tag ("foo");
-    evt.tag ("bar");
 
     evt.trace ("trace1\"trace1");
     evt.trace ("t2't2\"\"\"");

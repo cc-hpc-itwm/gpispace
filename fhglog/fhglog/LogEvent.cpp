@@ -146,17 +146,6 @@ namespace fhg
 
         return ret;
       }
-      std::set<std::string> read_set (fhg::util::parse::position& pos)
-      {
-        std::set<std::string> ret;
-
-        while (!pos.end())
-        {
-          ret.insert (read_string (pos));
-        }
-
-        return ret;
-      }
       LogLevel::Level read_loglevel (fhg::util::parse::position& pos)
       {
         switch (*pos)
@@ -185,7 +174,7 @@ namespace fhg
       , tid_ ((++pos, read_integral<unsigned long> (pos)))
       , host_ ((++pos, read_string (pos)))
       , trace_ ((++pos, read_vec (pos)))
-      , tags_ ((++pos, read_set (pos)))
+      , tags_ ((++pos, read_vec (pos)))
     {}
 
     LogEvent LogEvent::from_string (const std::string& str)
