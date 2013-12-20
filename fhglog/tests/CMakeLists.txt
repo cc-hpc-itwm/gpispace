@@ -23,11 +23,6 @@ fhg_add_test (event.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (every_n.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhglog
-  LINK_LIBRARIES fhglog)
-
 fhg_add_test (file_appender.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
