@@ -17,7 +17,7 @@
 #include <we/type/value/show.hpp>
 
 #include <gspc/kvs/api.hpp>
-#include <gspc/kvs/util.hpp>
+#include <gspc/kvs/kvs.hpp>
 #include <gspc/kvs/impl/kvs_impl.hpp>
 
 BOOST_AUTO_TEST_CASE (test_impl_invalid_key)
@@ -310,7 +310,6 @@ static void s_wfh_client_thread ( const size_t rank
                                 , const std::string &queue
                                 )
 {
-  int rc;
   const std::string my_queue ((boost::format ("thread-%1%") % rank).str ());
 
   for (size_t i = 0 ; i < nmsg ; ++i)
@@ -322,27 +321,8 @@ static void s_wfh_client_thread ( const size_t rank
        ).str ());
     pnet::type::value::value_type rply;
 
-    rc = gspc::kvs::query ( *kvs
-                          , queue
-                          , rqst
-                          , my_queue
-                          , rply
-                          , 10 * 1000
-                          );
-    if (rc != 0)
-    {
-      std::cerr << "thread[" << rank << "]: "
-                << "could not query #" << i << " from '" << queue << "': "
-                << strerror (-rc)
-                << std::endl
-        ;
-      kvs->get (my_queue, rply);
-      std::cerr << "thread[" << rank << "]: queue content: "
-                << pnet::type::value::show (rply)
-                << std::endl
-        ;
-      break;
-    }
+    BOOST_REQUIRE_EQUAL (kvs->push (queue, rqst), 0);
+    BOOST_REQUIRE_EQUAL (kvs->pop (my_queue, rply, 10 * 1000), 0);
   }
 }
 

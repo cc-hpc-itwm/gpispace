@@ -5,7 +5,6 @@
 #include <gspc/kvs/impl/kvs_impl.hpp>
 #include <gspc/kvs/impl/kvs_net_frontend.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
-#include <gspc/kvs/util.hpp>
 #include <gspc/net.hpp>
 
 #include <we/type/value/peek.hpp>
@@ -224,21 +223,16 @@ namespace
       pnet::type::value::value_type rply;
 
       BOOST_REQUIRE_EQUAL
-        ( gspc::kvs::query
-          ( *kvs
-          , queue
-          , pnet::type::value::read
-            ((boost::format ( "Struct [from := \"%1%\", msg := %2%UL]"
-                            ) % my_queue % i
-             ).str ()
-            )
-          , my_queue
-          , rply
-          , 10 * 1000
-          )
+        (kvs->push ( queue
+                   , pnet::type::value::read
+                     ((boost::format ( "Struct [from := \"%1%\", msg := %2%UL]"
+                                     ) % my_queue % i
+                      ).str ()
+                     )
+                   )
         , 0
         );
-
+      BOOST_REQUIRE_EQUAL (kvs->pop (my_queue, rply, 10 * 1000), 0);
       BOOST_REQUIRE_EQUAL (rply, pnet::type::value::value_type (i));
     }
   }
