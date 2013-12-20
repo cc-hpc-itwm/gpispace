@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 add_executable(fhglogd server.cpp)
 add_executable(fhglogc client.cpp)
 add_executable(fhglog-dump dump.cpp)
