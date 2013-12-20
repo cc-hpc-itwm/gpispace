@@ -235,12 +235,9 @@ if (ENABLE_APPLICATION)
 endif (ENABLE_APPLICATION)
 add_subdirectory (src)
 add_subdirectory (sdpa)
+add_subdirectory(bundle)
 
 include (TargetDoc)
-
-if (INSTALL_AS_BUNDLE)
-  add_subdirectory(bundle)
-endif()
 
 add_subdirectory (test)
 

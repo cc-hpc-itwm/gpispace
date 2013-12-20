@@ -1,5 +1,11 @@
 # bundle up
 
+install (PROGRAMS bundle.sh
+  DESTINATION libexec/sdpa/scripts
+  COMPONENT runtime)
+
+if (INSTALL_AS_BUNDLE)
+
 set (APPS)
 
 macro (BUNDLE_APPS)
@@ -59,6 +65,4 @@ install(CODE "
   endif()
   " COMPONENT dependencies)
 
-install (PROGRAMS bundle.sh
-  DESTINATION libexec/sdpa/scripts
-  COMPONENT runtime)
+endif()
