@@ -8,11 +8,9 @@
 
 namespace fhg { namespace log {
 
-#define FHGLOG_FUNCTION __PRETTY_FUNCTION__
-
 // convenience macro to create an event
-#define FHGLOG_MKEVENT_HERE(level, message) ::fhg::log::LogEvent(::fhg::log::LogLevel::level, __FILE__, FHGLOG_FUNCTION, __LINE__, message)
-#define FHGLOG_MKEVENT(var, level, message) ::fhg::log::LogEvent var(::fhg::log::LogLevel::level, __FILE__, FHGLOG_FUNCTION, __LINE__, message)
+#define FHGLOG_MKEVENT_HERE(level, message) ::fhg::log::LogEvent(::fhg::log::LogLevel::level, __FILE__, __PRETTY_FUNCTION__, __LINE__, message)
+#define FHGLOG_MKEVENT(var, level, message) ::fhg::log::LogEvent var(::fhg::log::LogLevel::level, __FILE__, __PRETTY_FUNCTION__, __LINE__, message)
 
 #  define FHGLOG_FLUSH()                                                \
     do                                                                  \
