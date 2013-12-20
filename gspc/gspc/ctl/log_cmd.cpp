@@ -143,7 +143,7 @@ namespace gspc
         }
 
         fhg::log::Logger::get ("system")->log
-          ( fhg::log::LogEvent ( fhg::log::LogLevel::LogLevel (level)
+          ( fhg::log::LogEvent ( fhg::log::LogLevel (level)
                                , file
                                , function
                                , line
