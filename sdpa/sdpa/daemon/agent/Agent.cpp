@@ -88,10 +88,9 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
       return;
   }
 
-  pJob->JobFinished(pEvt);
-
   if( !hasWorkflowEngine() )
   {
+      pJob->JobFinished(pEvt);
       // forward it up
       events::JobFinishedEvent::Ptr pEvtJobFinished(new events::JobFinishedEvent( name()
                                                                   , pJob->owner()
@@ -118,12 +117,26 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
       if(bTaskGroupComputed) {
           DLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
           if(scheduler()->groupFinished(actId))
+          {
+            pJob->JobFinished(pEvt);
             workflowEngine()->finished(actId, pEvt->result());
+          }
           else
+          {
+            events::JobFailedEvent* pJobFailedEvt(new events::JobFailedEvent( name()
+                                                                             , pEvt->from()
+                                                                             , pEvt->job_id()
+                                                                             , pEvt->result()
+                                                                             , fhg::error::UNEXPECTED_ERROR
+                                                                             , "One of tasks of the group failed with the actual reservation!"));
+            pJob->JobFailed(pJobFailedEvt);
+            delete pJobFailedEvt;
+
             workflowEngine()->failed( actId,
                                       pEvt->result(),
                                       sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
                                       "One of tasks of the group failed with the actual reservation!");
+          }
       }
 
       try {
