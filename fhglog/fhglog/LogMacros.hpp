@@ -14,14 +14,6 @@ namespace fhg { namespace log {
 #define FHGLOG_MKEVENT_HERE(level, message) ::fhg::log::LogEvent(::fhg::log::LogLevel::level, __FILE__, FHGLOG_FUNCTION, __LINE__, message)
 #define FHGLOG_MKEVENT(var, level, message) ::fhg::log::LogEvent var(::fhg::log::LogLevel::level, __FILE__, FHGLOG_FUNCTION, __LINE__, message)
 
-#define FHGLOG_TOSTRING_(x) #x
-#define FHGLOG_TOSTRING(x) FHGLOG_TOSTRING_(x)
-
-#define FHGLOG_UNIQUE_NAME(name, line) FHGLOG_UNIQUE_NAME_CONCAT(name, line)
-#define FHGLOG_UNIQUE_NAME_CONCAT(name, line) name ## line
-#define FHGLOG_COUNTER FHGLOG_UNIQUE_NAME(counter_, __LINE__)
-#define FHGLOG_ONCE_FLAG FHGLOG_UNIQUE_NAME(once_, __LINE__)
-
 #  define FHGLOG_FLUSH()                                                \
     do                                                                  \
     {                                                                   \
