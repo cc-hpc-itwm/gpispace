@@ -9,7 +9,6 @@
 #include <boost/foreach.hpp>
 
 #include <gspc/rif/manager.hpp>
-#include <gspc/rif/convenience.hpp>
 #include <gspc/rif/proc_info.hpp>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE(gspc::rif::argv_t);
@@ -226,7 +225,11 @@ BOOST_AUTO_TEST_CASE (test_parallel_sleeps)
 
   for (size_t i = 0 ; i < NUM_PROCS ; ++i)
   {
-    gspc::rif::proc_t p = gspc::rif::exec (manager, "/bin/sleep 5");
+    gspc::rif::argv_t argv;
+    argv.push_back ("/bin/sleep");
+    argv.push_back ("5");
+
+    gspc::rif::proc_t p (manager.exec (argv));
     if (p > 0)
     {
       ids.push_back (p);
