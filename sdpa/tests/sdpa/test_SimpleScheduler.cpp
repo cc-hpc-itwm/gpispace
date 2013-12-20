@@ -17,7 +17,7 @@
  */
 #define BOOST_TEST_MODULE TestSimpleScheduler
 #include <boost/test/unit_test.hpp>
-#include <sdpa/daemon/agent/Agent.hpp>
+#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/daemon/scheduler/SimpleScheduler.hpp>
 #include "kvs_setup_fixture.hpp"
 
@@ -32,16 +32,12 @@ const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
 typedef std::map<sdpa::job_id_t, sdpa::worker_id_t> mapJob2Worker_t;
 
-class TestAgent : public sdpa::daemon::Agent
+class TestOrchestrator : public sdpa::daemon::Orchestrator
 {
 public:
-  typedef boost::shared_ptr<TestAgent > ptr_t;
-  TestAgent( const std::string& name
-             , const std::string& url
-             , const sdpa::master_info_list_t& arrMasterNames
-             , const unsigned int rank = 0
-             , const boost::optional<std::string>& appGuiUrl = boost::none)
-    : sdpa::daemon::Agent(name, url, arrMasterNames, rank, appGuiUrl)
+  typedef boost::shared_ptr<TestOrchestrator > ptr_t;
+  TestOrchestrator( const std::string& name, const std::string& url)
+    : sdpa::daemon::Orchestrator(name, url)
   {
   }
 
@@ -77,18 +73,18 @@ public:
   }
 };
 
-struct allocate_test_agent_and_scheduler
+struct allocate_test_orchestrator_and_scheduler
 {
-    allocate_test_agent_and_scheduler()
-      : _agent ("agent", "127.0.0.1", sdpa::master_info_list_t())
-      , _scheduler (&_agent)
+    allocate_test_orchestrator_and_scheduler()
+      : _orchestrator ("orchestrator", "127.0.0.1")
+      , _scheduler (&_orchestrator)
     {}
 
-    TestAgent _agent;
+    TestOrchestrator _orchestrator;
     sdpa::daemon::SimpleScheduler _scheduler;
 };
 
-BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_agent_and_scheduler)
+BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_orchestrator_and_scheduler)
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
@@ -132,7 +128,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   const sdpa::job_id_t jobId1("Job1");
   job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-  _agent.addJob(jobId1, "description 1", sdpa::job_id_t(), false, "", jobReqs1);
+  _orchestrator.addJob(jobId1, "description 1", sdpa::job_id_t(), false, "", jobReqs1);
 
   LOG(DEBUG, "Schedule the job "<<jobId1);
   _scheduler.schedule(jobId1);
@@ -189,7 +185,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       sdpa::job_id_t jobId(osstr.str());
       listJobIds.push_back(jobId);
       osstr.str("");
-      _agent.addJob(jobId, "", sdpa::job_id_t(), false, "", job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
+      _orchestrator.addJob(jobId, "", sdpa::job_id_t(), false, "", job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   // schedule all jobs now
@@ -249,7 +245,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       listJobIds.push_back(jobId);
       osstr.str("");
       job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-      _agent.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
+      _orchestrator.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
   }
 
   // schedule all jobs now
@@ -334,7 +330,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     listJobIds.push_back(jobId);
     osstr.str("");
     job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-    _agent.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
+    _orchestrator.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
   }
 
   // schedule all jobs now
@@ -419,7 +415,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     listJobIds.push_back(jobId);
     osstr.str("");
     job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-    _agent.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
+    _orchestrator.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
   }
 
   // schedule all jobs now
