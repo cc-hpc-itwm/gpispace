@@ -17,7 +17,7 @@
 #include <we/type/value/show.hpp>
 
 #include <gspc/net.hpp>
-#include <gspc/kvs.hpp>
+#include <gspc/kvs/kvs.hpp>
 
 static void long_usage (int lvl)
 {

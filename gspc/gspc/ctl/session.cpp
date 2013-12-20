@@ -11,7 +11,7 @@
 #include <time.h>
 
 #include <gspc/net.hpp>
-#include <gspc/kvs.hpp>
+#include <gspc/kvs/kvs.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 #include <gspc/ctl/system.hpp>
 
