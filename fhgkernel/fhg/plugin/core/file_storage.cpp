@@ -2,7 +2,7 @@
 
 #include <errno.h>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/filesystem/fstream.hpp>
 #include <boost/system/error_code.hpp>

@@ -1,4 +1,4 @@
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include "observable.hpp"
 #include "observer.hpp"

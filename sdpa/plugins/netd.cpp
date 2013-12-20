@@ -4,7 +4,7 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <fhglog/format.hpp>
 #include <fhglog/MemoryAppender.hpp>

@@ -1,6 +1,6 @@
 #include "transfer_queue.hpp"
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>

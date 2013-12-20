@@ -86,7 +86,7 @@
   } while (0)
 
 #elif FHG_ASSERT_LOG == FHG_ASSERT_MODE
-#  include <fhglog/minimal.hpp>
+#  include <fhglog/LogMacros.hpp>
 #  define fhg_assert(cond, ...)                                      \
   do                                                                    \
   {                                                                     \
@@ -99,7 +99,7 @@
   } while (0)
 
 #elif FHG_ASSERT_LOG_ABORT == FHG_ASSERT_MODE
-#  include <fhglog/minimal.hpp>
+#  include <fhglog/LogMacros.hpp>
 #  define fhg_assert(cond, ...)                                      \
   do                                                                    \
   {                                                                     \

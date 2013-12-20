@@ -1,6 +1,6 @@
 #include "api.hpp"
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include "fake_api.hpp"

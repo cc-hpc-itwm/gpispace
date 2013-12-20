@@ -1,6 +1,6 @@
 #include "logc.hpp"
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/ThreadedAppender.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 

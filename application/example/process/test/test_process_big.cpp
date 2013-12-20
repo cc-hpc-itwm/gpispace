@@ -5,7 +5,7 @@
 
 #include <require.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 int
 main (int argc, char ** argv)

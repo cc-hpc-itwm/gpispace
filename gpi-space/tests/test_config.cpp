@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE GpiSpaceConfigTest
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/config/config.hpp>
 #include <gpi-space/config/config_io.hpp>

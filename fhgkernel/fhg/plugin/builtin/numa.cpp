@@ -1,4 +1,4 @@
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <hwloc.h>
 #include <errno.h>

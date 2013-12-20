@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 

@@ -69,7 +69,7 @@
   		</properties>
 	</properties>
 	<module name="coallocation_test" function="done task_A (id, nw)" pass_context="true">
-      <cinclude href="fhglog/minimal.hpp"/>
+      <cinclude href="fhglog/LogMacros.hpp"/>
 	  <cinclude href="unistd.h"/>
 	  <cinclude href="sstream"/>
 	 <code><![CDATA[
@@ -145,7 +145,7 @@
   			</properties>
 		</properties> 
 		<module name="coallocation_test" function=" done task_B (id, nw)" pass_context="true">
-	        <cinclude href="fhglog/minimal.hpp" />
+	        <cinclude href="fhglog/LogMacros.hpp" />
 		  	<cinclude href="unistd.h" />
 		  	<cinclude href="sstream"/>
 	    	<code><![CDATA[

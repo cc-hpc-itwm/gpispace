@@ -10,7 +10,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <fhgcom/kvs/kvsc.hpp>

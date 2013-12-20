@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE ProcessBasics
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <csignal>
 
 #include <process.hpp>

@@ -20,7 +20,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/get_home_dir.hpp>
 #include <fhg/util/program_info.h>

@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/segment/segment.hpp>

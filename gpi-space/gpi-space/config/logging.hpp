@@ -2,7 +2,7 @@
 #define GPI_SPACE_CONFIG_LOGGING_HPP 1
 
 #include <gpi-space/config/config-data.hpp>
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/util/getenv.hpp>
 
 #include <stdio.h> // snprintf

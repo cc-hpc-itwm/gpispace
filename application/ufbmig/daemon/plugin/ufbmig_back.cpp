@@ -8,7 +8,7 @@
 #include <list>
 #include <stack>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/error_codes.hpp>
 #include <fhg/util/bool.hpp>

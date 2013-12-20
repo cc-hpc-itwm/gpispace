@@ -1,5 +1,5 @@
 #include <iostream>
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <fhg/plugin/core/plugin_kernel_mediator.hpp>

@@ -20,7 +20,7 @@
 #include <boost/unordered_map.hpp>
 #include <boost/filesystem.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/util/show.hpp>
 #include <fhg/util/split.hpp>
 

@@ -3,7 +3,7 @@
 
 #include <signal.h>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/signal_handler.hpp>
 

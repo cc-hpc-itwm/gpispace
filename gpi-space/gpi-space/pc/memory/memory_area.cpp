@@ -2,7 +2,7 @@
 
 #include <stack>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <boost/make_shared.hpp>

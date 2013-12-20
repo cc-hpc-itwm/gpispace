@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE GpiSpacePCTypesTest
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>

@@ -7,7 +7,7 @@
 
 #include <errno.h>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 
 struct child_arg_t

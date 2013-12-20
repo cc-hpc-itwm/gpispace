@@ -15,7 +15,7 @@
 #include "ServerStateControlServer.h"
 
 #include <fhg/assert.hpp>
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 
 #include <fhg/util/threadname.hpp>

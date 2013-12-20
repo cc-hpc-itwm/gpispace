@@ -6,7 +6,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <fhgcom/peer.hpp>
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/threadname.hpp>

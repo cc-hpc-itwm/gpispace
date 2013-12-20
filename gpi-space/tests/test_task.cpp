@@ -4,7 +4,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/bind.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <boost/make_shared.hpp>
 #include <gpi-space/pc/memory/task.hpp>
 #include <gpi-space/pc/memory/task_queue.hpp>

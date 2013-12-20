@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/util/url.hpp>
 #include <fhg/util/read_bool.hpp>
 

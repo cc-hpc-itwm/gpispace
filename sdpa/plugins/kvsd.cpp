@@ -1,4 +1,4 @@
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/bool.hpp>
 #include <fhg/util/bool_io.hpp>

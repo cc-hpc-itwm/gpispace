@@ -64,7 +64,7 @@
 	<in name="filename" type="string" />
 	<out name="done" type="control" />
 	<module name="atomic_test" function="done f_A (id,filename)">
-      <cinclude href="fhglog/minimal.hpp"/>
+      <cinclude href="fhglog/LogMacros.hpp"/>
 	  <cinclude href="unistd.h" />
 	  <cinclude href="stdio.h" />
 	  <code><![CDATA[
@@ -135,7 +135,7 @@
 	<in name="filename" type="string" />
 	<out name="done" type="control" />
 	<module name="atomic_test" function="done f_B(id, filename)">
-		<cinclude href="fhglog/minimal.hpp" />
+		<cinclude href="fhglog/LogMacros.hpp" />
 		<cinclude href="unistd.h" />
 		<cinclude href="stdio.h" />
         <code><![CDATA[

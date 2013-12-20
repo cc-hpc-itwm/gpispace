@@ -1,6 +1,6 @@
 #include "transfer_manager.hpp"
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/make_shared.hpp>
 

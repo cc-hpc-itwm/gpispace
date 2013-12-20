@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE WeTypeBytearrayTest
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <we/type/bytearray.hpp>
 

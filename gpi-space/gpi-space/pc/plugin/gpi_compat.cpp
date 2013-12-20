@@ -1,6 +1,6 @@
 // this is a compatibility plugin for the new plugin architecture
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <unistd.h> // usleep
 #include <fvm-pc/pc.hpp>

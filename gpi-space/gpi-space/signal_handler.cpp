@@ -5,7 +5,7 @@
 #include <errno.h>  // errno
 #include <pthread.h> // pthread_sigmask
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/shared_ptr.hpp>
 

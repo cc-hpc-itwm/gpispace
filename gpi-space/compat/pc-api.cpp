@@ -1,7 +1,7 @@
 #include <fvm-pc/pc.hpp>
 
 #define LOG_COMPONENT "fvm-pc-compat"
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>

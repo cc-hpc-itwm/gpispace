@@ -4,7 +4,7 @@
 
 #include <boost/bind.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/global/topology.hpp>

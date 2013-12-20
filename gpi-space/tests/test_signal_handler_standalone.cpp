@@ -1,7 +1,7 @@
 #include <signal.h>
 #include <pthread.h>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/signal_handler.hpp>
 

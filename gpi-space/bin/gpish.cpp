@@ -17,7 +17,7 @@
 #include <boost/foreach.hpp>
 #include <boost/timer.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <fhg/revision.hpp>
 

@@ -49,7 +49,7 @@
 	<in name="filename" type="string" />
 	<out name="done" type="control" />
 	<module name="inotify_test" function="done testInotify (id,filename)">
-	  	<cinclude href="fhglog/minimal.hpp"/>
+	  	<cinclude href="fhglog/LogMacros.hpp"/>
 	  	<cinclude href="unistd.h" />
 	  	<cinclude href="stdio.h" />
 

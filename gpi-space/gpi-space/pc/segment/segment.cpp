@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>

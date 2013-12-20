@@ -1,6 +1,6 @@
 #include "rif.hpp"
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/read.hpp>
 #include <fhg/util/split.hpp>

@@ -19,7 +19,7 @@
 
 #include <fhg/assert.hpp>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/revision.hpp>

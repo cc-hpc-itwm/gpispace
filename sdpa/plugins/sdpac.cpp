@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 
 #include <sdpa/events/EventHandler.hpp>

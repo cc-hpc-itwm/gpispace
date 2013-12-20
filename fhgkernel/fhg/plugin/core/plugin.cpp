@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <algorithm>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <fhg/plugin/core/exception.hpp>

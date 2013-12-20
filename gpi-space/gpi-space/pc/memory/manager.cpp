@@ -1,6 +1,6 @@
 #include "manager.hpp"
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/url.hpp>

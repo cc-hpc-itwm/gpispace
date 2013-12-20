@@ -5,7 +5,7 @@
 
 #include <errno.h>
 
-#include <fhglog/minimal.hpp>
+#include <fhglog/LogMacros.hpp>
 #include <fhglog/LogEvent.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/thread/queue.hpp>

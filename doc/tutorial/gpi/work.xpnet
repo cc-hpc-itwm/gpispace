@@ -21,7 +21,7 @@
           <module name="gpi_work" function="work (v, n, config)">
             <cinclude href="string.h"/>
             <cinclude href="iostream"/>
-            <cinclude href="fhglog/minimal.hpp"/>
+            <cinclude href="fhglog/LogMacros.hpp"/>
             <cinclude href="fvm-pc/pc.hpp"/>
             <code><![CDATA[
             LOG (INFO, "### work " << v.id << " of [0.." << n << ")"
