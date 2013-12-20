@@ -33,7 +33,7 @@ namespace gspc
         static fhglog_initializer _;
 
         size_t i = 1;
-        int level = -1;
+        std::string level ("DEF");
         std::string tag ("gspc");
         std::string file ("(STDIN)");
         std::string function ("(main)");
@@ -46,45 +46,30 @@ namespace gspc
           if (arg == "--help" || arg == "-h")
           {
             ++i;
-            err << "usage: log [options] [--] message..."             << std::endl
-                <<                                                       std::endl
-                << "   options:"                                      << std::endl
-                << "       --LEVEL : trace, debug, info, warn, error" << std::endl
-                << "       --tag <tag> : how to tag the log event"    << std::endl
-                <<                                                       std::endl
+            err << "usage: log [options] [--] message..."           << std::endl
+                <<                                                     std::endl
+                << "  options:"                                     << std::endl
+                << "    --level <level>"                            << std::endl
+                << "    --tag <tag>"                                << std::endl
+                << "    --file <file>"                              << std::endl
+                << "    --line <line>"                              << std::endl
+                << "    --function <f>"                             << std::endl
+                <<                                                     std::endl
               ;
 
             return 0;
           }
-          else if (arg == "--trace")
+          else if (arg == "--level")
           {
             ++i;
-            level = 0;
-          }
-          else if (arg == "--debug")
-          {
+            if (i == argv.size ())
+            {
+              std::cerr << "log: missing argument to --tag" << std::endl;
+              return EXIT_FAILURE;
+            }
+
+            level = argv [i];
             ++i;
-            level = 1;
-          }
-          else if (arg == "--info")
-          {
-            ++i;
-            level = 2;
-          }
-          else if (arg == "--warn")
-          {
-            ++i;
-            level = 3;
-          }
-          else if (arg == "--error")
-          {
-            ++i;
-            level = 4;
-          }
-          else if (arg == "--fatal")
-          {
-            ++i;
-            level = 5;
           }
           else if (arg == "--tag")
           {
@@ -157,23 +142,15 @@ namespace gspc
           ++i;
         }
 
-
-        if (  level < fhg::log::LogLevel::MIN_LEVEL
-           || level > fhg::log::LogLevel::MAX_LEVEL
-           )
-        {
-          throw std::runtime_error ("STRANGE log level");
-        }
-
-        fhg::log::LogEvent evt ( fhg::log::LogLevel ((fhg::log::LogLevel::Level) level)
+        fhg::log::Logger::get ("system")->log
+          ( fhg::log::LogEvent ( fhg::log::LogLevel::LogLevel (level)
                                , file
                                , function
                                , line
                                , sstr.str().c_str()
                                , fhg::log::LogEvent::tags_type (1, tag)
-                               );
-
-        fhg::log::Logger::get ("system")->log (evt);
+                               )
+          );
 
         return 0;
       }
