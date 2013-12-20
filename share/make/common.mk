@@ -405,12 +405,17 @@ submit: $(PUT)
 
 ###############################################################################
 
-.PHONY: install modinstall
+.PHONY: install modinstall uninstall moduninstall
 
 install: modinstall
 
 modinstall: lib
 	$(MAKE) LIB_DESTDIR=$(LIB_DESTDIR) -C $(GEN) install
+
+uninstall: moduninstall
+
+moduninstall:
+	$(MAKE) LIB_DESTDIR=$(LIB_DESTDIR) -C $(GEN) uninstall
 
 ###############################################################################
 
@@ -447,32 +452,34 @@ endif
 .PHONY: help
 
 help:
-	@echo "default     'build'"
+	@echo "default      'build'"
 	@echo
-	@echo "build       'put' & 'lib'"
+	@echo "build        'put' & 'lib'"
 	@echo
-	@echo "net         build pnet from xml"
-	@echo "put         'net' & put tokens into the workflow"
+	@echo "net          build pnet from xml"
+	@echo "put          'net' & put tokens into the workflow"
 	@echo
-	@echo "gen         generate code into gen"
-	@echo "lib         'gen' & build libs from code in gen"
-	@echo "run         'lib' & 'put' & execute workflow"
-	@echo "submit      'put' & submit to a running SDPA system"
+	@echo "gen          generate code into gen"
+	@echo "lib          'gen' & build libs from code in gen"
+	@echo "run          'lib' & 'put' & execute workflow"
+	@echo "submit       'put' & submit to a running SDPA system"
 	@echo
-	@echo "validate    validate the xml"
-	@echo "verify      'net' & verify the pnet"
+	@echo "validate     validate the xml"
+	@echo "verify       'net' & verify the pnet"
 	@echo
-	@echo "dot         'net' & generate .dot"
-	@echo "ps          'dot' & generate postscript"
-	@echo "svg         'dot' & generate svg"
+	@echo "dot          'net' & generate .dot"
+	@echo "ps           'dot' & generate postscript"
+	@echo "svg          'dot' & generate svg"
 	@echo
-	@echo "clean       delete all generated files"
+	@echo "clean        delete all generated files"
 	@echo
-	@echo "showconfig  show the actual configuration"
+	@echo "showconfig   show the actual configuration"
 	@echo
-	@echo "modinstall  'lib' & install module(s) to $(LIB_DESTDIR)"
+	@echo "modinstall   'lib' & install module(s) to $(LIB_DESTDIR)"
+	@echo "install      'modinstall'"
 	@echo
-	@echo "install     'modinstall'"
+	@echo "moduninstall uninstall module(s) from $(LIB_DESTDIR)"
+	@echo "uninstall    'moduninstall'"
 
 ###############################################################################
 
