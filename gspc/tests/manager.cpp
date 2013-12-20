@@ -11,8 +11,8 @@
 #include <gspc/rif/manager.hpp>
 #include <gspc/rif/proc_info.hpp>
 
-BOOST_TEST_DONT_PRINT_LOG_VALUE(gspc::rif::argv_t);
-BOOST_TEST_DONT_PRINT_LOG_VALUE(gspc::rif::env_t);
+#include <fhg/util/boost/test/printer/vector.hpp>
+#include <fhg/util/boost/test/printer/map.hpp>
 
 struct F
 {
