@@ -5,7 +5,7 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 
-#include "log.hpp"
+#include <fhglog/fhglog.hpp>
 
 namespace gspc
 {
@@ -13,12 +13,25 @@ namespace gspc
   {
     namespace cmd
     {
+      namespace
+      {
+        struct fhglog_initializer
+        {
+          fhglog_initializer ()
+          {
+            FHGLOG_SETUP ();
+          }
+        };
+      }
+
       int log_cmd ( std::vector<std::string> const & argv
                   , std::istream &inp
                   , std::ostream &out
                   , std::ostream &err
                   )
       {
+        static fhglog_initializer _;
+
         size_t i = 1;
         int level = -1;
         std::string tag ("gspc");
@@ -144,14 +157,23 @@ namespace gspc
           ++i;
         }
 
-        gspc::ctl::log ( gspc::ctl::SYSTEM
-                       , tag.c_str ()
-                       , level
-                       , file.c_str ()
-                       , function.c_str ()
-                       , line
-                       , sstr.str ().c_str ()
-                       );
+
+        if (  level < fhg::log::LogLevel::MIN_LEVEL
+           || level > fhg::log::LogLevel::MAX_LEVEL
+           )
+        {
+          throw std::runtime_error ("STRANGE log level");
+        }
+
+        fhg::log::LogEvent evt ( fhg::log::LogLevel ((fhg::log::LogLevel::Level) level)
+                               , file
+                               , function
+                               , line
+                               ,  sstr.str().c_str()
+                               );
+        evt.tag (tag);
+
+        fhg::log::Logger::get ("system")->log (evt);
 
         return 0;
       }
