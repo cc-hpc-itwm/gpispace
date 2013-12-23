@@ -218,11 +218,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _orchestrator.expect_serveJob_call ("job_7", make_list ("worker_2"));
   _orchestrator.expect_serveJob_call ("job_8", make_list ("worker_1"));
   _orchestrator.expect_serveJob_call ("job_9", make_list ("worker_0"));
-  _orchestrator.expect_serveJob_call ("job_10", make_list ("worker_9"));
-  _orchestrator.expect_serveJob_call ("job_11", make_list ("worker_8"));
-  _orchestrator.expect_serveJob_call ("job_12", make_list ("worker_7"));
-  _orchestrator.expect_serveJob_call ("job_13", make_list ("worker_5"));
-  _orchestrator.expect_serveJob_call ("job_14", make_list ("worker_4"));
 
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, listJobIds)
