@@ -155,7 +155,7 @@ namespace we
                               | boost::adaptors::map_keys
                               )
                 {
-                  preds_read.insert (tid_pid_type (transition_id, place_id));
+                  preds_read.insert (std::make_pair (transition_id, place_id));
 
                   BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
                                 , net.out_of_transition (transition_id)
