@@ -89,7 +89,6 @@ namespace we
           typedef std::pair< const petri_net::transition_id_type
             , const petri_net::place_id_type
             > tid_pid_type;
-          typedef boost::unordered_set<tid_pid_type> set_of_tid_pid_type;
 
           // no chance when input and output ports have the same name
           boost::unordered_set<std::string> names_in;
@@ -129,7 +128,7 @@ namespace we
 
           // collect predecessors, separate read connections
           boost::unordered_set<pair_type> preds;
-          set_of_tid_pid_type preds_read;
+          boost::unordered_set<tid_pid_type> preds_read;
           boost::unordered_set<petri_net::place_id_type> pid_read;
           std::size_t max_successors_of_pred = 0;
 
@@ -222,9 +221,9 @@ namespace we
 
           const pair_type p (*preds.begin());
 
-          for ( set_of_tid_pid_type::const_iterator tr (preds_read.begin())
-                  ; tr != preds_read.end()
-                  ; ++tr
+          for ( boost::unordered_set<tid_pid_type>::const_iterator tr (preds_read.begin())
+              ; tr != preds_read.end()
+              ; ++tr
               )
           {
             if (tr->first != p.second)
