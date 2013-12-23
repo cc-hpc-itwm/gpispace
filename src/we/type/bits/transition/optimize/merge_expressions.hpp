@@ -470,10 +470,10 @@ namespace we
           {
             const petri_net::transition_id_type & tid_trans (stack.top());
             transition_t trans (net.get_transition (tid_trans));
+            boost::optional<we::type::expression_t const&> const
+              exp_trans (trans.expression());
 
-            if (  content::is_expression (trans)
-               && trans.condition().is_const_true()
-               )
+            if (exp_trans && trans.condition().is_const_true())
             {
               const boost::optional<trans_info>
                 maybe_pred (expression_predecessor (trans, tid_trans, net));
@@ -489,13 +489,10 @@ namespace we
 
                 resolve_ports (trans, tid_trans, pred, net, pid_read);
 
-                expression_t & exp_trans
-                  (boost::get<expression_t &> (trans.data()));
-
                 expression_t & exp_pred
                   (boost::get<expression_t &> (pred.data()));
 
-                exp_pred.add (exp_trans);
+                exp_pred.add (*exp_trans);
 
                 take_ports (trans, tid_trans, pred, tid_pred, net, pid_read);
 
