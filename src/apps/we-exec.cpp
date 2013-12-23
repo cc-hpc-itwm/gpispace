@@ -112,8 +112,6 @@ namespace
     typedef boost::unordered_map< we::mgmt::layer::id_type
                                 , we::mgmt::layer::id_type
                                 > id_map_t;
-    typedef fhg::thread::queue<job_t> job_q_t;
-    typedef std::vector<boost::thread*> worker_list_t;
 
     sdpa_daemon ( std::size_t num_worker
                 , we::loader::loader* loader
@@ -368,8 +366,8 @@ namespace
     we::mgmt::layer mgmt_layer_;
     mutable boost::recursive_mutex _mutex_id_map;
     id_map_t  id_map_;
-    job_q_t jobs_;
-    worker_list_t worker_;
+    fhg::thread::queue<job_t> jobs_;
+    std::vector<boost::thread*> worker_;
     we::loader::loader* _loader;
     sdpa::status::code _job_status;
     boost::optional<std::string> _result;
