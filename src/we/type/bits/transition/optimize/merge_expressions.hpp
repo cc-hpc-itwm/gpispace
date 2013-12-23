@@ -426,9 +426,8 @@ namespace we
 
           while (!to_erase.empty())
           {
-            const pair_type & p (to_erase.top());
-            const petri_net::port_id_type& port_id (p.first);
-            const petri_net::place_id_type & pid (p.second);
+            const petri_net::port_id_type& port_id (to_erase.top().first);
+            const petri_net::place_id_type & pid (to_erase.top().second);
 
             net.delete_place (pid);
             trans.erase_port (port_id);
