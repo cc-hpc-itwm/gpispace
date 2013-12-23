@@ -214,6 +214,12 @@ namespace
 
       return new_id;
     }
+    bool has_mapping (const we::mgmt::layer::id_type& id) const
+    {
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
+
+      return id_map_.count (id);
+    }
     we::mgmt::layer::id_type
       get_mapping (const we::mgmt::layer::id_type& id) const
     {
@@ -272,50 +278,43 @@ namespace
     {
       std::cout << "cancel[" << id << "] = " << desc << std::endl;
 
-      try
+      if (has_mapping (id))
       {
         we::mgmt::layer::id_type const mapped_id (get_mapping (id));
         del_mapping (id);
 
         mgmt_layer_.canceled (mapped_id);
       }
-      catch (std::exception const& ex)
-      {
-        //! \todo explain why we can ignore the exception
-      }
     }
 
     void finished (const we::mgmt::layer::id_type& id, const std::string& desc)
     {
-      try
+      if (has_mapping (id))
       {
         we::mgmt::layer::id_type const mapped_id (get_mapping (id));
         del_mapping (id);
 
         mgmt_layer_.finished (mapped_id, desc);
       }
-      catch (std::out_of_range const&)
+      else if (id == _job_id)
       {
-        if (id == _job_id)
-        {
-          we::mgmt::type::activity_t const act (desc);
+        we::mgmt::type::activity_t const act (desc);
 
-          std::cout << "finished [" << id << "]" << std::endl;
-          BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
-                        , act.output()
-                        )
-          {
-            std::cout << act.transition().get_port (top.second).name()
-                      << " => " << pnet::type::value::show (top.first) << std::endl;
-          }
-
-          _result = desc;
-          set_job_status (sdpa::status::FINISHED);
-        }
-        else
+        std::cout << "finished [" << id << "]" << std::endl;
+        BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
+                      , act.output()
+                      )
         {
-          throw std::invalid_argument ("finished(" + id + "): no such id");
+          std::cout << act.transition().get_port (top.second).name()
+                    << " => " << pnet::type::value::show (top.first) << std::endl;
         }
+
+        _result = desc;
+        set_job_status (sdpa::status::FINISHED);
+      }
+      else
+      {
+        throw std::invalid_argument ("finished(" + id + "): no such id");
       }
     }
 
@@ -325,55 +324,49 @@ namespace
                 , const std::string& reason
                 )
     {
-      try
+      if (has_mapping (id))
       {
         we::mgmt::layer::id_type const mapped_id (get_mapping (id));
         del_mapping (id);
 
         mgmt_layer_.failed (mapped_id, desc, error_code, reason);
       }
-      catch (std::out_of_range const&)
+      else if (id == _job_id)
       {
-        if (id == _job_id)
-        {
-          we::mgmt::type::activity_t const act (desc);
+        we::mgmt::type::activity_t const act (desc);
 
-          std::cout << "failed [" << id << "] = ";
-          act.print (std::cout, act.output());
-          std::cout << " error-code := " << error_code
-                    << " reason := " << reason
-                    << " activity := " << act.transition().name()
-                    << std::endl;
-          _result = desc;
-          set_job_status (sdpa::status::FAILED);
-        }
-        else
-        {
-          throw std::invalid_argument ("failed(" + id + "): no such id");
-        }
+        std::cout << "failed [" << id << "] = ";
+        act.print (std::cout, act.output());
+        std::cout << " error-code := " << error_code
+                  << " reason := " << reason
+                  << " activity := " << act.transition().name()
+                  << std::endl;
+        _result = desc;
+        set_job_status (sdpa::status::FAILED);
+      }
+      else
+      {
+        throw std::invalid_argument ("failed(" + id + "): no such id");
       }
     }
 
     void canceled (const we::mgmt::layer::id_type& id)
     {
-      try
+      if (has_mapping (id))
       {
         we::mgmt::layer::id_type const mapped_id (get_mapping (id));
         del_mapping (id);
 
         mgmt_layer_.canceled (mapped_id);
       }
-      catch (std::out_of_range const&)
+      else if (id == _job_id)
       {
-        if (id == _job_id)
-        {
-          std::cout << "canceled [" << id << "]" << std::endl;
-          set_job_status (sdpa::status::CANCELED);
-        }
-        else
-        {
-          throw std::invalid_argument ("canceled(" + id + "): no such id");
-        }
+        std::cout << "canceled [" << id << "]" << std::endl;
+        set_job_status (sdpa::status::CANCELED);
+      }
+      else
+      {
+        throw std::invalid_argument ("canceled(" + id + "): no such id");
       }
     }
 
