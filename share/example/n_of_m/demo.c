@@ -10,7 +10,5 @@ int main (int argc, char ** argv)
 
   printf ("RUN %i of %i\n", n, m);
 
-  sleep (1);
-
   return EXIT_SUCCESS;
 }
