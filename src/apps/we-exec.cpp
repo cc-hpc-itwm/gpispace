@@ -146,6 +146,7 @@ namespace
     sdpa_daemon ( std::size_t num_worker
                 , we::loader::loader* loader
                 , we::mgmt::type::activity_t const act
+                , boost::optional<std::size_t> const timeout
                 )
         : _mutex_id()
         , _id (0)
@@ -158,6 +159,8 @@ namespace
         , _job_status (sdpa::status::RUNNING)
         , _result ()
         , _job_id (gen_id ())
+        , _timeout_thread
+          (boost::bind (&sdpa_daemon::maybe_cancel_after_ms, this, timeout))
     {
       for (std::size_t n (0); n < num_worker; ++n)
       {
@@ -175,6 +178,12 @@ namespace
         t->interrupt();
         t->join();
         delete t;
+      }
+
+      _timeout_thread.interrupt();
+      if (_timeout_thread.joinable())
+      {
+        _timeout_thread.join();
       }
     }
 
@@ -387,6 +396,15 @@ namespace
       _condition_job_status_changed.notify_all ();
     }
 
+    void maybe_cancel_after_ms (boost::optional<std::size_t> timeout)
+    {
+      if (timeout)
+      {
+        boost::this_thread::sleep (boost::posix_time::milliseconds (*timeout));
+        cancel();
+      }
+    }
+
     mutable boost::mutex _mutex_job_status;
     mutable boost::condition_variable _condition_job_status_changed;
     boost::recursive_mutex _mutex_id;
@@ -400,21 +418,8 @@ namespace
     sdpa::status::code _job_status;
     boost::optional<std::string> _result;
     we::mgmt::layer::id_type _job_id;
+    boost::thread _timeout_thread;
   };
-}
-
-namespace
-{
-  void maybe_cancel_after_ms ( boost::optional<std::size_t> timeout
-                             , sdpa_daemon* daemon
-                             )
-  {
-    if (timeout)
-    {
-      boost::this_thread::sleep (boost::posix_time::milliseconds (*timeout));
-      daemon->cancel();
-    }
-  }
 }
 
 int main (int argc, char **argv)
@@ -513,17 +518,10 @@ try
     , path_to_act == "-"
     ? we::mgmt::type::activity_t (std::cin)
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
+    , cancel_after
     );
 
-  boost::thread cancel_thread (maybe_cancel_after_ms, cancel_after, &daemon);
-
   daemon.wait_for_job_to_terminate ();
-
-  cancel_thread.interrupt();
-  if (cancel_thread.joinable())
-  {
-    cancel_thread.join();
-  }
 
   FHG_UTIL_STAT_OUT (std::cerr);
 
