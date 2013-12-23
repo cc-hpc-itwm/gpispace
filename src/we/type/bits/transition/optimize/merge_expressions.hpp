@@ -224,14 +224,11 @@ namespace we
                          , const petri_net::transition_id_type
                          > p (*preds.begin());
 
-          for ( boost::unordered_set<tid_pid_type>::const_iterator tr (preds_read.begin())
-              ; tr != preds_read.end()
-              ; ++tr
-              )
+          BOOST_FOREACH (tid_pid_type const& tr, preds_read)
           {
-            if (tr->first != p.second)
+            if (tr.first != p.second)
             {
-              pid_read.insert (tr->second);
+              pid_read.insert (tr.second);
             }
           }
 
