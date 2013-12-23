@@ -97,6 +97,8 @@ namespace we { namespace type {
       { }
 
       boost::optional<const expression_t&> expression() const;
+      boost::optional<const petri_net::net&> net() const;
+      boost::optional<const module_call_t&> module_call() const;
 
       const condition::type& condition() const
       {
