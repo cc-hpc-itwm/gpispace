@@ -7,7 +7,6 @@
 #include <we/type/schedule_data.hpp>
 
 #include <fhg/revision.hpp>
-#include <fhg/util/stat.hpp>
 #include <fhg/util/thread/queue.hpp>
 
 #include <fhglog/fhglog.hpp>
@@ -495,8 +494,6 @@ try
     );
 
   sdpa::status::code const rc (daemon.wait_while_job_is_running());
-
-  FHG_UTIL_STAT_OUT (std::cerr);
 
   switch (rc)
   {
