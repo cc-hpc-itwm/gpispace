@@ -131,7 +131,7 @@ namespace we
                               > preds;
           boost::unordered_set<tid_pid_type> preds_read;
           boost::unordered_set<petri_net::place_id_type> pid_read;
-          std::size_t max_successors_of_pred = 0;
+          std::size_t max_successors_of_pred (0);
 
           typedef std::pair< petri_net::place_id_type
             , petri_net::connection_t
