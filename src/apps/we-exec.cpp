@@ -258,11 +258,6 @@ namespace
       return *_result;
     }
 
-    void cancel()
-    {
-      mgmt_layer_.cancel (_job_id, "user requested cancellation");
-    }
-
     void submit ( const we::mgmt::layer::id_type& id
                 , const std::string& desc
                 , std::list<we::type::requirement_t> const&
@@ -382,7 +377,7 @@ namespace
       if (timeout)
       {
         boost::this_thread::sleep (boost::posix_time::milliseconds (*timeout));
-        cancel();
+        mgmt_layer_.cancel (_job_id, "user requested cancellation");
       }
     }
 
