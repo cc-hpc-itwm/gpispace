@@ -46,8 +46,8 @@ namespace we
         }
 
         inline boost::optional<const we::type::port_t>
-          minput_port_by_pid ( const transition_t & trans
-                             , const petri_net::place_id_type & pid
+          minput_port_by_pid ( const transition_t& trans
+                             , const petri_net::place_id_type& pid
                              )
         {
           boost::optional<transition_t::port_id_with_prop_t const&> pwp
@@ -69,24 +69,25 @@ namespace we
           const petri_net::transition_id_type tid_pred;
           const boost::unordered_set<petri_net::place_id_type> pid_read;
 
-          trans_info ( const transition_t & _pred
-                     , const petri_net::transition_id_type & _tid_pred
-                     , const boost::unordered_set<petri_net::place_id_type>& _pid_read
-                     )
+          trans_info
+            ( const transition_t& _pred
+            , const petri_net::transition_id_type& _tid_pred
+            , const boost::unordered_set<petri_net::place_id_type>& _pid_read
+            )
             : pred (_pred), tid_pred (_tid_pred), pid_read (_pid_read)
           {}
         };
 
         inline boost::optional<trans_info>
           expression_predecessor
-          ( const transition_t & trans
-          , const petri_net::transition_id_type & tid
-          , const petri_net::net & net
+          ( const transition_t& trans
+          , const petri_net::transition_id_type& tid
+          , const petri_net::net& net
           )
         {
           typedef std::pair< const petri_net::transition_id_type
-            , const petri_net::place_id_type
-            > tid_pid_type;
+                           , const petri_net::place_id_type
+                           > tid_pid_type;
 
           // no chance when input and output ports have the same name
           boost::unordered_set<std::string> names_in;
@@ -117,9 +118,10 @@ namespace we
           // collect outgoing pids
           boost::unordered_set<petri_net::place_id_type> pid_out;
 
-          BOOST_FOREACH ( const petri_net::place_id_type& place_id
-                        , net.out_of_transition (tid) | boost::adaptors::map_keys
-                        )
+          BOOST_FOREACH
+            ( const petri_net::place_id_type& place_id
+            , net.out_of_transition (tid) | boost::adaptors::map_keys
+            )
           {
             pid_out.insert (place_id);
           }
@@ -134,8 +136,8 @@ namespace we
           std::size_t max_successors_of_pred (0);
 
           typedef std::pair< petri_net::place_id_type
-            , petri_net::connection_t
-            > pc_type;
+                           , petri_net::connection_t
+                           > pc_type;
 
           BOOST_FOREACH (const pc_type& pc, net.in_to_transition (tid))
           {
@@ -150,10 +152,10 @@ namespace we
               }
               else
               {
-                BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
-                              , net.in_to_place (place_id)
-                              | boost::adaptors::map_keys
-                              )
+                BOOST_FOREACH
+                  ( const petri_net::transition_id_type& transition_id
+                  , net.in_to_place (place_id) | boost::adaptors::map_keys
+                  )
                 {
                   preds_read.insert (std::make_pair (transition_id, place_id));
 
@@ -184,8 +186,8 @@ namespace we
                             | boost::adaptors::map_keys
                             )
               {
-                const petri_net::transition_id_type & tid_pred (transition_id);
-                const transition_t & trans_pred (net.get_transition (tid_pred));
+                const petri_net::transition_id_type& tid_pred (transition_id);
+                const transition_t& trans_pred (net.get_transition (tid_pred));
 
                 if (not trans_pred.expression())
                 {
@@ -238,14 +240,14 @@ namespace we
         // ***************************************************************** //
 
         inline void resolve_ports
-          ( transition_t & trans
-          , const petri_net::transition_id_type & tid_trans
-          , const transition_t & pred
-          , const petri_net::net & net
+          ( transition_t& trans
+          , const petri_net::transition_id_type& tid_trans
+          , const transition_t& pred
+          , const petri_net::net& net
           , const boost::unordered_set<petri_net::place_id_type> pid_read
           )
         {
-          expression_t & expression (boost::get<expression_t &> (trans.data()));
+          expression_t& expression (boost::get<expression_t&> (trans.data()));
 
           BOOST_FOREACH ( const petri_net::place_id_type& place_id
                         , net.in_to_transition (tid_trans)
@@ -254,10 +256,10 @@ namespace we
           {
             if (pid_read.find (place_id) == pid_read.end())
             {
-              const port_t & pred_out
+              const port_t& pred_out
                 (pred.get_port (output_port_by_pid (pred, place_id)->first));
 
-              port_t & trans_in
+              port_t& trans_in
                 (trans.get_port (input_port_by_pid (trans, place_id)->first));
 
               expression.rename (trans_in.name(), pred_out.name());
@@ -271,9 +273,9 @@ namespace we
 
               if (maybe_pred_in)
               {
-                const port_t & pred_in (*maybe_pred_in);
+                const port_t& pred_in (*maybe_pred_in);
 
-                port_t & trans_in
+                port_t& trans_in
                   (trans.get_port (input_port_by_pid (trans, place_id)->first));
 
                 expression.rename (trans_in.name(), pred_in.name());
@@ -287,8 +289,8 @@ namespace we
         // ***************************************************************** //
 
         inline void rename_ports
-          ( transition_t & trans
-          , const transition_t & other
+          ( transition_t& trans
+          , const transition_t& other
           )
         {
           boost::unordered_set<std::string> other_names;
@@ -302,7 +304,7 @@ namespace we
 
           const std::string prefix (rewrite::mk_prefix (trans.name()));
 
-          expression_t & expression (boost::get<expression_t &> (trans.data()));
+          expression_t& expression (boost::get<expression_t&> (trans.data()));
 
           BOOST_FOREACH ( we::type::port_t& port
                         , trans.ports() | boost::adaptors::map_values
@@ -320,11 +322,11 @@ namespace we
         // ***************************************************************** //
 
         inline void take_ports
-          ( const transition_t & trans
+          ( const transition_t& trans
           , const petri_net::transition_id_type tid_trans
-          , transition_t & pred
+          , transition_t& pred
           , const petri_net::transition_id_type tid_pred
-          , petri_net::net & net
+          , petri_net::net& net
           , const boost::unordered_set<petri_net::place_id_type> pid_read
           )
         {
@@ -378,8 +380,7 @@ namespace we
                     );
 
                   pred.add_connection
-                    (*pid, p.second.name(), p.second.property())
-                    ;
+                    (*pid, p.second.name(), p.second.property());
                 }
               }
             }
@@ -389,10 +390,10 @@ namespace we
         // ***************************************************************** //
 
         inline void clear_ports
-          ( transition_t & trans
+          ( transition_t& trans
           , const petri_net::transition_id_type /* tid_trans */
-          , const transition_t & trans_parent
-          , petri_net::net & net
+          , const transition_t& trans_parent
+          , petri_net::net& net
           )
         {
           std::stack<std::pair< petri_net::port_id_type
@@ -400,9 +401,10 @@ namespace we
                               >
                     > to_erase;
 
-          BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                        , trans.ports()
-                        )
+          BOOST_FOREACH
+            ( we::type::transition_t::port_map_t::value_type const& p
+            , trans.ports()
+            )
           {
             if (p.second.is_output())
             {
@@ -429,7 +431,7 @@ namespace we
           while (!to_erase.empty())
           {
             const petri_net::port_id_type& port_id (to_erase.top().first);
-            const petri_net::place_id_type & pid (to_erase.top().second);
+            const petri_net::place_id_type& pid (to_erase.top().second);
 
             net.delete_place (pid);
             trans.erase_port (port_id);
@@ -441,8 +443,8 @@ namespace we
         // ***************************************************************** //
 
         inline bool run_once
-          ( transition_t & trans_parent
-          , petri_net::net & net
+          ( transition_t& trans_parent
+          , petri_net::net& net
           )
         {
           bool modified (false);
@@ -458,7 +460,7 @@ namespace we
 
           while (!stack.empty())
           {
-            const petri_net::transition_id_type & tid_trans (stack.top());
+            const petri_net::transition_id_type& tid_trans (stack.top());
             transition_t trans (net.get_transition (tid_trans));
             boost::optional<we::type::expression_t const&> const
               exp_trans (trans.expression());
@@ -480,8 +482,8 @@ namespace we
 
                 resolve_ports (trans, tid_trans, pred, net, pid_read);
 
-                expression_t & exp_pred
-                  (boost::get<expression_t &> (pred.data()));
+                expression_t& exp_pred
+                  (boost::get<expression_t&> (pred.data()));
 
                 exp_pred.add (*exp_trans);
 
@@ -503,10 +505,7 @@ namespace we
           return modified;
         }
 
-        inline bool run
-          ( transition_t & trans_parent
-          , petri_net::net & net
-          )
+        inline bool run (transition_t& trans_parent, petri_net::net& net)
         {
           bool modified (false);
 
