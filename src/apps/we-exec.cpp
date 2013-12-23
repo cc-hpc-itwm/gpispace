@@ -55,8 +55,6 @@ namespace
     }
   }
 
-  struct sdpa_daemon;
-
   struct context : public we::mgmt::context
   {
     virtual int handle_internally (we::mgmt::type::activity_t&, net_t&);
