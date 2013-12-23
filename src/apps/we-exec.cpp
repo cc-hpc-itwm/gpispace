@@ -57,13 +57,6 @@ namespace
 
   struct context : public we::mgmt::context
   {
-    virtual int handle_internally (we::mgmt::type::activity_t&, net_t&);
-    virtual int handle_internally (we::mgmt::type::activity_t&, mod_t&);
-    virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&);
-    virtual int handle_externally (we::mgmt::type::activity_t&, net_t&);
-    virtual int handle_externally (we::mgmt::type::activity_t&, mod_t&);
-    virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&);
-
     context ( const we::mgmt::layer::id_type& id
             , we::loader::loader* loader
             , we::mgmt::layer* layer
@@ -76,6 +69,49 @@ namespace
       , _layer (layer)
       , _new_id (new_id)
     {}
+
+    virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n)
+    {
+      return handle_externally (act, n);
+    }
+    virtual int handle_internally (we::mgmt::type::activity_t&, mod_t&)
+    {
+      throw std::runtime_error ("NO internal mod here!");
+    }
+    virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
+    {
+      throw std::runtime_error ("NO internal expr here!");
+    }
+    virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&)
+    {
+      _layer->submit (_new_id (_id),  act, we::type::user_data());
+      return 0;
+    }
+    virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+    {
+      try
+      {
+        //!\todo pass a real gspc::drts::context
+        module::call (*_loader, 0, act, mod);
+        _layer->finished (_id, act.to_string());
+      }
+      catch (std::exception const & ex)
+      {
+        std::cerr << "handle-ext(" << act.transition ().name () << ") failed: " << ex.what () << std::endl;
+
+        _layer->failed ( _id
+                       , act.to_string()
+                       , fhg::error::MODULE_CALL_FAILED
+                       , ex.what()
+                       );
+      }
+      return 0;
+    }
+    virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&)
+    {
+      throw std::runtime_error ("NO external expr here!");
+    }
+
 
   private:
     we::mgmt::layer::id_type _id;
@@ -369,48 +405,6 @@ namespace
     boost::optional<std::string> _result;
     we::mgmt::layer::id_type _job_id;
   };
-
-  int context::handle_internally (we::mgmt::type::activity_t& act, net_t& n)
-  {
-    return handle_externally (act, n);
-  }
-  int context::handle_internally (we::mgmt::type::activity_t&, mod_t&)
-  {
-    throw std::runtime_error ("NO internal mod here!");
-  }
-  int context::handle_internally (we::mgmt::type::activity_t&, expr_t&)
-  {
-    throw std::runtime_error ("NO internal expr here!");
-  }
-  int context::handle_externally (we::mgmt::type::activity_t& act, net_t&)
-  {
-    _layer->submit (_new_id (_id),  act, we::type::user_data());
-    return 0;
-  }
-  int context::handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
-  {
-    try
-    {
-      //!\todo pass a real gspc::drts::context
-      module::call (*_loader, 0, act, mod);
-      _layer->finished (_id, act.to_string());
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "handle-ext(" << act.transition ().name () << ") failed: " << ex.what () << std::endl;
-
-      _layer->failed ( _id
-                     , act.to_string()
-                     , fhg::error::MODULE_CALL_FAILED
-                     , ex.what()
-                     );
-    }
-    return 0;
-  }
-  int context::handle_externally (we::mgmt::type::activity_t&, expr_t&)
-  {
-    throw std::runtime_error ("NO external expr here!");
-  }
 }
 
 namespace
