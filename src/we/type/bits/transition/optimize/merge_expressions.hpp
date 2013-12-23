@@ -419,7 +419,7 @@ namespace we
                  && !get_port_by_associated_pid (trans_parent, pid)
                  )
               {
-                to_erase.push (pair_type (p.first, pid));
+                to_erase.push (std::make_pair (p.first, pid));
               }
             }
           }
