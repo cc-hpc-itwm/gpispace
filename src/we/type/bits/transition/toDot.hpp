@@ -727,25 +727,12 @@ namespace we { namespace type {
             }
           }
 
-        switch (boost::apply_visitor (content::visitor (), t.data()))
-          {
-          case content::modcall:
-            level (s, l + 1) << bgcolor (color::modcall);
-            break;
-          case content::expression:
-            level (s, l + 1) << bgcolor (color::expression);
-            break;
-          case content::subnet:
-            level (s, l + 1) <<
-              bgcolor ( t.is_internal()
-                      ? color::subnet_internal
-                      : color::external
-                      )
-              ;
-            break;
-          default: throw std::runtime_error
-              ("STRANGE: unknown type of transition content");
-          }
+        level (s, l + 1)
+          << bgcolor ( t.expression() ? color::expression
+                     : t.module_call() ? color::modcall
+                     : t.is_internal() ? color::subnet_internal
+                     : color::external
+                     );
 
         level (s, l)
           << "} /* " << "cluster_" << id_trans << " == " << t.name() << " */"
