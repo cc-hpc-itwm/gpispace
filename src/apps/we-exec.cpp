@@ -28,13 +28,11 @@
 
 namespace
 {
-  void write_result ( boost::filesystem::path const& output
-                    , std::string const& result
-                    )
+  void write_result (std::string const& output, std::string const& result)
   {
-    if (output != boost::filesystem::path())
+    if (output.size())
     {
-      if (output.string() == "-")
+      if (output == "-")
       {
         std::cout << result;
       }
@@ -519,12 +517,14 @@ try
   if (sdpa::status::FINISHED == daemon.job_status())
   {
     std::cerr << "Workflow finished." << std::endl;
-    write_result (boost::filesystem::path (output), daemon.result());
+
+    write_result (output, daemon.result());
   }
   else if (sdpa::status::FAILED == daemon.job_status())
   {
     std::cerr << "Workflow failed!" << std::endl;
-    write_result (boost::filesystem::path (output), daemon.result());
+
+    write_result (output, daemon.result());
   }
   else if (sdpa::status::CANCELED == daemon.job_status())
   {
