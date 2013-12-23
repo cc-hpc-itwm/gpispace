@@ -512,7 +512,7 @@ try
     loader.append_search_path (p);
   }
 
-  sdpa_daemon daemon
+  sdpa_daemon const daemon
     ( num_worker
     , &loader
     , path_to_act == "-"
