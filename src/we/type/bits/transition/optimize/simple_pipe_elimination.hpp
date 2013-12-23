@@ -232,9 +232,11 @@ namespace we { namespace type {
           {
             const petri_net::transition_id_type & tid (stack.top());
             const transition_t trans (net.get_transition (tid));
+            boost::optional<we::type::expression_t const&>
+              exp_trans (trans.expression());
 
-            if (  content::is_expression (trans)
-               && boost::get<expression_t> (trans.data()).is_empty()
+            if (  exp_trans
+               && exp_trans->is_empty()
                && trans.condition().is_const_true()
                )
               {
