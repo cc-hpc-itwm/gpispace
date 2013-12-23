@@ -214,24 +214,23 @@ namespace
 
       return new_id;
     }
-    bool has_mapping (const we::mgmt::layer::id_type& id) const
+    boost::optional<we::mgmt::layer::id_type>
+      get_and_delete_mapping (const we::mgmt::layer::id_type& id)
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
 
-      return id_map_.count (id);
-    }
-    we::mgmt::layer::id_type
-      get_mapping (const we::mgmt::layer::id_type& id) const
-    {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
+      boost::optional<we::mgmt::layer::id_type> mapped;
 
-      return id_map_.at (id);
-    }
-    void del_mapping (const we::mgmt::layer::id_type& id)
-    {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
+      id_map_t::iterator pos (id_map_.find (id));
 
-      id_map_.erase (id);
+      if (pos != id_map_.end())
+      {
+        mapped = pos->second;
+
+        id_map_.erase (pos);
+      }
+
+      return mapped;
     }
 
     sdpa::status::code job_status() const
@@ -278,23 +277,23 @@ namespace
     {
       std::cout << "cancel[" << id << "] = " << desc << std::endl;
 
-      if (has_mapping (id))
-      {
-        we::mgmt::layer::id_type const mapped_id (get_mapping (id));
-        del_mapping (id);
+      boost::optional<we::mgmt::layer::id_type> const mapped
+        (get_and_delete_mapping (id));
 
-        mgmt_layer_.canceled (mapped_id);
+      if (mapped)
+      {
+        mgmt_layer_.canceled (*mapped);
       }
     }
 
     void finished (const we::mgmt::layer::id_type& id, const std::string& desc)
     {
-      if (has_mapping (id))
-      {
-        we::mgmt::layer::id_type const mapped_id (get_mapping (id));
-        del_mapping (id);
+      boost::optional<we::mgmt::layer::id_type> const mapped
+        (get_and_delete_mapping (id));
 
-        mgmt_layer_.finished (mapped_id, desc);
+      if (mapped)
+      {
+        mgmt_layer_.finished (*mapped, desc);
       }
       else if (id == _job_id)
       {
@@ -324,12 +323,12 @@ namespace
                 , const std::string& reason
                 )
     {
-      if (has_mapping (id))
-      {
-        we::mgmt::layer::id_type const mapped_id (get_mapping (id));
-        del_mapping (id);
+      boost::optional<we::mgmt::layer::id_type> const mapped
+        (get_and_delete_mapping (id));
 
-        mgmt_layer_.failed (mapped_id, desc, error_code, reason);
+      if (mapped)
+      {
+        mgmt_layer_.failed (*mapped, desc, error_code, reason);
       }
       else if (id == _job_id)
       {
@@ -352,12 +351,12 @@ namespace
 
     void canceled (const we::mgmt::layer::id_type& id)
     {
-      if (has_mapping (id))
-      {
-        we::mgmt::layer::id_type const mapped_id (get_mapping (id));
-        del_mapping (id);
+      boost::optional<we::mgmt::layer::id_type> const mapped
+        (get_and_delete_mapping (id));
 
-        mgmt_layer_.canceled (mapped_id);
+      if (mapped)
+      {
+        mgmt_layer_.canceled (*mapped);
       }
       else if (id == _job_id)
       {
