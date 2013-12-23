@@ -22,6 +22,7 @@ cleanup()
 {
   sdpa stop
   rm -rf "${CMP}" "${DAT}" "${HOSTFILE}"
+  eval ${make_src} uninstall
   eval ${make_src} clean
   eval ${make_gen} clean
   cleanup_dir_build
@@ -54,5 +55,3 @@ test $(pnetget -i "${OUT}" -p avg) == "0.000193708"         || die $EX_ERR_RES
 test $(pnetget -i "${OUT}" -p stddev) == "0.999908"         || die $EX_ERR_RES
 
 sdpa stop                                                   || die $EX_ERR_STOP
-
-measured "uninstall" ${make_src} uninstall                  || die $EX_ERR_RUN
