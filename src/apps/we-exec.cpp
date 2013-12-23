@@ -5,16 +5,10 @@
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/type/expression.fwd.hpp>
-#include <we/type/module_call.fwd.hpp>
-#include <we/type/net.fwd.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
-#include <we/type/value/show.hpp>
 
 #include <fhg/revision.hpp>
-#include <fhg/util/getenv.hpp>
-#include <fhg/util/split.hpp>
 #include <fhg/util/stat.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhglog/fhglog.hpp>
@@ -23,16 +17,12 @@
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <fstream>
-#include <iostream>
 #include <list>
-#include <set>
 #include <vector>
 
 namespace
