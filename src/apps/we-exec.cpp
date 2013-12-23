@@ -514,11 +514,9 @@ try
     loader.load (m);
   }
 
+  BOOST_FOREACH (std::string const &p, mod_path)
   {
-    BOOST_FOREACH (std::string const &p, mod_path)
-    {
-      loader.append_search_path (p);
-    }
+    loader.append_search_path (p);
   }
 
   sdpa_daemon daemon
