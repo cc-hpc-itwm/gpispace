@@ -41,9 +41,9 @@ namespace
                     , std::string const &result
                     )
   {
-    if (output != boost::filesystem::path ())
+    if (output != boost::filesystem::path())
     {
-      if (output.string () == "-")
+      if (output.string() == "-")
       {
         std::cout << result;
       }
@@ -97,7 +97,7 @@ namespace
       }
       catch (std::exception const & ex)
       {
-        std::cerr << "handle-ext(" << act.transition ().name () << ") failed: " << ex.what () << std::endl;
+        std::cerr << "handle-ext(" << act.transition().name() << ") failed: " << ex.what() << std::endl;
 
         _layer->failed ( _id
                        , act.to_string()
@@ -123,7 +123,7 @@ namespace
 
   struct job_t
   {
-    job_t ()
+    job_t()
     {}
 
     job_t (const we::mgmt::layer::id_type& id_, const std::string & desc_)
@@ -157,8 +157,8 @@ namespace
         , worker_()
         , _loader (loader)
         , _job_status (sdpa::status::RUNNING)
-        , _result ()
-        , _job_id (gen_id ())
+        , _result()
+        , _job_id (gen_id())
         , _timeout_thread
           (boost::bind (&sdpa_daemon::maybe_cancel_after_ms, this, timeout))
     {
@@ -239,13 +239,13 @@ namespace
       id_map_.erase (id);
     }
 
-    sdpa::status::code job_status () const
+    sdpa::status::code job_status() const
     {
       boost::unique_lock<boost::mutex> const _ (_mutex_job_status);
       return _job_status;
     }
 
-    void wait_for_job_to_terminate () const
+    void wait_for_job_to_terminate() const
     {
       boost::unique_lock<boost::mutex> _ (_mutex_job_status);
       while (sdpa::status::is_running (_job_status))
@@ -264,7 +264,7 @@ namespace
       return *_result;
     }
 
-    void cancel ()
+    void cancel()
     {
       mgmt_layer_.cancel (_job_id, "user requested cancellation");
     }
@@ -353,7 +353,7 @@ namespace
           act.print (std::cout, act.output());
           std::cout << " error-code := " << error_code
                     << " reason := " << reason
-                    << " activity := " << act.transition ().name ()
+                    << " activity := " << act.transition().name()
                     << std::endl;
           _result = desc;
           set_job_status (sdpa::status::FAILED);
@@ -393,7 +393,7 @@ namespace
     {
       boost::unique_lock<boost::mutex> const _ (_mutex_job_status);
       _job_status = c;
-      _condition_job_status_changed.notify_all ();
+      _condition_job_status_changed.notify_all();
     }
 
     void maybe_cancel_after_ms (boost::optional<std::size_t> timeout)
@@ -521,21 +521,21 @@ try
     , cancel_after
     );
 
-  daemon.wait_for_job_to_terminate ();
+  daemon.wait_for_job_to_terminate();
 
   FHG_UTIL_STAT_OUT (std::cerr);
 
-  if (sdpa::status::FINISHED == daemon.job_status ())
+  if (sdpa::status::FINISHED == daemon.job_status())
   {
     std::cerr << "Workflow finished." << std::endl;
-    write_result (boost::filesystem::path (output), daemon.result ());
+    write_result (boost::filesystem::path (output), daemon.result());
   }
-  else if (sdpa::status::FAILED == daemon.job_status ())
+  else if (sdpa::status::FAILED == daemon.job_status())
   {
     std::cerr << "Workflow failed!" << std::endl;
-    write_result (boost::filesystem::path (output), daemon.result ());
+    write_result (boost::filesystem::path (output), daemon.result());
   }
-  else if (sdpa::status::CANCELED == daemon.job_status ())
+  else if (sdpa::status::CANCELED == daemon.job_status())
   {
     std::cerr << "Workflow canceled!" << std::endl;
   }
