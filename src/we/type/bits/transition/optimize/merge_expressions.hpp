@@ -111,12 +111,9 @@ namespace we
             }
           }
 
-          for ( name_set_type::const_iterator n (names_in.begin())
-                  ; n != names_in.end()
-                  ; ++n
-              )
+          BOOST_FOREACH (std::string const& name_in, names_in)
           {
-            if (names_out.find (*n) != names_out.end())
+            if (names_out.find (name_in) != names_out.end())
             {
               return boost::none;
             }
