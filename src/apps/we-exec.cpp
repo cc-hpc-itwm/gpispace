@@ -270,7 +270,7 @@ namespace
       jobs_.put (job_t (id, desc));
     }
 
-    bool cancel (const we::mgmt::layer::id_type& id, const std::string & desc)
+    void cancel (const we::mgmt::layer::id_type& id, const std::string & desc)
     {
       std::cout << "cancel[" << id << "] = " << desc << std::endl;
 
@@ -280,15 +280,14 @@ namespace
         del_mapping (id);
 
         mgmt_layer_.canceled (mapped_id);
-        return true;
       }
       catch (std::exception const &ex)
       {
-        return false;
+        //! \todo explain why we can ignore the exception
       }
     }
 
-    bool finished (const we::mgmt::layer::id_type& id, const std::string & desc)
+    void finished (const we::mgmt::layer::id_type& id, const std::string & desc)
     {
       try
       {
@@ -320,10 +319,9 @@ namespace
           throw std::invalid_argument ("finished(" + id + "): no such id");
         }
       }
-      return true;
     }
 
-    bool failed ( const we::mgmt::layer::id_type& id
+    void failed ( const we::mgmt::layer::id_type& id
                 , const std::string & desc
                 , const int error_code
                 , const std::string & reason
@@ -356,10 +354,9 @@ namespace
           throw std::invalid_argument ("failed(" + id + "): no such id");
         }
       }
-      return true;
     }
 
-    bool canceled (const we::mgmt::layer::id_type& id)
+    void canceled (const we::mgmt::layer::id_type& id)
     {
       try
       {
@@ -380,7 +377,6 @@ namespace
           throw std::invalid_argument ("canceled(" + id + "): no such id");
         }
       }
-      return true;
     }
 
   private:
