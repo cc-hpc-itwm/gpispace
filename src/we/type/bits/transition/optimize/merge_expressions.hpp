@@ -65,15 +65,13 @@ namespace we
 
         struct trans_info
         {
-          typedef boost::unordered_set<petri_net::place_id_type> pid_set_type;
-
           const transition_t pred;
           const petri_net::transition_id_type tid_pred;
-          const pid_set_type pid_read;
+          const boost::unordered_set<petri_net::place_id_type> pid_read;
 
           trans_info ( const transition_t & _pred
                      , const petri_net::transition_id_type & _tid_pred
-                     , const pid_set_type & _pid_read
+                     , const boost::unordered_set<petri_net::place_id_type>& _pid_read
                      )
             : pred (_pred), tid_pred (_tid_pred), pid_read (_pid_read)
           {}
@@ -86,8 +84,6 @@ namespace we
           , const petri_net::net & net
           )
         {
-          typedef trans_info::pid_set_type pid_set_type;
-
           typedef std::pair<const transition_t, const petri_net::transition_id_type> pair_type;
           typedef boost::unordered_set<pair_type> set_of_pair_type;
 
@@ -128,7 +124,7 @@ namespace we
           }
 
           // collect outgoing pids
-          pid_set_type pid_out;
+          boost::unordered_set<petri_net::place_id_type> pid_out;
 
           BOOST_FOREACH ( const petri_net::place_id_type& place_id
                         , net.out_of_transition (tid) | boost::adaptors::map_keys
@@ -140,7 +136,7 @@ namespace we
           // collect predecessors, separate read connections
           set_of_pair_type preds;
           set_of_tid_pid_type preds_read;
-          pid_set_type pid_read;
+          boost::unordered_set<petri_net::place_id_type> pid_read;
           std::size_t max_successors_of_pred = 0;
 
           typedef std::pair< petri_net::place_id_type
@@ -253,7 +249,7 @@ namespace we
           , const petri_net::transition_id_type & tid_trans
           , const transition_t & pred
           , const petri_net::net & net
-          , const trans_info::pid_set_type & pid_read
+          , const boost::unordered_set<petri_net::place_id_type> pid_read
           )
         {
           expression_t & expression (boost::get<expression_t &> (trans.data()));
@@ -336,7 +332,7 @@ namespace we
           , transition_t & pred
           , const petri_net::transition_id_type tid_pred
           , petri_net::net & net
-          , const trans_info::pid_set_type pid_read
+          , const boost::unordered_set<petri_net::place_id_type> pid_read
           )
         {
           BOOST_FOREACH
@@ -483,7 +479,8 @@ namespace we
                 transition_t pred ((*maybe_pred).pred);
                 petri_net::transition_id_type tid_pred ((*maybe_pred).tid_pred);
 
-                trans_info::pid_set_type pid_read ((*maybe_pred).pid_read);
+                boost::unordered_set<petri_net::place_id_type>
+                  pid_read ((*maybe_pred).pid_read);
 
                 rename_ports (trans, pred);
 
