@@ -373,46 +373,6 @@ namespace we { namespace type {
     get_port_by_associated_pid ( transition_t const&
                                , const petri_net::place_id_type&
                                );
-
-    // ********************************************************************* //
-
-    namespace content
-    {
-      enum kind
-        { expression
-        , modcall
-        , subnet
-        };
-
-      class visitor : public boost::static_visitor<kind>
-      {
-      public:
-        kind operator () (const expression_t &) const
-        {
-          return expression;
-        }
-
-        kind operator () (const module_call_t &) const
-        {
-          return modcall;
-        }
-
-        kind operator () (const petri_net::net &) const
-        {
-          return subnet;
-        }
-      };
-
-      inline bool is_expression (const transition_t& t)
-      {
-        return boost::apply_visitor (visitor(), t.data()) == expression;
-      }
-
-      inline bool is_subnet (const transition_t& t)
-      {
-        return boost::apply_visitor (visitor(), t.data()) == subnet;
-      }
-    }
   }
 }
 
