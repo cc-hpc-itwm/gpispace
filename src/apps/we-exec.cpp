@@ -233,19 +233,16 @@ namespace
       return mapped;
     }
 
-    sdpa::status::code job_status() const
-    {
-      boost::unique_lock<boost::mutex> const _ (_mutex_job_status);
-      return _job_status;
-    }
-
-    void wait_for_job_to_terminate() const
+    sdpa::status::code wait_while_job_is_running() const
     {
       boost::unique_lock<boost::mutex> _ (_mutex_job_status);
+
       while (sdpa::status::is_running (_job_status))
       {
         _condition_job_status_changed.wait (_);
       }
+
+      return _job_status;
     }
 
     std::string const& result() const
@@ -497,28 +494,23 @@ try
     , cancel_after
     );
 
-  daemon.wait_for_job_to_terminate();
+  sdpa::status::code const rc (daemon.wait_while_job_is_running());
 
   FHG_UTIL_STAT_OUT (std::cerr);
 
-  if (sdpa::status::FINISHED == daemon.job_status())
+  switch (rc)
   {
-    std::cerr << "Workflow finished." << std::endl;
-
+  case sdpa::status::FINISHED:
+  case sdpa::status::FAILED:
     write_result (output, daemon.result());
-  }
-  else if (sdpa::status::FAILED == daemon.job_status())
-  {
-    std::cerr << "Workflow failed!" << std::endl;
-
-    write_result (output, daemon.result());
-  }
-  else if (sdpa::status::CANCELED == daemon.job_status())
-  {
-    std::cerr << "Workflow canceled!" << std::endl;
+    break;
+  case sdpa::status::CANCELED:
+    break;
+  default:
+    throw std::runtime_error ("STRANGE: is_running is not consistent!?");
   }
 
-  return daemon.job_status();
+  return rc;
 }
 catch (const std::exception& e)
 {
