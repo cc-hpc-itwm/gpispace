@@ -395,8 +395,10 @@ namespace we
           , petri_net::net & net
           )
         {
-          typedef std::pair<petri_net::port_id_type, petri_net::place_id_type> pair_type;
-          std::stack<pair_type> to_erase;
+          std::stack<std::pair< petri_net::port_id_type
+                              , petri_net::place_id_type
+                              >
+                    > to_erase;
 
           BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
                         , trans.ports()
