@@ -27,22 +27,6 @@
 
 namespace
 {
-  void write_result (std::string const& output, std::string const& result)
-  {
-    if (output.size())
-    {
-      if (output == "-")
-      {
-        std::cout << result;
-      }
-      else
-      {
-        boost::filesystem::ofstream ofs (output);
-        ofs << result;
-      }
-    }
-  }
-
   struct context : public we::mgmt::context
   {
     context ( const we::mgmt::layer::id_type& id
@@ -499,7 +483,18 @@ try
   {
   case sdpa::status::FINISHED:
   case sdpa::status::FAILED:
-    write_result (output, daemon.result());
+    if (output.size())
+    {
+      if (output == "-")
+      {
+        std::cout << daemon.result();
+      }
+      else
+      {
+        boost::filesystem::ofstream ofs (output);
+        ofs << daemon.result();
+      }
+    }
     break;
   case sdpa::status::CANCELED:
     break;
