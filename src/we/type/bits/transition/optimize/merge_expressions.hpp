@@ -91,11 +91,9 @@ namespace we
             > tid_pid_type;
           typedef boost::unordered_set<tid_pid_type> set_of_tid_pid_type;
 
-          typedef boost::unordered_set<std::string> name_set_type;
-
           // no chance when input and output ports have the same name
-          name_set_type names_in;
-          name_set_type names_out;
+          boost::unordered_set<std::string> names_in;
+          boost::unordered_set<std::string> names_out;
 
           BOOST_FOREACH ( we::type::port_t const& port
                         , trans.ports() | boost::adaptors::map_values
