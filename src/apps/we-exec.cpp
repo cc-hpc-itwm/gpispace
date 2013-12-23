@@ -1,5 +1,3 @@
-#include <sysexits.h>
-
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
@@ -11,19 +9,22 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/stat.hpp>
 #include <fhg/util/thread/queue.hpp>
+
 #include <fhglog/fhglog.hpp>
 
 #include <sdpa/job_states.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
-#include <boost/filesystem/fstream.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <list>
 #include <vector>
+
+#include <sysexits.h>
 
 namespace
 {
