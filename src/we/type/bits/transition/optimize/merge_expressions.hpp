@@ -187,7 +187,7 @@ namespace we
                 const petri_net::transition_id_type & tid_pred (transition_id);
                 const transition_t & trans_pred (net.get_transition (tid_pred));
 
-                if (not content::is_expression (trans_pred))
+                if (not trans_pred.expression())
                 {
                   return boost::none;
                 }
