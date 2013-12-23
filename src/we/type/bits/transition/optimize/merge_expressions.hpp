@@ -85,7 +85,6 @@ namespace we
           )
         {
           typedef std::pair<const transition_t, const petri_net::transition_id_type> pair_type;
-          typedef boost::unordered_set<pair_type> set_of_pair_type;
 
           typedef std::pair< const petri_net::transition_id_type
             , const petri_net::place_id_type
@@ -134,7 +133,7 @@ namespace we
           }
 
           // collect predecessors, separate read connections
-          set_of_pair_type preds;
+          boost::unordered_set<pair_type> preds;
           set_of_tid_pid_type preds_read;
           boost::unordered_set<petri_net::place_id_type> pid_read;
           std::size_t max_successors_of_pred = 0;
