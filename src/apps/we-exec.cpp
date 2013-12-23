@@ -37,8 +37,8 @@
 
 namespace
 {
-  void write_result ( boost::filesystem::path const &output
-                    , std::string const &result
+  void write_result ( boost::filesystem::path const& output
+                    , std::string const& result
                     )
   {
     if (output != boost::filesystem::path())
@@ -95,7 +95,7 @@ namespace
         module::call (*_loader, 0, act, mod);
         _layer->finished (_id, act.to_string());
       }
-      catch (std::exception const & ex)
+      catch (std::exception const& ex)
       {
         std::cerr << "handle-ext(" << act.transition().name() << ") failed: " << ex.what() << std::endl;
 
@@ -126,7 +126,7 @@ namespace
     job_t()
     {}
 
-    job_t (const we::mgmt::layer::id_type& id_, const std::string & desc_)
+    job_t (const we::mgmt::layer::id_type& id_, const std::string& desc_)
       : id (id_)
       , desc (desc_)
     {}
@@ -270,7 +270,7 @@ namespace
     }
 
     void submit ( const we::mgmt::layer::id_type& id
-                , const std::string & desc
+                , const std::string& desc
                 , std::list<we::type::requirement_t> const&
                 , const we::type::schedule_data&
                 , const we::type::user_data&
@@ -279,7 +279,7 @@ namespace
       jobs_.put (job_t (id, desc));
     }
 
-    void cancel (const we::mgmt::layer::id_type& id, const std::string & desc)
+    void cancel (const we::mgmt::layer::id_type& id, const std::string& desc)
     {
       std::cout << "cancel[" << id << "] = " << desc << std::endl;
 
@@ -290,13 +290,13 @@ namespace
 
         mgmt_layer_.canceled (mapped_id);
       }
-      catch (std::exception const &ex)
+      catch (std::exception const& ex)
       {
         //! \todo explain why we can ignore the exception
       }
     }
 
-    void finished (const we::mgmt::layer::id_type& id, const std::string & desc)
+    void finished (const we::mgmt::layer::id_type& id, const std::string& desc)
     {
       try
       {
@@ -305,7 +305,7 @@ namespace
 
         mgmt_layer_.finished (mapped_id, desc);
       }
-      catch (std::out_of_range const &)
+      catch (std::out_of_range const&)
       {
         if (id == _job_id)
         {
@@ -331,9 +331,9 @@ namespace
     }
 
     void failed ( const we::mgmt::layer::id_type& id
-                , const std::string & desc
+                , const std::string& desc
                 , const int error_code
-                , const std::string & reason
+                , const std::string& reason
                 )
     {
       try
@@ -343,7 +343,7 @@ namespace
 
         mgmt_layer_.failed (mapped_id, desc, error_code, reason);
       }
-      catch (std::out_of_range const &)
+      catch (std::out_of_range const&)
       {
         if (id == _job_id)
         {
@@ -374,7 +374,7 @@ namespace
 
         mgmt_layer_.canceled (mapped_id);
       }
-      catch (std::out_of_range const &)
+      catch (std::out_of_range const&)
       {
         if (id == _job_id)
         {
@@ -507,7 +507,7 @@ try
     loader.load (m);
   }
 
-  BOOST_FOREACH (std::string const &p, mod_path)
+  BOOST_FOREACH (std::string const& p, mod_path)
   {
     loader.append_search_path (p);
   }
