@@ -84,8 +84,6 @@ namespace we
           , const petri_net::net & net
           )
         {
-          typedef std::pair<const transition_t, const petri_net::transition_id_type> pair_type;
-
           typedef std::pair< const petri_net::transition_id_type
             , const petri_net::place_id_type
             > tid_pid_type;
@@ -127,7 +125,10 @@ namespace we
           }
 
           // collect predecessors, separate read connections
-          boost::unordered_set<pair_type> preds;
+          boost::unordered_set<std::pair< const transition_t
+                                        , const petri_net::transition_id_type
+                                        >
+                              > preds;
           boost::unordered_set<tid_pid_type> preds_read;
           boost::unordered_set<petri_net::place_id_type> pid_read;
           std::size_t max_successors_of_pred = 0;
@@ -207,7 +208,7 @@ namespace we
                              );
                 }
 
-                preds.insert (pair_type (trans_pred, tid_pred));
+                preds.insert (std::make_pair (trans_pred, tid_pred));
               }
             }
           }
@@ -219,7 +220,9 @@ namespace we
             return boost::none;
           }
 
-          const pair_type p (*preds.begin());
+          const std::pair< const transition_t
+                         , const petri_net::transition_id_type
+                         > p (*preds.begin());
 
           for ( boost::unordered_set<tid_pid_type>::const_iterator tr (preds_read.begin())
               ; tr != preds_read.end()
