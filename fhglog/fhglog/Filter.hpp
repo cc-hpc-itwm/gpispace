@@ -15,28 +15,6 @@ namespace fhg { namespace log {
     virtual ~Filter() {}
   };
 
-  class FilterChain : public Filter {
-  public:
-    void addFilter(const Filter::ptr_t &filter)
-    {
-      filter_list_.push_back(filter);
-    }
-
-    bool operator()(const LogEvent &event) const
-    {
-      for (filter_list_t::const_iterator filter(filter_list_.begin()); filter != filter_list_.end(); ++filter)
-      {
-        if ((**filter)(event))
-          return true;
-      }
-      return false;
-    }
-
-  private:
-    typedef std::list<Filter::ptr_t> filter_list_t;
-    filter_list_t filter_list_;
-  };
-
   class LevelFilter : public Filter {
   public:
     explicit
