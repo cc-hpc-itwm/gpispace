@@ -36,6 +36,7 @@ void signal_handler(int)
 }
 
 int main(int argc, char **argv)
+try
 {
   po::options_description desc("options");
 
@@ -68,16 +69,7 @@ int main(int argc, char **argv)
     ;
 
   po::variables_map vm;
-  try
-  {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "invalid argument: " << ex.what() << std::endl;
-    std::cerr << "try " << argv[0] << " -h to get some help" << std::endl;
-    return EXIT_FAILURE;
-  }
+  po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
 
   if (vm.count("help"))
@@ -139,15 +131,7 @@ int main(int argc, char **argv)
   else if (fmt_string == "short") fmt = fhg::log::default_format::SHORT();
   else
   {
-    try
-    {
-      fhg::log::check_format (fmt);
-    }
-    catch (std::exception const &ex)
-    {
-      std::cerr << "invalid format: " << ex.what () << std::endl;
-      return EXIT_FAILURE;
-    }
+    fhg::log::check_format (fmt);
   }
 
   // remote messages go to stdout
@@ -165,16 +149,15 @@ int main(int argc, char **argv)
                                       )
     );
 
-  try
-  {
-    fhg::log::remote::LogServer const server (appender, io_service, port);
-    io_service.run();
-    LOG(INFO, "done.");
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << "Exception occured: " << e.what() << std::endl;
-  }
+  fhg::log::remote::LogServer const server (appender, io_service, port);
+  io_service.run();
+  LOG(INFO, "done.");
 
   return 0;
+}
+catch (const std::exception& e)
+{
+  std::cerr << "Exception occured: " << e.what() << std::endl;
+
+  return EXIT_FAILURE;
 }
