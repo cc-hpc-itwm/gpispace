@@ -29,3 +29,9 @@ fhg_add_test (xml_stream.cpp
   PROJECT fhg_util
   LINK_LIBRARIES fhg-util
 )
+
+fhg_add_test (temporary_file.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhg_util
+  LINK_LIBRARIES fhg-util
+)
