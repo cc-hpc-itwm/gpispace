@@ -5,6 +5,7 @@
 
 #include <fhg/util/first_then.hpp>
 #include <fhg/util/save_stream_flags.hpp>
+#include <fhg/util/parse/position.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -18,24 +19,25 @@ namespace fhg
   {
     inline
     std::ostream & format( std::ostream & os
-                         , const std::string &_fmt
+                         , const std::string & format
                          , const LogEvent &evt
                          )
     {
-      std::string::const_iterator c(_fmt.begin());
-      std::string::size_type len(_fmt.size());
-      while (len > 0)
+      fhg::util::parse::position_string pos (format);
+
+      while (!pos.end())
       {
-        if (*c == '%')
+        if (*pos == '%')
         {
-          ++c; --len;
-          if (0 == len)
+          ++pos;
+
+          if (pos.end())
           {
             throw std::runtime_error
               ("Format string ends with a single opening character!");
           }
 
-          switch (*c)
+          switch (*pos)
           {
           case '%': os << '%'; break;
           case 's': os << evt.severity().str()[0]; break;
@@ -98,19 +100,17 @@ namespace fhg
           case 'n': os << "\n"; break;
           default:
             throw std::runtime_error
-              ((boost::format ("format code not defined: %1%") % *c).str());
+              ((boost::format ("format code not defined: %1%") % *pos).str());
           }
         }
         else
         {
-          os << *c;
+          os << *pos;
         }
 
-        if (len)
-        {
-          ++c; --len;
-        }
+        ++pos;
       }
+
       return os;
     }
 
