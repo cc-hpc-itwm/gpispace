@@ -35,18 +35,11 @@ namespace fhg
 
       ~ThreadedAppender()
       {
-        stop();
-      }
-
-      void stop()
-      {
-        if (_log_thread.get_id() == boost::thread::id())
+        if (_log_thread.get_id() != boost::thread::id())
         {
-          return;
+          _log_thread.interrupt();
+          _log_thread.join();
         }
-
-        _log_thread.interrupt();
-        _log_thread.join();
       }
 
       virtual void append (const LogEvent& event)
