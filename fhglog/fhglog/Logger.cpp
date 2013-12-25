@@ -140,21 +140,13 @@ void Logger::log(const LogEvent &event)
     return;
   event.trace(name());
 
-  bool logged (false);
   BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
   {
     appender->append(event);
-    logged = true;
   }
 
   if (event.severity() == LogLevel::FATAL)
   {
-    if (! logged)
-    {
-      std::cerr << "logger " << name() << " got unhandled FATAL message: "
-                << event.path() << ":" << event.line() << " - " << event.message()
-                << std::endl;
-    }
     throw std::runtime_error (event.message());
   }
 }
