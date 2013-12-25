@@ -45,8 +45,8 @@ namespace fhg
           switch (*pos)
           {
           case '%': os << '%'; break;
-          case 's': os << evt.severity().str()[0]; break;
-          case 'S': os << evt.severity().str(); break;
+          case 's': os << string (evt.severity())[0]; break;
+          case 'S': os << string (evt.severity()); break;
           case 'p': os << boost::filesystem::path (evt.path()).filename().string(); break;
           case 'P': os << evt.path(); break;
           case 'F': os << evt.function(); break;

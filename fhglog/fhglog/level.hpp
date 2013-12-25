@@ -33,7 +33,6 @@ namespace fhg
 
       explicit LogLevel (const std::string&);
 
-      const std::string& str() const;
       const Level& lvl() const
       {
         return lvl_;
@@ -46,6 +45,8 @@ namespace fhg
     private:
       Level lvl_;
     };
+
+    const std::string& string (LogLevel const&);
   }
 }
 

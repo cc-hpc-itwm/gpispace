@@ -12,9 +12,9 @@ namespace fhg
 {
   namespace log
   {
-    const std::string& LogLevel::str() const
+    const std::string& string (LogLevel const& l)
     {
-      static std::string LevelToStringMap_[] =
+      static std::string const map[] =
         { "TRACE"
         , "DEBUG"
         , "INFO"
@@ -23,11 +23,10 @@ namespace fhg
         , "FATAL"
         };
 
-      assert (lvl_ >= 0 && lvl_ < 6);
+      assert (l.lvl() >= 0 && l.lvl() < 6);
 
-      return LevelToStringMap_[lvl_];
+      return map[l.lvl()];
     }
-
 
     namespace
     {
