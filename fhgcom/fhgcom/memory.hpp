@@ -1,13 +1,13 @@
 #ifndef FHG_COM_MEMORY_HPP
 #define FHG_COM_MEMORY_HPP 1
 
-#include <fhglog/memory.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace fhg
 {
   namespace com
   {
-    using fhg::log::shared_ptr;
+    using boost::shared_ptr;
   }
 }
 
