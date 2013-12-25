@@ -27,11 +27,9 @@ namespace fhg
         }
       }
 
-      virtual const Appender::ptr_t& addAppender (const Appender::ptr_t& a)
+      void addAppender (const Appender::ptr_t& a)
       {
         _appender.push_back (a);
-
-        return a;
       }
 
       virtual void flush()
