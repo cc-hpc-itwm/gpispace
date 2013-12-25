@@ -46,8 +46,6 @@ namespace fhg { namespace log {
       const std::string &parent() const;
       void setLevel(const LogLevel &level);
       void setFilter(const Filter::ptr_t &filter);
-      const Filter::ptr_t &getFilter() const;
-      const LogLevel &getLevel() const;
       inline bool isLevelEnabled(const LogLevel &level) const
       {
         return level >= lvl_;

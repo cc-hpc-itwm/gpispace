@@ -44,11 +44,9 @@ logger_t getLogger(const std::string &name, const std::string & base);
       inline const std::string &name() const { return impl_->name(); }
 
       inline void setLevel(const LogLevel &level) { impl_->setLevel(level); }
-      inline const LogLevel & getLevel() const { return impl_->getLevel(); }
       inline bool isLevelEnabled(const LogLevel &level) const { return impl_->isLevelEnabled(level); }
 
       inline void setFilter(const Filter::ptr_t &filter) { impl_->setFilter(filter); }
-      inline const Filter::ptr_t &getFilter() const { return impl_->getFilter(); }
       inline bool isFiltered(const LogEvent &event) const { return impl_->isFiltered(event); }
 
       inline const Appender::ptr_t &addAppender(Appender::ptr_t appender) { return impl_->addAppender(appender); }

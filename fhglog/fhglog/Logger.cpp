@@ -131,11 +131,6 @@ void Logger::setLevel(const LogLevel &level)
   lvl_ = level;
 }
 
-const LogLevel &Logger::getLevel() const
-{
-  return lvl_;
-}
-
 void Logger::log(const LogEvent &event)
 {
   if (! isLevelEnabled(event.severity()))
@@ -165,11 +160,6 @@ const Appender::ptr_t &Logger::addAppender(const Appender::ptr_t &appender)
 {
   appenders_.push_back(appender);
   return appender;
-}
-
-const Filter::ptr_t &Logger::getFilter() const
-{
-  return filter_;
 }
 
 void Logger::removeAllAppenders()
