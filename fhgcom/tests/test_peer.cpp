@@ -26,8 +26,6 @@ struct KVSSetup
     , m_serv (0)
     , m_thrd (0)
   {
-    FHGLOG_SETUP();
-
     m_pool = new fhg::com::io_service_pool(1);
     m_kvsd = new fhg::com::kvs::server::kvsd;
     m_serv = new fhg::com::tcp_server ( *m_pool
@@ -42,8 +40,6 @@ struct KVSSetup
                                );
 
     m_serv->start();
-
-    LOG(INFO, "kvs daemon is listening on port " << m_serv->port ());
 
     fhg::com::kvs::global::get_kvs_info().init( kvs_host()
                                               , boost::lexical_cast<std::string>(m_serv->port())
@@ -64,8 +60,6 @@ struct KVSSetup
 
     delete *fhg::com::kvs::global::get_kvs_info_ptr ();
     *fhg::com::kvs::global::get_kvs_info_ptr () = 0;
-
-    FHGLOG_TERM ();
   }
 
   fhg::com::io_service_pool *m_pool;
