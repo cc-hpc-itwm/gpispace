@@ -19,7 +19,6 @@ set (header_appender
   appender/file.hpp
   appender/filtering.hpp
   appender/memory.hpp
-  appender/null.hpp
   appender/stream.hpp
   appender/synchronized.hpp
   appender/threaded.hpp
