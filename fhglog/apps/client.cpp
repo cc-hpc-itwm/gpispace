@@ -70,9 +70,6 @@ int main (int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  if (level < LogLevel::MIN_LEVEL || level > LogLevel::MAX_LEVEL)
-    level = LogLevel::DEF_LEVEL;
-
   if (message == "-")
   {
     message = "";
@@ -87,18 +84,17 @@ int main (int argc, char **argv)
     } while (true);
   }
 
-  LogEvent e( (LogLevel::Level)level
-            , file
-            , function
-            , line
-            , message
-            , tags
-            );
-
   try
   {
     remote::RemoteAppender r (url);
-    r.append (e);
+    r.append (LogEvent ( LogLevel::Level (level)
+                       , file
+                       , function
+                       , line
+                       , message
+                       , tags
+                       )
+             );
   }
   catch (std::exception const & ex)
   {
