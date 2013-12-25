@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE (synchronized_appender)
   std::size_t messages_logged (0);
 
   fhg::log::SynchronizedAppender appender
-    (new utils::counting_appender (&messages_logged));
+    (fhg::log::Appender::ptr_t (new utils::counting_appender (&messages_logged)));
 
   {
     boost::ptr_vector<boost::thread> threads;
