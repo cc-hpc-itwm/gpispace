@@ -69,8 +69,7 @@ namespace fhg { namespace log {
       LogLevel lvl_;
       Filter::ptr_t filter_;
 
-      typedef std::list<Appender::ptr_t> appender_list_t;
-      appender_list_t appenders_;
+      std::list<Appender::ptr_t> appenders_;
   };
 
     void terminate ();
