@@ -24,7 +24,7 @@ namespace fhg { namespace log {
 
     bool operator()(const LogEvent &evt) const
     {
-      return evt.severity() < level_;
+      return evt.severity().lvl() < level_.lvl();
     }
   private:
     LogLevel level_;

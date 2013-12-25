@@ -50,7 +50,7 @@ namespace fhg
       void setLevel (const LogLevel& level);
       bool isLevelEnabled (const LogLevel& level) const
       {
-        return level >= lvl_;
+        return level.lvl() >= lvl_.lvl();
       }
       bool isFiltered (const LogEvent& evt) const
       {

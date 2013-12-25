@@ -37,7 +37,7 @@ namespace fhg
 
     std::string const & color_map_t::colorize (const LogLevel &lvl) const
     {
-      return m_color_table.at (lvl);
+      return m_color_table.at (lvl.lvl());
     }
 
     std::string const & color_map_t::operator[](const LogLevel &level) const
@@ -46,11 +46,11 @@ namespace fhg
     }
     std::string & color_map_t::operator[](const LogLevel &level)
     {
-      if (m_color_table.find(level) == m_color_table.end())
+      if (m_color_table.find(level.lvl()) == m_color_table.end())
       {
-        m_color_table[level] = reset_escape_code();
+        m_color_table[level.lvl()] = reset_escape_code();
       }
-      return m_color_table[level];
+      return m_color_table[level.lvl()];
     }
   }
 }

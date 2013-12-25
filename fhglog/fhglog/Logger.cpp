@@ -94,7 +94,7 @@ void Logger::log (const LogEvent& event)
     }
   }
 
-  if (event.severity() == LogLevel::FATAL)
+  if (event.severity().lvl() == LogLevel::FATAL)
   {
     throw std::runtime_error (event.message());
   }

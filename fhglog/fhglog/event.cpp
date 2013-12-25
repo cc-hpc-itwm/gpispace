@@ -252,7 +252,7 @@ namespace
 std::ostream& operator<< (std::ostream& os, const fhg::log::LogEvent& event)
 {
   os << ',' << event.id();
-  os << ',' << encode::loglevel (event.severity());
+  os << ',' << encode::loglevel (event.severity().lvl());
   os << ',' << encode::string (event.path());
   os << ',' << encode::string (event.function());
   os << ',' << event.line();
