@@ -1,66 +1,56 @@
-/*
- * =====================================================================================
- *
- *       Filename:  CompoundAppender.hpp
- *
- *    Description:  an appender that contains several appenders
- *
- *        Version:  1.0
- *        Created:  10/13/2009 12:44:05 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef FHG_LOG_COMPOUND_APPENDER_HPP
 #define FHG_LOG_COMPOUND_APPENDER_HPP 1
 
-#include <list>
 #include <fhglog/Appender.hpp>
 
+#include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-namespace fhg { namespace log {
-  class CompoundAppender : public Appender
+#include <list>
+
+namespace fhg
+{
+  namespace log
   {
-	private:
-	  typedef std::list<Appender::ptr_t> appender_list;
-    public:
-    typedef boost::shared_ptr<CompoundAppender> ptr_t;
-
-      virtual void append(const LogEvent &evt)
-      {
-		for (appender_list::iterator a(appenders_.begin()); a != appenders_.end(); ++a)
-		{
-		  (*a)->append(evt);
-		}
-      }
-
-      virtual const Appender::ptr_t &addAppender(const Appender::ptr_t &a)
-	  {
-		appenders_.push_back(a);
-		return a;
-	  }
-
-	  virtual void clear()
-	  {
-		appenders_.clear();
-	  }
-
-    virtual void flush(void)
+    class CompoundAppender : public Appender
     {
-      for (appender_list::iterator a(appenders_.begin()); a != appenders_.end(); ++a)
+    public:
+      typedef boost::shared_ptr<CompoundAppender> ptr_t;
+
+      virtual void append (const LogEvent& evt)
       {
-        (*a)->flush();
+        BOOST_FOREACH (Appender::ptr_t const appender, _appender)
+        {
+          appender->append (evt);
+        }
       }
-    }
+
+      virtual const Appender::ptr_t& addAppender (const Appender::ptr_t& a)
+      {
+        _appender.push_back (a);
+
+        return a;
+      }
+
+      virtual void clear()
+      {
+        _appender.clear();
+      }
+
+      virtual void flush()
+      {
+        BOOST_FOREACH (Appender::ptr_t const appender, _appender)
+        {
+          appender->flush();
+        }
+      }
+
     private:
-	  appender_list appenders_;
-  };
-}}
+      std::list<Appender::ptr_t> _appender;
+    };
+  }
+}
 
 #endif
