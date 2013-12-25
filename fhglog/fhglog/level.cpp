@@ -33,10 +33,7 @@ namespace fhg
       else if (name == "WARN")  lvl_ = WARN;
       else if (name == "ERROR") lvl_ = ERROR;
       else if (name == "FATAL") lvl_ = ERROR;
-      else if (name == "MIN")   lvl_ = MIN_LEVEL;
-      else if (name == "MAX")   lvl_ = MAX_LEVEL;
-      else if (name == "DEF")   lvl_ = DEF_LEVEL;
-      else                      lvl_ = DEF_LEVEL;
+      else throw std::runtime_error ("unknown log level: " + name);
     }
   }
 }

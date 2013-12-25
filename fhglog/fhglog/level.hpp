@@ -20,17 +20,12 @@ namespace fhg
                  , WARN
                  , ERROR
                  , FATAL
-
-                 // keep the following definitions always up-to-date
-                 , MIN_LEVEL = TRACE
-                 , DEF_LEVEL = INFO
-                 , MAX_LEVEL = FATAL
                  };
 
       LogLevel (Level level)
         : lvl_ (level)
       {
-        if (lvl_ < MIN_LEVEL || lvl_ > MAX_LEVEL)
+        if (lvl_ < TRACE || lvl_ > FATAL)
         {
           throw std::runtime_error ("the specified log-level is out of range!");
         }
