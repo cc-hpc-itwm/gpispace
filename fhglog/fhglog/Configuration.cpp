@@ -217,8 +217,6 @@ namespace fhg
     {
       DefaultConfiguration conf;
 
-      getLogger().removeAllAppenders();
-
       conf.parse_environment();
 
       if (conf.disabled_)
