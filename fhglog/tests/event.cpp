@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE (illegal_loglevel_should_throw)
 {
   BOOST_REQUIRE_THROW
     ( fhg::log::LogLevel
-      (static_cast<fhg::log::LogLevel::Level> (fhg::log::LogLevel::MAX_LEVEL+1))
+      (static_cast<fhg::log::LogLevel::Level> (fhg::log::LogLevel::FATAL + 1))
     , std::runtime_error
     );
 }
