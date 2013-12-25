@@ -49,4 +49,4 @@ FHGLOG_level=INFO nre-pcd -c /p/herc/itwm/hpc/soft/sdpa/fvm-pc/etc/fvm.cfg \
   >/scratch/petry/sdpa/pc.`hostname`.log 2>&1 &
 sleep 1
 
-FHGLOG_level=MIN /p/herc/itwm/hpc/soft/sdpa/sdpa/bin/nre --url "0.0.0.0" --name "$name" --gui_url="$gui_url" --agg_name="$agg" --agg_url="$agg_url" >/scratch/petry/sdpa/nre.`hostname`.log 2>&1 &
+FHGLOG_level=TRACE /p/herc/itwm/hpc/soft/sdpa/sdpa/bin/nre --url "0.0.0.0" --name "$name" --gui_url="$gui_url" --agg_name="$agg" --agg_url="$agg_url" >/scratch/petry/sdpa/nre.`hostname`.log 2>&1 &

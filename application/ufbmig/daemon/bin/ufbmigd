@@ -171,7 +171,7 @@ fi
 
 state_dir="$scratch_dir/state/ufbmigd"
 mkdir -p "$state_dir"
-#FHGLOG_level=MIN FHGLOG_to_console=stderr valgrind --tool=memcheck --leak-check=full --show-reachable=yes --malloc-fill=0x0 --free-fill=0xa $SDPA_HOME/bin/fhgkernel \
+#FHGLOG_level=TRACE FHGLOG_to_console=stderr valgrind --tool=memcheck --leak-check=full --show-reachable=yes --malloc-fill=0x0 --free-fill=0xa $SDPA_HOME/bin/fhgkernel \
 FHGLOG_to_console=stderr "$SDPA_HOME/bin/fhgkernel" \
     --state "$state_dir/store/" \
     -s kernel.load.lazy=0 \
