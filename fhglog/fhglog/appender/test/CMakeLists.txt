@@ -1,0 +1,29 @@
+fhg_add_test (appenders.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog_appender
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (compound.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog_appender
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (file.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog_appender
+  LINK_LIBRARIES fhglog ${Boost_FILESYSTEM_LIBRARY})
+
+fhg_add_test (filtering.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog_appender
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (synchronized.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog_appender
+  LINK_LIBRARIES fhglog)
+
+fhg_add_test (threaded.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog_appender
+  LINK_LIBRARIES fhglog)

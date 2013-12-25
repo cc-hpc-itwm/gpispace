@@ -89,3 +89,5 @@ install(TARGETS fhglog-shared
   LIBRARY
   DESTINATION lib
   COMPONENT runtime-libraries)
+
+add_subdirectory (appender/test)
