@@ -18,11 +18,6 @@ fhg_add_test (format.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (performance.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhglog
-  LINK_LIBRARIES fhglog)
-
 fhg_add_test (remote_logging.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
