@@ -24,7 +24,6 @@ namespace fhg
 namespace fhg { namespace log {
   class LogEvent {
     public:
-      typedef LogLevel severity_type;
       typedef std::string file_type;
       typedef std::string function_type;
       typedef std::size_t line_type;
@@ -38,7 +37,7 @@ namespace fhg { namespace log {
       LogEvent(util::parse::position&);
       static LogEvent from_string (const std::string&);
       LogEvent();
-      LogEvent(const severity_type &severity
+      LogEvent(const LogLevel &severity
              , const file_type &pa
              , const function_type &function
              , const line_type &line
@@ -49,7 +48,7 @@ namespace fhg { namespace log {
       bool operator<(const LogEvent &) const;
 
       const std::size_t& id() const { return id_; }
-      const severity_type& severity() const { return severity_; }
+      const LogLevel& severity() const { return severity_; }
       const file_type& path() const { return path_; }
       const function_type& function() const { return function_; }
       const line_type& line() const { return line_; }
@@ -70,7 +69,7 @@ namespace fhg { namespace log {
 
     private:
       uint64_t id_;
-      severity_type severity_;
+      LogLevel severity_;
       file_type path_;
       function_type function_;
       line_type line_;

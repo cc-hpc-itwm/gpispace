@@ -61,7 +61,7 @@ namespace fhg
       }
     }
 
-    LogEvent::LogEvent( const severity_type &a_severity
+    LogEvent::LogEvent( const LogLevel &a_severity
                       , const file_type &a_path
                       , const function_type &a_function
                       , const line_type &a_line
