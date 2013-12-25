@@ -3,7 +3,6 @@
 #include    <iostream>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
-#include "error_handler.hpp"
 
 using namespace fhg::log;
 
@@ -179,7 +178,7 @@ void Logger::log(const LogEvent &event)
                 << event.path() << ":" << event.line() << " - " << event.message()
                 << std::endl;
     }
-    fhg::log::error_handler();
+    throw std::runtime_error (event.message());
   }
 }
 

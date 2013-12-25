@@ -13,7 +13,7 @@ fhg_add_test (dump_event.cpp
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (error_handler.cpp
+fhg_add_test (fatal_throws.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog
   LINK_LIBRARIES fhglog)
