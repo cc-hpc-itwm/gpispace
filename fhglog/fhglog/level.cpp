@@ -28,36 +28,38 @@ namespace fhg
       return LevelToStringMap_[lvl_];
     }
 
-    LogLevel::LogLevel (const std::string& name)
+
+    namespace
     {
-      namespace parse = fhg::util::parse;
-
-      std::string const any
-        ("one of 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
-
-      parse::position_string pos (name);
-
-      if (pos.end())
+      LogLevel::Level parse_level (std::string const& name)
       {
-        throw parse::error::expected (any, pos);
-      }
+        namespace parse = fhg::util::parse;
 
-      switch (*pos)
-      {
-      case 'T': ++pos; parse::require::require (pos, "RACE"); lvl_ = TRACE; break;
-      case 'D': ++pos; parse::require::require (pos, "EBUG"); lvl_ = DEBUG; break;
-      case 'I': ++pos; parse::require::require (pos, "NFO"); lvl_ = INFO; break;
-      case 'W': ++pos; parse::require::require (pos, "ARN"); lvl_ = WARN; break;
-      case 'E': ++pos; parse::require::require (pos, "RROR"); lvl_ = ERROR; break;
-      case 'F': ++pos; parse::require::require (pos, "ATAL"); lvl_ = FATAL; break;
-      default:
-        throw parse::error::expected (any, pos);
-      }
+        std::string const any
+          ("one of 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
 
-      if (!pos.end())
-      {
-        throw parse::error::expected (any, pos);
+        parse::position_string pos (name);
+
+        if (pos.end())
+        {
+          throw parse::error::expected (any, pos);
+        }
+
+        switch (*pos)
+        {
+        case 'T': ++pos; parse::require::require (pos, "RACE"); return LogLevel::TRACE;
+        case 'D': ++pos; parse::require::require (pos, "EBUG"); return LogLevel::DEBUG;
+        case 'I': ++pos; parse::require::require (pos, "NFO"); return LogLevel::INFO;
+        case 'W': ++pos; parse::require::require (pos, "ARN"); return LogLevel::WARN;
+        case 'E': ++pos; parse::require::require (pos, "RROR"); return LogLevel::ERROR;
+        case 'F': ++pos; parse::require::require (pos, "ATAL"); return LogLevel::FATAL;
+        default: throw parse::error::expected (any, pos);
+        }
       }
     }
+
+    LogLevel::LogLevel (const std::string& name)
+      : lvl_ (parse_level (name))
+    {}
   }
 }
