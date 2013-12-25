@@ -151,7 +151,6 @@ try
 
   fhg::log::remote::LogServer const server (appender, io_service, port);
   io_service.run();
-  LOG(INFO, "done.");
 
   return 0;
 }
