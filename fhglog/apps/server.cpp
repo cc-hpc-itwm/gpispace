@@ -34,7 +34,7 @@ try
     ("port,p", po::value<unsigned short>()->default_value(FHGLOG_DEFAULT_PORT), "port to listen on")
     ("quiet,q", "be quiet")
     ("verbose,v", po::value<unsigned int>()->default_value(0), "verbosity level")
-    ("color,c", po::value<std::string>()->default_value("auto"), "colored output")
+    ("color,c", po::value<std::string>()->default_value("off"), "colored output")
     ( "format,f", po::value<std::string>()->default_value("short")
     , "possible values:\n"
     "  short:\t use a short logging format (eq. to \"%s: %l %p:%L - %m%n\")\n"
