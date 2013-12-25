@@ -6,7 +6,6 @@
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/format.hpp>
 #include <fhglog/appender/null.hpp>
 
 #include <tests/utils.hpp>
@@ -14,23 +13,6 @@
 namespace
 {
   using namespace fhg::log;
-
-  class FormattingNullAppender : public Appender
-  {
-  public:
-    FormattingNullAppender (const std::string & fmt)
-      : fmt_ (fmt)
-    {}
-
-    void append (const LogEvent &evt)
-    {
-      format (fmt_, evt);
-    }
-
-    void flush () {}
-  private:
-    std::string fmt_;
-  };
 }
 
 //! \todo These two should test by pushing into the logger before / after removing
@@ -63,16 +45,6 @@ BOOST_FIXTURE_TEST_CASE (NOTEST_add_and_remove_all_appenders, utils::logger_with
   log.removeAllAppenders();
 
   //! \todo Assert being removed
-}
-
-//! \todo This is not a test!
-BOOST_FIXTURE_TEST_CASE (NOTEST_formatting_performance, utils::logger_with_minimum_log_level)
-{
-  log.addAppender (Appender::ptr_t (new FormattingNullAppender (default_format::LONG())));
-  for (std::size_t count(0); count < 100000; ++count)
-  {
-    log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
-  }
 }
 
 BOOST_FIXTURE_TEST_CASE (stream_appender, utils::logger_with_minimum_log_level)
