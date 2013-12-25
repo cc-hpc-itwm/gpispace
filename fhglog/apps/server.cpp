@@ -68,7 +68,6 @@ try
     return EXIT_SUCCESS;
   }
 
-  const unsigned short port (vm["port"].as<unsigned short>());
   const std::string fmt_string (vm["format"].as<std::string>());
 
   fhg::log::StreamAppender::ColorMode const color_mode
@@ -135,7 +134,8 @@ try
                                       )
     );
 
-  fhg::log::remote::LogServer const server (appender, io_service, port);
+  fhg::log::remote::LogServer const
+    server (appender, io_service, vm["port"].as<unsigned short>());
 
   signal (SIGINT, signal_handler);
   signal (SIGTERM, signal_handler);
