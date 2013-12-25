@@ -39,7 +39,6 @@ namespace fhg { namespace log {
       const std::string &str() const;
 
       inline const Level &lvl() const { return lvl_; }
-      inline Level &lvl() { return lvl_; }
       operator Level () const { return lvl_; }
 
     private:
