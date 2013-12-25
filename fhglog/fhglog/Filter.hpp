@@ -2,7 +2,7 @@
 #define FHGLOG_FILTER_HPP 1
 
 #include <fhglog/memory.hpp>
-#include <fhglog/LogEvent.hpp>
+#include <fhglog/event.hpp>
 
 #include <list>
 

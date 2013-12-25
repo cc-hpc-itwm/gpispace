@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE event
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/LogEvent.hpp>
+#include <fhglog/event.hpp>
 #include <fhglog/LogLevel.hpp>
 
 //! \todo This should test way more

@@ -1,7 +1,7 @@
 #ifndef FHG_LOG_FORMAT_FLAG_HPP
 #define FHG_LOG_FORMAT_FLAG_HPP 1
 
-#include <fhglog/LogEvent.hpp>
+#include <fhglog/event.hpp>
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <cstring>

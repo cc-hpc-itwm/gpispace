@@ -2,7 +2,7 @@
 #define FHG_LOG_FORMAT_HPP 1
 
 #include <string>
-#include <fhglog/LogEvent.hpp>
+#include <fhglog/event.hpp>
 #include <fhglog/format_flag.hpp>
 
 namespace fhg

@@ -2,7 +2,7 @@
 #define FHG_LOG_APPENDER_HPP 1
 
 #include    <fhglog/memory.hpp>
-#include    <fhglog/LogEvent.hpp>
+#include    <fhglog/event.hpp>
 
 namespace fhg { namespace log {
   class Appender {

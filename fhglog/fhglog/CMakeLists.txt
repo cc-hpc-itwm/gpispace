@@ -14,7 +14,7 @@ set (hdrs
   FilteringAppender.hpp
   format_flag.hpp
   format.hpp
-  LogEvent.hpp
+  event.hpp
   LoggerApi.hpp
   Logger.hpp
   LogLevel.hpp
@@ -32,7 +32,7 @@ set (srcs
   error_handler.cpp
   FileAppender.cpp
   MemoryAppender.cpp
-  LogEvent.cpp
+  event.cpp
   Logger.cpp
   LogLevel.cpp
   StreamAppender.cpp

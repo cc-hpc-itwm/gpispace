@@ -1,4 +1,4 @@
-#include "LogEvent.hpp"
+#include "event.hpp"
 
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
