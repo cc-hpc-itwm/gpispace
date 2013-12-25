@@ -39,9 +39,7 @@ void LogServer::handle_receive_from ( const boost::system::error_code& error
 {
   if (!error && bytes_recv > 0)
   {
-    data_[bytes_recv] = 0;
-
-    std::string msg (data_);
+    std::string const msg (data_ , data_ + bytes_recv);
 
     if (msg == "QUIT deadbeef")
     {
