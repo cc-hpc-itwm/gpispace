@@ -3,21 +3,17 @@
 #define BOOST_TEST_MODULE append
 #include <boost/test/unit_test.hpp>
 
-#include <sstream> // ostringstream
+#include <tests/utils.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fhglog/appender/stream.hpp>
 
-#include <tests/utils.hpp>
-
-namespace
-{
-  using namespace fhg::log;
-}
+#include <sstream>
 
 BOOST_FIXTURE_TEST_CASE (stream_appender, utils::logger_with_minimum_log_level)
 {
   std::ostringstream logstream;
-  log.addAppender (Appender::ptr_t (new StreamAppender (logstream, "%m")));
+  log.addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream, "%m")));
 
   log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
 
@@ -29,8 +25,8 @@ BOOST_FIXTURE_TEST_CASE (two_stream_appenders, utils::logger_with_minimum_log_le
   std::ostringstream logstream_0;
   std::ostringstream logstream_1;
 
-  log.addAppender (Appender::ptr_t (new StreamAppender (logstream_0, "%m")));
-  log.addAppender (Appender::ptr_t (new StreamAppender (logstream_1, "%m")));
+  log.addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream_0, "%m")));
+  log.addAppender (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream_1, "%m")));
 
   log.log (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));
 
