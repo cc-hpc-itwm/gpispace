@@ -68,14 +68,14 @@ try
     return EXIT_SUCCESS;
   }
 
-  const std::string color (vm["color"].as<std::string>());
   const unsigned short port (vm["port"].as<unsigned short>());
   const std::string fmt_string (vm["format"].as<std::string>());
 
-  fhg::log::StreamAppender::ColorMode color_mode
-    (fhg::log::StreamAppender::COLOR_OFF);
-  if (color == "on")
-    color_mode = fhg::log::StreamAppender::COLOR_ON;
+  fhg::log::StreamAppender::ColorMode const color_mode
+    ( vm["color"].as<std::string>() == "on"
+    ? fhg::log::StreamAppender::COLOR_ON
+    : fhg::log::StreamAppender::COLOR_OFF
+    );
 
   // my own output goes to stderr
   fhg::log::getLogger().addAppender
