@@ -37,10 +37,6 @@ namespace fhg
       {
         return lvl_;
       }
-      operator Level() const
-      {
-        return lvl_;
-      }
 
     private:
       Level lvl_;
