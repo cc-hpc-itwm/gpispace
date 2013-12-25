@@ -5,6 +5,7 @@
 #include <boost/unordered_map.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 using namespace fhg::log;
 
@@ -40,13 +41,11 @@ namespace state
 
     void terminate ()
     {
-      logger_map_t::iterator logger (m_loggers.begin());
-      logger_map_t::iterator end (m_loggers.end());
-
-      while (logger != end)
+      BOOST_FOREACH ( Logger::ptr_t const& logger
+                    , m_loggers | boost::adaptors::map_values
+                    )
       {
-        logger->second->flush();
-        ++logger;
+        logger->flush();
       }
     }
 
