@@ -1,133 +1,134 @@
-/*
- * =====================================================================================
- *
- *       Filename:  ThreadedAppender.hpp
- *
- *    Description:  uses a thread to decouple the real logging effort from the
- *					application code
- *
- *        Version:  1.0
- *        Created:  10/07/2009 11:36:52 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef FHG_LOG_THREADED_APPENDER_HPP
 #define FHG_LOG_THREADED_APPENDER_HPP 1
 
-#include <boost/thread.hpp>
-#include <deque>
 #include <fhglog/Appender.hpp>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
+#include <deque>
 
 #ifndef NDEBUG
 #	include <iostream>
 #endif
 
-namespace fhg { namespace log {
-  class ThreadedAppender : public Appender
+namespace fhg
+{
+  namespace log
   {
-  private:
-	typedef std::deque<LogEvent> event_list_type;
-	typedef boost::recursive_mutex mutex_type;
-	typedef boost::unique_lock<mutex_type> lock_type;
-	typedef boost::condition_variable_any condition_type;
-
-  public:
-    typedef boost::shared_ptr<ThreadedAppender> ptr_t;
-
-    explicit
-    ThreadedAppender(const Appender::ptr_t &appender)
-      : _appender (appender)
+    class ThreadedAppender : public Appender
     {
-	  start();
-	}
+    public:
+      typedef boost::shared_ptr<ThreadedAppender> ptr_t;
 
-    ~ThreadedAppender()
-    {
-	  try
-	  {
-		stop();
-	  }
-	  catch (const std::exception &ex)
-	  {
+      explicit
+      ThreadedAppender (const Appender::ptr_t &appender)
+        : _appender (appender)
+      {
+        start();
+      }
+
+      ~ThreadedAppender()
+      {
+        try
+        {
+          stop();
+        }
+        catch (const std::exception& ex)
+        {
 #ifndef NDEBUG
-		std::clog << "E: error during stop of ThreadedAppender: " << ex.what() << std::endl;
+          std::clog << "E: error during stop of ThreadedAppender: "
+                    << ex.what() << std::endl;
 #endif
-	  }
-	  catch (...)
-	  {
+        }
+        catch (...)
+        {
 #ifndef NDEBUG
-		std::clog << "E: unknown error during stop of ThreadedAppender!" << std::endl;
+          std::clog << "E: unknown error during stop of ThreadedAppender!"
+                    << std::endl;
 #endif
-	  }
-    }
+        }
+      }
 
-	void start()
-	{
-	  if (log_thread_.get_id() != boost::thread::id()) return;
-
-	  log_thread_ = boost::thread(boost::bind(&ThreadedAppender::log_thread_loop, this));
-	}
-
-	void stop()
-	{
-	  if (log_thread_.get_id() == boost::thread::id()) return;
-
-	  log_thread_.interrupt();
-	  log_thread_.join();
-	}
-
-    virtual void append(const LogEvent &evt)
-    {
-	  lock_type lock(mtx_);
-	  events_.push_back(evt);
-	  event_available_.notify_one();
-    }
-
-	virtual void flush() throw (boost::thread_interrupted)
-	{
-	  lock_type lock(mtx_);
-	  while (! events_.empty())
-	  {
-		flushed_.wait(lock);
-	  }
-          _appender->flush ();
-	}
-  private:
-	void log_thread_loop()
-	{
-	  for (;;)
-	  {
-            lock_type lock(mtx_);
-            while (events_.empty())
-            {
-              event_available_.wait(lock);
-            }
-            LogEvent evt = events_.front(); events_.pop_front();
-            _appender->append(evt);
-
-            if (events_.empty())
-            {
-              flushed_.notify_all();
-            }
-          }
+      void start()
+      {
+        if (_log_thread.get_id() != boost::thread::id())
+        {
+          return;
         }
 
-	private:
-    Appender::ptr_t _appender;
-	  boost::thread log_thread_;
-	  mutex_type mtx_;
-	  condition_type event_available_;
-	  condition_type flushed_;
-	  event_list_type events_;
-  };
-}}
+        _log_thread =
+          boost::thread (boost::bind ( &ThreadedAppender::log_thread_loop
+                                     , this
+                                     )
+                        );
+      }
+
+      void stop()
+      {
+        if (_log_thread.get_id() == boost::thread::id())
+        {
+          return;
+        }
+
+        _log_thread.interrupt();
+        _log_thread.join();
+      }
+
+      virtual void append (const LogEvent& event)
+      {
+        boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
+
+        _events.push_back (event);
+        _event_available.notify_one();
+      }
+
+      virtual void flush()
+      {
+        boost::unique_lock<boost::recursive_mutex> lock (_mutex);
+
+        while (!_events.empty())
+        {
+          _flushed.wait (lock);
+        }
+
+        _appender->flush();
+      }
+
+    private:
+      void log_thread_loop()
+      {
+        while (true)
+        {
+          boost::unique_lock<boost::recursive_mutex> lock (_mutex);
+
+          while (_events.empty())
+          {
+            _event_available.wait (lock);
+          }
+
+          _appender->append (_events.front());
+
+          _events.pop_front();
+
+          if (_events.empty())
+          {
+            _flushed.notify_all();
+          }
+        }
+      }
+
+    private:
+      Appender::ptr_t _appender;
+      boost::thread _log_thread;
+      boost::recursive_mutex _mutex;
+      boost::condition_variable_any _event_available;
+      boost::condition_variable_any _flushed;
+      std::deque<LogEvent> _events;
+    };
+  }
+}
 
 #endif
