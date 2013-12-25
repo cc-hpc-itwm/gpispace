@@ -8,6 +8,8 @@
 #include <ios>
 #include <boost/filesystem.hpp>
 
+#include <sstream>
+
 namespace fhg
 {
   namespace log
