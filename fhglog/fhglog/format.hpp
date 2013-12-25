@@ -4,6 +4,7 @@
 #include <fhglog/event.hpp>
 
 #include <fhg/util/first_then.hpp>
+#include <fhg/util/save_stream_flags.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -61,18 +62,16 @@ namespace fhg
             break;
           case 't':
             {
-              std::ios_base::fmtflags const flags (os.flags());
+              fhg::util::save_stream_flags const _ (os);
               os.unsetf (std::ios_base::scientific);
               os.setf (std::ios_base::fixed);
               os << evt.tstamp();
-              os.flags (flags);
             }
             break;
           case 'T':
             {
-              std::ios_base::fmtflags const flags (os.flags());
+              fhg::util::save_stream_flags const _ (os);
               os << std::hex << evt.tid();
-              os.flags (flags);
             }
             break;
           case 'R': os << evt.pid(); break;
