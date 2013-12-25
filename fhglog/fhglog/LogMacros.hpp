@@ -60,11 +60,12 @@ namespace fhg { namespace log {
          && logger.isLevelEnabled(LogLevel::level)                      \
          )                                                              \
       {                                                                 \
-        FHGLOG_MKEVENT(__log_evt, level, "");                           \
+        std::ostringstream msg_;                                        \
+        msg_ << msg;                                                    \
+        FHGLOG_MKEVENT(__log_evt, level, msg_.str());                   \
+                                                                        \
         if (! logger.isFiltered(__log_evt))                             \
         {                                                               \
-          std::ostringstream msg_; msg_ << msg;                         \
-          __log_evt.message() = msg_.str();                             \
           logger.log(__log_evt);                                        \
         }                                                               \
       }                                                                 \
