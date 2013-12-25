@@ -1,50 +1,42 @@
-/*
- * =====================================================================================
- *
- *       Filename:  StreamAppender.cpp
- *
- *    Description:  appending to a std::ostream
- *
- *        Version:  1.0
- *        Created:  08/25/2009 11:02:12 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #include "stream.hpp"
-#include "fhglog/format.hpp"
 
-using namespace fhg::log;
+#include <fhglog/format.hpp>
 
-StreamAppender::StreamAppender( std::ostream &stream
-                              , std::string const &fmt
-                              , StreamAppender::ColorMode color_mode
-                              )
-  : stream_(stream)
-  , fmt_(fmt)
-  , color_mode_(color_mode)
-{}
-
-void
-StreamAppender::append(const LogEvent &evt)
+namespace fhg
 {
-  if (color_mode_ == COLOR_ON)
-    stream_ << color_map[(evt.severity())];
+  namespace log
+  {
+    StreamAppender::StreamAppender ( std::ostream& stream
+                                   , std::string const& format
+                                   , StreamAppender::ColorMode color_mode
+                                   )
+      : _stream (stream)
+      , _format (format)
+      , _color_mode (color_mode)
+    {}
 
-  // TODO: pass color mapper into the formatter
-  stream_ << format(fmt_, evt);
+    void StreamAppender::append (const LogEvent& event)
+    {
+      if (_color_mode == COLOR_ON)
+      {
+        _stream << _color_map[event.severity()];
+      }
 
-  if (color_mode_ == COLOR_ON)
-    stream_ << color_map.reset_escape_code();
+      // TODO: pass color mapper into the formatter
+      _stream << format (_format, event);
+
+      if (_color_mode == COLOR_ON)
+      {
+        _stream << _color_map.reset_escape_code();
+      }
+    }
+
+    void StreamAppender::flush()
+    {
+      _stream.flush();
+    }
+  }
 }
 
-void
-StreamAppender::flush (void)
-{
-  stream_.flush();
-}
