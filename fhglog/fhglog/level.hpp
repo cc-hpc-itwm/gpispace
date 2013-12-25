@@ -49,11 +49,4 @@ namespace fhg
   }
 }
 
-inline std::ostream &operator<< ( std::ostream& os
-                                , const fhg::log::LogLevel& lvl
-                                )
-{
-  return os << lvl.str();
-}
-
 #endif
