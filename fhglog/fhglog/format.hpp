@@ -98,20 +98,6 @@ namespace fhg
         return f;
       }
     };
-
-    struct formatter
-    {
-      formatter (const std::string & s = default_format::SHORT())
-        : fmt_(s)
-      {}
-
-      std::string operator () (const LogEvent & e) const
-      {
-        return format(fmt_, e);
-      }
-    private:
-      std::string fmt_;
-    };
   }
 }
 
