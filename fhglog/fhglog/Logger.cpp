@@ -143,19 +143,8 @@ void Logger::log(const LogEvent &event)
   bool logged (false);
   BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
   {
-    try
-    {
-      appender->append(event);
-      logged = true;
-    }
-    catch (const std::exception &ex)
-    {
-      std::clog << "could not append log event to appender: " << ex.what() << std::endl;
-    }
-    catch (...)
-    {
-      std::clog << "could not append log event to appender: unknown errror" << std::endl;
-    }
+    appender->append(event);
+    logged = true;
   }
 
   if (event.severity() == LogLevel::FATAL)
@@ -174,14 +163,7 @@ void Logger::flush (void)
 {
   BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
   {
-    try
-    {
-      appender->flush();
-    }
-    catch (std::exception const & ex)
-    {
-      std::clog << "could not flush appender: " << ex.what() << std::endl;
-    }
+    appender->flush();
   }
 }
 
