@@ -6,46 +6,59 @@
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/appender/compound.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 #include <fhglog/remote/LogServer.hpp>
 
 namespace
 {
-  class StopAppender : public fhg::log::Appender
+  class TestAppender : public fhg::log::Appender
   {
   public:
-    StopAppender(boost::asio::io_service & s)
-      : service_(s)
+    TestAppender ( boost::asio::io_service& s
+                 , fhg::log::Appender::ptr_t appender
+                 )
+      : _appender (appender)
+      , service_ (s)
     {}
 
-    void append(const fhg::log::LogEvent &)
+    void append (const fhg::log::LogEvent& event)
     {
+      _appender->append (event);
       service_.stop();
     }
-    void flush () {}
-    boost::asio::io_service & service_;
+
+    void flush()
+    {
+      _appender->flush();
+    }
+
+  private:
+    fhg::log::Appender::ptr_t _appender;
+    boost::asio::io_service& service_;
   };
 }
 
 BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
 {
-  fhg::log::CompoundAppender::ptr_t compound (new fhg::log::CompoundAppender);
-
   std::ostringstream logstream;
-  compound->addAppender
-    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream, "%m")));
-
   boost::asio::io_service io_service;
-  compound->addAppender
-    (fhg::log::Appender::ptr_t (new StopAppender (io_service)));
+
+  boost::shared_ptr<TestAppender>
+    test_appender
+    ( new TestAppender
+      ( io_service
+      , fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream, "%m"))
+      )
+    );
+
   boost::shared_ptr<fhg::log::remote::LogServer> logd
-    (new fhg::log::remote::LogServer (compound, io_service, FHGLOG_DEFAULT_PORT));
+    (new fhg::log::remote::LogServer (test_appender, io_service, FHGLOG_DEFAULT_PORT));
 
   boost::thread service_thread
     (boost::bind (&boost::asio::io_service::run, &io_service));
 
   fhg::log::remote::RemoteAppender appender (FHGLOG_DEFAULT_LOCATION);
+
   appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello server!"));
 
   if (service_thread.joinable())
