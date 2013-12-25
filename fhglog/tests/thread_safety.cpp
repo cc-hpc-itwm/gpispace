@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (same_logger)
   std::vector<std::string> output;
 
   fhg::log::Appender::ptr_t sync_appender
-    (new fhg::log::SynchronizedAppender (new pushback_appender (&output)));
+    (new fhg::log::SynchronizedAppender (fhg::log::Appender::ptr_t (new pushback_appender (&output))));
   fhg::log::getLogger ("log").addAppender (sync_appender);
 
   boost::thread t0 (&thread_function, "log");
