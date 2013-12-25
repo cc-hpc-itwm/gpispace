@@ -20,7 +20,6 @@ namespace fhg
      */
 
     void configure();
-    void configure (int ac, char *av[]);
   }
 }
 

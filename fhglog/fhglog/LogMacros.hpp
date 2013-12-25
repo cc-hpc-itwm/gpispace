@@ -29,20 +29,10 @@ namespace fhg { namespace log {
       };
     }
 
-#  define FHGLOG_SETUP(args...)                                         \
+#  define FHGLOG_SETUP()                                                \
     fhg::log::detail::flush_at_end_of_scope_t fhglog_flush_at_end_of_scope; \
     (void)(fhglog_flush_at_end_of_scope);                               \
-    do                                                                  \
-    {                                                                   \
-      if (! #args[0])                                                   \
-      {                                                                 \
-        fhg::log::configure();                                          \
-      }                                                                 \
-      else                                                              \
-      {                                                                 \
-        fhg::log::configure(args);                                      \
-      }                                                                 \
-    } while (0)
+    fhg::log::configure();
 
 #  define FHGLOG_TERM()                         \
     do                                          \

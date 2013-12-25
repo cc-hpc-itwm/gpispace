@@ -231,11 +231,5 @@ namespace fhg
 
       conf.configure();
     }
-
-    void configure (int ac, char *av[])
-    {
-      // parameters currently ignored
-      configure();
-    }
   }
 }
