@@ -22,22 +22,17 @@ namespace fhg
       explicit
       ThreadedAppender (const Appender::ptr_t &appender)
         : _appender (appender)
-      {
-        if (_log_thread.get_id() == boost::thread::id())
-        {
-          _log_thread =
-            boost::thread (boost::bind ( &ThreadedAppender::log_thread_loop
-                                       , this
-                                       )
-                          );
-        }
-      }
+        , _log_thread (boost::bind ( &ThreadedAppender::log_thread_loop
+                                   , this
+                                   )
+                      )
+      {}
 
       ~ThreadedAppender()
       {
-        if (_log_thread.get_id() != boost::thread::id())
+        _log_thread.interrupt();
+        if (_log_thread.joinable())
         {
-          _log_thread.interrupt();
           _log_thread.join();
         }
       }
