@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE (formatting_performance)
 {
   double t (-fhg::util::now());
 
-  for (std::size_t count (0); count < 150000; ++count)
+  for (std::size_t count (0); count < 100000; ++count)
   {
     format ( fhg::log::default_format::LONG()
            , FHGLOG_MKEVENT_HERE (DEBUG, "hello world!")
