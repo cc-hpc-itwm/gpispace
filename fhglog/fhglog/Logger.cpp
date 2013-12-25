@@ -121,11 +121,6 @@ Logger::Logger(const std::string &a_name, const Logger &inherit_from)
   }
 }
 
-const std::string &Logger::name() const
-{
-  return name_;
-}
-
 void Logger::setLevel(const LogLevel &level)
 {
   lvl_ = level;
