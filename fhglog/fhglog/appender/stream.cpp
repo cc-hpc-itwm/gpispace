@@ -16,8 +16,8 @@
  * =====================================================================================
  */
 
-#include "StreamAppender.hpp"
-#include "format.hpp"
+#include "stream.hpp"
+#include "fhglog/format.hpp"
 
 using namespace fhg::log;
 

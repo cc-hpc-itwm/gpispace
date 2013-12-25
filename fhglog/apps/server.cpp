@@ -1,7 +1,7 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#include <fhglog/FilteringAppender.hpp>
-#include <fhglog/StreamAppender.hpp>
+#include <fhglog/appender/filtering.hpp>
+#include <fhglog/appender/stream.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
 #include <fhglog/remote/LogServer.hpp>

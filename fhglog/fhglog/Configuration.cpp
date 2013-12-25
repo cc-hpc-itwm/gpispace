@@ -3,15 +3,15 @@
 #include <fhglog/Configuration.hpp>
 
 #include <fhglog/Appender.hpp>
-#include <fhglog/CompoundAppender.hpp>
-#include <fhglog/FileAppender.hpp>
+#include <fhglog/appender/compound.hpp>
+#include <fhglog/appender/file.hpp>
 #include <fhglog/Filter.hpp>
 #include <fhglog/event.hpp>
 #include <fhglog/level.hpp>
-#include <fhglog/MemoryAppender.hpp>
-#include <fhglog/StreamAppender.hpp>
-#include <fhglog/SynchronizedAppender.hpp>
-#include <fhglog/ThreadedAppender.hpp>
+#include <fhglog/appender/memory.hpp>
+#include <fhglog/appender/stream.hpp>
+#include <fhglog/appender/synchronized.hpp>
+#include <fhglog/appender/threaded.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 

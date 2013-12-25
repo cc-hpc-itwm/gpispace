@@ -7,7 +7,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhglog/format.hpp>
-#include <fhglog/MemoryAppender.hpp>
+#include <fhglog/appender/memory.hpp>
 
 #include <gspc/net.hpp>
 #include <gspc/net/service/echo.hpp>

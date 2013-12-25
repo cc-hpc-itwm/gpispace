@@ -7,8 +7,8 @@
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/Configuration.hpp>
-#include <fhglog/FileAppender.hpp>
-#include <fhglog/StreamAppender.hpp>
+#include <fhglog/appender/file.hpp>
+#include <fhglog/appender/stream.hpp>
 
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>

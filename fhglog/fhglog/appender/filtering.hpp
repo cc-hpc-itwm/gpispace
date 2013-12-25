@@ -20,7 +20,7 @@
 #define FHG_LOG_FILTERING_APPENDER_HPP 1
 
 #include <fhglog/Filter.hpp>
-#include <fhglog/DecoratingAppender.hpp>
+#include <fhglog/appender/decorating.hpp>
 
 namespace fhg { namespace log {
   class FilteringAppender : public DecoratingAppender

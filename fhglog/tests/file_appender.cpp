@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/fhglog.hpp>
-#include <fhglog/FileAppender.hpp>
+#include <fhglog/appender/file.hpp>
 
 #include <fstream> // ifstream
 

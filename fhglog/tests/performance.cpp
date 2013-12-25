@@ -4,8 +4,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/fhglog.hpp>
-#include <fhglog/NullAppender.hpp>
-#include <fhglog/ThreadedAppender.hpp>
+#include <fhglog/appender/null.hpp>
+#include <fhglog/appender/threaded.hpp>
 
 #include <boost/thread/thread_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

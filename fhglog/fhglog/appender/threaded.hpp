@@ -22,7 +22,7 @@
 
 #include <boost/thread.hpp>
 #include <deque>
-#include <fhglog/DecoratingAppender.hpp>
+#include <fhglog/appender/decorating.hpp>
 
 #include <boost/shared_ptr.hpp>
 

@@ -5,9 +5,9 @@
 
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
-#include <fhglog/StreamAppender.hpp>
+#include <fhglog/appender/stream.hpp>
 #include <fhglog/format.hpp>
-#include <fhglog/NullAppender.hpp>
+#include <fhglog/appender/null.hpp>
 
 #include <tests/utils.hpp>
 

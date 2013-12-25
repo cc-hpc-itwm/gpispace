@@ -5,8 +5,8 @@
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
-#include <fhglog/StreamAppender.hpp>
-#include <fhglog/SynchronizedAppender.hpp>
+#include <fhglog/appender/stream.hpp>
+#include <fhglog/appender/synchronized.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>

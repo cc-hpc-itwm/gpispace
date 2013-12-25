@@ -5,8 +5,8 @@
 
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
-#include <fhglog/StreamAppender.hpp>
-#include <fhglog/ThreadedAppender.hpp>
+#include <fhglog/appender/stream.hpp>
+#include <fhglog/appender/threaded.hpp>
 
 #include <tests/utils.hpp>
 

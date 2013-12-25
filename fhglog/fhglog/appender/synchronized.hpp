@@ -19,7 +19,7 @@
 #ifndef FHG_LOG_SYNCHRONIZED_APPENDER_HPP
 #define FHG_LOG_SYNCHRONIZED_APPENDER_HPP 1
 
-#include <fhglog/DecoratingAppender.hpp>
+#include <fhglog/appender/decorating.hpp>
 #include <boost/thread.hpp>
 
 namespace fhg { namespace log {

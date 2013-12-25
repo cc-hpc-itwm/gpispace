@@ -3,7 +3,7 @@
 #ifndef SDPA_UTIL_NOTIFICATION_SERVICE_HPP
 #define SDPA_UTIL_NOTIFICATION_SERVICE_HPP
 
-#include <fhglog/ThreadedAppender.hpp>
+#include <fhglog/appender/threaded.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>

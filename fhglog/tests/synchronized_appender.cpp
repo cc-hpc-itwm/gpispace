@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE synchronized_appender
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/SynchronizedAppender.hpp>
+#include <fhglog/appender/synchronized.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
