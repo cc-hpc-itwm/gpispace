@@ -28,78 +28,26 @@ FileAppender::FileAppender( const std::string &a_path
                           , int flush_interval
                           , const std::ios_base::openmode &a_mode
                           )
-  : path_(a_path)
-  , stream_()
+  : stream_(a_path.c_str(), a_mode)
   , fmt_(fmt)
-  , mode_(a_mode)
   , flush_interval_(flush_interval)
   , event_count_(0)
 {
   stream_.exceptions(std::ios_base::badbit | std::ios_base::failbit);
-  open();
-}
-
-FileAppender::~FileAppender() throw ()
-{
-  try
-  {
-    if (stream_.is_open()) close();
-  }
-  catch (const std::exception &ex)
-  {
-    std::clog << "E: could not close ofstream: " << ex.what() << std::endl;
-  }
-  catch (...)
-  {
-    std::clog << "E: could not close ofstream (unknown error)!" << std::endl;
-  }
 }
 
 void FileAppender::flush()
 {
-  try
-  {
-    stream_.flush();
-  } catch (std::exception const & ex)
-  {
-    std::clog << "could not flush: " << ex.what();
-  }
-}
-
-void FileAppender::close()
-{
-  stream_.close();
-}
-
-void FileAppender::open()
-{
-  stream_.open(path_.c_str(), mode_);
-#ifndef NDEBUG // FIXME: use a better marking message
-//  stream_ << "------ MARK (file opened)" << std::endl;
-#endif
-  event_count_ = 0;
-}
-
-void FileAppender::reopen()
-{
-  close();
-  open();
+  stream_.flush();
 }
 
 void FileAppender::append(const LogEvent &evt)
 {
-  try
+  stream_ << format(fmt_, evt);
+
+  if (++event_count_ >= flush_interval_)
   {
-    stream_ << format(fmt_, evt);
-    if (++event_count_ >= flush_interval_)
-    {
-      flush();
-      event_count_ = 0;
-    }
-  }
-  catch (std::exception const & ex)
-  {
-    std::clog << "could not append to `" << path_ << "'" << std::endl;
-    reopen();
+    flush();
+    event_count_ = 0;
   }
 }

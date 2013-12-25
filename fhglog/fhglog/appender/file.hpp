@@ -42,41 +42,15 @@ namespace fhg { namespace log {
                     | std::ios_base::app
                     | std::ios_base::binary
                 );
-    virtual ~FileAppender() throw();
-
-    const std::string &path() const
-    {
-      return path_;
-    }
-
-    void set_path(const std::string &p)
-    {
-      path_ = p;
-    }
-
-    const std::ios_base::openmode &mode() const
-    {
-      return mode_;
-    }
-
-    void set_mode(const std::ios_base::openmode &a_mode)
-    {
-      mode_ = a_mode;
-    }
 
     virtual void flush();
-    virtual void close();
-    virtual void open();
-    virtual void reopen();
-
     virtual void append(const LogEvent &evt);
+
   private:
-    std::string path_;
     std::ofstream stream_;
-    std::string fmt_;
-    std::ios_base::openmode mode_;
-    int flush_interval_;
-    mutable int event_count_;
+    std::string const fmt_;
+    int const flush_interval_;
+    int event_count_;
   };
 }}
 
