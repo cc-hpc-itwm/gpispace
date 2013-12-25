@@ -3,11 +3,12 @@
 #define BOOST_TEST_MODULE filtering_appender
 #include <boost/test/unit_test.hpp>
 
-#include <sstream> // ostringstream
-#include <fhglog/fhglog.hpp>
-#include <fhglog/appender/stream.hpp>
-#include <fhglog/appender/filtering.hpp>
 #include <fhglog/Filter.hpp>
+#include <fhglog/appender/filtering.hpp>
+#include <fhglog/appender/stream.hpp>
+#include <fhglog/fhglog.hpp>
+
+#include <sstream>
 
 #include <tests/utils.hpp>
 
