@@ -18,7 +18,6 @@ set (hdrs
   Logger.hpp
   level.hpp
   LogMacros.hpp
-  memory.hpp
   NullAppender.hpp
   StreamAppender.hpp
   SynchronizedAppender.hpp
