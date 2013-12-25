@@ -119,18 +119,6 @@ Logger::Logger(const std::string &a_name, const Logger &inherit_from)
   }
 }
 
-Logger::~Logger ()
-{
-  try
-  {
-    flush ();
-  }
-  catch (...)
-  {
-    // nothing can be done
-  }
-}
-
 const std::string &Logger::name() const
 {
   return name_;

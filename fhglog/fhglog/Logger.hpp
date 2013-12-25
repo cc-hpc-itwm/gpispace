@@ -43,8 +43,6 @@ namespace fhg { namespace log {
       Logger(const std::string &name);
       Logger(const std::string &name, const Logger &inherit_from);
 
-      ~Logger();
-
       const std::string &name() const;
       const std::string &parent() const;
       void setLevel(const LogLevel &level);
