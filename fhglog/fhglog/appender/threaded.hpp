@@ -10,10 +10,6 @@
 
 #include <deque>
 
-#ifndef NDEBUG
-#	include <iostream>
-#endif
-
 namespace fhg
 {
   namespace log
@@ -32,24 +28,7 @@ namespace fhg
 
       ~ThreadedAppender()
       {
-        try
-        {
-          stop();
-        }
-        catch (const std::exception& ex)
-        {
-#ifndef NDEBUG
-          std::clog << "E: error during stop of ThreadedAppender: "
-                    << ex.what() << std::endl;
-#endif
-        }
-        catch (...)
-        {
-#ifndef NDEBUG
-          std::clog << "E: unknown error during stop of ThreadedAppender!"
-                    << std::endl;
-#endif
-        }
+        stop();
       }
 
       void start()
