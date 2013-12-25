@@ -92,8 +92,8 @@ set_target_properties(fhg-util-shared
              VERSION     1
 )
 
-target_link_libraries (fhg-util ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY})
-target_link_libraries (fhg-util-shared ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY})
+target_link_libraries (fhg-util ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries (fhg-util-shared ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY})
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util
