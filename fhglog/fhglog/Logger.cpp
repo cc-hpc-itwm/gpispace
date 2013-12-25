@@ -151,8 +151,7 @@ void Logger::flush (void)
   }
 }
 
-const Appender::ptr_t &Logger::addAppender(const Appender::ptr_t &appender)
+void Logger::addAppender(Appender::ptr_t appender)
 {
   appenders_.push_back(appender);
-  return appender;
 }

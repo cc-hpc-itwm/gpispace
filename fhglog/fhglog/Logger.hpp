@@ -61,7 +61,7 @@ namespace fhg
       void log (const LogEvent &event);
       void flush();
 
-      const Appender::ptr_t &addAppender(const Appender::ptr_t &appender);
+      void addAppender(Appender::ptr_t);
 
     private:
       std::string name_;

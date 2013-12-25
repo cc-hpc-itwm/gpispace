@@ -42,9 +42,9 @@ namespace fhg
       {
         return impl_->isFiltered(event);
       }
-      const Appender::ptr_t& addAppender (Appender::ptr_t appender)
+      void addAppender (Appender::ptr_t appender)
       {
-        return impl_->addAppender(appender);
+        impl_->addAppender(appender);
       }
 
       void log (const LogEvent& event)
