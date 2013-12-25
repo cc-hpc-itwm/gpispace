@@ -34,11 +34,6 @@ namespace fhg
         return a;
       }
 
-      virtual void clear()
-      {
-        _appender.clear();
-      }
-
       virtual void flush()
       {
         BOOST_FOREACH (Appender::ptr_t const appender, _appender)
