@@ -34,11 +34,6 @@ namespace fhg { namespace log {
     (void)(fhglog_flush_at_end_of_scope);                               \
     fhg::log::configure();
 
-#  define FHGLOG_TERM()                         \
-    do                                          \
-    {                                           \
-      fhg::log::terminate ();                   \
-    } while (0)
 #ifndef FHGLOG_STRIP_LEVEL
 #  define FHGLOG_STRIP_LEVEL -1
 #endif
