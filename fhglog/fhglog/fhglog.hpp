@@ -1,7 +1,6 @@
 #ifndef  FHGLOG_INC
 #define  FHGLOG_INC
 
-#include    <fhglog/error_handler.hpp>
 #include	<fhglog/LogMacros.hpp>
 #include	<fhglog/LoggerApi.hpp>
 

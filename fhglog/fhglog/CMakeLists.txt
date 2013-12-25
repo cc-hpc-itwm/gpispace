@@ -6,7 +6,6 @@ set (hdrs
   CompoundAppender.hpp
   Configuration.hpp
   DecoratingAppender.hpp
-  error_handler.hpp
   fhglog.hpp
   FileAppender.hpp
   MemoryAppender.hpp
@@ -29,7 +28,6 @@ set (hdrs
 set (srcs
   Configuration.cpp
   color_map.cpp
-  error_handler.cpp
   FileAppender.cpp
   MemoryAppender.cpp
   event.cpp
