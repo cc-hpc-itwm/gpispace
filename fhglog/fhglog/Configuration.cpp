@@ -38,7 +38,7 @@ namespace fhg
       {
       public:
         DefaultConfiguration()
-          : level_ (LogLevel::DEF_LEVEL)
+          : level_ (LogLevel::INFO)
           , to_console_()
           , to_file_()
           , to_server_()

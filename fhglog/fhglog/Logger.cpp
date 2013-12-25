@@ -60,7 +60,7 @@ Logger::ptr_t Logger::get ( const std::string& name, const std::string& base)
 
 Logger::Logger (const std::string& name)
   : name_ (name)
-  , lvl_ (LogLevel (LogLevel::DEF_LEVEL))
+  , lvl_ (LogLevel (LogLevel::INFO))
   , filter_ (new NullFilter())
 {}
 
