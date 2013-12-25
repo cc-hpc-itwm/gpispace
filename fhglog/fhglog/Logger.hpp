@@ -47,7 +47,6 @@ namespace fhg
       explicit Logger (const std::string &name);
       Logger (const std::string& name, const Logger& inherit_from);
 
-      const std::string& name() const;
       void setLevel (const LogLevel& level);
       void setFilter (const Filter::ptr_t& filter);
       bool isLevelEnabled (const LogLevel& level) const
