@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  SynchronizedAppender.hpp
- *
- *    Description:  synchronizes an Appender
- *
- *        Version:  1.0
- *        Created:  10/07/2009 11:36:52 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef FHG_LOG_SYNCHRONIZED_APPENDER_HPP
 #define FHG_LOG_SYNCHRONIZED_APPENDER_HPP 1
@@ -22,41 +6,36 @@
 #include <fhglog/Appender.hpp>
 #include <boost/thread.hpp>
 
-namespace fhg { namespace log {
-  class SynchronizedAppender : public Appender
+namespace fhg
+{
+  namespace log
   {
-  private:
-    typedef boost::recursive_mutex mutex_type;
-    typedef boost::unique_lock<mutex_type> lock_type;
-
-  public:
-    explicit
-    SynchronizedAppender(const Appender::ptr_t &appender)
-      : _appender (appender)
-    {}
-
-    explicit
-    SynchronizedAppender(Appender *appender)
-      : _appender (appender)
-    {}
-
-    virtual void append(const LogEvent &evt)
+    class SynchronizedAppender : public Appender
     {
-      lock_type lock (m_mutex);
+    public:
+      explicit SynchronizedAppender (const Appender::ptr_t& appender)
+        : _appender (appender)
+      {}
 
-      _appender->append(evt);
-    }
+      virtual void append (const LogEvent& event)
+      {
+        boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
 
-    virtual void flush(void)
-    {
-      lock_type lock (m_mutex);
+        _appender->append (event);
+      }
 
-      _appender->flush();
-    }
-  private:
-    mutable mutex_type m_mutex;
-    Appender::ptr_t _appender;
-  };
-}}
+      virtual void flush()
+      {
+        boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
+
+        _appender->flush();
+      }
+
+    private:
+      mutable boost::recursive_mutex _mutex;
+      Appender::ptr_t _appender;
+    };
+  }
+}
 
 #endif
