@@ -12,11 +12,14 @@
 #include <cstdlib>
 #include <sstream>
 
-boost::asio::io_service io_service;
-
-void signal_handler(int)
+namespace
 {
-  io_service.stop();
+  boost::asio::io_service io_service;
+
+  void signal_handler(int)
+  {
+    io_service.stop();
+  }
 }
 
 int main(int argc, char **argv)
