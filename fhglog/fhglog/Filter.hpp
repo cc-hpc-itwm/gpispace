@@ -4,6 +4,8 @@
 #include <fhglog/memory.hpp>
 #include <fhglog/LogEvent.hpp>
 
+#include <list>
+
 namespace fhg { namespace log {
   class Filter {
   public:
