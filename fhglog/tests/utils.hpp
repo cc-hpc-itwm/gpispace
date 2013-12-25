@@ -25,21 +25,4 @@ namespace utils
 
     fhg::log::logger_t log;
   };
-
-  class counting_appender : public fhg::log::Appender
-  {
-  public:
-    counting_appender (std::size_t* counter)
-      : _counter (counter)
-    {}
-
-    void append (const fhg::log::LogEvent &evt)
-    {
-      ++(*_counter);
-    }
-
-    void flush () {}
-  private:
-    std::size_t* _counter;
-  };
 }

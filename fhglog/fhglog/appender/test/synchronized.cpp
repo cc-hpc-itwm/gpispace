@@ -5,22 +5,47 @@
 
 #include <fhglog/appender/synchronized.hpp>
 
-#include <boost/foreach.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/thread.hpp>
+#include <fhglog/LogMacros.hpp>
 
-#include <tests/utils.hpp>
+#include <boost/foreach.hpp>
+#include <boost/thread.hpp>
 
 namespace
 {
+  class counting_appender : public fhg::log::Appender
+  {
+  public:
+    counting_appender ( std::size_t* counter
+                      , std::string const& message
+                      )
+      : _counter (counter)
+      , _message (message)
+    {}
+
+    void append (const fhg::log::LogEvent &evt)
+    {
+      BOOST_REQUIRE_EQUAL (evt.message(), _message);
+
+      ++(*_counter);
+    }
+
+    void flush () {}
+
+  private:
+    std::size_t* _counter;
+    std::string const _message;
+  };
+
   const std::size_t thread_count (100);
   const std::size_t message_count (1000);
 
-  void worker (fhg::log::SynchronizedAppender* appender)
+  void worker ( fhg::log::LogEvent const& event
+              , fhg::log::SynchronizedAppender* appender
+              )
   {
     for (std::size_t i (0); i < message_count; ++i)
     {
-      appender->append (FHGLOG_MKEVENT_HERE (ERROR, "hello"));
+      appender->append (event);
     }
   }
 }
@@ -28,25 +53,26 @@ namespace
 BOOST_AUTO_TEST_CASE (synchronized_appender)
 {
   std::size_t messages_logged (0);
+  std::string const message ("boo fazzi");
 
   fhg::log::SynchronizedAppender appender
-    (fhg::log::Appender::ptr_t (new utils::counting_appender (&messages_logged)));
+    (fhg::log::Appender::ptr_t (new counting_appender ( &messages_logged
+                                                      , message
+                                                      )
+                               )
+    );
+
+  fhg::log::LogEvent const event (FHGLOG_MKEVENT_HERE (ERROR, message));
 
   {
-    boost::ptr_vector<boost::thread> threads;
+    boost::thread_group threads;
 
     for (std::size_t i (0); i < thread_count; ++i)
     {
-      threads.push_back (new boost::thread (&worker, &appender));
+      threads.create_thread (boost::bind (&worker, event, &appender));
     }
 
-    BOOST_FOREACH (boost::thread& thread, threads)
-    {
-      if (thread.joinable())
-      {
-        thread.join();
-      }
-    }
+    threads.join_all();
   }
 
   BOOST_REQUIRE_EQUAL (messages_logged, thread_count * message_count);
