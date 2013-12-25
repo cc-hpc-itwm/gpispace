@@ -7,7 +7,7 @@
 #include <fhglog/FileAppender.hpp>
 #include <fhglog/Filter.hpp>
 #include <fhglog/event.hpp>
-#include <fhglog/LogLevel.hpp>
+#include <fhglog/level.hpp>
 #include <fhglog/MemoryAppender.hpp>
 #include <fhglog/StreamAppender.hpp>
 #include <fhglog/SynchronizedAppender.hpp>

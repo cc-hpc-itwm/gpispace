@@ -5,7 +5,7 @@
 #include <string>
 
 #include <fhglog/memory.hpp>
-#include <fhglog/LogLevel.hpp>
+#include <fhglog/level.hpp>
 #include <fhglog/event.hpp>
 #include <fhglog/Appender.hpp>
 #include <fhglog/Filter.hpp>

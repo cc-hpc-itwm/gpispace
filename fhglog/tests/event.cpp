@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/event.hpp>
-#include <fhglog/LogLevel.hpp>
+#include <fhglog/level.hpp>
 
 //! \todo This should test way more
 BOOST_AUTO_TEST_CASE (event_ctor_should_regard_severity)

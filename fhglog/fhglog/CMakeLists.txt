@@ -17,7 +17,7 @@ set (hdrs
   event.hpp
   LoggerApi.hpp
   Logger.hpp
-  LogLevel.hpp
+  level.hpp
   LogMacros.hpp
   memory.hpp
   NullAppender.hpp
@@ -34,7 +34,7 @@ set (srcs
   MemoryAppender.cpp
   event.cpp
   Logger.cpp
-  LogLevel.cpp
+  level.cpp
   StreamAppender.cpp
   )
 

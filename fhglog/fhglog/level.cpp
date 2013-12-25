@@ -18,7 +18,7 @@
 
 
 #include    <cassert>
-#include	"LogLevel.hpp"
+#include	"level.hpp"
 
 using namespace fhg::log;
 

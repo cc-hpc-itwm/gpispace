@@ -20,7 +20,7 @@
 #define FHGLOG_LOGGER_API_HPP 1
 
 #include <string>
-#include <fhglog/LogLevel.hpp>
+#include <fhglog/level.hpp>
 #include <fhglog/Appender.hpp>
 #include <fhglog/Logger.hpp>
 

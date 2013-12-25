@@ -6,7 +6,7 @@
 #include <set>
 #include <sstream>
 #include <sys/types.h>
-#include <fhglog/LogLevel.hpp>
+#include <fhglog/level.hpp>
 
 #include <boost/cstdint.hpp>
 

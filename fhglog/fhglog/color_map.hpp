@@ -3,7 +3,7 @@
 
 #include <map>
 
-#include <fhglog/LogLevel.hpp>
+#include <fhglog/level.hpp>
 
 namespace fhg
 {
