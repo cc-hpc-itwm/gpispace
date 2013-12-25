@@ -54,7 +54,6 @@ namespace fhg { namespace log {
 
       inline bool isFiltered(const LogEvent &evt) const
       {
-        //        return (! hasAppender()) || (*filter_)(evt);
         return (*filter_)(evt);
       }
 
