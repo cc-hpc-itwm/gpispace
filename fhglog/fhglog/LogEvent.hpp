@@ -62,8 +62,6 @@ namespace fhg { namespace log {
       const std::string& host() const { return host_; }
       const tags_type& tags () const { return tags_; }
 
-      message_type &message() { return message_; }
-
       void trace (const std::string &name) const
       {
         trace_.push_back (name);
