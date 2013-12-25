@@ -25,16 +25,11 @@ namespace state
 
       if (logger == _logger.end())
       {
-        Logger::ptr_t newLogger;
-
-        if (name != "default")
-        {
-          newLogger.reset (new Logger (name, *getLogger (base, "default")));
-        }
-        else
-        {
-          newLogger.reset (new Logger (name));
-        }
+        Logger::ptr_t const newLogger
+          ( name != "default"
+          ? new Logger (name, *getLogger (base, "default"))
+          : new Logger (name)
+          );
 
         logger = _logger.insert (std::make_pair (name, newLogger)).first;
       }
