@@ -2,6 +2,10 @@
 
 #include "level.hpp"
 
+#include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
+#include <fhg/util/parse/error.hpp>
+
 #include <cassert>
 
 namespace fhg
@@ -26,14 +30,34 @@ namespace fhg
 
     LogLevel::LogLevel (const std::string& name)
     {
-      // TODO: make this better
-      if      (name == "TRACE") lvl_ = TRACE;
-      else if (name == "DEBUG") lvl_ = DEBUG;
-      else if (name == "INFO")  lvl_ = INFO;
-      else if (name == "WARN")  lvl_ = WARN;
-      else if (name == "ERROR") lvl_ = ERROR;
-      else if (name == "FATAL") lvl_ = ERROR;
-      else throw std::runtime_error ("unknown log level: " + name);
+      namespace parse = fhg::util::parse;
+
+      std::string const any
+        ("one of 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
+
+      parse::position_string pos (name);
+
+      if (pos.end())
+      {
+        throw parse::error::expected (any, pos);
+      }
+
+      switch (*pos)
+      {
+      case 'T': ++pos; parse::require::require (pos, "RACE"); lvl_ = TRACE; break;
+      case 'D': ++pos; parse::require::require (pos, "EBUG"); lvl_ = DEBUG; break;
+      case 'I': ++pos; parse::require::require (pos, "NFO"); lvl_ = INFO; break;
+      case 'W': ++pos; parse::require::require (pos, "ARN"); lvl_ = WARN; break;
+      case 'E': ++pos; parse::require::require (pos, "RROR"); lvl_ = ERROR; break;
+      case 'F': ++pos; parse::require::require (pos, "ATAL"); lvl_ = FATAL; break;
+      default:
+        throw parse::error::expected (any, pos);
+      }
+
+      if (!pos.end())
+      {
+        throw parse::error::expected (any, pos);
+      }
     }
   }
 }
