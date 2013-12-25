@@ -106,10 +106,6 @@ namespace fhg
                       : val;
 
           check_format (fmt_string_);
-
-#ifdef FHGLOG_DEBUG_CONFIG
-          std::clog << "D: setting format to \"" << val << "\"" << std::endl;
-#endif
         }
         else if (key == "to_console")
         {
@@ -139,17 +135,7 @@ namespace fhg
         }
         else if (key == "disabled")
         {
-#ifdef FHGLOG_DEBUG_CONFIG
-          std::clog << "D: logging disabled due to environment FHGLOG_disabled"
-                    << std::endl;
-#endif
           disabled_ = true;
-        }
-        else
-        {
-#ifdef FHGLOG_DEBUG_CONFIG
-          std::clog << "D: ignoring key: " << key << std::endl;
-#endif
         }
       }
       catch (const std::exception& ex)
@@ -186,12 +172,6 @@ namespace fhg
             std::clog << "W: invalid value for configuration value to_console: "
                       << to_console_ << " assuming stderr" << std::endl;
           }
-#ifdef FHGLOG_DEBUG_CONFIG
-          else
-          {
-            std::clog << "D: logging to console: " << to_console_ << std::endl;
-          }
-#endif
         }
 
         if (to_file_.size())
@@ -200,9 +180,6 @@ namespace fhg
           {
             compound_appender->addAppender
               (Appender::ptr_t (new FileAppender (to_file_, fmt_string_)));
-#ifdef FHGLOG_DEBUG_CONFIG
-            std::clog << "D: logging to file: " << to_file_ << std::endl;
-#endif
           }
           catch (const std::exception& ex)
           {
@@ -218,9 +195,6 @@ namespace fhg
             // TODO: split to_remote_ into host and port
             compound_appender->addAppender
               (Appender::ptr_t (new remote::RemoteAppender (to_server_)));
-#ifdef FHGLOG_DEBUG_CONFIG
-            std::clog << "D: logging to server: " << to_server_ << std::endl;
-#endif
           }
           catch (const std::exception &ex)
           {
@@ -229,9 +203,6 @@ namespace fhg
           }
         }
 
-#ifdef FHGLOG_DEBUG_CONFIG
-        std::clog << "D: loglevel set to " << level_ << std::endl;
-#endif
         getLogger().setLevel (level_);
 
         getLogger().addAppender
@@ -245,10 +216,6 @@ namespace fhg
     void configure()
     {
       DefaultConfiguration conf;
-
-#ifdef FHGLOG_DEBUG_CONFIG
-      std::clog << "I: performing default logging configuration" << std::endl;
-#endif
 
       getLogger().removeAllAppenders();
 
