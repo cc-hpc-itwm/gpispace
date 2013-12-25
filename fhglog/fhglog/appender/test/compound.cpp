@@ -3,12 +3,13 @@
 #define BOOST_TEST_MODULE compound
 #include <boost/test/unit_test.hpp>
 
-#include <sstream> // ostringstream
+#include <tests/utils.hpp>
+
 #include <fhglog/fhglog.hpp>
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/appender/compound.hpp>
 
-#include <tests/utils.hpp>
+#include <sstream>
 
 BOOST_FIXTURE_TEST_CASE (compound_appender, utils::logger_with_minimum_log_level)
 {
