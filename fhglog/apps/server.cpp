@@ -13,7 +13,6 @@
 #include <sstream>
 
 boost::asio::io_service io_service;
-namespace po = boost::program_options;
 
 void signal_handler(int)
 {
@@ -23,6 +22,8 @@ void signal_handler(int)
 int main(int argc, char **argv)
 try
 {
+  namespace po = boost::program_options;
+
   po::options_description desc("options");
 
   desc.add_options()
