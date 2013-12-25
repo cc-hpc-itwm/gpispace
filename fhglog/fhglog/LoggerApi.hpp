@@ -33,11 +33,6 @@ namespace fhg
       {
         return impl_->isLevelEnabled (level);
       }
-
-      void setFilter (const Filter::ptr_t& filter)
-      {
-        impl_->setFilter(filter);
-      }
       bool isFiltered (const LogEvent& event) const
       {
         return impl_->isFiltered(event);
