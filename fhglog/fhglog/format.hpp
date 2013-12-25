@@ -2,7 +2,6 @@
 #define FHG_LOG_FORMAT_HPP 1
 
 #include <fhglog/event.hpp>
-#include <fhglog/format_flag.hpp>
 
 #include <fhg/util/first_then.hpp>
 

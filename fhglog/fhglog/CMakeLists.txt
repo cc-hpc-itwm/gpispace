@@ -11,7 +11,6 @@ set (hdrs
   event.hpp
   fhglog.hpp
   format.hpp
-  format_flag.hpp
   level.hpp
   )
 set (header_appender
