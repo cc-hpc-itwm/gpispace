@@ -26,11 +26,13 @@
 #include <fhglog/format.hpp>
 #include <fhglog/Appender.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 namespace fhg { namespace log {
   class FileAppender : public Appender
   {
   public:
-    typedef shared_ptr<FileAppender> ptr_t;
+    typedef boost::shared_ptr<FileAppender> ptr_t;
 
     FileAppender( const std::string &a_path
                 , const std::string &fmt = default_format::LONG()

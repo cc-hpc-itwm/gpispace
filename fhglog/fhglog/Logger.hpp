@@ -4,11 +4,12 @@
 #include <list>
 #include <string>
 
-#include <fhglog/memory.hpp>
 #include <fhglog/level.hpp>
 #include <fhglog/event.hpp>
 #include <fhglog/Appender.hpp>
 #include <fhglog/Filter.hpp>
+
+#include <boost/shared_ptr.hpp>
 
 /**
   Common logging framework.
@@ -32,7 +33,7 @@ namespace fhg { namespace log {
    */
   class Logger {
     public:
-      typedef shared_ptr<Logger> ptr_t;
+      typedef boost::shared_ptr<Logger> ptr_t;
 
       static Logger::ptr_t get();
       static Logger::ptr_t get(const std::string &name, const std::string &base = "default");

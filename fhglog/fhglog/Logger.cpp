@@ -113,9 +113,9 @@ Logger::Logger(const std::string &a_name)
 Logger::Logger(const std::string &a_name, const Logger &inherit_from)
   : name_(a_name), lvl_(inherit_from.getLevel()), filter_(inherit_from.getFilter())
 {
-  for (appender_list_t::const_iterator it(inherit_from.appenders_.begin()); it != inherit_from.appenders_.end(); ++it)
+  BOOST_FOREACH (Appender::ptr_t const& appender, inherit_from.appenders_)
   {
-    addAppender(*it);
+    addAppender (appender);
   }
 }
 

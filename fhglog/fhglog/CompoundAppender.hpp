@@ -22,13 +22,15 @@
 #include <list>
 #include <fhglog/Appender.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 namespace fhg { namespace log {
   class CompoundAppender : public Appender
   {
 	private:
 	  typedef std::list<Appender::ptr_t> appender_list;
     public:
-	  typedef shared_ptr<CompoundAppender> ptr_t;
+    typedef boost::shared_ptr<CompoundAppender> ptr_t;
 
       virtual void append(const LogEvent &evt)
       {

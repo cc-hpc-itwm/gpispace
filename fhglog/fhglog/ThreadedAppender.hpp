@@ -24,6 +24,8 @@
 #include <deque>
 #include <fhglog/DecoratingAppender.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 #ifndef NDEBUG
 #	include <iostream>
 #endif
@@ -38,7 +40,7 @@ namespace fhg { namespace log {
 	typedef boost::condition_variable_any condition_type;
 
   public:
-	typedef shared_ptr<ThreadedAppender> ptr_t;
+    typedef boost::shared_ptr<ThreadedAppender> ptr_t;
 
     explicit
     ThreadedAppender(const Appender::ptr_t &appender)

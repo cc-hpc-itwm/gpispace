@@ -8,11 +8,13 @@
 
 #include <fhglog/Appender.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 namespace fhg { namespace log {
   class MemoryAppender : public Appender
   {
   public:
-    typedef shared_ptr<MemoryAppender> ptr_t;
+    typedef boost::shared_ptr<MemoryAppender> ptr_t;
     typedef std::deque<LogEvent> backlog_t;
 
     explicit

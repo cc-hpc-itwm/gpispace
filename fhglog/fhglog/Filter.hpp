@@ -1,15 +1,16 @@
 #ifndef FHGLOG_FILTER_HPP
 #define FHGLOG_FILTER_HPP 1
 
-#include <fhglog/memory.hpp>
 #include <fhglog/event.hpp>
+
+#include <boost/shared_ptr.hpp>
 
 #include <list>
 
 namespace fhg { namespace log {
   class Filter {
   public:
-    typedef shared_ptr<Filter> ptr_t;
+    typedef boost::shared_ptr<Filter> ptr_t;
 
     virtual bool operator()(const LogEvent &event) const = 0;
     virtual ~Filter() {}
