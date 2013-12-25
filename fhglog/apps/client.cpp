@@ -37,7 +37,7 @@ int main (int argc, char **argv)
   int line (0);
   std::string message("-");
   std::vector<std::string> tags;
-  int level (LogLevel::DEF_LEVEL);
+  int level (LogLevel::INFO);
 
   desc.add_options()
     ("help,h", "this message")
