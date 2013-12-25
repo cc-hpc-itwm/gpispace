@@ -167,11 +167,9 @@ int main(int argc, char **argv)
 
   try
   {
-    fhg::log::remote::LogServer *server
-      (new fhg::log::remote::LogServer(appender, io_service, port));
+    fhg::log::remote::LogServer const server (appender, io_service, port);
     io_service.run();
     LOG(INFO, "done.");
-    delete server;
   }
   catch (const std::exception& e)
   {
