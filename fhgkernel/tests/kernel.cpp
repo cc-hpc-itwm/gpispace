@@ -144,7 +144,7 @@ void test_restart_kernel ()
 test_suite*
 init_unit_test_suite (int ac, char *av[])
 {
-  FHGLOG_SETUP (ac, av);
+  FHGLOG_SETUP ();
 
   if (ac <= 1)
   {

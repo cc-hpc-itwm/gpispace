@@ -182,7 +182,7 @@ int main (int ac, char **av)
 {
   gpi::signal::handler().start();
 
-  FHGLOG_SETUP(ac, av);
+  FHGLOG_SETUP();
 
   if (isatty(0))
     interactive = true;

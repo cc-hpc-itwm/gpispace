@@ -88,7 +88,7 @@ private:
 int main (int argc, char **argv)
 try
 {
-  FHGLOG_SETUP (argc, argv);
+  FHGLOG_SETUP();
 
   namespace po = boost::program_options;
 
