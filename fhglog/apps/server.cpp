@@ -1,15 +1,16 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#include <sstream>
-#include <cstdlib>
-#include <csignal>
-
-#include <fhglog/fhglog.hpp>
-#include <fhglog/remote/LogServer.hpp>
-#include <fhglog/StreamAppender.hpp>
 #include <fhglog/FilteringAppender.hpp>
+#include <fhglog/StreamAppender.hpp>
+#include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
+#include <fhglog/remote/LogServer.hpp>
+
 #include <boost/program_options.hpp>
+
+#include <csignal>
+#include <cstdlib>
+#include <sstream>
 
 boost::asio::io_service io_service;
 namespace po = boost::program_options;
