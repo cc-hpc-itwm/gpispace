@@ -38,7 +38,7 @@ namespace fhg
       {
       public:
         DefaultConfiguration()
-          : level_ (LogLevel::INFO)
+          : level_ (INFO)
           , to_console_()
           , to_file_()
           , to_server_()
@@ -55,7 +55,7 @@ namespace fhg
 
         void configure() const;
 
-        fhg::log::LogLevel level_;
+        fhg::log::Level level_;
         std::string to_console_;
         std::string to_file_;
         std::string to_server_;
@@ -96,7 +96,7 @@ namespace fhg
       {
         if (key == "level")
         {
-          level_ = LogLevel (val);
+          level_ = from_string (val);
         }
         else if (key == "format")
         {

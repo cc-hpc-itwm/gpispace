@@ -20,7 +20,7 @@ namespace utils
               ((boost::format ("logger-%1%") % _logger_counter.next()).str())
             )
     {
-      log.setLevel (fhg::log::LogLevel::TRACE);
+      log.setLevel (fhg::log::TRACE);
     }
 
     fhg::log::LoggerApi log;

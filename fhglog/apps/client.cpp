@@ -37,7 +37,7 @@ int main (int argc, char **argv)
   int line (0);
   std::string message("-");
   std::vector<std::string> tags;
-  int level (LogLevel::INFO);
+  int level (INFO);
 
   desc.add_options()
     ("help,h", "this message")
@@ -87,7 +87,7 @@ int main (int argc, char **argv)
   try
   {
     remote::RemoteAppender r (url);
-    r.append (LogEvent ( LogLevel::Level (level)
+    r.append (LogEvent ( from_int (level)
                        , file
                        , function
                        , line

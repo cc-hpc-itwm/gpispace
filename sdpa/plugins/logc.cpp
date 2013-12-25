@@ -61,7 +61,7 @@ public:
            , const char * message
            )
   {
-    m_destination->append(fhg::log::LogEvent ( fhg::log::LogLevel::INFO
+    m_destination->append(fhg::log::LogEvent ( fhg::log::INFO
                                              , filename
                                              , function
                                              , line

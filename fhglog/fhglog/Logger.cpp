@@ -60,7 +60,7 @@ Logger::ptr_t Logger::get ( const std::string& name, const std::string& base)
 
 Logger::Logger (const std::string& name)
   : name_ (name)
-  , lvl_ (LogLevel (LogLevel::INFO))
+  , lvl_ (INFO)
   , filter_ (new NullFilter())
 {}
 
@@ -77,7 +77,7 @@ Logger::Logger ( const std::string& name
   }
 }
 
-void Logger::setLevel (const LogLevel& level)
+void Logger::setLevel (const Level& level)
 {
   lvl_ = level;
 }
@@ -94,7 +94,7 @@ void Logger::log (const LogEvent& event)
     }
   }
 
-  if (event.severity().lvl() == LogLevel::FATAL)
+  if (event.severity() == FATAL)
   {
     throw std::runtime_error (event.message());
   }

@@ -47,10 +47,10 @@ namespace fhg
       explicit Logger (const std::string &name);
       Logger (const std::string& name, const Logger& inherit_from);
 
-      void setLevel (const LogLevel& level);
-      bool isLevelEnabled (const LogLevel& level) const
+      void setLevel (const Level& level);
+      bool isLevelEnabled (const Level& level) const
       {
-        return level.lvl() >= lvl_.lvl();
+        return level >= lvl_;
       }
       bool isFiltered (const LogEvent& evt) const
       {
@@ -64,7 +64,7 @@ namespace fhg
 
     private:
       std::string name_;
-      LogLevel lvl_;
+      Level lvl_;
       Filter::ptr_t filter_;
 
       std::list<Appender::ptr_t> appenders_;

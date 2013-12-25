@@ -13,7 +13,7 @@ namespace
     tags.push_back ("foo");
     tags.push_back ("bar");
 
-    fhg::log::LogEvent evt ( fhg::log::LogLevel::DEBUG
+    fhg::log::LogEvent evt ( fhg::log::DEBUG
                            , __FILE__
                            , "main", __LINE__, "hello world!"
                            , tags

@@ -11,12 +11,12 @@ namespace fhg
       // flags:
       //    0 - normal
       //    5 - blink
-      m_color_table[LogLevel::TRACE] = color_escape_code(FG_WHITE, BG_DEFAULT, 0);
-      m_color_table[LogLevel::DEBUG] = color_escape_code(FG_WHITE, BG_DEFAULT, 0);
-      m_color_table[LogLevel::INFO]  = color_escape_code(FG_CYAN);
-      m_color_table[LogLevel::WARN]  = color_escape_code(FG_YELLOW);
-      m_color_table[LogLevel::ERROR] = color_escape_code(FG_RED);
-      m_color_table[LogLevel::FATAL] = color_escape_code(FG_MAGENTA, BG_DEFAULT, 0);
+      m_color_table[TRACE] = color_escape_code(FG_WHITE, BG_DEFAULT, 0);
+      m_color_table[DEBUG] = color_escape_code(FG_WHITE, BG_DEFAULT, 0);
+      m_color_table[INFO]  = color_escape_code(FG_CYAN);
+      m_color_table[WARN]  = color_escape_code(FG_YELLOW);
+      m_color_table[ERROR] = color_escape_code(FG_RED);
+      m_color_table[FATAL] = color_escape_code(FG_MAGENTA, BG_DEFAULT, 0);
     }
 
     std::string const & color_map_t::reset_escape_code ()
@@ -35,22 +35,22 @@ namespace fhg
       return os.str();
     }
 
-    std::string const & color_map_t::colorize (const LogLevel &lvl) const
+    std::string const & color_map_t::colorize (const Level &lvl) const
     {
-      return m_color_table.at (lvl.lvl());
+      return m_color_table.at (lvl);
     }
 
-    std::string const & color_map_t::operator[](const LogLevel &level) const
+    std::string const & color_map_t::operator[](const Level &level) const
     {
       return const_cast<color_map_t&>(*this).operator[](level);
     }
-    std::string & color_map_t::operator[](const LogLevel &level)
+    std::string & color_map_t::operator[](const Level &level)
     {
-      if (m_color_table.find(level.lvl()) == m_color_table.end())
+      if (m_color_table.find(level) == m_color_table.end())
       {
-        m_color_table[level.lvl()] = reset_escape_code();
+        m_color_table[level] = reset_escape_code();
       }
-      return m_color_table[level.lvl()];
+      return m_color_table[level];
     }
   }
 }

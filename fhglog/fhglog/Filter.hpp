@@ -19,15 +19,15 @@ namespace fhg { namespace log {
   class LevelFilter : public Filter {
   public:
     explicit
-    LevelFilter(const LogLevel &level)
+    LevelFilter(const Level &level)
       : level_(level) {}
 
     bool operator()(const LogEvent &evt) const
     {
-      return evt.severity().lvl() < level_.lvl();
+      return evt.severity() < level_;
     }
   private:
-    LogLevel level_;
+    Level level_;
   };
 
   class NullFilter : public Filter {

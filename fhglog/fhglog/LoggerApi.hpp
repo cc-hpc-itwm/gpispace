@@ -25,11 +25,11 @@ namespace fhg
       friend LoggerApi getLogger (const std::string&, const std::string&);
 
     public:
-      void setLevel (const LogLevel& level)
+      void setLevel (const Level& level)
       {
         impl_->setLevel (level);
       }
-      bool isLevelEnabled (const LogLevel& level) const
+      bool isLevelEnabled (const Level& level) const
       {
         return impl_->isLevelEnabled (level);
       }

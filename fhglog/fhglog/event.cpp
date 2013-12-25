@@ -61,7 +61,7 @@ namespace fhg
       }
     }
 
-    LogEvent::LogEvent( const LogLevel &a_severity
+    LogEvent::LogEvent( const Level &a_severity
                       , const file_type &a_path
                       , const function_type &a_function
                       , const line_type &a_line
@@ -84,7 +84,7 @@ namespace fhg
 
     LogEvent::LogEvent()
       : id_ (next_id ())
-      , severity_ (LogLevel::INFO)
+      , severity_ (INFO)
       , path_()
       , function_()
       , line_()
@@ -146,16 +146,16 @@ namespace fhg
 
         return ret;
       }
-      LogLevel::Level read_loglevel (fhg::util::parse::position& pos)
+      Level read_loglevel (fhg::util::parse::position& pos)
       {
         switch (*pos)
         {
-        case 'T': ++pos; return LogLevel::TRACE;
-        case 'D': ++pos; return LogLevel::DEBUG;
-        case 'I': ++pos; return LogLevel::INFO;
-        case 'W': ++pos; return LogLevel::WARN;
-        case 'E': ++pos; return LogLevel::ERROR;
-        case 'F': ++pos; return LogLevel::FATAL;
+        case 'T': ++pos; return TRACE;
+        case 'D': ++pos; return DEBUG;
+        case 'I': ++pos; return INFO;
+        case 'W': ++pos; return WARN;
+        case 'E': ++pos; return ERROR;
+        case 'F': ++pos; return FATAL;
         }
 
         throw std::runtime_error ("unknown log level");
@@ -207,16 +207,16 @@ namespace
       return s (os);
     }
 
-    char loglevel (fhg::log::LogLevel::Level const& level)
+    char loglevel (fhg::log::Level const& level)
     {
       switch (level)
       {
-      case fhg::log::LogLevel::TRACE: return 'T';
-      case fhg::log::LogLevel::DEBUG: return 'D';
-      case fhg::log::LogLevel::INFO: return 'I';
-      case fhg::log::LogLevel::WARN: return 'W';
-      case fhg::log::LogLevel::ERROR: return 'E';
-      case fhg::log::LogLevel::FATAL: return 'F';
+      case fhg::log::TRACE: return 'T';
+      case fhg::log::DEBUG: return 'D';
+      case fhg::log::INFO: return 'I';
+      case fhg::log::WARN: return 'W';
+      case fhg::log::ERROR: return 'E';
+      case fhg::log::FATAL: return 'F';
       }
 
       throw std::runtime_error ("unknown log level");
@@ -252,7 +252,7 @@ namespace
 std::ostream& operator<< (std::ostream& os, const fhg::log::LogEvent& event)
 {
   os << ',' << event.id();
-  os << ',' << encode::loglevel (event.severity().lvl());
+  os << ',' << encode::loglevel (event.severity());
   os << ',' << encode::string (event.path());
   os << ',' << encode::string (event.function());
   os << ',' << event.line();

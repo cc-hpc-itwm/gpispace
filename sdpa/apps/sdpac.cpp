@@ -383,19 +383,19 @@ int main (int argc, char **argv) {
   }
   if (cfg.is_set("quiet"))
   {
-    fhg::log::getLogger().setLevel(fhg::log::LogLevel::ERROR);
+    fhg::log::getLogger().setLevel(fhg::log::ERROR);
   }
   else
   {
-    fhg::log::getLogger().setLevel(fhg::log::LogLevel::WARN);
+    fhg::log::getLogger().setLevel(fhg::log::WARN);
   }
 
   if (cfg.is_set("verbose"))
   {
     int lvl(cfg.get<int>("verbose"));
-    if (lvl > 0) fhg::log::getLogger().setLevel(fhg::log::LogLevel::INFO);
-    if (lvl > 1) fhg::log::getLogger().setLevel(fhg::log::LogLevel::DEBUG);
-    if (lvl > 2) fhg::log::getLogger().setLevel(fhg::log::LogLevel::TRACE);
+    if (lvl > 0) fhg::log::getLogger().setLevel(fhg::log::INFO);
+    if (lvl > 1) fhg::log::getLogger().setLevel(fhg::log::DEBUG);
+    if (lvl > 2) fhg::log::getLogger().setLevel(fhg::log::TRACE);
   }
 
   try

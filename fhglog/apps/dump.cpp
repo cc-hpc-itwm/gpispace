@@ -81,23 +81,14 @@ int main(int argc, char **argv)
                                )
     );
 
-  fhg::log::LogLevel level (fhg::log::LogLevel::INFO);
+  fhg::log::Level level (fhg::log::INFO);
   if (vm.count("quiet"))
   {
-    level = fhg::log::LogLevel::ERROR;
+    level = fhg::log::ERROR;
   }
   else
   {
-    if (filter < 1)
-      level = fhg::log::LogLevel::TRACE;
-    else if (filter == 1)
-      level = fhg::log::LogLevel::DEBUG;
-    else if (filter == 2)
-      level = fhg::log::LogLevel::INFO;
-    else if (filter == 3)
-      level = fhg::log::LogLevel::WARN;
-    else // if (filter == 4)
-      level = fhg::log::LogLevel::ERROR;
+    level = fhg::log::from_int (filter);
   }
 
   fhg::log::getLogger().setLevel (level);

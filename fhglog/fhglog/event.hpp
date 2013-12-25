@@ -37,7 +37,7 @@ namespace fhg { namespace log {
       LogEvent(util::parse::position&);
       static LogEvent from_string (const std::string&);
       LogEvent();
-      LogEvent(const LogLevel &severity
+      LogEvent(const Level &severity
              , const file_type &pa
              , const function_type &function
              , const line_type &line
@@ -48,7 +48,7 @@ namespace fhg { namespace log {
       bool operator<(const LogEvent &) const;
 
       const std::size_t& id() const { return id_; }
-      const LogLevel& severity() const { return severity_; }
+      const Level& severity() const { return severity_; }
       const file_type& path() const { return path_; }
       const function_type& function() const { return function_; }
       const line_type& line() const { return line_; }
@@ -69,7 +69,7 @@ namespace fhg { namespace log {
 
     private:
       uint64_t id_;
-      LogLevel severity_;
+      Level severity_;
       file_type path_;
       function_type function_;
       line_type line_;

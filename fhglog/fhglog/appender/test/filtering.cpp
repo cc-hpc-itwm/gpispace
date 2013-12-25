@@ -18,7 +18,7 @@ BOOST_FIXTURE_TEST_CASE (filter_levels_below, utils::logger_with_minimum_log_lev
 
   fhg::log::FilteringAppender appender
     ( fhg::log::Appender::ptr_t (new fhg::log::StreamAppender (logstream, "%m"))
-    , fhg::log::Filter::ptr_t (new fhg::log::LevelFilter (fhg::log::LogLevel::ERROR))
+    , fhg::log::Filter::ptr_t (new fhg::log::LevelFilter (fhg::log::ERROR))
     );
 
   appender.append (FHGLOG_MKEVENT_HERE (DEBUG, "hello world!"));

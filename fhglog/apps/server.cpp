@@ -85,28 +85,14 @@ try
                                )
     );
 
-  fhg::log::LogLevel level (fhg::log::LogLevel::INFO);
+  fhg::log::Level level (fhg::log::INFO);
   if (vm.count("quiet"))
   {
-    level = fhg::log::LogLevel::ERROR;
+    level = fhg::log::ERROR;
   }
   else
   {
-    switch (vm["verbose"].as<unsigned int> ())
-    {
-    case 0:
-      level = fhg::log::LogLevel::WARN;
-      break;
-    case 1:
-      level = fhg::log::LogLevel::INFO;
-      break;
-    case 2:
-      level = fhg::log::LogLevel::DEBUG;
-      break;
-    default:
-      level = fhg::log::LogLevel::TRACE;
-      break;
-    }
+    level = fhg::log::from_int (vm["verbose"].as<unsigned int> ());
   }
 
   fhg::log::getLogger().setLevel (level);

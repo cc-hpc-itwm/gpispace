@@ -9,8 +9,8 @@
 namespace fhg { namespace log {
 
 // convenience macro to create an event
-#define FHGLOG_MKEVENT_HERE(level, message) ::fhg::log::LogEvent(::fhg::log::LogLevel::level, __FILE__, __PRETTY_FUNCTION__, __LINE__, message)
-#define FHGLOG_MKEVENT(var, level, message) ::fhg::log::LogEvent var(::fhg::log::LogLevel::level, __FILE__, __PRETTY_FUNCTION__, __LINE__, message)
+#define FHGLOG_MKEVENT_HERE(level, message) ::fhg::log::LogEvent(::fhg::log::level, __FILE__, __PRETTY_FUNCTION__, __LINE__, message)
+#define FHGLOG_MKEVENT(var, level, message) ::fhg::log::LogEvent var(::fhg::log::level, __FILE__, __PRETTY_FUNCTION__, __LINE__, message)
 
 #  define FHGLOG_FLUSH()                                                \
     do                                                                  \
@@ -40,9 +40,8 @@ namespace fhg { namespace log {
 
 #  define __LOG(logger, level, msg)                                     \
     do {                                                                \
-      using namespace fhg::log;                                         \
-      if (  (LogLevel::level > FHGLOG_STRIP_LEVEL)                      \
-         && logger.isLevelEnabled(LogLevel::level)                      \
+      if (  (::fhg::log::level > FHGLOG_STRIP_LEVEL)                    \
+         && logger.isLevelEnabled(::fhg::log::level)                    \
          )                                                              \
       {                                                                 \
         std::ostringstream msg_;                                        \

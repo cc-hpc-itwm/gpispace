@@ -81,24 +81,17 @@ namespace
       (new function_call_appender (boost::bind (function, that, _1)));
   }
 
-  QColor severityToColor (const fhg::log::LogLevel lvl)
+  QColor severityToColor (const fhg::log::Level lvl)
   {
-    switch (lvl.lvl())
+    switch (lvl)
     {
-    case fhg::log::LogLevel::TRACE:
-      return QColor (205, 183, 158);
-    case fhg::log::LogLevel::DEBUG:
-      return QColor (139, 125, 107);
-    case fhg::log::LogLevel::INFO:
-      return QColor (25, 25, 25);
-    case fhg::log::LogLevel::WARN:
-      return QColor (255, 140, 0);
-    case fhg::log::LogLevel::ERROR:
-      return QColor (255, 0, 0);
-    case fhg::log::LogLevel::FATAL:
-      return QColor (165, 42, 42);
-    default:
-      return QColor (0, 0, 0);
+    case fhg::log::TRACE: return QColor (205, 183, 158);
+    case fhg::log::DEBUG: return QColor (139, 125, 107);
+    case fhg::log::INFO: return QColor (25, 25, 25);
+    case fhg::log::WARN: return QColor (255, 140, 0);
+    case fhg::log::ERROR: return QColor (255, 0, 0);
+    case fhg::log::FATAL: return QColor (165, 42, 42);
+    default: return QColor (0, 0, 0);
     }
   }
 

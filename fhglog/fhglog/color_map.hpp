@@ -37,9 +37,9 @@ namespace fhg
 
       color_map_t ();
 
-      std::string const & colorize (const LogLevel & lvl) const;
-      std::string const & operator[](const LogLevel & lvl) const;
-      std::string & operator[](const LogLevel & lvl);
+      std::string const & colorize (const Level & lvl) const;
+      std::string const & operator[](const Level & lvl) const;
+      std::string & operator[](const Level & lvl);
 
       static std::string const & reset_escape_code ();
       static std::string color_escape_code ( ColorEnum fg
@@ -47,7 +47,7 @@ namespace fhg
                                            , int flags = 0
                                            );
     private:
-      typedef std::map<LogLevel::Level, std::string> color_table_t;
+      typedef std::map<Level, std::string> color_table_t;
       color_table_t m_color_table;
     };
   }
