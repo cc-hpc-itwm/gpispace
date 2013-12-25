@@ -27,7 +27,12 @@ namespace fhg
 
       while (!pos.end())
       {
-        if (*pos == '%')
+        if (*pos != '%')
+        {
+          os << *pos;
+          ++pos;
+        }
+        else
         {
           ++pos;
 
@@ -102,13 +107,9 @@ namespace fhg
             throw std::runtime_error
               ((boost::format ("format code not defined: %1%") % *pos).str());
           }
-        }
-        else
-        {
-          os << *pos;
-        }
 
-        ++pos;
+          ++pos;
+        }
       }
 
       return os;
