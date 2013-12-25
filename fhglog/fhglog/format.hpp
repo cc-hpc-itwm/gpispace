@@ -53,6 +53,8 @@ namespace fhg
           case 'M': os << boost::filesystem::path (evt.path()).stem().string(); break;
           case 'L': os << evt.line(); break;
           case 'm': os << evt.message(); break;
+          case 'R': os << evt.pid(); break;
+          case 'n': os << "\n"; break;
           case 'd':
             {
               char buf[128];
@@ -81,7 +83,6 @@ namespace fhg
               os << std::hex << evt.tid();
             }
             break;
-          case 'R': os << evt.pid(); break;
           case '#':
             {
               fhg::util::first_then<std::string> sep ("#", ",#");
@@ -102,7 +103,6 @@ namespace fhg
               }
             }
             break;
-          case 'n': os << "\n"; break;
           default:
             throw std::runtime_error
               ((boost::format ("format code not defined: %1%") % *pos).str());
