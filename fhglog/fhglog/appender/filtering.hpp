@@ -19,29 +19,30 @@
 #ifndef FHG_LOG_FILTERING_APPENDER_HPP
 #define FHG_LOG_FILTERING_APPENDER_HPP 1
 
+#include <fhglog/Appender.hpp>
 #include <fhglog/Filter.hpp>
-#include <fhglog/appender/decorating.hpp>
 
 namespace fhg { namespace log {
-  class FilteringAppender : public DecoratingAppender
+  class FilteringAppender : public Appender
   {
     public:
       FilteringAppender(const Appender::ptr_t &real_appender, const Filter::ptr_t &a_filter)
-        : DecoratingAppender(real_appender)
-        , filter_(a_filter) { }
-
-      FilteringAppender(Appender *real_appender, const Filter::ptr_t &a_filter)
-        : DecoratingAppender(real_appender)
+        : _appender (real_appender)
         , filter_(a_filter) { }
 
       virtual void append(const LogEvent &evt)
       {
         if (! (*filter_)(evt))
         {
-          DecoratingAppender::append(evt);
+          _appender->append(evt);
         }
       }
+    virtual void flush()
+    {
+      _appender->flush();
+    }
     private:
+    Appender::ptr_t _appender;
       Filter::ptr_t filter_;
   };
 }}

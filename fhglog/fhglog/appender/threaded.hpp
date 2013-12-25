@@ -22,7 +22,7 @@
 
 #include <boost/thread.hpp>
 #include <deque>
-#include <fhglog/appender/decorating.hpp>
+#include <fhglog/Appender.hpp>
 
 #include <boost/shared_ptr.hpp>
 
@@ -31,7 +31,7 @@
 #endif
 
 namespace fhg { namespace log {
-  class ThreadedAppender : public DecoratingAppender
+  class ThreadedAppender : public Appender
   {
   private:
 	typedef std::deque<LogEvent> event_list_type;
@@ -44,17 +44,10 @@ namespace fhg { namespace log {
 
     explicit
     ThreadedAppender(const Appender::ptr_t &appender)
-      : DecoratingAppender(appender)
+      : _appender (appender)
     {
 	  start();
 	}
-
-    explicit
-    ThreadedAppender(Appender *appender)
-      : DecoratingAppender(appender)
-    {
-	  start();
-    }
 
     ~ThreadedAppender()
     {
@@ -105,7 +98,7 @@ namespace fhg { namespace log {
 	  {
 		flushed_.wait(lock);
 	  }
-          DecoratingAppender::flush ();
+          _appender->flush ();
 	}
   private:
 	void log_thread_loop()
@@ -118,7 +111,7 @@ namespace fhg { namespace log {
               event_available_.wait(lock);
             }
             LogEvent evt = events_.front(); events_.pop_front();
-            DecoratingAppender::append(evt);
+            _appender->append(evt);
 
             if (events_.empty())
             {
@@ -128,6 +121,7 @@ namespace fhg { namespace log {
         }
 
 	private:
+    Appender::ptr_t _appender;
 	  boost::thread log_thread_;
 	  mutex_type mtx_;
 	  condition_type event_available_;

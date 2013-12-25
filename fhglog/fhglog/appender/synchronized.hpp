@@ -19,11 +19,11 @@
 #ifndef FHG_LOG_SYNCHRONIZED_APPENDER_HPP
 #define FHG_LOG_SYNCHRONIZED_APPENDER_HPP 1
 
-#include <fhglog/appender/decorating.hpp>
+#include <fhglog/Appender.hpp>
 #include <boost/thread.hpp>
 
 namespace fhg { namespace log {
-  class SynchronizedAppender : public DecoratingAppender
+  class SynchronizedAppender : public Appender
   {
   private:
     typedef boost::recursive_mutex mutex_type;
@@ -32,27 +32,30 @@ namespace fhg { namespace log {
   public:
     explicit
     SynchronizedAppender(const Appender::ptr_t &appender)
-      : DecoratingAppender(appender)
+      : _appender (appender)
     {}
 
     explicit
     SynchronizedAppender(Appender *appender)
-      : DecoratingAppender(appender)
+      : _appender (appender)
     {}
 
     virtual void append(const LogEvent &evt)
     {
       lock_type lock (m_mutex);
-      DecoratingAppender::append(evt);
+
+      _appender->append(evt);
     }
 
     virtual void flush(void)
     {
       lock_type lock (m_mutex);
-      DecoratingAppender::flush();
+
+      _appender->flush();
     }
   private:
     mutable mutex_type m_mutex;
+    Appender::ptr_t _appender;
   };
 }}
 
