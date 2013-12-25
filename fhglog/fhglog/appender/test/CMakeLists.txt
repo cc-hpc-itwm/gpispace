@@ -11,7 +11,10 @@ fhg_add_test (compound.cpp
 fhg_add_test (file.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog_appender
-  LINK_LIBRARIES fhglog ${Boost_FILESYSTEM_LIBRARY})
+  LINK_LIBRARIES fhglog
+                 fhg-util
+                 ${Boost_FILESYSTEM_LIBRARY}
+)
 
 fhg_add_test (filtering.cpp
   BOOST_UNIT_TEST

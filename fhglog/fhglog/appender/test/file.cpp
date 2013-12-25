@@ -6,33 +6,8 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/appender/file.hpp>
 
-#include <fstream> // ifstream
-
-#include <boost/filesystem.hpp>
-
-namespace
-{
-  std::string content_of_file (const std::string file)
-  {
-    std::ifstream ifs (file.c_str());
-    std::string content;
-    std::getline (ifs, content);
-    return content;
-  }
-
-  struct remove_on_scope_exit
-  {
-    remove_on_scope_exit (boost::filesystem::path filename)
-      : _filename (filename)
-    {}
-    ~remove_on_scope_exit()
-    {
-      boost::filesystem::remove (_filename);
-    }
-  private:
-    const boost::filesystem::path _filename;
-  };
-}
+#include <fhg/util/read_file.hpp>
+#include <fhg/util/temporary_file.hpp>
 
 BOOST_AUTO_TEST_CASE (throw_on_unwritable_file)
 {
@@ -46,7 +21,7 @@ BOOST_AUTO_TEST_CASE (throw_on_unwritable_file)
 
 BOOST_AUTO_TEST_CASE (remaining)
 {
-  const remove_on_scope_exit delete_logfile ("test_file_appender.cpp.log");
+  fhg::util::temporary_file const _ ("test_file_appender.cpp.log");
 
   fhg::log::FileAppender appender ("test_file_appender.cpp.log", "%m");
 
@@ -54,5 +29,5 @@ BOOST_AUTO_TEST_CASE (remaining)
   appender.flush();
 
   BOOST_REQUIRE_EQUAL
-    (content_of_file ("test_file_appender.cpp.log"), "hello world!");
+    (fhg::util::read_file ("test_file_appender.cpp.log"), "hello world!");
 }
