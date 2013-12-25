@@ -161,13 +161,3 @@ const Appender::ptr_t &Logger::addAppender(const Appender::ptr_t &appender)
   appenders_.push_back(appender);
   return appender;
 }
-
-void Logger::removeAllAppenders()
-{
-  appenders_.clear();
-}
-
-void Logger::removeAppender(const Appender::ptr_t& appender)
-{
-  appenders_.remove (appender);
-}

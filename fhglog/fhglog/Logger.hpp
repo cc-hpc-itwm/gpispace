@@ -60,8 +60,6 @@ namespace fhg { namespace log {
       void flush();
 
       const Appender::ptr_t &addAppender(const Appender::ptr_t &appender);
-      void removeAppender(const Appender::ptr_t&);
-      void removeAllAppenders();
 
     private:
       std::string name_;

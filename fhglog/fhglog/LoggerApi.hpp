@@ -50,8 +50,6 @@ logger_t getLogger(const std::string &name, const std::string & base);
       inline bool isFiltered(const LogEvent &event) const { return impl_->isFiltered(event); }
 
       inline const Appender::ptr_t &addAppender(Appender::ptr_t appender) { return impl_->addAppender(appender); }
-      inline void removeAppender(const Appender::ptr_t &appender) { impl_->removeAppender(appender); }
-      inline void removeAllAppenders() { impl_->removeAllAppenders(); }
 
       inline void log(const LogEvent &event) { impl_->log(event); }
       inline void flush(void) { impl_->flush(); }

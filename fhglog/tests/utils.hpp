@@ -23,6 +23,6 @@ namespace utils
       log.setLevel (fhg::log::LogLevel::MIN_LEVEL);
     }
 
-    fhg::log::logger_t log;
+    fhg::log::LoggerApi log;
   };
 }
