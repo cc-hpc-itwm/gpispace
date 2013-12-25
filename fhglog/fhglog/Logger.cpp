@@ -14,35 +14,38 @@ namespace state
   struct state_t
   {
     typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
-    typedef boost::recursive_mutex mutex_type;
-    typedef boost::unique_lock<mutex_type> lock_type;
 
-    Logger::ptr_t getLogger(const std::string &a_name, const std::string & base)
+    Logger::ptr_t getLogger ( const std::string& name
+                            , const std::string& base
+                            )
     {
-      lock_type lock(m_mutex);
-      logger_map_t::iterator logger(m_loggers.find(a_name));
-      if (logger == m_loggers.end())
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
+
+      logger_map_t::iterator logger (_logger.find (name));
+
+      if (logger == _logger.end())
       {
         Logger::ptr_t newLogger;
-        if (a_name != "default")
+
+        if (name != "default")
         {
-          newLogger.reset (new Logger(a_name, *getLogger(base, "default")));
+          newLogger.reset (new Logger (name, *getLogger (base, "default")));
         }
         else
         {
-          newLogger.reset (new Logger(a_name));
+          newLogger.reset (new Logger (name));
         }
-        assert (newLogger);
 
-        logger = m_loggers.insert(std::make_pair(a_name, newLogger)).first;
+        logger = _logger.insert (std::make_pair (name, newLogger)).first;
       }
+
       return logger->second;
     }
 
-    void terminate ()
+    void terminate()
     {
       BOOST_FOREACH ( Logger::ptr_t const& logger
-                    , m_loggers | boost::adaptors::map_values
+                    , _logger | boost::adaptors::map_values
                     )
       {
         logger->flush();
@@ -51,29 +54,32 @@ namespace state
 
     ~state_t ()
     {
-      lock_type lock(m_mutex);
-      m_loggers.clear ();
+      boost::unique_lock<boost::recursive_mutex> _ (_mutex);
+
+      _logger.clear ();
     }
 
   private:
-    mutex_type   m_mutex;
-    logger_map_t m_loggers;
+    boost::recursive_mutex _mutex;
+    logger_map_t _logger;
   };
 
-  //  typedef fhg::log::shared_ptr<state_t> state_ptr;
-  typedef state_t* state_ptr;
-  static state_ptr static_state;
+  static state_t* static_state;
 
-  state_ptr get ()
+  state_t* get()
   {
     if (! static_state)
-      static_state = state_ptr (new state_t);
+    {
+      static_state = new state_t;
+    }
+
     return static_state;
   }
 
-  void clear ()
+  void clear()
   {
     delete static_state;
+
     static_state = 0;
   }
 }
@@ -82,35 +88,34 @@ namespace fhg
 {
   namespace log
   {
-    void terminate ()
+    void terminate()
     {
-      state::get ()->terminate ();
-      state::clear ();
+      state::get()->terminate ();
+      state::clear();
     }
   }
 }
 
-/*
- * Logger implementation
- *
- */
 Logger::ptr_t Logger::get()
 {
-  return get("default", "default");
+  return get ("default", "default");
 }
 
-Logger::ptr_t Logger::get(const std::string &a_name, const std::string & base)
+Logger::ptr_t Logger::get ( const std::string& name, const std::string& base)
 {
-  return state::get ()->getLogger (a_name, base);
+  return state::get()->getLogger (name, base);
 }
 
-Logger::Logger(const std::string &a_name)
-  : name_(a_name), lvl_(LogLevel(LogLevel::DEF_LEVEL)), filter_(new NullFilter())
-{
-}
+Logger::Logger (const std::string& name)
+  : name_ (name)
+  , lvl_ (LogLevel (LogLevel::DEF_LEVEL))
+  , filter_ (new NullFilter())
+{}
 
-Logger::Logger(const std::string &a_name, const Logger &inherit_from)
-  : name_ (a_name)
+Logger::Logger ( const std::string& name
+               , const Logger& inherit_from
+               )
+  : name_ (name)
   , lvl_ (inherit_from.lvl_)
   , filter_ (inherit_from.filter_)
 {
@@ -120,16 +125,16 @@ Logger::Logger(const std::string &a_name, const Logger &inherit_from)
   }
 }
 
-void Logger::setLevel(const LogLevel &level)
+void Logger::setLevel (const LogLevel& level)
 {
   lvl_ = level;
 }
 
-void Logger::log(const LogEvent &event)
+void Logger::log (const LogEvent& event)
 {
-  if (isLevelEnabled(event.severity()))
+  if (isLevelEnabled (event.severity()))
   {
-    event.trace(name_);
+    event.trace (name_);
 
     BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
     {
@@ -143,7 +148,7 @@ void Logger::log(const LogEvent &event)
   }
 }
 
-void Logger::flush (void)
+void Logger::flush()
 {
   BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
   {
@@ -151,7 +156,7 @@ void Logger::flush (void)
   }
 }
 
-void Logger::addAppender(Appender::ptr_t appender)
+void Logger::addAppender (Appender::ptr_t appender)
 {
   appenders_.push_back(appender);
 }
