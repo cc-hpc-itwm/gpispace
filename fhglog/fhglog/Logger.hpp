@@ -34,8 +34,6 @@ namespace fhg { namespace log {
     public:
       typedef shared_ptr<Logger> ptr_t;
 
-      typedef std::size_t verbosity_type;
-
       static Logger::ptr_t get();
       static Logger::ptr_t get(const std::string &name, const std::string &base = "default");
 
@@ -71,7 +69,6 @@ namespace fhg { namespace log {
       std::string name_;
       LogLevel lvl_;
       Filter::ptr_t filter_;
-      verbosity_type verbosity_;
 
       typedef std::list<Appender::ptr_t> appender_list_t;
       appender_list_t appenders_;
