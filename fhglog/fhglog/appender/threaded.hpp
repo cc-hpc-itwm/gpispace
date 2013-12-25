@@ -42,7 +42,7 @@ namespace fhg
         boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
 
         _events.push_back (event);
-        _event_available.notify_one();
+        _non_empty.notify_one();
       }
 
       virtual void flush()
@@ -51,7 +51,7 @@ namespace fhg
 
         while (!_events.empty())
         {
-          _flushed.wait (lock);
+          _empty.wait (lock);
         }
 
         _appender->flush();
@@ -66,7 +66,7 @@ namespace fhg
 
           while (_events.empty())
           {
-            _event_available.wait (lock);
+            _non_empty.wait (lock);
           }
 
           _appender->append (_events.front());
@@ -75,7 +75,7 @@ namespace fhg
 
           if (_events.empty())
           {
-            _flushed.notify_all();
+            _empty.notify_all();
           }
         }
       }
@@ -84,8 +84,8 @@ namespace fhg
       Appender::ptr_t _appender;
       boost::thread _log_thread;
       boost::recursive_mutex _mutex;
-      boost::condition_variable_any _event_available;
-      boost::condition_variable_any _flushed;
+      boost::condition_variable_any _non_empty;
+      boost::condition_variable_any _empty;
       std::deque<LogEvent> _events;
     };
   }
