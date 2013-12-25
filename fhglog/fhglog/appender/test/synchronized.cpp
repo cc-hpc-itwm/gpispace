@@ -36,14 +36,12 @@ namespace
     std::string const _message;
   };
 
-  const std::size_t thread_count (100);
-  const std::size_t message_count (1000);
-
-  void worker ( fhg::log::LogEvent const& event
+  void worker ( std::size_t const& num_messages
+              , fhg::log::LogEvent const& event
               , fhg::log::SynchronizedAppender* appender
               )
   {
-    for (std::size_t i (0); i < message_count; ++i)
+    for (std::size_t i (0); i < num_messages; ++i)
     {
       appender->append (event);
     }
@@ -54,6 +52,8 @@ BOOST_AUTO_TEST_CASE (synchronized_appender)
 {
   std::size_t messages_logged (0);
   std::string const message ("boo fazzi");
+  std::size_t const num_messages (10000);
+  std::size_t const num_threads (100);
 
   fhg::log::SynchronizedAppender appender
     (fhg::log::Appender::ptr_t (new counting_appender ( &messages_logged
@@ -67,13 +67,14 @@ BOOST_AUTO_TEST_CASE (synchronized_appender)
   {
     boost::thread_group threads;
 
-    for (std::size_t i (0); i < thread_count; ++i)
+    for (std::size_t i (0); i < num_threads; ++i)
     {
-      threads.create_thread (boost::bind (&worker, event, &appender));
+      threads.create_thread
+        (boost::bind (&worker, num_messages, event, &appender));
     }
 
     threads.join_all();
   }
 
-  BOOST_REQUIRE_EQUAL (messages_logged, thread_count * message_count);
+  BOOST_REQUIRE_EQUAL (messages_logged, num_threads * num_messages);
 }
