@@ -128,13 +128,14 @@ void Logger::setLevel(const LogLevel &level)
 
 void Logger::log(const LogEvent &event)
 {
-  if (! isLevelEnabled(event.severity()))
-    return;
-  event.trace(name_);
-
-  BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
+  if (isLevelEnabled(event.severity()))
   {
-    appender->append(event);
+    event.trace(name_);
+
+    BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
+    {
+      appender->append(event);
+    }
   }
 
   if (event.severity() == LogLevel::FATAL)
