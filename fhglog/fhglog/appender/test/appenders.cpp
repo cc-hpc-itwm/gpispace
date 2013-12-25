@@ -14,38 +14,6 @@ namespace
   using namespace fhg::log;
 }
 
-//! \todo These two should test by pushing into the logger before / after removing
-BOOST_FIXTURE_TEST_CASE (NOTEST_add_and_remove_appender, utils::logger_with_minimum_log_level)
-{
-  const Appender::ptr_t appender;
-  log.addAppender (appender);
-
-  //! \todo Assert being added
-
-  log.removeAppender (appender);
-
-  //! \todo Assert being removed
-}
-
-BOOST_FIXTURE_TEST_CASE (NOTEST_add_and_remove_all_appenders, utils::logger_with_minimum_log_level)
-{
-  const Appender::ptr_t null_0;
-  const Appender::ptr_t null_1;
-  const Appender::ptr_t null_2;
-  const Appender::ptr_t null_3;
-
-  log.addAppender (null_0);
-  log.addAppender (null_1);
-  log.addAppender (null_2);
-  log.addAppender (null_3);
-
-  //! \todo Assert being added
-
-  log.removeAllAppenders();
-
-  //! \todo Assert being removed
-}
-
 BOOST_FIXTURE_TEST_CASE (stream_appender, utils::logger_with_minimum_log_level)
 {
   std::ostringstream logstream;
