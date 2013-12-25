@@ -4,6 +4,8 @@
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <boost/foreach.hpp>
+
 using namespace fhg::log;
 
 namespace state
@@ -151,13 +153,11 @@ void Logger::log(const LogEvent &event)
   event.trace(name());
 
   bool logged (false);
-  for (appender_list_t::const_iterator it(appenders_.begin());
-       it != appenders_.end();
-       ++it)
+  BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
   {
     try
     {
-      (*it)->append(event);
+      appender->append(event);
       logged = true;
     }
     catch (const std::exception &ex)
@@ -184,13 +184,11 @@ void Logger::log(const LogEvent &event)
 
 void Logger::flush (void)
 {
-  for (appender_list_t::const_iterator it(appenders_.begin());
-       it != appenders_.end();
-       ++it)
+  BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
   {
     try
     {
-      (*it)->flush ();
+      appender->flush();
     }
     catch (std::exception const & ex)
     {
