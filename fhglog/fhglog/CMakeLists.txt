@@ -16,7 +16,6 @@ set (hdrs
   )
 set (header_appender
   appender/compound.hpp
-  appender/decorating.hpp
   appender/file.hpp
   appender/filtering.hpp
   appender/memory.hpp
