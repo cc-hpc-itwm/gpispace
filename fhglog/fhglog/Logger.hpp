@@ -69,8 +69,6 @@ namespace fhg
 
       std::list<Appender::ptr_t> appenders_;
     };
-
-    void terminate ();
   }
 }
 

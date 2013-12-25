@@ -21,37 +21,18 @@ namespace state
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
 
-      logger_map_t::iterator logger (_logger.find (name));
+      logger_map_t::const_iterator const logger (_logger.find (name));
 
-      if (logger == _logger.end())
-      {
-        Logger::ptr_t const newLogger
-          ( name != "default"
-          ? new Logger (name, *getLogger (base, "default"))
-          : new Logger (name)
-          );
-
-        logger = _logger.insert (std::make_pair (name, newLogger)).first;
-      }
-
-      return logger->second;
-    }
-
-    void terminate()
-    {
-      BOOST_FOREACH ( Logger::ptr_t const& logger
-                    , _logger | boost::adaptors::map_values
-                    )
-      {
-        logger->flush();
-      }
-    }
-
-    ~state_t ()
-    {
-      boost::unique_lock<boost::recursive_mutex> _ (_mutex);
-
-      _logger.clear ();
+      return (logger != _logger.end()) ? logger->second
+        : _logger.insert
+          ( std::make_pair
+            ( name
+            , Logger::ptr_t ( name != "default"
+                            ? new Logger (name, *getLogger (base, "default"))
+                            : new Logger (name)
+                            )
+            )
+          ).first->second;
     }
 
   private:
@@ -59,35 +40,11 @@ namespace state
     logger_map_t _logger;
   };
 
-  static state_t* static_state;
-
-  state_t* get()
+  state_t& get()
   {
-    if (! static_state)
-    {
-      static_state = new state_t;
-    }
+    static state_t s;
 
-    return static_state;
-  }
-
-  void clear()
-  {
-    delete static_state;
-
-    static_state = 0;
-  }
-}
-
-namespace fhg
-{
-  namespace log
-  {
-    void terminate()
-    {
-      state::get()->terminate ();
-      state::clear();
-    }
+    return s;
   }
 }
 
@@ -98,7 +55,7 @@ Logger::ptr_t Logger::get()
 
 Logger::ptr_t Logger::get ( const std::string& name, const std::string& base)
 {
-  return state::get()->getLogger (name, base);
+  return state::get().getLogger (name, base);
 }
 
 Logger::Logger (const std::string& name)
