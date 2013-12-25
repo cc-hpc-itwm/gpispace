@@ -34,7 +34,6 @@ namespace fhg
               ("Format string ends with a single opening character!");
           }
 
-          // what do we have
           switch (*c)
           {
           case '%': os << '%'; break;
