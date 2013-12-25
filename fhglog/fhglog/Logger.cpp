@@ -135,7 +135,7 @@ void Logger::log(const LogEvent &event)
 {
   if (! isLevelEnabled(event.severity()))
     return;
-  event.trace(name());
+  event.trace(name_);
 
   BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
   {
