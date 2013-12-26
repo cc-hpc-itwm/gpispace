@@ -13,7 +13,6 @@ set (hdrs
   )
 set (header_appender
   appender/file.hpp
-  appender/filtering.hpp
   appender/stream.hpp
   appender/call.hpp
 )
