@@ -20,12 +20,6 @@ namespace fhg
           , boost::asio::ip::udp::endpoint (boost::asio::ip::udp::v4(), port)
           )
         {
-          LOG ( INFO, "log server listening on "
-              << boost::asio::ip::udp::endpoint ( boost::asio::ip::udp::v4()
-                                                , port
-                                                )
-              );
-
           boost::system::error_code ec;
 
           socket_.set_option ( boost::asio::socket_base::reuse_address (true)
@@ -59,30 +53,17 @@ namespace fhg
 
           if (msg == "QUIT deadbeef")
           {
-            LOG (INFO, "got QUIT message, shutting down.");
-
             return;
           }
 
-          try
-          {
-            LogEvent evt (LogEvent::from_string (msg));
+          LogEvent evt (LogEvent::from_string (msg));
 
-            {
-              std::ostringstream ostr;
-              ostr << sender_endpoint_;
-              evt.trace (ostr.str());
-            }
-            appender_->append (evt);
-          }
-          catch (std::exception const &ex)
           {
-            LOG (WARN, "error during log-event decode: " << ex.what ());
+            std::ostringstream ostr;
+            ostr << sender_endpoint_;
+            evt.trace (ostr.str());
           }
-        }
-        else
-        {
-          LOG (ERROR, "error during receive: " << error);
+          appender_->append (evt);
         }
 
         socket_.async_receive_from
