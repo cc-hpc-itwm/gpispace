@@ -63,13 +63,7 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  const std::string color (vm["color"].as<std::string>());
   const std::string fmt_string (vm["format"].as<std::string>());
-
-  fhg::log::StreamAppender::ColorMode color_mode
-    (fhg::log::StreamAppender::COLOR_OFF);
-  if (color == "on")
-    color_mode = fhg::log::StreamAppender::COLOR_ON;
 
   fhg::log::getLogger("dump").setLevel
     (vm.count("quiet") ? fhg::log::ERROR : fhg::log::from_int (filter));
@@ -80,11 +74,15 @@ int main(int argc, char **argv)
   else fhg::log::check_format (fmt);
 
   fhg::log::getLogger("dump").addAppender
-    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ( std::cout
-                                                             , fmt
-                                                             , color_mode
-                                                             )
-                               )
+    ( fhg::log::Appender::ptr_t
+      ( new fhg::log::StreamAppender
+        ( std::cout
+        , fmt
+        , vm["color"].as<std::string>() == "on"
+        ? fhg::log::StreamAppender::COLOR_ON
+        : fhg::log::StreamAppender::COLOR_OFF
+        )
+      )
     );
 
   std::cin.unsetf (std::ios_base::skipws);
