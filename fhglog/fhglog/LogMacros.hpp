@@ -31,7 +31,7 @@ namespace fhg
     };
 
 #define FHGLOG_SETUP()                                                  \
-    ::fhg::log::flush_at_end_of_scope_t const _1e872d1a_6dcf_11e3_9e3b_13f239ecd3ca; \
+    ::fhg::log::flush_at_end_of_scope_t _1e872d1a_6dcf_11e3_9e3b_13f239ecd3ca; \
     ::fhg::log::configure()
 
 #ifndef FHGLOG_STRIP_LEVEL
