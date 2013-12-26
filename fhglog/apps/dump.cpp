@@ -3,7 +3,6 @@
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/appender/filtering.hpp>
 #include <fhglog/format.hpp>
 
 #include <fhg/util/parse/position.hpp>
@@ -72,15 +71,6 @@ int main(int argc, char **argv)
   if (color == "on")
     color_mode = fhg::log::StreamAppender::COLOR_ON;
 
-  // my own output goes to stderr
-  fhg::log::getLogger().addAppender
-    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( std::clog
-                                                            , fhg::log::default_format::SHORT()
-                                                            , color_mode
-                                                            )
-                               )
-    );
-
   fhg::log::Level level (fhg::log::INFO);
   if (vm.count("quiet"))
   {
@@ -91,44 +81,26 @@ int main(int argc, char **argv)
     level = fhg::log::from_int (filter);
   }
 
-  fhg::log::getLogger().setLevel (level);
+  fhg::log::getLogger("dump").setLevel (level);
 
   std::string fmt (fmt_string);
   if      (fmt_string == "full")  fmt = fhg::log::default_format::LONG();
   else if (fmt_string == "short") fmt = fhg::log::default_format::SHORT();
   else fhg::log::check_format (fmt);
 
-  // remote messages go to stdout
-  fhg::log::Appender::ptr_t appender
-    (new fhg::log::StreamAppender( std::cout
-                                 , fmt
-                                 , color_mode
-                                 )
+  fhg::log::getLogger("dump").addAppender
+    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender ( std::cout
+                                                             , fmt
+                                                             , color_mode
+                                                             )
+                               )
     );
 
-  appender = fhg::log::Appender::ptr_t
-    (new fhg::log::FilteringAppender ( appender
-                                     , fhg::log::Filter::ptr_t
-                                     (new fhg::log::LevelFilter(level))
-                                     )
-    );
-
-  try
+  std::cin.unsetf (std::ios_base::skipws);
+  fhg::util::parse::position_istream pos (std::cin);
+  while (std::cin.good())
   {
-    std::cin.unsetf (std::ios_base::skipws);
-    fhg::util::parse::position_istream pos (std::cin);
-    while (std::cin)
-    {
-      appender->append (fhg::log::LogEvent (pos));
-      if (!std::cin.good())
-      {
-        break;
-      }
-    }
-  }
-  catch (const std::exception& e)
-  {
-    LOG (ERROR, "could not dump log events: " << e.what ());
+    fhg::log::getLogger("dump").log (fhg::log::LogEvent (pos));
   }
 
   return 0;
