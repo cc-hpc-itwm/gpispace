@@ -124,10 +124,11 @@ namespace fhg
     }
 
     inline
-    void check_format(const std::string & fmt)
+    std::string check_format(const std::string & fmt)
     {
       std::ostringstream os;
       format (os, fmt, LogEvent());
+      return fmt;
     }
 
     struct default_format
