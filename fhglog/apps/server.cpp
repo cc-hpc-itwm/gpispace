@@ -105,15 +105,15 @@ try
     fhg::log::check_format (fmt);
   }
 
-  // remote messages go to stdout
-  fhg::log::Appender::ptr_t appender
-    (new fhg::log::StreamAppender( std::cout
-                                 , fmt
-                                 , color_mode
-                                 )
+  fhg::log::Logger::get ("log")->addAppender
+    ( fhg::log::Appender::ptr_t appender
+      ( new fhg::log::StreamAppender
+        ( std::cout
+        , fmt
+        , color_mode
+        )
+      )
     );
-
-  fhg::log::Logger::get ("log")->addAppender (appender);
 
   fhg::log::remote::LogServer const
     server ( fhg::log::Logger::get ("log")
