@@ -8,7 +8,10 @@
 
 #include <fhglog/format.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/handle.hpp>
+#include <gspc/net/io.hpp>
+#include <gspc/net/serve.hpp>
+#include <gspc/net/server.hpp>
 #include <gspc/net/service/echo.hpp>
 
 #include <fhg/plugin/plugin.hpp>
