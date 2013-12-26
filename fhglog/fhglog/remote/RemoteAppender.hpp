@@ -1,27 +1,11 @@
-/*
- * =====================================================================================
- *
- *       Filename:  RemoteAppender.hpp
- *
- *    Description:  append to an remote logger
- *
- *        Version:  1.0
- *        Created:  10/19/2009 02:35:47 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef FHGLOG_REMOTE_APPENDER_HPP
 #define FHGLOG_REMOTE_APPENDER_HPP 1
 
-#include <boost/asio.hpp>
-
 #include <fhglog/Appender.hpp>
+
+#include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
 #if ! defined(FHGLOG_DEFAULT_PORT)
@@ -37,26 +21,41 @@
 #define FHGLOG_DEFAULT_LOCATION "localhost:2438"
 #endif
 
-namespace fhg { namespace log { namespace remote {
-  class RemoteAppender : public Appender
+namespace fhg
+{
+  namespace log
   {
-  public:
-    explicit
-    RemoteAppender(const std::string &location);
-    virtual ~RemoteAppender();
+    namespace remote
+    {
+      class RemoteAppender : public Appender
+      {
+      public:
+        explicit
+        RemoteAppender (const std::string &location);
+        virtual ~RemoteAppender();
 
-    const std::string &host() const { return host_; }
-    const unsigned short &port() const { return port_; }
-    void append(const LogEvent &evt);
-    void flush(void) {}
-  private:
-    std::string host_;
-    unsigned short port_;
+        const std::string& host() const
+        {
+          return host_;
+        }
+        const unsigned short& port() const
+        {
+          return port_;
+        }
 
-    boost::asio::ip::udp::socket *socket_;
-    boost::asio::io_service io_service_;
-    boost::asio::ip::udp::endpoint logserver_;
-  };
-}}}
+        void append (const LogEvent&);
+        void flush() {}
+
+      private:
+        std::string host_;
+        unsigned short port_;
+
+        boost::asio::ip::udp::socket *socket_;
+        boost::asio::io_service io_service_;
+        boost::asio::ip::udp::endpoint logserver_;
+      };
+    }
+  }
+}
 
 #endif
