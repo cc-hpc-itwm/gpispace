@@ -54,21 +54,18 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  const std::string fmt_string (vm["format"].as<std::string>());
-
   fhg::log::getLogger("dump").setLevel
     (vm.count("quiet") ? fhg::log::ERROR : fhg::log::from_int (filter));
 
-  std::string fmt (fmt_string);
-  if      (fmt_string == "full")  fmt = fhg::log::default_format::LONG();
-  else if (fmt_string == "short") fmt = fhg::log::default_format::SHORT();
-  else fhg::log::check_format (fmt);
+  const std::string format_string (vm["format"].as<std::string>());
 
   fhg::log::getLogger("dump").addAppender
     ( fhg::log::Appender::ptr_t
       ( new fhg::log::StreamAppender
         ( std::cout
-        , fmt
+        , format_string == "full" ? fhg::log::default_format::LONG()
+        : format_string == "short" ? fhg::log::default_format::SHORT()
+        : fhg::log::check_format (format_string)
         , vm["color"].as<std::string>() == "on"
         ? fhg::log::StreamAppender::COLOR_ON
         : fhg::log::StreamAppender::COLOR_OFF
