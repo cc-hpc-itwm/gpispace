@@ -28,22 +28,10 @@ namespace gspc
 
     // read the default config
     config_t config_read ();
-    config_t config_read (std::istream &is);
-    config_t config_read (std::string const & file);
     config_t config_read_safe (std::string const & file);
 
-    config_t config_read_site ();
-    config_t config_read_system ();
-    config_t config_read_user ();
-
-    void     config_write (config_t const &);
-    void     config_write (config_t const &, std::ostream &os);
     void     config_write (config_t const &, std::string const &fname);
 
-    std::string config_get ( config_t const &
-                           , std::string const &key
-                           , std::string const &value_regex=""
-                           );
     std::vector<std::string> config_get_all ( config_t const &
                                             , std::string const &key
                                             , std::string const &value_regex=""
