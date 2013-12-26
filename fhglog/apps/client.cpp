@@ -25,7 +25,7 @@
 
 namespace po = boost::program_options;
 
-int main (int argc, char **argv)
+int main (int argc, char **argv) try
 {
   using namespace fhg::log;
 
@@ -51,16 +51,7 @@ int main (int argc, char **argv)
     ;
 
   po::variables_map vm;
-  try
-  {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "invalid argument: " << ex.what() << std::endl;
-    std::cerr << "try " << argv[0] << " -h to get some help" << std::endl;
-    return EXIT_FAILURE;
-  }
+  po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
 
   if (vm.count("help"))
@@ -84,23 +75,20 @@ int main (int argc, char **argv)
     } while (true);
   }
 
-  try
-  {
-    remote::RemoteAppender r (url);
-    r.append (LogEvent ( from_int (level)
-                       , file
-                       , function
-                       , line
-                       , message
-                       , tags
-                       )
-             );
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "could not log message: " << ex.what() << std::endl;
-    return 1;
-  }
+  remote::RemoteAppender r (url);
+  r.append (LogEvent ( from_int (level)
+                     , file
+                     , function
+                     , line
+                     , message
+                     , tags
+                     )
+           );
 
   return 0;
+}
+catch (std::exception const & ex)
+{
+  std::cerr << "Exception: " << ex.what() << std::endl;
+  return 1;
 }
