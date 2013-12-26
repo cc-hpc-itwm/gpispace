@@ -7,7 +7,6 @@
 #include <fhglog/Filter.hpp>
 #include <fhglog/event.hpp>
 #include <fhglog/level.hpp>
-#include <fhglog/appender/memory.hpp>
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
@@ -125,8 +124,6 @@ namespace fhg
 
       void DefaultConfiguration::configure() const
       {
-        getLogger().addAppender (global_memory_appender());
-
         if (to_console_.size())
         {
           if (  "stderr" != to_console_
