@@ -1,14 +1,13 @@
 #ifndef FHG_LOG_LOGEVENT_HPP
 #define FHG_LOG_LOGEVENT_HPP 1
 
-#include <string>
-#include <vector>
-#include <set>
-#include <sstream>
-#include <sys/types.h>
 #include <fhglog/level.hpp>
 
-#include <boost/cstdint.hpp>
+#include <sys/types.h>
+
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace fhg
 {
