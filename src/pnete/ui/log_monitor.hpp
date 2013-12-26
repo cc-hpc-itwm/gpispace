@@ -2,7 +2,7 @@
 #define FHG_PNETE_UI_LOG_MONITOR_HPP
 
 #include <fhglog/fhglog.hpp>
-#include <fhglog/remote/LogServer.hpp>
+#include <fhglog/remote/server.hpp>
 
 #include <boost/thread.hpp>
 

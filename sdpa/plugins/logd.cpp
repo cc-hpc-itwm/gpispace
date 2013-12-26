@@ -2,7 +2,7 @@
 
 #include <boost/function.hpp>
 
-#include <fhglog/remote/LogServer.hpp>
+#include <fhglog/remote/server.hpp>
 #include <fhglog/Appender.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fhg/plugin/plugin.hpp>

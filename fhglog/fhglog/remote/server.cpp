@@ -1,4 +1,4 @@
-#include "LogServer.hpp"
+#include "server.hpp"
 
 #include <fhglog/fhglog.hpp>
 

@@ -30,11 +30,11 @@ set (source_appender
 )
 
 set (remote_hdrs
-  remote/LogServer.hpp
+  remote/server.hpp
   remote/appender.hpp
   )
 set (remote_srcs
-  remote/LogServer.cpp
+  remote/server.cpp
   remote/appender.cpp
   )
 install(FILES ${remote_hdrs}

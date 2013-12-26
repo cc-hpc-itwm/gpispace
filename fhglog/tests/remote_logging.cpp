@@ -7,7 +7,7 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/remote/appender.hpp>
-#include <fhglog/remote/LogServer.hpp>
+#include <fhglog/remote/server.hpp>
 
 namespace
 {
