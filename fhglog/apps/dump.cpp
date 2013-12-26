@@ -44,17 +44,8 @@ int main(int argc, char **argv)
     ;
 
   po::variables_map vm;
-  try
-  {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "invalid argument: " << ex.what() << std::endl;
-    std::cerr << "try " << argv[0] << " -h to get some help" << std::endl;
-    return EXIT_FAILURE;
-  }
-  po::notify(vm);
+  po::store (po::parse_command_line(argc, argv, desc), vm);
+  po::notify (vm);
 
   if (vm.count("help"))
   {
