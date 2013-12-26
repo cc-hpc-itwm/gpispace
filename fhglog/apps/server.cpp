@@ -1,6 +1,5 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#include <fhglog/appender/filtering.hpp>
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
@@ -68,48 +67,28 @@ try
     return EXIT_SUCCESS;
   }
 
-  const std::string fmt_string (vm["format"].as<std::string>());
+  fhg::log::Logger::ptr_t l (fhg::log::Logger::get ("server"));
 
-  fhg::log::StreamAppender::ColorMode const color_mode
-    ( vm["color"].as<std::string>() == "on"
-    ? fhg::log::StreamAppender::COLOR_ON
-    : fhg::log::StreamAppender::COLOR_OFF
-    );
+  l->setLevel (fhg::log::TRACE);
 
-  // my own output goes to stderr
-  fhg::log::getLogger().addAppender
-    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( std::clog
-                                                            , fhg::log::default_format::SHORT()
-                                                            , color_mode
-                                                            )
-                               )
-    );
+  const std::string format_string (vm["format"].as<std::string>());
 
-  fhg::log::getLogger("log").setLevel
-    (vm.count("quiet") ? fhg::log::ERROR : fhg::log::from_int (filter));
-
-  std::string fmt (fmt_string);
-  if      (fmt_string == "full")  fmt = fhg::log::default_format::LONG();
-  else if (fmt_string == "short") fmt = fhg::log::default_format::SHORT();
-  else
-  {
-    fhg::log::check_format (fmt);
-  }
-
-  fhg::log::Logger::get ("log")->addAppender
-    ( fhg::log::Appender::ptr_t appender
+  l->addAppender
+    ( fhg::log::Appender::ptr_t
       ( new fhg::log::StreamAppender
         ( std::cout
-        , fmt
-        , color_mode
+        , format_string == "full" ? fhg::log::default_format::LONG()
+        : format_string == "short" ? fhg::log::default_format::SHORT()
+        : fhg::log::check_format (format_string)
+        , vm["color"].as<std::string>() == "on"
+        ? fhg::log::StreamAppender::COLOR_ON
+        : fhg::log::StreamAppender::COLOR_OFF
         )
       )
     );
 
   fhg::log::remote::LogServer const
-    server ( fhg::log::Logger::get ("log")
-           , io_service, vm["port"].as<unsigned short>()
-           );
+    server (l, io_service, vm["port"].as<unsigned short>());
 
   signal (SIGINT, signal_handler);
   signal (SIGTERM, signal_handler);
