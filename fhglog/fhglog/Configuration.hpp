@@ -15,7 +15,6 @@ namespace fhg
      *  FHGLOG_to_file=path to logfile   log to specified file
      *  FHGLOG_to_server=ip:port         log to the specified server
      *  FHGLOG_disabled={anything}       disable logging if defined
-     *  FHGLOG_synch={anything}          make logging synchronized (very expensive!)
      */
 
     void configure();

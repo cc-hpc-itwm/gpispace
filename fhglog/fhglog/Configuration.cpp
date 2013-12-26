@@ -10,7 +10,6 @@
 #include <fhglog/level.hpp>
 #include <fhglog/appender/memory.hpp>
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/appender/synchronized.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 
@@ -44,7 +43,6 @@ namespace fhg
           , fmt_string_ (default_format::SHORT())
           , color_ (StreamAppender::COLOR_OFF)
           , disabled_ (false)
-          , synchronize_ (false)
         {}
 
         void parse_environment();
@@ -59,7 +57,6 @@ namespace fhg
         std::string fmt_string_;
         StreamAppender::ColorMode color_;
         bool disabled_;
-        bool synchronize_;
       };
 
       void DefaultConfiguration::parse_environment()
@@ -121,10 +118,6 @@ namespace fhg
                  : throw std::runtime_error
                      ("expected: 'on' or 'off' for key 'color'");
         }
-        else if (key == "synch")
-        {
-          synchronize_ = true;
-        }
         else if (key == "disabled")
         {
           disabled_ = true;
@@ -176,8 +169,7 @@ namespace fhg
         getLogger().setLevel (level_);
 
         getLogger().addAppender
-          ( synchronize_ ? Appender::ptr_t (new SynchronizedAppender (compound_appender))
-          : compound_appender
+          ( compound_appender
           );
       }
     }
