@@ -1,6 +1,8 @@
 #ifndef GSPC_NET_SERVER_HPP
 #define GSPC_NET_SERVER_HPP
 
+#include "server_fwd.hpp"
+
 #include <string>
 
 namespace gspc

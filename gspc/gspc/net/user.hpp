@@ -1,6 +1,8 @@
 #ifndef GSPC_NET_USER_HPP
 #define GSPC_NET_USER_HPP
 
+#include "user_fwd.hpp"
+
 #include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/heartbeat_info.hpp>
 

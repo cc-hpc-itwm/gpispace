@@ -1,6 +1,8 @@
 #ifndef GSPC_NET_CLIENT_HPP
 #define GSPC_NET_CLIENT_HPP
 
+#include "client_fwd.hpp"
+
 #include <string>
 #include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/frame_handler_fwd.hpp>
