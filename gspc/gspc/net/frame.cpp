@@ -51,18 +51,11 @@ namespace gspc
       return *this;
     }
 
-    frame & frame::set_header ( frame::key_type const & key
-                              , frame::header_value const & val
-                              )
+    frame & frame::set_or_delete_header ( frame::key_type const & key
+                                        , frame::header_value const & val
+                                        )
     {
-      if (val)
-      {
-        return set_header (key, *val);
-      }
-      else
-      {
-        return del_header (key);
-      }
+      return val ? set_header (key, *val) : del_header (key);
     }
 
     frame & frame::del_header (std::string const & key)

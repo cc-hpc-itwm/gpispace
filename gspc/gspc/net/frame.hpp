@@ -37,7 +37,7 @@ namespace gspc
 
       frame & set_header (header_type const &);
       frame & set_header (key_type const &key, value_type const &val);
-      frame & set_header (key_type const &key, header_value const &opt_val);
+      frame & set_or_delete_header (key_type const&, header_value const&);
 
       frame & del_header (key_type const &key);
 

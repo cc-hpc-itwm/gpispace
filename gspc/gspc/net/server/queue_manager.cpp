@@ -257,7 +257,7 @@ namespace gspc
             }
 
             user_hb.apply (connected);
-            connected.set_header ("correlation-id", f.get_header ("message-id"));
+            connected.set_or_delete_header ("correlation-id", f.get_header ("message-id"));
             gspc::net::header::set ( connected
                                    , "session-id"
                                    , boost::format ("session-%1%-%2%")
