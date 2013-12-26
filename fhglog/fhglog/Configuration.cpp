@@ -170,31 +170,15 @@ namespace fhg
 
         if (to_file_.size())
         {
-          try
-          {
-            compound_appender->addAppender
-              (Appender::ptr_t (new FileAppender (to_file_, fmt_string_)));
-          }
-          catch (const std::exception& ex)
-          {
-            std::clog << "E: could not open log-file " << to_file_ << ": "
-                      << ex.what() << std::endl;
-          }
+          compound_appender->addAppender
+            (Appender::ptr_t (new FileAppender (to_file_, fmt_string_)));
         }
 
         if (to_server_.size())
         {
-          try
-          {
-            // TODO: split to_remote_ into host and port
-            compound_appender->addAppender
-              (Appender::ptr_t (new remote::RemoteAppender (to_server_)));
-          }
-          catch (const std::exception &ex)
-          {
-            std::clog << "E: could not create remote logger to: "
-                      << to_server_ << ": " << ex.what() << std::endl;
-          }
+          // TODO: split to_remote_ into host and port
+          compound_appender->addAppender
+            (Appender::ptr_t (new remote::RemoteAppender (to_server_)));
         }
 
         getLogger().setLevel (level_);
