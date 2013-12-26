@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 # locates the libzmq library
 # This file defines:
 # * ZMQ_FOUND if libreadline was found

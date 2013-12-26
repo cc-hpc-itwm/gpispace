@@ -1,4 +1,3 @@
-// -*- mode: c++ -*-
 #include "base_connection.hpp"
 
 #include <boost/bind.hpp>

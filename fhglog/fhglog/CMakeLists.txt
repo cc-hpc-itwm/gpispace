@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 set (hdrs
   Appender.hpp
   Configuration.hpp

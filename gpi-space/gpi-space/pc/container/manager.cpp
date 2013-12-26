@@ -1,5 +1,3 @@
-/* -*- mode: c++ -*- */
-
 #include "manager.hpp"
 
 #include <boost/bind.hpp>

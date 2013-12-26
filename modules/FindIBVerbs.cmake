@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 # locates the ibverbs library
 # This file defines:
 # * IBverbs_FOUND if libibverbs was found

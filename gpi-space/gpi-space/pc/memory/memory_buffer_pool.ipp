@@ -1,5 +1,3 @@
-// -*- mode: c++ -*-
-
 #include "memory_buffer_pool.hpp"
 
 #include <limits>

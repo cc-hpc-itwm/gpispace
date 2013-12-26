@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 # check for 'pthread_setname_np'
 include(CheckCSourceCompiles)
 set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})

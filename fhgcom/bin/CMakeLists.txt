@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 add_executable(fhgcomd fhgcomd.cpp)
 target_link_libraries(fhgcomd fhgcom ${FhgLog_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_THREAD_LIBRARY})
 

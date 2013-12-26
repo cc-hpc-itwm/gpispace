@@ -1,5 +1,3 @@
-/* -*- mode: c++ -*- */
-
 #include "counter.hpp"
 
 #include <stdexcept>

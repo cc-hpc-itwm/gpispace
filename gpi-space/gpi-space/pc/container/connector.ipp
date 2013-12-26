@@ -1,4 +1,3 @@
-/* -*- mode: c++ -*- */
 #include "connector.hpp"
 
 #include <sys/socket.h>

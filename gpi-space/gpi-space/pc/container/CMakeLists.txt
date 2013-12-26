@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 set (hdrs
   process.hpp
   message_visitor.hpp

@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 set (hdrs
   assert.hpp
   pc.hpp

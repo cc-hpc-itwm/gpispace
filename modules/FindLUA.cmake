@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 # locates the liblua library
 # This file defines:
 # * LUA_FOUND if libreadline was found

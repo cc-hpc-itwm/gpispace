@@ -1,4 +1,3 @@
-// -*- mode: c++; -*-
 #include "config_io.hpp"
 
 #include <fhg/util/ini-parser.hpp>

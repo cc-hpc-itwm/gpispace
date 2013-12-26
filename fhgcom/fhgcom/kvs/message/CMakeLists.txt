@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 set (hdrs
   clear.hpp
   del.hpp

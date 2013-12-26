@@ -1,4 +1,3 @@
-// -*- mode: c++ -*-
 #include "base_server.hpp"
 
 #include <fhg/assert.hpp>

@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 fhg_add_test(frame_parser.cpp
   BOOST_UNIT_TEST
   PROJECT gspc

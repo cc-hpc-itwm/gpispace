@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 set (hdrs
   itopology.hpp
   topology.hpp

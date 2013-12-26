@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 # locates the libreadline
 # This file defines:
 # * LibReadline_FOUND if libreadline was found

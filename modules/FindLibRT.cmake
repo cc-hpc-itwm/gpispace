@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 # locates the librt library
 # This file defines:
 # * LIBRT_FOUND if libreadline was found

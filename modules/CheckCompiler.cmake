@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-#
 #  Figure out the version of the used compiler
 #  Variables set by this module
 #  CMAKE_CXX_COMPILER_MAJOR  major version of compiler

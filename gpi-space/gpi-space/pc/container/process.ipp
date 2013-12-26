@@ -1,5 +1,3 @@
-/* -*- mode: c++ -*- */
-
 #include "process.hpp"
 
 #include <sys/socket.h>
