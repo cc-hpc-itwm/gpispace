@@ -36,14 +36,6 @@ namespace we
       typedef path_type::const_iterator path_iterator;
       typedef boost::unordered_map<key_type, mapped_type> map_type;
 
-      //! \note Used when storing containers, to allow storing structured types.
-      template <typename T> value_type to_property (const T& t);
-      template <typename T> void store_value
-        (type* properties, const key_type& key, const T& t);
-      template <typename T> T from_property (const value_type& value);
-      template <typename T>  T retrieve_value
-        (const type& properties, const key_type& key);
-
       // ******************************************************************* //
 
       namespace util
@@ -133,46 +125,6 @@ namespace we
         boost::optional<mapped_type>
           set (const std::string& path, const value_type& val);
 
-        template <typename C>
-          void set_container (const key_type& key, const C& c)
-        {
-          store_value (this, key + ".size", c.size());
-          std::size_t i (0);
-          for ( typename C::const_iterator it (c.begin())
-              ; it != c.end()
-              ; ++it
-              )
-          {
-            store_value
-              (this, key + "." + boost::lexical_cast<key_type> (i), *it);
-            ++i;
-          }
-        }
-
-        //! \todo Sanity checking? (missing binding -> throw invalid_container)
-        template <typename C>
-          C get_container (const key_type& key)
-        {
-          typedef typename C::value_type value_type;
-
-          C result;
-
-          const std::size_t size
-            (retrieve_value<std::size_t> (*this, key + ".size"));
-          //! \todo Detect if C::reserve exists (does not with std::list)
-          // result.reserve (size);
-          for (std::size_t i (0); i < size; ++i)
-          {
-            result.insert
-              ( result.end()
-              , retrieve_value<value_type>
-                (*this, key + "." + boost::lexical_cast<key_type> (i))
-              );
-          }
-
-          return result;
-        }
-
         const mapped_type& get
           (const path_iterator& pos, const path_iterator& end) const;
         const mapped_type& get (const path_type& path) const;
@@ -209,28 +161,6 @@ namespace we
         bool has (const path_type& path) const;
         bool has (const std::string& path) const;
       };
-
-      template <typename T> value_type to_property (const T& t)
-      {
-        return boost::lexical_cast<value_type> (t);
-      }
-
-      template <typename T> void store_value
-        (type* properties, const key_type& key, const T& t)
-      {
-        properties->set (key, to_property (t));
-      }
-
-      template <typename T> T from_property (const value_type& value)
-      {
-        return boost::lexical_cast<T> (value);
-      }
-
-      template <typename T>  T retrieve_value
-        (const type& properties, const key_type& key)
-      {
-        return from_property<T> (properties.get_val (key));
-      }
 
       namespace dump
       {
