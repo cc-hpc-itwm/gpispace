@@ -1,11 +1,12 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/appender.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
+
+#include <sstream>
 
 namespace po = boost::program_options;
 
