@@ -9,7 +9,7 @@ namespace
 {
   fhg::log::LogEvent gen_event()
   {
-    fhg::log::LogEvent::tags_type tags;
+    std::vector<std::string> tags;
     tags.push_back ("foo");
     tags.push_back ("bar");
 

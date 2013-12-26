@@ -46,7 +46,7 @@ namespace fhg
                       , const function_type &a_function
                       , const line_type &a_line
                       , const std::string &a_message
-                      , tags_type const& tags
+                      , std::vector<std::string> const& tags
                       )
       : severity_(a_severity)
       , path_(a_path)
@@ -203,7 +203,7 @@ namespace
     {
     public:
       explicit
-      tstamp (fhg::log::LogEvent::tstamp_type const &t)
+      tstamp (double const &t)
         : _t (t)
       {}
       std::ostream& operator() (std::ostream& os) const
@@ -217,7 +217,7 @@ namespace
         return os;
       }
     private:
-      fhg::log::LogEvent::tstamp_type const& _t;
+      double const& _t;
     };
     std::ostream& operator<< (std::ostream& os, tstamp const& t)
     {

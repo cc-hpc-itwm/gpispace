@@ -148,7 +148,7 @@ namespace gspc
                                , function
                                , line
                                , sstr.str().c_str()
-                               , fhg::log::LogEvent::tags_type (1, tag)
+                               , std::vector<std::string> (1, tag)
                                )
           );
 

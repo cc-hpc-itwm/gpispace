@@ -28,11 +28,6 @@ namespace fhg { namespace log {
       typedef std::string function_type;
       typedef std::size_t line_type;
       typedef std::string message_type;
-      typedef double tstamp_type;
-      typedef pid_t pid_type;
-      typedef pid_t tid_type;
-      typedef std::vector<std::string> trace_type;
-      typedef std::vector<std::string> tags_type;
 
       LogEvent(util::parse::position&);
       static LogEvent from_string (const std::string&);
@@ -42,7 +37,7 @@ namespace fhg { namespace log {
              , const function_type &function
              , const line_type &line
              , const message_type &message
-             , tags_type const& = tags_type()
+             , std::vector<std::string> const& = std::vector<std::string>()
              );
 
       bool operator<(const LogEvent &) const;
@@ -52,12 +47,12 @@ namespace fhg { namespace log {
       const function_type& function() const { return function_; }
       const line_type& line() const { return line_; }
       const message_type& message() const { return message_; }
-      const tstamp_type& tstamp() const { return tstamp_; }
-      const pid_type& pid() const { return pid_; }
-      const tid_type& tid() const { return tid_; }
-      const trace_type& trace() const { return trace_; }
+      const double& tstamp() const { return tstamp_; }
+      const pid_t& pid() const { return pid_; }
+      const pid_t& tid() const { return tid_; }
+      const std::vector<std::string>& trace() const { return trace_; }
       const std::string& host() const { return host_; }
-      const tags_type& tags () const { return tags_; }
+      const std::vector<std::string>& tags () const { return tags_; }
 
       void trace (const std::string &name) const
       {
@@ -72,12 +67,12 @@ namespace fhg { namespace log {
       function_type function_;
       line_type line_;
       message_type message_;
-      tstamp_type tstamp_;
-      pid_type pid_;
-      tid_type tid_;
+      double tstamp_;
+      pid_t pid_;
+      pid_t tid_;
       std::string host_;
-      mutable trace_type trace_;
-      tags_type tags_;
+      mutable std::vector<std::string> trace_;
+      std::vector<std::string> tags_;
   };
 }}
 
