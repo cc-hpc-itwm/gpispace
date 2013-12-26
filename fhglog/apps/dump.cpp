@@ -71,17 +71,8 @@ int main(int argc, char **argv)
   if (color == "on")
     color_mode = fhg::log::StreamAppender::COLOR_ON;
 
-  fhg::log::Level level (fhg::log::INFO);
-  if (vm.count("quiet"))
-  {
-    level = fhg::log::ERROR;
-  }
-  else
-  {
-    level = fhg::log::from_int (filter);
-  }
-
-  fhg::log::getLogger("dump").setLevel (level);
+  fhg::log::getLogger("dump").setLevel
+    (vm.count("quiet") ? fhg::log::ERROR : fhg::log::from_int (filter));
 
   std::string fmt (fmt_string);
   if      (fmt_string == "full")  fmt = fhg::log::default_format::LONG();
