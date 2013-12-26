@@ -3,7 +3,7 @@
 #ifndef FHGLOG_REMOTE_LOG_SERVER_HPP
 #define FHGLOG_REMOTE_LOG_SERVER_HPP 1
 
-#include <fhglog/Appender.hpp>
+#include <fhglog/Logger.hpp>
 #include <fhglog/remote/appender.hpp>
 
 #include <boost/asio.hpp>
@@ -17,7 +17,7 @@ namespace fhg
       class LogServer
       {
       public:
-        LogServer ( const fhg::log::Appender::ptr_t&
+        LogServer ( const fhg::log::Logger::ptr_t&
                   , boost::asio::io_service&
                   , unsigned short port
                   );
@@ -26,7 +26,7 @@ namespace fhg
                                  , size_t bytes_recv
                                  );
       private:
-        fhg::log::Appender::ptr_t appender_;
+        fhg::log::Logger::ptr_t _log;
         boost::asio::ip::udp::socket socket_;
         boost::asio::ip::udp::endpoint sender_endpoint_;
 

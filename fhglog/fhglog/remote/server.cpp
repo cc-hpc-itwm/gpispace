@@ -10,11 +10,11 @@ namespace fhg
   {
     namespace remote
     {
-      LogServer::LogServer ( const fhg::log::Appender::ptr_t& appender
+      LogServer::LogServer ( const fhg::log::Logger::ptr_t& log
                            , boost::asio::io_service& io_service
                            , unsigned short port
                            )
-        : appender_ (appender)
+        : _log (log)
         , socket_
           ( io_service
           , boost::asio::ip::udp::endpoint (boost::asio::ip::udp::v4(), port)
@@ -68,7 +68,7 @@ namespace fhg
             ostr << sender_endpoint_;
             evt.trace (ostr.str());
           }
-          appender_->append (evt);
+          _log->log (evt);
         }
 
         async_receive();

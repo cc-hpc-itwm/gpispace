@@ -95,7 +95,7 @@ try
     level = fhg::log::from_int (vm["verbose"].as<unsigned int> ());
   }
 
-  fhg::log::getLogger().setLevel (level);
+  fhg::log::getLogger("log").setLevel (level);
 
   std::string fmt (fmt_string);
   if      (fmt_string == "full")  fmt = fhg::log::default_format::LONG();
@@ -120,8 +120,12 @@ try
                                       )
     );
 
+  fhg::log::Logger::get ("log")->addAppender (appender);
+
   fhg::log::remote::LogServer const
-    server (appender, io_service, vm["port"].as<unsigned short>());
+    server ( fhg::log::Logger::get ("log")
+           , io_service, vm["port"].as<unsigned short>()
+           );
 
   signal (SIGINT, signal_handler);
   signal (SIGTERM, signal_handler);
