@@ -15,3 +15,9 @@ fhg_add_test (filtering.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog_appender
   LINK_LIBRARIES fhglog)
+
+fhg_add_test (call.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhglog_appender
+  LINK_LIBRARIES fhglog
+)
