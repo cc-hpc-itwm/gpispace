@@ -23,11 +23,6 @@ namespace
     {
       fhg::log::getLogger (logger_name).log
         (FHGLOG_MKEVENT_HERE (ERROR, boost::lexical_cast<std::string> (i)));
-
-      if (0 == (i % 50))
-      {
-        boost::this_thread::sleep (boost::posix_time::microseconds (100));
-      }
     }
   }
 
