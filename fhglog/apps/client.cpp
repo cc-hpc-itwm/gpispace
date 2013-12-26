@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  fhglog-client.cpp
- *
- *    Description:  send messages to an fhg-log daemon
- *
- *        Version:  1.0
- *        Created:  10/19/2009 02:24:52 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
