@@ -26,51 +26,14 @@
   <out name="ratio" type="ratio" place="ratio"/>
 
   <net>
-    <place name="num_packet" type="long">
-      <token>
-        <value>
-          @NUM_PACKET@L
-        </value>
-      </token>
-    </place>
-    <place name="points_per_packet" type="long">
-      <token>
-        <value>
-          @POINTS_PER_PACKET@L
-        </value>
-      </token>
-    </place>
-    <place name="credit_generate" type="long">
-      <token>
-        <value>
-          @CREDIT_GENERATE@L
-        </value>
-      </token>
-    </place>
-    <place name="credit_run" type="long">
-      <token>
-        <value>
-          @CREDIT_RUN@L
-        </value>
-      </token>
-    </place>
-    <place name="credit_get_key" type="long">
-      <token>
-        <value>
-          @CREDIT_GET_KEY@L
-        </value>
-      </token>
-    </place>
-    <place name="start_seed" type="long">
-      <token>
-        <value>
-          @SEED@L
-        </value>
-      </token>
-    </place>
+    <place name="num_packet" type="long"/>
+    <place name="points_per_packet" type="long"/>
+    <place name="credit_generate" type="long"/>
+    <place name="credit_run" type="long"/>
+    <place name="credit_get_key" type="long"/>
+    <place name="start_seed" type="long"/>
     <place name="ratio" type="ratio"/>
     <place name="accum" type="ratio"/>
-
 
     <transition name="generate" inline="true">
       <defun>
@@ -136,8 +99,8 @@
               <out name="seed" type="long"/>
               <expression>
                 ${seed} := ${state.id} + ${start_seed};
-                ${state.id} := ${state.id} + 1;
-                ${credit_generate} := ${credit_generate} - 1
+                ${state.id} := ${state.id} + 1L;
+                ${credit_generate} := ${credit_generate} - 1L
               </expression>
             </defun>
             <condition>
@@ -188,7 +151,7 @@
                 ${credit} := ${credit} - 1L;
               </expression>
               <condition>
-                ${credit} :gt: 0
+                ${credit} :gt: 0L
               </condition>
             </defun>
             <connect-in port="seed" place="seed"/>
@@ -277,7 +240,7 @@
                 ${credit} := ${credit} - 1L;
               </expression>
               <condition>
-                ${credit} :gt: 0
+                ${credit} :gt: 0L
               </condition>
             </defun>
             <connect-in port="job" place="job"/>
@@ -373,8 +336,8 @@
         <in name="wait" type="long"/>
         <out name="wait" type="long"/>
         <expression>
-          ${credit_generate} := ${credit_generate} + 1;
-          ${wait} := ${wait} - 1;
+          ${credit_generate} := ${credit_generate} + 1L;
+          ${wait} := ${wait} - 1L;
 
           ${ratio.in} := ${ratio.in} + ${done.in};
           ${ratio.total} := ${ratio.total} + ${done.total};
@@ -432,7 +395,7 @@
         </module>
       </defun>
       <condition>
-        ${wait} == 0
+        ${wait} == 0L
       </condition>
       <connect-in port="points_per_packet" place="points_per_packet"/>
       <connect-in port="start_seed" place="start_seed"/>
