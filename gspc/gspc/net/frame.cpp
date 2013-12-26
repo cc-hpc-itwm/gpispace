@@ -24,23 +24,14 @@ namespace gspc
       update_content_length ();
     }
 
-    void frame::invalidate_cache ()
-    {
-      m_to_string_cache = boost::none;
-    }
-
     frame & frame::set_command (std::string const & cmd)
     {
-      invalidate_cache ();
-
       m_command = cmd;
       return *this;
     }
 
     frame & frame::set_header (frame::header_type const &hdr)
     {
-      invalidate_cache ();
-
       m_header = hdr;
       return *this;
     }
@@ -49,8 +40,6 @@ namespace gspc
                               , std::string const & val
                               )
     {
-      invalidate_cache ();
-
       bool updated = false;
       header_type::iterator it = m_header.begin ();
       const header_type::iterator end = m_header.end ();
@@ -89,8 +78,6 @@ namespace gspc
 
     frame & frame::del_header (std::string const & key)
     {
-      invalidate_cache ();
-
       header_type::iterator it = m_header.begin ();
       const header_type::iterator end = m_header.end ();
       while (it != end)
@@ -148,8 +135,6 @@ namespace gspc
 
     frame & frame::set_body (frame::body_type const & body)
     {
-      invalidate_cache ();
-
       m_body = body;
 
       return update_content_length ();
@@ -157,8 +142,6 @@ namespace gspc
 
     frame & frame::add_body (std::string const &body)
     {
-      invalidate_cache ();
-
       m_body.insert ( m_body.end ()
                     , body.begin ()
                     , body.end ()
@@ -168,8 +151,6 @@ namespace gspc
 
     frame & frame::add_body (const char *bytes, size_t len)
     {
-      invalidate_cache ();
-
       m_body.insert ( m_body.end ()
                     , bytes
                     , bytes + len
@@ -180,10 +161,8 @@ namespace gspc
     static const char EOL = '\n';
     static const char NUL = '\0';
 
-    std::string const & frame::to_string () const
+    std::string const frame::to_string () const
     {
-      if (not m_to_string_cache)
-      {
         std::ostringstream os;
 
         if (is_heartbeat (*this))
@@ -204,10 +183,7 @@ namespace gspc
           os << NUL;
         }
 
-        m_to_string_cache = os.str ();
-      }
-
-      return *m_to_string_cache;
+        return os.str();
     }
 
     frame & frame::update_content_length ()

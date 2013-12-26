@@ -80,16 +80,13 @@ namespace gspc
 
       body_type const & get_body () const { return m_body; }
 
-      std::string const &to_string () const;
+      std::string const to_string () const;
     private:
       frame & update_content_length ();
-      void invalidate_cache ();
 
       std::string       m_command;
       header_type       m_header;
       body_type         m_body;
-
-      mutable boost::optional<std::string> m_to_string_cache;
     };
   }
 }
