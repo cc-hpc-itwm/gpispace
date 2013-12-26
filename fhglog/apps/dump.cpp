@@ -1,13 +1,13 @@
-#include <fstream>
-#include <iostream>
-
-#include <fhglog/fhglog.hpp>
 #include <fhglog/appender/stream.hpp>
+#include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
 
 #include <fhg/util/parse/position.hpp>
 
 #include <boost/program_options.hpp>
+
+#include <fstream>
+#include <iostream>
 
 namespace po = boost::program_options;
 
