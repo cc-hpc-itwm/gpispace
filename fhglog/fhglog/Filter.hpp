@@ -29,13 +29,6 @@ namespace fhg { namespace log {
   private:
     Level level_;
   };
-
-  class NullFilter : public Filter {
-    bool operator()(const LogEvent &) const
-    {
-      return false;
-    }
-  };
 }}
 
 #endif
