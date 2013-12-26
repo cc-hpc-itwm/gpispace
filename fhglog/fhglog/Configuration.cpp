@@ -92,7 +92,6 @@ namespace fhg
 
       void DefaultConfiguration::parse_key_value
         (const std::string& key, const std::string& val)
-      try
       {
         if (key == "level")
         {
@@ -127,7 +126,8 @@ namespace fhg
         {
           color_ = val == "off" ? StreamAppender::COLOR_OFF
                  : val == "on" ? StreamAppender::COLOR_ON
-                 : throw std::runtime_error ("expected: 'on' or 'off'");
+                 : throw std::runtime_error
+                     ("expected: 'on' or 'off' for key 'color'");
         }
         else if (key == "synch")
         {
@@ -138,12 +138,6 @@ namespace fhg
           disabled_ = true;
         }
       }
-      catch (const std::exception& ex)
-      {
-        std::clog << "E: invalid value '" << val << "' for key '" << key
-                  << "':" << ex.what() << std::endl;
-      }
-
 
       void DefaultConfiguration::configure() const
       {
