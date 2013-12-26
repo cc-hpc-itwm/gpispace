@@ -14,6 +14,7 @@
 #include <we/type/value/wrap.hpp>
 #include <we/type/value/unwrap.hpp>
 #include <we/type/value/to_value.hpp>
+#include <we/type/value/dump.hpp>
 #include <we/field.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
@@ -25,6 +26,8 @@
 #include <fhg/util/boost/test/printer/list.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/boost/test/printer/map.hpp>
+
+#include <fhg/util/xml.hpp>
 
 #include <sstream>
 
@@ -871,4 +874,61 @@ BOOST_AUTO_TEST_CASE (wrap_generated)
     BOOST_CHECK_EQUAL (pnet::type::value::to_value (s), mv.begin()->first);
     BOOST_CHECK_EQUAL (pnet::type::value::to_value (s), mv.begin()->second);
   }
+}
+
+namespace
+{
+  void dump_okay (std::string const& v, std::string const& expected)
+  {
+    std::ostringstream oss;
+    fhg::util::xml::xmlstream os (oss);
+
+    pnet::type::value::dump (os, pnet::type::value::read (v));
+
+    BOOST_REQUIRE_EQUAL (oss.str(), expected);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (dump)
+{
+  dump_okay ( "Struct []"
+            , ""
+            );
+  dump_okay ( "Struct [foo := 0L]"
+            , "<property key=\"foo\">0L</property>"
+            );
+  dump_okay ( "Struct [foo := 0L, bar := List (1U, 2)]"
+            , "<property key=\"foo\">0L</property>"
+              "<property key=\"bar\">List (1U, 2)</property>"
+            );
+  dump_okay ( "Struct [fhg := Struct [ drts := Struct"
+              "                             [ schedule := Struct"
+              "                                        [ num_worker := 12L"
+              "                                        , memory := 4294967296L"
+              "                                        ]"
+              "                             ]"
+              "                      , pnete := Struct"
+              "                              [ invisible := true"
+              "                              , position := Struct [ x := 24"
+              "                                                   , y := 36"
+              "                                                   ]"
+              "                              ]"
+              "                      ]"
+              "       ]"
+            , "<properties name=\"fhg\">\n"
+              "  <properties name=\"drts\">\n"
+              "    <properties name=\"schedule\">\n"
+              "      <property key=\"num_worker\">12L</property>\n"
+              "      <property key=\"memory\">4294967296L</property>\n"
+              "    </properties>\n"
+              "  </properties>\n"
+              "  <properties name=\"pnete\">\n"
+              "    <property key=\"invisible\">true</property>\n"
+              "    <properties name=\"position\">\n"
+              "      <property key=\"x\">24</property>\n"
+              "      <property key=\"y\">36</property>\n"
+              "    </properties>\n"
+              "  </properties>\n"
+              "</properties>"
+            );
 }
