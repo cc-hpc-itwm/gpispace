@@ -171,7 +171,7 @@ namespace fhg
       , message_ ((++pos, read_string (pos)))
       , tstamp_ ((++pos, fhg::util::read_double (pos)))
       , pid_ ((++pos, read_integral<pid_t> (pos)))
-      , tid_ ((++pos, read_integral<unsigned long> (pos)))
+      , tid_ ((++pos, read_integral<unsigned int> (pos)))
       , host_ ((++pos, read_string (pos)))
       , trace_ ((++pos, read_vec (pos)))
       , tags_ ((++pos, read_vec (pos)))
