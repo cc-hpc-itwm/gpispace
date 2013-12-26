@@ -63,22 +63,22 @@ BOOST_AUTO_TEST_CASE (decode_with_time_constraint)
 {
   fhg::log::LogEvent evt (gen_event());
   const std::string evts (evt.encoded());
-  const size_t id (evt.id());
+  const pid_t id (evt.tid());
 
   const std::size_t max (750000);
 
-  std::size_t count (0);
+  pid_t count (0);
 
   double t (-fhg::util::now());
 
   for (std::size_t i (0); i < max; ++i)
   {
-    count += fhg::log::LogEvent::from_string (evts).id();
+    count += fhg::log::LogEvent::from_string (evts).tid();
   }
 
   t += fhg::util::now();
 
-  BOOST_REQUIRE_EQUAL (count, max * id);
+  BOOST_REQUIRE_EQUAL (count, pid_t (max * id));
 #ifndef NDEBUG
   BOOST_REQUIRE_LT (t, 5.0);
 #else
