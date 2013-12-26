@@ -53,8 +53,6 @@ RemoteAppender::~RemoteAppender()
 
 void RemoteAppender::open()
 {
-  close();
-
   using boost::asio::ip::udp;
 
   udp::resolver resolver(io_service_);
