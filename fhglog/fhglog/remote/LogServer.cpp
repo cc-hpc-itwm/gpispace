@@ -1,8 +1,8 @@
-#include <boost/bind.hpp>
+#include "LogServer.hpp"
 
 #include <fhglog/fhglog.hpp>
 
-#include "LogServer.hpp"
+#include <boost/bind.hpp>
 
 namespace fhg
 {
