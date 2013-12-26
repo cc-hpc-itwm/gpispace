@@ -54,8 +54,7 @@ namespace fhg
                       , const std::string &a_message
                       , tags_type const& tags
                       )
-      : id_ (next_id ())
-      , severity_(a_severity)
+      : severity_(a_severity)
       , path_(a_path)
       , function_(a_function)
       , line_(a_line)
@@ -69,8 +68,7 @@ namespace fhg
     {}
 
     LogEvent::LogEvent()
-      : id_ (next_id ())
-      , severity_ (INFO)
+      : severity_ (INFO)
       , path_()
       , function_()
       , line_()
@@ -149,8 +147,7 @@ namespace fhg
     }
 
     LogEvent::LogEvent (fhg::util::parse::position& pos)
-      : id_ ((++pos, read_integral<uint64_t> (pos)))
-      , severity_ ((++pos, read_loglevel (pos)))
+      : severity_ ((++pos, read_loglevel (pos)))
       , path_ ((++pos, read_string (pos)))
       , function_ ((++pos, read_string (pos)))
       , line_ ((++pos, read_integral<line_type> (pos)))
@@ -237,7 +234,6 @@ namespace
 
 std::ostream& operator<< (std::ostream& os, const fhg::log::LogEvent& event)
 {
-  os << ',' << event.id();
   os << ',' << encode::loglevel (event.severity());
   os << ',' << encode::string (event.path());
   os << ',' << encode::string (event.function());

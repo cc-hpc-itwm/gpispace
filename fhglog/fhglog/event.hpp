@@ -47,7 +47,6 @@ namespace fhg { namespace log {
 
       bool operator<(const LogEvent &) const;
 
-      const std::size_t& id() const { return id_; }
       const Level& severity() const { return severity_; }
       const file_type& path() const { return path_; }
       const function_type& function() const { return function_; }
@@ -68,7 +67,6 @@ namespace fhg { namespace log {
       std::string encoded() const;
 
     private:
-      uint64_t id_;
       Level severity_;
       file_type path_;
       function_type function_;
