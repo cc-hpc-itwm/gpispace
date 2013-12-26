@@ -10,7 +10,6 @@
 #include <boost/foreach.hpp>
 #include <boost/thread.hpp>
 
-#include <gspc/net.hpp>
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/frame_io.hpp>

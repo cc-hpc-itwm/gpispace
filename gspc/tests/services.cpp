@@ -11,7 +11,6 @@
 #include <boost/foreach.hpp>
 #include <boost/thread.hpp>
 
-#include <gspc/net.hpp>
 #include <gspc/net/error.hpp>
 #include <gspc/net/handle.hpp>
 #include <gspc/net/parse/parser.hpp>
