@@ -59,7 +59,6 @@ namespace fhg { namespace log { namespace remote {
     boost::asio::ip::udp::socket *socket_;
     boost::asio::io_service io_service_;
     boost::asio::ip::udp::endpoint logserver_;
-    std::string my_endpoint_string_;
   };
 }}}
 

@@ -62,8 +62,6 @@ void RemoteAppender::open()
   logserver_ = *resolver.resolve(query);
   logserver_.port(port());
   socket_ = new udp::socket(io_service_, udp::v4());
-
-  my_endpoint_string_ = boost::asio::ip::host_name();
 }
 
 void RemoteAppender::close()
