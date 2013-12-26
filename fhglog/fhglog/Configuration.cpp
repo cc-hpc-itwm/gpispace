@@ -129,6 +129,14 @@ namespace fhg
 
         if (to_console_.size())
         {
+          if (  "stderr" != to_console_
+             && "stdout" != to_console_
+             && "stdlog" != to_console_
+             )
+          {
+            throw std::runtime_error ("unknown console " + to_console_);
+          }
+
           getLogger().addAppender
             ( Appender::ptr_t ( new StreamAppender
                                 ( "stdout" == to_console_ ? std::cout
@@ -140,14 +148,6 @@ namespace fhg
                             )
             );
 
-          if (  "stderr" != to_console_
-             && "stdout" != to_console_
-             && "stdlog" != to_console_
-             )
-          {
-            std::clog << "W: invalid value for configuration value to_console: "
-                      << to_console_ << " assuming stderr" << std::endl;
-          }
         }
 
         if (to_file_.size())
