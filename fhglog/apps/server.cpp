@@ -113,13 +113,6 @@ try
                                  )
     );
 
-  appender = fhg::log::Appender::ptr_t
-    ( new fhg::log::FilteringAppender ( appender
-                                      , fhg::log::Filter::ptr_t
-                                      (new fhg::log::LevelFilter(level))
-                                      )
-    );
-
   fhg::log::Logger::get ("log")->addAppender (appender);
 
   fhg::log::remote::LogServer const
