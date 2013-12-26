@@ -24,12 +24,8 @@ namespace gspc
         };
       }
 
-      int log_cmd ( std::vector<std::string> const & argv
-                  , std::istream &inp
-                  , std::ostream &out
-                  , std::ostream &err
-                  )
-      {
+      int log_cmd (std::vector<std::string> const & argv)
+     {
         static fhglog_initializer _;
 
         size_t i = 1;
@@ -46,7 +42,7 @@ namespace gspc
           if (arg == "--help" || arg == "-h")
           {
             ++i;
-            err << "usage: log [options] [--] message..."           << std::endl
+            std::cerr << "usage: log [options] [--] message..."           << std::endl
                 <<                                                     std::endl
                 << "  options:"                                     << std::endl
                 << "    --level <level>"                            << std::endl
