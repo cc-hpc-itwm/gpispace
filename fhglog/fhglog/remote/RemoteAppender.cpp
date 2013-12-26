@@ -43,16 +43,6 @@ RemoteAppender::RemoteAppender(const std::string &location)
     throw std::runtime_error("could not parse port information: " + host_port.second);
   }
 
-  open();
-}
-
-RemoteAppender::~RemoteAppender()
-{
-  close();
-}
-
-void RemoteAppender::open()
-{
   using boost::asio::ip::udp;
 
   udp::resolver resolver(io_service_);
@@ -62,7 +52,7 @@ void RemoteAppender::open()
   socket_ = new udp::socket(io_service_, udp::v4());
 }
 
-void RemoteAppender::close()
+RemoteAppender::~RemoteAppender()
 {
   if (socket_)
   {

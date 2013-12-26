@@ -50,9 +50,6 @@ namespace fhg { namespace log { namespace remote {
     void append(const LogEvent &evt);
     void flush(void) {}
   private:
-    void open();
-    void close();
-
     std::string host_;
     unsigned short port_;
 
