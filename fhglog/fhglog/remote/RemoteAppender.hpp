@@ -38,9 +38,6 @@ namespace fhg
         void flush() {}
 
       private:
-        std::string host_;
-        unsigned short port_;
-
         boost::asio::ip::udp::socket *socket_;
         boost::asio::io_service io_service_;
         boost::asio::ip::udp::endpoint logserver_;

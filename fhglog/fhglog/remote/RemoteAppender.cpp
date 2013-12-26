@@ -17,33 +17,23 @@ namespace fhg
   {
     namespace remote
     {
+      using boost::asio::ip::udp;
+
       RemoteAppender::RemoteAppender (const std::string& location)
         : socket_ (NULL)
+        , logserver_ (*udp::resolver (io_service_)
+                     . resolve
+                       ( udp::resolver::query
+                         ( udp::v4()
+                         , fhg::util::split_string (location, ":").first.c_str()
+                         , "0"
+                         )
+                       )
+                     )
       {
-        std::pair<std::string, std::string> host_port
-          (fhg::util::split_string(location, ":"));
-
-        host_ = host_port.first;
-
-       if (host_port.second.empty())
-        {
-          host_port.second = boost::lexical_cast<std::string>(FHGLOG_DEFAULT_PORT);
-        }
-
-        std::stringstream sstr (host_port.second);
-        sstr >> port_;
-        if (!sstr)
-        {
-          throw std::runtime_error
-            ("could not parse port information: " + host_port.second);
-        }
-
-        using boost::asio::ip::udp;
-
-        udp::resolver resolver (io_service_);
-        udp::resolver::query query (udp::v4(), host_.c_str(), "0");
-        logserver_ = *resolver.resolve (query);
-        logserver_.port (port_);
+        logserver_.port ( boost::lexical_cast<unsigned long>
+                          (fhg::util::split_string (location, ":").second)
+                        );
 
         socket_ = new udp::socket (io_service_, udp::v4());
       }
