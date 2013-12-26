@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE (test_simple_cmdline)
   size_t consumed;
 
   const std::string input ("echo hello world");
-  gspc::rif::parse (input, argv, consumed);
+  BOOST_REQUIRE_EQUAL (gspc::rif::parse (input, argv, consumed), 0);
 
   BOOST_REQUIRE_EQUAL (argv.size (), 3u);
   BOOST_REQUIRE_EQUAL (consumed, input.size ());
@@ -32,7 +32,10 @@ BOOST_AUTO_TEST_CASE (test_simple_cmdline_spaces)
   std::vector<std::string> argv;
   size_t consumed;
 
-  gspc::rif::parse ("       echo    hello       world     ", argv, consumed);
+  BOOST_REQUIRE_EQUAL
+    ( gspc::rif::parse ("       echo    hello       world     ", argv, consumed)
+    , 0
+    );
 
   BOOST_REQUIRE_EQUAL (argv.size (), 3u);
   BOOST_REQUIRE_EQUAL (argv [0], "echo");
@@ -45,7 +48,10 @@ BOOST_AUTO_TEST_CASE (test_single_quoted_arguments)
   std::vector<std::string> argv;
   size_t consumed;
 
-  gspc::rif::parse ("echo \'hello world\' \'hello world\'", argv, consumed);
+  BOOST_REQUIRE_EQUAL
+    ( gspc::rif::parse ("echo \'hello world\' \'hello world\'", argv, consumed)
+    , 0
+    );
 
   BOOST_REQUIRE_EQUAL (argv.size (), 3u);
   BOOST_REQUIRE_EQUAL (argv [0], "echo");
@@ -58,7 +64,10 @@ BOOST_AUTO_TEST_CASE (test_double_quoted_arguments)
   std::vector<std::string> argv;
   size_t consumed;
 
-  gspc::rif::parse ("echo \"hello world\"", argv, consumed);
+  BOOST_REQUIRE_EQUAL
+    ( gspc::rif::parse ("echo \"hello world\"", argv, consumed)
+    , 0
+    );
 
   BOOST_REQUIRE_EQUAL (argv.size (), 2u);
   BOOST_REQUIRE_EQUAL (argv [0], "echo");
@@ -70,7 +79,10 @@ BOOST_AUTO_TEST_CASE (test_escape_sequences)
   {
     std::vector<std::string> argv;
     size_t consumed;
-    gspc::rif::parse ("\\a \\b \\f \\n \\r \\t \\\\ \\\' \\\"", argv, consumed);
+    BOOST_REQUIRE_EQUAL
+      ( gspc::rif::parse ("\\a \\b \\f \\n \\r \\t \\\\ \\\' \\\"", argv, consumed)
+      , 0
+      );
 
     BOOST_REQUIRE_EQUAL (argv.size (), 9u);
     BOOST_REQUIRE_EQUAL (argv [0], "\a");
@@ -87,7 +99,10 @@ BOOST_AUTO_TEST_CASE (test_escape_sequences)
   {
     std::vector<std::string> argv;
     size_t consumed;
-    gspc::rif::parse ("\\x00\\x01\\x02\\x03", argv, consumed);
+    BOOST_REQUIRE_EQUAL
+      ( gspc::rif::parse ("\\x00\\x01\\x02\\x03", argv, consumed)
+      , 0
+      );
 
     BOOST_REQUIRE_EQUAL (argv.size (), 1u);
     BOOST_REQUIRE_EQUAL (argv [0].size (), 4);

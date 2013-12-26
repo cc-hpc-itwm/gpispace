@@ -63,11 +63,13 @@ BOOST_AUTO_TEST_CASE (test_strip_prefix)
   using namespace gspc::net::tests;
 
   mock::user user;
-  int rc;
 
   gspc::net::server::service_demux_t demux;
   gspc::net::server::queue_manager_t qmgr (demux);
-  qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
+  BOOST_REQUIRE_EQUAL
+   ( qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ())
+   , 0
+   );
 
   demux.handle ( "/service/echo"
                , gspc::net::service::strip_prefix ( "/service"
@@ -82,8 +84,7 @@ BOOST_AUTO_TEST_CASE (test_strip_prefix)
   rqst_frame.set_header ("reply-to", "/test/replies");
   rqst_frame.set_body ("Hello echo!");
 
-  rc = qmgr.send (&user, "/service/echo", rqst_frame);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (qmgr.send (&user, "/service/echo", rqst_frame), 0);
 
   BOOST_REQUIRE_EQUAL (user.frames.size (), 1);
 
