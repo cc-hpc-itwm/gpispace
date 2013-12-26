@@ -159,7 +159,6 @@ namespace gspc
         frame f ("CONNECT");
         //f.set_header ("login", "...");
         //f.set_header ("passcode", "...");
-        //f.set_header ("heart-beat", "1000,1000");
         //f.set_header ("accept-version","1.0,1.2");
         return f;
       }
@@ -170,11 +169,6 @@ namespace gspc
         return f;
       }
 
-      frame const & heartbeat_frame ()
-      {
-        static frame f;
-        return f;
-      }
     }
   }
 }

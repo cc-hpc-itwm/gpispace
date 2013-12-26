@@ -40,21 +40,11 @@ namespace gspc
             return m_id;
           }
 
-          void set_heartbeat_info (heartbeat_info_t const &hb)
-          {
-            m_heartbeat_info = hb;
-          }
-
           frame_list_t frames;
 
-          heartbeat_info_t const &get_heartbeat_info () const
-          {
-            return m_heartbeat_info;
-          }
         private:
           boost::mutex m_mutex;
           size_t m_id;
-          heartbeat_info_t m_heartbeat_info;
         };
       }
     }

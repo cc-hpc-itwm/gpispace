@@ -94,7 +94,6 @@ namespace gspc
 
         void set_connect_timeout (size_t ms);
         void set_timeout (size_t ms);
-        void set_heartbeat_info (heartbeat_info_t const &);
       private:
         enum state_t
           {
@@ -135,8 +134,6 @@ namespace gspc
 
         boost::system::error_code   m_last_error_code;
         std::string m_priv_queue;
-
-        heartbeat_info_t m_heartbeat_info;
       };
     }
   }
