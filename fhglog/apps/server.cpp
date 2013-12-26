@@ -85,17 +85,8 @@ try
                                )
     );
 
-  fhg::log::Level level (fhg::log::INFO);
-  if (vm.count("quiet"))
-  {
-    level = fhg::log::ERROR;
-  }
-  else
-  {
-    level = fhg::log::from_int (vm["verbose"].as<unsigned int> ());
-  }
-
-  fhg::log::getLogger("log").setLevel (level);
+  fhg::log::getLogger("log").setLevel
+    (vm.count("quiet") ? fhg::log::ERROR : fhg::log::from_int (filter));
 
   std::string fmt (fmt_string);
   if      (fmt_string == "full")  fmt = fhg::log::default_format::LONG();
