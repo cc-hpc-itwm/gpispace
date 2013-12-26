@@ -5,6 +5,8 @@
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/mgmt/type/activity.hpp>
 
+#include <fhglog/appender/call.hpp>
+
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -49,28 +51,6 @@
 
 namespace
 {
-  class function_call_appender : public fhg::log::Appender
-  {
-  public:
-    typedef boost::function<void (const fhg::log::LogEvent&)> event_handler_t;
-
-    function_call_appender (const event_handler_t& handler)
-      : _handler (handler)
-    { }
-
-    void append (const fhg::log::LogEvent& evt)
-    {
-      _handler (evt);
-    }
-
-    void flush()
-    {
-    }
-
-  private:
-    event_handler_t _handler;
-  };
-
   template<typename T>
     fhg::log::Appender::ptr_t appender_with
     ( void (T::* function)(const fhg::log::LogEvent&)
@@ -78,7 +58,7 @@ namespace
     )
   {
     return fhg::log::Appender::ptr_t
-      (new function_call_appender (boost::bind (function, that, _1)));
+      (new fhg::log::appender::call (boost::bind (function, that, _1)));
   }
 
   QColor severityToColor (const fhg::log::Level lvl)
