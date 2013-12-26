@@ -1,8 +1,12 @@
 #define BOOST_TEST_MODULE GspcNetIo
 #include <boost/test/unit_test.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/client.hpp>
+#include <gspc/net/dial.hpp>
 #include <gspc/net/io.hpp>
+#include <gspc/net/serve.hpp>
+#include <gspc/net/server.hpp>
+#include <gspc/net/server/queue_manager.hpp>
 
 #include "mock_user.hpp"
 

@@ -6,7 +6,11 @@
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/client.hpp>
+#include <gspc/net/dial.hpp>
+#include <gspc/net/frame.hpp>
+#include <gspc/net/header_util.hpp>
+#include <gspc/net/io.hpp>
 
 static bool stop_requested = false;
 
