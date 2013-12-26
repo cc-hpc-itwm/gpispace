@@ -47,13 +47,6 @@ namespace gspc
                 << "       --site : selects the site config"          << std::endl
                 << "       -f | --file file : use this file"          << std::endl
                 <<                                                       std::endl
-              /*
-                << "   types"                                         << std::endl
-                << "       --int : value is an integer"               << std::endl
-                << "       --bool : value is a boolean"               << std::endl
-                << "       --string : value is a string"              << std::endl
-                <<                                                       std::endl
-              */
                 << "   available commands"                            << std::endl
                 << "       --add name value"                          << std::endl
                 << "       --get name [regex]"                        << std::endl
