@@ -41,9 +41,10 @@ namespace fhg
         using boost::asio::ip::udp;
 
         udp::resolver resolver (io_service_);
-        udp::resolver::query query (udp::v4(), host().c_str(), "0");
+        udp::resolver::query query (udp::v4(), host_.c_str(), "0");
         logserver_ = *resolver.resolve (query);
-        logserver_.port (port());
+        logserver_.port (port_);
+
         socket_ = new udp::socket (io_service_, udp::v4());
       }
 

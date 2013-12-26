@@ -34,15 +34,6 @@ namespace fhg
         RemoteAppender (const std::string &location);
         virtual ~RemoteAppender();
 
-        const std::string& host() const
-        {
-          return host_;
-        }
-        const unsigned short& port() const
-        {
-          return port_;
-        }
-
         void append (const LogEvent&);
         void flush() {}
 
