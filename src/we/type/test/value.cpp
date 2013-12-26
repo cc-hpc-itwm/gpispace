@@ -908,6 +908,21 @@ BOOST_AUTO_TEST_CASE (dump)
   dump_okay ( "Struct [foo := 0L]"
             , "<property key=\"foo\">0L</property>"
             );
+  dump_okay ("Struct [k := []]", "<property key=\"k\">[]</property>");
+  dump_okay ("Struct [k := true]", "<property key=\"k\">true</property>");
+  dump_okay ("Struct [k := 0]", "<property key=\"k\">0</property>");
+  dump_okay ("Struct [k := 0U]", "<property key=\"k\">0U</property>");
+  dump_okay ("Struct [k := 0L]", "<property key=\"k\">0L</property>");
+  dump_okay ("Struct [k := 0UL]", "<property key=\"k\">0UL</property>");
+  dump_okay ("Struct [k := 0.0f]", "<property key=\"k\">0.00000f</property>");
+  dump_okay ("Struct [k := 0.0]", "<property key=\"k\">0.00000</property>");
+  dump_okay ("Struct [k := 'c']", "<property key=\"k\">'c'</property>");
+  dump_okay ("Struct [k := \"\"]", "<property key=\"k\">\"\"</property>");
+  dump_okay ("Struct [k := {}]", "<property key=\"k\">{}</property>");
+  dump_okay ("Struct [k := y()]", "<property key=\"k\">y()</property>");
+  dump_okay ("Struct [k := List()]", "<property key=\"k\">List ()</property>");
+  dump_okay ("Struct [k := Set{}]", "<property key=\"k\">Set {}</property>");
+  dump_okay ("Struct [k := Map[]]", "<property key=\"k\">Map []</property>");
   dump_okay ( "Struct [foo := 0L, bar := List (1U, 2)]"
             , "<property key=\"foo\">0L</property>"
               "<property key=\"bar\">List (1U, 2)</property>"
