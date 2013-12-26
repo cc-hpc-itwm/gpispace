@@ -52,12 +52,12 @@ BOOST_AUTO_TEST_CASE (log_to_fake_remote_stream)
     );
 
   boost::shared_ptr<fhg::log::remote::LogServer> logd
-    (new fhg::log::remote::LogServer (test_appender, io_service, FHGLOG_DEFAULT_PORT));
+    (new fhg::log::remote::LogServer (test_appender, io_service, 2438));
 
   boost::thread service_thread
     (boost::bind (&boost::asio::io_service::run, &io_service));
 
-  fhg::log::remote::RemoteAppender appender (FHGLOG_DEFAULT_LOCATION);
+  fhg::log::remote::RemoteAppender appender ("localhost:2438");
 
   appender.append (FHGLOG_MKEVENT_HERE (ERROR, "hello server!"));
 

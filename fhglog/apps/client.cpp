@@ -31,7 +31,7 @@ int main (int argc, char **argv) try
 
   po::options_description desc("options");
 
-  std::string url (getenv("FHGLOG_to_server") ? getenv("FHGLOG_to_server") : FHGLOG_DEFAULT_LOCATION);
+  std::string url (getenv("FHGLOG_to_server") ? getenv("FHGLOG_to_server") : "");
   std::string file ("fhglog-client.cpp");
   std::string function ("(main)");
   int line (0);

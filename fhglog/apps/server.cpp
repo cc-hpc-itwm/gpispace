@@ -31,7 +31,7 @@ try
 
   desc.add_options()
     ("help,h", "this message")
-    ("port,p", po::value<unsigned short>()->default_value(FHGLOG_DEFAULT_PORT), "port to listen on")
+    ("port,p", po::value<unsigned short>(), "port to listen on")
     ("quiet,q", "be quiet")
     ("verbose,v", po::value<unsigned int>()->default_value(0), "verbosity level")
     ("color,c", po::value<std::string>()->default_value("off"), "colored output")

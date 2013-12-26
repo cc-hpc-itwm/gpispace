@@ -8,19 +8,6 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
-#if ! defined(FHGLOG_DEFAULT_PORT)
-// ascii codes of fhgl: 102 104 103 108
-#define FHGLOG_DEFAULT_PORT  2438
-#endif
-
-#if ! defined(FHGLOG_DEFAULT_HOST)
-#define FHGLOG_DEFAULT_HOST  "localhost"
-#endif
-
-#if ! defined(FHGLOG_DEFAULT_LOCATION)
-#define FHGLOG_DEFAULT_LOCATION "localhost:2438"
-#endif
-
 namespace fhg
 {
   namespace log
