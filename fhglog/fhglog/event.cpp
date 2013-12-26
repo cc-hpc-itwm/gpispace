@@ -3,7 +3,6 @@
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
-#include <fhg/util/thread/atomic.hpp>
 #include <fhg/util/now.hpp>
 
 #include <boost/foreach.hpp>
