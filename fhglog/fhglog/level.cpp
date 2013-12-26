@@ -26,6 +26,11 @@ namespace fhg
 
     const std::string& string (Level l)
     {
+      if (l < TRACE || l > FATAL)
+      {
+        throw std::runtime_error ("the specified log-level is out of range!");
+      }
+
       static std::string const map[] =
         { "TRACE"
         , "DEBUG"
@@ -34,8 +39,6 @@ namespace fhg
         , "ERROR"
         , "FATAL"
         };
-
-      assert (l >= 0 && l < 6);
 
       return map[l];
     }
