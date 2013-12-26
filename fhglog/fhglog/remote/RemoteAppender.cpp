@@ -20,8 +20,7 @@ namespace fhg
       using boost::asio::ip::udp;
 
       RemoteAppender::RemoteAppender (const std::string& location)
-        : socket_ (NULL)
-        , logserver_ (*udp::resolver (io_service_)
+        : logserver_ (*udp::resolver (io_service_)
                      . resolve
                        ( udp::resolver::query
                          ( udp::v4()
@@ -30,12 +29,11 @@ namespace fhg
                          )
                        )
                      )
+        , socket_ (new udp::socket (io_service_, udp::v4()))
       {
         logserver_.port ( boost::lexical_cast<unsigned long>
                           (fhg::util::split_string (location, ":").second)
                         );
-
-        socket_ = new udp::socket (io_service_, udp::v4());
       }
 
       RemoteAppender::~RemoteAppender()

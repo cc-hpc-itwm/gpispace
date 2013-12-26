@@ -38,9 +38,9 @@ namespace fhg
         void flush() {}
 
       private:
-        boost::asio::ip::udp::socket *socket_;
         boost::asio::io_service io_service_;
         boost::asio::ip::udp::endpoint logserver_;
+        boost::asio::ip::udp::socket *socket_;
       };
     }
   }
