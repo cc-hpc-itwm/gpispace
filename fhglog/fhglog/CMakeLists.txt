@@ -14,7 +14,6 @@ set (hdrs
 set (header_appender
   appender/file.hpp
   appender/filtering.hpp
-  appender/memory.hpp
   appender/stream.hpp
 )
 
@@ -27,7 +26,6 @@ set (srcs
   )
 set (source_appender
   appender/file.cpp
-  appender/memory.cpp
   appender/stream.cpp
 )
 
