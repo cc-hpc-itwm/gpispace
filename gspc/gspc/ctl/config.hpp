@@ -48,10 +48,6 @@ namespace gspc
                       , std::string const &key
                       , std::string const &value_regex=""
                       );
-    void config_unset_all ( config_t &
-                          , std::string const &key
-                          , std::string const &value_regex=""
-                          );
   }
 }
 
