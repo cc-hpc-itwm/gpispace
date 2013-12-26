@@ -18,7 +18,6 @@ namespace gspc
         {
           config_no_section = 1
         , config_no_name
-        , config_no_such_key
         , config_invalid_key
         , config_invalid
         };

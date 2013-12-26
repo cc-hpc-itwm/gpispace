@@ -55,8 +55,6 @@ namespace gspc
             return "key did not contain a section";
           case error::config_no_name:
             return "key did not contain a name";
-          case error::config_no_such_key:
-            return "key not found";
           case error::config_invalid_key:
             return "invalid key";
           case error::config_invalid:
