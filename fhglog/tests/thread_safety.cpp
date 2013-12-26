@@ -6,7 +6,6 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/appender/synchronized.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
@@ -39,6 +38,24 @@ namespace
     void flush () {}
 
     std::vector<std::string>* _container;
+  };
+
+  struct pushback_appender_synchronized : public fhg::log::Appender
+  {
+    pushback_appender_synchronized (std::vector<std::string>* container)
+      : _container (container)
+    {}
+
+    void append (const fhg::log::LogEvent &evt)
+    {
+      boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
+
+      _container->push_back (fhg::log::format ("%m", evt));
+    }
+    void flush () {}
+
+    std::vector<std::string>* _container;
+    boost::recursive_mutex _mutex;
   };
 
   struct counter
@@ -92,7 +109,7 @@ BOOST_AUTO_TEST_CASE (same_logger)
   std::vector<std::string> output;
 
   fhg::log::Appender::ptr_t sync_appender
-    (new fhg::log::SynchronizedAppender (fhg::log::Appender::ptr_t (new pushback_appender (&output))));
+    (fhg::log::Appender::ptr_t (new pushback_appender_synchronized (&output)));
   fhg::log::getLogger ("log").addAppender (sync_appender);
 
   boost::thread t0 (&thread_function, "log");
