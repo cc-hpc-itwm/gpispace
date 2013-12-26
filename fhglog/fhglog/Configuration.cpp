@@ -11,7 +11,6 @@
 #include <fhglog/appender/memory.hpp>
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/appender/synchronized.hpp>
-#include <fhglog/appender/threaded.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fhglog/remote/RemoteAppender.hpp>
 
@@ -43,8 +42,6 @@ namespace fhg
           , to_file_()
           , to_server_()
           , fmt_string_ (default_format::SHORT())
-            // FIXME: broken if set to true
-          , threaded_ (false)
           , color_ (StreamAppender::COLOR_OFF)
           , disabled_ (false)
           , synchronize_ (false)
@@ -60,7 +57,6 @@ namespace fhg
         std::string to_file_;
         std::string to_server_;
         std::string fmt_string_;
-        bool threaded_;
         StreamAppender::ColorMode color_;
         bool disabled_;
         bool synchronize_;
@@ -117,10 +113,6 @@ namespace fhg
         else if (key == "to_server")
         {
           to_server_ = val;
-        }
-        else if (key == "threaded")
-        {
-          threaded_ = fhg::util::read_bool (val);
         }
         else if (key == "color")
         {
@@ -184,8 +176,7 @@ namespace fhg
         getLogger().setLevel (level_);
 
         getLogger().addAppender
-          ( threaded_ ? Appender::ptr_t (new ThreadedAppender (compound_appender))
-          : synchronize_ ? Appender::ptr_t (new SynchronizedAppender (compound_appender))
+          ( synchronize_ ? Appender::ptr_t (new SynchronizedAppender (compound_appender))
           : compound_appender
           );
       }

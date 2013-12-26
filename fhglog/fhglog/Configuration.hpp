@@ -14,7 +14,6 @@ namespace fhg
      *  FHGLOG_to_console={stdout,stderr,stdlog} log to stdout, stderr, clog
      *  FHGLOG_to_file=path to logfile   log to specified file
      *  FHGLOG_to_server=ip:port         log to the specified server
-     *  FHGLOG_threaded={yes,true,1}     make logging appear from a separate thread (unsafe)
      *  FHGLOG_disabled={anything}       disable logging if defined
      *  FHGLOG_synch={anything}          make logging synchronized (very expensive!)
      */
