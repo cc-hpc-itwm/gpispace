@@ -3,7 +3,6 @@
 #include <fhglog/Configuration.hpp>
 
 #include <fhglog/Appender.hpp>
-#include <fhglog/appender/compound.hpp>
 #include <fhglog/appender/file.hpp>
 #include <fhglog/Filter.hpp>
 #include <fhglog/event.hpp>
@@ -126,13 +125,11 @@ namespace fhg
 
       void DefaultConfiguration::configure() const
       {
-        CompoundAppender::ptr_t compound_appender (new CompoundAppender);
-
-        compound_appender->addAppender (global_memory_appender());
+        getLogger().addAppender (global_memory_appender());
 
         if (to_console_.size())
         {
-          compound_appender->addAppender
+          getLogger().addAppender
             ( Appender::ptr_t ( new StreamAppender
                                 ( "stdout" == to_console_ ? std::cout
                                 : "stdlog" == to_console_ ? std::clog
@@ -155,22 +152,18 @@ namespace fhg
 
         if (to_file_.size())
         {
-          compound_appender->addAppender
+          getLogger().addAppender
             (Appender::ptr_t (new FileAppender (to_file_, fmt_string_)));
         }
 
         if (to_server_.size())
         {
           // TODO: split to_remote_ into host and port
-          compound_appender->addAppender
+          getLogger().addAppender
             (Appender::ptr_t (new remote::RemoteAppender (to_server_)));
         }
 
         getLogger().setLevel (level_);
-
-        getLogger().addAppender
-          ( compound_appender
-          );
       }
     }
 
