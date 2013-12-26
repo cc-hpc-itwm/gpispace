@@ -27,7 +27,6 @@ namespace gspc
     void frame::invalidate_cache ()
     {
       m_to_string_cache = boost::none;
-      m_to_hex_cache = boost::none;
     }
 
     frame & frame::set_command (std::string const & cmd)
@@ -209,30 +208,6 @@ namespace gspc
       }
 
       return *m_to_string_cache;
-    }
-
-    std::string const & frame::to_hex () const
-    {
-      if (not m_to_hex_cache)
-      {
-
-        std::string frame_as_string = to_string ();
-        std::ostringstream os;
-
-        os << std::hex;
-        BOOST_FOREACH (const char c, frame_as_string)
-        {
-          os << "\\x"
-             << std::setfill ('0')
-             << std::setw (2)
-             << (int)(c & 0xff)
-            ;
-        }
-
-        m_to_hex_cache = os.str ();
-      }
-
-      return *m_to_hex_cache;
     }
 
     frame & frame::update_content_length ()
