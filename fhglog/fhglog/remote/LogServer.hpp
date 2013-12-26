@@ -32,6 +32,8 @@ namespace fhg
 
         enum { max_length = (2<<16) };
         char data_[max_length];
+
+        void async_receive();
       };
     }
   }
