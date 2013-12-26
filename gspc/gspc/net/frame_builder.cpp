@@ -63,13 +63,6 @@ namespace gspc
         return f;
       }
 
-      frame message_frame (frame const & send_frame)
-      {
-        frame f (send_frame);
-        f.set_command ("MESSAGE");
-        return f;
-      }
-
       frame reply_frame (frame const & send_frame)
       {
         frame f ("MESSAGE");
@@ -116,41 +109,6 @@ namespace gspc
       {
         frame f ("UNSUBSCRIBE");
         id.apply_to (f);
-        return f;
-      }
-
-      frame ack_frame (gspc::net::header::id const &id)
-      {
-        frame f ("ACK");
-        id.apply_to (f);
-        return f;
-      }
-
-      frame nack_frame (gspc::net::header::id const &id)
-      {
-        frame f ("NACK");
-        id.apply_to (f);
-        return f;
-      }
-
-      frame begin_frame (gspc::net::header::transaction const &trans)
-      {
-        frame f ("BEGIN");
-        trans.apply_to (f);
-        return f;
-      }
-
-      frame commit_frame (gspc::net::header::transaction const &trans)
-      {
-        frame f ("COMMIT");
-        trans.apply_to (f);
-        return f;
-      }
-
-      frame abort_frame (gspc::net::header::transaction const &trans)
-      {
-        frame f ("ABORT");
-        trans.apply_to (f);
         return f;
       }
 
