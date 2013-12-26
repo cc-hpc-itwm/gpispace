@@ -16,7 +16,6 @@ set (header_appender
   appender/filtering.hpp
   appender/memory.hpp
   appender/stream.hpp
-  appender/threaded.hpp
 )
 
 set (srcs
