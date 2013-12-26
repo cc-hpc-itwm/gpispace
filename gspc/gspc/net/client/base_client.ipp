@@ -170,14 +170,6 @@ namespace gspc
       }
 
       template <class Proto>
-      void
-      base_client<Proto>::set_heartbeat_info (heartbeat_info_t const &hb)
-      {
-        unique_lock _ (m_mutex);
-        m_heartbeat_info = hb;
-      }
-
-      template <class Proto>
       int base_client<Proto>::connect ()
       {
         return this->connect (m_connect_timeout);
@@ -191,7 +183,6 @@ namespace gspc
         int rc;
 
         cnct = make::connect_frame ();
-        m_heartbeat_info.apply (cnct);
         header::set (cnct, "cookie", auth::get_cookie ());
 
         rc = send_and_wait ( cnct
@@ -212,9 +203,6 @@ namespace gspc
         {
           std::string session_id =
             header::get (rply, "session-id", std::string ());
-
-          const heartbeat_info_t server_hb (rply);
-          m_connection->set_heartbeat_info (server_hb);
 
           m_priv_queue =
             ( boost::format ("/queue/%1%-%2%/replies")

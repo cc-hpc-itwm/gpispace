@@ -9,7 +9,6 @@ namespace gspc
   {
     struct constants
     {
-      static std::size_t MAX_LOST_HEARTBEATS ();
       static std::size_t CONNECT_TIMEOUT ();
     };
   }

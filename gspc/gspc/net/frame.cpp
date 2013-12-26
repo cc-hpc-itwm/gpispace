@@ -129,12 +129,6 @@ namespace gspc
     {
         std::ostringstream os;
 
-        if (is_heartbeat (*this))
-        {
-          os << EOL;
-        }
-        else
-        {
           os << get_command () << EOL;
           BOOST_FOREACH ( frame::header_type::value_type const & kvp
                         , get_header ()
@@ -145,7 +139,6 @@ namespace gspc
           os << EOL;
           os << get_body ();
           os << NUL;
-        }
 
         return os.str();
     }

@@ -80,12 +80,3 @@ BOOST_AUTO_TEST_CASE (test_disconnect_frame)
 
   BOOST_REQUIRE_EQUAL (f.get_command (), "DISCONNECT");
 }
-
-BOOST_AUTO_TEST_CASE (test_heartbeat_frame)
-{
-  frame f = make::heartbeat_frame ();
-
-  BOOST_REQUIRE_EQUAL (f.get_command (), "");
-  BOOST_REQUIRE_EQUAL (f.get_header ().size (), 0u);
-  BOOST_REQUIRE_EQUAL (f.get_body ().size (), 0u);
-}

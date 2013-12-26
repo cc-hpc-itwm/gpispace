@@ -102,7 +102,6 @@ namespace gspc
       MK_HEADER (content_type, "content-type");
       MK_HEADER (id, "id");
       MK_HEADER (transaction, "transaction");
-      MK_HEADER (heart_beat, "heart-beat");
       MK_HEADER (version, "version");
       MK_HEADER (login, "login");
       MK_HEADER (passcode, "passcode");

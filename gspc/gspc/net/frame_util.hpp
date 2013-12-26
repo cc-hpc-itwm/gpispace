@@ -35,8 +35,6 @@ namespace gspc
       }
     }
 
-    bool is_heartbeat (frame const &f);
-
     struct set_header
     {
       explicit

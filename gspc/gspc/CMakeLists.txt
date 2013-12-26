@@ -7,13 +7,11 @@ set (gspc_src
   net/resolver.cpp
 
   net/frame.cpp
-  net/frame_util.cpp
   net/frame_io.cpp
   net/frame_builder.cpp
   net/handle.cpp
   net/serve.cpp
   net/dial.cpp
-  net/heartbeat_info.cpp
 
   net/parse/parser.cpp
 

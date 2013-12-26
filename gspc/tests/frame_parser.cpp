@@ -87,49 +87,6 @@ BOOST_AUTO_TEST_CASE (test_invalid_command)
   BOOST_REQUIRE_EQUAL (result.consumed, strlen (input));
 }
 
-BOOST_AUTO_TEST_CASE (test_heartbeat_frame)
-{
-  gspc::net::parse::parser parser;
-  gspc::net::parse::result_t result;
-
-  const char *input = "\n";
-  gspc::net::frame frame;
-
-  result = parser.parse ( input
-                        , input + strlen (input) + 1
-                        , frame
-                        );
-
-  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
-  // heartbeats don't want a NULL byte
-  BOOST_REQUIRE_EQUAL (result.consumed, strlen (input));
-
-  BOOST_CHECK_EQUAL (frame.get_command (), "");
-  BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
-  BOOST_CHECK_EQUAL (frame.get_body (), "");
-}
-
-BOOST_AUTO_TEST_CASE (test_heartbeat_crlf_frame)
-{
-  gspc::net::parse::parser parser;
-  gspc::net::parse::result_t result;
-
-  const char *input = "\r\n";
-  gspc::net::frame frame;
-
-  result = parser.parse ( input
-                        , input + strlen (input) + 1
-                        , frame
-                        );
-
-  BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
-  // heartbeats don't want a NULL byte
-  BOOST_REQUIRE_EQUAL (result.consumed, strlen (input));
-
-  BOOST_CHECK_EQUAL (frame.get_command (), "");
-  BOOST_CHECK_EQUAL (frame.get_header ().size (), 0);
-}
-
 BOOST_AUTO_TEST_CASE (test_empty_header_empty_body)
 {
   gspc::net::parse::parser parser;
