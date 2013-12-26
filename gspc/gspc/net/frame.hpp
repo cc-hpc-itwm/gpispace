@@ -33,9 +33,6 @@ namespace gspc
       std::string const & get_command () const { return m_command; }
       frame & set_command (std::string const &cmd);
 
-      /**
-         Sets a header key to the given value.
-       */
       frame & set_header (header_type const &);
 
       /**
