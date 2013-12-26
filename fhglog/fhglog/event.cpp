@@ -27,12 +27,6 @@ namespace fhg
   {
     namespace
     {
-      uint64_t next_id()
-      {
-        static fhg::thread::atomic<uint64_t> counter;
-        return ++counter;
-      }
-
       std::string get_hostname_ ()
       {
         char buf [4096];
