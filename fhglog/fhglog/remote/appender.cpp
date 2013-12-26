@@ -1,6 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#include <fhglog/remote/RemoteAppender.hpp>
+#include <fhglog/remote/appender.hpp>
 
 #include <fhglog/fhglog.hpp>
 

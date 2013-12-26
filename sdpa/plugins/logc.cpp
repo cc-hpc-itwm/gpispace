@@ -1,7 +1,7 @@
 #include "logc.hpp"
 
 #include <fhglog/LogMacros.hpp>
-#include <fhglog/remote/RemoteAppender.hpp>
+#include <fhglog/remote/appender.hpp>
 
 #include <boost/function.hpp>
 

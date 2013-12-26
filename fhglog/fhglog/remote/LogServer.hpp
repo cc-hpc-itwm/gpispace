@@ -4,7 +4,7 @@
 #define FHGLOG_REMOTE_LOG_SERVER_HPP 1
 
 #include <fhglog/Appender.hpp>
-#include <fhglog/remote/RemoteAppender.hpp>
+#include <fhglog/remote/appender.hpp>
 
 #include <boost/asio.hpp>
 

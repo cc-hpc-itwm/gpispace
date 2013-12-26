@@ -6,7 +6,7 @@
 #include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
 #include <fhglog/appender/stream.hpp>
-#include <fhglog/remote/RemoteAppender.hpp>
+#include <fhglog/remote/appender.hpp>
 #include <fhglog/remote/LogServer.hpp>
 
 namespace

@@ -3,7 +3,7 @@
 #ifndef SDPA_UTIL_NOTIFICATION_SERVICE_HPP
 #define SDPA_UTIL_NOTIFICATION_SERVICE_HPP
 
-#include <fhglog/remote/RemoteAppender.hpp>
+#include <fhglog/remote/appender.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 

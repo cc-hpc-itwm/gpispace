@@ -9,7 +9,7 @@
 #include <fhglog/level.hpp>
 #include <fhglog/appender/stream.hpp>
 #include <fhglog/fhglog.hpp>
-#include <fhglog/remote/RemoteAppender.hpp>
+#include <fhglog/remote/appender.hpp>
 
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
