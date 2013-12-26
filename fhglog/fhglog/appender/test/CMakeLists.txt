@@ -3,11 +3,6 @@ fhg_add_test (appenders.cpp
   PROJECT fhglog_appender
   LINK_LIBRARIES fhglog)
 
-fhg_add_test (compound.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhglog_appender
-  LINK_LIBRARIES fhglog)
-
 fhg_add_test (file.cpp
   BOOST_UNIT_TEST
   PROJECT fhglog_appender
