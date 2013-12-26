@@ -8,6 +8,8 @@
 
 #include <boost/optional.hpp>
 
+#include <map>
+
 namespace gspc
 {
   namespace net
@@ -17,7 +19,7 @@ namespace gspc
     public:
       typedef std::string                        key_type;
       typedef std::string                        value_type;
-      typedef std::list<std::pair<std::string, value_type> >  header_type;
+      typedef std::map<key_type, value_type>     header_type;
       typedef std::string                        body_type;
       typedef boost::optional<value_type>        header_value;
 

@@ -40,23 +40,12 @@ namespace gspc
                               , std::string const & val
                               )
     {
-      bool updated = false;
-      header_type::iterator it = m_header.begin ();
-      const header_type::iterator end = m_header.end ();
-      while (it != end)
-      {
-        if (it->first == key)
-        {
-          it->second = val;
-          updated = true;
-        }
+      std::pair<header_type::iterator, bool> const
+        iresult (m_header.insert (std::make_pair (key, val)));
 
-        ++it;
-      }
-
-      if (it == end && not updated)
+      if (not iresult.second)
       {
-        m_header.push_back (header_type::value_type (key, val));
+        iresult.first->second = val;
       }
 
       return *this;
@@ -78,19 +67,7 @@ namespace gspc
 
     frame & frame::del_header (std::string const & key)
     {
-      header_type::iterator it = m_header.begin ();
-      const header_type::iterator end = m_header.end ();
-      while (it != end)
-      {
-        if (it->first == key)
-        {
-          it = m_header.erase (it);
-        }
-        else
-        {
-          ++it;
-        }
-      }
+      m_header.erase (key);
 
       return *this;
     }
@@ -104,20 +81,14 @@ namespace gspc
     frame::header_value
     frame::get_header (std::string const & key) const
     {
-      frame::header_value val;
+      header_type::const_iterator const pos (m_header.find (key));
 
-      header_type::const_reverse_iterator it = m_header.rbegin ();
-      const header_type::const_reverse_iterator end = m_header.rend ();
-      while (it != end)
+      if (pos == m_header.end())
       {
-        if (it->first == key)
-        {
-          return it->second;
-        }
-        ++it;
+        return boost::none;
       }
 
-      return boost::none;
+      return pos->second;
     }
 
     frame::value_type frame::get_header ( key_type const &key
