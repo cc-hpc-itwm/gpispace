@@ -33,10 +33,6 @@ namespace fhg
       {
         return impl_->isLevelEnabled (level);
       }
-      bool isFiltered (const LogEvent& event) const
-      {
-        return impl_->isFiltered(event);
-      }
       void addAppender (Appender::ptr_t appender)
       {
         impl_->addAppender(appender);

@@ -52,10 +52,6 @@ namespace fhg
       {
         return level >= lvl_;
       }
-      bool isFiltered (const LogEvent& evt) const
-      {
-        return (*filter_)(evt);
-      }
 
       void log (const LogEvent &event);
       void flush();
@@ -65,7 +61,6 @@ namespace fhg
     private:
       std::string name_;
       Level lvl_;
-      Filter::ptr_t filter_;
 
       std::list<Appender::ptr_t> appenders_;
     };

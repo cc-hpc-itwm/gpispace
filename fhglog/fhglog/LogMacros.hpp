@@ -6,7 +6,6 @@
 
 #include <boost/current_function.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/preprocessor/facilities/empty.hpp>
 
 #include <sstream>
 
@@ -15,16 +14,13 @@ namespace fhg
   namespace log
   {
 
-#define FHGLOG_MKEVENT(var, level, message)             \
-    ::fhg::log::LogEvent var ( ::fhg::log::level        \
-                             , __FILE__                 \
-                             , BOOST_CURRENT_FUNCTION   \
-                             , __LINE__                 \
-                             , message                  \
-                             )
-
 #define FHGLOG_MKEVENT_HERE(level, message)             \
-    FHGLOG_MKEVENT (BOOST_PP_EMPTY(), level, message)
+    ::fhg::log::LogEvent ( ::fhg::log::level            \
+                         , __FILE__                     \
+                         , BOOST_CURRENT_FUNCTION       \
+                         , __LINE__                     \
+                         , message                      \
+                         )
 
     struct flush_at_end_of_scope_t
     {
@@ -42,22 +38,17 @@ namespace fhg
 #define FHGLOG_STRIP_LEVEL -1
 #endif
 
-#define __LOG(logger, level, msg)                       \
-    do                                                  \
-    {                                                   \
-      if (  (::fhg::log::level > FHGLOG_STRIP_LEVEL)    \
-         && logger.isLevelEnabled (::fhg::log::level)   \
-         )                                              \
-      {                                                 \
-        std::ostringstream msg_;                        \
-        msg_ << msg;                                    \
-        FHGLOG_MKEVENT(__log_evt, level, msg_.str());   \
-                                                        \
-        if (not logger.isFiltered (__log_evt))          \
-        {                                               \
-          logger.log (__log_evt);                       \
-        }                                               \
-      }                                                 \
+#define __LOG(logger, level, msg)                               \
+    do                                                          \
+    {                                                           \
+      if (  (::fhg::log::level > FHGLOG_STRIP_LEVEL)            \
+         && logger.isLevelEnabled (::fhg::log::level)           \
+         )                                                      \
+      {                                                         \
+        std::ostringstream msg_;                                \
+        msg_ << msg;                                            \
+        logger.log (FHGLOG_MKEVENT_HERE (level, msg_.str()));   \
+      }                                                         \
     } while (0)
 
 #define LLOG(level, logger, msg) __LOG(logger, level, msg)

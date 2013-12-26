@@ -61,7 +61,6 @@ Logger::ptr_t Logger::get ( const std::string& name, const std::string& base)
 Logger::Logger (const std::string& name)
   : name_ (name)
   , lvl_ (INFO)
-  , filter_ (new NullFilter())
 {}
 
 Logger::Logger ( const std::string& name
@@ -69,7 +68,6 @@ Logger::Logger ( const std::string& name
                )
   : name_ (name)
   , lvl_ (inherit_from.lvl_)
-  , filter_ (inherit_from.filter_)
 {
   BOOST_FOREACH (Appender::ptr_t const& appender, inherit_from.appenders_)
   {
