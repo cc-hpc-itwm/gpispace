@@ -28,11 +28,8 @@ namespace gspc
       session_t ();
 
       static int info (boost::filesystem::path const &socket, session_info_t &);
-      static int list (boost::filesystem::path const &dir, session_info_list_t &);
-      static int list (boost::filesystem::path const &dir, session_info_list_t &, int flags);
 
       int list (session_info_list_t &) const;
-      int list (session_info_list_t &, int flags) const;
 
       int set_session_dir (boost::filesystem::path const &p);
       int set_session_name (std::string const &name);
@@ -40,7 +37,13 @@ namespace gspc
 
       int run (session_info_t &) const;
       int daemonize_then_run (session_info_t &) const;
+
     private:
+      static int list (boost::filesystem::path const &dir, session_info_list_t &);
+      static int list (boost::filesystem::path const &dir, session_info_list_t &, int flags);
+
+      int list (session_info_list_t &, int flags) const;
+
       boost::filesystem::path m_dir;
       std::string             m_name;
       std::string             m_url;
