@@ -887,6 +887,17 @@ namespace
 
     BOOST_REQUIRE_EQUAL (oss.str(), expected);
   }
+
+  void dump_throw (std::string const& v)
+  {
+    std::ostringstream oss;
+    fhg::util::xml::xmlstream os (oss);
+
+    BOOST_REQUIRE_THROW
+      ( pnet::type::value::dump (os, pnet::type::value::read (v))
+      , std::runtime_error
+      );
+  }
 }
 
 BOOST_AUTO_TEST_CASE (dump)
@@ -931,4 +942,20 @@ BOOST_AUTO_TEST_CASE (dump)
               "  </properties>\n"
               "</properties>"
             );
+
+  dump_throw ("[]");
+  dump_throw ("true");
+  dump_throw ("0");
+  dump_throw ("0U");
+  dump_throw ("0L");
+  dump_throw ("0UL");
+  dump_throw ("0.0f");
+  dump_throw ("0.0");
+  dump_throw ("'c'");
+  dump_throw ("\"\"");
+  dump_throw ("{}");
+  dump_throw ("y()");
+  dump_throw ("List()");
+  dump_throw ("Set{}");
+  dump_throw ("Map[]");
 }
