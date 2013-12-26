@@ -9,7 +9,7 @@ namespace fhg
      * This configuration takes the following environment variables into account (case sensitive):
      *
      *  FHGLOG_level                     log everything with at least this level, defaults to TRACE
-     *  FHGLOG_color={auto,on,off}       colorized output
+     *  FHGLOG_color={on,off}            colorized output
      *  FHGLOG_format=log-format         defaults to the default format in Formatter
      *  FHGLOG_to_console={stdout,stderr,stdlog} log to stdout, stderr, clog
      *  FHGLOG_to_file=path to logfile   log to specified file
