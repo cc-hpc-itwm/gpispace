@@ -1,7 +1,6 @@
 set (hdrs
   Appender.hpp
   Configuration.hpp
-  Filter.hpp
   LogMacros.hpp
   Logger.hpp
   LoggerApi.hpp

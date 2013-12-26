@@ -4,7 +4,6 @@
 
 #include <fhglog/Appender.hpp>
 #include <fhglog/appender/file.hpp>
-#include <fhglog/Filter.hpp>
 #include <fhglog/event.hpp>
 #include <fhglog/level.hpp>
 #include <fhglog/appender/stream.hpp>

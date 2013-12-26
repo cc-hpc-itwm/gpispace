@@ -7,7 +7,6 @@
 #include <fhglog/level.hpp>
 #include <fhglog/event.hpp>
 #include <fhglog/Appender.hpp>
-#include <fhglog/Filter.hpp>
 
 #include <boost/shared_ptr.hpp>
 
