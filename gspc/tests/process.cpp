@@ -32,7 +32,6 @@ BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
 {
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
-  int rc;
   char buf [4096];
 
   memset (buf, 0, sizeof(buf));
@@ -44,10 +43,8 @@ BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
 
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_CREATED);
 
-  rc = proc.fork_and_exec ();
-
+  BOOST_REQUIRE_EQUAL (proc.fork_and_exec (), 0);
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
-  BOOST_REQUIRE_EQUAL (rc, 0);
   BOOST_REQUIRE_GT (proc.pid (), 0);
 
   std::string text ("hello world\n");
@@ -61,15 +58,12 @@ BOOST_AUTO_TEST_CASE (test_exec_write_read_kill)
 
   BOOST_REQUIRE_EQUAL (buf, "hello world\n");
 
-  rc = proc.try_waitpid ();
-  BOOST_REQUIRE_EQUAL (rc, -EBUSY);
+  BOOST_REQUIRE_EQUAL (proc.try_waitpid (), -EBUSY);
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
 
-  rc = proc.kill (SIGTERM);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.kill (SIGTERM), 0);
 
-  rc = proc.waitpid ();
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.waitpid (), 0);
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_TERMINATED);
 
   int status = *proc.status ();
@@ -81,7 +75,6 @@ BOOST_AUTO_TEST_CASE (test_echo)
 {
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
-  int rc;
   char buf [4096];
 
   memset (buf, 0, sizeof(buf));
@@ -92,9 +85,7 @@ BOOST_AUTO_TEST_CASE (test_echo)
 
   gspc::rif::process_t proc (0, argv.front (), argv, env);
 
-  rc = proc.fork_and_exec ();
-
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.fork_and_exec (), 0);
   BOOST_REQUIRE_GT (proc.pid (), 0);
 
   std::string text ("hello world\n");
@@ -103,8 +94,7 @@ BOOST_AUTO_TEST_CASE (test_echo)
                       );
   BOOST_REQUIRE_EQUAL (buf, "hello world\n");
 
-  rc = proc.waitpid ();
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.waitpid (), 0);
 
   BOOST_REQUIRE_EQUAL (proc.exit_code (), 0);
 }
@@ -113,7 +103,6 @@ BOOST_AUTO_TEST_CASE (test_echo_no_newline)
 {
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
-  int rc;
   char buf [4096];
 
   memset (buf, 0, sizeof(buf));
@@ -125,9 +114,7 @@ BOOST_AUTO_TEST_CASE (test_echo_no_newline)
 
   gspc::rif::process_t proc (0, argv.front (), argv, env);
 
-  rc = proc.fork_and_exec ();
-
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.fork_and_exec (), 0);
   BOOST_REQUIRE_GT (proc.pid (), 0);
 
   std::string text ("hello world");
@@ -136,8 +123,7 @@ BOOST_AUTO_TEST_CASE (test_echo_no_newline)
                       );
   BOOST_REQUIRE_EQUAL (buf, "hello world");
 
-  rc = proc.waitpid ();
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.waitpid (), 0);
 
   BOOST_REQUIRE_EQUAL (proc.exit_code (), 0);
 }
@@ -146,7 +132,6 @@ BOOST_AUTO_TEST_CASE (test_no_such_file_or_directory)
 {
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
-  int rc;
   char buf [4096];
 
   memset (buf, 0, sizeof(buf));
@@ -155,13 +140,10 @@ BOOST_AUTO_TEST_CASE (test_no_such_file_or_directory)
 
   gspc::rif::process_t proc (0, argv.front (), argv, env);
 
-  rc = proc.fork_and_exec ();
-
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.fork_and_exec (), 0);
   BOOST_REQUIRE_GT (proc.pid (), 0);
 
-  rc = proc.waitpid ();
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.waitpid (), 0);
 
   int status = *proc.status ();
   BOOST_REQUIRE (WIFEXITED (status));
@@ -172,7 +154,6 @@ BOOST_AUTO_TEST_CASE (test_permission_denied)
 {
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
-  int rc;
   char buf [4096];
 
   memset (buf, 0, sizeof(buf));
@@ -181,13 +162,10 @@ BOOST_AUTO_TEST_CASE (test_permission_denied)
 
   gspc::rif::process_t proc (0, argv.front (), argv, env);
 
-  rc = proc.fork_and_exec ();
-
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.fork_and_exec (), 0);
   BOOST_REQUIRE_GT (proc.pid (), 0);
 
-  rc = proc.waitpid ();
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.waitpid (), 0);
 
   int status = *proc.status ();
   BOOST_REQUIRE (WIFEXITED (status));
@@ -198,22 +176,19 @@ BOOST_AUTO_TEST_CASE (test_empty_argv)
 {
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
-  int rc;
   char buf [4096];
 
   memset (buf, 0, sizeof(buf));
 
   gspc::rif::process_t proc (0, "", argv, env);
 
-  rc = proc.fork_and_exec ();
-  BOOST_REQUIRE_EQUAL (rc, -EINVAL);
+  BOOST_REQUIRE_EQUAL (proc.fork_and_exec (), -EINVAL);
 }
 
 BOOST_AUTO_TEST_CASE (test_environment)
 {
   gspc::rif::argv_t argv;
   gspc::rif::env_t env;
-  int rc;
   char buf [4096];
 
   memset (buf, 0, sizeof(buf));
@@ -222,15 +197,12 @@ BOOST_AUTO_TEST_CASE (test_environment)
   argv.push_back ("/usr/bin/env");
   gspc::rif::process_t proc (0, argv.front (), argv, env);
 
-  rc = proc.fork_and_exec ();
-
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.fork_and_exec (), 0);
   BOOST_REQUIRE_GT (proc.pid (), 0);
 
   proc.read (buf, sizeof(buf));
 
-  rc = proc.waitpid ();
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (proc.waitpid (), 0);
 
   int status = *proc.status ();
   BOOST_REQUIRE (WIFEXITED (status));

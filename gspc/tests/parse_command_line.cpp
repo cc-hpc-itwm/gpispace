@@ -117,10 +117,8 @@ BOOST_AUTO_TEST_CASE (test_invalid_hexcode)
 {
   std::vector<std::string> argv;
   size_t consumed;
-  int rc;
-  rc = gspc::rif::parse ("\\xgh", argv, consumed);
 
-  BOOST_REQUIRE_EQUAL (rc, -EINVAL);
+  BOOST_REQUIRE_EQUAL (gspc::rif::parse ("\\xgh", argv, consumed), -EINVAL);
   BOOST_REQUIRE_EQUAL (consumed, 2u);
   BOOST_REQUIRE_EQUAL (argv.size (), 0u);
 }
