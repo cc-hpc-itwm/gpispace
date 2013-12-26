@@ -15,16 +15,11 @@
 #include <sstream>
 #include <sys/time.h>
 
-#ifdef __linux__
-#  ifndef _GNU_SOURCE
-#    define _GNU_SOURCE
-#  endif
-#  include <unistd.h>
-#  include <sys/syscall.h>
-#else
-#  include <boost/thread.hpp>
-#  include <boost/lexical_cast.hpp>
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
 #endif
+#include <unistd.h>
+#include <sys/syscall.h>
 
 namespace fhg
 {
@@ -50,15 +45,6 @@ namespace fhg
         static std::string h (get_hostname_ ());
         return h;
       }
-
-      unsigned int gettid()
-      {
-#ifdef __linux__
-        return (unsigned int)(syscall(SYS_gettid));
-#else
-        return boost::lexical_cast<unsigned int>(boost::this_thread::get_id());
-#endif
-      }
     }
 
     LogEvent::LogEvent( const Level &a_severity
@@ -76,7 +62,7 @@ namespace fhg
       , message_(a_message)
       , tstamp_(fhg::util::now())
       , pid_(getpid())
-      , tid_(gettid())
+      , tid_(syscall (SYS_gettid))
       , host_ (get_hostname ())
       , trace_ ()
       , tags_ (tags)
@@ -171,7 +157,7 @@ namespace fhg
       , message_ ((++pos, read_string (pos)))
       , tstamp_ ((++pos, fhg::util::read_double (pos)))
       , pid_ ((++pos, read_integral<pid_t> (pos)))
-      , tid_ ((++pos, read_integral<unsigned int> (pos)))
+      , tid_ ((++pos, read_integral<pid_t> (pos)))
       , host_ ((++pos, read_string (pos)))
       , trace_ ((++pos, read_vec (pos)))
       , tags_ ((++pos, read_vec (pos)))
