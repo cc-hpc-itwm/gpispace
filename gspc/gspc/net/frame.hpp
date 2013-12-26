@@ -75,7 +75,6 @@ namespace gspc
       bool has_header (std::string const &key) const;
 
       frame & set_body (body_type const & body);
-      frame & set_body (const char *buf, std::size_t len);
       frame & add_body (body_type const & body);
       frame & add_body (const char *buf, std::size_t len);
 
