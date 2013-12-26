@@ -24,8 +24,6 @@ namespace fhg { namespace log {
     virtual void append (const LogEvent &evt);
 
     backlog_t backlog () const;
-
-    void set_backlog_length (size_t n);
   private:
     typedef boost::shared_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> unique_lock;

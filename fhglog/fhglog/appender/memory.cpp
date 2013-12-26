@@ -22,13 +22,7 @@ namespace fhg
         m_backlog.pop_back ();
     }
 
-    void MemoryAppender::set_backlog_length (size_t len)
-    {
-      unique_lock lock (m_mutex);
-      m_backlog_length = len;
-    }
-
-    MemoryAppender::backlog_t MemoryAppender::backlog () const
+    MemoryAppender::backlog_t MemoryAppender::backlog() const
     {
       shared_lock lock (m_mutex);
       return m_backlog;
