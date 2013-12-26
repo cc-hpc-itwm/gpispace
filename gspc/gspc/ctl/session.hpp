@@ -35,13 +35,8 @@ namespace gspc
       int list (session_info_list_t &, int flags) const;
 
       int set_session_dir (boost::filesystem::path const &p);
-      int get_session_dir (boost::filesystem::path &p) const;
-
       int set_session_name (std::string const &name);
-      int get_session_name (std::string &name) const;
-
       int set_bind_url (std::string const &url);
-      int get_bind_url (std::string & url) const;
 
       int run (session_info_t &) const;
       int daemonize_then_run (session_info_t &) const;

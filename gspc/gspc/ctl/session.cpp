@@ -195,12 +195,6 @@ namespace gspc
       return 0;
     }
 
-    int session_t::get_session_dir (fs::path &p) const
-    {
-      p = m_dir;
-      return 0;
-    }
-
     int session_t::set_session_name (std::string const &name)
     {
       if (not is_valid_session_name (name))
@@ -211,21 +205,9 @@ namespace gspc
       return 0;
     }
 
-    int session_t::get_session_name (std::string &name) const
-    {
-      name = m_name;
-      return 0;
-    }
-
     int session_t::set_bind_url (std::string const &u)
     {
       m_url = u;
-      return 0;
-    }
-
-    int session_t::get_bind_url (std::string &u) const
-    {
-      u = m_url;
       return 0;
     }
 
