@@ -13,7 +13,7 @@
 
 namespace
 {
-  const std::size_t loop_count (1000);
+  const std::size_t loop_count (10000);
 
   void thread_function (std::string logger_name)
   {
