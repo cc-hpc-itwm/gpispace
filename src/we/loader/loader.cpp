@@ -20,7 +20,6 @@ namespace we {
 
     loader::~loader()
     {
-      try {
         while (! module_load_order_.empty ())
           {
             const std::string module_name = module_load_order_.front ();
@@ -32,8 +31,6 @@ namespace we {
               module_table_.erase (mod);
             }
           }
-      } catch (const std::exception &ex) {
-      }
     }
 
     const loader::module_ptr_t loader::get (const std::string &module) const
