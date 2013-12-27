@@ -31,8 +31,8 @@ namespace we
         typedef boost::function<void (const petri_net::activity_id_type&)> fun_t;
 
         descriptor();
-        descriptor (id_type const&, activity_type const&);
-        descriptor (id_type const&, activity_type const&, id_type const&);
+        descriptor (id_type const&, activity_type const&, const we::type::user_data&);
+        descriptor (id_type const&, activity_type const&, id_type const&, const we::type::user_data&);
         descriptor (const descriptor&);
 
         descriptor& operator= (const descriptor&);
@@ -93,11 +93,6 @@ namespace we
         bool enabled() const;
 
         void apply_to_children (fun_t) const;
-
-        void set_user_data (we::type::user_data const &data)
-        {
-          m_user_data = data;
-        }
 
         we::type::user_data const &get_user_data () const
         {

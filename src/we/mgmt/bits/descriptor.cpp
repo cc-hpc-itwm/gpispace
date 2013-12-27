@@ -30,6 +30,7 @@ namespace we
 
       descriptor::descriptor ( id_type const& a_id
                              , activity_type const& a_activity
+                             , const we::type::user_data& user_data
                              )
         : id_(a_id)
         , activity_(a_activity)
@@ -40,7 +41,7 @@ namespace we
         , m_error_code(0)
         , m_error_message()
         , m_result()
-        , m_user_data ()
+        , m_user_data (user_data)
       {
         activity_.set_id (a_id);
       }
@@ -48,6 +49,7 @@ namespace we
       descriptor::descriptor ( id_type const& a_id
                              , activity_type const& a_activity
                              , id_type const& a_parent
+                             , const we::type::user_data& user_data
                              )
         : id_(a_id)
         , activity_(a_activity)
@@ -59,7 +61,7 @@ namespace we
         , m_error_code(0)
         , m_error_message()
         , m_result()
-        , m_user_data ()
+        , m_user_data (user_data)
       {
         activity_.set_id (a_id);
       }
@@ -292,8 +294,7 @@ namespace we
       {
         lock_t lock(mutex_);
 
-        descriptor child (child_id, activity_.extract(), id());
-        child.set_user_data (m_user_data);
+        descriptor child (child_id, activity_.extract(), id(), m_user_data);
 
         add_child (child_id);
 
