@@ -226,11 +226,6 @@ namespace we
         };
       }
 
-      void activity_t::inject_input()
-      {
-      }
-
-
       namespace
       {
         class visitor_add_input : public boost::static_visitor<>

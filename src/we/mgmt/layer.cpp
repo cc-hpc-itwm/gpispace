@@ -275,9 +275,6 @@ namespace we
         type::activity_t activity
           (net.extract_activity_random (_random_extraction_engine));
 
-        //! \todo should not be necessary, net already added the input
-        activity.inject_input();
-
         if (!activity.transition().expression())
         {
           return activity;

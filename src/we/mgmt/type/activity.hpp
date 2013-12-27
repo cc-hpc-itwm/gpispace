@@ -71,7 +71,6 @@ namespace we
 
         activity_t extract();
         void inject (const activity_t&);
-        void inject_input();
         void collect_output();
 
         int execute (context*);

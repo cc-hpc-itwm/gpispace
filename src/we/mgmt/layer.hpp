@@ -170,10 +170,7 @@ namespace we
           : _id (id)
           , _activity (activity)
           , _user_data (user)
-        {
-          //! \todo should not be necessary, net already added the input
-          _activity.inject_input();
-        }
+        {}
 
         boost::optional<type::activity_t>
           fire_internally_and_extract_external();
