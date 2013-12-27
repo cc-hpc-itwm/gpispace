@@ -32,8 +32,6 @@ namespace we {
       loader();
       ~loader();
 
-      module_ptr_t get(const std::string &module) const;
-
       Module & operator[] (const std::string &module);
 
       module_ptr_t get(const std::string &module);
