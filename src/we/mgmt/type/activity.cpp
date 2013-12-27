@@ -312,11 +312,6 @@ namespace we
                              );
       }
 
-      void activity_t::set_id (const petri_net::activity_id_type& new_id)
-      {
-        _id = new_id;
-      }
-
       const petri_net::activity_id_type& activity_t::id() const
       {
         return _id;

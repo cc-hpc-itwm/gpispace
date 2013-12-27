@@ -63,7 +63,6 @@ namespace we
           return _transition.get_schedule_data<T> (input(), key);
         }
 
-        void set_id (const petri_net::activity_id_type&);
         const petri_net::activity_id_type& id() const;
 
         //! \todo DIRTY! Why lock and return a ref? Eliminate!!
