@@ -67,21 +67,9 @@ namespace we
       }
 
       descriptor::descriptor (const descriptor& other)
-        : id_(other.id_)
-        , activity_(other.activity_)
-        , has_parent_(other.has_parent_)
-        , parent_(other.parent_)
-        , children_(other.children_)
-        , from_external_(other.from_external_)
-        , to_external_(other.to_external_)
-        , from_external_id_(other.from_external_id_)
-        , to_external_id_(other.to_external_id_)
-        , failure_counter_(other.failure_counter_)
-        , m_error_code(other.m_error_code)
-        , m_error_message(other.m_error_message)
-        , m_result(other.m_result)
-        , m_user_data (other.m_user_data)
-      {}
+      {
+        this->operator= (other);
+      }
 
       descriptor& descriptor::operator= (const descriptor& other)
       {
