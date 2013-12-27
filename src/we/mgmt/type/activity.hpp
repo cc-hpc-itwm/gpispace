@@ -87,8 +87,6 @@ namespace we
         void set_output (const output_t&);
         void add_output (const output_t::value_type&);
 
-        std::ostream& print (std::ostream&, const token_on_port_list_t&) const;
-
         std::string nice_name() const;
 
       private:

@@ -503,35 +503,6 @@ namespace we
         _output.push_back (outp);
       }
 
-      std::ostream& activity_t::print ( std::ostream& os
-                                      , const token_on_port_list_t& top_list
-                                      ) const
-      {
-        bool first (true);
-
-        os << "[";
-
-        BOOST_FOREACH (const token_on_port_t& top, top_list)
-          {
-            if (first)
-              {
-                first = false;
-              }
-            else
-              {
-                os << ", ";
-              }
-
-            os << transition().get_port (top.second).name()
-               << "=(" << pnet::type::value::show (top.first)
-               << ", " << top.second << ")";
-          }
-
-        os << "]";
-
-        return os;
-      }
-
       namespace
       {
         class visitor_nice_name
