@@ -4,6 +4,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <boost/format.hpp>
+
+#include <cerrno>
+#include <cstring>
+
 #include <stdexcept>
 #include <iterator>
 
@@ -130,19 +135,29 @@ namespace gspc
       }
     }
 
-    static std::string s_hostname ()
+    namespace
     {
-      char buf [HOST_NAME_MAX];
-      int rc = gethostname (buf, sizeof(buf));
-      if (0 == rc)
-        return std::string (buf);
-      else
-        return "localhost";
+      std::string get_hostname()
+      {
+        char buf [HOST_NAME_MAX + 1];
+
+        buf[HOST_NAME_MAX] = 0;
+
+        if (gethostname (buf, HOST_NAME_MAX) == 0)
+        {
+          return std::string (buf);
+        }
+
+        throw std::runtime_error
+          ( (boost::format ("Could not get hostname: %1%") % strerror (errno))
+          . str()
+          );
+      }
     }
 
-    std::string const &hostname ()
+    std::string const& hostname()
     {
-      static std::string h (s_hostname ());
+      static std::string const h (get_hostname());
       return h;
     }
   }
