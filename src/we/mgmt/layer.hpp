@@ -44,18 +44,44 @@ namespace we
 
     public:
 
-      void submit (const external_id_type&, const encoded_type&, const we::type::user_data &);
-      void submit (const external_id_type&, const we::mgmt::type::activity_t&, const we::type::user_data &);
+      void submit ( const external_id_type& id
+                  , const encoded_type& act
+                  , const we::type::user_data& user_data
+                  )
+      {
+        submit (id, type::activity_t (act), user_data);
+      }
       void cancel (const external_id_type&, const reason_type&);
-      void finished (const external_id_type&, const result_type&);
-      void failed ( const external_id_type&
-                  , const result_type&
+      void finished (const external_id_type& id, const result_type& result)
+      {
+        finished (id, type::activity_t (result));
+      }
+      void failed ( const external_id_type& id
+                  , const result_type& result
                   , const int error_code
-                  , const std::string&
-                  );
+                  , const std::string& reason
+                  )
+      {
+        failed (id, type::activity_t (result), error_code, reason);
+      }
       void canceled (const external_id_type&);
 
     private:
+      //! \todo This should be the actual interface
+      void submit ( const external_id_type&
+                  , const type::activity_t&
+                  , const type::user_data &
+                  );
+      void finished ( const external_id_type&
+                    , const type::activity_t&
+                    );
+      void failed ( const external_id_type&
+                  , const type::activity_t&
+                  , const int error_code
+                  , const std::string&
+                  );
+
+
       // handle execution layer
       boost::function<void ( external_id_type const &
                            , encoded_type const &
