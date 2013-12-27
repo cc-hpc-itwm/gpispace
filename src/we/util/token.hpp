@@ -21,10 +21,8 @@ namespace we
                , pnet::type::value::value_type const & value
                )
       {
-        act.add_input ( mgmt::type::activity_t::input_t::value_type
-                        ( value
-                        , act.transition().input_port_by_name (port)
-                        )
+        act.add_input ( act.transition().input_port_by_name (port)
+                      , value
                       );
       }
     }
