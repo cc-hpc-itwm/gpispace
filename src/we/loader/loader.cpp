@@ -20,17 +20,18 @@ namespace we {
 
     loader::~loader()
     {
-        while (! module_load_order_.empty ())
-          {
-            const std::string module_name = module_load_order_.front ();
-            module_load_order_.pop_front ();
+      while (! module_load_order_.empty())
+      {
+        const std::string module_name (module_load_order_.front());
+        module_load_order_.pop_front();
 
-            module_table_t::iterator mod = module_table_.find(module_name);
-            if (mod != module_table_.end()) {
-              MLOG (TRACE, "unloading " << mod->first);
-              module_table_.erase (mod);
-            }
-          }
+        module_table_t::iterator const mod (module_table_.find (module_name));
+        if (mod != module_table_.end())
+        {
+          MLOG (TRACE, "unloading " << mod->first);
+          module_table_.erase (mod);
+        }
+      }
     }
 
     const loader::module_ptr_t loader::get (const std::string &module) const
