@@ -78,7 +78,6 @@ namespace we
 
         bool can_fire() const;
 
-        const input_t& pending_input() const;
         const input_t& input() const;
         void add_input
           ( petri_net::port_id_type const&
@@ -138,7 +137,6 @@ namespace we
           ar & BOOST_SERIALIZATION_NVP(_id);
           ar & BOOST_SERIALIZATION_NVP(_transition);
 
-          save (ar, _pending_input);
           save (ar, _input);
           save (ar, _output);
         }
@@ -150,7 +148,6 @@ namespace we
           ar & BOOST_SERIALIZATION_NVP(_id);
           ar & BOOST_SERIALIZATION_NVP(_transition);
 
-          load (ar, _pending_input);
           load (ar, _input);
           load (ar, _output);
         }
@@ -162,7 +159,6 @@ namespace we
 
         we::type::transition_t _transition;
 
-        input_t _pending_input;
         input_t _input;
         output_t _output;
 

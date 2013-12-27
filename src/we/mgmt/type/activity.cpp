@@ -43,7 +43,6 @@ namespace we
       activity_t::activity_t (const activity_t& other)
         : _id (other._id)
         , _transition (other._transition)
-        , _pending_input (other._pending_input)
         , _input(other._input)
         , _output (other._output)
       {}
@@ -97,7 +96,6 @@ namespace we
           {
             _id = other._id;
             _transition = (other._transition);
-            _pending_input = (other._pending_input);
             _input = (other._input);
             _output = (other._output);
           }
@@ -230,18 +228,6 @@ namespace we
 
       void activity_t::inject_input()
       {
-        unique_lock_t lock (_mutex);
-
-        boost::apply_visitor ( visitor_injector (*this, _pending_input)
-                             , _transition.data()
-                             );
-
-        std::copy ( _pending_input.begin()
-                  , _pending_input.end()
-                  , std::inserter (_input, _input.end())
-                  );
-
-        _pending_input.clear();
       }
 
 
@@ -496,12 +482,6 @@ namespace we
       {
         shared_lock_t lock (_mutex);
         return boost::apply_visitor (visitor_can_fire(), transition().data());
-      }
-
-      const activity_t::input_t& activity_t::pending_input() const
-      {
-        shared_lock_t lock (_mutex);
-        return _pending_input;
       }
 
       const activity_t::input_t& activity_t::input() const

@@ -209,22 +209,12 @@ try
                          , output_token(stream, "\n")
                          , match_equal_port(port_id)
                          );
-          detail::copy_if( act.pending_input().begin()
-                         , act.pending_input().end()
-                         , output_token(stream, "\n")
-                         , match_equal_port(port_id)
-                         );
         }
       }
       else
       {
         detail::copy_if( act.input().begin()
                        , act.input().end()
-                       , output_port_and_token(stream, "\n")
-                       , match_every_port()
-                       );
-        detail::copy_if( act.pending_input().begin()
-                       , act.pending_input().end()
                        , output_port_and_token(stream, "\n")
                        , match_every_port()
                        );
