@@ -79,8 +79,6 @@ namespace gspc
                                      , const char c
                                      )
       {
-        using namespace gspc::net::limits;
-
         switch (m_frame_state)
         {
         case frame_start:
@@ -123,7 +121,7 @@ namespace gspc
             }
             else if (isprint (c))
             {
-              if (m_buffer.size () < max_command_length ())
+              if (m_buffer.size () < gspc::net::limits::max_command_length ())
               {
                 m_buffer.push_back (c);
               }
@@ -239,7 +237,7 @@ namespace gspc
             }
             else if (isprint (c))
             {
-              if (m_buffer.size () < max_header_key_length ())
+              if (m_buffer.size () < gspc::net::limits::max_header_key_length ())
               {
                 m_buffer.push_back (c);
               }
@@ -271,7 +269,7 @@ namespace gspc
             }
             else if (isprint (c))
             {
-              if (m_buffer.size () < max_header_value_length ())
+              if (m_buffer.size () < gspc::net::limits::max_header_value_length ())
               {
                 m_buffer.push_back (c);
               }
