@@ -34,7 +34,7 @@ namespace we {
       }
     }
 
-    const loader::module_ptr_t loader::get (const std::string &module) const
+    loader::module_ptr_t loader::get (const std::string &module) const
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
       module_table_t::const_iterator mod = module_table_.find(module);
