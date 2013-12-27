@@ -53,7 +53,6 @@ add_library (pnet
   we/loader/loader.cpp
   we/mgmt/layer.cpp
   we/mgmt/type/activity.cpp
-  we/mgmt/type/flags.cpp
   we/require_type.cpp
   we/signature_of.cpp
   we/type/bitsetofint.cpp

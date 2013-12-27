@@ -9,7 +9,6 @@
 #include <we/type/transition.hpp>
 #include <we/expr/eval/context.hpp>
 
-#include <we/mgmt/type/flags.hpp>
 #include <we/mgmt/context.fwd.hpp>
 
 #include <we/type/value.hpp>
@@ -95,20 +94,6 @@ namespace we
 
         void set_id (const petri_net::activity_id_type&);
         const petri_net::activity_id_type& id() const;
-        const flags::flags_t& flags() const;
-
-        bool is_alive() const;
-
-#define FLAG(_name)                             \
-        bool is_ ## _name() const;              \
-        void set_ ## _name (bool value = true)
-
-        FLAG (suspended);
-        FLAG (canceling);
-        FLAG (canceled);
-        FLAG (failed);
-        FLAG (finished);
-#undef FLAG
 
         //! \todo DIRTY! Why lock and return a ref? Eliminate!!
         const we::type::transition_t& transition() const;
@@ -180,7 +165,6 @@ namespace we
           unique_lock_t lock (_mutex);
 
           ar & BOOST_SERIALIZATION_NVP(_id);
-          ar & BOOST_SERIALIZATION_NVP(_flags);
           ar & BOOST_SERIALIZATION_NVP(_transition);
 
           save (ar, _pending_input);
@@ -193,7 +177,6 @@ namespace we
           unique_lock_t lock (_mutex);
 
           ar & BOOST_SERIALIZATION_NVP(_id);
-          ar & BOOST_SERIALIZATION_NVP(_flags);
           ar & BOOST_SERIALIZATION_NVP(_transition);
 
           load (ar, _pending_input);
@@ -204,7 +187,6 @@ namespace we
 
       private:
         petri_net::activity_id_type _id;
-        flags::flags_t _flags;
         mutable boost::recursive_mutex _mutex;
 
         we::type::transition_t _transition;

@@ -42,7 +42,6 @@ namespace we
 
       activity_t::activity_t (const activity_t& other)
         : _id (other._id)
-        , _flags (other._flags)
         , _transition (other._transition)
         , _pending_input (other._pending_input)
         , _input(other._input)
@@ -97,7 +96,6 @@ namespace we
         if (this != &other)
           {
             _id = other._id;
-            _flags = (other._flags);
             _transition = (other._transition);
             _pending_input = (other._pending_input);
             _input = (other._input);
@@ -323,36 +321,6 @@ namespace we
       {
         return _id;
       }
-
-      const flags::flags_t& activity_t::flags() const
-      {
-        return _flags;
-      }
-
-      bool activity_t::is_alive() const
-      {
-        shared_lock_t lock (_mutex);
-        return (flags::is_alive (_flags));
-      }
-
-#define FLAG(_name)                                             \
-      bool activity_t::is_ ## _name() const                     \
-      {                                                         \
-        shared_lock_t lock (_mutex);                            \
-        return (flags::is_ ## _name (_flags));                  \
-      }                                                         \
-      void activity_t::set_ ## _name (bool value)               \
-      {                                                         \
-        unique_lock_t lock (_mutex);                            \
-        flags::set_ ## _name (_flags, value);                   \
-      }
-
-      FLAG (suspended)
-      FLAG (canceling)
-      FLAG (canceled)
-      FLAG (failed)
-      FLAG (finished)
-#undef FLAG
 
       const we::type::transition_t& activity_t::transition() const
       {
