@@ -21,15 +21,9 @@ namespace we
                , pnet::type::value::value_type const & value
                )
       {
-        const ::petri_net::port_id_type pid
-          (act.transition().input_port_by_name (port));
-
-        const pnet::type::signature::signature_type port_signature
-          (act.transition().get_port (pid).signature());
-
         act.add_input ( mgmt::type::activity_t::input_t::value_type
-                        ( pnet::require_type (value, port_signature, port)
-                        , pid
+                        ( value
+                        , act.transition().input_port_by_name (port)
                         )
                       );
       }
