@@ -46,7 +46,7 @@ struct daemon_t
               , const we::type::user_data& = we::type::user_data ()
               )
   {
-    layer.finished (id, enc);
+    layer.finished_DEPRECATED (id, enc);
   }
 
   bool cancel (const id_type &, const std::string &)

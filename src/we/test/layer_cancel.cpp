@@ -50,7 +50,7 @@ struct daemon_t
               )
   {
     std::cout << "submitted id = " << id << std::endl;
-    layer.failed (id, enc, fhg::error::UNEXPECTED_ERROR, "test_layer_cancel");
+    layer.failed_DEPRECATED (id, enc, fhg::error::UNEXPECTED_ERROR, "test_layer_cancel");
   }
 
   bool cancel (const id_type & id, const std::string &)

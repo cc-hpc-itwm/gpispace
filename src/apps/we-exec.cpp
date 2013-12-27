@@ -65,14 +65,14 @@ namespace
       {
         //!\todo pass a real gspc::drts::context
         module::call (*_loader, 0, act, mod);
-        _layer->finished (_id, act.to_string());
+        _layer->finished (_id, act);
       }
       catch (std::exception const& ex)
       {
         std::cerr << "handle-ext(" << act.transition().name() << ") failed: " << ex.what() << std::endl;
 
         _layer->failed ( _id
-                       , act.to_string()
+                       , act
                        , fhg::error::MODULE_CALL_FAILED
                        , ex.what()
                        );
@@ -264,14 +264,14 @@ namespace
       boost::optional<we::mgmt::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
+      we::mgmt::type::activity_t const act (desc);
+
       if (mapped)
       {
-        mgmt_layer_.finished (*mapped, desc);
+        mgmt_layer_.finished (*mapped, act);
       }
       else if (id == _job_id)
       {
-        we::mgmt::type::activity_t const act (desc);
-
         std::cout << "finished [" << id << "]" << std::endl;
         BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
                       , act.output()
@@ -299,14 +299,14 @@ namespace
       boost::optional<we::mgmt::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
+      we::mgmt::type::activity_t const act (desc);
+
       if (mapped)
       {
-        mgmt_layer_.failed (*mapped, desc, error_code, reason);
+        mgmt_layer_.failed (*mapped, act, error_code, reason);
       }
       else if (id == _job_id)
       {
-        we::mgmt::type::activity_t const act (desc);
-
         std::cout << "failed [" << id << "] = ";
         act.print (std::cout, act.output());
         std::cout << " error-code := " << error_code
