@@ -534,10 +534,6 @@ namespace we
           .get_value_or (transition().name());
       }
 
-      bool operator== (const activity_t& a, const activity_t& b)
-      {
-        return a.id() == b.id();
-      }
       std::ostream& operator<< (std::ostream& os, const activity_t& a)
       {
         return os << a.to_string();

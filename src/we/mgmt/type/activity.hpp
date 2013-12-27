@@ -159,7 +159,6 @@ namespace we
         boost::mt19937 _engine;
       };
 
-      bool operator== (const activity_t&, const activity_t&);
       std::ostream& operator<< (std::ostream&, const activity_t&);
     }
   }
