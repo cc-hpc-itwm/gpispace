@@ -6,6 +6,7 @@
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
+#include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
 #include <fhg/util/thread/queue.hpp>
 
