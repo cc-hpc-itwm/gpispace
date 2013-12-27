@@ -66,12 +66,8 @@ Logger::Logger ( const std::string& name
                )
   : name_ (name)
   , lvl_ (inherit_from.lvl_)
-{
-  BOOST_FOREACH (Appender::ptr_t const& appender, inherit_from.appenders_)
-  {
-    addAppender (appender);
-  }
-}
+  , appenders_ (inherit_from.appenders_)
+{}
 
 void Logger::setLevel (const Level& level)
 {
