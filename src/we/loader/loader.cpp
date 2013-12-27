@@ -154,12 +154,5 @@ namespace we {
         unload (module_name);
       }
     }
-
-    loader::module_table_t::iterator loader::unload(module_table_t::iterator mod)
-    {
-      assert(mod != module_table_.end());
-      MLOG (TRACE, "unloading " << mod->first);
-      return module_table_.erase(mod);
-    }
   }
 }

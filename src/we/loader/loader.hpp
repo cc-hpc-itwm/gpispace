@@ -59,8 +59,6 @@ namespace we {
 
       void unload_all();
 
-      module_table_t::iterator unload(module_table_t::iterator mod);
-
       module_table_t module_table_;
       module_names_t module_load_order_;
       unsigned long module_counter_;
