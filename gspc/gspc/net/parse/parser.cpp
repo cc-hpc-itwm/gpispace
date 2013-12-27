@@ -83,7 +83,9 @@ namespace gspc
         {
         case frame_start:
           if (is_line_feed (c))
+          {
             return PARSE_FINISHED;
+          }
           if (is_carriage_return (c))
           {
             m_frame_state = frame_start_line_feed;
@@ -101,7 +103,9 @@ namespace gspc
           return PARSE_NEED_MORE_DATA;
         case frame_start_line_feed:
           if (is_line_feed (c))
+          {
             return PARSE_FINISHED;
+          }
           else
           {
             return PARSE_FAILED;
