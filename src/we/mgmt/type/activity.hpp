@@ -63,8 +63,6 @@ namespace we
           return _transition.get_schedule_data<T> (input(), key);
         }
 
-        const petri_net::activity_id_type& id() const;
-
         //! \todo DIRTY! Why lock and return a ref? Eliminate!!
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
@@ -128,7 +126,6 @@ namespace we
         {
           unique_lock_t lock (_mutex);
 
-          ar & BOOST_SERIALIZATION_NVP(_id);
           ar & BOOST_SERIALIZATION_NVP(_transition);
 
           save (ar, _input);
@@ -139,7 +136,6 @@ namespace we
         {
           unique_lock_t lock (_mutex);
 
-          ar & BOOST_SERIALIZATION_NVP(_id);
           ar & BOOST_SERIALIZATION_NVP(_transition);
 
           load (ar, _input);
@@ -148,7 +144,6 @@ namespace we
         BOOST_SERIALIZATION_SPLIT_MEMBER()
 
       private:
-        petri_net::activity_id_type _id;
         mutable boost::recursive_mutex _mutex;
 
         we::type::transition_t _transition;

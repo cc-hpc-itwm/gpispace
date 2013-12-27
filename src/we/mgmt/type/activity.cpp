@@ -32,17 +32,14 @@ namespace we
     namespace type
     {
       activity_t::activity_t ()
-        : _id (petri_net::activity_id_invalid())
       {}
 
       activity_t::activity_t (const we::type::transition_t& transition)
-        : _id (petri_net::activity_id_invalid())
-        , _transition (transition)
+        : _transition (transition)
       {}
 
       activity_t::activity_t (const activity_t& other)
-        : _id (other._id)
-        , _transition (other._transition)
+	: _transition (other._transition)
         , _input(other._input)
         , _output (other._output)
       {}
@@ -94,7 +91,6 @@ namespace we
       {
         if (this != &other)
           {
-            _id = other._id;
             _transition = (other._transition);
             _input = (other._input);
             _output = (other._output);
@@ -342,11 +338,6 @@ namespace we
         boost::apply_visitor ( visitor_collect_output (*this)
                              , _transition.data()
                              );
-      }
-
-      const petri_net::activity_id_type& activity_t::id() const
-      {
-        return _id;
       }
 
       const we::type::transition_t& activity_t::transition() const
