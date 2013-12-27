@@ -118,8 +118,8 @@ namespace we
                        )
       {
         we::type::schedule_data schedule_data
-          ( act.get_schedule_data<long> ("num_worker")
-          , act.get_schedule_data<long> ("vmem")
+          ( act.transition().get_schedule_data<long> (act.input(), "num_worker")
+          , act.transition().get_schedule_data<long> (act.input(), "vmem")
           );
 
         _rts_submit_IMPL ( id
