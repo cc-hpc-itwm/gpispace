@@ -21,7 +21,6 @@ namespace we {
     loader::~loader()
     {
       try {
-        boost::unique_lock<boost::recursive_mutex> lock(mtx_);
         while (! module_load_order_.empty ())
           {
             const std::string module_name = module_load_order_.front ();
