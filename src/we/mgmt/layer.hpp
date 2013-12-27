@@ -208,6 +208,8 @@ namespace we
 
       private:
         mutable boost::mutex _container_mutex;
+        //! \todo measure performance, remove uses std::find_if,
+        //! possibly accelerate with additional map<id_type, list::iterator>
         std::list<activity_data_type> _container;
 
         boost::condition_variable_any _condition_non_empty;
@@ -249,6 +251,7 @@ namespace we
 
       private:
         mutable boost::mutex _relation_mutex;
+        //! \todo measure performance, parent is reverse, boost::bimap
         typedef boost::unordered_map<id_type, boost::unordered_set<id_type> >
           relation_type;
         relation_type _relation;
