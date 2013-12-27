@@ -57,8 +57,6 @@ namespace we {
       loader(const loader&);
       loader & operator = (const loader &);
 
-      void unload_all();
-
       module_table_t module_table_;
       module_names_t module_load_order_;
       unsigned long module_counter_;

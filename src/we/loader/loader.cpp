@@ -149,17 +149,5 @@ namespace we {
       }
       return count;
     }
-
-    void loader::unload_all()
-    {
-      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-      while (! module_load_order_.empty ())
-      {
-        const std::string module_name = module_load_order_.front ();
-        module_load_order_.pop_front ();
-
-        unload (module_name);
-      }
-    }
   }
 }
