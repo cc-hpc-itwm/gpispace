@@ -314,15 +314,12 @@ namespace gspc
             --m_remaining_body_bytes;
           }
 
-          if (m_remaining_body_bytes)
-          {
-            return PARSE_NEED_MORE_DATA;
-          }
-          else
+          if (!m_remaining_body_bytes)
           {
             m_frame_state = body_with_content_length_final_null;
-            return PARSE_NEED_MORE_DATA;
           }
+
+          return PARSE_NEED_MORE_DATA;
         case body_with_content_length_final_null:
           if (is_null (c))
           {
