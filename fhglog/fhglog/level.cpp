@@ -8,8 +8,6 @@
 
 #include <stdexcept>
 
-#include <cassert>
-
 namespace fhg
 {
   namespace log
