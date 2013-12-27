@@ -26,7 +26,11 @@ namespace we {
             const std::string module_name = module_load_order_.front ();
             module_load_order_.pop_front ();
 
-            unload (module_name);
+            module_table_t::iterator mod = module_table_.find(module_name);
+            if (mod != module_table_.end()) {
+              MLOG (TRACE, "unloading " << mod->first);
+              module_table_.erase (mod);
+            }
           }
       } catch (const std::exception &ex) {
       }
