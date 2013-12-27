@@ -99,8 +99,6 @@ namespace we
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
 
-        std::string type_to_string() const;
-
         activity_t extract();
         void inject (const activity_t&);
         void inject_input();

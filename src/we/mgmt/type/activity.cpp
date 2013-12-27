@@ -497,33 +497,6 @@ namespace we
         _mutex.unlock();
       }
 
-      namespace
-      {
-        class visitor_type_to_string : public boost::static_visitor<std::string>
-        {
-        public:
-          std::string operator () (const petri_net::net&) const
-          {
-            return "net";
-          }
-          std::string operator () (const we::type::module_call_t&) const
-          {
-            return "module";
-          }
-          std::string operator () (const we::type::expression_t&) const
-          {
-            return "expr";
-          }
-        };
-      }
-
-      std::string activity_t::type_to_string() const
-      {
-        return boost::apply_visitor ( visitor_type_to_string()
-                                    , _transition.data()
-                                    );
-      }
-
       std::ostream& activity_t::print ( std::ostream& os
                                       , const token_on_port_list_t& top_list
                                       ) const
