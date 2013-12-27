@@ -31,26 +31,6 @@ namespace gspc
         m_remaining_body_bytes = 0;
       }
 
-      namespace
-      {
-        bool is_carriage_return (const char c)
-        {
-          return c == 13;
-        }
-        bool is_line_feed (const char c)
-        {
-          return c == 10;
-        }
-        bool is_header_separator (const char c)
-        {
-          return c == ':';
-        }
-        bool is_null (const char c)
-        {
-          return c == 0;
-        }
-      }
-
       result_t parser::parse ( const char *begin
                              , const char *end
                              , gspc::net::frame & frame
@@ -73,6 +53,33 @@ namespace gspc
                         , PARSE_NEED_MORE_DATA
                         , m_error
                         );
+      }
+
+      namespace
+      {
+        enum
+        { null = 0
+        , line_feed = 10
+        , carriage_return = 13
+        , header_separator = ':'
+        };
+
+        bool is_carriage_return (const char c)
+        {
+          return c == carriage_return;
+        }
+        bool is_line_feed (const char c)
+        {
+          return c == line_feed;
+        }
+        bool is_header_separator (const char c)
+        {
+          return c == header_separator;
+        }
+        bool is_null (const char c)
+        {
+          return c == null;
+        }
       }
 
       inline state_t parser::consume ( gspc::net::frame & frame
