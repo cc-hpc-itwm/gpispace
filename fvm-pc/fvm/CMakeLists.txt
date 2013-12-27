@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 set (hdrs
   fvmAllocatorTypes.h
   fvm_common.h

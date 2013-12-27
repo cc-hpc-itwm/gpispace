@@ -16,7 +16,7 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/io.hpp>
 #include <gspc/kvs/kvs.hpp>
 
 static void long_usage (int lvl)

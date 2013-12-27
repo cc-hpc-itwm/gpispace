@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 # locates the libnacl library
 # This file defines:
 # * NACL_FOUND if libreadline was found

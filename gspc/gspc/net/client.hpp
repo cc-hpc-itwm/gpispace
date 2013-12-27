@@ -1,12 +1,16 @@
 #ifndef GSPC_NET_CLIENT_HPP
 #define GSPC_NET_CLIENT_HPP
 
+#include "client_fwd.hpp"
+
 #include <string>
 #include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/frame_handler_fwd.hpp>
 
 #include <boost/signals2/signal.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+
+#include <boost/system/error_code.hpp>
 
 namespace gspc
 {

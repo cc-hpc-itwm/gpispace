@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 # check for 'pthread_setname_np'
 include(CheckCSourceCompiles)
 set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
@@ -83,6 +81,8 @@ set (srcs
   read_file.cpp
 
   get_cpucount.c
+
+  hostname.cpp
 )
 
 add_library (fhg-util ${srcs})
@@ -92,8 +92,8 @@ set_target_properties(fhg-util-shared
              VERSION     1
 )
 
-target_link_libraries (fhg-util ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY})
-target_link_libraries (fhg-util-shared ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY})
+target_link_libraries (fhg-util ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries (fhg-util-shared ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY})
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util

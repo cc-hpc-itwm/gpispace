@@ -35,7 +35,6 @@ BOOST_AUTO_TEST_CASE (simple_pool)
   pool_t pool (ncpu);
   pool.start ();
 
-  s_work_count = 0;
   for (size_t i = 0 ; i < NUM_ITERATIONS; ++i)
     pool.execute (s_work, s_work_callback);
 

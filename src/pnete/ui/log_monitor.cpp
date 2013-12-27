@@ -5,6 +5,8 @@
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/mgmt/type/activity.hpp>
 
+#include <fhglog/appender/call.hpp>
+
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -49,56 +51,33 @@
 
 namespace
 {
-  class function_call_appender : public fhg::log::Appender
-  {
-  public:
-    typedef boost::function<void (const fhg::log::LogEvent&)> event_handler_t;
-
-    function_call_appender (const event_handler_t& handler)
-      : _handler (handler)
-    { }
-
-    void append (const fhg::log::LogEvent& evt)
-    {
-      _handler (evt);
-    }
-
-    void flush()
-    {
-    }
-
-  private:
-    event_handler_t _handler;
-  };
-
   template<typename T>
-    fhg::log::Appender::ptr_t appender_with
+    fhg::log::Logger::ptr_t logger_with
     ( void (T::* function)(const fhg::log::LogEvent&)
     , T* that
     )
   {
-    return fhg::log::Appender::ptr_t
-      (new function_call_appender (boost::bind (function, that, _1)));
+    fhg::log::Logger::ptr_t l (fhg::log::Logger::get ("log_monitor"));
+
+    l->addAppender
+      ( fhg::log::Appender::ptr_t
+        (new fhg::log::appender::call (boost::bind (function, that, _1)))
+      );
+
+    return l;
   }
 
-  QColor severityToColor (const fhg::log::LogLevel lvl)
+  QColor severityToColor (const fhg::log::Level lvl)
   {
-    switch (lvl.lvl())
+    switch (lvl)
     {
-    case fhg::log::LogLevel::TRACE:
-      return QColor (205, 183, 158);
-    case fhg::log::LogLevel::DEBUG:
-      return QColor (139, 125, 107);
-    case fhg::log::LogLevel::INFO:
-      return QColor (25, 25, 25);
-    case fhg::log::LogLevel::WARN:
-      return QColor (255, 140, 0);
-    case fhg::log::LogLevel::ERROR:
-      return QColor (255, 0, 0);
-    case fhg::log::LogLevel::FATAL:
-      return QColor (165, 42, 42);
-    default:
-      return QColor (0, 0, 0);
+    case fhg::log::TRACE: return QColor (205, 183, 158);
+    case fhg::log::DEBUG: return QColor (139, 125, 107);
+    case fhg::log::INFO: return QColor (25, 25, 25);
+    case fhg::log::WARN: return QColor (255, 140, 0);
+    case fhg::log::ERROR: return QColor (255, 0, 0);
+    case fhg::log::FATAL: return QColor (165, 42, 42);
+    default: return QColor (0, 0, 0);
     }
   }
 
@@ -321,7 +300,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   , _log_model_update_timer (new QTimer (this))
   , _io_service()
   , _log_server
-    (appender_with (&log_monitor::append_log_event, this), _io_service, port)
+    (logger_with (&log_monitor::append_log_event, this), _io_service, port)
   , _io_thread (boost::bind (&boost::asio::io_service::run, &_io_service))
 {
   // _log_model->moveToThread (_log_model_update_thread);

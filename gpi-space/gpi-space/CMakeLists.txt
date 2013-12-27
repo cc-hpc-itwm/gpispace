@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 set (hdrs
   types.hpp
   error.hpp

@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 include (fhg_plugin_macros)
 
 add_subdirectory(workflows)

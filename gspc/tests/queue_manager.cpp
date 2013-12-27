@@ -10,7 +10,6 @@
 #include <boost/foreach.hpp>
 #include <boost/thread.hpp>
 
-#include <gspc/net.hpp>
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/frame_io.hpp>
@@ -123,10 +122,12 @@ BOOST_AUTO_TEST_CASE (test_async_sender)
 
   std::vector<boost::thread *> sender;
   mock::user client;
-  int rc;
 
   gspc::net::server::queue_manager_t qmgr;
-  rc = qmgr.subscribe (&client, "/tests", "sub-client-0", gspc::net::frame ());
+  BOOST_REQUIRE_EQUAL
+    ( qmgr.subscribe (&client, "/tests", "sub-client-0", gspc::net::frame())
+    , 0
+    );
 
   for (size_t i = 0 ; i < NUM_ASYNC_SENDER ; ++i)
   {

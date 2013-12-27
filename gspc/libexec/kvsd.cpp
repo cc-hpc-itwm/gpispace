@@ -1,7 +1,8 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/handle.hpp>
+#include <gspc/net/service/strip_prefix.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 
 class KVSDImpl : FHG_PLUGIN

@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 set (hdrs
   segment.hpp
   #  manager.hpp

@@ -1,43 +1,28 @@
-/*
- * =====================================================================================
- *
- *       Filename:  fhglog-client.cpp
- *
- *    Description:  send messages to an fhg-log daemon
- *
- *        Version:  1.0
- *        Created:  10/19/2009 02:24:52 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
-#include <sstream> // ostringstream
 #include <fhglog/fhglog.hpp>
-#include <fhglog/remote/RemoteAppender.hpp>
+#include <fhglog/remote/appender.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
+#include <sstream>
+
 namespace po = boost::program_options;
 
-int main (int argc, char **argv)
+int main (int argc, char **argv) try
 {
   using namespace fhg::log;
 
   po::options_description desc("options");
 
-  std::string url (getenv("FHGLOG_to_server") ? getenv("FHGLOG_to_server") : FHGLOG_DEFAULT_LOCATION);
+  std::string url (getenv("FHGLOG_to_server") ? getenv("FHGLOG_to_server") : "");
   std::string file ("fhglog-client.cpp");
   std::string function ("(main)");
   int line (0);
   std::string message("-");
   std::vector<std::string> tags;
-  int level (LogLevel::DEF_LEVEL);
+  int level (INFO);
 
   desc.add_options()
     ("help,h", "this message")
@@ -51,16 +36,7 @@ int main (int argc, char **argv)
     ;
 
   po::variables_map vm;
-  try
-  {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "invalid argument: " << ex.what() << std::endl;
-    std::cerr << "try " << argv[0] << " -h to get some help" << std::endl;
-    return EXIT_FAILURE;
-  }
+  po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
 
   if (vm.count("help"))
@@ -69,9 +45,6 @@ int main (int argc, char **argv)
     std::cerr << desc << std::endl;
     return EXIT_SUCCESS;
   }
-
-  if (level < LogLevel::MIN_LEVEL || level > LogLevel::MAX_LEVEL)
-    level = LogLevel::DEF_LEVEL;
 
   if (message == "-")
   {
@@ -87,24 +60,20 @@ int main (int argc, char **argv)
     } while (true);
   }
 
-  LogEvent e( (LogLevel::Level)level
-            , file
-            , function
-            , line
-            , message
-            , tags
-            );
-
-  try
-  {
-    remote::RemoteAppender r (url);
-    r.append (e);
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "could not log message: " << ex.what() << std::endl;
-    return 1;
-  }
+  remote::RemoteAppender r (url);
+  r.append (LogEvent ( from_int (level)
+                     , file
+                     , function
+                     , line
+                     , message
+                     , tags
+                     )
+           );
 
   return 0;
+}
+catch (std::exception const & ex)
+{
+  std::cerr << "Exception: " << ex.what() << std::endl;
+  return 1;
 }

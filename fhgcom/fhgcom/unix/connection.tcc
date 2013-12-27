@@ -1,5 +1,3 @@
-// -*- mode: c++; -*-
-
 #include "connection.hpp"
 
 namespace fhg

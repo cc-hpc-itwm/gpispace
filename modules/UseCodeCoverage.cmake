@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 # - Enable Code Coverage
 #
 #

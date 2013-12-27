@@ -1,8 +1,7 @@
 #include "logc.hpp"
 
 #include <fhglog/LogMacros.hpp>
-#include <fhglog/ThreadedAppender.hpp>
-#include <fhglog/remote/RemoteAppender.hpp>
+#include <fhglog/remote/appender.hpp>
 
 #include <boost/function.hpp>
 
@@ -34,10 +33,7 @@ public:
 
     try
     {
-      m_destination.reset (new fhg::log::ThreadedAppender
-                          (fhg::log::Appender::ptr_t
-                          (new fhg::log::remote::RemoteAppender(m_url)
-                          )));
+      m_destination.reset (new fhg::log::remote::RemoteAppender(m_url));
     }
     catch (std::exception const &ex)
     {
@@ -61,7 +57,7 @@ public:
            , const char * message
            )
   {
-    m_destination->append(fhg::log::LogEvent ( fhg::log::LogLevel::INFO
+    m_destination->append(fhg::log::LogEvent ( fhg::log::INFO
                                              , filename
                                              , function
                                              , line

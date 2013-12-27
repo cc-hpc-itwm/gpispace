@@ -15,6 +15,7 @@ namespace fhg
       {
         throw std::runtime_error ("could not open: " + path);
       }
+      ifs >> std::noskipws;
 
       return std::string ( std::istream_iterator<char> (ifs)
                          , std::istream_iterator<char>()

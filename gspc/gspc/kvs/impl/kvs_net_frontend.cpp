@@ -3,7 +3,10 @@
 #include <boost/thread/locks.hpp>
 #include <boost/format.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/client.hpp>
+#include <gspc/net/error.hpp>
+#include <gspc/net/dial.hpp>
+#include <gspc/net/frame.hpp>
 
 #include <fhg/util/read.hpp>
 #include <fhg/util/parse/position.hpp>

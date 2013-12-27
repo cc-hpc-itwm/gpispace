@@ -48,21 +48,15 @@ namespace gspc
         size_t id () const;
 
         void set_queue_length (size_t);
-        void set_heartbeat_info (heartbeat_info_t const &);
       private:
         typedef boost::lock_guard<boost::mutex> unique_lock;
 
         typedef std::deque<frame>  frame_list_t;
 
-        void send_heartbeat_if_needed ();
-        void start_heartbeats ();
         void handle_read ( const boost::system::error_code &
                          , std::size_t transferred
                          );
         void handle_write (const boost::system::error_code &);
-
-        void handle_recv_heartbeat_timer (const boost::system::error_code &);
-        void handle_send_heartbeat_timer (const boost::system::error_code &);
 
         mutable boost::mutex     m_shutting_down_mutex;
         mutable boost::mutex     m_pending_mutex;
@@ -82,17 +76,6 @@ namespace gspc
         size_t m_max_queue_length;
 
         size_t m_id;
-
-        mutable boost::mutex m_heartbeat_mutex;
-
-        boost::posix_time::ptime m_recv_timestamp;
-        boost::posix_time::ptime m_send_timestamp;
-
-        boost::asio::deadline_timer m_recv_heartbeat_timer;
-        boost::asio::deadline_timer m_send_heartbeat_timer;
-
-        heartbeat_info_t m_heartbeat_info;
-        size_t m_lost_heartbeats;
       };
     }
   }

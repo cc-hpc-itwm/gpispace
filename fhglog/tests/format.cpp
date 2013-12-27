@@ -7,6 +7,24 @@
 #include <fhglog/fhglog.hpp>
 #include <fhglog/format.hpp>
 
+#include <fhg/util/now.hpp>
+
+BOOST_AUTO_TEST_CASE (formatting_performance)
+{
+  double t (-fhg::util::now());
+
+  for (std::size_t count (0); count < 100000; ++count)
+  {
+    format ( fhg::log::default_format::LONG()
+           , FHGLOG_MKEVENT_HERE (DEBUG, "hello world!")
+           );
+  }
+
+  t += fhg::util::now();
+
+  BOOST_REQUIRE_LT (t, 1.0);
+}
+
 BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
 {
   BOOST_REQUIRE_EQUAL (fhg::log::format ("%%", fhg::log::LogEvent()), "%");
@@ -46,7 +64,7 @@ BOOST_AUTO_TEST_CASE (severity)
 
 BOOST_AUTO_TEST_CASE (file)
 {
-  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::DEBUG
                                  , "tests/test_formatter.cpp"
                                  , "main", __LINE__, "hello"
                                  );
@@ -55,7 +73,7 @@ BOOST_AUTO_TEST_CASE (file)
 
 BOOST_AUTO_TEST_CASE (path)
 {
-  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::DEBUG
                                  , "tests/test_formatter.cpp"
                                  , "main", __LINE__, "hello"
                                  );
@@ -64,7 +82,7 @@ BOOST_AUTO_TEST_CASE (path)
 
 BOOST_AUTO_TEST_CASE (function)
 {
-  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::DEBUG
                                  , "tests/test_formatter.cpp"
                                  , "main (int ac, char** av)", __LINE__, "hello"
                                  );
@@ -73,7 +91,7 @@ BOOST_AUTO_TEST_CASE (function)
 
 BOOST_AUTO_TEST_CASE (module)
 {
-  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::DEBUG
                                  , "tests/test_formatter.cpp"
                                  , "main", __LINE__, "hello"
                                  );
@@ -82,7 +100,7 @@ BOOST_AUTO_TEST_CASE (module)
 
 BOOST_AUTO_TEST_CASE (line)
 {
-  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::DEBUG
                                  , "tests/test_formatter.cpp"
                                  , "main", 1002, "hello"
                                  );
@@ -105,7 +123,7 @@ BOOST_AUTO_TEST_CASE (logger)
 {
   //! \todo This should actually test something:
   //! put mutiple loggers in a chain, send event through
-  const fhg::log::LogEvent event ( fhg::log::LogLevel::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::DEBUG
                                  , "tests/test_formatter.cpp"
                                  , "main", 1002, "hello"
                                  );

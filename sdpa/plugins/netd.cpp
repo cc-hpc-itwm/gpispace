@@ -7,9 +7,11 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <fhglog/format.hpp>
-#include <fhglog/MemoryAppender.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/handle.hpp>
+#include <gspc/net/io.hpp>
+#include <gspc/net/serve.hpp>
+#include <gspc/net/server.hpp>
 #include <gspc/net/service/echo.hpp>
 
 #include <fhg/plugin/plugin.hpp>
@@ -25,11 +27,6 @@ public:
     gspc::net::initialize (nthreads);
 
     gspc::net::handle ("/service/echo", gspc::net::service::echo ());
-
-    gspc::net::handle
-      ( "/service/backlog"
-      , boost::bind (&DaemonImpl::service_backlog, this, _1, _2, _3)
-      );
 
     m_url = fhg_kernel()->get ("url", "tcp://*");
 
@@ -72,26 +69,6 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 private:
-  void service_backlog ( std::string const &dst
-                       , gspc::net::frame const &rqst
-                       , gspc::net::user_ptr user
-                       )
-  {
-    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
-
-    fhg::log::MemoryAppender::backlog_t backlog =
-      fhg::log::global_memory_appender()->backlog ();
-
-    std::ostringstream oss;
-    BOOST_REVERSE_FOREACH (fhg::log::LogEvent const &evt, backlog)
-    {
-      oss << evt;
-    }
-    rply.set_body (oss.str());
-
-    user->deliver (rply);
-  }
-
   std::string             m_url;
   std::string             m_listen_url;
 

@@ -118,7 +118,7 @@ try
       const pnet::type::value::value_type val
         (expr::parse::parser (value).eval_all());
 
-      if (not we::type::content::is_subnet (act.transition()))
+      if (not act.transition().net())
         {
           const port_values_type::const_iterator pos
             (port_values.find (port_name));

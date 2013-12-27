@@ -3,7 +3,10 @@
 #include <iostream>
 #include <string>
 
-#include <gspc/net.hpp>
+#include <gspc/net/error.hpp>
+#include <gspc/net/frame_builder.hpp>
+#include <gspc/net/frame_util.hpp>
+#include <gspc/net/server/queue_manager.hpp>
 #include <gspc/kvs/kvs.hpp>
 
 #include <fhg/assert.hpp>

@@ -13,7 +13,10 @@
 
 #include <signal.h>
 
-#include <gspc/net.hpp>
+#include <gspc/net/error.hpp>
+#include <gspc/net/frame_builder.hpp>
+#include <gspc/net/handle.hpp>
+#include <gspc/net/user.hpp>
 #include <gspc/rif/manager.hpp>
 #include <gspc/rif/proc_info.hpp>
 #include <gspc/rif/supervisor.hpp>

@@ -1,50 +1,39 @@
-/*
- * =====================================================================================
- *
- *       Filename:  main.cpp
- *
- *    Description:  log server daemon
- *
- *        Version:  1.0
- *        Created:  10/19/2009 09:31:40 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
-#include <sstream>
-#include <cstdlib>
-#include <csignal>
-
+#include <fhglog/appender/stream.hpp>
 #include <fhglog/fhglog.hpp>
-#include <fhglog/remote/LogServer.hpp>
-#include <fhglog/StreamAppender.hpp>
-#include <fhglog/FilteringAppender.hpp>
 #include <fhglog/format.hpp>
+#include <fhglog/remote/server.hpp>
+
 #include <boost/program_options.hpp>
 
-boost::asio::io_service io_service;
-namespace po = boost::program_options;
+#include <csignal>
+#include <cstdlib>
+#include <sstream>
 
-void signal_handler(int)
+namespace
 {
-  io_service.stop();
+  boost::asio::io_service io_service;
+
+  void signal_handler(int)
+  {
+    io_service.stop();
+  }
 }
 
 int main(int argc, char **argv)
+try
 {
+  namespace po = boost::program_options;
+
   po::options_description desc("options");
 
   desc.add_options()
     ("help,h", "this message")
-    ("port,p", po::value<unsigned short>()->default_value(FHGLOG_DEFAULT_PORT), "port to listen on")
+    ("port,p", po::value<unsigned short>(), "port to listen on")
     ("quiet,q", "be quiet")
     ("verbose,v", po::value<unsigned int>()->default_value(0), "verbosity level")
-    ("color,c", po::value<std::string>()->default_value("auto"), "colored output")
+    ("color,c", po::value<std::string>()->default_value("off"), "colored output")
     ( "format,f", po::value<std::string>()->default_value("short")
     , "possible values:\n"
     "  short:\t use a short logging format (eq. to \"%s: %l %p:%L - %m%n\")\n"
@@ -68,16 +57,7 @@ int main(int argc, char **argv)
     ;
 
   po::variables_map vm;
-  try
-  {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "invalid argument: " << ex.what() << std::endl;
-    std::cerr << "try " << argv[0] << " -h to get some help" << std::endl;
-    return EXIT_FAILURE;
-  }
+  po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
 
   if (vm.count("help"))
@@ -87,96 +67,39 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  const std::string color (vm["color"].as<std::string>());
-  const unsigned short port (vm["port"].as<unsigned short>());
-  const std::string fmt_string (vm["format"].as<std::string>());
+  fhg::log::Logger::ptr_t l (fhg::log::Logger::get ("server"));
 
-  signal(SIGINT, signal_handler);
-  signal(SIGTERM, signal_handler);
+  l->setLevel (fhg::log::TRACE);
 
-  fhg::log::StreamAppender::ColorMode color_mode
-    (fhg::log::StreamAppender::COLOR_OFF);
-  if (color == "on")
-    color_mode = fhg::log::StreamAppender::COLOR_ON;
+  const std::string format_string (vm["format"].as<std::string>());
 
-  // my own output goes to stderr
-  fhg::log::getLogger().addAppender
-    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( std::clog
-                                                            , fhg::log::default_format::SHORT()
-                                                            , color_mode
-                                                            )
-                               )
+  l->addAppender
+    ( fhg::log::Appender::ptr_t
+      ( new fhg::log::StreamAppender
+        ( std::cout
+        , format_string == "full" ? fhg::log::default_format::LONG()
+        : format_string == "short" ? fhg::log::default_format::SHORT()
+        : fhg::log::check_format (format_string)
+        , vm["color"].as<std::string>() == "on"
+        ? fhg::log::StreamAppender::COLOR_ON
+        : fhg::log::StreamAppender::COLOR_OFF
+        )
+      )
     );
 
-  fhg::log::LogLevel level (fhg::log::LogLevel::INFO);
-  if (vm.count("quiet"))
-  {
-    level = fhg::log::LogLevel::ERROR;
-  }
-  else
-  {
-    switch (vm["verbose"].as<unsigned int> ())
-    {
-    case 0:
-      level = fhg::log::LogLevel::WARN;
-      break;
-    case 1:
-      level = fhg::log::LogLevel::INFO;
-      break;
-    case 2:
-      level = fhg::log::LogLevel::DEBUG;
-      break;
-    default:
-      level = fhg::log::LogLevel::TRACE;
-      break;
-    }
-  }
+  fhg::log::remote::LogServer const
+    server (l, io_service, vm["port"].as<unsigned short>());
 
-  fhg::log::getLogger().setLevel (level);
+  signal (SIGINT, signal_handler);
+  signal (SIGTERM, signal_handler);
 
-  std::string fmt (fmt_string);
-  if      (fmt_string == "full")  fmt = fhg::log::default_format::LONG();
-  else if (fmt_string == "short") fmt = fhg::log::default_format::SHORT();
-  else
-  {
-    try
-    {
-      fhg::log::check_format (fmt);
-    }
-    catch (std::exception const &ex)
-    {
-      std::cerr << "invalid format: " << ex.what () << std::endl;
-      return EXIT_FAILURE;
-    }
-  }
-
-  // remote messages go to stdout
-  fhg::log::Appender::ptr_t appender
-    (new fhg::log::StreamAppender( std::cout
-                                 , fmt
-                                 , color_mode
-                                 )
-    );
-
-  appender = fhg::log::Appender::ptr_t
-    ( new fhg::log::FilteringAppender ( appender
-                                      , fhg::log::Filter::ptr_t
-                                      (new fhg::log::LevelFilter(level))
-                                      )
-    );
-
-  try
-  {
-    fhg::log::remote::LogServer *server
-      (new fhg::log::remote::LogServer(appender, io_service, port));
-    io_service.run();
-    LOG(INFO, "done.");
-    delete server;
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << "Exception occured: " << e.what() << std::endl;
-  }
+  io_service.run();
 
   return 0;
+}
+catch (const std::exception& e)
+{
+  std::cerr << "Exception occured: " << e.what() << std::endl;
+
+  return EXIT_FAILURE;
 }

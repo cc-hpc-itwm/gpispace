@@ -1,5 +1,3 @@
-/* -*- mode: c++ -*- */
-
 #include "shell.hpp"
 
 // readline

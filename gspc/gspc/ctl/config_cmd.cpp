@@ -12,11 +12,7 @@ namespace gspc
   {
     namespace cmd
     {
-      int config_cmd ( std::vector<std::string> const & argv
-                     , std::istream &inp
-                     , std::ostream &out
-                     , std::ostream &err
-                     )
+      int config_cmd (std::vector<std::string> const& argv)
       {
         enum config_mode_t
         {
@@ -43,7 +39,7 @@ namespace gspc
           if (arg == "--help" || arg == "-h")
           {
             ++i;
-            err << "usage: config [<file-option>] [type] command..."  << std::endl
+            std::cerr << "usage: config [<file-option>] [type] command..."  << std::endl
                 <<                                                       std::endl
                 << "   file-options"                                  << std::endl
                 << "       --user : selects the users global config"  << std::endl
@@ -51,13 +47,6 @@ namespace gspc
                 << "       --site : selects the site config"          << std::endl
                 << "       -f | --file file : use this file"          << std::endl
                 <<                                                       std::endl
-              /*
-                << "   types"                                         << std::endl
-                << "       --int : value is an integer"               << std::endl
-                << "       --bool : value is a boolean"               << std::endl
-                << "       --string : value is a string"              << std::endl
-                <<                                                       std::endl
-              */
                 << "   available commands"                            << std::endl
                 << "       --add name value"                          << std::endl
                 << "       --get name [regex]"                        << std::endl
@@ -95,7 +84,7 @@ namespace gspc
             }
             else
             {
-              err << "config: missing argument to '--file'" << std::endl;
+              std::cerr << "config: missing argument to '--file'" << std::endl;
               return EX_USAGE;
             }
           }
@@ -126,7 +115,7 @@ namespace gspc
             }
             else
             {
-              err << "config: missing argument(s) to '--set'" << std::endl;
+              std::cerr << "config: missing argument(s) to '--set'" << std::endl;
               return EX_USAGE;
             }
           }
@@ -141,7 +130,7 @@ namespace gspc
             }
             else
             {
-              err << "config: missing argument(s) to '--add'" << std::endl;
+              std::cerr << "config: missing argument(s) to '--add'" << std::endl;
               return EX_USAGE;
             }
           }
@@ -156,7 +145,7 @@ namespace gspc
             }
             else
             {
-              err << "config: missing argument to '--unset'" << std::endl;
+              std::cerr << "config: missing argument to '--unset'" << std::endl;
               return EX_USAGE;
             }
           }
@@ -181,7 +170,7 @@ namespace gspc
             }
             else
             {
-              err << "config: missing argument to '--replace'" << std::endl;
+              std::cerr << "config: missing argument to '--replace'" << std::endl;
               return EX_USAGE;
             }
           }
@@ -202,7 +191,7 @@ namespace gspc
           {
             if (i == argv.size ())
             {
-              err << "usage: config [<file-option>] --get key [value-regex]"
+              std::cerr << "usage: config [<file-option>] --get key [value-regex]"
                   << std::endl;
               return EX_USAGE;
             }
@@ -228,7 +217,7 @@ namespace gspc
           {
             if (i == argv.size ())
             {
-              err << "usage: config [<file-option>] --get-all key [value-regex]"
+              std::cerr << "usage: config [<file-option>] --get-all key [value-regex]"
                   << std::endl;
               return EX_USAGE;
             }
@@ -268,7 +257,7 @@ namespace gspc
             flat_list_t flat_list = config_list (cfg);
             for (flat_list_t::const_iterator it = flat_list.begin () ; it != flat_list.end () ; ++it)
             {
-              out << it->first << "=" << it->second << std::endl;
+              std::cout << it->first << "=" << it->second << std::endl;
             }
           }
           return 0;
@@ -276,7 +265,7 @@ namespace gspc
           {
             if ((argv.size () - i) < 2)
             {
-              err << "usage: config [<file-option>] --add key value"
+              std::cerr << "usage: config [<file-option>] --add key value"
                   << std::endl;
               return EX_USAGE;
             }
@@ -301,7 +290,7 @@ namespace gspc
           {
             if ((argv.size () - i) < 1)
             {
-              err << "usage: config [<file-option>] --unset key [value-regex]"
+              std::cerr << "usage: config [<file-option>] --unset key [value-regex]"
                   << std::endl;
               return EX_USAGE;
             }
@@ -321,7 +310,7 @@ namespace gspc
           {
             if ((argv.size () - i) < 2)
             {
-              err << "usage: config [<file-option>] --replace key value [value-regex]"
+              std::cerr << "usage: config [<file-option>] --replace key value [value-regex]"
                   << std::endl;
               return EX_USAGE;
             }
@@ -339,7 +328,7 @@ namespace gspc
           }
           return 0;
         default:
-          err << "mode " << mode << " not yet implemented" << std::endl;
+          std::cerr << "mode " << mode << " not yet implemented" << std::endl;
           return EX_SOFTWARE;
         }
 

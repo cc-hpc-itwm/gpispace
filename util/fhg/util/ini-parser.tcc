@@ -1,5 +1,3 @@
-// -*- mode: c++; -*-
-
 #include "ini-parser.hpp"
 #include "ini-parser-except.hpp"
 

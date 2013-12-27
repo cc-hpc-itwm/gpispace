@@ -30,11 +30,59 @@ namespace we
           return boost::none;
         }
       };
+      class visitor_net
+        : public boost::static_visitor<boost::optional<const petri_net::net&> >
+      {
+      public:
+        boost::optional<const petri_net::net&>
+          operator() (const expression_t&) const
+        {
+          return boost::none;
+        }
+        boost::optional<const petri_net::net&>
+          operator() (const module_call_t&) const
+        {
+          return boost::none;
+        }
+        boost::optional<const petri_net::net&>
+          operator() (const petri_net::net& n) const
+        {
+          return n;
+        }
+      };
+      class visitor_module_call
+        : public boost::static_visitor<boost::optional<const module_call_t&> >
+      {
+      public:
+        boost::optional<const module_call_t&>
+          operator() (const expression_t&) const
+        {
+          return boost::none;
+        }
+        boost::optional<const module_call_t&>
+          operator() (const module_call_t& m) const
+        {
+          return m;
+        }
+        boost::optional<const module_call_t&>
+          operator() (const petri_net::net&) const
+        {
+          return boost::none;
+        }
+      };
     }
 
     boost::optional<const expression_t&> transition_t::expression() const
     {
       return boost::apply_visitor (visitor_expression(), data());
+    }
+    boost::optional<const petri_net::net&> transition_t::net() const
+    {
+      return boost::apply_visitor (visitor_net(), data());
+    }
+    boost::optional<const module_call_t&> transition_t::module_call() const
+    {
+      return boost::apply_visitor (visitor_module_call(), data());
     }
 
     // ********************************************************************* //

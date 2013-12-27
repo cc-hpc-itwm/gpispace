@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 include_directories(${FVM_INCLUDE_DIR})
 
 include(fhg_plugin_macros)

@@ -2,7 +2,7 @@
 
 # mirko.rahn@itwm.fraunhofer.de
 
-fhg_add_test (test_bytearray.cpp
+fhg_add_test (bytearray.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES pnet
 )

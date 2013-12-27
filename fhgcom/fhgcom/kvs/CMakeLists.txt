@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 set (hdrs
   backend.hpp
   cache.hpp

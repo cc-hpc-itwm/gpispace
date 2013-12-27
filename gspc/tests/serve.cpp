@@ -12,7 +12,7 @@
 
 #include <fhg/util/now.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/client.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/error.hpp>
 #include <gspc/net/serve.hpp>

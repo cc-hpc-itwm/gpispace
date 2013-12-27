@@ -13,8 +13,6 @@ namespace gspc
   {
     namespace make
     {
-      frame const & heartbeat_frame ();
-
       // server -> client frames
       frame error_frame (frame const &, error_code_t ec, std::string const&);
       frame error_frame (error_code_t ec, const char *message);

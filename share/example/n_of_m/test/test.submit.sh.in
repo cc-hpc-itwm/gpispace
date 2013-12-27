@@ -9,8 +9,6 @@ DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 DIR_SOURCE="${DIR_TEST}/.."
 
 OUT="${DIR_BUILD}/n_of_m.out"
-CMP="${DIR_BUILD}/run.out"
-CMP_ORIG="${DIR_TEST}/out.cmp"
 HOSTFILE="${DIR_BUILD}/hostfile"
 
 make_src='make BUILDDIR="${DIR_BUILD}" LIB_DESTDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
@@ -18,7 +16,7 @@ make_src='make BUILDDIR="${DIR_BUILD}" LIB_DESTDIR="${DIR_BUILD}" -C "${DIR_SOUR
 cleanup()
 {
   sdpa stop
-  rm -rf "${CMP}" "${HOSTFILE}"
+  rm -rf "${HOSTFILE}"
   eval ${make_src} uninstall
   eval ${make_src} clean
   cleanup_dir_build
@@ -29,7 +27,7 @@ trap 'cleanup' EXIT
 measured "build-wrapper" ${make_src} lib                    || die $EX_ERR_RUN
 measured "install" ${make_src} install                      || die $EX_ERR_RUN
 
-hostname > "${HOSTFILE}"
+hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 
 measured "setup" SDPA_PERFORM_UNATTENDED_SETUP=1 sdpa setup || die $EX_ERR_ENV
 

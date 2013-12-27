@@ -19,7 +19,7 @@ enum my_exit_codes
 
 int main(int ac, char *av[])
 {
-  FHGLOG_SETUP(ac,av);
+  FHGLOG_SETUP();
 
   namespace po = boost::program_options;
 

@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 include_directories (${MMGR_INCLUDE_DIR})
 
 set (pc-srcs pc.cpp)

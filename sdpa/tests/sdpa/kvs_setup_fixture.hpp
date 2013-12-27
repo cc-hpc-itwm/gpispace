@@ -22,7 +22,7 @@ struct KVSSetup
     , m_serv (m_pool, m_kvsd, kvs_host(), kvs_port(), true)
     , m_thrd (boost::bind (&fhg::com::io_service_pool::run, &m_pool))
   {
-	  setenv("FHGLOG_level", "MIN", true);
+	  setenv("FHGLOG_level", "TRACE", true);
 	  FHGLOG_SETUP();
 
 	  m_serv.start();

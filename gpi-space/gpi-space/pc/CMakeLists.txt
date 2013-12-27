@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 add_subdirectory (type)
 add_subdirectory (proto)
 add_subdirectory (client)

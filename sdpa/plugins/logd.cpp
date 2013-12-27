@@ -2,35 +2,13 @@
 
 #include <boost/function.hpp>
 
-#include <fhglog/remote/LogServer.hpp>
+#include <fhglog/appender/call.hpp>
+#include <fhglog/remote/server.hpp>
 #include <fhglog/Appender.hpp>
 #include <fhglog/fhglog.hpp>
 #include <fhg/plugin/plugin.hpp>
 
 #include <fhg/util/threadname.hpp>
-
-namespace detail
-{
-  class FunctionAppender : public fhg::log::Appender
-  {
-  public:
-    typedef boost::function<void (const fhg::log::LogEvent&)> event_handler_t;
-
-    FunctionAppender (event_handler_t h)
-      : m_handler (h)
-    {}
-
-    void append (fhg::log::LogEvent const &evt)
-    {
-      m_handler(evt);
-    }
-
-    void flush() {}
-  private:
-    event_handler_t m_handler;
-    //    unsigned short m_port;
-  };
-}
 
 typedef boost::shared_ptr<fhg::log::remote::LogServer> logserver_t;
 
@@ -42,16 +20,20 @@ public:
   {
     m_port = fhg_kernel()->get<unsigned short>("port", "3456");
 
+    fhg::log::Logger::ptr_t l (fhg::log::Logger::get ("logd"));
+
+    l->addAppender
+      ( fhg::log::Appender::ptr_t
+        ( new fhg::log::appender::call (boost::bind ( &LogdPluginImpl::emit
+                                                    , this
+                                                    , _1
+                                                    )
+                                       )
+        )
+      );
+
     m_log_server = logserver_t
-      (new fhg::log::remote::LogServer
-      ( fhg::log::Appender::ptr_t (new detail::FunctionAppender
-                                  ( boost::bind( &LogdPluginImpl::emit
-                                               , this
-                                               , _1
-                                               )
-                                  )
-                                  )
-      , m_io_service, m_port));
+      (new fhg::log::remote::LogServer (l, m_io_service, m_port));
 
     m_io_thread = boost::thread
       (boost::bind (&boost::asio::io_service::run, &m_io_service));

@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
 
 namespace gspc
 {
@@ -11,11 +10,7 @@ namespace gspc
   {
     namespace cmd
     {
-      int config_cmd ( std::vector<std::string> const &argv
-                     , std::istream &inp = std::cin
-                     , std::ostream &out = std::cout
-                     , std::ostream &err = std::cerr
-                     );
+      int config_cmd (std::vector<std::string> const& argv);
     }
   }
 }

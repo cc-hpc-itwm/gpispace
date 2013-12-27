@@ -10,8 +10,6 @@ DIR_SOURCE="${DIR_TEST}/.."
 DIR_MODULE="${DIR_SOURCE}/src"
 
 OUT="${DIR_BUILD}/avg_stddev.out"
-CMP="${DIR_BUILD}/run.out"
-CMP_ORIG="${DIR_TEST}/out.cmp"
 DAT="${DIR_BUILD}/dat"
 HOSTFILE="${DIR_BUILD}/hostfile"
 
@@ -21,7 +19,7 @@ make_gen='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
 cleanup()
 {
   sdpa stop
-  rm -rf "${CMP}" "${DAT}" "${HOSTFILE}"
+  rm -rf "${DAT}" "${HOSTFILE}"
   eval ${make_src} uninstall
   eval ${make_src} clean
   eval ${make_gen} clean

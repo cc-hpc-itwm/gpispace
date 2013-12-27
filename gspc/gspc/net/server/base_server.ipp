@@ -1,4 +1,3 @@
-// -*- mode: c++ -*-
 #include "base_server.hpp"
 
 #include <fhg/assert.hpp>
@@ -99,7 +98,7 @@ namespace gspc
       template <class Proto>
       void base_server<Proto>::start_accept ()
       {
-        m_new_connection.reset (new connection ( m_active_connections_id++
+        m_new_connection.reset (new connection ( ++m_active_connections_id
                                                , m_io_service
                                                , *this
                                                )

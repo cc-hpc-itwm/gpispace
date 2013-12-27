@@ -91,7 +91,6 @@ namespace gspc
         typedef std::set<user_ptr> user_set_t;
 
         bool is_connected (user_ptr) const;
-        void set_heartbeat_info (heartbeat_info_t const &);
 
         //
         // MEMBER VARIABLES
@@ -109,8 +108,6 @@ namespace gspc
 
         // used to handle services
         service_demux_t & m_service_demux;
-
-        heartbeat_info_t m_heartbeat_info;
       };
     }
   }

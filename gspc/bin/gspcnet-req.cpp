@@ -12,7 +12,14 @@
 
 #include <fhg/util/split.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/client.hpp>
+#include <gspc/net/dial.hpp>
+#include <gspc/net/error.hpp>
+#include <gspc/net/frame.hpp>
+#include <gspc/net/frame_handler.hpp>
+#include <gspc/net/header_util.hpp>
+#include <gspc/net/io.hpp>
+#include <gspc/net/user.hpp>
 
 static std::string consume_stream (std::istream &is)
 {

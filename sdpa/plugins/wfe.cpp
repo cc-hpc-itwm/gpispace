@@ -27,7 +27,11 @@
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/capability.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/frame.hpp>
+#include <gspc/net/frame_builder.hpp>
+#include <gspc/net/handle.hpp>
+#include <gspc/net/user.hpp>
+
 #include <gspc/drts/context.hpp>
 
 #include <we/loader/loader.hpp>

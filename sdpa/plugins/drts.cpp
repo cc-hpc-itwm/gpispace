@@ -32,7 +32,8 @@
 #include <boost/shared_ptr.hpp>
 #include <sdpa/types.hpp>
 
-#include <gspc/net.hpp>
+#include <gspc/net/handle.hpp>
+#include <gspc/net/frame_builder.hpp>
 
 class DRTSImpl : FHG_PLUGIN
                , public drts::DRTS

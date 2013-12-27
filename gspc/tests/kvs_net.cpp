@@ -5,7 +5,11 @@
 #include <gspc/kvs/impl/kvs_impl.hpp>
 #include <gspc/kvs/impl/kvs_net_frontend.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
-#include <gspc/net.hpp>
+#include <gspc/net/handle.hpp>
+#include <gspc/net/io.hpp>
+#include <gspc/net/serve.hpp>
+#include <gspc/net/server.hpp>
+#include <gspc/net/service/strip_prefix.hpp>
 
 #include <we/type/value/peek.hpp>
 #include <we/type/value/read.hpp>

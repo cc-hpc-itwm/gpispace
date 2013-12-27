@@ -6,8 +6,14 @@
 #include <stdlib.h>
 
 #include <vector>
-#include <gspc/net.hpp>
+#include <gspc/net/client.hpp>
+#include <gspc/net/dial.hpp>
+#include <gspc/net/frame.hpp>
+#include <gspc/net/frame_handler.hpp>
+#include <gspc/net/frame_io.hpp>
+#include <gspc/net/io.hpp>
 #include <gspc/net/parse/parser.hpp>
+#include <gspc/net/user.hpp>
 
 static struct termios oldt;
 

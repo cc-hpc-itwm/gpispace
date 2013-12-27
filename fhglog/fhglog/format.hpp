@@ -1,9 +1,17 @@
 #ifndef FHG_LOG_FORMAT_HPP
 #define FHG_LOG_FORMAT_HPP 1
 
+#include <fhglog/event.hpp>
+
+#include <fhg/util/first_then.hpp>
+#include <fhg/util/save_stream_flags.hpp>
+#include <fhg/util/parse/position.hpp>
+
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+#include <boost/format.hpp>
+
 #include <string>
-#include <fhglog/LogEvent.hpp>
-#include <fhglog/format_flag.hpp>
 
 namespace fhg
 {
@@ -11,62 +19,99 @@ namespace fhg
   {
     inline
     std::ostream & format( std::ostream & os
-                         , const std::string &_fmt
+                         , const std::string & format
                          , const LogEvent &evt
                          )
     {
-      std::string::const_iterator c(_fmt.begin());
-      std::string::size_type len(_fmt.size());
-      while (len > 0)
+      fhg::util::parse::position_string pos (format);
+
+      while (!pos.end())
       {
-        if (*c == fhg::log::fmt::flag::OPEN::value)
+        if (*pos != '%')
         {
-          ++c; --len;
-          if (0 == len)
+          os << *pos;
+          ++pos;
+        }
+        else
+        {
+          ++pos;
+
+          if (pos.end())
           {
             throw std::runtime_error
               ("Format string ends with a single opening character!");
           }
 
-          // what do we have
-          switch (*c)
+          switch (*pos)
           {
-#define HDL(f)                                                         \
-            case fmt::format_traits<fmt::flag:: f>::flag::value:        \
-              fmt::format_traits<fmt::flag:: f>::flag::format(evt, os, *c); \
-            break
+          case '%': os << '%'; break;
+          case 's': os << string (evt.severity())[0]; break;
+          case 'S': os << string (evt.severity()); break;
+          case 'p': os << boost::filesystem::path (evt.path()).filename().string(); break;
+          case 'P': os << evt.path(); break;
+          case 'F': os << evt.function(); break;
+          case 'M': os << boost::filesystem::path (evt.path()).stem().string(); break;
+          case 'L': os << evt.line(); break;
+          case 'm': os << evt.message(); break;
+          case 'R': os << evt.pid(); break;
+          case 'n': os << "\n"; break;
+          case 'd':
+            {
+              char buf[128];
 
-            HDL(OPEN);
-            HDL(SHORT_SEVERITY);
-            HDL(SEVERITY);
-            HDL(FILE);
-            HDL(PATH);
-            HDL(FUNCTION);
-            HDL(MODULE);
-            HDL(LINE);
-            HDL(MESSAGE);
-            HDL(DATE);
-            HDL(TSTAMP);
-            HDL(TID);
-            HDL(PID);
-            HDL(TAGS);
-            HDL(LOGGER);
-            HDL(ENDL);
+              memset (buf, 0, sizeof (buf));
+
+              const time_t tm (static_cast<time_t> (evt.tstamp()));
+
+              ctime_r (&tm, buf);
+
+              buf[std::find (buf, buf + sizeof (buf), '\n') - buf] = 0;
+              os << buf;
+            }
+            break;
+          case 't':
+            {
+              fhg::util::save_stream_flags const _ (os);
+              os.unsetf (std::ios_base::scientific);
+              os.setf (std::ios_base::fixed);
+              os << evt.tstamp();
+            }
+            break;
+          case 'T':
+            {
+              fhg::util::save_stream_flags const _ (os);
+              os << std::hex << evt.tid();
+            }
+            break;
+          case '#':
+            {
+              fhg::util::first_then<std::string> sep ("#", ",#");
+
+              BOOST_FOREACH (std::string const& tag, evt.tags())
+              {
+                os << sep << tag;
+              }
+            }
+            break;
+          case 'l':
+            {
+              fhg::util::first_then<std::string> sep ("", "->");
+
+              BOOST_FOREACH (std::string const& t, evt.trace())
+              {
+                os << sep << t;
+              }
+            }
+            break;
           default:
-            HDL(UNDEF);
-#undef HDL
+            throw std::runtime_error
+              ((boost::format ("format code not defined: %1%") % *pos).str());
           }
-        }
-        else
-        {
-          os << *c;
-        }
 
-        if (len)
-        {
-          ++c; --len;
+          ++pos;
         }
       }
+
       return os;
     }
 
@@ -79,10 +124,11 @@ namespace fhg
     }
 
     inline
-    void check_format(const std::string & fmt)
+    std::string check_format(const std::string & fmt)
     {
       std::ostringstream os;
       format (os, fmt, LogEvent());
+      return fmt;
     }
 
     struct default_format
@@ -97,20 +143,6 @@ namespace fhg
         static std::string f("%t %S %l pid:%R thread:%T %p:%L (%F) - %m%n");
         return f;
       }
-    };
-
-    struct formatter
-    {
-      formatter (const std::string & s = default_format::SHORT())
-        : fmt_(s)
-      {}
-
-      std::string operator () (const LogEvent & e) const
-      {
-        return format(fmt_, e);
-      }
-    private:
-      std::string fmt_;
     };
   }
 }

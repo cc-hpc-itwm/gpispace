@@ -38,7 +38,6 @@ BOOST_FIXTURE_TEST_SUITE( suite, F )
 
 BOOST_AUTO_TEST_CASE (test_exec)
 {
-  int rc;
   int status;
   gspc::rif::proc_t p;
   handler_t handler;
@@ -56,8 +55,7 @@ BOOST_AUTO_TEST_CASE (test_exec)
   BOOST_REQUIRE_EQUAL (handler.proc, p);
   BOOST_REQUIRE_EQUAL (handler.state, gspc::rif::PROCESS_STARTED);
 
-  rc = manager.wait (p, &status);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.wait (p, &status), 0);
   BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
   BOOST_REQUIRE_EQUAL (handler.proc, p);
@@ -66,7 +64,6 @@ BOOST_AUTO_TEST_CASE (test_exec)
 
 BOOST_AUTO_TEST_CASE (test_echo_no_newline)
 {
-  int rc;
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
@@ -81,15 +78,13 @@ BOOST_AUTO_TEST_CASE (test_echo_no_newline)
   p = manager.exec (argv);
   BOOST_REQUIRE_GT (p, 0);
 
-  rc = manager.wait (p, &status);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.wait (p, &status), 0);
   BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
 }
 
 BOOST_AUTO_TEST_CASE (test_no_output)
 {
-  int rc;
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
@@ -101,15 +96,13 @@ BOOST_AUTO_TEST_CASE (test_no_output)
   p = manager.exec (argv);
   BOOST_REQUIRE_GT (p, 0);
 
-  rc = manager.wait (p, &status);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.wait (p, &status), 0);
   BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
 }
 
 BOOST_AUTO_TEST_CASE (test_cat)
 {
-  int rc;
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
@@ -122,8 +115,7 @@ BOOST_AUTO_TEST_CASE (test_cat)
   p = manager.exec (argv);
   BOOST_REQUIRE_GT (p, 0);
 
-  rc = manager.wait (p, &status);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.wait (p, &status), 0);
   BOOST_REQUIRE (WIFEXITED (status));
   BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
 }
@@ -132,7 +124,6 @@ BOOST_AUTO_TEST_CASE (test_many_processes)
 {
   static const std::size_t NUM_PROCS = 128;
 
-  int rc;
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
@@ -146,19 +137,16 @@ BOOST_AUTO_TEST_CASE (test_many_processes)
     p = manager.exec (argv);
     BOOST_REQUIRE_GT (p, 0);
 
-    rc = manager.wait (p, &status);
-    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL (manager.wait (p, &status), 0);
     BOOST_REQUIRE (WIFEXITED (status));
     BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
 
-    rc = manager.remove (p);
-    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL (manager.remove (p), 0);
   }
 }
 
 BOOST_AUTO_TEST_CASE (test_sigterm)
 {
-  int rc;
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
@@ -170,24 +158,20 @@ BOOST_AUTO_TEST_CASE (test_sigterm)
   p = manager.exec (argv);
   BOOST_REQUIRE_GT (p, 0);
 
-  rc = manager.kill (p, SIGTERM);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.kill (p, SIGTERM), 0);
 
-  rc = manager.wait (p, &status);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.wait (p, &status), 0);
 
   BOOST_REQUIRE (WIFSIGNALED (status));
   BOOST_REQUIRE_EQUAL (WTERMSIG (status), SIGTERM);
 
-  rc = manager.remove (p);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.remove (p), 0);
 }
 
 BOOST_AUTO_TEST_CASE (test_parallel_sleeps)
 {
   const std::size_t NUM_PROCS = 128;
 
-  int rc;
   gspc::rif::manager_t manager;
   gspc::rif::proc_list_t ids;
 
@@ -215,13 +199,11 @@ BOOST_AUTO_TEST_CASE (test_parallel_sleeps)
   BOOST_FOREACH (gspc::rif::proc_t p, ids)
   {
     int status;
-    rc = manager.wait (p, &status);
-    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL (manager.wait (p, &status), 0);
     BOOST_REQUIRE (WIFEXITED (status));
     BOOST_REQUIRE_EQUAL (WEXITSTATUS (status), 0);
 
-    rc = manager.remove (p);
-    BOOST_REQUIRE_EQUAL (rc, 0);
+    BOOST_REQUIRE_EQUAL (manager.remove (p), 0);
   }
 
   std::cerr << ids.size () << " processes finished" << std::endl;
@@ -231,7 +213,6 @@ BOOST_AUTO_TEST_CASE (test_parallel_sleeps)
 
 BOOST_AUTO_TEST_CASE (test_proc_info)
 {
-  int rc;
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
@@ -245,41 +226,34 @@ BOOST_AUTO_TEST_CASE (test_proc_info)
   p = manager.exec (argv, gspc::rif::env_t ());
   BOOST_REQUIRE_GT (p, 0);
 
-  rc = manager.proc_info (p, info);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.proc_info (p, info), 0);
   BOOST_REQUIRE_EQUAL (info.id (), p);
   BOOST_REQUIRE_GT (info.pid (), 1);
   BOOST_REQUIRE_EQUAL (info.argv (), argv);
   BOOST_REQUIRE (info.env ().empty ());
   BOOST_REQUIRE (not info.status ());
 
-  rc = manager.kill (p, SIGTERM);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.kill (p, SIGTERM), 0);
 
-  rc = manager.wait (p, &status);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.wait (p, &status), 0);
 
   BOOST_REQUIRE (WIFSIGNALED (status));
   BOOST_REQUIRE_EQUAL (WTERMSIG (status), SIGTERM);
 
-  rc = manager.proc_info (p, info);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.proc_info (p, info), 0);
   BOOST_REQUIRE_EQUAL (info.id (), p);
   BOOST_REQUIRE_EQUAL (info.pid (), -1);
   BOOST_REQUIRE_EQUAL (info.argv (), argv);
   BOOST_REQUIRE (info.env ().empty ());
   BOOST_REQUIRE (info.status ());
 
-  rc = manager.remove (p);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.remove (p), 0);
 
-  rc = manager.proc_info (p, info);
-  BOOST_REQUIRE_EQUAL (rc, -ESRCH);
+  BOOST_REQUIRE_EQUAL (manager.proc_info (p, info), -ESRCH);
 }
 
 BOOST_AUTO_TEST_CASE (test_communicate)
 {
-  int rc;
   int status;
   gspc::rif::proc_t p;
   gspc::rif::manager_t manager;
@@ -295,10 +269,11 @@ BOOST_AUTO_TEST_CASE (test_communicate)
 
   const std::string text = "hello world!";
 
-  rc = manager.write (p, STDIN_FILENO, text.c_str (), text.size (), ec);
-  BOOST_REQUIRE_GT (rc, 0);
-  BOOST_REQUIRE_EQUAL ((std::size_t)rc, text.size ());
+  BOOST_REQUIRE_EQUAL ( manager.write (p, STDIN_FILENO, text.c_str (), text.size (), ec)
+                      , text.size ()
+                      );
 
+  int rc;
   do
   {
     rc = manager.read (p, STDOUT_FILENO, buf, sizeof(buf), ec);
@@ -309,20 +284,16 @@ BOOST_AUTO_TEST_CASE (test_communicate)
   BOOST_REQUIRE_GT (rc, 0);
   BOOST_REQUIRE_EQUAL ((std::size_t)rc, text.size ());
 
-  rc = manager.read (p, STDOUT_FILENO, buf, sizeof(buf), ec);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.read (p, STDOUT_FILENO, buf, sizeof(buf), ec), 0);
 
-  rc = manager.kill (p, SIGTERM);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.kill (p, SIGTERM), 0);
 
-  rc = manager.wait (p, &status);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.wait (p, &status), 0);
 
   BOOST_REQUIRE (WIFSIGNALED (status));
   BOOST_REQUIRE_EQUAL (WTERMSIG (status), SIGTERM);
 
-  rc = manager.remove (p);
-  BOOST_REQUIRE_EQUAL (rc, 0);
+  BOOST_REQUIRE_EQUAL (manager.remove (p), 0);
 }
 
 BOOST_AUTO_TEST_CASE (test_async_handler)

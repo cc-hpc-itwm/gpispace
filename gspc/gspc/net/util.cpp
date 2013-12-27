@@ -1,8 +1,6 @@
 #include "util.hpp"
 
-#include <limits.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <cstdlib>
 
 #include <stdexcept>
 #include <iterator>
@@ -128,49 +126,6 @@ namespace gspc
       {
         return std::string::npos;
       }
-    }
-
-    void join_host_port ( std::string const & host
-                        , std::string const & port
-                        , std::string & host_port
-                        )
-    {
-      if (host.find ('[') != std::string::npos)
-        throw std::invalid_argument ("host must not contain '[': " + host);
-      if (host.find (']') != std::string::npos)
-        throw std::invalid_argument ("host must not contain ']': " + host);
-      if (host.find (' ') != std::string::npos)
-        throw std::invalid_argument ("host must not contain ' ': " + host);
-
-      if (host.find (':') != std::string::npos)
-      {
-        host_port = "[" + host + "]";
-      }
-      else
-      {
-        host_port = host;
-      }
-
-      if (not port.empty ())
-      {
-        host_port = host_port + ":" + port;
-      }
-    }
-
-    static std::string s_hostname ()
-    {
-      char buf [HOST_NAME_MAX];
-      int rc = gethostname (buf, sizeof(buf));
-      if (0 == rc)
-        return std::string (buf);
-      else
-        return "localhost";
-    }
-
-    std::string const &hostname ()
-    {
-      static std::string h (s_hostname ());
-      return h;
     }
   }
 }

@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 set (hdrs
   api.hpp
   )

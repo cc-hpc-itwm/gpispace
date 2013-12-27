@@ -71,15 +71,8 @@ set (editor_ui_sources
   weaver/tv.cpp
 )
 
-set (editor_ui_uis
-  ui/PropertiesEditorForm.ui
-  ui/StructureEditorForm.ui
-)
-
 set (editor_ui_tomoc
   ui/StructureView.hpp
-  ui/StructureEditor.hpp
-  ui/PropertiesEditor.hpp
   ui/TransitionLibraryItem.hpp
   ui/TransitionLibraryModel.hpp
   ui/execution_monitor.hpp

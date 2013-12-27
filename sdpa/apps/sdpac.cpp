@@ -7,8 +7,8 @@
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/Configuration.hpp>
-#include <fhglog/FileAppender.hpp>
-#include <fhglog/StreamAppender.hpp>
+#include <fhglog/appender/file.hpp>
+#include <fhglog/appender/stream.hpp>
 
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
@@ -358,7 +358,7 @@ int main (int argc, char **argv) {
   {
     try
     {
-      fhg::log::getLogger().addAppender
+      fhg::log::Logger::get()->addAppender
         (fhg::log::Appender::ptr_t
         (new fhg::log::FileAppender( cfg.get<std::string>("logging.file")
                                    , "%t %s: %l %p:%L - %m%n"
@@ -374,7 +374,7 @@ int main (int argc, char **argv) {
 
   if (cfg.is_set("logging.tostderr"))
   {
-    fhg::log::getLogger().addAppender
+    fhg::log::Logger::get()->addAppender
       (fhg::log::Appender::ptr_t(new fhg::log::StreamAppender( std::cerr
                                                              , "%s: %p:%L - %m%n"
                                                              )
@@ -383,19 +383,19 @@ int main (int argc, char **argv) {
   }
   if (cfg.is_set("quiet"))
   {
-    fhg::log::getLogger().setLevel(fhg::log::LogLevel::ERROR);
+    fhg::log::Logger::get()->setLevel(fhg::log::ERROR);
   }
   else
   {
-    fhg::log::getLogger().setLevel(fhg::log::LogLevel::WARN);
+    fhg::log::Logger::get()->setLevel(fhg::log::WARN);
   }
 
   if (cfg.is_set("verbose"))
   {
     int lvl(cfg.get<int>("verbose"));
-    if (lvl > 0) fhg::log::getLogger().setLevel(fhg::log::LogLevel::INFO);
-    if (lvl > 1) fhg::log::getLogger().setLevel(fhg::log::LogLevel::DEBUG);
-    if (lvl > 2) fhg::log::getLogger().setLevel(fhg::log::LogLevel::TRACE);
+    if (lvl > 0) fhg::log::Logger::get()->setLevel(fhg::log::INFO);
+    if (lvl > 1) fhg::log::Logger::get()->setLevel(fhg::log::DEBUG);
+    if (lvl > 2) fhg::log::Logger::get()->setLevel(fhg::log::TRACE);
   }
 
   try

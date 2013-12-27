@@ -3,8 +3,8 @@
 #ifndef FHG_PNETE_UI_EXECUTION_MONITOR_WORKER_MODEL_HPP
 #define FHG_PNETE_UI_EXECUTION_MONITOR_WORKER_MODEL_HPP
 
-#include <fhglog/LogEvent.hpp>
-#include <fhglog/remote/LogServer.hpp>
+#include <fhglog/event.hpp>
+#include <fhglog/remote/server.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 

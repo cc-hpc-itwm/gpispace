@@ -19,6 +19,24 @@ namespace gspc
 {
   namespace ctl
   {
+    config_t config_read (std::istream &is);
+    config_t config_read (std::string const & file);
+    config_t config_read_site ();
+    config_t config_read_system ();
+    config_t config_read_user ();
+    void     config_write (config_t const &);
+    void     config_write (config_t const &, std::ostream &os);
+    std::string config_get ( config_t const &
+                           , std::string const &key
+                           , std::string const &value_regex=""
+                           );
+  }
+}
+
+namespace gspc
+{
+  namespace ctl
+  {
     namespace detail
     {
       class config_category : public boost::system::error_category
@@ -37,8 +55,6 @@ namespace gspc
             return "key did not contain a section";
           case error::config_no_name:
             return "key did not contain a name";
-          case error::config_no_such_key:
-            return "key not found";
           case error::config_invalid_key:
             return "invalid key";
           case error::config_invalid:

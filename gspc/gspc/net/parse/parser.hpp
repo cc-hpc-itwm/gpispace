@@ -45,9 +45,8 @@ namespace gspc
 
         void reset ();
 
-        template <typename InputIterator>
-        result_t parse ( InputIterator begin
-                       , InputIterator end
+        result_t parse ( const char* begin
+                       , const char* end
                        , gspc::net::frame & frame
                        );
       private:

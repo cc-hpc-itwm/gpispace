@@ -3,9 +3,9 @@
 
 #include <fhglog/fhglog.hpp>
 
-#define SDPA_LDECLARE_LOGGER(logger)           mutable ::fhg::log::logger_t logger
-#define SDPA_LDEFINE_LOGGER(logger, name) ::fhg::log::logger_t logger(::fhg::log::getLogger(name))
-#define SDPA_LINIT_LOGGER(logger, name)   logger(::fhg::log::getLogger(name))
+#define SDPA_LDECLARE_LOGGER(logger)           mutable ::fhg::log::Logger::ptr_t logger
+#define SDPA_LDEFINE_LOGGER(logger, name) ::fhg::log::Logger::ptr_t logger(::fhg::log::Logger::get(name))
+#define SDPA_LINIT_LOGGER(logger, name)   logger(::fhg::log::Logger::get(name))
 
 #define SDPA_DECLARE_LOGGER()         SDPA_LDECLARE_LOGGER(sdpa_logger)
 #define SDPA_DEFINE_LOGGER(hierarchy) SDPA_LDEFINE_LOGGER(sdpa_logger, hierarchy)

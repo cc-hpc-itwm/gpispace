@@ -19,7 +19,7 @@ for d in orchestrator aggregator
 do
 	rm -f "$d.log"
 	echo -n "starting daemon $d..."
-	FHGLOG_level=MIN ./$d > $d.log 2>&1 &
+	FHGLOG_level=TRACE ./$d > $d.log 2>&1 &
 	sleep 1
 	echo "done."
 done
@@ -41,7 +41,7 @@ do
 	#  -w [ --worker_url ] arg (=127.0.0.1:8000) Worker's url
 
 	echo -n "starting NRE_$i..."
-	FHGLOG_level=MIN ./nre -n "NRE_${i}" -u 127.0.0.1:$nre_port -m "aggregator_0" -p "127.0.0.1:5001" -w 127.0.0.1:$worker_port > nre.$i.log 2>&1 &
+	FHGLOG_level=TRACE ./nre -n "NRE_${i}" -u 127.0.0.1:$nre_port -m "aggregator_0" -p "127.0.0.1:5001" -w 127.0.0.1:$worker_port > nre.$i.log 2>&1 &
 	sleep 1
 done
 

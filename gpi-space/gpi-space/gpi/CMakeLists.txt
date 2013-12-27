@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 if(ENABLE_REAL_GPI)
   include_directories(${GPI_INCLUDE_DIR})
 endif(ENABLE_REAL_GPI)

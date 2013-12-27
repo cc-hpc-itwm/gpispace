@@ -1,14 +1,13 @@
-#include <fstream>
-#include <iostream>
-
+#include <fhglog/appender/stream.hpp>
 #include <fhglog/fhglog.hpp>
-#include <fhglog/StreamAppender.hpp>
-#include <fhglog/FilteringAppender.hpp>
 #include <fhglog/format.hpp>
 
 #include <fhg/util/parse/position.hpp>
 
 #include <boost/program_options.hpp>
+
+#include <fstream>
+#include <iostream>
 
 namespace po = boost::program_options;
 
@@ -45,17 +44,8 @@ int main(int argc, char **argv)
     ;
 
   po::variables_map vm;
-  try
-  {
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "invalid argument: " << ex.what() << std::endl;
-    std::cerr << "try " << argv[0] << " -h to get some help" << std::endl;
-    return EXIT_FAILURE;
-  }
-  po::notify(vm);
+  po::store (po::parse_command_line(argc, argv, desc), vm);
+  po::notify (vm);
 
   if (vm.count("help"))
   {
@@ -64,80 +54,30 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  const std::string color (vm["color"].as<std::string>());
-  const std::string fmt_string (vm["format"].as<std::string>());
+  fhg::log::Logger::get("dump")->setLevel
+    (vm.count("quiet") ? fhg::log::ERROR : fhg::log::from_int (filter));
 
-  fhg::log::StreamAppender::ColorMode color_mode
-    (fhg::log::StreamAppender::COLOR_OFF);
-  if (color == "on")
-    color_mode = fhg::log::StreamAppender::COLOR_ON;
+  const std::string format_string (vm["format"].as<std::string>());
 
-  // my own output goes to stderr
-  fhg::log::getLogger().addAppender
-    (fhg::log::Appender::ptr_t (new fhg::log::StreamAppender( std::clog
-                                                            , fhg::log::default_format::SHORT()
-                                                            , color_mode
-                                                            )
-                               )
+  fhg::log::Logger::get("dump")->addAppender
+    ( fhg::log::Appender::ptr_t
+      ( new fhg::log::StreamAppender
+        ( std::cout
+        , format_string == "full" ? fhg::log::default_format::LONG()
+        : format_string == "short" ? fhg::log::default_format::SHORT()
+        : fhg::log::check_format (format_string)
+        , vm["color"].as<std::string>() == "on"
+        ? fhg::log::StreamAppender::COLOR_ON
+        : fhg::log::StreamAppender::COLOR_OFF
+        )
+      )
     );
 
-  fhg::log::LogLevel level (fhg::log::LogLevel::INFO);
-  if (vm.count("quiet"))
+  std::cin.unsetf (std::ios_base::skipws);
+  fhg::util::parse::position_istream pos (std::cin);
+  while (std::cin.good())
   {
-    level = fhg::log::LogLevel::ERROR;
-  }
-  else
-  {
-    if (filter < 1)
-      level = fhg::log::LogLevel::TRACE;
-    else if (filter == 1)
-      level = fhg::log::LogLevel::DEBUG;
-    else if (filter == 2)
-      level = fhg::log::LogLevel::INFO;
-    else if (filter == 3)
-      level = fhg::log::LogLevel::WARN;
-    else // if (filter == 4)
-      level = fhg::log::LogLevel::ERROR;
-  }
-
-  fhg::log::getLogger().setLevel (level);
-
-  std::string fmt (fmt_string);
-  if      (fmt_string == "full")  fmt = fhg::log::default_format::LONG();
-  else if (fmt_string == "short") fmt = fhg::log::default_format::SHORT();
-  else fhg::log::check_format (fmt);
-
-  // remote messages go to stdout
-  fhg::log::Appender::ptr_t appender
-    (new fhg::log::StreamAppender( std::cout
-                                 , fmt
-                                 , color_mode
-                                 )
-    );
-
-  appender = fhg::log::Appender::ptr_t
-    (new fhg::log::FilteringAppender ( appender
-                                     , fhg::log::Filter::ptr_t
-                                     (new fhg::log::LevelFilter(level))
-                                     )
-    );
-
-  try
-  {
-    std::cin.unsetf (std::ios_base::skipws);
-    fhg::util::parse::position_istream pos (std::cin);
-    while (std::cin)
-    {
-      appender->append (fhg::log::LogEvent (pos));
-      if (!std::cin.good())
-      {
-        break;
-      }
-    }
-  }
-  catch (const std::exception& e)
-  {
-    LOG (ERROR, "could not dump log events: " << e.what ());
+    fhg::log::Logger::get("dump")->log (fhg::log::LogEvent (pos));
   }
 
   return 0;

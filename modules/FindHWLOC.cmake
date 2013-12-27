@@ -1,4 +1,3 @@
-# -*- mode: cmake; -*-
 # locates the libhwloc library
 # This file defines:
 # * HWLOC_FOUND if libreadline was found

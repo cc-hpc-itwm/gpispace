@@ -16,30 +16,13 @@ namespace utils
   struct logger_with_minimum_log_level
   {
     logger_with_minimum_log_level()
-      : log ( fhg::log::getLogger
+      : log ( fhg::log::Logger::get
               ((boost::format ("logger-%1%") % _logger_counter.next()).str())
             )
     {
-      log.setLevel (fhg::log::LogLevel::MIN_LEVEL);
+      log->setLevel (fhg::log::TRACE);
     }
 
-    fhg::log::logger_t log;
-  };
-
-  class counting_appender : public fhg::log::Appender
-  {
-  public:
-    counting_appender (std::size_t* counter)
-      : _counter (counter)
-    {}
-
-    void append (const fhg::log::LogEvent &evt)
-    {
-      ++(*_counter);
-    }
-
-    void flush () {}
-  private:
-    std::size_t* _counter;
+    fhg::log::Logger::ptr_t log;
   };
 }

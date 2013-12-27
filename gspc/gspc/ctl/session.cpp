@@ -10,7 +10,11 @@
 #include <syslog.h>
 #include <time.h>
 
-#include <gspc/net.hpp>
+#include <gspc/net/handle.hpp>
+#include <gspc/net/io.hpp>
+#include <gspc/net/serve.hpp>
+#include <gspc/net/server.hpp>
+#include <gspc/net/service/strip_prefix.hpp>
 #include <gspc/kvs/kvs.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 #include <gspc/ctl/system.hpp>
@@ -191,12 +195,6 @@ namespace gspc
       return 0;
     }
 
-    int session_t::get_session_dir (fs::path &p) const
-    {
-      p = m_dir;
-      return 0;
-    }
-
     int session_t::set_session_name (std::string const &name)
     {
       if (not is_valid_session_name (name))
@@ -207,21 +205,9 @@ namespace gspc
       return 0;
     }
 
-    int session_t::get_session_name (std::string &name) const
-    {
-      name = m_name;
-      return 0;
-    }
-
     int session_t::set_bind_url (std::string const &u)
     {
       m_url = u;
-      return 0;
-    }
-
-    int session_t::get_bind_url (std::string &u) const
-    {
-      u = m_url;
       return 0;
     }
 

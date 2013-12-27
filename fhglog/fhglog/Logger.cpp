@@ -3,220 +3,100 @@
 #include    <iostream>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
-#include "error_handler.hpp"
+
+#include <boost/foreach.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 using namespace fhg::log;
 
-namespace state
+namespace
 {
-  struct state_t
+  namespace global_state
   {
-    typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
-    typedef boost::recursive_mutex mutex_type;
-    typedef boost::unique_lock<mutex_type> lock_type;
-
-    Logger::ptr_t getLogger(const std::string &a_name, const std::string & base)
+    struct
     {
-      lock_type lock(m_mutex);
-      logger_map_t::iterator logger(m_loggers.find(a_name));
-      if (logger == m_loggers.end())
+      typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
+
+      Logger::ptr_t getLogger (const std::string& name)
       {
-        Logger::ptr_t newLogger;
-        if (a_name != "default")
-        {
-          newLogger.reset (new Logger(a_name, *getLogger(base, "default")));
-        }
-        else
-        {
-          newLogger.reset (new Logger(a_name));
-        }
-        assert (newLogger);
+        boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
 
-        logger = m_loggers.insert(std::make_pair(a_name, newLogger)).first;
+        logger_map_t::const_iterator const logger (_logger.find (name));
+
+        return (logger != _logger.end()) ? logger->second
+          : _logger.insert
+            ( std::make_pair
+              ( name
+              , Logger::ptr_t ( name != "default"
+                              ? new Logger (name, *getLogger ("default"))
+                              : new Logger (name)
+                              )
+              )
+            ).first->second;
       }
-      return logger->second;
-    }
 
-    void terminate ()
-    {
-      logger_map_t::iterator logger (m_loggers.begin());
-      logger_map_t::iterator end (m_loggers.end());
-
-      while (logger != end)
-      {
-        logger->second->flush();
-        ++logger;
-      }
-    }
-
-    ~state_t ()
-    {
-      lock_type lock(m_mutex);
-      m_loggers.clear ();
-    }
-
-  private:
-    mutex_type   m_mutex;
-    logger_map_t m_loggers;
-  };
-
-  //  typedef fhg::log::shared_ptr<state_t> state_ptr;
-  typedef state_t* state_ptr;
-  static state_ptr static_state;
-
-  state_ptr get ()
-  {
-    if (! static_state)
-      static_state = state_ptr (new state_t);
-    return static_state;
-  }
-
-  void clear ()
-  {
-    delete static_state;
-    static_state = 0;
+    private:
+      boost::recursive_mutex _mutex;
+      logger_map_t _logger;
+    } loggers;
   }
 }
 
-namespace fhg
-{
-  namespace log
-  {
-    void terminate ()
-    {
-      state::get ()->terminate ();
-      state::clear ();
-    }
-  }
-}
-
-/*
- * Logger implementation
- *
- */
 Logger::ptr_t Logger::get()
 {
-  return get("default", "default");
+  return get ("default");
 }
 
-Logger::ptr_t Logger::get(const std::string &a_name, const std::string & base)
+Logger::ptr_t Logger::get (const std::string& name)
 {
-  return state::get ()->getLogger (a_name, base);
+  return global_state::loggers.getLogger (name);
 }
 
-Logger::Logger(const std::string &a_name)
-  : name_(a_name), lvl_(LogLevel(LogLevel::DEF_LEVEL)), filter_(new NullFilter())
-{
-}
+Logger::Logger (const std::string& name)
+  : name_ (name)
+  , lvl_ (INFO)
+{}
 
-Logger::Logger(const std::string &a_name, const Logger &inherit_from)
-  : name_(a_name), lvl_(inherit_from.getLevel()), filter_(inherit_from.getFilter())
-{
-  for (appender_list_t::const_iterator it(inherit_from.appenders_.begin()); it != inherit_from.appenders_.end(); ++it)
-  {
-    addAppender(*it);
-  }
-}
+Logger::Logger ( const std::string& name
+               , const Logger& inherit_from
+               )
+  : name_ (name)
+  , lvl_ (inherit_from.lvl_)
+  , appenders_ (inherit_from.appenders_)
+{}
 
-Logger::~Logger ()
-{
-  try
-  {
-    flush ();
-  }
-  catch (...)
-  {
-    // nothing can be done
-  }
-}
-
-const std::string &Logger::name() const
-{
-  return name_;
-}
-
-void Logger::setLevel(const LogLevel &level)
+void Logger::setLevel (const Level& level)
 {
   lvl_ = level;
 }
 
-const LogLevel &Logger::getLevel() const
+void Logger::log (const LogEvent& event)
 {
-  return lvl_;
-}
-
-void Logger::log(const LogEvent &event)
-{
-  if (! isLevelEnabled(event.severity()))
-    return;
-  event.trace(name());
-
-  bool logged (false);
-  for (appender_list_t::const_iterator it(appenders_.begin());
-       it != appenders_.end();
-       ++it)
+  if (isLevelEnabled (event.severity()))
   {
-    try
+    event.trace (name_);
+
+    BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
     {
-      (*it)->append(event);
-      logged = true;
-    }
-    catch (const std::exception &ex)
-    {
-      std::clog << "could not append log event to appender: " << ex.what() << std::endl;
-    }
-    catch (...)
-    {
-      std::clog << "could not append log event to appender: unknown errror" << std::endl;
+      appender->append(event);
     }
   }
 
-  if (event.severity() == LogLevel::FATAL)
+  if (event.severity() == FATAL)
   {
-    if (! logged)
-    {
-      std::cerr << "logger " << name() << " got unhandled FATAL message: "
-                << event.path() << ":" << event.line() << " - " << event.message()
-                << std::endl;
-    }
-    fhg::log::error_handler();
+    throw std::runtime_error (event.message());
   }
 }
 
-void Logger::flush (void)
+void Logger::flush()
 {
-  for (appender_list_t::const_iterator it(appenders_.begin());
-       it != appenders_.end();
-       ++it)
+  BOOST_FOREACH (Appender::ptr_t const& appender, appenders_)
   {
-    try
-    {
-      (*it)->flush ();
-    }
-    catch (std::exception const & ex)
-    {
-      std::clog << "could not flush appender: " << ex.what() << std::endl;
-    }
+    appender->flush();
   }
 }
 
-const Appender::ptr_t &Logger::addAppender(const Appender::ptr_t &appender)
+void Logger::addAppender (Appender::ptr_t appender)
 {
   appenders_.push_back(appender);
-  return appender;
-}
-
-const Filter::ptr_t &Logger::getFilter() const
-{
-  return filter_;
-}
-
-void Logger::removeAllAppenders()
-{
-  appenders_.clear();
-}
-
-void Logger::removeAppender(const Appender::ptr_t& appender)
-{
-  appenders_.remove (appender);
 }

@@ -1,5 +1,3 @@
-# -*- mode: cmake; -*-
-
 set (hdrs
   memory_buffer.hpp
   handle_buffer.hpp

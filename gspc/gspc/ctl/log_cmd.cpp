@@ -24,12 +24,8 @@ namespace gspc
         };
       }
 
-      int log_cmd ( std::vector<std::string> const & argv
-                  , std::istream &inp
-                  , std::ostream &out
-                  , std::ostream &err
-                  )
-      {
+      int log_cmd (std::vector<std::string> const & argv)
+     {
         static fhglog_initializer _;
 
         size_t i = 1;
@@ -46,7 +42,7 @@ namespace gspc
           if (arg == "--help" || arg == "-h")
           {
             ++i;
-            err << "usage: log [options] [--] message..."           << std::endl
+            std::cerr << "usage: log [options] [--] message..."           << std::endl
                 <<                                                     std::endl
                 << "  options:"                                     << std::endl
                 << "    --level <level>"                            << std::endl
@@ -143,12 +139,12 @@ namespace gspc
         }
 
         fhg::log::Logger::get ("system")->log
-          ( fhg::log::LogEvent ( fhg::log::LogLevel (level)
+          ( fhg::log::LogEvent ( fhg::log::from_string (level)
                                , file
                                , function
                                , line
                                , sstr.str().c_str()
-                               , fhg::log::LogEvent::tags_type (1, tag)
+                               , std::vector<std::string> (1, tag)
                                )
           );
 
