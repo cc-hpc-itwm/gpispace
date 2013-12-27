@@ -2,6 +2,8 @@
 #include "base_server.ipp"
 #include "url_maker.hpp"
 
+#include <fhg/util/hostname.hpp>
+
 #include <boost/asio.hpp>
 
 #include <gspc/net/resolver.hpp>
@@ -24,7 +26,7 @@ namespace gspc
 
         if (ep.address ().is_unspecified ())
         {
-          oss << gspc::net::hostname () << ":" << ep.port ();
+          oss << fhg::util::hostname () << ":" << ep.port ();
         }
         else
         {
