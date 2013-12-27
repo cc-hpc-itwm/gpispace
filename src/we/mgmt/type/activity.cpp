@@ -510,12 +510,6 @@ namespace we
         return _input;
       }
 
-      void activity_t::add_input (const input_t::value_type& inp)
-      {
-        unique_lock_t lock (_mutex);
-        _pending_input.push_back (inp);
-      }
-
       const activity_t::output_t& activity_t::output() const
       {
         shared_lock_t lock (_mutex);
