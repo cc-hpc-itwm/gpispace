@@ -84,7 +84,6 @@ namespace gspc
         switch (m_frame_state)
         {
         case frame_start:
-          {
             if (is_line_feed (c))
               return PARSE_FINISHED;
             if (is_carriage_return (c))
@@ -102,18 +101,14 @@ namespace gspc
             }
 
             return PARSE_NEED_MORE_DATA;
-          }
         case frame_start_line_feed:
-          {
             if (is_line_feed (c))
               return PARSE_FINISHED;
             else
             {
               return PARSE_FAILED;
             }
-          }
         case command:
-          {
             if (is_line_feed (c))
             {
               frame.set_command (m_buffer);
@@ -144,9 +139,7 @@ namespace gspc
             }
 
             return PARSE_NEED_MORE_DATA;
-          }
         case command_line_feed:
-          {
             if (is_line_feed (c))
             {
               frame.set_command (m_buffer);
@@ -158,9 +151,7 @@ namespace gspc
             {
               return PARSE_FAILED;
             }
-          }
         case header_start:
-          {
             if (is_line_feed (c))
             {
               if (frame.has_header ("content-length"))
@@ -207,9 +198,7 @@ namespace gspc
             }
 
             return PARSE_NEED_MORE_DATA;
-          }
         case header_start_line_feed:
-          {
             if (is_line_feed (c))
             {
               if (frame.has_header ("content-length"))
@@ -236,9 +225,7 @@ namespace gspc
             {
               return PARSE_FAILED;
             }
-          }
         case header_name:
-          {
             if (is_line_feed (c) || is_carriage_return (c))
             {
               return PARSE_FAILED;
@@ -268,9 +255,7 @@ namespace gspc
             }
 
             return PARSE_NEED_MORE_DATA;
-          }
         case header_value:
-          {
             if (is_line_feed (c))
             {
               frame.set_header (m_header_key, m_buffer);
@@ -302,9 +287,7 @@ namespace gspc
             }
 
             return PARSE_NEED_MORE_DATA;
-          }
         case header_value_line_feed:
-          {
             if (is_line_feed (c))
             {
               frame.set_header (m_header_key, m_buffer);
@@ -317,9 +300,7 @@ namespace gspc
             {
               return PARSE_FAILED;
             }
-          }
         case body_without_content_length:
-          {
             if (is_null (c))
             {
               return PARSE_FINISHED;
@@ -329,9 +310,7 @@ namespace gspc
               frame.add_body (&c, 1);
               return PARSE_NEED_MORE_DATA;
             }
-          }
         case body_with_content_length:
-          {
             if (m_remaining_body_bytes)
             {
               frame.add_body (&c, 1);
@@ -347,9 +326,7 @@ namespace gspc
               m_frame_state = body_with_content_length_final_null;
               return PARSE_NEED_MORE_DATA;
             }
-          }
         case body_with_content_length_final_null:
-          {
             if (is_null (c))
             {
               return PARSE_FINISHED;
@@ -358,7 +335,6 @@ namespace gspc
             {
               return PARSE_FAILED;
             }
-          }
         default:
           abort ();
         }
