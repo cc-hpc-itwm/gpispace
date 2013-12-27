@@ -52,7 +52,6 @@ add_library (pnet
   we/field.cpp
   we/loader/loader.cpp
   we/mgmt/layer.cpp
-  we/mgmt/bits/descriptor.cpp
   we/mgmt/type/activity.cpp
   we/mgmt/type/flags.cpp
   we/require_type.cpp
