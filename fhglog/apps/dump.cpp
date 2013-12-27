@@ -54,12 +54,12 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  fhg::log::getLogger("dump").setLevel
+  fhg::log::Logger::get("dump")->setLevel
     (vm.count("quiet") ? fhg::log::ERROR : fhg::log::from_int (filter));
 
   const std::string format_string (vm["format"].as<std::string>());
 
-  fhg::log::getLogger("dump").addAppender
+  fhg::log::Logger::get("dump")->addAppender
     ( fhg::log::Appender::ptr_t
       ( new fhg::log::StreamAppender
         ( std::cout
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
   fhg::util::parse::position_istream pos (std::cin);
   while (std::cin.good())
   {
-    fhg::log::getLogger("dump").log (fhg::log::LogEvent (pos));
+    fhg::log::Logger::get("dump")->log (fhg::log::LogEvent (pos));
   }
 
   return 0;

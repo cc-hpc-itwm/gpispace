@@ -13,8 +13,8 @@
 /**
    Common logging framework.
 
-   LoggerApi root_logger(Logger::get());
-   LoggerApi my_logger(Logger::get("module"));
+   Logger root_logger(Logger::get());
+   Logger my_logger(Logger::get("module"));
 
    my_logger.log(LogEvent(...));
 */
@@ -22,17 +22,6 @@ namespace fhg
 {
   namespace log
   {
-
-    /*
-     * This class wraps around a simple Logger object.
-     *
-     * The main reason to have a separate loggerapi class and an implementation
-     * is the following, when we want to disable logging completely, we should
-     * make sure that the classes using loggers as member variables still have
-     * the same size. In this case, sizeof(LoggerApi) == sizeof(void*) - that
-     * means in the disabled case, we can just allocate an empty void pointer.
-     *
-     */
     class Logger
     {
     public:

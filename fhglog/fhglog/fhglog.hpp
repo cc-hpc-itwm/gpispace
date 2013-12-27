@@ -2,7 +2,7 @@
 #define  FHGLOG_INC
 
 #include	<fhglog/LogMacros.hpp>
-#include	<fhglog/LoggerApi.hpp>
+#include	<fhglog/Logger.hpp>
 
 #include    <fhglog/Configuration.hpp>
 

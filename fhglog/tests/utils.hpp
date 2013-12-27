@@ -16,13 +16,13 @@ namespace utils
   struct logger_with_minimum_log_level
   {
     logger_with_minimum_log_level()
-      : log ( fhg::log::getLogger
+      : log ( fhg::log::Logger::get
               ((boost::format ("logger-%1%") % _logger_counter.next()).str())
             )
     {
-      log.setLevel (fhg::log::TRACE);
+      log->setLevel (fhg::log::TRACE);
     }
 
-    fhg::log::LoggerApi log;
+    fhg::log::Logger::ptr_t log;
   };
 }

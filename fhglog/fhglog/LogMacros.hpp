@@ -2,7 +2,7 @@
 #define FHG_LOG_LOGMACROS_INC
 
 #include <fhglog/Configuration.hpp>
-#include <fhglog/LoggerApi.hpp>
+#include <fhglog/Logger.hpp>
 
 #include <boost/current_function.hpp>
 #include <boost/filesystem.hpp>
@@ -26,7 +26,7 @@ namespace fhg
     {
       ~flush_at_end_of_scope_t() throw ()
       {
-        ::fhg::log::getLogger().flush();
+        ::fhg::log::Logger::get()->flush();
       }
     };
 
@@ -42,12 +42,12 @@ namespace fhg
     do                                                          \
     {                                                           \
       if (  (::fhg::log::level > FHGLOG_STRIP_LEVEL)            \
-         && logger.isLevelEnabled (::fhg::log::level)           \
+         && logger->isLevelEnabled (::fhg::log::level)          \
          )                                                      \
       {                                                         \
         std::ostringstream msg_;                                \
         msg_ << msg;                                            \
-        logger.log (FHGLOG_MKEVENT_HERE (level, msg_.str()));   \
+        logger->log (FHGLOG_MKEVENT_HERE (level, msg_.str()));  \
       }                                                         \
     } while (0)
 
@@ -76,14 +76,14 @@ namespace fhg
     // log to a logger with the name of the filename the statement is in
 #define MLOG(level, msg)                                          \
     LLOG ( level                                                  \
-         , ::fhg::log::getLogger                                  \
+         , ::fhg::log::Logger::get                                \
            (::boost::filesystem::path (__FILE__).stem().string()) \
          , msg                                                    \
          )
 
 #define MLOG_IF(level, condition, msg)                                    \
     LLOG_IF ( level                                                       \
-            , ::fhg::log::getLogger                                       \
+            , ::fhg::log::Logger::get                                     \
               (::boost::filesystem::path (__FILE__).stem().string())      \
             , condition                                                   \
             , msg                                                         \
@@ -92,12 +92,12 @@ namespace fhg
     // log to a named logger (component)
 #define CLOG(level, component, msg)             \
     LLOG ( level                                \
-         , ::fhg::log::getLogger (component)    \
+         , ::fhg::log::Logger::get (component)    \
          , msg                                  \
          )
 
     // just log
-#define LOG(level, msg) LLOG (level, ::fhg::log::getLogger(), msg)
+#define LOG(level, msg) LLOG (level, ::fhg::log::Logger::get(), msg)
 
 #ifdef NDEBUG
 

@@ -3,7 +3,6 @@ set (hdrs
   Configuration.hpp
   LogMacros.hpp
   Logger.hpp
-  LoggerApi.hpp
   color_map.hpp
   event.hpp
   fhglog.hpp
