@@ -86,7 +86,7 @@ namespace gspc
           {
             return PARSE_FINISHED;
           }
-          if (is_carriage_return (c))
+          else if (is_carriage_return (c))
           {
             m_frame_state = frame_start_line_feed;
           }
@@ -118,8 +118,7 @@ namespace gspc
             m_frame_state = header_start;
             return PARSE_NEED_MORE_DATA;
           }
-
-          if (is_carriage_return (c))
+          else if (is_carriage_return (c))
           {
             m_frame_state = command_line_feed;
           }
@@ -179,13 +178,11 @@ namespace gspc
             }
             return PARSE_NEED_MORE_DATA;
           }
-
-          if (is_header_separator (c))
+          else if (is_header_separator (c))
           {
             return PARSE_FAILED;
           }
-
-          if (is_carriage_return (c))
+          else if (is_carriage_return (c))
           {
             m_frame_state = header_start_line_feed;
           }
@@ -232,8 +229,7 @@ namespace gspc
           {
             return PARSE_FAILED;
           }
-
-          if (is_header_separator (c))
+          else if (is_header_separator (c))
           {
             m_frame_state = header_value;
             m_header_key = m_buffer;
@@ -266,8 +262,7 @@ namespace gspc
             m_frame_state = header_start;
             return PARSE_NEED_MORE_DATA;
           }
-
-          if (is_carriage_return (c))
+          else if (is_carriage_return (c))
           {
             m_frame_state = header_value_line_feed;
           }
