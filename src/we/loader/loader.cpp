@@ -148,34 +148,6 @@ namespace we {
       return count;
     }
 
-    int loader::selftest ()
-    {
-      int ec (0);
-
-      // running selftests
-      for ( module_table_t::const_iterator m(module_table_.begin())
-          ; m != module_table_.end()
-          ; ++m
-          )
-      {
-        try
-        {
-          expr::eval::context out;
-          (*(m->second)).call ("selftest", 0, expr::eval::context(), out);
-        }
-        catch (FunctionNotFound const &)
-        {
-          // ignore
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "selftest failed for module: " << m->first << ": " << ex.what());
-          ++ec;
-        }
-      }
-      return ec;
-    }
-
     void loader::unload_all()
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
