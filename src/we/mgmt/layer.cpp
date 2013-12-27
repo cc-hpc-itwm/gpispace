@@ -137,8 +137,11 @@ namespace we
 
       if (_running_jobs.terminated (*parent, child))
       {
-        _finalize_job_cancellation.find (*parent)->second();
-        _finalize_job_cancellation.erase (*parent);
+        boost::unordered_map<id_type, boost::function<void()> >::iterator
+          const pos (_finalize_job_cancellation.find (*parent));
+
+        pos->second();
+        _finalize_job_cancellation.erase (pos);
       }
     }
 
