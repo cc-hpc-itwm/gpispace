@@ -244,6 +244,57 @@ namespace we
         _pending_input.clear();
       }
 
+
+      namespace
+      {
+        class visitor_add_input : public boost::static_visitor<>
+        {
+        private:
+          we::type::transition_t& _transition;
+          petri_net::port_id_type const& _port_id;
+          pnet::type::value::value_type const& _value;
+
+        public:
+          visitor_add_input ( we::type::transition_t& transition
+                            , petri_net::port_id_type const& port_id
+                            , pnet::type::value::value_type const& value
+                            )
+            : _transition (transition)
+            , _port_id (port_id)
+            , _value (value)
+          {}
+
+          void operator() (petri_net::net& net) const
+          {
+            if (_transition.get_port (_port_id).has_associated_place())
+            {
+              net.put_value
+                ( _transition.get_port (_port_id).associated_place()
+                , _value
+                );
+            }
+          }
+
+          template<typename T>
+          void operator() (T&) const
+          {}
+        };
+      }
+
+      void activity_t::add_input
+        ( petri_net::port_id_type const& port_id
+        , pnet::type::value::value_type const& value
+        )
+      {
+        unique_lock_t const _ (_mutex);
+
+        boost::apply_visitor ( visitor_add_input (_transition, port_id, value)
+                             , _transition.data()
+                             );
+
+        _input.push_back (input_t::value_type (value, port_id));
+      }
+
       namespace
       {
         class visitor_collect_output : public boost::static_visitor<>

@@ -81,6 +81,11 @@ namespace we
         const input_t& pending_input() const;
         const input_t& input() const;
         void add_input (const input_t::value_type&);
+        // avoid storing in _pending_input
+        void add_input
+          ( petri_net::port_id_type const&
+          , pnet::type::value::value_type const&
+          );
 
         const output_t& output() const;
         void set_output (const output_t&);
