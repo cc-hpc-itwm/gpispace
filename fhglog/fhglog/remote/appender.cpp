@@ -39,7 +39,6 @@ namespace fhg
       RemoteAppender::~RemoteAppender()
       {
         socket_->close();
-        delete socket_;
       }
 
       void RemoteAppender::append (const LogEvent& event)
