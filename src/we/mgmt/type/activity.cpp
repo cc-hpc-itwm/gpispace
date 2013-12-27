@@ -503,15 +503,6 @@ namespace we
         _output.push_back (outp);
       }
 
-      void activity_t::lock()
-      {
-        _mutex.lock();
-      }
-      void activity_t::unlock()
-      {
-        _mutex.unlock();
-      }
-
       std::ostream& activity_t::print ( std::ostream& os
                                       , const token_on_port_list_t& top_list
                                       ) const

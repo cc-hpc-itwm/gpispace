@@ -92,9 +92,6 @@ namespace we
         std::string nice_name() const;
 
       private:
-        void lock();
-        void unlock();
-
         template<class Archive>
           void save (Archive& ar, const token_on_port_list_t& l) const
         {
