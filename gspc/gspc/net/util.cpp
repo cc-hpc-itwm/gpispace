@@ -130,33 +130,6 @@ namespace gspc
       }
     }
 
-    void join_host_port ( std::string const & host
-                        , std::string const & port
-                        , std::string & host_port
-                        )
-    {
-      if (host.find ('[') != std::string::npos)
-        throw std::invalid_argument ("host must not contain '[': " + host);
-      if (host.find (']') != std::string::npos)
-        throw std::invalid_argument ("host must not contain ']': " + host);
-      if (host.find (' ') != std::string::npos)
-        throw std::invalid_argument ("host must not contain ' ': " + host);
-
-      if (host.find (':') != std::string::npos)
-      {
-        host_port = "[" + host + "]";
-      }
-      else
-      {
-        host_port = host;
-      }
-
-      if (not port.empty ())
-      {
-        host_port = host_port + ":" + port;
-      }
-    }
-
     static std::string s_hostname ()
     {
       char buf [HOST_NAME_MAX];
