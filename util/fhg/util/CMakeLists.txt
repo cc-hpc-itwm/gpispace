@@ -81,6 +81,8 @@ set (srcs
   read_file.cpp
 
   get_cpucount.c
+
+  hostname.cpp
 )
 
 add_library (fhg-util ${srcs})
