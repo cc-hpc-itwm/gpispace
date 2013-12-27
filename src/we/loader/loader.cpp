@@ -117,12 +117,6 @@ namespace we {
       search_path_.push_back (p);
     }
 
-    void loader::prepend_search_path (const boost::filesystem::path & p)
-    {
-      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-      search_path_.push_front (p);
-    }
-
     size_t loader::unload_autoloaded ()
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);

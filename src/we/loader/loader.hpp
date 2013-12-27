@@ -52,8 +52,6 @@ namespace we {
 
       void append_search_path (const boost::filesystem::path & p);
 
-      void prepend_search_path (const boost::filesystem::path & p);
-
       size_t unload_autoloaded ();
     private:
       loader(const loader&);
