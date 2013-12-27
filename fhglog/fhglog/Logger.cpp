@@ -9,40 +9,36 @@
 
 using namespace fhg::log;
 
-namespace state
+namespace
 {
-  struct state_t
+  namespace global_state
   {
-    typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
-
-    Logger::ptr_t getLogger (const std::string& name)
+    struct
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
+      typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
 
-      logger_map_t::const_iterator const logger (_logger.find (name));
+      Logger::ptr_t getLogger (const std::string& name)
+      {
+        boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
 
-      return (logger != _logger.end()) ? logger->second
-        : _logger.insert
-          ( std::make_pair
-            ( name
-            , Logger::ptr_t ( name != "default"
-                            ? new Logger (name, *getLogger ("default"))
-                            : new Logger (name)
-                            )
-            )
-          ).first->second;
-    }
+        logger_map_t::const_iterator const logger (_logger.find (name));
 
-  private:
-    boost::recursive_mutex _mutex;
-    logger_map_t _logger;
-  };
+        return (logger != _logger.end()) ? logger->second
+          : _logger.insert
+            ( std::make_pair
+              ( name
+              , Logger::ptr_t ( name != "default"
+                              ? new Logger (name, *getLogger ("default"))
+                              : new Logger (name)
+                              )
+              )
+            ).first->second;
+      }
 
-  state_t& get()
-  {
-    static state_t s;
-
-    return s;
+    private:
+      boost::recursive_mutex _mutex;
+      logger_map_t _logger;
+    } loggers;
   }
 }
 
@@ -53,7 +49,7 @@ Logger::ptr_t Logger::get()
 
 Logger::ptr_t Logger::get (const std::string& name)
 {
-  return state::get().getLogger (name);
+  return global_state::loggers.getLogger (name);
 }
 
 Logger::Logger (const std::string& name)
