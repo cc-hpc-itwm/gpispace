@@ -15,9 +15,7 @@ namespace state
   {
     typedef boost::unordered_map<std::string, Logger::ptr_t> logger_map_t;
 
-    Logger::ptr_t getLogger ( const std::string& name
-                            , const std::string& base
-                            )
+    Logger::ptr_t getLogger (const std::string& name)
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
 
@@ -28,7 +26,7 @@ namespace state
           ( std::make_pair
             ( name
             , Logger::ptr_t ( name != "default"
-                            ? new Logger (name, *getLogger (base, "default"))
+                            ? new Logger (name, *getLogger ("default"))
                             : new Logger (name)
                             )
             )
@@ -50,12 +48,12 @@ namespace state
 
 Logger::ptr_t Logger::get()
 {
-  return get ("default", "default");
+  return get ("default");
 }
 
-Logger::ptr_t Logger::get ( const std::string& name, const std::string& base)
+Logger::ptr_t Logger::get (const std::string& name)
 {
-  return state::get().getLogger (name, base);
+  return state::get().getLogger (name);
 }
 
 Logger::Logger (const std::string& name)

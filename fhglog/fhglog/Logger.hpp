@@ -28,9 +28,7 @@ namespace fhg
       typedef boost::shared_ptr<Logger> ptr_t;
 
       static Logger::ptr_t get();
-      static Logger::ptr_t get ( const std::string&name
-                               , const std::string&base = "default"
-                               );
+      static Logger::ptr_t get (const std::string&name);
 
       explicit Logger (const std::string &name);
       Logger (const std::string& name, const Logger& inherit_from);
