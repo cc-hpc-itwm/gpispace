@@ -309,7 +309,6 @@ namespace
       else if (id == _job_id)
       {
         std::cout << "failed [" << id << "] = ";
-        act.print (std::cout, act.output());
         std::cout << " error-code := " << error_code
                   << " reason := " << reason
                   << " activity := " << act.transition().name()
