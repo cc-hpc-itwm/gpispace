@@ -63,23 +63,6 @@ namespace gspc
         , carriage_return = 13
         , header_separator = ':'
         };
-
-        bool is_carriage_return (const char c)
-        {
-          return c == carriage_return;
-        }
-        bool is_line_feed (const char c)
-        {
-          return c == line_feed;
-        }
-        bool is_header_separator (const char c)
-        {
-          return c == header_separator;
-        }
-        bool is_null (const char c)
-        {
-          return c == null;
-        }
       }
 
       inline state_t parser::consume ( gspc::net::frame & frame
@@ -89,11 +72,11 @@ namespace gspc
         switch (m_frame_state)
         {
         case frame_start:
-          if (is_line_feed (c))
+          if (line_feed == c)
           {
             return PARSE_FINISHED;
           }
-          else if (is_carriage_return (c))
+          else if (carriage_return == c)
           {
             m_frame_state = frame_start_line_feed;
           }
@@ -109,7 +92,7 @@ namespace gspc
 
           return PARSE_NEED_MORE_DATA;
         case frame_start_line_feed:
-          if (is_line_feed (c))
+          if (line_feed == c)
           {
             return PARSE_FINISHED;
           }
@@ -118,14 +101,14 @@ namespace gspc
             return PARSE_FAILED;
           }
         case command:
-          if (is_line_feed (c))
+          if (line_feed == c)
           {
             frame.set_command (m_buffer);
             m_buffer.clear ();
             m_frame_state = header_start;
             return PARSE_NEED_MORE_DATA;
           }
-          else if (is_carriage_return (c))
+          else if (carriage_return == c)
           {
             m_frame_state = command_line_feed;
           }
@@ -148,7 +131,7 @@ namespace gspc
 
           return PARSE_NEED_MORE_DATA;
         case command_line_feed:
-          if (is_line_feed (c))
+          if (line_feed == c)
           {
             frame.set_command (m_buffer);
             m_buffer.clear ();
@@ -160,7 +143,7 @@ namespace gspc
             return PARSE_FAILED;
           }
         case header_start:
-          if (is_line_feed (c))
+          if (line_feed == c)
           {
             if (frame.has_header ("content-length"))
             {
@@ -185,11 +168,11 @@ namespace gspc
             }
             return PARSE_NEED_MORE_DATA;
           }
-          else if (is_header_separator (c))
+          else if (header_separator == c)
           {
             return PARSE_FAILED;
           }
-          else if (is_carriage_return (c))
+          else if (carriage_return == c)
           {
             m_frame_state = header_start_line_feed;
           }
@@ -205,7 +188,7 @@ namespace gspc
 
           return PARSE_NEED_MORE_DATA;
         case header_start_line_feed:
-          if (is_line_feed (c))
+          if (line_feed == c)
           {
             if (frame.has_header ("content-length"))
             {
@@ -232,11 +215,11 @@ namespace gspc
             return PARSE_FAILED;
           }
         case header_name:
-          if (is_line_feed (c) || is_carriage_return (c))
+          if (line_feed == c || carriage_return == c)
           {
             return PARSE_FAILED;
           }
-          else if (is_header_separator (c))
+          else if (header_separator == c)
           {
             m_frame_state = header_value;
             m_header_key = m_buffer;
@@ -261,7 +244,7 @@ namespace gspc
 
           return PARSE_NEED_MORE_DATA;
         case header_value:
-          if (is_line_feed (c))
+          if (line_feed == c)
           {
             frame.set_header (m_header_key, m_buffer);
             m_header_key.clear ();
@@ -269,7 +252,7 @@ namespace gspc
             m_frame_state = header_start;
             return PARSE_NEED_MORE_DATA;
           }
-          else if (is_carriage_return (c))
+          else if (carriage_return == c)
           {
             m_frame_state = header_value_line_feed;
           }
@@ -292,7 +275,7 @@ namespace gspc
 
           return PARSE_NEED_MORE_DATA;
         case header_value_line_feed:
-          if (is_line_feed (c))
+          if (line_feed == c)
           {
             frame.set_header (m_header_key, m_buffer);
             m_header_key.clear ();
@@ -305,7 +288,7 @@ namespace gspc
             return PARSE_FAILED;
           }
         case body_without_content_length:
-          if (is_null (c))
+          if (null == c)
           {
             return PARSE_FINISHED;
           }
@@ -328,7 +311,7 @@ namespace gspc
 
           return PARSE_NEED_MORE_DATA;
         case body_with_content_length_final_null:
-          if (is_null (c))
+          if (null == c)
           {
             return PARSE_FINISHED;
           }
