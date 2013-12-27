@@ -1,7 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/mgmt/layer.hpp>
-#include <we/require_type.hpp>
 
 namespace we
 {
