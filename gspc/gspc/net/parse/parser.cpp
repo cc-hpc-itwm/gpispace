@@ -48,7 +48,6 @@ namespace gspc
         return c == 0;
       }
 
-      template <>
       result_t parser::parse ( const char *begin
                              , const char *end
                              , gspc::net::frame & frame
@@ -71,18 +70,6 @@ namespace gspc
                         , PARSE_NEED_MORE_DATA
                         , m_error
                         );
-      }
-
-      template <>
-      result_t parser::parse ( char *begin
-                             , char *end
-                             , gspc::net::frame & frame
-                             )
-      {
-        return parse ( static_cast<const char*>(begin)
-                     , static_cast<const char*>(end)
-                     , frame
-                     );
       }
 
       inline state_t parser::consume ( gspc::net::frame & frame
