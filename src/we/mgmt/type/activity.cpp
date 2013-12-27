@@ -186,44 +186,6 @@ namespace we
 
       namespace
       {
-        class visitor_injector : public boost::static_visitor<void>
-        {
-        private:
-          we::type::transition_t& _transition;
-          const activity_t::input_t& _input;
-
-        public:
-          visitor_injector ( activity_t& activity
-                           , const activity_t::input_t& input
-                           )
-            : _transition (activity.transition())
-            , _input (input)
-          {}
-
-          void operator() (petri_net::net& net) const
-          {
-            BOOST_FOREACH (const activity_t::token_on_port_t& inp, _input)
-              {
-                const petri_net::port_id_type port_id (inp.second);
-
-                if (_transition.get_port (port_id).has_associated_place())
-                  {
-                    net.put_value
-                      ( _transition.get_port (port_id).associated_place()
-                      , inp.first
-                      );
-                  }
-              }
-          }
-
-          template<typename T>
-          void operator() (T&) const
-          {}
-        };
-      }
-
-      namespace
-      {
         class visitor_add_input : public boost::static_visitor<>
         {
         private:
