@@ -96,7 +96,8 @@ namespace we {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
       module_table_t::iterator mod = module_table_.find(module_name);
       if (mod != module_table_.end()) {
-        unload(mod);
+        MLOG (TRACE, "unloading " << mod->first);
+        module_table_.erase (mod);
       }
     }
 
