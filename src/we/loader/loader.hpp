@@ -44,8 +44,7 @@ namespace we
     private:
       typedef boost::unordered_map<std::string, module_ptr_t> module_table_t;
       module_table_t module_table_;
-      typedef std::list<std::string> module_names_t;
-      module_names_t module_load_order_;
+      std::list<std::string> module_load_order_;
       search_path_t search_path_;
       mutable boost::recursive_mutex mtx_;
     };
