@@ -6,6 +6,7 @@
 #include "order/stack.hpp"
 
 #include <we/loader/loader.hpp>
+#include <we/loader/exceptions.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 
