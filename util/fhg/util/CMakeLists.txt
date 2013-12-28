@@ -47,6 +47,8 @@ set (hdrs
   read_file.hpp
 
   get_cpucount.h
+
+  macros.hpp
 )
 
 set (srcs
