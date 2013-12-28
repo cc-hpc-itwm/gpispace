@@ -32,8 +32,6 @@ namespace we
           );
       }
 
-      dlerror();
-
       try
       {
         struct
@@ -132,8 +130,6 @@ namespace we
     {
       if (!handle_)
         return;
-
-      dlerror();
 
       struct
       {
