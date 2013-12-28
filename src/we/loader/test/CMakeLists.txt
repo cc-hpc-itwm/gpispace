@@ -22,7 +22,7 @@ fhg_add_test (load_module.cpp
                  ${CMAKE_DL_LIBS}
 )
 
-add_library (answer SHARED answer.cpp)
-add_library (question SHARED question.cpp)
+add_library (answer SHARED question_answer/answer.cpp)
+add_library (question SHARED question_answer/question.cpp)
 target_link_libraries (question answer)
 target_link_libraries (answer pnet)
