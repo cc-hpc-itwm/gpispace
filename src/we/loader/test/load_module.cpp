@@ -18,29 +18,28 @@ int main (int ac, char **av)
   std::list<std::string> failed;
   for (int i = 1; i < ac; ++i)
   {
-    const std::string mod_name ("mod-" + fhg::util::show(i));
     try
     {
-      loader.load (mod_name, av[i]);
+      std::string const mod_name (loader.load (av[i])->name());
+
+      try
+      {
+        expr::eval::context out;
+
+        loader[mod_name].call ("selftest", 0, expr::eval::context(), out);
+      }
+      catch (const std::exception &ex)
+      {
+        std::cerr << "could not run module self-test: " << ex.what() << std::endl;
+        failed.push_back (av[i]);
+      }
     }
     catch (const std::exception & ex)
     {
       std::cerr << "load of module " << av[i] << " failed: " << ex.what() << std::endl;
       failed.push_back (av[i]);
-      continue;
     }
 
-    try
-    {
-      expr::eval::context out;
-
-      loader[mod_name].call ("selftest", 0, expr::eval::context(), out);
-    }
-    catch (const std::exception &ex)
-    {
-      std::cerr << "could not run module self-test: " << ex.what() << std::endl;
-      failed.push_back (av[i]);
-    }
   }
 
   if (failed.size())
