@@ -435,6 +435,7 @@ private:
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
     {
+      //! \todo is that lock needed really? what does it lock?
       lock_type lock (m_mutex);
 
       rply.set_body (m_loader->search_path());
