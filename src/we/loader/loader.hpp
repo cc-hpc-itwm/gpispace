@@ -27,8 +27,6 @@ namespace we
       typedef shared_ptr<Module> module_ptr_t;
       typedef shared_ptr<loader> ptr_t;
       typedef std::list<boost::filesystem::path> search_path_t;
-      typedef std::list<std::string> module_names_t;
-      typedef boost::unordered_map<std::string, module_ptr_t> module_table_t;
 
       static ptr_t create();
 
@@ -44,7 +42,9 @@ namespace we
       void append_search_path (const boost::filesystem::path&);
 
     private:
+      typedef boost::unordered_map<std::string, module_ptr_t> module_table_t;
       module_table_t module_table_;
+      typedef std::list<std::string> module_names_t;
       module_names_t module_load_order_;
       search_path_t search_path_;
       mutable boost::recursive_mutex mtx_;
