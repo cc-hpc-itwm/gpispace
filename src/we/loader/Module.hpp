@@ -14,8 +14,6 @@ namespace we
 {
   namespace loader
   {
-    class loader;
-
     class Module : public IModule, boost::noncopyable
     {
     public:
