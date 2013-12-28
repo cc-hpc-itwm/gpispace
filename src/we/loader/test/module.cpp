@@ -125,6 +125,21 @@ BOOST_AUTO_TEST_CASE (call_local)
   BOOST_REQUIRE_EQUAL (x, 1);
 }
 
+BOOST_AUTO_TEST_CASE (call_lib)
+{
+  we::loader::Module m ("./libanswer.so");
+
+  gspc::drts::context context ((std::list<std::string>()));
+  expr::eval::context input;
+  expr::eval::context output;
+
+  m.call ("answer", &context, input, output);
+
+  BOOST_REQUIRE_EQUAL ( output.value ("out")
+                      , pnet::type::value::value_type (42L)
+                      );
+}
+
 BOOST_AUTO_TEST_CASE (duplicate_function)
 {
   we::loader::Module m ("./libempty.so");
