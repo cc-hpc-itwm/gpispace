@@ -1,7 +1,8 @@
 #include "loader.hpp"
 
-#include <fhg/assert.hpp>
-#include <fhg/util/show.hpp>
+#include <we/loader/exceptions.hpp>
+
+#include <fhg/util/join.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
@@ -88,6 +89,13 @@ namespace we
       boost::unique_lock<boost::recursive_mutex> const _ (_search_path_mutex);
 
       _search_path.push_back (p);
+    }
+
+    std::string loader::search_path() const
+    {
+      boost::unique_lock<boost::recursive_mutex> const _ (_search_path_mutex);
+
+      return fhg::util::join (_search_path.begin(), _search_path.end(), ":");
     }
   }
 }
