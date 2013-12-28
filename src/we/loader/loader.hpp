@@ -14,44 +14,42 @@
 #include <we/loader/exceptions.hpp>
 #include <we/loader/Module.hpp>
 
-namespace we {
-  namespace loader {
+namespace we
+{
+  namespace loader
+  {
     using boost::shared_ptr;
 
-    class loader {
+    class loader
+    {
     public:
       typedef shared_ptr<Module> module_ptr_t;
       typedef shared_ptr<loader> ptr_t;
       typedef std::list<boost::filesystem::path> search_path_t;
       typedef std::list<std::string> module_names_t;
+      typedef boost::unordered_map<std::string, module_ptr_t> module_table_t;
 
       static ptr_t create();
-
-      typedef boost::unordered_map<std::string, module_ptr_t> module_table_t;
 
       loader();
       ~loader();
 
-      Module & operator[] (const std::string &module);
+      Module& operator[] (const std::string &module);
 
-      module_ptr_t load (const boost::filesystem::path & path);
+      module_ptr_t load (const boost::filesystem::path&);
+      module_ptr_t load (const std::string&, const boost::filesystem::path&);
 
-      module_ptr_t load( const std::string & module_name
-                       , const boost::filesystem::path & path
-                       );
+      void unload (const std::string&);
 
-      void unload(const std::string &module_name);
+      const search_path_t& search_path() const;
+      void clear_search_path();
+      void append_search_path (const boost::filesystem::path&);
 
-      const search_path_t & search_path (void) const;
+      size_t unload_autoloaded();
 
-      void clear_search_path (void);
-
-      void append_search_path (const boost::filesystem::path & p);
-
-      size_t unload_autoloaded ();
     private:
-      loader(const loader&);
-      loader & operator = (const loader &);
+      loader (const loader&);
+      loader& operator= (const loader&);
 
       module_table_t module_table_;
       module_names_t module_load_order_;
