@@ -7,7 +7,6 @@ fhg_add_test (loader.cpp
                  order_stack
                  ${FhgLog_LIBRARY}
                  ${CMAKE_DL_LIBS}
-                 ${Boost_FILESYSTEM_LIBRARY}
   DEPENDS question
           answer
           order_a
