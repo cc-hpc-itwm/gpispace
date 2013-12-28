@@ -36,7 +36,23 @@ namespace we {
 
     Module & loader::operator[] (const std::string &module)
     {
-      return *get(module);
+      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
+      module_table_t::const_iterator mod = module_table_.find(module);
+      if (mod != module_table_.end()) {
+        return *mod->second;
+      } else {
+        const  boost::filesystem::path file_name ("lib" + module + ".so");
+
+        BOOST_FOREACH (boost::filesystem::path const& p, search_path_)
+        {
+          if (boost::filesystem::exists (p / file_name))
+          {
+            return *load (module, p / file_name);
+          }
+        }
+
+        throw ModuleLoadFailed("module '" + module + "' could not be located", module, "[not-found]");
+      }
     }
 
     loader::module_ptr_t loader::get(const std::string &module)
