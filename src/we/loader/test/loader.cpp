@@ -9,6 +9,8 @@
 
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/boost/test/require_exception.hpp>
+
 BOOST_AUTO_TEST_CASE (fresh_has_empty_search_path)
 {
   we::loader::loader loader;
@@ -66,4 +68,36 @@ BOOST_AUTO_TEST_CASE (answer_question)
     BOOST_REQUIRE_EQUAL
       (out.value ("out"), pnet::type::value::value_type (42L));
   }
+}
+
+BOOST_AUTO_TEST_CASE (load_not_found)
+{
+  we::loader::loader loader;
+
+  fhg::util::boost::test::require_exception<we::loader::ModuleLoadFailed>
+    ( boost::bind (&we::loader::loader::load, &loader, "name", "<path>")
+    , "we::loader::ModuleLoadFailed"
+    , "could not load module 'name' from '<path>': <path>:"
+      " cannot open shared object file: No such file or directory"
+    );
+}
+
+BOOST_AUTO_TEST_CASE (load_okay)
+{
+  we::loader::loader loader;
+
+  BOOST_REQUIRE (loader.load ("name", "./libanswer.so"));
+}
+
+BOOST_AUTO_TEST_CASE (load_already_registered)
+{
+  we::loader::loader loader;
+
+  BOOST_REQUIRE (loader.load ("name", "./libanswer.so"));
+
+  fhg::util::boost::test::require_exception<we::loader::ModuleLoadFailed>
+    ( boost::bind (&we::loader::loader::load, &loader, "name", "<path>")
+    , "we::loader::ModuleLoadFailed"
+    , "module 'name' already registered"
+    );
 }
