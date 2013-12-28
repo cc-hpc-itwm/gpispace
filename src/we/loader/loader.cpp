@@ -15,8 +15,8 @@ namespace we {
     {
       while (! module_load_order_.empty())
       {
-        delete module_load_order_.front();
-        module_load_order_.pop_front();
+        delete module_load_order_.top();
+        module_load_order_.pop();
       }
     }
 
@@ -59,7 +59,7 @@ namespace we {
 
       Module* mod (new Module (name, path.string()));
 
-      module_load_order_.push_front (mod);
+      module_load_order_.push (mod);
 
       return module_table_.insert (std::make_pair (name, mod)).first->second;
     }

@@ -12,6 +12,7 @@
 
 #include <list>
 #include <string>
+#include <stack>
 
 namespace we
 {
@@ -40,7 +41,7 @@ namespace we
     private:
       typedef boost::unordered_map<std::string, Module*> module_table_t;
       module_table_t module_table_;
-      std::list<Module*> module_load_order_;
+      std::stack<Module*> module_load_order_;
       search_path_t search_path_;
       mutable boost::recursive_mutex mtx_;
     };
