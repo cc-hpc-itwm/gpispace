@@ -22,7 +22,7 @@ namespace we
 
     Module& loader::operator[] (const std::string& module)
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);
+      boost::unique_lock<boost::recursive_mutex> const _ (_table_mutex);
 
       module_table_t::const_iterator mod (_module_table.find (module));
 
@@ -32,6 +32,8 @@ namespace we
       }
 
       const boost::filesystem::path file_name ("lib" + module + ".so");
+
+      boost::mutex::scoped_lock const __ (_search_path_mutex);
 
       BOOST_FOREACH (boost::filesystem::path const& p, _search_path)
       {
@@ -49,7 +51,7 @@ namespace we
                          , const boost::filesystem::path& path
                          )
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);
+      boost::unique_lock<boost::recursive_mutex> const _ (_table_mutex);
 
       if (_module_table.find (name) != _module_table.end())
       {
@@ -66,14 +68,14 @@ namespace we
 
     void loader::clear_search_path()
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);
+      boost::mutex::scoped_lock const _ (_search_path_mutex);
 
       _search_path.clear();
     }
 
     void loader::append_search_path (const boost::filesystem::path & p)
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);
+      boost::mutex::scoped_lock const _ (_search_path_mutex);
 
       _search_path.push_back (p);
     }

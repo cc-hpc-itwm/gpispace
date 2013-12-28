@@ -33,16 +33,17 @@ namespace we
 
       std::string search_path() const
       {
-        boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);
+        boost::mutex::scoped_lock const _ (_search_path_mutex);
 
         return fhg::util::join (_search_path.begin(), _search_path.end(), ":");
       }
    private:
+      mutable boost::recursive_mutex _table_mutex;
       typedef boost::unordered_map<std::string, Module*> module_table_t;
       module_table_t _module_table;
       std::stack<Module*> _module_stack;
+      mutable boost::mutex _search_path_mutex;
       std::list<boost::filesystem::path> _search_path;
-      mutable boost::recursive_mutex _loader_mutex;
     };
   }
 }
