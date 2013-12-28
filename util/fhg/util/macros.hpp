@@ -13,4 +13,10 @@
 #define FHG_ATTRIBUTE_NORETURN
 #endif
 
+#define MEMBER(_name, _type...)                         \
+  public:                                               \
+    const _type& _name() const { return _ ## _name; }   \
+  private:                                              \
+    _type _ ## _name
+
 #endif
