@@ -40,8 +40,6 @@ namespace we
       void add_function (const std::string&, WrapperFunction);
 
     private:
-      void close();
-
       std::string name_;
       std::string path_;
 

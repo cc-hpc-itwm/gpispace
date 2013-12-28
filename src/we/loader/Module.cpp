@@ -45,7 +45,21 @@ namespace we
 
       try
       {
-        close ();
+        struct
+        {
+          union
+          {
+            void * symbol;
+            void (*function) (IModule*);
+          };
+        } func_ptr;
+
+        func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_finalize");
+
+        if (func_ptr.function != NULL)
+        {
+          func_ptr.function (this);
+        }
       }
       catch (const std::exception& ex)
       {
@@ -103,24 +117,6 @@ namespace we
          )
       {
         throw DuplicateFunction (name_, name);
-      }
-    }
-    void Module::close()
-    {
-      struct
-      {
-        union
-        {
-          void * symbol;
-          void (*function) (IModule*);
-        };
-      } func_ptr;
-
-      func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_finalize");
-
-      if (func_ptr.function != NULL)
-      {
-        func_ptr.function (this);
       }
     }
 
