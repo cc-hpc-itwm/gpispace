@@ -68,3 +68,11 @@ BOOST_AUTO_TEST_CASE (ctor_okay_name_path)
   BOOST_REQUIRE_EQUAL (m.name(), "empty");
   BOOST_REQUIRE_EQUAL (m.path(), "./libempty.so");
 }
+
+BOOST_AUTO_TEST_CASE (set_name)
+{
+  we::loader::Module m ("./libempty.so");
+  m.name ("name");
+
+  BOOST_REQUIRE_EQUAL (m.name(), "name");
+}
