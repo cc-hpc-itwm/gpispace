@@ -3,8 +3,6 @@
 #define BOOST_TEST_MODULE loader
 #include <boost/test/unit_test.hpp>
 
-#include "answer.hpp"
-
 #include <we/loader/loader.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
