@@ -50,8 +50,6 @@ namespace we {
 
       size_t unload_autoloaded ();
     private:
-      module_ptr_t get(const std::string &module);
-
       loader(const loader&);
       loader & operator = (const loader &);
 
