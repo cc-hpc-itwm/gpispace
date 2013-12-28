@@ -37,7 +37,6 @@ namespace we
       Module& operator[] (const std::string &module);
 
       module_ptr_t load (const boost::filesystem::path&);
-      module_ptr_t load (const std::string&, const boost::filesystem::path&);
 
       void unload (const std::string&);
 
@@ -48,6 +47,8 @@ namespace we
       size_t unload_autoloaded();
 
     private:
+      module_ptr_t load (const std::string&, const boost::filesystem::path&);
+
       loader (const loader&);
       loader& operator= (const loader&);
 
