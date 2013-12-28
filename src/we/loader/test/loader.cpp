@@ -101,3 +101,43 @@ BOOST_AUTO_TEST_CASE (load_already_registered)
     , "module 'name' already registered"
     );
 }
+
+BOOST_AUTO_TEST_CASE (bracket_not_located)
+{
+  we::loader::loader loader;
+
+  fhg::util::boost::test::require_exception<we::loader::ModuleLoadFailed>
+    ( boost::bind (&we::loader::loader::operator[], &loader, "name")
+    , "we::loader::ModuleLoadFailed"
+    , "module 'name' could not be located in ''"
+    );
+
+  loader.append_search_path ("<p>");
+  loader.append_search_path ("<q>");
+
+  fhg::util::boost::test::require_exception<we::loader::ModuleLoadFailed>
+    ( boost::bind (&we::loader::loader::operator[], &loader, "name")
+    , "we::loader::ModuleLoadFailed"
+    , "module 'name' could not be located in '\"<p>\":\"<q>\"'"
+    );
+}
+
+BOOST_AUTO_TEST_CASE (bracket_okay_load)
+{
+  we::loader::loader loader;
+  loader.append_search_path (".");
+
+  BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
+}
+
+BOOST_AUTO_TEST_CASE (bracket_okay_from_table)
+{
+  we::loader::loader loader;
+  loader.append_search_path (".");
+
+  BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
+
+  loader.clear_search_path();
+
+  BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
+}
