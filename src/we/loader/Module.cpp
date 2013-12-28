@@ -128,9 +128,6 @@ namespace we
     }
     void Module::close()
     {
-      if (!handle_)
-        return;
-
       struct
       {
         union
