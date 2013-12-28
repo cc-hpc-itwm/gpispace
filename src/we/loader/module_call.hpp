@@ -4,7 +4,6 @@
 #include <we/expr/eval/context.hpp>
 #include <we/loader/loader.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/require_type.hpp>
 #include <we/type/id.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/port.hpp>
@@ -47,14 +46,7 @@ namespace module
 
       if (port.is_output())
       {
-        act.add_output ( token_on_port_type
-                         (pnet::require_type ( out.value (port.name())
-                                             , port.signature()
-                                             , port.name()
-                                             )
-                         , port_id
-                         )
-                       );
+        act.add_output (token_on_port_type (out.value (port.name()), port_id));
       }
     }
   }
