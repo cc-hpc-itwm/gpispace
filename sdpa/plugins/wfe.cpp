@@ -97,7 +97,7 @@ namespace
     {
       try
       {
-        module::call (loader, &context, act, mod);
+        we::loader::module_call (loader, &context, act, mod);
       }
       catch (std::exception const &ex)
       {

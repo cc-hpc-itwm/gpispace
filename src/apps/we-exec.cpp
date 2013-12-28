@@ -65,7 +65,7 @@ namespace
       try
       {
         //!\todo pass a real gspc::drts::context
-        module::call (*_loader, 0, act, mod);
+        we::loader::module_call (*_loader, 0, act, mod);
         _layer->finished (_id, act.to_string());
       }
       catch (std::exception const& ex)
