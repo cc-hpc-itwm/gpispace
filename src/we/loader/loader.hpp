@@ -33,7 +33,7 @@ namespace we
 
       std::string search_path() const
       {
-        boost::mutex::scoped_lock const _ (_search_path_mutex);
+        boost::unique_lock<boost::recursive_mutex> const _ (_search_path_mutex);
 
         return fhg::util::join (_search_path.begin(), _search_path.end(), ":");
       }
@@ -42,7 +42,7 @@ namespace we
       typedef boost::unordered_map<std::string, Module*> module_table_t;
       module_table_t _module_table;
       std::stack<Module*> _module_stack;
-      mutable boost::mutex _search_path_mutex;
+      mutable boost::recursive_mutex _search_path_mutex;
       std::list<boost::filesystem::path> _search_path;
     };
   }

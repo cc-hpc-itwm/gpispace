@@ -4,6 +4,7 @@
 #include <fhg/util/show.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 
 const int WE_GUARD_SYMBOL = 0xDEADBEEF;
 
@@ -33,7 +34,7 @@ namespace we
 
       const boost::filesystem::path file_name ("lib" + module + ".so");
 
-      boost::mutex::scoped_lock const __ (_search_path_mutex);
+      boost::unique_lock<boost::recursive_mutex> const __ (_search_path_mutex);
 
       BOOST_FOREACH (boost::filesystem::path const& p, _search_path)
       {
@@ -44,7 +45,13 @@ namespace we
       }
 
       throw ModuleLoadFailed
-        ("module '" + module + "' could not be located", module, "[not-found]");
+        ( ( boost::format ("module '%1%' could not be located in '%2%'")
+          % module
+          % search_path()
+          ).str()
+        , module
+        , "[not-found]"
+        );
     }
 
     Module* loader::load ( const std::string& name
@@ -56,7 +63,10 @@ namespace we
       if (_module_table.find (name) != _module_table.end())
       {
         throw ModuleLoadFailed
-          ("module already registered", name, path.string());
+          ( (boost::format ("module '%1%' already registered") % name).str()
+          , name
+          , path.string()
+          );
       }
 
       Module* mod (new Module (name, path.string()));
@@ -68,14 +78,14 @@ namespace we
 
     void loader::clear_search_path()
     {
-      boost::mutex::scoped_lock const _ (_search_path_mutex);
+      boost::unique_lock<boost::recursive_mutex> const _ (_search_path_mutex);
 
       _search_path.clear();
     }
 
     void loader::append_search_path (const boost::filesystem::path & p)
     {
-      boost::mutex::scoped_lock const _ (_search_path_mutex);
+      boost::unique_lock<boost::recursive_mutex> const _ (_search_path_mutex);
 
       _search_path.push_back (p);
     }
