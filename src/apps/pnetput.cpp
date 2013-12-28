@@ -20,17 +20,6 @@
 
 // ************************************************************************* //
 
-template<typename T>
-static inline void dump (std::ostream & os, const T & v)
-{
-  for (typename T::const_iterator pos (v.begin()); pos != v.end(); ++pos)
-    {
-      os << "on " << pos->second << ": " << pos->first << std::endl;
-    }
-}
-
-// ************************************************************************* //
-
 namespace po = boost::program_options;
 
 int
