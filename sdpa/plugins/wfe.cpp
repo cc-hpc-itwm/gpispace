@@ -173,11 +173,16 @@ class WFEImpl : FHG_PLUGIN
   typedef fhg::thread::queue<wfe_task_t*> task_list_t;
   typedef std::map<std::string, wfe_task_t *> map_of_tasks_t;
 public:
+  ~WFEImpl()
+  {
+    delete m_loader;
+  }
 
   FHG_PLUGIN_START()
   {
     assert (! m_worker);
-    m_loader = we::loader::loader::create();
+    assert (! m_loader);
+    m_loader = new we::loader::loader();
 
     m_current_task = 0;
 
@@ -273,10 +278,8 @@ public:
       }
     }
 
-    if (m_loader)
-    {
-      m_loader.reset();
-    }
+    delete m_loader;
+    m_loader = NULL;
     FHG_PLUGIN_STOPPED();
   }
 
@@ -538,7 +541,7 @@ private:
   mutable mutex_type m_current_task_mutex;
   wfe_task_t *m_current_task;
 
-  we::loader::loader::ptr_t m_loader;
+  we::loader::loader* m_loader;
   boost::shared_ptr<boost::thread> m_worker;
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
