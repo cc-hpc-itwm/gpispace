@@ -64,27 +64,29 @@ namespace we {
       return load ( "mod-"+fhg::util::show(module_counter_), path);
     }
 
-    loader::module_ptr_t loader::load( const std::string & module_name
-                                     , const boost::filesystem::path & path
-                                     )
+    loader::module_ptr_t loader::load ( const std::string& name
+                                      , const boost::filesystem::path& path
+                                      )
     {
-      module_ptr_t mod(new Module(module_name, path.string()));
+      boost::unique_lock<boost::recursive_mutex> const _ (mtx_);
 
-      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-      std::pair<module_table_t::iterator, bool> insert_result =
-        module_table_.insert(std::make_pair(module_name, mod));
+      if (module_table_.find (name) != module_table_.end())
+      {
+        throw ModuleLoadFailed
+          ("module already registered", name, path.string());
+      }
 
-      if (! insert_result.second)
-      {
-        throw ModuleLoadFailed("module already registered", module_name, path.string());
-      }
-      else
-      {
-        MLOG (TRACE, "loaded module " << module_name << " from " << path);
-        module_load_order_.push_front (module_name);
-        ++module_counter_;
-        return mod;
-      }
+      module_ptr_t const mod (new Module (name, path.string()));
+
+      module_table_.insert (std::make_pair (name, mod));
+
+      module_load_order_.push_front (name);
+
+      ++module_counter_;
+
+      MLOG (TRACE, "loaded module " << name << " from " << path);
+
+      return mod;
     }
 
     void loader::unload(const std::string &module_name)
