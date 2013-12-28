@@ -42,7 +42,6 @@ namespace we
       void add_function (const std::string&, WrapperFunction);
 
     private:
-      void open (const std::string&, int);
       void close();
 
       std::string name_;

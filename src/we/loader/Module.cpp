@@ -4,20 +4,45 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <boost/format.hpp>
+
 namespace we
 {
   namespace loader
   {
-    Module::Module ( const std::string& a_name
-                   , const std::string& a_path
+    Module::Module ( const std::string& name
+                   , const std::string& path
                    , int flags
                    )
-      : name_ (a_name)
-      , path_ (a_path)
-      , handle_(0)
+      : name_ (name)
+      , path_ (path)
+      , handle_ (dlopen (path_.c_str(), flags))
       , call_table_()
     {
-      open (a_path, flags);
+      if (!handle_)
+      {
+        throw ModuleLoadFailed
+          ( ( boost::format ("could not load module '%1%' from '%2%': %3%")
+            % name_
+            % path_
+            % dlerror()
+            ).str()
+          , name_
+          , path_
+          );
+      }
+
+      dlerror();
+
+      try
+      {
+        init (0);
+      }
+      catch (...)
+      {
+        close();
+        throw;
+      }
 
       MLOG (TRACE, "loaded module " << name_ << " from " << path_);
     }
@@ -122,35 +147,6 @@ namespace we
         {
           throw ModuleInitFailed ("unknown error during mod-init function", name(), path());
         }
-      }
-    }
-    void Module::open (const std::string& a_path, int flags)
-    {
-      if (handle_)
-        return;
-
-      handle_ = dlopen(a_path.c_str(), flags);
-      if (!handle_)
-      {
-        throw ModuleLoadFailed ( std::string("could not load module '")
-                               + name()
-                               + "' from '"+ a_path + "': "
-                               + std::string(dlerror())
-                               , name()
-                               , a_path
-                               );
-      }
-
-      dlerror();
-
-      try
-      {
-        init (0);
-      }
-      catch (...)
-      {
-        close();
-        throw;
       }
     }
     void Module::close()
