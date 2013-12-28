@@ -21,32 +21,12 @@ namespace we
       std::string module_;
     };
 
-    class ModuleNotLoaded : public ModuleException {
-    public:
-      explicit
-      ModuleNotLoaded(const std::string &a_module)
-        : ModuleException("the desired module is not loaded: " + a_module, a_module) {}
-      virtual ~ModuleNotLoaded() throw() {}
-    };
-
     class ModuleLoadFailed : public ModuleException {
     public:
       explicit
       ModuleLoadFailed(const std::string &a_reason, const std::string &a_module, const std::string &a_file)
         : ModuleException(a_reason, a_module), file_(a_file) {}
       virtual ~ModuleLoadFailed() throw() {}
-
-      const std::string &file() const { return file_; }
-    private:
-      std::string file_;
-    };
-
-    class ModuleInitFailed : public ModuleException {
-    public:
-      explicit
-      ModuleInitFailed(const std::string &a_reason, const std::string &a_module, const std::string &a_file)
-        : ModuleException(a_reason, a_module), file_(a_file) {}
-      virtual ~ModuleInitFailed() throw() {}
 
       const std::string &file() const { return file_; }
     private:
