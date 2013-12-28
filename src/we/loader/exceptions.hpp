@@ -1,6 +1,8 @@
 #ifndef WE_LOADER_EXCEPTIONS_HPP
 #define WE_LOADER_EXCEPTIONS_HPP 1
 
+#include <fhg/util/macros.hpp>
+
 #include <boost/format.hpp>
 
 #include <stdexcept>
@@ -26,18 +28,8 @@ namespace we
       {}
       virtual ~module_load_failed() throw() {}
 
-      const std::string& file() const
-      {
-        return _file;
-      }
-      const std::string& reason() const
-      {
-        return _reason;
-      }
-
-    private:
-      std::string _file;
-      std::string _reason;
+      MEMBER (file, std::string);
+      MEMBER (reason, std::string);
     };
 
     class module_not_found : public std::runtime_error
@@ -57,18 +49,8 @@ namespace we
       {}
       virtual ~module_not_found() throw() {}
 
-      const std::string& file() const
-      {
-        return _file;
-      }
-      const std::string& search_path() const
-      {
-        return _search_path;
-      }
-
-    private:
-      std::string _file;
-      std::string _search_path;
+      MEMBER (file, std::string);
+      MEMBER (search_path, std::string);
     };
 
     class module_already_registered : public std::runtime_error
@@ -81,13 +63,7 @@ namespace we
       {}
       virtual ~module_already_registered() throw() {}
 
-      const std::string& name() const
-      {
-        return _name;
-      }
-
-    private:
-      std::string _name;
+      MEMBER (name, std::string);
     };
 
     /**
