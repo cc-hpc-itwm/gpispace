@@ -19,14 +19,8 @@ namespace we {
     {
       while (! module_load_order_.empty())
       {
-        const std::string module_name (module_load_order_.front());
+        module_table_.erase (module_load_order_.front());
         module_load_order_.pop_front();
-
-        module_table_t::iterator const mod (module_table_.find (module_name));
-        if (mod != module_table_.end())
-        {
-          module_table_.erase (mod);
-        }
       }
     }
 
