@@ -73,7 +73,7 @@ namespace we
       {
         std::cerr << "E: **** module " << name()
                   << " from file " << path()
-                  << " had unknow errors during close!"
+                  << " had unknown errors during close!"
                   << std::endl;
       }
     }
