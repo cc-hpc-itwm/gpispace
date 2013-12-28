@@ -19,30 +19,22 @@ namespace we
       , _dlhandle (name, path, flags)
       , call_table_()
     {
-      try
+      struct
       {
-        struct
+        union
         {
-          union
-          {
-            void * symbol;
-            void (*function)(IModule*, unsigned int);
-          };
-        } func_ptr;
+          void * symbol;
+          void (*function)(IModule*, unsigned int);
+        };
+      } func_ptr;
 
-        func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_initialize");
+      func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_initialize");
 
-        if (func_ptr.function != NULL)
-        {
-          const unsigned int LOADER_VERSION (1U);
-
-          func_ptr.function (this, LOADER_VERSION);
-        }
-      }
-      catch (...)
+      if (func_ptr.function != NULL)
       {
-        close();
-        throw;
+        const unsigned int LOADER_VERSION (1U);
+
+        func_ptr.function (this, LOADER_VERSION);
       }
 
       MLOG (TRACE, "loaded module " << name_ << " from " << path_);
