@@ -9,8 +9,6 @@ const int WE_GUARD_SYMBOL = 0xDEADBEEF;
 
 namespace we {
   namespace loader {
-    loader::ptr_t loader::create() { return ptr_t(new loader()); }
-
     loader::~loader()
     {
       while (! module_load_order_.empty())

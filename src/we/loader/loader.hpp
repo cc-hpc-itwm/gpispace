@@ -5,7 +5,6 @@
 #include <we/loader/exceptions.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
@@ -18,15 +17,9 @@ namespace we
 {
   namespace loader
   {
-    using boost::shared_ptr;
-
     class loader : boost::noncopyable
     {
     public:
-      typedef shared_ptr<loader> ptr_t;
-
-      static ptr_t create();
-
       ~loader();
 
       Module& operator[] (const std::string &module);
