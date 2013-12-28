@@ -32,10 +32,10 @@ namespace we
 
     private:
       typedef boost::unordered_map<std::string, Module*> module_table_t;
-      module_table_t module_table_;
-      std::stack<Module*> module_load_order_;
-      std::list<boost::filesystem::path> search_path_;
-      mutable boost::recursive_mutex mtx_;
+      module_table_t _module_table;
+      std::stack<Module*> _module_stack;
+      std::list<boost::filesystem::path> _search_path;
+      mutable boost::recursive_mutex _loader_mutex;
     };
   }
 }

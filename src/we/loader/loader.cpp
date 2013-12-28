@@ -7,31 +7,33 @@
 
 const int WE_GUARD_SYMBOL = 0xDEADBEEF;
 
-namespace we {
-  namespace loader {
+namespace we
+{
+  namespace loader
+  {
     loader::~loader()
     {
-      while (! module_load_order_.empty())
+      while (not _module_stack.empty())
       {
-        delete module_load_order_.top();
-        module_load_order_.pop();
+        delete _module_stack.top();
+        _module_stack.pop();
       }
     }
 
     Module& loader::operator[] (const std::string& module)
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (mtx_);
+      boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);
 
-      module_table_t::const_iterator mod (module_table_.find (module));
+      module_table_t::const_iterator mod (_module_table.find (module));
 
-      if (mod != module_table_.end())
+      if (mod != _module_table.end())
       {
         return *mod->second;
       }
 
       const boost::filesystem::path file_name ("lib" + module + ".so");
 
-      BOOST_FOREACH (boost::filesystem::path const& p, search_path_)
+      BOOST_FOREACH (boost::filesystem::path const& p, _search_path)
       {
         if (boost::filesystem::exists (p / file_name))
         {
@@ -47,9 +49,9 @@ namespace we {
                          , const boost::filesystem::path& path
                          )
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (mtx_);
+      boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);
 
-      if (module_table_.find (name) != module_table_.end())
+      if (_module_table.find (name) != _module_table.end())
       {
         throw ModuleLoadFailed
           ("module already registered", name, path.string());
@@ -57,26 +59,28 @@ namespace we {
 
       Module* mod (new Module (name, path.string()));
 
-      module_load_order_.push (mod);
+      _module_stack.push (mod);
 
-      return module_table_.insert (std::make_pair (name, mod)).first->second;
+      return _module_table.insert (std::make_pair (name, mod)).first->second;
     }
 
     const std::list<boost::filesystem::path>& loader::search_path() const
     {
-      return search_path_;
+      return _search_path;
     }
 
     void loader::clear_search_path()
     {
-      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-      search_path_.clear();
+      boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);
+
+      _search_path.clear();
     }
 
     void loader::append_search_path (const boost::filesystem::path & p)
     {
-      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-      search_path_.push_back (p);
+      boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);
+
+      _search_path.push_back (p);
     }
   }
 }
