@@ -151,3 +151,8 @@ BOOST_AUTO_TEST_CASE (duplicate_function)
     , "duplicate function 'empty::f'"
     );
 }
+
+BOOST_AUTO_TEST_CASE (finalize_throw_ignored)
+{
+  we::loader::Module m ("./libfinalize_throws.so");
+}

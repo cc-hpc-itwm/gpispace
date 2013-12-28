@@ -20,6 +20,7 @@ fhg_add_test (module.cpp
                  ${FhgLog_LIBRARY}
                  ${CMAKE_DL_LIBS}
   DEPENDS initialize_throws
+          finalize_throws
           empty_not_linked_with_pnet
           empty
 )
@@ -37,6 +38,8 @@ target_link_libraries (order_b order_stack pnet)
 
 add_library (initialize_throws SHARED module/initialize_throws.cpp)
 target_link_libraries (initialize_throws pnet)
+add_library (finalize_throws SHARED module/finalize_throws.cpp)
+target_link_libraries (finalize_throws pnet)
 
 add_library (empty_not_linked_with_pnet
   SHARED module/empty_not_linked_with_pnet.cpp
