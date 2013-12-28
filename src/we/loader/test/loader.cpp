@@ -1,26 +1,69 @@
-#include <iostream>
+// mirko.rahn@itwm.fraunhofer.de
 
-#include <we/loader/loader.hpp>
+#define BOOST_TEST_MODULE loader
+#include <boost/test/unit_test.hpp>
 
 #include "answer.hpp"
 
-int main (int ac, char **argv)
+#include <we/loader/loader.hpp>
+
+#include <we/type/value/boost/test/printer.hpp>
+
+BOOST_AUTO_TEST_CASE (fresh_has_empty_search_path)
+{
+  we::loader::loader loader;
+
+  BOOST_REQUIRE_EQUAL (loader.search_path(), "");
+}
+
+BOOST_AUTO_TEST_CASE (append_and_clear_serch_path)
+{
+  we::loader::loader loader;
+  loader.append_search_path ("p");
+
+  BOOST_REQUIRE_EQUAL (loader.search_path(), "\"p\"");
+
+  loader.append_search_path ("q");
+
+  BOOST_REQUIRE_EQUAL (loader.search_path(), "\"p\":\"q\"");
+
+  loader.clear_search_path();
+
+  BOOST_REQUIRE_EQUAL (loader.search_path(), "");
+}
+
+BOOST_AUTO_TEST_CASE (answer_question)
 {
   we::loader::loader loader;
 
   loader.append_search_path (".");
 
-  for (int i = 1; i < ac; ++i)
   {
-    loader.append_search_path (argv[i]);
+    expr::eval::context out;
+
+    loader["answer"].call ("answer", 0, expr::eval::context(), out);
+
+    BOOST_REQUIRE_EQUAL
+      (out.value ("out"), pnet::type::value::value_type (42L));
   }
 
-  expr::eval::context out;
+  {
+    expr::eval::context out;
 
-  loader["answer"].call ("answer", 0, expr::eval::context(), out);
+    loader["question"].call ("question", 0, expr::eval::context(), out);
 
-  loader["question"].call ("question", 0, expr::eval::context(), out);
-  loader["answer"].call ("answer", 0, expr::eval::context(), out);
+    BOOST_REQUIRE_EQUAL
+      (out.value ("out"), pnet::type::value::value_type (44L));
+    BOOST_REQUIRE_EQUAL
+      (out.value ("ans"), pnet::type::value::value_type (42L));
+  }
 
-  return EXIT_SUCCESS;
+  {
+    expr::eval::context out;
+
+    loader["answer"].call ("answer", 0, expr::eval::context(), out);
+
+    BOOST_REQUIRE_EQUAL
+      (out.value ("out"), pnet::type::value::value_type (42L));
+  }
 }

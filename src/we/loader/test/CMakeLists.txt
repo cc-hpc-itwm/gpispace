@@ -1,6 +1,7 @@
 # mirko.rahn@itwm.fraunhofer.de
 
 fhg_add_test (loader.cpp
+  BOOST_UNIT_TEST
   PROJECT we_loader
   LINK_LIBRARIES pnet
                  ${FhgLog_LIBRARY}

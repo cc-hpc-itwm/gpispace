@@ -1,21 +1,22 @@
 #include <we/loader/IModule.hpp>
 #include <we/loader/macros.hpp>
-#include <iostream>
 
 #include "answer.hpp"
 
-static void question (gspc::drts::context *, const expr::eval::context & input, expr::eval::context& output)
+static void question ( gspc::drts::context*
+                     , const expr::eval::context&
+                     , expr::eval::context& output
+                     )
 {
-  std::cerr << "input := " << input << std::endl;
-  output. bind ("out", pnet::type::value::value_type ((long)get_answer()));
-  std::cerr << "answer := " << get_answer() << std::endl;
+  output.bind ("out", get_answer());
+  output.bind ("ans", the_answer);
+  get_answer();
 }
 
 
 WE_MOD_INITIALIZE_START (question);
 {
-  std::cerr << "The answer to life, the universe and everything := " << get_answer() << std::endl;
-  std::cerr << "The answer to life, the universe and everything := " << the_answer << std::endl;
+  get_answer();
   WE_REGISTER_FUN (question);
 }
 WE_MOD_INITIALIZE_END (question);
