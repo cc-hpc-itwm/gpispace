@@ -459,7 +459,7 @@ try
 
   BOOST_FOREACH (std::string const& m, mods_to_load)
   {
-    loader.load (m);
+    loader.load (m, m);
   }
 
   BOOST_FOREACH (std::string const& p, mod_path)

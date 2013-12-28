@@ -20,7 +20,9 @@ int main (int ac, char **av)
   {
     try
     {
-      std::string const mod_name (loader.load (av[i])->name());
+      std::string const mod_name (av[i]);
+
+      loader.load (mod_name, av[i]);
 
       try
       {

@@ -165,7 +165,7 @@ try
 
   BOOST_FOREACH (const std::string& module, mods_to_load)
   {
-    loader.load (module);
+    loader.load (module, module);
   }
 
   {

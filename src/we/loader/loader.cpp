@@ -15,7 +15,6 @@ namespace we {
 
     loader::loader ()
       : module_table_()
-      , module_counter_(0)
     {}
 
     loader::~loader()
@@ -59,11 +58,6 @@ namespace we {
         ("module '" + module + "' could not be located", module, "[not-found]");
     }
 
-    loader::module_ptr_t loader::load (const boost::filesystem::path & path)
-    {
-      return load ( "mod-"+fhg::util::show(module_counter_), path);
-    }
-
     loader::module_ptr_t loader::load ( const std::string& name
                                       , const boost::filesystem::path& path
                                       )
@@ -81,8 +75,6 @@ namespace we {
       module_table_.insert (std::make_pair (name, mod));
 
       module_load_order_.push_front (name);
-
-      ++module_counter_;
 
       MLOG (TRACE, "loaded module " << name << " from " << path);
 
