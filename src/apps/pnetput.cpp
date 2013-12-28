@@ -1,74 +1,68 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/util/token.hpp>
+#include <fhg/revision.hpp>
+
 #include <we/expr/parse/parser.hpp>
-
-#include <we/type/value.hpp>
-#include <we/type/value/show.hpp>
-
+#include <we/mgmt/type/activity.hpp>
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/show.hpp>
+#include <we/util/token.hpp>
 
-#include <iostream>
-#include <fstream>
-
+#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <fhg/revision.hpp>
+#include <fstream>
+#include <iostream>
 
-// ************************************************************************* //
-
-namespace po = boost::program_options;
-
-int
-main (int argc, char ** argv)
-try
+int main (int argc, char** argv) try
 {
+  namespace po = boost::program_options;
+
   std::string input ("-");
   std::string output ("-");
   std::vector<std::string> input_spec;
 
-  po::options_description desc("options");
+  po::options_description desc ("options");
 
   desc.add_options()
     ( "help,h", "this message")
     ( "version,V", "print version information")
     ( "if,i"
-    , po::value<std::string>(&input)->default_value(input)
+    , po::value<std::string> (&input)->default_value (input)
     , "input file name, - for stdin"
     )
     ( "of,o"
-    , po::value<std::string>(&output)->default_value(input)
+    , po::value<std::string> (&output)->default_value (input)
     , "output file name, - for stdout"
     )
     ( "put,p"
-    , po::value<std::vector<std::string> >(&input_spec)
+    , po::value<std::vector<std::string> > (&input_spec)
     , "input token: port=<value>"
     )
     ;
 
   po::positional_options_description p;
-  p.add("put", -1);
+  p.add ("put", -1);
 
   po::variables_map vm;
-  po::store( po::command_line_parser(argc, argv)
-           . options(desc).positional(p).run()
-           , vm
-           );
+  po::store ( po::command_line_parser (argc, argv)
+            . options (desc).positional (p).run()
+            , vm
+            );
   po::notify (vm);
 
-  if (vm.count("help"))
-    {
-      std::cout << argv[0] << ": put tokens on input ports" << std::endl;
+  if (vm.count ("help"))
+  {
+    std::cout << argv[0] << ": put tokens on input ports" << std::endl;
+    std::cout << desc << std::endl;
 
-      std::cout << desc << std::endl;
+    return EXIT_SUCCESS;
+  }
 
-      return EXIT_SUCCESS;
-    }
-
-  if (vm.count("version"))
+  if (vm.count ("version"))
   {
     std::cout << fhg::project_info ("Token Injector");
 
@@ -76,9 +70,9 @@ try
   }
 
   if (output == "-")
-    {
-      output = "/dev/stdout";
-    }
+  {
+    output = "/dev/stdout";
+  }
 
   we::mgmt::type::activity_t act
     ( input == "-"
@@ -92,66 +86,44 @@ try
 
   port_values_type port_values;
 
-  for ( std::vector<std::string>::const_iterator inp (input_spec.begin())
-      ; inp != input_spec.end()
-      ; ++inp
-      )
+  BOOST_FOREACH (std::string const& inp, input_spec)
   {
-    try
+    const std::string port_name (inp.substr (0, inp.find ('=')));
+    const std::string value (inp.substr (inp.find ('=') + 1));
+
+    const pnet::type::value::value_type val
+      (expr::parse::parser (value).eval_all());
+
+    if (not act.transition().net())
     {
-      const std::string port_name
-        ( inp->substr (0, inp->find('=') ));
-      const std::string value
-        ( inp->substr (inp->find('=')+1) );
+      const port_values_type::const_iterator pos
+        (port_values.find (port_name));
 
-      const pnet::type::value::value_type val
-        (expr::parse::parser (value).eval_all());
-
-      if (not act.transition().net())
-        {
-          const port_values_type::const_iterator pos
-            (port_values.find (port_name));
-
-          if (pos != port_values.end())
-            {
-              std::cerr
-                << "WARNING! On port " << port_name
-                << " the put of value " << pnet::type::value::show (val)
-                << " overwrites the put of value "
-                << pnet::type::value::show (pos->second)
-                << std::endl;
-            }
-
-          port_values[port_name] = val;
-        }
-
-      we::util::token::put (act, port_name, val);
-    }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "failed: input-spec: " << *inp << std::endl;
-      std::cerr << "failed: could not put token: " << ex.what() << std::endl;
-      return 2;
-    }
-  }
-
-  try
-  {
-    std::ofstream stream (output.c_str());
-
-    if (!stream)
+      if (pos != port_values.end())
       {
-        throw std::runtime_error
-          ("could not open file " + output + " for writing");
+        std::cerr
+          << "WARNING! On port " << port_name
+          << " the put of value " << pnet::type::value::show (val)
+          << " overwrites the put of value "
+          << pnet::type::value::show (pos->second)
+          << std::endl;
       }
 
-    stream << act.to_string();
+      port_values[port_name] = val;
+    }
+
+    we::util::token::put (act, port_name, val);
   }
-  catch (std::exception const & ex)
+
+  std::ofstream stream (output.c_str());
+
+  if (!stream)
   {
-    std::cerr << "failed: could not generate output: " << ex.what() << std::endl;
-    return 3;
+    throw std::runtime_error
+      ("could not open file " + output + " for writing");
   }
+
+  stream << act.to_string();
 
   return EXIT_SUCCESS;
 }
