@@ -36,7 +36,34 @@ namespace we
 
       try
       {
-        init (0);
+        struct
+        {
+          union
+          {
+            void * symbol;
+            void (*function)(IModule*, unsigned int);
+          };
+        } func_ptr;
+
+        func_ptr.symbol = dlsym (handle_, "we_mod_initialize");
+
+        if (func_ptr.function != NULL)
+        {
+          try
+          {
+            const unsigned int LOADER_VERSION (1U);
+
+            func_ptr.function (this, LOADER_VERSION);
+          }
+          catch (const std::exception &ex)
+          {
+            throw ModuleInitFailed ("error during mod-init function: " + std::string(ex.what()), name_, path_);
+          }
+          catch (...)
+          {
+            throw ModuleInitFailed ("unknown error during mod-init function", name_, path_);
+          }
+        }
       }
       catch (...)
       {
@@ -110,43 +137,6 @@ namespace we
          )
       {
         throw DuplicateFunction (name_, name);
-      }
-    }
-    void Module::init (loader*) throw (ModuleException)
-    {
-      if (! handle_)
-      {
-        throw ModuleInitFailed
-          ("initialization of module " + name() + " from " + path() + " failed: handle is 0", name(), path());
-      }
-
-      struct
-      {
-        union
-        {
-          void * symbol;
-          void (*function)(IModule*, unsigned int);
-        };
-      } func_ptr;
-
-      func_ptr.symbol = dlsym (handle_, "we_mod_initialize");
-
-      if (func_ptr.function != NULL)
-      {
-        try
-        {
-          const unsigned int LOADER_VERSION (1U);
-
-          func_ptr.function (this, LOADER_VERSION);
-        }
-        catch (const std::exception &ex)
-        {
-          throw ModuleInitFailed ("error during mod-init function: " + std::string(ex.what()), name(), path());
-        }
-        catch (...)
-        {
-          throw ModuleInitFailed ("unknown error during mod-init function", name(), path());
-        }
       }
     }
     void Module::close()

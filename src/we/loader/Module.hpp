@@ -40,8 +40,6 @@ namespace we
       void add_function (const std::string&, WrapperFunction);
 
     private:
-      void init (loader*) throw (ModuleException);
-
       void close();
 
       std::string name_;
