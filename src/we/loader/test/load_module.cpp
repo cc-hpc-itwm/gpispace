@@ -2,7 +2,6 @@
 #include <list>
 #include <string>
 
-#include <fhg/util/show.hpp>
 #include <we/loader/loader.hpp>
 
 int main (int ac, char **av)
