@@ -22,7 +22,7 @@ add_library (we-dev SHARED
   loader/Module.cpp
 )
 
-target_link_libraries(we-dev fhg-util ${CMAKE_DL_LIBS})
+target_link_libraries(we-dev fhg-util fhglog ${CMAKE_DL_LIBS})
 set_target_properties (we-dev PROPERTIES OUTPUT_NAME we-dev VERSION 1)
 
 install (TARGETS we-dev

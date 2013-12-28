@@ -2,6 +2,8 @@
 
 #include <we/loader/Module.hpp>
 
+#include <fhglog/LogMacros.hpp>
+
 namespace we
 {
   namespace loader
@@ -16,9 +18,13 @@ namespace we
       , call_table_()
     {
       open (a_path, flags);
+
+      MLOG (TRACE, "loaded module " << name_ << " from " << path_);
     }
     Module::~Module() throw()
     {
+      MLOG (TRACE, "unloading " << name_);
+
       try
       {
         close ();

@@ -1,7 +1,5 @@
 #include "loader.hpp"
 
-#include <fhglog/fhglog.hpp>
-
 #include <fhg/assert.hpp>
 #include <fhg/util/show.hpp>
 
@@ -27,7 +25,6 @@ namespace we {
         module_table_t::iterator const mod (module_table_.find (module_name));
         if (mod != module_table_.end())
         {
-          MLOG (TRACE, "unloading " << mod->first);
           module_table_.erase (mod);
         }
       }
@@ -75,8 +72,6 @@ namespace we {
       module_table_.insert (std::make_pair (name, mod));
 
       module_load_order_.push_front (name);
-
-      MLOG (TRACE, "loaded module " << name << " from " << path);
 
       return mod;
     }
