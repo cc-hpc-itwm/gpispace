@@ -69,11 +69,6 @@ int main (int argc, char** argv) try
     return EXIT_SUCCESS;
   }
 
-  if (output == "-")
-  {
-    output = "/dev/stdout";
-  }
-
   we::mgmt::type::activity_t act
     ( input == "-"
     ? we::mgmt::type::activity_t (std::cin)
@@ -115,15 +110,22 @@ int main (int argc, char** argv) try
     we::util::token::put (act, port_name, val);
   }
 
-  std::ofstream stream (output.c_str());
-
-  if (!stream)
+  if (output == "-")
   {
-    throw std::runtime_error
-      ("could not open file " + output + " for writing");
+    std::cout << act.to_string();
   }
+  else
+  {
+    std::ofstream stream (output.c_str());
 
-  stream << act.to_string();
+    if (!stream)
+    {
+      throw std::runtime_error
+        ("could not open file " + output + " for writing");
+    }
+
+    stream << act.to_string();
+  }
 
   return EXIT_SUCCESS;
 }
