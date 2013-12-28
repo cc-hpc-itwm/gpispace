@@ -64,7 +64,7 @@ namespace we {
       return module_table_.insert (std::make_pair (name, mod)).first->second;
     }
 
-    const loader::search_path_t & loader::search_path (void) const
+    const std::list<boost::filesystem::path>& loader::search_path (void) const
     {
       return search_path_;
     }
