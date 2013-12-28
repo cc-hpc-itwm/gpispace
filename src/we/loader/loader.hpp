@@ -10,6 +10,7 @@
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/utility.hpp>
 
 #include <we/loader/exceptions.hpp>
 #include <we/loader/Module.hpp>
@@ -20,7 +21,7 @@ namespace we
   {
     using boost::shared_ptr;
 
-    class loader
+    class loader : boost::noncopyable
     {
     public:
       typedef shared_ptr<Module> module_ptr_t;
@@ -43,9 +44,6 @@ namespace we
       void append_search_path (const boost::filesystem::path&);
 
     private:
-      loader (const loader&);
-      loader& operator= (const loader&);
-
       module_table_t module_table_;
       module_names_t module_load_order_;
       search_path_t search_path_;
