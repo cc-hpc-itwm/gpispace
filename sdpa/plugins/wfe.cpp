@@ -180,7 +180,6 @@ public:
     m_loader = we::loader::loader::create();
 
     m_current_task = 0;
-    m_auto_unload = fhg_kernel ()->get<fhg::util::bool_t> ("auto_unload", "false");
 
     {
       // initalize loader with paths
@@ -212,11 +211,6 @@ public:
     fhg::util::set_threadname (*m_worker, "[wfe]");
 
     gspc::net::handle
-      ("/service/wfe/unload-modules"
-      , boost::bind (&WFEImpl::service_module_unload, this, _1, _2, _3)
-      );
-
-    gspc::net::handle
       ("/service/wfe/current-job"
       , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
       );
@@ -246,7 +240,6 @@ public:
   {
     _notification_service = boost::none;
 
-    gspc::net::unhandle ("/service/wfe/unload-modules");
     gspc::net::unhandle ("/service/wfe/current-job");
     gspc::net::unhandle ("/service/wfe/search-path/get");
     gspc::net::unhandle ("/service/wfe/search-path/set");
@@ -414,32 +407,6 @@ public:
     return 0;
   }
 private:
-  void service_module_unload ( std::string const &dst
-                             , gspc::net::frame const &rqst
-                             , gspc::net::user_ptr user
-                             )
-  {
-    MLOG (INFO, "unloading modules as requested by the user...");
-
-    gspc::net::frame rply;
-
-    try
-    {
-      m_loader->unload_autoloaded ();
-      rply = gspc::net::make::reply_frame (rqst);
-    }
-    catch (std::exception const &ex)
-    {
-      rply = gspc::net::make::error_frame
-        ( rqst
-        , gspc::net::E_SERVICE_FAILED
-        , ex.what ()
-        );
-    }
-
-    user->deliver (rply);
-  }
-
   void service_current_job ( std::string const &dst
                            , gspc::net::frame const &rqst
                            , gspc::net::user_ptr user
@@ -549,9 +516,6 @@ private:
           // TODO: more detailed error codes
           task->errc = fhg::error::MODULE_CALL_FAILED;
           task->error_message = ex.what();
-
-          if (m_auto_unload)
-            m_loader->unload_autoloaded();
         }
         catch (...)
         {
@@ -560,9 +524,6 @@ private:
           task->error_message =
             "UNKNOWN REASON, exception not derived from std::exception";
           task->done.notify(1);
-
-          if (m_auto_unload)
-            m_loader->unload_autoloaded();
         }
       }
 
@@ -579,8 +540,6 @@ private:
 
   we::loader::loader::ptr_t m_loader;
   boost::shared_ptr<boost::thread> m_worker;
-
-  bool m_auto_unload;
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
 };
