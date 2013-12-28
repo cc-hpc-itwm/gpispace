@@ -20,7 +20,6 @@
 #include <fhg/util/bool_io.hpp>
 #include <fhg/util/threadname.hpp>
 #include <fhg/util/split.hpp>
-#include <fhg/util/join.hpp>
 #include <fhg/error_codes.hpp>
 
 #include <fhglog/LogMacros.hpp>
@@ -438,12 +437,7 @@ private:
     {
       lock_type lock (m_mutex);
 
-      rply.set_body
-        (fhg::util::join ( m_loader->search_path ().begin ()
-                         , m_loader->search_path ().end ()
-                         , ":"
-                         )
-        );
+      rply.set_body (m_loader->search_path());
     }
 
     user->deliver (rply);

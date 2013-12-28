@@ -64,11 +64,6 @@ namespace we
       return _module_table.insert (std::make_pair (name, mod)).first->second;
     }
 
-    const std::list<boost::filesystem::path>& loader::search_path() const
-    {
-      return _search_path;
-    }
-
     void loader::clear_search_path()
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);

@@ -4,6 +4,8 @@
 #include <we/loader/Module.hpp>
 #include <we/loader/exceptions.hpp>
 
+#include <fhg/util/join.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
@@ -26,11 +28,16 @@ namespace we
 
       Module* load (const std::string&, const boost::filesystem::path&);
 
-      const std::list<boost::filesystem::path>& search_path() const;
       void clear_search_path();
       void append_search_path (const boost::filesystem::path&);
 
-    private:
+      std::string search_path() const
+      {
+        boost::unique_lock<boost::recursive_mutex> const _ (_loader_mutex);
+
+        return fhg::util::join (_search_path.begin(), _search_path.end(), ":");
+      }
+   private:
       typedef boost::unordered_map<std::string, Module*> module_table_t;
       module_table_t _module_table;
       std::stack<Module*> _module_stack;
