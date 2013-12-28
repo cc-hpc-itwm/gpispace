@@ -71,14 +71,14 @@ BOOST_AUTO_TEST_CASE (answer_question)
   }
 }
 
-BOOST_AUTO_TEST_CASE (load_not_found)
+BOOST_AUTO_TEST_CASE (load_failed)
 {
   we::loader::loader loader;
 
-  fhg::util::boost::test::require_exception<we::loader::ModuleLoadFailed>
+  fhg::util::boost::test::require_exception<we::loader::module_load_failed>
     ( boost::bind (&we::loader::loader::load, &loader, "name", "<path>")
-    , "we::loader::ModuleLoadFailed"
-    , "could not load module 'name' from '<path>': <path>:"
+    , "we::loader::module_load_failed"
+    , "could not load module '<path>': <path>:"
       " cannot open shared object file: No such file or directory"
     );
 }
@@ -96,30 +96,30 @@ BOOST_AUTO_TEST_CASE (load_already_registered)
 
   BOOST_REQUIRE (loader.load ("name", "./libanswer.so"));
 
-  fhg::util::boost::test::require_exception<we::loader::ModuleLoadFailed>
+  fhg::util::boost::test::require_exception<we::loader::module_already_registered>
     ( boost::bind (&we::loader::loader::load, &loader, "name", "<path>")
-    , "we::loader::ModuleLoadFailed"
+    , "module_already_registered"
     , "module 'name' already registered"
     );
 }
 
-BOOST_AUTO_TEST_CASE (bracket_not_located)
+BOOST_AUTO_TEST_CASE (bracket_not_found)
 {
   we::loader::loader loader;
 
-  fhg::util::boost::test::require_exception<we::loader::ModuleLoadFailed>
+  fhg::util::boost::test::require_exception<we::loader::module_not_found>
     ( boost::bind (&we::loader::loader::operator[], &loader, "name")
     , "we::loader::ModuleLoadFailed"
-    , "module 'name' could not be located in ''"
+    , "module 'libname.so' not found in ''"
     );
 
   loader.append_search_path ("<p>");
   loader.append_search_path ("<q>");
 
-  fhg::util::boost::test::require_exception<we::loader::ModuleLoadFailed>
+  fhg::util::boost::test::require_exception<we::loader::module_not_found>
     ( boost::bind (&we::loader::loader::operator[], &loader, "name")
     , "we::loader::ModuleLoadFailed"
-    , "module 'name' could not be located in '\"<p>\":\"<q>\"'"
+    , "module 'libname.so' not found in '\"<p>\":\"<q>\"'"
     );
 }
 

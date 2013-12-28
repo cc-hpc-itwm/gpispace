@@ -6,21 +6,18 @@
 
 #include <fhglog/LogMacros.hpp>
 
-#include <boost/format.hpp>
-
 #include <iostream>
 
 namespace we
 {
   namespace loader
   {
-    Module::Module ( const std::string& name
-                   , const std::string& path
+    Module::Module ( const std::string& path
                    , int flags
                    )
-      : name_ (name)
+      : name_()
       , path_ (path)
-      , _dlhandle (name, path, flags)
+      , _dlhandle (path, flags)
       , call_table_()
     {
       struct
@@ -124,23 +121,14 @@ namespace we
       }
     }
 
-    Module::dlhandle::dlhandle ( std::string const& name
-                               , std::string const& path
+    Module::dlhandle::dlhandle ( std::string const& path
                                , int flags
                                )
       : _handle (dlopen (path.c_str(), flags))
     {
       if (!_handle)
       {
-        throw ModuleLoadFailed
-          ( ( boost::format ("could not load module '%1%' from '%2%': %3%")
-            % name
-            % path
-            % dlerror()
-            ).str()
-          , name
-          , path
-          );
+        throw module_load_failed (path, dlerror());
       }
     }
     Module::dlhandle::~dlhandle()

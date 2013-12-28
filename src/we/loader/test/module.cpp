@@ -18,18 +18,18 @@
 
 namespace
 {
-  void ctor (std::string const& name, std::string const& path)
+  void ctor (std::string const& path)
   {
-    (void) (we::loader::Module (name, path));
+    (void) (we::loader::Module (path));
   }
 }
 
-BOOST_AUTO_TEST_CASE (ctor_failed_not_found)
+BOOST_AUTO_TEST_CASE (ctor_load_failed)
 {
-  fhg::util::boost::test::require_exception<we::loader::ModuleLoadFailed>
-    ( boost::bind (&ctor, "name", "<path>")
-    , "we::loader::ModuleLoadFailed"
-    , "could not load module 'name' from '<path>': <path>:"
+  fhg::util::boost::test::require_exception<we::loader::module_load_failed>
+    ( boost::bind (&ctor, "<path>")
+    , "we::loader::module_load_failed"
+    , "could not load module '<path>': <path>:"
       " cannot open shared object file: No such file or directory"
     );
 }
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE (ctor_failed_not_found)
 BOOST_AUTO_TEST_CASE (ctor_failed_exception_from_we_mod_initialize)
 {
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&ctor, "a", "./libinitialize_throws.so")
+    ( boost::bind (&ctor, "./libinitialize_throws.so")
     , "std::runtime_error"
     , "initialize_throws"
     );
@@ -48,10 +48,10 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
 #define XSTR(x) STR(x)
 #define STR(x) #x
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&ctor, "a", "./libempty_not_linked_with_pnet.so")
+    ( boost::bind (&ctor, "./libempty_not_linked_with_pnet.so")
     , "std::runtime_error"
     , ( boost::format
-        ( "could not load module 'a' from './libempty_not_linked_with_pnet.so':"
+        ( "could not load module './libempty_not_linked_with_pnet.so':"
           " ./libempty_not_linked_with_pnet.so: undefined symbol: %1%"
         )
       % XSTR (WE_GUARD_SYMBOL)
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
 
 BOOST_AUTO_TEST_CASE (ctor_okay_name_path)
 {
-  we::loader::Module const m ("name", "./libempty.so");
+  we::loader::Module const m ("./libempty.so");
 
   BOOST_REQUIRE_EQUAL (m.name(), "empty");
   BOOST_REQUIRE_EQUAL (m.path(), "./libempty.so");

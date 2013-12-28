@@ -17,8 +17,7 @@ namespace we
     class Module : public IModule, boost::noncopyable
     {
     public:
-      Module ( const std::string& name
-             , const std::string& path
+      Module ( const std::string& path
              , int flags = RTLD_NOW | RTLD_GLOBAL
              );
       virtual ~Module() throw();
@@ -42,7 +41,7 @@ namespace we
       class dlhandle
       {
       public:
-        dlhandle (std::string const& name, std::string const& path, int flags);
+        dlhandle (std::string const& path, int flags);
         ~dlhandle();
         void* handle() const;
       private:

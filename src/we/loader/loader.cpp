@@ -5,7 +5,6 @@
 #include <fhg/util/join.hpp>
 
 #include <boost/foreach.hpp>
-#include <boost/format.hpp>
 
 const int WE_GUARD_SYMBOL = 0xDEADBEEF;
 
@@ -45,14 +44,7 @@ namespace we
         }
       }
 
-      throw ModuleLoadFailed
-        ( ( boost::format ("module '%1%' could not be located in '%2%'")
-          % module
-          % search_path()
-          ).str()
-        , module
-        , "[not-found]"
-        );
+      throw module_not_found (file_name.string(), search_path());
     }
 
     Module* loader::load ( const std::string& name
@@ -63,14 +55,10 @@ namespace we
 
       if (_module_table.find (name) != _module_table.end())
       {
-        throw ModuleLoadFailed
-          ( (boost::format ("module '%1%' already registered") % name).str()
-          , name
-          , path.string()
-          );
+        throw module_already_registered (name);
       }
 
-      Module* mod (new Module (name, path.string()));
+      Module* mod (new Module (path.string()));
 
       _module_stack.push (mod);
 
