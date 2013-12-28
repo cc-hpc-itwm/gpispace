@@ -38,12 +38,9 @@ struct wfe_exec_context : public we::mgmt::context
 
   virtual int handle_internally (we::mgmt::type::activity_t& act, net_t&)
   {
-    act.inject_input ();
-
     while (act.can_fire())
     {
       we::mgmt::type::activity_t sub (act.extract ());
-      sub.inject_input ();
       sub.execute (this);
       act.inject (sub);
     }
@@ -183,7 +180,6 @@ try
 
   try
   {
-    act.inject_input();
     act.execute (&context);
     act.collect_output ();
 

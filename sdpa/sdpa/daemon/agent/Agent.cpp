@@ -119,7 +119,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
           if(scheduler()->groupFinished(actId))
           {
             pJob->JobFinished(pEvt);
-            workflowEngine()->finished(actId, pEvt->result());
+            workflowEngine()->finished_DEPRECATED(actId, pEvt->result());
           }
           else
           {
@@ -132,7 +132,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
             pJob->JobFailed(pJobFailedEvt);
             delete pJobFailedEvt;
 
-            workflowEngine()->failed( actId,
+            workflowEngine()->failed_DEPRECATED( actId,
                                       pEvt->result(),
                                       sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
                                       "One of tasks of the group failed with the actual reservation!");
@@ -311,7 +311,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 
       if(bTaskGroupComputed) {
           pJob->JobFailed(pEvt);
-          workflowEngine()->failed( actId
+          workflowEngine()->failed_DEPRECATED( actId
                                     , pEvt->result()
                                     , pEvt->error_code()
                                     , pEvt->error_message()

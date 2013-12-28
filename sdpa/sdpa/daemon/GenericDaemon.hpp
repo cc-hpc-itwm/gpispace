@@ -59,6 +59,7 @@
 #include <sdpa/capability.hpp>
 
 #include <fhg/util/thread/set.hpp>
+#include <fhg/util/thread/queue.hpp>
 
 #define OVERWRITTEN_IN_TEST virtual
 

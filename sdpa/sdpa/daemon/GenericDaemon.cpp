@@ -292,7 +292,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     }
     else
     {
-        workflowEngine()->failed(job_id, "",  fhg::error::UNEXPECTED_ERROR, ex.what());
+        workflowEngine()->failed_DEPRECATED (job_id, "",  fhg::error::UNEXPECTED_ERROR, ex.what());
     }
     return;
   }
@@ -545,7 +545,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
 
   if( schedule_data.num_worker() && schedule_data.num_worker().get()<=0)
   {
-      workflowEngine()->we::mgmt::layer::failed(  activityId
+      workflowEngine()->failed_DEPRECATED (  activityId
                                                   , ""
                                                   , fhg::error::UNEXPECTED_ERROR
                                                   , "Invalid number of workers required: "
@@ -555,7 +555,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
         return;
     }
 
-  on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed, workflowEngine()
+  on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed_DEPRECATED, workflowEngine()
                               , activityId, desc
                               , fhg::error::UNEXPECTED_ERROR
                               , "Exception in GenericDaemon::submit()"
@@ -737,7 +737,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
       we::type::user_data job_data;
       job_data.set_user_job_identification(jobId);
       // actually, this information redundant because wf_id == job_data.get_user_job_identification()!
-      workflowEngine()->submit (wf_id, pJob->description(), job_data);
+      workflowEngine()->submit_DEPRECATED (wf_id, pJob->description(), job_data);
     }
   }
   catch(const NoWorkflowEngine& ex)
