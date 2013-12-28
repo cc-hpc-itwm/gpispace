@@ -27,8 +27,6 @@ namespace we
              );
       virtual ~Module() throw();
 
-      void init (loader*) throw (ModuleException);
-
       void name (const std::string&);
       const std::string &name() const;
       const std::string &path() const;
@@ -42,6 +40,8 @@ namespace we
       void add_function (const std::string&, WrapperFunction);
 
     private:
+      void init (loader*) throw (ModuleException);
+
       void close();
 
       std::string name_;
