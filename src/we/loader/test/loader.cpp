@@ -3,6 +3,8 @@
 #define BOOST_TEST_MODULE loader
 #include <boost/test/unit_test.hpp>
 
+#include "order/stack.hpp"
+
 #include <we/loader/loader.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
@@ -138,4 +140,31 @@ BOOST_AUTO_TEST_CASE (bracket_okay_from_table)
   loader.clear_search_path();
 
   BOOST_REQUIRE_EQUAL (loader["answer"].name(), "answer");
+}
+
+BOOST_AUTO_TEST_CASE (unload_order)
+{
+  {
+    we::loader::loader loader;
+
+    BOOST_REQUIRE (loader.load ("a", "./liborder_a.so"));
+    BOOST_REQUIRE (loader.load ("b", "./liborder_b.so"));
+
+    BOOST_REQUIRE_EQUAL (start().size(), 2);
+  }
+
+  BOOST_REQUIRE_EQUAL (stop().size(), 2);
+
+  std::stack<std::string> stop_expected;
+  while (!start().empty())
+  {
+    stop_expected.push (start().top()); start().pop();
+  }
+
+  while (!stop().empty())
+  {
+    BOOST_REQUIRE_EQUAL (stop().top(), stop_expected.top());
+    stop().pop();
+    stop_expected.pop();
+  }
 }
