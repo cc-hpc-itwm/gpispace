@@ -16,22 +16,9 @@ namespace we
                    )
       : name_ (name)
       , path_ (path)
-      , handle_ (dlopen (path_.c_str(), flags))
+      , _dlhandle (name, path, flags)
       , call_table_()
     {
-      if (!handle_)
-      {
-        throw ModuleLoadFailed
-          ( ( boost::format ("could not load module '%1%' from '%2%': %3%")
-            % name_
-            % path_
-            % dlerror()
-            ).str()
-          , name_
-          , path_
-          );
-      }
-
       try
       {
         struct
@@ -43,7 +30,7 @@ namespace we
           };
         } func_ptr;
 
-        func_ptr.symbol = dlsym (handle_, "we_mod_initialize");
+        func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_initialize");
 
         if (func_ptr.function != NULL)
         {
@@ -137,24 +124,40 @@ namespace we
         };
       } func_ptr;
 
-      func_ptr.symbol = dlsym (handle_, "we_mod_finalize");
+      func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_finalize");
 
       if (func_ptr.function != NULL)
       {
-        try
-        {
-          func_ptr.function (this);
-        }
-        catch (...)
-        {
-          dlclose (handle_);
-          handle_ = 0;
-          throw;
-        }
+        func_ptr.function (this);
       }
+    }
 
-      dlclose (handle_);
-      handle_ = 0;
+    Module::dlhandle::dlhandle ( std::string const& name
+                               , std::string const& path
+                               , int flags
+                               )
+      : _handle (dlopen (path.c_str(), flags))
+    {
+      if (!_handle)
+      {
+        throw ModuleLoadFailed
+          ( ( boost::format ("could not load module '%1%' from '%2%': %3%")
+            % name
+            % path
+            % dlerror()
+            ).str()
+          , name
+          , path
+          );
+      }
+    }
+    Module::dlhandle::~dlhandle()
+    {
+      dlclose (_handle);
+    }
+    void* Module::dlhandle::handle() const
+    {
+      return _handle;
     }
   }
 }

@@ -44,7 +44,16 @@ namespace we
 
       std::string name_;
       std::string path_;
-      void* handle_;
+
+      class dlhandle
+      {
+      public:
+        dlhandle (std::string const& name, std::string const& path, int flags);
+        ~dlhandle();
+        void* handle() const;
+      private:
+        void* _handle;
+      } _dlhandle;
       boost::unordered_map<std::string, parameterized_function_t> call_table_;
     };
   }
