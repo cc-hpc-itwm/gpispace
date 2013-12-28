@@ -1,6 +1,5 @@
 #include "stack.hpp"
 
-#include <we/loader/IModule.hpp>
 #include <we/loader/macros.hpp>
 
 WE_MOD_INITIALIZE_START (a);

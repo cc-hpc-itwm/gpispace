@@ -1,6 +1,5 @@
 #include "answer.hpp"
 
-#include <we/loader/IModule.hpp>
 #include <we/loader/macros.hpp>
 
 long the_answer;
