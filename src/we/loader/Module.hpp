@@ -2,12 +2,10 @@
 #define WE_LOADER_MODULE_HPP 1
 
 #include <we/loader/IModule.hpp>
-#include <we/loader/exceptions.hpp>
 
 #include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
 
-#include <iostream>
 #include <string>
 
 #include <dlfcn.h>

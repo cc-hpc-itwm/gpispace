@@ -2,9 +2,13 @@
 
 #include <we/loader/Module.hpp>
 
+#include <we/loader/exceptions.hpp>
+
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/format.hpp>
+
+#include <iostream>
 
 namespace we
 {
