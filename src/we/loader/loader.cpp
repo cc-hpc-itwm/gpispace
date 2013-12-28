@@ -11,10 +11,6 @@ namespace we {
   namespace loader {
     loader::ptr_t loader::create() { return ptr_t(new loader()); }
 
-    loader::loader ()
-      : module_table_()
-    {}
-
     loader::~loader()
     {
       while (! module_load_order_.empty())

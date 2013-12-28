@@ -30,7 +30,6 @@ namespace we
 
       static ptr_t create();
 
-      loader();
       ~loader();
 
       Module& operator[] (const std::string &module);
