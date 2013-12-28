@@ -5,10 +5,12 @@
 
 #include <we/loader/Module.hpp>
 
+#include <we/expr/eval/context.hpp>
 #include <we/loader/api-guard.hpp>
 #include <we/loader/exceptions.hpp>
-
 #include <we/type/value/boost/test/printer.hpp>
+
+#include <gspc/drts/context.hpp>
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
@@ -75,4 +77,62 @@ BOOST_AUTO_TEST_CASE (set_name)
   m.name ("name");
 
   BOOST_REQUIRE_EQUAL (m.name(), "name");
+}
+
+BOOST_AUTO_TEST_CASE (call_not_found)
+{
+  we::loader::Module m ("./libempty.so");
+
+  gspc::drts::context context ((std::list<std::string>()));
+  expr::eval::context input;
+  expr::eval::context output;
+
+  fhg::util::boost::test::require_exception<we::loader::function_not_found>
+    ( boost::bind ( &we::loader::Module::call, &m
+                  , "<name>", &context, input, output
+                  )
+    , "we::loader::function_not_found"
+    , "function 'empty::<name>' not found"
+    );
+}
+
+namespace
+{
+  static int x;
+
+  void inc ( gspc::drts::context*
+           , expr::eval::context const&
+           , expr::eval::context&
+           )
+  {
+    ++x;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (call_local)
+{
+  we::loader::Module m ("./libempty.so");
+  m.add_function ("f", &inc);
+
+  gspc::drts::context context ((std::list<std::string>()));
+  expr::eval::context input;
+  expr::eval::context output;
+
+  x=0;
+
+  m.call ("f", &context, input, output);
+
+  BOOST_REQUIRE_EQUAL (x, 1);
+}
+
+BOOST_AUTO_TEST_CASE (duplicate_function)
+{
+  we::loader::Module m ("./libempty.so");
+  m.add_function ("f", &inc);
+
+  fhg::util::boost::test::require_exception<we::loader::duplicate_function>
+    ( boost::bind ( &we::loader::Module::add_function, &m, "f", inc)
+    , "we::loader::duplicate_function"
+    , "duplicate function 'empty::f'"
+    );
 }
