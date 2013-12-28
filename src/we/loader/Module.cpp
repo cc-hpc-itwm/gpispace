@@ -49,20 +49,9 @@ namespace we
 
         if (func_ptr.function != NULL)
         {
-          try
-          {
-            const unsigned int LOADER_VERSION (1U);
+          const unsigned int LOADER_VERSION (1U);
 
-            func_ptr.function (this, LOADER_VERSION);
-          }
-          catch (const std::exception &ex)
-          {
-            throw ModuleInitFailed ("error during mod-init function: " + std::string(ex.what()), name_, path_);
-          }
-          catch (...)
-          {
-            throw ModuleInitFailed ("unknown error during mod-init function", name_, path_);
-          }
+          func_ptr.function (this, LOADER_VERSION);
         }
       }
       catch (...)
