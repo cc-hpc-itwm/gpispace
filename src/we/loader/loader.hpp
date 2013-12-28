@@ -1,19 +1,17 @@
 #ifndef WE_LOADER_MODULE_LOADER_HPP
 #define WE_LOADER_MODULE_LOADER_HPP 1
 
-#include <list>
-#include <string>
-#include <cassert>
-#include <dlfcn.h>
+#include <we/loader/Module.hpp>
+#include <we/loader/exceptions.hpp>
 
+#include <boost/filesystem.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/utility.hpp>
 
-#include <we/loader/exceptions.hpp>
-#include <we/loader/Module.hpp>
+#include <list>
+#include <string>
 
 namespace we
 {
