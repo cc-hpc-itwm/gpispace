@@ -6,570 +6,396 @@ namespace we
 {
   namespace mgmt
   {
-    void layer::submit ( const external_id_type& id
-                       , const encoded_type& bytes
-                       , const we::type::user_data & data
-                       )
+    layer::~layer()
     {
-      submit (id, we::mgmt::type::activity_t (bytes), data);
-    }
-    void layer::submit ( const external_id_type& id
-                       , const we::mgmt::type::activity_t& act
-                       , const we::type::user_data & data
-                       )
-    {
-      detail::descriptor desc (generate_internal_id(), act);
-      desc.set_user_data (data);
-      desc.came_from_external_as (id);
-      desc.inject_input ();
-
-      submit (desc);
-    }
-    void layer::submit (detail::descriptor const &desc)
-    {
-      lock_t const _ (mutex_);
-
-      insert_activity(desc);
-      active_nets_.put (desc.id ());
-    }
-
-    void layer::cancel (const external_id_type& id, const reason_type& reason)
-    {
-      lock_t const _ (mutex_);
-
-      const std::string message
-        (reason.empty () ? "user requested cancellation" : reason.c_str ());
-
-      MLOG (WARN, "cancel ( " << id << " ) := " << message);
-
-      internal_id_type const int_id (map_to_internal (id));
-
+      _extract_from_nets_thread.interrupt();
+      if (_extract_from_nets_thread.joinable())
       {
-        lookup (int_id).set_error_code (ECANCELED).set_error_message (message);
-        cancel_activity (int_id);
-      }
-    }
-    void layer::finished (const external_id_type& id, const result_type& result)
-    {
-      lock_t const _ (mutex_);
-
-      internal_id_type const int_id (map_to_internal (id));
-
-      {
-        lookup (int_id).output (we::mgmt::type::activity_t (result).output());
-        do_inject (lookup (int_id));
-      }
-    }
-    void layer::failed ( const external_id_type& id
-                       , const result_type& result
-                       , const int error_code
-                       , const std::string& error_message
-                       )
-    {
-      lock_t const _ (mutex_);
-
-      detail::descriptor& d (lookup (map_to_internal (id)));
-
-      d.set_error_code (error_code);
-      d.set_error_message (d.name () + ": " + error_message);
-      d.set_result (result);
-
-      // TODO:
-      //    lookup activity
-      //    mark as failed
-      //    store result + reason
-
-      //    let the "parent" fail as well
-      //        -> mark the parent's *outcome* as "failed"
-      //        -> store the reasons, i.e. a list of childfailures
-      //        -> cancel all children
-      //        -> wait until all children are done
-      //        -> inform parent and so on
-      activity_failed (d.id ());
-    }
-    void layer::canceled (const external_id_type& id)
-    {
-      lock_t const _ (mutex_);
-
-      DMLOG (WARN, "canceled(" << id << ")");
-      activity_canceled (map_to_internal (id));
-    }
-
-    void layer::add_map_to_internal ( const external_id_type & external_id
-                                    , const internal_id_type & internal_id
-                                    )
-    {
-      lock_t const _ (mutex_);
-
-      ext_to_int_.insert ( external_to_internal_map_t::value_type
-                         (external_id, internal_id)
-                         );
-    }
-    void layer::del_map_to_internal ( const external_id_type & external_id
-                                    , const internal_id_type & internal_id
-                                    )
-    {
-      lock_t const _ (mutex_);
-      ext_to_int_.erase (external_id);
-    }
-
-    void layer::del_map_to_internal (const internal_id_type & internal_id)
-    {
-      lock_t const _ (mutex_);
-      external_to_internal_map_t::iterator it = ext_to_int_.begin ();
-      const external_to_internal_map_t::iterator end = ext_to_int_.end ();
-
-      while (it != end)
-      {
-        if (it->second == internal_id)
-        {
-          it = ext_to_int_.erase (it);
-        }
-        else
-        {
-          ++it;
-        }
+        _extract_from_nets_thread.join();
       }
     }
 
-    layer::external_to_internal_map_t::mapped_type layer::map_to_internal ( const external_id_type & external_id ) const
+    void layer::submit ( const id_type& id
+                       , const type::activity_t& act
+                       , const we::type::user_data & user_data
+                       )
     {
-      lock_t const _ (mutex_);
-
-      return ext_to_int_.at (external_id);
+      if (act.transition().net())
+      {
+        _nets_to_extract_from.put (activity_data_type (id, act, user_data));
+      }
+      else
+      {
+        throw std::runtime_error ("NYI: submit (!net)");
+        //! \todo forwarding net
+        // _nets_to_extract_from.put ()
+        // activity_data_type (id, constructed_activity, user_data);
+      }
     }
 
-    void layer::execute_externally (const internal_id_type & int_id)
+    void layer::update_activity
+      (id_type parent, type::activity_t result, boost::function<void()> after)
     {
-      detail::descriptor& desc (lookup (int_id));
-
-      external_id_type ext_id ( generate_external_id() );
-      desc.sent_to_external_as (ext_id);
-      add_map_to_internal (ext_id, int_id);
-
-      we::mgmt::type::activity_t ext_act (desc.activity());
-      ext_act.transition().set_internal(true);
-
-      DMLOG( TRACE
-           , "submitting internal activity " << int_id
-           << " to external with id " << ext_id
-           << " related to " << desc.get_user_data ().get_user_job_identification ()
-           );
-
-      we::type::schedule_data schedule_data
-        ( ext_act.get_schedule_data<long> ("num_worker")
-        , ext_act.get_schedule_data<long> ("vmem")
+      _nets_to_extract_from.apply
+        ( parent
+        , boost::bind (&layer::do_update_activity, this, _1, result, after)
         );
-
-      ext_submit ( ext_id
-                 , ext_act.to_string()
-                 , ext_act.transition().requirements()
-                 , schedule_data
-                 , desc.get_user_data ()
-                 );
+    }
+    void layer::do_update_activity
+      ( activity_data_type& activity_data
+      , type::activity_t result
+      , boost::function<void()> after
+      )
+    {
+      activity_data.child_finished (result);
+      after();
     }
 
-    //! \todo WORK HERE: rewrite!
-    void layer::executor ()
+    void layer::finished
+      (const id_type& id, const type::activity_t& result)
     {
-      for (;;)
-      {
-        internal_id_type const active_id (active_nets_.get());
+      boost::optional<id_type> const parent (_running_jobs.parent (id));
+      assert (parent);
 
-        lock_t const _ (mutex_);
-
-        if (! is_valid (active_id))
-        {
-          DMLOG( WARN
-               , "executor woken up by old activity id " << active_id
-               );
-          continue;
-        }
-
-        detail::descriptor& desc (lookup(active_id));
-
-        if (_to_be_removed.find (active_id) != _to_be_removed.end ())
-        {
-          remove_activity (desc);
-          _to_be_removed.erase (active_id);
-          continue;
-        }
-
-        if (! desc.is_alive ())
-        {
-          if (desc.activity ().is_failed ())
-          {
-            activity_failed (desc.id ());
-          }
-          else if (desc.activity().is_canceling() || desc.activity ().is_canceled ())
-          {
-            if (!desc.has_children())
-            {
-              activity_canceled (desc.id ());
-            }
-          }
-          else if (desc.activity ().is_canceled ())
-          {
-            activity_canceled (desc.id ());
-          }
-          else if (desc.activity ().is_finished ())
-          {
-            do_inject (desc);
-          }
-          else if (desc.activity ().is_suspended ())
-          {
-            // nothing to do
-          }
-          else
-          {
-            throw std::runtime_error
-              ( desc.name ()
-              + " is not alive but neither finished, nor failed nor canceled nor suspended"
-              );
-          }
-
-          continue;
-        }
-
-        try
-        {
-          // classify/execute
-          //    EXTRACT: while loop
-          //       classify/execute
-          //          EXTRACT: remember id
-          //       INJECT: inject
-          //       EXTERN: extern
-          //    INJECT:  inject to parent / notify client
-          //    EXTERN:  send to extern
-          do_execute (desc);
-        }
-        catch (const std::exception & ex)
-        {
-          MLOG( ERROR
-              , "executor: something went wrong during execution of: "
-              << desc.name() << ": " << ex.what()
-              );
-          desc.set_error_code (fhg::error::UNEXPECTED_ERROR);
-          desc.set_error_message
-            ( std::string ("in: '")
-            + desc.name ()
-            + std::string ("' ")
-            + ex.what ()
-            );
-          desc.set_result (desc.activity().to_string());
-
-          activity_failed (desc.id ());
-        }
-      }
-      DMLOG(TRACE, "executor thread stopped...");
+      update_activity
+        (*parent, result, boost::bind (&layer::finalize_finished, this, *parent, id));
+    }
+    void layer::finalize_finished (id_type parent, id_type child)
+    {
+      _running_jobs.terminated (parent, child);
     }
 
-    detail::descriptor &layer::do_extract (detail::descriptor & parent)
+    void layer::cancel (const id_type& id, const reason_type& reason)
     {
-      internal_id_type id (generate_internal_id ());
-      insert_activity (parent.extract(id));
-      return lookup (id);
+      request_cancel (id, boost::bind (_rts_canceled, id), reason);
     }
 
-    void layer::do_execute (detail::descriptor& desc)
-    {
-      policy::execution_policy exec_policy;
-
-      switch (desc.execute (&exec_policy))
-      {
-      case policy::execution_policy::EXTRACT:
-        {
-          while (desc.is_alive () && desc.enabled())
-          {
-            detail::descriptor & child (do_extract (desc));
-            child.inject_input ();
-            active_nets_.put (child.id ());
-          }
-
-          if (desc.is_done ())
-          {
-            DMLOG (TRACE, "executor: activity (" << desc.name() << ")-" << desc.id() << " is done");
-            do_inject (desc);
-          }
-        }
-        break;
-      case policy::execution_policy::INJECT:
-        do_inject (desc);
-        break;
-      case policy::execution_policy::EXTERNAL:
-        execute_externally (desc.id());
-        break;
-      default:
-        MLOG (FATAL, "executor: got strange classification for activity (" << desc.name() << ")-" << desc.id());
-        throw std::runtime_error ("executor got strange classification for activity");
-      }
-    }
-    bool layer::is_valid (const internal_id_type & id) const
-    {
-      lock_t const _ (mutex_);
-      return activities_.find(id) != activities_.end();
-    }
-    void layer::do_inject (detail::descriptor& desc)
-    {
-      desc.finished();
-
-      if (desc.has_parent())
-      {
-        lookup (desc.parent()).inject (desc);
-        active_nets_.put (desc.parent ());
-      }
-      else if (desc.came_from_external())
-      {
-        if (desc.activity ().is_failed ())
-        {
-          DLOG ( INFO
-               , "failed (" << desc.name() << ")-" << desc.id()
-               << " external-id := " << desc.from_external_id()
-               );
-          ext_failed ( desc.from_external_id()
-                     , desc.activity().to_string()
-                     , desc.error_code()
-                     , desc.error_message()
-                     );
-        }
-        else if (desc.activity ().is_canceled ())
-        {
-          DLOG ( INFO
-               , "canceled (" << desc.name() << ")-" << desc.id()
-               << " external-id := " << desc.from_external_id()
-               );
-          ext_canceled (desc.from_external_id());
-        }
-        else
-        {
-          DLOG ( INFO
-               , "finished (" << desc.name() << ")-" << desc.id()
-               << " external-id := " << desc.from_external_id()
-               );
-          ext_finished ( desc.from_external_id()
-                       , desc.activity().to_string()
-                       );
-        }
-      }
-      else
-      {
-        throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (desc));
-      }
-
-      _to_be_removed.insert (desc.id ());
-      active_nets_.put (desc.id ());
-    }
-
-    void layer::activity_failed (internal_id_type const internal_id)
-    {
-      detail::descriptor& desc (lookup(internal_id));
-      desc.failed();
-
-      DMLOG ( WARN
-            , "failed (" << desc.name() << ")-" << desc.id() << " : "
-            << desc.error_message ()
-            << ": " << std::endl << desc
-            );
-
-      if (desc.has_children())
-      {
-        DMLOG (WARN, "cancelling all children of" << std::endl << desc);
-
-        desc.cancel
-          (boost::bind ( &layer::cancel_activity
-                       , this
-                       , _1
+    void layer::failed ( const id_type& id
+                       , const type::activity_t& result
+                       , const int error_code
+                       , const std::string& reason
                        )
-          );
-      }
-      else if (desc.has_parent ())
+    {
+      boost::optional<id_type> const parent (_running_jobs.parent (id));
+      assert (parent);
+
+      update_activity
+        ( *parent
+        , result
+        , boost::bind
+          (&layer::finalize_failed, this, *parent, id, result, error_code, reason)
+        );
+    }
+    void layer::finalize_failed ( id_type parent
+                                , id_type child
+                                , const type::activity_t& result
+                                , const int error_code
+                                , const std::string& reason
+                                )
+    {
+      _running_jobs.terminated (parent, child);
+
+      request_cancel
+        ( parent
+        , boost::bind (&layer::_rts_failed, this, parent, result, error_code, reason)
+        , reason
+        );
+    }
+
+    void layer::request_cancel ( const id_type& id
+                               , boost::function<void()> after
+                               , reason_type const& reason
+                               )
+    {
+      _nets_to_extract_from.remove_and_apply
+        (id, boost::bind (&layer::cancel_child_jobs, this, _1, after, reason));
+    }
+
+    void layer::cancel_child_jobs ( activity_data_type activity_data
+                                  , boost::function<void()> after
+                                  , reason_type const& reason
+                                  )
+    {
+      if (!_running_jobs.contains (activity_data._id))
       {
-        detail::descriptor& parent_desc (lookup (desc.parent()));
-
-        parent_desc.child_failed ( desc
-                                 , desc.error_code()
-                                 , desc.error_message()
-                                 );
-        //! \fixme: handle failure in a meaningful way:
-        //     - check failure reason
-        //         - EAGAIN reschedule (had not been submitted yet)
-        //         - ECRASH activity crashed (idempotence criteria)
-        if (not parent_desc.activity ().is_canceling ())
-        {
-          cancel_activity (parent_desc.id ());
-        }
-        else
-        {
-          active_nets_.put (parent_desc.id ());
-        }
-
-        _to_be_removed.insert (internal_id);
-        active_nets_.put (internal_id);
-      }
-      else if (desc.came_from_external ())
-      {
-        ext_failed ( desc.from_external_id()
-                   , desc.activity().to_string()
-                   , desc.error_code()
-                   , desc.error_message()
-                   );
-
-        _to_be_removed.insert (internal_id);
-        active_nets_.put (internal_id);
+        after();
       }
       else
       {
-        throw std::runtime_error ("activity failed, but I don't know what to do with it: " + fhg::util::show (desc));
+        _finalize_job_cancellation.insert
+          (std::make_pair (activity_data._id, after));
+        _running_jobs.apply
+          (activity_data._id, boost::bind (_rts_cancel, _1, reason));
       }
     }
 
-    void layer::activity_canceled (internal_id_type const internal_id)
+    void layer::canceled (const id_type& child)
     {
-      detail::descriptor& desc (lookup(internal_id));
-      if (not desc.activity ().is_failed ())
+      boost::optional<id_type> const parent (_running_jobs.parent (child));
+      assert (parent);
+
+      if (_running_jobs.terminated (*parent, child))
       {
-        desc.canceled ();
+        boost::unordered_map<id_type, boost::function<void()> >::iterator
+          const pos (_finalize_job_cancellation.find (*parent));
+
+        pos->second();
+        _finalize_job_cancellation.erase (pos);
       }
-
-      if (desc.has_parent ())
-      {
-        DLOG ( TRACE, "activity canceled: "
-             << std::endl
-             << desc
-             << std::endl
-             << " error-code := "
-             << desc.error_code ()
-             << " error-message := "
-             << desc.error_message ()
-             << ": informing parent"
-             );
-
-        detail::descriptor& parent (lookup (desc.parent()));
-        parent.child_canceled (desc, desc.error_code (), desc.error_message ());
-
-        DLOG ( TRACE, "parent is: " << std::endl << parent);
-
-        if (! parent.has_children () && not parent.activity ().is_failed ())
-        {
-          activity_canceled (parent.id ());
-        }
-        else
-        {
-          active_nets_.put (parent.id ());
-        }
-      }
-      else if (desc.came_from_external ())
-      {
-        // if we were cancelling because of a failed child, notify failed
-        if (desc.activity ().is_failed ())
-        {
-          DMLOG (WARN, "descriptor failed: " << std::endl << desc);
-
-          ext_failed ( desc.from_external_id()
-                     , desc.activity().to_string()
-                     , desc.error_code()
-                     , desc.error_message()
-                     );
-        }
-        else
-        {
-          DMLOG (WARN, "descriptor canceled: " << std::endl << desc);
-
-          ext_canceled (desc.from_external_id());
-        }
-      }
-      else
-      {
-        throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (desc));
-      }
-
-      _to_be_removed.insert (internal_id);
-      active_nets_.put (internal_id);
     }
 
-    void layer::cancel_activity (internal_id_type const internal_id)
+    void layer::extract_from_nets()
     {
-      lock_t const _ (mutex_);
-
-      detail::descriptor& desc (lookup(internal_id));
-
-      DMLOG (WARN, "cancel_activity(" << internal_id << "): " << std::endl << desc);
-
-      if (desc.activity ().is_canceling ())
-        return;
-
-      if (desc.sent_to_external())
+      while (true)
       {
-        if (! (  desc.activity().is_canceling()
-              || desc.activity().is_failed()
-              || desc.activity().is_canceled()
-              || desc.activity().is_finished()
-              )
+        activity_data_type activity_data (_nets_to_extract_from.get());
+
+        //! \todo How to cancel if the net is inside
+        //! fire_internally_and_extract_external (endless loop in
+        //! expressions)?
+        if ( boost::optional<type::activity_t> activity
+           = activity_data.fire_internally_and_extract_external()
            )
         {
-          ext_cancel ( desc.to_external_id()
-                     , desc.error_message ()
-                     );
+          const id_type child_id (_id_generator());
+          _rts_submit (child_id, *activity, activity_data._user_data);
+          _running_jobs.started (activity_data._id, child_id);
         }
+
+        //! \todo Don't busy wait, but notify when empty
+        if (_running_jobs.contains (activity_data._id))
+        {
+          _nets_to_extract_from.put (activity_data);
+        }
+        else
+        {
+          _rts_finished (activity_data._id, activity_data._activity);
+        }
+      }
+    }
+
+
+    // async_remove_queue
+
+    layer::activity_data_type layer::async_remove_queue::get()
+    {
+      boost::mutex::scoped_lock lock (_container_mutex);
+
+      _condition_non_empty.wait
+        ( lock
+        , not boost::bind (&std::list<activity_data_type>::empty, &_container)
+        );
+
+      activity_data_type activity_data (_container.front());
+
+      _container.pop_front();
+
+      return activity_data;
+    }
+
+    void layer::async_remove_queue::put (activity_data_type activity_data)
+    {
+      {
+        boost::mutex::scoped_lock const _ (_to_be_removed_mutex);
+
+        to_be_removed_type::iterator const pos
+          (_to_be_removed.find (activity_data._id));
+
+        if (pos != _to_be_removed.end())
+        {
+          boost::function<void (activity_data_type)> const fun (pos->second);
+
+          _to_be_removed.erase (pos);
+
+          fun (activity_data);
+
+          return;
+        }
+      }
+
+      {
+        boost::mutex::scoped_lock const _ (_container_mutex);
+
+        _container.push_back (activity_data);
+
+        _condition_non_empty.notify_one();
+      }
+    }
+
+    void layer::async_remove_queue::remove_and_apply
+      (id_type id, boost::function<void (activity_data_type)> fun)
+    {
+      boost::mutex::scoped_lock const container_lock (_container_mutex);
+      boost::mutex::scoped_lock const to_be_removed_lock (_to_be_removed_mutex);
+
+      std::list<activity_data_type>::iterator pos
+        ( std::find_if ( _container.begin(), _container.end()
+                       , boost::bind (&activity_data_type::_id, _1) == id
+                       )
+        );
+
+      if (pos != _container.end())
+      {
+        fun (*pos);
+        _container.erase (pos);
       }
       else
       {
-        desc.cancel
-          ( boost::bind ( &layer::cancel_activity
-                        , this
-                        , _1
-                        )
-          );
-        if (not desc.has_children ())
+        _to_be_removed.insert (std::make_pair (id, fun));
+      }
+    }
+
+    void layer::async_remove_queue::apply
+      (id_type id, boost::function<void (activity_data_type&)> fun)
+    {
+      remove_and_apply
+        (id, boost::bind (&async_remove_queue::apply_callback, this, _1, fun));
+    }
+    void layer::async_remove_queue::apply_callback
+      ( activity_data_type activity_data
+      , boost::function<void (activity_data_type&)> fun
+      )
+    {
+      fun (activity_data);
+      put (activity_data);
+    }
+
+
+    // activity_data_type
+
+    boost::optional<type::activity_t>
+      layer::activity_data_type::fire_internally_and_extract_external()
+    {
+      //! \note We wrap all input activites in a net.
+      petri_net::net& net
+        (boost::get<petri_net::net&> (_activity.transition().data()));
+
+      while (net.can_fire())
+      {
+        type::activity_t activity
+          (net.extract_activity_random (_random_extraction_engine));
+
+        if (!activity.transition().expression())
         {
-          active_nets_.put (desc.id ());
+          return activity;
+        }
+        else
+        {
+          expr::eval::context context;
+
+          BOOST_FOREACH ( const type::activity_t::input_t::value_type top
+                        , activity.input()
+                        )
+          {
+            context.bind
+              ( activity.transition().get_port (top.second).name()
+              , top.first
+              );
+          }
+
+          activity.transition().expression()->ast().eval_all (context);
+
+          BOOST_FOREACH
+            ( we::type::transition_t::port_map_t::value_type const& p
+            , activity.transition().ports()
+            )
+          {
+            if (p.second.is_output())
+            {
+              net.put_value
+                ( activity.transition().inner_to_outer().at (p.first).first
+                , context.value (p.second.name())
+                );
+            }
+          }
+        }
+      }
+
+      return boost::none;
+    }
+
+    void layer::activity_data_type::child_finished
+      (const type::activity_t& child)
+    {
+      //! \note We wrap all input activites in a net.
+      petri_net::net& net
+        (boost::get<petri_net::net&> (_activity.transition().data()));
+
+      {
+        BOOST_FOREACH ( const type::activity_t::token_on_port_t& top
+                      , child.output()
+                      )
+        {
+          net.put_value
+            ( child.transition().inner_to_outer().at (top.second).first
+            , top.first
+            );
         }
       }
     }
 
-    void layer::insert_activity(const detail::descriptor & desc)
-    {
-      lock_t const _ (mutex_);
 
-      activities_.insert(std::make_pair(desc.id(), desc));
-      if (desc.came_from_external())
-      {
-        add_map_to_internal (desc.from_external_id(), desc.id());
-      }
+    // locked_parent_child_relation_type
+
+    void layer::locked_parent_child_relation_type::started
+      (id_type parent, id_type child)
+    {
+      boost::mutex::scoped_lock const _ (_relation_mutex);
+
+      _relation[parent].insert (child);
     }
 
-    void layer::remove_activity(const detail::descriptor & desc)
+    bool layer::locked_parent_child_relation_type::terminated
+      (id_type parent, id_type child)
     {
-      lock_t const _ (mutex_);
+      boost::mutex::scoped_lock const _ (_relation_mutex);
 
-      if (desc.has_children())
-        throw std::runtime_error("cannot remove non-leaf: " + fhg::util::show (desc));
-      if (desc.sent_to_external())
+      relation_type::iterator const childs (_relation.find (parent));
+
+      childs->second.erase (child);
+
+      if (childs->second.empty())
       {
-        del_map_to_internal (desc.to_external_id(), desc.id());
-      }
-      if (desc.came_from_external())
-      {
-        del_map_to_internal (desc.from_external_id(), desc.id());
+        _relation.erase (childs);
+
+        return true;
       }
 
-      active_nets_.remove_if
-        (boost::bind (&std::equal_to<internal_id_type>::operator(), std::equal_to<internal_id_type>(), desc.id (), _1));
-      activities_.erase (desc.id());
+      return false;
     }
 
-    detail::descriptor& layer::lookup (const internal_id_type& id)
+    boost::optional<layer::id_type>
+      layer::locked_parent_child_relation_type::parent (id_type child)
     {
-      lock_t const _ (mutex_);
+      boost::mutex::scoped_lock const _ (_relation_mutex);
 
-      try
+      BOOST_FOREACH (relation_type::value_type const& entry, _relation)
       {
-        return activities_.at (id);
+        if (entry.second.count (child))
+        {
+          return entry.first;
+        }
       }
-      catch (std::exception const&)
+
+      return boost::none;
+    }
+
+    bool layer::locked_parent_child_relation_type::contains
+      (id_type parent) const
+    {
+      boost::mutex::scoped_lock const _ (_relation_mutex);
+
+      return _relation.find (parent) != _relation.end();
+    }
+
+    void layer::locked_parent_child_relation_type::apply
+      (id_type parent, boost::function<void (id_type)> fun) const
+    {
+      boost::mutex::scoped_lock const _ (_relation_mutex);
+
+      BOOST_FOREACH (id_type child, _relation.find (parent)->second)
       {
-        throw std::invalid_argument
-          ((boost::format ("unable to locate id: %1%") % id).str ());
+        fun (child);
       }
     }
   }

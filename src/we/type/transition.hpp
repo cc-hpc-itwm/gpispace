@@ -11,8 +11,11 @@
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
 #include <we/type/requirement.hpp>
+#include <we/type/value.hpp>
 
 #include <we/type/net.fwd.hpp>
+
+#include <we/expr/eval/context.hpp>
 
 #include <we/exception.hpp>
 
@@ -294,6 +297,46 @@ namespace we { namespace type {
       {
         _requirements.push_back (r);
       }
+
+      template<typename T>
+        boost::optional<T> get_schedule_data
+          ( std::vector<std::pair< pnet::type::value::value_type
+                                 , petri_net::port_id_type
+                                 >
+                       > const& input
+          , const std::string& key
+          ) const
+      {
+        we::type::property::path_type path;
+        path.push_back ("fhg");
+        path.push_back ("drts");
+        path.push_back ("schedule");
+        path.push_back (key);
+
+        boost::optional<const property::value_type&> expr
+          (prop().get_maybe_val (path));
+
+        if (!expr)
+        {
+          return boost::none;
+        }
+
+        expression_t e (*expr);
+
+        expr::eval::context context;
+
+        typedef std::pair< pnet::type::value::value_type
+                         , petri_net::port_id_type
+                         > token_on_port_t;
+
+        BOOST_FOREACH (token_on_port_t const& top, input)
+        {
+          context.bind_ref (get_port (top.second).name(), top.first);
+        }
+
+        return boost::get<T> (e.ast().eval_all (context));
+      }
+
 
     private:
       std::string name_;

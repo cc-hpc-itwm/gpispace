@@ -98,8 +98,6 @@ struct exec_context : public we::mgmt::context
 {
   virtual int handle_internally (activity_t& act, net_t&)
   {
-    act.inject_input ();
-
     // submit to self
     while (act.can_fire())
     {

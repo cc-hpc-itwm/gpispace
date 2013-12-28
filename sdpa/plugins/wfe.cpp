@@ -79,12 +79,9 @@ namespace
 
     virtual int handle_internally (we::mgmt::type::activity_t& act, net_t &)
     {
-      act.inject_input();
-
       while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
       {
         we::mgmt::type::activity_t sub (act.extract());
-        sub.inject_input();
         sub.execute (this);
         act.inject (sub);
       }
@@ -494,7 +491,6 @@ private:
         {
           wfe_exec_context ctxt (*m_loader, *task);
 
-          task->activity.inject_input();
           task->activity.execute (&ctxt);
           task->activity.collect_output();
 
