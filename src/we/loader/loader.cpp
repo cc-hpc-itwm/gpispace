@@ -62,12 +62,12 @@ namespace we {
       return module_table_.insert (std::make_pair (name, mod)).first->second;
     }
 
-    const std::list<boost::filesystem::path>& loader::search_path (void) const
+    const std::list<boost::filesystem::path>& loader::search_path() const
     {
       return search_path_;
     }
 
-    void loader::clear_search_path (void)
+    void loader::clear_search_path()
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
       search_path_.clear();
