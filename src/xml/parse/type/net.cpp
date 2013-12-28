@@ -13,7 +13,6 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we/require_type.hpp>
 #include <we/type/signature/resolve.hpp>
 
 #include <fhg/util/remove_prefix.hpp>
@@ -745,12 +744,7 @@ namespace xml
           BOOST_FOREACH (const place_type::token_type& token, place.tokens)
           {
             we_net.put_value
-              ( pid
-              , pnet::require_type
-                ( util::generic_we_parse (token, "parse token").eval_all()
-                , place.signature_or_throw()
-                )
-              );
+              (pid, util::generic_we_parse (token, "parse token").eval_all());
           }
 
           if (  (we_net.in_to_place (pid).size() == 0)

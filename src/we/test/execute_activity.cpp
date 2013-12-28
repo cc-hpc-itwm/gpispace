@@ -11,7 +11,6 @@
 #include <we/mgmt/context.hpp>
 
 #include <we/type/value.hpp>
-#include <we/require_type.hpp>
 
 #include <we/expr/eval/context.hpp>
 
@@ -90,12 +89,7 @@ namespace module
 
       const port_t & port (act.transition().get_port (port_id));
 
-      act.add_output
-        ( output_t::value_type
-          ( pnet::require_type (ton->first, port.signature(), port.name())
-          , port_id
-          )
-        );
+      act.add_output (output_t::value_type (ton->first, port_id));
     }
   }
 }

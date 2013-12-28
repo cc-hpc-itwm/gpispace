@@ -5,7 +5,6 @@
 
 #include <we/type/id.hpp>
 
-#include <we/require_type.hpp>
 #include <we/type/value.hpp>
 
 #include <we/mgmt/type/activity.hpp>
@@ -28,9 +27,7 @@ namespace we
           (act.transition().get_port (pid).signature());
 
         act.add_input ( mgmt::type::activity_t::input_t::value_type
-                        ( pnet::require_type (value, port_signature, port)
-                        , pid
-                        )
+                        (value, pid)
                       );
       }
     }
