@@ -38,13 +38,9 @@ namespace we
 
       module_ptr_t load (const std::string&, const boost::filesystem::path&);
 
-      void unload (const std::string&);
-
       const search_path_t& search_path() const;
       void clear_search_path();
       void append_search_path (const boost::filesystem::path&);
-
-      size_t unload_autoloaded();
 
     private:
       loader (const loader&);

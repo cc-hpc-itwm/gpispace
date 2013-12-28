@@ -81,16 +81,6 @@ namespace we {
       return mod;
     }
 
-    void loader::unload(const std::string &module_name)
-    {
-      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-      module_table_t::iterator mod = module_table_.find(module_name);
-      if (mod != module_table_.end()) {
-        MLOG (TRACE, "unloading " << mod->first);
-        module_table_.erase (mod);
-      }
-    }
-
     const loader::search_path_t & loader::search_path (void) const
     {
       return search_path_;
@@ -106,31 +96,6 @@ namespace we {
     {
       boost::unique_lock<boost::recursive_mutex> lock(mtx_);
       search_path_.push_back (p);
-    }
-
-    size_t loader::unload_autoloaded ()
-    {
-      boost::unique_lock<boost::recursive_mutex> lock(mtx_);
-
-      size_t count (0);
-
-      module_names_t::iterator it = module_load_order_.begin ();
-      module_names_t::iterator end = module_load_order_.end ();
-      while (it != end)
-      {
-        const std::string module_name = *it;
-        if (module_name.find ("mod-") != 0)
-        {
-          it = module_load_order_.erase (it);
-          unload (module_name);
-          ++count;
-        }
-        else
-        {
-          ++it;
-        }
-      }
-      return count;
     }
   }
 }
