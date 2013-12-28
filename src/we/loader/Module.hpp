@@ -47,7 +47,7 @@ namespace we
       private:
         void* _handle;
       } _dlhandle;
-      boost::unordered_map<std::string, parameterized_function_t> call_table_;
+      boost::unordered_map<std::string, WrapperFunction> call_table_;
     };
   }
 }

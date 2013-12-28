@@ -96,9 +96,7 @@ namespace we
                       , expr::eval::context& output
                       )
     {
-      const boost::unordered_map< std::string
-                                , parameterized_function_t
-                                >::const_iterator
+      const boost::unordered_map<std::string, WrapperFunction>::const_iterator
         fun (call_table_.find (function));
 
       if (fun == call_table_.end())
@@ -107,15 +105,12 @@ namespace we
       }
       else
       {
-        (*(fun->second.first))(info, input, output);
+        (*fun->second)(info, input, output);
       }
     }
     void Module::add_function (const std::string& name, WrapperFunction f)
     {
-      if (! call_table_.insert
-            ( std::make_pair (name, std::make_pair (f, param_names_list_t()))
-            ).second
-         )
+      if (! call_table_.insert (std::make_pair (name, f)).second)
       {
         throw duplicate_function (name_, name);
       }
