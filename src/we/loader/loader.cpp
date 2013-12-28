@@ -15,7 +15,7 @@ namespace we {
     {
       while (! module_load_order_.empty())
       {
-        module_table_.erase (module_load_order_.front());
+        delete module_load_order_.front();
         module_load_order_.pop_front();
       }
     }
@@ -45,9 +45,9 @@ namespace we {
         ("module '" + module + "' could not be located", module, "[not-found]");
     }
 
-    loader::module_ptr_t loader::load ( const std::string& name
-                                      , const boost::filesystem::path& path
-                                      )
+    Module* loader::load ( const std::string& name
+                         , const boost::filesystem::path& path
+                         )
     {
       boost::unique_lock<boost::recursive_mutex> const _ (mtx_);
 
@@ -57,13 +57,11 @@ namespace we {
           ("module already registered", name, path.string());
       }
 
-      module_ptr_t const mod (new Module (name, path.string()));
+      Module* mod (new Module (name, path.string()));
 
-      module_table_.insert (std::make_pair (name, mod));
+      module_load_order_.push_front (mod);
 
-      module_load_order_.push_front (name);
-
-      return mod;
+      return module_table_.insert (std::make_pair (name, mod)).first->second;
     }
 
     const loader::search_path_t & loader::search_path (void) const

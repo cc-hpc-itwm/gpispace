@@ -22,7 +22,6 @@ namespace we
     class loader : boost::noncopyable
     {
     public:
-      typedef shared_ptr<Module> module_ptr_t;
       typedef shared_ptr<loader> ptr_t;
       typedef std::list<boost::filesystem::path> search_path_t;
 
@@ -32,16 +31,16 @@ namespace we
 
       Module& operator[] (const std::string &module);
 
-      module_ptr_t load (const std::string&, const boost::filesystem::path&);
+      Module* load (const std::string&, const boost::filesystem::path&);
 
       const search_path_t& search_path() const;
       void clear_search_path();
       void append_search_path (const boost::filesystem::path&);
 
     private:
-      typedef boost::unordered_map<std::string, module_ptr_t> module_table_t;
+      typedef boost::unordered_map<std::string, Module*> module_table_t;
       module_table_t module_table_;
-      std::list<std::string> module_load_order_;
+      std::list<Module*> module_load_order_;
       search_path_t search_path_;
       mutable boost::recursive_mutex mtx_;
     };
