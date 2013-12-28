@@ -66,47 +66,46 @@ namespace we
       MEMBER (name, std::string);
     };
 
-    /**
-       All exceptions related to a module.
-    */
-    class ModuleException : public std::runtime_error {
+    class function_not_found : public std::runtime_error
+    {
     public:
-      ModuleException(const std::string &a_reason, const std::string &a_module)
-        : std::runtime_error(a_reason), module_(a_module) {}
+      explicit function_not_found ( std::string const& module
+                                  , std::string const& name
+                                  )
+        : std::runtime_error
+          ( ( boost::format ("function '%1%::%2%' not found")
+            % module
+            % name
+            ).str()
+          )
+        , _module (module)
+        , _name (name)
+      {}
+      virtual ~function_not_found() throw() {}
 
-      virtual ~ModuleException() throw() {}
-      const std::string &module() const { return module_; }
-    private:
-      std::string module_;
+      MEMBER (module, std::string);
+      MEMBER (name, std::string);
     };
 
-    /**
-       All exceptions related to a specific function.
-    */
-    class FunctionException : public ModuleException {
+    class duplicate_function : public std::runtime_error
+    {
     public:
-      FunctionException(const std::string &a_reason, const std::string &a_module, const std::string &a_function)
-        : ModuleException(a_reason, a_module), function_(a_function) {}
+      explicit duplicate_function ( std::string const& module
+                                  , std::string const& name
+                                  )
+        : std::runtime_error
+          ( ( boost::format ("duplicate function '%1%::%2%'")
+            % module
+            % name
+            ).str()
+          )
+        , _module (module)
+        , _name (name)
+      {}
+      virtual ~duplicate_function() throw() {}
 
-      virtual ~FunctionException() throw() {}
-
-      const std::string &function() const { return function_; }
-    private:
-      std::string function_;
-    };
-
-    class FunctionNotFound : public FunctionException {
-    public:
-      FunctionNotFound(const std::string &a_module, const std::string &a_function)
-        : FunctionException("function could not be found: "+a_function, a_module, a_function) {}
-      virtual ~FunctionNotFound() throw() {}
-    };
-
-    class DuplicateFunction : public FunctionException {
-    public:
-      DuplicateFunction(const std::string &a_module, const std::string &a_function)
-        : FunctionException("duplicate function detected: " + a_module+"."+a_function, a_module, a_function) {}
-      virtual ~DuplicateFunction() throw() {}
+      MEMBER (module, std::string);
+      MEMBER (name, std::string);
     };
   }
 }

@@ -103,7 +103,7 @@ namespace we
 
       if (fun == call_table_.end())
       {
-        throw FunctionNotFound (name(), function);
+        throw function_not_found (name_, function);
       }
       else
       {
@@ -117,7 +117,7 @@ namespace we
             ).second
          )
       {
-        throw DuplicateFunction (name_, name);
+        throw duplicate_function (name_, name);
       }
     }
 
