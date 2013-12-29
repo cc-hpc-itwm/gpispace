@@ -4,13 +4,13 @@
 #include <sys/mman.h> // mmap
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <cstring> // strerror
 
 #include <fhglog/LogMacros.hpp>
 #include <fhg/util/url.hpp>
+#include <fhg/util/hostname.hpp>
 #include <fhg/util/read_bool.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -50,16 +50,10 @@ namespace gpi
           return p / "lock";
         }
 
-        static std::string hostname ()
-        {
-          char buf [1024]; gethostname (buf, sizeof(buf));
-          return buf;
-        }
-
         static std::string my_lock_info ()
         {
           std::ostringstream sstr;
-          sstr << hostname () << " " << getpid ();
+          sstr << fhg::util::hostname() << " " << getpid ();
           return sstr.str ();
         }
       }
@@ -240,7 +234,7 @@ namespace gpi
                 std::string other_host;
                 sstr >> other_host;
 
-                std::string my_host = detail::hostname ();
+                std::string my_host = fhg::util::hostname ();
                 if (other_host == my_host)
                 {
                   m_lock_fd = ::open ( lock_file.string ().c_str ()
