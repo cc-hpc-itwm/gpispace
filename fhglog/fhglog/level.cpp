@@ -41,14 +41,12 @@ namespace fhg
       return map[l];
     }
 
-    Level from_string (std::string const& name)
+    Level from_parse_position (fhg::util::parse::position& pos)
     {
       namespace parse = fhg::util::parse;
 
       std::string const any
         ("one of 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
-
-      parse::position_string pos (name);
 
       if (pos.end())
       {
@@ -65,6 +63,20 @@ namespace fhg
       case 'F': ++pos; parse::require::require (pos, "ATAL"); return FATAL;
       default: throw parse::error::expected (any, pos);
       }
+  }
+
+    Level from_string (std::string const& name)
+    {
+      fhg::util::parse::position_string pos (name);
+
+      Level const level (from_parse_position (pos));
+
+      if (!pos.end())
+      {
+        throw std::runtime_error (pos.error_message ("additional input"));
+      }
+
+      return level;
     }
   }
 }
