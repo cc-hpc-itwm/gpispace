@@ -41,29 +41,32 @@ namespace fhg
       return map[l];
     }
 
-    Level from_parse_position (fhg::util::parse::position& pos)
+    namespace
     {
-      namespace parse = fhg::util::parse;
-
-      std::string const any
-        ("one of 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
-
-      if (pos.end())
+      Level from_parse_position (fhg::util::parse::position& pos)
       {
-        throw parse::error::expected (any, pos);
-      }
+        namespace parse = fhg::util::parse;
 
-      switch (*pos)
-      {
-      case 'T': ++pos; parse::require::require (pos, "RACE"); return TRACE;
-      case 'D': ++pos; parse::require::require (pos, "EBUG"); return DEBUG;
-      case 'I': ++pos; parse::require::require (pos, "NFO"); return INFO;
-      case 'W': ++pos; parse::require::require (pos, "ARN"); return WARN;
-      case 'E': ++pos; parse::require::require (pos, "RROR"); return ERROR;
-      case 'F': ++pos; parse::require::require (pos, "ATAL"); return FATAL;
-      default: throw parse::error::expected (any, pos);
+        std::string const any
+          ("one of 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
+
+        if (pos.end())
+        {
+          throw parse::error::expected (any, pos);
+        }
+
+        switch (*pos)
+        {
+        case 'T': ++pos; parse::require::require (pos, "RACE"); return TRACE;
+        case 'D': ++pos; parse::require::require (pos, "EBUG"); return DEBUG;
+        case 'I': ++pos; parse::require::require (pos, "NFO"); return INFO;
+        case 'W': ++pos; parse::require::require (pos, "ARN"); return WARN;
+        case 'E': ++pos; parse::require::require (pos, "RROR"); return ERROR;
+        case 'F': ++pos; parse::require::require (pos, "ATAL"); return FATAL;
+        default: throw parse::error::expected (any, pos);
+        }
       }
-  }
+    }
 
     Level from_string (std::string const& name)
     {
