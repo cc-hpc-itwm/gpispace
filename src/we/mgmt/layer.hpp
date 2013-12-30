@@ -59,14 +59,6 @@ namespace we
 
 
       // initial from exec_layer -> top level
-      //! \todo only use un-encoded activity
-      void submit_DEPRECATED ( const id_type& id
-                             , const encoded_type& act
-                             , const we::type::user_data& user_data
-                             )
-      {
-        submit (id, type::activity_t (act), user_data);
-      }
       void submit ( const id_type&
                   , const type::activity_t&
                   , const we::type::user_data &

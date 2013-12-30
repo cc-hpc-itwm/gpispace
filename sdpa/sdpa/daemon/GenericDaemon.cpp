@@ -715,10 +715,10 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
     }
     else
     {
+      const we::mgmt::type::activity_t act (pJob->description());
       if (m_guiService)
       {
        std::list<std::string> workers; workers.push_back (name());
-       const we::mgmt::type::activity_t act (pJob->description());
        const sdpa::daemon::NotificationEvent evt
        ( workers
           , jobId.str()
@@ -732,7 +732,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
       we::type::user_data job_data;
       job_data.set_user_job_identification(jobId);
       // actually, this information redundant because wf_id == job_data.get_user_job_identification()!
-      workflowEngine()->submit_DEPRECATED (wf_id, pJob->description(), job_data);
+      workflowEngine()->submit (wf_id, act, job_data);
     }
   }
   catch(const NoWorkflowEngine& ex)
