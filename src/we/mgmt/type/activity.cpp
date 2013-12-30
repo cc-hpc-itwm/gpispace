@@ -53,7 +53,7 @@ namespace we
 
               ar >> BOOST_SERIALIZATION_NVP (t);
             }
-          catch (boost::archive::archive_exception const &ex)
+          catch (std::exception const &ex)
             {
               throw std::runtime_error
                 (std::string ("deserialization error: ") + ex.what ());
