@@ -265,7 +265,8 @@ namespace
       boost::optional<we::mgmt::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
-      we::mgmt::type::activity_t const act (desc);
+      we::mgmt::type::activity_t act (desc);
+      act.collect_output();
 
       if (mapped)
       {
@@ -300,7 +301,8 @@ namespace
       boost::optional<we::mgmt::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
-      we::mgmt::type::activity_t const act (desc);
+      we::mgmt::type::activity_t act (desc);
+      act.collect_output();
 
       if (mapped)
       {
