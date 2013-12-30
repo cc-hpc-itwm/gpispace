@@ -314,12 +314,11 @@ namespace we
         {
           expr::eval::context context;
 
-          BOOST_FOREACH ( const type::activity_t::input_t::value_type top
+          BOOST_FOREACH ( const type::activity_t::input_t::value_type& top
                         , activity.input()
                         )
           {
-            //! \todo should be bind_ref
-            context.bind
+            context.bind_ref
               ( activity.transition().get_port (top.second).name()
               , top.first
               );
