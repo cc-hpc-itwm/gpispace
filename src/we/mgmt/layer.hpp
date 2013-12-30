@@ -60,15 +60,10 @@ namespace we
       void cancel (const id_type&, const reason_type&);
 
       // reply to _rts_submit -> childs only
-      void finished ( const id_type&
-                    , const type::activity_t&
-                    );
+      void finished (const id_type&, const type::activity_t&);
 
       // reply to _rts_submit -> childs only
-      void failed ( const id_type&
-                  , const int error_code
-                  , const std::string&
-                  );
+      void failed (const id_type&, const int error_code, const std::string& msg);
 
       // reply to _rts_cancel (after top level canceled/failure) -> childs only
       void canceled (const id_type&);
