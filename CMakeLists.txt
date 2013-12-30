@@ -254,5 +254,6 @@ INCLUDE (CPack)
 
 add_subdirectory (playground/ap)
 add_subdirectory (playground/bl)
+add_subdirectory (playground/mr)
 add_subdirectory (doc)
 add_subdirectory (share)
