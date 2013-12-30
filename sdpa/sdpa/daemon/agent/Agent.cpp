@@ -171,7 +171,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   }
 }
 
-bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::layer::result_type & result)
+bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::type::activity_t & result)
 {
   //put the job into the state Finished
   JobId id(wfid);
@@ -191,7 +191,7 @@ bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::layer
                 (new events::JobFinishedEvent( name()
                                      , pJob->owner()
                                      , id
-                                     , result
+                                     , result.to_string()
                                      )
                 );
 

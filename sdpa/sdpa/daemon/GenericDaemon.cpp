@@ -601,7 +601,7 @@ bool GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId, const we:
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const we::mgmt::layer::result_type& result)
+bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const we::mgmt::type::activity_t& result)
 {
   DMLOG (TRACE, "activity finished: " << workflowId);
   // generate a JobFinishedEvent for self!
@@ -613,7 +613,7 @@ bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const w
   // call job.JobFinished(event);
 
   job_id_t job_id(workflowId);
-  events::JobFinishedEvent::Ptr pEvtJobFinished( new events::JobFinishedEvent( sdpa::daemon::WE, name(), job_id, result ));
+  events::JobFinishedEvent::Ptr pEvtJobFinished( new events::JobFinishedEvent( sdpa::daemon::WE, name(), job_id, result.to_string()));
   sendEventToSelf(pEvtJobFinished);
 
   // notify the GUI that the activity finished

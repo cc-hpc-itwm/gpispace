@@ -256,12 +256,11 @@ namespace
       }
     }
 
-    void finished (const we::mgmt::layer::id_type& id, const std::string& desc)
+    void finished (const we::mgmt::layer::id_type& id, we::mgmt::type::activity_t act)
     {
       boost::optional<we::mgmt::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
-      we::mgmt::type::activity_t act (desc);
       act.collect_output();
 
       if (mapped)
@@ -279,7 +278,7 @@ namespace
                     << " => " << pnet::type::value::show (top.first) << std::endl;
         }
 
-        _result = desc;
+        _result = act.to_string();
         set_job_status (sdpa::status::FINISHED);
       }
       else

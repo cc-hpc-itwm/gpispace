@@ -42,7 +42,7 @@ namespace we
 
           // reply to submit -> top level
           //! \todo use un-encoded activity
-          , _rts_finished_IMPL (boost::bind (&RTS::finished, runtime_system, _1, _2))
+          , _rts_finished (boost::bind (&RTS::finished, runtime_system, _1, _2))
 
           // reply to submit (on failure of child) -> top level
           //! \todo use un-encoded activity
@@ -112,14 +112,8 @@ namespace we
                            )>  _rts_cancel;
 
       boost::function<void ( id_type const &
-                           , result_type const &
-                           )> _rts_finished_IMPL;
-      void _rts_finished ( id_type const & id
-                        , type::activity_t const & act
-                        )
-      {
-        _rts_finished_IMPL (id, act.to_string());
-      }
+                           , type::activity_t const &
+                           )> _rts_finished;
 
       boost::function<void ( id_type const &
                            , const int error_code

@@ -60,7 +60,7 @@ struct daemon_t
     return true;
   }
 
-  bool finished (const id_type & id, const std::string &)
+  bool finished (const id_type & id, we::mgmt::type::activity_t const&)
   {
     std::cout << "finished id = " << id << std::endl;
     return false;
