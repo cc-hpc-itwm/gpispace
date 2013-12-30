@@ -62,16 +62,9 @@ execute_process(
 )
 if (revision_cpp_needs_update)
   file(RENAME ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp.new ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
-#  configure_file (${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp @ONLY)
 endif()
 
 add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
-
-#add_custom_target(increment-build-counter ALL
-#  COMMAND echo "${FHG_BUILD_COUNT}" > "${CMAKE_BINARY_DIR}/build.counter"
-#  COMMENT "Incrementing build counter to ${FHG_BUILD_COUNT}"
-#  VERBATIM
-#  )
 
 install (FILES revision.hpp
                assert.hpp
