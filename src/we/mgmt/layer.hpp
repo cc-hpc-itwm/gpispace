@@ -184,7 +184,7 @@ namespace we
       struct async_remove_queue
       {
         activity_data_type get();
-        void put (activity_data_type activity_data);
+        void put (activity_data_type activity_data, bool);
 
         void remove_and_apply
           (id_type, boost::function<void (activity_data_type)>);
@@ -195,6 +195,7 @@ namespace we
         //! \todo measure performance, remove uses std::find_if,
         //! possibly accelerate with additional map<id_type, list::iterator>
         std::list<activity_data_type> _container;
+        std::list<activity_data_type> _container_inactive;
 
         boost::condition_variable_any _condition_non_empty;
 

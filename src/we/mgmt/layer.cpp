@@ -22,7 +22,8 @@ namespace we
     {
       if (act.transition().net())
       {
-        _nets_to_extract_from.put (activity_data_type (id, act, user_data));
+        _nets_to_extract_from.put
+          (activity_data_type (id, act, user_data), true);
       }
       else
       {
@@ -135,6 +136,8 @@ namespace we
       {
         activity_data_type activity_data (_nets_to_extract_from.get());
 
+        bool was_active (false);
+
         //! \todo How to cancel if the net is inside
         //! fire_internally_and_extract_external (endless loop in
         //! expressions)?
@@ -145,12 +148,12 @@ namespace we
           const id_type child_id (_id_generator());
           _running_jobs.started (activity_data._id, child_id);
           _rts_submit (child_id, *activity, activity_data._user_data);
+          was_active = true;
         }
 
-        //! \todo Don't busy wait, but notify when empty
         if (_running_jobs.contains (activity_data._id))
         {
-          _nets_to_extract_from.put (activity_data);
+          _nets_to_extract_from.put (activity_data, was_active);
         }
         else
         {
@@ -178,7 +181,8 @@ namespace we
       return activity_data;
     }
 
-    void layer::async_remove_queue::put (activity_data_type activity_data)
+    void layer::async_remove_queue::put
+      (activity_data_type activity_data, bool active)
     {
       boost::optional<boost::function<void (activity_data_type)> > fun;
 
@@ -203,9 +207,16 @@ namespace we
       {
         boost::mutex::scoped_lock const _ (_container_mutex);
 
-        _container.push_back (activity_data);
+        if (active)
+        {
+          _container.push_back (activity_data);
 
-        _condition_non_empty.notify_one();
+          _condition_non_empty.notify_one();
+        }
+        else
+        {
+          _container_inactive.push_back (activity_data);
+        }
       }
     }
 
@@ -221,10 +232,21 @@ namespace we
                        )
         );
 
+      std::list<activity_data_type>::iterator pos_container_inactive
+        ( std::find_if ( _container_inactive.begin(), _container_inactive.end()
+                       , boost::bind (&activity_data_type::_id, _1) == id
+                       )
+        );
+
       if (pos != _container.end())
       {
         fun (*pos);
         _container.erase (pos);
+      }
+      else if (pos_container_inactive != _container_inactive.end())
+      {
+        fun (*pos_container_inactive);
+        _container_inactive.erase (pos_container_inactive);
       }
       else
       {
@@ -244,9 +266,19 @@ namespace we
                        )
         );
 
+      std::list<activity_data_type>::iterator pos_container_inactive
+        ( std::find_if ( _container_inactive.begin(), _container_inactive.end()
+                       , boost::bind (&activity_data_type::_id, _1) == id
+                       )
+        );
+
       if (pos != _container.end())
       {
         fun (*pos);
+      }
+      else if (pos_container_inactive != _container_inactive.end())
+      {
+        fun (*pos_container_inactive);
       }
       else
       {
@@ -264,7 +296,7 @@ namespace we
       )
     {
       fun (activity_data);
-      put (activity_data);
+      put (activity_data, true);
     }
 
 
