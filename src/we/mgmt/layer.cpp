@@ -15,22 +15,19 @@ namespace we
       }
     }
 
-    void layer::submit ( const id_type& id
-                       , const type::activity_t& act
-                       , const we::type::user_data & user_data
-                       )
+    void layer::submit (const id_type& id, const type::activity_t& act)
     {
       if (act.transition().net())
       {
         _nets_to_extract_from.put
-          (activity_data_type (id, act, user_data), true);
+          (activity_data_type (id, act), true);
       }
       else
       {
         throw std::runtime_error ("NYI: submit (!net)");
         //! \todo forwarding net
         // _nets_to_extract_from.put ()
-        // activity_data_type (id, constructed_activity, user_data);
+        // activity_data_type (id, constructed_activity);
       }
     }
 
@@ -147,7 +144,7 @@ namespace we
         {
           const id_type child_id (_id_generator());
           _running_jobs.started (activity_data._id, child_id);
-          _rts_submit (child_id, *activity, activity_data._user_data, activity_data._id);
+          _rts_submit (child_id, *activity, activity_data._id);
           was_active = true;
         }
 

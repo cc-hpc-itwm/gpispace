@@ -237,7 +237,6 @@ namespace
                 , const we::mgmt::type::activity_t& act
                 , std::list<we::type::requirement_t> const&
                 , const we::type::schedule_data&
-                , const we::type::user_data&
                 , const we::mgmt::layer::id_type& parent_id
                 )
     {

@@ -7,7 +7,6 @@
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 #include <we/type/requirement.hpp>
-#include <we/type/user_data.hpp>
 #include <we/type/schedule_data.hpp>
 
 #include <boost/function.hpp>
@@ -34,7 +33,7 @@ namespace we
               )
 
           // external activities from submitted net -> child jobs
-          : _rts_submit_IMPL (boost::bind (&RTS::submit, runtime_system, _1, _2, _3, _4, _5, _6))
+          : _rts_submit_IMPL (boost::bind (&RTS::submit, runtime_system, _1, _2, _3, _4, _5))
 
           // reply to cancel (parent)/on failure (child) -> child jobs
           , _rts_cancel (boost::bind (&RTS::cancel, runtime_system, _1, _2))
@@ -56,10 +55,7 @@ namespace we
 
 
       // initial from exec_layer -> top level
-      void submit ( const id_type&
-                  , const type::activity_t&
-                  , const we::type::user_data & = we::type::user_data()
-                  );
+      void submit (const id_type&, const type::activity_t&);
 
       // initial from exec_layer -> top level
       void cancel (const id_type&, const reason_type&);
@@ -84,12 +80,10 @@ namespace we
                            , type::activity_t const &
                            , const std::list<we::type::requirement_t>&
                            , const we::type::schedule_data&
-                           , const we::type::user_data &
                            , id_type const&
                            )> _rts_submit_IMPL;
       void _rts_submit ( id_type const & id
                        , type::activity_t const & act
-                       , we::type::user_data const& user_data
                        , id_type const& parent_id
                        )
       {
@@ -102,7 +96,6 @@ namespace we
                          , act
                          , act.transition().requirements()
                          , schedule_data
-                         , user_data
                          , parent_id
                          );
       }
@@ -125,13 +118,9 @@ namespace we
       //! \todo test the embedded data structures
       struct activity_data_type
       {
-        activity_data_type ( id_type id
-                           , type::activity_t activity
-                           , we::type::user_data user
-                           )
+        activity_data_type (id_type id, type::activity_t activity)
           : _id (id)
           , _activity (activity)
-          , _user_data (user)
         {}
 
         boost::optional<type::activity_t>
@@ -140,7 +129,6 @@ namespace we
 
         id_type _id;
         type::activity_t _activity;
-        we::type::user_data _user_data;
 
         boost::mt19937 _random_extraction_engine;
       };

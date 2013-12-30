@@ -46,7 +46,6 @@ struct daemon_t
               , we::mgmt::type::activity_t const&
               , requirement_list_t req_list
               , const we::type::schedule_data&
-              , const we::type::user_data&
               , const we::mgmt::layer::id_type& parent_id
               )
   {
