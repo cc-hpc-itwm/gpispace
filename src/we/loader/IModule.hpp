@@ -19,10 +19,6 @@ namespace we
                                    , const expr::eval::context&
                                    , expr::eval::context&
                                    );
-    typedef std::list<std::string> param_names_list_t;
-    typedef std::pair< WrapperFunction
-                     , param_names_list_t
-                     > parameterized_function_t;
 
     class IModule
     {

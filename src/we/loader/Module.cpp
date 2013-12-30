@@ -2,26 +2,65 @@
 
 #include <we/loader/Module.hpp>
 
+#include <we/loader/exceptions.hpp>
+
+#include <fhglog/LogMacros.hpp>
+
+#include <iostream>
+
 namespace we
 {
   namespace loader
   {
-    Module::Module ( const std::string& a_name
-                   , const std::string& a_path
+    Module::Module ( const std::string& path
                    , int flags
                    )
-      : name_ (a_name)
-      , path_ (a_path)
-      , handle_(0)
+      : name_()
+      , path_ (path)
+      , _dlhandle (path, flags)
       , call_table_()
     {
-      open (a_path, flags);
+      struct
+      {
+        union
+        {
+          void * symbol;
+          void (*function)(IModule*, unsigned int);
+        };
+      } func_ptr;
+
+      func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_initialize");
+
+      if (func_ptr.function != NULL)
+      {
+        const unsigned int LOADER_VERSION (1U);
+
+        func_ptr.function (this, LOADER_VERSION);
+      }
+
+      MLOG (TRACE, "loaded module " << name_ << " from " << path_);
     }
     Module::~Module() throw()
     {
+      MLOG (TRACE, "unloading " << name_);
+
       try
       {
-        close ();
+        struct
+        {
+          union
+          {
+            void * symbol;
+            void (*function) (IModule*);
+          };
+        } func_ptr;
+
+        func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_finalize");
+
+        if (func_ptr.function != NULL)
+        {
+          func_ptr.function (this);
+        }
       }
       catch (const std::exception& ex)
       {
@@ -35,7 +74,7 @@ namespace we
       {
         std::cerr << "E: **** module " << name()
                   << " from file " << path()
-                  << " had unknow errors during close!"
+                  << " had unknown errors during close!"
                   << std::endl;
       }
     }
@@ -57,130 +96,43 @@ namespace we
                       , expr::eval::context& output
                       )
     {
-      const boost::unordered_map< std::string
-                                , parameterized_function_t
-                                >::const_iterator
+      const boost::unordered_map<std::string, WrapperFunction>::const_iterator
         fun (call_table_.find (function));
 
       if (fun == call_table_.end())
       {
-        throw FunctionNotFound (name(), function);
+        throw function_not_found (name_, function);
       }
       else
       {
-        (*(fun->second.first))(info, input, output);
+        (*fun->second)(info, input, output);
       }
     }
     void Module::add_function (const std::string& name, WrapperFunction f)
     {
-      if (! call_table_.insert
-            ( std::make_pair (name, std::make_pair (f, param_names_list_t()))
-            ).second
-         )
+      if (! call_table_.insert (std::make_pair (name, f)).second)
       {
-        throw DuplicateFunction (name_, name);
+        throw duplicate_function (name_, name);
       }
     }
-    void Module::init (loader*) throw (ModuleException)
+
+    Module::dlhandle::dlhandle ( std::string const& path
+                               , int flags
+                               )
+      : _handle (dlopen (path.c_str(), flags))
     {
-      if (! handle_)
+      if (!_handle)
       {
-        throw ModuleInitFailed
-          ("initialization of module " + name() + " from " + path() + " failed: handle is 0", name(), path());
-      }
-
-      struct
-      {
-        union
-        {
-          void * symbol;
-          void (*function)(IModule*, unsigned int);
-        };
-      } func_ptr;
-
-      func_ptr.symbol = dlsym (handle_, "we_mod_initialize");
-
-      if (func_ptr.function != NULL)
-      {
-        try
-        {
-          const unsigned int LOADER_VERSION (1U);
-
-          func_ptr.function (this, LOADER_VERSION);
-        }
-        catch (const std::exception &ex)
-        {
-          throw ModuleInitFailed ("error during mod-init function: " + std::string(ex.what()), name(), path());
-        }
-        catch (...)
-        {
-          throw ModuleInitFailed ("unknown error during mod-init function", name(), path());
-        }
+        throw module_load_failed (path, dlerror());
       }
     }
-    void Module::open (const std::string& a_path, int flags)
+    Module::dlhandle::~dlhandle()
     {
-      if (handle_)
-        return;
-
-      handle_ = dlopen(a_path.c_str(), flags);
-      if (!handle_)
-      {
-        throw ModuleLoadFailed ( std::string("could not load module '")
-                               + name()
-                               + "' from '"+ a_path + "': "
-                               + std::string(dlerror())
-                               , name()
-                               , a_path
-                               );
-      }
-
-      dlerror();
-
-      try
-      {
-        init (0);
-      }
-      catch (...)
-      {
-        close();
-        throw;
-      }
+      dlclose (_handle);
     }
-    void Module::close()
+    void* Module::dlhandle::handle() const
     {
-      if (!handle_)
-        return;
-
-      dlerror();
-
-      struct
-      {
-        union
-        {
-          void * symbol;
-          void (*function) (IModule*);
-        };
-      } func_ptr;
-
-      func_ptr.symbol = dlsym (handle_, "we_mod_finalize");
-
-      if (func_ptr.function != NULL)
-      {
-        try
-        {
-          func_ptr.function (this);
-        }
-        catch (...)
-        {
-          dlclose (handle_);
-          handle_ = 0;
-          throw;
-        }
-      }
-
-      dlclose (handle_);
-      handle_ = 0;
+      return _handle;
     }
   }
 }

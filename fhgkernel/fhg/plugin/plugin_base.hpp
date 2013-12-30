@@ -1,6 +1,8 @@
 #ifndef FHG_PLUGIN_BASE_HPP
 #define FHG_PLUGIN_BASE_HPP 1
 
+#include <boost/utility.hpp>
+
 #include <csignal>
 
 namespace fhg
@@ -9,7 +11,7 @@ namespace fhg
   {
     class Kernel;
 
-    class Plugin
+    class Plugin : boost::noncopyable
     {
     public:
       virtual ~Plugin(){}

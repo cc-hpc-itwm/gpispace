@@ -20,7 +20,6 @@
 #include <fhg/util/bool_io.hpp>
 #include <fhg/util/threadname.hpp>
 #include <fhg/util/split.hpp>
-#include <fhg/util/join.hpp>
 #include <fhg/error_codes.hpp>
 
 #include <fhglog/LogMacros.hpp>
@@ -98,7 +97,7 @@ namespace
     {
       try
       {
-        module::call (loader, &context, act, mod);
+        we::loader::module_call (loader, &context, act, mod);
       }
       catch (std::exception const &ex)
       {
@@ -173,14 +172,18 @@ class WFEImpl : FHG_PLUGIN
   typedef fhg::thread::queue<wfe_task_t*> task_list_t;
   typedef std::map<std::string, wfe_task_t *> map_of_tasks_t;
 public:
+  ~WFEImpl()
+  {
+    delete m_loader;
+  }
 
   FHG_PLUGIN_START()
   {
     assert (! m_worker);
-    m_loader = we::loader::loader::create();
+    assert (! m_loader);
+    m_loader = new we::loader::loader();
 
     m_current_task = 0;
-    m_auto_unload = fhg_kernel ()->get<fhg::util::bool_t> ("auto_unload", "false");
 
     {
       // initalize loader with paths
@@ -212,11 +215,6 @@ public:
     fhg::util::set_threadname (*m_worker, "[wfe]");
 
     gspc::net::handle
-      ("/service/wfe/unload-modules"
-      , boost::bind (&WFEImpl::service_module_unload, this, _1, _2, _3)
-      );
-
-    gspc::net::handle
       ("/service/wfe/current-job"
       , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
       );
@@ -246,7 +244,6 @@ public:
   {
     _notification_service = boost::none;
 
-    gspc::net::unhandle ("/service/wfe/unload-modules");
     gspc::net::unhandle ("/service/wfe/current-job");
     gspc::net::unhandle ("/service/wfe/search-path/get");
     gspc::net::unhandle ("/service/wfe/search-path/set");
@@ -280,10 +277,8 @@ public:
       }
     }
 
-    if (m_loader)
-    {
-      m_loader.reset();
-    }
+    delete m_loader;
+    m_loader = NULL;
     FHG_PLUGIN_STOPPED();
   }
 
@@ -414,32 +409,6 @@ public:
     return 0;
   }
 private:
-  void service_module_unload ( std::string const &dst
-                             , gspc::net::frame const &rqst
-                             , gspc::net::user_ptr user
-                             )
-  {
-    MLOG (INFO, "unloading modules as requested by the user...");
-
-    gspc::net::frame rply;
-
-    try
-    {
-      m_loader->unload_autoloaded ();
-      rply = gspc::net::make::reply_frame (rqst);
-    }
-    catch (std::exception const &ex)
-    {
-      rply = gspc::net::make::error_frame
-        ( rqst
-        , gspc::net::E_SERVICE_FAILED
-        , ex.what ()
-        );
-    }
-
-    user->deliver (rply);
-  }
-
   void service_current_job ( std::string const &dst
                            , gspc::net::frame const &rqst
                            , gspc::net::user_ptr user
@@ -466,14 +435,10 @@ private:
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
     {
+      //! \todo is that lock needed really? what does it lock?
       lock_type lock (m_mutex);
 
-      rply.set_body
-        (fhg::util::join ( m_loader->search_path ().begin ()
-                         , m_loader->search_path ().end ()
-                         , ":"
-                         )
-        );
+      rply.set_body (m_loader->search_path());
     }
 
     user->deliver (rply);
@@ -549,9 +514,6 @@ private:
           // TODO: more detailed error codes
           task->errc = fhg::error::MODULE_CALL_FAILED;
           task->error_message = ex.what();
-
-          if (m_auto_unload)
-            m_loader->unload_autoloaded();
         }
         catch (...)
         {
@@ -560,9 +522,6 @@ private:
           task->error_message =
             "UNKNOWN REASON, exception not derived from std::exception";
           task->done.notify(1);
-
-          if (m_auto_unload)
-            m_loader->unload_autoloaded();
         }
       }
 
@@ -577,10 +536,8 @@ private:
   mutable mutex_type m_current_task_mutex;
   wfe_task_t *m_current_task;
 
-  we::loader::loader::ptr_t m_loader;
+  we::loader::loader* m_loader;
   boost::shared_ptr<boost::thread> m_worker;
-
-  bool m_auto_unload;
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
 };

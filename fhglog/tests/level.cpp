@@ -6,6 +6,9 @@
 #include <fhglog/level.hpp>
 
 #include <fhg/util/parse/error.hpp>
+#include <fhg/util/boost/test/require_exception.hpp>
+
+#include <boost/bind.hpp>
 
 BOOST_AUTO_TEST_CASE (from_int)
 {
@@ -36,14 +39,51 @@ BOOST_AUTO_TEST_CASE (from_string)
   OKAY (WARN, "WARN");
   OKAY (ERROR, "ERROR");
   OKAY (FATAL, "FATAL");
-  OKAY (TRACE, "TRACEmore");
-  OKAY (DEBUG, "DEBUGmore");
-  OKAY (INFO, "INFOmore");
-  OKAY (WARN, "WARNmore");
-  OKAY (ERROR, "ERRORmore");
-  OKAY (FATAL, "FATALmore");
 
 #undef OKAY
+
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ( boost::bind (&fhg::log::from_string, "TRACEmore")
+    , "std::runtime_error"
+    , "PARSE ERROR [5]: additional input\n"
+      "TRACE more\n"
+      "     ^\n"
+    );
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ( boost::bind (&fhg::log::from_string, "DEBUGmore")
+    , "std::runtime_error"
+    , "PARSE ERROR [5]: additional input\n"
+      "DEBUG more\n"
+      "     ^\n"
+    );
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ( boost::bind (&fhg::log::from_string, "INFOmore")
+    , "std::runtime_error"
+    , "PARSE ERROR [4]: additional input\n"
+      "INFO more\n"
+      "    ^\n"
+    );
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ( boost::bind (&fhg::log::from_string, "WARNmore")
+    , "std::runtime_error"
+    , "PARSE ERROR [4]: additional input\n"
+      "WARN more\n"
+      "    ^\n"
+    );
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ( boost::bind (&fhg::log::from_string, "ERRORmore")
+    , "std::runtime_error"
+    , "PARSE ERROR [5]: additional input\n"
+      "ERROR more\n"
+      "     ^\n"
+    );
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ( boost::bind (&fhg::log::from_string, "FATALmore")
+    , "std::runtime_error"
+    , "PARSE ERROR [5]: additional input\n"
+      "FATAL more\n"
+      "     ^\n"
+    );
 
 #define THROW(_s)                                                \
   BOOST_REQUIRE_THROW ( fhg::log::from_string (_s)               \

@@ -2,12 +2,10 @@
 #define WE_LOADER_MODULE_HPP 1
 
 #include <we/loader/IModule.hpp>
-#include <we/loader/exceptions.hpp>
 
 #include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
 
-#include <iostream>
 #include <string>
 
 #include <dlfcn.h>
@@ -16,18 +14,13 @@ namespace we
 {
   namespace loader
   {
-    class loader;
-
     class Module : public IModule, boost::noncopyable
     {
     public:
-      Module ( const std::string& name
-             , const std::string& path
+      Module ( const std::string& path
              , int flags = RTLD_NOW | RTLD_GLOBAL
              );
       virtual ~Module() throw();
-
-      void init (loader*) throw (ModuleException);
 
       void name (const std::string&);
       const std::string &name() const;
@@ -42,13 +35,19 @@ namespace we
       void add_function (const std::string&, WrapperFunction);
 
     private:
-      void open (const std::string&, int);
-      void close();
-
       std::string name_;
       std::string path_;
-      void* handle_;
-      boost::unordered_map<std::string, parameterized_function_t> call_table_;
+
+      class dlhandle
+      {
+      public:
+        dlhandle (std::string const& path, int flags);
+        ~dlhandle();
+        void* handle() const;
+      private:
+        void* _handle;
+      } _dlhandle;
+      boost::unordered_map<std::string, WrapperFunction> call_table_;
     };
   }
 }

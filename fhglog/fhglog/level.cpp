@@ -41,30 +41,45 @@ namespace fhg
       return map[l];
     }
 
+    namespace
+    {
+      Level from_parse_position (fhg::util::parse::position& pos)
+      {
+        namespace parse = fhg::util::parse;
+
+        std::string const any
+          ("one of 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
+
+        if (pos.end())
+        {
+          throw parse::error::expected (any, pos);
+        }
+
+        switch (*pos)
+        {
+        case 'T': ++pos; parse::require::require (pos, "RACE"); return TRACE;
+        case 'D': ++pos; parse::require::require (pos, "EBUG"); return DEBUG;
+        case 'I': ++pos; parse::require::require (pos, "NFO"); return INFO;
+        case 'W': ++pos; parse::require::require (pos, "ARN"); return WARN;
+        case 'E': ++pos; parse::require::require (pos, "RROR"); return ERROR;
+        case 'F': ++pos; parse::require::require (pos, "ATAL"); return FATAL;
+        default: throw parse::error::expected (any, pos);
+        }
+      }
+    }
+
     Level from_string (std::string const& name)
     {
-      namespace parse = fhg::util::parse;
+      fhg::util::parse::position_string pos (name);
 
-      std::string const any
-        ("one of 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
+      Level const level (from_parse_position (pos));
 
-      parse::position_string pos (name);
-
-      if (pos.end())
+      if (!pos.end())
       {
-        throw parse::error::expected (any, pos);
+        throw std::runtime_error (pos.error_message ("additional input"));
       }
 
-      switch (*pos)
-      {
-      case 'T': ++pos; parse::require::require (pos, "RACE"); return TRACE;
-      case 'D': ++pos; parse::require::require (pos, "EBUG"); return DEBUG;
-      case 'I': ++pos; parse::require::require (pos, "NFO"); return INFO;
-      case 'W': ++pos; parse::require::require (pos, "ARN"); return WARN;
-      case 'E': ++pos; parse::require::require (pos, "RROR"); return ERROR;
-      case 'F': ++pos; parse::require::require (pos, "ATAL"); return FATAL;
-      default: throw parse::error::expected (any, pos);
-      }
+      return level;
     }
   }
 }

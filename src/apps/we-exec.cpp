@@ -6,6 +6,7 @@
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
+#include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
 #include <fhg/util/thread/queue.hpp>
 
@@ -64,7 +65,7 @@ namespace
       try
       {
         //!\todo pass a real gspc::drts::context
-        module::call (*_loader, 0, act, mod);
+        we::loader::module_call (*_loader, 0, act, mod);
         _layer->finished (_id, act.to_string());
       }
       catch (std::exception const& ex)
@@ -458,7 +459,7 @@ try
 
   BOOST_FOREACH (std::string const& m, mods_to_load)
   {
-    loader.load (m);
+    loader.load (m, m);
   }
 
   BOOST_FOREACH (std::string const& p, mod_path)

@@ -3,8 +3,8 @@
 
 extern "C"
 {
-  extern int the_answer;
-  extern int get_answer();
+  extern long the_answer;
+  extern long get_answer();
 }
 
 #endif

@@ -56,7 +56,7 @@ struct wfe_exec_context : public we::mgmt::context
   virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
   {
     //!\todo pass a real gspc::drts::context
-    module::call (loader, 0, act, mod);
+    we::loader::module_call (loader, 0, act, mod);
 
     return 0;
   }
@@ -165,7 +165,7 @@ try
 
   BOOST_FOREACH (const std::string& module, mods_to_load)
   {
-    loader.load (module);
+    loader.load (module, module);
   }
 
   {

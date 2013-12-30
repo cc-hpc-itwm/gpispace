@@ -9,6 +9,7 @@
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 #include <we/type/requirement.hpp>
+#include <we/type/user_data.hpp>
 #include <we/type/schedule_data.hpp>
 
 #include <fhg/assert.hpp>

@@ -11,7 +11,6 @@
 #include <we/mgmt/type/activity.hpp>
 
 #include <we/type/value/show.hpp>
-#include <we/require_type.hpp>
 
 #include <fhg/util/show.hpp>
 
@@ -432,13 +431,7 @@ namespace we
               {
                 _activity.add_output
                   ( type::activity_t::output_t::value_type
-                    ( pnet::require_type
-                      ( context.value (p.second.name())
-                      , p.second.signature()
-                      , p.second.name()
-                      )
-                    , p.first
-                    )
+                    (context.value (p.second.name()), p.first)
                   );
               }
             }

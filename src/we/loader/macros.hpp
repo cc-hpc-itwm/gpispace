@@ -41,19 +41,6 @@
         {volatile int _ = WE_GUARD_SYMBOL; (void)_;} \
         mod->name (#modname)
 
-#define WE_REGISTER_FUN_START(fun)                \
-  {                                               \
-    ::we::loader::param_names_list_t params
-
-#define WE_ADD_INP(p, typ)\
-           params.push_back(p)
-#define WE_ADD_OUT(p, typ)\
-           params.push_back(p)
-
-#define WE_REGISTER_FUN_END(fun)\
-           mod->add_function(#fun, &fun, params);\
-        }
-
 #define WE_REGISTER_FUN(fun)                   \
         mod->add_function(#fun, &fun)
 #define WE_REGISTER_FUN_AS(fun,as)             \
