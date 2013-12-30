@@ -12,16 +12,6 @@ namespace we
     class user_data
     {
     public:
-      void set_user_job_identification (std::string const &id)
-      {
-        m_user_job_identification = id;
-      }
-
-      std::string const &get_user_job_identification () const
-      {
-        return m_user_job_identification;
-      }
-
       int get (std::string const &key, std::string & value) const
       {
         typedef std::map<std::string, std::string> map_type_t;
@@ -59,7 +49,6 @@ namespace we
         }
       }
     private:
-      std::string m_user_job_identification;
       std::map<std::string, std::string> m_values;
     };
   }
