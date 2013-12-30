@@ -158,8 +158,8 @@ namespace we
            )
         {
           const id_type child_id (_id_generator());
-          _rts_submit (child_id, *activity, activity_data._user_data);
           _running_jobs.started (activity_data._id, child_id);
+          _rts_submit (child_id, *activity, activity_data._user_data);
         }
 
         //! \todo Don't busy wait, but notify when empty
