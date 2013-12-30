@@ -58,7 +58,7 @@ namespace we
       // initial from exec_layer -> top level
       void submit ( const id_type&
                   , const type::activity_t&
-                  , const we::type::user_data &
+                  , const we::type::user_data & = we::type::user_data()
                   );
 
       // initial from exec_layer -> top level

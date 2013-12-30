@@ -57,7 +57,7 @@ namespace
     }
     virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&)
     {
-      _layer->submit (_new_id (_id),  act, we::type::user_data());
+      _layer->submit (_new_id (_id), act);
       return 0;
     }
     virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
@@ -135,7 +135,7 @@ namespace
           (new boost::thread (boost::bind (&sdpa_daemon::worker, this, n)));
       }
 
-      mgmt_layer_.submit (_job_id, act, we::type::user_data());
+      mgmt_layer_.submit (_job_id, act);
     }
 
     ~sdpa_daemon()

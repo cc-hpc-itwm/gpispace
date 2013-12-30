@@ -89,7 +89,7 @@ int main ()
       , we::type::property::type()
       );
     we::mgmt::type::activity_t act (mod_call);
-    layer.submit (generate_id(), act, we::type::user_data ());
+    layer.submit (generate_id(), act);
 
     sleep (1);
   }
@@ -103,7 +103,7 @@ int main ()
       , we::type::property::type()
       );
     we::mgmt::type::activity_t act (expr);
-    layer.submit (generate_id(), act, we::type::user_data ());
+    layer.submit (generate_id(), act);
 
     sleep (1);
   }
