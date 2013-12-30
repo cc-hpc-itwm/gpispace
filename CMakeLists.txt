@@ -86,7 +86,6 @@ if (NOT PROJECT_VERSION)
 endif()
 set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
 
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cpack-dev.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-dev.cmake @ONLY)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/packages.list.cmake.in
                 ${CMAKE_CURRENT_BINARY_DIR}/packages.list.cmake @ONLY)
