@@ -195,6 +195,8 @@ namespace we
 
     void layer::async_remove_queue::put (activity_data_type activity_data)
     {
+      boost::optional<boost::function<void (activity_data_type)> > fun;
+
       {
         boost::mutex::scoped_lock const _ (_to_be_removed_mutex);
 
@@ -203,16 +205,16 @@ namespace we
 
         if (pos != _to_be_removed.end())
         {
-          boost::function<void (activity_data_type)> const fun (pos->second);
-
+          fun = pos->second;
           _to_be_removed.erase (pos);
-
-          fun (activity_data);
-
-          return;
         }
       }
 
+      if (fun)
+      {
+        (*fun) (activity_data);
+      }
+      else
       {
         boost::mutex::scoped_lock const _ (_container_mutex);
 
