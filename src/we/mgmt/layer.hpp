@@ -32,7 +32,7 @@ namespace we
               )
 
           // external activities from submitted net -> child jobs
-          : _rts_submit_IMPL (boost::bind (&RTS::submit, runtime_system, _1, _2, _3))
+          : _rts_submit (boost::bind (&RTS::submit, runtime_system, _1, _2, _3))
 
           // reply to cancel (parent)/on failure (child) -> child jobs
           , _rts_cancel (boost::bind (&RTS::cancel, runtime_system, _1, _2))
@@ -77,22 +77,12 @@ namespace we
     private:
       boost::function<void ( id_type const &
                            , type::activity_t const &
-                           , id_type const&
-                           )> _rts_submit_IMPL;
-      void _rts_submit ( id_type const & id
-                       , type::activity_t const & act
-                       , id_type const& parent_id
-                       )
-      {
-        _rts_submit_IMPL ( id
-                         , act
-                         , parent_id
-                         );
-      }
+                           , id_type const& parent
+                           )> _rts_submit;
 
       boost::function<void ( id_type const &
                            , reason_type const &
-                           )>  _rts_cancel;
+                           )> _rts_cancel;
 
       boost::function<void ( id_type const &
                            , type::activity_t const &
