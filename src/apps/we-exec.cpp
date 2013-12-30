@@ -289,16 +289,12 @@ namespace
     }
 
     void failed ( const we::mgmt::layer::id_type& id
-                , const std::string& desc
                 , const int error_code
                 , const std::string& reason
                 )
     {
       boost::optional<we::mgmt::layer::id_type> const mapped
         (get_and_delete_mapping (id));
-
-      we::mgmt::type::activity_t act (desc);
-      act.collect_output();
 
       if (mapped)
       {
@@ -309,9 +305,7 @@ namespace
         std::cout << "failed [" << id << "] = ";
         std::cout << " error-code := " << error_code
                   << " reason := " << reason
-                  << " activity := " << act.transition().name()
                   << std::endl;
-        _result = desc;
         set_job_status (sdpa::status::FAILED);
       }
       else
@@ -478,7 +472,6 @@ try
   switch (rc)
   {
   case sdpa::status::FINISHED:
-  case sdpa::status::FAILED:
     if (output.size())
     {
       if (output == "-")
@@ -492,6 +485,7 @@ try
       }
     }
     break;
+  case sdpa::status::FAILED:
   case sdpa::status::CANCELED:
     break;
   default:

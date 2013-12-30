@@ -46,7 +46,7 @@ namespace we
 
           // reply to submit (on failure of child) -> top level
           //! \todo use un-encoded activity
-          , _rts_failed_IMPL (boost::bind (&RTS::failed, runtime_system, _1, _2, _3, _4))
+          , _rts_failed (boost::bind (&RTS::failed, runtime_system, _1, _2, _3))
 
           // reply to cancel (parent) -> child jobs
           , _rts_canceled (boost::bind (&RTS::canceled, runtime_system, _1))
@@ -86,15 +86,6 @@ namespace we
                     );
 
       // reply to _rts_submit -> childs only
-      //! \todo only  use un-encoded activity
-      void failed_DEPRECATED ( const id_type& id
-                             , const result_type& result
-                             , const int error_code
-                             , const std::string& reason
-                             )
-      {
-        failed (id, error_code, reason);
-      }
       void failed ( const id_type&
                   , const int error_code
                   , const std::string&
@@ -144,17 +135,9 @@ namespace we
       }
 
       boost::function<void ( id_type const &
-                           , result_type const &
                            , const int error_code
                            , std::string const & reason
-                           )> _rts_failed_IMPL;
-      void _rts_failed ( id_type const & id
-                       , const int error_code
-                       , std::string const & reason
-                       )
-      {
-        _rts_failed_IMPL (id, "BAD: NO ACTIVITY EXISTS.", error_code, reason);
-      }
+                           )> _rts_failed;
 
       boost::function<void (id_type const &)> _rts_canceled;
 

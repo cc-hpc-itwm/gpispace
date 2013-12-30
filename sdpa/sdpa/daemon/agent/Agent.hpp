@@ -48,7 +48,7 @@ namespace sdpa {
         void cancelPendingJob (const sdpa::events::CancelJobEvent& evt);
 
         virtual bool finished(const we::mgmt::layer::id_type & id, const we::mgmt::layer::result_type & result);
-        virtual bool failed( const we::mgmt::layer::id_type& workflowId, const we::mgmt::layer::result_type& result, int error_code, std::string const& reason);
+        virtual bool failed( const we::mgmt::layer::id_type& workflowId, int error_code, std::string const& reason);
 
         template <typename T>
         void notifySubscribers(const T& ptrEvt);

@@ -83,7 +83,7 @@ namespace we
 
       request_cancel
         ( *parent
-        , boost::bind (&layer::_rts_failed, this, *parent, error_code, reason)
+        , boost::bind (_rts_failed, *parent, error_code, reason)
         , reason
         );
     }

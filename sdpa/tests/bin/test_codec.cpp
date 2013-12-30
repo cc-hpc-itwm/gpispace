@@ -118,10 +118,9 @@ BOOST_AUTO_TEST_CASE (JobFailedAck)
 
 BOOST_AUTO_TEST_CASE (JobFailed)
 {
-  JobFailedEvent e ("foo", "bar", "job-id-1", "no result", fhg::error::UNASSIGNED_ERROR, "testing");
+  JobFailedEvent e ("foo", "bar", "job-id-1", fhg::error::UNASSIGNED_ERROR, "testing");
   JobFailedEvent* r (encode_decode_job_event (e));
 
-  BOOST_REQUIRE_EQUAL (r->result(), e.result());
   BOOST_REQUIRE_EQUAL (r->error_code(), e.error_code());
   BOOST_REQUIRE_EQUAL (r->error_message(), e.error_message());
 }

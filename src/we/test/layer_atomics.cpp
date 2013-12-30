@@ -60,7 +60,6 @@ struct daemon_t
   }
 
   bool failed( const id_type & id
-             , const std::string & result
              , const int error_code
              , const std::string & reason
              )

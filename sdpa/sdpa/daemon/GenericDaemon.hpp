@@ -104,7 +104,7 @@ namespace sdpa {
                          );
       bool cancel(const we::mgmt::layer::id_type & id, const we::mgmt::layer::reason_type& reason);
       virtual bool finished(const we::mgmt::layer::id_type & id, const we::mgmt::layer::result_type& result);
-      virtual bool failed( const we::mgmt::layer::id_type& wfId, const we::mgmt::layer::result_type& res, int errc, std::string const& reason);
+      virtual bool failed( const we::mgmt::layer::id_type& wfId, int errc, std::string const& reason);
       bool canceled(const we::mgmt::layer::id_type& id);
       virtual void pause(const job_id_t& id ) = 0;
       virtual void resume(const job_id_t& id ) = 0;
