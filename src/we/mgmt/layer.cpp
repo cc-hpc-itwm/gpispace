@@ -265,7 +265,12 @@ namespace we
       }
       else if (pos_container_inactive != _container_inactive.end())
       {
-        fun (*pos_container_inactive);
+        activity_data_type data (*pos_container_inactive);
+        _container_inactive.erase (pos_container_inactive);
+        fun (data);
+        _container.push_back (data);
+
+        _condition_non_empty.notify_one();
       }
       else
       {
