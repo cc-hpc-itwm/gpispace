@@ -309,6 +309,7 @@ namespace we
                         , activity.input()
                         )
           {
+            //! \todo should be bind_ref
             context.bind
               ( activity.transition().get_port (top.second).name()
               , top.first
