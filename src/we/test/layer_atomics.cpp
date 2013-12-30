@@ -2,7 +2,6 @@
 #include <stdint.h>
 
 #include <we/mgmt/layer.hpp>
-#include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
 #include <we/type/module_call.hpp>
@@ -18,8 +17,6 @@
 typedef std::string id_type;
 
 typedef we::mgmt::layer layer_t;
-
-typedef std::list<we::type::requirement_t> requirement_list_t;
 
 static inline id_type generate_id ()
 {
@@ -41,7 +38,6 @@ struct daemon_t
 
   void submit ( const id_type & id
               , const we::mgmt::type::activity_t & act
-              , requirement_list_t req_list
               , const we::type::schedule_data&
               , const we::mgmt::layer::id_type& parent_id
               )

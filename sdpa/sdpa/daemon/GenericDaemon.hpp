@@ -97,7 +97,6 @@ namespace sdpa {
       // WE interface
       void submit( const we::mgmt::layer::id_type & id
                  , const we::mgmt::type::activity_t&
-                         , const requirement_list_t&
                          , const we::type::schedule_data&
                  , const we::mgmt::layer::id_type& parent_id
                          );

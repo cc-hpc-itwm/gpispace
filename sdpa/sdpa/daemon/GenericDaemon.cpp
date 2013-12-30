@@ -531,12 +531,11 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
  */
 void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
                           , const we::mgmt::type::activity_t& activity
-                          , const requirement_list_t& req_list
                           , const we::type::schedule_data& schedule_data
                           , const we::mgmt::layer::id_type& parent_id
                           )
 {
-  job_requirements_t jobReqs(req_list, schedule_data);
+  job_requirements_t jobReqs(activity.transition().requirements(), schedule_data);
 
   DMLOG(TRACE, "workflow engine submitted "<<activityId);
 

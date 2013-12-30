@@ -6,7 +6,6 @@
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
-#include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
 #include <boost/function.hpp>
@@ -33,7 +32,7 @@ namespace we
               )
 
           // external activities from submitted net -> child jobs
-          : _rts_submit_IMPL (boost::bind (&RTS::submit, runtime_system, _1, _2, _3, _4, _5))
+          : _rts_submit_IMPL (boost::bind (&RTS::submit, runtime_system, _1, _2, _3, _4))
 
           // reply to cancel (parent)/on failure (child) -> child jobs
           , _rts_cancel (boost::bind (&RTS::cancel, runtime_system, _1, _2))
@@ -78,7 +77,6 @@ namespace we
     private:
       boost::function<void ( id_type const &
                            , type::activity_t const &
-                           , const std::list<we::type::requirement_t>&
                            , const we::type::schedule_data&
                            , id_type const&
                            )> _rts_submit_IMPL;
@@ -94,7 +92,6 @@ namespace we
 
         _rts_submit_IMPL ( id
                          , act
-                         , act.transition().requirements()
                          , schedule_data
                          , parent_id
                          );
