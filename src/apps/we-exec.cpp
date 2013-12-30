@@ -95,13 +95,13 @@ namespace
     job_t()
     {}
 
-    job_t (const we::mgmt::layer::id_type& id_, const std::string& desc_)
+    job_t (const we::mgmt::layer::id_type& id_, const we::mgmt::type::activity_t& act_)
       : id (id_)
-      , desc (desc_)
+      , act (act_)
     {}
 
     we::mgmt::layer::id_type id;
-    std::string desc;
+    we::mgmt::type::activity_t act;
   };
 
   struct sdpa_daemon
@@ -160,7 +160,7 @@ namespace
 
       for (;;)
       {
-        job_t const job (jobs_.get());
+        job_t job (jobs_.get());
 
         context ctxt ( job.id
                      , _loader
@@ -168,7 +168,7 @@ namespace
                      , boost::bind (&sdpa_daemon::add_mapping, this, _1)
                      );
 
-        we::mgmt::type::activity_t (job.desc).execute (&ctxt);
+        job.act.execute (&ctxt);
       }
 
       MLOG (INFO, "SDPA layer worker-" << rank << " stopped");
@@ -240,7 +240,7 @@ namespace
                 , const we::type::user_data&
                 )
     {
-      jobs_.put (job_t (id, desc));
+      jobs_.put (job_t (id, we::mgmt::type::activity_t (desc)));
     }
 
     void cancel (const we::mgmt::layer::id_type& id, const std::string& desc)
