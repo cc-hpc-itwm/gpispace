@@ -71,7 +71,6 @@ namespace we
     }
 
     void layer::failed ( const id_type& id
-                       , const type::activity_t& result
                        , const int error_code
                        , const std::string& reason
                        )
@@ -79,25 +78,11 @@ namespace we
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       assert (parent);
 
-      update_activity
-        ( *parent
-        , result
-        , boost::bind
-          (&layer::finalize_failed, this, *parent, id, result, error_code, reason)
-        );
-    }
-    void layer::finalize_failed ( id_type parent
-                                , id_type child
-                                , const type::activity_t& result
-                                , const int error_code
-                                , const std::string& reason
-                                )
-    {
-      _running_jobs.terminated (parent, child);
+      _running_jobs.terminated (*parent, id);
 
       request_cancel
-        ( parent
-        , boost::bind (&layer::_rts_failed, this, parent, result, error_code, reason)
+        ( *parent
+        , boost::bind (&layer::_rts_failed, this, *parent, error_code, reason)
         , reason
         );
     }

@@ -72,11 +72,7 @@ namespace
       {
         std::cerr << "handle-ext(" << act.transition().name() << ") failed: " << ex.what() << std::endl;
 
-        _layer->failed ( _id
-                       , act
-                       , fhg::error::MODULE_CALL_FAILED
-                       , ex.what()
-                       );
+        _layer->failed (_id, fhg::error::MODULE_CALL_FAILED, ex.what());
       }
       return 0;
     }
@@ -306,7 +302,7 @@ namespace
 
       if (mapped)
       {
-        mgmt_layer_.failed (*mapped, act, error_code, reason);
+        mgmt_layer_.failed (*mapped, error_code, reason);
       }
       else if (id == _job_id)
       {

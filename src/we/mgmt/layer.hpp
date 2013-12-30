@@ -93,10 +93,9 @@ namespace we
                              , const std::string& reason
                              )
       {
-        failed (id, type::activity_t (result), error_code, reason);
+        failed (id, error_code, reason);
       }
       void failed ( const id_type&
-                  , const type::activity_t&
                   , const int error_code
                   , const std::string&
                   );
@@ -150,12 +149,11 @@ namespace we
                            , std::string const & reason
                            )> _rts_failed_IMPL;
       void _rts_failed ( id_type const & id
-                      , type::activity_t const & act
-                      , const int error_code
-                      , std::string const & reason
-                      )
+                       , const int error_code
+                       , std::string const & reason
+                       )
       {
-        _rts_failed_IMPL (id, act.to_string(), error_code, reason);
+        _rts_failed_IMPL (id, "BAD: NO ACTIVITY EXISTS.", error_code, reason);
       }
 
       boost::function<void (id_type const &)> _rts_canceled;
@@ -251,12 +249,6 @@ namespace we
         (activity_data_type&, type::activity_t, boost::function<void()>);
 
       void finalize_finished (id_type parent, id_type child);
-      void finalize_failed ( id_type parent
-                           , id_type child
-                           , const type::activity_t& result
-                           , const int error_code
-                           , const std::string& reason
-                           );
     };
   }
 }
