@@ -1,5 +1,12 @@
 # mirko.rahn@itwm.fraunhofer.de
 
+fhg_add_test (locked_parent_child_relation.cpp
+  BOOST_UNIT_TEST
+  PROJECT we
+  LINK_LIBRARIES fhg-util
+                 ${Boost_SYSTEM_LIBRARY}
+)
+
 fhg_add_test (require_type.cpp
   BOOST_UNIT_TEST
   PROJECT we
