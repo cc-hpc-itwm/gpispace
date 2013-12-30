@@ -110,7 +110,6 @@ fi
 cd "${builddir}"
 
 echo "$(date)" > "${builddir}/build.tstamp"
-"${srcdir}/incr-build-count" "${builddir}/build.counter"
 
 extra=(-DINSTALL_AS_BUNDLE=ON -DENABLE_APPLICATION=ON -DENABLE_UFBMIGD=ON)
 

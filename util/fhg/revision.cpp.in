@@ -51,11 +51,6 @@ namespace fhg
     return "@FHG_BUILD_INFO@";
   }
 
-  const char* project_build_count()
-  {
-    return "@FHG_BUILD_COUNT@";
-  }
-
   std::string project_info (const std::string& head)
   {
     std::ostringstream s;

@@ -27,22 +27,11 @@ execute_process(COMMAND ${CMAKE_CXX_COMPILER} --version
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                )
 
-execute_process(COMMAND cat ${CMAKE_BINARY_DIR}/build.counter
-                OUTPUT_VARIABLE FHG_BUILD_COUNT
-                ERROR_QUIET
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-                )
-
 execute_process(COMMAND cat ${CMAKE_BINARY_DIR}/build.tstamp
                 OUTPUT_VARIABLE FHG_BUILD_TIMESTAMP
                 ERROR_QUIET
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                )
-
-if ("${FHG_BUILD_COUNT}" STREQUAL "")
-  set(FHG_BUILD_COUNT "0")
-endif ()
-MATH(EXPR FHG_BUILD_COUNT "${FHG_BUILD_COUNT}+1")
 
 if ("${FHG_BUILD_TIMESTAMP}" STREQUAL "")
   execute_process (COMMAND "date" "+%y-%m" OUTPUT_VARIABLE __year_and_month OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -50,7 +39,7 @@ if ("${FHG_BUILD_TIMESTAMP}" STREQUAL "")
   set(__year_and_month)
 endif ()
 
-set(FHG_BUILD_INFO "${FHG_BUILD_KERNEL} ${FHG_BUILD_CPU} Build #${FHG_BUILD_COUNT} at ${FHG_BUILD_TIMESTAMP} by ${FHG_BUILD_USER}@${FHG_BUILD_HOST}")
+set(FHG_BUILD_INFO "${FHG_BUILD_KERNEL} ${FHG_BUILD_CPU} Build at ${FHG_BUILD_TIMESTAMP} by ${FHG_BUILD_USER}@${FHG_BUILD_HOST}")
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp.new @ONLY)
 

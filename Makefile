@@ -14,9 +14,6 @@ config:
 release:
 	cd build && cpack --config cpack-rel.cmake
 
-incr-build:
-	@./incr-build-count
-
 $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
