@@ -41,11 +41,6 @@ namespace fhg
     return "@FHG_BUILD_TIMESTAMP@";
   }
 
-  const char* project_build_compiler()
-  {
-    return "@FHG_BUILD_COMPILER@";
-  }
-
   std::string project_info (const std::string& head)
   {
     std::ostringstream s;
@@ -55,7 +50,6 @@ namespace fhg
       << std::endl << "version:  " << project_version()
       << std::endl << "revision: " << project_revision()
       << std::endl << "built:    " << project_build_time()
-      << std::endl << "using:    " << project_build_compiler()
       << std::endl << "contact:  " <<  project_contact()
       << std::endl
       << std::endl << project_copyright()

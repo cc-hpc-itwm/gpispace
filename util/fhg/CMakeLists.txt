@@ -1,11 +1,5 @@
 add_subdirectory(util)
 
-execute_process(COMMAND ${CMAKE_CXX_COMPILER} --version
-                COMMAND head -n 1
-                OUTPUT_VARIABLE FHG_BUILD_COMPILER
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-               )
-
 execute_process(COMMAND cat ${CMAKE_BINARY_DIR}/build.tstamp
                 OUTPUT_VARIABLE FHG_BUILD_TIMESTAMP
                 ERROR_QUIET

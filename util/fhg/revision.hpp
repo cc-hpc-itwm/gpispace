@@ -29,7 +29,6 @@ namespace fhg
   extern const char* project_version();
   extern const char* project_revision();
   extern const char* project_build_time();
-  extern const char* project_build_compiler();
 
   extern std::string project_info (const std::string&);
 }
