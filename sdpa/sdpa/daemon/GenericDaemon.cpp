@@ -775,7 +775,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
   }
   catch(const std::exception& ex)
   {
-     SDPA_LOG_ERROR("Exception occurred. Failed to submit the job "<<jobId<<" to the workflow engine!");
+     SDPA_LOG_ERROR("Exception occurred: " << ex.what() << ". Failed to submit the job "<<jobId<<" to the workflow engine!");
      sdpa::job_result_t result(ex.what());
 
      events::JobFailedEvent::Ptr pEvtJobFailed
