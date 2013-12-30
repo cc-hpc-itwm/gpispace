@@ -171,12 +171,8 @@ namespace we
 
       boost::function<id_type()> _id_generator;
 
-      void update_activity
-        (id_type, type::activity_t result, boost::function<void()>);
-      void do_update_activity
-        (activity_data_type&, type::activity_t, boost::function<void()>);
-
-      void finalize_finished (id_type parent, id_type child);
+      void finalize_finished
+        (activity_data_type&, type::activity_t, id_type parent, id_type child);
     };
   }
 }

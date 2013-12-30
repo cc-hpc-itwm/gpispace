@@ -31,35 +31,25 @@ namespace we
       }
     }
 
-    void layer::update_activity
-      (id_type parent, type::activity_t result, boost::function<void()> after)
-    {
-      _nets_to_extract_from.apply
-        ( parent
-        , boost::bind (&layer::do_update_activity, this, _1, result, after)
-        );
-    }
-    void layer::do_update_activity
-      ( activity_data_type& activity_data
-      , type::activity_t result
-      , boost::function<void()> after
-      )
-    {
-      activity_data.child_finished (result);
-      after();
-    }
-
     void layer::finished
       (const id_type& id, const type::activity_t& result)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       assert (parent);
 
-      update_activity
-        (*parent, result, boost::bind (&layer::finalize_finished, this, *parent, id));
+      _nets_to_extract_from.apply
+        ( *parent
+        , boost::bind
+          (&layer::finalize_finished, this, _1, result, *parent, id)
+        );
     }
-    void layer::finalize_finished (id_type parent, id_type child)
+    void layer::finalize_finished ( activity_data_type& activity_data
+                                  , type::activity_t result
+                                  , id_type parent
+                                  , id_type child
+                                  )
     {
+      activity_data.child_finished (result);
       _running_jobs.terminated (parent, child);
     }
 
