@@ -46,11 +46,6 @@ namespace fhg
     return "@FHG_BUILD_COMPILER@";
   }
 
-  const char* project_build_info()
-  {
-    return "@FHG_BUILD_INFO@";
-  }
-
   std::string project_info (const std::string& head)
   {
     std::ostringstream s;
