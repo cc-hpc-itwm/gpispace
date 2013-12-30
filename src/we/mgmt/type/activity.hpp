@@ -57,12 +57,6 @@ namespace we
 
         std::string to_string() const;
 
-        template<typename T>
-          boost::optional<T> get_schedule_data (const std::string& key) const
-        {
-          return _transition.get_schedule_data<T> (input(), key);
-        }
-
         //! \todo DIRTY! Why lock and return a ref? Eliminate!!
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
