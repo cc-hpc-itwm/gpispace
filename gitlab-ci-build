@@ -12,7 +12,7 @@ diff_url="http://gitlab.hpc.devnet.itwm.fhg.de/top/gpispace/commit/${sha}"
 author=$(git log -n 1 --pretty="%aN <%aE>")
 project="GPI-Space"
 
-opts=(--with-tests)
+opts=(-DBUILD_TESTING=ON)
 makeflags=()
 ctestflags=()
 runtests=false
@@ -28,8 +28,8 @@ case "$myhost" in
         export BOOST_ROOT=~/external_software/boost/1.52/gcc/
         export NACL_HOME=~/external_software/nacl/20110221
         export BASE_BUILD_DIR=/tmp/gitlab-ci
-        opts+=(--type=Debug)
-        opts+=(--assert-mode=on)
+        opts+=(-DCMAKE_BUILD_TYPE=Debug)
+        opts+=(-DFHG_ASSERT_MODE=ON)
         makeflags+=(-j2)
         send_mail=true
 
@@ -122,7 +122,7 @@ cleanup()
 }
 trap cleanup EXIT
 
-cd "${builddir}" && "${srcdir}/configure" --prefix="${instdir}" "${opts[@]}"
+cd "${builddir}" && cmake -DCMAKE_INSTALL_PREFIX="${instdir}" "${opts[@]}"
 ec=$?
 if [ $ec -ne 0 ]
 then
