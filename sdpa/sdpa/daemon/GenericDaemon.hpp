@@ -101,6 +101,7 @@ namespace sdpa {
                          , const requirement_list_t&
                          , const we::type::schedule_data&
                          , const we::type::user_data &
+                 , const we::mgmt::layer::id_type& parent_id
                          );
       bool cancel(const we::mgmt::layer::id_type & id, const we::mgmt::layer::reason_type& reason);
       virtual bool finished(const we::mgmt::layer::id_type & id, const we::mgmt::type::activity_t& result);

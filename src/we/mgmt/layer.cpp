@@ -147,7 +147,7 @@ namespace we
         {
           const id_type child_id (_id_generator());
           _running_jobs.started (activity_data._id, child_id);
-          _rts_submit (child_id, *activity, activity_data._user_data);
+          _rts_submit (child_id, *activity, activity_data._user_data, activity_data._id);
           was_active = true;
         }
 

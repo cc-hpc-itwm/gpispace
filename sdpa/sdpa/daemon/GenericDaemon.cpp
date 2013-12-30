@@ -534,6 +534,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
                           , const requirement_list_t& req_list
                           , const we::type::schedule_data& schedule_data
                           , const we::type::user_data& user_data
+                          , const we::mgmt::layer::id_type& parent_id
                           )
 {
   job_requirements_t jobReqs(req_list, schedule_data);
@@ -541,7 +542,6 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
   DMLOG(TRACE, "workflow engine submitted "<<activityId);
 
   job_id_t job_id(activityId);
-  job_id_t parent_id(user_data.get_user_job_identification());
 
   if( schedule_data.num_worker() && schedule_data.num_worker().get()<=0)
   {
