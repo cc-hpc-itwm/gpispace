@@ -239,8 +239,6 @@ add_subdirectory (src)
 add_subdirectory (sdpa)
 add_subdirectory(bundle)
 
-include (TargetDoc)
-
 add_subdirectory (test)
 
 INCLUDE (InstallRequiredSystemLibraries)
