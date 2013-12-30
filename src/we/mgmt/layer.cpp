@@ -248,8 +248,28 @@ namespace we
     void layer::async_remove_queue::apply
       (id_type id, boost::function<void (activity_data_type&)> fun)
     {
-      remove_and_apply
-        (id, boost::bind (&async_remove_queue::apply_callback, this, _1, fun));
+      boost::mutex::scoped_lock const container_lock (_container_mutex);
+      boost::mutex::scoped_lock const to_be_removed_lock (_to_be_removed_mutex);
+
+      std::list<activity_data_type>::iterator pos
+        ( std::find_if ( _container.begin(), _container.end()
+                       , boost::bind (&activity_data_type::_id, _1) == id
+                       )
+        );
+
+      if (pos != _container.end())
+      {
+        fun (*pos);
+      }
+      else
+      {
+        _to_be_removed.insert
+          ( std::make_pair
+            ( id
+            , boost::bind (&async_remove_queue::apply_callback, this, _1, fun)
+            )
+          );
+      }
     }
     void layer::async_remove_queue::apply_callback
       ( activity_data_type activity_data
