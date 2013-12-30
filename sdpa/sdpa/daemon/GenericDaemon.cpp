@@ -530,7 +530,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
  * to notify the GS about activity status transitions.
  */
 void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
-                          , const we::mgmt::layer::encoded_type& desc
+                          , const we::mgmt::type::activity_t& activity
                           , const requirement_list_t& req_list
                           , const we::type::schedule_data& schedule_data
                           , const we::type::user_data& user_data
@@ -565,7 +565,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
   jobManager().addJobRequirements(job_id, jobReqs);
 
   // don't forget to set here the job's preferences
-  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
+  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string(), parent_id) );
   sendEventToSelf(pEvtSubmitJob);
 
   _.dont();

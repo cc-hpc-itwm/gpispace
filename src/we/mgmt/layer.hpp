@@ -84,7 +84,7 @@ namespace we
 
     private:
       boost::function<void ( id_type const &
-                           , encoded_type const &
+                           , type::activity_t const &
                            , const std::list<we::type::requirement_t>&
                            , const we::type::schedule_data&
                            , const we::type::user_data &
@@ -100,7 +100,7 @@ namespace we
           );
 
         _rts_submit_IMPL ( id
-                         , act.to_string()
+                         , act
                          , act.transition().requirements()
                          , schedule_data
                          , user_data

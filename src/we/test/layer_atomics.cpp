@@ -40,13 +40,13 @@ struct daemon_t
   {}
 
   void submit ( const id_type & id
-              , const std::string &enc
+              , const we::mgmt::type::activity_t & act
               , requirement_list_t req_list = requirement_list_t()
               , const we::type::schedule_data& = we::type::schedule_data()
               , const we::type::user_data& = we::type::user_data ()
               )
   {
-    layer.finished (id, we::mgmt::type::activity_t (enc));
+    layer.finished (id, act);
   }
 
   bool cancel (const id_type &, const std::string &)

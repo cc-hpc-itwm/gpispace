@@ -234,13 +234,13 @@ namespace
     }
 
     void submit ( const we::mgmt::layer::id_type& id
-                , const std::string& desc
+                , const we::mgmt::type::activity_t& act
                 , std::list<we::type::requirement_t> const&
                 , const we::type::schedule_data&
                 , const we::type::user_data&
                 )
     {
-      jobs_.put (job_t (id, we::mgmt::type::activity_t (desc)));
+      jobs_.put (job_t (id, act));
     }
 
     void cancel (const we::mgmt::layer::id_type& id, const std::string& desc)
