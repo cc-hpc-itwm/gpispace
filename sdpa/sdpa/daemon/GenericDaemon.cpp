@@ -729,8 +729,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
        m_guiService->notify (evt);
       }
 
-      we::type::user_data job_data;
-      workflowEngine()->submit (wf_id, act, job_data);
+      workflowEngine()->submit (wf_id, act);
     }
   }
   catch(const NoWorkflowEngine& ex)
