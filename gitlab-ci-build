@@ -122,7 +122,7 @@ cleanup()
 }
 trap cleanup EXIT
 
-cd "${builddir}" && cmake -DCMAKE_INSTALL_PREFIX="${instdir}" "${opts[@]}"
+cd "${builddir}" && cmake -DCMAKE_INSTALL_PREFIX="${instdir}" "${opts[@]}" "${srcdir}"
 ec=$?
 if [ $ec -ne 0 ]
 then
