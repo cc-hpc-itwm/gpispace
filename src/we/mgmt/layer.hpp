@@ -68,11 +68,6 @@ namespace we
       void cancel (const id_type&, const reason_type&);
 
       // reply to _rts_submit -> childs only
-      //! \todo only use un-encoded activity
-      void finished_DEPRECATED (const id_type& id, const result_type& result)
-      {
-        finished (id, type::activity_t (result));
-      }
       void finished ( const id_type&
                     , const type::activity_t&
                     );

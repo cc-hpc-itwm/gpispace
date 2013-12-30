@@ -119,7 +119,8 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
           if(scheduler()->groupFinished(actId))
           {
             pJob->JobFinished(pEvt);
-            workflowEngine()->finished_DEPRECATED(actId, pEvt->result());
+            workflowEngine()->finished
+              (actId, we::mgmt::type::activity_t (pEvt->result()));
           }
           else
           {
