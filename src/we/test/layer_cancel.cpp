@@ -5,7 +5,6 @@
 
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/type/schedule_data.hpp>
 #include <we/type/transition.hpp>
 
 #include <we/type/module_call.hpp>
@@ -42,7 +41,6 @@ struct daemon_t
 
   void submit ( const id_type & id
               , we::mgmt::type::activity_t const&
-              , const we::type::schedule_data&
               , const we::mgmt::layer::id_type& parent_id
               )
   {

@@ -97,7 +97,6 @@ namespace sdpa {
       // WE interface
       void submit( const we::mgmt::layer::id_type & id
                  , const we::mgmt::type::activity_t&
-                         , const we::type::schedule_data&
                  , const we::mgmt::layer::id_type& parent_id
                          );
       bool cancel(const we::mgmt::layer::id_type & id, const we::mgmt::layer::reason_type& reason);

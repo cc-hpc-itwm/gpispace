@@ -3,7 +3,6 @@
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/type/schedule_data.hpp>
 
 #include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
@@ -234,7 +233,6 @@ namespace
 
     void submit ( const we::mgmt::layer::id_type& id
                 , const we::mgmt::type::activity_t& act
-                , const we::type::schedule_data&
                 , const we::mgmt::layer::id_type& parent_id
                 )
     {
