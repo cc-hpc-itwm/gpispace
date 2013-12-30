@@ -34,18 +34,15 @@ namespace we
               )
 
           // external activities from submitted net -> child jobs
-          //! \todo use un-encoded activity
           : _rts_submit_IMPL (boost::bind (&RTS::submit, runtime_system, _1, _2, _3, _4, _5))
 
           // reply to cancel (parent)/on failure (child) -> child jobs
           , _rts_cancel (boost::bind (&RTS::cancel, runtime_system, _1, _2))
 
           // reply to submit -> top level
-          //! \todo use un-encoded activity
           , _rts_finished (boost::bind (&RTS::finished, runtime_system, _1, _2))
 
           // reply to submit (on failure of child) -> top level
-          //! \todo use un-encoded activity
           , _rts_failed (boost::bind (&RTS::failed, runtime_system, _1, _2, _3))
 
           // reply to cancel (parent) -> child jobs
