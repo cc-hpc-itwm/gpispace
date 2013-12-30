@@ -8,8 +8,6 @@
 
 #include <we/expr/token/type.hpp>
 
-#include <fhg/util/macros.hpp>
-
 #include <list>
 #include <stdexcept>
 
@@ -17,6 +15,12 @@ namespace pnet
 {
   namespace exception
   {
+#define MEMBER(_name, _type...)                           \
+    public:                                               \
+      const _type& _name() const { return _ ## _name; }   \
+    private:                                              \
+      _type _ ## _name
+
     class type_error : public std::runtime_error
     {
     public:
@@ -111,6 +115,8 @@ namespace pnet
         MEMBER (port_name, std::string);
       };
     }
+
+#undef MEMBER
   }
 }
 

@@ -1,8 +1,6 @@
 #ifndef WE_LOADER_EXCEPTIONS_HPP
 #define WE_LOADER_EXCEPTIONS_HPP 1
 
-#include <fhg/util/macros.hpp>
-
 #include <boost/format.hpp>
 
 #include <stdexcept>
@@ -11,6 +9,12 @@ namespace we
 {
   namespace loader
   {
+#define MEMBER(_name, _type...)                           \
+    public:                                               \
+      const _type& _name() const { return _ ## _name; }   \
+    private:                                              \
+      _type _ ## _name
+
     class module_load_failed : public std::runtime_error
     {
     public:
@@ -107,6 +111,7 @@ namespace we
       MEMBER (module, std::string);
       MEMBER (name, std::string);
     };
+#undef MEMBER
   }
 }
 

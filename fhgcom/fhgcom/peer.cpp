@@ -75,11 +75,6 @@ namespace fhg
       }
     }
 
-    std::string peer_t::hostname()
-    {
-      return boost::asio::ip::host_name();
-    }
-
     peer_t::handler_t peer_t::set_kvs_error_handler (handler_t h)
     {
       handler_t old = m_kvs_error_handler;

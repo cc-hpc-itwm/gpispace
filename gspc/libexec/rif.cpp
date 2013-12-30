@@ -2,10 +2,10 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
+#include <fhg/util/hostname.hpp>
 #include <fhg/util/read.hpp>
 #include <fhg/util/split.hpp>
 
-#include <unistd.h> // gethostname
 #include <algorithm>
 #include <cctype>
 
@@ -24,22 +24,6 @@
 
 class RifImpl;
 static RifImpl *s_rif = 0;
-
-namespace detail
-{
-  static std::string get_hostname ()
-  {
-    char buf [4096];
-    ::gethostname (buf, sizeof(buf));
-    return std::string (buf);
-  }
-}
-
-static std::string const &s_gethostname ()
-{
-  static std::string h (detail::get_hostname ());
-  return h;
-}
 
 static void s_handle_rif ( std::string const &dst
                          , gspc::net::frame const &rqst
@@ -776,7 +760,7 @@ void s_handle_rif ( std::string const &dst
   {
     std::stringstream sstr;
 
-    sstr << "GspcRIFD running on " << s_gethostname () << " as " << getpid ()
+    sstr << "GspcRIFD running on " << fhg::util::hostname() << " as " << getpid ()
          << std::endl
       ;
 

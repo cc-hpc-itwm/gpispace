@@ -3,6 +3,7 @@
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
+#include <fhg/util/hostname.hpp>
 #include <fhg/util/now.hpp>
 
 #include <boost/foreach.hpp>
@@ -17,29 +18,12 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#include <unistd.h>
 #include <sys/syscall.h>
 
 namespace fhg
 {
   namespace log
   {
-    namespace
-    {
-      std::string get_hostname_ ()
-      {
-        char buf [4096];
-        gethostname (buf, sizeof(buf));
-        return buf;
-      }
-
-      std::string get_hostname ()
-      {
-        static std::string h (get_hostname_ ());
-        return h;
-      }
-    }
-
     LogEvent::LogEvent( const Level &a_severity
                       , const file_type &a_path
                       , const function_type &a_function
@@ -55,7 +39,7 @@ namespace fhg
       , tstamp_(fhg::util::now())
       , pid_(getpid())
       , tid_(syscall (SYS_gettid))
-      , host_ (get_hostname ())
+      , host_ (fhg::util::hostname())
       , trace_ ()
       , tags_ (tags)
     {}

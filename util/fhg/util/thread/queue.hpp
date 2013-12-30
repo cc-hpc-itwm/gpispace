@@ -22,11 +22,8 @@ namespace fhg
       T get()
       {
         boost::unique_lock<boost::recursive_mutex> lock(m_mtx);
-        m_get_cond.wait ( lock
-                        , boost::bind ( &queue<T>::is_element_available
-                                      , this
-                                      )
-                        );
+        m_get_cond.wait
+          (lock, not boost::bind (&container_type::empty, &m_container));
 
         T t (m_container.front()); m_container.pop_front();
         return t;
@@ -81,11 +78,6 @@ namespace fhg
         m_container.clear();
       }
     private:
-      bool is_element_available() const
-      {
-        return not m_container.empty ();
-      }
-
       mutable boost::recursive_mutex m_mtx;
       boost::condition_variable_any m_get_cond;
 

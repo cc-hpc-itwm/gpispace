@@ -19,8 +19,9 @@
 #ifndef SDPA_ID_GENERATOR_HPP
 #define SDPA_ID_GENERATOR_HPP 1
 
+#include <fhg/util/hostname.hpp>
 #include <sys/types.h> // pid_t
-#include <unistd.h> // gethostname, getpid
+#include <unistd.h> // getpid
 #include <string.h> // memset
 #include <time.h>   // time
 #include <boost/thread/mutex.hpp>
@@ -70,12 +71,8 @@ namespace sdpa {
       : mtx_ ()
       , m_count (0)
     {
-      char hbuf [1024];
-      memset (hbuf, 0, sizeof(hbuf));
-      gethostname (hbuf, sizeof(hbuf)-1);
-
       std::ostringstream sstr;
-      sstr << hbuf << "." << Tag::name () << "." << time (0) << "." << getpid();
+      sstr << fhg::util::hostname() << "." << Tag::name () << "." << time (0) << "." << getpid();
 
       m_id_prefix = sstr.str ();
     }

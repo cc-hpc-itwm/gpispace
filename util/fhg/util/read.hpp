@@ -6,10 +6,7 @@
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
 
-#include <sstream>
-#include <stdexcept>
-#include <ios>
-#include <typeinfo>
+#include <string>
 
 namespace fhg
 {
