@@ -7,6 +7,8 @@
 
 #include <fhglog/fhglog.hpp>
 
+#include <iostream>
+
 namespace gspc
 {
   namespace ctl
