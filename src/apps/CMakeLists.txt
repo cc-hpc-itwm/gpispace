@@ -1,5 +1,7 @@
 include (fhg_executable_macros)
 
+include_directories (${CMAKE_SOURCE_DIR}/sdpa)
+
 fhg_add_runtime_executable (
   we-exec.cpp
   LINK_LIBRARIES fhg-revision
