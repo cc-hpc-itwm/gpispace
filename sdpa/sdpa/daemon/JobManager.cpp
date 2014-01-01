@@ -107,7 +107,7 @@ namespace sdpa
           {
             sdpa::events::JobFailedEvent::Ptr pEvtJobFailed
               ( new sdpa::events::JobFailedEvent
-                (pComm->name(), job->owner(), job->id(), job->result())
+                (pComm->name(), job->owner(), job->id())
               );
             pComm->sendEventToOther(pEvtJobFailed);
           }

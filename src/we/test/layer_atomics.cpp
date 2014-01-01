@@ -2,8 +2,6 @@
 #include <stdint.h>
 
 #include <we/mgmt/layer.hpp>
-#include <we/type/requirement.hpp>
-#include <we/type/schedule_data.hpp>
 
 #include <we/type/module_call.hpp>
 #include <we/type/expression.hpp>
@@ -18,8 +16,6 @@
 typedef std::string id_type;
 
 typedef we::mgmt::layer layer_t;
-
-typedef std::list<we::type::requirement_t> requirement_list_t;
 
 static inline id_type generate_id ()
 {
@@ -40,13 +36,11 @@ struct daemon_t
   {}
 
   void submit ( const id_type & id
-              , const std::string &enc
-              , requirement_list_t req_list = requirement_list_t()
-              , const we::type::schedule_data& = we::type::schedule_data()
-              , const we::type::user_data& = we::type::user_data ()
+              , const we::mgmt::type::activity_t & act
+              , const we::mgmt::layer::id_type& parent_id
               )
   {
-    layer.finished (id, enc);
+    layer.finished (id, act);
   }
 
   bool cancel (const id_type &, const std::string &)
@@ -54,13 +48,12 @@ struct daemon_t
     return false;
   }
 
-  bool finished (const id_type &, const std::string &)
+  bool finished (const id_type &, we::mgmt::type::activity_t const&)
   {
     return false;
   }
 
   bool failed( const id_type & id
-             , const std::string & result
              , const int error_code
              , const std::string & reason
              )
@@ -90,7 +83,7 @@ int main ()
       , we::type::property::type()
       );
     we::mgmt::type::activity_t act (mod_call);
-    layer.submit (generate_id(), act, we::type::user_data ());
+    layer.submit (generate_id(), act);
 
     sleep (1);
   }
@@ -104,7 +97,7 @@ int main ()
       , we::type::property::type()
       );
     we::mgmt::type::activity_t act (expr);
-    layer.submit (generate_id(), act, we::type::user_data ());
+    layer.submit (generate_id(), act);
 
     sleep (1);
   }

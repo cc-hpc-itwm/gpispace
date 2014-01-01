@@ -1,27 +1,13 @@
-// alexander.petry@itwm.fraunhofer.de
+// {mirko.rahn,bernd.loerwald}@itwm.fraunhofer.de
 
 #ifndef WE_MGMT_LAYER_HPP
 #define WE_MGMT_LAYER_HPP 1
 
-#include <we/mgmt/bits/descriptor.hpp>
-#include <we/mgmt/bits/execution_policy.hpp>
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
-#include <we/type/requirement.hpp>
-#include <we/type/user_data.hpp>
 #include <we/type/schedule_data.hpp>
 
-#include <fhg/assert.hpp>
-#include <fhg/error_codes.hpp>
-#include <fhg/util/show.hpp>
-#include <fhg/util/thread/queue.hpp>
-#include <fhg/util/threadname.hpp>
-
-#include <fhglog/fhglog.hpp>
-
-#include <boost/foreach.hpp>
-#include <boost/format.hpp>
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
@@ -35,251 +21,158 @@ namespace we
     {
     public:
       typedef std::string id_type;
-
-      typedef std::string external_id_type;
-      typedef petri_net::activity_id_type internal_id_type;
-
       typedef std::string encoded_type;
       typedef std::string reason_type;
       typedef std::string result_type;
 
-    private:
-      typedef boost::unordered_map<external_id_type, internal_id_type> external_to_internal_map_t;
+      //! \todo pass in functions, not RTS
+      template <class RTS>
+        layer ( RTS* runtime_system
+              , boost::function<id_type()> gen
+              )
 
-      typedef boost::unordered_map< internal_id_type
-                                  , detail::descriptor
-                                  > activities_t;
+          // external activities from submitted net -> child jobs
+          : _rts_submit (boost::bind (&RTS::submit, runtime_system, _1, _2, _3))
 
-      //! \todo is it necessary to use a locked data structure?
-      typedef fhg::thread::queue<internal_id_type> active_nets_t;
+          // reply to cancel (parent)/on failure (child) -> child jobs
+          , _rts_cancel (boost::bind (&RTS::cancel, runtime_system, _1, _2))
 
-      typedef boost::unique_lock<boost::recursive_mutex> lock_t;
+          // reply to submit -> top level
+          , _rts_finished (boost::bind (&RTS::finished, runtime_system, _1, _2))
 
-    public:
+          // reply to submit (on failure of child) -> top level
+          , _rts_failed (boost::bind (&RTS::failed, runtime_system, _1, _2, _3))
 
-      /******************************
-       * EXTERNAL API
-       *****************************/
+          // reply to cancel (parent) -> child jobs
+          , _rts_canceled (boost::bind (&RTS::canceled, runtime_system, _1))
 
-      /**
-       * Submit a new petri net to the petri-net management layer
-       *
-       *          pre-conditions: none
-       *
-       *          side-effects: parses the passed data
-       *                                        registeres the petri-net with the mgmt layer
-       *
-       *          post-conditions: the net is registered is with id "id"
-       *
-       */
-      void submit (const external_id_type&, const encoded_type&, const we::type::user_data &);
-      void submit (const external_id_type&, const we::mgmt::type::activity_t&, const we::type::user_data &);
+          , _extract_from_nets_thread (&layer::extract_from_nets, this)
+          , _id_generator (gen)
+      {}
 
-      /**
-       * Inform the management layer to cancel a previously submitted net
-       *
-       *          pre-conditions:
-       *                - a  network  must have  been registered  and
-       *                  assigned the id "id"
-       *
-       *          side-effects:
-       *                -  the  hierarchy   belonging  to  the  net  is
-       *                   canceled in turn
-       *
-       *          post-conditions:
-       *
-       *                - the  internal   state  of  the   network  switches  to
-       *                  CANCELING
-       *                - all children of the network will be terminated
-       */
-      void cancel (const external_id_type&, const reason_type&);
+      ~layer();
 
-      /**
-       * Inform the management  layer that an execution finished  with the given
-       * result
-       *
-       *          pre-conditions:
-       *
-       *              - the  management  layer   submitted  an  activity  to  be
-       *                executed with id "id"
-       *
-       *          side-effects:
-       *
-       *              - the results are integrated into the referenced net
-       *
-       *          post-conditions:
-       *
-       *               - the node belonging to this is activity is removed
-       **/
-      void finished (const external_id_type&, const result_type&);
 
-      /**
-       * Inform the  management layer  that an execution  failed with  the given
-       * result
-       *
-       *          pre-conditions:
-       *
-       *               - the  management  layer  submitted  an  activity  to  be
-       *                 executed with id "id"
-       *
-       *          side-effects:
-       *
-       *               - the results are integrated into the referenced net
-       *
-       *          post-conditions:
-       *
-       *                - the node belonging to this activity is removed
-       **/
-      void failed ( const external_id_type&
-                  , const result_type&
-                  , const int error_code
-                  , const std::string&
-                  );
+      // initial from exec_layer -> top level
+      void submit (const id_type&, const type::activity_t&);
 
-      /**
-       * Inform the management layer that an execution has been canceled
-       *
-       *          pre-conditions:
-       *                  - the management layer submitted an activity to be executed with id "id"
-       *                  - the management layer requested the cancellation of an activity
-       *
-       *          side-effects:
-       *                  - the enclosing workflow will be informed that an activity has been canceled
-       *
-       *          post-conditions:
-       *                  - the node belonging to this activity is removed
-       **/
-      void canceled (const external_id_type&);
+      // initial from exec_layer -> top level
+      void cancel (const id_type&, const reason_type&);
 
-      // END: EXTERNAL API
+      // reply to _rts_submit -> childs only
+      void finished (const id_type&, const type::activity_t&);
+
+      // reply to _rts_submit -> childs only
+      void failed (const id_type&, const int error_code, const std::string& msg);
+
+      // reply to _rts_cancel (after top level canceled/failure) -> childs only
+      void canceled (const id_type&);
+
 
     private:
-      // handle execution layer
-      boost::function<void ( external_id_type const &
-                           , encoded_type const &
-                           , const std::list<we::type::requirement_t>&
-                           , const we::type::schedule_data&
-                           , const we::type::user_data &
-                           )> ext_submit;
-      boost::function<void ( external_id_type const &
+      boost::function<void ( id_type const &
+                           , type::activity_t const &
+                           , id_type const& parent
+                           )> _rts_submit;
+
+      boost::function<void ( id_type const &
                            , reason_type const &
-                           )>  ext_cancel;
-      boost::function<void ( external_id_type const &
-                           , result_type const &
-                           )>  ext_finished;
-      boost::function<void ( external_id_type const &
-                           , result_type const &
+                           )> _rts_cancel;
+
+      boost::function<void ( id_type const &
+                           , type::activity_t const &
+                           )> _rts_finished;
+
+      boost::function<void ( id_type const &
                            , const int error_code
                            , std::string const & reason
-                           )>  ext_failed;
-      boost::function<void (external_id_type const &)> ext_canceled;
+                           )> _rts_failed;
 
-      void submit (const detail::descriptor & desc);
+      boost::function<void (id_type const &)> _rts_canceled;
 
-      void add_map_to_internal ( const external_id_type & external_id
-                               , const internal_id_type & internal_id
-                               );
-
-      void del_map_to_internal ( const external_id_type & external_id
-                               , const internal_id_type & internal_id
-                               );
-
-      void del_map_to_internal (const internal_id_type & internal_id);
-
-      external_to_internal_map_t::mapped_type map_to_internal ( const external_id_type & external_id ) const;
-    public:
-      template <class E>
-        layer (E* exec_layer, boost::function<external_id_type()> gen)
-          : ext_submit (boost::bind (&E::submit, exec_layer, _1, _2, _3, _4, _5))
-          , ext_cancel (boost::bind (&E::cancel, exec_layer, _1, _2))
-          , ext_finished (boost::bind (&E::finished, exec_layer, _1, _2))
-          , ext_failed (boost::bind (&E::failed, exec_layer, _1, _2, _3, _4))
-          , ext_canceled (boost::bind (&E::canceled, exec_layer, _1))
-          , external_id_gen_ (gen)
-          , internal_id_gen_ (&petri_net::activity_id_generate)
-          , executor_ (boost::bind (&layer::executor, this))
+      //! \todo test the embedded data structures
+      struct activity_data_type
       {
-        fhg::util::set_threadname (executor_, "[we-execute]");
-      }
+        activity_data_type (id_type id, type::activity_t activity)
+          : _id (id)
+          , _activity (activity)
+        {}
 
-      ~layer()
+        boost::optional<type::activity_t>
+          fire_internally_and_extract_external();
+        void child_finished (const type::activity_t&);
+
+        id_type _id;
+        type::activity_t _activity;
+
+        boost::mt19937 _random_extraction_engine;
+      };
+
+      struct async_remove_queue
       {
-        executor_.interrupt();
-        if (executor_.joinable())
-        {
-          executor_.join();
-        }
+        activity_data_type get();
+        void put (activity_data_type activity_data, bool);
 
-        if (not activities_.empty ())
-        {
-          DMLOG (WARN, "#" << activities_.size () << " activities remaining:");
-          activities_t::const_iterator it = activities_.begin ();
-          const activities_t::const_iterator end = activities_.end ();
-          while (it != end)
-          {
-            DMLOG (WARN, it->second);
-            ++it;
-          }
-        }
+        void remove_and_apply
+          (id_type, boost::function<void (activity_data_type)>);
+        void apply (id_type, boost::function<void (activity_data_type&)>);
 
-        if (not ext_to_int_.empty ())
-        {
-          DMLOG (WARN, "#" << ext_to_int_.size () << " mappings remaining:");
-          external_to_internal_map_t::iterator it = ext_to_int_.begin ();
-          const external_to_internal_map_t::iterator end = ext_to_int_.end ();
+      private:
+        mutable boost::mutex _container_mutex;
+        //! \todo measure performance, remove uses std::find_if,
+        //! possibly accelerate with additional map<id_type, list::iterator>
+        std::list<activity_data_type> _container;
+        std::list<activity_data_type> _container_inactive;
 
-          while (it != end)
-          {
-            DMLOG (WARN, it->first << " -> " << it->second);
-            ++it;
-          }
-        }
-      }
+        boost::condition_variable_any _condition_non_empty;
 
-    private:
-      void execute_externally (const internal_id_type & int_id);
+        mutable boost::mutex _to_be_removed_mutex;
+        typedef boost::unordered_multimap< id_type
+                                         , boost::function<void (activity_data_type)>
+                                         > to_be_removed_type;
+        to_be_removed_type _to_be_removed;
 
-      void executor ();
+        void apply_callback
+          (activity_data_type, boost::function<void (activity_data_type&)>);
+      } _nets_to_extract_from;
 
-      detail::descriptor & do_extract (detail::descriptor & parent);
+      void extract_from_nets();
+      boost::thread _extract_from_nets_thread;
 
-      void do_execute (detail::descriptor& desc);
+      void request_cancel ( const id_type&
+                          , boost::function<void()> after
+                          , reason_type const&
+                          );
+      void cancel_child_jobs ( activity_data_type
+                             , boost::function<void()> after
+                             , reason_type const&
+                             );
 
-      bool is_valid (const internal_id_type & id) const;
+      boost::unordered_map<id_type, boost::function<void()> >
+        _finalize_job_cancellation;
 
-      void do_inject (detail::descriptor& desc);
-    private:
-      boost::function<external_id_type()> external_id_gen_;
-      boost::function<internal_id_type()> internal_id_gen_;
-      mutable boost::recursive_mutex mutex_;
-      mutable boost::recursive_mutex id_gen_mutex_;
-      activities_t activities_;
-
-      active_nets_t active_nets_;
-
-      external_to_internal_map_t ext_to_int_;
-      std::set<internal_id_type> _to_be_removed;
-
-      boost::thread executor_;
-
-      external_id_type generate_external_id (void) const
+      struct locked_parent_child_relation_type
       {
-        boost::unique_lock<boost::recursive_mutex> lock (id_gen_mutex_);
-        return external_id_gen_();
-      }
+        void started (id_type parent, id_type child);
+        bool terminated (id_type parent, id_type child);
 
-      internal_id_type generate_internal_id (void) const
-      {
-        boost::unique_lock<boost::recursive_mutex> lock (id_gen_mutex_);
-        return internal_id_gen_();
-      }
+        boost::optional<id_type> parent (id_type child);
+        bool contains (id_type parent) const;
 
-      void activity_failed (internal_id_type const internal_id);
-      void activity_canceled (internal_id_type const internal_id);
-      void cancel_activity (internal_id_type const internal_id);
-      void insert_activity(const detail::descriptor & desc);
-      void remove_activity(const detail::descriptor & desc);
-      detail::descriptor& lookup (const internal_id_type& id);
+        void apply (id_type parent, boost::function<void (id_type)>) const;
+
+      private:
+        mutable boost::mutex _relation_mutex;
+        //! \todo measure performance, parent is reverse, boost::bimap
+        typedef boost::unordered_map<id_type, boost::unordered_set<id_type> >
+          relation_type;
+        relation_type _relation;
+      } _running_jobs;
+
+      boost::function<id_type()> _id_generator;
+
+      void finalize_finished
+        (activity_data_type&, type::activity_t, id_type parent, id_type child);
     };
   }
 }

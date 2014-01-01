@@ -185,7 +185,6 @@ int main (int, char **)
   while (act.can_fire())
   {
     activity_t sub = act.extract ();
-    sub.inject_input ();
 
     exec_context ctxt;
     sub.execute (&ctxt);

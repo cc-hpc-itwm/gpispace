@@ -19,24 +19,9 @@ namespace petri_net
   }
 
   INVALID (place_id)
-  INVALID (activity_id)
   INVALID (transition_id)
 
   INVALID (priority)
 
 #undef INVALID
-
-#define GENERATE(_prefix)                               \
-  _prefix ## _type _prefix ## _generate()               \
-  {                                                     \
-    static _prefix ## _type v (0);                      \
-    static boost::mutex mtx;                            \
-                                                        \
-    boost::lock_guard<boost::mutex> lock (mtx);         \
-                                                        \
-    return v++;                                         \
-  }
-
-  GENERATE (activity_id)
-#undef GENERATE
 }

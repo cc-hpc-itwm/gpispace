@@ -20,7 +20,6 @@ make_gen='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
 
 cleanup()
 {
-  sdpa stop
   rm -rf "${CMP}" "${DAT}" "${HOSTFILE}"
   eval ${make_src} clean
   eval ${make_gen} clean

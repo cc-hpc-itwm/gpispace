@@ -292,7 +292,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     }
     else
     {
-        workflowEngine()->failed(job_id, "",  fhg::error::UNEXPECTED_ERROR, ex.what());
+        workflowEngine()->failed (job_id, fhg::error::UNEXPECTED_ERROR, ex.what());
     }
     return;
   }
@@ -530,33 +530,33 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
  * to notify the GS about activity status transitions.
  */
 void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
-                          , const we::mgmt::layer::encoded_type& desc
-                          , const requirement_list_t& req_list
-                          , const we::type::schedule_data& schedule_data
-                          , const we::type::user_data& user_data
+                          , const we::mgmt::type::activity_t& activity
+                          , const we::mgmt::layer::id_type& parent_id
                           )
 {
-  job_requirements_t jobReqs(req_list, schedule_data);
+  const we::type::schedule_data schedule_data
+    ( activity.transition().get_schedule_data<long> (activity.input(), "num_worker")
+    , activity.transition().get_schedule_data<long> (activity.input(), "vmem")
+    );
+  job_requirements_t jobReqs(activity.transition().requirements(), schedule_data);
 
   DMLOG(TRACE, "workflow engine submitted "<<activityId);
 
   job_id_t job_id(activityId);
-  job_id_t parent_id(user_data.get_user_job_identification());
 
   if( schedule_data.num_worker() && schedule_data.num_worker().get()<=0)
   {
-      workflowEngine()->we::mgmt::layer::failed(  activityId
-                                                  , ""
-                                                  , fhg::error::UNEXPECTED_ERROR
-                                                  , "Invalid number of workers required: "
-                                                  +boost::lexical_cast<std::string>( schedule_data.num_worker().get()));
+      workflowEngine()->failed (  activityId
+                               , fhg::error::UNEXPECTED_ERROR
+                               , "Invalid number of workers required: "
+                               +boost::lexical_cast<std::string>( schedule_data.num_worker().get()));
 
 
         return;
     }
 
   on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed, workflowEngine()
-                              , activityId, desc
+                              , activityId
                               , fhg::error::UNEXPECTED_ERROR
                               , "Exception in GenericDaemon::submit()"
                               )
@@ -566,7 +566,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
   jobManager().addJobRequirements(job_id, jobReqs);
 
   // don't forget to set here the job's preferences
-  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, desc, parent_id) );
+  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string(), parent_id) );
   sendEventToSelf(pEvtSubmitJob);
 
   _.dont();
@@ -602,7 +602,7 @@ bool GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId, const we:
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const we::mgmt::layer::result_type& result)
+bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const we::mgmt::type::activity_t& result)
 {
   DMLOG (TRACE, "activity finished: " << workflowId);
   // generate a JobFinishedEvent for self!
@@ -614,7 +614,7 @@ bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const w
   // call job.JobFinished(event);
 
   job_id_t job_id(workflowId);
-  events::JobFinishedEvent::Ptr pEvtJobFinished( new events::JobFinishedEvent( sdpa::daemon::WE, name(), job_id, result ));
+  events::JobFinishedEvent::Ptr pEvtJobFinished( new events::JobFinishedEvent( sdpa::daemon::WE, name(), job_id, result.to_string()));
   sendEventToSelf(pEvtJobFinished);
 
   // notify the GUI that the activity finished
@@ -627,7 +627,6 @@ bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const w
  * from running to failed).
  */
 bool GenericDaemon::failed( const we::mgmt::layer::id_type& workflowId
-                          , const we::mgmt::layer::result_type & result
                           , int error_code
                           , std::string const & reason
                           )
@@ -645,7 +644,6 @@ bool GenericDaemon::failed( const we::mgmt::layer::id_type& workflowId
     (new events::JobFailedEvent ( sdpa::daemon::WE
                         , name()
                         , job_id
-                        , result
                         , error_code
                         , reason
                         )
@@ -687,7 +685,6 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
                                 , events::JobFailedEvent::Ptr ( new events::JobFailedEvent ( sdpa::daemon::WE
                                                                            , name()
                                                                            , jobId
-                                                                           , "exception"
                                                                            , fhg::error::UNEXPECTED_ERROR
                                                                            , "Exception in GenericDaemon::submitWorkflow()"
                                                                            )
@@ -710,7 +707,6 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
               (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
                                  , jobId
-                                 , ""
                                  , fhg::error::UNEXPECTED_ERROR
                                  , "the job has an empty workflow attached!"
                                  )
@@ -720,10 +716,10 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
     }
     else
     {
+      const we::mgmt::type::activity_t act (pJob->description());
       if (m_guiService)
       {
        std::list<std::string> workers; workers.push_back (name());
-       const we::mgmt::type::activity_t act (pJob->description());
        const sdpa::daemon::NotificationEvent evt
        ( workers
           , jobId.str()
@@ -734,22 +730,17 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
        m_guiService->notify (evt);
       }
 
-      we::type::user_data job_data;
-      job_data.set_user_job_identification(jobId);
-      // actually, this information redundant because wf_id == job_data.get_user_job_identification()!
-      workflowEngine()->submit (wf_id, pJob->description(), job_data);
+      workflowEngine()->submit (wf_id, act);
     }
   }
   catch(const NoWorkflowEngine& ex)
   {
     SDPA_LOG_ERROR("No workflow engine is available!");
-    sdpa::job_result_t result(ex.what());
 
     events::JobFailedEvent::Ptr pEvtJobFailed
       (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
                                  , jobId
-                                 , result
                                  , fhg::error::UNEXPECTED_ERROR
                                  , "no workflow engine attached!"
                                  )
@@ -759,13 +750,11 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
   catch(const JobNotFoundException& ex)
   {
     SDPA_LOG_ERROR("Couldn't find the job "<<ex.job_id());
-    sdpa::job_result_t result(ex.what());
 
     events::JobFailedEvent::Ptr pEvtJobFailed
       (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
                                  , jobId
-                                 , result
                                  , fhg::error::UNEXPECTED_ERROR
                                  , "job could not be found"
                                  )
@@ -775,14 +764,12 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
   }
   catch(const std::exception& ex)
   {
-     SDPA_LOG_ERROR("Exception occurred. Failed to submit the job "<<jobId<<" to the workflow engine!");
-     sdpa::job_result_t result(ex.what());
+     SDPA_LOG_ERROR("Exception occurred: " << ex.what() << ". Failed to submit the job "<<jobId<<" to the workflow engine!");
 
      events::JobFailedEvent::Ptr pEvtJobFailed
        (new events::JobFailedEvent( sdpa::daemon::WE
                                   , name()
                                   , jobId
-                                  , result
                                   , fhg::error::UNEXPECTED_ERROR
                                   , ex.what()
                                   )
@@ -1112,7 +1099,6 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
             (new events::JobFailedEvent( name()
                                        , subscriber
                                        , pJob->id()
-                                       , pJob->result()
                                        , fhg::error::UNASSIGNED_ERROR
                                        , "TODO: take the error message from the job pointer somehow"
                                        )

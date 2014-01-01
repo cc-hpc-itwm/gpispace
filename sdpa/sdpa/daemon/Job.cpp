@@ -99,7 +99,6 @@ namespace sdpa {
     void Job::action_job_failed(const events::JobFailedEvent& evt )
     {
       lock_type lock(mtx_);
-      result_ = evt.result();
       m_error_code = evt.error_code();
       m_error_message = evt.error_message();
     }

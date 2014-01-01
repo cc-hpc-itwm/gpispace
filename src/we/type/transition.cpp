@@ -4,85 +4,23 @@
 
 #include <we/type/net.hpp>
 
+#include <fhg/util/boost/variant.hpp>
+
 namespace we
 {
   namespace type
   {
-    namespace
-    {
-      class visitor_expression
-        : public boost::static_visitor<boost::optional<const expression_t&> >
-      {
-      public:
-        boost::optional<const expression_t&>
-          operator() (const expression_t& e) const
-        {
-          return e;
-        }
-        boost::optional<const expression_t&>
-          operator() (const module_call_t&) const
-        {
-          return boost::none;
-        }
-        boost::optional<const expression_t&>
-          operator() (const petri_net::net&) const
-        {
-          return boost::none;
-        }
-      };
-      class visitor_net
-        : public boost::static_visitor<boost::optional<const petri_net::net&> >
-      {
-      public:
-        boost::optional<const petri_net::net&>
-          operator() (const expression_t&) const
-        {
-          return boost::none;
-        }
-        boost::optional<const petri_net::net&>
-          operator() (const module_call_t&) const
-        {
-          return boost::none;
-        }
-        boost::optional<const petri_net::net&>
-          operator() (const petri_net::net& n) const
-        {
-          return n;
-        }
-      };
-      class visitor_module_call
-        : public boost::static_visitor<boost::optional<const module_call_t&> >
-      {
-      public:
-        boost::optional<const module_call_t&>
-          operator() (const expression_t&) const
-        {
-          return boost::none;
-        }
-        boost::optional<const module_call_t&>
-          operator() (const module_call_t& m) const
-        {
-          return m;
-        }
-        boost::optional<const module_call_t&>
-          operator() (const petri_net::net&) const
-        {
-          return boost::none;
-        }
-      };
-    }
-
     boost::optional<const expression_t&> transition_t::expression() const
     {
-      return boost::apply_visitor (visitor_expression(), data());
+      return fhg::util::boost::get_or_none<const expression_t&> (data());
     }
     boost::optional<const petri_net::net&> transition_t::net() const
     {
-      return boost::apply_visitor (visitor_net(), data());
+      return fhg::util::boost::get_or_none<const petri_net::net&> (data());
     }
     boost::optional<const module_call_t&> transition_t::module_call() const
     {
-      return boost::apply_visitor (visitor_module_call(), data());
+      return fhg::util::boost::get_or_none<const module_call_t&> (data());
     }
 
     // ********************************************************************* //

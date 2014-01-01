@@ -5,8 +5,6 @@
 
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/type/requirement.hpp>
-#include <we/type/schedule_data.hpp>
 #include <we/type/transition.hpp>
 
 #include <we/type/module_call.hpp>
@@ -22,7 +20,6 @@
 typedef std::string id_type;
 
 typedef we::mgmt::layer layer_t;
-typedef std::list<we::type::requirement_t> requirement_list_t;
 
 static inline id_type generate_id ()
 {
@@ -43,14 +40,12 @@ struct daemon_t
   {}
 
   void submit ( const id_type & id
-              , const std::string &enc
-              , requirement_list_t req_list = requirement_list_t()
-              , const we::type::schedule_data& = we::type::schedule_data()
-              , const we::type::user_data& = we::type::user_data ()
+              , we::mgmt::type::activity_t const&
+              , const we::mgmt::layer::id_type& parent_id
               )
   {
     std::cout << "submitted id = " << id << std::endl;
-    layer.failed (id, enc, fhg::error::UNEXPECTED_ERROR, "test_layer_cancel");
+    layer.failed (id, fhg::error::UNEXPECTED_ERROR, "test_layer_cancel");
   }
 
   bool cancel (const id_type & id, const std::string &)
@@ -60,14 +55,13 @@ struct daemon_t
     return true;
   }
 
-  bool finished (const id_type & id, const std::string &)
+  bool finished (const id_type & id, we::mgmt::type::activity_t const&)
   {
     std::cout << "finished id = " << id << std::endl;
     return false;
   }
 
   bool failed( const id_type & id
-             , const std::string & /* result */
              , const int error_code
              , const std::string & reason
              )
@@ -103,7 +97,7 @@ int main ()
       , we::type::property::type()
       );
     we::mgmt::type::activity_t act (mod_call);
-    layer.submit (generate_id(), act, we::type::user_data ());
+    layer.submit (generate_id(), act);
 
     sleep (1);
   }
@@ -117,7 +111,7 @@ int main ()
       , we::type::property::type()
       );
     we::mgmt::type::activity_t act (expr);
-    layer.submit (generate_id(), act, we::type::user_data ());
+    layer.submit (generate_id(), act);
 
     sleep (1);
   }

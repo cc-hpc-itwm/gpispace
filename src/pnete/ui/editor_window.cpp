@@ -617,12 +617,9 @@ namespace fhg
 
           virtual int handle_internally (we::mgmt::type::activity_t& act, net_t&)
           {
-            act.inject_input();
-
             while (act.can_fire())
             {
               we::mgmt::type::activity_t sub (act.extract());
-              sub.inject_input();
               sub.execute (this);
               act.inject (sub);
             }
@@ -792,8 +789,6 @@ namespace fhg
           , const boost::filesystem::path& temporary_path
           )
         {
-          activity.inject_input();
-
           we::loader::loader loader;
           loader.append_search_path (temporary_path / "pnetc" / "op");
 
