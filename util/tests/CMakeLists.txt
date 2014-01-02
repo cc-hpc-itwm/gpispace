@@ -54,12 +54,6 @@ fhg_add_test(hex.cpp
   LINK_LIBRARIES fhg-util
 )
 
-fhg_add_test(read_show.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES fhg-util
-)
-
 fhg_add_test(pool.cpp
   BOOST_UNIT_TEST
   PROJECT util
