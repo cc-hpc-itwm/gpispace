@@ -15,7 +15,6 @@ set (hdrs
 
   join.hpp
   read_bool.hpp
-  read.hpp
   split.hpp
   starts_with.hpp
 
