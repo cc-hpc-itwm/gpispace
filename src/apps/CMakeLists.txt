@@ -17,20 +17,6 @@ fhg_add_runtime_executable (
 )
 
 fhg_add_runtime_executable (
-  we-eval.cpp
-  LINK_LIBRARIES fhg-revision
-                 pnet
-                 we-dev # for the client only
-                 ${FhgLog_LIBRARY}
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-                 ${CMAKE_DL_LIBS}
-)
-
-fhg_add_runtime_executable (
   pnetget.cpp
   LINK_LIBRARIES fhg-revision
                  pnet
