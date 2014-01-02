@@ -8,21 +8,21 @@ namespace we
 {
   namespace mgmt
   {
-    layer::layer ( boost::function<void ( id_type const&
+    layer::layer ( boost::function<void ( id_type
                                         , type::activity_t const&
-                                        , id_type const& parent
+                                        , id_type parent
                                         )> rts_submit
-                 , boost::function<void ( id_type const&
+                 , boost::function<void ( id_type
                                         , reason_type const&
                                         )> rts_cancel
-                 , boost::function<void ( id_type const&
+                 , boost::function<void ( id_type
                                         , type::activity_t const&
                                         )> rts_finished
-                 , boost::function<void ( id_type const&
+                 , boost::function<void ( id_type
                                         , const int error_code
                                         , std::string const& reason
                                         )> rts_failed
-                 , boost::function<void (id_type const &)> rts_canceled
+                 , boost::function<void (id_type)> rts_canceled
                  , boost::function<id_type()> rts_id_generator
                  )
       : _rts_submit (rts_submit)
@@ -121,7 +121,7 @@ namespace we
       }
     }
 
-    void layer::submit (const id_type& id, const type::activity_t& act)
+    void layer::submit (id_type id, const type::activity_t& act)
     {
       _nets_to_extract_from.put
         ( activity_data_type (id, act.transition().net() ? act : wrap (act))
@@ -130,7 +130,7 @@ namespace we
     }
 
     void layer::finished
-      (const id_type& id, const type::activity_t& result)
+      (id_type id, const type::activity_t& result)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       assert (parent);
@@ -151,12 +151,12 @@ namespace we
       _running_jobs.terminated (parent, child);
     }
 
-    void layer::cancel (const id_type& id, const reason_type& reason)
+    void layer::cancel (id_type id, const reason_type& reason)
     {
       request_cancel (id, boost::bind (_rts_canceled, id), reason);
     }
 
-    void layer::failed ( const id_type& id
+    void layer::failed ( id_type id
                        , const int error_code
                        , const std::string& reason
                        )
@@ -173,7 +173,7 @@ namespace we
         );
     }
 
-    void layer::request_cancel ( const id_type& id
+    void layer::request_cancel ( id_type id
                                , boost::function<void()> after
                                , reason_type const& reason
                                )
@@ -200,7 +200,7 @@ namespace we
       }
     }
 
-    void layer::canceled (const id_type& child)
+    void layer::canceled (id_type child)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (child));
       assert (parent);
