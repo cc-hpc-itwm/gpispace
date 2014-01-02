@@ -36,12 +36,6 @@ namespace we
         : _transition (transition)
       {}
 
-      activity_t::activity_t (const activity_t& other)
-	: _transition (other._transition)
-        , _input(other._input)
-        , _output (other._output)
-      {}
-
       namespace
       {
         void decode (std::istream& s, we::mgmt::type::activity_t& t)
@@ -85,18 +79,6 @@ namespace we
         decode (stream, *this);
       }
 
-      activity_t& activity_t::operator= (const activity_t& other)
-      {
-        if (this != &other)
-          {
-            _transition = (other._transition);
-            _input = (other._input);
-            _output = (other._output);
-          }
-
-        return *this;
-      }
-
       std::string activity_t::to_string() const
       {
         std::ostringstream oss;
@@ -133,8 +115,6 @@ namespace we
 
       activity_t activity_t::extract()
       {
-        unique_lock_t lock (_mutex);
-
         return boost::apply_visitor ( visitor_activity_extractor (_engine)
                                     , _transition.data()
                                     );
@@ -175,8 +155,6 @@ namespace we
 
       void activity_t::inject (const activity_t& subact)
       {
-        unique_lock_t lock (_mutex);
-
         boost::apply_visitor ( visitor_activity_injector (subact)
                              , _transition.data()
                              );
@@ -223,8 +201,6 @@ namespace we
         , pnet::type::value::value_type const& value
         )
       {
-        unique_lock_t const _ (_mutex);
-
         boost::apply_visitor ( visitor_add_input (_transition, port_id, value)
                              , _transition.data()
                              );
@@ -293,8 +269,6 @@ namespace we
 
       void activity_t::collect_output ()
       {
-        unique_lock_t lock (_mutex);
-
         boost::apply_visitor ( visitor_collect_output (*this)
                              , _transition.data()
                              );
@@ -302,13 +276,11 @@ namespace we
 
       const we::type::transition_t& activity_t::transition() const
       {
-        shared_lock_t lock (_mutex);
         return _transition;
       }
 
       we::type::transition_t& activity_t::transition()
       {
-        unique_lock_t lock (_mutex);
         return _transition;
       }
 
@@ -393,7 +365,6 @@ namespace we
 
       int activity_t::execute (context* ctxt)
       {
-        unique_lock_t lock (_mutex);
         return boost::apply_visitor
           (executor (*this, ctxt), transition().data());
       }
@@ -420,31 +391,26 @@ namespace we
 
       bool activity_t::can_fire() const
       {
-        shared_lock_t lock (_mutex);
         return boost::apply_visitor (visitor_can_fire(), transition().data());
       }
 
       const activity_t::input_t& activity_t::input() const
       {
-        shared_lock_t lock (_mutex);
         return _input;
       }
 
       const activity_t::output_t& activity_t::output() const
       {
-        shared_lock_t lock (_mutex);
         return _output;
       }
 
       void activity_t::set_output (const output_t& outp)
       {
-        unique_lock_t lock (_mutex);
         _output = outp;
       }
 
       void activity_t::add_output (const output_t::value_type& outp)
       {
-        unique_lock_t lock (_mutex);
         _output.push_back (outp);
       }
 
@@ -474,7 +440,6 @@ namespace we
 
       std::string activity_t::nice_name() const
       {
-        shared_lock_t lock (_mutex);
         return boost::apply_visitor (visitor_nice_name(), transition().data())
           .get_value_or (transition().name());
       }

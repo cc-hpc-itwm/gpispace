@@ -14,7 +14,6 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
-#include <boost/thread/recursive_mutex.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/nvp.hpp>
 
@@ -41,19 +40,13 @@ namespace we
         typedef token_on_port_list_t input_t;
         typedef token_on_port_list_t output_t;
 
-      private:
-        typedef boost::unique_lock<boost::recursive_mutex> shared_lock_t;
-        typedef boost::unique_lock<boost::recursive_mutex> unique_lock_t;
-
       public:
         explicit activity_t ();
         explicit activity_t (const we::type::transition_t&);
-        activity_t (const activity_t&);
+
         explicit activity_t (const boost::filesystem::path&);
         explicit activity_t (std::istream&);
         explicit activity_t (const std::string&);
-
-        activity_t& operator= (const activity_t&);
 
         std::string to_string() const;
 
@@ -118,8 +111,6 @@ namespace we
         template<class Archive>
           void save (Archive& ar, const unsigned int) const
         {
-          unique_lock_t lock (_mutex);
-
           ar & BOOST_SERIALIZATION_NVP(_transition);
 
           save (ar, _input);
@@ -128,8 +119,6 @@ namespace we
         template<class Archive>
         void load (Archive& ar, const unsigned int)
         {
-          unique_lock_t lock (_mutex);
-
           ar & BOOST_SERIALIZATION_NVP(_transition);
 
           load (ar, _input);
@@ -138,8 +127,6 @@ namespace we
         BOOST_SERIALIZATION_SPLIT_MEMBER()
 
       private:
-        mutable boost::recursive_mutex _mutex;
-
         we::type::transition_t _transition;
 
         input_t _input;
