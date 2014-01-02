@@ -14,7 +14,6 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/error_codes.hpp>
-#include <fhg/util/show.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/threadname.hpp>
 

@@ -353,7 +353,7 @@ namespace we
       }
       else
       {
-        throw std::runtime_error ("STRANGE! cannot inject: " + fhg::util::show (desc));
+        throw std::runtime_error ("STRANGE! cannot inject: <desc omitted>" );
       }
 
       _to_be_removed.insert (desc.id ());
@@ -419,7 +419,7 @@ namespace we
       }
       else
       {
-        throw std::runtime_error ("activity failed, but I don't know what to do with it: " + fhg::util::show (desc));
+        throw std::runtime_error ("activity failed, but I don't know what to do with it: <desc omitted>");
       }
     }
 
@@ -480,7 +480,7 @@ namespace we
       }
       else
       {
-        throw std::runtime_error ("activity canceled, but I don't know what to do with it: " + fhg::util::show (desc));
+        throw std::runtime_error ("activity canceled, but I don't know what to do with it: <desc omitted>");
       }
 
       _to_be_removed.insert (internal_id);
@@ -543,7 +543,7 @@ namespace we
       lock_t const _ (mutex_);
 
       if (desc.has_children())
-        throw std::runtime_error("cannot remove non-leaf: " + fhg::util::show (desc));
+        throw std::runtime_error("cannot remove non-leaf: <desc omitted>");
       if (desc.sent_to_external())
       {
         del_map_to_internal (desc.to_external_id(), desc.id());
