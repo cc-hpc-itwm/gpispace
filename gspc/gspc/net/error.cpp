@@ -1,6 +1,6 @@
 #include "error.hpp"
 #include <gspc/net/frame.hpp>
-#include <fhg/util/read.hpp>
+#include <fhg/util/num.hpp>
 
 namespace boost
 {

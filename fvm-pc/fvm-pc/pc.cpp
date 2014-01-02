@@ -10,7 +10,7 @@
 
 #include <we/loader/macros.hpp>
 
-#include <fhg/util/show.hpp>
+#include <boost/lexical_cast.hpp>
 
 //msgqueue
 static int pcQueueID;
@@ -506,7 +506,7 @@ WE_MOD_INITIALIZE_START (fvm);
   int res(0);
   if ( (res = fvmConnect (cfg)) != 0)
   {
-    throw std::runtime_error("could not initialize fvm-connection: "+fhg::util::show(res));
+    throw std::runtime_error("could not initialize fvm-connection: "+boost::lexical_cast<std::string>(res));
   }
 
   WE_REGISTER_FUN (selftest);

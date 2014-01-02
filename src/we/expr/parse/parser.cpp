@@ -13,9 +13,8 @@
 #include <we/expr/eval/refnode.hpp>
 #include <we/expr/eval/eval.hpp>
 
-#include <fhg/util/show.hpp>
-
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <sstream>
 #include <sstream>
@@ -166,7 +165,7 @@ namespace expr
       if (token::is_define (token) && not node::is_ref (l))
         {
           throw exception::parse::exception ( "left hand of "
-                                            + fhg::util::show (token)
+                                            + boost::lexical_cast<std::string> (token)
                                             + " must be reference name"
                                             , k
                                             );
@@ -331,7 +330,7 @@ namespace expr
                         tmp_stack.clear();
                         break;
                       default:
-                        throw exception::parse::exception (fhg::util::show(action), token.pos().eaten());
+                        throw exception::parse::exception (boost::lexical_cast<std::string>(action), token.pos().eaten());
                       }
                     break;
                   }

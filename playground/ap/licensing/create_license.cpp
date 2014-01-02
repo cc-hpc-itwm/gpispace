@@ -7,7 +7,7 @@
 #include <sstream>
 #include <cstring>
 
-#include <fhg/util/read.hpp>
+#include <fhg/util/num.hpp>
 #include <fhg/util/hex.hpp>
 #include <fhg/util/read_file.hpp>
 

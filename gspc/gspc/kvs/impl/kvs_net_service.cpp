@@ -10,7 +10,7 @@
 #include <gspc/kvs/kvs.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/util/read.hpp>
+#include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
 

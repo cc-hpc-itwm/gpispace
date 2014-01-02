@@ -12,13 +12,12 @@
 
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/show.hpp>
-
 #include <fhg/util/stat.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <sstream>
 #include <iostream>
@@ -274,8 +273,8 @@ namespace we
                 {
                   throw std::runtime_error
                     ( "output port ("
-                    + fhg::util::show (p.first)
-                    + ", " + fhg::util::show (p.second) + ") "
+                    + boost::lexical_cast<std::string> (p.first)
+                    + ", " + boost::lexical_cast<std::string> (p.second) + ") "
                     + "is not associated with any place!"
                     );
                 }
