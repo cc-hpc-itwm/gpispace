@@ -67,7 +67,7 @@ namespace
 
     _relation.erase (relation_type::value_type (parent, child));
 
-    return !contains (parent);
+    return _relation.left.find (parent) == _relation.left.end();
   }
 
   boost::optional<id_type> locked_parent_child_relation_bimap_type::parent
@@ -88,6 +88,8 @@ namespace
 
   bool locked_parent_child_relation_bimap_type::contains (id_type parent) const
   {
+    boost::mutex::scoped_lock const _ (_relation_mutex);
+
     return _relation.left.find (parent) != _relation.left.end();
   }
 
