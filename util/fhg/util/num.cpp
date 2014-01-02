@@ -2,6 +2,7 @@
 
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/error.hpp>
+#include <fhg/util/parse/from_string.hpp>
 
 #include <limits>
 
@@ -249,6 +250,10 @@ namespace fhg
     {
       return generic_read_integral<unsigned int> (pos);
     }
+    std::size_t read_size_t (parse::position& pos)
+    {
+      return generic_read_integral<std::size_t> (pos);
+    }
     long read_long (parse::position& pos)
     {
       return generic_read_signed_integral<long> (pos);
@@ -345,5 +350,15 @@ namespace fhg
 
 #undef SIGNED
 
+    int read_int (std::string const& input)
+    {
+      return parse::from_string<int>
+        (static_cast<int (*) (parse::position&)> (&read_int), input);
+    }
+    std::size_t read_size_t (std::string const& input)
+    {
+      return parse::from_string<std::size_t>
+        (static_cast<std::size_t (*) (parse::position&)> (&read_size_t), input);
+    }
   }
 }
