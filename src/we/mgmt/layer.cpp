@@ -2,6 +2,8 @@
 
 #include <we/mgmt/layer.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 namespace we
 {
   namespace mgmt
@@ -15,20 +17,91 @@ namespace we
       }
     }
 
+    namespace
+    {
+      type::activity_t wrap (type::activity_t const& act)
+      {
+        petri_net::net net;
+
+        petri_net::transition_id_type const transition_id
+          (net.add_transition (act.transition()));
+
+        boost::unordered_map<std::string, petri_net::place_id_type> place_ids;
+
+        BOOST_FOREACH
+          ( we::type::port_t const& port
+          , act.transition().ports() | boost::adaptors::map_values
+          )
+        {
+          petri_net::place_id_type const place_id
+            (net.add_place (place::type (port.name(), port.signature())));
+
+          net.add_connection
+            ( petri_net::connection_t
+              ( port.is_output() ? petri_net::edge::TP
+              : port.is_input() ? petri_net::edge::PT
+              : throw std::runtime_error ("tried to wrap, found tunnel port!?")
+              , transition_id
+              , place_id
+              )
+            );
+
+          place_ids.insert (std::make_pair (port.name(), place_id));
+        }
+
+        we::type::transition_t
+          transition_net_wrapper ( "_wrapper_for_" + act.transition().name()
+                                 , net
+                                 , condition::type ("true")
+                                 , true
+                                 , we::type::property::type()
+                                 );
+
+        BOOST_FOREACH
+          ( we::type::port_t const& port
+          , act.transition().ports() | boost::adaptors::map_values
+          )
+        {
+          transition_net_wrapper.add_port
+            ( we::type::port_t ( port.name()
+                               , port.direction()
+                               , port.signature()
+                               , port.property()
+                               )
+            );
+
+          if (port.is_output())
+          {
+            transition_net_wrapper.add_connection
+              ( place_ids.find (port.name())->second
+              , port.name()
+              , we::type::property::type()
+              );
+          }
+          else if (port.is_input())
+          {
+            transition_net_wrapper.add_connection
+              ( port.name()
+              , place_ids.find (port.name())->second
+              , we::type::property::type()
+              );
+          }
+          else
+          {
+            throw std::runtime_error ("tried to wrap, found tunnel port!?");
+          }
+        }
+
+        return type::activity_t (transition_net_wrapper);
+      }
+    }
+
     void layer::submit (const id_type& id, const type::activity_t& act)
     {
-      if (act.transition().net())
-      {
-        _nets_to_extract_from.put
-          (activity_data_type (id, act), true);
-      }
-      else
-      {
-        throw std::runtime_error ("NYI: submit (!net)");
-        //! \todo forwarding net
-        // _nets_to_extract_from.put ()
-        // activity_data_type (id, constructed_activity);
-      }
+      _nets_to_extract_from.put
+        ( activity_data_type (id, act.transition().net() ? act : wrap (act))
+        , true
+        );
     }
 
     void layer::finished
