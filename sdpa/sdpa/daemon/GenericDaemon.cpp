@@ -83,8 +83,9 @@ GenericDaemon::GenericDaemon( const std::string name
   , _name (name)
   , m_arrMasterInfo(arrMasterInfo),
     _job_manager(),
-    ptr_scheduler_(),
-    ptr_workflow_engine_ ( create_wfe
+    ptr_scheduler_()
+  , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
+  , ptr_workflow_engine_ ( create_wfe
                          ? new we::mgmt::layer
                            ( boost::bind (&GenericDaemon::submit, this, _1, _2, _3)
                            , boost::bind (&GenericDaemon::cancel, this, _1, _2)
@@ -92,6 +93,7 @@ GenericDaemon::GenericDaemon( const std::string name
                            , boost::bind (&GenericDaemon::failed, this, _1, _2, _3)
                            , boost::bind (&GenericDaemon::canceled, this, _1)
                            , boost::bind (&GenericDaemon::gen_id, this)
+                           , *_random_extraction_engine
                            )
                          : NULL
                          ),

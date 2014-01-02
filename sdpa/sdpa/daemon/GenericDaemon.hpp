@@ -233,6 +233,7 @@ namespace sdpa {
     protected:
       JobManager _job_manager;
       SchedulerBase::ptr_t ptr_scheduler_;
+      boost::optional<boost::mt19937> _random_extraction_engine;
       boost::scoped_ptr<we::mgmt::layer> ptr_workflow_engine_;
 
     private:

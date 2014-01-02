@@ -110,6 +110,7 @@ namespace
                 , we::loader::loader* loader
                 , we::mgmt::type::activity_t const act
                 , boost::optional<std::size_t> const timeout
+                , boost::mt19937& random_extraction_engine
                 )
         : _mutex_id()
         , _id (0)
@@ -119,6 +120,7 @@ namespace
                       , boost::bind (&sdpa_daemon::failed, this, _1, _2, _3)
                       , boost::bind (&sdpa_daemon::canceled, this, _1)
                       , boost::bind (&sdpa_daemon::gen_id, this)
+                      , random_extraction_engine
                       )
         , _mutex_id_map()
         , id_map_()
@@ -457,6 +459,7 @@ try
     loader.append_search_path (p);
   }
 
+  boost::mt19937 random_extraction_engine;
   sdpa_daemon const daemon
     ( num_worker
     , &loader
@@ -464,6 +467,7 @@ try
     ? we::mgmt::type::activity_t (std::cin)
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     , cancel_after
+    , random_extraction_engine
     );
 
   sdpa::status::code const rc (daemon.wait_while_job_is_running());

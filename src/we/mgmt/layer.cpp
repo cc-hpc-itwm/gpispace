@@ -15,6 +15,7 @@ namespace we
         , boost::function<void (id_type, int, std::string)> rts_failed
         , boost::function<void (id_type)> rts_canceled
         , boost::function<id_type()> rts_id_generator
+        , boost::mt19937& random_extraction_engine
         )
       : _rts_submit (rts_submit)
       , _rts_cancel (rts_cancel)
@@ -22,6 +23,7 @@ namespace we
       , _rts_failed (rts_failed)
       , _rts_canceled (rts_canceled)
       , _rts_id_generator (rts_id_generator)
+      , _random_extraction_engine (random_extraction_engine)
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
     {}
     layer::~layer()
@@ -211,8 +213,10 @@ namespace we
         //! \todo How to cancel if the net is inside
         //! fire_internally_and_extract_external (endless loop in
         //! expressions)?
+
         if ( boost::optional<type::activity_t> activity
-           = activity_data.fire_internally_and_extract_external()
+           = activity_data.fire_internally_and_extract_external
+               (_random_extraction_engine)
            )
         {
           const id_type child_id (_rts_id_generator());
@@ -378,7 +382,8 @@ namespace we
     // activity_data_type
 
     boost::optional<type::activity_t>
-      layer::activity_data_type::fire_internally_and_extract_external()
+      layer::activity_data_type::fire_internally_and_extract_external
+        (boost::mt19937& random_extraction_engine)
     {
       //! \note We wrap all input activites in a net.
       petri_net::net& net
@@ -387,7 +392,7 @@ namespace we
       while (net.can_fire())
       {
         type::activity_t activity
-          (net.extract_activity_random (_random_extraction_engine));
+          (net.extract_activity_random (random_extraction_engine));
 
         if (!activity.transition().expression())
         {

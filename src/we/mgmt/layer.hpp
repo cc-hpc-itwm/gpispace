@@ -36,6 +36,7 @@ namespace we
               // reply to cancel (parent) -> top level
             , boost::function<void (id_type)>
             , boost::function<id_type()> rts_id_generator
+            , boost::mt19937& random_extraction_engine
             );
       ~layer();
 
@@ -72,13 +73,11 @@ namespace we
         {}
 
         boost::optional<type::activity_t>
-          fire_internally_and_extract_external();
+          fire_internally_and_extract_external (boost::mt19937&);
         void child_finished (type::activity_t);
 
         id_type _id;
         type::activity_t _activity;
-
-        boost::mt19937 _random_extraction_engine;
       };
 
       struct async_remove_queue
@@ -109,6 +108,7 @@ namespace we
           (activity_data_type, boost::function<void (activity_data_type&)>);
       } _nets_to_extract_from;
 
+      boost::mt19937& _random_extraction_engine;
       void extract_from_nets();
       boost::thread _extract_from_nets_thread;
 
