@@ -97,10 +97,6 @@ namespace we
                                , const path_iterator& end
                                , const path_iterator& zero
                                ) const;
-        boost::optional<const mapped_type&> get_maybe ( const path_iterator& pos
-                                                      , const path_iterator& end
-                                                      , const path_iterator& zero
-                                                      ) const;
 
         const value_type& get_val ( const path_iterator& pos
                                   , const path_iterator& end

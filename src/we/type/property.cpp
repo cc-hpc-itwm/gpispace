@@ -102,21 +102,6 @@ namespace we
           }
         };
 
-        class visitor_get_maybe_val : public boost::static_visitor<boost::optional<const value_type&> >
-        {
-        public:
-          boost::optional<const value_type&> operator () (const value_type& v) const
-          {
-            return v;
-          }
-
-          template<typename T>
-          boost::optional<const value_type&> operator () (const T&) const
-          {
-            return boost::none;
-          }
-        };
-
         class is_value : public boost::static_visitor<bool>
         {
         public:
@@ -168,52 +153,21 @@ namespace we
         return boost::apply_visitor (visitor_get_val(), get (pos, end, zero));
       }
 
-      boost::optional<const mapped_type&>
-        type::get_maybe ( const path_iterator& pos
-                        , const path_iterator& end
-                        , const path_iterator& zero
-                        ) const
-      {
-        if (pos == end)
-        {
-          throw exception::empty_path ("get_maybe");
-        }
-
-        map_type::const_iterator map_pos (map.find (*pos));
-
-        if (map_pos == map.end())
-        {
-          return boost::none;
-        }
-
-        if (std::distance (pos, end) == 1)
-        {
-          return map_pos->second;
-        }
-        else
-        {
-          const type& t ( boost::apply_visitor ( visitor_get_map<const type&>()
-                                               , map_pos->second
-                                               )
-                        );
-
-          return t.get (pos + 1, end, zero);
-        }
-      }
-
       const boost::optional<const value_type&>
         type::get_maybe_val ( const path_iterator& pos
                             , const path_iterator& end
                             , const path_iterator& zero
                             ) const
       {
-        const boost::optional<const mapped_type&> mapped
-          (get_maybe (pos, end, zero));
-        if (mapped)
+        try
         {
-          return boost::apply_visitor (visitor_get_maybe_val(), *mapped);
+          return get_val (pos, end, zero);
         }
-        else
+        catch (const exception::missing_binding&)
+        {
+          return boost::none;
+        }
+        catch (const exception::not_a_val&)
         {
           return boost::none;
         }
