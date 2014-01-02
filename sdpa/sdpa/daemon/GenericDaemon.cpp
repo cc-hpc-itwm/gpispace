@@ -86,7 +86,13 @@ GenericDaemon::GenericDaemon( const std::string name
     ptr_scheduler_(),
     ptr_workflow_engine_ ( create_wfe
                          ? new we::mgmt::layer
-                           (this, boost::bind (&GenericDaemon::gen_id, this))
+                           ( boost::bind (&GenericDaemon::submit, this, _1, _2, _3)
+                           , boost::bind (&GenericDaemon::cancel, this, _1, _2)
+                           , boost::bind (&GenericDaemon::finished, this, _1, _2)
+                           , boost::bind (&GenericDaemon::failed, this, _1, _2, _3)
+                           , boost::bind (&GenericDaemon::canceled, this, _1)
+                           , boost::bind (&GenericDaemon::gen_id, this)
+                           )
                          : NULL
                          ),
     m_nRank(rank),

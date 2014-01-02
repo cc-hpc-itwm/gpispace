@@ -25,33 +25,29 @@ namespace we
       typedef std::string reason_type;
       typedef std::string result_type;
 
-      //! \todo pass in functions, not RTS
-      template <class RTS>
-        layer ( RTS* runtime_system
-              , boost::function<id_type()> gen
-              )
-
-          // external activities from submitted net -> child jobs
-          : _rts_submit (boost::bind (&RTS::submit, runtime_system, _1, _2, _3))
-
-          // reply to cancel (parent)/on failure (child) -> child jobs
-          , _rts_cancel (boost::bind (&RTS::cancel, runtime_system, _1, _2))
-
-          // reply to submit -> top level
-          , _rts_finished (boost::bind (&RTS::finished, runtime_system, _1, _2))
-
-          // reply to submit (on failure of child) -> top level
-          , _rts_failed (boost::bind (&RTS::failed, runtime_system, _1, _2, _3))
-
-          // reply to cancel (parent) -> child jobs
-          , _rts_canceled (boost::bind (&RTS::canceled, runtime_system, _1))
-
-          , _extract_from_nets_thread (&layer::extract_from_nets, this)
-          , _id_generator (gen)
-      {}
-
+      layer ( // external activities from submitted net -> child jobs
+              boost::function<void ( id_type const&
+                                   , type::activity_t const&
+                                   , id_type const& parent
+                                   )> rts_submit
+              // reply to cancel (parent)/on failure (child) -> child jobs
+            , boost::function<void ( id_type const&
+                                   , reason_type const&
+                                   )> rts_cancel
+              // reply to submit -> top level
+            , boost::function<void ( id_type const&
+                                   , type::activity_t const&
+                                   )> rts_finished
+              // reply to submit (on failure of child) -> top level
+            , boost::function<void ( id_type const&
+                                   , const int error_code
+                                   , std::string const& reason
+                                   )> rts_failed
+              // reply to cancel (parent) -> top level
+            , boost::function<void (id_type const &)> rts_canceled
+            , boost::function<id_type()> rts_id_generator
+            );
       ~layer();
-
 
       // initial from exec_layer -> top level
       void submit (const id_type&, const type::activity_t&);
@@ -89,6 +85,9 @@ namespace we
                            )> _rts_failed;
 
       boost::function<void (id_type const &)> _rts_canceled;
+
+      boost::function<id_type()> _rts_id_generator;
+
 
       struct activity_data_type
       {
@@ -167,8 +166,6 @@ namespace we
           relation_type;
         relation_type _relation;
       } _running_jobs;
-
-      boost::function<id_type()> _id_generator;
 
       void finalize_finished
         (activity_data_type&, type::activity_t, id_type parent, id_type child);

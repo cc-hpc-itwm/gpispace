@@ -8,6 +8,31 @@ namespace we
 {
   namespace mgmt
   {
+    layer::layer ( boost::function<void ( id_type const&
+                                        , type::activity_t const&
+                                        , id_type const& parent
+                                        )> rts_submit
+                 , boost::function<void ( id_type const&
+                                        , reason_type const&
+                                        )> rts_cancel
+                 , boost::function<void ( id_type const&
+                                        , type::activity_t const&
+                                        )> rts_finished
+                 , boost::function<void ( id_type const&
+                                        , const int error_code
+                                        , std::string const& reason
+                                        )> rts_failed
+                 , boost::function<void (id_type const &)> rts_canceled
+                 , boost::function<id_type()> rts_id_generator
+                 )
+      : _rts_submit (rts_submit)
+      , _rts_cancel (rts_cancel)
+      , _rts_finished (rts_finished)
+      , _rts_failed (rts_failed)
+      , _rts_canceled (rts_canceled)
+      , _rts_id_generator (rts_id_generator)
+      , _extract_from_nets_thread (&layer::extract_from_nets, this)
+    {}
     layer::~layer()
     {
       _extract_from_nets_thread.interrupt();
@@ -205,7 +230,7 @@ namespace we
            = activity_data.fire_internally_and_extract_external()
            )
         {
-          const id_type child_id (_id_generator());
+          const id_type child_id (_rts_id_generator());
           _running_jobs.started (activity_data._id, child_id);
           _rts_submit (child_id, *activity, activity_data._id);
           was_active = true;

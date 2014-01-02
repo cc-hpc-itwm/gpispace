@@ -32,7 +32,13 @@ template <typename L>
 struct daemon_t
 {
   daemon_t ()
-    : layer (this, &generate_id)
+    : layer ( boost::bind (&daemon_t::submit, this, _1, _2, _3)
+            , boost::bind (&daemon_t::cancel, this, _1, _2)
+            , boost::bind (&daemon_t::finished, this, _1, _2)
+            , boost::bind (&daemon_t::failed, this, _1, _2, _3)
+            , boost::bind (&daemon_t::canceled, this, _1)
+            , &generate_id
+            )
   {}
 
   void submit ( const id_type & id
