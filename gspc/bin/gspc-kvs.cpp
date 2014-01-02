@@ -11,7 +11,7 @@
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <fhg/util/read.hpp>
+#include <fhg/util/num.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>

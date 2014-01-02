@@ -8,7 +8,7 @@
 #include <gspc/net/dial.hpp>
 #include <gspc/net/frame.hpp>
 
-#include <fhg/util/read.hpp>
+#include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
 
