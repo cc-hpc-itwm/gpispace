@@ -54,7 +54,7 @@ namespace we
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
 
-        activity_t extract();
+        activity_t extract (boost::mt19937& engine);
         void inject (const activity_t&);
         void collect_output();
 
@@ -131,8 +131,6 @@ namespace we
 
         input_t _input;
         output_t _output;
-
-        boost::mt19937 _engine;
       };
 
       std::ostream& operator<< (std::ostream&, const activity_t&);

@@ -610,6 +610,8 @@ namespace fhg
         //! \note Context copied from we-eval.
         class eval_context : public we::mgmt::context
         {
+          boost::mt19937 _engine;
+
         public:
           eval_context (we::loader::loader& module_loader)
             : loader (module_loader)
@@ -619,7 +621,7 @@ namespace fhg
           {
             while (act.can_fire())
             {
-              we::mgmt::type::activity_t sub (act.extract());
+              we::mgmt::type::activity_t sub (act.extract (_engine));
               sub.execute (this);
               act.inject (sub);
             }

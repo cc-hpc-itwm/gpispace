@@ -113,9 +113,9 @@ namespace we
         };
       }
 
-      activity_t activity_t::extract()
+      activity_t activity_t::extract (boost::mt19937& engine)
       {
-        return boost::apply_visitor ( visitor_activity_extractor (_engine)
+        return boost::apply_visitor ( visitor_activity_extractor (engine)
                                     , _transition.data()
                                     );
       }

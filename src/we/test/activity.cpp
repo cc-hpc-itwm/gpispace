@@ -182,9 +182,12 @@ int main (int, char **)
   }
 
   std::cout << "can_fire = " << act.can_fire() << std::endl;
+
+  boost::mt19937 engine;
+
   while (act.can_fire())
   {
-    activity_t sub = act.extract ();
+    activity_t sub = act.extract (engine);
 
     exec_context ctxt;
     sub.execute (&ctxt);

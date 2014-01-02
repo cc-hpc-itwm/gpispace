@@ -94,12 +94,14 @@ namespace module
 
 struct exec_context : public we::mgmt::context
 {
+  boost::mt19937 _engine;
+
   virtual int handle_internally (activity_t& act, net_t&)
   {
     // submit to self
     while (act.can_fire())
     {
-      activity_t sub = act.extract ();
+      activity_t sub = act.extract (_engine);
 
       sub.execute (this);
 

@@ -70,6 +70,8 @@ namespace
 
   struct wfe_exec_context : public we::mgmt::context
   {
+    boost::mt19937 _engine;
+
     wfe_exec_context (we::loader::loader& module_loader, wfe_task_t& target)
       : loader (module_loader)
       , task (target)
@@ -80,7 +82,7 @@ namespace
     {
       while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
       {
-        we::mgmt::type::activity_t sub (act.extract());
+        we::mgmt::type::activity_t sub (act.extract (_engine));
         sub.execute (this);
         act.inject (sub);
       }
