@@ -38,7 +38,7 @@ namespace sdpa
                         )
         : _components ()
         , _activity_id (activity_id)
-        , _activity_name (activity.nice_name())
+        , _activity_name (activity.transition().name())
         , _activity_state (activity_state)
         , _meta_data (meta_data)
       {
@@ -53,7 +53,7 @@ namespace sdpa
                         )
         : _components (components)
         , _activity_id (activity_id)
-        , _activity_name (activity.nice_name())
+        , _activity_name (activity.transition().name())
         , _activity_state (activity_state)
         , _meta_data (meta_data)
       {}

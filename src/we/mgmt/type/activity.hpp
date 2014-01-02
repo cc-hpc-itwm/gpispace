@@ -72,8 +72,6 @@ namespace we
         void set_output (const output_t&);
         void add_output (const output_t::value_type&);
 
-        std::string nice_name() const;
-
       private:
         template<class Archive>
           void save (Archive& ar, const token_on_port_list_t& l) const
