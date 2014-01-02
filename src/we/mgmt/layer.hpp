@@ -83,7 +83,7 @@ namespace we
       struct async_remove_queue
       {
         activity_data_type get();
-        void put (activity_data_type activity_data, bool);
+        void put (activity_data_type, bool was_active);
 
         void remove_and_apply
           (id_type, boost::function<void (activity_data_type)>);
