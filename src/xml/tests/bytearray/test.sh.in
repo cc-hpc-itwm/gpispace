@@ -19,8 +19,7 @@ cleanup()
 trap 'cleanup' EXIT
 
 measured "build-wrapper" ${make_src} lib                     || die $EX_ERR_RUN
-measured "run" WE_EXEC_CMD=we-eval                           \
-               WE_EXEC_OUTPUT="${OUT}" ${make_src} run       || die $EX_ERR_RUN
+measured "run" WE_EXEC_OUTPUT="${OUT}" ${make_src} run       || die $EX_ERR_RUN
 
 test -s "${OUT}"                                             || die $EX_ERR_RUN
 
