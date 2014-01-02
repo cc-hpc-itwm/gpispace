@@ -100,6 +100,19 @@ namespace gspc
       return rc;
     }
 
+    namespace
+    {
+      int read_int_with_following_newline (std::string const& input)
+      {
+        fhg::util::parse::position_string pos (input);
+
+        int const value (fhg::util::read_int (pos));
+        fhg::util::parse::require::require (pos, '\n');
+
+        return value;
+      }
+    }
+
     int kvs_net_frontend_t::do_put (std::list<std::pair<key_type, value_type> > const &vals)
     {
       typedef std::list<std::pair<key_type, value_type> > kv_list_t;
@@ -121,7 +134,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      return fhg::util::read_int (rply);
+      return read_int_with_following_newline (rply);
     }
 
     int kvs_net_frontend_t::do_get (key_type const &key, value_type &val) const
@@ -192,8 +205,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      rc = fhg::util::read_int (rply);
-      return rc;
+      return read_int_with_following_newline (rply);
     }
 
     int kvs_net_frontend_t::do_del_regex (std::string const &regex)
@@ -206,8 +218,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      rc = fhg::util::read_int (rply);
-      return rc;
+      return read_int_with_following_newline (rply);
     }
 
     int kvs_net_frontend_t::do_set_ttl (key_type const &key, int ttl)
@@ -223,8 +234,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      rc = fhg::util::read_int (rply);
-      return rc;
+      return read_int_with_following_newline (rply);
     }
 
     int kvs_net_frontend_t::do_set_ttl_regex (std::string const &regex, int ttl)
@@ -240,8 +250,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      rc = fhg::util::read_int (rply);
-      return rc;
+      return read_int_with_following_newline (rply);
     }
 
     int kvs_net_frontend_t::do_push (key_type const &key, value_type const &val)
@@ -254,7 +263,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      return fhg::util::read_int (rply);
+      return read_int_with_following_newline (rply);
     }
 
     int kvs_net_frontend_t::do_try_pop (key_type const &key, value_type &val)
@@ -289,7 +298,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      return fhg::util::read_int (rply);
+      return read_int_with_following_newline (rply);
     }
 
     int kvs_net_frontend_t::do_counter_change (key_type const &key, int &val, int delta)
@@ -332,12 +341,7 @@ namespace gspc
       if (rc != 0)
         return rc;
 
-      fhg::util::parse::position_string pos (rply);
-
-      rc = fhg::util::read_int (pos);
-      fhg::util::parse::require::require (pos, '\n');
-
-      return rc;
+      return read_int_with_following_newline (rply);
     }
   }
 }
