@@ -99,10 +99,10 @@ namespace sdpa {
                  , const we::mgmt::type::activity_t&
                  , const we::mgmt::layer::id_type& parent_id
                          );
-      bool cancel(const we::mgmt::layer::id_type & id, const we::mgmt::layer::reason_type& reason);
-      virtual bool finished(const we::mgmt::layer::id_type & id, const we::mgmt::type::activity_t& result);
-      virtual bool failed( const we::mgmt::layer::id_type& wfId, int errc, std::string const& reason);
-      bool canceled(const we::mgmt::layer::id_type& id);
+      void cancel(const we::mgmt::layer::id_type & id, const we::mgmt::layer::reason_type& reason);
+      virtual void finished(const we::mgmt::layer::id_type & id, const we::mgmt::type::activity_t& result);
+      virtual void failed( const we::mgmt::layer::id_type& wfId, int errc, std::string const& reason);
+      void canceled(const we::mgmt::layer::id_type& id);
       virtual void pause(const job_id_t& id ) = 0;
       virtual void resume(const job_id_t& id ) = 0;
 

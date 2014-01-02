@@ -171,7 +171,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   }
 }
 
-bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::type::activity_t & result)
+void Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::type::activity_t & result)
 {
   //put the job into the state Finished
   JobId id(wfid);
@@ -182,8 +182,7 @@ bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::type:
   Job* pJob = jobManager().findJob(id);
   if(!pJob)
   {
-    DMLOG(WARN,  "got finished message for old/unknown Job "<<id.str());
-    return false;
+    throw std::runtime_error ("got finished message for old/unknown Job " + id.str());
   }
 
   // forward it up
@@ -232,8 +231,6 @@ bool Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::type:
       sendEventToOther(ptrEvt);
     }
   }
-
-  return true;
 }
 
 void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
@@ -350,7 +347,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
   }
 }
 
-bool Agent::failed( const we::mgmt::layer::id_type& wfid
+void Agent::failed( const we::mgmt::layer::id_type& wfid
                   , int error_code
                   , std::string const & reason
                   )
@@ -363,8 +360,7 @@ bool Agent::failed( const we::mgmt::layer::id_type& wfid
   Job* pJob = jobManager().findJob(id);
   if(!pJob)
   {
-    DMLOG(WARN,  "got failed message for old/unknown Job "<<id.str());
-    return false;
+    throw std::runtime_error ("got failed message for old/unknown Job " + id.str());
   }
 
   // forward it up
@@ -412,8 +408,6 @@ bool Agent::failed( const we::mgmt::layer::id_type& wfid
       sendEventToOther(ptrEvt);
     }
   }
-
-  return true;
 }
 
 namespace

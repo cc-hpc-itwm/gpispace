@@ -50,27 +50,23 @@ struct daemon_t
     layer.finished (id, act);
   }
 
-  bool cancel (const id_type &, const std::string &)
+  void cancel (const id_type &, const std::string &)
   {
-    return false;
   }
 
-  bool finished (const id_type &, we::mgmt::type::activity_t const&)
+  void finished (const id_type &, we::mgmt::type::activity_t const&)
   {
-    return false;
   }
 
-  bool failed( const id_type & id
+  void failed( const id_type & id
              , const int error_code
              , const std::string & reason
              )
   {
-    return false;
   }
 
-  bool canceled (const id_type &)
+  void canceled (const id_type &)
   {
-    return false;
   }
 
   L layer;

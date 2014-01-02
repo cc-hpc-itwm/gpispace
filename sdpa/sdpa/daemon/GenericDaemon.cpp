@@ -584,7 +584,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
  */
-bool GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId, const we::mgmt::layer::reason_type & reason)
+void GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId, const we::mgmt::layer::reason_type & reason)
 {
   DMLOG (TRACE, "The workflow engine requests the cancellation of the activity " << activityId << "( reason: " << reason<<")!");
 
@@ -603,14 +603,13 @@ bool GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId, const we:
                               , reason )
           );
   sendEventToSelf(pEvtCancelJob);
-  return true;
 }
 
 /**
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const we::mgmt::type::activity_t& result)
+void GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const we::mgmt::type::activity_t& result)
 {
   DMLOG (TRACE, "activity finished: " << workflowId);
   // generate a JobFinishedEvent for self!
@@ -626,15 +625,13 @@ bool GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const w
   sendEventToSelf(pEvtJobFinished);
 
   // notify the GUI that the activity finished
-
-  return true;
 }
 
 /**
  * Notify the SDPA that a workflow failed (state transition
  * from running to failed).
  */
-bool GenericDaemon::failed( const we::mgmt::layer::id_type& workflowId
+void GenericDaemon::failed( const we::mgmt::layer::id_type& workflowId
                           , int error_code
                           , std::string const & reason
                           )
@@ -658,15 +655,13 @@ bool GenericDaemon::failed( const we::mgmt::layer::id_type& workflowId
     );
 
   sendEventToSelf(pEvtJobFailed);
-
-  return true;
 }
 
 /**
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */
-bool GenericDaemon::canceled(const we::mgmt::layer::id_type& workflowId)
+void GenericDaemon::canceled(const we::mgmt::layer::id_type& workflowId)
 {
   DMLOG (TRACE, "activity canceled: " << workflowId);
   // generate a JobCanceledEvent for self!
@@ -675,8 +670,6 @@ bool GenericDaemon::canceled(const we::mgmt::layer::id_type& workflowId)
 
   events::CancelJobAckEvent::Ptr pEvtCancelJobAck( new events::CancelJobAckEvent(sdpa::daemon::WE, name(), job_id ));
   sendEventToSelf(pEvtCancelJobAck);
-
-  return true;
 }
 
 /*
