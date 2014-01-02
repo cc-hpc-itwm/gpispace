@@ -26,8 +26,11 @@
 #include <fhg/util/boost/test/printer/list.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/boost/test/printer/map.hpp>
+#include <fhg/util/boost/test/require_exception.hpp>
 
 #include <fhg/util/xml.hpp>
+
+#include <boost/format.hpp>
 
 #include <sstream>
 
@@ -888,44 +891,121 @@ namespace
     BOOST_REQUIRE_EQUAL (oss.str(), expected);
   }
 
-  void dump_throw (std::string const& v)
+  void dump_throw_plain (std::string const& v)
   {
     std::ostringstream oss;
     fhg::util::xml::xmlstream os (oss);
 
-    BOOST_REQUIRE_THROW
-      ( pnet::type::value::dump (os, pnet::type::value::read (v))
-      , std::runtime_error
+    pnet::type::value::value_type const value (pnet::type::value::read (v));
+
+    fhg::util::boost::test::require_exception<std::runtime_error>
+      ( boost::bind (&pnet::type::value::dump, os, value)
+      , "std::runtime_error"
+      , ( boost::format ("cannot dump the plain value '%1%'")
+        % pnet::type::value::show (value)
+        ).str()
+      );
+  }
+
+  void dump_throw_depth ( std::string const& v
+                        , std::string const& key
+                        , std::string const& val
+                        )
+  {
+    std::ostringstream oss;
+    fhg::util::xml::xmlstream os (oss);
+
+    fhg::util::boost::test::require_exception<std::runtime_error>
+      ( boost::bind (&pnet::type::value::dump, os, pnet::type::value::read (v))
+      , "std::runtime_error"
+      , ( boost::format ("cannot dump the single level property"
+                        " with key '%1%' and value '%2%'"
+                        ) % key % val
+        ).str()
       );
   }
 }
 
 BOOST_AUTO_TEST_CASE (dump)
 {
-  dump_okay ( "Struct []"
-            , ""
+  dump_okay ( "Struct[]", "");
+  dump_okay ( "Struct [root := Struct[]]"
+            , "<properties name=\"root\"/>"
             );
-  dump_okay ( "Struct [foo := 0L]"
-            , "<property key=\"foo\">0L</property>"
+  dump_okay ( "Struct [root := Struct [k := []]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">[]</property>\n"
+              "</properties>"
             );
-  dump_okay ("Struct [k := []]", "<property key=\"k\">[]</property>");
-  dump_okay ("Struct [k := true]", "<property key=\"k\">true</property>");
-  dump_okay ("Struct [k := 0]", "<property key=\"k\">0</property>");
-  dump_okay ("Struct [k := 0U]", "<property key=\"k\">0U</property>");
-  dump_okay ("Struct [k := 0L]", "<property key=\"k\">0L</property>");
-  dump_okay ("Struct [k := 0UL]", "<property key=\"k\">0UL</property>");
-  dump_okay ("Struct [k := 0.0f]", "<property key=\"k\">0.00000f</property>");
-  dump_okay ("Struct [k := 0.0]", "<property key=\"k\">0.00000</property>");
-  dump_okay ("Struct [k := 'c']", "<property key=\"k\">'c'</property>");
-  dump_okay ("Struct [k := \"\"]", "<property key=\"k\">\"\"</property>");
-  dump_okay ("Struct [k := {}]", "<property key=\"k\">{}</property>");
-  dump_okay ("Struct [k := y()]", "<property key=\"k\">y()</property>");
-  dump_okay ("Struct [k := List()]", "<property key=\"k\">List ()</property>");
-  dump_okay ("Struct [k := Set{}]", "<property key=\"k\">Set {}</property>");
-  dump_okay ("Struct [k := Map[]]", "<property key=\"k\">Map []</property>");
-  dump_okay ( "Struct [foo := 0L, bar := List (1U, 2)]"
-            , "<property key=\"foo\">0L</property>"
-              "<property key=\"bar\">List (1U, 2)</property>"
+  dump_okay ( "Struct [root := Struct [k := true]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">true</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0U]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0U</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0L]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0L</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0UL]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0UL</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0.0f]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0.00000f</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0.0]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0.00000</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 'c']]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">'c'</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := \"\"]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">\"\"</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := {}]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">{}</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := y()]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">y()</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := List()]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">List ()</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := Set{}]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">Set {}</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := Map[]]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">Map []</property>\n"
+              "</properties>"
             );
   dump_okay ( "Struct [fhg := Struct [ drts := Struct"
               "                             [ schedule := Struct"
@@ -958,19 +1038,23 @@ BOOST_AUTO_TEST_CASE (dump)
               "</properties>"
             );
 
-  dump_throw ("[]");
-  dump_throw ("true");
-  dump_throw ("0");
-  dump_throw ("0U");
-  dump_throw ("0L");
-  dump_throw ("0UL");
-  dump_throw ("0.0f");
-  dump_throw ("0.0");
-  dump_throw ("'c'");
-  dump_throw ("\"\"");
-  dump_throw ("{}");
-  dump_throw ("y()");
-  dump_throw ("List()");
-  dump_throw ("Set{}");
-  dump_throw ("Map[]");
+  dump_throw_plain ("[]");
+  dump_throw_plain ("true");
+  dump_throw_plain ("0");
+  dump_throw_plain ("0U");
+  dump_throw_plain ("0L");
+  dump_throw_plain ("0UL");
+  dump_throw_plain ("0.0f");
+  dump_throw_plain ("0.0");
+  dump_throw_plain ("'c'");
+  dump_throw_plain ("\"\"");
+  dump_throw_plain ("{}");
+  dump_throw_plain ("y()");
+  dump_throw_plain ("List()");
+  dump_throw_plain ("Set{}");
+  dump_throw_plain ("Map[]");
+
+  dump_throw_depth ("Struct[k:=0]", "k", "0");
+  dump_throw_depth ("Struct[k:=0, Struct:=[]]", "k", "0");
+  dump_throw_depth ("Struct[deeper:=Struct[], k:=0]", "k", "0");
 }

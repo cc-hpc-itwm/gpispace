@@ -6,6 +6,7 @@
 #include <fhg/util/xml.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 
 #include <sstream>
 
@@ -22,9 +23,11 @@ namespace pnet
         {
         public:
           visitor_dump ( fhg::util::xml::xmlstream& os
+                       , unsigned int depth
                        , boost::optional<std::string const&> parent = boost::none
                        )
             : _os (os)
+            , _depth (depth)
             , _parent (parent)
           {}
 
@@ -40,7 +43,8 @@ namespace pnet
 
             BOOST_FOREACH (kv_type const& kv, m)
             {
-              boost::apply_visitor (visitor_dump (_os, kv.first), kv.second);
+              boost::apply_visitor
+                (visitor_dump (_os, _depth + 1, kv.first), kv.second);
             }
 
             if (_parent)
@@ -55,7 +59,20 @@ namespace pnet
           {
             if (!_parent)
             {
-              throw std::runtime_error ("cannot dump a plain value");
+              throw std::runtime_error
+                ( ( boost::format ("cannot dump the plain value '%1%'")
+                  % show (value)
+                  ).str()
+                );
+            }
+            if (_depth < 2)
+            {
+              throw std::runtime_error
+                ( (boost::format ("cannot dump the single level property"
+                                 " with key '%1%' and value '%2%'"
+                                 ) % *_parent % show (value)
+                  ).str()
+                );
             }
 
             _os.open ("property");
@@ -72,6 +89,7 @@ namespace pnet
 
         private:
           fhg::util::xml::xmlstream& _os;
+          unsigned int _depth;
           boost::optional<std::string const&> _parent;
         };
       }
@@ -80,7 +98,7 @@ namespace pnet
                                       , const value_type& value
                                       )
       {
-        return boost::apply_visitor (visitor_dump (os), value);
+        return boost::apply_visitor (visitor_dump (os, 0), value);
       }
     }
   }
