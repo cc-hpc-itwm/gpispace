@@ -21,7 +21,6 @@
 #include <boost/filesystem.hpp>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/util/show.hpp>
 #include <fhg/util/split.hpp>
 
 #include <process.hpp>
@@ -631,8 +630,6 @@ namespace process
     ret.exit_code = 255;
     ret.bytes_read_stdout = 0;
     ret.bytes_read_stderr = 0;
-
-    DMLOG (TRACE, "run command: " << fhg::util::show (av,av+cmdline.size()));
 
     sigset_t signals_to_block;
     sigset_t signals_to_restore;
