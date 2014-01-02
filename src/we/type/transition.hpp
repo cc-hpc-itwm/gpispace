@@ -16,8 +16,6 @@
 
 #include <we/exception.hpp>
 
-#include <fhg/util/show.hpp>
-
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/foreach.hpp>
@@ -35,6 +33,8 @@
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptor/map.hpp>
+
+#include <boost/lexical_cast.hpp>
 
 #include <stdexcept>
 
@@ -246,8 +246,8 @@ namespace we { namespace type {
         }
         catch (const std::out_of_range &)
         {
-          const std::string port_name (fhg::util::show (port_id) );
-          throw pnet::exception::port::unknown (name(), port_name);
+          throw pnet::exception::port::unknown
+            (name(), boost::lexical_cast<std::string> (port_id));
         }
       }
 
@@ -279,7 +279,7 @@ namespace we { namespace type {
                             " trans '%1%', pid_old '%2%'"
                             )
             % name()
-            % fhg::util::show (pid_old)
+            % pid_old
             )
           . str()
           );

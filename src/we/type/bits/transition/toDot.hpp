@@ -15,6 +15,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace we { namespace type {
 
@@ -111,7 +112,7 @@ namespace we { namespace type {
           case '<': return "\\<";
           case '"': return "\\\"";
           case '|': return "\\|";
-          default: return fhg::util::show (c);
+          default: return std::string (1, c);
           }
       }
 
@@ -385,7 +386,7 @@ namespace we { namespace type {
 
           level (s, l)
             << name (id, "expression")
-            << node (shape::expression, quote (fhg::util::show (expr)))
+            << node (shape::expression, quote (boost::lexical_cast<std::string> (expr)))
             ;
 
           return s.str();
@@ -399,7 +400,7 @@ namespace we { namespace type {
 
           level (s, l)
             << name (id, "modcall")
-            << node (shape::modcall, fhg::util::show (mod_call))
+            << node (shape::modcall, boost::lexical_cast<std::string> (mod_call))
             ;
 
           return s.str();
@@ -434,7 +435,7 @@ namespace we { namespace type {
               const petri_net::place_id_type& place_id (ip.first);
               const place::type& place (ip.second);
               const std::string place_dot_name
-                (name (id_net, "place_" + fhg::util::show (place_id)));
+                (name (id_net, "place_" + boost::lexical_cast<std::string> (place_id)));
 
               std::ostringstream token;
 
@@ -546,7 +547,7 @@ namespace we { namespace type {
                                 )
                     {
                       level (s, l + 1)
-                        << name (id_trans, "port_" + fhg::util::show(ec.second))
+                        << name (id_trans, "port_" + boost::lexical_cast<std::string>(ec.second))
                         << arrow
                         << ec.first
                         << association()
@@ -562,11 +563,11 @@ namespace we { namespace type {
               {
                 level (s, l + 1)
                   << name ( id_trans
-                          , "port_" + fhg::util::show (c.first)
+                          , "port_" + boost::lexical_cast<std::string> (c.first)
                           )
                   << arrow
                   << name ( id_net
-                          , "place_" + fhg::util::show (c.second.first)
+                          , "place_" + boost::lexical_cast<std::string> (c.second.first)
                           )
                   << std::endl
                   ;
@@ -603,11 +604,11 @@ namespace we { namespace type {
 
                 level (s, l + 1)
                   << name ( id_net
-                          , "place_" + fhg::util::show (c.first)
+                          , "place_" + boost::lexical_cast<std::string> (c.first)
                           )
                   << arrow
                   << name ( id_trans
-                          , "port_" + fhg::util::show (c.second.first)
+                          , "port_" + boost::lexical_cast<std::string> (c.second.first)
                           )
                   << ( is_read
                      ? brackets (keyval ("style", style::read_connection))
@@ -669,10 +670,10 @@ namespace we { namespace type {
 
         std::ostringstream cond;
 
-        if (fhg::util::show (t.condition()) != "true")
+        if (boost::lexical_cast<std::string> (t.condition()) != "true")
         {
           std::ostringstream oss;
-          oss << expr::parse::parser (fhg::util::show (t.condition()));
+          oss << expr::parse::parser (boost::lexical_cast<std::string> (t.condition()));
 
           cond << "|" << lines ('&', quote (oss.str()));
         }
@@ -692,7 +693,7 @@ namespace we { namespace type {
                       )
         {
           level (s, l + 1)
-            << name (id_trans, "port_" + fhg::util::show (p.first))
+            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
             << node ( shape::port (p.second)
                     , with_signature ( p.second.name()
                                      , p.second.signature()
@@ -714,11 +715,11 @@ namespace we { namespace type {
               if (p.second.has_associated_place())
               {
                 level (s, l + 1)
-                  << name (id_trans, "port_" + fhg::util::show (p.first))
+                  << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
                   << arrow
                   << name (id_trans
                           , "place_"
-                          + fhg::util::show (p.second.associated_place())
+                          + boost::lexical_cast<std::string> (p.second.associated_place())
                           )
                   << association()
                   << std::endl
