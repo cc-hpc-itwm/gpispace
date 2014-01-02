@@ -96,7 +96,7 @@ struct exec_context : public we::mgmt::context
 {
   boost::mt19937 _engine;
 
-  virtual int handle_internally (activity_t& act, net_t&)
+  virtual void handle_internally (activity_t& act, net_t&)
   {
     // submit to self
     while (act.can_fire())
@@ -110,19 +110,16 @@ struct exec_context : public we::mgmt::context
     }
 
     act.collect_output();
-
-    return 0;
   }
 
-  virtual int handle_internally (activity_t&, mod_t&)
+  virtual void handle_internally (activity_t&, mod_t&)
   {
     throw std::runtime_error ("cannot handle module calls internally");
   }
 
-  virtual int handle_internally (activity_t&, expr_t&)
+  virtual void handle_internally (activity_t&, expr_t&)
   {
     // nothing to do
-    return 0;
   }
 
   std::string fake_external (const std::string& act_enc, net_t& n)
@@ -132,11 +129,10 @@ struct exec_context : public we::mgmt::context
     return act.to_string();
   }
 
-  virtual int handle_externally (activity_t& act, net_t& n)
+  virtual void handle_externally (activity_t& act, net_t& n)
   {
     activity_t result (fake_external (act.to_string(), n));
     act.set_output(result.output());
-    return 0;
   }
 
   std::string fake_external (const std::string& act_enc, const mod_t& mod)
@@ -146,16 +142,15 @@ struct exec_context : public we::mgmt::context
     return act.to_string();
   }
 
-  virtual int handle_externally (activity_t& act, mod_t& module_call)
+  virtual void handle_externally (activity_t& act, mod_t& module_call)
   {
     activity_t result (fake_external (act.to_string(), module_call));
     act.set_output(result.output());
-    return 0;
   }
 
-  virtual int handle_externally (activity_t& act, expr_t& e)
+  virtual void handle_externally (activity_t& act, expr_t& e)
   {
-    return handle_internally (act, e );
+    handle_internally (act, e );
   }
 };
 

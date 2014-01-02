@@ -78,7 +78,7 @@ namespace
       , context (task.workers)
     {}
 
-    virtual int handle_internally (we::mgmt::type::activity_t& act, net_t &)
+    virtual void handle_internally (we::mgmt::type::activity_t& act, net_t &)
     {
       while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
       {
@@ -88,11 +88,9 @@ namespace
       }
 
       act.collect_output();
-
-      return 0;
     }
 
-    virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+    virtual void handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
     {
       try
       {
@@ -105,28 +103,25 @@ namespace
           + " failed: " + ex.what()
           );
       }
-
-      return 0;
     }
 
-    virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
+    virtual void handle_internally (we::mgmt::type::activity_t&, expr_t&)
     {
-      return 0;
     }
 
-    virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+    virtual void handle_externally (we::mgmt::type::activity_t& act, net_t& n)
     {
-      return handle_internally (act, n);
+      handle_internally (act, n);
     }
 
-    virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& module_call)
+    virtual void handle_externally (we::mgmt::type::activity_t& act, mod_t& module_call)
     {
-      return handle_internally (act, module_call);
+      handle_internally (act, module_call);
     }
 
-    virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+    virtual void handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
     {
-      return handle_internally (act, e);
+      handle_internally (act, e);
     }
 
   private:

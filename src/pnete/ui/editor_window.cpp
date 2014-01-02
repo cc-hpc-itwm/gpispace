@@ -617,7 +617,7 @@ namespace fhg
             : loader (module_loader)
           { }
 
-          virtual int handle_internally (we::mgmt::type::activity_t& act, net_t&)
+          virtual void handle_internally (we::mgmt::type::activity_t& act, net_t&)
           {
             while (act.can_fire())
             {
@@ -627,36 +627,31 @@ namespace fhg
             }
 
             act.collect_output ();
-
-            return 0;
           }
 
-          virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+          virtual void handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
           {
             //!\todo pass a real gspc::drts::context here
             we::loader::module_call (loader, 0, act, mod);
-
-            return 0;
           }
 
-          virtual int handle_internally (we::mgmt::type::activity_t& , expr_t&)
+          virtual void handle_internally (we::mgmt::type::activity_t& , expr_t&)
           {
-            return 0;
           }
 
-          virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+          virtual void handle_externally (we::mgmt::type::activity_t& act, net_t& n)
           {
-            return handle_internally (act, n);
+            handle_internally (act, n);
           }
 
-          virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+          virtual void handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
           {
-            return handle_internally (act, mod);
+            handle_internally (act, mod);
           }
 
-          virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+          virtual void handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
           {
-            return handle_internally (act, e);
+            handle_internally (act, e);
           }
 
         private:

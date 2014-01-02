@@ -58,7 +58,7 @@ namespace we
         void inject (const activity_t&);
         void collect_output();
 
-        int execute (context*);
+        void execute (context*);
 
         bool can_fire() const;
 

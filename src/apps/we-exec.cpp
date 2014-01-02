@@ -41,24 +41,23 @@ namespace
       , _new_id (new_id)
     {}
 
-    virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n)
+    virtual void handle_internally (we::mgmt::type::activity_t& act, net_t& n)
     {
-      return handle_externally (act, n);
+      handle_externally (act, n);
     }
-    virtual int handle_internally (we::mgmt::type::activity_t&, mod_t&)
+    virtual void handle_internally (we::mgmt::type::activity_t&, mod_t&)
     {
       throw std::runtime_error ("NO internal mod here!");
     }
-    virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
+    virtual void handle_internally (we::mgmt::type::activity_t&, expr_t&)
     {
       throw std::runtime_error ("NO internal expr here!");
     }
-    virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&)
+    virtual void handle_externally (we::mgmt::type::activity_t& act, net_t&)
     {
       _layer->submit (_new_id (_id), act);
-      return 0;
     }
-    virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+    virtual void handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
     {
       try
       {
@@ -72,9 +71,8 @@ namespace
 
         _layer->failed (_id, fhg::error::MODULE_CALL_FAILED, ex.what());
       }
-      return 0;
     }
-    virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&)
+    virtual void handle_externally (we::mgmt::type::activity_t&, expr_t&)
     {
       throw std::runtime_error ("NO external expr here!");
     }

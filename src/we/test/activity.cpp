@@ -25,34 +25,28 @@ typedef we::mgmt::type::activity_t activity_t;
 
 struct exec_context : public we::mgmt::context
 {
-  virtual int handle_internally (activity_t&, net_t&)
+  virtual void handle_internally (activity_t&, net_t&)
   {
-    return 0;
   }
 
-  virtual int handle_internally (activity_t&, mod_t&)
+  virtual void handle_internally (activity_t&, mod_t&)
   {
-    return 0;
   }
 
-  virtual int handle_internally (activity_t&, expr_t&)
+  virtual void handle_internally (activity_t&, expr_t&)
   {
-    return 0;
   }
 
-  virtual int handle_externally (activity_t&, net_t&)
+  virtual void handle_externally (activity_t&, net_t&)
   {
-    return 0;
   }
 
-  virtual int handle_externally (activity_t&, mod_t&)
+  virtual void handle_externally (activity_t&, mod_t&)
   {
-    return 0;
   }
 
-  virtual int handle_externally (activity_t&, expr_t&)
+  virtual void handle_externally (activity_t&, expr_t&)
   {
-    return 0;
   }
 };
 

@@ -286,7 +286,7 @@ namespace we
 
       namespace
       {
-        class executor : public boost::static_visitor<int>
+        class executor : public boost::static_visitor<void>
         {
         private:
           type::activity_t& _activity;
@@ -298,24 +298,24 @@ namespace we
             , _ctxt (ctxt)
           {}
 
-          int operator () (petri_net::net& net) const
+          void operator () (petri_net::net& net) const
           {
             if (_activity.transition().is_internal())
               {
-                return _ctxt->handle_internally (_activity, net);
+                _ctxt->handle_internally (_activity, net);
               }
             else
               {
-                return _ctxt->handle_externally (_activity, net);
+                _ctxt->handle_externally (_activity, net);
               }
           }
 
-          int operator() (we::type::module_call_t & mod) const
+          void operator() (we::type::module_call_t & mod) const
           {
-            return _ctxt->handle_externally (_activity, mod);
+            _ctxt->handle_externally (_activity, mod);
           }
 
-          int operator() (we::type::expression_t & expr) const
+          void operator() (we::type::expression_t & expr) const
           {
             FHG_UTIL_STAT_INC ("expr " + expr.expression());
             FHG_UTIL_STAT_START ("expr " + expr.expression());
@@ -358,14 +358,14 @@ namespace we
             FHG_UTIL_STAT_STOP ("expr-put " + expr.expression());
             FHG_UTIL_STAT_STOP ("expr " + expr.expression());
 
-            return _ctxt->handle_internally (_activity, expr);
+            _ctxt->handle_internally (_activity, expr);
           }
         };
       }
 
-      int activity_t::execute (context* ctxt)
+      void activity_t::execute (context* ctxt)
       {
-        return boost::apply_visitor
+        boost::apply_visitor
           (executor (*this, ctxt), transition().data());
       }
 
