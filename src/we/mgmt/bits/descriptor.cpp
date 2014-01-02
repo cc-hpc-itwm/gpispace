@@ -2,8 +2,6 @@
 
 #include <we/mgmt/bits/descriptor.hpp>
 
-#include <fhg/util/show.hpp>
-
 //! \todo Why is this include needed really?
 #include <we/type/net.hpp>
 
@@ -454,7 +452,7 @@ namespace we
         if (d.has_parent())      p << d.parent();
         else                   p << "n/a";
         p << std::endl;
-        p << "     children := #" << d.children_.size () << " " << fhg::util::show (d.children_.begin(), d.children_.end()) << std::endl;
+        p << "     children := #" << d.children_.size () << " [children list omitted]" << std::endl;
         p << "     internal := "
           << d.activity_.transition().is_internal()
           << std::endl;
