@@ -21,11 +21,6 @@ fhg_add_test(ini_parser.cpp
   PROJECT util
 )
 
-fhg_add_test(parent_path.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY})
-
 fhg_add_test(assert.cpp
   BOOST_UNIT_TEST
   PROJECT util
