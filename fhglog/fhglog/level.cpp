@@ -2,9 +2,10 @@
 
 #include "level.hpp"
 
+#include <fhg/util/parse/error.hpp>
+#include <fhg/util/parse/from_string.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
-#include <fhg/util/parse/error.hpp>
 
 #include <stdexcept>
 
@@ -70,16 +71,7 @@ namespace fhg
 
     Level from_string (std::string const& name)
     {
-      fhg::util::parse::position_string pos (name);
-
-      Level const level (from_parse_position (pos));
-
-      if (!pos.end())
-      {
-        throw std::runtime_error (pos.error_message ("additional input"));
-      }
-
-      return level;
+      return fhg::util::parse::from_string<Level> (&from_parse_position, name);
     }
   }
 }
