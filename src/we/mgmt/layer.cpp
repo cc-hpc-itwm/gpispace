@@ -8,23 +8,14 @@ namespace we
 {
   namespace mgmt
   {
-    layer::layer ( boost::function<void ( id_type
-                                        , type::activity_t
-                                        , id_type parent
-                                        )> rts_submit
-                 , boost::function<void ( id_type
-                                        , reason_type
-                                        )> rts_cancel
-                 , boost::function<void ( id_type
-                                        , type::activity_t
-                                        )> rts_finished
-                 , boost::function<void ( id_type
-                                        , int error_code
-                                        , std::string reason
-                                        )> rts_failed
-                 , boost::function<void (id_type)> rts_canceled
-                 , boost::function<id_type()> rts_id_generator
-                 )
+    layer::layer
+        ( boost::function<void (id_type, type::activity_t, id_type)> rts_submit
+        , boost::function<void (id_type, reason_type)> rts_cancel
+        , boost::function<void (id_type, type::activity_t)> rts_finished
+        , boost::function<void (id_type, int, std::string)> rts_failed
+        , boost::function<void (id_type)> rts_canceled
+        , boost::function<id_type()> rts_id_generator
+        )
       : _rts_submit (rts_submit)
       , _rts_cancel (rts_cancel)
       , _rts_finished (rts_finished)
@@ -129,8 +120,7 @@ namespace we
         );
     }
 
-    void layer::finished
-      (id_type id, type::activity_t result)
+    void layer::finished (id_type id, type::activity_t result)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       assert (parent);
@@ -156,10 +146,7 @@ namespace we
       request_cancel (id, boost::bind (_rts_canceled, id), reason);
     }
 
-    void layer::failed ( id_type id
-                       , int error_code
-                       , std::string reason
-                       )
+    void layer::failed (id_type id, int error_code, std::string reason)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       assert (parent);
@@ -173,10 +160,8 @@ namespace we
         );
     }
 
-    void layer::request_cancel ( id_type id
-                               , boost::function<void()> after
-                               , reason_type reason
-                               )
+    void layer::request_cancel
+      (id_type id, boost::function<void()> after, reason_type reason)
     {
       _nets_to_extract_from.remove_and_apply
         (id, boost::bind (&layer::cancel_child_jobs, this, _1, after, reason));
@@ -443,8 +428,7 @@ namespace we
       return boost::none;
     }
 
-    void layer::activity_data_type::child_finished
-      (type::activity_t child)
+    void layer::activity_data_type::child_finished (type::activity_t child)
     {
       //! \note We wrap all input activites in a net.
       petri_net::net& net

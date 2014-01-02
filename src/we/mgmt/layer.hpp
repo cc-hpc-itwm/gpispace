@@ -25,26 +25,16 @@ namespace we
       typedef std::string reason_type;
       typedef std::string result_type;
 
-      layer ( // external activities from submitted net -> child jobs
-              boost::function<void ( id_type
-                                   , type::activity_t
-                                   , id_type parent
-                                   )> rts_submit
+      layer ( // submit: external activities from submitted net -> child jobs
+              boost::function<void (id_type, type::activity_t, id_type parent)>
               // reply to cancel (parent)/on failure (child) -> child jobs
-            , boost::function<void ( id_type
-                                   , reason_type
-                                   )> rts_cancel
-              // reply to submit -> top level
-            , boost::function<void ( id_type
-                                   , type::activity_t
-                                   )> rts_finished
-              // reply to submit (on failure of child) -> top level
-            , boost::function<void ( id_type
-                                   , int error_code
-                                   , std::string reason
-                                   )> rts_failed
+            , boost::function<void (id_type, reason_type)>
+              // reply to submit on success -> top level
+            , boost::function<void (id_type, type::activity_t)>
+              // reply to submit on failure (of child) -> top level
+            , boost::function<void (id_type, int errorcode, std::string reason)>
               // reply to cancel (parent) -> top level
-            , boost::function<void (id_type)> rts_canceled
+            , boost::function<void (id_type)>
             , boost::function<id_type()> rts_id_generator
             );
       ~layer();
@@ -66,26 +56,11 @@ namespace we
 
 
     private:
-      boost::function<void ( id_type
-                           , type::activity_t
-                           , id_type parent
-                           )> _rts_submit;
-
-      boost::function<void ( id_type
-                           , reason_type
-                           )> _rts_cancel;
-
-      boost::function<void ( id_type
-                           , type::activity_t
-                           )> _rts_finished;
-
-      boost::function<void ( id_type
-                           , int error_code
-                           , std::string reason
-                           )> _rts_failed;
-
+      boost::function<void (id_type, type::activity_t, id_type)> _rts_submit;
+      boost::function<void (id_type, reason_type)> _rts_cancel;
+      boost::function<void (id_type, type::activity_t)> _rts_finished;
+      boost::function<void (id_type, int, std::string)> _rts_failed;
       boost::function<void (id_type)> _rts_canceled;
-
       boost::function<id_type()> _rts_id_generator;
 
 
@@ -137,14 +112,9 @@ namespace we
       void extract_from_nets();
       boost::thread _extract_from_nets_thread;
 
-      void request_cancel ( id_type
-                          , boost::function<void()> after
-                          , reason_type
-                          );
-      void cancel_child_jobs ( activity_data_type
-                             , boost::function<void()> after
-                             , reason_type
-                             );
+      void request_cancel (id_type, boost::function<void()> after, reason_type);
+      void cancel_child_jobs
+        (activity_data_type, boost::function<void()> after, reason_type);
 
       boost::unordered_map<id_type, boost::function<void()> >
         _finalize_job_cancellation;
