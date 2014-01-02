@@ -90,7 +90,6 @@ namespace we
 
       boost::function<void (id_type const &)> _rts_canceled;
 
-      //! \todo test the embedded data structures
       struct activity_data_type
       {
         activity_data_type (id_type id, type::activity_t activity)
