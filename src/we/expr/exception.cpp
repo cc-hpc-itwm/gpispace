@@ -2,7 +2,7 @@
 
 #include <we/expr/exception.hpp>
 
-#include <fhg/util/show.hpp>
+#include <boost/format.hpp>
 
 namespace expr
 {
@@ -11,7 +11,8 @@ namespace expr
     namespace parse
     {
       exception::exception (const std::string& msg, const std::size_t k)
-        : std::runtime_error("parse error [" + fhg::util::show(k) + "]: " + msg)
+        : std::runtime_error
+            ((boost::format ("parse error [%1%]: %2%") % k % msg).str())
         , eaten (k)
       {}
 
@@ -29,10 +30,13 @@ namespace expr
                                  , const std::size_t open
                                  , const std::size_t k
                                  )
-        : exception ( "unterminated " + what
-                    + ", opened at: " + fhg::util::show (open)
-                    , k
-                    )
+        : exception
+          ( ( boost::format ("unterminated %1%, opened at: %2%")
+            % what
+            % open
+            ).str()
+          , k
+          )
       {}
 
       missing::missing (const std::string& what, const std::size_t k)
