@@ -37,6 +37,11 @@ namespace we
 
     namespace
     {
+      std::string wrapped_activity_prefix()
+      {
+        return "_wrap_";
+      }
+
       std::string wrapped_name (we::type::port_t const& port)
       {
         return (port.is_output() ? "_out_" : "_in_") + port.name();
@@ -106,7 +111,8 @@ namespace we
         }
 
         we::type::transition_t
-          transition_net_wrapper ( "_wrap_" + transition_inner.name()
+          transition_net_wrapper ( wrapped_activity_prefix()
+                                 + transition_inner.name()
                                  , net
                                  , condition::type ("true")
                                  , true
