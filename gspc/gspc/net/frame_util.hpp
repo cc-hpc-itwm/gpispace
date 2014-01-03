@@ -9,18 +9,6 @@ namespace gspc
 {
   namespace net
   {
-    struct set_header
-    {
-      explicit
-      set_header (std::string const &k, std::string const &v)
-        : key (k)
-        , value (v)
-      {}
-
-      const std::string key;
-      const std::string value;
-    };
-
     class stream
     {
     public:
@@ -40,12 +28,6 @@ namespace gspc
       stream &operator << (T const &t)
       {
         m_sstr << t;
-        return *this;
-      }
-
-      stream & operator << (set_header const &hdr)
-      {
-        m_frame.set_header (hdr.key, hdr.value);
         return *this;
       }
 
