@@ -18,23 +18,6 @@ namespace gspc
       return f.set_header (key, boost::lexical_cast<frame::value_type>(val));
     }
 
-    template <typename T>
-    T frame_get_header ( frame const & f
-                       , frame::key_type const &key
-                       , T const &dflt
-                       )
-    {
-      boost::optional<std::string> entry = f.get_header (key);
-      if (entry)
-      {
-        return boost::lexical_cast<T>(*entry);
-      }
-      else
-      {
-        return dflt;
-      }
-    }
-
     struct set_header
     {
       explicit
