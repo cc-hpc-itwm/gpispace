@@ -47,6 +47,7 @@ namespace gspc
 
         start_accept();
 
+        //! \todo RV do not return const 0 and set return type to void
         return 0;
       }
 
@@ -54,9 +55,11 @@ namespace gspc
       int base_server<Proto>::stop ()
       {
         boost::system::error_code ec;
+        //! \todo RV do not ignore return value from cleanup
         cleanup ();
 
         m_acceptor.cancel (ec);
+        //! \todo RV do not overwrite ec or explain why this is okay
         m_acceptor.close (ec);
 
         {
@@ -66,6 +69,7 @@ namespace gspc
 
         m_new_connection.reset ();
 
+        //! \todo RV do not return const 0 and set return type to void
         return 0;
       }
 

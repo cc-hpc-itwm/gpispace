@@ -74,6 +74,7 @@ namespace gspc
         gspc::net::header::receipt r (f);
         if (r.value ())
         {
+          //! \todo RV explain why the return value is ignored
           user->deliver (make::receipt_frame (r));
         }
       }
@@ -235,6 +236,7 @@ namespace gspc
               ( "session-id"
               , boost::format ("session-%1%-%2%") % time (NULL) % m_session_id
               );
+            //! \todo RV do not ignore return value from deliver
             u->deliver (connected);
 
             m_connections.insert (u);
@@ -243,6 +245,7 @@ namespace gspc
           }
           else
           {
+            //! \todo RV do not ignore return value from deliver
             u->deliver (gspc::net::make::error_frame ( f
                                                      , gspc::net::E_UNAUTHORIZED
                                                      , "you shall not pass"
@@ -287,6 +290,7 @@ namespace gspc
 
         m_user_subscriptions.erase (user);
 
+        //! \todo RV do not return const 0 and set return type to void
         return 0;
       }
 
@@ -324,6 +328,8 @@ namespace gspc
           BOOST_FOREACH (subscription_ptr sub, sub_it->second)
           {
             frame_to_deliver.set_header ("subscription", sub->id);
+
+            //! \todo RV explain why the return value is ignored
             sub->user->deliver (frame_to_deliver);
           }
         }
