@@ -32,7 +32,7 @@
 #include <boost/shared_ptr.hpp>
 #include <sdpa/types.hpp>
 
-#include <gspc/net/handle.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/frame_builder.hpp>
 
 class DRTSImpl : FHG_PLUGIN
@@ -244,17 +244,17 @@ public:
 
     start_connect ();
 
-    gspc::net::handle
+    gspc::net::server::default_service_demux().handle
       ("/service/drts/capability/add"
       , boost::bind (&DRTSImpl::service_capability_add, this, _1, _2, _3)
       );
 
-    gspc::net::handle
+    gspc::net::server::default_service_demux().handle
       ("/service/drts/capability/del"
       , boost::bind (&DRTSImpl::service_capability_del, this, _1, _2, _3)
       );
 
-    gspc::net::handle
+    gspc::net::server::default_service_demux().handle
       ("/service/drts/capability/get"
       , boost::bind (&DRTSImpl::service_capability_get, this, _1, _2, _3)
       );
@@ -264,9 +264,9 @@ public:
 
   FHG_PLUGIN_STOP()
   {
-    gspc::net::unhandle ("/service/drts/capability/add");
-    gspc::net::unhandle ("/service/drts/capability/del");
-    gspc::net::unhandle ("/service/drts/capability/get");
+    gspc::net::server::default_service_demux().unhandle ("/service/drts/capability/add");
+    gspc::net::server::default_service_demux().unhandle ("/service/drts/capability/del");
+    gspc::net::server::default_service_demux().unhandle ("/service/drts/capability/get");
 
     m_shutting_down = true;
 

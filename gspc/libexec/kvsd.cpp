@@ -1,7 +1,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 
-#include <gspc/net/handle.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/service/strip_prefix.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 
@@ -20,7 +20,7 @@ public:
     m_kvs.reset
       (new gspc::kvs::service_t (fhg_kernel ()->get ("next", "inproc://")));
 
-    gspc::net::handle ( "/service/kvs"
+    gspc::net::server::default_service_demux().handle ( "/service/kvs"
                       , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                          , boost::ref (*m_kvs)
                                                          )
@@ -31,7 +31,7 @@ public:
 
   FHG_PLUGIN_STOP ()
   {
-    gspc::net::unhandle ("/service/kvs");
+    gspc::net::server::default_service_demux().unhandle ("/service/kvs");
     FHG_PLUGIN_STOPPED();
   }
 

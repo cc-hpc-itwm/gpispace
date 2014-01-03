@@ -8,7 +8,7 @@
 
 #include <fhglog/format.hpp>
 
-#include <gspc/net/handle.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
@@ -26,7 +26,7 @@ public:
 
     gspc::net::initialize (nthreads);
 
-    gspc::net::handle ("/service/echo", gspc::net::service::echo ());
+    gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
 
     m_url = fhg_kernel()->get ("url", "tcp://*");
 

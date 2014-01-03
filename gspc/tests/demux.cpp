@@ -11,7 +11,7 @@
 #include <boost/thread.hpp>
 
 #include <gspc/net/error.hpp>
-#include <gspc/net/handle.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
   gspc::net::server::queue_manager_t qmgr;
   qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
-  gspc::net::handle ("/service/echo", gspc::net::service::echo ());
+  gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
 
   gspc::net::frame rqst_frame;
   rqst_frame.set_command ("SEND");
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE (test_default_demux_multiple_mgmr)
   gspc::net::server::queue_manager_t qmgr_2;
   qmgr_2.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
-  gspc::net::handle ("/service/echo", gspc::net::service::echo ());
+  gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
 
   gspc::net::frame rqst_frame;
   rqst_frame.set_command ("SEND");

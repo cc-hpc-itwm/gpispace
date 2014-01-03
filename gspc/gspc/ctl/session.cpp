@@ -10,7 +10,7 @@
 #include <syslog.h>
 #include <time.h>
 
-#include <gspc/net/handle.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
@@ -231,7 +231,7 @@ namespace gspc
       gspc::net::initializer _net_init;
 
       gspc::kvs::service_t service;
-      gspc::net::handle
+      gspc::net::server::default_service_demux().handle
         ( "/service/kvs"
         , gspc::net::service::strip_prefix ( "/service/kvs/"
                                            , boost::ref (service)

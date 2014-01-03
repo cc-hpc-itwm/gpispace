@@ -15,7 +15,7 @@
 
 #include <gspc/net/error.hpp>
 #include <gspc/net/frame_builder.hpp>
-#include <gspc/net/handle.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/user.hpp>
 #include <gspc/rif/manager.hpp>
 #include <gspc/rif/proc_info.hpp>
@@ -229,7 +229,7 @@ public:
 
     m_supervisor.start ();
 
-    gspc::net::handle
+    gspc::net::server::default_service_demux().handle
       ("/service/rif", &s_handle_rif);
     FHG_PLUGIN_STARTED();
   }

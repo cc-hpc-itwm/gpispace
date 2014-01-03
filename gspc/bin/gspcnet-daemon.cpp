@@ -4,7 +4,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <gspc/net/handle.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
@@ -21,7 +21,7 @@ int main (int argc, char *argv[])
 
   gspc::net::initialize ();
 
-  gspc::net::handle ("/service/echo", gspc::net::service::echo ());
+  gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
 
   std::vector<gspc::net::server_ptr_t> servers;
   gspc::net::server::queue_manager_t qmgr;
