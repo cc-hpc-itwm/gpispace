@@ -53,6 +53,19 @@ namespace gspc
 
       header_value get_header (key_type const &key) const;
 
+      template<typename T>
+        T get_header_or (key_type const& key, T const& fallback) const
+      {
+        boost::optional<value_type> value (get_header (key));
+
+        if (value)
+        {
+          return boost::lexical_cast<T> (*value);
+        }
+
+        return fallback;
+      }
+
       frame & set_body (body_type const & body);
       frame & add_body (body_type const & body);
       frame & add_body (const char *buf, std::size_t len);
