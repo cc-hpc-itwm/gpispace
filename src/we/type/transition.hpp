@@ -163,7 +163,7 @@ namespace we { namespace type {
                                      , const we::type::property::type& prop
                                      )
       {
-        inner_to_outer_.erase (port);
+        remove_connection_out (port);
 
         connect_inner_to_outer (port, pid, prop);
       }
@@ -174,7 +174,7 @@ namespace we { namespace type {
                                      , const we::type::property::type& prop
                                      )
       {
-        outer_to_inner_.erase (pid_old);
+        remove_connection_in (pid_old);
 
         connect_outer_to_inner (pid_new, port, prop);
       }
@@ -196,7 +196,14 @@ namespace we { namespace type {
       {
         connect_outer_to_inner (pid, input_port_by_name (name), prop);
       }
-
+      void remove_connection_in (const petri_net::place_id_type& place_id)
+      {
+        outer_to_inner_.erase (place_id);
+      }
+      void remove_connection_out (const petri_net::port_id_type& port_id)
+      {
+        inner_to_outer_.erase (port_id);
+      }
       void add_connection ( const std::string& name
                           , const petri_net::place_id_type& pid
                           , const we::type::property::type& prop
@@ -214,7 +221,7 @@ namespace we { namespace type {
       void erase_port (const petri_net::port_id_type& port_id)
       {
         ports_.erase (port_id);
-        inner_to_outer_.erase (port_id);
+        remove_connection_out (port_id);
       }
 
       petri_net::port_id_type input_port_by_name (const std::string& port_name) const
