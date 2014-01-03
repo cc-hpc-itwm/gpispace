@@ -19,7 +19,6 @@
 #include <gspc/net/service/echo.hpp>
 
 #include <gspc/net/frame_io.hpp>
-#include <gspc/net/frame_util.hpp>
 
 #include "mock_user.hpp"
 

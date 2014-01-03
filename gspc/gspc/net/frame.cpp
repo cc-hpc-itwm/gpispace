@@ -7,8 +7,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 
-#include <gspc/net/frame_util.hpp>
-
 namespace gspc
 {
   namespace net
