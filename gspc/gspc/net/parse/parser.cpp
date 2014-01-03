@@ -22,6 +22,15 @@ namespace gspc
         , m_remaining_body_bytes (0)
       {}
 
+      void parser::reset ()
+      {
+        m_frame_state = frame_start;
+        m_error = E_BAD_REQUEST;
+        m_buffer.clear ();
+        m_header_key.clear ();
+        m_remaining_body_bytes = 0;
+      }
+
       result_t parser::parse ( const char *begin
                              , const char *end
                              , gspc::net::frame & frame

@@ -43,6 +43,8 @@ namespace gspc
       public:
         parser ();
 
+        void reset ();
+
         result_t parse ( const char* begin
                        , const char* end
                        , gspc::net::frame & frame
