@@ -52,6 +52,8 @@ namespace gspc
         trim_r (mangled_dst, SERVICE_SEPARATOR);
 
         m_handler_map [mangled_dst] = h;
+
+        //! \todo RV do not return const 0 and set return type to void
         return 0;
       }
 
@@ -165,6 +167,7 @@ namespace gspc
           ++it;
         }
 
+        //! \todo explain why the return value can be ignored
         user->deliver (rply);
       }
     }
