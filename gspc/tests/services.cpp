@@ -12,7 +12,6 @@
 #include <boost/thread.hpp>
 
 #include <gspc/net/error.hpp>
-#include <gspc/net/handle.hpp>
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
