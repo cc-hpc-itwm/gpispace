@@ -10,18 +10,6 @@ namespace gspc
   {
     namespace header
     {
-      template <typename T>
-      T get (frame const &f, frame::key_type const & key, T const &dflt)
-      {
-        frame::header_value v = f.get_header (key);
-        if (v)
-        {
-          return boost::lexical_cast<T>(*v);
-        }
-
-        return dflt;
-      }
-
       class item_t
       {
       public:
