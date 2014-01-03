@@ -13,8 +13,6 @@
 
 #include <stack>
 
-#include <fhg/util/stat.hpp>
-
 namespace petri_net
 {
   net::net()
@@ -432,28 +430,18 @@ namespace petri_net
     {
       const we::type::transition_t& transition (get_transition (tid));
 
-      FHG_UTIL_STAT_START ("eval    " + transition.name());
-
       do
       {
-        FHG_UTIL_STAT_INC ("eval    " + transition.name());
-
         if (cross.eval (transition))
         {
           _enabled.insert (tid);
 
           cross.write_to (_enabled_choice[tid]);
 
-          FHG_UTIL_STAT_INC  ("enable  " + transition.name());
-          FHG_UTIL_STAT_STOP ("eval    " + transition.name());
-
           return;
         }
       }
       while (cross.step());
-
-      FHG_UTIL_STAT_INC  ("disable " + transition.name());
-      FHG_UTIL_STAT_STOP ("eval    " + transition.name());
     }
 
     disable (tid);
