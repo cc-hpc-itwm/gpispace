@@ -13,9 +13,10 @@
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/frame_io.hpp>
-#include <gspc/net/frame_util.hpp>
 
 #include "mock_user.hpp"
+
+#include <boost/lexical_cast.hpp>
 
 BOOST_AUTO_TEST_CASE (test_subscribe_unsubscribe)
 {
@@ -107,7 +108,7 @@ static void s_dummy_sender_thread ( gspc::net::server::queue_manager_t & qmgr
   {
     gspc::net::frame dummy;
     dummy.set_command ("SEND");
-    gspc::net::frame_set_header (dummy, "test-id", i);
+    dummy.set_header ("test-id", boost::lexical_cast<gspc::net::frame::value_type> (i));
 
     qmgr.send (&client, dst, dummy);
   }
