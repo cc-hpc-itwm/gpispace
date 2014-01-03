@@ -9,15 +9,6 @@ namespace gspc
 {
   namespace net
   {
-    template <typename T>
-    frame & frame_set_header ( frame & f
-                             , frame::key_type const &key
-                             , T const &val
-                             )
-    {
-      return f.set_header (key, boost::lexical_cast<frame::value_type>(val));
-    }
-
     struct set_header
     {
       explicit
