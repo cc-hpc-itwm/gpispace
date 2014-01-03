@@ -9,7 +9,6 @@
 #include <gspc/net/client.hpp>
 #include <gspc/net/dial.hpp>
 #include <gspc/net/frame.hpp>
-#include <gspc/net/header_util.hpp>
 #include <gspc/net/io.hpp>
 
 static bool stop_requested = false;
@@ -41,17 +40,15 @@ public:
     if (f.get_command () == "ERROR")
     {
       std::cerr << "error: "
-                << gspc::net::header::get (f,"code",EPROTO)
+                << f.get_header_or ("code", EPROTO)
                 << ": "
-                << gspc::net::header::get (f,"message",std::string("unknown"))
+                << f.get_header_or ("message", std::string ("unknown"))
                 << std::endl;
     }
     else
     {
-      size_t recv_seq =
-        gspc::net::header::get (f, "sequence", -1);
-      boost::posix_time::ptime sent_t =
-        gspc::net::header::get (f, "timestamp", end);
+      size_t recv_seq = f.get_header_or ("sequence", -1);
+      boost::posix_time::ptime sent_t = f.get_header_or ("timestamp", end);
       boost::posix_time::ptime now =
         boost::posix_time::microsec_clock::universal_time ();
       boost::posix_time::time_duration rtt = now - sent_t;
@@ -62,8 +59,7 @@ public:
       if (rtt < rtt_min) rtt_min = rtt;
       if (rtt > rtt_max) rtt_max = rtt;
 
-      size_t recv_ttl =
-        gspc::net::header::get (f, "ttl", 0);
+      size_t recv_ttl = f.get_header_or ("ttl", 0);
 
       std::cout << f.to_string ().size () << " bytes:"
                 << " seq=" << recv_seq

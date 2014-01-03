@@ -221,11 +221,8 @@ namespace gspc
 
         if (m_connections.find (u) == m_connections.end ())
         {
-          if (auth::default_auth ().is_authorized (header::get ( f
-                                                               , "cookie"
-                                                               , std::string ("")
-                                                               )
-                                                  )
+          if ( auth::default_auth ().is_authorized
+               (f.get_header_or ("cookie", std::string ("")))
              )
           {
             ++m_session_id;

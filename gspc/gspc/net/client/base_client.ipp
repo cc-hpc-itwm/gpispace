@@ -200,8 +200,8 @@ namespace gspc
 
         if (rc == 0 && rply.get_command () == "CONNECTED")
         {
-          std::string session_id =
-            header::get (rply, "session-id", std::string ());
+          std::string session_id
+            (rply.get_header_or ("session-id", std::string()));
 
           m_priv_queue =
             ( boost::format ("/queue/%1%-%2%/replies")
@@ -225,7 +225,7 @@ namespace gspc
           {
             if (rply.get_command () == "ERROR")
             {
-              const int error_code = header::get (rply, "code", -EPERM);
+              const int error_code (rply.get_header_or ("code", -EPERM));
               if (  error_code == E_UNAUTHORIZED
                  || error_code == E_PERMISSION_DENIED
                  )
@@ -335,7 +335,7 @@ namespace gspc
             }
             else if (rply.get_command () == "ERROR")
             {
-              rc = header::get (rply, "code", -EPERM);
+              rc = rply.get_header_or ("code", -EPERM);
             }
             else
             {
