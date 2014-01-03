@@ -2,6 +2,8 @@
 
 #include <we/mgmt/layer.hpp>
 
+#include <fhg/util/starts_with.hpp>
+
 #include <boost/range/adaptor/map.hpp>
 
 namespace we
@@ -136,6 +138,63 @@ namespace we
 
         return type::activity_t (transition_net_wrapper);
       }
+
+      type::activity_t unwrap (type::activity_t& activity)
+      {
+        petri_net::net net (*activity.transition().net());
+        we::type::transition_t transition_inner
+          (net.transitions().begin()->second);
+
+        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                      , transition_inner.ports()
+                      )
+        {
+          if (p.second.is_output())
+          {
+            transition_inner.remove_connection_out (p.first);
+          }
+          else
+          {
+            petri_net::place_id_type const place_id
+              ( activity.transition().get_port
+                ( activity.transition().input_port_by_name
+                  (wrapped_name (p.second))
+                )
+              .associated_place()
+              );
+
+            transition_inner.remove_connection_in (place_id);
+          }
+        }
+
+        type::activity_t activity_inner (transition_inner);
+
+        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                      , transition_inner.ports()
+                      )
+        {
+          if (p.second.is_output())
+          {
+            petri_net::place_id_type const place_id
+              ( activity.transition().get_port
+                ( activity.transition().output_port_by_name
+                  (wrapped_name (p.second))
+                )
+              .associated_place()
+              );
+
+            BOOST_FOREACH ( const pnet::type::value::value_type& token
+                          , net.get_token (place_id)
+                          )
+            {
+              activity_inner.add_output
+                (type::activity_t::output_t::value_type (token, p.first));
+            }
+          }
+        }
+
+        return activity_inner;
+      }
     }
 
     void layer::submit (id_type id, type::activity_t act)
@@ -255,7 +314,14 @@ namespace we
         }
         else
         {
-          _rts_finished (activity_data._id, activity_data._activity);
+          _rts_finished ( activity_data._id
+                        , fhg::util::starts_with
+                          ( wrapped_activity_prefix()
+                          , activity_data._activity.transition().name()
+                          )
+                        ? unwrap (activity_data._activity)
+                        : activity_data._activity
+                        );
         }
       }
     }
