@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 
 #include <map>
+#include <sstream>
 
 namespace gspc
 {
@@ -52,6 +53,16 @@ namespace gspc
       body_type const & get_body () const { return m_body; }
 
       std::string const to_string () const;
+
+      template <class T>
+        frame& operator<< (T const& x)
+      {
+        std::ostringstream oss;
+        oss << x;
+        add_body (oss.str());
+        return *this;
+      }
+
     private:
       frame & update_content_length ();
 
