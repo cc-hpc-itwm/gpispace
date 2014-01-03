@@ -15,7 +15,6 @@
 #include <gspc/net/client.hpp>
 #include <gspc/net/dial.hpp>
 #include <gspc/net/frame.hpp>
-#include <gspc/net/header_util.hpp>
 
 class SDPACImpl : FHG_PLUGIN
                 , public sdpa::Client
