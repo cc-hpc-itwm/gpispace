@@ -5,7 +5,6 @@
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/client/dummy_frame_handler.hpp>
 #include <gspc/net/client/response.hpp>

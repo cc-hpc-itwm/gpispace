@@ -19,8 +19,6 @@
 #include <gspc/net/service/echo.hpp>
 #include <gspc/net/service/strip_prefix.hpp>
 
-#include <gspc/net/frame_io.hpp>
-
 #include "mock_user.hpp"
 
 BOOST_AUTO_TEST_CASE (test_echo_service)

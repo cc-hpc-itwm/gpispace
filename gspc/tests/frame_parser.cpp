@@ -8,7 +8,6 @@
 #include <fhg/util/now.hpp>
 #include <gspc/net/frame.hpp>
 #include <gspc/net/parse/parser.hpp>
-#include <gspc/net/frame_io.hpp>
 
 BOOST_AUTO_TEST_CASE (invalid_frame_start)
 {

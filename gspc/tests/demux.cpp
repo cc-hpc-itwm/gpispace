@@ -18,8 +18,6 @@
 
 #include <gspc/net/service/echo.hpp>
 
-#include <gspc/net/frame_io.hpp>
-
 #include "mock_user.hpp"
 
 static void s_echo_roundtrip ( gspc::net::server::queue_manager_t & qmgr
