@@ -7,6 +7,7 @@
 #include <iosfwd>
 
 #include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <map>
 #include <sstream>
@@ -39,6 +40,12 @@ namespace gspc
       frame & set_header (header_type const &);
       frame & set_header (key_type const &key, value_type const &val);
       frame & set_or_delete_header (key_type const&, header_value const&);
+
+      template<typename T>
+        frame& set_header (key_type const& key, T const& x)
+      {
+        return set_header (key, boost::lexical_cast<value_type> (x));
+      }
 
       frame & del_header (key_type const &key);
 
