@@ -110,7 +110,6 @@ namespace gspc
               );
             return -EPROTO;
           }
-          const std::string dst = *f.get_header ("destination");
           return send (user, *f.get_header ("destination"), f);
         }
         else if (f.get_command () == "SUBSCRIBE")
@@ -192,13 +191,10 @@ namespace gspc
           return -EPROTO;
         }
 
-        int rc = 0;
-        std::string const & dst = *f.get_header ("destination");
-
         shared_lock lock (m_mutex);
 
         subscription_map_t::iterator sub_it =
-          m_subscriptions.find (dst);
+          m_subscriptions.find (*f.get_header ("destination"));
 
         if (sub_it != m_subscriptions.end ())
         {
@@ -212,7 +208,7 @@ namespace gspc
           }
         }
 
-        return rc;
+        return 0;
       }
 
       int
@@ -314,7 +310,6 @@ namespace gspc
           return m_service_demux.handle_request (dst, f, this);
         }
 
-        int rc = 0;
         shared_lock lock (m_mutex);
 
         subscription_map_t::iterator sub_it =
@@ -336,7 +331,8 @@ namespace gspc
 
         s_maybe_send_receipt (user, f);
 
-        return rc;
+        //! \todo RV do not return const 0 and set return type to void
+        return 0;
       }
 
       int queue_manager_t::subscribe ( user_ptr user
@@ -345,8 +341,6 @@ namespace gspc
                                      , frame const &f
                                      )
       {
-        int rc = 0;
-
         unique_lock lock (m_mutex);
 
         s_maybe_send_receipt (user, f);
@@ -368,7 +362,7 @@ namespace gspc
         subscription_ptr sub (new subscription_t);
         if (not sub)
         {
-          rc = -ENOMEM;
+          return -ENOMEM;
         }
         else
         {
@@ -381,9 +375,10 @@ namespace gspc
         }
 
         // sanity check the frame
-        return rc;
+        return 0;
       }
 
+      //! \todo RV do not return const 0 and set return type to void
       int queue_manager_t::unsubscribe ( user_ptr user
                                        , std::string const & id
                                        , frame const &f
