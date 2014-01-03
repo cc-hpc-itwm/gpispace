@@ -50,7 +50,7 @@ static void s_echo_roundtrip ( gspc::net::server::queue_manager_t & qmgr
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body (), "Hello echo!");
-  BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
+  BOOST_REQUIRE     (rply_frame.get_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }
 
@@ -129,9 +129,9 @@ BOOST_AUTO_TEST_CASE (test_erroneous_service)
   gspc::net::frame & rply_frame = user.frames.back ();
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "ERROR");
-  BOOST_CHECK       (rply_frame.has_header ("code"));
+  BOOST_CHECK       (rply_frame.get_header ("code"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("code"), "503");
-  BOOST_CHECK       (rply_frame.has_header ("message"));
+  BOOST_CHECK       (rply_frame.get_header ("message"));
   BOOST_CHECK_EQUAL ( *rply_frame.get_header ("message")
                     , "service failed"
                     );
@@ -163,9 +163,9 @@ BOOST_AUTO_TEST_CASE (test_no_such_service)
   gspc::net::frame & rply_frame = user.frames.back ();
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "ERROR");
-  BOOST_CHECK       (rply_frame.has_header ("code"));
+  BOOST_CHECK       (rply_frame.get_header ("code"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("code"), "404");
-  BOOST_CHECK       (rply_frame.has_header ("message"));
+  BOOST_CHECK       (rply_frame.get_header ("message"));
   BOOST_CHECK_EQUAL ( *rply_frame.get_header ("message")
                     , "no such service"
                     );
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body (), "Hello echo!");
-  BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
+  BOOST_REQUIRE     (rply_frame.get_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }
 
@@ -236,6 +236,6 @@ BOOST_AUTO_TEST_CASE (test_default_demux_multiple_mgmr)
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body (), "Hello echo!");
-  BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
+  BOOST_REQUIRE     (rply_frame.get_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }

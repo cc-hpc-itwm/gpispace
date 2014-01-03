@@ -163,9 +163,9 @@ BOOST_AUTO_TEST_CASE (test_header)
 
   BOOST_CHECK_EQUAL (frame.get_command (), "CONNECT");
   BOOST_CHECK_EQUAL (frame.get_header ().size (), 2);
-  BOOST_REQUIRE (frame.has_header ("foo"));
+  BOOST_REQUIRE (frame.get_header ("foo"));
   BOOST_CHECK_EQUAL (*frame.get_header ("foo"), "bar");
-  BOOST_REQUIRE (frame.has_header ("baz"));
+  BOOST_REQUIRE (frame.get_header ("baz"));
   BOOST_CHECK_EQUAL (*frame.get_header ("baz"), "bam");
   BOOST_CHECK_EQUAL (frame.get_body (), "");
 }
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE (test_header_empty_value)
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
   BOOST_REQUIRE_GT (result.consumed, 0);
   BOOST_REQUIRE_EQUAL (result.consumed, sizeof(input));
-  BOOST_REQUIRE (frame.has_header ("foo"));
+  BOOST_REQUIRE (frame.get_header ("foo"));
   BOOST_REQUIRE_EQUAL (*frame.get_header ("foo"), "");
 }
 
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE (test_empty_body_with_content_length)
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
   BOOST_REQUIRE_EQUAL (result.consumed, sizeof(input));
-  BOOST_REQUIRE (frame.has_header ("content-length"));
+  BOOST_REQUIRE (frame.get_header ("content-length"));
   BOOST_REQUIRE_EQUAL (*frame.get_header ("content-length"), "0");
 }
 
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE (test_header_value_with_spaces)
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
   BOOST_REQUIRE_GT (result.consumed, 0);
   BOOST_REQUIRE_EQUAL (result.consumed, sizeof(input));
-  BOOST_REQUIRE (frame.has_header ("foo"));
+  BOOST_REQUIRE (frame.get_header ("foo"));
   BOOST_REQUIRE_EQUAL (*frame.get_header ("foo"), " 1  2   3    4 ");
 }
 

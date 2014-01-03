@@ -434,9 +434,9 @@ BOOST_AUTO_TEST_CASE (test_request_no_such_service)
                       , 0
                       );
   BOOST_REQUIRE_EQUAL (rply.get_command (), "ERROR");
-  BOOST_REQUIRE (rply.has_header ("code"));
+  BOOST_REQUIRE (rply.get_header ("code"));
   BOOST_REQUIRE_EQUAL (*rply.get_header ("code"), "404");
-  BOOST_REQUIRE (rply.has_header ("message"));
+  BOOST_REQUIRE (rply.get_header ("message"));
   BOOST_REQUIRE_EQUAL (*rply.get_header ("message"), "no such service");
 
   client->stop ();

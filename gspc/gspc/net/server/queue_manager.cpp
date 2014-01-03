@@ -101,7 +101,7 @@ namespace gspc
 
         if (f.get_command () == "SEND")
         {
-          if (not f.has_header ("destination"))
+          if (not f.get_header ("destination"))
           {
             user->deliver
               (gspc::net::make::error_frame ( f
@@ -116,7 +116,7 @@ namespace gspc
         }
         else if (f.get_command () == "SUBSCRIBE")
         {
-          if (not f.has_header ("destination"))
+          if (not f.get_header ("destination"))
           {
             user->deliver
               (gspc::net::make::error_frame ( f
@@ -126,7 +126,7 @@ namespace gspc
               );
             return -EPROTO;
           }
-          if (not f.has_header ("id"))
+          if (not f.get_header ("id"))
           {
             user->deliver
               (gspc::net::make::error_frame ( f
@@ -145,7 +145,7 @@ namespace gspc
         }
         else if (f.get_command () == "UNSUBSCRIBE")
         {
-          if (not f.has_header ("id"))
+          if (not f.get_header ("id"))
           {
             user->deliver
               (gspc::net::make::error_frame ( f
@@ -188,7 +188,7 @@ namespace gspc
       int
       queue_manager_t::deliver (frame const &f)
       {
-        if (not f.has_header ("destination"))
+        if (not f.get_header ("destination"))
         {
           return -EPROTO;
         }
