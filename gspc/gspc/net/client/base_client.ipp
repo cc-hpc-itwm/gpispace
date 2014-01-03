@@ -182,7 +182,7 @@ namespace gspc
         int rc;
 
         cnct = make::connect_frame ();
-        header::set (cnct, "cookie", auth::get_cookie ());
+        cnct.set_header ("cookie", auth::get_cookie ());
 
         rc = send_and_wait ( cnct
                            , rply

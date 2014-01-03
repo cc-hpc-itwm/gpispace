@@ -208,12 +208,12 @@ int main (int argc, char *argv[])
 
       frame ping ("SEND");
       ping.set_body (payload);
-      header::set (ping, "sequence", reply_handler.sent);
-      header::set (ping, "ttl", 255);
-      header::set (ping, "reply-to", client->get_private_queue ());
-      header::set (ping, "destination", "/service/echo");
+      ping.set_header ("sequence", reply_handler.sent);
+      ping.set_header ("ttl", 255);
+      ping.set_header ("reply-to", client->get_private_queue ());
+      ping.set_header ("destination", "/service/echo");
 
-      header::set (ping, "timestamp", boost::posix_time::microsec_clock::universal_time ());
+      ping.set_header ("timestamp", boost::posix_time::microsec_clock::universal_time ());
 
       client->send_raw (ping);
     }

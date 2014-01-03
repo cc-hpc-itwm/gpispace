@@ -182,7 +182,7 @@ int main (int argc, char *argv[])
     }
   }
 
-  gspc::net::header::set (rqst, "destination", destination);
+  rqst.set_header ("destination", destination);
 
   BOOST_FOREACH (std::string const &kv, header)
   {

@@ -35,15 +35,15 @@ namespace gspc
         frame error = error_frame (ec, message);
         if (frame::header_value h = f.get_header ("receipt"))
         {
-          header::set (error, "receipt-id", *h);
+          error.set_header ("receipt-id", *h);
         }
         if (frame::header_value h = f.get_header ("message-id"))
         {
-          header::set (error, "correlation-id", *h);
+          error.set_header ("correlation-id", *h);
         }
         if (frame::header_value h = f.get_header ("reply-to"))
         {
-          header::set (error, "destination", *h);
+          error.set_header ("destination", *h);
         }
         return error;
       }

@@ -234,12 +234,10 @@ namespace gspc
               make::connected_frame (gspc::net::header::version ("1.0"));
 
             connected.set_or_delete_header ("correlation-id", f.get_header ("message-id"));
-            gspc::net::header::set ( connected
-                                   , "session-id"
-                                   , boost::format ("session-%1%-%2%")
-                                   % time (NULL)
-                                   % m_session_id
-                                   );
+            connected.set_header
+              ( "session-id"
+              , boost::format ("session-%1%-%2%") % time (NULL) % m_session_id
+              );
             u->deliver (connected);
 
             m_connections.insert (u);
