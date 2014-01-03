@@ -113,10 +113,9 @@ namespace gspc
       const api_t::key_type &key = rqst.get_body ();
 
       api_t::value_type val;
-      int rc = m_kvs->get (key, val);
 
-      gspc::net::frame rply = encode_error_code (rqst, rc);
-      return rply << pnet::type::value::show (val) << "\n";
+      return encode_error_code (rqst, m_kvs->get (key, val))
+        << pnet::type::value::show (val) << "\n";
     }
 
     boost::optional<gspc::net::frame>
@@ -306,10 +305,9 @@ namespace gspc
         fhg::util::parse::require::plain_string (pos, '\n');
 
       int val;
-      int rc = m_kvs->counter_change (key, val, delta);
 
-      gspc::net::frame rply = encode_error_code (rqst, rc);
-      return rply << val << "\n";
+      return encode_error_code (rqst, m_kvs->counter_change (key, val, delta))
+        << val << "\n";
     }
 
     boost::optional<gspc::net::frame>
@@ -343,8 +341,7 @@ namespace gspc
                                  , int rc
                                  )
     {
-      gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
-      return rply << rc << "\n";
+      return gspc::net::make::reply_frame (rqst) << rc << "\n";
     }
 
     void service_t::operator () ( std::string const &dst
