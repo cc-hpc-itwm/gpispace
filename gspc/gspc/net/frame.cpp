@@ -84,14 +84,6 @@ namespace gspc
       return pos->second;
     }
 
-    frame::value_type frame::get_header ( key_type const &key
-                                        , value_type const &def
-                                        ) const
-    {
-      frame::header_value val = get_header (key);
-      return val ? *val : def;
-    }
-
     frame & frame::set_body (frame::body_type const & body)
     {
       m_body = body;

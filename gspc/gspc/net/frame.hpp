@@ -44,7 +44,6 @@ namespace gspc
       header_type const & get_header () const;
 
       header_value get_header (key_type const &key) const;
-      value_type get_header (key_type const &key, value_type const &def) const;
 
       frame & set_body (body_type const & body);
       frame & add_body (body_type const & body);
