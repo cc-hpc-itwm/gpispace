@@ -53,18 +53,6 @@ fhg_add_test (execute_activity.cpp
   LINK_LIBRARIES pnet
 )
 
-fhg_add_test (layer_atomics.cpp
-  PROJECT we
-  LINK_LIBRARIES pnet
-                 ${FhgLog_LIBRARY}
-)
-
-fhg_add_test (layer_cancel.cpp
-  PROJECT we
-  LINK_LIBRARIES pnet
-                 ${FhgLog_LIBRARY}
-)
-
 fhg_add_test (port.cpp
   PROJECT we
   LINK_LIBRARIES pnet
