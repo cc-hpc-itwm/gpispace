@@ -51,6 +51,7 @@ int main (int argc, char *argv[])
 {
   struct termios newt;
   std::string url;
+  gspc::net::parse::parser parser;
   gspc::net::frame frame;
   gspc::net::client_ptr_t client;
 
@@ -116,7 +117,6 @@ int main (int argc, char *argv[])
       std::cerr << "Connected! private queue: " << client->get_private_queue () << std::endl;
     }
 
-    gspc::net::parse::parser parser;
     gspc::net::parse::result_t result = parser.parse (&c, &c + 1, frame);
     if (result.state == gspc::net::parse::PARSE_FAILED)
     {
@@ -136,6 +136,7 @@ int main (int argc, char *argv[])
       continue;
     }
 
+    parser.reset ();
     frame = gspc::net::frame ();
   }
 
