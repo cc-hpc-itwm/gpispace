@@ -25,7 +25,6 @@ namespace gspc
         , m_strand (service)
         , m_socket (service)
         , m_buffer ()
-        , m_parser ()
         , m_frame ()
         , m_pending ()
         , m_shutting_down (false)
@@ -131,13 +130,15 @@ namespace gspc
 
           std::size_t offset = 0;
           std::size_t remaining = transferred;
+          gspc::net::parse::parser parser;
+
 
           while (remaining)
           {
-            result = m_parser.parse ( m_buffer.data () + offset
-                                    , m_buffer.data () + offset + remaining
-                                    , m_frame
-                                    );
+            result = parser.parse ( m_buffer.data () + offset
+                                  , m_buffer.data () + offset + remaining
+                                  , m_frame
+                                  );
 
             if (result.state == gspc::net::parse::PARSE_FAILED)
             {
@@ -149,8 +150,6 @@ namespace gspc
 
             if (result.state == gspc::net::parse::PARSE_FINISHED)
             {
-              m_parser.reset ();
-
                 {
                   unique_lock _ (m_shutting_down_mutex);
                   if (m_shutting_down)
