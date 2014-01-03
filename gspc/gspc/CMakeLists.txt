@@ -7,7 +7,6 @@ set (gspc_src
   net/resolver.cpp
 
   net/frame.cpp
-  net/frame_io.cpp
   net/frame_builder.cpp
   net/serve.cpp
   net/dial.cpp
