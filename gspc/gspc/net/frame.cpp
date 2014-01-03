@@ -92,11 +92,6 @@ namespace gspc
       return val ? *val : def;
     }
 
-    bool frame::has_header (std::string const & key) const
-    {
-      return get_header (key) != boost::none;
-    }
-
     frame & frame::set_body (frame::body_type const & body)
     {
       m_body = body;

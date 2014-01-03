@@ -46,8 +46,6 @@ namespace gspc
       header_value get_header (key_type const &key) const;
       value_type get_header (key_type const &key, value_type const &def) const;
 
-      bool has_header (std::string const &key) const;
-
       frame & set_body (body_type const & body);
       frame & add_body (body_type const & body);
       frame & add_body (const char *buf, std::size_t len);
