@@ -104,7 +104,6 @@ namespace petri_net
       _adj_pt.set_adjacent ( connection.place_id()
                            , connection.transition_id()
                            , connection
-                           , "add_connection"
                            );
     }
     else
@@ -112,7 +111,6 @@ namespace petri_net
       _adj_tp.set_adjacent ( connection.transition_id()
                            , connection.place_id()
                            , connection
-                           , "add_connection"
                            );
     }
 
@@ -231,20 +229,20 @@ namespace petri_net
                                        , const place_id_type& pid
                                        ) const
   {
-    return _adj_tp.get_adjacent (tid, pid, "get_connection_out");
+    return _adj_tp.get_adjacent (tid, pid);
   }
   connection_t net::get_connection_in ( const transition_id_type& tid
                                       , const place_id_type& pid
                                       ) const
   {
-    return _adj_pt.get_adjacent (pid, tid, "get_connection_in");
+    return _adj_pt.get_adjacent (pid, tid);
   }
   bool net::is_read_connection ( const transition_id_type& tid
                                , const place_id_type& pid
                                ) const
   {
     return edge::is_pt_read
-      (_adj_pt.get_adjacent (pid, tid, "is_read_connection").type());
+      (_adj_pt.get_adjacent (pid, tid).type());
   }
 
   void net::delete_edge_out ( const transition_id_type& tid

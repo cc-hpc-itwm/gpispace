@@ -10,6 +10,7 @@
 #include <boost/unordered_set.hpp>
 #include <boost/optional.hpp>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 
 namespace adjacency
 {
@@ -17,12 +18,9 @@ namespace adjacency
   class table
   {
   public:
-    const boost::optional<ADJ> get_adjacent (const ROW&, const COL&) const;
-    const ADJ get_adjacent (const ROW&, const COL&, const std::string&) const;
-    bool is_adjacent (const ROW&, const COL&) const;
+    const ADJ get_adjacent (const ROW&, const COL&) const;
     void clear_adjacent (const ROW&, const COL&);
     void set_adjacent (const ROW&, const COL&, const ADJ&);
-    void set_adjacent (const ROW&, const COL&, const ADJ&, const std::string&);
     boost::unordered_set<ADJ> adjacencies() const;
 
     const boost::unordered_map<COL,ADJ>&
@@ -74,29 +72,9 @@ namespace adjacency
   };
 
   template<typename ROW, typename COL, typename ADJ>
-  const boost::optional<ADJ>
-  table<ROW,COL,ADJ>::get_adjacent (const ROW& r, const COL&c) const
-  {
-    typename row_tab_t::const_iterator pos (row_tab.find (r));
-
-    if (pos != row_tab.end())
-      {
-        typename col_adj_tab_t::const_iterator it (pos->second.find (c));
-
-        if (it != pos->second.end())
-          {
-            return it->second;
-          }
-      }
-
-    return boost::none;
-  }
-
-  template<typename ROW, typename COL, typename ADJ>
   const ADJ
   table<ROW,COL,ADJ>::get_adjacent ( const ROW& r
                                    , const COL& c
-                                   , const std::string& msg
                                    ) const
   {
     typename row_tab_t::const_iterator pos (row_tab.find (r));
@@ -111,18 +89,8 @@ namespace adjacency
           }
       }
 
-    throw we::container::exception::no_such ("get_adjacent: " + msg);
-  }
-
-  template<typename ROW, typename COL, typename ADJ>
-  bool table<ROW,COL,ADJ>::is_adjacent (const ROW& r, const COL&c) const
-  {
-    typename row_tab_t::const_iterator pos (row_tab.find (r));
-
-    return (pos != row_tab.end())
-      ? (pos->second.find (c) != pos->second.end())
-      : false
-      ;
+    throw we::container::exception::no_such
+      ((boost::format ("get_adjacent: %1% <-> %2%") % r % c).str());
   }
 
   template<typename ROW, typename COL, typename ADJ>
@@ -153,23 +121,17 @@ namespace adjacency
                                         , const ADJ& v
                                         )
   {
-    row_tab[r][c] = v;
-    col_tab[c][r] = v;
-  }
+    typename row_tab_t::const_iterator const pos (row_tab.find (r));
 
-  template<typename ROW, typename COL, typename ADJ>
-  void table<ROW,COL,ADJ>::set_adjacent ( const ROW& r
-                                        , const COL& c
-                                        , const ADJ& v
-                                        , const std::string& msg
-                                        )
-  {
-    if (is_adjacent (r, c))
+    if (pos != row_tab.end() && pos->second.find (c) != pos->second.end())
       {
-        throw we::container::exception::already_there ("set_adjacent: " + msg);
+        throw we::container::exception::already_there
+          ( ( boost::format ("set_adjacent: %1% <-|%3%|-> %2%") % r % c % "v"
+            ).str()
+          );
       }
 
-    set_adjacent (r, c, v);
+    row_tab[r][c] = col_tab[c][r] = v;
   }
 
   //! \todo Implement more efficient if necessary
