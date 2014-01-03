@@ -16,14 +16,7 @@ namespace gspc
         frame::header_value v = f.get_header (key);
         if (v)
         {
-          try
-          {
-            return boost::lexical_cast<T>(*v);
-          }
-          catch (boost::bad_lexical_cast const &)
-          {
-            return dflt;
-          }
+          return boost::lexical_cast<T>(*v);
         }
 
         return dflt;
