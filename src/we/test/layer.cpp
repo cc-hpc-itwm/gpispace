@@ -309,8 +309,20 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
                       , we::type::property::type()
                       )
     );
+  transition.add_port
+    (we::type::port_t ( "out"
+                      , we::type::PORT_OUT
+                      , signature_type (std::string ("control"))
+                      , we::type::property::type()
+                      )
+    );
 
-  we::mgmt::type::activity_t const activity_output (transition);
+  we::mgmt::type::activity_t activity_output (transition);
+  activity_output.add_output
+    (std::make_pair ( pnet::type::value::read ("[]")
+                    , transition.output_port_by_name ("out")
+                    )
+    );
 
   we::mgmt::type::activity_t activity_input (transition);
   activity_input.add_input ( transition.input_port_by_name ("in")
@@ -320,11 +332,19 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   //! \todo leaking implementation detail: maybe extract() should
   //! remove those connections to outside that were introduced by
   //! wrap()
-  transition.add_connection (0, "in", we::type::property::type());
+  transition.add_connection (1, "in", we::type::property::type());
+  transition.add_connection ("out", 0, we::type::property::type());
   we::mgmt::type::activity_t activity_child (transition);
   activity_child.add_input ( transition.input_port_by_name ("in")
                            , pnet::type::value::read ("[]")
                            );
+
+  we::mgmt::type::activity_t activity_result (transition);
+  activity_result.add_output
+    (std::make_pair ( pnet::type::value::read ("[]")
+                    , transition.output_port_by_name ("out")
+                    )
+    );
 
   we::mgmt::layer::id_type const id (generate_id());
 
@@ -338,7 +358,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
       do_submit (id, activity_input);
     }
 
-    do_finished (child_id, activity_output);
+    do_finished (child_id, activity_result);
   }
 }
 
