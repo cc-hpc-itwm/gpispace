@@ -29,12 +29,6 @@ namespace gspc
         return dflt;
       }
 
-      template <typename T>
-      void set (frame &f, frame::key_type const &key, T const &val)
-      {
-        f.set_header (key, boost::lexical_cast<frame::value_type>(val));
-      }
-
       class item_t
       {
       public:
