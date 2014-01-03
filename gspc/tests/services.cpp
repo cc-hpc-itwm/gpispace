@@ -135,10 +135,12 @@ BOOST_AUTO_TEST_CASE (test_best_prefix_match)
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 1);
 
+  //! \todo explain why service_B is called, no service has prefix "/echo/B"
   BOOST_REQUIRE_EQUAL (demux.handle_request ("/echo/B", rqst_frame, &user), 0);
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 2);
 
+  //! \todo explain why service_B is called, no service has prefix "/echo/BCD/EFG"
   BOOST_REQUIRE_EQUAL (demux.handle_request ("/echo/BCD/EFG", rqst_frame, &user), 0);
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 3);
