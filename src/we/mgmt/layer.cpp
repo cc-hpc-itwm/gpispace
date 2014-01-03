@@ -37,38 +37,76 @@ namespace we
 
     namespace
     {
-      type::activity_t wrap (type::activity_t const& act)
+      std::string wrapped_name (we::type::port_t const& port)
       {
-        petri_net::net net;
+        return (port.is_output() ? "_out_" : "_in_") + port.name();
+      }
 
-        petri_net::transition_id_type const transition_id
-          (net.add_transition (act.transition()));
+      type::activity_t wrap (type::activity_t& activity)
+      {
+        we::type::transition_t& transition_inner (activity.transition());
+
+        petri_net::net net;
 
         boost::unordered_map<std::string, petri_net::place_id_type> place_ids;
 
-        BOOST_FOREACH
-          ( we::type::port_t const& port
-          , act.transition().ports() | boost::adaptors::map_values
-          )
+        BOOST_FOREACH ( we::type::port_t const& port
+                      , transition_inner.ports() | boost::adaptors::map_values
+                      )
         {
           petri_net::place_id_type const place_id
-            (net.add_place (place::type (port.name(), port.signature())));
+            (net.add_place (place::type (wrapped_name (port), port.signature())));
 
+          if (port.is_output())
+          {
+            transition_inner.add_connection
+              (port.name(), place_id, we::type::property::type());
+          }
+          else if (port.is_input())
+          {
+            transition_inner.add_connection
+              (place_id, port.name(), we::type::property::type());
+          }
+          else
+          {
+            throw std::runtime_error ("tried to wrap, found tunnel port!?");
+          }
+
+          place_ids.insert (std::make_pair (wrapped_name (port), place_id));
+        }
+
+        petri_net::transition_id_type const transition_id
+          (net.add_transition (transition_inner));
+
+        BOOST_FOREACH
+          ( we::type::port_t const& port
+          , transition_inner.ports() | boost::adaptors::map_values
+          )
+        {
           net.add_connection
             ( petri_net::connection_t
               ( port.is_output() ? petri_net::edge::TP
               : port.is_input() ? petri_net::edge::PT
               : throw std::runtime_error ("tried to wrap, found tunnel port!?")
               , transition_id
-              , place_id
+              , place_ids.find (wrapped_name (port))->second
               )
             );
+        }
 
-          place_ids.insert (std::make_pair (port.name(), place_id));
+        BOOST_FOREACH ( const type::activity_t::input_t::value_type& top
+                      , activity.input()
+                      )
+        {
+          we::type::port_t const& port
+            (transition_inner.get_port (top.second));
+
+          net.put_value
+            (place_ids.find (wrapped_name (port))->second, top.first);
         }
 
         we::type::transition_t
-          transition_net_wrapper ( "_wrapper_for_" + act.transition().name()
+          transition_net_wrapper ( "_wrap_" + transition_inner.name()
                                  , net
                                  , condition::type ("true")
                                  , true
@@ -77,37 +115,17 @@ namespace we
 
         BOOST_FOREACH
           ( we::type::port_t const& port
-          , act.transition().ports() | boost::adaptors::map_values
+          , transition_inner.ports() | boost::adaptors::map_values
           )
         {
           transition_net_wrapper.add_port
-            ( we::type::port_t ( port.name()
+            ( we::type::port_t ( wrapped_name (port)
                                , port.direction()
                                , port.signature()
+                               , place_ids.find (wrapped_name (port))->second
                                , port.property()
                                )
             );
-
-          if (port.is_output())
-          {
-            transition_net_wrapper.add_connection
-              ( place_ids.find (port.name())->second
-              , port.name()
-              , we::type::property::type()
-              );
-          }
-          else if (port.is_input())
-          {
-            transition_net_wrapper.add_connection
-              ( port.name()
-              , place_ids.find (port.name())->second
-              , we::type::property::type()
-              );
-          }
-          else
-          {
-            throw std::runtime_error ("tried to wrap, found tunnel port!?");
-          }
         }
 
         return type::activity_t (transition_net_wrapper);
