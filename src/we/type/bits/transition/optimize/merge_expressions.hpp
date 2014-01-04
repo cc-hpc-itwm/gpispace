@@ -339,13 +339,9 @@ namespace we
               const petri_net::place_id_type pid
                 (trans.inner_to_outer().at (p.first).first);
 
-              petri_net::connection_t const connection
-                (net.get_connection_out (tid_trans, pid));
-
               net.delete_edge_out (tid_trans, pid);
 
-              net.add_connection
-                (connection.type(), tid_pred, connection.place_id());
+              net.add_connection (petri_net::edge::TP, tid_pred, pid);
 
               pred.add_connection (p.second.name(), pid, p.second.property());
             }
