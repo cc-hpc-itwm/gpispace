@@ -25,7 +25,6 @@ namespace gspc
   {
     static
     server_ptr_t s_new_unix_server ( std::string const & path
-                                   , option_map_t const &opts
                                    , server::queue_manager_t &qmgr
                                    )
     {
@@ -42,7 +41,6 @@ namespace gspc
 
     static
     server_ptr_t s_new_tcp_server ( std::string const & location
-                                  , option_map_t const &opts
                                   , server::queue_manager_t &qmgr
                                   )
     {
@@ -61,14 +59,14 @@ namespace gspc
       const fhg::util::url_t url (url_s);
 
       server_ptr_t server
-        ( url.type() == "unix" ? s_new_unix_server (url.path(), url.args(), qmgr)
-        : url.type() == "tcp" ? s_new_tcp_server (url.path(), url.args(), qmgr)
+        ( url.type() == "unix" ? s_new_unix_server (url.path(), qmgr)
+        : url.type() == "tcp" ? s_new_tcp_server (url.path(), qmgr)
         : throw boost::system::system_error
             (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
         );
 
       server->set_queue_length
-        (get_option ( opts
+        (get_option ( url.args()
                     , "queue_length"
                     , limits::max_pending_frames_per_connection ()
                     )
