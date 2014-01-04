@@ -39,14 +39,15 @@ namespace we { namespace type {
           {
             const petri_net::transition_id_type& tid_trans_out_B (stack.top());
 
-            petri_net::connection_t const connection
-              (net.get_connection_in (tid_trans_out_B, pid_B));
+            bool const _is_read
+              (net.is_read_connection (tid_trans_out_B, pid_B));
 
             net.delete_edge_in (tid_trans_out_B, pid_B);
 
             net.add_connection
-              ( is_read ? petri_net::edge::PT_READ : connection.type()
-              , connection.transition_id()
+              ( (is_read || _is_read)
+              ? petri_net::edge::PT_READ : petri_net::edge::PT
+              , tid_trans_out_B
               , pid_A
               );
 
