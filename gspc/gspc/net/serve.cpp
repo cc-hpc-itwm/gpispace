@@ -46,7 +46,6 @@ namespace gspc
     server_ptr_t s_new_unix_server ( std::string const & path
                                    , option_map_t const &opts
                                    , server::queue_manager_t &qmgr
-                                   , boost::system::error_code & ec
                                    )
     {
       namespace fs = boost::filesystem;
@@ -55,6 +54,8 @@ namespace gspc
       {
         fs::path full_path = fs::absolute (path);
         fs::remove (full_path);
+
+        boost::system::error_code ec;
 
         server::unix_server::endpoint_type ep;
         ep = resolver<server::unix_server::protocol_type>::resolve
@@ -83,11 +84,12 @@ namespace gspc
     server_ptr_t s_new_tcp_server ( std::string const & location
                                   , option_map_t const &opts
                                   , server::queue_manager_t &qmgr
-                                  , boost::system::error_code & ec
                                   )
     {
       try
       {
+        boost::system::error_code ec;
+
         server::tcp_server::endpoint_type ep;
         ep = resolver<server::tcp_server::protocol_type>::resolve ( location
                                                                   , ec
@@ -118,29 +120,22 @@ namespace gspc
     {
       gspc::net::initialize ();
 
-      boost::system::error_code ec;
-
       server_ptr_t server;
 
       const fhg::util::url_t url (url_s);
 
       if (url.type () == "unix")
       {
-        server = s_new_unix_server (url.path (), url.args (), qmgr, ec);
+        server = s_new_unix_server (url.path (), url.args (), qmgr);
       }
       else if (url.type () == "tcp")
       {
-        server = s_new_tcp_server (url.path (), url.args (), qmgr, ec);
+        server = s_new_tcp_server (url.path (), url.args (), qmgr);
       }
       else
       {
         throw boost::system::system_error
           (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type));
-      }
-
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
       }
 
       if (server)
