@@ -22,6 +22,8 @@
 
 #include <we/mgmt/type/activity.hpp>
 
+#include <boost/bimap/bimap.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -35,6 +37,12 @@ namespace petri_net
   class net
   {
   public:
+    typedef boost::bimaps::bimap
+      < boost::bimaps::unordered_multiset_of<petri_net::transition_id_type>
+      , boost::bimaps::unordered_multiset_of<petri_net::place_id_type>
+      , boost::bimaps::set_of_relation<>
+      > adj_tp_type;
+
     //! \todo eliminate these, just do not copy or assign nets!
     net();
     net (const net&);
@@ -57,13 +65,13 @@ namespace petri_net
     transitions() const;
     const boost::unordered_set<connection_t> connections() const;
 
-    const boost::select_first_range<boost::unordered_map<place_id_type, connection_t> >
+    boost::select_second_const_range<std::pair<adj_tp_type::left_const_iterator, adj_tp_type::left_const_iterator> >
     out_of_transition (const transition_id_type&) const;
     const boost::unordered_map<place_id_type, connection_t>&
     in_to_transition (const transition_id_type&) const;
     const boost::select_first_range<boost::unordered_map<transition_id_type, connection_t> >
     out_of_place (const place_id_type&) const;
-    const boost::select_first_range<boost::unordered_map<transition_id_type, connection_t> >
+    boost::select_second_const_range<std::pair<adj_tp_type::right_const_iterator, adj_tp_type::right_const_iterator> >
     in_to_place (const place_id_type&) const;
 
     connection_t get_connection_out ( const transition_id_type&
@@ -119,7 +127,7 @@ namespace petri_net
     boost::unordered_map<transition_id_type, we::type::transition_t> _tmap;
 
     adjacency::table<place_id_type,transition_id_type> _adj_pt;
-    adjacency::table<transition_id_type,place_id_type> _adj_tp;
+    adj_tp_type _adj_tp;
 
     typedef boost::unordered_map< place_id_type
                                 , std::list<pnet::type::value::value_type>
