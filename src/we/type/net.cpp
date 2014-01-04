@@ -190,23 +190,6 @@ namespace petri_net
     }
   }
 
-  //! \todo Implement more efficient if necessary
-  const boost::unordered_set<connection_t> net::connections() const
-  {
-    boost::unordered_set<connection_t> s;
-
-    BOOST_FOREACH (adj_tp_type::value_type const& tp, _adj_tp)
-    {
-      s.insert (connection_t (edge::TP, tp.left, tp.right));
-    }
-    BOOST_FOREACH (adj_pt_type::value_type const& pt, _adj_pt)
-    {
-      s.insert (connection_t (pt.info, pt.right, pt.left));
-    }
-
-    return s;
-  }
-
   boost::select_second_const_range<std::pair<net::adj_tp_type::left_const_iterator, net::adj_tp_type::left_const_iterator> >
   net::out_of_transition (const transition_id_type& tid) const
   {

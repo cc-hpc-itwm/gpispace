@@ -68,7 +68,6 @@ namespace petri_net
     const boost::unordered_map<place_id_type,place::type>& places() const;
     const boost::unordered_map<transition_id_type,we::type::transition_t>&
     transitions() const;
-    const boost::unordered_set<connection_t> connections() const;
 
     adj_tp_type const& transition_to_place() const;
     adj_pt_type const& place_to_transition() const;
