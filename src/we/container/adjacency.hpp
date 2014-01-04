@@ -4,6 +4,7 @@
 #define _CONTAINER_ADJACENCY_HPP
 
 #include <we/container/exception.hpp>
+#include <we/type/connection.hpp>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
@@ -14,16 +15,16 @@
 
 namespace adjacency
 {
-  template<typename ROW, typename COL, typename ADJ>
+  template<typename ROW, typename COL>
   class table
   {
   public:
-    const ADJ get_adjacent (const ROW&, const COL&) const;
+    const petri_net::connection_t& get_adjacent (const ROW&, const COL&) const;
     void clear_adjacent (const ROW&, const COL&);
-    void set_adjacent (const ROW&, const COL&, const ADJ&);
-    boost::unordered_set<ADJ> adjacencies() const;
+    void set_adjacent (const ROW&, const COL&, const petri_net::connection_t&);
+    boost::unordered_set<petri_net::connection_t> adjacencies() const;
 
-    const boost::unordered_map<COL,ADJ>&
+    const boost::unordered_map<COL,petri_net::connection_t>&
     col_adj_tab (const ROW& r) const
     {
       typename row_tab_t::const_iterator pos (row_tab.find (r));
@@ -33,12 +34,12 @@ namespace adjacency
           return pos->second;
         }
 
-      static boost::unordered_map<COL,ADJ> col_adj_tab_empty;
+      static boost::unordered_map<COL,petri_net::connection_t> col_adj_tab_empty;
 
       return col_adj_tab_empty;
     }
 
-    const boost::unordered_map<ROW,ADJ>&
+    const boost::unordered_map<ROW,petri_net::connection_t>&
     row_adj_tab (const COL& c) const
     {
       typename col_tab_t::const_iterator pos (col_tab.find (c));
@@ -48,14 +49,14 @@ namespace adjacency
           return pos->second;
         }
 
-      static boost::unordered_map<ROW,ADJ> row_adj_tab_empty;
+      static boost::unordered_map<ROW,petri_net::connection_t> row_adj_tab_empty;
 
       return row_adj_tab_empty;
     }
 
   private:
-    typedef boost::unordered_map<ROW,ADJ> row_adj_tab_t;
-    typedef boost::unordered_map<COL,ADJ> col_adj_tab_t;
+    typedef boost::unordered_map<ROW,petri_net::connection_t> row_adj_tab_t;
+    typedef boost::unordered_map<COL,petri_net::connection_t> col_adj_tab_t;
 
     typedef boost::unordered_map<ROW,col_adj_tab_t> row_tab_t;
     typedef boost::unordered_map<COL,row_adj_tab_t> col_tab_t;
@@ -71,11 +72,11 @@ namespace adjacency
     }
   };
 
-  template<typename ROW, typename COL, typename ADJ>
-  const ADJ
-  table<ROW,COL,ADJ>::get_adjacent ( const ROW& r
-                                   , const COL& c
-                                   ) const
+  template<typename ROW, typename COL>
+  const petri_net::connection_t&
+  table<ROW,COL>::get_adjacent ( const ROW& r
+                               , const COL& c
+                               ) const
   {
     typename row_tab_t::const_iterator pos (row_tab.find (r));
 
@@ -93,8 +94,8 @@ namespace adjacency
       ((boost::format ("get_adjacent: %1% <-> %2%") % r % c).str());
   }
 
-  template<typename ROW, typename COL, typename ADJ>
-  void table<ROW,COL,ADJ>::clear_adjacent (const ROW& r, const COL& c)
+  template<typename ROW, typename COL>
+  void table<ROW,COL>::clear_adjacent (const ROW& r, const COL& c)
   {
     {
       typename row_tab_t::iterator pos (row_tab.find (r));
@@ -115,11 +116,11 @@ namespace adjacency
     }
   }
 
-  template<typename ROW, typename COL, typename ADJ>
-  void table<ROW,COL,ADJ>::set_adjacent ( const ROW& r
-                                        , const COL& c
-                                        , const ADJ& v
-                                        )
+  template<typename ROW, typename COL>
+  void table<ROW,COL>::set_adjacent ( const ROW& r
+                                    , const COL& c
+                                    , const petri_net::connection_t& v
+                                    )
   {
     typename row_tab_t::const_iterator const pos (row_tab.find (r));
 
@@ -135,10 +136,11 @@ namespace adjacency
   }
 
   //! \todo Implement more efficient if necessary
-  template<typename ROW, typename COL, typename ADJ>
-  boost::unordered_set<ADJ> table<ROW,COL,ADJ>::adjacencies() const
+  template<typename ROW, typename COL>
+  boost::unordered_set<petri_net::connection_t>
+  table<ROW,COL>::adjacencies() const
   {
-    boost::unordered_set<ADJ> s;
+    boost::unordered_set<petri_net::connection_t> s;
 
     BOOST_FOREACH (const typename row_tab_t::value_type& tab, row_tab)
       {

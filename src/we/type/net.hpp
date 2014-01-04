@@ -118,8 +118,8 @@ namespace petri_net
     transition_id_type _transition_id;
     boost::unordered_map<transition_id_type, we::type::transition_t> _tmap;
 
-    adjacency::table<place_id_type,transition_id_type,connection_t> _adj_pt;
-    adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
+    adjacency::table<place_id_type,transition_id_type> _adj_pt;
+    adjacency::table<transition_id_type,place_id_type> _adj_tp;
 
     typedef boost::unordered_map< place_id_type
                                 , std::list<pnet::type::value::value_type>
