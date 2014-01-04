@@ -120,7 +120,7 @@ namespace gspc
 
       using namespace boost::system;
 
-      boost::system::error_code ec (errc::make_error_code (errc::success));
+      boost::system::error_code ec;
 
       server_ptr_t server;
 
