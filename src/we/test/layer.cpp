@@ -401,8 +401,8 @@ namespace
     petri_net::place_id_type const place_id_out
       (net.add_place (place::type ("out", signature::control)));
 
-    net.put_token (put_on_input ? place_id_in : place_id_out, value::control);
-    net.put_token (put_on_input ? place_id_in : place_id_out, value::control);
+    net.put_value (put_on_input ? place_id_in : place_id_out, value::control);
+    net.put_value (put_on_input ? place_id_in : place_id_out, value::control);
 
     transition.add_connection (place_id_in, "in", we::type::property::type());
     transition.add_connection ("out", place_id_out, we::type::property::type());
