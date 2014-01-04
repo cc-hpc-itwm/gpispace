@@ -5,6 +5,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <fhg/util/url.hpp>
 
@@ -99,6 +100,10 @@ namespace gspc
       return server_ptr_t ();
     }
 
+    server_ptr_t serve ( std::string const &url
+                       , server::queue_manager_t &
+                       , boost::system::error_code & ec
+                       );
     server_ptr_t serve ( std::string const &url
                        , server::queue_manager_t &qmgr
                        )
