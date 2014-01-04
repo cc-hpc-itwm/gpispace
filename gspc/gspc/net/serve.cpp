@@ -73,7 +73,7 @@ namespace gspc
       }
       catch (boost::system::system_error const &se)
       {
-        ec = se.code ();
+        throw;
       }
 
       return server_ptr_t ();
@@ -106,7 +106,7 @@ namespace gspc
       }
       catch (boost::system::system_error const &se)
       {
-        ec = se.code ();
+        throw;
       }
 
       return server_ptr_t ();
