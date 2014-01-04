@@ -50,34 +50,23 @@ namespace gspc
     {
       namespace fs = boost::filesystem;
 
-      try
+      fs::path full_path = fs::absolute (path);
+      fs::remove (full_path);
+
+      boost::system::error_code ec;
+
+      server::unix_server::endpoint_type ep;
+      ep = resolver<server::unix_server::protocol_type>::resolve
+        (full_path.string (), ec);
+
+      if (ec)
       {
-        fs::path full_path = fs::absolute (path);
-        fs::remove (full_path);
-
-        boost::system::error_code ec;
-
-        server::unix_server::endpoint_type ep;
-        ep = resolver<server::unix_server::protocol_type>::resolve
-          (full_path.string (), ec);
-
-        if (ec)
-        {
-          throw boost::system::system_error (ec);
-        }
-        else
-        {
-          server_ptr_t s (new server::unix_server (gspc::net::io (), ep, qmgr));
-          s_set_options (s.get(), opts);
-          return s;
-        }
-      }
-      catch (boost::system::system_error const &se)
-      {
-        throw;
+        throw boost::system::system_error (ec);
       }
 
-      return server_ptr_t ();
+      server_ptr_t s (new server::unix_server (gspc::net::io (), ep, qmgr));
+      s_set_options (s.get(), opts);
+      return s;
     }
 
     static
@@ -86,32 +75,21 @@ namespace gspc
                                   , server::queue_manager_t &qmgr
                                   )
     {
-      try
-      {
-        boost::system::error_code ec;
+      boost::system::error_code ec;
 
-        server::tcp_server::endpoint_type ep;
-        ep = resolver<server::tcp_server::protocol_type>::resolve ( location
-                                                                  , ec
-                                                                  );
+      server::tcp_server::endpoint_type ep;
+      ep = resolver<server::tcp_server::protocol_type>::resolve ( location
+                                                                , ec
+                                                                );
 
-        if (ec)
-        {
-          throw boost::system::system_error (ec);
-        }
-        else
-        {
-          server_ptr_t s (new server::tcp_server (gspc::net::io (), ep, qmgr));
-          s_set_options (s.get(), opts);
-          return s;
-        }
-      }
-      catch (boost::system::system_error const &se)
+      if (ec)
       {
-        throw;
+        throw boost::system::system_error (ec);
       }
 
-      return server_ptr_t ();
+      server_ptr_t s (new server::tcp_server (gspc::net::io (), ep, qmgr));
+      s_set_options (s.get(), opts);
+      return s;
     }
 
     server_ptr_t serve ( std::string const &url_s
