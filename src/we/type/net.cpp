@@ -198,10 +198,10 @@ namespace petri_net
     return s;
   }
 
-  const boost::unordered_map<place_id_type, connection_t>&
+  const boost::select_first_range<boost::unordered_map<place_id_type, connection_t> >
   net::out_of_transition (const transition_id_type& tid) const
   {
-    return _adj_tp.col_adj_tab (tid);
+    return _adj_tp.col_adj_tab (tid) | boost::adaptors::map_keys;
   }
   const boost::unordered_map<place_id_type, connection_t>&
   net::in_to_transition (const transition_id_type& tid) const
@@ -298,7 +298,7 @@ namespace petri_net
     std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
     BOOST_FOREACH ( const place_id_type& place_id
-                  , out_of_transition (tid) | boost::adaptors::map_keys
+                  , out_of_transition (tid)
                   )
     {
       stack_out.push (std::make_pair (tid, place_id));

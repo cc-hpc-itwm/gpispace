@@ -120,7 +120,7 @@ namespace we
 
           BOOST_FOREACH
             ( const petri_net::place_id_type& place_id
-            , net.out_of_transition (tid) | boost::adaptors::map_keys
+            , net.out_of_transition (tid)
             )
           {
             pid_out.insert (place_id);
@@ -161,7 +161,6 @@ namespace we
 
                   BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
                                 , net.out_of_transition (transition_id)
-                                | boost::adaptors::map_keys
                                 )
                   {
                     if (pid_out.find (out_place_id) != pid_out.end())
@@ -195,7 +194,6 @@ namespace we
 
                 BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
                               , net.out_of_transition (transition_id)
-                              | boost::adaptors::map_keys
                               )
                 {
                   if (pid_out.find (out_place_id) != pid_out.end())
