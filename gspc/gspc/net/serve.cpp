@@ -55,9 +55,8 @@ namespace gspc
 
       boost::system::error_code ec;
 
-      server::unix_server::endpoint_type ep;
-      ep = resolver<server::unix_server::protocol_type>::resolve
-        (full_path.string (), ec);
+      server::unix_server::endpoint_type ep
+        (resolver<server::unix_server::protocol_type>::resolve (full_path.string (), ec));
 
       if (ec)
       {
@@ -77,10 +76,8 @@ namespace gspc
     {
       boost::system::error_code ec;
 
-      server::tcp_server::endpoint_type ep;
-      ep = resolver<server::tcp_server::protocol_type>::resolve ( location
-                                                                , ec
-                                                                );
+      server::tcp_server::endpoint_type ep
+        (resolver<server::tcp_server::protocol_type>::resolve (location, ec));
 
       if (ec)
       {
