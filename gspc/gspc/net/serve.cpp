@@ -26,9 +26,9 @@ namespace gspc
     template <typename Server>
     void s_set_options ( Server *server
                        , option_map_t const &opts
-                       , boost::system::error_code & ec
                        )
     {
+      boost::system::error_code ec;
       server->set_queue_length
         (get_option ( opts
                     , "queue_length"
@@ -36,6 +36,10 @@ namespace gspc
                     , ec
                     )
         );
+      if (ec)
+      {
+        throw boost::system::system_error (ec);
+      }
     }
 
     static
@@ -63,11 +67,7 @@ namespace gspc
         else
         {
           server_ptr_t s (new server::unix_server (gspc::net::io (), ep, qmgr));
-          s_set_options (s.get(), opts, ec);
-          if (ec)
-          {
-            throw boost::system::system_error (ec);
-          }
+          s_set_options (s.get(), opts);
           return s;
         }
       }
@@ -100,11 +100,7 @@ namespace gspc
         else
         {
           server_ptr_t s (new server::tcp_server (gspc::net::io (), ep, qmgr));
-          s_set_options (s.get(), opts, ec);
-          if (ec)
-          {
-            throw boost::system::system_error (ec);
-          }
+          s_set_options (s.get(), opts);
           return s;
         }
       }
