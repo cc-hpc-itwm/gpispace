@@ -91,13 +91,11 @@ namespace we
           )
         {
           net.add_connection
-            ( petri_net::connection_t
-              ( port.is_output() ? petri_net::edge::TP
-              : port.is_input() ? petri_net::edge::PT
-              : throw std::runtime_error ("tried to wrap, found tunnel port!?")
-              , transition_id
-              , place_ids.find (wrapped_name (port))->second
-              )
+            ( port.is_output() ? petri_net::edge::TP
+            : port.is_input() ? petri_net::edge::PT
+            : throw std::runtime_error ("tried to wrap, found tunnel port!?")
+            , transition_id
+            , place_ids.find (wrapped_name (port))->second
             );
         }
 

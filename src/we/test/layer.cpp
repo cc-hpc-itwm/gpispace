@@ -412,26 +412,10 @@ namespace
     petri_net::transition_id_type const transition_id_B
       (net.add_transition (transition));
 
-    net.add_connection (petri_net::connection_t ( petri_net::edge::TP
-                                                , transition_id_A
-                                                , place_id_out
-                                                )
-                       );
-    net.add_connection (petri_net::connection_t ( petri_net::edge::TP
-                                                , transition_id_B
-                                                , place_id_out
-                                                )
-                       );
-    net.add_connection (petri_net::connection_t ( petri_net::edge::PT
-                                                , transition_id_A
-                                                , place_id_in
-                                                )
-                       );
-    net.add_connection (petri_net::connection_t ( petri_net::edge::PT
-                                                , transition_id_B
-                                                , place_id_in
-                                                )
-                       );
+    net.add_connection (petri_net::edge::TP, transition_id_A, place_id_out);
+    net.add_connection (petri_net::edge::TP, transition_id_B, place_id_out);
+    net.add_connection (petri_net::edge::PT, transition_id_A, place_id_in);
+    net.add_connection (petri_net::edge::PT, transition_id_B, place_id_in);
 
     return std::make_pair ( we::type::transition_t ( "net"
                                                    , net
