@@ -24,9 +24,9 @@ namespace gspc
   namespace net
   {
     template <typename Server>
-    void s_set_options ( Server *server
-                       , option_map_t const &opts
-                       )
+    static void s_set_options ( Server *server
+                              , option_map_t const &opts
+                              )
     {
       boost::system::error_code ec;
       server->set_queue_length
