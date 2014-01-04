@@ -3,7 +3,6 @@
 #include <string>
 
 #include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/system/error_code.hpp>
 
@@ -17,7 +16,6 @@
 #include <gspc/net/resolver.hpp>
 #include <gspc/net/server/tcp_server.hpp>
 #include <gspc/net/server/unix_server.hpp>
-#include <gspc/net/server/default_queue_manager.hpp>
 
 namespace gspc
 {
