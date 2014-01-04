@@ -100,35 +100,15 @@ namespace gspc
       return server_ptr_t ();
     }
 
-    server_ptr_t serve ( std::string const &url
-                       , server::queue_manager_t &
-                       , boost::system::error_code & ec
-                       );
-    server_ptr_t serve ( std::string const &url
-                       , server::queue_manager_t &qmgr
-                       )
-    {
-      boost::system::error_code ec;
-      server_ptr_t server = serve (url, qmgr, ec);
-
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
-      }
-
-      return server;
-    }
-
     server_ptr_t serve ( std::string const &url_s
                        , server::queue_manager_t & qmgr
-                       , boost::system::error_code & ec
                        )
     {
       gspc::net::initialize ();
 
       using namespace boost::system;
 
-      ec = errc::make_error_code (errc::success);
+      boost::system::error_code ec (errc::make_error_code (errc::success));
 
       server_ptr_t server;
 
@@ -144,7 +124,13 @@ namespace gspc
       }
       else
       {
-        ec = errc::make_error_code (errc::wrong_protocol_type);
+        throw boost::system::system_error
+          (errc::make_error_code (errc::wrong_protocol_type));
+      }
+
+      if (ec)
+      {
+        throw boost::system::system_error (ec);
       }
 
       if (server)
