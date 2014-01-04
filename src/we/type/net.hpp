@@ -63,7 +63,7 @@ namespace petri_net
     in_to_transition (const transition_id_type&) const;
     const boost::unordered_map<transition_id_type, connection_t>&
     out_of_place (const place_id_type&) const;
-    const boost::unordered_map<transition_id_type, connection_t>&
+    const boost::select_first_range<boost::unordered_map<transition_id_type, connection_t> >
     in_to_place (const place_id_type&) const;
 
     connection_t get_connection_out ( const transition_id_type&

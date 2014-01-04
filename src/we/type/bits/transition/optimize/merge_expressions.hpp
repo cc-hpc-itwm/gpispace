@@ -154,7 +154,7 @@ namespace we
               {
                 BOOST_FOREACH
                   ( const petri_net::transition_id_type& transition_id
-                  , net.in_to_place (place_id) | boost::adaptors::map_keys
+                  , net.in_to_place (place_id)
                   )
                 {
                   preds_read.insert (std::make_pair (transition_id, place_id));
@@ -183,7 +183,6 @@ namespace we
             {
               BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
                             , net.in_to_place (place_id)
-                            | boost::adaptors::map_keys
                             )
               {
                 const petri_net::transition_id_type& tid_pred (transition_id);
