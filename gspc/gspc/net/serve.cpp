@@ -118,8 +118,6 @@ namespace gspc
     {
       gspc::net::initialize ();
 
-      using namespace boost::system;
-
       boost::system::error_code ec;
 
       server_ptr_t server;
@@ -137,7 +135,7 @@ namespace gspc
       else
       {
         throw boost::system::system_error
-          (errc::make_error_code (errc::wrong_protocol_type));
+          (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type));
       }
 
       if (ec)
