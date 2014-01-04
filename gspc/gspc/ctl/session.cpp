@@ -10,6 +10,7 @@
 #include <syslog.h>
 #include <time.h>
 
+#include <gspc/net/server/default_queue_manager.hpp>
 #include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
@@ -240,7 +241,7 @@ namespace gspc
 
       std::list<gspc::net::server_ptr_t> servers;
       {
-        gspc::net::server_ptr_t s (gspc::net::serve (m_url));
+        gspc::net::server_ptr_t s (gspc::net::serve (m_url, gspc::net::server::default_queue_manager()));
         servers.push_back (s);
         si.puburl = s->url ();
       }
@@ -255,7 +256,7 @@ namespace gspc
 
       {
         gspc::net::server_ptr_t s
-          (gspc::net::serve ("unix://" + (m_dir / m_name).string ()));
+          (gspc::net::serve ("unix://" + (m_dir / m_name).string (), gspc::net::server::default_queue_manager()));
         servers.push_back (s);
       }
 

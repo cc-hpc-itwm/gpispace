@@ -8,6 +8,7 @@
 
 #include <fhglog/format.hpp>
 
+#include <gspc/net/server/default_queue_manager.hpp>
 #include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
@@ -30,7 +31,7 @@ public:
 
     m_url = fhg_kernel()->get ("url", "tcp://*");
 
-    m_server = gspc::net::serve (m_url);
+    m_server = gspc::net::serve (m_url, gspc::net::server::default_queue_manager());
 
     m_listen_url = m_server->url ();
 
