@@ -550,7 +550,7 @@ namespace we
     {
       boost::mutex::scoped_lock const _ (_relation_mutex);
 
-      _relation[parent].insert (child);
+      _relation.insert (relation_type::value_type (parent, child));
     }
 
     bool layer::locked_parent_child_relation_type::terminated
@@ -558,18 +558,9 @@ namespace we
     {
       boost::mutex::scoped_lock const _ (_relation_mutex);
 
-      relation_type::iterator const childs (_relation.find (parent));
+      _relation.erase (relation_type::value_type (parent, child));
 
-      childs->second.erase (child);
-
-      if (childs->second.empty())
-      {
-        _relation.erase (childs);
-
-        return true;
-      }
-
-      return false;
+      return _relation.left.find (parent) == _relation.left.end();
     }
 
     boost::optional<layer::id_type>
@@ -577,12 +568,12 @@ namespace we
     {
       boost::mutex::scoped_lock const _ (_relation_mutex);
 
-      BOOST_FOREACH (relation_type::value_type const& entry, _relation)
+      relation_type::right_map::const_iterator const pos
+        (_relation.right.find (child));
+
+      if (pos != _relation.right.end())
       {
-        if (entry.second.count (child))
-        {
-          return entry.first;
-        }
+        return pos->second;
       }
 
       return boost::none;
@@ -593,7 +584,7 @@ namespace we
     {
       boost::mutex::scoped_lock const _ (_relation_mutex);
 
-      return _relation.find (parent) != _relation.end();
+      return _relation.left.find (parent) != _relation.left.end();
     }
 
     void layer::locked_parent_child_relation_type::apply
@@ -601,7 +592,10 @@ namespace we
     {
       boost::mutex::scoped_lock const _ (_relation_mutex);
 
-      BOOST_FOREACH (id_type child, _relation.find (parent)->second)
+      BOOST_FOREACH
+        ( id_type child
+        , _relation.left.equal_range (parent) | boost::adaptors::map_values
+        )
       {
         fun (child);
       }

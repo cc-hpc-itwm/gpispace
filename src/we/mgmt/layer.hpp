@@ -8,10 +8,12 @@
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
 
+#include <boost/bimap/bimap.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
-#include <boost/unordered_map.hpp>
 
 namespace we
 {
@@ -131,9 +133,11 @@ namespace we
 
       private:
         mutable boost::mutex _relation_mutex;
-        //! \todo measure performance, parent is reverse, boost::bimap
-        typedef boost::unordered_map<id_type, boost::unordered_set<id_type> >
-          relation_type;
+        typedef boost::bimaps::bimap
+          < boost::bimaps::unordered_multiset_of<id_type>
+          , boost::bimaps::unordered_set_of<id_type>
+          , boost::bimaps::set_of_relation<>
+          > relation_type;
         relation_type _relation;
       } _running_jobs;
 
