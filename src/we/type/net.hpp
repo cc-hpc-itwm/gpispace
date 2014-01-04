@@ -67,7 +67,7 @@ namespace petri_net
 
     boost::select_second_const_range<std::pair<adj_tp_type::left_const_iterator, adj_tp_type::left_const_iterator> >
     out_of_transition (const transition_id_type&) const;
-    const boost::unordered_map<place_id_type, connection_t>&
+    const boost::select_first_range<boost::unordered_map<place_id_type, connection_t> >
     in_to_transition (const transition_id_type&) const;
     const boost::select_first_range<boost::unordered_map<transition_id_type, connection_t> >
     out_of_place (const place_id_type&) const;

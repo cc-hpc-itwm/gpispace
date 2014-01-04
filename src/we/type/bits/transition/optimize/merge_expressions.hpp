@@ -136,7 +136,7 @@ namespace we
           long max_successors_of_pred (0);
 
           BOOST_FOREACH ( const petri_net::place_id_type& place_id
-                        , net.in_to_transition (tid) | boost::adaptors::map_keys
+                        , net.in_to_transition (tid)
                         )
           {
             petri_net::connection_t const connection
@@ -246,7 +246,6 @@ namespace we
 
           BOOST_FOREACH ( const petri_net::place_id_type& place_id
                         , net.in_to_transition (tid_trans)
-                        | boost::adaptors::map_keys
                         )
           {
             if (pid_read.find (place_id) == pid_read.end())
