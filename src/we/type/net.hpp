@@ -74,9 +74,6 @@ namespace petri_net
     boost::select_second_const_range<std::pair<adj_tp_type::right_const_iterator, adj_tp_type::right_const_iterator> >
     in_to_place (const place_id_type&) const;
 
-    connection_t get_connection_in ( const transition_id_type&
-                                   , const place_id_type&
-                                   ) const;
     bool is_read_connection ( const transition_id_type&
                             , const place_id_type&
                             ) const;

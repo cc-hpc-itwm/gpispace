@@ -219,12 +219,6 @@ namespace petri_net
     return _adj_tp.right.equal_range (pid) | boost::adaptors::map_values;
   }
 
-  connection_t net::get_connection_in ( const transition_id_type& tid
-                                      , const place_id_type& pid
-                                      ) const
-  {
-    return _adj_pt.get_adjacent (pid, tid);
-  }
   bool net::is_read_connection ( const transition_id_type& tid
                                , const place_id_type& pid
                                ) const
