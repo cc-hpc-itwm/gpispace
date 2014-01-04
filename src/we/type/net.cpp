@@ -108,8 +108,7 @@ namespace petri_net
     }
     else
     {
-      _adj_pt.set_adjacent
-        (place_id, transition_id, connection_t (type, transition_id, place_id));
+      _adj_pt.insert (adj_pt_type::value_type (place_id, transition_id, type));
 
       update_enabled (transition_id);
     }
@@ -191,9 +190,9 @@ namespace petri_net
     {
       s.insert (connection_t (edge::TP, tp.left, tp.right));
     }
-    BOOST_FOREACH (const connection_t& connection, _adj_pt.adjacencies())
+    BOOST_FOREACH (adj_pt_type::value_type const& pt, _adj_pt)
     {
-      s.insert (connection);
+      s.insert (connection_t (pt.info, pt.right, pt.left));
     }
 
     return s;
@@ -204,15 +203,15 @@ namespace petri_net
   {
     return _adj_tp.left.equal_range (tid) | boost::adaptors::map_values;
   }
-  const boost::select_first_range<boost::unordered_map<place_id_type, connection_t> >
+  boost::select_second_const_range<std::pair<net::adj_pt_type::right_const_iterator, net::adj_pt_type::right_const_iterator> >
   net::in_to_transition (const transition_id_type& tid) const
   {
-    return _adj_pt.row_adj_tab (tid) | boost::adaptors::map_keys;
+    return _adj_pt.right.equal_range (tid) | boost::adaptors::map_values;
   }
-  const boost::select_first_range<boost::unordered_map<transition_id_type, connection_t> >
+  boost::select_second_const_range<std::pair<net::adj_pt_type::left_const_iterator, net::adj_pt_type::left_const_iterator> >
   net::out_of_place (const place_id_type& pid) const
   {
-    return _adj_pt.col_adj_tab (pid) | boost::adaptors::map_keys;
+    return _adj_pt.left.equal_range (pid) | boost::adaptors::map_values;
   }
   boost::select_second_const_range<std::pair<net::adj_tp_type::right_const_iterator, net::adj_tp_type::right_const_iterator> >
   net::in_to_place (const place_id_type& pid) const
@@ -224,8 +223,16 @@ namespace petri_net
                                , const place_id_type& pid
                                ) const
   {
-    return edge::is_pt_read
-      (_adj_pt.get_adjacent (pid, tid).type());
+    adj_pt_type::const_iterator const pos
+      (_adj_pt.find (adj_pt_type::value_type (pid, tid)));
+
+    if (pos == _adj_pt.end())
+    {
+      throw pnet::exception::connection::no_such
+        <transition_id_type, place_id_type> (tid, pid);
+    }
+
+    return pos->info == edge::PT_READ;
   }
 
   void net::delete_edge_out ( const transition_id_type& tid
@@ -238,7 +245,7 @@ namespace petri_net
                            , const place_id_type& pid
                            )
   {
-    _adj_pt.clear_adjacent (pid, tid);
+    _adj_pt.erase (adj_pt_type::value_type (pid, tid));
 
     update_enabled (tid);
   }

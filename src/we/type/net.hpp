@@ -5,7 +5,6 @@
 
 #include <we/type/net.fwd.hpp>
 
-#include <we/container/adjacency.hpp>
 #include <we/container/priostore.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
@@ -42,6 +41,12 @@ namespace petri_net
       , boost::bimaps::unordered_multiset_of<petri_net::place_id_type>
       , boost::bimaps::set_of_relation<>
       > adj_tp_type;
+    typedef boost::bimaps::bimap
+      < boost::bimaps::unordered_multiset_of<petri_net::place_id_type>
+      , boost::bimaps::unordered_multiset_of<petri_net::transition_id_type>
+      , boost::bimaps::set_of_relation<>
+      , boost::bimaps::with_info<edge::type>
+      > adj_pt_type;
 
     //! \todo eliminate these, just do not copy or assign nets!
     net();
@@ -67,9 +72,9 @@ namespace petri_net
 
     boost::select_second_const_range<std::pair<adj_tp_type::left_const_iterator, adj_tp_type::left_const_iterator> >
     out_of_transition (const transition_id_type&) const;
-    const boost::select_first_range<boost::unordered_map<place_id_type, connection_t> >
+    boost::select_second_const_range<std::pair<adj_pt_type::right_const_iterator, adj_pt_type::right_const_iterator> >
     in_to_transition (const transition_id_type&) const;
-    const boost::select_first_range<boost::unordered_map<transition_id_type, connection_t> >
+    boost::select_second_const_range<std::pair<adj_pt_type::left_const_iterator, adj_pt_type::left_const_iterator> >
     out_of_place (const place_id_type&) const;
     boost::select_second_const_range<std::pair<adj_tp_type::right_const_iterator, adj_tp_type::right_const_iterator> >
     in_to_place (const place_id_type&) const;
@@ -120,7 +125,7 @@ namespace petri_net
     transition_id_type _transition_id;
     boost::unordered_map<transition_id_type, we::type::transition_t> _tmap;
 
-    adjacency::table<place_id_type,transition_id_type> _adj_pt;
+    adj_pt_type _adj_pt;
     adj_tp_type _adj_tp;
 
     typedef boost::unordered_map< place_id_type
