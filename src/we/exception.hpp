@@ -8,6 +8,8 @@
 
 #include <we/expr/token/type.hpp>
 
+#include <boost/format.hpp>
+
 #include <list>
 #include <stdexcept>
 
@@ -113,6 +115,27 @@ namespace pnet
 
         MEMBER (transition_name, std::string);
         MEMBER (port_name, std::string);
+      };
+    }
+
+    namespace connection
+    {
+      template<typename FROM, typename TO>
+      class no_such : public std::runtime_error
+      {
+      public:
+        no_such (FROM const& from, TO const& to)
+          : std::runtime_error
+            ( ( boost::format ("no such connection: %1% -> %2%") % from % to
+              ).str()
+            )
+          , _from (from)
+          , _to (to)
+        {}
+        ~no_such() throw() {}
+
+        MEMBER (from, FROM);
+        MEMBER (to, TO);
       };
     }
 
