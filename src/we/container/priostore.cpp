@@ -122,7 +122,7 @@ namespace we
     {
       const prio_map_t::const_iterator pos (_prio_map.find (get_priority (x)));
 
-      return (pos != _prio_map.end()) ? vec_elem (pos->second, x) : false;
+      return (pos != _prio_map.end()) && vec_elem (pos->second, x);
     }
 
     bool priority_store::empty() const
