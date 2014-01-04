@@ -17,6 +17,8 @@ namespace gspc
       endpoint_type resolve ( std::string const &address
                             , boost::system::error_code &ec
                             );
+      static
+      endpoint_type resolve (std::string const &address);
     };
   }
 }
