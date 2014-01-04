@@ -139,10 +139,7 @@ namespace we
                         , net.in_to_transition (tid)
                         )
           {
-            petri_net::connection_t const connection
-              (net.get_connection_in (tid, place_id));
-
-            if (petri_net::edge::is_pt_read (connection.type()))
+            if (net.is_read_connection (tid, place_id))
             {
               if (net.in_to_place (place_id).empty())
               {
@@ -353,13 +350,15 @@ namespace we
                 {
                   pred.add_port (p.second);
 
-                  petri_net::connection_t const connection
-                    (net.get_connection_in (tid_trans, *pid));
+                  bool const is_read (net.is_read_connection (tid_trans, *pid));
 
                   net.delete_edge_in (tid_trans, *pid);
 
                   net.add_connection
-                    (connection.type(), tid_pred, connection.place_id());
+                    ( is_read ? petri_net::edge::PT_READ : petri_net::edge::PT
+                    , tid_pred
+                    , *pid
+                    );
 
                   pred.add_connection
                     (*pid, p.second.name(), p.second.property());
