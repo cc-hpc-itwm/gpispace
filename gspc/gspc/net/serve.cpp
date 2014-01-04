@@ -104,8 +104,7 @@ namespace gspc
             (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
         );
 
-      if (server)
-        server->start ();
+      server->start ();
 
       return server;
     }
