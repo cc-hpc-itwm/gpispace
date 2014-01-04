@@ -14,6 +14,7 @@
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace we
 {
@@ -92,11 +93,27 @@ namespace we
         void apply (id_type, boost::function<void (activity_data_type&)>);
 
       private:
+        struct list_with_id_lookup
+        {
+          typedef boost::unordered_map< id_type
+                                      , std::list<activity_data_type>::iterator
+                                      > position_in_container_type;
+          typedef position_in_container_type::iterator iterator;
+
+          activity_data_type get_front();
+          void push_back (activity_data_type);
+          iterator find (id_type);
+          iterator end();
+          void erase (iterator);
+          bool empty() const;
+        private:
+          std::list<activity_data_type> _container;
+          position_in_container_type _position_in_container;
+        };
+
         mutable boost::mutex _container_mutex;
-        //! \todo measure performance, remove uses std::find_if,
-        //! possibly accelerate with additional map<id_type, list::iterator>
-        std::list<activity_data_type> _container;
-        std::list<activity_data_type> _container_inactive;
+        list_with_id_lookup _container;
+        list_with_id_lookup _container_inactive;
 
         boost::condition_variable_any _condition_non_empty;
 

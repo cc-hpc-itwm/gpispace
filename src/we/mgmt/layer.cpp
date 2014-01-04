@@ -327,6 +327,49 @@ namespace we
     }
 
 
+    // list_with_id_lookup
+
+    layer::activity_data_type
+      layer::async_remove_queue::list_with_id_lookup::get_front()
+    {
+      activity_data_type const activity_data (_container.front());
+
+      _container.pop_front();
+      _position_in_container.erase (activity_data._id);
+
+      return activity_data;
+    }
+    void layer::async_remove_queue::list_with_id_lookup::push_back
+      (activity_data_type activity_data)
+    {
+      _position_in_container.insert
+        ( std::make_pair
+          ( activity_data._id
+          , _container.insert (_container.end(), activity_data)
+          )
+        );
+    }
+    layer::async_remove_queue::list_with_id_lookup::iterator
+      layer::async_remove_queue::list_with_id_lookup::find (id_type id)
+    {
+      return _position_in_container.find (id);
+    }
+    layer::async_remove_queue::list_with_id_lookup::iterator
+      layer::async_remove_queue::list_with_id_lookup::end()
+    {
+      return _position_in_container.end();
+    }
+    void layer::async_remove_queue::list_with_id_lookup::erase (iterator pos)
+    {
+      _container.erase (pos->second);
+      _position_in_container.erase (pos);
+    }
+    bool layer::async_remove_queue::list_with_id_lookup::empty() const
+    {
+      return _container.empty();
+    }
+
+
     // async_remove_queue
 
     layer::activity_data_type layer::async_remove_queue::get()
@@ -335,14 +378,10 @@ namespace we
 
       _condition_non_empty.wait
         ( lock
-        , not boost::bind (&std::list<activity_data_type>::empty, &_container)
+        , not boost::bind (&list_with_id_lookup::empty, &_container)
         );
 
-      activity_data_type activity_data (_container.front());
-
-      _container.pop_front();
-
-      return activity_data;
+      return _container.get_front();
     }
 
     void layer::async_remove_queue::put
@@ -390,26 +429,18 @@ namespace we
       boost::mutex::scoped_lock const container_lock (_container_mutex);
       boost::mutex::scoped_lock const to_be_removed_lock (_to_be_removed_mutex);
 
-      std::list<activity_data_type>::iterator pos
-        ( std::find_if ( _container.begin(), _container.end()
-                       , boost::bind (&activity_data_type::_id, _1) == id
-                       )
-        );
-
-      std::list<activity_data_type>::iterator pos_container_inactive
-        ( std::find_if ( _container_inactive.begin(), _container_inactive.end()
-                       , boost::bind (&activity_data_type::_id, _1) == id
-                       )
-        );
+      list_with_id_lookup::iterator const pos (_container.find (id));
+      list_with_id_lookup::iterator const pos_container_inactive
+        (_container_inactive.find (id));
 
       if (pos != _container.end())
       {
-        fun (*pos);
+        fun (*pos->second);
         _container.erase (pos);
       }
       else if (pos_container_inactive != _container_inactive.end())
       {
-        fun (*pos_container_inactive);
+        fun (*pos_container_inactive->second);
         _container_inactive.erase (pos_container_inactive);
       }
       else
@@ -424,25 +455,17 @@ namespace we
       boost::mutex::scoped_lock const container_lock (_container_mutex);
       boost::mutex::scoped_lock const to_be_removed_lock (_to_be_removed_mutex);
 
-      std::list<activity_data_type>::iterator pos
-        ( std::find_if ( _container.begin(), _container.end()
-                       , boost::bind (&activity_data_type::_id, _1) == id
-                       )
-        );
-
-      std::list<activity_data_type>::iterator pos_container_inactive
-        ( std::find_if ( _container_inactive.begin(), _container_inactive.end()
-                       , boost::bind (&activity_data_type::_id, _1) == id
-                       )
-        );
+      list_with_id_lookup::iterator const pos (_container.find (id));
+      list_with_id_lookup::iterator const pos_container_inactive
+        (_container_inactive.find (id));
 
       if (pos != _container.end())
       {
-        fun (*pos);
+        fun (*pos->second);
       }
       else if (pos_container_inactive != _container_inactive.end())
       {
-        activity_data_type data (*pos_container_inactive);
+        activity_data_type data (*pos_container_inactive->second);
         _container_inactive.erase (pos_container_inactive);
         fun (data);
         _container.push_back (data);
