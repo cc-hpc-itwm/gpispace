@@ -145,7 +145,7 @@ namespace gspc
         case header_start:
           if (line_feed == c)
           {
-            if (frame.has_header ("content-length"))
+            if (frame.get_header ("content-length"))
             {
               try
               {
@@ -190,7 +190,7 @@ namespace gspc
         case header_start_line_feed:
           if (line_feed == c)
           {
-            if (frame.has_header ("content-length"))
+            if (frame.get_header ("content-length"))
             {
               try
               {

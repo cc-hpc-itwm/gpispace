@@ -28,7 +28,7 @@
 
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_builder.hpp>
-#include <gspc/net/handle.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/user.hpp>
 
 #include <gspc/drts/context.hpp>
@@ -208,17 +208,17 @@ public:
     m_worker.reset(new boost::thread(&WFEImpl::execution_thread, this));
     fhg::util::set_threadname (*m_worker, "[wfe]");
 
-    gspc::net::handle
+    gspc::net::server::default_service_demux().handle
       ("/service/wfe/current-job"
       , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
       );
 
-    gspc::net::handle
+    gspc::net::server::default_service_demux().handle
       ("/service/wfe/search-path/set"
       , boost::bind (&WFEImpl::service_set_search_path, this, _1, _2, _3)
       );
 
-    gspc::net::handle
+    gspc::net::server::default_service_demux().handle
       ("/service/wfe/search-path/get"
       , boost::bind (&WFEImpl::service_get_search_path, this, _1, _2, _3)
       );
@@ -238,9 +238,9 @@ public:
   {
     _notification_service = boost::none;
 
-    gspc::net::unhandle ("/service/wfe/current-job");
-    gspc::net::unhandle ("/service/wfe/search-path/get");
-    gspc::net::unhandle ("/service/wfe/search-path/set");
+    gspc::net::server::default_service_demux().unhandle ("/service/wfe/current-job");
+    gspc::net::server::default_service_demux().unhandle ("/service/wfe/search-path/get");
+    gspc::net::server::default_service_demux().unhandle ("/service/wfe/search-path/set");
 
     if (m_worker)
     {

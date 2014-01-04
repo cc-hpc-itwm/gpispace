@@ -11,15 +11,13 @@
 #include <boost/thread.hpp>
 
 #include <gspc/net/error.hpp>
-#include <gspc/net/handle.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/parse/parser.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
 
 #include <gspc/net/service/echo.hpp>
-
-#include <gspc/net/frame_io.hpp>
-#include <gspc/net/frame_util.hpp>
 
 #include "mock_user.hpp"
 
@@ -50,7 +48,7 @@ static void s_echo_roundtrip ( gspc::net::server::queue_manager_t & qmgr
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body (), "Hello echo!");
-  BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
+  BOOST_REQUIRE     (rply_frame.get_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }
 
@@ -129,9 +127,9 @@ BOOST_AUTO_TEST_CASE (test_erroneous_service)
   gspc::net::frame & rply_frame = user.frames.back ();
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "ERROR");
-  BOOST_CHECK       (rply_frame.has_header ("code"));
+  BOOST_CHECK       (rply_frame.get_header ("code"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("code"), "503");
-  BOOST_CHECK       (rply_frame.has_header ("message"));
+  BOOST_CHECK       (rply_frame.get_header ("message"));
   BOOST_CHECK_EQUAL ( *rply_frame.get_header ("message")
                     , "service failed"
                     );
@@ -163,9 +161,9 @@ BOOST_AUTO_TEST_CASE (test_no_such_service)
   gspc::net::frame & rply_frame = user.frames.back ();
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "ERROR");
-  BOOST_CHECK       (rply_frame.has_header ("code"));
+  BOOST_CHECK       (rply_frame.get_header ("code"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("code"), "404");
-  BOOST_CHECK       (rply_frame.has_header ("message"));
+  BOOST_CHECK       (rply_frame.get_header ("message"));
   BOOST_CHECK_EQUAL ( *rply_frame.get_header ("message")
                     , "no such service"
                     );
@@ -178,10 +176,10 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
   int rc;
   mock::user user;
 
-  gspc::net::server::queue_manager_t qmgr;
+  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
   qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
-  gspc::net::handle ("/service/echo", gspc::net::service::echo ());
+  gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
 
   gspc::net::frame rqst_frame;
   rqst_frame.set_command ("SEND");
@@ -199,7 +197,7 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body (), "Hello echo!");
-  BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
+  BOOST_REQUIRE     (rply_frame.get_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }
 
@@ -210,12 +208,12 @@ BOOST_AUTO_TEST_CASE (test_default_demux_multiple_mgmr)
   int rc;
   mock::user user;
 
-  gspc::net::server::queue_manager_t qmgr_1;
+  gspc::net::server::queue_manager_t qmgr_1 ((gspc::net::server::default_service_demux()));
   qmgr_1.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
-  gspc::net::server::queue_manager_t qmgr_2;
+  gspc::net::server::queue_manager_t qmgr_2 ((gspc::net::server::default_service_demux()));
   qmgr_2.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
-  gspc::net::handle ("/service/echo", gspc::net::service::echo ());
+  gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
 
   gspc::net::frame rqst_frame;
   rqst_frame.set_command ("SEND");
@@ -236,6 +234,6 @@ BOOST_AUTO_TEST_CASE (test_default_demux_multiple_mgmr)
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body (), "Hello echo!");
-  BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
+  BOOST_REQUIRE     (rply_frame.get_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }

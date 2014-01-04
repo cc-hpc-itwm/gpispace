@@ -9,7 +9,6 @@
 
 #include <we/type/net.fwd.hpp>
 #include <we/type/place.hpp>
-#include <we/type/error.hpp>
 
 #include <we/expr/eval/context.hpp>
 
@@ -747,8 +746,8 @@ namespace xml
               (pid, util::generic_we_parse (token, "parse token").eval_all());
           }
 
-          if (  (we_net.in_to_place (pid).size() == 0)
-             && (we_net.out_of_place (pid).size() == 0)
+          if (  we_net.in_to_place (pid).empty()
+             && we_net.out_of_place (pid).empty()
              && (!place.is_virtual())
              )
           {

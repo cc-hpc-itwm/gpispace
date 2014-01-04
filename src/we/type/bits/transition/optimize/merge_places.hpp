@@ -29,7 +29,7 @@ namespace we { namespace type {
 
         // rewire pid_B -> trans to pid_A -> trans
         BOOST_FOREACH ( const petri_net::transition_id_type& trans_out_B
-                      , net.out_of_place (pid_B) | boost::adaptors::map_keys
+                      , net.out_of_place (pid_B)
                       )
           {
             stack.push (trans_out_B);
@@ -39,17 +39,16 @@ namespace we { namespace type {
           {
             const petri_net::transition_id_type& tid_trans_out_B (stack.top());
 
-            petri_net::connection_t const connection
-              (net.get_connection_in (tid_trans_out_B, pid_B));
+            bool const _is_read
+              (net.is_read_connection (tid_trans_out_B, pid_B));
 
             net.delete_edge_in (tid_trans_out_B, pid_B);
 
             net.add_connection
-              ( petri_net::connection_t
-                ( is_read ? petri_net::edge::PT_READ : connection.type()
-                , connection.transition_id()
-                , pid_A
-                )
+              ( (is_read || _is_read)
+              ? petri_net::edge::PT_READ : petri_net::edge::PT
+              , tid_trans_out_B
+              , pid_A
               );
 
             transition_t trans_out_B (net.get_transition (tid_trans_out_B));
@@ -71,7 +70,7 @@ namespace we { namespace type {
 
         // rewire trans -> pid_B to trans -> pid_A
         BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
-                      , net.in_to_place (pid_B) | boost::adaptors::map_keys
+                      , net.in_to_place (pid_B)
                       )
           {
             stack.push (transition_id);
@@ -81,17 +80,9 @@ namespace we { namespace type {
           {
             const petri_net::transition_id_type& tid_trans_in_B (stack.top());
 
-            petri_net::connection_t const connection
-              (net.get_connection_out (tid_trans_in_B, pid_B));
-
             net.delete_edge_out (tid_trans_in_B, pid_B);
 
-            net.add_connection
-              ( petri_net::connection_t ( connection.type()
-                                        , connection.transition_id()
-                                        , pid_A
-                                        )
-              );
+            net.add_connection (petri_net::edge::TP, tid_trans_in_B, pid_A);
 
             transition_t trans_in_B (net.get_transition (tid_trans_in_B));
 
@@ -119,7 +110,7 @@ namespace we { namespace type {
 
         BOOST_FOREACH (const pnet::type::value::value_type& token, tokens)
         {
-          net.put_token (pid_A, token);
+          net.put_value (pid_A, token);
         }
 
         const bool okay_A (!rewrite::has_magic_prefix (name_A));

@@ -34,6 +34,8 @@ namespace gspc
       virtual int start () = 0;
       virtual int stop () = 0;
       virtual std::string url () const = 0;
+
+      virtual void set_queue_length (size_t) = 0;
     };
   }
 }

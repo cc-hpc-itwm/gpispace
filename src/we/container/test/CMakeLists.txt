@@ -6,7 +6,3 @@ fhg_add_test (priostore.cpp
   PROJECT we_container
   DESCRIPTION "functionality of priority_store (transition id <-> prio)"
 )
-
-fhg_add_test (adjacency.cpp
-  PROJECT we_container
-)

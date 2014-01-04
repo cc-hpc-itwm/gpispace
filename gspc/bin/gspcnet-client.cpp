@@ -10,7 +10,6 @@
 #include <gspc/net/dial.hpp>
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_handler.hpp>
-#include <gspc/net/frame_io.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/user.hpp>
@@ -34,7 +33,7 @@ public:
     if (f.get_command ().size ())
     {
       std::cout << "'";
-      std::cout << f;
+      std::cout << f.to_string();
       std::cout << "'" << std::endl;
     }
     return 0;

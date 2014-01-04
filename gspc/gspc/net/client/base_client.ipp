@@ -5,7 +5,6 @@
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
-#include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/client/dummy_frame_handler.hpp>
 #include <gspc/net/client/response.hpp>
@@ -183,7 +182,7 @@ namespace gspc
         int rc;
 
         cnct = make::connect_frame ();
-        header::set (cnct, "cookie", auth::get_cookie ());
+        cnct.set_header ("cookie", auth::get_cookie ());
 
         rc = send_and_wait ( cnct
                            , rply
@@ -201,8 +200,8 @@ namespace gspc
 
         if (rc == 0 && rply.get_command () == "CONNECTED")
         {
-          std::string session_id =
-            header::get (rply, "session-id", std::string ());
+          std::string session_id
+            (rply.get_header_or ("session-id", std::string()));
 
           m_priv_queue =
             ( boost::format ("/queue/%1%-%2%/replies")
@@ -226,7 +225,7 @@ namespace gspc
           {
             if (rply.get_command () == "ERROR")
             {
-              const int error_code = header::get (rply, "code", -EPERM);
+              const int error_code (rply.get_header_or ("code", -EPERM));
               if (  error_code == E_UNAUTHORIZED
                  || error_code == E_PERMISSION_DENIED
                  )
@@ -336,7 +335,7 @@ namespace gspc
             }
             else if (rply.get_command () == "ERROR")
             {
-              rc = header::get (rply, "code", -EPERM);
+              rc = rply.get_header_or ("code", -EPERM);
             }
             else
             {

@@ -3,10 +3,13 @@
 #ifndef PNET_SRC_WE_TYPE_VALUE_EXCEPTION_HPP
 #define PNET_SRC_WE_TYPE_VALUE_EXCEPTION_HPP
 
+#include <we/type/id.hpp>
 #include <we/type/value.hpp>
 #include <we/type/signature.hpp>
 
 #include <we/expr/token/type.hpp>
+
+#include <boost/format.hpp>
 
 #include <list>
 #include <stdexcept>
@@ -113,6 +116,51 @@ namespace pnet
 
         MEMBER (transition_name, std::string);
         MEMBER (port_name, std::string);
+      };
+    }
+
+    namespace connection
+    {
+      template<typename FROM, typename TO>
+      class no_such : public std::runtime_error
+      {
+      public:
+        no_such (FROM const& from, TO const& to)
+          : std::runtime_error
+            ( ( boost::format ("no such connection: %1% -> %2%") % from % to
+              ).str()
+            )
+          , _from (from)
+          , _to (to)
+        {}
+        ~no_such() throw() {}
+
+        MEMBER (from, FROM);
+        MEMBER (to, TO);
+      };
+    }
+
+    namespace place
+    {
+      class no_such : public std::runtime_error
+      {
+      public:
+        no_such (petri_net::place_id_type const&);
+        ~no_such() throw() {}
+
+        MEMBER (place_id, petri_net::place_id_type);
+      };
+    }
+
+    namespace transition
+    {
+      class no_such : public std::runtime_error
+      {
+      public:
+        no_such (petri_net::transition_id_type const&);
+        ~no_such() throw() {}
+
+        MEMBER (transition_id, petri_net::transition_id_type);
       };
     }
 

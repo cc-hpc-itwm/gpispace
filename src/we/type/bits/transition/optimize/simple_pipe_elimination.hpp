@@ -50,20 +50,6 @@ namespace we { namespace type {
         {}
       };
 
-      namespace detail
-      {
-        template<typename Set, typename SetB>
-        void insert_tids (Set& set, const SetB& b)
-        {
-          BOOST_FOREACH ( const typename SetB::key_type& v
-                        , b | boost::adaptors::map_keys
-                        )
-          {
-            set.insert (v);
-          }
-        }
-      }
-
       typedef std::vector<pid_pair_type> pid_pair_vec_type;
 
       inline boost::optional<pid_pair_vec_type>
@@ -133,13 +119,33 @@ namespace we { namespace type {
             const petri_net::place_id_type pid_A (in->second);
             const petri_net::place_id_type pid_B (out->second);
 
-            all_out_equals_one &= (net.out_of_place (pid_A).size() == 1);
-            all_in_equals_one &= (net.in_to_place (pid_B).size() == 1);
+            all_out_equals_one &= (boost::distance (net.out_of_place (pid_A)) == 1);
+            all_in_equals_one &= (boost::distance (net.in_to_place (pid_B)) == 1);
 
-            detail::insert_tids (suc_in, net.out_of_place (pid_A));
-            detail::insert_tids (suc_out, net.out_of_place (pid_B));
-            detail::insert_tids (pred_in, net.in_to_place (pid_A));
-            detail::insert_tids (pred_out, net.in_to_place (pid_B));
+            BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
+                          , net.out_of_place (pid_A)
+                          )
+            {
+              suc_in.insert (transition_id);
+            }
+            BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
+                          , net.out_of_place (pid_B)
+                          )
+            {
+              suc_out.insert (transition_id);
+            }
+            BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
+                          , net.in_to_place (pid_A)
+                          )
+            {
+              pred_in.insert (transition_id);
+            }
+            BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
+                          , net.in_to_place (pid_B)
+                          )
+            {
+              pred_out.insert (transition_id);
+            }
 
             if (net.is_read_connection (tid, pid_A))
               {
@@ -158,7 +164,7 @@ namespace we { namespace type {
                 return boost::none;
               }
 
-            if (  (( net.out_of_place (pid_A).size()
+            if (  (( boost::distance (net.out_of_place (pid_A))
                    + ((port_A && port_A->is_output()) ? 1 : 0)
                    ) > 1
                   )

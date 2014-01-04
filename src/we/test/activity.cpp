@@ -14,7 +14,6 @@
 #include <we/type/expression.hpp>
 #include <we/type/net.fwd.hpp>
 
-using petri_net::connection_t;
 using petri_net::edge::PT;
 using petri_net::edge::PT_READ;
 using petri_net::edge::TP;
@@ -124,10 +123,10 @@ int main (int, char **)
 
   petri_net::transition_id_type tid (net.add_transition (trans_inner));
 
-  net.add_connection (connection_t (PT, tid, pid_store));
-  net.add_connection (connection_t (TP, tid, pid_store));
-  net.add_connection (connection_t (PT_READ, tid, pid_vid));
-  net.add_connection (connection_t (TP, tid, pid_pair));
+  net.add_connection (PT, tid, pid_store);
+  net.add_connection (TP, tid, pid_store);
+  net.add_connection (PT_READ, tid, pid_vid);
+  net.add_connection (TP, tid, pid_pair);
 
   net.put_value (pid_vid, 0L);
   net.put_value (pid_vid, 1L);

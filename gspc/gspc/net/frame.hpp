@@ -7,8 +7,10 @@
 #include <iosfwd>
 
 #include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <map>
+#include <sstream>
 
 namespace gspc
 {
@@ -39,14 +41,30 @@ namespace gspc
       frame & set_header (key_type const &key, value_type const &val);
       frame & set_or_delete_header (key_type const&, header_value const&);
 
+      template<typename T>
+        frame& set_header (key_type const& key, T const& x)
+      {
+        return set_header (key, boost::lexical_cast<value_type> (x));
+      }
+
       frame & del_header (key_type const &key);
 
       header_type const & get_header () const;
 
       header_value get_header (key_type const &key) const;
-      value_type get_header (key_type const &key, value_type const &def) const;
 
-      bool has_header (std::string const &key) const;
+      template<typename T>
+        T get_header_or (key_type const& key, T const& fallback) const
+      {
+        boost::optional<value_type> value (get_header (key));
+
+        if (value)
+        {
+          return boost::lexical_cast<T> (*value);
+        }
+
+        return fallback;
+      }
 
       frame & set_body (body_type const & body);
       frame & add_body (body_type const & body);
@@ -55,6 +73,16 @@ namespace gspc
       body_type const & get_body () const { return m_body; }
 
       std::string const to_string () const;
+
+      template <class T>
+        frame& operator<< (T const& x)
+      {
+        std::ostringstream oss;
+        oss << x;
+        add_body (oss.str());
+        return *this;
+      }
+
     private:
       frame & update_content_length ();
 

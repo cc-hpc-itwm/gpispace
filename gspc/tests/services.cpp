@@ -12,16 +12,12 @@
 #include <boost/thread.hpp>
 
 #include <gspc/net/error.hpp>
-#include <gspc/net/handle.hpp>
 #include <gspc/net/parse/parser.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
 
 #include <gspc/net/service/echo.hpp>
 #include <gspc/net/service/strip_prefix.hpp>
-
-#include <gspc/net/frame_io.hpp>
-#include <gspc/net/frame_util.hpp>
 
 #include "mock_user.hpp"
 
@@ -52,7 +48,7 @@ BOOST_AUTO_TEST_CASE (test_echo_service)
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body (), "Hello echo!");
-  BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
+  BOOST_REQUIRE     (rply_frame.get_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }
 
@@ -90,7 +86,7 @@ BOOST_AUTO_TEST_CASE (test_strip_prefix)
 
   BOOST_CHECK_EQUAL (rply_frame.get_command (), "MESSAGE");
   BOOST_CHECK_EQUAL (rply_frame.get_body (), "Hello echo!");
-  BOOST_REQUIRE     (rply_frame.has_header ("test-id"));
+  BOOST_REQUIRE     (rply_frame.get_header ("test-id"));
   BOOST_CHECK_EQUAL (*rply_frame.get_header ("test-id"), "42");
 }
 
@@ -139,10 +135,12 @@ BOOST_AUTO_TEST_CASE (test_best_prefix_match)
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 1);
 
+  //! \todo explain why service_B is called, no service has prefix "/echo/B"
   BOOST_REQUIRE_EQUAL (demux.handle_request ("/echo/B", rqst_frame, &user), 0);
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 2);
 
+  //! \todo explain why service_B is called, no service has prefix "/echo/BCD/EFG"
   BOOST_REQUIRE_EQUAL (demux.handle_request ("/echo/BCD/EFG", rqst_frame, &user), 0);
   BOOST_REQUIRE_EQUAL (service_A.counter, 1);
   BOOST_REQUIRE_EQUAL (service_B.counter, 3);

@@ -5,7 +5,6 @@
 
 #include <gspc/net/error.hpp>
 #include <gspc/net/frame_builder.hpp>
-#include <gspc/net/frame_util.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/kvs/kvs.hpp>
 
@@ -114,14 +113,9 @@ namespace gspc
       const api_t::key_type &key = rqst.get_body ();
 
       api_t::value_type val;
-      int rc = m_kvs->get (key, val);
 
-      gspc::net::frame rply = encode_error_code (rqst, rc);
-      gspc::net::stream (rply)
-        << pnet::type::value::show (val)
-        << std::endl
-        ;
-      return rply;
+      return encode_error_code (rqst, m_kvs->get (key, val))
+        << pnet::type::value::show (val) << "\n";
     }
 
     boost::optional<gspc::net::frame>
@@ -142,11 +136,8 @@ namespace gspc
 
         for ( ; it != end ; ++it)
         {
-          gspc::net::stream (rply)
-            << it->first
-            << " "
-            << pnet::type::value::show (it->second)
-            << std::endl
+          rply << it->first << " " << pnet::type::value::show (it->second)
+               << "\n"
             ;
         }
       }
@@ -269,7 +260,7 @@ namespace gspc
       gspc::net::frame rply = encode_error_code (rqst, rc);
       if (0 == rc)
       {
-        gspc::net::stream (rply) << pnet::type::value::show (val) << std::endl;
+        rply << pnet::type::value::show (val) << "\n";
       }
       return rply;
     }
@@ -314,25 +305,22 @@ namespace gspc
         fhg::util::parse::require::plain_string (pos, '\n');
 
       int val;
-      int rc = m_kvs->counter_change (key, val, delta);
 
-      gspc::net::frame rply = encode_error_code (rqst, rc);
-      gspc::net::stream (rply) << val << std::endl;
-      return rply;
+      return encode_error_code (rqst, m_kvs->counter_change (key, val, delta))
+        << val << "\n";
     }
 
     boost::optional<gspc::net::frame>
     service_t::rpc_help (gspc::net::frame const &rqst)
     {
       gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
-      gspc::net::stream (rply)
-        << "available RPC:" << std::endl;
+      rply << "available RPC:" << "\n";
       rpc_table_t::const_iterator it = m_rpc_table.begin ();
       const rpc_table_t::const_iterator end = m_rpc_table.end ();
 
       for ( ; it != end ; ++it)
       {
-        gspc::net::stream (rply) << "   " << it->first << std::endl;
+        rply << "   " << it->first << "\n";
       }
 
       return rply;
@@ -353,9 +341,7 @@ namespace gspc
                                  , int rc
                                  )
     {
-      gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
-      gspc::net::stream (rply) << rc << std::endl;
-      return rply;
+      return gspc::net::make::reply_frame (rqst) << rc << "\n";
     }
 
     void service_t::operator () ( std::string const &dst

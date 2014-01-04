@@ -583,7 +583,6 @@ namespace we { namespace type {
 
                 BOOST_FOREACH ( const petri_net::place_id_type& place_id
                               , net.in_to_transition (trans_id)
-                              | boost::adaptors::map_keys
                               )
                 {
                   if (place_id == c.first)

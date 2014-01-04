@@ -5,7 +5,6 @@
 
 #include <we/type/net.fwd.hpp>
 
-#include <we/container/adjacency.hpp>
 #include <we/container/priostore.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
@@ -22,6 +21,8 @@
 
 #include <we/mgmt/type/activity.hpp>
 
+#include <boost/bimap/bimap.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -35,6 +36,18 @@ namespace petri_net
   class net
   {
   public:
+    typedef boost::bimaps::bimap
+      < boost::bimaps::unordered_multiset_of<petri_net::transition_id_type>
+      , boost::bimaps::unordered_multiset_of<petri_net::place_id_type>
+      , boost::bimaps::set_of_relation<>
+      > adj_tp_type;
+    typedef boost::bimaps::bimap
+      < boost::bimaps::unordered_multiset_of<petri_net::place_id_type>
+      , boost::bimaps::unordered_multiset_of<petri_net::transition_id_type>
+      , boost::bimaps::set_of_relation<>
+      , boost::bimaps::with_info<edge::type>
+      > adj_pt_type;
+
     //! \todo eliminate these, just do not copy or assign nets!
     net();
     net (const net&);
@@ -42,7 +55,7 @@ namespace petri_net
 
     place_id_type add_place (const place::type&);
     transition_id_type add_transition (const we::type::transition_t&);
-    void add_connection (const connection_t&);
+    void add_connection (edge::type, transition_id_type, place_id_type);
 
     void set_transition_priority ( const transition_id_type&
                                  , const priority_type&
@@ -55,23 +68,19 @@ namespace petri_net
     const boost::unordered_map<place_id_type,place::type>& places() const;
     const boost::unordered_map<transition_id_type,we::type::transition_t>&
     transitions() const;
-    const boost::unordered_set<connection_t> connections() const;
 
-    const boost::unordered_map<place_id_type, connection_t>&
+    adj_tp_type const& transition_to_place() const;
+    adj_pt_type const& place_to_transition() const;
+
+    boost::select_second_const_range<std::pair<adj_tp_type::left_const_iterator, adj_tp_type::left_const_iterator> >
     out_of_transition (const transition_id_type&) const;
-    const boost::unordered_map<place_id_type, connection_t>&
+    boost::select_second_const_range<std::pair<adj_pt_type::right_const_iterator, adj_pt_type::right_const_iterator> >
     in_to_transition (const transition_id_type&) const;
-    const boost::unordered_map<transition_id_type, connection_t>&
+    boost::select_second_const_range<std::pair<adj_pt_type::left_const_iterator, adj_pt_type::left_const_iterator> >
     out_of_place (const place_id_type&) const;
-    const boost::unordered_map<transition_id_type, connection_t>&
+    boost::select_second_const_range<std::pair<adj_tp_type::right_const_iterator, adj_tp_type::right_const_iterator> >
     in_to_place (const place_id_type&) const;
 
-    connection_t get_connection_out ( const transition_id_type&
-                                    , const place_id_type&
-                                    ) const;
-    connection_t get_connection_in ( const transition_id_type&
-                                   , const place_id_type&
-                                   ) const;
     bool is_read_connection ( const transition_id_type&
                             , const place_id_type&
                             ) const;
@@ -96,7 +105,6 @@ namespace petri_net
                                    )>&
       );
 
-    void put_token (const place_id_type&, const pnet::type::value::value_type&);
     void put_value (const place_id_type&, const pnet::type::value::value_type&);
 
     const std::list<pnet::type::value::value_type>&
@@ -118,8 +126,8 @@ namespace petri_net
     transition_id_type _transition_id;
     boost::unordered_map<transition_id_type, we::type::transition_t> _tmap;
 
-    adjacency::table<place_id_type,transition_id_type,connection_t> _adj_pt;
-    adjacency::table<transition_id_type,place_id_type,connection_t> _adj_tp;
+    adj_pt_type _adj_pt;
+    adj_tp_type _adj_tp;
 
     typedef boost::unordered_map< place_id_type
                                 , std::list<pnet::type::value::value_type>

@@ -13,12 +13,8 @@ namespace gspc
 
     template <>
     resolver<stream_protocol>::endpoint_type
-    resolver<stream_protocol>::resolve ( std::string const &address
-                                       , boost::system::error_code &ec
-                                       )
+    resolver<stream_protocol>::resolve (std::string const &address)
     {
-      ec = boost::system::errc::make_error_code
-        (boost::system::errc::success);
       return endpoint_type (address);
     }
 
@@ -26,9 +22,7 @@ namespace gspc
 
     template <>
     resolver<tcp>::endpoint_type
-    resolver<tcp>::resolve ( std::string const &address
-                           , boost::system::error_code &ec
-                           )
+      resolver<tcp>::resolve (std::string const &address)
     {
       using namespace boost::system;
 
@@ -37,8 +31,8 @@ namespace gspc
 
       if (split_host_port (address, host, port) != std::string::npos)
       {
-        ec = errc::make_error_code (errc::invalid_argument);
-        return endpoint_type ();
+        throw boost::system::system_error
+          (errc::make_error_code (errc::invalid_argument));
       }
 
       if (host == "*")
@@ -60,13 +54,7 @@ namespace gspc
                                  | resolver_query_base::all_matching
                                  );
 
-      tcp::resolver::iterator ep_it = r.resolve (query, ec);
-      if (not ec)
-      {
-        return *ep_it;
-      }
-
-      return endpoint_type ();
+      return *r.resolve (query);
     }
   }
 }

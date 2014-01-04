@@ -17,7 +17,6 @@
 #include <gspc/net/error.hpp>
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_handler.hpp>
-#include <gspc/net/header_util.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/user.hpp>
 
@@ -42,9 +41,9 @@ public:
     if (f.get_command () == "ERROR")
     {
       std::cerr << "error: "
-                << gspc::net::header::get (f,"code",EPROTO)
+                << f.get_header_or ("code", EPROTO)
                 << ": "
-                << gspc::net::header::get (f,"message",std::string("unknown"))
+                << f.get_header_or ("message", std::string ("unknown"))
                 << std::endl;
       error_code = boost::system::errc::make_error_code
         (boost::system::errc::bad_message);
@@ -182,7 +181,7 @@ int main (int argc, char *argv[])
     }
   }
 
-  gspc::net::header::set (rqst, "destination", destination);
+  rqst.set_header ("destination", destination);
 
   BOOST_FOREACH (std::string const &kv, header)
   {
@@ -210,12 +209,12 @@ int main (int argc, char *argv[])
 
     if (rply.get_command () == "ERROR")
     {
-      rc = gspc::net::header::get (rply, "code", (int)gspc::net::E_BAD_REQUEST);
+      rc = rply.get_header_or ("code", (int)gspc::net::E_BAD_REQUEST);
 
       std::cerr << "failed: "
                 << rc
                 << ": "
-                << gspc::net::header::get (rply, "message", std::string ())
+                << rply.get_header_or ("message", std::string())
                 << ": "
                 << rply.get_body ()
                 << std::endl

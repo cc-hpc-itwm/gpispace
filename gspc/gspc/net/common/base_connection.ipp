@@ -3,8 +3,6 @@
 #include <boost/bind.hpp>
 
 #include <gspc/net/constants.hpp>
-#include <gspc/net/frame_io.hpp>
-#include <gspc/net/frame_util.hpp>
 #include <gspc/net/frame_handler.hpp>
 #include <gspc/net/frame_builder.hpp>
 

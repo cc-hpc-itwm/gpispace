@@ -7,6 +7,8 @@
 #include <gspc/net/error.hpp>
 #include <gspc/net/user.hpp>
 
+#include <fhg/util/starts_with.hpp>
+
 #include "service_demux.hpp"
 
 namespace gspc
@@ -23,13 +25,6 @@ namespace gspc
         {
           s.erase (s.end () - 1);
         }
-      }
-
-      static bool s_starts_with ( std::string const &s
-                                , std::string const &prefix
-                                )
-      {
-        return s.find (prefix) == 0;
       }
 
       service_demux_t::service_demux_t ()
@@ -52,6 +47,8 @@ namespace gspc
         trim_r (mangled_dst, SERVICE_SEPARATOR);
 
         m_handler_map [mangled_dst] = h;
+
+        //! \todo RV do not return const 0 and set return type to void
         return 0;
       }
 
@@ -85,7 +82,7 @@ namespace gspc
         {
           const std::string & service = begin->first;
 
-          if (s_starts_with (dst, service))
+          if (fhg::util::starts_with (service, dst))
           {
             if (  dst.size () <= service.size ()
                || dst [service.size ()] == SERVICE_SEPARATOR
@@ -165,6 +162,7 @@ namespace gspc
           ++it;
         }
 
+        //! \todo explain why the return value can be ignored
         user->deliver (rply);
       }
     }

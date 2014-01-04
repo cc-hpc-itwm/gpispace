@@ -12,8 +12,6 @@
 
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/stat.hpp>
-
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/foreach.hpp>
@@ -317,9 +315,6 @@ namespace we
 
           void operator() (we::type::expression_t & expr) const
           {
-            FHG_UTIL_STAT_INC ("expr " + expr.expression());
-            FHG_UTIL_STAT_START ("expr " + expr.expression());
-
             expr::eval::context context;
 
             for ( type::activity_t::input_t::const_iterator top
@@ -334,12 +329,7 @@ namespace we
                   );
               }
 
-            FHG_UTIL_STAT_START ("expr-eval " + expr.expression());
-
             expr.ast ().eval_all (context);
-
-            FHG_UTIL_STAT_STOP ("expr-eval " + expr.expression());
-            FHG_UTIL_STAT_START ("expr-put " + expr.expression());
 
             BOOST_FOREACH
               ( we::type::transition_t::port_map_t::value_type const& p
@@ -355,10 +345,7 @@ namespace we
               }
             }
 
-            FHG_UTIL_STAT_STOP ("expr-put " + expr.expression());
-            FHG_UTIL_STAT_STOP ("expr " + expr.expression());
-
-            _ctxt->handle_internally (_activity, expr);
+            return _ctxt->handle_internally (_activity, expr);
           }
         };
       }

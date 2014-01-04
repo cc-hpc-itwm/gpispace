@@ -120,7 +120,7 @@ namespace we
 
           BOOST_FOREACH
             ( const petri_net::place_id_type& place_id
-            , net.out_of_transition (tid) | boost::adaptors::map_keys
+            , net.out_of_transition (tid)
             )
           {
             pid_out.insert (place_id);
@@ -133,18 +133,13 @@ namespace we
                               > preds;
           boost::unordered_set<tid_pid_type> preds_read;
           boost::unordered_set<petri_net::place_id_type> pid_read;
-          std::size_t max_successors_of_pred (0);
+          long max_successors_of_pred (0);
 
-          typedef std::pair< petri_net::place_id_type
-                           , petri_net::connection_t
-                           > pc_type;
-
-          BOOST_FOREACH (const pc_type& pc, net.in_to_transition (tid))
+          BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                        , net.in_to_transition (tid)
+                        )
           {
-            const petri_net::connection_t& connection (pc.second);
-            const petri_net::place_id_type& place_id (pc.first);
-
-            if (petri_net::edge::is_pt_read (connection.type()))
+            if (net.is_read_connection (tid, place_id))
             {
               if (net.in_to_place (place_id).empty())
               {
@@ -154,14 +149,13 @@ namespace we
               {
                 BOOST_FOREACH
                   ( const petri_net::transition_id_type& transition_id
-                  , net.in_to_place (place_id) | boost::adaptors::map_keys
+                  , net.in_to_place (place_id)
                   )
                 {
                   preds_read.insert (std::make_pair (transition_id, place_id));
 
                   BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
                                 , net.out_of_transition (transition_id)
-                                | boost::adaptors::map_keys
                                 )
                   {
                     if (pid_out.find (out_place_id) != pid_out.end())
@@ -183,7 +177,6 @@ namespace we
             {
               BOOST_FOREACH ( const petri_net::transition_id_type& transition_id
                             , net.in_to_place (place_id)
-                            | boost::adaptors::map_keys
                             )
               {
                 const petri_net::transition_id_type& tid_pred (transition_id);
@@ -196,7 +189,6 @@ namespace we
 
                 BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
                               , net.out_of_transition (transition_id)
-                              | boost::adaptors::map_keys
                               )
                 {
                   if (pid_out.find (out_place_id) != pid_out.end())
@@ -206,7 +198,7 @@ namespace we
 
                   max_successors_of_pred =
                     std::max ( max_successors_of_pred
-                             , net.out_of_place (out_place_id).size()
+                             , boost::distance (net.out_of_place (out_place_id))
                              );
                 }
 
@@ -251,7 +243,6 @@ namespace we
 
           BOOST_FOREACH ( const petri_net::place_id_type& place_id
                         , net.in_to_transition (tid_trans)
-                        | boost::adaptors::map_keys
                         )
           {
             if (pid_read.find (place_id) == pid_read.end())
@@ -342,17 +333,9 @@ namespace we
               const petri_net::place_id_type pid
                 (trans.inner_to_outer().at (p.first).first);
 
-              petri_net::connection_t const connection
-                (net.get_connection_out (tid_trans, pid));
-
               net.delete_edge_out (tid_trans, pid);
 
-              net.add_connection
-                (petri_net::connection_t ( connection.type()
-                                         , tid_pred
-                                         , connection.place_id()
-                                         )
-                );
+              net.add_connection (petri_net::edge::TP, tid_pred, pid);
 
               pred.add_connection (p.second.name(), pid, p.second.property());
             }
@@ -367,16 +350,14 @@ namespace we
                 {
                   pred.add_port (p.second);
 
-                  petri_net::connection_t const connection
-                    (net.get_connection_in (tid_trans, *pid));
+                  bool const is_read (net.is_read_connection (tid_trans, *pid));
 
                   net.delete_edge_in (tid_trans, *pid);
 
                   net.add_connection
-                    (petri_net::connection_t ( connection.type()
-                                             , tid_pred
-                                             , connection.place_id()
-                                             )
+                    ( is_read ? petri_net::edge::PT_READ : petri_net::edge::PT
+                    , tid_pred
+                    , *pid
                     );
 
                   pred.add_connection

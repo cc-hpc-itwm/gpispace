@@ -6,9 +6,7 @@
 #include <boost/format.hpp>
 
 #include <gspc/net/frame.hpp>
-#include <gspc/net/frame_io.hpp>
 #include <gspc/net/frame_builder.hpp>
-#include <gspc/net/frame_util.hpp>
 
 #include <gspc/net/error.hpp>
 #include <gspc/net/user.hpp>
@@ -25,13 +23,6 @@ namespace gspc
   {
     namespace server
     {
-      queue_manager_t::queue_manager_t ()
-        : m_mutex ()
-        , m_subscriptions ()
-        , m_user_subscriptions ()
-        , m_service_demux (gspc::net::server::default_service_demux())
-      {}
-
       queue_manager_t::queue_manager_t (service_demux_t &demux)
         : m_mutex ()
         , m_subscriptions ()
@@ -76,6 +67,7 @@ namespace gspc
         gspc::net::header::receipt r (f);
         if (r.value ())
         {
+          //! \todo RV explain why the return value is ignored
           user->deliver (make::receipt_frame (r));
         }
       }
@@ -101,7 +93,7 @@ namespace gspc
 
         if (f.get_command () == "SEND")
         {
-          if (not f.has_header ("destination"))
+          if (not f.get_header ("destination"))
           {
             user->deliver
               (gspc::net::make::error_frame ( f
@@ -111,12 +103,11 @@ namespace gspc
               );
             return -EPROTO;
           }
-          const std::string dst = *f.get_header ("destination");
           return send (user, *f.get_header ("destination"), f);
         }
         else if (f.get_command () == "SUBSCRIBE")
         {
-          if (not f.has_header ("destination"))
+          if (not f.get_header ("destination"))
           {
             user->deliver
               (gspc::net::make::error_frame ( f
@@ -126,7 +117,7 @@ namespace gspc
               );
             return -EPROTO;
           }
-          if (not f.has_header ("id"))
+          if (not f.get_header ("id"))
           {
             user->deliver
               (gspc::net::make::error_frame ( f
@@ -145,7 +136,7 @@ namespace gspc
         }
         else if (f.get_command () == "UNSUBSCRIBE")
         {
-          if (not f.has_header ("id"))
+          if (not f.get_header ("id"))
           {
             user->deliver
               (gspc::net::make::error_frame ( f
@@ -188,18 +179,15 @@ namespace gspc
       int
       queue_manager_t::deliver (frame const &f)
       {
-        if (not f.has_header ("destination"))
+        if (not f.get_header ("destination"))
         {
           return -EPROTO;
         }
 
-        int rc = 0;
-        std::string const & dst = *f.get_header ("destination");
-
         shared_lock lock (m_mutex);
 
         subscription_map_t::iterator sub_it =
-          m_subscriptions.find (dst);
+          m_subscriptions.find (*f.get_header ("destination"));
 
         if (sub_it != m_subscriptions.end ())
         {
@@ -208,15 +196,12 @@ namespace gspc
 
           BOOST_FOREACH (subscription_ptr sub, sub_it->second)
           {
-            frame_set_header ( frame_to_deliver
-                             , "subscription"
-                             , sub->id
-                             );
+            frame_to_deliver.set_header ("subscription", sub->id);
             sub->user->deliver (frame_to_deliver);
           }
         }
 
-        return rc;
+        return 0;
       }
 
       int
@@ -226,11 +211,8 @@ namespace gspc
 
         if (m_connections.find (u) == m_connections.end ())
         {
-          if (auth::default_auth ().is_authorized (header::get ( f
-                                                               , "cookie"
-                                                               , std::string ("")
-                                                               )
-                                                  )
+          if ( auth::default_auth ().is_authorized
+               (f.get_header_or ("cookie", std::string ("")))
              )
           {
             ++m_session_id;
@@ -239,12 +221,11 @@ namespace gspc
               make::connected_frame (gspc::net::header::version ("1.0"));
 
             connected.set_or_delete_header ("correlation-id", f.get_header ("message-id"));
-            gspc::net::header::set ( connected
-                                   , "session-id"
-                                   , boost::format ("session-%1%-%2%")
-                                   % time (NULL)
-                                   % m_session_id
-                                   );
+            connected.set_header
+              ( "session-id"
+              , boost::format ("session-%1%-%2%") % time (NULL) % m_session_id
+              );
+            //! \todo RV do not ignore return value from deliver
             u->deliver (connected);
 
             m_connections.insert (u);
@@ -253,6 +234,7 @@ namespace gspc
           }
           else
           {
+            //! \todo RV do not ignore return value from deliver
             u->deliver (gspc::net::make::error_frame ( f
                                                      , gspc::net::E_UNAUTHORIZED
                                                      , "you shall not pass"
@@ -297,6 +279,7 @@ namespace gspc
 
         m_user_subscriptions.erase (user);
 
+        //! \todo RV do not return const 0 and set return type to void
         return 0;
       }
 
@@ -320,7 +303,6 @@ namespace gspc
           return m_service_demux.handle_request (dst, f, this);
         }
 
-        int rc = 0;
         shared_lock lock (m_mutex);
 
         subscription_map_t::iterator sub_it =
@@ -333,17 +315,17 @@ namespace gspc
 
           BOOST_FOREACH (subscription_ptr sub, sub_it->second)
           {
-            frame_set_header ( frame_to_deliver
-                             , "subscription"
-                             , sub->id
-                             );
+            frame_to_deliver.set_header ("subscription", sub->id);
+
+            //! \todo RV explain why the return value is ignored
             sub->user->deliver (frame_to_deliver);
           }
         }
 
         s_maybe_send_receipt (user, f);
 
-        return rc;
+        //! \todo RV do not return const 0 and set return type to void
+        return 0;
       }
 
       int queue_manager_t::subscribe ( user_ptr user
@@ -352,8 +334,6 @@ namespace gspc
                                      , frame const &f
                                      )
       {
-        int rc = 0;
-
         unique_lock lock (m_mutex);
 
         s_maybe_send_receipt (user, f);
@@ -375,7 +355,7 @@ namespace gspc
         subscription_ptr sub (new subscription_t);
         if (not sub)
         {
-          rc = -ENOMEM;
+          return -ENOMEM;
         }
         else
         {
@@ -388,9 +368,10 @@ namespace gspc
         }
 
         // sanity check the frame
-        return rc;
+        return 0;
       }
 
+      //! \todo RV do not return const 0 and set return type to void
       int queue_manager_t::unsubscribe ( user_ptr user
                                        , std::string const & id
                                        , frame const &f

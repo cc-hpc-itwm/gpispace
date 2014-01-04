@@ -15,8 +15,6 @@
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/read_bool.hpp>
 
-#include <fhg/util/stat.hpp>
-
 #include <boost/tokenizer.hpp>
 
 namespace bfs = boost::filesystem;
@@ -213,8 +211,6 @@ int main (int argc, char **argv)
 
     {
       std::ostringstream oss;
-
-      FHG_UTIL_STAT_OUT (oss);
 
       if (oss.str().size())
       {

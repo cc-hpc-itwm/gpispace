@@ -8,7 +8,6 @@
 #include <fhg/util/now.hpp>
 #include <gspc/net/frame.hpp>
 #include <gspc/net/parse/parser.hpp>
-#include <gspc/net/frame_io.hpp>
 
 BOOST_AUTO_TEST_CASE (invalid_frame_start)
 {
@@ -163,9 +162,9 @@ BOOST_AUTO_TEST_CASE (test_header)
 
   BOOST_CHECK_EQUAL (frame.get_command (), "CONNECT");
   BOOST_CHECK_EQUAL (frame.get_header ().size (), 2);
-  BOOST_REQUIRE (frame.has_header ("foo"));
+  BOOST_REQUIRE (frame.get_header ("foo"));
   BOOST_CHECK_EQUAL (*frame.get_header ("foo"), "bar");
-  BOOST_REQUIRE (frame.has_header ("baz"));
+  BOOST_REQUIRE (frame.get_header ("baz"));
   BOOST_CHECK_EQUAL (*frame.get_header ("baz"), "bam");
   BOOST_CHECK_EQUAL (frame.get_body (), "");
 }
@@ -204,7 +203,7 @@ BOOST_AUTO_TEST_CASE (test_header_empty_value)
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
   BOOST_REQUIRE_GT (result.consumed, 0);
   BOOST_REQUIRE_EQUAL (result.consumed, sizeof(input));
-  BOOST_REQUIRE (frame.has_header ("foo"));
+  BOOST_REQUIRE (frame.get_header ("foo"));
   BOOST_REQUIRE_EQUAL (*frame.get_header ("foo"), "");
 }
 
@@ -223,7 +222,7 @@ BOOST_AUTO_TEST_CASE (test_empty_body_with_content_length)
 
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
   BOOST_REQUIRE_EQUAL (result.consumed, sizeof(input));
-  BOOST_REQUIRE (frame.has_header ("content-length"));
+  BOOST_REQUIRE (frame.get_header ("content-length"));
   BOOST_REQUIRE_EQUAL (*frame.get_header ("content-length"), "0");
 }
 
@@ -243,7 +242,7 @@ BOOST_AUTO_TEST_CASE (test_header_value_with_spaces)
   BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
   BOOST_REQUIRE_GT (result.consumed, 0);
   BOOST_REQUIRE_EQUAL (result.consumed, sizeof(input));
-  BOOST_REQUIRE (frame.has_header ("foo"));
+  BOOST_REQUIRE (frame.get_header ("foo"));
   BOOST_REQUIRE_EQUAL (*frame.get_header ("foo"), " 1  2   3    4 ");
 }
 
@@ -363,7 +362,6 @@ BOOST_AUTO_TEST_CASE (test_nul_in_sstream)
 BOOST_AUTO_TEST_CASE (test_parse_performance)
 {
   gspc::net::parse::result_t result;
-  gspc::net::parse::parser parser;
   gspc::net::frame frame ("SEND");
   frame.set_header ("destination", "foo");
   frame.set_body ("test 0 1 2 3 4 5 6 7 8 9");
@@ -374,6 +372,7 @@ BOOST_AUTO_TEST_CASE (test_parse_performance)
   double duration = -fhg::util::now ();
   for (std::size_t i = 0 ; i < NUM ; ++i)
   {
+    gspc::net::parse::parser parser;
     gspc::net::frame f;
     result = parser.parse ( bytes.c_str ()
                           , bytes.c_str () + bytes.size ()
@@ -381,7 +380,6 @@ BOOST_AUTO_TEST_CASE (test_parse_performance)
                           );
     BOOST_REQUIRE_EQUAL (result.state, gspc::net::parse::PARSE_FINISHED);
     BOOST_CHECK_EQUAL (result.consumed, bytes.size ());
-    parser.reset ();
   }
   duration += fhg::util::now ();
 

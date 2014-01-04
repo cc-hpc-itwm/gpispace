@@ -5,6 +5,7 @@
 #include <we/util/cross.hpp>
 
 #include <we/require_type.hpp>
+#include <we/exception.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -12,8 +13,6 @@
 #include <boost/utility.hpp>
 
 #include <stack>
-
-#include <fhg/util/stat.hpp>
 
 namespace petri_net
 {
@@ -99,28 +98,18 @@ namespace petri_net
     return tid;
   }
 
-  void net::add_connection (const connection_t& connection)
+  void net::add_connection
+    (edge::type type, transition_id_type transition_id, place_id_type place_id)
   {
-    if (edge::is_PT (connection.type()))
+    if (type == edge::TP)
     {
-      _adj_pt.set_adjacent ( connection.place_id()
-                           , connection.transition_id()
-                           , connection
-                           , "add_connection"
-                           );
+      _adj_tp.insert (adj_tp_type::value_type (transition_id, place_id));
     }
     else
     {
-      _adj_tp.set_adjacent ( connection.transition_id()
-                           , connection.place_id()
-                           , connection
-                           , "add_connection"
-                           );
-    }
+      _adj_pt.insert (adj_pt_type::value_type (place_id, transition_id, type));
 
-    if (edge::is_PT (connection.type()))
-    {
-      update_enabled (connection.transition_id());
+      update_enabled (transition_id);
     }
   }
 
@@ -137,34 +126,31 @@ namespace petri_net
     return _enabled.get_priority (tid);
   }
 
-  namespace
-  {
-    template<class MAP>
-    const typename MAP::mapped_type& get ( const MAP& m
-                                         , const typename MAP::key_type& key
-                                         , const std::string& msg
-                                         )
-    {
-      const typename MAP::const_iterator pos (m.find (key));
-
-      if (pos == m.end())
-        {
-          throw we::container::exception::no_such (msg);
-        }
-
-      return pos->second;
-    }
-  }
-
   const place::type& net::get_place (const place_id_type& pid) const
   {
-    return get (_pmap, pid, "get_place");
+    boost::unordered_map<place_id_type, place::type>::const_iterator const
+      pos (_pmap.find (pid));
+
+    if (pos == _pmap.end())
+    {
+      throw pnet::exception::place::no_such (pid);
+    }
+
+    return pos->second;
   }
 
   const we::type::transition_t&
   net::get_transition (const transition_id_type& tid) const
   {
-    return get (_tmap, tid, "get_transition");
+    boost::unordered_map<transition_id_type, we::type::transition_t>
+      ::const_iterator const pos (_tmap.find (tid));
+
+    if (pos == _tmap.end())
+    {
+      throw pnet::exception::transition::no_such (tid);
+    }
+
+    return pos->second;
   }
 
   const boost::unordered_map<place_id_type,place::type>& net::places() const
@@ -176,6 +162,15 @@ namespace petri_net
   net::transitions() const
   {
     return _tmap;
+  }
+
+  net::adj_tp_type const& net::transition_to_place() const
+  {
+    return _adj_tp;
+  }
+  net::adj_pt_type const& net::place_to_transition() const
+  {
+    return _adj_pt;
   }
 
   void net::modify_transitions
@@ -191,75 +186,54 @@ namespace petri_net
     }
   }
 
-  //! \todo Implement more efficient if necessary
-  const boost::unordered_set<connection_t> net::connections() const
-  {
-    boost::unordered_set<connection_t> s;
-
-    BOOST_FOREACH (const connection_t& connection, _adj_tp.adjacencies())
-    {
-      s.insert (connection);
-    }
-    BOOST_FOREACH (const connection_t& connection, _adj_pt.adjacencies())
-    {
-      s.insert (connection);
-    }
-
-    return s;
-  }
-
-  const boost::unordered_map<place_id_type, connection_t>&
+  boost::select_second_const_range<std::pair<net::adj_tp_type::left_const_iterator, net::adj_tp_type::left_const_iterator> >
   net::out_of_transition (const transition_id_type& tid) const
   {
-    return _adj_tp.col_adj_tab (tid);
+    return _adj_tp.left.equal_range (tid) | boost::adaptors::map_values;
   }
-  const boost::unordered_map<place_id_type, connection_t>&
+  boost::select_second_const_range<std::pair<net::adj_pt_type::right_const_iterator, net::adj_pt_type::right_const_iterator> >
   net::in_to_transition (const transition_id_type& tid) const
   {
-    return _adj_pt.row_adj_tab (tid);
+    return _adj_pt.right.equal_range (tid) | boost::adaptors::map_values;
   }
-  const boost::unordered_map<transition_id_type, connection_t>&
+  boost::select_second_const_range<std::pair<net::adj_pt_type::left_const_iterator, net::adj_pt_type::left_const_iterator> >
   net::out_of_place (const place_id_type& pid) const
   {
-    return _adj_pt.col_adj_tab (pid);
+    return _adj_pt.left.equal_range (pid) | boost::adaptors::map_values;
   }
-  const boost::unordered_map<transition_id_type, connection_t>&
+  boost::select_second_const_range<std::pair<net::adj_tp_type::right_const_iterator, net::adj_tp_type::right_const_iterator> >
   net::in_to_place (const place_id_type& pid) const
   {
-    return _adj_tp.row_adj_tab (pid);
+    return _adj_tp.right.equal_range (pid) | boost::adaptors::map_values;
   }
 
-  connection_t net::get_connection_out ( const transition_id_type& tid
-                                       , const place_id_type& pid
-                                       ) const
-  {
-    return _adj_tp.get_adjacent (tid, pid, "get_connection_out");
-  }
-  connection_t net::get_connection_in ( const transition_id_type& tid
-                                      , const place_id_type& pid
-                                      ) const
-  {
-    return _adj_pt.get_adjacent (pid, tid, "get_connection_in");
-  }
   bool net::is_read_connection ( const transition_id_type& tid
                                , const place_id_type& pid
                                ) const
   {
-    return edge::is_pt_read
-      (_adj_pt.get_adjacent (pid, tid, "is_read_connection").type());
+    adj_pt_type::const_iterator const pos
+      (_adj_pt.find (adj_pt_type::value_type (pid, tid)));
+
+    if (pos == _adj_pt.end())
+    {
+      throw pnet::exception::connection::no_such
+        <transition_id_type, place_id_type> (tid, pid);
+    }
+
+    return pos->info == edge::PT_READ;
   }
 
   void net::delete_edge_out ( const transition_id_type& tid
                             , const place_id_type& pid
                             )
   {
-    _adj_tp.clear_adjacent (tid, pid);
+    _adj_tp.erase (adj_tp_type::value_type (tid, pid));
   }
   void net::delete_edge_in ( const transition_id_type& tid
                            , const place_id_type& pid
                            )
   {
-    _adj_pt.clear_adjacent (pid, tid);
+    _adj_pt.erase (adj_pt_type::value_type (pid, tid));
 
     update_enabled (tid);
   }
@@ -273,7 +247,7 @@ namespace petri_net
     std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
     BOOST_FOREACH ( const transition_id_type& tid
-                  , out_of_place (pid) | boost::adaptors::map_keys
+                  , out_of_place (pid)
                   )
     {
       stack_in.push (std::make_pair (tid, pid));
@@ -281,7 +255,7 @@ namespace petri_net
     }
 
     BOOST_FOREACH ( const transition_id_type& transition_id
-                  , in_to_place (pid) | boost::adaptors::map_keys
+                  , in_to_place (pid)
                   )
     {
       stack_out.push (std::make_pair (transition_id, pid));
@@ -308,14 +282,14 @@ namespace petri_net
     std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
     BOOST_FOREACH ( const place_id_type& place_id
-                  , out_of_transition (tid) | boost::adaptors::map_keys
+                  , out_of_transition (tid)
                   )
     {
       stack_out.push (std::make_pair (tid, place_id));
     }
 
     BOOST_FOREACH ( const place_id_type& place_id
-                  , in_to_transition (tid) | boost::adaptors::map_keys
+                  , in_to_transition (tid)
                   )
     {
       stack_in.push (std::make_pair (tid, place_id));
@@ -358,31 +332,26 @@ namespace petri_net
     return tid;
   }
 
-  void net::put_token ( const place_id_type& pid
-                      , const pnet::type::value::value_type& token
-                      )
-  {
-    std::list<pnet::type::value::value_type>& tokens (_token_by_place_id[pid]);
-    const std::list<pnet::type::value::value_type>::iterator
-      tokenpos (tokens.insert (tokens.end(), token));
-
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , out_of_place (pid) | boost::adaptors::map_keys
-                  )
-    {
-      update_enabled_put_token (tid, pid, tokenpos);
-    }
-  }
-
   void net::put_value ( const place_id_type& pid
                       , const pnet::type::value::value_type& value
                       )
   {
     const place::type& place (get_place (pid));
 
-    put_token ( pid
-              , pnet::require_type (value, place.signature(), place.name())
-              );
+    std::list<pnet::type::value::value_type>& tokens (_token_by_place_id[pid]);
+    std::list<pnet::type::value::value_type>::iterator const tokenpos
+      ( tokens.insert
+        ( tokens.end()
+        , pnet::require_type (value, place.signature(), place.name())
+        )
+      );
+
+    BOOST_FOREACH ( const transition_id_type& tid
+                  , out_of_place (pid)
+                  )
+    {
+      update_enabled_put_token (tid, pid, tokenpos);
+    }
   }
 
   namespace
@@ -412,7 +381,7 @@ namespace petri_net
     _token_by_place_id.erase (pid);
 
     BOOST_FOREACH ( const transition_id_type& tid
-                  , out_of_place (pid) | boost::adaptors::map_keys
+                  , out_of_place (pid)
                   )
     {
       disable (tid);
@@ -432,28 +401,18 @@ namespace petri_net
     {
       const we::type::transition_t& transition (get_transition (tid));
 
-      FHG_UTIL_STAT_START ("eval    " + transition.name());
-
       do
       {
-        FHG_UTIL_STAT_INC ("eval    " + transition.name());
-
         if (cross.eval (transition))
         {
           _enabled.insert (tid);
 
           cross.write_to (_enabled_choice[tid]);
 
-          FHG_UTIL_STAT_INC  ("enable  " + transition.name());
-          FHG_UTIL_STAT_STOP ("eval    " + transition.name());
-
           return;
         }
       }
       while (cross.step());
-
-      FHG_UTIL_STAT_INC  ("disable " + transition.name());
-      FHG_UTIL_STAT_STOP ("eval    " + transition.name());
     }
 
     disable (tid);
@@ -464,7 +423,7 @@ namespace petri_net
     we::util::cross_type cross;
 
     BOOST_FOREACH ( const place_id_type& place_id
-                  , in_to_transition (tid) | boost::adaptors::map_keys
+                  , in_to_transition (tid)
                   )
     {
       std::list<pnet::type::value::value_type>&
@@ -497,7 +456,7 @@ namespace petri_net
     we::util::cross_type cross;
 
     BOOST_FOREACH ( const place_id_type& place_id
-                  , in_to_transition (tid) | boost::adaptors::map_keys
+                  , in_to_transition (tid)
                   )
     {
       if (place_id == pid)
@@ -555,7 +514,7 @@ namespace petri_net
         _token_by_place_id.at (pid).erase (token);
 
         BOOST_FOREACH ( const transition_id_type& t
-                      , out_of_place (pid) | boost::adaptors::map_keys
+                      , out_of_place (pid)
                       )
         {
           transitions_to_update.insert (t);

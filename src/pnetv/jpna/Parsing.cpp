@@ -115,38 +115,37 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        FOREACH (const petri_net::connection_t& connection, net.connections()) {
-            switch (connection.type()) {
-                case petri_net::edge::PT: {
-                  Place *place = find(places_, connection.place_id());
-                    Transition *transition = find(transitions_, connection.transition_id());
+        FOREACH ( const petri_net::net::adj_pt_type::value_type& pt
+                , net.place_to_transition()
+                )
+        {
+          if (pt.info == petri_net::edge::PT)
+          {
+            Place *place = find(places_, pt.left);
+            Transition *transition = find(transitions_, pt.right);
 
-                    /* Transition consumes the token on input place. */
-                    transition->addInputPlace(place);
+            /* Transition consumes the token on input place. */
+            transition->addInputPlace(place);
+          }
+          else
+          {
+            Place *place = find(places_, pt.left);
+            Transition *transition = find(transitions_, pt.right);
 
-                    break;
-                }
-                case petri_net::edge::PT_READ: {
-                  Place *place = find(places_, connection.place_id());
-                    Transition *transition = find(transitions_, connection.transition_id());
+            /* Transition takes a token and instantly puts it back. */
+            transition->addInputPlace(place);
+            transition->addOutputPlace(place);
+          }
+        }
+        FOREACH ( const petri_net::net::adj_tp_type::value_type& tp
+                , net.transition_to_place()
+                )
+        {
+          Transition *transition = find(transitions_, tp.left);
+          Place *place = find(places_, tp.right);
 
-                    /* Transition takes a token and instantly puts it back. */
-                    transition->addInputPlace(place);
-                    transition->addOutputPlace(place);
-                    break;
-                }
-                case petri_net::edge::TP: {
-                    Transition *transition = find(transitions_, connection.transition_id());
-                    Place *place = find(places_, connection.place_id());
-
-                    /* Executing the transition puts a token on output place. */
-                    transition->addOutputPlace(place);
-
-                    break;
-                }
-                default:
-                    jpn::unreachable();
-            }
+          /* Executing the transition puts a token on output place. */
+          transition->addOutputPlace(place);
         }
 
         FOREACH ( const petri_net::transition_id_type& id
