@@ -24,17 +24,14 @@ namespace gspc
   namespace net
   {
     static
-    server_ptr_t s_new_unix_server ( std::string const & path
+    server_ptr_t s_new_unix_server ( std::string const & location
                                    , server::queue_manager_t &qmgr
                                    )
     {
-      namespace fs = boost::filesystem;
-
-      fs::path full_path = fs::absolute (path);
-      fs::remove (full_path);
+      boost::filesystem::remove (location);
 
       server::unix_server::endpoint_type ep
-        (resolver<server::unix_server::protocol_type>::resolve (full_path.string ()));
+        (resolver<server::unix_server::protocol_type>::resolve (location));
 
       return server_ptr_t (new server::unix_server (gspc::net::io (), ep, qmgr));
     }
@@ -59,7 +56,7 @@ namespace gspc
       const fhg::util::url_t url (url_s);
 
       server_ptr_t server
-        ( url.type() == "unix" ? s_new_unix_server (url.path(), qmgr)
+        ( url.type() == "unix" ? s_new_unix_server (boost::filesystem::absolute (url.path()).string(), qmgr)
         : url.type() == "tcp" ? s_new_tcp_server (url.path(), qmgr)
         : throw boost::system::system_error
             (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
