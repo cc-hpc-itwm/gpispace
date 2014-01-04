@@ -3,7 +3,6 @@
 #include <we/type/net.hpp>
 #include <we/type/condition.hpp>
 #include <we/util/cross.hpp>
-#include <we/container/exception.hpp>
 
 #include <we/require_type.hpp>
 #include <we/exception.hpp>
@@ -127,34 +126,31 @@ namespace petri_net
     return _enabled.get_priority (tid);
   }
 
-  namespace
-  {
-    template<class MAP>
-    const typename MAP::mapped_type& get ( const MAP& m
-                                         , const typename MAP::key_type& key
-                                         , const std::string& msg
-                                         )
-    {
-      const typename MAP::const_iterator pos (m.find (key));
-
-      if (pos == m.end())
-        {
-          throw we::container::exception::no_such (msg);
-        }
-
-      return pos->second;
-    }
-  }
-
   const place::type& net::get_place (const place_id_type& pid) const
   {
-    return get (_pmap, pid, "get_place");
+    boost::unordered_map<place_id_type, place::type>::const_iterator const
+      pos (_pmap.find (pid));
+
+    if (pos == _pmap.end())
+    {
+      throw pnet::exception::place::no_such (pid);
+    }
+
+    return pos->second;
   }
 
   const we::type::transition_t&
   net::get_transition (const transition_id_type& tid) const
   {
-    return get (_tmap, tid, "get_transition");
+    boost::unordered_map<transition_id_type, we::type::transition_t>
+      ::const_iterator const pos (_tmap.find (tid));
+
+    if (pos == _tmap.end())
+    {
+      throw pnet::exception::transition::no_such (tid);
+    }
+
+    return pos->second;
   }
 
   const boost::unordered_map<place_id_type,place::type>& net::places() const
