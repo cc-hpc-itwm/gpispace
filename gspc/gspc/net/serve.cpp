@@ -64,6 +64,10 @@ namespace gspc
         {
           server_ptr_t s (new server::unix_server (gspc::net::io (), ep, qmgr));
           s_set_options (s.get(), opts, ec);
+          if (ec)
+          {
+            throw boost::system::system_error (ec);
+          }
           return s;
         }
       }
@@ -97,6 +101,10 @@ namespace gspc
         {
           server_ptr_t s (new server::tcp_server (gspc::net::io (), ep, qmgr));
           s_set_options (s.get(), opts, ec);
+          if (ec)
+          {
+            throw boost::system::system_error (ec);
+          }
           return s;
         }
       }
