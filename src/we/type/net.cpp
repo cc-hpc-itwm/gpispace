@@ -3,6 +3,7 @@
 #include <we/type/net.hpp>
 #include <we/type/condition.hpp>
 #include <we/util/cross.hpp>
+#include <we/container/exception.hpp>
 
 #include <we/require_type.hpp>
 #include <we/exception.hpp>
