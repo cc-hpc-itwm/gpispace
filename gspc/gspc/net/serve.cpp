@@ -23,8 +23,7 @@ namespace gspc
 {
   namespace net
   {
-    template <typename Server>
-    static void s_set_options ( Server *server
+    static void s_set_options ( server_ptr_t server
                               , option_map_t const &opts
                               )
     {
@@ -51,7 +50,7 @@ namespace gspc
         (resolver<server::unix_server::protocol_type>::resolve (full_path.string ()));
 
       server_ptr_t s (new server::unix_server (gspc::net::io (), ep, qmgr));
-      s_set_options (s.get(), opts);
+      s_set_options (s, opts);
       return s;
     }
 
@@ -65,7 +64,7 @@ namespace gspc
         (resolver<server::tcp_server::protocol_type>::resolve (location));
 
       server_ptr_t s (new server::tcp_server (gspc::net::io (), ep, qmgr));
-      s_set_options (s.get(), opts);
+      s_set_options (s, opts);
       return s;
     }
 
