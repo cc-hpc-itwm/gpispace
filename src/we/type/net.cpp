@@ -219,21 +219,6 @@ namespace petri_net
     return _adj_tp.right.equal_range (pid) | boost::adaptors::map_values;
   }
 
-  connection_t net::get_connection_out ( const transition_id_type& tid
-                                       , const place_id_type& pid
-                                       ) const
-  {
-    adj_tp_type::const_iterator const pos
-      (_adj_tp.find (adj_tp_type::value_type (tid, pid)));
-
-    if (pos == _adj_tp.end())
-    {
-      throw pnet::exception::connection::no_such
-        <transition_id_type, place_id_type> (tid, pid);
-    }
-
-    return connection_t (edge::TP, pos->left, pos->right);
-  }
   connection_t net::get_connection_in ( const transition_id_type& tid
                                       , const place_id_type& pid
                                       ) const
