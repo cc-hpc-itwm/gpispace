@@ -53,15 +53,8 @@ namespace gspc
       fs::path full_path = fs::absolute (path);
       fs::remove (full_path);
 
-      boost::system::error_code ec;
-
       server::unix_server::endpoint_type ep
-        (resolver<server::unix_server::protocol_type>::resolve (full_path.string (), ec));
-
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
-      }
+        (resolver<server::unix_server::protocol_type>::resolve (full_path.string ()));
 
       server_ptr_t s (new server::unix_server (gspc::net::io (), ep, qmgr));
       s_set_options (s.get(), opts);
@@ -74,15 +67,8 @@ namespace gspc
                                   , server::queue_manager_t &qmgr
                                   )
     {
-      boost::system::error_code ec;
-
       server::tcp_server::endpoint_type ep
-        (resolver<server::tcp_server::protocol_type>::resolve (location, ec));
-
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
-      }
+        (resolver<server::tcp_server::protocol_type>::resolve (location));
 
       server_ptr_t s (new server::tcp_server (gspc::net::io (), ep, qmgr));
       s_set_options (s.get(), opts);
