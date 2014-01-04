@@ -168,6 +168,15 @@ namespace petri_net
     return _tmap;
   }
 
+  net::adj_tp_type const& net::transition_to_place() const
+  {
+    return _adj_tp;
+  }
+  net::adj_pt_type const& net::place_to_transition() const
+  {
+    return _adj_pt;
+  }
+
   void net::modify_transitions
     ( const boost::function<void ( const transition_id_type&
                                  , we::type::transition_t&

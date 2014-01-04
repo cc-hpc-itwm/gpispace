@@ -70,6 +70,9 @@ namespace petri_net
     transitions() const;
     const boost::unordered_set<connection_t> connections() const;
 
+    adj_tp_type const& transition_to_place() const;
+    adj_pt_type const& place_to_transition() const;
+
     boost::select_second_const_range<std::pair<adj_tp_type::left_const_iterator, adj_tp_type::left_const_iterator> >
     out_of_transition (const transition_id_type&) const;
     boost::select_second_const_range<std::pair<adj_pt_type::right_const_iterator, adj_pt_type::right_const_iterator> >
