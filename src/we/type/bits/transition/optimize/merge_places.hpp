@@ -110,7 +110,7 @@ namespace we { namespace type {
 
         BOOST_FOREACH (const pnet::type::value::value_type& token, tokens)
         {
-          net.put_token (pid_A, token);
+          net.put_value (pid_A, token);
         }
 
         const bool okay_A (!rewrite::has_magic_prefix (name_A));
