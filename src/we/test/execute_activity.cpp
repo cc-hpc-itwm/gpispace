@@ -18,7 +18,6 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
-using petri_net::connection_t;
 using petri_net::edge::PT;
 using petri_net::edge::PT_READ;
 using petri_net::edge::TP;

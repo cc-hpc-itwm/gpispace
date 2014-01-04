@@ -348,11 +348,7 @@ namespace we
               net.delete_edge_out (tid_trans, pid);
 
               net.add_connection
-                (petri_net::connection_t ( connection.type()
-                                         , tid_pred
-                                         , connection.place_id()
-                                         )
-                );
+                (connection.type(), tid_pred, connection.place_id());
 
               pred.add_connection (p.second.name(), pid, p.second.property());
             }
@@ -373,11 +369,7 @@ namespace we
                   net.delete_edge_in (tid_trans, *pid);
 
                   net.add_connection
-                    (petri_net::connection_t ( connection.type()
-                                             , tid_pred
-                                             , connection.place_id()
-                                             )
-                    );
+                    (connection.type(), tid_pred, connection.place_id());
 
                   pred.add_connection
                     (*pid, p.second.name(), p.second.property());

@@ -97,26 +97,20 @@ namespace petri_net
     return tid;
   }
 
-  void net::add_connection (const connection_t& connection)
+  void net::add_connection
+    (edge::type type, transition_id_type transition_id, place_id_type place_id)
   {
-    if (edge::is_PT (connection.type()))
+    if (type == edge::TP)
     {
-      _adj_pt.set_adjacent ( connection.place_id()
-                           , connection.transition_id()
-                           , connection
-                           );
+      _adj_tp.set_adjacent
+        (transition_id, place_id, connection_t (type, transition_id, place_id));
     }
     else
     {
-      _adj_tp.set_adjacent ( connection.transition_id()
-                           , connection.place_id()
-                           , connection
-                           );
-    }
+      _adj_pt.set_adjacent
+        (place_id, transition_id, connection_t (type, transition_id, place_id));
 
-    if (edge::is_PT (connection.type()))
-    {
-      update_enabled (connection.transition_id());
+      update_enabled (transition_id);
     }
   }
 

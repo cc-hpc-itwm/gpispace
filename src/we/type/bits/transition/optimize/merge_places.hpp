@@ -45,11 +45,9 @@ namespace we { namespace type {
             net.delete_edge_in (tid_trans_out_B, pid_B);
 
             net.add_connection
-              ( petri_net::connection_t
-                ( is_read ? petri_net::edge::PT_READ : connection.type()
-                , connection.transition_id()
-                , pid_A
-                )
+              ( is_read ? petri_net::edge::PT_READ : connection.type()
+              , connection.transition_id()
+              , pid_A
               );
 
             transition_t trans_out_B (net.get_transition (tid_trans_out_B));
@@ -87,11 +85,7 @@ namespace we { namespace type {
             net.delete_edge_out (tid_trans_in_B, pid_B);
 
             net.add_connection
-              ( petri_net::connection_t ( connection.type()
-                                        , connection.transition_id()
-                                        , pid_A
-                                        )
-              );
+              (connection.type(), connection.transition_id(), pid_A);
 
             transition_t trans_in_B (net.get_transition (tid_trans_in_B));
 

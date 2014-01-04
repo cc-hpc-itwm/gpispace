@@ -42,7 +42,7 @@ namespace petri_net
 
     place_id_type add_place (const place::type&);
     transition_id_type add_transition (const we::type::transition_t&);
-    void add_connection (const connection_t&);
+    void add_connection (edge::type, transition_id_type, place_id_type);
 
     void set_transition_priority ( const transition_id_type&
                                  , const priority_type&
