@@ -23,28 +23,29 @@ namespace gspc
 {
   namespace net
   {
-    static
-    server_ptr_t s_new_unix_server ( std::string const & location
+    namespace
+    {
+      server_ptr_t new_unix_server ( std::string const & location
                                    , server::queue_manager_t &qmgr
                                    )
-    {
-      boost::filesystem::remove (location);
+      {
+        boost::filesystem::remove (location);
 
-      server::unix_server::endpoint_type ep
-        (resolver<server::unix_server::protocol_type>::resolve (location));
+        server::unix_server::endpoint_type ep
+          (resolver<server::unix_server::protocol_type>::resolve (location));
 
-      return server_ptr_t (new server::unix_server (gspc::net::io (), ep, qmgr));
-    }
+        return server_ptr_t (new server::unix_server (gspc::net::io (), ep, qmgr));
+      }
 
-    static
-    server_ptr_t s_new_tcp_server ( std::string const & location
+      server_ptr_t new_tcp_server ( std::string const & location
                                   , server::queue_manager_t &qmgr
                                   )
-    {
-      server::tcp_server::endpoint_type ep
-        (resolver<server::tcp_server::protocol_type>::resolve (location));
+      {
+        server::tcp_server::endpoint_type ep
+          (resolver<server::tcp_server::protocol_type>::resolve (location));
 
-      return server_ptr_t (new server::tcp_server (gspc::net::io (), ep, qmgr));
+        return server_ptr_t (new server::tcp_server (gspc::net::io (), ep, qmgr));
+      }
     }
 
     server_ptr_t serve ( std::string const &url_s
@@ -56,8 +57,8 @@ namespace gspc
       const fhg::util::url_t url (url_s);
 
       server_ptr_t server
-        ( url.type() == "unix" ? s_new_unix_server (boost::filesystem::absolute (url.path()).string(), qmgr)
-        : url.type() == "tcp" ? s_new_tcp_server (url.path(), qmgr)
+        ( url.type() == "unix" ? new_unix_server (boost::filesystem::absolute (url.path()).string(), qmgr)
+        : url.type() == "tcp" ? new_tcp_server (url.path(), qmgr)
         : throw boost::system::system_error
             (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
         );
