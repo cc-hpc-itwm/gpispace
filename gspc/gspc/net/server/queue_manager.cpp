@@ -23,13 +23,6 @@ namespace gspc
   {
     namespace server
     {
-      queue_manager_t::queue_manager_t ()
-        : m_mutex ()
-        , m_subscriptions ()
-        , m_user_subscriptions ()
-        , m_service_demux (gspc::net::server::default_service_demux())
-      {}
-
       queue_manager_t::queue_manager_t (service_demux_t &demux)
         : m_mutex ()
         , m_subscriptions ()

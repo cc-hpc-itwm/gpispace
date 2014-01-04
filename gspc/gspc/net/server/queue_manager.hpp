@@ -30,7 +30,6 @@ namespace gspc
                             , boost::noncopyable
       {
       public:
-        queue_manager_t ();
         queue_manager_t (service_demux_t & demux);
 
         ~queue_manager_t ();
