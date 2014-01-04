@@ -56,7 +56,11 @@ namespace gspc
         ep = resolver<server::unix_server::protocol_type>::resolve
           (full_path.string (), ec);
 
-        if (not ec)
+        if (ec)
+        {
+          throw boost::system::system_error (ec);
+        }
+        else
         {
           server_ptr_t s (new server::unix_server (gspc::net::io (), ep, qmgr));
           s_set_options (s.get(), opts, ec);
@@ -85,7 +89,11 @@ namespace gspc
                                                                   , ec
                                                                   );
 
-        if (not ec)
+        if (ec)
+        {
+          throw boost::system::system_error (ec);
+        }
+        else
         {
           server_ptr_t s (new server::tcp_server (gspc::net::io (), ep, qmgr));
           s_set_options (s.get(), opts, ec);
