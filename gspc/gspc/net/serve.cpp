@@ -99,11 +99,6 @@ namespace gspc
       return server_ptr_t ();
     }
 
-    server_ptr_t serve (std::string const &url)
-    {
-      return serve (url, server::default_queue_manager ());
-    }
-
     server_ptr_t serve ( std::string const &url
                        , server::queue_manager_t &qmgr
                        )
