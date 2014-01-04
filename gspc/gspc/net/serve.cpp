@@ -95,23 +95,14 @@ namespace gspc
     {
       gspc::net::initialize ();
 
-      server_ptr_t server;
-
       const fhg::util::url_t url (url_s);
 
-      if (url.type () == "unix")
-      {
-        server = s_new_unix_server (url.path (), url.args (), qmgr);
-      }
-      else if (url.type () == "tcp")
-      {
-        server = s_new_tcp_server (url.path (), url.args (), qmgr);
-      }
-      else
-      {
-        throw boost::system::system_error
-          (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type));
-      }
+      server_ptr_t server
+        ( url.type() == "unix" ? s_new_unix_server (url.path(), url.args(), qmgr)
+        : url.type() == "tcp" ? s_new_tcp_server (url.path(), url.args(), qmgr)
+        : throw boost::system::system_error
+            (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
+        );
 
       if (server)
         server->start ();
