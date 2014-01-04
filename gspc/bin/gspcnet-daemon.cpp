@@ -8,6 +8,7 @@
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/service/echo.hpp>
 
@@ -24,7 +25,7 @@ int main (int argc, char *argv[])
   gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
 
   std::vector<gspc::net::server_ptr_t> servers;
-  gspc::net::server::queue_manager_t qmgr;
+  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
 
   for (int i = 1 ; i < argc ; ++i)
   {

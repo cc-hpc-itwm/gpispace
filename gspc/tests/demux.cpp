@@ -13,6 +13,7 @@
 #include <gspc/net/error.hpp>
 #include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/parse/parser.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
 
@@ -175,7 +176,7 @@ BOOST_AUTO_TEST_CASE (test_default_demux)
   int rc;
   mock::user user;
 
-  gspc::net::server::queue_manager_t qmgr;
+  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
   qmgr.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
   gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
@@ -207,9 +208,9 @@ BOOST_AUTO_TEST_CASE (test_default_demux_multiple_mgmr)
   int rc;
   mock::user user;
 
-  gspc::net::server::queue_manager_t qmgr_1;
+  gspc::net::server::queue_manager_t qmgr_1 ((gspc::net::server::default_service_demux()));
   qmgr_1.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
-  gspc::net::server::queue_manager_t qmgr_2;
+  gspc::net::server::queue_manager_t qmgr_2 ((gspc::net::server::default_service_demux()));
   qmgr_2.subscribe (&user, "/test/replies", "/test/replies", gspc::net::frame ());
 
   gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());

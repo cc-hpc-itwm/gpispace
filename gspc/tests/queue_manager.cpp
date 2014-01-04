@@ -11,6 +11,7 @@
 #include <boost/thread.hpp>
 
 #include <gspc/net/parse/parser.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 
 #include "mock_user.hpp"
@@ -24,7 +25,7 @@ BOOST_AUTO_TEST_CASE (test_subscribe_unsubscribe)
   mock::user user;
   int rc;
 
-  gspc::net::server::queue_manager_t qmgr;
+  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
 
   rc = qmgr.subscribe (&user, "/tests", "0", gspc::net::frame ());
   BOOST_CHECK_EQUAL (rc, 0);
@@ -63,7 +64,7 @@ BOOST_AUTO_TEST_CASE (test_subscribe_many_users)
   mock::user client;
   int rc;
 
-  gspc::net::server::queue_manager_t qmgr;
+  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
 
   BOOST_FOREACH (mock::user *user, users)
   {
@@ -123,7 +124,7 @@ BOOST_AUTO_TEST_CASE (test_async_sender)
   std::vector<boost::thread *> sender;
   mock::user client;
 
-  gspc::net::server::queue_manager_t qmgr;
+  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
   BOOST_REQUIRE_EQUAL
     ( qmgr.subscribe (&client, "/tests", "sub-client-0", gspc::net::frame())
     , 0
@@ -158,7 +159,7 @@ BOOST_AUTO_TEST_CASE (test_disconnect)
   mock::user user;
   int rc;
 
-  gspc::net::server::queue_manager_t qmgr;
+  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
 
   rc = qmgr.subscribe (&user, "/tests", "0", gspc::net::frame ());
   BOOST_REQUIRE_EQUAL (rc, 0);
@@ -180,7 +181,7 @@ BOOST_AUTO_TEST_CASE (test_subscribe_disconnect_loop)
   mock::user user;
   int rc;
 
-  gspc::net::server::queue_manager_t qmgr;
+  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
 
   for (std::size_t i = 0 ; i < NUM_ITERATIONS ; ++i)
   {
