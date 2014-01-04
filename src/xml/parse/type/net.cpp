@@ -9,7 +9,6 @@
 
 #include <we/type/net.fwd.hpp>
 #include <we/type/place.hpp>
-#include <we/type/error.hpp>
 
 #include <we/expr/eval/context.hpp>
 
