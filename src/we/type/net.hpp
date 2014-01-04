@@ -103,7 +103,6 @@ namespace petri_net
                                    )>&
       );
 
-    void put_token (const place_id_type&, const pnet::type::value::value_type&);
     void put_value (const place_id_type&, const pnet::type::value::value_type&);
 
     const std::list<pnet::type::value::value_type>&

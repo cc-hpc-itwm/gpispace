@@ -344,13 +344,19 @@ namespace petri_net
     return tid;
   }
 
-  void net::put_token ( const place_id_type& pid
-                      , const pnet::type::value::value_type& token
+  void net::put_value ( const place_id_type& pid
+                      , const pnet::type::value::value_type& value
                       )
   {
+    const place::type& place (get_place (pid));
+
     std::list<pnet::type::value::value_type>& tokens (_token_by_place_id[pid]);
-    const std::list<pnet::type::value::value_type>::iterator
-      tokenpos (tokens.insert (tokens.end(), token));
+    std::list<pnet::type::value::value_type>::iterator const tokenpos
+      ( tokens.insert
+        ( tokens.end()
+        , pnet::require_type (value, place.signature(), place.name())
+        )
+      );
 
     BOOST_FOREACH ( const transition_id_type& tid
                   , out_of_place (pid)
@@ -358,17 +364,6 @@ namespace petri_net
     {
       update_enabled_put_token (tid, pid, tokenpos);
     }
-  }
-
-  void net::put_value ( const place_id_type& pid
-                      , const pnet::type::value::value_type& value
-                      )
-  {
-    const place::type& place (get_place (pid));
-
-    put_token ( pid
-              , pnet::require_type (value, place.signature(), place.name())
-              );
   }
 
   namespace
