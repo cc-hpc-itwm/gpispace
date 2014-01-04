@@ -10,9 +10,7 @@ namespace gspc
 {
   namespace net
   {
-    server_ptr_t serve ( std::string const &url
-                       , server::queue_manager_t &
-                       );
+    server_ptr_t serve (std::string const& url, server::queue_manager_t&);
   }
 }
 
