@@ -28,18 +28,12 @@ namespace gspc
                               , option_map_t const &opts
                               )
     {
-      boost::system::error_code ec;
       server->set_queue_length
         (get_option ( opts
                     , "queue_length"
                     , limits::max_pending_frames_per_connection ()
-                    , ec
                     )
         );
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
-      }
     }
 
     static
