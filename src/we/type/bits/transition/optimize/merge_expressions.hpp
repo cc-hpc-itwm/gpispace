@@ -135,14 +135,12 @@ namespace we
           boost::unordered_set<petri_net::place_id_type> pid_read;
           long max_successors_of_pred (0);
 
-          typedef std::pair< petri_net::place_id_type
-                           , petri_net::connection_t
-                           > pc_type;
-
-          BOOST_FOREACH (const pc_type& pc, net.in_to_transition (tid))
+          BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                        , net.in_to_transition (tid) | boost::adaptors::map_keys
+                        )
           {
-            const petri_net::connection_t& connection (pc.second);
-            const petri_net::place_id_type& place_id (pc.first);
+            petri_net::connection_t const connection
+              (net.get_connection_in (tid, place_id));
 
             if (petri_net::edge::is_pt_read (connection.type()))
             {
