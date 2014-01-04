@@ -58,9 +58,9 @@ namespace gspc
 
         if (not ec)
         {
-          server::unix_server *s = new server::unix_server (gspc::net::io (), ep, qmgr);
-          s_set_options (s, opts, ec);
-          return server_ptr_t (s);
+          server_ptr_t s (new server::unix_server (gspc::net::io (), ep, qmgr));
+          s_set_options (s.get(), opts, ec);
+          return s;
         }
       }
       catch (boost::system::system_error const &se)
@@ -87,9 +87,9 @@ namespace gspc
 
         if (not ec)
         {
-          server::tcp_server *s = new server::tcp_server (gspc::net::io (), ep, qmgr);
-          s_set_options (s, opts, ec);
-          return server_ptr_t (s);
+          server_ptr_t s (new server::tcp_server (gspc::net::io (), ep, qmgr));
+          s_set_options (s.get(), opts, ec);
+          return s;
         }
       }
       catch (boost::system::system_error const &se)
