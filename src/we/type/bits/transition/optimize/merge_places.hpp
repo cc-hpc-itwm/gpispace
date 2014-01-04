@@ -29,7 +29,7 @@ namespace we { namespace type {
 
         // rewire pid_B -> trans to pid_A -> trans
         BOOST_FOREACH ( const petri_net::transition_id_type& trans_out_B
-                      , net.out_of_place (pid_B) | boost::adaptors::map_keys
+                      , net.out_of_place (pid_B)
                       )
           {
             stack.push (trans_out_B);

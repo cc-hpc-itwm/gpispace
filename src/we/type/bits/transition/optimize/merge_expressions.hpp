@@ -133,7 +133,7 @@ namespace we
                               > preds;
           boost::unordered_set<tid_pid_type> preds_read;
           boost::unordered_set<petri_net::place_id_type> pid_read;
-          std::size_t max_successors_of_pred (0);
+          long max_successors_of_pred (0);
 
           typedef std::pair< petri_net::place_id_type
                            , petri_net::connection_t
@@ -205,7 +205,7 @@ namespace we
 
                   max_successors_of_pred =
                     std::max ( max_successors_of_pred
-                             , net.out_of_place (out_place_id).size()
+                             , boost::distance (net.out_of_place (out_place_id))
                              );
                 }
 

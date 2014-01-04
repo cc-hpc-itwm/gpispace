@@ -208,10 +208,10 @@ namespace petri_net
   {
     return _adj_pt.row_adj_tab (tid);
   }
-  const boost::unordered_map<transition_id_type, connection_t>&
+  const boost::select_first_range<boost::unordered_map<transition_id_type, connection_t> >
   net::out_of_place (const place_id_type& pid) const
   {
-    return _adj_pt.col_adj_tab (pid);
+    return _adj_pt.col_adj_tab (pid) | boost::adaptors::map_keys;
   }
   const boost::select_first_range<boost::unordered_map<transition_id_type, connection_t> >
   net::in_to_place (const place_id_type& pid) const
@@ -263,7 +263,7 @@ namespace petri_net
     std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
     BOOST_FOREACH ( const transition_id_type& tid
-                  , out_of_place (pid) | boost::adaptors::map_keys
+                  , out_of_place (pid)
                   )
     {
       stack_in.push (std::make_pair (tid, pid));
@@ -357,7 +357,7 @@ namespace petri_net
       tokenpos (tokens.insert (tokens.end(), token));
 
     BOOST_FOREACH ( const transition_id_type& tid
-                  , out_of_place (pid) | boost::adaptors::map_keys
+                  , out_of_place (pid)
                   )
     {
       update_enabled_put_token (tid, pid, tokenpos);
@@ -402,7 +402,7 @@ namespace petri_net
     _token_by_place_id.erase (pid);
 
     BOOST_FOREACH ( const transition_id_type& tid
-                  , out_of_place (pid) | boost::adaptors::map_keys
+                  , out_of_place (pid)
                   )
     {
       disable (tid);
@@ -539,7 +539,7 @@ namespace petri_net
         _token_by_place_id.at (pid).erase (token);
 
         BOOST_FOREACH ( const transition_id_type& t
-                      , out_of_place (pid) | boost::adaptors::map_keys
+                      , out_of_place (pid)
                       )
         {
           transitions_to_update.insert (t);
