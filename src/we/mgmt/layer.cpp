@@ -429,14 +429,14 @@ namespace we
       boost::mutex::scoped_lock const container_lock (_container_mutex);
       boost::mutex::scoped_lock const to_be_removed_lock (_to_be_removed_mutex);
 
-      list_with_id_lookup::iterator const pos (_container.find (id));
+      list_with_id_lookup::iterator const pos_container (_container.find (id));
       list_with_id_lookup::iterator const pos_container_inactive
         (_container_inactive.find (id));
 
-      if (pos != _container.end())
+      if (pos_container != _container.end())
       {
-        fun (*pos->second);
-        _container.erase (pos);
+        fun (*pos_container->second);
+        _container.erase (pos_container);
       }
       else if (pos_container_inactive != _container_inactive.end())
       {
@@ -455,20 +455,20 @@ namespace we
       boost::mutex::scoped_lock const container_lock (_container_mutex);
       boost::mutex::scoped_lock const to_be_removed_lock (_to_be_removed_mutex);
 
-      list_with_id_lookup::iterator const pos (_container.find (id));
+      list_with_id_lookup::iterator const pos_container (_container.find (id));
       list_with_id_lookup::iterator const pos_container_inactive
         (_container_inactive.find (id));
 
-      if (pos != _container.end())
+      if (pos_container != _container.end())
       {
-        fun (*pos->second);
+        fun (*pos_container->second);
       }
       else if (pos_container_inactive != _container_inactive.end())
       {
-        activity_data_type data (*pos_container_inactive->second);
+        activity_data_type activity_data (*pos_container_inactive->second);
         _container_inactive.erase (pos_container_inactive);
-        fun (data);
-        _container.push_back (data);
+        fun (activity_data);
+        _container.push_back (activity_data);
 
         _condition_non_empty.notify_one();
       }
