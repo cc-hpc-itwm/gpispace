@@ -413,7 +413,9 @@ namespace petri_net
       cross.push (place_id, tokens);
     }
 
-    if (cross.enables (get_transition (tid)))
+    we::type::transition_t const& transition (get_transition (tid));
+
+    if (cross.enables (transition, transition.condition()))
     {
       _enabled.insert (tid);
       cross.write_to (_enabled_choice[tid]);
@@ -461,7 +463,9 @@ namespace petri_net
       }
     }
 
-    if (cross.enables (get_transition (tid)))
+    we::type::transition_t const& transition (get_transition (tid));
+
+    if (cross.enables (transition, transition.condition()))
     {
       _enabled.insert (tid);
       cross.write_to (_enabled_choice[tid]);

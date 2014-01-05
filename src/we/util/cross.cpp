@@ -67,7 +67,9 @@ namespace we
       return false;
     }
 
-    bool cross_type::enables (we::type::transition_t const& transition)
+    bool cross_type::enables ( we::type::transition_t const& transition
+                             , condition::type const& condition
+                             )
     {
       //! \note that means the transitions without in-port cannot fire
       //! instead of fire unconditionally
@@ -77,7 +79,7 @@ namespace we
       }
 
       //! \todo use is_const_true and boost::optional...
-      if (transition.condition().expression() == "true")
+      if (condition.expression() == "true")
       {
         return true;
       }
@@ -98,7 +100,7 @@ namespace we
             );
         }
 
-        if (transition.condition().parser().eval_all_bool (context))
+        if (condition.parser().eval_all_bool (context))
         {
           return true;
         }

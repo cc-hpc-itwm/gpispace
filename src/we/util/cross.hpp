@@ -3,6 +3,7 @@
 #ifndef _WE_UTIL_CROSS_HPP
 #define _WE_UTIL_CROSS_HPP
 
+#include <we/type/condition.hpp>
 #include <we/type/id.hpp>
 #include <we/type/transition.fwd.hpp>
 #include <we/type/value.hpp>
@@ -22,7 +23,9 @@ namespace we
     class cross_type
     {
     public:
-      bool enables (we::type::transition_t const&);
+      bool enables ( we::type::transition_t const&
+                   , condition::type const&
+                   );
       void write_to (boost::unordered_map< petri_net::place_id_type
                                          , pos_and_distance_type
                                          >&
