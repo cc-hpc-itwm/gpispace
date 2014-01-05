@@ -50,18 +50,21 @@ namespace we
     bool cross_type::do_step
       (map_type::iterator slot, map_type::iterator const& end)
     {
-      ++slot->second;
-
-      if (slot->second.end())
+      while (slot != end)
       {
+        //! \note all sequences are non-empty
+        ++slot->second;
+
+        if (!slot->second.end())
+        {
+          return true;
+        }
+
         slot->second.rewind();
-
         ++slot;
-
-        return (slot != end) && do_step (slot, end);
       }
 
-      return true;
+      return false;
     }
 
     bool cross_type::enables (we::type::transition_t const& transition)
