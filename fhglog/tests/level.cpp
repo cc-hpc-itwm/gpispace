@@ -44,42 +44,36 @@ BOOST_AUTO_TEST_CASE (from_string)
 
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( boost::bind (&fhg::log::from_string, "TRACEmore")
-    , "std::runtime_error"
     , "PARSE ERROR [5]: additional input\n"
       "TRACE more\n"
       "     ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( boost::bind (&fhg::log::from_string, "DEBUGmore")
-    , "std::runtime_error"
     , "PARSE ERROR [5]: additional input\n"
       "DEBUG more\n"
       "     ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( boost::bind (&fhg::log::from_string, "INFOmore")
-    , "std::runtime_error"
     , "PARSE ERROR [4]: additional input\n"
       "INFO more\n"
       "    ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( boost::bind (&fhg::log::from_string, "WARNmore")
-    , "std::runtime_error"
     , "PARSE ERROR [4]: additional input\n"
       "WARN more\n"
       "    ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( boost::bind (&fhg::log::from_string, "ERRORmore")
-    , "std::runtime_error"
     , "PARSE ERROR [5]: additional input\n"
       "ERROR more\n"
       "     ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( boost::bind (&fhg::log::from_string, "FATALmore")
-    , "std::runtime_error"
     , "PARSE ERROR [5]: additional input\n"
       "FATAL more\n"
       "     ^\n"
