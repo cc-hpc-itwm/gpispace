@@ -67,9 +67,10 @@ namespace we
       return false;
     }
 
-    bool cross_type::enables ( we::type::transition_t const& transition
-                             , condition::type const& condition
-                             )
+    bool cross_type::enables
+    ( boost::function<std::string const& (petri_net::place_id_type const&)> name
+    , condition::type const& condition
+    )
     {
       //! \note that means the transitions without in-port cannot fire
       //! instead of fire unconditionally
@@ -93,11 +94,7 @@ namespace we
         BOOST_FOREACH (const pits_type& pits, _m)
         {
           context.bind_ref
-            ( transition
-            . get_port (transition.outer_to_inner().at (pits.first).first)
-            . name()
-            , *pits.second.pos_and_distance().first
-            );
+            (name (pits.first), *pits.second.pos_and_distance().first);
         }
 
         if (condition.parser().eval_all_bool (context))

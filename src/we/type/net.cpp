@@ -392,6 +392,25 @@ namespace petri_net
     return not _enabled.empty();
   }
 
+  namespace
+  {
+    class get_port_name
+    {
+    public:
+      get_port_name (we::type::transition_t const& transition)
+        : _transition (transition)
+      {}
+      std::string const&
+        operator() (petri_net::place_id_type const& place_id) const
+      {
+        return _transition.get_port
+          (_transition.outer_to_inner().at (place_id).first).name();
+      }
+    private:
+      we::type::transition_t const& _transition;
+    };
+  }
+
   void net::update_enabled (const transition_id_type& tid)
   {
     we::util::cross_type cross;
@@ -415,7 +434,7 @@ namespace petri_net
 
     we::type::transition_t const& transition (get_transition (tid));
 
-    if (cross.enables (transition, transition.condition()))
+    if (cross.enables (get_port_name (transition), transition.condition()))
     {
       _enabled.insert (tid);
       cross.write_to (_enabled_choice[tid]);
@@ -465,7 +484,7 @@ namespace petri_net
 
     we::type::transition_t const& transition (get_transition (tid));
 
-    if (cross.enables (transition, transition.condition()))
+    if (cross.enables (get_port_name (transition), transition.condition()))
     {
       _enabled.insert (tid);
       cross.write_to (_enabled_choice[tid]);

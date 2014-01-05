@@ -5,12 +5,14 @@
 
 #include <we/type/condition.hpp>
 #include <we/type/id.hpp>
-#include <we/type/transition.fwd.hpp>
+#include <we/type/port.hpp>
 #include <we/type/value.hpp>
 
+#include <boost/function.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <list>
+#include <string>
 
 namespace we
 {
@@ -23,9 +25,10 @@ namespace we
     class cross_type
     {
     public:
-      bool enables ( we::type::transition_t const&
-                   , condition::type const&
-                   );
+      bool enables
+      ( boost::function<std::string const& (petri_net::place_id_type const&)>
+      , condition::type const&
+      );
       void write_to (boost::unordered_map< petri_net::place_id_type
                                          , pos_and_distance_type
                                          >&
