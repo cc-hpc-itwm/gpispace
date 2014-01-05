@@ -19,21 +19,6 @@ namespace we
                      , std::size_t
                      > pos_and_distance_type;
 
-    class iterators_type
-    {
-    public:
-      iterators_type (std::list<pnet::type::value::value_type>&);
-      iterators_type (const std::list<pnet::type::value::value_type>::iterator&);
-      bool end() const;
-      const pos_and_distance_type& pos_and_distance() const;
-      void operator++();
-      void rewind();
-    private:
-      std::list<pnet::type::value::value_type>::iterator _begin;
-      std::list<pnet::type::value::value_type>::iterator _end;
-      pos_and_distance_type _pos_and_distance;
-    };
-
     class cross_type
     {
     public:
@@ -49,7 +34,27 @@ namespace we
                 , const std::list<pnet::type::value::value_type>::iterator&
                 );
     private:
-      boost::unordered_map<petri_net::place_id_type, iterators_type> _m;
+      class iterators_type
+      {
+      public:
+        iterators_type (std::list<pnet::type::value::value_type>&);
+        iterators_type (const std::list<pnet::type::value::value_type>::iterator&);
+        bool end() const;
+        const pos_and_distance_type& pos_and_distance() const;
+        void operator++();
+        void rewind();
+      private:
+        std::list<pnet::type::value::value_type>::iterator _begin;
+        std::list<pnet::type::value::value_type>::iterator _end;
+        pos_and_distance_type _pos_and_distance;
+      };
+
+      typedef boost::unordered_map<petri_net::place_id_type, iterators_type>
+        map_type;
+
+      map_type _m;
+
+      bool do_step (map_type::iterator, map_type::iterator const&);
     };
   }
 }

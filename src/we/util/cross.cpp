@@ -18,56 +18,50 @@ namespace we
 {
   namespace util
   {
-    iterators_type::iterators_type (std::list<pnet::type::value::value_type>& tokens)
+    cross_type::iterators_type::iterators_type (std::list<pnet::type::value::value_type>& tokens)
       : _begin (tokens.begin())
       , _end (tokens.end())
       , _pos_and_distance (tokens.begin(), 0)
     {}
-    iterators_type::iterators_type (const std::list<pnet::type::value::value_type>::iterator& token)
+    cross_type::iterators_type::iterators_type (const std::list<pnet::type::value::value_type>::iterator& token)
       : _begin (token)
       , _end (boost::next (token))
       , _pos_and_distance (token, 0)
     {}
-    bool iterators_type::end() const
+    bool cross_type::iterators_type::end() const
     {
       return _end == _pos_and_distance.first;
     }
-    const pos_and_distance_type& iterators_type::pos_and_distance() const
+    const pos_and_distance_type& cross_type::iterators_type::pos_and_distance() const
     {
       return _pos_and_distance;
     }
-    void iterators_type::operator++()
+    void cross_type::iterators_type::operator++()
     {
       ++_pos_and_distance.first;
       ++_pos_and_distance.second;
     }
-    void iterators_type::rewind()
+    void cross_type::iterators_type::rewind()
     {
       _pos_and_distance.first = _begin;
       _pos_and_distance.second = 0;
     }
 
-    namespace
+    bool cross_type::do_step
+      (map_type::iterator slot, map_type::iterator const& end)
     {
-      typedef boost::unordered_map< petri_net::place_id_type
-                                  , iterators_type
-                                  > map_type;
+      ++slot->second;
 
-      bool do_step (map_type::iterator slot, const map_type::iterator& end)
+      if (slot->second.end())
       {
-        ++slot->second;
+        slot->second.rewind();
 
-        if (slot->second.end())
-        {
-          slot->second.rewind();
+        ++slot;
 
-          ++slot;
-
-          return (slot != end) && do_step (slot, end);
-        }
-
-        return true;
+        return (slot != end) && do_step (slot, end);
       }
+
+      return true;
     }
 
     bool cross_type::enables (we::type::transition_t const& transition)
