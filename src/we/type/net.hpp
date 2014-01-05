@@ -15,7 +15,7 @@
 #include <we/type/value/show.hpp>
 #include <we/type/value/read.hpp>
 
-#include <we/type/transition.hpp>
+#include <we/type/transition.fwd.hpp>
 
 #include <we/mgmt/type/activity.hpp>
 

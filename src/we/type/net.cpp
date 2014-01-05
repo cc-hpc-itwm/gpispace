@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/net.hpp>
+#include <we/type/transition.hpp>
 #include <we/type/condition.hpp>
 
 #include <we/require_type.hpp>
