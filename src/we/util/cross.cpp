@@ -70,37 +70,45 @@ namespace we
       }
     }
 
-    bool cross_type::empty() const
+    bool cross_type::enables (we::type::transition_t const& transition)
     {
-      return _m.empty();
-    }
-    bool cross_type::step()
-    {
-      return do_step (_m.begin(), _m.end());
-    }
-    bool cross_type::eval (const we::type::transition_t& transition) const
-    {
+      //! \note that means the transitions without in-port cannot fire
+      //! instead of fire unconditionally
+      if (_m.empty())
+      {
+        return false;
+      }
+
       //! \todo use is_const_true and boost::optional...
       if (transition.condition().expression() == "true")
       {
         return true;
       }
 
-      expr::eval::context context;
-
-      typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
-
-      BOOST_FOREACH (const pits_type& pits, _m)
+      do
       {
-        context.bind_ref
-          ( transition
-          . get_port (transition.outer_to_inner().at (pits.first).first)
-          . name()
-          , *pits.second.pos_and_distance().first
-          );
-      }
+        expr::eval::context context;
 
-      return transition.condition().parser().eval_all_bool (context);
+        typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
+
+        BOOST_FOREACH (const pits_type& pits, _m)
+        {
+          context.bind_ref
+            ( transition
+            . get_port (transition.outer_to_inner().at (pits.first).first)
+            . name()
+            , *pits.second.pos_and_distance().first
+            );
+        }
+
+        if (transition.condition().parser().eval_all_bool (context))
+        {
+          return true;
+        }
+      }
+      while (do_step (_m.begin(), _m.end()));
+
+      return false;
     }
     void cross_type::write_to (boost::unordered_map< petri_net::place_id_type
                                                    , pos_and_distance_type

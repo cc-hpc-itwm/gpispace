@@ -35,9 +35,7 @@ namespace we
     class cross_type
     {
     public:
-      bool empty() const;
-      bool step();
-      bool eval (const we::type::transition_t&) const;
+      bool enables (we::type::transition_t const&);
       void write_to (boost::unordered_map< petri_net::place_id_type
                                          , pos_and_distance_type
                                          >&

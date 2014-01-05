@@ -393,31 +393,6 @@ namespace petri_net
     return not _enabled.empty();
   }
 
-  void net::eval_cross ( const transition_id_type& tid
-                       , we::util::cross_type& cross
-                       )
-  {
-    if (!cross.empty())
-    {
-      const we::type::transition_t& transition (get_transition (tid));
-
-      do
-      {
-        if (cross.eval (transition))
-        {
-          _enabled.insert (tid);
-
-          cross.write_to (_enabled_choice[tid]);
-
-          return;
-        }
-      }
-      while (cross.step());
-    }
-
-    disable (tid);
-  }
-
   void net::update_enabled (const transition_id_type& tid)
   {
     we::util::cross_type cross;
@@ -439,7 +414,15 @@ namespace petri_net
       cross.push (place_id, tokens);
     }
 
-    eval_cross (tid, cross);
+    if (cross.enables (get_transition (tid)))
+    {
+      _enabled.insert (tid);
+      cross.write_to (_enabled_choice[tid]);
+    }
+    else
+    {
+      disable (tid);
+    }
   }
 
   void net::update_enabled_put_token
@@ -479,7 +462,15 @@ namespace petri_net
       }
     }
 
-    eval_cross (tid, cross);
+    if (cross.enables (get_transition (tid)))
+    {
+      _enabled.insert (tid);
+      cross.write_to (_enabled_choice[tid]);
+    }
+    else
+    {
+      disable (tid);
+    }
   }
 
   void net::disable (const transition_id_type& tid)
