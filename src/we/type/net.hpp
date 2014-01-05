@@ -6,18 +6,15 @@
 #include <we/type/net.fwd.hpp>
 
 #include <we/container/priostore.hpp>
+#include <we/mgmt/type/activity.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
-
-#include <we/type/value.hpp>
-#include <we/type/value/show.hpp>
-#include <we/type/value/read.hpp>
-
 #include <we/type/transition.fwd.hpp>
-
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/read.hpp>
+#include <we/type/value/show.hpp>
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
