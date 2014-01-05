@@ -393,25 +393,6 @@ namespace petri_net
     return not _enabled.empty();
   }
 
-  namespace
-  {
-    class get_port_name
-    {
-    public:
-      get_port_name (we::type::transition_t const& transition)
-        : _transition (transition)
-      {}
-      std::string const&
-        operator() (petri_net::place_id_type const& place_id) const
-      {
-        return _transition.get_port
-          (_transition.outer_to_inner().at (place_id).first).name();
-      }
-    private:
-      we::type::transition_t const& _transition;
-    };
-  }
-
   void net::update_enabled (const transition_id_type& tid)
   {
     cross_type cross;
@@ -433,9 +414,7 @@ namespace petri_net
       cross.push (place_id, tokens);
     }
 
-    we::type::transition_t const& transition (get_transition (tid));
-
-    if (cross.enables (get_port_name (transition), transition.condition()))
+    if (cross.enables (get_transition (tid)))
     {
       _enabled.insert (tid);
       cross.write_to (_enabled_choice[tid]);
@@ -483,9 +462,7 @@ namespace petri_net
       }
     }
 
-    we::type::transition_t const& transition (get_transition (tid));
-
-    if (cross.enables (get_port_name (transition), transition.condition()))
+    if (cross.enables (get_transition (tid)))
     {
       _enabled.insert (tid);
       cross.write_to (_enabled_choice[tid]);
@@ -600,10 +577,7 @@ namespace petri_net
     return false;
   }
 
-  bool net::cross_type::enables
-  ( boost::function<std::string const& (petri_net::place_id_type const&)> name
-  , condition::type const& condition
-  )
+  bool net::cross_type::enables (we::type::transition_t const& transition)
   {
     //! \note that means the transitions without in-port cannot fire
     //! instead of fire unconditionally
@@ -613,7 +587,7 @@ namespace petri_net
     }
 
     //! \todo use is_const_true and boost::optional...
-    if (condition.expression() == "true")
+    if (transition.condition().expression() == "true")
     {
       return true;
     }
@@ -627,10 +601,13 @@ namespace petri_net
       BOOST_FOREACH (const pits_type& pits, _m)
       {
         context.bind_ref
-          (name (pits.first), *pits.second.pos_and_distance().first);
+          ( transition.get_port
+            (transition.outer_to_inner().at (pits.first).first).name()
+          , *pits.second.pos_and_distance().first
+          );
       }
 
-      if (condition.parser().eval_all_bool (context))
+      if (transition.condition().parser().eval_all_bool (context))
       {
         return true;
       }

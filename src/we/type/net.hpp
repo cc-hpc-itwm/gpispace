@@ -232,10 +232,7 @@ namespace petri_net
     class cross_type
     {
     public:
-      bool enables
-      ( boost::function<std::string const& (petri_net::place_id_type const&)>
-      , condition::type const&
-      );
+      bool enables (we::type::transition_t const&);
       void write_to (boost::unordered_map< petri_net::place_id_type
                                          , pos_and_distance_type
                                          >&
