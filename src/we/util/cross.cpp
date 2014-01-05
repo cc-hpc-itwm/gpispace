@@ -63,14 +63,7 @@ namespace we
 
           ++slot;
 
-          if (slot == end)
-          {
-            return false;
-          }
-          else
-          {
-            return do_step (slot, end);
-          }
+          return (slot != end) && do_step (slot, end);
         }
 
         return true;
