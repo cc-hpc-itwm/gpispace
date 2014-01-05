@@ -17,8 +17,6 @@
 
 #include <we/type/transition.hpp>
 
-#include <we/util/cross.hpp>
-
 #include <we/mgmt/type/activity.hpp>
 
 #include <boost/bimap/bimap.hpp>
@@ -210,10 +208,14 @@ namespace petri_net
 
     we::container::priority_store _enabled;
 
+    typedef std::pair< std::list<pnet::type::value::value_type>::iterator
+                     , std::size_t
+                     > pos_and_distance_type;
+
     boost::unordered_map
       < transition_id_type
       , boost::unordered_map< petri_net::place_id_type
-                            , we::util::pos_and_distance_type
+                            , pos_and_distance_type
                             >
       > _enabled_choice;
 
@@ -229,6 +231,47 @@ namespace petri_net
     void disable (const transition_id_type&);
 
     we::mgmt::type::activity_t extract_activity (const transition_id_type&);
+
+    class cross_type
+    {
+    public:
+      bool enables
+      ( boost::function<std::string const& (petri_net::place_id_type const&)>
+      , condition::type const&
+      );
+      void write_to (boost::unordered_map< petri_net::place_id_type
+                                         , pos_and_distance_type
+                                         >&
+                    ) const;
+      void push ( const petri_net::place_id_type&
+                , std::list<pnet::type::value::value_type>&
+                );
+      void push ( const petri_net::place_id_type&
+                , const std::list<pnet::type::value::value_type>::iterator&
+                );
+    private:
+      class iterators_type
+      {
+      public:
+        iterators_type (std::list<pnet::type::value::value_type>&);
+        iterators_type (const std::list<pnet::type::value::value_type>::iterator&);
+        bool end() const;
+        const pos_and_distance_type& pos_and_distance() const;
+        void operator++();
+        void rewind();
+      private:
+        std::list<pnet::type::value::value_type>::iterator _begin;
+        std::list<pnet::type::value::value_type>::iterator _end;
+        pos_and_distance_type _pos_and_distance;
+      };
+
+      typedef boost::unordered_map<petri_net::place_id_type, iterators_type>
+      map_type;
+
+      map_type _m;
+
+      bool do_step (map_type::iterator, map_type::iterator const&);
+    };
   };
 }
 
