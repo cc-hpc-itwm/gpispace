@@ -3,20 +3,22 @@
 #ifndef _WE_UTIL_CROSS_HPP
 #define _WE_UTIL_CROSS_HPP
 
-#include <we/util/cross.fwd.hpp>
-
 #include <we/type/id.hpp>
-
 #include <we/type/transition.fwd.hpp>
-
-#include <list>
+#include <we/type/value.hpp>
 
 #include <boost/unordered_map.hpp>
+
+#include <list>
 
 namespace we
 {
   namespace util
   {
+    typedef std::pair< std::list<pnet::type::value::value_type>::iterator
+                     , std::size_t
+                     > pos_and_distance_type;
+
     class iterators_type
     {
     public:

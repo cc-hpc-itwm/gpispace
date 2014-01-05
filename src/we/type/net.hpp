@@ -17,7 +17,7 @@
 
 #include <we/type/transition.hpp>
 
-#include <we/util/cross.fwd.hpp>
+#include <we/util/cross.hpp>
 
 #include <we/mgmt/type/activity.hpp>
 
