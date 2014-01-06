@@ -127,10 +127,7 @@ namespace we
           }
 
           // collect predecessors, separate read connections
-          boost::unordered_set<std::pair< const transition_t
-                                        , const petri_net::transition_id_type
-                                        >
-                              > preds;
+          boost::optional<petri_net::transition_id_type> predecessor;
           boost::unordered_set<tid_pid_type> preds_read;
           boost::unordered_set<petri_net::place_id_type> pid_read;
           long max_successors_of_pred (0);
@@ -202,31 +199,35 @@ namespace we
                              );
                 }
 
-                preds.insert (std::make_pair (trans_pred, tid_pred));
+                if (predecessor)
+                {
+                  return boost::none;
+                }
+
+                predecessor = tid_pred;
               }
             }
           }
 
-          if (  (preds.size() != 1)
+          if (  !predecessor
              || (!preds_read.empty() && max_successors_of_pred > 1)
              )
           {
             return boost::none;
           }
 
-          const std::pair< const transition_t
-                         , const petri_net::transition_id_type
-                         > p (*preds.begin());
-
           BOOST_FOREACH (tid_pid_type const& tr, preds_read)
           {
-            if (tr.first != p.second)
+            if (tr.first != *predecessor)
             {
               pid_read.insert (tr.second);
             }
           }
 
-          return trans_info (p.first, p.second, pid_read);
+          return trans_info ( net.get_transition (*predecessor)
+                            , *predecessor
+                            , pid_read
+                            );
         }
 
         // ***************************************************************** //
