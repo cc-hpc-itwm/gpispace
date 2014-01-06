@@ -603,7 +603,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   {
     we::mgmt::layer::id_type workflowId = pEvt->job_id();
     DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<sdpa::status::show(pJob->getStatus()));
-    workflowEngine()->cancel(workflowId, "user cancel");
+    workflowEngine()->cancel(workflowId);
     pJob->CancelJob(pEvt);
     DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<sdpa::status::show(pJob->getStatus()));
   }

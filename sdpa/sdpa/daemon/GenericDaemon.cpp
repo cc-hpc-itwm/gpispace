@@ -576,9 +576,9 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
  */
-bool GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId, const we::mgmt::layer::reason_type & reason)
+bool GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId)
 {
-  DMLOG (TRACE, "The workflow engine requests the cancellation of the activity " << activityId << "( reason: " << reason<<")!");
+  DMLOG (TRACE, "The workflow engine requests the cancellation of the activity " << activityId);
 
   // cancel the job corresponding to that activity -> send downward a CancelJobEvent?
   // look for the job_id corresponding to the received workflowId into job_map_

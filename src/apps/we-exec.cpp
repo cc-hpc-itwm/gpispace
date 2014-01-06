@@ -247,9 +247,9 @@ namespace
       jobs_.put (job_t (id, desc));
     }
 
-    void cancel (const we::mgmt::layer::id_type& id, const std::string& desc)
+    void cancel (const we::mgmt::layer::id_type& id)
     {
-      std::cout << "cancel[" << id << "] = " << desc << std::endl;
+      std::cout << "cancel[" << id << "]" << std::endl;
 
       boost::optional<we::mgmt::layer::id_type> const mapped
         (get_and_delete_mapping (id));
@@ -356,7 +356,7 @@ namespace
       if (timeout)
       {
         boost::this_thread::sleep (boost::posix_time::milliseconds (*timeout));
-        mgmt_layer_.cancel (_job_id, "user requested cancellation");
+        mgmt_layer_.cancel (_job_id);
       }
     }
 

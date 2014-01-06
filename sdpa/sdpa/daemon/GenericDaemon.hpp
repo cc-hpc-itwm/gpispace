@@ -101,7 +101,7 @@ namespace sdpa {
                          , const we::type::schedule_data& = we::type::schedule_data()
                          , const we::type::user_data & = we::type::user_data ()
                          );
-      bool cancel(const we::mgmt::layer::id_type & id, const we::mgmt::layer::reason_type& reason);
+      bool cancel(const we::mgmt::layer::id_type & id);
       virtual bool finished(const we::mgmt::layer::id_type & id, const we::mgmt::layer::result_type& result);
       virtual bool failed( const we::mgmt::layer::id_type& wfId, const we::mgmt::layer::result_type& res, int errc, std::string const& reason);
       bool canceled(const we::mgmt::layer::id_type& id);

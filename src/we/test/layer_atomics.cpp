@@ -49,7 +49,7 @@ struct daemon_t
     layer.finished (id, enc);
   }
 
-  bool cancel (const id_type &, const std::string &)
+  bool cancel (const id_type &)
   {
     return false;
   }

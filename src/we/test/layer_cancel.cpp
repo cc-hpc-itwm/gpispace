@@ -53,7 +53,7 @@ struct daemon_t
     layer.failed (id, enc, fhg::error::UNEXPECTED_ERROR, "test_layer_cancel");
   }
 
-  bool cancel (const id_type & id, const std::string &)
+  bool cancel (const id_type & id)
   {
     std::cout << "canceling id = " << id << std::endl;
     layer.canceled (id);

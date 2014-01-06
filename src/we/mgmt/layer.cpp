@@ -33,12 +33,11 @@ namespace we
       active_nets_.put (desc.id ());
     }
 
-    void layer::cancel (const external_id_type& id, const reason_type& reason)
+    void layer::cancel (const external_id_type& id)
     {
       lock_t const _ (mutex_);
 
-      const std::string message
-        (reason.empty () ? "user requested cancellation" : reason.c_str ());
+      const std::string message ("user requested cancellation");
 
       MLOG (WARN, "cancel ( " << id << " ) := " << message);
 
@@ -507,9 +506,7 @@ namespace we
               )
            )
         {
-          ext_cancel ( desc.to_external_id()
-                     , desc.error_message ()
-                     );
+          ext_cancel (desc.to_external_id());
         }
       }
       else

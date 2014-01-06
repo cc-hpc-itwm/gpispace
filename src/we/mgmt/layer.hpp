@@ -91,7 +91,7 @@ namespace we
        *                  CANCELING
        *                - all children of the network will be terminated
        */
-      void cancel (const external_id_type&, const reason_type&);
+      void cancel (const external_id_type&);
 
       /**
        * Inform the management  layer that an execution finished  with the given
@@ -160,9 +160,7 @@ namespace we
                            , const we::type::schedule_data&
                            , const we::type::user_data &
                            )> ext_submit;
-      boost::function<void ( external_id_type const &
-                           , reason_type const &
-                           )>  ext_cancel;
+      boost::function<void (external_id_type const &)>  ext_cancel;
       boost::function<void ( external_id_type const &
                            , result_type const &
                            )>  ext_finished;
@@ -190,7 +188,7 @@ namespace we
       template <class E>
         layer (E* exec_layer, boost::function<external_id_type()> gen)
           : ext_submit (boost::bind (&E::submit, exec_layer, _1, _2, _3, _4, _5))
-          , ext_cancel (boost::bind (&E::cancel, exec_layer, _1, _2))
+          , ext_cancel (boost::bind (&E::cancel, exec_layer, _1))
           , ext_finished (boost::bind (&E::finished, exec_layer, _1, _2))
           , ext_failed (boost::bind (&E::failed, exec_layer, _1, _2, _3, _4))
           , ext_canceled (boost::bind (&E::canceled, exec_layer, _1))
