@@ -117,7 +117,6 @@ namespace we
 
         boost::condition_variable_any _condition_non_empty;
 
-        mutable boost::mutex _to_be_removed_mutex;
         typedef boost::unordered_map
           < id_type
           , std::list<std::pair<boost::function<void (activity_data_type&)>, bool> >

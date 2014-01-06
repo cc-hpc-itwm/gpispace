@@ -379,7 +379,6 @@ namespace we
       (activity_data_type activity_data, bool active)
     {
       boost::mutex::scoped_lock const container_lock (_container_mutex);
-      boost::mutex::scoped_lock const to_be_removed_lock (_to_be_removed_mutex);
 
       bool do_put (true);
 
@@ -420,7 +419,6 @@ namespace we
       (id_type id, boost::function<void (activity_data_type)> fun)
     {
       boost::mutex::scoped_lock const container_lock (_container_mutex);
-      boost::mutex::scoped_lock const to_be_removed_lock (_to_be_removed_mutex);
 
       list_with_id_lookup::iterator const pos_container (_container.find (id));
       list_with_id_lookup::iterator const pos_container_inactive
@@ -446,7 +444,6 @@ namespace we
       (id_type id, boost::function<void (activity_data_type&)> fun)
     {
       boost::mutex::scoped_lock const container_lock (_container_mutex);
-      boost::mutex::scoped_lock const to_be_removed_lock (_to_be_removed_mutex);
 
       list_with_id_lookup::iterator const pos_container (_container.find (id));
       list_with_id_lookup::iterator const pos_container_inactive
