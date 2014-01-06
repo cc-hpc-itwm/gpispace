@@ -286,9 +286,11 @@ struct daemon
     layer.canceled (id);
   }
 
+  boost::mutex _generate_id_mutex;
   unsigned long _cnt;
   we::mgmt::layer::id_type generate_id()
   {
+    boost::mutex::scoped_lock const _ (_generate_id_mutex);
     return boost::lexical_cast<we::mgmt::layer::id_type> (++_cnt);
   }
 
