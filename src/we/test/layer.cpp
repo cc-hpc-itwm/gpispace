@@ -282,9 +282,8 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   {
     we::mgmt::type::activity_t activity_expected (transition);
     activity_expected.add_output
-      (std::make_pair ( pnet::type::value::read ("2L")
-                      , transition.output_port_by_name ("out")
-                      )
+      ( transition.output_port_by_name ("out")
+      , pnet::type::value::read ("2L")
       );
 
     expect_finished const _ (this, id, activity_expected);
@@ -334,7 +333,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 
   we::mgmt::type::activity_t activity_output (transition);
   activity_output.add_output
-    (std::make_pair (value::control, transition.output_port_by_name ("out")));
+    (transition.output_port_by_name ("out"), value::control);
 
   we::mgmt::type::activity_t activity_input (transition);
   activity_input.add_input
@@ -351,7 +350,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 
   we::mgmt::type::activity_t activity_result (transition);
   activity_result.add_output
-    (std::make_pair (value::control, transition.output_port_by_name ("out")));
+    (transition.output_port_by_name ("out"), value::control);
 
   we::mgmt::layer::id_type const id (generate_id());
 
@@ -447,10 +446,7 @@ BOOST_FIXTURE_TEST_CASE (finished_shall_be_called_after_finished, daemon)
 
   we::mgmt::type::activity_t activity_result (transition_child);
   activity_result.add_output
-    ( std::make_pair ( value::control
-                     , transition_child.output_port_by_name ("out")
-                     )
-    );
+    (transition_child.output_port_by_name ("out"), value::control);
 
   we::mgmt::layer::id_type const id (generate_id());
 

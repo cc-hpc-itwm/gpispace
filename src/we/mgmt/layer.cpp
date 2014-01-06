@@ -185,8 +185,7 @@ namespace we
                           , net.get_token (place_id)
                           )
             {
-              activity_inner.add_output
-                (type::activity_t::output_t::value_type (token, p.first));
+              activity_inner.add_output (p.first, token);
             }
           }
         }

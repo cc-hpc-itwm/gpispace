@@ -69,7 +69,10 @@ namespace we
           );
 
         const output_t& output() const;
-        void add_output (const output_t::value_type&);
+        void add_output
+          ( petri_net::port_id_type const&
+          , pnet::type::value::value_type const&
+          );
 
       private:
         template<class Archive>

@@ -86,7 +86,7 @@ namespace module
       const petri_net::port_id_type& port_id
         (act.transition().output_port_by_name (ton->second));
 
-      act.add_output (output_t::value_type (ton->first, port_id));
+      act.add_output (port_id, ton->first);
     }
   }
 }

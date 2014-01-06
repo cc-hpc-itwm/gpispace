@@ -237,8 +237,7 @@ namespace we
                                 , net.get_token (pid)
                                 )
                   {
-                    _activity.add_output
-                      (activity_t::output_t::value_type (token, port_id));
+                    _activity.add_output (port_id, token);
                   }
 
                   net.delete_all_token (pid);
@@ -338,10 +337,7 @@ namespace we
             {
               if (p.second.is_output())
               {
-                _activity.add_output
-                  ( type::activity_t::output_t::value_type
-                    (context.value (p.second.name()), p.first)
-                  );
+                _activity.add_output (p.first, context.value (p.second.name()));
               }
             }
 
@@ -391,9 +387,12 @@ namespace we
         return _output;
       }
 
-      void activity_t::add_output (const output_t::value_type& outp)
+      void activity_t::add_output
+        ( petri_net::port_id_type const& port_id
+        , pnet::type::value::value_type const& value
+        )
       {
-        _output.push_back (outp);
+        _output.push_back (output_t::value_type (value, port_id));
       }
 
       std::ostream& operator<< (std::ostream& os, const activity_t& a)
