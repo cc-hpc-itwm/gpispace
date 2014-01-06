@@ -413,7 +413,9 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 namespace
 {
   std::pair<we::type::transition_t, we::type::transition_t>
-    finished_shall_be_called_after_finished_make_net (bool put_on_input)
+    finished_shall_be_called_after_finished_make_net ( bool put_on_input
+                                                     , std::size_t token_count
+                                                     )
   {
     we::type::transition_t transition
       ( "module call"
@@ -442,8 +444,10 @@ namespace
     petri_net::place_id_type const place_id_out
       (net.add_place (place::type ("out", signature::CONTROL)));
 
-    net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
-    net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
+    for (std::size_t i (0); i < token_count; ++i)
+    {
+      net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
+    }
 
     transition.add_connection (place_id_in, "in", we::type::property::type());
     transition.add_connection ("out", place_id_out, we::type::property::type());
@@ -469,15 +473,55 @@ namespace
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (finished_shall_be_called_after_finished, daemon)
+BOOST_FIXTURE_TEST_CASE
+  (finished_shall_be_called_after_finished_one_child, daemon)
 {
   we::type::transition_t transition_in;
   we::type::transition_t transition_out;
   we::type::transition_t transition_child;
   boost::tie (transition_in, transition_child) =
-    finished_shall_be_called_after_finished_make_net (true);
+    finished_shall_be_called_after_finished_make_net (true, 1);
   boost::tie (transition_out, boost::tuples::ignore) =
-    finished_shall_be_called_after_finished_make_net (false);
+    finished_shall_be_called_after_finished_make_net (false, 1);
+
+  we::mgmt::type::activity_t activity_input (transition_in);
+  we::mgmt::type::activity_t activity_output (transition_out);
+
+  we::mgmt::type::activity_t activity_child (transition_child);
+  activity_child.add_input
+    (transition_child.input_port_by_name ("in"), value::CONTROL);
+
+  we::mgmt::type::activity_t activity_result (transition_child);
+  activity_result.add_output
+    (transition_child.output_port_by_name ("out"), value::CONTROL);
+
+  we::mgmt::layer::id_type const id (generate_id());
+
+  we::mgmt::layer::id_type child_id;
+
+  {
+    expect_submit const _ (this, &child_id, activity_child, id);
+
+    do_submit (id, activity_input);
+  }
+
+  {
+    expect_finished const _ (this, id, activity_output);
+
+    do_finished (child_id, activity_result);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (finished_shall_be_called_after_finished_two_childs, daemon)
+{
+  we::type::transition_t transition_in;
+  we::type::transition_t transition_out;
+  we::type::transition_t transition_child;
+  boost::tie (transition_in, transition_child) =
+    finished_shall_be_called_after_finished_make_net (true, 2);
+  boost::tie (transition_out, boost::tuples::ignore) =
+    finished_shall_be_called_after_finished_make_net (false, 2);
 
   we::mgmt::type::activity_t activity_input (transition_in);
   we::mgmt::type::activity_t activity_output (transition_out);
@@ -506,6 +550,11 @@ BOOST_FIXTURE_TEST_CASE (finished_shall_be_called_after_finished, daemon)
 
   {
     expect_finished const _ (this, id, activity_output);
+
+    //! \note There is a race here where layer may call rts_finished
+    //! before do_finished, but this is checked by comparing the
+    //! output activity: if it would finish before the second child
+    //! finishing, there would be a token missing.
 
     do_finished (child_id_B, activity_result);
   }
