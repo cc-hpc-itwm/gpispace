@@ -61,23 +61,6 @@ namespace we
     {
       return requirement_t (val, false);
     }
-
-    inline bool operator==( const requirement_t& a
-                          , const requirement_t& b
-                          )
-    {
-      return (a.value() == b.value())
-        &&   (a.is_mandatory() == b.is_mandatory())
-        ;
-    }
-
-    inline std::size_t hash_value(requirement_t const & r)
-    {
-      boost::hash<std::string> hasher;
-      std::size_t h (hasher(r.value()));
-      boost::hash_combine (h, r.is_mandatory());
-      return h;
-    }
   }
 }
 

@@ -398,16 +398,6 @@ namespace we { namespace type {
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
 
-    inline bool operator==(const transition_t& a, const transition_t& b)
-    {
-      return a.name() == b.name();
-    }
-    inline std::size_t hash_value(transition_t const& t)
-    {
-      boost::hash<std::string> hasher;
-      return hasher(t.name());
-    }
-
     // ********************************************************************* //
 
     boost::optional<transition_t::port_id_with_prop_t>
