@@ -268,6 +268,16 @@ struct daemon
     layer.cancel (id);
   }
 
+  void do_failed ( we::mgmt::layer::id_type id
+                 , int ec
+                 , std::string message
+                 )
+  {
+    DEC_IN_PROGRESS (jobs_rts);
+
+    layer.failed (id, ec, message);
+  }
+
   void do_canceled (we::mgmt::layer::id_type id)
   {
     DEC_IN_PROGRESS (replies);
@@ -652,6 +662,59 @@ BOOST_FIXTURE_TEST_CASE
     expect_canceled const _ (this, id);
 
     //! \todo There is an uncheckable(?) race here: rts_canceled may
+    //! be called before do_canceled (second child)!
+
+    do_canceled (child_id_B);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (sibling_jobs_shall_be_canceled_on_child_failure, daemon)
+{
+  we::type::transition_t transition_in;
+  we::type::transition_t transition_out;
+  we::type::transition_t transition_child;
+  boost::tie (transition_in, transition_child) =
+    finished_shall_be_called_after_finished_make_net (true, 2);
+  boost::tie (transition_out, boost::tuples::ignore) =
+    finished_shall_be_called_after_finished_make_net (false, 2);
+
+  we::mgmt::type::activity_t activity_input (transition_in);
+  we::mgmt::type::activity_t activity_output (transition_out);
+
+  we::mgmt::type::activity_t activity_child (transition_child);
+  activity_child.add_input
+    (transition_child.input_port_by_name ("in"), value::CONTROL);
+
+  we::mgmt::type::activity_t activity_result (transition_child);
+  activity_result.add_output
+    (transition_child.output_port_by_name ("out"), value::CONTROL);
+
+  we::mgmt::layer::id_type const id (generate_id());
+
+  we::mgmt::layer::id_type child_id_A;
+  we::mgmt::layer::id_type child_id_B;
+
+  {
+    expect_submit const _A (this, &child_id_A, activity_child, id);
+    expect_submit const _B (this, &child_id_B, activity_child, id);
+
+    do_submit (id, activity_input);
+  }
+
+  const int ec (rand());
+  const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
+
+  {
+    expect_cancel const _ (this, child_id_B);
+
+    do_failed (child_id_A, ec, message);
+  }
+
+  {
+    expect_failed const _ (this, id, ec, message);
+
+    //! \todo There is an uncheckable(?) race here: rts_failed may
     //! be called before do_canceled (second child)!
 
     do_canceled (child_id_B);
