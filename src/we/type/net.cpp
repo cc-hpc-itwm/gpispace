@@ -186,23 +186,23 @@ namespace petri_net
     }
   }
 
-  boost::select_second_const_range<std::pair<net::adj_tp_type::left_const_iterator, net::adj_tp_type::left_const_iterator> >
-  net::out_of_transition (const transition_id_type& tid) const
+  net::place_id_range_type
+    net::out_of_transition (const transition_id_type& tid) const
   {
     return _adj_tp.left.equal_range (tid) | boost::adaptors::map_values;
   }
-  boost::select_second_const_range<std::pair<net::adj_pt_type::right_const_iterator, net::adj_pt_type::right_const_iterator> >
-  net::in_to_transition (const transition_id_type& tid) const
+  net::place_id_range_type
+    net::in_to_transition (const transition_id_type& tid) const
   {
     return _adj_pt.right.equal_range (tid) | boost::adaptors::map_values;
   }
-  boost::select_second_const_range<std::pair<net::adj_pt_type::left_const_iterator, net::adj_pt_type::left_const_iterator> >
-  net::out_of_place (const place_id_type& pid) const
+  net::transition_id_range_type
+    net::out_of_place (const place_id_type& pid) const
   {
     return _adj_pt.left.equal_range (pid) | boost::adaptors::map_values;
   }
-  boost::select_second_const_range<std::pair<net::adj_tp_type::right_const_iterator, net::adj_tp_type::right_const_iterator> >
-  net::in_to_place (const place_id_type& pid) const
+  net::transition_id_range_type
+    net::in_to_place (const place_id_type& pid) const
   {
     return _adj_tp.right.equal_range (pid) | boost::adaptors::map_values;
   }

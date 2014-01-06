@@ -20,6 +20,7 @@
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -67,14 +68,23 @@ namespace petri_net
     adj_tp_type const& transition_to_place() const;
     adj_pt_type const& place_to_transition() const;
 
-    boost::select_second_const_range<std::pair<adj_tp_type::left_const_iterator, adj_tp_type::left_const_iterator> >
-    out_of_transition (const transition_id_type&) const;
-    boost::select_second_const_range<std::pair<adj_pt_type::right_const_iterator, adj_pt_type::right_const_iterator> >
-    in_to_transition (const transition_id_type&) const;
-    boost::select_second_const_range<std::pair<adj_pt_type::left_const_iterator, adj_pt_type::left_const_iterator> >
-    out_of_place (const place_id_type&) const;
-    boost::select_second_const_range<std::pair<adj_tp_type::right_const_iterator, adj_tp_type::right_const_iterator> >
-    in_to_place (const place_id_type&) const;
+    typedef boost::any_range< place_id_type
+                            , boost::forward_traversal_tag
+                            , place_id_type const&
+                            , std::ptrdiff_t
+                            > place_id_range_type;
+
+    place_id_range_type out_of_transition (const transition_id_type&) const;
+    place_id_range_type in_to_transition (const transition_id_type&) const;
+
+    typedef boost::any_range< transition_id_type
+                            , boost::forward_traversal_tag
+                            , transition_id_type const&
+                            , std::ptrdiff_t
+                            > transition_id_range_type;
+
+    transition_id_range_type out_of_place (const place_id_type&) const;
+    transition_id_range_type in_to_place (const place_id_type&) const;
 
     bool is_read_connection ( const transition_id_type&
                             , const place_id_type&
