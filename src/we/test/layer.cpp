@@ -10,10 +10,13 @@
 #include <we/type/transition.hpp>
 #include <we/type/value/read.hpp>
 
+#include <fhg/util/now.hpp>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/range/algorithm.hpp>
 #include <boost/bind.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 
 #include <list>
 
@@ -721,4 +724,159 @@ BOOST_FIXTURE_TEST_CASE
 
     do_canceled (child_id_B);
   }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (finished_shall_be_called_after_finished_N_childs, daemon)
+{
+  const std::size_t N (10);
+
+  we::type::transition_t transition_in;
+  we::type::transition_t transition_out;
+  we::type::transition_t transition_child;
+  boost::tie (transition_in, transition_child) =
+    finished_shall_be_called_after_finished_make_net (true, N);
+  boost::tie (transition_out, boost::tuples::ignore) =
+    finished_shall_be_called_after_finished_make_net (false, N);
+
+  we::mgmt::type::activity_t activity_input (transition_in);
+  we::mgmt::type::activity_t activity_output (transition_out);
+
+  we::mgmt::type::activity_t activity_child (transition_child);
+  activity_child.add_input
+    (transition_child.input_port_by_name ("in"), value::CONTROL);
+
+  we::mgmt::type::activity_t activity_result (transition_child);
+  activity_result.add_output
+    (transition_child.output_port_by_name ("out"), value::CONTROL);
+
+  we::mgmt::layer::id_type const id (generate_id());
+
+  std::vector<we::mgmt::layer::id_type> child_ids (N);
+
+  {
+    boost::ptr_vector<expect_submit> _;
+    _.reserve (N);
+    for (std::size_t i (0); i < N; ++i)
+    {
+      _.push_back (new expect_submit (this, &child_ids[i], activity_child, id));
+    }
+
+    do_submit (id, activity_input);
+  }
+
+  for (std::size_t i (0); i < N - 1; ++i)
+  {
+    do_finished (child_ids[i], activity_result);
+  }
+
+  {
+    expect_finished const _ (this, id, activity_output);
+
+    do_finished (child_ids.back(), activity_result);
+  }
+}
+
+namespace
+{
+  void submit_fake ( std::vector<we::mgmt::layer::id_type>* ids
+                   , we::mgmt::layer::id_type id
+                   , we::mgmt::type::activity_t
+                   , we::mgmt::layer::id_type
+                   )
+  {
+    ids->push_back (id);
+  }
+
+  void finished_fake ( volatile bool* finished
+                     , we::mgmt::layer::id_type id
+                     , we::mgmt::type::activity_t
+                     )
+  {
+    *finished = true;
+  }
+
+  void cancel (we::mgmt::layer::id_type){}
+  void failed (we::mgmt::layer::id_type, int errorcode, std::string reason){}
+  void canceled (we::mgmt::layer::id_type){}
+
+  boost::mutex generate_id_mutex;
+  we::mgmt::layer::id_type generate_id()
+  {
+    boost::mutex::scoped_lock const _ (generate_id_mutex);
+    static unsigned long _cnt (0);
+    return boost::lexical_cast<we::mgmt::layer::id_type> (++_cnt);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (performance_finished_shall_be_called_after_finished_N_childs)
+{
+  const std::size_t num_activities (10);
+  const std::size_t num_child_per_activity (250);
+
+  we::type::transition_t transition_in;
+  we::type::transition_t transition_out;
+  we::type::transition_t transition_child;
+  boost::tie (transition_in, transition_child) =
+    finished_shall_be_called_after_finished_make_net
+      (true, num_child_per_activity);
+  boost::tie (transition_out, boost::tuples::ignore) =
+    finished_shall_be_called_after_finished_make_net
+      (false, num_child_per_activity);
+
+  we::mgmt::type::activity_t activity_input (transition_in);
+  we::mgmt::type::activity_t activity_output (transition_out);
+
+  we::mgmt::type::activity_t activity_child (transition_child);
+  activity_child.add_input
+    (transition_child.input_port_by_name ("in"), value::CONTROL);
+
+  we::mgmt::type::activity_t activity_result (transition_child);
+  activity_result.add_output
+    (transition_child.output_port_by_name ("out"), value::CONTROL);
+
+  std::vector<we::mgmt::layer::id_type> child_ids;
+  child_ids.reserve (num_child_per_activity * num_activities);
+
+  bool finished (false);
+
+  boost::mt19937 _random_engine;
+
+  we::mgmt::layer layer
+    ( boost::bind (&submit_fake, &child_ids, _1, _2, _3)
+    , boost::bind (&cancel, _1)
+    , boost::bind (&finished_fake, &finished, _1, _2)
+    , boost::bind (&failed, _1, _2, _3)
+    , boost::bind (&canceled, _1)
+    , boost::bind (&generate_id)
+    , _random_engine
+    );
+
+  double t (-fhg::util::now());
+
+  for (std::size_t i (0); i < num_activities; ++i)
+  {
+    layer.submit (generate_id(), activity_input);
+  }
+
+  //! \todo Don't busy wait
+  while (child_ids.size() != child_ids.capacity())
+  {
+    boost::this_thread::yield();
+  }
+
+  BOOST_FOREACH (we::mgmt::layer::id_type child_id, child_ids)
+  {
+    layer.finished (child_id, activity_result);
+  }
+
+  //! \todo Don't busy wait
+  while (!finished)
+  {
+    boost::this_thread::yield();
+  }
+
+  t += fhg::util::now();
+
+  BOOST_REQUIRE_LT (t, 1.0);
 }
