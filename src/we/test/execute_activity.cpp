@@ -121,30 +121,14 @@ struct exec_context : public we::mgmt::context
     // nothing to do
   }
 
-  std::string fake_external (const std::string& act_enc, net_t const& n)
-  {
-    activity_t act (act_enc);
-    handle_internally (act, n );
-    return act.to_string();
-  }
-
   virtual void handle_externally (activity_t& act, net_t const& n)
   {
-    activity_t result (fake_external (act.to_string(), n));
-    act.set_output(result.output());
-  }
-
-  std::string fake_external (const std::string& act_enc, const mod_t& mod)
-  {
-    activity_t act (act_enc);
-    module::call (act, mod );
-    return act.to_string();
+    handle_internally (act, n);
   }
 
   virtual void handle_externally (activity_t& act, mod_t const& module_call)
   {
-    activity_t result (fake_external (act.to_string(), module_call));
-    act.set_output(result.output());
+    module::call (act, module_call);
   }
 
   virtual void handle_externally (activity_t& act, expr_t const& e)
