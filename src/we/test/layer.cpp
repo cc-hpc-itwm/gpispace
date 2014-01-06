@@ -12,15 +12,19 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/bind.hpp>
 
-#define DECLARE_EXPECT_CLASS(NAME, CTOR_ARGUMENTS, INITIALIZER_LIST, MEMBER_VARIABLES) \
+#include <list>
+
+#define DECLARE_EXPECT_CLASS(NAME, CTOR_ARGUMENTS, INITIALIZER_LIST, MEMBER_VARIABLES, EQ_IMPL) \
   struct expect_ ## NAME                                                \
   {                                                                     \
     expect_ ## NAME (daemon* d, CTOR_ARGUMENTS)                         \
       : _happened (false)                                               \
       , INITIALIZER_LIST                                                \
     {                                                                   \
-      d->_to_ ## NAME.push (this);                                      \
+      d->_to_ ## NAME.push_back (this);                                 \
     }                                                                   \
     ~expect_ ## NAME()                                                  \
     {                                                                   \
@@ -35,6 +39,10 @@
       _happened = true;                                                 \
       _happened_condition.notify_one();                                 \
     }                                                                   \
+    bool eq (CTOR_ARGUMENTS) const                                      \
+    {                                                                   \
+      return EQ_IMPL;                                                   \
+    }                                                                   \
     bool _happened;                                                     \
     mutable boost::mutex _happened_mutex;                               \
     boost::condition_variable_any _happened_condition;                  \
@@ -42,7 +50,7 @@
     MEMBER_VARIABLES;                                                   \
   };                                                                    \
                                                                         \
-  std::stack<expect_ ## NAME*> _to_ ## NAME
+  std::list<expect_ ## NAME*> _to_ ## NAME
 
 struct daemon
 {
@@ -56,13 +64,19 @@ struct daemon
             , boost::bind (&daemon::generate_id, this)
             , _random_engine
             )
-    , _in_progress()
+    , _in_progress_jobs_rts()
+    , _in_progress_jobs_layer()
+    , _in_progress_replies()
   {}
   ~daemon()
   {
     boost::mutex::scoped_lock lock (_in_progress_mutex);
 
-    while (_in_progress > 0)
+    while ( _in_progress_jobs_rts
+          + _in_progress_jobs_layer
+          + _in_progress_replies
+          > 0
+          )
     {
       _in_progress_condition.wait (lock);
     }
@@ -74,6 +88,19 @@ struct daemon
     BOOST_REQUIRE (_to_canceled.empty());
   }
 
+#define INC_IN_PROGRESS(COUNTER)                                \
+  {                                                             \
+    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
+    ++_in_progress_ ## COUNTER;                                 \
+  }
+
+#define DEC_IN_PROGRESS(COUNTER)                                \
+  {                                                             \
+    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
+    --_in_progress_ ## COUNTER;                                 \
+  }                                                             \
+  _in_progress_condition.notify_one()
+
   DECLARE_EXPECT_CLASS ( submit
                        , we::mgmt::layer::id_type* id
         BOOST_PP_COMMA() we::mgmt::type::activity_t act
@@ -84,13 +111,53 @@ struct daemon
                        , we::mgmt::layer::id_type* _id
                        ; we::mgmt::type::activity_t _act
                        ; we::mgmt::layer::id_type _parent
+                       , _act == act && _parent == parent
                        );
+
+  void submit ( we::mgmt::layer::id_type id
+              , we::mgmt::type::activity_t act
+              , we::mgmt::layer::id_type parent
+              )
+  {
+    INC_IN_PROGRESS (jobs_rts);
+
+    std::list<expect_submit*>::iterator const e
+      ( boost::find_if ( _to_submit
+                       , boost::bind (&expect_submit::eq, _1, &id, act, parent)
+                       )
+        );
+
+    BOOST_REQUIRE (e != _to_submit.end());
+
+    *((*e)->_id) = id;
+
+    (*e)->happened();
+    _to_submit.erase (e);
+  }
 
   DECLARE_EXPECT_CLASS ( cancel
                        , we::mgmt::layer::id_type id
                        , _id (id)
                        , we::mgmt::layer::id_type _id
+                       , _id == id
                        );
+
+  void cancel (we::mgmt::layer::id_type id)
+  {
+    INC_IN_PROGRESS (replies);
+
+    std::list<expect_cancel*>::iterator const e
+      ( boost::find_if ( _to_cancel
+                       , boost::bind (&expect_cancel::eq, _1, id)
+                       )
+        );
+
+    BOOST_REQUIRE (e != _to_cancel.end());
+
+    (*e)->happened();
+    _to_cancel.erase (e);
+  }
+
 
   DECLARE_EXPECT_CLASS ( finished
                        , we::mgmt::layer::id_type id
@@ -99,7 +166,26 @@ struct daemon
         BOOST_PP_COMMA() _act (act)
                        , we::mgmt::layer::id_type _id
                        ; we::mgmt::type::activity_t _act
+                       , _id == id && _act == act
                        );
+
+  void finished ( we::mgmt::layer::id_type id
+                , we::mgmt::type::activity_t act
+                )
+  {
+    std::list<expect_finished*>::iterator const e
+      ( boost::find_if ( _to_finished
+                       , boost::bind (&expect_finished::eq, _1, id, act)
+                       )
+      );
+
+    BOOST_REQUIRE (e != _to_finished.end());
+
+    (*e)->happened();
+    _to_finished.erase (e);
+
+    DEC_IN_PROGRESS (jobs_layer);
+  }
 
   DECLARE_EXPECT_CLASS ( failed
                        , we::mgmt::layer::id_type id
@@ -111,95 +197,57 @@ struct daemon
                        , we::mgmt::layer::id_type _id
                        ; int _ec
                        ; std::string _message
+                       , _id == id && _ec == ec && _message == message
                        );
-
-  DECLARE_EXPECT_CLASS ( canceled
-                       , we::mgmt::layer::id_type id
-                       , _id (id)
-                       , we::mgmt::layer::id_type _id
-                       );
-
-#define INC_IN_PROGRESS                                         \
-  {                                                             \
-    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
-    ++_in_progress;                                             \
-  }
-
-#define DEC_IN_PROGRESS                                         \
-  {                                                             \
-    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
-    --_in_progress;                                             \
-  }                                                             \
-  _in_progress_condition.notify_one()
-
-  void submit ( we::mgmt::layer::id_type id
-              , we::mgmt::type::activity_t act
-              , we::mgmt::layer::id_type parent
-              )
-  {
-    INC_IN_PROGRESS;
-
-    BOOST_REQUIRE (!_to_submit.empty());
-    *_to_submit.top()->_id = id;
-    BOOST_REQUIRE_EQUAL (_to_submit.top()->_act, act);
-    BOOST_REQUIRE_EQUAL (_to_submit.top()->_parent, parent);
-    _to_submit.top()->happened();
-    _to_submit.pop();
-  }
-
-  void cancel (we::mgmt::layer::id_type id)
-  {
-    INC_IN_PROGRESS;
-
-    BOOST_REQUIRE (!_to_cancel.empty());
-    BOOST_REQUIRE_EQUAL (_to_cancel.top()->_id, id);
-    _to_cancel.top()->happened();
-    _to_cancel.pop();
-  }
-
-  void finished ( we::mgmt::layer::id_type id
-                , we::mgmt::type::activity_t act
-                )
-  {
-    BOOST_REQUIRE (!_to_finished.empty());
-    BOOST_REQUIRE_EQUAL (_to_finished.top()->_id, id);
-    BOOST_REQUIRE_EQUAL (_to_finished.top()->_act, act);
-    _to_finished.top()->happened();
-    _to_finished.pop();
-
-    DEC_IN_PROGRESS;
-  }
 
   void failed ( we::mgmt::layer::id_type id
               , int ec
               , std::string message
               )
   {
-    BOOST_REQUIRE (!_to_failed.empty());
-    BOOST_REQUIRE_EQUAL (_to_failed.top()->_id, id);
-    BOOST_REQUIRE_EQUAL (_to_failed.top()->_ec, ec);
-    BOOST_REQUIRE_EQUAL (_to_failed.top()->_message, message);
-    _to_failed.top()->happened();
-    _to_failed.pop();
+    std::list<expect_failed*>::iterator const e
+      ( boost::find_if ( _to_failed
+                       , boost::bind (&expect_failed::eq, _1, id, ec, message)
+                       )
+      );
 
-    DEC_IN_PROGRESS;
+    BOOST_REQUIRE (e != _to_failed.end());
+
+    (*e)->happened();
+    _to_failed.erase (e);
+
+    DEC_IN_PROGRESS (jobs_layer);
   }
+
+  DECLARE_EXPECT_CLASS ( canceled
+                       , we::mgmt::layer::id_type id
+                       , _id (id)
+                       , we::mgmt::layer::id_type _id
+                       , _id == id
+                       );
 
   void canceled (we::mgmt::layer::id_type id)
   {
-    BOOST_REQUIRE (!_to_canceled.empty());
-    BOOST_REQUIRE_EQUAL (_to_canceled.top()->_id, id);
-    _to_canceled.top()->happened();
-    _to_canceled.pop();
+    std::list<expect_canceled*>::iterator const e
+      ( boost::find_if ( _to_canceled
+                       , boost::bind (&expect_canceled::eq, _1, id)
+                       )
+      );
 
-    DEC_IN_PROGRESS;
+    BOOST_REQUIRE (e != _to_canceled.end());
+
+    (*e)->happened();
+    _to_canceled.erase (e);
+
+    DEC_IN_PROGRESS (jobs_layer);
+    DEC_IN_PROGRESS (replies);
   }
 
   void do_submit ( we::mgmt::layer::id_type id
                  , we::mgmt::type::activity_t act
                  )
   {
-    INC_IN_PROGRESS;
+    INC_IN_PROGRESS (jobs_layer);
 
     layer.submit (id, act);
   }
@@ -208,9 +256,24 @@ struct daemon
                    , we::mgmt::type::activity_t act
                    )
   {
-    DEC_IN_PROGRESS;
+    DEC_IN_PROGRESS (jobs_rts);
 
     layer.finished (id, act);
+  }
+
+  void do_cancel (we::mgmt::layer::id_type id)
+  {
+    INC_IN_PROGRESS (replies);
+
+    layer.cancel (id);
+  }
+
+  void do_canceled (we::mgmt::layer::id_type id)
+  {
+    DEC_IN_PROGRESS (replies);
+    DEC_IN_PROGRESS (jobs_rts);
+
+    layer.canceled (id);
   }
 
   unsigned long _cnt;
@@ -223,7 +286,9 @@ struct daemon
   we::mgmt::layer layer;
   mutable boost::mutex _in_progress_mutex;
   boost::condition_variable_any _in_progress_condition;
-  unsigned long _in_progress;
+  unsigned long _in_progress_jobs_rts;
+  unsigned long _in_progress_jobs_layer;
+  unsigned long _in_progress_replies;
 };
 
 namespace
