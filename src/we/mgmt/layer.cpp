@@ -378,34 +378,31 @@ namespace we
     void layer::async_remove_queue::put
       (activity_data_type activity_data, bool active)
     {
+      boost::mutex::scoped_lock const container_lock (_container_mutex);
+      boost::mutex::scoped_lock const to_be_removed_lock (_to_be_removed_mutex);
+
       bool do_put (true);
 
+      to_be_removed_type::iterator const pos
+        (_to_be_removed.find (activity_data._id));
+
+      if (pos != _to_be_removed.end())
       {
-        boost::mutex::scoped_lock const _ (_to_be_removed_mutex);
-
-        to_be_removed_type::iterator const pos
-          (_to_be_removed.find (activity_data._id));
-
-        if (pos != _to_be_removed.end())
+        BOOST_FOREACH ( std::pair<boost::function<void (activity_data_type&)>
+                      BOOST_PP_COMMA() bool
+                      > fun_and_do_put
+                      , pos->second
+                      )
         {
-          BOOST_FOREACH ( std::pair<boost::function<void (activity_data_type&)>
-                                                    BOOST_PP_COMMA() bool
-                                   > fun_and_do_put
-                        , pos->second
-                        )
-          {
-            fun_and_do_put.first (activity_data);
-            do_put = do_put && (active = fun_and_do_put.second);
-          }
-
-          _to_be_removed.erase (pos);
+          fun_and_do_put.first (activity_data);
+          do_put = do_put && (active = fun_and_do_put.second);
         }
+
+        _to_be_removed.erase (pos);
       }
 
       if (do_put)
       {
-        boost::mutex::scoped_lock const _ (_container_mutex);
-
         if (active)
         {
           _container.push_back (activity_data);
