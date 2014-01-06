@@ -7,6 +7,7 @@
 #include <xml/parse/state.hpp>
 
 #include <we/mgmt/type/activity.hpp>
+#include <we/test/operator_equal.hpp>
 
 #include <fhg/util/read_file.hpp>
 
@@ -60,8 +61,9 @@ namespace
                       , const boost::filesystem::path& path
                       )
     {
-      BOOST_REQUIRE_EQUAL ( fhg::util::read_file (path_to_pnets / path)
-                          , activity.to_string()
+      BOOST_REQUIRE_EQUAL ( ::we::mgmt::type::activity_t
+                            (fhg::util::read_file (path_to_pnets / path))
+                          , activity
                           );
     }
 
