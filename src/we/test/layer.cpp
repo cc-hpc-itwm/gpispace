@@ -63,7 +63,7 @@ struct daemon
   daemon()
     : _cnt()
     , layer ( boost::bind (&daemon::submit, this, _1, _2, _3)
-            , boost::bind (&daemon::cancel, this, _1, _2)
+            , boost::bind (&daemon::cancel, this, _1)
             , boost::bind (&daemon::finished, this, _1, _2)
             , boost::bind (&daemon::failed, this, _1, _2, _3)
             , boost::bind (&daemon::canceled, this, _1)
@@ -102,11 +102,8 @@ struct daemon
 
   DECLARE_EXPECT_CLASS ( cancel
                        , we::mgmt::layer::id_type id
-        BOOST_PP_COMMA() we::mgmt::layer::reason_type reason
                        , _id (id)
-        BOOST_PP_COMMA() _reason (reason)
                        , we::mgmt::layer::id_type _id
-                       ; we::mgmt::layer::reason_type _reason
                        );
 
   DECLARE_EXPECT_CLASS ( finished
@@ -164,15 +161,12 @@ struct daemon
     _to_submit.pop();
   }
 
-  void cancel ( we::mgmt::layer::id_type id
-              , we::mgmt::layer::reason_type reason
-              )
+  void cancel (we::mgmt::layer::id_type id)
   {
     INC_IN_PROGRESS;
 
     BOOST_REQUIRE (!_to_cancel.empty());
     BOOST_REQUIRE_EQUAL (_to_cancel.top()->_id, id);
-    BOOST_REQUIRE_EQUAL (_to_cancel.top()->_reason, reason);
     _to_cancel.top()->happened();
     _to_cancel.pop();
   }

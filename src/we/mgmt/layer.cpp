@@ -12,7 +12,7 @@ namespace we
   {
     layer::layer
         ( boost::function<void (id_type, type::activity_t, id_type)> rts_submit
-        , boost::function<void (id_type, reason_type)> rts_cancel
+        , boost::function<void (id_type)> rts_cancel
         , boost::function<void (id_type, type::activity_t)> rts_finished
         , boost::function<void (id_type, int, std::string)> rts_failed
         , boost::function<void (id_type)> rts_canceled
@@ -223,9 +223,9 @@ namespace we
       _running_jobs.terminated (parent, child);
     }
 
-    void layer::cancel (id_type id, reason_type reason)
+    void layer::cancel (id_type id)
     {
-      request_cancel (id, boost::bind (_rts_canceled, id), reason);
+      request_cancel (id, boost::bind (_rts_canceled, id));
     }
 
     void layer::failed (id_type id, int error_code, std::string reason)
@@ -236,23 +236,17 @@ namespace we
       _running_jobs.terminated (*parent, id);
 
       request_cancel
-        ( *parent
-        , boost::bind (_rts_failed, *parent, error_code, reason)
-        , reason
-        );
+        (*parent, boost::bind (_rts_failed, *parent, error_code, reason));
     }
 
-    void layer::request_cancel
-      (id_type id, boost::function<void()> after, reason_type reason)
+    void layer::request_cancel (id_type id, boost::function<void()> after)
     {
       _nets_to_extract_from.remove_and_apply
-        (id, boost::bind (&layer::cancel_child_jobs, this, _1, after, reason));
+        (id, boost::bind (&layer::cancel_child_jobs, this, _1, after));
     }
 
-    void layer::cancel_child_jobs ( activity_data_type activity_data
-                                  , boost::function<void()> after
-                                  , reason_type reason
-                                  )
+    void layer::cancel_child_jobs
+      (activity_data_type activity_data, boost::function<void()> after)
     {
       if (!_running_jobs.contains (activity_data._id))
       {
@@ -263,7 +257,7 @@ namespace we
         _finalize_job_cancellation.insert
           (std::make_pair (activity_data._id, after));
         _running_jobs.apply
-          (activity_data._id, boost::bind (_rts_cancel, _1, reason));
+          (activity_data._id, boost::bind (_rts_cancel, _1));
       }
     }
 

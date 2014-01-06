@@ -268,8 +268,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
          DMLOG(TRACE, "Tell the worker "<<*worker_id<<" to cancel the job "<<pEvt->job_id());
          events::CancelJobEvent::Ptr pCancelEvt( new  events::CancelJobEvent( name()
                                                            , *worker_id
-                                                           , pEvt->job_id()
-                                                           , pEvt->reason() ) );
+                                                           , pEvt->job_id() ) );
          sendEventToOther(pCancelEvt);
 
          DMLOG(TRACE, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());

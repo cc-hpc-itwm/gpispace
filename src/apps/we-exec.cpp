@@ -115,7 +115,7 @@ namespace
         : _mutex_id()
         , _id (0)
         , mgmt_layer_ ( boost::bind (&sdpa_daemon::submit, this, _1, _2, _3)
-                      , boost::bind (&sdpa_daemon::cancel, this, _1, _2)
+                      , boost::bind (&sdpa_daemon::cancel, this, _1)
                       , boost::bind (&sdpa_daemon::finished, this, _1, _2)
                       , boost::bind (&sdpa_daemon::failed, this, _1, _2, _3)
                       , boost::bind (&sdpa_daemon::canceled, this, _1)
@@ -245,9 +245,9 @@ namespace
       jobs_.put (job_t (id, act));
     }
 
-    void cancel (const we::mgmt::layer::id_type& id, const std::string& desc)
+    void cancel (const we::mgmt::layer::id_type& id)
     {
-      std::cout << "cancel[" << id << "] = " << desc << std::endl;
+      std::cout << "cancel[" << id << "]" << std::endl;
 
       boost::optional<we::mgmt::layer::id_type> const mapped
         (get_and_delete_mapping (id));
@@ -348,7 +348,7 @@ namespace
       if (timeout)
       {
         boost::this_thread::sleep (boost::posix_time::milliseconds (*timeout));
-        mgmt_layer_.cancel (_job_id, "user requested cancellation");
+        mgmt_layer_.cancel (_job_id);
       }
     }
 

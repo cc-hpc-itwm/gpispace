@@ -206,7 +206,7 @@ namespace sdpa
     void Client::cancelJob(const job_id_t &jid)
     {
       send_and_wait_for_reply<sdpa::events::CancelJobAckEvent>
-        (sdpa::events::CancelJobEvent (_name, orchestrator_, jid, "user cancel"));
+        (sdpa::events::CancelJobEvent (_name, orchestrator_, jid));
     }
 
     sdpa::status::code Client::queryJob(const job_id_t &jid)

@@ -148,12 +148,7 @@ public:
     SDPAEvent::Ptr req;
     SDPAEvent::Ptr rep;
 
-    req.reset (new CancelJobEvent( m_peer->name()
-                                 , m_orchestrator
-                                 , id
-                                 , "ufbmig requested cancel"
-                                 )
-              );
+    req.reset (new CancelJobEvent (m_peer->name(), m_orchestrator, id));
     if (request(req, rep) == 0)
     {
       if (dynamic_cast<CancelJobAckEvent*>(rep.get()))

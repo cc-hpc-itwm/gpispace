@@ -31,7 +31,7 @@ namespace we
       layer ( // submit: external activities from submitted net -> child jobs
               boost::function<void (id_type, type::activity_t, id_type parent)>
               // reply to cancel (parent)/on failure (child) -> child jobs
-            , boost::function<void (id_type, reason_type)>
+            , boost::function<void (id_type)>
               // reply to submit on success -> top level
             , boost::function<void (id_type, type::activity_t)>
               // reply to submit on failure (of child) -> top level
@@ -47,7 +47,7 @@ namespace we
       void submit (id_type, type::activity_t);
 
       // initial from exec_layer -> top level
-      void cancel (id_type, reason_type);
+      void cancel (id_type);
 
       // reply to _rts_submit -> childs only
       void finished (id_type, type::activity_t);
@@ -61,7 +61,7 @@ namespace we
 
     private:
       boost::function<void (id_type, type::activity_t, id_type)> _rts_submit;
-      boost::function<void (id_type, reason_type)> _rts_cancel;
+      boost::function<void (id_type)> _rts_cancel;
       boost::function<void (id_type, type::activity_t)> _rts_finished;
       boost::function<void (id_type, int, std::string)> _rts_failed;
       boost::function<void (id_type)> _rts_canceled;
@@ -131,9 +131,8 @@ namespace we
       void extract_from_nets();
       boost::thread _extract_from_nets_thread;
 
-      void request_cancel (id_type, boost::function<void()> after, reason_type);
-      void cancel_child_jobs
-        (activity_data_type, boost::function<void()> after, reason_type);
+      void request_cancel (id_type, boost::function<void()> after);
+      void cancel_child_jobs (activity_data_type, boost::function<void()> after);
 
       boost::unordered_map<id_type, boost::function<void()> >
         _finalize_job_cancellation;

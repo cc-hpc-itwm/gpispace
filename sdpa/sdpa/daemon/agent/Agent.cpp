@@ -568,8 +568,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
       DMLOG(TRACE, "Tell the worker "<<*worker_id<<" to cancel the job "<<pEvt->job_id());
       events::CancelJobEvent::Ptr pCancelEvt( new events::CancelJobEvent( name()
                                                           , *worker_id
-                                                          , pEvt->job_id()
-                                                          , pEvt->reason() ) );
+                                                          , pEvt->job_id() ) );
       sendEventToOther(pCancelEvt);
 
       // change the job status to "Canceling"
@@ -590,10 +589,8 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   else // a Cancel message came from the upper level -> forward cancellation request to WE
   {
     we::mgmt::layer::id_type workflowId = pEvt->job_id();
-    //! \todo "No reason"?! We've got a CancelJobEvent, which has a reason.
-    we::mgmt::layer::reason_type reason("No reason");
     DMLOG (TRACE, "Cancel the workflow "<<workflowId<<". Current status is: "<<sdpa::status::show(pJob->getStatus()));
-    workflowEngine()->cancel(workflowId, reason);
+    workflowEngine()->cancel(workflowId);
     pJob->CancelJob(pEvt);
     DMLOG (TRACE, "The current status of the workflow "<<workflowId<<" is: "<<sdpa::status::show(pJob->getStatus()));
   }
