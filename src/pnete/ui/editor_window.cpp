@@ -32,7 +32,6 @@
 #include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/util/token.hpp>
 
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
@@ -739,10 +738,10 @@ namespace fhg
           {
             try
             {
-              we::util::token::put ( activity
-                                    , port_name
-                                    , pnet::type::value::read (value)
-                                    );
+              activity.add_input
+                ( activity.transition().input_port_by_name (port_name)
+                , pnet::type::value::read (value)
+                );
             }
             catch (const expr::exception::parse::exception& e)
             {

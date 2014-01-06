@@ -23,7 +23,6 @@
 // ufbmig types
 #include <we/mgmt/type/activity.hpp>
 #include <we/type/net.hpp>
-#include <we/util/token.hpp>
 #include <pnetc/type/config.hpp>
 #include <pnetc/type/config/op.hpp>
 
@@ -425,8 +424,10 @@ public:
     // place tokens
     try
     {
-      we::util::token::put (act, "description", xml);
-      we::util::token::put (act, "file_with_config", m_file_with_config);
+      act.add_input (act.transition().input_port_by_name ("description"), xml);
+      act.add_input ( act.transition().input_port_by_name ("file_with_config")
+                    , m_file_with_config
+                    );
     }
     catch (std::exception const &ex)
     {
@@ -470,8 +471,12 @@ public:
     // place tokens
     try
     {
-      we::util::token::put (act, "file_with_config", m_file_with_config);
-      we::util::token::put (act, "file_with_mask", m_file_with_mask);
+      act.add_input ( act.transition().input_port_by_name ("file_with_config")
+                    , m_file_with_config
+                    );
+      act.add_input ( act.transition().input_port_by_name ("file_with_mask")
+                    , m_file_with_mask
+                    );
     }
     catch (std::exception const &ex)
     {
@@ -508,8 +513,10 @@ public:
     // place tokens
     try
     {
-      we::util::token::put (act, "description", xml);
-      we::util::token::put (act, "file_with_config", m_file_with_config);
+      act.add_input (act.transition().input_port_by_name ("description"), xml);
+      act.add_input ( act.transition().input_port_by_name ("file_with_config")
+                    , m_file_with_config
+                    );
     }
     catch (std::exception const &ex)
     {
@@ -550,7 +557,9 @@ public:
     // place tokens
     try
     {
-      we::util::token::put (act, "file_with_config", m_file_with_config);
+      act.add_input ( act.transition().input_port_by_name ("file_with_config")
+                    , m_file_with_config
+                    );
     }
     catch (std::exception const &ex)
     {

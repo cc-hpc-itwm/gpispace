@@ -8,7 +8,6 @@
 #include <we/type/net.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/show.hpp>
-#include <we/util/token.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
@@ -107,7 +106,7 @@ int main (int argc, char** argv) try
       port_values[port_name] = val;
     }
 
-    we::util::token::put (act, port_name, val);
+    act.add_input (act.transition().input_port_by_name (port_name), val);
   }
 
   if (output == "-")
