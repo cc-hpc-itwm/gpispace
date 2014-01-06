@@ -58,10 +58,8 @@ BOOST_AUTO_TEST_CASE (CancelJobAck)
 
 BOOST_AUTO_TEST_CASE (CancelJob)
 {
-  CancelJobEvent e ("foo", "bar", "job-id-1", "reason");
-  CancelJobEvent* r (encode_decode_job_event (e));
-
-  BOOST_REQUIRE_EQUAL (r->reason(), e.reason());
+  CancelJobEvent e ("foo", "bar", "job-id-1");
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (CapabilitiesGained)

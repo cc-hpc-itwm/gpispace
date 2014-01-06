@@ -591,8 +591,7 @@ bool GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId, const we:
   events::CancelJobEvent::Ptr pEvtCancelJob
           (new events::CancelJobEvent( sdpa::daemon::WE
                               , name()
-                              , job_id
-                              , reason )
+                              , job_id )
           );
   sendEventToSelf(pEvtCancelJob);
   return true;
