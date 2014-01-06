@@ -48,8 +48,6 @@ namespace place
   };
 
   std::ostream& operator<< (std::ostream&, const type&);
-  bool operator== (const type&, const type&);
-  std::size_t hash_value (const type&);
 }
 
 #endif

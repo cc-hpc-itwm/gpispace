@@ -459,38 +459,3 @@ BOOST_AUTO_TEST_CASE (visit_all_leafs)
     correct.erase (it);
   }
 }
-
-namespace boost
-{
-  namespace test_tools
-  {
-    template<typename T> struct print_log_value<std::vector<T> >
-    {
-      void operator()( std::ostream& ostr, const std::vector<T>& p)
-      {
-        ostr << fhg::util::join (p, ",", "{", "}");
-      }
-    };
-    template<typename T> struct print_log_value<std::list<T> >
-    {
-      void operator()( std::ostream& ostr, const std::list<T>& p)
-      {
-        ostr << fhg::util::join (p, ",", "{", "}");
-      }
-    };
-  }
-}
-
-struct point
-{
-  int _x, _y;
-
-  point (int x, int y) : _x (x), _y (y) { }
-  bool operator== (const point& o) const { return _x == o._x && _y == o._y; }
-};
-
-std::ostream& operator<< (std::ostream& s, const point& p)
-{
-  s << "(" << p._x << ", " << p._y << ")";
-  return s;
-}

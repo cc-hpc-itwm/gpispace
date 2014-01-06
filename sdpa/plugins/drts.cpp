@@ -1166,7 +1166,6 @@ private:
           (new sdpa::events::JobFailedEvent ( m_my_name
                                             , job->owner()
                                             , job->id()
-                                            , job->result()
                                             , job->result_code()
                                             , job->message()
                                             )

@@ -1,5 +1,11 @@
 # mirko.rahn@itwm.fraunhofer.de
 
+fhg_add_test (layer.cpp
+  BOOST_UNIT_TEST
+  PROJECT we
+  LINK_LIBRARIES pnet
+)
+
 fhg_add_test (require_type.cpp
   BOOST_UNIT_TEST
   PROJECT we
@@ -45,18 +51,6 @@ fhg_add_test (activity.cpp
 fhg_add_test (execute_activity.cpp
   PROJECT we
   LINK_LIBRARIES pnet
-)
-
-fhg_add_test (layer_atomics.cpp
-  PROJECT we
-  LINK_LIBRARIES pnet
-                 ${FhgLog_LIBRARY}
-)
-
-fhg_add_test (layer_cancel.cpp
-  PROJECT we
-  LINK_LIBRARIES pnet
-                 ${FhgLog_LIBRARY}
 )
 
 fhg_add_test (port.cpp

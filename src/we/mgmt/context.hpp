@@ -49,12 +49,12 @@ namespace we
       typedef we::type::expression_t expr_t;
 
     public:
-      virtual int handle_internally (activity_t&, net_t&) = 0;
-      virtual int handle_internally (activity_t&, mod_t&) = 0;
-      virtual int handle_internally (activity_t&, expr_t&) = 0;
-      virtual int handle_externally (activity_t&, net_t&) = 0;
-      virtual int handle_externally (activity_t&, mod_t&) = 0;
-      virtual int handle_externally (activity_t&, expr_t&) = 0;
+      virtual void handle_internally (activity_t&, net_t const&) = 0;
+      virtual void handle_internally (activity_t&, mod_t const&) = 0;
+      virtual void handle_internally (activity_t&, expr_t const&) = 0;
+      virtual void handle_externally (activity_t&, net_t const&) = 0;
+      virtual void handle_externally (activity_t&, mod_t const&) = 0;
+      virtual void handle_externally (activity_t&, expr_t const&) = 0;
 
       virtual ~context() {}
     };

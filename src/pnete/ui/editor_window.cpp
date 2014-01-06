@@ -32,7 +32,6 @@
 #include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/util/token.hpp>
 
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
@@ -610,54 +609,48 @@ namespace fhg
         //! \note Context copied from we-eval.
         class eval_context : public we::mgmt::context
         {
+          boost::mt19937 _engine;
+
         public:
           eval_context (we::loader::loader& module_loader)
             : loader (module_loader)
           { }
 
-          virtual int handle_internally (we::mgmt::type::activity_t& act, net_t&)
+          virtual void handle_internally (we::mgmt::type::activity_t& act, net_t const&)
           {
-            act.inject_input();
-
             while (act.can_fire())
             {
-              we::mgmt::type::activity_t sub (act.extract());
-              sub.inject_input();
+              we::mgmt::type::activity_t sub (act.extract (_engine));
               sub.execute (this);
               act.inject (sub);
             }
 
             act.collect_output ();
-
-            return 0;
           }
 
-          virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+          virtual void handle_internally (we::mgmt::type::activity_t& act, mod_t const& mod)
           {
             //!\todo pass a real gspc::drts::context here
             we::loader::module_call (loader, 0, act, mod);
-
-            return 0;
           }
 
-          virtual int handle_internally (we::mgmt::type::activity_t& , expr_t&)
+          virtual void handle_internally (we::mgmt::type::activity_t& , expr_t const&)
           {
-            return 0;
           }
 
-          virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+          virtual void handle_externally (we::mgmt::type::activity_t& act, net_t const& n)
           {
-            return handle_internally (act, n);
+            handle_internally (act, n);
           }
 
-          virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+          virtual void handle_externally (we::mgmt::type::activity_t& act, mod_t const& mod)
           {
-            return handle_internally (act, mod);
+            handle_internally (act, mod);
           }
 
-          virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+          virtual void handle_externally (we::mgmt::type::activity_t& act, expr_t const& e)
           {
-            return handle_internally (act, e);
+            handle_internally (act, e);
           }
 
         private:
@@ -745,10 +738,10 @@ namespace fhg
           {
             try
             {
-              we::util::token::put ( activity
-                                    , port_name
-                                    , pnet::type::value::read (value)
-                                    );
+              activity.add_input
+                ( activity.transition().input_port_by_name (port_name)
+                , pnet::type::value::read (value)
+                );
             }
             catch (const expr::exception::parse::exception& e)
             {
@@ -792,8 +785,6 @@ namespace fhg
           , const boost::filesystem::path& temporary_path
           )
         {
-          activity.inject_input();
-
           we::loader::loader loader;
           loader.append_search_path (temporary_path / "pnetc" / "op");
 

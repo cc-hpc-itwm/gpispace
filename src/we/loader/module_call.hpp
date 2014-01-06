@@ -49,8 +49,7 @@ namespace we
 
           if (port.is_output())
           {
-            act.add_output
-              (token_on_port_type (out.value (port.name()), port_id));
+            act.add_output (port_id, out.value (port.name()));
           }
         }
     }

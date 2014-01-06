@@ -49,16 +49,4 @@ namespace place
   {
     return s << p.name();
   }
-
-  bool operator== (const type& a, const type& b)
-  {
-    return a.name() == b.name();
-  }
-
-  std::size_t hash_value (const type& p)
-  {
-    boost::hash<std::string> h;
-
-    return h(p.name());
-  }
 }

@@ -132,14 +132,10 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
     }
     catch (std::exception const & ex)
     {
-      //send a JobFailed event
-      sdpa::job_result_t result(ex.what());
-
       sdpa::events::JobFailedEvent::Ptr pEvtJobFailed
             (new sdpa::events::JobFailedEvent(  m_agent_name
                                   , m_agent_name
                                   , jobId
-                                  , result
                                   , fhg::error::UNEXPECTED_ERROR
                                   , ex.what()
                                    ));
@@ -149,12 +145,9 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
   }
   else
   {
-    sdpa::job_result_t result("Inexsitent job: "+jobId.str());
-
     sdpa::events::JobFailedEvent::Ptr pEvtJobFailed(new sdpa::events::JobFailedEvent(m_agent_name
                                                          , m_agent_name
                                                          , jobId
-                                                         , result
                                                          , fhg::error::UNEXPECTED_ERROR
                                                          , "job could not be found"
                                                          ));

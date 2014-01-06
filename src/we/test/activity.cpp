@@ -24,34 +24,28 @@ typedef we::mgmt::type::activity_t activity_t;
 
 struct exec_context : public we::mgmt::context
 {
-  virtual int handle_internally (activity_t&, net_t&)
+  virtual void handle_internally (activity_t&, net_t const&)
   {
-    return 0;
   }
 
-  virtual int handle_internally (activity_t&, mod_t&)
+  virtual void handle_internally (activity_t&, mod_t const&)
   {
-    return 0;
   }
 
-  virtual int handle_internally (activity_t&, expr_t&)
+  virtual void handle_internally (activity_t&, expr_t const&)
   {
-    return 0;
   }
 
-  virtual int handle_externally (activity_t&, net_t&)
+  virtual void handle_externally (activity_t&, net_t const&)
   {
-    return 0;
   }
 
-  virtual int handle_externally (activity_t&, mod_t&)
+  virtual void handle_externally (activity_t&, mod_t const&)
   {
-    return 0;
   }
 
-  virtual int handle_externally (activity_t&, expr_t&)
+  virtual void handle_externally (activity_t&, expr_t const&)
   {
-    return 0;
   }
 };
 
@@ -181,10 +175,12 @@ int main (int, char **)
   }
 
   std::cout << "can_fire = " << act.can_fire() << std::endl;
+
+  boost::mt19937 engine;
+
   while (act.can_fire())
   {
-    activity_t sub = act.extract ();
-    sub.inject_input ();
+    activity_t sub = act.extract (engine);
 
     exec_context ctxt;
     sub.execute (&ctxt);

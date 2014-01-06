@@ -70,30 +70,27 @@ namespace
 
   struct wfe_exec_context : public we::mgmt::context
   {
+    boost::mt19937 _engine;
+
     wfe_exec_context (we::loader::loader& module_loader, wfe_task_t& target)
       : loader (module_loader)
       , task (target)
       , context (task.workers)
     {}
 
-    virtual int handle_internally (we::mgmt::type::activity_t& act, net_t &)
+    virtual void handle_internally (we::mgmt::type::activity_t& act, net_t const&)
     {
-      act.inject_input();
-
       while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
       {
-        we::mgmt::type::activity_t sub (act.extract());
-        sub.inject_input();
+        we::mgmt::type::activity_t sub (act.extract (_engine));
         sub.execute (this);
         act.inject (sub);
       }
 
       act.collect_output();
-
-      return 0;
     }
 
-    virtual int handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+    virtual void handle_internally (we::mgmt::type::activity_t& act, mod_t const& mod)
     {
       try
       {
@@ -106,28 +103,25 @@ namespace
           + " failed: " + ex.what()
           );
       }
-
-      return 0;
     }
 
-    virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
+    virtual void handle_internally (we::mgmt::type::activity_t&, expr_t const&)
     {
-      return 0;
     }
 
-    virtual int handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+    virtual void handle_externally (we::mgmt::type::activity_t& act, net_t const& n)
     {
-      return handle_internally (act, n);
+      handle_internally (act, n);
     }
 
-    virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& module_call)
+    virtual void handle_externally (we::mgmt::type::activity_t& act, mod_t const& module_call)
     {
-      return handle_internally (act, module_call);
+      handle_internally (act, module_call);
     }
 
-    virtual int handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+    virtual void handle_externally (we::mgmt::type::activity_t& act, expr_t const& e)
     {
-      return handle_internally (act, e);
+      handle_internally (act, e);
     }
 
   private:
@@ -420,7 +414,7 @@ private:
       lock_type lock (m_current_task_mutex);
       if (m_current_task)
       {
-        rply.set_body (m_current_task->activity.nice_name());
+        rply.set_body (m_current_task->activity.transition().name());
       }
     }
 
@@ -492,7 +486,6 @@ private:
         {
           wfe_exec_context ctxt (*m_loader, *task);
 
-          task->activity.inject_input();
           task->activity.execute (&ctxt);
           task->activity.collect_output();
 

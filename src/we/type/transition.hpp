@@ -11,8 +11,11 @@
 #include <we/type/property.hpp>
 #include <we/type/id.hpp>
 #include <we/type/requirement.hpp>
+#include <we/type/value.hpp>
 
 #include <we/type/net.fwd.hpp>
+
+#include <we/expr/eval/context.hpp>
 
 #include <we/exception.hpp>
 
@@ -160,7 +163,7 @@ namespace we { namespace type {
                                      , const we::type::property::type& prop
                                      )
       {
-        inner_to_outer_.erase (port);
+        remove_connection_out (port);
 
         connect_inner_to_outer (port, pid, prop);
       }
@@ -171,7 +174,7 @@ namespace we { namespace type {
                                      , const we::type::property::type& prop
                                      )
       {
-        outer_to_inner_.erase (pid_old);
+        remove_connection_in (pid_old);
 
         connect_outer_to_inner (pid_new, port, prop);
       }
@@ -193,7 +196,14 @@ namespace we { namespace type {
       {
         connect_outer_to_inner (pid, input_port_by_name (name), prop);
       }
-
+      void remove_connection_in (const petri_net::place_id_type& place_id)
+      {
+        outer_to_inner_.erase (place_id);
+      }
+      void remove_connection_out (const petri_net::port_id_type& port_id)
+      {
+        inner_to_outer_.erase (port_id);
+      }
       void add_connection ( const std::string& name
                           , const petri_net::place_id_type& pid
                           , const we::type::property::type& prop
@@ -211,7 +221,7 @@ namespace we { namespace type {
       void erase_port (const petri_net::port_id_type& port_id)
       {
         ports_.erase (port_id);
-        inner_to_outer_.erase (port_id);
+        remove_connection_out (port_id);
       }
 
       petri_net::port_id_type input_port_by_name (const std::string& port_name) const
@@ -295,6 +305,46 @@ namespace we { namespace type {
         _requirements.push_back (r);
       }
 
+      template<typename T>
+        boost::optional<T> get_schedule_data
+          ( std::vector<std::pair< pnet::type::value::value_type
+                                 , petri_net::port_id_type
+                                 >
+                       > const& input
+          , const std::string& key
+          ) const
+      {
+        we::type::property::path_type path;
+        path.push_back ("fhg");
+        path.push_back ("drts");
+        path.push_back ("schedule");
+        path.push_back (key);
+
+        boost::optional<const property::value_type&> expr
+          (prop().get_maybe_val (path));
+
+        if (!expr)
+        {
+          return boost::none;
+        }
+
+        expression_t e (*expr);
+
+        expr::eval::context context;
+
+        typedef std::pair< pnet::type::value::value_type
+                         , petri_net::port_id_type
+                         > token_on_port_t;
+
+        BOOST_FOREACH (token_on_port_t const& top, input)
+        {
+          context.bind_ref (get_port (top.second).name(), top.first);
+        }
+
+        return boost::get<T> (e.ast().eval_all (context));
+      }
+
+
     private:
       std::string name_;
       data_type data_;
@@ -347,16 +397,6 @@ namespace we { namespace type {
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
-
-    inline bool operator==(const transition_t& a, const transition_t& b)
-    {
-      return a.name() == b.name();
-    }
-    inline std::size_t hash_value(transition_t const& t)
-    {
-      boost::hash<std::string> hasher;
-      return hasher(t.name());
-    }
 
     // ********************************************************************* //
 

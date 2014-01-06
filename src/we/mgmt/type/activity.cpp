@@ -28,21 +28,10 @@ namespace we
     namespace type
     {
       activity_t::activity_t ()
-        : _id (petri_net::activity_id_invalid())
       {}
 
       activity_t::activity_t (const we::type::transition_t& transition)
-        : _id (petri_net::activity_id_invalid())
-        , _transition (transition)
-      {}
-
-      activity_t::activity_t (const activity_t& other)
-        : _id (other._id)
-        , _flags (other._flags)
-        , _transition (other._transition)
-        , _pending_input (other._pending_input)
-        , _input(other._input)
-        , _output (other._output)
+        : _transition (transition)
       {}
 
       namespace
@@ -55,7 +44,7 @@ namespace we
 
               ar >> BOOST_SERIALIZATION_NVP (t);
             }
-          catch (boost::archive::archive_exception const &ex)
+          catch (std::exception const &ex)
             {
               throw std::runtime_error
                 (std::string ("deserialization error: ") + ex.what ());
@@ -86,21 +75,6 @@ namespace we
         std::istringstream stream (s);
 
         decode (stream, *this);
-      }
-
-      activity_t& activity_t::operator= (const activity_t& other)
-      {
-        if (this != &other)
-          {
-            _id = other._id;
-            _flags = (other._flags);
-            _transition = (other._transition);
-            _pending_input = (other._pending_input);
-            _input = (other._input);
-            _output = (other._output);
-          }
-
-        return *this;
       }
 
       std::string activity_t::to_string() const
@@ -137,11 +111,9 @@ namespace we
         };
       }
 
-      activity_t activity_t::extract()
+      activity_t activity_t::extract (boost::mt19937& engine)
       {
-        unique_lock_t lock (_mutex);
-
-        return boost::apply_visitor ( visitor_activity_extractor (_engine)
+        return boost::apply_visitor ( visitor_activity_extractor (engine)
                                     , _transition.data()
                                     );
       }
@@ -181,8 +153,6 @@ namespace we
 
       void activity_t::inject (const activity_t& subact)
       {
-        unique_lock_t lock (_mutex);
-
         boost::apply_visitor ( visitor_activity_injector (subact)
                              , _transition.data()
                              );
@@ -190,34 +160,32 @@ namespace we
 
       namespace
       {
-        class visitor_injector : public boost::static_visitor<void>
+        class visitor_add_input : public boost::static_visitor<>
         {
         private:
           we::type::transition_t& _transition;
-          const activity_t::input_t& _input;
+          petri_net::port_id_type const& _port_id;
+          pnet::type::value::value_type const& _value;
 
         public:
-          visitor_injector ( activity_t& activity
-                           , const activity_t::input_t& input
-                           )
-            : _transition (activity.transition())
-            , _input (input)
+          visitor_add_input ( we::type::transition_t& transition
+                            , petri_net::port_id_type const& port_id
+                            , pnet::type::value::value_type const& value
+                            )
+            : _transition (transition)
+            , _port_id (port_id)
+            , _value (value)
           {}
 
           void operator() (petri_net::net& net) const
           {
-            BOOST_FOREACH (const activity_t::token_on_port_t& inp, _input)
-              {
-                const petri_net::port_id_type port_id (inp.second);
-
-                if (_transition.get_port (port_id).has_associated_place())
-                  {
-                    net.put_value
-                      ( _transition.get_port (port_id).associated_place()
-                      , inp.first
-                      );
-                  }
-              }
+            if (_transition.get_port (_port_id).has_associated_place())
+            {
+              net.put_value
+                ( _transition.get_port (_port_id).associated_place()
+                , _value
+                );
+            }
           }
 
           template<typename T>
@@ -226,20 +194,16 @@ namespace we
         };
       }
 
-      void activity_t::inject_input()
+      void activity_t::add_input
+        ( petri_net::port_id_type const& port_id
+        , pnet::type::value::value_type const& value
+        )
       {
-        unique_lock_t lock (_mutex);
-
-        boost::apply_visitor ( visitor_injector (*this, _pending_input)
+        boost::apply_visitor ( visitor_add_input (_transition, port_id, value)
                              , _transition.data()
                              );
 
-        std::copy ( _pending_input.begin()
-                  , _pending_input.end()
-                  , std::inserter (_input, _input.end())
-                  );
-
-        _pending_input.clear();
+        _input.push_back (input_t::value_type (value, port_id));
       }
 
       namespace
@@ -273,8 +237,7 @@ namespace we
                                 , net.get_token (pid)
                                 )
                   {
-                    _activity.add_output
-                      (activity_t::output_t::value_type (token, port_id));
+                    _activity.add_output (port_id, token);
                   }
 
                   net.delete_all_token (pid);
@@ -303,68 +266,24 @@ namespace we
 
       void activity_t::collect_output ()
       {
-        unique_lock_t lock (_mutex);
-
         boost::apply_visitor ( visitor_collect_output (*this)
                              , _transition.data()
                              );
       }
 
-      void activity_t::set_id (const petri_net::activity_id_type& new_id)
-      {
-        _id = new_id;
-      }
-
-      const petri_net::activity_id_type& activity_t::id() const
-      {
-        return _id;
-      }
-
-      const flags::flags_t& activity_t::flags() const
-      {
-        return _flags;
-      }
-
-      bool activity_t::is_alive() const
-      {
-        shared_lock_t lock (_mutex);
-        return (flags::is_alive (_flags));
-      }
-
-#define FLAG(_name)                                             \
-      bool activity_t::is_ ## _name() const                     \
-      {                                                         \
-        shared_lock_t lock (_mutex);                            \
-        return (flags::is_ ## _name (_flags));                  \
-      }                                                         \
-      void activity_t::set_ ## _name (bool value)               \
-      {                                                         \
-        unique_lock_t lock (_mutex);                            \
-        flags::set_ ## _name (_flags, value);                   \
-      }
-
-      FLAG (suspended)
-      FLAG (canceling)
-      FLAG (canceled)
-      FLAG (failed)
-      FLAG (finished)
-#undef FLAG
-
       const we::type::transition_t& activity_t::transition() const
       {
-        shared_lock_t lock (_mutex);
         return _transition;
       }
 
       we::type::transition_t& activity_t::transition()
       {
-        unique_lock_t lock (_mutex);
         return _transition;
       }
 
       namespace
       {
-        class executor : public boost::static_visitor<int>
+        class executor : public boost::static_visitor<void>
         {
         private:
           type::activity_t& _activity;
@@ -376,24 +295,24 @@ namespace we
             , _ctxt (ctxt)
           {}
 
-          int operator () (petri_net::net& net) const
+          void operator () (petri_net::net const& net) const
           {
             if (_activity.transition().is_internal())
               {
-                return _ctxt->handle_internally (_activity, net);
+                _ctxt->handle_internally (_activity, net);
               }
             else
               {
-                return _ctxt->handle_externally (_activity, net);
+                _ctxt->handle_externally (_activity, net);
               }
           }
 
-          int operator() (we::type::module_call_t & mod) const
+          void operator() (we::type::module_call_t const& mod) const
           {
-            return _ctxt->handle_externally (_activity, mod);
+            _ctxt->handle_externally (_activity, mod);
           }
 
-          int operator() (we::type::expression_t & expr) const
+          void operator() (we::type::expression_t const& expr) const
           {
             expr::eval::context context;
 
@@ -418,10 +337,7 @@ namespace we
             {
               if (p.second.is_output())
               {
-                _activity.add_output
-                  ( type::activity_t::output_t::value_type
-                    (context.value (p.second.name()), p.first)
-                  );
+                _activity.add_output (p.first, context.value (p.second.name()));
               }
             }
 
@@ -430,10 +346,9 @@ namespace we
         };
       }
 
-      int activity_t::execute (context* ctxt)
+      void activity_t::execute (context* ctxt)
       {
-        unique_lock_t lock (_mutex);
-        return boost::apply_visitor
+        boost::apply_visitor
           (executor (*this, ctxt), transition().data());
       }
 
@@ -459,146 +374,27 @@ namespace we
 
       bool activity_t::can_fire() const
       {
-        shared_lock_t lock (_mutex);
         return boost::apply_visitor (visitor_can_fire(), transition().data());
-      }
-
-      const activity_t::input_t& activity_t::pending_input() const
-      {
-        shared_lock_t lock (_mutex);
-        return _pending_input;
       }
 
       const activity_t::input_t& activity_t::input() const
       {
-        shared_lock_t lock (_mutex);
         return _input;
-      }
-
-      void activity_t::add_input (const input_t::value_type& inp)
-      {
-        unique_lock_t lock (_mutex);
-        _pending_input.push_back (inp);
       }
 
       const activity_t::output_t& activity_t::output() const
       {
-        shared_lock_t lock (_mutex);
         return _output;
       }
 
-      void activity_t::set_output (const output_t& outp)
+      void activity_t::add_output
+        ( petri_net::port_id_type const& port_id
+        , pnet::type::value::value_type const& value
+        )
       {
-        unique_lock_t lock (_mutex);
-        _output = outp;
+        _output.push_back (output_t::value_type (value, port_id));
       }
 
-      void activity_t::add_output (const output_t::value_type& outp)
-      {
-        unique_lock_t lock (_mutex);
-        _output.push_back (outp);
-      }
-
-      void activity_t::lock()
-      {
-        _mutex.lock();
-      }
-      void activity_t::unlock()
-      {
-        _mutex.unlock();
-      }
-
-      namespace
-      {
-        class visitor_type_to_string : public boost::static_visitor<std::string>
-        {
-        public:
-          std::string operator () (const petri_net::net&) const
-          {
-            return "net";
-          }
-          std::string operator () (const we::type::module_call_t&) const
-          {
-            return "module";
-          }
-          std::string operator () (const we::type::expression_t&) const
-          {
-            return "expr";
-          }
-        };
-      }
-
-      std::string activity_t::type_to_string() const
-      {
-        return boost::apply_visitor ( visitor_type_to_string()
-                                    , _transition.data()
-                                    );
-      }
-
-      std::ostream& activity_t::print ( std::ostream& os
-                                      , const token_on_port_list_t& top_list
-                                      ) const
-      {
-        bool first (true);
-
-        os << "[";
-
-        BOOST_FOREACH (const token_on_port_t& top, top_list)
-          {
-            if (first)
-              {
-                first = false;
-              }
-            else
-              {
-                os << ", ";
-              }
-
-            os << transition().get_port (top.second).name()
-               << "=(" << pnet::type::value::show (top.first)
-               << ", " << top.second << ")";
-          }
-
-        os << "]";
-
-        return os;
-      }
-
-      namespace
-      {
-        class visitor_nice_name
-          : public boost::static_visitor<boost::optional<std::string> >
-        {
-        public:
-          boost::optional<std::string>
-            operator() (const petri_net::net&) const
-          {
-            return boost::none;
-          }
-          boost::optional<std::string>
-            operator() (const we::type::module_call_t& mod_call) const
-          {
-            return mod_call.module() + ":" + mod_call.function();
-          }
-          boost::optional<std::string>
-            operator() (const we::type::expression_t&) const
-          {
-            return boost::none;
-          }
-        };
-      }
-
-      std::string activity_t::nice_name() const
-      {
-        shared_lock_t lock (_mutex);
-        return boost::apply_visitor (visitor_nice_name(), transition().data())
-          .get_value_or (transition().name());
-      }
-
-      bool operator== (const activity_t& a, const activity_t& b)
-      {
-        return a.id() == b.id();
-      }
       std::ostream& operator<< (std::ostream& os, const activity_t& a)
       {
         return os << a.to_string();

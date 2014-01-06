@@ -3,8 +3,6 @@
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/layer.hpp>
 #include <we/mgmt/type/activity.hpp>
-#include <we/type/requirement.hpp>
-#include <we/type/schedule_data.hpp>
 
 #include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
@@ -43,44 +41,38 @@ namespace
       , _new_id (new_id)
     {}
 
-    virtual int handle_internally (we::mgmt::type::activity_t& act, net_t& n)
+    virtual void handle_internally (we::mgmt::type::activity_t& act, net_t const& n)
     {
-      return handle_externally (act, n);
+      handle_externally (act, n);
     }
-    virtual int handle_internally (we::mgmt::type::activity_t&, mod_t&)
+    virtual void handle_internally (we::mgmt::type::activity_t&, mod_t const&)
     {
       throw std::runtime_error ("NO internal mod here!");
     }
-    virtual int handle_internally (we::mgmt::type::activity_t&, expr_t&)
+    virtual void handle_internally (we::mgmt::type::activity_t&, expr_t const&)
     {
       throw std::runtime_error ("NO internal expr here!");
     }
-    virtual int handle_externally (we::mgmt::type::activity_t& act, net_t&)
+    virtual void handle_externally (we::mgmt::type::activity_t& act, net_t const&)
     {
-      _layer->submit (_new_id (_id),  act, we::type::user_data());
-      return 0;
+      _layer->submit (_new_id (_id), act);
     }
-    virtual int handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+    virtual void handle_externally (we::mgmt::type::activity_t& act, mod_t const& mod)
     {
       try
       {
         //!\todo pass a real gspc::drts::context
         we::loader::module_call (*_loader, 0, act, mod);
-        _layer->finished (_id, act.to_string());
+        _layer->finished (_id, act);
       }
       catch (std::exception const& ex)
       {
         std::cerr << "handle-ext(" << act.transition().name() << ") failed: " << ex.what() << std::endl;
 
-        _layer->failed ( _id
-                       , act.to_string()
-                       , fhg::error::MODULE_CALL_FAILED
-                       , ex.what()
-                       );
+        _layer->failed (_id, fhg::error::MODULE_CALL_FAILED, ex.what());
       }
-      return 0;
     }
-    virtual int handle_externally (we::mgmt::type::activity_t&, expr_t&)
+    virtual void handle_externally (we::mgmt::type::activity_t&, expr_t const&)
     {
       throw std::runtime_error ("NO external expr here!");
     }
@@ -99,13 +91,13 @@ namespace
     job_t()
     {}
 
-    job_t (const we::mgmt::layer::id_type& id_, const std::string& desc_)
+    job_t (const we::mgmt::layer::id_type& id_, const we::mgmt::type::activity_t& act_)
       : id (id_)
-      , desc (desc_)
+      , act (act_)
     {}
 
     we::mgmt::layer::id_type id;
-    std::string desc;
+    we::mgmt::type::activity_t act;
   };
 
   struct sdpa_daemon
@@ -118,10 +110,18 @@ namespace
                 , we::loader::loader* loader
                 , we::mgmt::type::activity_t const act
                 , boost::optional<std::size_t> const timeout
+                , boost::mt19937& random_extraction_engine
                 )
         : _mutex_id()
         , _id (0)
-        , mgmt_layer_ (this, boost::bind (&sdpa_daemon::gen_id, this))
+        , mgmt_layer_ ( boost::bind (&sdpa_daemon::submit, this, _1, _2, _3)
+                      , boost::bind (&sdpa_daemon::cancel, this, _1)
+                      , boost::bind (&sdpa_daemon::finished, this, _1, _2)
+                      , boost::bind (&sdpa_daemon::failed, this, _1, _2, _3)
+                      , boost::bind (&sdpa_daemon::canceled, this, _1)
+                      , boost::bind (&sdpa_daemon::gen_id, this)
+                      , random_extraction_engine
+                      )
         , _mutex_id_map()
         , id_map_()
         , jobs_()
@@ -139,7 +139,7 @@ namespace
           (new boost::thread (boost::bind (&sdpa_daemon::worker, this, n)));
       }
 
-      mgmt_layer_.submit (_job_id, act, we::type::user_data());
+      mgmt_layer_.submit (_job_id, act);
     }
 
     ~sdpa_daemon()
@@ -164,7 +164,7 @@ namespace
 
       for (;;)
       {
-        job_t const job (jobs_.get());
+        job_t job (jobs_.get());
 
         context ctxt ( job.id
                      , _loader
@@ -172,7 +172,7 @@ namespace
                      , boost::bind (&sdpa_daemon::add_mapping, this, _1)
                      );
 
-        we::mgmt::type::activity_t (job.desc).execute (&ctxt);
+        job.act.execute (&ctxt);
       }
 
       MLOG (INFO, "SDPA layer worker-" << rank << " stopped");
@@ -238,13 +238,11 @@ namespace
     }
 
     void submit ( const we::mgmt::layer::id_type& id
-                , const std::string& desc
-                , std::list<we::type::requirement_t> const&
-                , const we::type::schedule_data&
-                , const we::type::user_data&
+                , const we::mgmt::type::activity_t& act
+                , const we::mgmt::layer::id_type& parent_id
                 )
     {
-      jobs_.put (job_t (id, desc));
+      jobs_.put (job_t (id, act));
     }
 
     void cancel (const we::mgmt::layer::id_type& id)
@@ -260,19 +258,19 @@ namespace
       }
     }
 
-    void finished (const we::mgmt::layer::id_type& id, const std::string& desc)
+    void finished (const we::mgmt::layer::id_type& id, we::mgmt::type::activity_t act)
     {
       boost::optional<we::mgmt::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
+      act.collect_output();
+
       if (mapped)
       {
-        mgmt_layer_.finished (*mapped, desc);
+        mgmt_layer_.finished (*mapped, act);
       }
       else if (id == _job_id)
       {
-        we::mgmt::type::activity_t const act (desc);
-
         std::cout << "finished [" << id << "]" << std::endl;
         BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
                       , act.output()
@@ -282,7 +280,7 @@ namespace
                     << " => " << pnet::type::value::show (top.first) << std::endl;
         }
 
-        _result = desc;
+        _result = act.to_string();
         set_job_status (sdpa::status::FINISHED);
       }
       else
@@ -292,7 +290,6 @@ namespace
     }
 
     void failed ( const we::mgmt::layer::id_type& id
-                , const std::string& desc
                 , const int error_code
                 , const std::string& reason
                 )
@@ -302,19 +299,14 @@ namespace
 
       if (mapped)
       {
-        mgmt_layer_.failed (*mapped, desc, error_code, reason);
+        mgmt_layer_.failed (*mapped, error_code, reason);
       }
       else if (id == _job_id)
       {
-        we::mgmt::type::activity_t const act (desc);
-
         std::cout << "failed [" << id << "] = ";
-        act.print (std::cout, act.output());
         std::cout << " error-code := " << error_code
                   << " reason := " << reason
-                  << " activity := " << act.transition().name()
                   << std::endl;
-        _result = desc;
         set_job_status (sdpa::status::FAILED);
       }
       else
@@ -467,6 +459,7 @@ try
     loader.append_search_path (p);
   }
 
+  boost::mt19937 random_extraction_engine;
   sdpa_daemon const daemon
     ( num_worker
     , &loader
@@ -474,6 +467,7 @@ try
     ? we::mgmt::type::activity_t (std::cin)
     : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
     , cancel_after
+    , random_extraction_engine
     );
 
   sdpa::status::code const rc (daemon.wait_while_job_is_running());
@@ -481,7 +475,6 @@ try
   switch (rc)
   {
   case sdpa::status::FINISHED:
-  case sdpa::status::FAILED:
     if (output.size())
     {
       if (output == "-")
@@ -495,6 +488,7 @@ try
       }
     }
     break;
+  case sdpa::status::FAILED:
   case sdpa::status::CANCELED:
     break;
   default:

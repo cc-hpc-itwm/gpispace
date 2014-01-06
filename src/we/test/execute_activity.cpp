@@ -86,21 +86,21 @@ namespace module
       const petri_net::port_id_type& port_id
         (act.transition().output_port_by_name (ton->second));
 
-      act.add_output (output_t::value_type (ton->first, port_id));
+      act.add_output (port_id, ton->first);
     }
   }
 }
 
 struct exec_context : public we::mgmt::context
 {
-  virtual int handle_internally (activity_t& act, net_t&)
-  {
-    act.inject_input ();
+  boost::mt19937 _engine;
 
+  virtual void handle_internally (activity_t& act, net_t const&)
+  {
     // submit to self
     while (act.can_fire())
     {
-      activity_t sub = act.extract ();
+      activity_t sub = act.extract (_engine);
 
       sub.execute (this);
 
@@ -109,52 +109,31 @@ struct exec_context : public we::mgmt::context
     }
 
     act.collect_output();
-
-    return 0;
   }
 
-  virtual int handle_internally (activity_t&, mod_t&)
+  virtual void handle_internally (activity_t&, mod_t const&)
   {
     throw std::runtime_error ("cannot handle module calls internally");
   }
 
-  virtual int handle_internally (activity_t&, expr_t&)
+  virtual void handle_internally (activity_t&, expr_t const&)
   {
     // nothing to do
-    return 0;
   }
 
-  std::string fake_external (const std::string& act_enc, net_t& n)
+  virtual void handle_externally (activity_t& act, net_t const& n)
   {
-    activity_t act (act_enc);
-    handle_internally (act, n );
-    return act.to_string();
+    handle_internally (act, n);
   }
 
-  virtual int handle_externally (activity_t& act, net_t& n)
+  virtual void handle_externally (activity_t& act, mod_t const& module_call)
   {
-    activity_t result (fake_external (act.to_string(), n));
-    act.set_output(result.output());
-    return 0;
+    module::call (act, module_call);
   }
 
-  std::string fake_external (const std::string& act_enc, const mod_t& mod)
+  virtual void handle_externally (activity_t& act, expr_t const& e)
   {
-    activity_t act (act_enc);
-    module::call (act, mod );
-    return act.to_string();
-  }
-
-  virtual int handle_externally (activity_t& act, mod_t& module_call)
-  {
-    activity_t result (fake_external (act.to_string(), module_call));
-    act.set_output(result.output());
-    return 0;
-  }
-
-  virtual int handle_externally (activity_t& act, expr_t& e)
-  {
-    return handle_internally (act, e );
+    handle_internally (act, e );
   }
 };
 

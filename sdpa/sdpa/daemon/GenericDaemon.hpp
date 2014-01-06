@@ -44,7 +44,6 @@
 #include <sdpa/types.hpp>
 
 #include <we/type/schedule_data.hpp>
-#include <we/type/user_data.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
@@ -59,6 +58,7 @@
 #include <sdpa/capability.hpp>
 
 #include <fhg/util/thread/set.hpp>
+#include <fhg/util/thread/queue.hpp>
 
 #define OVERWRITTEN_IN_TEST virtual
 
@@ -96,15 +96,13 @@ namespace sdpa {
 
       // WE interface
       void submit( const we::mgmt::layer::id_type & id
-                         , const we::mgmt::layer::encoded_type&
-                         , const requirement_list_t& = requirement_list_t()
-                         , const we::type::schedule_data& = we::type::schedule_data()
-                         , const we::type::user_data & = we::type::user_data ()
+                 , const we::mgmt::type::activity_t&
+                 , const we::mgmt::layer::id_type& parent_id
                          );
-      bool cancel(const we::mgmt::layer::id_type & id);
-      virtual bool finished(const we::mgmt::layer::id_type & id, const we::mgmt::layer::result_type& result);
-      virtual bool failed( const we::mgmt::layer::id_type& wfId, const we::mgmt::layer::result_type& res, int errc, std::string const& reason);
-      bool canceled(const we::mgmt::layer::id_type& id);
+      void cancel(const we::mgmt::layer::id_type & id);
+      virtual void finished(const we::mgmt::layer::id_type & id, const we::mgmt::type::activity_t& result);
+      virtual void failed( const we::mgmt::layer::id_type& wfId, int errc, std::string const& reason);
+      void canceled(const we::mgmt::layer::id_type& id);
       virtual void pause(const job_id_t& id ) = 0;
       virtual void resume(const job_id_t& id ) = 0;
 
@@ -235,6 +233,7 @@ namespace sdpa {
     protected:
       JobManager _job_manager;
       SchedulerBase::ptr_t ptr_scheduler_;
+      boost::optional<boost::mt19937> _random_extraction_engine;
       boost::scoped_ptr<we::mgmt::layer> ptr_workflow_engine_;
 
     private:
