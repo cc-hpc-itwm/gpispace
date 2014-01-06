@@ -226,10 +226,22 @@ struct daemon
   unsigned long _in_progress;
 };
 
+namespace
+{
+  namespace value
+  {
+    pnet::type::value::value_type const CONTROL
+      (pnet::type::value::read ("[]"));
+  }
+  namespace signature
+  {
+    pnet::type::signature::signature_type CONTROL (std::string ("control"));
+    pnet::type::signature::signature_type LONG (std::string ("long"));
+  }
+}
+
 BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
 {
-  using pnet::type::signature::signature_type;
-
   we::type::transition_t transition
     ( "expression"
     , we::type::expression_t ("${out} := ${in} + 1L")
@@ -240,14 +252,14 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   transition.add_port
     (we::type::port_t ( "in"
                       , we::type::PORT_IN
-                      , signature_type (std::string ("long"))
+                      , signature::LONG
                       , we::type::property::type()
                       )
     );
   transition.add_port
     (we::type::port_t ( "out"
                       , we::type::PORT_OUT
-                      , signature_type (std::string ("long"))
+                      , signature::LONG
                       , we::type::property::type()
                       )
     );
@@ -272,19 +284,6 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   }
 }
 
-namespace
-{
-  namespace value
-  {
-    pnet::type::value::value_type const control
-      (pnet::type::value::read ("[]"));
-  }
-  namespace signature
-  {
-    pnet::type::signature::signature_type control (std::string ("control"));
-  }
-}
-
 BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 {
   we::type::transition_t transition
@@ -297,25 +296,25 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   transition.add_port
     (we::type::port_t ( "in"
                       , we::type::PORT_IN
-                      , signature::control
+                      , signature::CONTROL
                       , we::type::property::type()
                       )
     );
   transition.add_port
     (we::type::port_t ( "out"
                       , we::type::PORT_OUT
-                      , signature::control
+                      , signature::CONTROL
                       , we::type::property::type()
                       )
     );
 
   we::mgmt::type::activity_t activity_output (transition);
   activity_output.add_output
-    (transition.output_port_by_name ("out"), value::control);
+    (transition.output_port_by_name ("out"), value::CONTROL);
 
   we::mgmt::type::activity_t activity_input (transition);
   activity_input.add_input
-    (transition.input_port_by_name ("in"), value::control);
+    (transition.input_port_by_name ("in"), value::CONTROL);
 
   //! \todo leaking implementation detail: maybe extract() should
   //! remove those connections to outside that were introduced by
@@ -324,11 +323,11 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   transition.add_connection ("out", 0, we::type::property::type());
   we::mgmt::type::activity_t activity_child (transition);
   activity_child.add_input
-    (transition.input_port_by_name ("in"), value::control);
+    (transition.input_port_by_name ("in"), value::CONTROL);
 
   we::mgmt::type::activity_t activity_result (transition);
   activity_result.add_output
-    (transition.output_port_by_name ("out"), value::control);
+    (transition.output_port_by_name ("out"), value::CONTROL);
 
   we::mgmt::layer::id_type const id (generate_id());
 
@@ -360,13 +359,13 @@ namespace
       );
     transition.add_port ( we::type::port_t ( "in"
                                            , we::type::PORT_IN
-                                           , signature::control
+                                           , signature::CONTROL
                                            , we::type::property::type()
                                            )
                         );
     transition.add_port ( we::type::port_t ( "out"
                                            , we::type::PORT_OUT
-                                           , signature::control
+                                           , signature::CONTROL
                                            , we::type::property::type()
                                            )
                         );
@@ -374,12 +373,12 @@ namespace
     petri_net::net net;
 
     petri_net::place_id_type const place_id_in
-      (net.add_place (place::type ("in", signature::control)));
+      (net.add_place (place::type ("in", signature::CONTROL)));
     petri_net::place_id_type const place_id_out
-      (net.add_place (place::type ("out", signature::control)));
+      (net.add_place (place::type ("out", signature::CONTROL)));
 
-    net.put_value (put_on_input ? place_id_in : place_id_out, value::control);
-    net.put_value (put_on_input ? place_id_in : place_id_out, value::control);
+    net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
+    net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
 
     transition.add_connection (place_id_in, "in", we::type::property::type());
     transition.add_connection ("out", place_id_out, we::type::property::type());
@@ -420,11 +419,11 @@ BOOST_FIXTURE_TEST_CASE (finished_shall_be_called_after_finished, daemon)
 
   we::mgmt::type::activity_t activity_child (transition_child);
   activity_child.add_input
-    (transition_child.input_port_by_name ("in"), value::control);
+    (transition_child.input_port_by_name ("in"), value::CONTROL);
 
   we::mgmt::type::activity_t activity_result (transition_child);
   activity_result.add_output
-    (transition_child.output_port_by_name ("out"), value::control);
+    (transition_child.output_port_by_name ("out"), value::CONTROL);
 
   we::mgmt::layer::id_type const id (generate_id());
 
