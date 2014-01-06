@@ -384,8 +384,8 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   //! \todo leaking implementation detail: maybe extract() should
   //! remove those connections to outside that were introduced by
   //! wrap()
-  transition.add_connection (1, "in", we::type::property::type());
   transition.add_connection ("out", 0, we::type::property::type());
+  transition.add_connection (1, "in", we::type::property::type());
   we::mgmt::type::activity_t activity_child (transition);
   activity_child.add_input
     (transition.input_port_by_name ("in"), value::CONTROL);
