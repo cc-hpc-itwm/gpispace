@@ -151,7 +151,7 @@ public:
     req.reset (new CancelJobEvent( m_peer->name()
                                  , m_orchestrator
                                  , id
-                                 , "ufbmig requested cancel"
+                                 , "user cancel"
                                  )
               );
     if (request(req, rep) == 0)
