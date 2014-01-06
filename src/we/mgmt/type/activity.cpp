@@ -296,7 +296,7 @@ namespace we
             , _ctxt (ctxt)
           {}
 
-          void operator () (petri_net::net& net) const
+          void operator () (petri_net::net const& net) const
           {
             if (_activity.transition().is_internal())
               {
@@ -308,12 +308,12 @@ namespace we
               }
           }
 
-          void operator() (we::type::module_call_t & mod) const
+          void operator() (we::type::module_call_t const& mod) const
           {
             _ctxt->handle_externally (_activity, mod);
           }
 
-          void operator() (we::type::expression_t & expr) const
+          void operator() (we::type::expression_t const& expr) const
           {
             expr::eval::context context;
 

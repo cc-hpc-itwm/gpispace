@@ -616,7 +616,7 @@ namespace fhg
             : loader (module_loader)
           { }
 
-          virtual void handle_internally (we::mgmt::type::activity_t& act, net_t&)
+          virtual void handle_internally (we::mgmt::type::activity_t& act, net_t const&)
           {
             while (act.can_fire())
             {
@@ -628,27 +628,27 @@ namespace fhg
             act.collect_output ();
           }
 
-          virtual void handle_internally (we::mgmt::type::activity_t& act, mod_t& mod)
+          virtual void handle_internally (we::mgmt::type::activity_t& act, mod_t const& mod)
           {
             //!\todo pass a real gspc::drts::context here
             we::loader::module_call (loader, 0, act, mod);
           }
 
-          virtual void handle_internally (we::mgmt::type::activity_t& , expr_t&)
+          virtual void handle_internally (we::mgmt::type::activity_t& , expr_t const&)
           {
           }
 
-          virtual void handle_externally (we::mgmt::type::activity_t& act, net_t& n)
+          virtual void handle_externally (we::mgmt::type::activity_t& act, net_t const& n)
           {
             handle_internally (act, n);
           }
 
-          virtual void handle_externally (we::mgmt::type::activity_t& act, mod_t& mod)
+          virtual void handle_externally (we::mgmt::type::activity_t& act, mod_t const& mod)
           {
             handle_internally (act, mod);
           }
 
-          virtual void handle_externally (we::mgmt::type::activity_t& act, expr_t& e)
+          virtual void handle_externally (we::mgmt::type::activity_t& act, expr_t const& e)
           {
             handle_internally (act, e);
           }
