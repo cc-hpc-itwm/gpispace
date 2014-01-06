@@ -378,7 +378,7 @@ namespace we
     void layer::async_remove_queue::put
       (activity_data_type activity_data, bool active)
     {
-      boost::optional<boost::function<void (activity_data_type)> > fun;
+      bool do_put (true);
 
       {
         boost::mutex::scoped_lock const _ (_to_be_removed_mutex);
@@ -388,16 +388,21 @@ namespace we
 
         if (pos != _to_be_removed.end())
         {
-          fun = pos->second;
+          BOOST_FOREACH ( std::pair<boost::function<void (activity_data_type&)>
+                                                    BOOST_PP_COMMA() bool
+                                   > fun_and_do_put
+                        , pos->second
+                        )
+          {
+            fun_and_do_put.first (activity_data);
+            do_put = do_put && (active = fun_and_do_put.second);
+          }
+
           _to_be_removed.erase (pos);
         }
       }
 
-      if (fun)
-      {
-        (*fun) (activity_data);
-      }
-      else
+      if (do_put)
       {
         boost::mutex::scoped_lock const _ (_container_mutex);
 
@@ -436,7 +441,7 @@ namespace we
       }
       else
       {
-        _to_be_removed.insert (std::make_pair (id, fun));
+        _to_be_removed[id].push_back (std::make_pair (fun, false));
       }
     }
 
@@ -465,21 +470,8 @@ namespace we
       }
       else
       {
-        _to_be_removed.insert
-          ( std::make_pair
-            ( id
-            , boost::bind (&async_remove_queue::apply_callback, this, _1, fun)
-            )
-          );
+        _to_be_removed[id].push_back (std::make_pair (fun, true));
       }
-    }
-    void layer::async_remove_queue::apply_callback
-      ( activity_data_type activity_data
-      , boost::function<void (activity_data_type&)> fun
-      )
-    {
-      fun (activity_data);
-      put (activity_data, true);
     }
 
 

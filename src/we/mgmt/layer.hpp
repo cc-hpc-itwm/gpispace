@@ -118,13 +118,11 @@ namespace we
         boost::condition_variable_any _condition_non_empty;
 
         mutable boost::mutex _to_be_removed_mutex;
-        typedef boost::unordered_multimap< id_type
-                                         , boost::function<void (activity_data_type)>
-                                         > to_be_removed_type;
+        typedef boost::unordered_map
+          < id_type
+          , std::list<std::pair<boost::function<void (activity_data_type&)>, bool> >
+          > to_be_removed_type;
         to_be_removed_type _to_be_removed;
-
-        void apply_callback
-          (activity_data_type, boost::function<void (activity_data_type&)>);
       } _nets_to_extract_from;
 
       boost::mt19937& _random_extraction_engine;
