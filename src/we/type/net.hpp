@@ -6,20 +6,15 @@
 #include <we/type/net.fwd.hpp>
 
 #include <we/container/priostore.hpp>
+#include <we/mgmt/type/activity.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
-
+#include <we/type/transition.fwd.hpp>
 #include <we/type/value.hpp>
-#include <we/type/value/show.hpp>
 #include <we/type/value/read.hpp>
-
-#include <we/type/transition.hpp>
-
-#include <we/util/cross.fwd.hpp>
-
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/value/show.hpp>
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
@@ -210,10 +205,14 @@ namespace petri_net
 
     we::container::priority_store _enabled;
 
+    typedef std::pair< std::list<pnet::type::value::value_type>::iterator
+                     , std::size_t
+                     > pos_and_distance_type;
+
     boost::unordered_map
       < transition_id_type
       , boost::unordered_map< petri_net::place_id_type
-                            , we::util::pos_and_distance_type
+                            , pos_and_distance_type
                             >
       > _enabled_choice;
 
@@ -229,7 +228,44 @@ namespace petri_net
     void disable (const transition_id_type&);
 
     we::mgmt::type::activity_t extract_activity (const transition_id_type&);
-    void eval_cross (const transition_id_type&, we::util::cross_type&);
+
+    class cross_type
+    {
+    public:
+      bool enables (we::type::transition_t const&);
+      void write_to (boost::unordered_map< petri_net::place_id_type
+                                         , pos_and_distance_type
+                                         >&
+                    ) const;
+      void push ( const petri_net::place_id_type&
+                , std::list<pnet::type::value::value_type>&
+                );
+      void push ( const petri_net::place_id_type&
+                , const std::list<pnet::type::value::value_type>::iterator&
+                );
+    private:
+      class iterators_type
+      {
+      public:
+        iterators_type (std::list<pnet::type::value::value_type>&);
+        iterators_type (const std::list<pnet::type::value::value_type>::iterator&);
+        bool end() const;
+        const pos_and_distance_type& pos_and_distance() const;
+        void operator++();
+        void rewind();
+      private:
+        std::list<pnet::type::value::value_type>::iterator _begin;
+        std::list<pnet::type::value::value_type>::iterator _end;
+        pos_and_distance_type _pos_and_distance;
+      };
+
+      typedef boost::unordered_map<petri_net::place_id_type, iterators_type>
+      map_type;
+
+      map_type _m;
+
+      bool do_step (map_type::iterator, map_type::iterator const&);
+    };
   };
 }
 

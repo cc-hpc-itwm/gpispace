@@ -77,7 +77,6 @@ BOOST_AUTO_TEST_CASE (load_failed)
 
   fhg::util::boost::test::require_exception<we::loader::module_load_failed>
     ( boost::bind (&we::loader::loader::load, &loader, "name", "<path>")
-    , "we::loader::module_load_failed"
     , "could not load module '<path>': <path>:"
       " cannot open shared object file: No such file or directory"
     );
@@ -98,7 +97,6 @@ BOOST_AUTO_TEST_CASE (load_already_registered)
 
   fhg::util::boost::test::require_exception<we::loader::module_already_registered>
     ( boost::bind (&we::loader::loader::load, &loader, "name", "<path>")
-    , "module_already_registered"
     , "module 'name' already registered"
     );
 }
@@ -109,7 +107,6 @@ BOOST_AUTO_TEST_CASE (bracket_not_found)
 
   fhg::util::boost::test::require_exception<we::loader::module_not_found>
     ( boost::bind (&we::loader::loader::operator[], &loader, "name")
-    , "we::loader::ModuleLoadFailed"
     , "module 'libname.so' not found in ''"
     );
 
@@ -118,7 +115,6 @@ BOOST_AUTO_TEST_CASE (bracket_not_found)
 
   fhg::util::boost::test::require_exception<we::loader::module_not_found>
     ( boost::bind (&we::loader::loader::operator[], &loader, "name")
-    , "we::loader::ModuleLoadFailed"
     , "module 'libname.so' not found in '\"<p>\":\"<q>\"'"
     );
 }

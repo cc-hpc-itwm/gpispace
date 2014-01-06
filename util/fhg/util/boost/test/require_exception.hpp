@@ -8,6 +8,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <stdexcept>
+#include <typeinfo>
 
 namespace fhg
 {
@@ -21,7 +22,6 @@ namespace fhg
       {
         template<typename E>
         void require_exception ( boost::function<void()> f
-                               , std::string const& name
                                , std::string const& what
                                )
         {
@@ -33,7 +33,7 @@ namespace fhg
               ( boost::format ( "missing exception '%1%' with message '%2%'"
                                 ", got no exception at all"
                               )
-              % name
+              % typeid (E).name()
               % what
               );
           }
@@ -47,7 +47,7 @@ namespace fhg
               ( boost::format ( "missing exception '%1%' with message '%2%'"
                                 ", got exception of different type"
                               )
-              % name
+              % typeid (E).name()
               % what
               );
           }

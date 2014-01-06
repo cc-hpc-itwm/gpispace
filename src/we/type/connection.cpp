@@ -14,7 +14,7 @@ namespace petri_net
     }
     bool is_PT (const type& e)
     {
-      return e != TP;
+      return (e == PT || e == PT_READ);
     }
 
     std::string enum_to_string (const type& e)

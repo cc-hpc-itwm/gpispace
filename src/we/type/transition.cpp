@@ -48,14 +48,12 @@ namespace we
                       , const petri_net::place_id_type& pid
                       )
     {
-      BOOST_FOREACH ( transition_t::outer_to_inner_t::value_type const& p
-                    , trans.outer_to_inner()
-                    )
+      transition_t::outer_to_inner_t::const_iterator const pos
+        (trans.outer_to_inner().find (pid));
+
+      if (pos != trans.outer_to_inner().end())
       {
-        if (p.first == pid)
-        {
-          return p.second;
-        }
+        return pos->second;
       }
 
       return boost::none;

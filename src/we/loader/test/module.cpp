@@ -30,7 +30,6 @@ BOOST_AUTO_TEST_CASE (ctor_load_failed)
 {
   fhg::util::boost::test::require_exception<we::loader::module_load_failed>
     ( boost::bind (&ctor, "<path>")
-    , "we::loader::module_load_failed"
     , "could not load module '<path>': <path>:"
       " cannot open shared object file: No such file or directory"
     );
@@ -40,7 +39,6 @@ BOOST_AUTO_TEST_CASE (ctor_failed_exception_from_we_mod_initialize)
 {
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( boost::bind (&ctor, "./libinitialize_throws.so")
-    , "std::runtime_error"
     , "initialize_throws"
     );
 }
@@ -51,7 +49,6 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
 #define STR(x) #x
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( boost::bind (&ctor, "./libempty_not_linked_with_pnet.so")
-    , "std::runtime_error"
     , ( boost::format
         ( "could not load module './libempty_not_linked_with_pnet.so':"
           " ./libempty_not_linked_with_pnet.so: undefined symbol: %1%"
@@ -91,7 +88,6 @@ BOOST_AUTO_TEST_CASE (call_not_found)
     ( boost::bind ( &we::loader::Module::call, &m
                   , "<name>", &context, input, output
                   )
-    , "we::loader::function_not_found"
     , "function 'empty::<name>' not found"
     );
 }
@@ -147,7 +143,6 @@ BOOST_AUTO_TEST_CASE (duplicate_function)
 
   fhg::util::boost::test::require_exception<we::loader::duplicate_function>
     ( boost::bind ( &we::loader::Module::add_function, &m, "f", inc)
-    , "we::loader::duplicate_function"
     , "duplicate function 'empty::f'"
     );
 }

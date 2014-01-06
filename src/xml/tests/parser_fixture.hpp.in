@@ -8,6 +8,8 @@
 
 #include <we/mgmt/type/activity.hpp>
 
+#include <fhg/util/read_file.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/test/unit_test.hpp>
@@ -54,27 +56,11 @@ namespace
       return ::xml::parse::xml_to_we (*function, state);
     }
 
-    std::string content_of_file (const boost::filesystem::path& path) const
-    {
-      std::ifstream reference_file (path.string().c_str(), std::ios::in);
-
-      BOOST_REQUIRE (reference_file);
-
-      std::string reference;
-      reference_file.seekg (0, std::ios::end);
-      reference.resize (reference_file.tellg());
-      reference_file.seekg (0, std::ios::beg);
-      reference_file.read (&reference[0], reference.size());
-      reference_file.close();
-
-      return reference;
-    }
-
     void require_same ( const ::we::mgmt::type::activity_t& activity
                       , const boost::filesystem::path& path
                       )
     {
-      BOOST_REQUIRE_EQUAL ( content_of_file (path_to_pnets / path)
+      BOOST_REQUIRE_EQUAL ( fhg::util::read_file (path_to_pnets / path)
                           , activity.to_string()
                           );
     }

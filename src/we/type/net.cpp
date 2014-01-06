@@ -1,8 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/type/net.hpp>
+#include <we/type/transition.hpp>
 #include <we/type/condition.hpp>
-#include <we/util/cross.hpp>
 
 #include <we/require_type.hpp>
 #include <we/exception.hpp>
@@ -58,7 +58,7 @@ namespace petri_net
   void net::get_enabled_choice (const net& other)
   {
     typedef boost::unordered_map< petri_net::place_id_type
-                                , we::util::pos_and_distance_type
+                                , pos_and_distance_type
                                 > enabled_by_place_id_type;
 
     typedef std::pair<transition_id_type, enabled_by_place_id_type> tm_type;
@@ -393,34 +393,9 @@ namespace petri_net
     return not _enabled.empty();
   }
 
-  void net::eval_cross ( const transition_id_type& tid
-                       , we::util::cross_type& cross
-                       )
-  {
-    if (!cross.empty())
-    {
-      const we::type::transition_t& transition (get_transition (tid));
-
-      do
-      {
-        if (cross.eval (transition))
-        {
-          _enabled.insert (tid);
-
-          cross.write_to (_enabled_choice[tid]);
-
-          return;
-        }
-      }
-      while (cross.step());
-    }
-
-    disable (tid);
-  }
-
   void net::update_enabled (const transition_id_type& tid)
   {
-    we::util::cross_type cross;
+    cross_type cross;
 
     BOOST_FOREACH ( const place_id_type& place_id
                   , in_to_transition (tid)
@@ -439,7 +414,15 @@ namespace petri_net
       cross.push (place_id, tokens);
     }
 
-    eval_cross (tid, cross);
+    if (cross.enables (get_transition (tid)))
+    {
+      _enabled.insert (tid);
+      cross.write_to (_enabled_choice[tid]);
+    }
+    else
+    {
+      disable (tid);
+    }
   }
 
   void net::update_enabled_put_token
@@ -453,7 +436,7 @@ namespace petri_net
       return;
     }
 
-    we::util::cross_type cross;
+    cross_type cross;
 
     BOOST_FOREACH ( const place_id_type& place_id
                   , in_to_transition (tid)
@@ -479,7 +462,15 @@ namespace petri_net
       }
     }
 
-    eval_cross (tid, cross);
+    if (cross.enables (get_transition (tid)))
+    {
+      _enabled.insert (tid);
+      cross.write_to (_enabled_choice[tid]);
+    }
+    else
+    {
+      disable (tid);
+    }
   }
 
   void net::disable (const transition_id_type& tid)
@@ -497,13 +488,13 @@ namespace petri_net
     boost::unordered_set<transition_id_type> transitions_to_update;
 
     typedef std::pair< place_id_type
-                     , we::util::pos_and_distance_type
+                     , pos_and_distance_type
                      > place_and_token_type;
 
     BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
     {
       const place_id_type& pid (pt.first);
-      const we::util::pos_and_distance_type& pos_and_distance (pt.second);
+      const pos_and_distance_type& pos_and_distance (pt.second);
       const std::list<pnet::type::value::value_type>::iterator&
         token (pos_and_distance.first);
 
@@ -529,4 +520,124 @@ namespace petri_net
 
     return act;
   }
+
+
+  // cross_type
+
+  net::cross_type::iterators_type::iterators_type (std::list<pnet::type::value::value_type>& tokens)
+    : _begin (tokens.begin())
+    , _end (tokens.end())
+    , _pos_and_distance (tokens.begin(), 0)
+  {}
+  net::cross_type::iterators_type::iterators_type (const std::list<pnet::type::value::value_type>::iterator& token)
+    : _begin (token)
+    , _end (boost::next (token))
+    , _pos_and_distance (token, 0)
+  {}
+  bool net::cross_type::iterators_type::end() const
+  {
+    return _end == _pos_and_distance.first;
+  }
+  const net::pos_and_distance_type& net::cross_type::iterators_type::pos_and_distance() const
+  {
+    return _pos_and_distance;
+  }
+  void net::cross_type::iterators_type::operator++()
+  {
+    ++_pos_and_distance.first;
+    ++_pos_and_distance.second;
+  }
+  void net::cross_type::iterators_type::rewind()
+  {
+    _pos_and_distance.first = _begin;
+    _pos_and_distance.second = 0;
+  }
+
+  bool net::cross_type::do_step
+  (map_type::iterator slot, map_type::iterator const& end)
+  {
+    while (slot != end)
+    {
+      //! \note all sequences are non-empty
+      ++slot->second;
+
+      if (!slot->second.end())
+      {
+        return true;
+      }
+
+      slot->second.rewind();
+      ++slot;
+    }
+
+    return false;
+  }
+
+  bool net::cross_type::enables (we::type::transition_t const& transition)
+  {
+    //! \note that means the transitions without in-port cannot fire
+    //! instead of fire unconditionally
+    if (_m.empty())
+    {
+      return false;
+    }
+
+    //! \todo use is_const_true and boost::optional...
+    if (transition.condition().expression() == "true")
+    {
+      return true;
+    }
+
+    do
+    {
+      expr::eval::context context;
+
+      typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
+
+      BOOST_FOREACH (const pits_type& pits, _m)
+      {
+        context.bind_ref
+          ( transition.get_port
+            (transition.outer_to_inner().at (pits.first).first).name()
+          , *pits.second.pos_and_distance().first
+          );
+      }
+
+      if (transition.condition().parser().eval_all_bool (context))
+      {
+        return true;
+      }
+    }
+    while (do_step (_m.begin(), _m.end()));
+
+    return false;
+  }
+  void net::cross_type::write_to (boost::unordered_map< petri_net::place_id_type
+                                                      , pos_and_distance_type
+                                                      >& choice
+                                 ) const
+  {
+    choice.clear();
+
+    typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
+
+    BOOST_FOREACH (const pits_type& pits, _m)
+    {
+      choice.insert
+        (std::make_pair (pits.first, pits.second.pos_and_distance()));
+    }
+  }
+  void net::cross_type::push ( const petri_net::place_id_type& place_id
+                             , std::list<pnet::type::value::value_type>& tokens
+                             )
+  {
+    _m.insert (std::make_pair (place_id, iterators_type (tokens)));
+  }
+  void net::cross_type::push ( const petri_net::place_id_type& place_id
+                             , const std::list<pnet::type::value::value_type>::iterator& token
+                             )
+  {
+    _m.insert (std::make_pair (place_id, iterators_type (token)));
+  }
+
 }
