@@ -69,7 +69,6 @@ namespace we
           );
 
         const output_t& output() const;
-        void set_output (const output_t&);
         void add_output (const output_t::value_type&);
 
       private:

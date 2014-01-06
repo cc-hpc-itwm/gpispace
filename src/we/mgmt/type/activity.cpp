@@ -391,11 +391,6 @@ namespace we
         return _output;
       }
 
-      void activity_t::set_output (const output_t& outp)
-      {
-        _output = outp;
-      }
-
       void activity_t::add_output (const output_t::value_type& outp)
       {
         _output.push_back (outp);
