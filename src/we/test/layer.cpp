@@ -287,8 +287,6 @@ namespace
 
 BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 {
-  using pnet::type::signature::signature_type;
-
   we::type::transition_t transition
     ( "module call"
     , we::type::module_call_t ("m", "f")
