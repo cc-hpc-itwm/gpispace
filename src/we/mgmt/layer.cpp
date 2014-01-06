@@ -535,16 +535,14 @@ namespace we
       petri_net::net& net
         (boost::get<petri_net::net&> (_activity.transition().data()));
 
+      BOOST_FOREACH ( const type::activity_t::token_on_port_t& top
+                    , child.output()
+                    )
       {
-        BOOST_FOREACH ( const type::activity_t::token_on_port_t& top
-                      , child.output()
-                      )
-        {
-          net.put_value
-            ( child.transition().inner_to_outer().at (top.second).first
-            , top.first
-            );
-        }
+        net.put_value
+          ( child.transition().inner_to_outer().at (top.second).first
+          , top.first
+          );
       }
     }
 
