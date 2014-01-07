@@ -57,29 +57,29 @@ namespace we
 
         boost::unordered_map<std::string, petri_net::place_id_type> place_ids;
 
-        BOOST_FOREACH ( we::type::port_t const& port
-                      , transition_inner.ports() | boost::adaptors::map_values
+        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                      , transition_inner.ports()
                       )
         {
           petri_net::place_id_type const place_id
-            (net.add_place (place::type (wrapped_name (port), port.signature())));
+            (net.add_place (place::type (wrapped_name (p.second), p.second.signature())));
 
-          if (port.is_output())
+          if (p.second.is_output())
           {
             transition_inner.add_connection
-              (port.name(), place_id, we::type::property::type());
+              (p.first, place_id, we::type::property::type());
           }
-          else if (port.is_input())
+          else if (p.second.is_input())
           {
             transition_inner.add_connection
-              (place_id, port.name(), we::type::property::type());
+              (place_id, p.first, we::type::property::type());
           }
           else
           {
             throw std::runtime_error ("tried to wrap, found tunnel port!?");
           }
 
-          place_ids.insert (std::make_pair (wrapped_name (port), place_id));
+          place_ids.insert (std::make_pair (wrapped_name (p.second), place_id));
         }
 
         petri_net::transition_id_type const transition_id
