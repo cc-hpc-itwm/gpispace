@@ -85,9 +85,9 @@ public:
 
     req.reset (new SubmitJobEvent( m_peer->name()
                                  , m_orchestrator
-                                 , "" // job id not known
+                                 , sdpa::job_id_t::invalid_job_id() // job id not known
                                  , wf
-                                 , "" // parent job id
+                                 , sdpa::job_id_t::invalid_job_id() // parent job id
                                  )
               );
     if (request(req, rep) == 0)
