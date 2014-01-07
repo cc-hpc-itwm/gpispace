@@ -43,11 +43,6 @@ namespace we
       return internal_;
     }
 
-    void transition_t::set_internal (bool x)
-    {
-      internal_ = x;
-    }
-
     const transition_t::data_type& transition_t::data() const
     {
       return data_;

@@ -85,7 +85,6 @@ namespace we { namespace type {
       boost::optional<const module_call_t&> module_call() const;
 
       bool is_internal() const;
-      void set_internal (bool);
 
       const condition::type& condition() const;
 
