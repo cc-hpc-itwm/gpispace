@@ -329,7 +329,7 @@ namespace we
           {
             if (p.second.is_output())
             {
-              pred.add_port (p.second);
+              petri_net::port_id_type const port_id (pred.add_port (p.second));
 
               const petri_net::place_id_type pid
                 (trans.inner_to_outer().at (p.first).first);
@@ -338,7 +338,7 @@ namespace we
 
               net.add_connection (petri_net::edge::TP, tid_pred, pid);
 
-              pred.add_connection (p.second.name(), pid, p.second.property());
+              pred.add_connection (port_id, pid, p.second.property());
             }
             else
             {
@@ -349,7 +349,8 @@ namespace we
               {
                 if (not minput_port_by_pid (pred, *pid))
                 {
-                  pred.add_port (p.second);
+                  petri_net::port_id_type const port_id
+                    (pred.add_port (p.second));
 
                   bool const is_read (net.is_read_connection (tid_trans, *pid));
 
@@ -361,8 +362,7 @@ namespace we
                     , *pid
                     );
 
-                  pred.add_connection
-                    (*pid, p.second.name(), p.second.property());
+                  pred.add_connection (*pid, port_id, p.second.property());
                 }
               }
             }
