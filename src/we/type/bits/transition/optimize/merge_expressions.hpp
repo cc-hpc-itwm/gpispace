@@ -55,7 +55,7 @@ namespace we
 
           if (pwp)
           {
-            return trans.get_port (pwp->first);
+            return trans.ports().at (pwp->first);
           }
 
           return boost::none;
@@ -249,10 +249,10 @@ namespace we
             if (pid_read.find (place_id) == pid_read.end())
             {
               const port_t& pred_out
-                (pred.get_port (output_port_by_pid (pred, place_id)->first));
+                (pred.ports().at (output_port_by_pid (pred, place_id)->first));
 
               port_t& trans_in
-                (trans.get_port (input_port_by_pid (trans, place_id)->first));
+                (trans.ports().at (input_port_by_pid (trans, place_id)->first));
 
               expression.rename (trans_in.name(), pred_out.name());
 
@@ -268,7 +268,7 @@ namespace we
                 const port_t& pred_in (*maybe_pred_in);
 
                 port_t& trans_in
-                  (trans.get_port (input_port_by_pid (trans, place_id)->first));
+                  (trans.ports().at (input_port_by_pid (trans, place_id)->first));
 
                 expression.rename (trans_in.name(), pred_in.name());
 

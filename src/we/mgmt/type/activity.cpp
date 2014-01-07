@@ -179,10 +179,10 @@ namespace we
 
           void operator() (petri_net::net& net) const
           {
-            if (_transition.get_port (_port_id).has_associated_place())
+            if (_transition.ports().at (_port_id).has_associated_place())
             {
               net.put_value
-                ( _transition.get_port (_port_id).associated_place()
+                ( _transition.ports().at (_port_id).associated_place()
                 , _value
                 );
             }
@@ -323,7 +323,7 @@ namespace we
                 )
               {
                 context.bind_ref
-                  ( _activity.transition().get_port (top->second).name()
+                  ( _activity.transition().ports().at (top->second).name()
                   , top->first
                   );
               }

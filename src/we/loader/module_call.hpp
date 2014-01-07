@@ -32,7 +32,7 @@ namespace we
 
       BOOST_FOREACH (const token_on_port_type& token_on_port, act.input())
       {
-        in.bind_ref ( act.transition().get_port (token_on_port.second).name()
+        in.bind_ref ( act.transition().ports().at (token_on_port.second).name()
                     , token_on_port.first
                     );
       }

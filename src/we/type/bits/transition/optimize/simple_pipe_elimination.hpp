@@ -70,7 +70,7 @@ namespace we { namespace type {
           , trans.outer_to_inner()
           )
         {
-          const we::type::port_t& port (trans.get_port (oi.second.first));
+          const we::type::port_t& port (trans.ports().at (oi.second.first));
           const petri_net::place_id_type& pid (oi.first);
 
           map_in[port.name()] = pid;
@@ -81,7 +81,7 @@ namespace we { namespace type {
           , trans.inner_to_outer()
           )
         {
-          const we::type::port_t& port (trans.get_port (io.first));
+          const we::type::port_t& port (trans.ports().at (io.first));
           const petri_net::place_id_type& pid (io.second.first);
 
           map_out[port.name()] = pid;

@@ -597,7 +597,7 @@ namespace petri_net
       BOOST_FOREACH (const pits_type& pits, _m)
       {
         context.bind_ref
-          ( transition.get_port
+          ( transition.ports().at
             (transition.outer_to_inner().at (pits.first).first).name()
           , *pits.second.pos_and_distance().first
           );

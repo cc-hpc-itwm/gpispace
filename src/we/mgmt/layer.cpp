@@ -104,7 +104,7 @@ namespace we
                       )
         {
           we::type::port_t const& port
-            (transition_inner.get_port (top.second));
+            (transition_inner.ports().at (top.second));
 
           net.put_value
             (place_ids.find (wrapped_name (port))->second, top.first);
@@ -154,7 +154,7 @@ namespace we
           else
           {
             petri_net::place_id_type const place_id
-              ( activity.transition().get_port
+              ( activity.transition().ports().at
                 ( activity.transition().input_port_by_name
                   (wrapped_name (p.second))
                 )
@@ -174,7 +174,7 @@ namespace we
           if (p.second.is_output())
           {
             petri_net::place_id_type const place_id
-              ( activity.transition().get_port
+              ( activity.transition().ports().at
                 ( activity.transition().output_port_by_name
                   (wrapped_name (p.second))
                 )
@@ -539,7 +539,7 @@ namespace we
                         )
           {
             context.bind_ref
-              ( activity.transition().get_port (top.second).name()
+              ( activity.transition().ports().at (top.second).name()
               , top.first
               );
           }
