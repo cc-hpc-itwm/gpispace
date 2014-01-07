@@ -213,9 +213,13 @@ namespace we { namespace type {
         connect_inner_to_outer (output_port_by_name (name), pid, prop);
       }
 
-      void add_port (port_t const& port)
+      petri_net::port_id_type add_port (port_t const& port)
       {
-        ports_.insert (std::make_pair (port_id_counter_++, port));
+        petri_net::port_id_type const port_id (port_id_counter_++);
+
+        ports_.insert (std::make_pair (port_id, port));
+
+        return port_id;
       }
 
       void erase_port (const petri_net::port_id_type& port_id)
