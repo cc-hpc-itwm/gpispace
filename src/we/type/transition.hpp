@@ -91,9 +91,6 @@ namespace we { namespace type {
       petri_net::port_id_type add_port (port_t const&);
       void erase_port (const petri_net::port_id_type&);
 
-      const port_t& get_port (const petri_net::port_id_type& port_id) const;
-      port_t& get_port (const petri_net::port_id_type& port_id);
-
       petri_net::port_id_type input_port_by_name (const std::string&) const;
       const petri_net::port_id_type& output_port_by_name (const std::string&) const;
 
@@ -138,7 +135,7 @@ namespace we { namespace type {
 
         BOOST_FOREACH (token_on_port_t const& top, input)
         {
-          context.bind_ref (get_port (top.second).name(), top.first);
+          context.bind_ref (ports().at (top.second).name(), top.first);
         }
 
         return boost::get<T> (e.ast().eval_all (context));

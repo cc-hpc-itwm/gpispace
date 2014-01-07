@@ -178,25 +178,6 @@ namespace we
       throw pnet::exception::port::unknown (name(), port_name);
     }
 
-    const port_t& transition_t::get_port
-      (const petri_net::port_id_type& port_id) const
-    {
-      try
-      {
-        return ports_.at (port_id);
-      }
-      catch (const std::out_of_range &)
-      {
-        throw pnet::exception::port::unknown
-          (name(), boost::lexical_cast<std::string> (port_id));
-      }
-    }
-
-    port_t& transition_t::get_port (const petri_net::port_id_type& port_id)
-    {
-      return ports_[port_id];
-    }
-
     void transition_t::UNSAFE_re_associate_port
       ( const petri_net::place_id_type& pid_old
       , const petri_net::place_id_type& pid_new
