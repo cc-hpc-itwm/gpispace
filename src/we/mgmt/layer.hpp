@@ -29,15 +29,15 @@ namespace we
       typedef std::string result_type;
 
       layer ( // submit: external activities from submitted net -> child jobs
-              boost::function<void (id_type, type::activity_t, id_type parent)>
+              boost::function<void (id_type, type::activity_t, id_type parent)> rts_submit
               // reply to cancel (parent)/on failure (child) -> child jobs
-            , boost::function<void (id_type)>
+            , boost::function<void (id_type)> rts_cancel
               // reply to submit on success -> top level
-            , boost::function<void (id_type, type::activity_t)>
+            , boost::function<void (id_type, type::activity_t)> rts_finished
               // reply to submit on failure (of child) -> top level
-            , boost::function<void (id_type, int errorcode, std::string reason)>
+            , boost::function<void (id_type, int errorcode, std::string reason)> rts_failed
               // reply to cancel (parent) -> top level
-            , boost::function<void (id_type)>
+            , boost::function<void (id_type)> rts_canceled
             , boost::function<id_type()> rts_id_generator
             , boost::mt19937& random_extraction_engine
             );
