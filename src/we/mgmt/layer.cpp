@@ -248,7 +248,8 @@ namespace we
     void layer::cancel_child_jobs
       (activity_data_type activity_data, boost::function<void()> after)
     {
-      //! \todo race: contains, then apply. -> apply() -> if (empty?) finalize
+      //! \note Not a race: nobody can insert new running jobs as we
+      //! have ownership of activity
       if (!_running_jobs.contains (activity_data._id))
       {
         after();
