@@ -87,7 +87,7 @@ public:
                                  , m_orchestrator
                                  , sdpa::job_id_t::invalid_job_id() // job id not known
                                  , wf
-                                 , sdpa::job_id_t::invalid_job_id() // parent job id
+                                 , boost::none // parent job id
                                  )
               );
     if (request(req, rep) == 0)

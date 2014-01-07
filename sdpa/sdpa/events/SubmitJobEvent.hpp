@@ -19,7 +19,7 @@ namespace sdpa
         , const address_t& a_to
         , const sdpa::job_id_t& a_job_id
         , const job_desc_t& a_description
-        , const sdpa::job_id_t& a_parent_id
+        , const boost::optional<sdpa::job_id_t>& a_parent_id
         , const sdpa::worker_id_list_t& worker_list = sdpa::worker_id_list_t()
         )
           : sdpa::events::JobEvent( a_from, a_to, a_job_id )
@@ -37,7 +37,7 @@ namespace sdpa
       {
         return desc_;
       }
-      const sdpa::job_id_t& parent_id() const
+      const boost::optional<sdpa::job_id_t>& parent_id() const
       {
         return parent_;
       }
@@ -53,7 +53,7 @@ namespace sdpa
 
     private:
       sdpa::job_desc_t desc_;
-      sdpa::job_id_t parent_;
+      boost::optional<sdpa::job_id_t> parent_;
       sdpa::worker_id_list_t worker_list_;
     };
 
@@ -69,7 +69,7 @@ namespace sdpa
     {
       LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
       LOAD_FROM_ARCHIVE (sdpa::job_desc_t, description);
-      LOAD_FROM_ARCHIVE (sdpa::job_id_t, parent_id);
+      LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, parent_id);
       LOAD_FROM_ARCHIVE (sdpa::worker_id_list_t, worker_list);
 
       ::new (e) SubmitJobEvent
