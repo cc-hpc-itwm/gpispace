@@ -248,6 +248,7 @@ namespace we
     void layer::cancel_child_jobs
       (activity_data_type activity_data, boost::function<void()> after)
     {
+      //! \todo race: contains, then apply. -> apply() -> if (empty?) finalize
       if (!_running_jobs.contains (activity_data._id))
       {
         after();
@@ -395,6 +396,8 @@ namespace we
         {
           fun_and_do_put.first (activity_data);
           do_put = do_put && (active = fun_and_do_put.second);
+          //! \todo break when !active (+partial cleanup of already
+          //! executed functions)
         }
 
         _to_be_removed.erase (pos);
