@@ -116,6 +116,7 @@ BOOST_FIXTURE_TEST_CASE (net_api, gspc::net::initializer)
   BOOST_REQUIRE_EQUAL (kvs.del ("foo"), -ENOKEY);
 }
 
+#ifdef NDEBUG
 BOOST_FIXTURE_TEST_CASE (net_put_get, gspc::net::initializer)
 {
   gspc::kvs::api_t::value_type out;
@@ -142,12 +143,9 @@ BOOST_FIXTURE_TEST_CASE (net_put_get, gspc::net::initializer)
   }
   duration += fhg::util::now ();
 
-#ifndef NDEBUG
-  BOOST_REQUIRE_LT (duration, 2 * NUM / 2000.0);
-#else
   BOOST_REQUIRE_LT (duration, 2 * NUM / 4000.0);
-#endif
 }
+#endif
 
 BOOST_FIXTURE_TEST_CASE (net_wait, gspc::net::initializer)
 {

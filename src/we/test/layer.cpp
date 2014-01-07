@@ -777,6 +777,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+#ifdef NDEBUG
 namespace
 {
   void submit_fake ( std::vector<we::mgmt::layer::id_type>* ids
@@ -880,3 +881,4 @@ BOOST_AUTO_TEST_CASE (performance_finished_shall_be_called_after_finished_N_chil
 
   BOOST_REQUIRE_LT (t, 1.0);
 }
+#endif
