@@ -24,9 +24,6 @@ namespace we
     {
     public:
       typedef std::string id_type;
-      typedef std::string encoded_type;
-      typedef std::string reason_type;
-      typedef std::string result_type;
 
       layer ( // submit: external activities from submitted net -> child jobs
               boost::function<void (id_type, type::activity_t, id_type parent)> rts_submit
