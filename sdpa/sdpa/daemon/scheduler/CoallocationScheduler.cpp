@@ -24,7 +24,7 @@ void CoallocationScheduler::assignJobsToWorkers()
 
   // check if there are jobs that can already be scheduled on
   // these workers
-  JobQueue nonmatching_jobs_queue;
+  std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
   // iterate over all jobs and see if there is one that prefers
   while(schedulingAllowed() && !listAvailWorkers.empty())
@@ -82,12 +82,14 @@ void CoallocationScheduler::assignJobsToWorkers()
     else // put it back into the common queue
     {
         ptr_comm_handler_->pause(jobId);
-        nonmatching_jobs_queue.push(jobId);
+        nonmatching_jobs_queue.push_back(jobId);
     }
   }
 
-  while(!nonmatching_jobs_queue.empty())
-    schedule_first(nonmatching_jobs_queue.pop_back());
+  BOOST_REVERSE_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
+  {
+    schedule_first (id);
+  }
 }
 
 sdpa::worker_id_list_t CoallocationScheduler::checkReservationIsValid(const Reservation& res)
