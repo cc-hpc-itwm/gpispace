@@ -935,13 +935,13 @@ BOOST_AUTO_TEST_CASE
 
   we::mgmt::layer layer
     ( boost::bind (&submit_fake, &child_ids, _1, _2, _3)
-    , boost::bind (&cancel, _1)
+    , &cancel
     , boost::bind (&finished_fake, &finished, _1, _2)
-    , boost::bind (&failed, _1, _2, _3)
-    , boost::bind (&canceled, _1)
+    , &failed
+    , &canceled
     , &discover
     , &discovered
-    , boost::bind (&generate_id)
+    , &generate_id
     , _random_engine
     );
 
