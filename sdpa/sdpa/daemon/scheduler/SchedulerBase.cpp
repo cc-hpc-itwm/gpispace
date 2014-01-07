@@ -239,8 +239,6 @@ void SchedulerBase::run()
       }
       else {
           enqueueJob(jobId);
-          // mark the job as stalled
-          ptr_comm_handler_->pause(jobId);
           lock_type lock(mtx_);
           cond_workers_registered.wait(lock);
       }

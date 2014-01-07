@@ -40,7 +40,6 @@ void SimpleScheduler::assignJobsToWorkers()
 
         try {
            Worker::ptr_t pWorker(findWorker(matchingWorkerId));
-           //ptr_comm_handler_->resume(jobId);
            ptr_comm_handler_->serveJob(sdpa::worker_id_list_t (1, matchingWorkerId), jobId);
            pWorker->submit(jobId);
         }
@@ -52,11 +51,9 @@ void SimpleScheduler::assignJobsToWorkers()
                                              sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG,
                                              "not registered") );
            ptr_comm_handler_->sendEventToOther(pErrorEvt);
-           ptr_comm_handler_->pause(jobId);
         }
     }
     else { // put it back into the common queue
-        ptr_comm_handler_->pause(jobId);
         nonmatching_jobs_queue.push_back(jobId);
     }
   }

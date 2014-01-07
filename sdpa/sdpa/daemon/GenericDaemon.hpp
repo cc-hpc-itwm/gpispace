@@ -100,8 +100,6 @@ namespace sdpa {
       virtual void finished(const we::mgmt::layer::id_type & id, const we::mgmt::type::activity_t& result);
       virtual void failed( const we::mgmt::layer::id_type& wfId, int errc, std::string const& reason);
       void canceled(const we::mgmt::layer::id_type& id);
-      virtual void pause(const job_id_t& id ) = 0;
-      virtual void resume(const job_id_t& id ) = 0;
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);

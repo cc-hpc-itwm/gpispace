@@ -689,42 +689,4 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
   }
 }
 
-void Agent::pause(const job_id_t& jobId)
-{
-  Job* pJob(jobManager().findJob(jobId));
-  if(pJob)
-  {
-      pJob->Pause(NULL);
-      if(!pJob->isMasterJob() && pJob->parent())
-      {
-          Job* pMasterJob(jobManager().findJob(*pJob->parent()));
-          if(pMasterJob)
-            pMasterJob->Pause(this);
-      }
-
-      return;
-   }
-
-  DMLOG (ERROR, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
-}
-
-void Agent::resume(const job_id_t& jobId)
-{
-  Job* pJob(jobManager().findJob(jobId));
-  if(pJob)
-  {
-      pJob->Resume(NULL);
-      if(!pJob->isMasterJob() && pJob->parent())
-      {
-          Job* pMasterJob(jobManager().findJob(*pJob->parent()));
-          if(pMasterJob)
-            pMasterJob->Resume(this);
-      }
-
-      return;
-  }
-
-  DMLOG (WARN, "Couldn't mark the worker job "<<jobId<<" as RUNNING. The job was not found!");
-}
-
 }} // end namespaces

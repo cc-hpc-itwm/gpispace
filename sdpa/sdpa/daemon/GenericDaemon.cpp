@@ -1299,12 +1299,12 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
 
 void GenericDaemon::handleJobStalledEvent (const events::JobStalledEvent *pEvt)
 {
-  pause(pEvt->job_id());
+  //pause(pEvt->job_id());
 }
 
 void GenericDaemon::handleJobRunningEvent (const events::JobRunningEvent *pEvt)
 {
-  resume(pEvt->job_id());
+  //resume(pEvt->job_id());
 }
 
 bool GenericDaemon::noChildJobStalled(const sdpa::job_id_t& jobId) const
