@@ -3,43 +3,26 @@
 #ifndef WE_TYPE_TRANSITION_HPP
 #define WE_TYPE_TRANSITION_HPP 1
 
-#include <we/type/port.hpp>
-#include <we/type/module_call.hpp>
-#include <we/type/expression.hpp>
+#include <we/expr/eval/context.hpp>
 #include <we/type/condition.hpp>
-#include <we/type/signature.hpp>
-#include <we/type/property.hpp>
+#include <we/type/expression.hpp>
 #include <we/type/id.hpp>
+#include <we/type/module_call.hpp>
+#include <we/type/net.fwd.hpp>
+#include <we/type/port.hpp>
+#include <we/type/property.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/value.hpp>
 
-#include <we/type/net.fwd.hpp>
-
-#include <we/expr/eval/context.hpp>
-
-#include <we/exception.hpp>
-
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <boost/foreach.hpp>
-
-#include <boost/unordered_set.hpp>
+#include <boost/optional.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/variant.hpp>
 #include <boost/unordered_map.hpp>
-
+#include <boost/unordered_set.hpp>
 #include <boost/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
-#include <boost/serialization/variant.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/version.hpp>
-
-#include <boost/format.hpp>
-#include <boost/optional.hpp>
-#include <boost/range/adaptor/map.hpp>
-
-#include <boost/lexical_cast.hpp>
-
-#include <stdexcept>
 
 namespace we { namespace type {
     struct transition_t

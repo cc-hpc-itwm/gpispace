@@ -2,9 +2,14 @@
 
 #include <we/type/transition.hpp>
 
+#include <we/exception.hpp>
 #include <we/type/net.hpp>
 
 #include <fhg/util/boost/variant.hpp>
+
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace we
 {
