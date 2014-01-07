@@ -373,19 +373,21 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
     , true
     , we::type::property::type()
     );
-  transition.add_port
-    (we::type::port_t ( "in"
-                      , we::type::PORT_IN
-                      , signature::CONTROL
-                      , we::type::property::type()
-                      )
+  petri_net::port_id_type const port_id_in
+    ( transition.add_port ( we::type::port_t ( "in"
+                                             , we::type::PORT_IN
+                                             , signature::CONTROL
+                                             , we::type::property::type()
+                                             )
+                          )
     );
-  transition.add_port
-    (we::type::port_t ( "out"
-                      , we::type::PORT_OUT
-                      , signature::CONTROL
-                      , we::type::property::type()
-                      )
+  petri_net::port_id_type const port_id_out
+    ( transition.add_port ( we::type::port_t ( "out"
+                                             , we::type::PORT_OUT
+                                             , signature::CONTROL
+                                             , we::type::property::type()
+                                             )
+                          )
     );
 
   we::mgmt::type::activity_t activity_output (transition);
@@ -399,8 +401,8 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   //! \todo leaking implementation detail: maybe extract() should
   //! remove those connections to outside that were introduced by
   //! wrap()
-  transition.add_connection ("out", 0, we::type::property::type());
-  transition.add_connection (1, "in", we::type::property::type());
+  transition.add_connection (port_id_out, 0, we::type::property::type());
+  transition.add_connection (1, port_id_in, we::type::property::type());
   we::mgmt::type::activity_t activity_child (transition);
   activity_child.add_input
     (transition.input_port_by_name ("in"), value::CONTROL);
@@ -439,18 +441,22 @@ namespace
       , true
       , we::type::property::type()
       );
-    transition.add_port ( we::type::port_t ( "in"
-                                           , we::type::PORT_IN
-                                           , signature::CONTROL
-                                           , we::type::property::type()
-                                           )
-                        );
-    transition.add_port ( we::type::port_t ( "out"
-                                           , we::type::PORT_OUT
-                                           , signature::CONTROL
-                                           , we::type::property::type()
-                                           )
-                        );
+    petri_net::port_id_type const port_id_in
+      ( transition.add_port ( we::type::port_t ( "in"
+                                               , we::type::PORT_IN
+                                               , signature::CONTROL
+                                               , we::type::property::type()
+                                               )
+                            )
+      );
+    petri_net::port_id_type const port_id_out
+      ( transition.add_port ( we::type::port_t ( "out"
+                                               , we::type::PORT_OUT
+                                               , signature::CONTROL
+                                               , we::type::property::type()
+                                               )
+                            )
+      );
 
     petri_net::net net;
 
@@ -464,8 +470,8 @@ namespace
       net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
     }
 
-    transition.add_connection (place_id_in, "in", we::type::property::type());
-    transition.add_connection ("out", place_id_out, we::type::property::type());
+    transition.add_connection (place_id_in, port_id_in, we::type::property::type());
+    transition.add_connection (port_id_out, place_id_out, we::type::property::type());
 
     petri_net::transition_id_type const transition_id_A
       (net.add_transition (transition));

@@ -102,24 +102,31 @@ int main (int, char **)
 
   petri_net::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
 
-  trans_inner.add_port
-    (we::type::port_t ("vid",we::type::PORT_IN,std::string("long")));
-  trans_inner.add_port
-    (we::type::port_t ("store",we::type::PORT_OUT,sig_store));
-  trans_inner.add_port
-    (we::type::port_t ("store",we::type::PORT_IN,sig_store));
-  trans_inner.add_port
-    (we::type::port_t ("pair",we::type::PORT_OUT,sig_pair));
+  petri_net::port_id_type const port_id_vid
+    ( trans_inner.add_port
+      (we::type::port_t ("vid",we::type::PORT_IN,std::string("long")))
+    );
+  petri_net::port_id_type const port_id_store_out
+    ( trans_inner.add_port
+      (we::type::port_t ("store",we::type::PORT_OUT,sig_store))
+    );
+  petri_net::port_id_type const port_id_store_in
+    ( trans_inner.add_port
+      (we::type::port_t ("store",we::type::PORT_IN,sig_store))
+    );
+  petri_net::port_id_type const& port_id_pair
+    ( trans_inner.add_port
+      (we::type::port_t ("pair",we::type::PORT_OUT,sig_pair))
+    );
 
   trans_inner.add_connection
-    (pid_vid,"vid");
+    (pid_vid, port_id_vid, we::type::property::type());
   trans_inner.add_connection
-    (pid_store,"store");
+    (pid_store, port_id_store_in, we::type::property::type());
   trans_inner.add_connection
-    ("pair",pid_pair);
+    (port_id_pair, pid_pair, we::type::property::type());
   trans_inner.add_connection
-    ("store",pid_store)
-    ;
+    (port_id_store_out, pid_store, we::type::property::type());
 
   petri_net::transition_id_type tid (net.add_transition (trans_inner));
 
