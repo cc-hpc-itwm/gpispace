@@ -214,7 +214,8 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
                                                           worker_id,
                                                           ptrJob->id(),
                                                           ptrJob->description(),
-                                                          "",
+                                                                         //! \todo There is a parent known for this job: ptrJob->parent()
+                                                                         sdpa::job_id_t::invalid_job_id(),
                                                           worker_list));
 
         sendEventToOther(pSubmitEvt);
