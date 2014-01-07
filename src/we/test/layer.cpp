@@ -899,7 +899,8 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (performance_finished_shall_be_called_after_finished_N_childs)
+BOOST_AUTO_TEST_CASE
+  (performance_finished_shall_be_called_after_finished_N_childs)
 {
   const std::size_t num_activities (10);
   const std::size_t num_child_per_activity (250);
