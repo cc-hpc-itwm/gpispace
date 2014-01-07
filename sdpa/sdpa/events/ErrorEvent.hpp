@@ -35,7 +35,8 @@ namespace sdpa
         , const address_t &a_to
         , const error_code_t &a_error_code
         , const std::string& a_reason
-        , const sdpa::job_id_t& jobId = sdpa::job_id_t::invalid_job_id()
+        //! \todo This should not be in _every_ ErrorEvent!
+        , const boost::optional<sdpa::job_id_t>& jobId = boost::none
         )
           : MgmtEvent (a_from, a_to)
           , error_code_ (a_error_code)
@@ -51,7 +52,7 @@ namespace sdpa
       {
         return error_code_;
       }
-      const sdpa::job_id_t& job_id() const
+      const boost::optional<sdpa::job_id_t>& job_id() const
       {
         return job_id_;
       }
@@ -69,7 +70,7 @@ namespace sdpa
     private:
       error_code_t error_code_;
       std::string reason_;
-      sdpa::job_id_t job_id_;
+      boost::optional<sdpa::job_id_t> job_id_;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (ErrorEvent, e)
@@ -85,7 +86,7 @@ namespace sdpa
       LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
       LOAD_FROM_ARCHIVE (ErrorEvent::error_code_t, error_code);
       LOAD_FROM_ARCHIVE (std::string, reason);
-      LOAD_FROM_ARCHIVE (sdpa::job_id_t, job_id);
+      LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
 
       ::new (e) ErrorEvent (from, to, error_code, reason, job_id);
     }

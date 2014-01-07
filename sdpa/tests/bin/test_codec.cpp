@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE (DeleteJob)
 
 BOOST_AUTO_TEST_CASE (Error)
 {
-  ErrorEvent e ("from", "to", ErrorEvent::SDPA_EUNKNOWN, "testing", "job-id");
+  ErrorEvent e ("from", "to", ErrorEvent::SDPA_EUNKNOWN, "testing", sdpa::job_id_t ("job-id"));
   ErrorEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->reason(), e.reason());

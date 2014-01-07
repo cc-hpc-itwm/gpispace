@@ -387,9 +387,9 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
     // 'reason' should not be reused for important information
     case events::ErrorEvent::SDPA_EJOBREJECTED:
     {
-      sdpa::job_id_t jobId(error.job_id());
+      sdpa::job_id_t jobId(*error.job_id());
       sdpa::worker_id_t worker_id(error.from());
-      DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Reschedule it now!");
+      DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<error.job_id()->str()<<". Reschedule it now!");
 
       scheduler()->rescheduleWorkerJob(worker_id, jobId);
       break;
@@ -487,7 +487,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
     }
     case events::ErrorEvent::SDPA_EJOBEXISTS:
     {
-      DMLOG (TRACE, "The worker managed to recover the job "<<error.job_id()<<", it already has it!");
+      DMLOG (TRACE, "The worker managed to recover the job "<<*error.job_id()<<", it already has it!");
       // do the same as when receiving a SubmitJobAckEvent
 
       Worker::worker_id_t worker_id = error.from();
@@ -495,12 +495,12 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       // Only now should be the job state machine make a transition to RUNNING
       // this means that the job was not rejected, no error occurred etc ....
       // find the job ptrJob and call
-      Job* ptrJob = jobManager().findJob(error.job_id());
+      Job* ptrJob = jobManager().findJob(*error.job_id());
       if(ptrJob)
       {
         try {
             ptrJob->Dispatch();
-            scheduler()->acknowledgeJob(worker_id, error.job_id());
+            scheduler()->acknowledgeJob(worker_id, *error.job_id());
         }
         catch(WorkerNotFoundException const &)
         {
@@ -509,16 +509,16 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       }
       else
       {
-          DMLOG (WARN, "The job " << error.job_id() << " was not found on"<<name()<<"!");
+          DMLOG (WARN, "The job " << *error.job_id() << " was not found on"<<name()<<"!");
       }
 
       break;
     }
     case events::ErrorEvent::SDPA_EPERM:
     {
-    	sdpa::job_id_t jobId(error.job_id());
+    	sdpa::job_id_t jobId(*error.job_id());
     	sdpa::worker_id_t worker_id(error.from());
-    	DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<error.job_id().str()<<". Reschedule it now!");
+    	DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<error.job_id()->str()<<". Reschedule it now!");
 
     	scheduler()->rescheduleWorkerJob(worker_id, jobId);
     	break;
