@@ -58,13 +58,6 @@ namespace we { namespace type {
       typedef std::pair< petri_net::port_id_type
                        , we::type::property::type
                        > port_id_with_prop_t;
-      typedef boost::unordered_map< petri_net::place_id_type
-                                  , port_id_with_prop_t
-                                  > outer_to_inner_t;
-      typedef boost::unordered_map< petri_net::port_id_type
-                                  , pid_with_prop_t
-                                  > inner_to_outer_t;
-
       typedef boost::unordered_map<petri_net::port_id_type, port_t> port_map_t;
 
       transition_t ()
@@ -99,75 +92,35 @@ namespace we { namespace type {
         , _requirements()
       { }
 
+      const std::string& name() const;
+
+      const data_type& data() const;
+      data_type& data();
+
       boost::optional<const expression_t&> expression() const;
       boost::optional<const petri_net::net&> net() const;
       boost::optional<const module_call_t&> module_call() const;
 
-      const condition::type& condition() const;
-      const std::string& name() const;
       bool is_internal() const;
       void set_internal (bool);
-      const data_type& data() const;
-      data_type& data();
-      std::list<we::type::requirement_t> const& requirements() const;
 
-    private:
-      void connect_outer_to_inner ( const petri_net::place_id_type&
-                                  , const petri_net::port_id_type&
-                                  , const we::type::property::type&
-                                  );
-      void connect_inner_to_outer ( const petri_net::port_id_type&
-                                  , const petri_net::place_id_type&
-                                  , const we::type::property::type&
-                                  );
-
-    public:
-      void re_connect_inner_to_outer ( const petri_net::port_id_type&
-                                     , const petri_net::place_id_type&
-                                     , const we::type::property::type&
-                                     );
-      void re_connect_outer_to_inner ( const petri_net::place_id_type&
-                                     , const petri_net::place_id_type&
-                                     , const petri_net::port_id_type&
-                                     , const we::type::property::type&
-                                     );
-
-      inner_to_outer_t const& inner_to_outer() const;
-      outer_to_inner_t const& outer_to_inner() const;
-
-      void add_connection ( petri_net::place_id_type const&
-                          , petri_net::port_id_type const&
-                          , we::type::property::type const&
-                          );
-
-      void remove_connection_in (const petri_net::place_id_type&);
-      void remove_connection_out (const petri_net::port_id_type&);
-
-      void add_connection ( petri_net::port_id_type const&
-                          , petri_net::place_id_type const&
-                          , we::type::property::type const&
-                          );
+      const condition::type& condition() const;
 
       petri_net::port_id_type add_port (port_t const&);
       void erase_port (const petri_net::port_id_type&);
 
-      petri_net::port_id_type input_port_by_name (const std::string&) const;
-      const petri_net::port_id_type& output_port_by_name (const std::string&) const;
-
       const port_t& get_port (const petri_net::port_id_type& port_id) const;
       port_t& get_port (const petri_net::port_id_type& port_id);
 
-      // UNSAFE: does not check for multiple connections! Use with care!
-      //! \todo remove
-      void UNSAFE_re_associate_port ( const petri_net::place_id_type&
-                                    , const petri_net::place_id_type&
-                                    );
-
-      const we::type::property::type& prop() const;
+      petri_net::port_id_type input_port_by_name (const std::string&) const;
+      const petri_net::port_id_type& output_port_by_name (const std::string&) const;
 
       const port_map_t& ports() const;
       port_map_t& ports();
 
+      const we::type::property::type& prop() const;
+
+      std::list<we::type::requirement_t> const& requirements() const;
       void add_requirement (we::type::requirement_t const&);
 
       template<typename T>
@@ -209,6 +162,42 @@ namespace we { namespace type {
         return boost::get<T> (e.ast().eval_all (context));
       }
 
+      //!  \todo move connection handling to net
+      typedef boost::unordered_map< petri_net::place_id_type
+                                  , port_id_with_prop_t
+                                  > outer_to_inner_t;
+      typedef boost::unordered_map< petri_net::port_id_type
+                                  , pid_with_prop_t
+                                  > inner_to_outer_t;
+
+      inner_to_outer_t const& inner_to_outer() const;
+      outer_to_inner_t const& outer_to_inner() const;
+
+      void add_connection ( petri_net::place_id_type const&
+                          , petri_net::port_id_type const&
+                          , we::type::property::type const&
+                          );
+      void add_connection ( petri_net::port_id_type const&
+                          , petri_net::place_id_type const&
+                          , we::type::property::type const&
+                          );
+      void re_connect_inner_to_outer ( const petri_net::port_id_type&
+                                     , const petri_net::place_id_type&
+                                     , const we::type::property::type&
+                                     );
+      void re_connect_outer_to_inner ( const petri_net::place_id_type&
+                                     , const petri_net::place_id_type&
+                                     , const petri_net::port_id_type&
+                                     , const we::type::property::type&
+                                     );
+      void remove_connection_in (const petri_net::place_id_type&);
+      void remove_connection_out (const petri_net::port_id_type&);
+
+      // UNSAFE: does not check for multiple connections! Use with care!
+      //! \todo remove
+      void UNSAFE_re_associate_port ( const petri_net::place_id_type&
+                                    , const petri_net::place_id_type&
+                                    );
 
     private:
       std::string name_;
@@ -224,6 +213,15 @@ namespace we { namespace type {
       we::type::property::type prop_;
 
       std::list<we::type::requirement_t> _requirements;
+
+      void connect_outer_to_inner ( const petri_net::place_id_type&
+                                  , const petri_net::port_id_type&
+                                  , const we::type::property::type&
+                                  );
+      void connect_inner_to_outer ( const petri_net::port_id_type&
+                                  , const petri_net::place_id_type&
+                                  , const we::type::property::type&
+                                  );
 
       friend class boost::serialization::access;
       template <typename Archive>
