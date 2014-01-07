@@ -280,15 +280,65 @@ namespace we
       }
     }
 
+    namespace
+    {
+      void discover_traverse
+        ( std::size_t* child_count
+        , layer::id_type discover_id
+        , boost::function<void (layer::id_type, layer::id_type)> rts_discover
+        , layer::id_type child
+        )
+      {
+        ++(*child_count);
+        rts_discover (discover_id, child);
+      }
+    }
+
     void layer::discover (id_type discover_id, id_type id)
     {
-      throw std::runtime_error ("discover called: NYI");
+      boost::mutex::scoped_lock const _ (_discover_state_mutex);
+      assert (_discover_state.find (discover_id) == _discover_state.end());
+
+      std::pair<std::size_t, std::set<pnet::type::value::value_type> > state
+        (0, std::set<pnet::type::value::value_type>());
+
+      _running_jobs.apply ( id
+                          , boost::bind ( &discover_traverse
+                                        , &state.first
+                                        , discover_id
+                                        , _rts_discover
+                                        , _1
+                                        )
+                          );
+
+      //! \note Not a race: discovered can't be called in parallel
+      if (state.first == std::size_t (0))
+      {
+        _rts_discovered (discover_id, state.second);
+      }
+      else
+      {
+        _discover_state.insert (std::make_pair (discover_id, state));
+      }
     }
 
     void layer::discovered
       (id_type discover_id, pnet::type::value::value_type result)
     {
-      throw std::runtime_error ("discovered called: NYI");
+      boost::mutex::scoped_lock const _ (_discover_state_mutex);
+      assert (_discover_state.find (discover_id) != _discover_state.end());
+
+      std::pair<std::size_t, std::set<pnet::type::value::value_type> >& state
+        (_discover_state.find (discover_id)->second);
+
+      state.second.insert (result);
+
+      --state.first;
+
+      if (state.first == std::size_t (0))
+      {
+        _rts_discovered (discover_id, state.second);
+      }
     }
 
     void layer::extract_from_nets()

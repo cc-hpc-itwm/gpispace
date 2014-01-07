@@ -146,6 +146,11 @@ namespace we
       boost::unordered_map<id_type, boost::function<void()> >
         _finalize_job_cancellation;
 
+      mutable boost::mutex _discover_state_mutex;
+      boost::unordered_map
+        < id_type, std::pair<std::size_t, std::set<pnet::type::value::value_type> >
+        > _discover_state;
+
       struct locked_parent_child_relation_type
       {
         void started (id_type parent, id_type child);
