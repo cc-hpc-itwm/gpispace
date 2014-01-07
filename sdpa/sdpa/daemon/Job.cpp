@@ -6,7 +6,7 @@ namespace sdpa {
   namespace daemon {
     Job::Job( const job_id_t id
               , const job_desc_t desc
-              , const job_id_t &parent
+              , const boost::optional<job_id_t> &parent
               , bool is_master_job
               , const worker_id_t& owner
             )
@@ -27,7 +27,7 @@ namespace sdpa {
       return id_;
     }
 
-    const job_id_t & Job::parent() const
+    const boost::optional<job_id_t> & Job::parent() const
     {
       return parent_;
     }

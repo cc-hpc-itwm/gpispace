@@ -695,9 +695,9 @@ void Agent::pause(const job_id_t& jobId)
   if(pJob)
   {
       pJob->Pause(NULL);
-      if(!pJob->isMasterJob())
+      if(!pJob->isMasterJob() && pJob->parent())
       {
-          Job* pMasterJob(jobManager().findJob(pJob->parent()));
+          Job* pMasterJob(jobManager().findJob(*pJob->parent()));
           if(pMasterJob)
             pMasterJob->Pause(this);
       }
@@ -714,9 +714,9 @@ void Agent::resume(const job_id_t& jobId)
   if(pJob)
   {
       pJob->Resume(NULL);
-      if(!pJob->isMasterJob())
+      if(!pJob->isMasterJob() && pJob->parent())
       {
-          Job* pMasterJob(jobManager().findJob(pJob->parent()));
+          Job* pMasterJob(jobManager().findJob(*pJob->parent()));
           if(pMasterJob)
             pMasterJob->Resume(this);
       }

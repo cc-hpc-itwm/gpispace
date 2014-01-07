@@ -191,19 +191,20 @@ namespace sdpa {
 
       Job ( const job_id_t id
           , const job_desc_t desc
-          , const job_id_t &parent
+          , const boost::optional<job_id_t> &parent
           , bool is_master_job
           , const worker_id_t& owner
           );
 
       const job_id_t& id() const;
-      const job_id_t& parent() const;
+      const boost::optional<job_id_t>& parent() const;
       const job_desc_t& description() const;
       const job_result_t& result() const;
 
       int error_code() const;
       std::string error_message () const;
 
+      //! \todo Should somehow be equivalent to having a parent
       bool isMasterJob() const;
 
       void set_owner(const worker_id_t& owner);
@@ -240,7 +241,7 @@ namespace sdpa {
       mutable mutex_type mtx_;
       job_id_t id_;
       job_desc_t desc_;
-      job_id_t parent_;
+      boost::optional<job_id_t> parent_;
 
       bool _is_master_job;
       job_result_t result_;
