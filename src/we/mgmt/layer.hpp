@@ -67,6 +67,10 @@ namespace we
       boost::function<void (id_type)> _rts_canceled;
       boost::function<id_type()> _rts_id_generator;
 
+      void rts_finished_and_forget (id_type, type::activity_t);
+      void rts_failed_and_forget (id_type, int ec, std::string);
+      void rts_canceled_and_forget (id_type);
+
 
       struct activity_data_type
       {
@@ -91,6 +95,8 @@ namespace we
         void remove_and_apply
           (id_type, boost::function<void (activity_data_type)>);
         void apply (id_type, boost::function<void (activity_data_type&)>);
+
+        void forget (id_type);
 
       private:
         struct list_with_id_lookup

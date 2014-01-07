@@ -225,7 +225,8 @@ namespace we
 
     void layer::cancel (id_type id)
     {
-      request_cancel (id, boost::bind (_rts_canceled, id));
+      request_cancel
+        (id, boost::bind (&layer::rts_canceled_and_forget, this, id));
     }
 
     void layer::failed (id_type id, int error_code, std::string reason)
@@ -235,8 +236,11 @@ namespace we
 
       _running_jobs.terminated (*parent, id);
 
-      request_cancel
-        (*parent, boost::bind (_rts_failed, *parent, error_code, reason));
+      request_cancel ( *parent
+                     , boost::bind ( &layer::rts_failed_and_forget
+                                   , this, *parent, error_code, reason
+                                   )
+                     );
     }
 
     void layer::request_cancel (id_type id, boost::function<void()> after)
@@ -307,16 +311,33 @@ namespace we
         }
         else
         {
-          _rts_finished ( activity_data._id
-                        , fhg::util::starts_with
-                          ( wrapped_activity_prefix()
-                          , activity_data._activity.transition().name()
-                          )
-                        ? unwrap (activity_data._activity)
-                        : activity_data._activity
-                        );
+          rts_finished_and_forget
+            ( activity_data._id
+            , fhg::util::starts_with
+              ( wrapped_activity_prefix()
+              , activity_data._activity.transition().name()
+              )
+            ? unwrap (activity_data._activity)
+            : activity_data._activity
+            );
         }
       }
+    }
+
+    void layer::rts_finished_and_forget (id_type id, type::activity_t activity)
+    {
+      _rts_finished (id, activity);
+      _nets_to_extract_from.forget (id);
+    }
+    void layer::rts_failed_and_forget (id_type id, int ec, std::string message)
+    {
+      _rts_failed (id, ec, message);
+      _nets_to_extract_from.forget (id);
+    }
+    void layer::rts_canceled_and_forget (id_type id)
+    {
+      _rts_canceled (id);
+      _nets_to_extract_from.forget (id);
     }
 
 
@@ -480,6 +501,14 @@ namespace we
         _to_be_removed[id].push_back (std::make_pair (fun, true));
       }
     }
+
+    void layer::async_remove_queue::forget (id_type id)
+    {
+      boost::mutex::scoped_lock const container_lock (_container_mutex);
+
+      _to_be_removed.erase (id);
+    }
+
 
 
     // activity_data_type
