@@ -59,7 +59,7 @@ public:
     _expected_serveJob_calls.erase (_expected_serveJob_calls.find (jobId));
   }
 
-  void submitWorkflow(const we::mgmt::layer::id_type& id, const we::mgmt::layer::encoded_type& )
+  void submitWorkflow(const we::mgmt::layer::id_type& id)
   {
     DLOG(TRACE, "The agent is trying to forward the master job "<<id<<" to the workflow engine");
     throw std::runtime_error ("trying to submit workflow in test casse which never should");
