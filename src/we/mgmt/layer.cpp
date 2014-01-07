@@ -389,19 +389,28 @@ namespace we
 
       if (pos != _to_be_removed.end())
       {
-        BOOST_FOREACH ( std::pair<boost::function<void (activity_data_type&)>
-                      BOOST_PP_COMMA() bool
-                      > fun_and_do_put
-                      , pos->second
-                      )
+        to_be_removed_type::mapped_type::iterator fun_and_do_put_it
+          (pos->second.begin());
+
+        while (fun_and_do_put_it != pos->second.end())
         {
+          std::pair<boost::function<void (activity_data_type&)>, bool>
+            fun_and_do_put (*fun_and_do_put_it);
+          fun_and_do_put_it = pos->second.erase (fun_and_do_put_it);
+
           fun_and_do_put.first (activity_data);
           do_put = do_put && (active = fun_and_do_put.second);
-          //! \todo break when !active (+partial cleanup of already
-          //! executed functions)
+
+          if (!active)
+          {
+            break;
+          }
         }
 
-        _to_be_removed.erase (pos);
+        if (fun_and_do_put_it == pos->second.end())
+        {
+          _to_be_removed.erase (pos);
+        }
       }
 
       if (do_put)
