@@ -23,6 +23,22 @@ namespace we
       return fhg::util::boost::get_or_none<const module_call_t&> (data());
     }
 
+    void transition_t::add_connection ( petri_net::place_id_type const& place_id
+                                      , petri_net::port_id_type const& port_id
+                                      , we::type::property::type const& property
+                                      )
+    {
+      connect_outer_to_inner (place_id, port_id, property);
+    }
+
+    void transition_t::add_connection ( petri_net::port_id_type const& port_id
+                                      , petri_net::place_id_type const& place_id
+                                      , we::type::property::type const& property
+                                      )
+    {
+      connect_inner_to_outer (port_id, place_id, property);
+    }
+
     // ********************************************************************* //
 
     boost::optional<transition_t::port_id_with_prop_t>

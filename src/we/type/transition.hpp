@@ -188,6 +188,10 @@ namespace we { namespace type {
         return outer_to_inner_;
       }
 
+      void add_connection ( petri_net::place_id_type const&
+                          , petri_net::port_id_type const&
+                          , we::type::property::type const&
+                          );
       void add_connection ( const petri_net::place_id_type& pid
                           , const std::string& name
                           , const we::type::property::type& prop
@@ -204,6 +208,11 @@ namespace we { namespace type {
       {
         inner_to_outer_.erase (port_id);
       }
+
+      void add_connection ( petri_net::port_id_type const&
+                          , petri_net::place_id_type const&
+                          , we::type::property::type const&
+                          );
       void add_connection ( const std::string& name
                           , const petri_net::place_id_type& pid
                           , const we::type::property::type& prop
