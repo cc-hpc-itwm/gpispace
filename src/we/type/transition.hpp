@@ -253,11 +253,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
-
-        if (version > 0)
-        {
-          ar & BOOST_SERIALIZATION_NVP(_requirements);
-        }
+        ar & BOOST_SERIALIZATION_NVP(_requirements);
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
@@ -279,7 +275,5 @@ namespace we { namespace type {
                                );
   }
 }
-
-BOOST_CLASS_VERSION(we::type::transition_t, 1)
 
 #endif
