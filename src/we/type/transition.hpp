@@ -225,7 +225,6 @@ namespace we { namespace type {
 
       std::list<we::type::requirement_t> _requirements;
 
-    private:
       friend class boost::serialization::access;
       template <typename Archive>
       void save(Archive& ar, const unsigned int) const
