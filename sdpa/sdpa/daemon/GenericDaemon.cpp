@@ -72,6 +72,18 @@ namespace
   }
 }
 
+namespace
+{
+  void discover (we::mgmt::layer::id_type, we::mgmt::layer::id_type)
+  {
+    throw std::runtime_error ("discover called: NYI");
+  }
+  void discovered (we::mgmt::layer::id_type, std::set<pnet::type::value::value_type>)
+  {
+    throw std::runtime_error ("discovered called: NYI");
+  }
+}
+
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , const master_info_list_t arrMasterInfo
@@ -92,6 +104,8 @@ GenericDaemon::GenericDaemon( const std::string name
                            , boost::bind (&GenericDaemon::finished, this, _1, _2)
                            , boost::bind (&GenericDaemon::failed, this, _1, _2, _3)
                            , boost::bind (&GenericDaemon::canceled, this, _1)
+                           , &discover
+                           , &discovered
                            , boost::bind (&GenericDaemon::gen_id, this)
                            , *_random_extraction_engine
                            )

@@ -16,6 +16,8 @@ namespace we
         , boost::function<void (id_type, type::activity_t)> rts_finished
         , boost::function<void (id_type, int, std::string)> rts_failed
         , boost::function<void (id_type)> rts_canceled
+        , boost::function<void (id_type, id_type)> rts_discover
+        , boost::function<void (id_type, std::set<pnet::type::value::value_type>)> rts_discovered
         , boost::function<id_type()> rts_id_generator
         , boost::mt19937& random_extraction_engine
         )
@@ -24,6 +26,8 @@ namespace we
       , _rts_finished (rts_finished)
       , _rts_failed (rts_failed)
       , _rts_canceled (rts_canceled)
+      , _rts_discover (rts_discover)
+      , _rts_discovered (rts_discovered)
       , _rts_id_generator (rts_id_generator)
       , _random_extraction_engine (random_extraction_engine)
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
@@ -274,6 +278,17 @@ namespace we
         pos->second();
         _finalize_job_cancellation.erase (pos);
       }
+    }
+
+    void layer::discover (id_type discover_id, id_type id)
+    {
+      throw std::runtime_error ("discover called: NYI");
+    }
+
+    void layer::discovered
+      (id_type discover_id, pnet::type::value::value_type result)
+    {
+      throw std::runtime_error ("discovered called: NYI");
     }
 
     void layer::extract_from_nets()

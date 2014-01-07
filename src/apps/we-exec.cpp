@@ -100,6 +100,18 @@ namespace
     we::mgmt::type::activity_t act;
   };
 
+  namespace
+  {
+    void discover (we::mgmt::layer::id_type, we::mgmt::layer::id_type)
+    {
+      throw std::runtime_error ("discover called: NYI");
+    }
+    void discovered (we::mgmt::layer::id_type, std::set<pnet::type::value::value_type>)
+    {
+      throw std::runtime_error ("discovered called: NYI");
+    }
+  }
+
   struct sdpa_daemon
   {
     typedef boost::unordered_map< we::mgmt::layer::id_type
@@ -119,6 +131,8 @@ namespace
                       , boost::bind (&sdpa_daemon::finished, this, _1, _2)
                       , boost::bind (&sdpa_daemon::failed, this, _1, _2, _3)
                       , boost::bind (&sdpa_daemon::canceled, this, _1)
+                      , &discover
+                      , &discovered
                       , boost::bind (&sdpa_daemon::gen_id, this)
                       , random_extraction_engine
                       )

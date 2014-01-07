@@ -9,6 +9,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/value/read.hpp>
+#include <we/type/value/poke.hpp>
 
 #include <fhg/util/now.hpp>
 
@@ -64,6 +65,8 @@ struct daemon
             , boost::bind (&daemon::finished, this, _1, _2)
             , boost::bind (&daemon::failed, this, _1, _2, _3)
             , boost::bind (&daemon::canceled, this, _1)
+            , boost::bind (&daemon::discover, this, _1, _2)
+            , boost::bind (&daemon::discovered, this, _1, _2)
             , boost::bind (&daemon::generate_id, this)
             , _random_engine
             )
@@ -246,6 +249,61 @@ struct daemon
     DEC_IN_PROGRESS (replies);
   }
 
+  DECLARE_EXPECT_CLASS ( discover
+                       , we::mgmt::layer::id_type discover_id
+        BOOST_PP_COMMA() we::mgmt::layer::id_type id
+                       , _discover_id (discover_id)
+        BOOST_PP_COMMA() _id (id)
+                       , we::mgmt::layer::id_type _discover_id
+                       ; we::mgmt::layer::id_type _id
+                       , _discover_id == discover_id && _id == id
+                       );
+
+  void discover
+    (we::mgmt::layer::id_type discover_id, we::mgmt::layer::id_type id)
+  {
+    std::list<expect_discover*>::iterator const e
+      ( boost::find_if ( _to_discover
+                       , boost::bind (&expect_discover::eq, _1, discover_id, id)
+                       )
+      );
+
+    BOOST_REQUIRE (e != _to_discover.end());
+
+    (*e)->happened();
+    _to_discover.erase (e);
+
+    INC_IN_PROGRESS (replies);
+  }
+
+  DECLARE_EXPECT_CLASS ( discovered
+                       , we::mgmt::layer::id_type discover_id
+        BOOST_PP_COMMA() std::set<pnet::type::value::value_type> result
+                       , _discover_id (discover_id)
+        BOOST_PP_COMMA() _result (result)
+                       , we::mgmt::layer::id_type _discover_id
+                       ; std::set<pnet::type::value::value_type> _result
+                       , _discover_id == discover_id && _result == result
+                       );
+
+  void discovered ( we::mgmt::layer::id_type discover_id
+                  , std::set<pnet::type::value::value_type> result
+                  )
+  {
+    std::list<expect_discovered*>::iterator const e
+      ( boost::find_if ( _to_discovered
+                       , boost::bind (&expect_discovered::eq, _1, discover_id, result)
+                       )
+      );
+
+    BOOST_REQUIRE (e != _to_discovered.end());
+
+    (*e)->happened();
+    _to_discovered.erase (e);
+
+    DEC_IN_PROGRESS (replies);
+  }
+
   void do_submit ( we::mgmt::layer::id_type id
                  , we::mgmt::type::activity_t act
                  )
@@ -287,6 +345,21 @@ struct daemon
     DEC_IN_PROGRESS (jobs_rts);
 
     layer.canceled (id);
+  }
+
+  void do_discover
+    (we::mgmt::layer::id_type discover_id, we::mgmt::layer::id_type id)
+  {
+    INC_IN_PROGRESS (replies);
+
+    layer.discover (discover_id, id);
+  }
+  void do_discovered
+    (we::mgmt::layer::id_type discover_id, pnet::type::value::value_type result)
+  {
+    DEC_IN_PROGRESS (replies);
+
+    layer.discovered (discover_id, result);
   }
 
   boost::mutex _generate_id_mutex;
@@ -799,6 +872,14 @@ namespace
   void cancel (we::mgmt::layer::id_type){}
   void failed (we::mgmt::layer::id_type, int errorcode, std::string reason){}
   void canceled (we::mgmt::layer::id_type){}
+  void discover (we::mgmt::layer::id_type, we::mgmt::layer::id_type)
+  {
+    throw std::runtime_error ("discover called: should not happen in this test");
+  }
+  void discovered (we::mgmt::layer::id_type, std::set<pnet::type::value::value_type>)
+  {
+    throw std::runtime_error ("discovered called: should not happen in this test");
+  }
 
   boost::mutex generate_id_mutex;
   we::mgmt::layer::id_type generate_id()
@@ -848,6 +929,8 @@ BOOST_AUTO_TEST_CASE (performance_finished_shall_be_called_after_finished_N_chil
     , boost::bind (&finished_fake, &finished, _1, _2)
     , boost::bind (&failed, _1, _2, _3)
     , boost::bind (&canceled, _1)
+    , &discover
+    , &discovered
     , boost::bind (&generate_id)
     , _random_engine
     );
@@ -879,4 +962,147 @@ BOOST_AUTO_TEST_CASE (performance_finished_shall_be_called_after_finished_N_chil
   t += fhg::util::now();
 
   BOOST_REQUIRE_LT (t, 1.0);
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (discovered_shall_be_called_after_discover_one_child, daemon)
+{
+  we::type::transition_t transition_in;
+  we::type::transition_t transition_out;
+  we::type::transition_t transition_child;
+  boost::tie (transition_in, transition_child) =
+    finished_shall_be_called_after_finished_make_net (true, 1);
+  boost::tie (transition_out, boost::tuples::ignore) =
+    finished_shall_be_called_after_finished_make_net (false, 1);
+
+  we::mgmt::type::activity_t activity_input (transition_in);
+  we::mgmt::type::activity_t activity_output (transition_out);
+
+  we::mgmt::type::activity_t activity_child (transition_child);
+  activity_child.add_input
+    (transition_child.input_port_by_name ("in"), value::CONTROL);
+
+  we::mgmt::type::activity_t activity_result (transition_child);
+  activity_result.add_output
+    (transition_child.output_port_by_name ("out"), value::CONTROL);
+
+  we::mgmt::layer::id_type const id (generate_id());
+
+  we::mgmt::layer::id_type child_id;
+  {
+    expect_submit _ (this, &child_id, activity_child, id);
+
+    do_submit (id, activity_input);
+  }
+
+  const we::mgmt::layer::id_type discover_id
+    (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
+  {
+    expect_discover _ (this, discover_id, child_id);
+
+    do_discover (discover_id, id);
+  }
+
+  using pnet::type::value::value_type;
+  using pnet::type::value::poke;
+
+  value_type discover_result_child;
+  poke ("id", discover_result_child, child_id);
+  poke ("state", discover_result_child, "PENDING");
+  poke ("childs", discover_result_child, std::set<value_type>());
+
+  std::set<value_type> discover_result;
+  discover_result.insert (discover_result_child);
+
+  {
+    expect_discovered _ (this, discover_id, discover_result);
+
+    do_discovered (discover_id, discover_result_child);
+  }
+
+  {
+    expect_finished const _ (this, id, activity_output);
+
+    do_finished (child_id, activity_result);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (discovered_shall_be_called_after_discover_two_childs, daemon)
+{
+  we::type::transition_t transition_in;
+  we::type::transition_t transition_out;
+  we::type::transition_t transition_child;
+  boost::tie (transition_in, transition_child) =
+    finished_shall_be_called_after_finished_make_net (true, 2);
+  boost::tie (transition_out, boost::tuples::ignore) =
+    finished_shall_be_called_after_finished_make_net (false, 2);
+
+  we::mgmt::type::activity_t activity_input (transition_in);
+  we::mgmt::type::activity_t activity_output (transition_out);
+
+  we::mgmt::type::activity_t activity_child (transition_child);
+  activity_child.add_input
+    (transition_child.input_port_by_name ("in"), value::CONTROL);
+
+  we::mgmt::type::activity_t activity_result (transition_child);
+  activity_result.add_output
+    (transition_child.output_port_by_name ("out"), value::CONTROL);
+
+  we::mgmt::layer::id_type const id (generate_id());
+
+  we::mgmt::layer::id_type child_id_A;
+  we::mgmt::layer::id_type child_id_B;
+  {
+    expect_submit _A (this, &child_id_A, activity_child, id);
+    expect_submit _B (this, &child_id_B, activity_child, id);
+
+    do_submit (id, activity_input);
+  }
+
+  const we::mgmt::layer::id_type discover_id
+    (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
+  {
+    expect_discover _A (this, discover_id, child_id_A);
+    expect_discover _B (this, discover_id, child_id_B);
+
+    do_discover (discover_id, id);
+  }
+
+  using pnet::type::value::value_type;
+  using pnet::type::value::poke;
+
+  value_type discover_result_child_A;
+  poke ("id", discover_result_child_A, child_id_A);
+  poke ("state", discover_result_child_A, "PENDING");
+  poke ("childs", discover_result_child_A, std::set<value_type>());
+
+  value_type discover_result_child_B;
+  poke ("id", discover_result_child_B, child_id_B);
+  poke ("state", discover_result_child_B, "RUNNING");
+  poke ("childs", discover_result_child_B, std::set<value_type>());
+
+  std::set<value_type> discover_result;
+  discover_result.insert (discover_result_child_A);
+  discover_result.insert (discover_result_child_B);
+
+  do_discovered (discover_id, discover_result_child_A);
+
+  {
+    expect_discovered _ (this, discover_id, discover_result);
+
+    //! \note There is a race here where layer may call rts_discovered
+    //! before do_discovered, but this is checked by comparing the
+    //! result: if it would finish discovering before the second child
+    //! was discovered, there would be a child entry missing.
+
+    do_discovered (discover_id, discover_result_child_B);
+  }
+
+  {
+    expect_finished const _ (this, id, activity_output);
+
+    do_finished (child_id_A, activity_result);
+    do_finished (child_id_B, activity_result);
+  }
 }
