@@ -87,7 +87,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::mgmt::layer
-                           ( boost::bind (&GenericDaemon::submit, this, _1, _2, _3)
+                           ( boost::bind (&GenericDaemon::submit, this, _1, _2)
                            , boost::bind (&GenericDaemon::cancel, this, _1)
                            , boost::bind (&GenericDaemon::finished, this, _1, _2)
                            , boost::bind (&GenericDaemon::failed, this, _1, _2, _3)
@@ -540,7 +540,6 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
  */
 void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
                           , const we::mgmt::type::activity_t& activity
-                          , const we::mgmt::layer::id_type& parent_id
                           )
 {
   const we::type::schedule_data schedule_data
@@ -575,7 +574,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
   jobManager().addJobRequirements(job_id, jobReqs);
 
   // don't forget to set here the job's preferences
-  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string(), sdpa::job_id_t (parent_id)) );
+  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string(), sdpa::job_id_t::invalid_job_id()) );
   sendEventToSelf(pEvtSubmitJob);
 
   _.dont();

@@ -95,10 +95,7 @@ namespace sdpa {
       bool isTop() { return m_arrMasterInfo.empty(); }
 
       // WE interface
-      void submit( const we::mgmt::layer::id_type & id
-                 , const we::mgmt::type::activity_t&
-                 , const we::mgmt::layer::id_type& parent_id
-                         );
+      void submit( const we::mgmt::layer::id_type & id, const we::mgmt::type::activity_t&);
       void cancel(const we::mgmt::layer::id_type & id);
       virtual void finished(const we::mgmt::layer::id_type & id, const we::mgmt::type::activity_t& result);
       virtual void failed( const we::mgmt::layer::id_type& wfId, int errc, std::string const& reason);
