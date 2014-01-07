@@ -252,7 +252,6 @@ set (tests
   test_SubmitJobFails.cpp
   test_TransformFile.cpp
   test_wfe_plugin.cpp
-  test_Stalled.cpp
   test_InvalidNbWorkersReq.cpp
 )
 
