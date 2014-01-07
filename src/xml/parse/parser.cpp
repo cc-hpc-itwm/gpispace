@@ -1601,8 +1601,16 @@ namespace xml
         function.get_ref().name (boost::optional<std::string>("anonymous"));
       }
 
+      boost::unordered_map<std::string, petri_net::port_id_type> port_id_in;
+      boost::unordered_map<std::string, petri_net::port_id_type> port_id_out;
+
       we::type::transition_t trans
-        (function.get_ref().synthesize (*function.get().name(), state));
+        (function.get_ref().synthesize ( *function.get().name()
+                                       , state
+                                       , port_id_in
+                                       , port_id_out
+                                       )
+        );
 
       we::type::optimize::optimize (trans, state.options_optimize());
 

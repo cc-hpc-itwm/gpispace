@@ -655,6 +655,8 @@ namespace xml
         const conditions_type& _conditions;
         we::type::property::type _properties;
         const requirements_type& _trans_requirements;
+        boost::unordered_map<std::string, petri_net::port_id_type>& _port_id_in;
+        boost::unordered_map<std::string, petri_net::port_id_type>& _port_id_out;
 
         typedef we::type::transition_t we_transition_type;
 
@@ -667,20 +669,34 @@ namespace xml
                                     , petri_net::place_id_type
                                     > pid_of_place_type;
 
+        void add_port
+          (we_transition_type& transition, we::type::port_t const& port) const
+        {
+          petri_net::port_id_type const port_id (transition.add_port (port));
+
+          if (port.is_output())
+          {
+            _port_id_out.insert (std::make_pair (port.name(), port_id));
+          }
+          else
+          {
+            _port_id_in.insert (std::make_pair (port.name(), port_id));
+          }
+        }
+
         void add_ports ( we_transition_type & trans
                        , const function_type::ports_type& ports
                        ) const
         {
           BOOST_FOREACH (const port_type& port, ports.values())
-            {
-              trans.add_port
-                ( we::type::port_t ( port.name()
-                                   , port.direction()
-                                   , port.signature_or_throw()
-                                   , port.properties()
-                                   )
-                );
-            }
+          {
+            add_port (trans, we::type::port_t ( port.name()
+                                              , port.direction()
+                                              , port.signature_or_throw()
+                                              , port.properties()
+                                              )
+                     );
+          }
         }
 
         template<typename Map>
@@ -699,33 +715,31 @@ namespace xml
                        ) const
         {
           BOOST_FOREACH (const port_type& port, ports.values())
+          {
+            if (not port.place)
             {
-              if (not port.place)
-                {
-                  trans.add_port
-                    ( we::type::port_t ( port.name()
-                                       , port.direction()
-                                       , port.signature_or_throw()
-                                       , port.properties()
-                                       )
-                    );
-                }
-              else
-                {
-                  // basically safe, since type checking has verified
-                  // the existence and type safety of the place to
-                  // connect to
-
-                  trans.add_port
-                    ( we::type::port_t ( port.name()
-                                       , port.direction()
-                                       , port.signature_or_throw()
-                                       , get_pid (pid_of_place, *port.place)
-                                       , port.properties()
-                                       )
-                    );
-                }
+              add_port (trans, we::type::port_t ( port.name()
+                                                , port.direction()
+                                                , port.signature_or_throw()
+                                                , port.properties()
+                                                )
+                       );
             }
+            else
+            {
+              // basically safe, since type checking has verified
+              // the existence and type safety of the place to
+              // connect to
+
+              add_port (trans, we::type::port_t ( port.name()
+                                                , port.direction()
+                                                , port.signature_or_throw()
+                                                , get_pid (pid_of_place, *port.place)
+                                                , port.properties()
+                                                )
+                       );
+            }
+          }
         }
 
         void add_requirements (we_transition_type& trans) const
@@ -759,14 +773,17 @@ namespace xml
         }
 
       public:
-        function_synthesize ( const std::string& name
-                            , const state::type& _state
-                            , const function_type& _fun
-                            , const boost::optional<bool>& internal
-                            , const conditions_type& conditions
-                            , const we::type::property::type& trans_properties
-                            , const requirements_type& trans_requirements
-                            )
+        function_synthesize
+          ( const std::string& name
+          , const state::type& _state
+          , const function_type& _fun
+          , const boost::optional<bool>& internal
+          , const conditions_type& conditions
+          , const we::type::property::type& trans_properties
+          , const requirements_type& trans_requirements
+          , boost::unordered_map<std::string, petri_net::port_id_type>& port_id_in
+          , boost::unordered_map<std::string, petri_net::port_id_type>& port_id_out
+          )
           : _name (name)
           , state (_state)
           , fun (_fun)
@@ -774,6 +791,8 @@ namespace xml
           , _conditions (conditions)
           , _properties (trans_properties)
           , _trans_requirements (trans_requirements)
+          , _port_id_in (port_id_in)
+          , _port_id_out (port_id_out)
         {
           util::property::join (state, _properties, fun.properties());
         }
@@ -854,6 +873,8 @@ namespace xml
       we::type::transition_t function_type::synthesize
         ( const std::string& name
         , const state::type& state
+        , boost::unordered_map<std::string, petri_net::port_id_type>& port_id_in
+        , boost::unordered_map<std::string, petri_net::port_id_type>& port_id_out
         , const boost::optional<bool>& trans_internal
         , const conditions_type& conditions
         , const we::type::property::type& trans_properties
@@ -868,6 +889,8 @@ namespace xml
                                 , conditions
                                 , trans_properties
                                 , trans_requirements
+                                , port_id_in
+                                , port_id_out
                                 )
           , content()
           );

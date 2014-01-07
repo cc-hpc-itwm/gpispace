@@ -796,46 +796,59 @@ namespace xml
               , properties
               );
 
-            BOOST_FOREACH (const port_type& port, fun.ports().values())
             {
-              if (port.direction() == we::type::PORT_IN)
-              {
-                trans_in.add_port
-                  ( we::type::port_t ( port.name()
-                                     , we::type::PORT_IN
-                                     , port.signature_or_throw()
-                                     , port.properties()
-                                     )
-                  );
-                trans_in.add_port
-                  ( we::type::port_t ( port.name()
-                                     , we::type::PORT_OUT
-                                     , port.signature_or_throw()
-                                     , port.properties()
-                                     )
-                  );
+              boost::unordered_map<std::string, petri_net::port_id_type>
+                port_id_in;
 
-                if (port.place)
+              BOOST_FOREACH (const port_type& port, fun.ports().values())
+              {
+                if (port.direction() == we::type::PORT_IN)
                 {
-                  trans_in.add_connection
-                    ( port.name()
-                    , get_pid (pid_of_place , prefix + *port.place)
-                    , port.properties()
+                  port_id_in.insert
+                    ( std::make_pair
+                      ( port.name()
+                      , trans_in.add_port
+                        ( we::type::port_t ( port.name()
+                                           , we::type::PORT_IN
+                                           , port.signature_or_throw()
+                                           , port.properties()
+                                           )
+                        )
+                      )
                     );
+
+                  petri_net::port_id_type const port_id_out
+                    ( trans_in.add_port
+                      ( we::type::port_t ( port.name()
+                                         , we::type::PORT_OUT
+                                         , port.signature_or_throw()
+                                         , port.properties()
+                                         )
+                      )
+                    );
+
+                  if (port.place)
+                  {
+                    trans_in.add_connection
+                      ( port_id_out
+                      , get_pid (pid_of_place , prefix + *port.place)
+                      , port.properties()
+                      );
+                  }
                 }
               }
-            }
 
-            BOOST_FOREACH ( const connect_type& connect
-                          , trans.connections().values()
-                          )
-            {
-              if (petri_net::edge::is_PT (connect.direction()))
+              BOOST_FOREACH ( const connect_type& connect
+                            , trans.connections().values()
+                            )
               {
-                trans_in.add_connection ( get_pid (pids, connect.place())
-                                        , connect.port()
-                                        , connect.properties()
-                                        );
+                if (petri_net::edge::is_PT (connect.direction()))
+                {
+                  trans_in.add_connection ( get_pid (pids, connect.place())
+                                          , port_id_in.at (connect.port())
+                                          , connect.properties()
+                                          );
+                }
               }
             }
 
@@ -888,55 +901,66 @@ namespace xml
               , properties
               );
 
-            BOOST_FOREACH (const port_type& port, fun.ports().values())
             {
-              if (port.direction() == we::type::PORT_OUT)
-              {
-                trans_out.add_port
-                  ( we::type::port_t ( port.name()
-                                     , we::type::PORT_IN
-                                     , port.signature_or_throw()
-                                     , port.properties()
-                                     )
-                  );
-                trans_out.add_port
-                  ( we::type::port_t ( port.name()
-                                     , we::type::PORT_OUT
-                                     , port.signature_or_throw()
-                                     , port.properties()
-                                     )
-                  );
+              boost::unordered_map<std::string, petri_net::port_id_type>
+                port_id_out;
 
-                if (port.place)
+              BOOST_FOREACH (const port_type& port, fun.ports().values())
+              {
+                if (port.direction() == we::type::PORT_OUT)
                 {
-                  trans_out.add_connection
-                    ( get_pid (pid_of_place , prefix + *port.place)
-                    , port.name()
-                    , port.properties()
+                  petri_net::port_id_type const port_id_in
+                    ( trans_out.add_port
+                      ( we::type::port_t ( port.name()
+                                         , we::type::PORT_IN
+                                         , port.signature_or_throw()
+                                         , port.properties()
+                                         )
+                      )
                     );
+
+                  port_id_out.insert
+                    ( std::make_pair
+                      ( port.name()
+                      , trans_out.add_port
+                        ( we::type::port_t ( port.name()
+                                           , we::type::PORT_OUT
+                                           , port.signature_or_throw()
+                                           , port.properties()
+                                           )
+                        )
+                      )
+                    );
+
+                  if (port.place)
+                  {
+                    trans_out.add_connection
+                      ( get_pid (pid_of_place , prefix + *port.place)
+                      , port_id_in
+                      , port.properties()
+                      );
+                  }
                 }
               }
-            }
 
-            std::size_t num_outport (0);
+              std::size_t num_outport (0);
 
-            BOOST_FOREACH ( const connect_type& connect
-                          , trans.connections().values()
-                          )
-            {
-              if (!petri_net::edge::is_PT (connect.direction()))
+              BOOST_FOREACH ( const connect_type& connect
+                            , trans.connections().values()
+                            )
               {
-                trans_out.add_connection
-                  ( connect.port()
-                  , get_pid (pids, connect.place())
-                  , connect.properties()
-                  );
+                if (!petri_net::edge::is_PT (connect.direction()))
+                {
+                  trans_out.add_connection ( port_id_out.at (connect.port())
+                                           , get_pid (pids, connect.place())
+                                           , connect.properties()
+                                           );
 
-                ++num_outport;
+                  ++num_outport;
+                }
               }
-            }
 
-            if (num_outport > 1)
+              if (num_outport > 1)
               {
                 const std::string
                   key ("pnetc.warning.inline-many-output-ports");
@@ -952,6 +976,7 @@ namespace xml
                                );
                   }
               }
+            }
 
             const petri_net::transition_id_type tid_out
               (we_net.add_transition (trans_out));
@@ -1020,9 +1045,16 @@ namespace xml
                 we_net.modify_place (pid->second, we_place);
               }
 
+            boost::unordered_map<std::string, petri_net::port_id_type>
+              port_id_in;
+            boost::unordered_map<std::string, petri_net::port_id_type>
+              port_id_out;
+
             we::type::transition_t we_trans
               ( fun.synthesize ( trans.name()
                                , state
+                               , port_id_in
+                               , port_id_out
                                , trans.internal
                                , trans.conditions()
                                , trans.properties()
@@ -1038,14 +1070,14 @@ namespace xml
               {
                 we_trans.add_connection
                   ( get_pid (pids, connect.place())
-                  , connect.port()
+                  , port_id_in.at (connect.port())
                   , connect.properties()
                   );
               }
               else
               {
                 we_trans.add_connection
-                  ( connect.port()
+                  ( port_id_out.at (connect.port())
                   , get_pid (pids, connect.place())
                   , connect.properties()
                   );
