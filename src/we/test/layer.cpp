@@ -869,9 +869,18 @@ namespace
     *finished = true;
   }
 
-  void cancel (we::mgmt::layer::id_type){}
-  void failed (we::mgmt::layer::id_type, int errorcode, std::string reason){}
-  void canceled (we::mgmt::layer::id_type){}
+  void cancel (we::mgmt::layer::id_type)
+  {
+    throw std::runtime_error ("cancel called: should not happen in this test");
+  }
+  void failed (we::mgmt::layer::id_type, int errorcode, std::string reason)
+  {
+    throw std::runtime_error ("failed called: should not happen in this test");
+  }
+  void canceled (we::mgmt::layer::id_type)
+  {
+    throw std::runtime_error ("canceled called: should not happen in this test");
+  }
   void discover (we::mgmt::layer::id_type, we::mgmt::layer::id_type)
   {
     throw std::runtime_error ("discover called: should not happen in this test");
