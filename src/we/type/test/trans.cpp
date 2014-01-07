@@ -1,20 +1,4 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_trans.cpp
- *
- *    Description:
- *
- *        Version:  1.0
- *        Created:  04/12/2010 12:18:50 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
