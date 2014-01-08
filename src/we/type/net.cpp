@@ -198,19 +198,6 @@ namespace petri_net
     return _place_to_port;
   }
 
-  void net::modify_transitions
-    ( const boost::function<void ( const transition_id_type&
-                                 , we::type::transition_t&
-                                 )>& f
-    )
-  {
-    typedef std::pair<const transition_id_type, we::type::transition_t> it_type;
-    BOOST_FOREACH (it_type& it, _tmap)
-    {
-      f (it.first, it.second);
-    }
-  }
-
   net::place_id_range_type
     net::out_of_transition (const transition_id_type& tid) const
   {
@@ -375,16 +362,6 @@ namespace petri_net
     _pmap[pid] = place;
 
     return pid;
-  }
-
-  transition_id_type
-  net::modify_transition ( const transition_id_type& tid
-                         , const we::type::transition_t& transition
-                         )
-  {
-    _tmap[tid] = transition;
-
-    return tid;
   }
 
   void net::put_value ( const place_id_type& pid

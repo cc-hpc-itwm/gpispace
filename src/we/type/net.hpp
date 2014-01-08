@@ -118,14 +118,6 @@ namespace petri_net
     void delete_transition (const transition_id_type&);
 
     place_id_type modify_place (const place_id_type&, const place::type&);
-    transition_id_type modify_transition ( const transition_id_type&
-                                         , const we::type::transition_t&
-                                         );
-    void modify_transitions
-      ( const boost::function<void ( const transition_id_type&
-                                   , we::type::transition_t&
-                                   )>&
-      );
 
     void put_value (const place_id_type&, const pnet::type::value::value_type&);
 
