@@ -1,7 +1,6 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
-#include <fhg/util/bool.hpp>
-#include <fhg/util/bool_io.hpp>
+#include <fhg/util/read_bool.hpp>
 #include <fhg/util/threadname.hpp>
 
 #include <boost/thread.hpp>
@@ -22,7 +21,7 @@ public:
 
     m_port = fhg_kernel()->get("port", "2439");
     m_reuse_address =
-      fhg_kernel ()->get<fhg::util::bool_t> ("reuse_address", "true");
+      fhg::util::read_bool (fhg_kernel ()->get ("reuse_address", "true"));
     m_store_path =
       fhg_kernel ()->get ("store", "");
 
