@@ -18,6 +18,8 @@
 #include <fhglog/LogMacros.hpp>
 #include <iomanip>
 
+#include <boost/algorithm/string.hpp>
+
 namespace condition
 {
   class type
@@ -48,7 +50,9 @@ namespace condition
         //! \todo do not initialize parser immediately, think of some other way
         // (pnetput should not parse the whole net just to put some tokens)
       , _parser (exp)
-    {}
+    {
+      boost::trim (_expression);
+    }
 
     // should correspond!
     type ( const std::string& exp
@@ -56,7 +60,9 @@ namespace condition
          )
       : _expression (exp)
       , _parser (p)
-    {}
+    {
+      boost::trim (_expression);
+    }
 
     const std::string& expression() const
     {
