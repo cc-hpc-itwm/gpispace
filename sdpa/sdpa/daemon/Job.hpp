@@ -57,14 +57,7 @@ namespace sdpa {
       private:
         SchedulerBase* m_pScheduler;
       };
-      struct MSMStalledEvent{
-        MSMStalledEvent(GenericDaemon* pAgent)
-          : m_pAgent(pAgent)
-        {}
-        GenericDaemon* ptrAgent() const { return m_pAgent; }
-      private:
-        GenericDaemon* m_pAgent;
-      };
+
       struct MSMResumeJobEvent
       {
         MSMResumeJobEvent(GenericDaemon* pAgent)
