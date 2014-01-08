@@ -260,8 +260,7 @@ foreach (test ${tests})
     fhg_add_test (${test}
       PROJECT sdpa
       BOOST_UNIT_TEST # all of them?
-      LINK_LIBRARIES sdpa-daemon
-                     sdpa
+      LINK_LIBRARIES sdpa
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}

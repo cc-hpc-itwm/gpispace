@@ -1,5 +1,4 @@
 set (daemon_libs
-  sdpa-daemon
   sdpa
   ${FhgLog_LIBRARY}
   pnet
