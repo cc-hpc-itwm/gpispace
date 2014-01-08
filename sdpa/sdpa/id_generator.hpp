@@ -39,7 +39,7 @@ namespace sdpa {
 
 	static id_generator& instance()
 	{
-	  static id_generator<Tag> gen;
+	  static id_generator<Tag> gen (Tag::name());
 	  return gen;
 	}
 
@@ -53,11 +53,11 @@ namespace sdpa {
     return _prefix + boost::lexical_cast<std::string> (id);
   }
   private:
-    id_generator()
+    id_generator (std::string const& name)
       : _counter()
       , _prefix ( ( boost::format ("%1%.%2%.%3%.%4%.")
                   % fhg::util::hostname()
-                  % Tag::name()
+                  % name
                   % time (0)
                   % getpid()
                   ).str()
