@@ -89,11 +89,6 @@ namespace petri_net
     port_to_place_type const& port_to_place() const;
     place_to_port_type const& place_to_port() const;
 
-    //! \todo eliminate, clients could know that already
-    bool is_read_connection ( const transition_id_type&
-                            , const place_id_type&
-                            ) const;
-
     void delete_place (const place_id_type&);
     void delete_transition (const transition_id_type&);
 
@@ -236,6 +231,11 @@ namespace petri_net
 
     void delete_edge_out (const transition_id_type&, const place_id_type&);
     void delete_edge_in (const transition_id_type&, const place_id_type&);
+
+    //! \todo eliminate, clients could know that already
+    bool is_read_connection ( const transition_id_type&
+                            , const place_id_type&
+                            ) const;
 
     class cross_type
     {
