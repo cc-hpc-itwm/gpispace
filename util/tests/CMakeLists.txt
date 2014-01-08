@@ -27,12 +27,6 @@ fhg_add_test(assert.cpp
   COMPILE_FLAGS "-UFHG_ASSERT_MODE -DFHG_ASSERT_MODE=3 -UFHG_ASSERT_REPLACE_LEGACY -DFHG_ASSERT_REPLACE_LEGACY"
   )
 
-fhg_add_test(bool.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES fhg-util
-)
-
 fhg_add_test(counter.cpp
   BOOST_UNIT_TEST
   PROJECT util
