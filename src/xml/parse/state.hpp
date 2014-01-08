@@ -15,33 +15,16 @@
 #include <we/type/property.hpp>
 
 #include <fstream>
+#include <functional>
 #include <list>
-#include <set>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
-#include <functional>
 
 #include <boost/filesystem.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/optional.hpp>
-
-//! \todo cleanup, taken from optimize
-#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
-#include <boost/range/adaptor/map.hpp>
-#include <boost/variant.hpp>
-
-#include <fhg/util/read_bool.hpp>
-
-#include <rewrite/validprefix.hpp>
-
-#include <we/expr/parse/util/get_names.hpp>
-#include <we/type/id.hpp>
-#include <we/type/net.hpp>
-#include <we/type/port.hpp>
-#include <we/type/transition.hpp>
-
+#include <boost/unordered_map.hpp>
 
 namespace xml
 {
