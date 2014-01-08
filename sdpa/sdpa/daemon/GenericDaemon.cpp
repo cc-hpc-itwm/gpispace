@@ -229,7 +229,7 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
 
 std::string GenericDaemon::gen_id()
 {
-  return sdpa::JobId ().str ();
+  return sdpa::JobId::create_unique_id().str ();
 }
 
 bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
