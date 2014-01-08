@@ -114,13 +114,6 @@ namespace petri_net
                             , const place_id_type&
                             ) const;
 
-    void delete_edge_out ( const transition_id_type&
-                         , const place_id_type&
-                         );
-    void delete_edge_in ( const transition_id_type&
-                        , const place_id_type&
-                        );
-
     void delete_place (const place_id_type&);
     void delete_transition (const transition_id_type&);
 
@@ -270,6 +263,9 @@ namespace petri_net
     void disable (const transition_id_type&);
 
     we::mgmt::type::activity_t extract_activity (const transition_id_type&);
+
+    void delete_edge_out (const transition_id_type&, const place_id_type&);
+    void delete_edge_in (const transition_id_type&, const place_id_type&);
 
     class cross_type
     {
