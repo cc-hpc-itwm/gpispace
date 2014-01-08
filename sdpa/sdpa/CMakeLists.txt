@@ -1,6 +1,5 @@
 set (srcs
   client.cpp
-  JobId.cpp
   com/NetworkStrategy.cpp
   daemon/GenericDaemon.cpp
   daemon/Job.cpp
