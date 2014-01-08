@@ -87,7 +87,7 @@ namespace sdpa
         REGISTER (QueryJobStatusEvent, JobEvent);
         REGISTER (RetrieveJobResultsEvent, JobEvent);
         REGISTER (SubmitJobAckEvent, JobEvent);
-        REGISTER (SubmitJobEvent, JobEvent);
+        REGISTER (SubmitJobEvent, SDPAEvent);
         REGISTER (SubscribeAckEvent, MgmtEvent);
         REGISTER (SubscribeEvent, MgmtEvent);
         REGISTER (WorkerRegistrationAckEvent, MgmtEvent);
