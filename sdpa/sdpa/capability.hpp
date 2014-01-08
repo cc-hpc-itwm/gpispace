@@ -27,7 +27,7 @@ namespace
     explicit Capability(const std::string& name = "",
                         const std::string& type = "",
                         const std::string& owner = "",
-                        const std::string& uuid = sdpa::id_generator<cap_id_tag>::instance().next(),
+                        const std::string& uuid = sdpa::id_generator::instance<cap_id_tag>().next(),
                         size_t depth= 0)
     : name_(name)
     , type_(type)
@@ -53,7 +53,7 @@ namespace
     void setUuid(const std::string& uuid) { uuid_ = uuid; }
     void assignUuid()
     {
-      uuid_ = sdpa::id_generator<cap_id_tag>::instance().next();
+      uuid_ = sdpa::id_generator::instance<cap_id_tag>().next();
     }
 
     template <class Archive>

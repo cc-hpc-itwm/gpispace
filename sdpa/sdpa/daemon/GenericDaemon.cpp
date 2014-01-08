@@ -98,7 +98,7 @@ GenericDaemon::GenericDaemon( const std::string name
                          : NULL
                          ),
     m_nRank(rank),
-    m_strAgentUID(id_generator<agent_id_tag>::instance().next()),
+    m_strAgentUID(id_generator::instance<agent_id_tag>().next()),
     m_guiService ( guiUrl && !guiUrl->empty()
                  ? boost::optional<NotificationService>
                    (NotificationService (*guiUrl))

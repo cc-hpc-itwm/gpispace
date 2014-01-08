@@ -16,7 +16,7 @@ namespace
 
 JobId JobId::create_unique_id()
 {
-  return JobId (sdpa::id_generator<job_id_tag>::instance().next());
+  return JobId (sdpa::id_generator::instance<job_id_tag>().next());
 }
 
 JobId::JobId() : id_(create_unique_id().str())

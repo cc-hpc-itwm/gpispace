@@ -32,14 +32,14 @@
 #include <boost/lexical_cast.hpp>
 
 namespace sdpa {
-  template <class Tag>
   class id_generator
   {
   public:
 
+  template <class Tag>
 	static id_generator& instance()
 	{
-	  static id_generator<Tag> gen (Tag::name());
+	  static id_generator gen (Tag::name());
 	  return gen;
 	}
 
