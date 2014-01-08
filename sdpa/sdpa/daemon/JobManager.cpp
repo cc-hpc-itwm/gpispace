@@ -150,45 +150,5 @@ namespace sdpa
 
       return !job_map_.empty();
     }
-
-    bool JobManager::noChildJobStalled(const sdpa::job_id_t& jobId) const
-    {
-      lock_type lock(_job_map_and_requirements_mutex);
-      BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
-      {
-        assert(pJob);
-        if( pJob->parent()==jobId && pJob->getStatus()==sdpa::status::STALLED )
-            return false;
-      }
-
-      BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
-      {
-        assert(pJob);
-        if( pJob->parent()==jobId && !pJob->completed()  )
-          return true;
-      }
-
-      return false;
-    }
-
-    bool JobManager::noChildJobRunning(const sdpa::job_id_t& jobId) const
-    {
-     lock_type lock(_job_map_and_requirements_mutex);
-     BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
-     {
-       assert(pJob);
-       if( pJob->parent()==jobId && pJob->getStatus()==sdpa::status::RUNNING )
-           return false;
-     }
-
-     BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
-     {
-       assert(pJob);
-       if( pJob->parent()==jobId && !pJob->completed()  )
-         return true;
-     }
-
-     return false;
-    }
   }
 }
