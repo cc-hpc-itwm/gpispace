@@ -229,7 +229,8 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
 
 std::string GenericDaemon::gen_id()
 {
-  return sdpa::JobId::create_unique_id().str ();
+  static id_generator generator ("job");
+  return generator.next();
 }
 
 bool hasName(const sdpa::MasterInfo& masterInfo, const std::string& name)
@@ -283,10 +284,8 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
   DMLOG (TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
 
-  const JobId job_id ( JobId::is_invalid_job_id (e.job_id())
-                     ? JobId::create_unique_id()
-                     : e.job_id()
-                     );
+  const JobId job_id
+    (JobId::is_invalid_job_id (e.job_id()) ? JobId (gen_id()) : e.job_id());
 
   try {
     // One should parse the workflow in order to be able to create a valid job

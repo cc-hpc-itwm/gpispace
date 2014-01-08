@@ -1,13 +1,6 @@
 #include "JobId.hpp"
-#include  <sdpa/id_generator.hpp>
 
 using namespace sdpa;
-
-JobId JobId::create_unique_id()
-{
-  static id_generator generator ("job");
-  return generator.next();
-}
 
 JobId::JobId() : id_(invalid_job_id())
 {
