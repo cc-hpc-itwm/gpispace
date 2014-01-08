@@ -198,37 +198,6 @@ namespace petri_net
     return _place_to_port;
   }
 
-  net::place_id_range_type
-    net::out_of_transition (const transition_id_type& tid) const
-  {
-    return _adj_tp.left.equal_range (tid) | boost::adaptors::map_values;
-  }
-  net::place_id_range_type
-    net::in_to_transition_consume (const transition_id_type& tid) const
-  {
-    return _adj_pt_consume.right.equal_range (tid) | boost::adaptors::map_values;
-  }
-  net::place_id_range_type
-    net::in_to_transition_read (const transition_id_type& tid) const
-  {
-    return _adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values;
-  }
-  net::transition_id_range_type
-    net::out_of_place_consume (const place_id_type& pid) const
-  {
-    return _adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values;
-  }
-  net::transition_id_range_type
-    net::out_of_place_read (const place_id_type& pid) const
-  {
-    return _adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values;
-  }
-  net::transition_id_range_type
-    net::in_to_place (const place_id_type& pid) const
-  {
-    return _adj_tp.right.equal_range (pid) | boost::adaptors::map_values;
-  }
-
   bool net::is_read_connection ( const transition_id_type& tid
                                , const place_id_type& pid
                                ) const
