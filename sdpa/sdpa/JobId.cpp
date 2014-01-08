@@ -3,20 +3,10 @@
 
 using namespace sdpa;
 
-namespace
-{
-  struct job_id_tag
-  {
-    static const char *name ()
-    {
-      return "job";
-    }
-  };
-}
-
 JobId JobId::create_unique_id()
 {
-  return JobId (sdpa::id_generator::instance<job_id_tag>().next());
+  static id_generator generator ("job");
+  return generator.next();
 }
 
 JobId::JobId() : id_(create_unique_id().str())
