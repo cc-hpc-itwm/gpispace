@@ -219,8 +219,6 @@ namespace sdpa {
       void Reschedule(SchedulerBase*);
 
       void Dispatch();
-      void Pause(GenericDaemon*);
-      void Resume(GenericDaemon*);
 
     private:
       mutable mutex_type mtx_;

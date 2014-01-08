@@ -156,18 +156,6 @@ namespace sdpa {
       process_event(MSMRescheduleEvent (pSched));
     }
 
-    void Job::Pause(GenericDaemon* pAgent)
-    {
-      lock_type lock(mtx_);
-      process_event (MSMStalledEvent (pAgent));
-    }
-
-    void Job::Resume (GenericDaemon* pAgent)
-    {
-      lock_type lock(mtx_);
-      process_event (MSMResumeJobEvent (pAgent));
-    }
-
     void Job::Dispatch()
     {
       lock_type lock(mtx_);
