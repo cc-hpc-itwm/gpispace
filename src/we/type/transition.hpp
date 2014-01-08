@@ -89,13 +89,11 @@ namespace we { namespace type {
       const condition::type& condition() const;
 
       petri_net::port_id_type add_port (port_t const&);
-      void erase_port (const petri_net::port_id_type&);
 
       petri_net::port_id_type input_port_by_name (const std::string&) const;
       const petri_net::port_id_type& output_port_by_name (const std::string&) const;
 
       const port_map_t& ports() const;
-      port_map_t& ports();
 
       const we::type::property::type& prop() const;
 
@@ -160,23 +158,8 @@ namespace we { namespace type {
                           , petri_net::place_id_type const&
                           , we::type::property::type const&
                           );
-      void re_connect_inner_to_outer ( const petri_net::port_id_type&
-                                     , const petri_net::place_id_type&
-                                     , const we::type::property::type&
-                                     );
-      void re_connect_outer_to_inner ( const petri_net::place_id_type&
-                                     , const petri_net::place_id_type&
-                                     , const petri_net::port_id_type&
-                                     , const we::type::property::type&
-                                     );
       void remove_connection_in (const petri_net::place_id_type&);
       void remove_connection_out (const petri_net::port_id_type&);
-
-      // UNSAFE: does not check for multiple connections! Use with care!
-      //! \todo remove
-      void UNSAFE_re_associate_port ( const petri_net::place_id_type&
-                                    , const petri_net::place_id_type&
-                                    );
 
     private:
       std::string name_;
@@ -234,22 +217,6 @@ namespace we { namespace type {
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
-
-    // ********************************************************************* //
-
-    boost::optional<transition_t::port_id_with_prop_t>
-    output_port_by_pid (transition_t const&, const petri_net::place_id_type&);
-
-    boost::optional<transition_t::port_id_with_prop_t const&>
-    input_port_by_pid (transition_t const&, const petri_net::place_id_type&);
-
-    boost::unordered_set<std::string>
-    port_names (transition_t const&, const we::type::PortDirection&);
-
-    boost::optional<const port_t&>
-    get_port_by_associated_pid ( transition_t const&
-                               , const petri_net::place_id_type&
-                               );
   }
 }
 
