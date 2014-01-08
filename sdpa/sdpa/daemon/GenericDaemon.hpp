@@ -132,8 +132,6 @@ namespace sdpa {
       virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
       virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* ) = 0;
       //virtual void handleJobResultsReplyEvent (const sdpa::events::JobResultsReplyEvent *) ?!
-      virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *);
-      virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *);
       virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
       virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
       //virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) ?!

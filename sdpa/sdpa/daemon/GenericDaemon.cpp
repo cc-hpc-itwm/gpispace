@@ -574,7 +574,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
   jobManager().addJobRequirements(job_id, jobReqs);
 
   // don't forget to set here the job's preferences
-  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string(), sdpa::job_id_t::invalid_job_id()) );
+  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string(), boost::none) );
   sendEventToSelf(pEvtSubmitJob);
 
   _.dont();
@@ -1295,16 +1295,6 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
     events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
     sendEventToOther(pErrorEvt);
   }
-}
-
-void GenericDaemon::handleJobStalledEvent (const events::JobStalledEvent *pEvt)
-{
-  //pause(pEvt->job_id());
-}
-
-void GenericDaemon::handleJobRunningEvent (const events::JobRunningEvent *pEvt)
-{
-  //resume(pEvt->job_id());
 }
 
 bool GenericDaemon::noChildJobStalled(const sdpa::job_id_t& jobId) const
