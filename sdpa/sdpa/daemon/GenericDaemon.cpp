@@ -284,7 +284,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
   DMLOG (TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
 
-  const JobId job_id (e.job_id() ? *e.job_id() : JobId (gen_id()));
+  const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
   try {
     // One should parse the workflow in order to be able to create a valid job
@@ -1038,7 +1038,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   lock_type lock(mtx_subscriber_);
 
   // check if all the request jobs still exist
-  BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
+  BOOST_FOREACH(const job_id_t& jobId, listJobIds)
   {
     // if the list contains at least one invalid job,
     // send back an error message
@@ -1058,7 +1058,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   // allow to subscribe multiple times with different lists of job ids
   if(isSubscriber(subscriber))
   {
-    BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
+    BOOST_FOREACH(const job_id_t& jobId, listJobIds)
     {
       if( !subscribedFor(subscriber, jobId) )
         m_listSubscribers[subscriber].push_back(jobId);
@@ -1075,7 +1075,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   sendEventToOther(ptrSubscAckEvt);
 
   // check if the subscribed jobs are already in a terminal state
-  BOOST_FOREACH(const sdpa::JobId& jobId, listJobIds)
+  BOOST_FOREACH(const job_id_t& jobId, listJobIds)
   {
     Job* pJob = findJob(jobId);
     if(pJob)

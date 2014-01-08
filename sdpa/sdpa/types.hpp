@@ -2,7 +2,6 @@
 #define SDPA_TYPES_HPP 1
 
 #include <string>
-#include <sdpa/JobId.hpp>
 #include <vector>
 #include <set>
 #include <list>
@@ -11,8 +10,8 @@
 #include <boost/foreach.hpp>
 
 namespace sdpa {
-	typedef sdpa::JobId job_id_t;
-	typedef std::list<sdpa::JobId> job_id_list_t;
+	typedef std::string job_id_t;
+	typedef std::list<job_id_t> job_id_list_t;
 	typedef std::string job_desc_t;
 	typedef std::string location_t;
 	typedef std::string worker_id_t;

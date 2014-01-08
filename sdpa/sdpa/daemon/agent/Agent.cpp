@@ -174,7 +174,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 void Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::type::activity_t & result)
 {
   //put the job into the state Finished
-  JobId id(wfid);
+  job_id_t id(wfid);
   DMLOG ( TRACE,
         "The workflow engine has notified the agent "<<name()<<" that the job "<<id<<" finished!"
         );
@@ -352,7 +352,7 @@ void Agent::failed( const we::mgmt::layer::id_type& wfid
                   , std::string const & reason
                   )
 {
-  JobId id(wfid);
+  job_id_t id(wfid);
   DMLOG ( TRACE, "The workflow engine has notified the agent "<<name()<<" that the job "<<id<<" failed!"
         );
   //put the job into the state Failed
