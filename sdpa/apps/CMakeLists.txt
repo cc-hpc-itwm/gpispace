@@ -1,6 +1,5 @@
 set (daemon_libs
   sdpa-daemon
-  sdpa-com
   sdpa
   ${FhgLog_LIBRARY}
   pnet
@@ -31,7 +30,6 @@ install(TARGETS agent
 
 set ( client_libs
       sdpa-client
-      sdpa-com
       sdpa
       fhg-revision
       ${FhgLog_LIBRARY}
