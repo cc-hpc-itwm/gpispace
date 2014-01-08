@@ -198,28 +198,6 @@ namespace petri_net
     return _place_to_port;
   }
 
-  bool net::is_read_connection ( const transition_id_type& tid
-                               , const place_id_type& pid
-                               ) const
-  {
-    if (  _adj_pt_read.find (adj_pt_type::value_type (pid, tid))
-       != _adj_pt_read.end()
-       )
-    {
-      return true;
-    }
-
-    if (  _adj_pt_consume.find (adj_pt_type::value_type (pid, tid))
-       == _adj_pt_consume.end()
-       )
-    {
-      throw pnet::exception::connection::no_such
-        <transition_id_type, place_id_type> (tid, pid);
-    }
-
-    return false;
-  }
-
   void net::delete_edge_out ( const transition_id_type& tid
                             , const place_id_type& pid
                             )

@@ -232,11 +232,6 @@ namespace petri_net
     void delete_edge_out (const transition_id_type&, const place_id_type&);
     void delete_edge_in (const transition_id_type&, const place_id_type&);
 
-    //! \todo eliminate, clients could know that already
-    bool is_read_connection ( const transition_id_type&
-                            , const place_id_type&
-                            ) const;
-
     class cross_type
     {
     public:
