@@ -9,6 +9,7 @@
 
 #include <fhg/util/now.hpp>
 
+#ifdef NDEBUG
 BOOST_AUTO_TEST_CASE (formatting_performance)
 {
   double t (-fhg::util::now());
@@ -24,6 +25,7 @@ BOOST_AUTO_TEST_CASE (formatting_performance)
 
   BOOST_REQUIRE_LT (t, 1.0);
 }
+#endif
 
 BOOST_AUTO_TEST_CASE (percentage_escapes_percentage)
 {
