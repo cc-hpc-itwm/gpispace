@@ -57,32 +57,16 @@ namespace we
       return _requirements;
     }
 
-    void transition_t::connect_outer_to_inner
-      ( const petri_net::place_id_type& pid
-      , const petri_net::port_id_type& port
-      , const we::type::property::type& prop
-      )
-    {
-      outer_to_inner_.insert
-        (outer_to_inner_t::value_type (pid, std::make_pair (port, prop)));
-    }
-
-    void transition_t::connect_inner_to_outer
-      ( const petri_net::port_id_type& port
-      , const petri_net::place_id_type& pid
-      , const we::type::property::type& prop
-      )
-    {
-      inner_to_outer_.insert
-        (inner_to_outer_t::value_type (port, std::make_pair (pid, prop)));
-    }
-
     void transition_t::add_connection ( petri_net::place_id_type const& place_id
                                       , petri_net::port_id_type const& port_id
                                       , we::type::property::type const& property
                                       )
     {
-      connect_outer_to_inner (place_id, port_id, property);
+      outer_to_inner_.insert
+        (outer_to_inner_t::value_type ( place_id
+                                      , std::make_pair (port_id, property)
+                                      )
+        );
     }
 
     void transition_t::add_connection ( petri_net::port_id_type const& port_id
@@ -90,7 +74,11 @@ namespace we
                                       , we::type::property::type const& property
                                       )
     {
-      connect_inner_to_outer (port_id, place_id, property);
+      inner_to_outer_.insert
+        (inner_to_outer_t::value_type ( port_id
+                                      , std::make_pair (place_id, property)
+                                      )
+        );
     }
 
     transition_t::inner_to_outer_t const& transition_t::inner_to_outer() const

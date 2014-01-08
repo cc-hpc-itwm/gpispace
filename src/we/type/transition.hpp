@@ -176,15 +176,6 @@ namespace we { namespace type {
 
       std::list<we::type::requirement_t> _requirements;
 
-      void connect_outer_to_inner ( const petri_net::place_id_type&
-                                  , const petri_net::port_id_type&
-                                  , const we::type::property::type&
-                                  );
-      void connect_inner_to_outer ( const petri_net::port_id_type&
-                                  , const petri_net::place_id_type&
-                                  , const we::type::property::type&
-                                  );
-
       friend class boost::serialization::access;
       template <typename Archive>
       void save(Archive& ar, const unsigned int) const
