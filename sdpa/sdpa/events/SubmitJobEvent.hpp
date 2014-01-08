@@ -17,7 +17,7 @@ namespace sdpa
       SubmitJobEvent
         ( const address_t& a_from
         , const address_t& a_to
-        , const sdpa::job_id_t& a_job_id
+        , const boost::optional<sdpa::job_id_t>& a_job_id
         , const job_desc_t& a_description
         , const boost::optional<sdpa::job_id_t>& a_parent_id
         , const sdpa::worker_id_list_t& worker_list = sdpa::worker_id_list_t()
@@ -31,10 +31,10 @@ namespace sdpa
 
       std::string str() const
       {
-        return "SubmitJobEvent(" + job_id ().str () + ")";
+        return "SubmitJobEvent(" + job_id ().get_value_or ("NONE").str () + ")";
       }
 
-      const sdpa::job_id_t& job_id() const
+      const boost::optional<sdpa::job_id_t>& job_id() const
       {
         return _job_id;
       }
@@ -57,7 +57,7 @@ namespace sdpa
       }
 
     private:
-      sdpa::job_id_t _job_id;
+      boost::optional<sdpa::job_id_t> _job_id;
       sdpa::job_desc_t desc_;
       boost::optional<sdpa::job_id_t> parent_;
       sdpa::worker_id_list_t worker_list_;
@@ -75,7 +75,7 @@ namespace sdpa
     LOAD_CONSTRUCT_DATA_DEF (SubmitJobEvent, e)
     {
       LOAD_SDPAEVENT_CONSTRUCT_DATA (from, to);
-      LOAD_FROM_ARCHIVE (sdpa::job_id_t, job_id);
+      LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
       LOAD_FROM_ARCHIVE (sdpa::job_desc_t, description);
       LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, parent_id);
       LOAD_FROM_ARCHIVE (sdpa::worker_id_list_t, worker_list);

@@ -268,7 +268,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   }
 
   // First, check if the job 'job_id' wasn't already submitted!
-  if(jobManager().findJob(e.job_id()))
+  if(e.job_id() && jobManager().findJob(*e.job_id()))
   {
     // The job already exists -> generate an error message that the job already exists
 
@@ -284,8 +284,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
   DMLOG (TRACE, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
 
-  const JobId job_id
-    (JobId::is_invalid_job_id (e.job_id()) ? JobId (gen_id()) : e.job_id());
+  const JobId job_id (e.job_id() ? *e.job_id() : JobId (gen_id()));
 
   try {
     // One should parse the workflow in order to be able to create a valid job
