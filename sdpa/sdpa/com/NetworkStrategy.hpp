@@ -1,8 +1,9 @@
 #ifndef SDPA_COM_NETWORK_STRATEGY_HPP
 #define SDPA_COM_NETWORK_STRATEGY_HPP 1
 
-#include <sdpa/logging.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
+
+#include <fhglog/fhglog.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>

@@ -20,7 +20,6 @@
 #define SDPA_DAEMON_SYNCHRONIZED_QUEUE_HPP 1
 
 #include <boost/thread.hpp>
-#include <sdpa/logging.hpp>
 
 #include <iostream>
 #include <stdexcept>

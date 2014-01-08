@@ -4,7 +4,7 @@
 #include <vector>
 #include <csignal>
 
-#include <sdpa/logging.hpp>
+#include <fhglog/fhglog.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/foreach.hpp>

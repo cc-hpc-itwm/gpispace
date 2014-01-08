@@ -14,10 +14,11 @@
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/job_states.hpp>
-#include <sdpa/logging.hpp>
 #include <sdpa/types.hpp>
 
 #include <fhg/assert.hpp>
+
+#include <fhglog/fhglog.hpp>
 
 #include <boost/msm/back/state_machine.hpp>
 #include <boost/msm/front/state_machine_def.hpp>

@@ -21,7 +21,6 @@
 #include <fhg/assert.hpp>
 
 #include <sdpa/capability.hpp>
-#include <sdpa/logging.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
@@ -59,6 +58,8 @@
 
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
+
+#include <fhglog/fhglog.hpp>
 
 #define OVERWRITTEN_IN_TEST virtual
 

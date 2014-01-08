@@ -3,11 +3,12 @@
 
 #include <list>
 #include <string>
-#include <sdpa/logging.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/exceptions.hpp>
+
+#include <fhglog/fhglog.hpp>
 
 #include <boost/optional.hpp>
 
