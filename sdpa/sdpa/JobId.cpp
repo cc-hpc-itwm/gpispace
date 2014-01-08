@@ -9,7 +9,7 @@ JobId JobId::create_unique_id()
   return generator.next();
 }
 
-JobId::JobId() : id_(create_unique_id().str())
+JobId::JobId() : id_(invalid_job_id())
 {
 }
 

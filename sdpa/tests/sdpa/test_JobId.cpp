@@ -3,14 +3,17 @@
 #include <boost/test/unit_test.hpp>
 #include <sstream>
 #include <sdpa/JobId.hpp>
+#include <sdpa/id_generator.hpp>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::JobId)
 
-BOOST_AUTO_TEST_CASE (default_constructor)
+BOOST_AUTO_TEST_CASE (id_generator)
 {
-  const sdpa::JobId jid1;
-  const sdpa::JobId jid2;
-  const sdpa::JobId jid3;
+  sdpa::id_generator generator ("job");
+
+  const sdpa::JobId jid1 (generator.next());
+  const sdpa::JobId jid2 (generator.next());
+  const sdpa::JobId jid3 (generator.next());
 
   BOOST_REQUIRE_NE (jid1, jid2);
   BOOST_REQUIRE_NE (jid1, jid3);
