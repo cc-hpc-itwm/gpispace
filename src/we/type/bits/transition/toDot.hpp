@@ -463,56 +463,6 @@ namespace we { namespace type {
                     }
                 }
 
-              std::ostringstream real;
-
-              {
-                namespace prop = we::type::property::traverse;
-
-                //! \todo eliminate the hack that stores the real
-                //! place in the properties
-                prop::stack_type stack
-                  (prop::dfs (place.property(), "real"));
-
-                while (!stack.empty())
-                  {
-                    if (opts.show_real)
-                      {
-                        real << endl
-                             << property ("real"
-                                         , stack.top().first[0]
-                                         + "."
-                                         + stack.top().second
-                                         )
-                          ;
-                      }
-
-                    BOOST_FOREACH ( const transition_t& trans
-                                  , net.transitions()
-                                  | boost::adaptors::map_values
-                                  )
-                    {
-                      if (trans.name() == stack.top().first[0])
-                      {
-                        BOOST_FOREACH (const pmv_t& pmv, trans.ports())
-                        {
-                          if (  pmv.second.is_tunnel()
-                             && pmv.second.name() == stack.top().second
-                             )
-                          {
-                            ecbt[trans.name()].push_back
-                              (extra_connection_type ( place_dot_name
-                                                     , pmv.first
-                                                     )
-                              );
-                          }
-                        }
-                      }
-                    }
-
-                    stack.pop();
-                  }
-              }
-
               level (s, l + 1)
                 << place_dot_name
                 << node
@@ -523,7 +473,6 @@ namespace we { namespace type {
                                     )
                    + quote (token.str())
                    + virt.str()
-                   + real.str()
                    )
                 ;
             }

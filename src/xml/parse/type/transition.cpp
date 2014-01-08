@@ -1014,39 +1014,6 @@ namespace xml
 
           { // not unfold
 
-            // set the real-property
-            BOOST_FOREACH ( const place_map_type& place_map
-                          , trans.place_map().values()
-                          )
-              {
-                const place_map_map_type::const_iterator pid
-                  (pids.find (place_map.place_real()));
-
-                if (pid == pids.end())
-                  {
-                    throw
-                      error::real_place_missing ( place_map.place_virtual()
-                                                , place_map.place_real()
-                                                , trans.name()
-                                                , state.file_in_progress()
-                                                );
-                  }
-
-                //! \todo eliminate the hack that stores the real
-                //! place in the properties
-                place::type we_place (we_net.get_place (pid->second));
-
-                std::ostringstream path;
-
-                path << "real" << "." << trans.name();
-
-                we_place.property().set ( path.str()
-                                        , place_map.place_virtual()
-                                        );
-
-                we_net.modify_place (pid->second, we_place);
-              }
-
             boost::unordered_map<std::string, petri_net::port_id_type>
               port_id_in;
             boost::unordered_map<std::string, petri_net::port_id_type>
