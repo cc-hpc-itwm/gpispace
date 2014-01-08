@@ -40,8 +40,6 @@ namespace sdpa
     {
       lock_type _ (_job_map_and_requirements_mutex);
 
-      DMLOG (TRACE, "Add new job into the job manager");
-
       Job* pJob = new Job( job_id, desc, parent, is_master_job, owner );
 
       job_map_.insert(std::make_pair (job_id, pJob));
