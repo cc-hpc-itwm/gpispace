@@ -938,33 +938,35 @@ namespace fhg
           )
         {
           BOOST_FOREACH
-            ( const std::string& port_name
-            , we::type::port_names ( activity_and_fun->first.transition()
-                                   , we::type::PORT_IN
-                                   )
+            ( const we::type::port_t& port
+            , activity_and_fun->first.transition().ports()
+            | boost::adaptors::map_values
             )
           {
-            bool retry (true);
-            while (retry)
+            if (port.direction() == we::type::PORT_IN)
             {
-              const boost::optional<const xml::parse::id::ref::port&> xml_port
-                (activity_and_fun->second.get().get_port_in (port_name));
-
-              bool ok;
-              const std::string value
-                ( prompt_for ( QString::fromStdString (port_name)
-                             , xml_port
-                             ? xml_port->get().type()
-                             : boost::optional<std::string> (boost::none)
-                             , &ok
-                             )
-                );
-              if (!ok)
+              bool retry (true);
+              while (retry)
               {
-                return;
-              }
+                const boost::optional<const xml::parse::id::ref::port&> xml_port
+                  (activity_and_fun->second.get().get_port_in (port.name()));
 
-              retry = put_token (activity_and_fun->first, port_name, value);
+                bool ok;
+                const std::string value
+                  ( prompt_for ( QString::fromStdString (port.name())
+                               , xml_port
+                               ? xml_port->get().type()
+                               : boost::optional<std::string> (boost::none)
+                               , &ok
+                               )
+                  );
+                if (!ok)
+                {
+                  return;
+                }
+
+                retry = put_token (activity_and_fun->first, port.name(), value);
+              }
             }
           }
         }
