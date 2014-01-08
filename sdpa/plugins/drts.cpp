@@ -35,6 +35,8 @@
 #include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/frame_builder.hpp>
 
+#include <boost/serialization/shared_ptr.hpp>
+
 class DRTSImpl : FHG_PLUGIN
                , public drts::DRTS
                , public sdpa::events::EventHandler
