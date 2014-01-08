@@ -558,7 +558,11 @@ namespace petri_net
 
       act.add_input (transition.outer_to_inner().at (pid).first, *token);
 
-      if (!is_read_connection (tid, pid))
+      //! \todo save the information whether or not it is a read
+      //! connection in _enabled_choice and omit that conditional
+      if (  _adj_pt_read.find (adj_pt_type::value_type (pid, tid))
+         == _adj_pt_read.end()
+         )
       {
         _token_by_place_id.at (pid).erase (token);
 
