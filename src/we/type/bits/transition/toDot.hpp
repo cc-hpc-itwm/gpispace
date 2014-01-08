@@ -535,7 +535,12 @@ namespace we { namespace type {
                   << name ( id_trans
                           , "port_" + boost::lexical_cast<std::string> (c.second.first)
                           )
-                  << ( net.is_read_connection (trans_id, c.first)
+                  << (  net.place_to_transition_read().find
+                        (petri_net::net::adj_pt_type::value_type ( c.first
+                                                                 , trans_id
+                                                                 )
+                        )
+                     != net.place_to_transition_read().end()
                      ? brackets (keyval ("style", style::read_connection))
                      : ""
                      )
