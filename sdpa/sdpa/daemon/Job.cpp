@@ -109,25 +109,6 @@ namespace sdpa {
       evt.ptrScheduler()->schedule(id());
     }
 
-    void Job::action_resume_job(const MSMResumeJobEvent& evt)
-    {
-      DMLOG(TRACE, "The job "<<id()<<" changed its status from STALLED to RUNNING");
-      if(evt.ptrAgent())
-      {
-        //if( evt.ptrAgent()->noChildJobStalled(id()) )
-        {
-          DMLOG(TRACE, "Send  JobRunningEvent for the job "<<id()<<" to the master "<<owner());
-            // notify the the job owner that the job makes progress
-            sdpa::events::JobRunningEvent::Ptr pEvt(
-                new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
-                                                   , owner()
-                                                   , id()
-                                                  ));
-            evt.ptrAgent()->sendEventToOther(pEvt);
-         }
-      }
-    }
-
     void Job::action_retrieve_job_results(const MSMRetrieveJobResultsEvent& e)
     {
       const events::JobResultsReplyEvent::Ptr pResReply(
