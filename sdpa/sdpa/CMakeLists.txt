@@ -1,13 +1,3 @@
-set (hdrs
-  common.hpp
-  JobId.hpp
-  logging.hpp
-  types.hpp
-  job_states.hpp
-  id_generator.hpp
-  com/NetworkStrategy.hpp
-)
-
 set (srcs
   client.cpp
   JobId.cpp
@@ -24,7 +14,7 @@ set (srcs
   daemon/orchestrator/Orchestrator.cpp
 )
 
-ADD_LIBRARY(sdpa ${hdrs} ${srcs})
+ADD_LIBRARY(sdpa ${srcs})
 target_link_libraries (sdpa
   ${Boost_SERIALIZATION_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
