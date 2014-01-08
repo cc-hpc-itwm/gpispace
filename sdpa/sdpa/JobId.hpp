@@ -3,10 +3,7 @@
 
 #include <string>
 #include <ostream>
-#include <boost/serialization/shared_ptr.hpp>     // shared_ptr serialization
-#include <boost/serialization/base_object.hpp>
 #include <boost/serialization/utility.hpp>
-#include <boost/serialization/assume_abstract.hpp>
 #include <boost/functional/hash.hpp>
 
 namespace sdpa {
