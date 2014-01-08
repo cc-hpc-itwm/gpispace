@@ -15,6 +15,8 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
+#include <boost/system/system_error.hpp>
+
 namespace gspc
 {
   namespace kvs
