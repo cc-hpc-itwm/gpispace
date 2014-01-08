@@ -355,15 +355,6 @@ namespace petri_net
     _enabled_choice.erase (tid);
   }
 
-  place_id_type net::modify_place ( const place_id_type& pid
-                                  , const place::type& place
-                                  )
-  {
-    _pmap[pid] = place;
-
-    return pid;
-  }
-
   void net::put_value ( const place_id_type& pid
                       , const pnet::type::value::value_type& value
                       )

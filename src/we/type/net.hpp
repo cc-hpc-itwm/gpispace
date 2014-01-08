@@ -117,8 +117,6 @@ namespace petri_net
     void delete_place (const place_id_type&);
     void delete_transition (const transition_id_type&);
 
-    place_id_type modify_place (const place_id_type&, const place::type&);
-
     void put_value (const place_id_type&, const pnet::type::value::value_type&);
 
     const std::list<pnet::type::value::value_type>&
