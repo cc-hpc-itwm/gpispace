@@ -82,7 +82,6 @@ namespace sdpa {
                    );
       virtual ~GenericDaemon();
 
-      SDPA_DECLARE_LOGGER();
       const std::string& name() const;
 
       const unsigned int& rank() const { return m_nRank; }
@@ -223,6 +222,8 @@ namespace sdpa {
 
       // data members
     protected:
+      fhg::log::Logger::ptr_t _logger;
+
       std::string _name;
 
       mutex_type mtx_;
