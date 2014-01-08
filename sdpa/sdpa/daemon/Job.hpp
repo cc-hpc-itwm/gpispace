@@ -117,7 +117,6 @@ namespace sdpa {
         a_row<  Running,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
         _row<   Running,        events::CancelJobEvent,                 Canceling>,
         a_row<  Running,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
-        _row<   Running,        MSMStalledEvent,        		Stalled>,
         _irow<  Running,        MSMResumeJobEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
