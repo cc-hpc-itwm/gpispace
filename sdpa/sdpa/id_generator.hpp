@@ -52,7 +52,7 @@ namespace sdpa {
     }
     return _prefix + boost::lexical_cast<std::string> (id);
   }
-  private:
+
     id_generator (std::string const& name)
       : _counter()
       , _prefix ( ( boost::format ("%1%.%2%.%3%.%4%.")
