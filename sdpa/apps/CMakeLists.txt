@@ -29,7 +29,6 @@ install(TARGETS agent
 
 
 set ( client_libs
-      sdpa-client
       sdpa
       fhg-revision
       ${FhgLog_LIBRARY}

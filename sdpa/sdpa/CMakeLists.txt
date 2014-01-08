@@ -1,7 +1,5 @@
 add_subdirectory(daemon)
 
-add_library (sdpa-client client.cpp)
-
 set (hdrs
   common.hpp
   JobId.hpp
@@ -13,6 +11,7 @@ set (hdrs
 )
 
 set (srcs
+  client.cpp
   JobId.cpp
   com/NetworkStrategy.cpp
 )

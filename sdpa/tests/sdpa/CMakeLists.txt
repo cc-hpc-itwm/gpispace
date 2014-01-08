@@ -261,7 +261,6 @@ foreach (test ${tests})
       PROJECT sdpa
       BOOST_UNIT_TEST # all of them?
       LINK_LIBRARIES sdpa-daemon
-                     sdpa-client
                      sdpa
                      fhg-plugin
                      fhg-revision
