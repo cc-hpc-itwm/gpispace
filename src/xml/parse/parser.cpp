@@ -1612,8 +1612,6 @@ namespace xml
                                        )
         );
 
-      we::type::optimize::optimize (trans, state.options_optimize());
-
       return we::mgmt::type::activity_t (trans);
     }
   } // namespace parse

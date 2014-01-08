@@ -15,6 +15,7 @@
 
 #include <boost/unordered_map.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/bind.hpp>
 
 namespace xml
 {

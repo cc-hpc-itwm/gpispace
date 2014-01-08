@@ -12,7 +12,6 @@
 #include <xml/parse/util/position.hpp>
 #include <xml/parse/rapidxml/types.hpp>
 
-#include <we/type/bits/transition/optimize.hpp>
 #include <we/type/property.hpp>
 
 #include <fstream>
@@ -26,6 +25,23 @@
 #include <boost/filesystem.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/optional.hpp>
+
+//! \todo cleanup, taken from optimize
+#include <boost/foreach.hpp>
+#include <boost/program_options.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/variant.hpp>
+
+#include <fhg/util/read_bool.hpp>
+
+#include <rewrite/validprefix.hpp>
+
+#include <we/expr/parse/util/get_names.hpp>
+#include <we/type/id.hpp>
+#include <we/type/net.hpp>
+#include <we/type/port.hpp>
+#include <we/type/transition.hpp>
+
 
 namespace xml
 {
@@ -65,8 +81,6 @@ namespace xml
           );
 
         we::type::property::path_type& prop_path();
-
-        const we::type::optimize::options::type& options_optimize() const;
 
         void interpret_property ( const we::type::property::path_type& path
                                 , const we::type::property::value_type& value
@@ -239,7 +253,6 @@ namespace xml
         mutable in_progress_position_type _in_progress_position;
         std::set<boost::filesystem::path> _dependencies;
         we::type::property::path_type _prop_path;
-        we::type::optimize::options::type _options_optimize;
         bool _ignore_properties;
         bool _Werror;
         bool _Wall;
