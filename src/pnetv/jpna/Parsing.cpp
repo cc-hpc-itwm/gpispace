@@ -119,8 +119,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
                 , net.place_to_transition_consume()
                 )
         {
-          Place *place = find(places_, pt.left);
-          Transition *transition = find(transitions_, pt.right);
+          Place *place = ::jpna::find(places_, pt.left);
+          Transition *transition = ::jpna::find(transitions_, pt.right);
 
           /* Transition consumes the token on input place. */
           transition->addInputPlace(place);
@@ -129,8 +129,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
                 , net.place_to_transition_read()
                 )
         {
-          Place *place = find(places_, pt.left);
-          Transition *transition = find(transitions_, pt.right);
+          Place *place = ::jpna::find(places_, pt.left);
+          Transition *transition = ::jpna::find(transitions_, pt.right);
 
           /* Transition takes a token and instantly puts it back. */
           transition->addInputPlace(place);
@@ -140,8 +140,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
                 , net.transition_to_place()
                 )
         {
-          Transition *transition = find(transitions_, tp.left);
-          Place *place = find(places_, tp.right);
+          Transition *transition = ::jpna::find(transitions_, tp.left);
+          Place *place = ::jpna::find(places_, tp.right);
 
           /* Executing the transition puts a token on output place. */
           transition->addOutputPlace(place);
@@ -169,7 +169,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             if (port.has_associated_place()) {
                 petri_net::place_id_type pid = port.associated_place();
 
-                Place *place = find(places_, pid);
+                Place *place = ::jpna::find(places_, pid);
                 place->setInitialMarking(place->initialMarking() + 1);
 
             }
