@@ -42,7 +42,6 @@ namespace sdpa {
 
       // The list of FSM states
       struct Pending : public boost::msm::front::state<>{};
-      struct Stalled : public boost::msm::front::state<>{};
       struct Running : public boost::msm::front::state<>{};
       struct Finished : public boost::msm::front::state<>{};
       struct Failed : public boost::msm::front::state<>{};
