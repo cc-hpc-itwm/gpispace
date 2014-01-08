@@ -578,40 +578,6 @@ namespace we { namespace type {
                 , trans.outer_to_inner()
                 )
               {
-                bool found (false);
-                bool is_read (false);
-
-                BOOST_FOREACH ( const petri_net::place_id_type& place_id
-                              , net.in_to_transition_consume (trans_id)
-                              )
-                {
-                  if (place_id == c.first)
-                  {
-                    found = true;
-
-                    break;
-                  }
-                }
-                BOOST_FOREACH ( const petri_net::place_id_type& place_id
-                              , net.in_to_transition_read (trans_id)
-                              )
-                {
-                  if (place_id == c.first)
-                  {
-                    found = true;
-
-                    is_read = true;
-
-                    break;
-                  }
-                }
-
-                if (!found)
-                {
-                  throw std::runtime_error
-                    ("STRANGE! Connected in port but not in net!");
-                }
-
                 level (s, l + 1)
                   << name ( id_net
                           , "place_" + boost::lexical_cast<std::string> (c.first)
@@ -620,7 +586,7 @@ namespace we { namespace type {
                   << name ( id_trans
                           , "port_" + boost::lexical_cast<std::string> (c.second.first)
                           )
-                  << ( is_read
+                  << ( net.is_read_connection (trans_id, c.first)
                      ? brackets (keyval ("style", style::read_connection))
                      : ""
                      )
