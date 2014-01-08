@@ -9,6 +9,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/range/join.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
 
@@ -239,18 +240,12 @@ namespace petri_net
     std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
     std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , _adj_pt_consume.left.equal_range (pid)
-                  | boost::adaptors::map_values
-                  )
-    {
-      stack_in.push (std::make_pair (tid, pid));
-      // TODO: get port and remove place from there
-    }
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , _adj_pt_read.left.equal_range (pid)
-                  | boost::adaptors::map_values
-                  )
+    transition_id_range_type consume
+      (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
+    transition_id_range_type read
+      (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
+
+    BOOST_FOREACH (const transition_id_type& tid, boost::join (consume, read))
     {
       stack_in.push (std::make_pair (tid, pid));
       // TODO: get port and remove place from there
@@ -291,17 +286,12 @@ namespace petri_net
       stack_out.push (std::make_pair (tid, place_id));
     }
 
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , _adj_pt_consume.right.equal_range (tid)
-                  | boost::adaptors::map_values
-                  )
-    {
-      stack_in.push (std::make_pair (tid, place_id));
-    }
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , _adj_pt_read.right.equal_range (tid)
-                  | boost::adaptors::map_values
-                  )
+    place_id_range_type consume
+      (_adj_pt_consume.right.equal_range (tid) | boost::adaptors::map_values);
+    place_id_range_type read
+      (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
+
+    BOOST_FOREACH (const place_id_type& place_id, boost::join (consume, read))
     {
       stack_in.push (std::make_pair (tid, place_id));
     }
@@ -338,17 +328,12 @@ namespace petri_net
         )
       );
 
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , _adj_pt_consume.left.equal_range (pid)
-                  | boost::adaptors::map_values
-                  )
-    {
-      update_enabled_put_token (tid, pid, tokenpos);
-    }
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , _adj_pt_read.left.equal_range (pid)
-                  | boost::adaptors::map_values
-                  )
+    transition_id_range_type consume
+      (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
+    transition_id_range_type read
+      (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
+
+    BOOST_FOREACH (const transition_id_type& tid, boost::join (consume, read))
     {
       update_enabled_put_token (tid, pid, tokenpos);
     }
@@ -380,17 +365,12 @@ namespace petri_net
   {
     _token_by_place_id.erase (pid);
 
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , _adj_pt_consume.left.equal_range (pid)
-                  | boost::adaptors::map_values
-                  )
-    {
-      disable (tid);
-    }
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , _adj_pt_read.left.equal_range (pid)
-                  | boost::adaptors::map_values
-                  )
+    transition_id_range_type consume
+      (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
+    transition_id_range_type read
+      (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
+
+    BOOST_FOREACH (const transition_id_type& tid, boost::join (consume, read))
     {
       disable (tid);
     }
@@ -405,28 +385,12 @@ namespace petri_net
   {
     cross_type cross;
 
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , _adj_pt_consume.right.equal_range (tid)
-                  | boost::adaptors::map_values
-                  )
-    {
-      std::list<pnet::type::value::value_type>&
-        tokens (_token_by_place_id[place_id]);
+    place_id_range_type consume
+      (_adj_pt_consume.right.equal_range (tid) | boost::adaptors::map_values);
+    place_id_range_type read
+      (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
 
-      if (tokens.empty())
-      {
-        disable (tid);
-
-        return;
-      }
-
-      cross.push (place_id, tokens);
-    }
-
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , _adj_pt_read.right.equal_range (tid)
-                  | boost::adaptors::map_values
-                  )
+    BOOST_FOREACH (const place_id_type& place_id, boost::join (consume, read))
     {
       std::list<pnet::type::value::value_type>&
         tokens (_token_by_place_id[place_id]);
@@ -465,35 +429,12 @@ namespace petri_net
 
     cross_type cross;
 
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , _adj_pt_consume.right.equal_range (tid)
-                  | boost::adaptors::map_values
-                  )
-    {
-      if (place_id == pid)
-      {
-        cross.push (place_id, token);
-      }
-      else
-      {
-        std::list<pnet::type::value::value_type>&
-          tokens (_token_by_place_id[place_id]);
+    place_id_range_type consume
+      (_adj_pt_consume.right.equal_range (tid) | boost::adaptors::map_values);
+    place_id_range_type read
+      (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
 
-        if (tokens.empty())
-        {
-          disable (tid);
-
-          return;
-        }
-
-        cross.push (place_id, tokens);
-      }
-    }
-
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , _adj_pt_read.right.equal_range (tid)
-                  | boost::adaptors::map_values
-                  )
+    BOOST_FOREACH (const place_id_type& place_id, boost::join (consume, read))
     {
       if (place_id == pid)
       {
@@ -561,17 +502,12 @@ namespace petri_net
       {
         _token_by_place_id.at (pid).erase (token);
 
-        BOOST_FOREACH ( const transition_id_type& t
-                      , _adj_pt_consume.left.equal_range (pid)
-                      | boost::adaptors::map_values
-                      )
-        {
-          transitions_to_update.insert (t);
-        }
-        BOOST_FOREACH ( const transition_id_type& t
-                      , _adj_pt_read.left.equal_range (pid)
-                      | boost::adaptors::map_values
-                      )
+        transition_id_range_type consume
+          (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
+        transition_id_range_type read
+          (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
+
+        BOOST_FOREACH (const transition_id_type& t, boost::join (consume, read))
         {
           transitions_to_update.insert (t);
         }
