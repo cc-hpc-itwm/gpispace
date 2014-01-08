@@ -24,6 +24,7 @@ namespace sdpa {
 
     static JobId invalid_job_id() { return ""; }
     static bool is_invalid_job_id(const JobId &job_id) { return job_id.str().empty(); }
+    static JobId create_unique_id();
 
     template <class Archive>
     void serialize(Archive& ar, unsigned int /* version */)
