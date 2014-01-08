@@ -172,7 +172,7 @@ namespace sdpa {
 
     private:
       // jobs
-      std::string gen_id() { return sdpa::JobId ().str (); }
+      std::string gen_id();
 
     public:
       // forwarding to jobManager() only:
