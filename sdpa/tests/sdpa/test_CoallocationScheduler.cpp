@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
   // check if to worker_9 was assigned any job
   sdpa::job_id_t jobId = _scheduler.getAssignedJob(workerId);
-  BOOST_CHECK(!jobId.str().empty());
+  BOOST_CHECK(!jobId.empty());
 }
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)

@@ -31,7 +31,7 @@ namespace sdpa
 
       std::string str() const
       {
-        return "SubmitJobEvent(" + job_id ().get_value_or ("NONE").str () + ")";
+        return "SubmitJobEvent(" + job_id ().get_value_or ("NONE") + ")";
       }
 
       const boost::optional<sdpa::job_id_t>& job_id() const

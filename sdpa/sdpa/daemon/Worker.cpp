@@ -51,7 +51,7 @@ void Worker::update()
 void Worker::submit(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
-  DMLOG (TRACE, "appending job(" << jobId.str() << ") to the submitted queue");
+  DMLOG (TRACE, "appending job(" << jobId << ") to the submitted queue");
   setLastTimeServed(fhg::util::now());
   submitted_.push(jobId);
 }
@@ -63,12 +63,12 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
   {
       acknowledged_.push(job_id);
       submitted_.erase(job_id);
-      DMLOG(TRACE, "acknowledged job(" << job_id.str() << ")");
+      DMLOG(TRACE, "acknowledged job(" << job_id << ")");
       return true;
   }
   catch (const sdpa::daemon::NotFoundItem& ex)
   {
-      SDPA_LOG_WARN("The job " << job_id.str() << " could not be acknowledged. It was not found into the worker's submitted queue!");
+      SDPA_LOG_WARN("The job " << job_id << " could not be acknowledged. It was not found into the worker's submitted queue!");
       return false;
   }
 }

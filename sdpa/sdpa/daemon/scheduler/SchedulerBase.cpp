@@ -74,7 +74,7 @@ void SchedulerBase::reschedule( const Worker::worker_id_t & worker_id, sdpa::job
   lock_type lock(mtx_);
   while( !workerJobList.empty() ) {
       sdpa::job_id_t jobId = workerJobList.front();
-      DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
+      DMLOG (TRACE, "Re-scheduling the job "<<jobId<<" ... ");
       rescheduleWorkerJob(worker_id, jobId);
       workerJobList.pop_front();
   }
@@ -256,7 +256,7 @@ void SchedulerBase::run()
 void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
-  DLOG(TRACE, "Acknowledge the job "<<job_id.str());
+  DLOG(TRACE, "Acknowledge the job "<<job_id);
   try {
     Worker::ptr_t ptrWorker = findWorker(worker_id);
 
@@ -266,7 +266,7 @@ void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
   }
   catch(JobNotFoundException const& ex1)
   {
-    SDPA_LOG_ERROR("Could not find the job "<<job_id.str()<<"!");
+    SDPA_LOG_ERROR("Could not find the job "<<job_id<<"!");
     throw ex1;
   }
   catch(WorkerNotFoundException const &ex2)
@@ -289,7 +289,7 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
   }
   catch(JobNotDeletedException const& ex1)
   {
-    SDPA_LOG_WARN("The job "<<jobId.str()<<" couldn't be found!");
+    SDPA_LOG_WARN("The job "<<jobId<<" couldn't be found!");
     throw ex1;
   }
   catch(WorkerNotFoundException const &ex2 )

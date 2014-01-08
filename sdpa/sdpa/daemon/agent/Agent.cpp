@@ -176,13 +176,13 @@ void Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::type:
   //put the job into the state Finished
   JobId id(wfid);
   DMLOG ( TRACE,
-        "The workflow engine has notified the agent "<<name()<<" that the job "<<id.str()<<" finished!"
+        "The workflow engine has notified the agent "<<name()<<" that the job "<<id<<" finished!"
         );
 
   Job* pJob = jobManager().findJob(id);
   if(!pJob)
   {
-    throw std::runtime_error ("got finished message for old/unknown Job " + id.str());
+    throw std::runtime_error ("got finished message for old/unknown Job " + id);
   }
 
   // forward it up
@@ -208,7 +208,7 @@ void Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::type:
     const we::mgmt::type::activity_t act (pJob->description());
     const sdpa::daemon::NotificationEvent evt
       ( workers
-      , pJob->id().str()
+      , pJob->id()
       , NotificationEvent::STATE_FINISHED
       , act
       );
@@ -353,14 +353,14 @@ void Agent::failed( const we::mgmt::layer::id_type& wfid
                   )
 {
   JobId id(wfid);
-  DMLOG ( TRACE, "The workflow engine has notified the agent "<<name()<<" that the job "<<id.str()<<" failed!"
+  DMLOG ( TRACE, "The workflow engine has notified the agent "<<name()<<" that the job "<<id<<" failed!"
         );
   //put the job into the state Failed
 
   Job* pJob = jobManager().findJob(id);
   if(!pJob)
   {
-    throw std::runtime_error ("got failed message for old/unknown Job " + id.str());
+    throw std::runtime_error ("got failed message for old/unknown Job " + id);
   }
 
   // forward it up
@@ -385,7 +385,7 @@ void Agent::failed( const we::mgmt::layer::id_type& wfid
     const we::mgmt::type::activity_t act (pJob->description());
     const sdpa::daemon::NotificationEvent evt
       ( workers
-      , pJob->id().str()
+      , pJob->id()
       , NotificationEvent::STATE_FINISHED
       , act
       );

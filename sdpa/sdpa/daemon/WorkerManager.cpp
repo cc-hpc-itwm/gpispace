@@ -133,7 +133,7 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
-  DLOG(TRACE, "Dispatch the job " << jobId.str() );
+  DLOG(TRACE, "Dispatch the job " << jobId );
   common_queue_.push(jobId);
 }
 
@@ -159,11 +159,11 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
     Worker::ptr_t ptrWorker = findWorker(worker_id);
     // delete job from worker's queues
 
-    DLOG(TRACE, "Deleting the job " << job_id.str() << " from the "<<worker_id<<"'s queues!");
+    DLOG(TRACE, "Deleting the job " << job_id << " from the "<<worker_id<<"'s queues!");
     ptrWorker->deleteJob(job_id);
   }
   catch(JobNotDeletedException const &) {
-    SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<"!");
+    SDPA_LOG_ERROR("Could not delete the job "<<job_id<<"!");
   }
   catch(WorkerNotFoundException const &) {
     SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");

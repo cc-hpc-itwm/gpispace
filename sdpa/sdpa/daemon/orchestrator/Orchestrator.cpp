@@ -183,7 +183,7 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
   if( pEvt->is_external() )
   {
       Worker::worker_id_t worker_id = pEvt->from();
-      we::mgmt::layer::id_type actId = pJob->id().str();
+      we::mgmt::layer::id_type actId = pJob->id();
 
       try {
         events::JobFailedEvent::Ptr ptrEvtJobFailed(new  events::JobFailedEvent(*pEvt));
@@ -428,7 +428,7 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
   {
     SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
-    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
+    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id()) );
     sendEventToOther(pErrorEvt);
   }
 }
@@ -456,7 +456,7 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
   {
       SDPA_LOG_ERROR("job " << pEvt->job_id() << " could not be found!");
 
-      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id()) );
       sendEventToOther(pErrorEvt);
   }
 }

@@ -391,7 +391,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
     {
       sdpa::job_id_t jobId(*error.job_id());
       sdpa::worker_id_t worker_id(error.from());
-      DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<error.job_id()->str()<<". Reschedule it now!");
+      DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<*error.job_id()<<". Reschedule it now!");
 
       scheduler()->rescheduleWorkerJob(worker_id, jobId);
       break;
@@ -520,7 +520,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
     {
     	sdpa::job_id_t jobId(*error.job_id());
     	sdpa::worker_id_t worker_id(error.from());
-    	DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<error.job_id()->str()<<". Reschedule it now!");
+    	DMLOG (WARN, "The worker "<<worker_id<<" rejected the job "<<*error.job_id()<<". Reschedule it now!");
 
     	scheduler()->rescheduleWorkerJob(worker_id, jobId);
     	break;
@@ -681,8 +681,6 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 {
   DMLOG (TRACE, "Submit the job "<<jobId<<" to the workflow engine");
 
-  we::mgmt::layer::id_type wf_id = jobId.str();
-
   on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToSelf
                                 , this
                                 , events::JobFailedEvent::Ptr ( new events::JobFailedEvent ( sdpa::daemon::WE
@@ -725,7 +723,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
        std::list<std::string> workers; workers.push_back (name());
        const sdpa::daemon::NotificationEvent evt
        ( workers
-          , jobId.str()
+          , jobId
           , NotificationEvent::STATE_STARTED
           , act
        );
@@ -733,7 +731,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
        m_guiService->notify (evt);
       }
 
-      workflowEngine()->submit (wf_id, act);
+      workflowEngine()->submit (jobId, act);
     }
   }
   catch(const NoWorkflowEngine& ex)
@@ -1124,13 +1122,13 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
           // send nothing to the master if the job is not completed
           break;
         default:
-           throw std::runtime_error("The job "+jobId.str()+" has an invalid/unknown state");
+           throw std::runtime_error("The job "+jobId+" has an invalid/unknown state");
       }
     }
     else
     {
       std::string strErr("The job ");
-      strErr+=jobId.str();
+      strErr+=jobId;
       strErr+=" could not be found!";
 
       DMLOG (ERROR, strErr);
