@@ -31,10 +31,6 @@ namespace sdpa {
   template <class Tag>
   class id_generator
   {
-  private:
-    typedef boost::mutex mutex_type;
-    typedef boost::lock_guard<mutex_type> lock_type;
-
   public:
 
 	static id_generator& instance()
@@ -47,7 +43,7 @@ namespace sdpa {
 	{
           size_t id;
           {
-            lock_type lock (mtx_);
+            boost::mutex::scoped_lock const _ (_counter_mutex);
             id = m_count++;
           }
 
@@ -57,7 +53,7 @@ namespace sdpa {
         }
   private:
     id_generator()
-      : mtx_ ()
+      : _counter_mutex()
       , m_count (0)
     {
       std::ostringstream sstr;
@@ -66,7 +62,7 @@ namespace sdpa {
       m_id_prefix = sstr.str ();
     }
 
-    mutable mutex_type mtx_;
+    mutable boost::mutex _counter_mutex;
     size_t      m_count;
     std::string m_id_prefix;
   };
