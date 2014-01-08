@@ -4,6 +4,7 @@
 #define SDPA_UTIL_NOTIFICATION_SERVICE_HPP
 
 #include <fhglog/remote/appender.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
