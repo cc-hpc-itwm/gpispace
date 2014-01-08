@@ -20,12 +20,16 @@
 #define SDPA_ID_GENERATOR_HPP 1
 
 #include <fhg/util/hostname.hpp>
+#include <fhg/util/counter.hpp>
 #include <sys/types.h> // pid_t
 #include <unistd.h> // getpid
 #include <string.h> // memset
 #include <time.h>   // time
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
+
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace sdpa {
   template <class Tag>
@@ -41,30 +45,28 @@ namespace sdpa {
 
 	std::string next()
 	{
-          size_t id;
-          {
-            boost::mutex::scoped_lock const _ (_counter_mutex);
-            id = m_count++;
-          }
-
-          std::ostringstream os;
-          os << m_id_prefix << "." << id;
-          return os.str ();
-        }
+    std::size_t id;
+    {
+      boost::mutex::scoped_lock const _ (_counter_mutex);
+      id = _counter++;
+    }
+    return _prefix + boost::lexical_cast<std::string> (id);
+  }
   private:
     id_generator()
-      : _counter_mutex()
-      , m_count (0)
-    {
-      std::ostringstream sstr;
-      sstr << fhg::util::hostname() << "." << Tag::name () << "." << time (0) << "." << getpid();
-
-      m_id_prefix = sstr.str ();
-    }
+      : _counter()
+      , _prefix ( ( boost::format ("%1%.%2%.%3%.%4%.")
+                  % fhg::util::hostname()
+                  % Tag::name()
+                  % time (0)
+                  % getpid()
+                  ).str()
+                )
+    {}
 
     mutable boost::mutex _counter_mutex;
-    size_t      m_count;
-    std::string m_id_prefix;
+    std::size_t _counter;
+    std::string _prefix;
   };
 }
 
