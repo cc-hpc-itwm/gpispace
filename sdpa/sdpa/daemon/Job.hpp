@@ -96,7 +96,6 @@ namespace sdpa {
       virtual void action_job_failed(const events::JobFailedEvent&) = 0;
       virtual void action_job_finished(const events::JobFinishedEvent&) = 0;
       virtual void action_reschedule_job(const MSMRescheduleEvent&) = 0;
-      virtual void action_job_stalled(const MSMStalledEvent&) = 0;
       virtual void action_resume_job(const MSMResumeJobEvent&) = 0;
       virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&) = 0;
 
@@ -110,18 +109,18 @@ namespace sdpa {
         _row<   Pending,        events::CancelJobEvent, 		Canceled>,
         a_row<  Pending,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished >,
         a_row<  Pending,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
-        a_row<  Pending,        MSMStalledEvent,                        Stalled,        &sm::action_job_stalled >,
+        _row<  Pending,        MSMStalledEvent,                         Stalled >,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_row<  Stalled,        MSMResumeJobEvent,        		Running,        &sm::action_resume_job >,
         a_row<  Stalled,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
-        a_irow< Stalled,        MSMStalledEvent,                                        &sm::action_job_stalled >,
+        _irow<  Stalled,         MSMStalledEvent >,
         _row<   Stalled,        sdpa::events::CancelJobEvent,           Canceling>,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished>,
         a_row<  Running,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
         _row<   Running,        events::CancelJobEvent,                 Canceling>,
         a_row<  Running,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
-        a_row<  Running,        MSMStalledEvent,        		Stalled,        &sm::action_job_stalled >,
+        _row<   Running,        MSMStalledEvent,        		Stalled>,
         _irow<  Running,        MSMResumeJobEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
@@ -220,7 +219,6 @@ namespace sdpa {
       virtual void action_job_failed(const events::JobFailedEvent&);
       virtual void action_job_finished(const events::JobFinishedEvent&);
       virtual void action_reschedule_job(const MSMRescheduleEvent&);
-      virtual void action_job_stalled(const MSMStalledEvent&);
       virtual void action_resume_job(const MSMResumeJobEvent&);
       virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&);
 

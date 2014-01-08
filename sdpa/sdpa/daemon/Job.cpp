@@ -109,23 +109,6 @@ namespace sdpa {
       evt.ptrScheduler()->schedule(id());
     }
 
-    void Job::action_job_stalled(const MSMStalledEvent& evt)
-    {
-      DMLOG(TRACE, "The job "<<id()<<" changed its status from RUNNING to STALLED");
-      if(evt.ptrAgent()) {
-        // notify the the job owner that the job has no subtasks running
-        // and at least one is in pending or stalled
-        if( evt.ptrAgent()->noChildJobRunning(id()) )
-        {
-            DMLOG(TRACE, "Send  JobStalledEvent for the job "<<id()<<" to the master "<<owner());
-            events::JobStalledEvent::Ptr pEvt(new events::JobStalledEvent( evt.ptrAgent()->name()
-                                                                           , owner()
-                                                                           , id()));
-            evt.ptrAgent()->sendEventToOther(pEvt);
-        }
-      }
-    }
-
     void Job::action_resume_job(const MSMResumeJobEvent& evt)
     {
       DMLOG(TRACE, "The job "<<id()<<" changed its status from STALLED to RUNNING");
