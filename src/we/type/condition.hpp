@@ -5,20 +5,12 @@
 
 #include <we/expr/parse/parser.hpp>
 
-#include <we/type/id.hpp>
-
 #include <we/exception.hpp>
 
-#include <boost/function.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/serialization/nvp.hpp>
 
 #include <string>
-
-#include <sys/time.h>
-#include <fhglog/LogMacros.hpp>
-#include <iomanip>
-
-#include <boost/algorithm/string.hpp>
 
 namespace condition
 {
