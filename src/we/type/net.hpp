@@ -89,26 +89,6 @@ namespace petri_net
     port_to_place_type const& port_to_place() const;
     place_to_port_type const& place_to_port() const;
 
-    typedef boost::any_range< place_id_type
-                            , boost::forward_traversal_tag
-                            , place_id_type const&
-                            , std::ptrdiff_t
-                            > place_id_range_type;
-
-    place_id_range_type out_of_transition (const transition_id_type&) const;
-    place_id_range_type in_to_transition_consume (const transition_id_type&) const;
-    place_id_range_type in_to_transition_read (const transition_id_type&) const;
-
-    typedef boost::any_range< transition_id_type
-                            , boost::forward_traversal_tag
-                            , transition_id_type const&
-                            , std::ptrdiff_t
-                            > transition_id_range_type;
-
-    transition_id_range_type out_of_place_consume (const place_id_type&) const;
-    transition_id_range_type out_of_place_read (const place_id_type&) const;
-    transition_id_range_type in_to_place (const place_id_type&) const;
-
     //! \todo eliminate, clients could know that already
     bool is_read_connection ( const transition_id_type&
                             , const place_id_type&
@@ -256,6 +236,26 @@ namespace petri_net
 
     void delete_edge_out (const transition_id_type&, const place_id_type&);
     void delete_edge_in (const transition_id_type&, const place_id_type&);
+
+    typedef boost::any_range< place_id_type
+                            , boost::forward_traversal_tag
+                            , place_id_type const&
+                            , std::ptrdiff_t
+                            > place_id_range_type;
+
+    place_id_range_type out_of_transition (const transition_id_type&) const;
+    place_id_range_type in_to_transition_consume (const transition_id_type&) const;
+    place_id_range_type in_to_transition_read (const transition_id_type&) const;
+
+    typedef boost::any_range< transition_id_type
+                            , boost::forward_traversal_tag
+                            , transition_id_type const&
+                            , std::ptrdiff_t
+                            > transition_id_range_type;
+
+    transition_id_range_type out_of_place_consume (const place_id_type&) const;
+    transition_id_range_type out_of_place_read (const place_id_type&) const;
+    transition_id_range_type in_to_place (const place_id_type&) const;
 
     class cross_type
     {
