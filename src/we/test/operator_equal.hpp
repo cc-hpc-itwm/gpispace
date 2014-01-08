@@ -5,6 +5,11 @@
 
 #include <we/mgmt/type/activity.hpp>
 
+#include <we/type/place.hpp>
+#include <we/type/net.hpp>
+
+#include <boost/foreach.hpp>
+
 namespace we
 {
   namespace type

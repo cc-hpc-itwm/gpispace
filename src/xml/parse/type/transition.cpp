@@ -17,6 +17,8 @@
 
 #include <boost/variant.hpp>
 
+#include <rewrite/validprefix.hpp>
+
 namespace xml
 {
   namespace parse

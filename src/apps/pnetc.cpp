@@ -1,6 +1,7 @@
 // {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
 
 #include <we/type/transition.hpp>
+#include <we/type/net.hpp>
 #include <we/mgmt/type/activity.hpp>
 
 #include <xml/parse/parser.hpp>
