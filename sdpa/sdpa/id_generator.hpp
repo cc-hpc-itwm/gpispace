@@ -28,17 +28,6 @@
 #include <boost/thread/locks.hpp>
 
 namespace sdpa {
-  namespace detail
-  {
-    struct dflt_tag
-    {
-      static const char *name ()
-      {
-        return "id";
-      }
-    };
-  }
-
   template <class Tag>
   class id_generator
   {
@@ -81,8 +70,6 @@ namespace sdpa {
     size_t      m_count;
     std::string m_id_prefix;
   };
-
-  typedef id_generator<detail::dflt_tag> dflt_id_generator;
 }
 
 #endif
