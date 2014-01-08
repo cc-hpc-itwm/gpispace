@@ -42,6 +42,24 @@ namespace petri_net
       , boost::bimaps::unordered_multiset_of<transition_id_type>
       , boost::bimaps::set_of_relation<>
       > adj_pt_type;
+    typedef boost::bimaps::bimap
+        < port_id_type
+        , place_id_type
+        , boost::bimaps::left_based
+        , boost::bimaps::with_info<we::type::property::type>
+        > port_to_place_with_info_type;
+    typedef boost::bimaps::bimap
+        < place_id_type
+        , port_id_type
+        , boost::bimaps::left_based
+        , boost::bimaps::with_info<we::type::property::type>
+        > place_to_port_with_info_type;
+    typedef boost::unordered_map< transition_id_type
+                                , port_to_place_with_info_type
+                                > port_to_place_type;
+    typedef boost::unordered_map< transition_id_type
+                                , place_to_port_with_info_type
+                                > place_to_port_type;
 
     //! \todo eliminate these, just do not copy or assign nets!
     net();
@@ -67,6 +85,9 @@ namespace petri_net
     adj_tp_type const& transition_to_place() const;
     adj_pt_type const& place_to_transition_consume() const;
     adj_pt_type const& place_to_transition_read() const;
+
+    port_to_place_type const& port_to_place() const;
+    place_to_port_type const& place_to_port() const;
 
     typedef boost::any_range< place_id_type
                             , boost::forward_traversal_tag
@@ -138,6 +159,9 @@ namespace petri_net
     adj_pt_type _adj_pt_read;
     adj_tp_type _adj_tp;
 
+    port_to_place_type _port_to_place;
+    place_to_port_type _place_to_port;
+
     typedef boost::unordered_map< place_id_type
                                 , std::list<pnet::type::value::value_type>
                                 > token_by_place_id_type;
@@ -155,6 +179,8 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP (_adj_pt_consume);
       ar & BOOST_SERIALIZATION_NVP (_adj_pt_read);
       ar & BOOST_SERIALIZATION_NVP (_adj_tp);
+      ar & BOOST_SERIALIZATION_NVP (_port_to_place);
+      ar & BOOST_SERIALIZATION_NVP (_place_to_port);
       {
         const std::size_t s (_token_by_place_id.size());
         ar & s;
@@ -187,6 +213,8 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP (_adj_pt_consume);
       ar & BOOST_SERIALIZATION_NVP (_adj_pt_read);
       ar & BOOST_SERIALIZATION_NVP (_adj_tp);
+      ar & BOOST_SERIALIZATION_NVP (_port_to_place);
+      ar & BOOST_SERIALIZATION_NVP (_place_to_port);
       std::size_t token_by_place_id_size;
       ar & token_by_place_id_size;
       while (token_by_place_id_size --> 0)

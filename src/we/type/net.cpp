@@ -24,6 +24,8 @@ namespace petri_net
     , _adj_pt_consume()
     , _adj_pt_read()
     , _adj_tp()
+    , _port_to_place()
+    , _place_to_port()
     , _token_by_place_id()
     , _enabled()
     , _enabled_choice()
@@ -36,6 +38,8 @@ namespace petri_net
     , _adj_pt_consume (other._adj_pt_consume)
     , _adj_pt_read (other._adj_pt_read)
     , _adj_tp (other._adj_tp)
+    , _port_to_place (other._port_to_place)
+    , _place_to_port (other._place_to_port)
     , _token_by_place_id (other._token_by_place_id)
     , _enabled (other._enabled)
     , _enabled_choice()
@@ -51,6 +55,8 @@ namespace petri_net
     _adj_pt_consume = other._adj_pt_consume;
     _adj_pt_read = other._adj_pt_read;
     _adj_tp = other._adj_tp;
+    _port_to_place = other._port_to_place;
+    _place_to_port = other._place_to_port;
     _token_by_place_id = other._token_by_place_id;
     _enabled = other._enabled;
 
@@ -182,6 +188,14 @@ namespace petri_net
   net::adj_pt_type const& net::place_to_transition_read() const
   {
     return _adj_pt_read;
+  }
+  net::port_to_place_type const& net::port_to_place() const
+  {
+    return _port_to_place;
+  }
+  net::place_to_port_type const& net::place_to_port() const
+  {
+    return _place_to_port;
   }
 
   void net::modify_transitions
