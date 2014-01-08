@@ -149,7 +149,7 @@ namespace sdpa { namespace daemon {
     void free();
 
   private:
-    SDPA_DECLARE_LOGGER();
+    fhg::log::Logger::ptr_t _logger;
 
     worker_id_t name_; //! name of the worker
     boost::optional<unsigned int> capacity_;
