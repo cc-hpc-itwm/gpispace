@@ -93,8 +93,13 @@
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
   </xsd:complexType>
 
+  <!-- \todo make simple content to avoid
+       <token><value>0</value></token> and allow just <token>0</token>
+  -->
   <xsd:complexType name="token_type">
-    <xsd:element minOccurs="1" maxOccurs="unbounded" name="value" type="xsd:string"/>
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="value" type="xsd:string"/>
+    </xsd:choice>
   </xsd:complexType>
 
   <xsd:complexType name="mod_type">
