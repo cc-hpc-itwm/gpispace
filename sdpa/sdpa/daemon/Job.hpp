@@ -37,6 +37,8 @@ namespace sdpa {
     // front-end: define the FSM structure
     struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
     {
+      JobFSM_() : _logger (fhg::log::Logger::get ("JobFSM")) {}
+      fhg::log::Logger::ptr_t _logger;
       virtual ~JobFSM_() {}
 
       // The list of FSM states
@@ -167,7 +169,7 @@ namespace sdpa {
       template <class FSM, class Event>
       void no_transition(Event const& e, FSM&, int state)
       {
-        DMLOG(ERROR,  "No transition from state "
+        DLLOG (ERROR, _logger, "No transition from state "
                                          + sdpa::status::show(state_code(state))
                                          + " on event "
                                          + typeid(e).name()

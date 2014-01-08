@@ -105,19 +105,19 @@ namespace sdpa {
 
     void Job::action_reschedule_job(const MSMRescheduleEvent& evt)
     {
-      DLOG(TRACE, "Reschedule the job "<<id());
+      DLLOG (TRACE, _logger, "Reschedule the job "<<id());
       evt.ptrScheduler()->schedule(id());
     }
 
     void Job::action_job_stalled(const MSMStalledEvent& evt)
     {
-      DMLOG(TRACE, "The job "<<id()<<" changed its status from RUNNING to STALLED");
+      DLLOG (TRACE, _logger, "The job "<<id()<<" changed its status from RUNNING to STALLED");
       if(evt.ptrAgent()) {
         // notify the the job owner that the job has no subtasks running
         // and at least one is in pending or stalled
         if( evt.ptrAgent()->noChildJobRunning(id()) )
         {
-            DMLOG(TRACE, "Send  JobStalledEvent for the job "<<id()<<" to the master "<<owner());
+          DLLOG (TRACE, _logger, "Send  JobStalledEvent for the job "<<id()<<" to the master "<<owner());
             events::JobStalledEvent::Ptr pEvt(new events::JobStalledEvent( evt.ptrAgent()->name()
                                                                            , owner()
                                                                            , id()));
@@ -128,12 +128,12 @@ namespace sdpa {
 
     void Job::action_resume_job(const MSMResumeJobEvent& evt)
     {
-      DMLOG(TRACE, "The job "<<id()<<" changed its status from STALLED to RUNNING");
+      DLLOG (TRACE, _logger, "The job "<<id()<<" changed its status from STALLED to RUNNING");
       if(evt.ptrAgent())
       {
         //if( evt.ptrAgent()->noChildJobStalled(id()) )
         {
-          DMLOG(TRACE, "Send  JobRunningEvent for the job "<<id()<<" to the master "<<owner());
+          DLLOG (TRACE, _logger, "Send  JobRunningEvent for the job "<<id()<<" to the master "<<owner());
             // notify the the job owner that the job makes progress
             sdpa::events::JobRunningEvent::Ptr pEvt(
                 new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
