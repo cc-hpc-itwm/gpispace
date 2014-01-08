@@ -207,9 +207,6 @@ namespace sdpa {
         scheduler()->getWorkerCapabilities(worker_id, wCpbset);
       }
 
-      bool noChildJobStalled(const sdpa::job_id_t& jobId) const;
-      bool noChildJobRunning(const sdpa::job_id_t& jobId) const;
-
     protected:
       const JobManager& jobManager() const { return _job_manager; }
       JobManager& jobManager() { return _job_manager; }
