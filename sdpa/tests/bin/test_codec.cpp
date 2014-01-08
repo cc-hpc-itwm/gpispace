@@ -1,9 +1,6 @@
 #define BOOST_TEST_MODULE encode_and_decode_events
 
 #include <sdpa/events/Codec.hpp>
-#include <sdpa/events/JobRunningEvent.hpp>
-#include <sdpa/events/JobStalledEvent.hpp>
-
 #include <boost/test/unit_test.hpp>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::capabilities_set_t);
@@ -143,18 +140,6 @@ BOOST_AUTO_TEST_CASE (JobResultsReply)
   JobResultsReplyEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->result(), e.result());
-}
-
-BOOST_AUTO_TEST_CASE (JobRunning)
-{
-  JobRunningEvent e ("foo", "bar", "job-id-1");
-  encode_decode_job_event (e);
-}
-
-BOOST_AUTO_TEST_CASE (JobStalled)
-{
-  JobStalledEvent e ("foo", "bar", "job-id-1");
-  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (JobStatusReply)
