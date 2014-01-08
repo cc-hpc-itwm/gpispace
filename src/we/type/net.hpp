@@ -33,13 +33,13 @@ namespace petri_net
   {
   public:
     typedef boost::bimaps::bimap
-      < boost::bimaps::unordered_multiset_of<petri_net::transition_id_type>
-      , boost::bimaps::unordered_multiset_of<petri_net::place_id_type>
+      < boost::bimaps::unordered_multiset_of<transition_id_type>
+      , boost::bimaps::unordered_multiset_of<place_id_type>
       , boost::bimaps::set_of_relation<>
       > adj_tp_type;
     typedef boost::bimaps::bimap
-      < boost::bimaps::unordered_multiset_of<petri_net::place_id_type>
-      , boost::bimaps::unordered_multiset_of<petri_net::transition_id_type>
+      < boost::bimaps::unordered_multiset_of<place_id_type>
+      , boost::bimaps::unordered_multiset_of<transition_id_type>
       , boost::bimaps::set_of_relation<>
       > adj_pt_type;
 
@@ -227,9 +227,7 @@ namespace petri_net
 
     boost::unordered_map
       < transition_id_type
-      , boost::unordered_map< petri_net::place_id_type
-                            , pos_and_distance_type
-                            >
+      , boost::unordered_map<place_id_type, pos_and_distance_type>
       > _enabled_choice;
 
     void get_enabled_choice (const net&);
@@ -249,14 +247,14 @@ namespace petri_net
     {
     public:
       bool enables (we::type::transition_t const&);
-      void write_to (boost::unordered_map< petri_net::place_id_type
+      void write_to (boost::unordered_map< place_id_type
                                          , pos_and_distance_type
                                          >&
                     ) const;
-      void push ( const petri_net::place_id_type&
+      void push ( const place_id_type&
                 , std::list<pnet::type::value::value_type>&
                 );
-      void push ( const petri_net::place_id_type&
+      void push ( const place_id_type&
                 , const std::list<pnet::type::value::value_type>::iterator&
                 );
     private:
@@ -275,8 +273,7 @@ namespace petri_net
         pos_and_distance_type _pos_and_distance;
       };
 
-      typedef boost::unordered_map<petri_net::place_id_type, iterators_type>
-      map_type;
+      typedef boost::unordered_map<place_id_type, iterators_type> map_type;
 
       map_type _m;
 
