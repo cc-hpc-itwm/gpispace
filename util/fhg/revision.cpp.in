@@ -11,19 +11,9 @@
 
 namespace fhg
 {
-  const char* project_contact()
-  {
-    return "@PROJECT_CONTACT@";
-  }
-
   const char* project_summary()
   {
     return "@PROJECT_DESCRIPTION_SUMMARY@";
-  }
-
-  const char* project_copyright()
-  {
-    return "@PROJECT_COPYRIGHT@";
   }
 
   const char* project_version()
@@ -36,11 +26,6 @@ namespace fhg
     return "@PROJECT_REVISION@";
   }
 
-  const char* project_build_time()
-  {
-    return "@FHG_BUILD_TIMESTAMP@";
-  }
-
   std::string project_info (const std::string& head)
   {
     std::ostringstream s;
@@ -49,10 +34,10 @@ namespace fhg
       << std::endl << "  * " << head << std::endl
       << std::endl << "version:  " << project_version()
       << std::endl << "revision: " << project_revision()
-      << std::endl << "built:    " << project_build_time()
-      << std::endl << "contact:  " <<  project_contact()
+      << std::endl << "built:    @FHG_BUILD_TIMESTAMP@"
+      << std::endl << "contact:  @PROJECT_CONTACT@"
       << std::endl
-      << std::endl << project_copyright()
+      << std::endl << "@PROJECT_COPYRIGHT@"
       << std::endl
       ;
 
