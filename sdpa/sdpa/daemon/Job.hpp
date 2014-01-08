@@ -108,10 +108,6 @@ namespace sdpa {
         _row<   Pending,        events::CancelJobEvent, 		Canceled>,
         a_row<  Pending,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished >,
         a_row<  Pending,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        _row<   Stalled,        MSMResumeJobEvent,        		Running >,
-        a_row<  Stalled,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
-        _row<   Stalled,        sdpa::events::CancelJobEvent,           Canceling>,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished>,
         a_row<  Running,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
@@ -147,7 +143,6 @@ namespace sdpa {
       {
         static status::code const state_codes[] =
           { status::PENDING
-          , status::STALLED
           , status::RUNNING
           , status::FINISHED
           , status::FAILED
