@@ -107,6 +107,7 @@ namespace fhg
 
 #define DMLOG(level, msg)
 #define DLOG(level, msg)
+#define DLLOG(level, logger, msg)
 #define DLOG_IF(level, condition, msg)
 #define DMLOG_IF(level, condition, msg)
 
@@ -114,6 +115,7 @@ namespace fhg
 
 #define DMLOG(level, msg) MLOG (level, msg)
 #define DLOG(level, msg) LOG (level, msg)
+#define DLLOG(level, logger, msg) LLOG (level, logger, msg)
 #define DLOG_IF(level, condition, msg) LOG_IF (level, condition, msg)
 #define DMLOG_IF(level, condition, msg) MLOG_IF (level, condition, msg)
 
