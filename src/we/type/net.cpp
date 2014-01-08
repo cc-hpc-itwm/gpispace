@@ -127,20 +127,18 @@ namespace petri_net
     }
   }
 
-  void net::set_transition_priority ( const transition_id_type& tid
-                                    , const priority_type& prio
-                                    )
+  void net::set_transition_priority (transition_id_type tid, priority_type prio)
   {
     _enabled.set_priority (tid, prio);
   }
 
   priority_type
-  net::get_transition_priority (const transition_id_type& tid) const
+  net::get_transition_priority (transition_id_type tid) const
   {
     return _enabled.get_priority (tid);
   }
 
-  const place::type& net::get_place (const place_id_type& pid) const
+  const place::type& net::get_place (place_id_type pid) const
   {
     boost::unordered_map<place_id_type, place::type>::const_iterator const
       pos (_pmap.find (pid));
@@ -154,7 +152,7 @@ namespace petri_net
   }
 
   const we::type::transition_t&
-  net::get_transition (const transition_id_type& tid) const
+    net::get_transition (transition_id_type tid) const
   {
     boost::unordered_map<transition_id_type, we::type::transition_t>
       ::const_iterator const pos (_tmap.find (tid));
@@ -199,15 +197,11 @@ namespace petri_net
     return _place_to_port;
   }
 
-  void net::delete_edge_out ( const transition_id_type& tid
-                            , const place_id_type& pid
-                            )
+  void net::delete_edge_out (transition_id_type tid, place_id_type pid)
   {
     _adj_tp.erase (adj_tp_type::value_type (tid, pid));
   }
-  void net::delete_edge_in ( const transition_id_type& tid
-                           , const place_id_type& pid
-                           )
+  void net::delete_edge_in (transition_id_type tid, place_id_type pid)
   {
     _adj_pt_consume.erase (adj_pt_type::value_type (pid, tid));
     _adj_pt_read.erase (adj_pt_type::value_type (pid, tid));
@@ -220,19 +214,19 @@ namespace petri_net
     typedef boost::any_range
       < const petri_net::transition_id_type
       , boost::single_pass_traversal_tag
-      , const petri_net::transition_id_type &
+      , const petri_net::transition_id_type&
       , std::ptrdiff_t
       > transition_id_range_type;
 
     typedef boost::any_range
       < const petri_net::place_id_type
       , boost::single_pass_traversal_tag
-      , const petri_net::place_id_type &
+      , const petri_net::place_id_type&
       , std::ptrdiff_t
       > place_id_range_type;
   }
 
-  void net::delete_place (const place_id_type& pid)
+  void net::delete_place (place_id_type pid)
   {
     // make the token deletion visible to delete_connection
     _token_by_place_id.erase (pid);
@@ -245,13 +239,13 @@ namespace petri_net
     transition_id_range_type read
       (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
 
-    BOOST_FOREACH (const transition_id_type& tid, boost::join (consume, read))
+    BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
     {
       stack_in.push (std::make_pair (tid, pid));
       // TODO: get port and remove place from there
     }
 
-    BOOST_FOREACH ( const transition_id_type& transition_id
+    BOOST_FOREACH ( transition_id_type transition_id
                   , _adj_tp.right.equal_range (pid)
                   | boost::adaptors::map_values
                   )
@@ -274,12 +268,12 @@ namespace petri_net
     _pmap.erase (pid);
   }
 
-  void net::delete_transition (const transition_id_type& tid)
+  void net::delete_transition (transition_id_type tid)
   {
     std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
     std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
 
-    BOOST_FOREACH ( const place_id_type& place_id
+    BOOST_FOREACH ( place_id_type place_id
                   , _adj_tp.left.equal_range (tid) | boost::adaptors::map_values
                   )
     {
@@ -291,7 +285,7 @@ namespace petri_net
     place_id_range_type read
       (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
 
-    BOOST_FOREACH (const place_id_type& place_id, boost::join (consume, read))
+    BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
     {
       stack_in.push (std::make_pair (tid, place_id));
     }
@@ -314,7 +308,7 @@ namespace petri_net
     _enabled_choice.erase (tid);
   }
 
-  void net::put_value ( const place_id_type& pid
+  void net::put_value ( place_id_type pid
                       , const pnet::type::value::value_type& value
                       )
   {
@@ -333,7 +327,7 @@ namespace petri_net
     transition_id_range_type read
       (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
 
-    BOOST_FOREACH (const transition_id_type& tid, boost::join (consume, read))
+    BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
     {
       update_enabled_put_token (tid, pid, tokenpos);
     }
@@ -350,7 +344,7 @@ namespace petri_net
   }
 
   const std::list<pnet::type::value::value_type>&
-  net::get_token (const place_id_type& pid) const
+  net::get_token (place_id_type pid) const
   {
     typedef boost::unordered_map< place_id_type
                                 , std::list<pnet::type::value::value_type>
@@ -361,7 +355,7 @@ namespace petri_net
     return (pos != _token_by_place_id.end()) ? pos->second : no_tokens();
   }
 
-  void net::delete_all_token (const place_id_type& pid)
+  void net::delete_all_token (place_id_type pid)
   {
     _token_by_place_id.erase (pid);
 
@@ -370,7 +364,7 @@ namespace petri_net
     transition_id_range_type read
       (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
 
-    BOOST_FOREACH (const transition_id_type& tid, boost::join (consume, read))
+    BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
     {
       disable (tid);
     }
@@ -381,7 +375,7 @@ namespace petri_net
     return not _enabled.empty();
   }
 
-  void net::update_enabled (const transition_id_type& tid)
+  void net::update_enabled (transition_id_type tid)
   {
     cross_type cross;
 
@@ -390,7 +384,7 @@ namespace petri_net
     place_id_range_type read
       (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
 
-    BOOST_FOREACH (const place_id_type& place_id, boost::join (consume, read))
+    BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
     {
       std::list<pnet::type::value::value_type>&
         tokens (_token_by_place_id[place_id]);
@@ -417,8 +411,8 @@ namespace petri_net
   }
 
   void net::update_enabled_put_token
-    ( const transition_id_type& tid
-    , const place_id_type& pid
+    ( transition_id_type tid
+    , place_id_type pid
     , const std::list<pnet::type::value::value_type>::iterator& token
     )
   {
@@ -434,7 +428,7 @@ namespace petri_net
     place_id_range_type read
       (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
 
-    BOOST_FOREACH (const place_id_type& place_id, boost::join (consume, read))
+    BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
     {
       if (place_id == pid)
       {
@@ -467,14 +461,14 @@ namespace petri_net
     }
   }
 
-  void net::disable (const transition_id_type& tid)
+  void net::disable (transition_id_type tid)
   {
     _enabled.erase (tid);
     _enabled_choice.erase (tid);
   }
 
   we::mgmt::type::activity_t
-  net::extract_activity (const transition_id_type& tid)
+  net::extract_activity (transition_id_type tid)
   {
     const we::type::transition_t& transition (get_transition (tid));
     we::mgmt::type::activity_t act (transition);
@@ -487,7 +481,7 @@ namespace petri_net
 
     BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
     {
-      const place_id_type& pid (pt.first);
+      place_id_type pid (pt.first);
       const pos_and_distance_type& pos_and_distance (pt.second);
       const std::list<pnet::type::value::value_type>::iterator&
         token (pos_and_distance.first);
@@ -507,14 +501,14 @@ namespace petri_net
         transition_id_range_type read
           (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
 
-        BOOST_FOREACH (const transition_id_type& t, boost::join (consume, read))
+        BOOST_FOREACH (transition_id_type t, boost::join (consume, read))
         {
           transitions_to_update.insert (t);
         }
       }
     }
 
-    BOOST_FOREACH (const transition_id_type& t, transitions_to_update)
+    BOOST_FOREACH (transition_id_type t, transitions_to_update)
     {
       update_enabled (t);
     }
@@ -628,13 +622,13 @@ namespace petri_net
         (std::make_pair (pits.first, pits.second.pos_and_distance()));
     }
   }
-  void net::cross_type::push ( const place_id_type& place_id
+  void net::cross_type::push ( place_id_type place_id
                              , std::list<pnet::type::value::value_type>& tokens
                              )
   {
     _m.insert (std::make_pair (place_id, iterators_type (tokens)));
   }
-  void net::cross_type::push ( const place_id_type& place_id
+  void net::cross_type::push ( place_id_type place_id
                              , const std::list<pnet::type::value::value_type>::iterator& token
                              )
   {

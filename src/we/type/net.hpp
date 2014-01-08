@@ -70,13 +70,11 @@ namespace petri_net
     transition_id_type add_transition (const we::type::transition_t&);
     void add_connection (edge::type, transition_id_type, place_id_type);
 
-    void set_transition_priority ( const transition_id_type&
-                                 , const priority_type&
-                                 );
-    priority_type get_transition_priority (const transition_id_type&) const;
+    void set_transition_priority (transition_id_type, priority_type);
+    priority_type get_transition_priority (transition_id_type) const;
 
-    const place::type& get_place (const place_id_type&) const;
-    const we::type::transition_t& get_transition (const transition_id_type&) const;
+    const place::type& get_place (place_id_type) const;
+    const we::type::transition_t& get_transition (transition_id_type) const;
 
     const boost::unordered_map<place_id_type,place::type>& places() const;
     const boost::unordered_map<transition_id_type,we::type::transition_t>&
@@ -89,15 +87,15 @@ namespace petri_net
     port_to_place_type const& port_to_place() const;
     place_to_port_type const& place_to_port() const;
 
-    void delete_place (const place_id_type&);
-    void delete_transition (const transition_id_type&);
+    void delete_place (place_id_type);
+    void delete_transition (transition_id_type);
 
-    void put_value (const place_id_type&, const pnet::type::value::value_type&);
+    void put_value (place_id_type, const pnet::type::value::value_type&);
 
     const std::list<pnet::type::value::value_type>&
-      get_token (const place_id_type&) const;
+      get_token (place_id_type) const;
 
-    void delete_all_token (const place_id_type&);
+    void delete_all_token (place_id_type);
     bool can_fire() const;
 
     template<typename Engine>
@@ -196,9 +194,7 @@ namespace petri_net
         }
       }
 
-      BOOST_FOREACH ( const transition_id_type& tid
-                    , _tmap | boost::adaptors::map_keys
-                    )
+      BOOST_FOREACH (transition_id_type tid, _tmap | boost::adaptors::map_keys)
       {
         update_enabled (tid);
       }
@@ -218,19 +214,19 @@ namespace petri_net
 
     void get_enabled_choice (const net&);
 
-    void update_enabled (const transition_id_type&);
+    void update_enabled (transition_id_type);
     void update_enabled_put_token
-      ( const transition_id_type&
-      , const place_id_type&
+      ( transition_id_type
+      , place_id_type
       , const std::list<pnet::type::value::value_type>::iterator&
       );
 
-    void disable (const transition_id_type&);
+    void disable (transition_id_type);
 
-    we::mgmt::type::activity_t extract_activity (const transition_id_type&);
+    we::mgmt::type::activity_t extract_activity (transition_id_type);
 
-    void delete_edge_out (const transition_id_type&, const place_id_type&);
-    void delete_edge_in (const transition_id_type&, const place_id_type&);
+    void delete_edge_out (transition_id_type, place_id_type);
+    void delete_edge_in (transition_id_type, place_id_type);
 
     class cross_type
     {
@@ -240,10 +236,8 @@ namespace petri_net
                                          , pos_and_distance_type
                                          >&
                     ) const;
-      void push ( const place_id_type&
-                , std::list<pnet::type::value::value_type>&
-                );
-      void push ( const place_id_type&
+      void push (place_id_type, std::list<pnet::type::value::value_type>&);
+      void push ( place_id_type
                 , const std::list<pnet::type::value::value_type>::iterator&
                 );
     private:
