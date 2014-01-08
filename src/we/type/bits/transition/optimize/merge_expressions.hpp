@@ -133,37 +133,10 @@ namespace we
           long max_successors_of_pred (0);
 
           BOOST_FOREACH ( const petri_net::place_id_type& place_id
-                        , net.in_to_transition (tid)
+                        , net.in_to_transition_consume (tid)
                         )
           {
-            if (net.is_read_connection (tid, place_id))
-            {
-              if (net.in_to_place (place_id).empty())
-              {
-                pid_read.insert (place_id);
-              }
-              else
-              {
-                BOOST_FOREACH
-                  ( const petri_net::transition_id_type& transition_id
-                  , net.in_to_place (place_id)
-                  )
-                {
-                  preds_read.insert (std::make_pair (transition_id, place_id));
-
-                  BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
-                                , net.out_of_transition (transition_id)
-                                )
-                  {
-                    if (pid_out.find (out_place_id) != pid_out.end())
-                    {
-                      return boost::none;
-                    }
-                  }
-                }
-              }
-            }
-            else if (net.in_to_place (place_id).empty())
+            if (net.in_to_place (place_id).empty())
             {
               // WORK HERE: possible optimization: make the place an
               // input place of the only one predecessor
@@ -195,7 +168,8 @@ namespace we
 
                   max_successors_of_pred =
                     std::max ( max_successors_of_pred
-                             , boost::distance (net.out_of_place (out_place_id))
+                             , boost::distance (net.out_of_place_consume (out_place_id))
+                             + boost::distance (net.out_of_place_read (out_place_id))
                              );
                 }
 
@@ -205,6 +179,36 @@ namespace we
                 }
 
                 predecessor = tid_pred;
+              }
+            }
+          }
+
+          BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                        , net.in_to_transition_read (tid)
+                        )
+          {
+            if (net.in_to_place (place_id).empty())
+            {
+              pid_read.insert (place_id);
+            }
+            else
+            {
+              BOOST_FOREACH
+                ( const petri_net::transition_id_type& transition_id
+                , net.in_to_place (place_id)
+                )
+              {
+                preds_read.insert (std::make_pair (transition_id, place_id));
+
+                BOOST_FOREACH ( const petri_net::place_id_type& out_place_id
+                              , net.out_of_transition (transition_id)
+                              )
+                {
+                  if (pid_out.find (out_place_id) != pid_out.end())
+                  {
+                    return boost::none;
+                  }
+                }
               }
             }
           }
@@ -243,7 +247,41 @@ namespace we
           expression_t& expression (boost::get<expression_t&> (trans.data()));
 
           BOOST_FOREACH ( const petri_net::place_id_type& place_id
-                        , net.in_to_transition (tid_trans)
+                        , net.in_to_transition_consume (tid_trans)
+                        )
+          {
+            if (pid_read.find (place_id) == pid_read.end())
+            {
+              const port_t& pred_out
+                (pred.ports().at (output_port_by_pid (pred, place_id)->first));
+
+              port_t& trans_in
+                (trans.ports().at (input_port_by_pid (trans, place_id)->first));
+
+              expression.rename (trans_in.name(), pred_out.name());
+
+              trans_in.name() = pred_out.name();
+            }
+            else
+            {
+              const boost::optional<const port_t>
+                maybe_pred_in (minput_port_by_pid (pred, place_id));
+
+              if (maybe_pred_in)
+              {
+                const port_t& pred_in (*maybe_pred_in);
+
+                port_t& trans_in
+                  (trans.ports().at (input_port_by_pid (trans, place_id)->first));
+
+                expression.rename (trans_in.name(), pred_in.name());
+
+                trans_in.name() = pred_in.name();
+              }
+            }
+          }
+          BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                        , net.in_to_transition_read (tid_trans)
                         )
           {
             if (pid_read.find (place_id) == pid_read.end())
@@ -400,7 +438,8 @@ namespace we
               prop::stack_type stack
                 (prop::dfs (net.get_place(pid).property(), "real"));
 
-              if (  net.out_of_place (pid).empty()
+              if (  net.out_of_place_consume (pid).empty()
+                 && net.out_of_place_read (pid).empty()
                  && stack.empty()
                  && !get_port_by_associated_pid (trans_parent, pid)
                  )

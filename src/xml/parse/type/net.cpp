@@ -747,7 +747,8 @@ namespace xml
           }
 
           if (  we_net.in_to_place (pid).empty()
-             && we_net.out_of_place (pid).empty()
+             && we_net.out_of_place_consume (pid).empty()
+             && we_net.out_of_place_read (pid).empty()
              && (!place.is_virtual())
              )
           {

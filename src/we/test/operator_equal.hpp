@@ -66,7 +66,8 @@ namespace petri_net
     return lhs.places() == rhs.places()
       && lhs.transitions() == rhs.transitions()
       && lhs.transition_to_place() == rhs.transition_to_place()
-      && lhs.place_to_transition() == rhs.place_to_transition()
+      && lhs.place_to_transition_consume() == rhs.place_to_transition_consume()
+      && lhs.place_to_transition_read() == rhs.place_to_transition_read()
       && tokens (lhs) == tokens (rhs);
   }
 }

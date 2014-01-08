@@ -25,28 +25,31 @@ namespace we { namespace type {
       , const petri_net::place_id_type & pid_B
       )
       {
-        std::stack<petri_net::transition_id_type> stack;
+        std::stack<petri_net::transition_id_type> stack_consume;
+        std::stack<petri_net::transition_id_type> stack_read;
 
         // rewire pid_B -> trans to pid_A -> trans
         BOOST_FOREACH ( const petri_net::transition_id_type& trans_out_B
-                      , net.out_of_place (pid_B)
+                      , net.out_of_place_consume (pid_B)
                       )
           {
-            stack.push (trans_out_B);
+            stack_consume.push (trans_out_B);
+          }
+        BOOST_FOREACH ( const petri_net::transition_id_type& trans_out_B
+                      , net.out_of_place_read (pid_B)
+                      )
+          {
+            stack_read.push (trans_out_B);
           }
 
-        while (!stack.empty())
+        while (!stack_consume.empty())
           {
-            const petri_net::transition_id_type& tid_trans_out_B (stack.top());
-
-            bool const _is_read
-              (net.is_read_connection (tid_trans_out_B, pid_B));
+            const petri_net::transition_id_type& tid_trans_out_B (stack_consume.top());
 
             net.delete_edge_in (tid_trans_out_B, pid_B);
 
             net.add_connection
-              ( (is_read || _is_read)
-              ? petri_net::edge::PT_READ : petri_net::edge::PT
+              ( is_read ? petri_net::edge::PT_READ : petri_net::edge::PT
               , tid_trans_out_B
               , pid_A
               );
@@ -65,8 +68,39 @@ namespace we { namespace type {
 
             net.modify_transition (tid_trans_out_B, trans_out_B);
 
-            stack.pop();
+            stack_consume.pop();
           }
+
+        while (!stack_read.empty())
+          {
+            const petri_net::transition_id_type& tid_trans_out_B (stack_read.top());
+
+            net.delete_edge_in (tid_trans_out_B, pid_B);
+
+            net.add_connection
+              ( petri_net::edge::PT_READ
+              , tid_trans_out_B
+              , pid_A
+              );
+
+            transition_t trans_out_B (net.get_transition (tid_trans_out_B));
+
+            transition_t::port_id_with_prop_t port_id_with_prop
+              (*input_port_by_pid (trans_out_B, pid_B));
+
+            trans_out_B.re_connect_outer_to_inner
+              ( pid_B
+              , pid_A
+              , port_id_with_prop.first
+              , port_id_with_prop.second
+              );
+
+            net.modify_transition (tid_trans_out_B, trans_out_B);
+
+            stack_read.pop();
+          }
+
+        std::stack<petri_net::transition_id_type> stack;
 
         // rewire trans -> pid_B to trans -> pid_A
         BOOST_FOREACH ( const petri_net::transition_id_type& transition_id

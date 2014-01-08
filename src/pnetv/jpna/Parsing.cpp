@@ -116,26 +116,25 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         FOREACH ( const petri_net::net::adj_pt_type::value_type& pt
-                , net.place_to_transition()
+                , net.place_to_transition_consume()
                 )
         {
-          if (pt.info == petri_net::edge::PT)
-          {
-            Place *place = find(places_, pt.left);
-            Transition *transition = find(transitions_, pt.right);
+          Place *place = find(places_, pt.left);
+          Transition *transition = find(transitions_, pt.right);
 
-            /* Transition consumes the token on input place. */
-            transition->addInputPlace(place);
-          }
-          else
-          {
-            Place *place = find(places_, pt.left);
-            Transition *transition = find(transitions_, pt.right);
+          /* Transition consumes the token on input place. */
+          transition->addInputPlace(place);
+        }
+        FOREACH ( const petri_net::net::adj_pt_type::value_type& pt
+                , net.place_to_transition_read()
+                )
+        {
+          Place *place = find(places_, pt.left);
+          Transition *transition = find(transitions_, pt.right);
 
-            /* Transition takes a token and instantly puts it back. */
-            transition->addInputPlace(place);
-            transition->addOutputPlace(place);
-          }
+          /* Transition takes a token and instantly puts it back. */
+          transition->addInputPlace(place);
+          transition->addOutputPlace(place);
         }
         FOREACH ( const petri_net::net::adj_tp_type::value_type& tp
                 , net.transition_to_place()

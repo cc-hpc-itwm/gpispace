@@ -41,7 +41,6 @@ namespace petri_net
       < boost::bimaps::unordered_multiset_of<petri_net::place_id_type>
       , boost::bimaps::unordered_multiset_of<petri_net::transition_id_type>
       , boost::bimaps::set_of_relation<>
-      , boost::bimaps::with_info<edge::type>
       > adj_pt_type;
 
     //! \todo eliminate these, just do not copy or assign nets!
@@ -66,7 +65,8 @@ namespace petri_net
     transitions() const;
 
     adj_tp_type const& transition_to_place() const;
-    adj_pt_type const& place_to_transition() const;
+    adj_pt_type const& place_to_transition_consume() const;
+    adj_pt_type const& place_to_transition_read() const;
 
     typedef boost::any_range< place_id_type
                             , boost::forward_traversal_tag
@@ -75,7 +75,8 @@ namespace petri_net
                             > place_id_range_type;
 
     place_id_range_type out_of_transition (const transition_id_type&) const;
-    place_id_range_type in_to_transition (const transition_id_type&) const;
+    place_id_range_type in_to_transition_consume (const transition_id_type&) const;
+    place_id_range_type in_to_transition_read (const transition_id_type&) const;
 
     typedef boost::any_range< transition_id_type
                             , boost::forward_traversal_tag
@@ -83,9 +84,11 @@ namespace petri_net
                             , std::ptrdiff_t
                             > transition_id_range_type;
 
-    transition_id_range_type out_of_place (const place_id_type&) const;
+    transition_id_range_type out_of_place_consume (const place_id_type&) const;
+    transition_id_range_type out_of_place_read (const place_id_type&) const;
     transition_id_range_type in_to_place (const place_id_type&) const;
 
+    //! \todo eliminate, clients could know that already
     bool is_read_connection ( const transition_id_type&
                             , const place_id_type&
                             ) const;
@@ -131,7 +134,8 @@ namespace petri_net
     transition_id_type _transition_id;
     boost::unordered_map<transition_id_type, we::type::transition_t> _tmap;
 
-    adj_pt_type _adj_pt;
+    adj_pt_type _adj_pt_consume;
+    adj_pt_type _adj_pt_read;
     adj_tp_type _adj_tp;
 
     typedef boost::unordered_map< place_id_type
@@ -148,7 +152,8 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP (_pmap);
       ar & BOOST_SERIALIZATION_NVP (_transition_id);
       ar & BOOST_SERIALIZATION_NVP (_tmap);
-      ar & BOOST_SERIALIZATION_NVP (_adj_pt);
+      ar & BOOST_SERIALIZATION_NVP (_adj_pt_consume);
+      ar & BOOST_SERIALIZATION_NVP (_adj_pt_read);
       ar & BOOST_SERIALIZATION_NVP (_adj_tp);
       {
         const std::size_t s (_token_by_place_id.size());
@@ -179,7 +184,8 @@ namespace petri_net
       ar & BOOST_SERIALIZATION_NVP (_pmap);
       ar & BOOST_SERIALIZATION_NVP (_transition_id);
       ar & BOOST_SERIALIZATION_NVP (_tmap);
-      ar & BOOST_SERIALIZATION_NVP (_adj_pt);
+      ar & BOOST_SERIALIZATION_NVP (_adj_pt_consume);
+      ar & BOOST_SERIALIZATION_NVP (_adj_pt_read);
       ar & BOOST_SERIALIZATION_NVP (_adj_tp);
       std::size_t token_by_place_id_size;
       ar & token_by_place_id_size;

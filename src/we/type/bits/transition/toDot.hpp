@@ -582,14 +582,25 @@ namespace we { namespace type {
                 bool is_read (false);
 
                 BOOST_FOREACH ( const petri_net::place_id_type& place_id
-                              , net.in_to_transition (trans_id)
+                              , net.in_to_transition_consume (trans_id)
                               )
                 {
                   if (place_id == c.first)
                   {
                     found = true;
 
-                    is_read = net.is_read_connection (trans_id, place_id);
+                    break;
+                  }
+                }
+                BOOST_FOREACH ( const petri_net::place_id_type& place_id
+                              , net.in_to_transition_read (trans_id)
+                              )
+                {
+                  if (place_id == c.first)
+                  {
+                    found = true;
+
+                    is_read = true;
 
                     break;
                   }
