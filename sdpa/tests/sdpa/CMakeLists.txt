@@ -243,7 +243,6 @@ set (tests
   test_Inotify.cpp
   test_CancelJob.cpp
   test_SynchronizedQueue.cpp
-  test_JobId.cpp
   test_CoallocationScheduler.cpp
   test_SimpleScheduler.cpp
   restart_drts_worker_while_jobs_are_running.cpp
