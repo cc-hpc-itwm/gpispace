@@ -27,8 +27,6 @@ namespace sdpa {
     class Agent : public GenericDaemon
     {
       public:
-        SDPA_DECLARE_LOGGER();
-
         Agent ( const std::string& name
               , const std::string& url
               , const sdpa::master_info_list_t arrMasterNames
