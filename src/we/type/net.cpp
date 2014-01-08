@@ -214,6 +214,23 @@ namespace petri_net
     update_enabled (tid);
   }
 
+  namespace
+  {
+    typedef boost::any_range
+      < const petri_net::transition_id_type
+      , boost::single_pass_traversal_tag
+      , const petri_net::transition_id_type &
+      , std::ptrdiff_t
+      > transition_id_range_type;
+
+    typedef boost::any_range
+      < const petri_net::place_id_type
+      , boost::single_pass_traversal_tag
+      , const petri_net::place_id_type &
+      , std::ptrdiff_t
+      > place_id_range_type;
+  }
+
   void net::delete_place (const place_id_type& pid)
   {
     // make the token deletion visible to delete_connection
