@@ -222,22 +222,6 @@ namespace petri_net
 
     return pos->get_right();
   }
-  boost::optional<port_id_type> net::place_to_port
-    (transition_id_type transition_id, place_id_type place_id) const
-  {
-    place_to_port_with_info_type const& place_to_port_with_info
-      (_place_to_port.at (transition_id));
-
-    place_to_port_with_info_type::left_const_iterator const pos
-      (place_to_port_with_info.left.find (place_id));
-
-    if (pos == place_to_port_with_info.left.end())
-    {
-      return boost::none;
-    }
-
-    return pos->get_right();
-  }
 
   namespace
   {
