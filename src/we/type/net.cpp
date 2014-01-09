@@ -387,7 +387,6 @@ namespace petri_net
           );
       }
     }
-
   }
 
   we::type::activity_t net::extract_activity
