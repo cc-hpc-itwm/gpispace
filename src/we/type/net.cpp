@@ -214,7 +214,7 @@ namespace petri_net
                       , const pnet::type::value::value_type& value
                       )
   {
-    const place::type& place (get_place (pid));
+    const place::type& place (_pmap.at (pid));
 
     std::list<pnet::type::value::value_type>& tokens (_token_by_place_id[pid]);
     std::list<pnet::type::value::value_type>::iterator const tokenpos
