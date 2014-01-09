@@ -147,14 +147,14 @@ class TransitionVisitor: public boost::static_visitor<void> {
           transition->addOutputPlace(place);
         }
 
-        FOREACH ( const petri_net::transition_id_type& id
-                , net.transitions() | boost::adaptors::map_keys
-                )
-        {
-            const transition_t &transition = net.get_transition(id);
+        typedef std::pair<petri_net::transition_id_type, we::type::transition_t>
+          id_and_transition_type;
 
-            TransitionVisitor visitor(petriNet_->name() + "::" + transition.name(), petriNets_);
-            visitor(transition);
+        FOREACH
+          (id_and_transition_type const id_and_transition, net.transitions())
+        {
+            TransitionVisitor visitor(petriNet_->name() + "::" + id_and_transition.second.name(), petriNets_);
+            visitor(id_and_transition.second);
         }
     }
 
