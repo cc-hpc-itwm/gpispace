@@ -57,8 +57,8 @@ int main (int argc, char **argv)
 
   if( vm.count("help") )
   {
-    std::cerr << "usage: agent [options] ...." << std::endl;
-    std::cerr << desc << std::endl;
+    LLOG (ERROR, logger, "usage: agent [options] ....");
+    LLOG (ERROR, logger, desc);
     return 0;
   }
 
