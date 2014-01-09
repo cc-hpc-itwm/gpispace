@@ -386,7 +386,7 @@ namespace petri_net
   we::type::activity_t
   net::extract_activity (transition_id_type tid)
   {
-    const we::type::transition_t& transition (get_transition (tid));
+    const we::type::transition_t& transition (_tmap.at (tid));
     we::type::activity_t act (transition, tid);
 
     boost::unordered_set<transition_id_type> transitions_to_update;
@@ -496,7 +496,7 @@ namespace petri_net
     }
 
     we::type::transition_t const& transition
-      (n->get_transition (transition_id));
+      (n->_tmap.at (transition_id));
 
     //! \todo use is_const_true and boost::optional...
     if (transition.condition().expression() == "true")
