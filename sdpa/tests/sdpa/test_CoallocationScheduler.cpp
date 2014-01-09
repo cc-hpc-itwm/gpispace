@@ -167,7 +167,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
   _agent.addJob(jobId1, "description 1", sdpa::job_id_t(), false, "", jobReqs1);
 
-  LOG(DEBUG, "Schedule the job "<<jobId1);
   _scheduler.schedule(jobId1);
 
   _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
@@ -187,7 +186,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   _agent.expect_serveJob_call (jobId1, make_list (worker_A));
 
-  LOG(DEBUG, "Try to assign again jobs to the workers ...");
   _scheduler.assignJobsToWorkers();
   _scheduler.checkAllocations();
 
@@ -591,7 +589,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _scheduler.assignJobsToWorkers();
   _scheduler.checkAllocations();
 
-  LOG(DEBUG, "Initial allocations ...");
   // all the workers should have assigned jobs
   sdpa::worker_id_list_t workerList;
   _scheduler.getListNotAllocatedWorkers(workerList);
@@ -606,14 +603,12 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   LOG(DEBUG, "The worker "<<lastWorkerId<<" has the job "<<jobId<<" assigned");
 
   // and now simply delete the last worker !
-  LOG(DEBUG, "Reschedule the jobs assigned to "<<lastWorkerId<<"!");
   _scheduler.rescheduleWorkerJob(lastWorkerId, jobId);
 
   _agent.expect_serveJob_call ("job_0", make_list ("worker_9"));
   _scheduler.schedule(jobId);
   BOOST_CHECK (_scheduler.schedulingAllowed());
 
-  LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");
   _scheduler.deleteWorker(lastWorkerId);
   sdpa::worker_id_list_t listW = _scheduler.getListAllocatedWorkers(jobId);
   BOOST_CHECK(listW.empty());
@@ -623,7 +618,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addWorker(lastWorkerId, 1, cpbSet);
 
-  LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
   _scheduler.assignJobsToWorkers();
   _scheduler.checkAllocations();
 

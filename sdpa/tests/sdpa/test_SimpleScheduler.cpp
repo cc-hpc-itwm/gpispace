@@ -140,7 +140,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
   _orchestrator.addJob(jobId1, "description 1", sdpa::job_id_t(), false, "", jobReqs1);
 
-  LOG(DEBUG, "Schedule the job "<<jobId1);
   _scheduler.schedule(jobId1);
 
   _scheduler.assignJobsToWorkers();
@@ -160,7 +159,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   _orchestrator.expect_serveJob_call (jobId1, make_list (worker_A));
 
-  LOG(DEBUG, "Try to assign again jobs to the workers ...");
   _scheduler.assignJobsToWorkers();
 
   BOOST_REQUIRE_EQUAL (_scheduler.getAssignedWorker (jobId1), worker_A);
@@ -485,7 +483,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   osstr<<"worker_"<<nWorkers-1;
   sdpa::worker_id_t lastWorkerId(osstr.str());
 
-  LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");
   _scheduler.deleteWorker(lastWorkerId);
 
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
@@ -496,7 +493,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_9"));
 
-  LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
   _scheduler.assignJobsToWorkers();
 
   BOOST_FOREACH(const sdpa::worker_id_t& wid, arrWorkerIds)
