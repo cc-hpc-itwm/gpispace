@@ -89,39 +89,6 @@ namespace we
 
       namespace
       {
-        class visitor_activity_extractor
-          : public boost::static_visitor<activity_t>
-        {
-        private:
-          boost::mt19937& _engine;
-
-        public:
-          visitor_activity_extractor (boost::mt19937& engine)
-            : _engine (engine)
-          {}
-
-          activity_t operator() (petri_net::net& net) const
-          {
-            return net.extract_activity_random (_engine);
-          }
-
-          template<typename T>
-          activity_t operator() (T&) const
-          {
-            throw std::runtime_error ("STRANGE: activity_extractor");
-          }
-        };
-      }
-
-      activity_t activity_t::extract (boost::mt19937& engine)
-      {
-        return boost::apply_visitor ( visitor_activity_extractor (engine)
-                                    , _transition.data()
-                                    );
-      }
-
-      namespace
-      {
         class visitor_activity_injector : public boost::static_visitor<>
         {
         private:

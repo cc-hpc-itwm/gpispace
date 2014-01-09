@@ -57,7 +57,6 @@ namespace we
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
 
-        activity_t extract (boost::mt19937& engine);
         void inject (const activity_t&);
         void collect_output();
 
