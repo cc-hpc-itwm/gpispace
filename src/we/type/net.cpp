@@ -355,21 +355,54 @@ namespace petri_net
     _enabled_choice.erase (tid);
   }
 
-  void net::fire_expression ( transition_id_type transition_id
+  void net::fire_expression ( transition_id_type tid
                             , we::type::transition_t const& transition
                             )
   {
-    //! \todo further inline
-    we::type::activity_t const activity
-      (extract_activity (transition_id, transition));
-
     expr::eval::context context;
 
-    BOOST_FOREACH ( const we::type::activity_t::input_t::value_type& top
-                  , activity.input()
-                  )
+    boost::unordered_set<transition_id_type> transitions_to_update;
+
+    typedef std::pair< place_id_type
+                     , pos_and_distance_type
+                     > place_and_token_type;
+
+    BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
     {
-      context.bind_ref (transition.ports().at (top.second).name(), top.first);
+      place_id_type pid (pt.first);
+      const pos_and_distance_type& pos_and_distance (pt.second);
+      const std::list<pnet::type::value::value_type>::iterator&
+        token (pos_and_distance.first);
+
+      context.bind_ref
+        ( transition.ports()
+        .at (_place_to_port.at (tid).left.find (pid)->get_right()).name()
+        , *token
+        );
+
+      //! \todo save the information whether or not it is a read
+      //! connection in _enabled_choice and omit that conditional
+      if (  _adj_pt_read.find (adj_pt_type::value_type (pid, tid))
+         == _adj_pt_read.end()
+         )
+      {
+        _token_by_place_id.at (pid).erase (token);
+
+        transition_id_range_type consume
+          (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
+        transition_id_range_type read
+          (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
+
+        BOOST_FOREACH (transition_id_type t, boost::join (consume, read))
+        {
+          transitions_to_update.insert (t);
+        }
+      }
+    }
+
+    BOOST_FOREACH (transition_id_type t, transitions_to_update)
+    {
+      update_enabled (t);
     }
 
     transition.expression()->ast().eval_all (context);
@@ -382,7 +415,7 @@ namespace petri_net
       if (p.second.is_output())
       {
         put_value
-          ( _port_to_place.at (transition_id).left.find (p.first)->get_right()
+          ( _port_to_place.at (tid).left.find (p.first)->get_right()
           , context.value (p.second.name())
           );
       }
