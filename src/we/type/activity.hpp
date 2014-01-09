@@ -53,7 +53,6 @@ namespace we
 
         std::string to_string() const;
 
-        //! \todo DIRTY! Why lock and return a ref? Eliminate!!
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
 
