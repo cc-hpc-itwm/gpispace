@@ -107,7 +107,7 @@ namespace petri_net
     bool can_fire() const;
 
     template<typename Engine>
-    we::mgmt::type::activity_t extract_activity_random (Engine& engine)
+    we::type::activity_t extract_activity_random (Engine& engine)
     {
       return extract_activity (_enabled.random (engine));
     }
@@ -231,7 +231,7 @@ namespace petri_net
 
     void disable (transition_id_type);
 
-    we::mgmt::type::activity_t extract_activity (transition_id_type);
+    we::type::activity_t extract_activity (transition_id_type);
 
     class cross_type
     {

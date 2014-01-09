@@ -54,7 +54,7 @@ public:
     _expected_serveJob_calls.erase (_expected_serveJob_calls.find (jobId));
   }
 
-  void submitWorkflow(const we::mgmt::layer::id_type& id)
+  void submitWorkflow(const we::layer::id_type& id)
   {
     throw std::runtime_error ("trying to submit workflow in test casse which never should");
   }

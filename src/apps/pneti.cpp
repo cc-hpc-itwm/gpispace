@@ -95,10 +95,10 @@ try
     return 0;
   }
 
-  we::mgmt::type::activity_t act
+  we::type::activity_t act
     ( input == "-"
-    ? we::mgmt::type::activity_t (std::cin)
-    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    ? we::type::activity_t (std::cin)
+    : we::type::activity_t (boost::filesystem::path (input))
     );
 
   std::cout << act.transition().requirements();

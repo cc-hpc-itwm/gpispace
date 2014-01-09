@@ -120,8 +120,6 @@ namespace we
     }
   }
 
-  namespace mgmt
-  {
     namespace type
     {
       bool operator== (activity_t const& lhs, activity_t const& rhs)
@@ -132,7 +130,6 @@ namespace we
           && lhs.transition_id() == rhs.transition_id();
       }
     }
-  }
 }
 
 #endif

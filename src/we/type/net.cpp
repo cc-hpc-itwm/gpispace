@@ -415,11 +415,11 @@ namespace petri_net
     _enabled_choice.erase (tid);
   }
 
-  we::mgmt::type::activity_t
+  we::type::activity_t
   net::extract_activity (transition_id_type tid)
   {
     const we::type::transition_t& transition (get_transition (tid));
-    we::mgmt::type::activity_t act (transition, tid);
+    we::type::activity_t act (transition, tid);
 
     boost::unordered_set<transition_id_type> transitions_to_update;
 

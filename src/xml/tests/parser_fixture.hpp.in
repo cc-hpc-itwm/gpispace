@@ -16,7 +16,7 @@
 #include <boost/optional.hpp>
 #include <boost/test/unit_test.hpp>
 
-FHG_BOOST_TEST_LOG_VALUE_PRINTER (we::mgmt::type::activity_t, os, activity)
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (we::type::activity_t, os, activity)
 {
   os << activity.to_string();
 }
@@ -58,16 +58,16 @@ namespace
       ::xml::parse::dump_xml (*function, state);
     }
 
-    ::we::mgmt::type::activity_t xml_to_we()
+    ::we::type::activity_t xml_to_we()
     {
       return ::xml::parse::xml_to_we (*function, state);
     }
 
-    void require_same ( const ::we::mgmt::type::activity_t& activity
+    void require_same ( const ::we::type::activity_t& activity
                       , const boost::filesystem::path& path
                       )
     {
-      BOOST_REQUIRE_EQUAL ( ::we::mgmt::type::activity_t
+      BOOST_REQUIRE_EQUAL ( ::we::type::activity_t
                             (fhg::util::read_file (path_to_pnets / path))
                           , activity
                           );

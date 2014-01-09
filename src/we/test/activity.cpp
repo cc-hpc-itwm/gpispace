@@ -20,9 +20,9 @@ using petri_net::edge::TP;
 
 typedef we::type::transition_t transition_t;
 typedef petri_net::net pnet_t;
-typedef we::mgmt::type::activity_t activity_t;
+typedef we::type::activity_t activity_t;
 
-struct exec_context : public we::mgmt::context
+struct exec_context : public we::context
 {
   virtual void handle_internally (activity_t&, net_t const&)
   {

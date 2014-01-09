@@ -20,8 +20,6 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     class layer
     {
     public:
@@ -162,7 +160,6 @@ namespace we
       void finalize_finished
         (activity_data_type&, type::activity_t, id_type parent, id_type child);
     };
-  }
 }
 
 #endif

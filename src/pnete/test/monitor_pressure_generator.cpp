@@ -68,7 +68,7 @@ struct activity
   std::string _id;
   std::list<std::string> _workers;
   sdpa::daemon::NotificationEvent::state_t _state;
-  we::mgmt::type::activity_t _act;
+  we::type::activity_t _act;
 };
 
 std::string worker_gen()

@@ -33,7 +33,7 @@ namespace sdpa
       NotificationEvent ( const std::string& component
                         , const std::string& activity_id
                         , const state_t& activity_state
-                        , const we::mgmt::type::activity_t& activity
+                        , const we::type::activity_t& activity
                         , const wfe::meta_data_t& meta_data = wfe::meta_data_t()
                         )
         : _components ()
@@ -48,7 +48,7 @@ namespace sdpa
       NotificationEvent ( const std::list<std::string>& components
                         , const std::string& activity_id
                         , const state_t& activity_state
-                        , const we::mgmt::type::activity_t& activity
+                        , const we::type::activity_t& activity
                         , const wfe::meta_data_t& meta_data = wfe::meta_data_t()
                         )
         : _components (components)

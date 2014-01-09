@@ -103,7 +103,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   else
   {
     Worker::worker_id_t worker_id = pEvt->from();
-    we::mgmt::layer::id_type actId = pEvt->job_id();
+    we::layer::id_type actId = pEvt->job_id();
 
       // update the status of the reservation
       scheduler()->workerFinished(worker_id, actId);
@@ -119,7 +119,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
           {
             pJob->JobFinished(pEvt);
             workflowEngine()->finished
-              (actId, we::mgmt::type::activity_t (pEvt->result()));
+              (actId, we::type::activity_t (pEvt->result()));
           }
           else
           {
@@ -170,7 +170,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   }
 }
 
-void Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::type::activity_t & result)
+void Agent::finished(const we::layer::id_type& wfid, const we::type::activity_t & result)
 {
   //put the job into the state Finished
   job_id_t id(wfid);
@@ -205,7 +205,7 @@ void Agent::finished(const we::mgmt::layer::id_type& wfid, const we::mgmt::type:
   if (m_guiService)
   {
     std::list<std::string> workers; workers.push_back (name());
-    const we::mgmt::type::activity_t act (pJob->description());
+    const we::type::activity_t act (pJob->description());
     const sdpa::daemon::NotificationEvent evt
       ( workers
       , pJob->id()
@@ -289,7 +289,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
   {
     Worker::worker_id_t worker_id = pEvt->from();
 
-      we::mgmt::layer::id_type actId = pEvt->job_id();
+      we::layer::id_type actId = pEvt->job_id();
 
       // this  should only  be called  once, therefore
       // the state machine when we switch the job from
@@ -347,7 +347,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
   }
 }
 
-void Agent::failed( const we::mgmt::layer::id_type& wfid
+void Agent::failed( const we::layer::id_type& wfid
                   , int error_code
                   , std::string const & reason
                   )
@@ -382,7 +382,7 @@ void Agent::failed( const we::mgmt::layer::id_type& wfid
   if (m_guiService)
   {
     std::list<std::string> workers; workers.push_back (name());
-    const we::mgmt::type::activity_t act (pJob->description());
+    const we::type::activity_t act (pJob->description());
     const sdpa::daemon::NotificationEvent evt
       ( workers
       , pJob->id()
@@ -588,7 +588,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   }
   else // a Cancel message came from the upper level -> forward cancellation request to WE
   {
-    we::mgmt::layer::id_type workflowId = pEvt->job_id();
+    we::layer::id_type workflowId = pEvt->job_id();
     DLLOG (TRACE, _logger, "Cancel the workflow "<<workflowId<<". Current status is: "<<sdpa::status::show(pJob->getStatus()));
     workflowEngine()->cancel(workflowId);
     pJob->CancelJob(pEvt);
@@ -602,7 +602,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 
   Job* pJob(jobManager().findJob(pEvt->job_id()));
   {
-    on_scope_exit _ ( boost::bind ( &we::mgmt::layer::canceled
+    on_scope_exit _ ( boost::bind ( &we::layer::canceled
                                   , workflowEngine()
                                   , pEvt->job_id()
                                   )
@@ -642,7 +642,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
   else // acknowledgment comes from a worker -> inform WE that the activity was canceled
   {
     LLOG (TRACE, _logger, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
-    we::mgmt::layer::id_type actId = pEvt->job_id();
+    we::layer::id_type actId = pEvt->job_id();
     Worker::worker_id_t worker_id = pEvt->from();
 
     scheduler()->workerCanceled(worker_id, actId);

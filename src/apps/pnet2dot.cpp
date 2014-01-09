@@ -20,7 +20,7 @@
 namespace detail {
   template<typename Pred>
   void to_dot ( std::ostream & os
-              , const we::mgmt::type::activity_t& a
+              , const we::type::activity_t& a
               , const Pred & pred
               )
   {
@@ -222,10 +222,10 @@ try
                                            )
                              );
 
-  we::mgmt::type::activity_t act
+  we::type::activity_t act
     ( input == "-"
-    ? we::mgmt::type::activity_t (std::cin)
-    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    ? we::type::activity_t (std::cin)
+    : we::type::activity_t (boost::filesystem::path (input))
     );
 
   std::ofstream ostream (output.c_str());

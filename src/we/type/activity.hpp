@@ -28,8 +28,6 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     namespace type
     {
       class activity_t
@@ -144,7 +142,6 @@ namespace we
         output_t _output;
       };
     }
-  }
 }
 
 #endif

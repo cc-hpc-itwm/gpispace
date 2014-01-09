@@ -22,7 +22,7 @@ namespace xml
     void dump_xml (const id::ref::function&, const state::type&);
 
     //! \todo Not in parser, but somewhere else?
-    we::mgmt::type::activity_t xml_to_we
+    we::type::activity_t xml_to_we
       ( const xml::parse::id::ref::function& function
       , const xml::parse::state::type& state
       );

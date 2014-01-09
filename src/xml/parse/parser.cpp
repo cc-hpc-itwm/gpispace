@@ -1589,7 +1589,7 @@ namespace xml
       type::dump::dump (s, function.get());
     }
 
-    we::mgmt::type::activity_t xml_to_we
+    we::type::activity_t xml_to_we
       ( const xml::parse::id::ref::function& function
       , const xml::parse::state::type& state
       )
@@ -1612,7 +1612,7 @@ namespace xml
                                        )
         );
 
-      return we::mgmt::type::activity_t (trans, boost::none);
+      return we::type::activity_t (trans, boost::none);
     }
   } // namespace parse
 } // namespace xml

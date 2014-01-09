@@ -8,8 +8,6 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     layer::layer
         ( boost::function<void (id_type, type::activity_t, id_type)> rts_submit
         , boost::function<void (id_type)> rts_cancel
@@ -579,5 +577,4 @@ namespace we
         fun (child);
       }
     }
-  }
 }

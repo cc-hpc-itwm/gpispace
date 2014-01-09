@@ -3,10 +3,7 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     class context;
-  }
 }
 
 #endif

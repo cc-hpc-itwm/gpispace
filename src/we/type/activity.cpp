@@ -23,8 +23,6 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     namespace type
     {
       activity_t::activity_t ()
@@ -40,7 +38,7 @@ namespace we
 
       namespace
       {
-        void decode (std::istream& s, we::mgmt::type::activity_t& t)
+        void decode (std::istream& s, activity_t& t)
         {
           try
             {
@@ -406,5 +404,4 @@ namespace we
         return _transition_id;
       }
     }
-  }
 }

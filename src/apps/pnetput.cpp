@@ -68,10 +68,10 @@ int main (int argc, char** argv) try
     return EXIT_SUCCESS;
   }
 
-  we::mgmt::type::activity_t act
+  we::type::activity_t act
     ( input == "-"
-    ? we::mgmt::type::activity_t (std::cin)
-    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    ? we::type::activity_t (std::cin)
+    : we::type::activity_t (boost::filesystem::path (input))
     );
 
   typedef boost::unordered_map< std::string
