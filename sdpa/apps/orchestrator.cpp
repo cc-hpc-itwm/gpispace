@@ -47,8 +47,8 @@ int main (int argc, char **argv)
 
     if (vm.count("help"))
     {
-      std::cerr << "usage: orchestrator [options] ...." << std::endl;
-      std::cerr << desc << std::endl;
+      LLOG (ERROR, logger, "usage: orchestrator [options] ....");
+      LLOG (ERROR, logger, desc);
       return 0;
     }
 
@@ -167,6 +167,6 @@ int main (int argc, char **argv)
     }
     catch( std::exception& )
     {
-      std::cerr<<"Could not start the Orchestrator!"<<std::endl;
+      LLOG (ERROR, logger, "Could not start the Orchestrator!");
     }
 }
