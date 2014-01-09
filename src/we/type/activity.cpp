@@ -356,31 +356,6 @@ namespace we
           (executor (*this, ctxt), transition().data());
       }
 
-      namespace
-      {
-        class visitor_can_fire : public boost::static_visitor<bool>
-        {
-        public:
-          bool operator () (const petri_net::net& net) const
-          {
-            return net.can_fire();
-          }
-          bool operator () (const we::type::module_call_t&) const
-          {
-            return false;
-          }
-          bool operator () (const we::type::expression_t&) const
-          {
-            return false;
-          }
-        };
-      }
-
-      bool activity_t::can_fire() const
-      {
-        return boost::apply_visitor (visitor_can_fire(), transition().data());
-      }
-
       const activity_t::input_t& activity_t::input() const
       {
         return _input;

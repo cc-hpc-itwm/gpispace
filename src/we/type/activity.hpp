@@ -63,8 +63,6 @@ namespace we
 
         void execute (context*);
 
-        bool can_fire() const;
-
         const input_t& input() const;
         void add_input
           ( petri_net::port_id_type const&
