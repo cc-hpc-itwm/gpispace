@@ -58,6 +58,8 @@ namespace sdpa
       virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) {}
       virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *) {}
       virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *) {}
+      virtual void handleDiscoverPendingActEvent (const sdpa::events::DiscoverPendingActEvent *) {}
+      virtual void handleDiscoverPendingActReplyEvent (const sdpa::events::DiscoverPendingActReplyEvent *) {}
     };
   }
 }
