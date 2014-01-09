@@ -80,7 +80,6 @@ namespace petri_net
     priority_type get_transition_priority (transition_id_type) const;
 
     const place::type& get_place (place_id_type) const;
-    const we::type::transition_t& get_transition (transition_id_type) const;
 
     const boost::unordered_map<place_id_type,place::type>& places() const;
     const boost::unordered_map<transition_id_type,we::type::transition_t>&
@@ -108,6 +107,8 @@ namespace petri_net
     }
 
   private:
+    const we::type::transition_t& get_transition (transition_id_type) const;
+
     place_id_type _place_id;
     boost::unordered_map<place_id_type,place::type> _pmap;
 
