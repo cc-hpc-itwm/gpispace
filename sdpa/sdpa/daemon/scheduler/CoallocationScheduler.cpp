@@ -57,8 +57,8 @@ void CoallocationScheduler::assignJobsToWorkers()
               DMLOG(DEBUG, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<list_reserved_workers);
               // serve the same job to all reserved workers!!!!
 
-              ptr_comm_handler_->serveJob(list_reserved_workers, jobId);
               _worker_manager.markJobSubmitted(pReservation->getWorkerList(), jobId);
+              ptr_comm_handler_->serveJob(list_reserved_workers, jobId);
             }
             else
             {
