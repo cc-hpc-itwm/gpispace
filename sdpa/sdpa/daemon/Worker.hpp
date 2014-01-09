@@ -3,11 +3,12 @@
 
 #include <list>
 #include <string>
-#include <sdpa/common.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/exceptions.hpp>
+
+#include <fhglog/fhglog.hpp>
 
 #include <boost/optional.hpp>
 
@@ -149,7 +150,7 @@ namespace sdpa { namespace daemon {
     void free();
 
   private:
-    SDPA_DECLARE_LOGGER();
+    fhg::log::Logger::ptr_t _logger;
 
     worker_id_t name_; //! name of the worker
     boost::optional<unsigned int> capacity_;

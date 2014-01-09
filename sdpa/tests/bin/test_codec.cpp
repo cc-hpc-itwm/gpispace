@@ -4,9 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::capabilities_set_t);
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::job_id_t);
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::worker_id_list_t);
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::job_id_list_t);
 
 namespace
 {
@@ -177,8 +175,9 @@ BOOST_AUTO_TEST_CASE (SubmitJob)
   workers.push_back ("bar");
 
   SubmitJobEvent e ("foo", "bar", sdpa::job_id_t("job-id-1"), "pnet", workers);
-  SubmitJobEvent* r (encode_decode_job_event (e));
+  SubmitJobEvent* r (encode_decode_sdpa_event (e));
 
+  BOOST_REQUIRE_EQUAL (r->job_id(), e.job_id());
   BOOST_REQUIRE_EQUAL (r->description(), e.description());
   BOOST_REQUIRE_EQUAL (r->worker_list(), e.worker_list());
 }

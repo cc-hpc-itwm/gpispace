@@ -24,7 +24,6 @@
 #include <fhg/util/boost/test/printer/set.hpp>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::Capability)
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::job_id_t)
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -61,19 +60,16 @@ public:
 
   void submitWorkflow(const we::mgmt::layer::id_type& id)
   {
-    DLOG(TRACE, "The agent is trying to forward the master job "<<id<<" to the workflow engine");
     throw std::runtime_error ("trying to submit workflow in test casse which never should");
   }
 
   void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
   {
-    DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the daemon stage");
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
   void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& pEvt)
   {
-    DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the master stage");
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
@@ -134,8 +130,6 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 {
-  LOG( INFO, "Test if the capabilities are matching the requirements "<<std::endl);
-
   sdpa::worker_id_t workerId("test_worker");
   sdpa::capabilities_set_t workerCpbSet;
 
@@ -164,8 +158,6 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
-  LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
-
   sdpa::worker_id_t worker_A("worker_A");
 
   sdpa::capabilities_set_t cpbSetA;
@@ -175,7 +167,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
   _agent.TEST_add_dummy_job (jobId1, jobReqs1);
 
-  LOG(DEBUG, "Schedule the job "<<jobId1);
   _scheduler.schedule(jobId1);
 
   _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
@@ -186,16 +177,12 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   cpbSetA.insert(cpb1);
   _scheduler.addCapabilities(worker_A, cpbSetA);
 
-  LOG(DEBUG, "Check if worker_A really acquired the capability \"C\"");
-
   sdpa::capabilities_set_t cpbset;
   _scheduler.getWorkerCapabilities(worker_A, cpbset);
-
-  LOG(DEBUG, "The worker_A has now the following capabilities: ["<<cpbset<<"]");
+  BOOST_REQUIRE_EQUAL (cpbset, cpbSetA);
 
   _agent.expect_serveJob_call (jobId1, make_list (worker_A));
 
-  LOG(DEBUG, "Try to assign again jobs to the workers ...");
   _scheduler.assignJobsToWorkers();
   _scheduler.checkAllocations();
 
@@ -206,8 +193,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
-  LOG(INFO, "testLoadBalancing");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -293,8 +278,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
-  LOG(INFO, "Test the load-balancing when a worker joins later ...");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -368,13 +351,11 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
   // check if to worker_9 was assigned any job
   sdpa::job_id_t jobId = _scheduler.getAssignedJob(workerId);
-  BOOST_CHECK(!jobId.str().empty());
+  BOOST_CHECK(!jobId.empty());
 }
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
-  LOG(INFO, "Test the load-balancing when a worker gains a capability later ...");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 15;
@@ -458,8 +439,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
 BOOST_AUTO_TEST_CASE(testCoallocSched)
 {
-  LOG(INFO, "Test the co-allocation ...");
-
   const int NWORKERS = 12;
   const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
@@ -508,7 +487,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
     k = boost::lexical_cast<int>(wid);
     BOOST_CHECK( k==0 || k==3 || k==6 || k==9);
   }
-  LOG(INFO, "The job jobId0 has been allocated the workers "<<listJobAssignedWorkers);
 
   listJobAssignedWorkers.clear();
   listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId1);
@@ -517,7 +495,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
     k = boost::lexical_cast<int>(wid);
     BOOST_CHECK( k==1 || k==4 || k==7 || k==10);
   }
-  LOG(INFO, "The job jobId1 has been allocated the workers "<<listJobAssignedWorkers);
 
   listJobAssignedWorkers.clear();
   listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId2);
@@ -526,7 +503,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
     k = boost::lexical_cast<int>(wid);
     BOOST_CHECK( k==2 || k==5 || k==8 || k==11);
   }
-  LOG(INFO, "The job jobId2 has been allocated the workers "<<listJobAssignedWorkers);
 
   // try now to schedule a job requiring 2 resources of type "A"
   const sdpa::job_id_t jobId4("Job4");
@@ -558,8 +534,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {
-  LOG(INFO, "Test the load-balancing when a worker is stopped, re-started and announces afterwards its capabilities ...");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
@@ -609,7 +583,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _scheduler.assignJobsToWorkers();
   _scheduler.checkAllocations();
 
-  LOG(DEBUG, "Initial allocations ...");
   // all the workers should have assigned jobs
   sdpa::worker_id_list_t workerList;
   _scheduler.getListNotAllocatedWorkers(workerList);
@@ -618,34 +591,28 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   sdpa::worker_id_t lastWorkerId("worker_9");
   sdpa::job_id_t jobId = _scheduler.getAssignedJob(lastWorkerId);
-  LOG(DEBUG, "The worker "<<lastWorkerId<<" was assigned the job "<<jobId);
-  sdpa::job_id_t oldJobId(jobId);
 
-  LOG(DEBUG, "The worker "<<lastWorkerId<<" has the job "<<jobId<<" assigned");
+  BOOST_REQUIRE_EQUAL (jobId, "job_0");
 
   // and now simply delete the last worker !
-  LOG(DEBUG, "Reschedule the jobs assigned to "<<lastWorkerId<<"!");
   _scheduler.rescheduleWorkerJob(lastWorkerId, jobId);
 
   _agent.expect_serveJob_call ("job_0", make_list ("worker_9"));
   _scheduler.schedule(jobId);
   BOOST_CHECK (_scheduler.schedulingAllowed());
 
-  LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");
   _scheduler.deleteWorker(lastWorkerId);
   sdpa::worker_id_list_t listW = _scheduler.getListAllocatedWorkers(jobId);
   BOOST_CHECK(listW.empty());
-  LOG_IF(DEBUG, listW.empty(), "The worker "<<lastWorkerId<<" was deleted!");
 
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addWorker(lastWorkerId, 1, cpbSet);
 
-  LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
   _scheduler.assignJobsToWorkers();
   _scheduler.checkAllocations();
 
-  BOOST_REQUIRE_EQUAL (oldJobId, _scheduler.getAssignedJob (lastWorkerId));
+  BOOST_REQUIRE_EQUAL (jobId, _scheduler.getAssignedJob (lastWorkerId));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

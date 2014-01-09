@@ -204,16 +204,12 @@ namespace utils
     sdpa::job_id_t submit_job
       (sdpa::client::Client& c, std::string workflow)
     {
-      LOG (DEBUG, "Submitting the following test workflow: \n" << workflow);
-
       return c.submitJob (workflow);
     }
 
     sdpa::status::code query_job_status
       (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
-      LOG (DEBUG, "Query status for job " << id);
-
       return c.queryJob (id);
     }
 
@@ -221,8 +217,6 @@ namespace utils
                                                 , const sdpa::job_id_t& id
                                                 )
     {
-      LOG (DEBUG, "Waiting for termination of job " << id);
-
       sdpa::client::job_info_t job_info;
       return c.wait_for_terminal_state_polling (id, job_info);
     }
@@ -230,30 +224,22 @@ namespace utils
     sdpa::client::result_t retrieve_job_results
       (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
-      LOG (DEBUG, "Retrieving results of job " << id);
-
       return c.retrieveResults (id);
     }
 
     void delete_job (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
-      LOG (DEBUG, "Delete job " << id);
-
       return c.deleteJob (id);
     }
 
     void cancel_job (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
-      LOG (DEBUG, "Cancel job " << id);
-
       return c.cancelJob (id);
     }
 
     sdpa::status::code wait_for_terminal_state
       (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
-      LOG (DEBUG, "Subscribe to job " << id);
-
       sdpa::client::job_info_t job_info;
       return c.wait_for_terminal_state (id, job_info);
     }

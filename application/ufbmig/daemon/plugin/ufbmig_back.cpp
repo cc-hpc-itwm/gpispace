@@ -11,8 +11,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/error_codes.hpp>
-#include <fhg/util/bool.hpp>
-#include <fhg/util/bool_io.hpp>
+#include <fhg/util/read_bool.hpp>
 
 // plugin interfaces
 #include "sdpactl.hpp"
@@ -164,7 +163,7 @@ public:
   FHG_PLUGIN_START()
   {
     m_control_sdpa =
-      fhg_kernel()->get<fhg::util::bool_t>("control_sdpa", "true");
+      fhg::util::read_bool (fhg_kernel()->get ("control_sdpa", "true"));
     m_check_interval =
       fhg_kernel ()->get<std::size_t>("check_interval", 1800);
     // (10**6) / fhg_kernel ()->tick_time () * 360 // seconds

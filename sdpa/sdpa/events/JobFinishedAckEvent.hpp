@@ -21,7 +21,7 @@ namespace sdpa
 
       std::string str() const
       {
-        return "JobFinishedAckEvent(" + job_id ().str () + ")";
+        return "JobFinishedAckEvent(" + job_id () + ")";
       }
 
       virtual void handleBy (EventHandler* handler)

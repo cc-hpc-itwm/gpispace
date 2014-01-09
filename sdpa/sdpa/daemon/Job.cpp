@@ -98,7 +98,7 @@ namespace sdpa {
 
     void Job::action_reschedule_job(const MSMRescheduleEvent& evt)
     {
-      DLOG(TRACE, "Reschedule the job "<<id());
+      DLLOG (TRACE, _logger, "Reschedule the job "<<id());
       evt.ptrScheduler()->schedule(id());
     }
 

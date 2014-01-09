@@ -21,7 +21,6 @@
 #include <fhg/assert.hpp>
 
 #include <sdpa/capability.hpp>
-#include <sdpa/logging.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
@@ -60,6 +59,8 @@
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
 
+#include <fhglog/fhglog.hpp>
+
 #define OVERWRITTEN_IN_TEST virtual
 
 namespace sdpa {
@@ -82,7 +83,6 @@ namespace sdpa {
                    );
       virtual ~GenericDaemon();
 
-      SDPA_DECLARE_LOGGER();
       const std::string& name() const;
 
       const unsigned int& rank() const { return m_nRank; }
@@ -165,7 +165,7 @@ namespace sdpa {
 
     private:
       // jobs
-      std::string gen_id() { return sdpa::JobId ().str (); }
+      std::string gen_id();
 
     public:
       // forwarding to jobManager() only:
@@ -207,6 +207,8 @@ namespace sdpa {
 
       // data members
     protected:
+      fhg::log::Logger::ptr_t _logger;
+
       std::string _name;
 
       mutex_type mtx_;

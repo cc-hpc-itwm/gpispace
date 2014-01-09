@@ -27,8 +27,6 @@ struct KVSSetup
 
 	  m_serv.start();
 
-	  LOG(INFO, "kvs daemon is listening on port " << m_serv.port ());
-
 	  current_kvs_port = boost::lexical_cast<std::string>(m_serv.port());
 
 	  fhg::com::kvs::global::get_kvs_info().init( kvs_host()

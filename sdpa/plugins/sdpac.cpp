@@ -85,7 +85,7 @@ public:
 
     req.reset (new SubmitJobEvent( m_peer->name()
                                  , m_orchestrator
-                                 , sdpa::job_id_t::invalid_job_id() // job id not known
+                                 , boost::none
                                  , wf
                                  )
               );

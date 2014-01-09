@@ -8,6 +8,8 @@
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
 
+#include <sdpa/types.hpp>
+
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
@@ -23,7 +25,7 @@ namespace we
     class layer
     {
     public:
-      typedef std::string id_type;
+      typedef sdpa::job_id_t id_type;
 
       layer ( // submit: external activities from submitted net -> child jobs
               boost::function<void (id_type, type::activity_t)> rts_submit

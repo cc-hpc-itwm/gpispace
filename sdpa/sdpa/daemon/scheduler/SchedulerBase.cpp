@@ -7,13 +7,13 @@ namespace sdpa {
    namespace daemon {
 
 SchedulerBase::SchedulerBase(GenericDaemon* pCommHandler)
-  : _worker_manager()
-  , ptr_comm_handler_ ( pCommHandler
+  : ptr_comm_handler_ ( pCommHandler
                       ? pCommHandler
                       : throw std::runtime_error
                         ("SchedulerBase ctor with NULL ptr_comm_handler")
                       )
-  , SDPA_INIT_LOGGER (ptr_comm_handler_->name())
+  , _logger (fhg::log::Logger::get (ptr_comm_handler_->name()))
+  , _worker_manager()
   , m_agent_name (ptr_comm_handler_->name())
 {}
 
@@ -59,11 +59,11 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
   }
   catch (const WorkerNotFoundException& ex)
   {
-      SDPA_LOG_WARN("Cannot find the worker "<<worker_id);
+    LLOG (WARN, _logger, "Cannot find the worker "<<worker_id);
   }
   catch(JobNotDeletedException const & ex)
   {
-      SDPA_LOG_WARN("The job " << job_id << " could not be deleted: " << ex.what());
+    LLOG (WARN, _logger, "The job " << job_id << " could not be deleted: " << ex.what());
   }
 
   rescheduleJob(job_id);
@@ -74,7 +74,7 @@ void SchedulerBase::reschedule( const Worker::worker_id_t & worker_id, sdpa::job
   lock_type lock(mtx_);
   while( !workerJobList.empty() ) {
       sdpa::job_id_t jobId = workerJobList.front();
-      DMLOG (TRACE, "Re-scheduling the job "<<jobId.str()<<" ... ");
+      DLLOG (TRACE, _logger, "Re-scheduling the job "<<jobId<<" ... ");
       rescheduleWorkerJob(worker_id, jobId);
       workerJobList.pop_front();
   }
@@ -94,7 +94,7 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
 
     if( !workerJobList.empty() )
     {
-        SDPA_LOG_WARN( "The worker " << worker_id << " has still has assigned jobs!");
+      LLOG (WARN, _logger,  "The worker " << worker_id << " has still has assigned jobs!");
     }
 
     // delete the worker from the worker map
@@ -102,17 +102,17 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
   }
   catch (const WorkerNotFoundException& ex)
   {
-      SDPA_LOG_ERROR("Cannot delete the worker "<<worker_id<<". Worker not found!");
+    LLOG (ERROR, _logger, "Cannot delete the worker "<<worker_id<<". Worker not found!");
       throw ex;
   }
 }
 
 void SchedulerBase::delete_job (sdpa::job_id_t const & job)
 {
-  SDPA_LOG_DEBUG("removing job " << job << " from the scheduler's queue ....");
+  LLOG (DEBUG, _logger, "removing job " << job << " from the scheduler's queue ....");
   if (pending_jobs_queue_.erase(job))
   {
-    SDPA_LOG_DEBUG("removed job from the central queue...");
+    LLOG (DEBUG, _logger, "removed job from the central queue...");
   }
   else
     _worker_manager.deleteJob(job);
@@ -245,7 +245,7 @@ void SchedulerBase::run()
     }
     catch ( const std::exception &ex )
     {
-        MLOG(ERROR, "exception in scheduler thread: " << ex.what());
+      LLOG (ERROR, _logger, "exception in scheduler thread: " << ex.what());
         throw;
     }
   }
@@ -254,7 +254,7 @@ void SchedulerBase::run()
 void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
-  DLOG(TRACE, "Acknowledge the job "<<job_id.str());
+  DLLOG (TRACE, _logger, "Acknowledge the job "<<job_id);
   try {
     Worker::ptr_t ptrWorker = findWorker(worker_id);
 
@@ -264,7 +264,7 @@ void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
   }
   catch(JobNotFoundException const& ex1)
   {
-    SDPA_LOG_ERROR("Could not find the job "<<job_id.str()<<"!");
+    LLOG (ERROR, _logger, "Could not find the job "<<job_id<<"!");
     throw ex1;
   }
   catch(WorkerNotFoundException const &ex2)
@@ -287,12 +287,12 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
   }
   catch(JobNotDeletedException const& ex1)
   {
-    SDPA_LOG_WARN("The job "<<jobId.str()<<" couldn't be found!");
+    LLOG (WARN, _logger, "The job "<<jobId<<" couldn't be found!");
     throw ex1;
   }
   catch(WorkerNotFoundException const &ex2 )
   {
-    SDPA_LOG_WARN("The worker "<<worker_id<<" couldn't be found!");
+    LLOG (WARN, _logger, "The worker "<<worker_id<<" couldn't be found!");
     throw ex2;
   }
 }
@@ -340,7 +340,7 @@ void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sd
   }
   catch(WorkerNotFoundException const &ex2 )
   {
-      SDPA_LOG_ERROR("The worker "<<worker_id<<" could not be found!");
+    LLOG (ERROR, _logger, "The worker "<<worker_id<<" could not be found!");
       cpbset = sdpa::capabilities_set_t();
   }
 }

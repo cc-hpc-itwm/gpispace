@@ -16,8 +16,6 @@
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/getenv.hpp>
-#include <fhg/util/bool.hpp>
-#include <fhg/util/bool_io.hpp>
 #include <fhg/util/threadname.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/error_codes.hpp>

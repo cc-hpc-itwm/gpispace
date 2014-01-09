@@ -24,7 +24,6 @@
 #include <fhg/util/boost/test/printer/set.hpp>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::Capability)
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::job_id_t)
 
 using namespace std;
 using namespace sdpa::daemon;
@@ -57,19 +56,16 @@ public:
 
   void submitWorkflow(const we::mgmt::layer::id_type& id)
   {
-    DLOG(TRACE, "The agent is trying to forward the master job "<<id<<" to the workflow engine");
     throw std::runtime_error ("trying to submit workflow in test casse which never should");
   }
 
   void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
   {
-    DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the daemon stage");
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
   void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& pEvt)
   {
-    DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the master stage");
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
@@ -108,8 +104,6 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 {
-  LOG( INFO, "Test if the capabilities are matching the requirements "<<std::endl);
-
   sdpa::worker_id_t workerId("test_worker");
   sdpa::capabilities_set_t workerCpbSet;
 
@@ -137,8 +131,6 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
-  LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
-
   sdpa::worker_id_t worker_A("worker_A");
 
   sdpa::capabilities_set_t cpbSetA;
@@ -148,7 +140,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
   _orchestrator.TEST_add_dummy_job (jobId1, jobReqs1);
 
-  LOG(DEBUG, "Schedule the job "<<jobId1);
   _scheduler.schedule(jobId1);
 
   _scheduler.assignJobsToWorkers();
@@ -159,16 +150,13 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   cpbSetA.insert(cpb1);
   _scheduler.addCapabilities(worker_A, cpbSetA);
 
-  LOG(DEBUG, "Check if worker_A really acquired the capability \"C\"");
-
   sdpa::capabilities_set_t cpbset;
   _scheduler.getWorkerCapabilities(worker_A, cpbset);
 
-  LOG(DEBUG, "The worker_A has now the following capabilities: ["<<cpbset<<"]");
+  BOOST_REQUIRE_EQUAL (cpbset, cpbSetA);
 
   _orchestrator.expect_serveJob_call (jobId1, make_list (worker_A));
 
-  LOG(DEBUG, "Try to assign again jobs to the workers ...");
   _scheduler.assignJobsToWorkers();
 
   BOOST_REQUIRE_EQUAL (_scheduler.getAssignedWorker (jobId1), worker_A);
@@ -177,8 +165,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
-  LOG(INFO, "testLoadBalancing");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
@@ -247,8 +233,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
-  LOG(INFO, "Test the load-balancing when a worker joins later ...");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
@@ -338,8 +322,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
-  LOG(INFO, "Test the load-balancing when a worker gains a capability later ...");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
@@ -441,8 +423,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {
-  LOG(INFO, "Test the load-balancing when a worker is stopped, re-started and announces afterwards its capabilities ...");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
@@ -501,7 +481,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   osstr<<"worker_"<<nWorkers-1;
   sdpa::worker_id_t lastWorkerId(osstr.str());
 
-  LOG(DEBUG, "Delete the worker "<<lastWorkerId<<"!");
   _scheduler.deleteWorker(lastWorkerId);
 
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
@@ -512,7 +491,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_9"));
 
-  LOG(DEBUG, "The worker "<<lastWorkerId<<" was re-added!");
   _scheduler.assignJobsToWorkers();
 
   BOOST_FOREACH(const sdpa::worker_id_t& wid, arrWorkerIds)

@@ -1,8 +1,3 @@
-configure_file(sdpa.env.in ${CMAKE_CURRENT_BINARY_DIR}/sdpa.env @ONLY)
-
-INSTALL(FILES defaults.template functions.sh
-  DESTINATION etc/sdpa
-  COMPONENT configurations)
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdpa.env
+INSTALL(FILES defaults.template sdpa.env
   DESTINATION etc/sdpa
   COMPONENT configurations)

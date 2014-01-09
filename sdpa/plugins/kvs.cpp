@@ -2,7 +2,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
-#include <fhg/util/bool_io.hpp>
+#include <fhg/util/read_bool.hpp>
 
 #include <fhgcom/kvs/kvsc.hpp>
 
@@ -30,9 +30,8 @@ public:
     m_ping_interval =
       fhg_kernel ()->get<unsigned int> ("ping", m_ping_interval);
     m_terminate_on_connection_failure =
-      fhg_kernel ()->get<fhg::util::bool_t> ( "terminate"
-                                            , m_terminate_on_connection_failure
-                                            );
+      fhg::util::read_bool
+        (fhg_kernel()->get ("terminate", boost::lexical_cast<std::string> (m_terminate_on_connection_failure)));
     m_kvs_timeout = fhg_kernel ()->get<unsigned int> ("timeout", m_kvs_timeout);
 
     DMLOG( TRACE

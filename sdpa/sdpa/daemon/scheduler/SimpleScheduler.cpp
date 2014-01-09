@@ -36,7 +36,7 @@ void SimpleScheduler::assignJobsToWorkers()
 
     if( !matchingWorkerId.empty() )
     { // matching found
-        DMLOG(TRACE, "Serve the job "<<jobId<<" to the worker "<<matchingWorkerId);
+      DLLOG (TRACE, _logger, "Serve the job "<<jobId<<" to the worker "<<matchingWorkerId);
 
         try {
            Worker::ptr_t pWorker(findWorker(matchingWorkerId));
@@ -44,7 +44,7 @@ void SimpleScheduler::assignJobsToWorkers()
            ptr_comm_handler_->serveJob(sdpa::worker_id_list_t (1, matchingWorkerId), jobId);
         }
         catch(const WorkerNotFoundException&) {
-           DMLOG (TRACE, "The worker " << matchingWorkerId << " is not registered! Sending a notification ...");
+          DLLOG (TRACE, _logger, "The worker " << matchingWorkerId << " is not registered! Sending a notification ...");
            sdpa::events::ErrorEvent::Ptr pErrorEvt(
                new sdpa::events::ErrorEvent(m_agent_name,
                                              matchingWorkerId,
@@ -76,7 +76,7 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   }
   else
   {
-      SDPA_LOG_WARN("Cannot re-schedule the job " << job_id << ". The job could not be found!");
+    LLOG (WARN, _logger, "Cannot re-schedule the job " << job_id << ". The job could not be found!");
   }
 }
 
