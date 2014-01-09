@@ -150,12 +150,10 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   cpbSetA.insert(cpb1);
   _scheduler.addCapabilities(worker_A, cpbSetA);
 
-  LOG(DEBUG, "Check if worker_A really acquired the capability \"C\"");
-
   sdpa::capabilities_set_t cpbset;
   _scheduler.getWorkerCapabilities(worker_A, cpbset);
 
-  LOG(DEBUG, "The worker_A has now the following capabilities: ["<<cpbset<<"]");
+  BOOST_REQUIRE_EQUAL (cpbset, cpbSetA);
 
   _orchestrator.expect_serveJob_call (jobId1, make_list (worker_A));
 
