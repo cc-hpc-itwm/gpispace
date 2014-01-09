@@ -1,7 +1,7 @@
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
-#include <we/mgmt/context.hpp>
-#include <we/mgmt/layer.hpp>
+#include <we/context.hpp>
+#include <we/layer.hpp>
 #include <we/type/activity.hpp>
 
 #include <fhg/error_codes.hpp>

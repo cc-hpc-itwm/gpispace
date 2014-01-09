@@ -3,7 +3,7 @@
 #ifndef IWORKFLOWENGINE_HPP
 #define IWORKFLOWENGINE_HPP
 
-#include <we/mgmt/layer.hpp>
+#include <we/layer.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 

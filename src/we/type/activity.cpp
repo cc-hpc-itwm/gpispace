@@ -6,7 +6,7 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we/mgmt/context.hpp>
+#include <we/context.hpp>
 
 #include <we/type/activity.hpp>
 

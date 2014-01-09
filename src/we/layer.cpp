@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/mgmt/layer.hpp>
+#include <we/layer.hpp>
 
 #include <fhg/util/starts_with.hpp>
 

@@ -8,7 +8,7 @@
 #include <we/type/id.hpp>
 #include <we/type/transition.hpp>
 
-#include <we/mgmt/context.fwd.hpp>
+#include <we/context.fwd.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>

@@ -8,7 +8,7 @@
 #include <we/type/value.hpp>
 #include <we/type/port.hpp>
 #include <we/type/activity.hpp>
-#include <we/mgmt/context.hpp>
+#include <we/context.hpp>
 
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.hpp>

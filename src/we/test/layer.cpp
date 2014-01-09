@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE layer
 #include <boost/test/unit_test.hpp>
 
-#include <we/mgmt/layer.hpp>
+#include <we/layer.hpp>
 #include <we/type/activity.hpp>
 #include <we/test/operator_equal.hpp>
 #include <we/type/expression.hpp>
