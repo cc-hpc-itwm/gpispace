@@ -167,6 +167,6 @@ int main (int argc, char **argv)
     }
     catch( std::exception& )
     {
-      std::cout<<"Could not start the Orchestrator!"<<std::endl;
+      std::cerr<<"Could not start the Orchestrator!"<<std::endl;
     }
 }
