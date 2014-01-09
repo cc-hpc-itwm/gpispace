@@ -405,11 +405,6 @@ namespace we
       {
         return _transition_id;
       }
-
-      std::ostream& operator<< (std::ostream& os, const activity_t& a)
-      {
-        return os << a.to_string();
-      }
     }
   }
 }

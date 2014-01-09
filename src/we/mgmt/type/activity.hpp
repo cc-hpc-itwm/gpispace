@@ -143,8 +143,6 @@ namespace we
         input_t _input;
         output_t _output;
       };
-
-      std::ostream& operator<< (std::ostream&, const activity_t&);
     }
   }
 }
