@@ -71,7 +71,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_new_worker_registers)
   // add a new worker having one of the requested capabilities
   // the job should have now enogh workers and the workflow can be
   // entirely executed
-  DMLOG(TRACE, "Create new worker with capability \"B\" (required by the test job).\nNow, the task B can be scheduled and executed and the workflow should finish. ");
   const utils::drts_worker worker_B_2
     ( "drts_B_2", agent
     , "B"
@@ -139,9 +138,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_worker_gains_cpb)
   // add a new worker having one of the requested capabilities
   // the job should have now enogh workers and the workflow can be
   // entirely executed
-  DMLOG(TRACE, "Add new capability \"B\" to the worker drts_B_2 (required by the test job).\n"
-              "Now, the task B can be scheduled and executed and the workflow should finish. ");
-
   worker_B_2.add_capability("B");
 
   sdpa::client::job_info_t job_info;
