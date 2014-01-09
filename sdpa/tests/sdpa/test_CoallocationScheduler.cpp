@@ -60,19 +60,16 @@ public:
 
   void submitWorkflow(const we::mgmt::layer::id_type& id)
   {
-    DLOG(TRACE, "The agent is trying to forward the master job "<<id<<" to the workflow engine");
     throw std::runtime_error ("trying to submit workflow in test casse which never should");
   }
 
   void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
   {
-    DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the daemon stage");
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
   void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& pEvt)
   {
-    DLOG(TRACE, "The agent is trying to send a message of type "<<pEvt->str()<<" to the master stage");
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
