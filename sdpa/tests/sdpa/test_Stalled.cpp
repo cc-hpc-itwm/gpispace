@@ -23,7 +23,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_when_the_agent_has_no_worker)
 
   sdpa::status::code status(utils::client::wait_for_state_polling(client, job_id, sdpa::status::STALLED));
   BOOST_REQUIRE_EQUAL(status, sdpa::status::STALLED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 }
 
 BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_new_worker_registers)
@@ -68,7 +67,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_new_worker_registers)
   // and only 2 workers with the capability B are registered
   sdpa::status::code status(utils::client::wait_for_state_polling(client, job_id, sdpa::status::STALLED));
   BOOST_REQUIRE_EQUAL(status, sdpa::status::STALLED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 
   // add a new worker having one of the requested capabilities
   // the job should have now enogh workers and the workflow can be
@@ -85,7 +83,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_new_worker_registers)
   sdpa::client::job_info_t job_info;
   status = client.wait_for_terminal_state (job_id, job_info);
   BOOST_REQUIRE_EQUAL(status, sdpa::status::FINISHED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 }
 
 BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_worker_gains_cpb)
@@ -138,7 +135,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_worker_gains_cpb)
   // and only 2 workers with the capability B are registered
   sdpa::status::code status(utils::client::wait_for_state_polling(client, job_id, sdpa::status::STALLED));
   BOOST_REQUIRE_EQUAL(status, sdpa::status::STALLED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 
   // add a new worker having one of the requested capabilities
   // the job should have now enogh workers and the workflow can be
@@ -151,7 +147,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_worker_gains_cpb)
   sdpa::client::job_info_t job_info;
   status = client.wait_for_terminal_state (job_id, job_info);
   BOOST_REQUIRE_EQUAL(status, sdpa::status::FINISHED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 }
 
 BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_workers_are_progressively_added)
@@ -169,7 +164,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_workers_are_progressivel
 
   sdpa::status::code status = utils::client::wait_for_state_polling(client, job_id, sdpa::status::STALLED);
   BOOST_REQUIRE_EQUAL(status, sdpa::status::STALLED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 
   const utils::drts_worker worker_A_0
     ( "drts_A_0", agent
@@ -180,7 +174,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_workers_are_progressivel
 
   status = utils::client::wait_for_state_polling(client, job_id, sdpa::status::STALLED);
   BOOST_REQUIRE_EQUAL(status, sdpa::status::STALLED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 
   const utils::drts_worker worker_A_1
     ( "drts_A_1", agent
@@ -191,7 +184,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_workers_are_progressivel
 
   status = utils::client::wait_for_state_polling(client, job_id, sdpa::status::STALLED);
   BOOST_REQUIRE_EQUAL(status, sdpa::status::STALLED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 
   const utils::drts_worker worker_B_0
     ( "drts_B_0", agent
@@ -202,7 +194,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_workers_are_progressivel
 
   status = utils::client::wait_for_state_polling(client, job_id, sdpa::status::STALLED);
   BOOST_REQUIRE_EQUAL(status, sdpa::status::STALLED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 
   const utils::drts_worker worker_B_1
     ( "drts_B_1", agent
@@ -213,7 +204,6 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_workers_are_progressivel
 
   status = utils::client::wait_for_state_polling(client, job_id, sdpa::status::STALLED);
   BOOST_REQUIRE_EQUAL(status, sdpa::status::STALLED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 
   const utils::drts_worker worker_B_2
     ( "drts_B_2", agent
@@ -225,5 +215,4 @@ BOOST_AUTO_TEST_CASE (test_stalled_job_termination_when_workers_are_progressivel
   sdpa::client::job_info_t job_info;
   status = client.wait_for_terminal_state (job_id, job_info);
   BOOST_REQUIRE_EQUAL(status, sdpa::status::FINISHED);
-  DMLOG(TRACE, "The job has the status "<<sdpa::status::show(status)<<", as expected");
 }
