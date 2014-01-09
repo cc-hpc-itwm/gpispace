@@ -232,11 +232,15 @@ namespace we
         bool was_active (false);
 
         //! \todo How to cancel if the net is inside
-        //! fire_internally_and_extract_external (endless loop in
-        //! expressions)?
+        //! fire_expression_and_extract_activity_random (endless loop
+        //! in expressions)?
 
         if ( boost::optional<type::activity_t> activity
-           = activity_data.fire_internally_and_extract_external
+
+             //! \note We wrap all input activites in a net.
+           = boost::get<petri_net::net&>
+             (activity_data._activity.transition().data())
+           . fire_expressions_and_extract_activity_random
                (_random_extraction_engine)
            )
         {
@@ -453,18 +457,6 @@ namespace we
 
 
     // activity_data_type
-
-    boost::optional<type::activity_t>
-      layer::activity_data_type::fire_internally_and_extract_external
-        (boost::mt19937& random_extraction_engine)
-    {
-      //! \note We wrap all input activites in a net.
-      petri_net::net& net
-        (boost::get<petri_net::net&> (_activity.transition().data()));
-
-      return net.fire_expressions_and_extract_activity_random
-        (random_extraction_engine);
-    }
 
     void layer::activity_data_type::child_finished (type::activity_t child)
     {

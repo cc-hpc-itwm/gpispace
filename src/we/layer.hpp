@@ -76,8 +76,6 @@ namespace we
           , _activity (activity)
         {}
 
-        boost::optional<type::activity_t>
-          fire_internally_and_extract_external (boost::mt19937&);
         void child_finished (type::activity_t);
 
         id_type _id;
