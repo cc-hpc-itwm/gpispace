@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   const sdpa::job_id_t jobId1("Job1");
   job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-  _agent.addJob(jobId1, "description 1", sdpa::job_id_t(), false, "", jobReqs1);
+  _agent.addJob(jobId1, "description 1", false, "", jobReqs1);
 
   LOG(DEBUG, "Schedule the job "<<jobId1);
   _scheduler.schedule(jobId1);
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       arrJobIds.push_back(jobId);
       osstr.str("");
       job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-      _agent.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
+      _agent.addJob(jobId, "", false, "", job_reqs);
   }
 
   _agent.expect_serveJob_call ("job_0", make_list ("worker_9"));
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       arrJobIds.push_back(jobId);
       osstr.str("");
       job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-      _agent.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
+      _agent.addJob(jobId, "", false, "", job_reqs);
   }
 
   _agent.expect_serveJob_call ("job_0", make_list ("worker_8"));
@@ -408,7 +408,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     arrJobIds.push_back(jobId);
     osstr.str("");
     job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-    _agent.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
+    _agent.addJob(jobId, "", false, "", job_reqs);
   }
 
   _agent.expect_serveJob_call ("job_0", make_list ("worker_8"));
@@ -482,15 +482,15 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   // create a number of jobs
   const sdpa::job_id_t jobId0("Job0");
   job_requirements_t jobReqs0(requirement_list_t(1, we::type::requirement_t(WORKER_CPBS[0], true)), we::type::schedule_data(4, 100));
-  _agent.addJob(jobId0, "description 0", sdpa::job_id_t(), false, "", jobReqs0);
+  _agent.addJob(jobId0, "description 0", false, "", jobReqs0);
 
   const sdpa::job_id_t jobId1("Job1");
   job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t(WORKER_CPBS[1], true)), we::type::schedule_data(4, 100));
-  _agent.addJob(jobId1, "description 1", sdpa::job_id_t(), false, "", jobReqs1);
+  _agent.addJob(jobId1, "description 1", false, "", jobReqs1);
 
   const sdpa::job_id_t jobId2("Job2");
   job_requirements_t jobReqs2(requirement_list_t(1, we::type::requirement_t(WORKER_CPBS[2], true)), we::type::schedule_data(4, 100));
-  _agent.addJob(jobId2, "description 2", sdpa::job_id_t(), false, "", jobReqs2);
+  _agent.addJob(jobId2, "description 2", false, "", jobReqs2);
 
   _agent.expect_serveJob_call (jobId0, make_list ("6", "3", "9", "0"));
   _agent.expect_serveJob_call (jobId1, make_list ("10", "7", "4", "1"));
@@ -531,7 +531,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   // try now to schedule a job requiring 2 resources of type "A"
   const sdpa::job_id_t jobId4("Job4");
   job_requirements_t jobReqs4(requirement_list_t(1, we::type::requirement_t(WORKER_CPBS[0], true)), we::type::schedule_data(2, 100));
-  _agent.addJob(jobId4, "description 4", sdpa::job_id_t(), false, "", jobReqs4);
+  _agent.addJob(jobId4, "description 4", false, "", jobReqs4);
 
   _agent.expect_serveJob_call (jobId4, make_list ("6", "3"));
   _scheduler.schedule(jobId4);
@@ -586,7 +586,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     sdpa::job_id_t jobId(osstr.str());
     arrJobIds.push_back(jobId);
     osstr.str("");
-    _agent.addJob(jobId, "", sdpa::job_id_t(), false, "",  job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
+    _agent.addJob(jobId, "", false, "",  job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   _agent.expect_serveJob_call ("job_0", make_list ("worker_9"));

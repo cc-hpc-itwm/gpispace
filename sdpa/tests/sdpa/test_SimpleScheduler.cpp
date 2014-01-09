@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   const sdpa::job_id_t jobId1("Job1");
   job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-  _orchestrator.addJob(jobId1, "description 1", sdpa::job_id_t(), false, "", jobReqs1);
+  _orchestrator.addJob(jobId1, "description 1", false, "", jobReqs1);
 
   LOG(DEBUG, "Schedule the job "<<jobId1);
   _scheduler.schedule(jobId1);
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       sdpa::job_id_t jobId(osstr.str());
       listJobIds.push_back(jobId);
       osstr.str("");
-      _orchestrator.addJob(jobId, "", sdpa::job_id_t(), false, "", job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
+      _orchestrator.addJob(jobId, "", false, "", job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
   _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_9"));
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       listJobIds.push_back(jobId);
       osstr.str("");
       job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-      _orchestrator.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
+      _orchestrator.addJob(jobId, "", false, "", job_reqs);
   }
 
   _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_8"));
@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     listJobIds.push_back(jobId);
     osstr.str("");
     job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-    _orchestrator.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
+    _orchestrator.addJob(jobId, "", false, "", job_reqs);
   }
 
   _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_8"));
@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     listJobIds.push_back(jobId);
     osstr.str("");
     job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-    _orchestrator.addJob(jobId, "", sdpa::job_id_t(), false, "", job_reqs);
+    _orchestrator.addJob(jobId, "", false, "", job_reqs);
   }
 
   _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_9"));

@@ -285,7 +285,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   try {
     // One should parse the workflow in order to be able to create a valid job
     bool b_master_job(e.is_external() && hasWorkflowEngine());
-    jobManager().addJob(job_id, e.description(), boost::none, b_master_job, e.from());
+    jobManager().addJob(job_id, e.description(), b_master_job, e.from());
   }
   catch(std::bad_alloc const &ex)
   {

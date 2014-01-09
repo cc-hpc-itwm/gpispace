@@ -32,7 +32,6 @@ namespace sdpa
 
     void JobManager::addJob ( const sdpa::job_id_t& job_id
                             , const job_desc_t desc
-                            , const boost::optional<job_id_t> &parent
                             , bool is_master_job
                             , const worker_id_t& owner
                             , const job_requirements_t& job_req_list
@@ -42,7 +41,7 @@ namespace sdpa
 
       DMLOG (TRACE, "Add new job into the job manager");
 
-      Job* pJob = new Job( job_id, desc, parent, is_master_job, owner );
+      Job* pJob = new Job( job_id, desc, is_master_job, owner );
 
       job_map_.insert(std::make_pair (job_id, pJob));
 
