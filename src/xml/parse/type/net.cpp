@@ -689,7 +689,7 @@ namespace xml
 
             pid_of_place.insert (std::make_pair (place.name(), pid->second));
 
-            const place::type place_real (we_net.get_place (pid->second));
+            const place::type place_real (we_net.places().at (pid->second));
 
             if (!(place_real.signature() == place.signature_or_throw()))
             {
