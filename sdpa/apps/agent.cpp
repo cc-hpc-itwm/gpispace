@@ -210,15 +210,6 @@ int main (int argc, char **argv)
     }
 
     DLLOG (TRACE, logger, "terminating...");
-
-    {
-      std::ostringstream oss;
-
-      if (oss.str().size())
-      {
-        DLLOG (DEBUG, logger, oss.str());
-      }
-    }
   }
   catch ( std::exception& )
   {
