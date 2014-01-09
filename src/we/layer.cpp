@@ -116,7 +116,9 @@ namespace we
           if (p.second.is_output())
           {
             petri_net::place_id_type const place_id
-              (*net.port_to_place (net.transitions().begin()->first, p.first));
+              ( net.port_to_place().at (net.transitions().begin()->first)
+              .left.find (p.first)->get_right()
+              );
 
             BOOST_FOREACH ( const pnet::type::value::value_type& token
                           , net.get_token (place_id)
@@ -493,7 +495,8 @@ namespace we
             if (p.second.is_output())
             {
               net.put_value
-                ( *net.port_to_place (*activity.transition_id(), p.first)
+                ( net.port_to_place().at (*activity.transition_id())
+                .left.find (p.first)->get_right()
                 , context.value (p.second.name())
                 );
             }
@@ -515,7 +518,10 @@ namespace we
                     )
       {
         net.put_value
-          (*net.port_to_place (*child.transition_id(), top.second), top.first);
+          ( net.port_to_place().at (*child.transition_id())
+          .left.find (top.second)->get_right()
+          , top.first
+          );
       }
     }
 

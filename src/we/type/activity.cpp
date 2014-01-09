@@ -139,7 +139,8 @@ namespace we
                           )
               {
                 parent.put_value
-                  ( *parent.port_to_place (*_child.transition_id(), top.second)
+                  ( parent.port_to_place().at (*_child.transition_id())
+                  .left.find (top.second)->get_right()
                   , top.first
                   );
               }
