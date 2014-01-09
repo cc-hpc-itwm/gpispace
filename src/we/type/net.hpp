@@ -120,7 +120,6 @@ namespace petri_net
       return boost::none;
     }
 
-
   private:
     place_id_type _place_id;
     boost::unordered_map<place_id_type,place::type> _pmap;
