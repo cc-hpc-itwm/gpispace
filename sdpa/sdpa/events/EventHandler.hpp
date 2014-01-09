@@ -5,6 +5,8 @@ namespace sdpa
 {
   namespace events
   {
+    class DiscoverPendingActEvent;
+    class DiscoverPendingActReplyEvent;
     class CancelJobAckEvent;
     class CancelJobEvent;
     class DeleteJobAckEvent;
