@@ -355,6 +355,45 @@ namespace petri_net
     _enabled_choice.erase (tid);
   }
 
+  void net::fire_expression ( transition_id_type transition_id
+                            , we::type::transition_t const& transition
+                            )
+  {
+    //! \todo further inline
+    we::type::activity_t const activity
+      (extract_activity (transition_id, transition));
+
+    expr::eval::context context;
+
+    BOOST_FOREACH ( const we::type::activity_t::input_t::value_type& top
+                  , activity.input()
+                  )
+    {
+      context.bind_ref
+        ( activity.transition().ports().at (top.second).name()
+        , top.first
+        );
+    }
+
+    activity.transition().expression()->ast().eval_all (context);
+
+    BOOST_FOREACH
+      ( we::type::transition_t::port_map_t::value_type const& p
+      , activity.transition().ports()
+      )
+    {
+      if (p.second.is_output())
+      {
+        put_value
+          ( port_to_place().at (*activity.transition_id())
+          .left.find (p.first)->get_right()
+          , context.value (p.second.name())
+          );
+      }
+    }
+
+  }
+
   we::type::activity_t net::extract_activity
     (transition_id_type tid, we::type::transition_t const& transition)
   {

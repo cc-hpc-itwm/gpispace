@@ -107,6 +107,29 @@ namespace petri_net
       return extract_activity (transition_id, transition);
     }
 
+    template<typename Engine>
+    boost::optional<we::type::activity_t>
+    fire_expressions_and_extract_activity_random (Engine& engine)
+    {
+      while (can_fire())
+      {
+        transition_id_type const transition_id (_enabled.random (engine));
+        we::type::transition_t const& transition (_tmap.at (transition_id));
+
+        if (transition.expression())
+        {
+          fire_expression (transition_id, transition);
+        }
+        else
+        {
+          return extract_activity (transition_id, transition);
+        }
+      }
+
+      return boost::none;
+    }
+
+
   private:
     place_id_type _place_id;
     boost::unordered_map<place_id_type,place::type> _pmap;
@@ -228,6 +251,7 @@ namespace petri_net
 
     we::type::activity_t extract_activity
       (transition_id_type, we::type::transition_t const&);
+    void fire_expression (transition_id_type, we::type::transition_t const&);
 
     class cross_type
     {

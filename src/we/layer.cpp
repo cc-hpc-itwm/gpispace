@@ -462,49 +462,8 @@ namespace we
       petri_net::net& net
         (boost::get<petri_net::net&> (_activity.transition().data()));
 
-      while (net.can_fire())
-      {
-        type::activity_t activity
-          (net.extract_activity_random (random_extraction_engine));
-
-        if (!activity.transition().expression())
-        {
-          return activity;
-        }
-        else
-        {
-          expr::eval::context context;
-
-          BOOST_FOREACH ( const type::activity_t::input_t::value_type& top
-                        , activity.input()
-                        )
-          {
-            context.bind_ref
-              ( activity.transition().ports().at (top.second).name()
-              , top.first
-              );
-          }
-
-          activity.transition().expression()->ast().eval_all (context);
-
-          BOOST_FOREACH
-            ( we::type::transition_t::port_map_t::value_type const& p
-            , activity.transition().ports()
-            )
-          {
-            if (p.second.is_output())
-            {
-              net.put_value
-                ( net.port_to_place().at (*activity.transition_id())
-                .left.find (p.first)->get_right()
-                , context.value (p.second.name())
-                );
-            }
-          }
-        }
-      }
-
-      return boost::none;
+      return net.fire_expressions_and_extract_activity_random
+        (random_extraction_engine);
     }
 
     void layer::activity_data_type::child_finished (type::activity_t child)
