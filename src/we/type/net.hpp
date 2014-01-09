@@ -93,9 +93,6 @@ namespace petri_net
     port_to_place_type const& port_to_place() const;
     place_to_port_type const& place_to_port() const;
 
-    boost::optional<place_id_type>
-      port_to_place (transition_id_type, port_id_type) const;
-
     void put_value (place_id_type, const pnet::type::value::value_type&);
 
     const std::list<pnet::type::value::value_type>&
