@@ -5,7 +5,6 @@
 #include <we/type/condition.hpp>
 
 #include <we/require_type.hpp>
-#include <we/exception.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
