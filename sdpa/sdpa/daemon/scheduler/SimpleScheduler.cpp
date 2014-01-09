@@ -40,8 +40,8 @@ void SimpleScheduler::assignJobsToWorkers()
 
         try {
            Worker::ptr_t pWorker(findWorker(matchingWorkerId));
-           ptr_comm_handler_->serveJob(sdpa::worker_id_list_t (1, matchingWorkerId), jobId);
            pWorker->submit(jobId);
+           ptr_comm_handler_->serveJob(sdpa::worker_id_list_t (1, matchingWorkerId), jobId);
         }
         catch(const WorkerNotFoundException&) {
            DMLOG (TRACE, "The worker " << matchingWorkerId << " is not registered! Sending a notification ...");
