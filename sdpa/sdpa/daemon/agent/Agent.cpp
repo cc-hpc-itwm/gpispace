@@ -115,10 +115,10 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
       // about the status of the job (either finished, or failed
       // the group is finished when all the partial results are "finished"
       if(bTaskGroupComputed) {
-          DLOG(TRACE, "Inform WE that the activity "<<actId<<" finished");
           if(scheduler()->groupFinished(actId))
           {
             pJob->JobFinished(pEvt);
+            DLOG(TRACE, "Inform WE that the activity "<<actId<<" has finished");
             workflowEngine()->finished
               (actId, we::mgmt::type::activity_t (pEvt->result()));
           }
@@ -132,6 +132,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
             pJob->JobFailed(pJobFailedEvt);
             delete pJobFailedEvt;
 
+            DLOG(TRACE, "Inform WE that the activity "<<actId<<" has failed");
             workflowEngine()->failed( actId,
                                       sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
                                       "One of tasks of the group failed with the actual reservation!");
