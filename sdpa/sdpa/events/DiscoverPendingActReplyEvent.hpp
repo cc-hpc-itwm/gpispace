@@ -13,9 +13,9 @@ namespace sdpa
       typedef boost::shared_ptr<JobEvent> Ptr;
 
       DiscoverPendingActReplyEvent ( const address_t& a_from
-                                           , const address_t& a_to
-                                           , const sdpa::job_id_t& a_job_id
-                                           )
+                                    , const address_t& a_to
+                                    , const sdpa::job_id_t& a_job_id
+                                    )
         : sdpa::events::JobEvent (a_from, a_to, a_job_id)
       {}
 
