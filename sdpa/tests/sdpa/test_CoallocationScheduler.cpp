@@ -592,7 +592,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   sdpa::worker_id_t lastWorkerId("worker_9");
   sdpa::job_id_t jobId = _scheduler.getAssignedJob(lastWorkerId);
   LOG(DEBUG, "The worker "<<lastWorkerId<<" was assigned the job "<<jobId);
-  sdpa::job_id_t oldJobId(jobId);
 
   LOG(DEBUG, "The worker "<<lastWorkerId<<" has the job "<<jobId<<" assigned");
 
@@ -614,7 +613,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _scheduler.assignJobsToWorkers();
   _scheduler.checkAllocations();
 
-  BOOST_REQUIRE_EQUAL (oldJobId, _scheduler.getAssignedJob (lastWorkerId));
+  BOOST_REQUIRE_EQUAL (jobId, _scheduler.getAssignedJob (lastWorkerId));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
