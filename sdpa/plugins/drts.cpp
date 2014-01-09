@@ -62,10 +62,6 @@ class DRTSImpl : FHG_PLUGIN
   typedef std::pair<sdpa::Capability, fhg::plugin::Capability*> capability_info_t;
   typedef std::map<std::string, capability_info_t> map_of_capabilities_t;
 public:
-  DRTSImpl()
-    : _logger (fhg::log::Logger::get ("drts"))
-  {}
-
   FHG_PLUGIN_START()
   {
     m_shutting_down = false;
@@ -80,7 +76,7 @@ public:
     }
     catch (std::exception const &ex)
     {
-      LLOG( ERROR, _logger
+      MLOG( ERROR
           , "could not parse backlog size: "
           << fhg_kernel()->get("backlog", "3")
           << ": " << ex.what()
@@ -94,7 +90,7 @@ public:
     }
     catch (std::exception const &ex)
     {
-      LLOG( ERROR, _logger
+      MLOG( ERROR
           , "could not parse bool from `terminate_on_failure' config key: "
           << ex.what()
           );
@@ -108,7 +104,7 @@ public:
     }
     catch (std::exception const &ex)
     {
-      LLOG( ERROR, _logger
+      MLOG( ERROR
           , "could not parse 'max_reconnect_attempts' from config: "
           << ex.what()
           );
@@ -118,7 +114,7 @@ public:
     m_wfe = fhg_kernel()->acquire<wfe::WFE>("wfe");
     if (0 == m_wfe)
     {
-      LLOG (ERROR, _logger, "could not access workflow-engine plugin!");
+      MLOG(ERROR, "could not access workflow-engine plugin!");
       FHG_PLUGIN_FAILED(ELIBACC);
     }
 
@@ -142,7 +138,7 @@ public:
           const std::string & cap_name = capability_and_type.first;
           const std::string & cap_type = capability_and_type.second;
 
-          DLLOG ( TRACE, _logger
+          DMLOG ( TRACE
                 , "adding capability: " << cap_name
                 << " of type: " << cap_type
                 );
@@ -172,7 +168,7 @@ public:
       = fhg_kernel()->acquire< fhg::plugin::Capability>("gpi");
     if (cap)
     {
-      LLOG( INFO, _logger, "gained capability: " << cap->capability_name()
+      MLOG( INFO, "gained capability: " << cap->capability_name()
           << " of type " << cap->capability_type()
           );
 
@@ -208,7 +204,7 @@ public:
     }
     catch (std::exception const &ex)
     {
-      LLOG (ERROR, _logger, "could not start peer: " << ex.what());
+      MLOG(ERROR, "could not start peer: " << ex.what());
       FHG_PLUGIN_FAILED(EAGAIN);
     }
 
@@ -224,12 +220,12 @@ public:
       {
         if (m_masters.find (master) == m_masters.end ())
         {
-          DLLOG (TRACE, _logger, "adding master \"" << master << "\"");
+          DMLOG(TRACE, "adding master \"" << master << "\"");
           m_masters.insert (std::make_pair(master, create_master(master)));
         }
         else
         {
-          LLOG( WARN, _logger
+          MLOG( WARN
               , "master already specified, ignoring new one: " << master
               );
         }
@@ -238,7 +234,7 @@ public:
 
     if (m_masters.empty())
     {
-      LLOG (ERROR, _logger, "no masters specified, giving up");
+      MLOG(ERROR, "no masters specified, giving up");
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
@@ -331,7 +327,7 @@ public:
       = fhg_kernel()->acquire<fhg::plugin::Capability>(plugin);
     if (cap)
     {
-      LLOG( INFO, _logger
+      MLOG( INFO
           , "gained capability: " << cap->capability_name()
           << " of type " << cap->capability_type()
           );
@@ -375,8 +371,8 @@ public:
     map_of_capabilities_t::iterator cap(m_capabilities.find(plugin));
     if (cap != m_capabilities.end())
     {
-      LLOG (INFO, _logger, "lost capability: " << plugin);
-      LLOG (WARN, _logger, "TODO: make sure none of jobs make use of this capability");
+      MLOG(INFO, "lost capability: " << plugin);
+      MLOG(WARN, "TODO: make sure none of jobs make use of this capability");
 
       notify_capability_lost (cap->second.first);
 
@@ -389,7 +385,7 @@ public:
     if (sig != SIGUSR2)
       return;
 
-    DLLOG (TRACE, _logger, "initiating graceful shutdown due to signal := " << sig);
+    DMLOG (TRACE, "initiating graceful shutdown due to signal := " << sig);
     bool something_running;
     {
       lock_type lck (m_job_in_progress_mutex);
@@ -468,7 +464,7 @@ public:
     {
       if (!master_it->second->is_connected())
       {
-        DLLOG (TRACE, _logger, "successfully connected to " << master_it->second->name());
+        DMLOG(TRACE, "successfully connected to " << master_it->second->name());
         master_it->second->is_connected(true);
 
         notify_capabilities_to_master (master_it->second);
@@ -485,7 +481,7 @@ public:
   }
   virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent *e)
   {
-    LLOG (WARN, _logger, "worker tried to register: " << e->from());
+    MLOG(WARN, "worker tried to register: " << e->from());
 
     send_event
       (new sdpa::events::ErrorEvent( m_my_name
@@ -527,12 +523,12 @@ public:
 
     if (master == m_masters.end())
     {
-      LLOG (ERROR, _logger, "got SubmitJob from unknown source: " << e->from());
+      MLOG(ERROR, "got SubmitJob from unknown source: " << e->from());
       return;
     }
     else if (! master->second->is_connected())
     {
-      LLOG (WARN, _logger, "got SubmitJob from not yet connected master: " << e->from());
+      MLOG(WARN, "got SubmitJob from not yet connected master: " << e->from());
       send_event
         (new sdpa::events::ErrorEvent( m_my_name
                                      , e->from()
@@ -545,7 +541,7 @@ public:
     }
     else if (m_graceful_shutdown_requested)
     {
-      LLOG (WARN, _logger, "refusing job " << *e->job_id () << " : shutting down");
+      MLOG (WARN, "refusing job " << *e->job_id () << " : shutting down");
       send_event
         (new sdpa::events::ErrorEvent( m_my_name
                                      , e->from()
@@ -570,7 +566,7 @@ public:
 
       if (m_backlog_size && m_pending_jobs.size() >= m_backlog_size)
       {
-        LLOG( WARN, _logger
+        MLOG( WARN
             , "cannot accept new job (" << job->id() << "), backlog is full."
             );
         send_event (new sdpa::events::ErrorEvent
@@ -585,7 +581,7 @@ public:
       else
       {
     	sdpa::worker_id_list_t workerList(e->worker_list());
-    	DLLOG (INFO, _logger, "Worker "<<m_my_name<<": received from "
+    	DLOG( INFO, "Worker "<<m_my_name<<": received from "
     			             <<e->from()<<" the job " << job->id()
     	   			  	     <<", assigned to "<<workerList );
 
@@ -614,11 +610,11 @@ public:
     lock_type job_map_lock (m_job_map_mutex);
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
-    LLOG (TRACE, _logger, "got cancelation request for job: " << e->job_id());
+    MLOG(TRACE, "got cancelation request for job: " << e->job_id());
 
     if (job_it == m_jobs.end())
     {
-      DLLOG (WARN, _logger, "could not cancel job: " << e->job_id() << ": not found");
+      DMLOG (WARN, "could not cancel job: " << e->job_id() << ": not found");
       send_event(new sdpa::events::ErrorEvent
                 ( m_my_name
                 , e->from()
@@ -628,7 +624,7 @@ public:
     }
     else if (job_it->second->owner() != e->from())
     {
-      DLLOG (ERROR, _logger, "could not cancel job: " << e->job_id() << ": not owner");
+      DMLOG (ERROR, "could not cancel job: " << e->job_id() << ": not owner");
       send_event (new sdpa::events::ErrorEvent
                  ( m_my_name
                  , e->from()
@@ -645,7 +641,7 @@ public:
                                              )
          )
       {
-        LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
+        MLOG(TRACE, "canceling pending job: " << e->job_id());
         send_event
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job_it->second->owner()
@@ -656,21 +652,21 @@ public:
       }
       else if (job_it->second->state() == drts::Job::RUNNING)
       {
-        LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
+        MLOG (TRACE, "trying to cancel running job " << e->job_id());
         m_wfe->cancel (e->job_id());
         drts_on_cancel ();
       }
       else if (job_it->second->state() == drts::Job::FAILED)
       {
-        LLOG (TRACE, _logger, "canceling already failed job: " << e->job_id());
+        MLOG(TRACE, "canceling already failed job: " << e->job_id());
       }
       else if (job_it->second->state() == drts::Job::CANCELED)
       {
-        LLOG (TRACE, _logger, "canceling already canceled job: " << e->job_id());
+        MLOG(TRACE, "canceling already canceled job: " << e->job_id());
       }
       else
       {
-        LLOG( WARN, _logger
+        MLOG( WARN
             , "what shall I do with an already computed job? "
             << "(" << e->job_id() << ")"
             );
@@ -685,7 +681,7 @@ public:
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
     if (job_it == m_jobs.end())
     {
-      LLOG( ERROR, _logger
+      MLOG( ERROR
           , "could not acknowledge failed job: " << e->job_id() << ": not found"
           );
       send_event (new sdpa::events::ErrorEvent
@@ -698,7 +694,7 @@ public:
     }
     else if (job_it->second->owner() != e->from())
     {
-      LLOG( ERROR, _logger
+      MLOG( ERROR
           , "could not acknowledge failed job: " << e->job_id() << ": not owner"
           );
       send_event (new sdpa::events::ErrorEvent
@@ -710,7 +706,7 @@ public:
       return;
     }
 
-    DLLOG (TRACE, _logger, "removing job " << e->job_id());
+    DMLOG(TRACE, "removing job " << e->job_id());
     m_jobs.erase (job_it);
 
     fhg_kernel()->storage()->save("jobs", m_jobs);
@@ -723,7 +719,7 @@ public:
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
     if (job_it == m_jobs.end())
     {
-      LLOG( ERROR, _logger
+      MLOG( ERROR
           , "could not acknowledge finished job: " << e->job_id()
           << ": not found"
           );
@@ -737,7 +733,7 @@ public:
     }
     else if (job_it->second->owner() != e->from())
     {
-      LLOG( ERROR, _logger
+      MLOG( ERROR
           , "could not acknowledge finished job: " << e->job_id()
           << ": not owner"
           );
@@ -750,7 +746,7 @@ public:
       return;
     }
 
-    DLLOG (TRACE, _logger, "removing job " << e->job_id());
+    DMLOG(TRACE, "removing job " << e->job_id());
     m_jobs.erase (job_it);
 
     fhg_kernel()->storage()->save("jobs", m_jobs);
@@ -782,12 +778,12 @@ private:
       }
       catch (boost::thread_interrupted const & irq)
       {
-        DLLOG (TRACE, _logger, "event handler interrupted...");
+        DMLOG(TRACE, "event handler interrupted...");
         throw;
       }
       catch (std::exception const & ex)
       {
-        LLOG (WARN, _logger, "event could not be handled: " << ex.what());
+        MLOG(WARN, "event could not be handled: " << ex.what());
       }
     }
   }
@@ -823,7 +819,7 @@ private:
         {
           job->started(boost::posix_time::microsec_clock::universal_time());
 
-          LLOG (TRACE, _logger, "executing job " << job->id());
+          MLOG(TRACE, "executing job " << job->id());
 
           std::string result;
           std::string error_message;
@@ -841,7 +837,7 @@ private:
 
           job->completed(boost::posix_time::microsec_clock::universal_time());
 
-          LLOG( TRACE, _logger
+          MLOG( TRACE
               , "job returned."
               << " error-code := " << job->result_code()
               << " error-message := " << job->message()
@@ -863,9 +859,9 @@ private:
         }
         catch (std::exception const & ex)
         {
-          LLOG ( ERROR, _logger
-               , "unexpected exception during job execution: " << ex.what()
-               );
+          MLOG( ERROR
+              , "unexpected exception during job execution: " << ex.what()
+              );
           job->set_state (drts::Job::FAILED);
 
           job->set_result (job->description());
@@ -877,10 +873,10 @@ private:
 
         if (m_terminate_on_failure && job->state() == drts::Job::FAILED)
         {
-          LLOG ( WARN, _logger, "execution of job failed"
-               << " and terminate on failure policy is in place."
-               << " Good bye cruel world."
-               );
+          MLOG( WARN, "execution of job failed"
+              << " and terminate on failure policy is in place."
+              << " Good bye cruel world."
+              );
           fhg_kernel()->terminate();
         }
 
@@ -895,7 +891,7 @@ private:
         map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
         if (job_it != m_jobs.end())
         {
-          DLLOG (TRACE, _logger, "ignoring and erasing non-pending job " << job->id());
+          DMLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
           m_jobs.erase(job_it);
 
           fhg_kernel()->storage()->save("jobs", m_jobs);
@@ -910,7 +906,7 @@ private:
 
     if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
     {
-      DLLOG (TRACE, _logger, "adding virtual capability: " << cap);
+      DMLOG(TRACE, "adding virtual capability: " << cap);
       m_virtual_capabilities.insert
         (std::make_pair ( cap
                         , std::make_pair ( sdpa::Capability (cap
@@ -1101,28 +1097,28 @@ private:
       case drts::Job::FINISHED:
         {
           lock_type job_map_lock (m_job_map_mutex);
-          LLOG (INFO, _logger, "restoring information of finished job: " << job->id());
+          MLOG(INFO, "restoring information of finished job: " << job->id());
           m_jobs[it->first] = job;
         }
         break;
       case drts::Job::FAILED:
         {
           lock_type job_map_lock (m_job_map_mutex);
-          LLOG (INFO, _logger, "restoring information of failed job: " << job->id());
+          MLOG(INFO, "restoring information of failed job: " << job->id());
           m_jobs[it->first] = job;
         }
         break;
       case drts::Job::PENDING:
-        LLOG (WARN, _logger, "ignoring old pending job: " << job->id());
+        MLOG(WARN, "ignoring old pending job: " << job->id());
         break;
       case drts::Job::RUNNING:
-        LLOG (WARN, _logger, "ignoring old running job: " << job->id());
+        MLOG(WARN, "ignoring old running job: " << job->id());
         break;
       case drts::Job::CANCELED:
-        LLOG (WARN, _logger, "ignoring old canceled job: " << job->id());
+        MLOG(WARN, "ignoring old canceled job: " << job->id());
         break;
       default:
-        LLOG (ERROR, _logger, "STRANGE job state: " << job->state());
+        MLOG(ERROR, "STRANGE job state: " << job->state());
         break;
       }
     }
@@ -1130,7 +1126,7 @@ private:
 
   void resend_outstanding_events (master_ptr const &master)
   {
-    LLOG (TRACE, _logger, "resending outstanding notifications to " << master->name());
+    MLOG(TRACE, "resending outstanding notifications to " << master->name());
     lock_type job_map_lock (m_job_map_mutex);
     for ( map_of_jobs_t::iterator job_it (m_jobs.begin()), end (m_jobs.end())
         ; job_it != end
@@ -1138,7 +1134,7 @@ private:
         )
     {
       job_ptr_t job (job_it->second);
-      LLOG ( TRACE, _logger
+      MLOG( TRACE
           , "checking job"
           << " id := " << job->id()
           << " state := " << job->state()
@@ -1148,7 +1144,7 @@ private:
          && (job->state() >= drts::Job::FINISHED)
          )
       {
-        LLOG (TRACE, _logger, "resending outcome of job " << job->id());
+        MLOG(TRACE, "resending outcome of job " << job->id());
         send_job_result_to_master (job);
       }
     }
@@ -1253,7 +1249,7 @@ private:
         }
         else
         {
-          LLOG( WARN, _logger
+          MLOG( WARN
               , "still not connected after " << m_reconnect_counter
               << " trials: shutting down"
               );
@@ -1303,7 +1299,7 @@ private:
       }
       catch (std::exception const & ex)
       {
-        LLOG (WARN, _logger, "could not handle incoming message: " << ex.what());
+        MLOG(WARN, "could not handle incoming message: " << ex.what());
       }
       start_receiver();
     }
@@ -1317,7 +1313,7 @@ private:
         map_of_masters_t::iterator master(m_masters.find(other_name));
         if (master != m_masters.end() && master->second->is_connected())
         {
-          DLLOG ( INFO, _logger
+          DMLOG ( INFO
                 , "connection to " << other_name << " lost: " << ec.message()
                 );
 
@@ -1335,7 +1331,7 @@ private:
       }
       else
       {
-        LLOG (TRACE, _logger, m_peer->name() << " is shutting down");
+        MLOG(TRACE, m_peer->name() << " is shutting down");
       }
     }
   }
@@ -1357,7 +1353,7 @@ private:
     }
     catch (std::exception const &ex)
     {
-      DLLOG ( WARN, _logger, "could not send "
+      DMLOG ( WARN, "could not send "
             << evt->str() << " to " << evt->to() << ": " << ex.what()
             );
       return -ESRCH;
@@ -1370,16 +1366,14 @@ private:
   {
     if (evt)
     {
-      DLLOG (TRACE, _logger, "received event: " << evt->str());
+      DMLOG(TRACE, "received event: " << evt->str());
       m_event_queue.put(evt);
     }
     else
     {
-      LLOG (WARN, _logger, "got invalid message from suspicious source");
+      MLOG(WARN, "got invalid message from suspicious source");
     }
   }
-
-  fhg::log::Logger::ptr_t _logger;
 
   bool m_shutting_down;
   bool m_terminate_on_failure;
