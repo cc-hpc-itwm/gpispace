@@ -24,7 +24,6 @@
 #include <fhg/util/boost/test/printer/set.hpp>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::Capability)
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::job_id_t)
 
 using namespace std;
 using namespace sdpa::daemon;
