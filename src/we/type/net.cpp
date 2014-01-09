@@ -258,11 +258,6 @@ namespace petri_net
     }
   }
 
-  bool net::can_fire() const
-  {
-    return not _enabled.empty();
-  }
-
   void net::update_enabled (transition_id_type tid)
   {
     cross_type cross;
