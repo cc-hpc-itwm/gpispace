@@ -15,8 +15,10 @@ namespace sdpa
       DiscoverPendingActEvent ( const address_t& a_from
                               , const address_t& a_to
                               , const sdpa::job_id_t& a_job_id
+                              , const std::string& discover_id
                               )
         : sdpa::events::JobEvent (a_from, a_to, a_job_id)
+        , discover_id_(discover_id)
       {}
 
       std::string str() const
@@ -24,13 +26,29 @@ namespace sdpa
         return "DiscoverPendingActEvent(" + job_id ().str () + ")";
       }
 
+      const std::string& discover_id() const { return discover_id_; }
+
       virtual void handleBy (EventHandler* handler)
       {
         //handler->handleDiscoverPendingActEvent (this);
       }
+
+    private:
+      std::string discover_id_;
     };
 
-    CONSTRUCT_DATA_DEFS_FOR_EMPTY_JOBEVENT_OVERLOAD (DiscoverPendingActEvent)
+    SAVE_CONSTRUCT_DATA_DEF (DiscoverPendingActEvent, e)
+    {
+      SAVE_JOBEVENT_CONSTRUCT_DATA (e);
+      SAVE_TO_ARCHIVE (e->discover_id());
+    }
+
+    LOAD_CONSTRUCT_DATA_DEF (DiscoverPendingActEvent, e)
+    {
+      LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
+      LOAD_FROM_ARCHIVE ( std::string, disc_id);
+      ::new (e) DiscoverPendingActEvent (from, to, job_id, disc_id);
+    }
   }
 }
 
