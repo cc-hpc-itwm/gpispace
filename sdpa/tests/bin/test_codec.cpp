@@ -176,11 +176,10 @@ BOOST_AUTO_TEST_CASE (SubmitJob)
   workers.push_back ("foo");
   workers.push_back ("bar");
 
-  SubmitJobEvent e ("foo", "bar", sdpa::job_id_t("job-id-1"), "pnet", sdpa::job_id_t("parent job"), workers);
+  SubmitJobEvent e ("foo", "bar", sdpa::job_id_t("job-id-1"), "pnet", workers);
   SubmitJobEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->description(), e.description());
-  BOOST_REQUIRE_EQUAL (r->parent_id(), e.parent_id());
   BOOST_REQUIRE_EQUAL (r->worker_list(), e.worker_list());
 }
 

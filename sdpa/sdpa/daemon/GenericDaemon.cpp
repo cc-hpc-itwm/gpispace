@@ -214,8 +214,6 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
                                                           worker_id,
                                                           ptrJob->id(),
                                                           ptrJob->description(),
-                                                                         //! \todo There is a parent known for this job: ptrJob->parent()
-                                                                         boost::none,
                                                           worker_list));
 
         sendEventToOther(pSubmitEvt);
@@ -287,7 +285,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   try {
     // One should parse the workflow in order to be able to create a valid job
     bool b_master_job(e.is_external() && hasWorkflowEngine());
-    jobManager().addJob(job_id, e.description(), e.parent_id(), b_master_job, e.from());
+    jobManager().addJob(job_id, e.description(), boost::none, b_master_job, e.from());
   }
   catch(std::bad_alloc const &ex)
   {
@@ -574,7 +572,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
   jobManager().addJobRequirements(job_id, jobReqs);
 
   // don't forget to set here the job's preferences
-  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string(), boost::none) );
+  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string()) );
   sendEventToSelf(pEvtSubmitJob);
 
   _.dont();
