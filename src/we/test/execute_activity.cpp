@@ -98,14 +98,17 @@ struct exec_context : public we::context
   virtual void handle_internally (activity_t& act, net_t const&)
   {
     // submit to self
-    while (act.can_fire())
+    if (act.transition().net())
     {
-      activity_t sub = act.extract (_engine);
-
-      sub.execute (this);
-
-      act.inject (sub);
-
+      while ( boost::optional<we::type::activity_t> sub
+            = boost::get<petri_net::net&> (act.transition().data())
+            . fire_expressions_and_extract_activity_random (_engine)
+            )
+      {
+        exec_context ctxt;
+        sub->execute (&ctxt);
+        act.inject (*sub);
+      }
     }
 
     act.collect_output();

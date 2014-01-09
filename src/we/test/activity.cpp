@@ -176,18 +176,19 @@ int main (int, char **)
               << std::endl;
   }
 
-  std::cout << "can_fire = " << act.can_fire() << std::endl;
-
   boost::mt19937 engine;
 
-  while (act.can_fire())
+  if (act.transition().net())
   {
-    activity_t sub = act.extract (engine);
-
-    exec_context ctxt;
-    sub.execute (&ctxt);
-
-    act.inject (sub);
+    while ( boost::optional<we::type::activity_t> sub
+          = boost::get<petri_net::net&> (act.transition().data())
+          . fire_expressions_and_extract_activity_random (engine)
+          )
+    {
+      exec_context ctxt;
+      sub->execute (&ctxt);
+      act.inject (*sub);
+    }
   }
 
   act.collect_output();
