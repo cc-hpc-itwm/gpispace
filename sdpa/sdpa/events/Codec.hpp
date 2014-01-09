@@ -1,6 +1,8 @@
 #ifndef SDPA_EVENTS_CODEC_HPP
 #define SDPA_EVENTS_CODEC_HPP 1
 
+#include <sdpa/events/DiscoverPendingActEvent.hpp>
+#include <sdpa/events/DiscoverPendingActReplyEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
@@ -69,6 +71,8 @@ namespace sdpa
         boost::serialization::void_cast_register<TYPE, BASE>();         \
         ar.template register_type<TYPE>()
 
+        REGISTER (DiscoverPendingActEvent, JobEvent);
+        REGISTER (DiscoverPendingActReplyEvent, JobEvent);
         REGISTER (CancelJobAckEvent, JobEvent);
         REGISTER (CancelJobEvent, JobEvent);
         REGISTER (CapabilitiesGainedEvent, MgmtEvent);
