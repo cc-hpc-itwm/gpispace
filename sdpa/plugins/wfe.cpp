@@ -164,6 +164,10 @@ class WFEImpl : FHG_PLUGIN
   typedef fhg::thread::queue<wfe_task_t*> task_list_t;
   typedef std::map<std::string, wfe_task_t *> map_of_tasks_t;
 public:
+  WFEImpl()
+    : _logger (fhg::log::Logger::get ("wfe"))
+  {}
+
   ~WFEImpl()
   {
     delete m_loader;
@@ -187,11 +191,12 @@ public:
 
       if (search_path.empty())
       {
-        MLOG(WARN, "loader has an empty search path, try setting environment variable PC_LIBRARY_PATH or variable plugin.wfe.library_path");
+        LLOG (WARN, _logger, "loader has an empty search path, try setting environment variable PC_LIBRARY_PATH or variable plugin.wfe.library_path");
       }
       else
       {
-        DMLOG ( DEBUG
+        DLLOG ( DEBUG
+              , _logger
               , "initialized loader with search path: " << search_path
               );
       }
@@ -247,7 +252,7 @@ public:
         boost::posix_time::seconds (15);
       if (not m_worker->timed_join (timeout))
       {
-        LOG (WARN, "could not interrupt user-code, aborting");
+        LLOG (WARN, _logger, "could not interrupt user-code, aborting");
         _exit (66);
       }
       else
@@ -321,7 +326,7 @@ public:
 
       if (walltime > boost::posix_time::seconds(0))
       {
-        MLOG(INFO, "task has a walltime of " << walltime);
+        LLOG (INFO, _logger, "task has a walltime of " << walltime);
         if (! task.done.timed_wait(ec, boost::get_system_time()+walltime))
         {
           // abort task, i.e. restart worker
@@ -343,7 +348,7 @@ public:
 
       if (fhg::error::NO_ERROR == ec)
       {
-        MLOG(TRACE, "task finished: " << task.id);
+        LLOG (TRACE, _logger, "task finished: " << task.id);
         task.state = wfe_task_t::FINISHED;
         error_message = task.error_message;
 
@@ -351,7 +356,7 @@ public:
       }
       else if (fhg::error::EXECUTION_CANCELED == ec)
       {
-        DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
+        DLLOG (TRACE, _logger, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
         error_message = task.error_message;
 
@@ -359,7 +364,7 @@ public:
       }
       else
       {
-        MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
+        LLOG (ERROR, _logger, "task failed: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::FAILED;
         error_message = task.error_message;
 
@@ -368,7 +373,7 @@ public:
     }
     catch (std::exception const & ex)
     {
-      MLOG(ERROR, "could not parse activity: " << ex.what());
+      LLOG (ERROR, _logger, "could not parse activity: " << ex.what());
       task.state = wfe_task_t::FAILED;
       ec = fhg::error::INVALID_JOB_DESCRIPTION;
       error_message = ex.what();
@@ -390,7 +395,7 @@ public:
     map_of_tasks_t::iterator task_it (m_task_map.find(job_id));
     if (task_it == m_task_map.end())
     {
-      MLOG(WARN, "could not find task " << job_id);
+      LLOG (WARN, _logger, "could not find task " << job_id);
       return -ESRCH;
     }
     else
@@ -519,6 +524,8 @@ private:
       task->done.notify(task->errc);
     }
   }
+
+  fhg::log::Logger::ptr_t _logger;
 
   mutable mutex_type m_mutex;
   map_of_tasks_t m_task_map;
