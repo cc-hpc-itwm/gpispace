@@ -95,8 +95,6 @@ namespace petri_net
 
     boost::optional<place_id_type>
       port_to_place (transition_id_type, port_id_type) const;
-    boost::optional<port_id_type>
-      place_to_port (transition_id_type, place_id_type) const;
 
     void put_value (place_id_type, const pnet::type::value::value_type&);
 
@@ -113,6 +111,9 @@ namespace petri_net
     }
 
   private:
+    boost::optional<port_id_type>
+      place_to_port (transition_id_type, place_id_type) const;
+
     place_id_type _place_id;
     boost::unordered_map<place_id_type,place::type> _pmap;
 
