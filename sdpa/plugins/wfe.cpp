@@ -78,11 +78,21 @@ namespace
 
     virtual void handle_internally (we::type::activity_t& act, net_t const&)
     {
-      while (act.can_fire() && (task.state != wfe_task_t::CANCELED))
+      if (act.transition().net())
       {
-        we::type::activity_t sub (act.extract (_engine));
-        sub.execute (this);
-        act.inject (sub);
+        while ( boost::optional<we::type::activity_t> sub
+              = boost::get<petri_net::net&> (act.transition().data())
+              . fire_expressions_and_extract_activity_random (_engine)
+              )
+        {
+          sub->execute (this);
+          act.inject (*sub);
+
+          if (task.state == wfe_task_t::CANCELED)
+          {
+            break;
+          }
+        }
       }
 
       act.collect_output();
