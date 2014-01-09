@@ -434,7 +434,9 @@ namespace petri_net
       const std::list<pnet::type::value::value_type>::iterator&
         token (pos_and_distance.first);
 
-      act.add_input (*place_to_port (tid, pid), *token);
+      act.add_input ( _place_to_port.at (tid).left.find (pid)->get_right()
+                    , *token
+                    );
 
       //! \todo save the information whether or not it is a read
       //! connection in _enabled_choice and omit that conditional
@@ -544,7 +546,7 @@ namespace petri_net
       {
         context.bind_ref
           ( transition.ports()
-          .at (*n->place_to_port (transition_id, pits.first)).name()
+          .at (n->_place_to_port.at (transition_id).left.find (pits.first)->get_right()).name()
           , *pits.second.pos_and_distance().first
           );
       }
