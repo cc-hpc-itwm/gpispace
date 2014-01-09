@@ -59,7 +59,7 @@ struct daemon
 {
   daemon()
     : _cnt()
-    , layer ( boost::bind (&daemon::submit, this, _1, _2, _3)
+    , layer ( boost::bind (&daemon::submit, this, _1, _2)
             , boost::bind (&daemon::cancel, this, _1)
             , boost::bind (&daemon::finished, this, _1, _2)
             , boost::bind (&daemon::failed, this, _1, _2, _3)
@@ -107,26 +107,21 @@ struct daemon
   DECLARE_EXPECT_CLASS ( submit
                        , we::mgmt::layer::id_type* id
         BOOST_PP_COMMA() we::mgmt::type::activity_t act
-        BOOST_PP_COMMA() we::mgmt::layer::id_type parent
                        , _id (id)
         BOOST_PP_COMMA() _act (act)
-        BOOST_PP_COMMA() _parent (parent)
                        , we::mgmt::layer::id_type* _id
                        ; we::mgmt::type::activity_t _act
-                       ; we::mgmt::layer::id_type _parent
-                       , _act == act && _parent == parent
+                       , _act == act
                        );
 
-  void submit ( we::mgmt::layer::id_type id
-              , we::mgmt::type::activity_t act
-              , we::mgmt::layer::id_type parent
-              )
+  void submit
+    (we::mgmt::layer::id_type id, we::mgmt::type::activity_t act)
   {
     INC_IN_PROGRESS (jobs_rts);
 
     std::list<expect_submit*>::iterator const e
       ( boost::find_if ( _to_submit
-                       , boost::bind (&expect_submit::eq, _1, &id, act, parent)
+                       , boost::bind (&expect_submit::eq, _1, &id, act)
                        )
         );
 
@@ -418,7 +413,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 
     we::mgmt::layer::id_type child_id;
     {
-      expect_submit const _ (this, &child_id, activity_child, id);
+      expect_submit const _ (this, &child_id, activity_child);
 
       do_submit (id, activity_input);
     }
@@ -521,7 +516,7 @@ BOOST_FIXTURE_TEST_CASE
   we::mgmt::layer::id_type child_id;
 
   {
-    expect_submit const _ (this, &child_id, activity_child, id);
+    expect_submit const _ (this, &child_id, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -561,8 +556,8 @@ BOOST_FIXTURE_TEST_CASE
   we::mgmt::layer::id_type child_id_B;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child, id);
-    expect_submit const _B (this, &child_id_B, activity_child, id);
+    expect_submit const _A (this, &child_id_A, activity_child);
+    expect_submit const _B (this, &child_id_B, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -608,7 +603,7 @@ BOOST_FIXTURE_TEST_CASE
   we::mgmt::layer::id_type child_id;
 
   {
-    expect_submit const _ (this, &child_id, activity_child, id);
+    expect_submit const _ (this, &child_id, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -654,8 +649,8 @@ BOOST_FIXTURE_TEST_CASE
   we::mgmt::layer::id_type child_id_B;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child, id);
-    expect_submit const _B (this, &child_id_B, activity_child, id);
+    expect_submit const _A (this, &child_id_A, activity_child);
+    expect_submit const _B (this, &child_id_B, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -707,8 +702,8 @@ BOOST_FIXTURE_TEST_CASE
   we::mgmt::layer::id_type child_id_B;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child, id);
-    expect_submit const _B (this, &child_id_B, activity_child, id);
+    expect_submit const _A (this, &child_id_A, activity_child);
+    expect_submit const _B (this, &child_id_B, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -765,7 +760,7 @@ BOOST_FIXTURE_TEST_CASE
     _.reserve (N);
     for (std::size_t i (0); i < N; ++i)
     {
-      _.push_back (new expect_submit (this, &child_ids[i], activity_child, id));
+      _.push_back (new expect_submit (this, &child_ids[i], activity_child));
     }
 
     do_submit (id, activity_input);
@@ -789,7 +784,6 @@ namespace
   void submit_fake ( std::vector<we::mgmt::layer::id_type>* ids
                    , we::mgmt::layer::id_type id
                    , we::mgmt::type::activity_t
-                   , we::mgmt::layer::id_type
                    )
   {
     ids->push_back (id);
@@ -850,7 +844,7 @@ BOOST_AUTO_TEST_CASE (performance_finished_shall_be_called_after_finished_N_chil
   boost::mt19937 _random_engine;
 
   we::mgmt::layer layer
-    ( boost::bind (&submit_fake, &child_ids, _1, _2, _3)
+    ( boost::bind (&submit_fake, &child_ids, _1, _2)
     , boost::bind (&cancel, _1)
     , boost::bind (&finished_fake, &finished, _1, _2)
     , boost::bind (&failed, _1, _2, _3)
