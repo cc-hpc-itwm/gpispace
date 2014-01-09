@@ -161,20 +161,6 @@ namespace petri_net
     return pos->second;
   }
 
-  const we::type::transition_t&
-    net::get_transition (transition_id_type tid) const
-  {
-    boost::unordered_map<transition_id_type, we::type::transition_t>
-      ::const_iterator const pos (_tmap.find (tid));
-
-    if (pos == _tmap.end())
-    {
-      throw pnet::exception::transition::no_such (tid);
-    }
-
-    return pos->second;
-  }
-
   const boost::unordered_map<place_id_type,place::type>& net::places() const
   {
     return _pmap;

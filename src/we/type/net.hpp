@@ -107,8 +107,6 @@ namespace petri_net
     }
 
   private:
-    const we::type::transition_t& get_transition (transition_id_type) const;
-
     place_id_type _place_id;
     boost::unordered_map<place_id_type,place::type> _pmap;
 
