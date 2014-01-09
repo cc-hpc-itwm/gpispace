@@ -19,6 +19,7 @@
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/foreach.hpp>
+#include <boost/function.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -252,6 +253,12 @@ namespace petri_net
     we::type::activity_t extract_activity
       (transition_id_type, we::type::transition_t const&);
     void fire_expression (transition_id_type, we::type::transition_t const&);
+    void do_extract
+      ( transition_id_type
+      , we::type::transition_t const&
+      , boost::function
+          <void (port_id_type, pnet::type::value::value_type const&)>
+      );
 
     class cross_type
     {

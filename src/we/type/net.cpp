@@ -355,12 +355,15 @@ namespace petri_net
     _enabled_choice.erase (tid);
   }
 
-  void net::fire_expression ( transition_id_type tid
-                            , we::type::transition_t const& transition
-                            )
+  void net::do_extract
+    ( transition_id_type tid
+    , we::type::transition_t const& transition
+    , boost::function<void ( port_id_type
+                           , pnet::type::value::value_type const&
+                           )
+                      > fun
+    )
   {
-    expr::eval::context context;
-
     boost::unordered_set<transition_id_type> transitions_to_update;
 
     typedef std::pair< place_id_type
@@ -374,11 +377,7 @@ namespace petri_net
       const std::list<pnet::type::value::value_type>::iterator&
         token (pos_and_distance.first);
 
-      context.bind_ref
-        ( transition.ports()
-        .at (_place_to_port.at (tid).left.find (pid)->get_right()).name()
-        , *token
-        );
+      fun (_place_to_port.at (tid).left.find (pid)->get_right(), *token);
 
       //! \todo save the information whether or not it is a read
       //! connection in _enabled_choice and omit that conditional
@@ -404,6 +403,53 @@ namespace petri_net
     {
       update_enabled (t);
     }
+  }
+
+  we::type::activity_t net::extract_activity
+    (transition_id_type tid, we::type::transition_t const& transition)
+  {
+    we::type::activity_t act (transition, tid);
+
+    do_extract ( tid, transition
+               , boost::bind (&we::type::activity_t::add_input, &act, _1, _2)
+               );
+
+    return act;
+  }
+
+  namespace
+  {
+    class context_bind
+    {
+    public:
+      context_bind ( expr::eval::context& context
+                   , we::type::transition_t const& transition
+                   )
+        : _context (context)
+        , _transition (transition)
+      {}
+
+      void operator() ( port_id_type port_id
+                      , pnet::type::value::value_type const& value
+                      )
+      {
+        //! \note ownership goes from _token_by_place_id to context!
+        _context.bind (_transition.ports().at (port_id).name(), value);
+      }
+
+    private:
+      expr::eval::context& _context;
+      we::type::transition_t const& _transition;
+    };
+  }
+
+  void net::fire_expression ( transition_id_type tid
+                            , we::type::transition_t const& transition
+                            )
+  {
+    expr::eval::context context;
+
+    do_extract (tid, transition, context_bind (context, transition));
 
     transition.expression()->ast().eval_all (context);
 
@@ -420,56 +466,6 @@ namespace petri_net
           );
       }
     }
-  }
-
-  we::type::activity_t net::extract_activity
-    (transition_id_type tid, we::type::transition_t const& transition)
-  {
-    we::type::activity_t act (transition, tid);
-
-    boost::unordered_set<transition_id_type> transitions_to_update;
-
-    typedef std::pair< place_id_type
-                     , pos_and_distance_type
-                     > place_and_token_type;
-
-    BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
-    {
-      place_id_type pid (pt.first);
-      const pos_and_distance_type& pos_and_distance (pt.second);
-      const std::list<pnet::type::value::value_type>::iterator&
-        token (pos_and_distance.first);
-
-      act.add_input ( _place_to_port.at (tid).left.find (pid)->get_right()
-                    , *token
-                    );
-
-      //! \todo save the information whether or not it is a read
-      //! connection in _enabled_choice and omit that conditional
-      if (  _adj_pt_read.find (adj_pt_type::value_type (pid, tid))
-         == _adj_pt_read.end()
-         )
-      {
-        _token_by_place_id.at (pid).erase (token);
-
-        transition_id_range_type consume
-          (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
-        transition_id_range_type read
-          (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
-
-        BOOST_FOREACH (transition_id_type t, boost::join (consume, read))
-        {
-          transitions_to_update.insert (t);
-        }
-      }
-    }
-
-    BOOST_FOREACH (transition_id_type t, transitions_to_update)
-    {
-      update_enabled (t);
-    }
-
-    return act;
   }
 
 
