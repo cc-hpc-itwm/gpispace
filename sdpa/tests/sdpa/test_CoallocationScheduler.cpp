@@ -490,7 +490,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
     k = boost::lexical_cast<int>(wid);
     BOOST_CHECK( k==0 || k==3 || k==6 || k==9);
   }
-  LOG(INFO, "The job jobId0 has been allocated the workers "<<listJobAssignedWorkers);
 
   listJobAssignedWorkers.clear();
   listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId1);
@@ -499,7 +498,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
     k = boost::lexical_cast<int>(wid);
     BOOST_CHECK( k==1 || k==4 || k==7 || k==10);
   }
-  LOG(INFO, "The job jobId1 has been allocated the workers "<<listJobAssignedWorkers);
 
   listJobAssignedWorkers.clear();
   listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId2);
@@ -508,7 +506,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
     k = boost::lexical_cast<int>(wid);
     BOOST_CHECK( k==2 || k==5 || k==8 || k==11);
   }
-  LOG(INFO, "The job jobId2 has been allocated the workers "<<listJobAssignedWorkers);
 
   // try now to schedule a job requiring 2 resources of type "A"
   const sdpa::job_id_t jobId4("Job4");
@@ -612,7 +609,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _scheduler.deleteWorker(lastWorkerId);
   sdpa::worker_id_list_t listW = _scheduler.getListAllocatedWorkers(jobId);
   BOOST_CHECK(listW.empty());
-  LOG_IF(DEBUG, listW.empty(), "The worker "<<lastWorkerId<<" was deleted!");
 
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
