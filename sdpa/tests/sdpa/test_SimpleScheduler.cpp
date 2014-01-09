@@ -104,8 +104,6 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 {
-  LOG( INFO, "Test if the capabilities are matching the requirements "<<std::endl);
-
   sdpa::worker_id_t workerId("test_worker");
   sdpa::capabilities_set_t workerCpbSet;
 
@@ -133,8 +131,6 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
-  LOG(INFO, "Test scheduling when the required capabilities are gained later ...");
-
   sdpa::worker_id_t worker_A("worker_A");
 
   sdpa::capabilities_set_t cpbSetA;
@@ -173,8 +169,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
-  LOG(INFO, "testLoadBalancing");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
@@ -243,8 +237,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
-  LOG(INFO, "Test the load-balancing when a worker joins later ...");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
@@ -334,8 +326,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
-  LOG(INFO, "Test the load-balancing when a worker gains a capability later ...");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
@@ -437,8 +427,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {
-  LOG(INFO, "Test the load-balancing when a worker is stopped, re-started and announces afterwards its capabilities ...");
-
   // number of workers
   const int nWorkers = 10;
   const int nJobs = 10;
