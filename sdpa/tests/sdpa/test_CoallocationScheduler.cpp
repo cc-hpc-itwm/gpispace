@@ -591,7 +591,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   sdpa::worker_id_t lastWorkerId("worker_9");
   sdpa::job_id_t jobId = _scheduler.getAssignedJob(lastWorkerId);
-  LOG(DEBUG, "The worker "<<lastWorkerId<<" was assigned the job "<<jobId);
 
   LOG(DEBUG, "The worker "<<lastWorkerId<<" has the job "<<jobId<<" assigned");
 
