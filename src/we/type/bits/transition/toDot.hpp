@@ -505,48 +505,56 @@ namespace we { namespace type {
                     }
                 }
 
-              BOOST_FOREACH
-                ( petri_net::net::port_to_place_with_info_type::value_type
-                  const& port_to_place
-                , net.port_to_place().at (trans_id)
-                )
+              if (  net.port_to_place().find (trans_id)
+                 != net.port_to_place().end()
+                 )
               {
-                level (s, l + 1)
-                  << name ( id_trans
-                          , "port_" + boost::lexical_cast<std::string> (port_to_place.get_left())
-                          )
-                  << arrow
-                  << name ( id_net
-                          , "place_" + boost::lexical_cast<std::string> (port_to_place.get_right())
-                          )
-                  << std::endl
-                  ;
+                BOOST_FOREACH
+                  ( petri_net::net::port_to_place_with_info_type::value_type
+                  const& port_to_place
+                  , net.port_to_place().at (trans_id)
+                  )
+                {
+                  level (s, l + 1)
+                    << name ( id_trans
+                            , "port_" + boost::lexical_cast<std::string> (port_to_place.get_left())
+                            )
+                    << arrow
+                    << name ( id_net
+                            , "place_" + boost::lexical_cast<std::string> (port_to_place.get_right())
+                            )
+                    << std::endl
+                    ;
+                }
               }
 
-              BOOST_FOREACH
-                ( petri_net::net::place_to_port_with_info_type::value_type
-                  const& place_to_port
-                , net.place_to_port().at (trans_id)
-                )
+              if (net.place_to_port().find (trans_id) !=  net.place_to_port().end())
               {
-                level (s, l + 1)
-                  << name ( id_net
-                          , "place_" + boost::lexical_cast<std::string> (place_to_port.get_left())
-                          )
-                  << arrow
-                  << name ( id_trans
-                          , "port_" + boost::lexical_cast<std::string> (place_to_port.get_right())
-                          )
-                  << (  net.place_to_transition_read().find
-                        ( petri_net::net::adj_pt_type::value_type
-                          (place_to_port.get_left(), trans_id)
-                        )
-                     != net.place_to_transition_read().end()
-                     ? brackets (keyval ("style", style::read_connection))
-                     : ""
-                     )
-                  << std::endl
-                  ;
+                BOOST_FOREACH
+                  ( petri_net::net::place_to_port_with_info_type::value_type
+                  const& place_to_port
+                  , net.place_to_port().at (trans_id)
+                  )
+                {
+                  level (s, l + 1)
+                    << name ( id_net
+                            , "place_" + boost::lexical_cast<std::string> (place_to_port.get_left())
+                            )
+                    << arrow
+                    << name ( id_trans
+                            , "port_" + boost::lexical_cast<std::string> (place_to_port.get_right())
+                            )
+                    << (  net.place_to_transition_read().find
+                       ( petri_net::net::adj_pt_type::value_type
+                       (place_to_port.get_left(), trans_id)
+                       )
+                       != net.place_to_transition_read().end()
+                       ? brackets (keyval ("style", style::read_connection))
+                       : ""
+                       )
+                    << std::endl
+                    ;
+                }
               }
             }
 
