@@ -53,6 +53,8 @@ int main (int argc, char **argv)
   po::store( po::command_line_parser( argc, argv ).options(desc).run(), vm );
   po::notify(vm);
 
+  fhg::log::Logger::ptr_t logger (fhg::log::Logger::get (agentName));
+
   if( vm.count("help") )
   {
     std::cerr << "usage: agent [options] ...." << std::endl;
@@ -62,7 +64,7 @@ int main (int argc, char **argv)
 
   if( !vm.count("kvs_url") )
   {
-    LOG(ERROR, "The url of the kvs daemon was not specified!");
+    LLOG (ERROR, logger, "The url of the kvs daemon was not specified!");
     return -1;
   }
   else
@@ -75,12 +77,12 @@ int main (int argc, char **argv)
 
     if( vec.size() != 2 )
     {
-      LOG(ERROR, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
+      LLOG (ERROR, logger, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
       return -1;
     }
     else
     {
-      DMLOG(TRACE, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
+      DLLOG (TRACE, logger, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
       fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(120), 1);
     }
   }
@@ -97,7 +99,7 @@ int main (int argc, char **argv)
     pidfile_fd = open(pidfile.c_str(), O_CREAT|O_RDWR, 0640);
     if (pidfile_fd < 0)
     {
-      LOG( ERROR, "could not open pidfile for writing: "
+      LLOG (ERROR, logger, "could not open pidfile for writing: "
          << strerror(errno)
          );
       exit(EXIT_FAILURE);
@@ -111,7 +113,7 @@ int main (int argc, char **argv)
     {
       if (child == -1)
       {
-        LOG(ERROR, "could not fork: " << strerror(errno));
+        LLOG (ERROR, logger, "could not fork: " << strerror(errno));
         exit(EXIT_FAILURE);
       }
       else
@@ -124,11 +126,11 @@ int main (int argc, char **argv)
     int fd = open("/dev/null", O_RDWR);
     if (-1 == dup(fd))
     {
-      LOG(WARN, "could not duplicate /dev/null to stdout: " << strerror(errno));
+      LLOG (WARN, logger, "could not duplicate /dev/null to stdout: " << strerror(errno));
     }
     if (-1 == dup(fd))
     {
-      LOG(WARN, "could not duplicate /dev/null to stdout: " << strerror(errno));
+      LLOG (WARN, logger, "could not duplicate /dev/null to stdout: " << strerror(errno));
     }
   }
 
@@ -136,7 +138,7 @@ int main (int argc, char **argv)
   {
     if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
     {
-      LOG( ERROR, "could not lock pidfile: "
+      LLOG (ERROR, logger, "could not lock pidfile: "
          << strerror(errno)
          );
       exit(EX_STILL_RUNNING);
@@ -145,12 +147,12 @@ int main (int argc, char **argv)
     char buf[32];
     if (0 != ftruncate(pidfile_fd, 0))
     {
-      LOG(WARN, "could not truncate pidfile: " << strerror(errno));
+      LLOG (WARN, logger, "could not truncate pidfile: " << strerror(errno));
     }
     snprintf(buf, sizeof(buf), "%d\n", getpid());
     if (write(pidfile_fd, buf, strlen(buf)) <= 0)
     {
-      LOG(ERROR, "could not write pid: " << strerror(errno));
+      LLOG (ERROR, logger, "could not write pid: " << strerror(errno));
       exit(EXIT_FAILURE);
     }
     fsync(pidfile_fd);
@@ -168,7 +170,7 @@ int main (int argc, char **argv)
       listMasterInfo.push_back (sdpa::MasterInfo (master));
     }
 
-    DMLOG (TRACE, startup_message.str());
+    DLLOG (TRACE, logger, startup_message.str());
   }
 
   try
@@ -189,7 +191,7 @@ int main (int argc, char **argv)
       result = sigwait(&waitset, &sig);
       if (result == 0)
       {
-        DMLOG (TRACE, "got signal: " << sig);
+        DLLOG (TRACE, logger, "got signal: " << sig);
         switch (sig)
         {
         case SIGTERM:
@@ -197,29 +199,29 @@ int main (int argc, char **argv)
           signal_ignored = false;
           break;
         default:
-          DMLOG (TRACE, "ignoring signal: " << sig);
+          DLLOG (TRACE, logger, "ignoring signal: " << sig);
           break;
         }
       }
       else
       {
-        LOG(ERROR, "error while waiting for signal: " << result);
+        LLOG (ERROR, logger, "error while waiting for signal: " << result);
       }
     }
 
-    DMLOG(TRACE, "terminating...");
+    DLLOG (TRACE, logger, "terminating...");
 
     {
       std::ostringstream oss;
 
       if (oss.str().size())
       {
-        DMLOG (DEBUG, oss.str());
+        DLLOG (DEBUG, logger, oss.str());
       }
     }
   }
   catch ( std::exception& )
   {
-    LOG (FATAL, "Could not start the Agent!");
+    LLOG (FATAL, logger, "Could not start the Agent!");
   }
 }
