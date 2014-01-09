@@ -56,9 +56,9 @@ namespace sdpa {
         SchedulerBase* m_pScheduler;
       };
 
-      struct MSMResumeJobEvent
+      struct MSMDispatchJobEvent
       {
-        MSMResumeJobEvent(GenericDaemon* pAgent)
+        MSMDispatchJobEvent(GenericDaemon* pAgent)
           : m_pAgent(pAgent)
         {}
         GenericDaemon* ptrAgent() const { return m_pAgent; }
@@ -94,7 +94,7 @@ namespace sdpa {
         <
         //      Start           Event                                   Next           Action                Guard
         //      +---------------+---------------------------------------+--------------+---------------------+-----
-        _row<   Pending,        MSMResumeJobEvent,                      Running >,
+        _row<   Pending,        MSMDispatchJobEvent,                      Running >,
         _row<   Pending,        events::CancelJobEvent, 		Canceled>,
         a_row<  Pending,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished >,
         a_row<  Pending,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
@@ -103,7 +103,7 @@ namespace sdpa {
         a_row<  Running,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
         _row<   Running,        events::CancelJobEvent,                 Canceling>,
         a_row<  Running,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
-        _irow<  Running,        MSMResumeJobEvent>,
+        _irow<  Running,        MSMDispatchJobEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Finished,       events::JobFinishedEvent>,
@@ -115,7 +115,7 @@ namespace sdpa {
         a_row<  Canceling, 	sdpa::events::JobFinishedEvent,      	Canceled,       &sm::action_job_finished>,
         a_row<  Canceling, 	sdpa::events::JobFailedEvent,           Canceled,       &sm::action_job_failed>,
         _irow<  Canceling,      sdpa::events::CancelJobEvent>,
-        _irow<  Canceling,      MSMResumeJobEvent>,
+        _irow<  Canceling,      MSMDispatchJobEvent>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Canceled,       MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Canceled,       events::CancelJobAckEvent>,

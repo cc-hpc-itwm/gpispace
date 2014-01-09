@@ -159,6 +159,6 @@ namespace sdpa {
     void Job::Dispatch()
     {
       lock_type lock(mtx_);
-      process_event (MSMResumeJobEvent (NULL));
+      process_event (MSMDispatchJobEvent (NULL));
     }
 }}
