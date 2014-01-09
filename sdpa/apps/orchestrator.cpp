@@ -43,6 +43,8 @@ int main (int argc, char **argv)
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
     po::notify(vm);
 
+    fhg::log::Logger::ptr_t logger (fhg::log::Logger::get (orchName));
+
     if (vm.count("help"))
     {
       std::cerr << "usage: orchestrator [options] ...." << std::endl;
@@ -52,7 +54,7 @@ int main (int argc, char **argv)
 
     if( !vm.count("kvs_url") )
     {
-      LOG(ERROR, "The url of the kvs daemon was not specified!");
+      LLOG (ERROR, logger, "The url of the kvs daemon was not specified!");
       return -1;
     }
     else
@@ -65,7 +67,7 @@ int main (int argc, char **argv)
 
       if( vec.size() != 2 )
       {
-        LOG(ERROR, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
+        LLOG (ERROR, logger, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
         return -1;
       }
       else
@@ -84,7 +86,7 @@ int main (int argc, char **argv)
       pidfile_fd = open(pidfile.c_str(), O_CREAT|O_RDWR, 0640);
       if (pidfile_fd < 0)
       {
-        LOG( ERROR, "could not open pidfile for writing: "<< strerror(errno));
+        LLOG (ERROR, logger, "could not open pidfile for writing: "<< strerror(errno));
         exit(EXIT_FAILURE);
       }
     }
@@ -96,7 +98,7 @@ int main (int argc, char **argv)
       {
         if (child == -1)
         {
-          LOG(ERROR, "could not fork: " << strerror(errno));
+          LLOG (ERROR, logger, "could not fork: " << strerror(errno));
           exit(EXIT_FAILURE);
         }
         else
@@ -115,7 +117,7 @@ int main (int argc, char **argv)
     {
       if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
       {
-        LOG( ERROR, "could not lock pidfile: "<< strerror(errno));
+        LLOG (ERROR, logger, "could not lock pidfile: "<< strerror(errno));
         exit(EX_STILL_RUNNING);
       }
 
@@ -129,7 +131,7 @@ int main (int argc, char **argv)
     try {
       const sdpa::daemon::Orchestrator orchestrator (orchName, orchUrl);
 
-      DMLOG (TRACE, "waiting for signals...");
+      DLLOG (TRACE, logger, "waiting for signals...");
       sigset_t waitset;
       int sig(0);
       int result(0);
@@ -143,7 +145,7 @@ int main (int argc, char **argv)
         result = sigwait(&waitset, &sig);
         if (result == 0)
         {
-          DMLOG (TRACE, "got signal: " << sig);
+          DLLOG (TRACE, logger, "got signal: " << sig);
           switch (sig)
           {
             case SIGTERM:
@@ -151,17 +153,17 @@ int main (int argc, char **argv)
               signal_ignored = false;
               break;
             default:
-              LOG(INFO, "ignoring signal: " << sig);
+              LLOG (INFO, logger, "ignoring signal: " << sig);
               break;
           }
         }
         else
         {
-          LOG(ERROR, "error while waiting for signal: " << result);
+          LLOG (ERROR, logger, "error while waiting for signal: " << result);
         }
       }
 
-      DMLOG (TRACE, "terminating...");
+      DLLOG (TRACE, logger, "terminating...");
     }
     catch( std::exception& )
     {
