@@ -120,8 +120,7 @@ namespace sdpa {
         a_irow< Canceled,       MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Canceled,       events::CancelJobAckEvent>,
         _irow<  Canceled,       events::JobFinishedEvent>,
-        _irow<  Canceled,       events::JobFailedEvent>,
-        _irow<  Canceled,       MSMResumeJobEvent>
+        _irow<  Canceled,       events::JobFailedEvent>
         >{};
 
       //! \note This table refers to the order in which states are
