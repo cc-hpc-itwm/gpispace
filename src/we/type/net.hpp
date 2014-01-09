@@ -99,15 +99,6 @@ namespace petri_net
     void delete_all_token (place_id_type);
 
     template<typename Engine>
-    we::type::activity_t extract_activity_random (Engine& engine)
-    {
-      transition_id_type const transition_id (_enabled.random (engine));
-      we::type::transition_t const& transition (_tmap.at (transition_id));
-
-      return extract_activity (transition_id, transition);
-    }
-
-    template<typename Engine>
     boost::optional<we::type::activity_t>
     fire_expressions_and_extract_activity_random (Engine& engine)
     {
