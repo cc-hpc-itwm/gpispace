@@ -105,8 +105,6 @@ namespace petri_net
     }
 
   private:
-    const place::type& get_place (place_id_type) const;
-
     place_id_type _place_id;
     boost::unordered_map<place_id_type,place::type> _pmap;
 

@@ -148,19 +148,6 @@ namespace petri_net
     return _enabled.get_priority (tid);
   }
 
-  const place::type& net::get_place (place_id_type pid) const
-  {
-    boost::unordered_map<place_id_type, place::type>::const_iterator const
-      pos (_pmap.find (pid));
-
-    if (pos == _pmap.end())
-    {
-      throw pnet::exception::place::no_such (pid);
-    }
-
-    return pos->second;
-  }
-
   const boost::unordered_map<place_id_type,place::type>& net::places() const
   {
     return _pmap;
