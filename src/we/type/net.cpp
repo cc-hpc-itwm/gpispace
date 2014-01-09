@@ -355,10 +355,9 @@ namespace petri_net
     _enabled_choice.erase (tid);
   }
 
-  we::type::activity_t
-  net::extract_activity (transition_id_type tid)
+  we::type::activity_t net::extract_activity
+    (transition_id_type tid, we::type::transition_t const& transition)
   {
-    const we::type::transition_t& transition (_tmap.at (tid));
     we::type::activity_t act (transition, tid);
 
     boost::unordered_set<transition_id_type> transitions_to_update;

@@ -101,7 +101,10 @@ namespace petri_net
     template<typename Engine>
     we::type::activity_t extract_activity_random (Engine& engine)
     {
-      return extract_activity (_enabled.random (engine));
+      transition_id_type const transition_id (_enabled.random (engine));
+      we::type::transition_t const& transition (_tmap.at (transition_id));
+
+      return extract_activity (transition_id, transition);
     }
 
   private:
@@ -223,7 +226,8 @@ namespace petri_net
 
     void disable (transition_id_type);
 
-    we::type::activity_t extract_activity (transition_id_type);
+    we::type::activity_t extract_activity
+      (transition_id_type, we::type::transition_t const&);
 
     class cross_type
     {
