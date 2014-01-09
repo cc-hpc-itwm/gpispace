@@ -68,7 +68,12 @@ namespace petri_net
 
     place_id_type add_place (const place::type&);
     transition_id_type add_transition (const we::type::transition_t&);
-    void add_connection (edge::type, transition_id_type, place_id_type);
+    void add_connection ( edge::type
+                        , transition_id_type
+                        , place_id_type
+                        , port_id_type
+                        , we::type::property::type const&
+                        );
 
     void set_transition_priority (transition_id_type, priority_type);
     priority_type get_transition_priority (transition_id_type) const;
@@ -86,6 +91,11 @@ namespace petri_net
 
     port_to_place_type const& port_to_place() const;
     place_to_port_type const& place_to_port() const;
+
+    boost::optional<place_id_type>
+      port_to_place (transition_id_type, port_id_type) const;
+    boost::optional<port_id_type>
+      place_to_port (transition_id_type, place_id_type) const;
 
     void delete_place (place_id_type);
     void delete_transition (transition_id_type);
@@ -231,7 +241,7 @@ namespace petri_net
     class cross_type
     {
     public:
-      bool enables (we::type::transition_t const&);
+      bool enables (net* const, transition_id_type);
       void write_to (boost::unordered_map< place_id_type
                                          , pos_and_distance_type
                                          >&

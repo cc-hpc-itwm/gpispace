@@ -30,8 +30,12 @@ namespace we
       activity_t::activity_t ()
       {}
 
-      activity_t::activity_t (const we::type::transition_t& transition)
+      activity_t::activity_t
+        ( const we::type::transition_t& transition
+        , boost::optional<petri_net::transition_id_type> const& transition_id
+        )
         : _transition (transition)
+        , _transition_id (transition_id)
       {}
 
       namespace
@@ -137,7 +141,7 @@ namespace we
                           )
               {
                 parent.put_value
-                  ( _child.transition().inner_to_outer().at (top.second).first
+                  ( *parent.port_to_place (*_child.transition_id(), top.second)
                   , top.first
                   );
               }
@@ -163,15 +167,16 @@ namespace we
         class visitor_add_input : public boost::static_visitor<>
         {
         private:
-          we::type::transition_t& _transition;
+          we::type::transition_t const& _transition;
           petri_net::port_id_type const& _port_id;
           pnet::type::value::value_type const& _value;
 
         public:
-          visitor_add_input ( we::type::transition_t& transition
-                            , petri_net::port_id_type const& port_id
-                            , pnet::type::value::value_type const& value
-                            )
+          visitor_add_input
+            ( we::type::transition_t const& transition
+            , petri_net::port_id_type const& port_id
+            , pnet::type::value::value_type const& value
+            )
             : _transition (transition)
             , _port_id (port_id)
             , _value (value)
@@ -393,6 +398,12 @@ namespace we
         )
       {
         _output.push_back (output_t::value_type (value, port_id));
+      }
+
+      boost::optional<petri_net::transition_id_type> const&
+        activity_t::transition_id() const
+      {
+        return _transition_id;
       }
 
       std::ostream& operator<< (std::ostream& os, const activity_t& a)

@@ -1612,7 +1612,7 @@ namespace xml
                                        )
         );
 
-      return we::mgmt::type::activity_t (trans);
+      return we::mgmt::type::activity_t (trans, boost::none);
     }
   } // namespace parse
 } // namespace xml

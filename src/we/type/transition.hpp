@@ -48,8 +48,6 @@ namespace we { namespace type {
         , data_ (expression_t())
         , internal_ (true)
         , condition_("true")
-        , outer_to_inner_()
-        , inner_to_outer_()
         , ports_()
         , port_id_counter_ (0)
         , prop_()
@@ -67,8 +65,6 @@ namespace we { namespace type {
         , data_ (typ)
         , internal_ (intern)
         , condition_ (_condition)
-        , outer_to_inner_()
-        , inner_to_outer_()
         , ports_()
         , port_id_counter_ (0)
         , prop_(prop)
@@ -139,36 +135,12 @@ namespace we { namespace type {
         return boost::get<T> (e.ast().eval_all (context));
       }
 
-      //!  \todo move connection handling to net
-      typedef boost::unordered_map< petri_net::place_id_type
-                                  , port_id_with_prop_t
-                                  > outer_to_inner_t;
-      typedef boost::unordered_map< petri_net::port_id_type
-                                  , pid_with_prop_t
-                                  > inner_to_outer_t;
-
-      inner_to_outer_t const& inner_to_outer() const;
-      outer_to_inner_t const& outer_to_inner() const;
-
-      void add_connection ( petri_net::place_id_type const&
-                          , petri_net::port_id_type const&
-                          , we::type::property::type const&
-                          );
-      void add_connection ( petri_net::port_id_type const&
-                          , petri_net::place_id_type const&
-                          , we::type::property::type const&
-                          );
-      void remove_connection_in (const petri_net::place_id_type&);
-      void remove_connection_out (const petri_net::port_id_type&);
-
     private:
       std::string name_;
       data_type data_;
       bool internal_;
       condition::type condition_;
 
-      outer_to_inner_t outer_to_inner_;
-      inner_to_outer_t inner_to_outer_;
       port_map_t ports_;
       petri_net::port_id_type port_id_counter_;
 
@@ -184,8 +156,6 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(data_);
         ar & BOOST_SERIALIZATION_NVP(internal_);
         ar & BOOST_SERIALIZATION_NVP(condition_);
-        ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
-        ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
@@ -199,8 +169,6 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(data_);
         ar & BOOST_SERIALIZATION_NVP(internal_);
         ar & BOOST_SERIALIZATION_NVP(condition_);
-        ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
-        ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);

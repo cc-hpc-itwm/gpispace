@@ -73,6 +73,8 @@ namespace petri_net
       && lhs.transition_to_place() == rhs.transition_to_place()
       && lhs.place_to_transition_consume() == rhs.place_to_transition_consume()
       && lhs.place_to_transition_read() == rhs.place_to_transition_read()
+      && lhs.port_to_place() == rhs.port_to_place()
+      && lhs.place_to_port() == rhs.place_to_port()
       && tokens (lhs) == tokens (rhs);
   }
 }
@@ -86,7 +88,6 @@ namespace we
       return lhs.name() == rhs.name()
         && lhs.direction() == rhs.direction()
         && lhs.signature() == rhs.signature()
-        && lhs.associated_place() == rhs.associated_place()
         && lhs.property() == rhs.property();
     }
 
@@ -113,8 +114,6 @@ namespace we
         && lhs.data() == rhs.data()
         && lhs.is_internal() == rhs.is_internal()
         && lhs.condition() == rhs.condition()
-        && lhs.outer_to_inner() == rhs.outer_to_inner()
-        && lhs.inner_to_outer() == rhs.inner_to_outer()
         && lhs.ports() == rhs.ports()
         && lhs.prop() == rhs.prop()
         && lhs.requirements() == rhs.requirements();
@@ -129,7 +128,8 @@ namespace we
       {
         return lhs.input() == rhs.input()
           && lhs.output() == rhs.output()
-          && lhs.transition() == rhs.transition();
+          && lhs.transition() == rhs.transition()
+          && lhs.transition_id() == rhs.transition_id();
       }
     }
   }

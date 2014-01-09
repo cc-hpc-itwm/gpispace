@@ -16,8 +16,10 @@
 
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/optional.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 #include <boost/random.hpp>
 
 #include <vector>
@@ -42,7 +44,10 @@ namespace we
 
       public:
         explicit activity_t ();
-        explicit activity_t (const we::type::transition_t&);
+        explicit activity_t
+          ( const we::type::transition_t&
+          , boost::optional<petri_net::transition_id_type> const&
+          );
 
         explicit activity_t (const boost::filesystem::path&);
         explicit activity_t (std::istream&);
@@ -73,6 +78,9 @@ namespace we
           ( petri_net::port_id_type const&
           , pnet::type::value::value_type const&
           );
+
+        boost::optional<petri_net::transition_id_type> const&
+          transition_id() const;
 
       private:
         template<class Archive>
@@ -112,6 +120,7 @@ namespace we
           void save (Archive& ar, const unsigned int) const
         {
           ar & BOOST_SERIALIZATION_NVP(_transition);
+          ar & BOOST_SERIALIZATION_NVP(_transition_id);
 
           save (ar, _input);
           save (ar, _output);
@@ -120,6 +129,7 @@ namespace we
         void load (Archive& ar, const unsigned int)
         {
           ar & BOOST_SERIALIZATION_NVP(_transition);
+          ar & BOOST_SERIALIZATION_NVP(_transition_id);
 
           load (ar, _input);
           load (ar, _output);
@@ -128,6 +138,7 @@ namespace we
 
       private:
         we::type::transition_t _transition;
+        boost::optional<petri_net::transition_id_type> _transition_id;
 
         input_t _input;
         output_t _output;

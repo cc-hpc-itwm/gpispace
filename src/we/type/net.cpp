@@ -108,20 +108,30 @@ namespace petri_net
     return tid;
   }
 
-  void net::add_connection
-    (edge::type type, transition_id_type transition_id, place_id_type place_id)
+  void net::add_connection ( edge::type type
+                           , transition_id_type transition_id
+                           , place_id_type place_id
+                           , port_id_type port_id
+                           , we::type::property::type const& property
+                           )
   {
     switch (type)
     {
     case edge::TP:
       _adj_tp.insert (adj_tp_type::value_type (transition_id, place_id));
+      _port_to_place[transition_id].insert
+        (port_to_place_with_info_type::value_type (port_id, place_id, property));
       break;
     case edge::PT:
       _adj_pt_consume.insert (adj_pt_type::value_type (place_id, transition_id));
+      _place_to_port[transition_id].insert
+        (place_to_port_with_info_type::value_type (place_id, port_id, property));
       update_enabled (transition_id);
       break;
     case edge::PT_READ:
       _adj_pt_read.insert (adj_pt_type::value_type (place_id, transition_id));
+      _place_to_port[transition_id].insert
+        (place_to_port_with_info_type::value_type (place_id, port_id, property));
       update_enabled (transition_id);
       break;
     }
@@ -195,6 +205,38 @@ namespace petri_net
   net::place_to_port_type const& net::place_to_port() const
   {
     return _place_to_port;
+  }
+  boost::optional<place_id_type> net::port_to_place
+    (transition_id_type transition_id, port_id_type port_id) const
+  {
+    port_to_place_with_info_type const& port_to_place_with_info
+      (_port_to_place.at (transition_id));
+
+    port_to_place_with_info_type::left_const_iterator const pos
+      (port_to_place_with_info.left.find (port_id));
+
+    if (pos == port_to_place_with_info.left.end())
+    {
+      return boost::none;
+    }
+
+    return pos->get_right();
+  }
+  boost::optional<port_id_type> net::place_to_port
+    (transition_id_type transition_id, place_id_type place_id) const
+  {
+    place_to_port_with_info_type const& place_to_port_with_info
+      (_place_to_port.at (transition_id));
+
+    place_to_port_with_info_type::left_const_iterator const pos
+      (place_to_port_with_info.left.find (place_id));
+
+    if (pos == place_to_port_with_info.left.end())
+    {
+      return boost::none;
+    }
+
+    return pos->get_right();
   }
 
   void net::delete_edge_out (transition_id_type tid, place_id_type pid)
@@ -399,7 +441,7 @@ namespace petri_net
       cross.push (place_id, tokens);
     }
 
-    if (cross.enables (get_transition (tid)))
+    if (cross.enables (this, tid))
     {
       _enabled.insert (tid);
       cross.write_to (_enabled_choice[tid]);
@@ -450,7 +492,7 @@ namespace petri_net
       }
     }
 
-    if (cross.enables (get_transition (tid)))
+    if (cross.enables (this, tid))
     {
       _enabled.insert (tid);
       cross.write_to (_enabled_choice[tid]);
@@ -471,7 +513,7 @@ namespace petri_net
   net::extract_activity (transition_id_type tid)
   {
     const we::type::transition_t& transition (get_transition (tid));
-    we::mgmt::type::activity_t act (transition);
+    we::mgmt::type::activity_t act (transition, tid);
 
     boost::unordered_set<transition_id_type> transitions_to_update;
 
@@ -486,7 +528,7 @@ namespace petri_net
       const std::list<pnet::type::value::value_type>::iterator&
         token (pos_and_distance.first);
 
-      act.add_input (transition.outer_to_inner().at (pid).first, *token);
+      act.add_input (*place_to_port (tid, pid), *token);
 
       //! \todo save the information whether or not it is a read
       //! connection in _enabled_choice and omit that conditional
@@ -568,7 +610,7 @@ namespace petri_net
     return false;
   }
 
-  bool net::cross_type::enables (we::type::transition_t const& transition)
+  bool net::cross_type::enables (net* const n, transition_id_type transition_id)
   {
     //! \note that means the transitions without in-port cannot fire
     //! instead of fire unconditionally
@@ -576,6 +618,9 @@ namespace petri_net
     {
       return false;
     }
+
+    we::type::transition_t const& transition
+      (n->get_transition (transition_id));
 
     //! \todo use is_const_true and boost::optional...
     if (transition.condition().expression() == "true")
@@ -592,8 +637,8 @@ namespace petri_net
       BOOST_FOREACH (const pits_type& pits, _m)
       {
         context.bind_ref
-          ( transition.ports().at
-            (transition.outer_to_inner().at (pits.first).first).name()
+          ( transition.ports()
+          .at (*n->place_to_port (transition_id, pits.first)).name()
           , *pits.second.pos_and_distance().first
           );
       }

@@ -119,21 +119,16 @@ int main (int, char **)
       (we::type::port_t ("pair",we::type::PORT_OUT,sig_pair))
     );
 
-  trans_inner.add_connection
-    (pid_vid, port_id_vid, we::type::property::type());
-  trans_inner.add_connection
-    (pid_store, port_id_store_in, we::type::property::type());
-  trans_inner.add_connection
-    (port_id_pair, pid_pair, we::type::property::type());
-  trans_inner.add_connection
-    (port_id_store_out, pid_store, we::type::property::type());
-
   petri_net::transition_id_type tid (net.add_transition (trans_inner));
 
-  net.add_connection (PT, tid, pid_store);
-  net.add_connection (TP, tid, pid_store);
-  net.add_connection (PT_READ, tid, pid_vid);
-  net.add_connection (TP, tid, pid_pair);
+  {
+    we::type::property::type empty;
+
+    net.add_connection (PT, tid, pid_store, port_id_store_in, empty);
+    net.add_connection (TP, tid, pid_store, port_id_store_out, empty);
+    net.add_connection (PT_READ, tid, pid_vid, port_id_vid, empty);
+    net.add_connection (TP, tid, pid_pair, port_id_pair, empty);
+  }
 
   net.put_value (pid_vid, 0L);
   net.put_value (pid_vid, 1L);
@@ -171,7 +166,7 @@ int main (int, char **)
   tnet.add_port
     (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair, pid_pair));
 
-  activity_t act ( tnet );
+  activity_t act ( tnet, boost::none );
 
   {
     std::string act_encoded (act.to_string());

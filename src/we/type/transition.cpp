@@ -57,50 +57,6 @@ namespace we
       return _requirements;
     }
 
-    void transition_t::add_connection ( petri_net::place_id_type const& place_id
-                                      , petri_net::port_id_type const& port_id
-                                      , we::type::property::type const& property
-                                      )
-    {
-      outer_to_inner_.insert
-        (outer_to_inner_t::value_type ( place_id
-                                      , std::make_pair (port_id, property)
-                                      )
-        );
-    }
-
-    void transition_t::add_connection ( petri_net::port_id_type const& port_id
-                                      , petri_net::place_id_type const& place_id
-                                      , we::type::property::type const& property
-                                      )
-    {
-      inner_to_outer_.insert
-        (inner_to_outer_t::value_type ( port_id
-                                      , std::make_pair (place_id, property)
-                                      )
-        );
-    }
-
-    transition_t::inner_to_outer_t const& transition_t::inner_to_outer() const
-    {
-      return inner_to_outer_;
-    }
-    transition_t::outer_to_inner_t const& transition_t::outer_to_inner() const
-    {
-      return outer_to_inner_;
-    }
-
-    void transition_t::remove_connection_in
-      (const petri_net::place_id_type& place_id)
-    {
-      outer_to_inner_.erase (place_id);
-    }
-    void transition_t::remove_connection_out
-      (const petri_net::port_id_type& port_id)
-    {
-      inner_to_outer_.erase (port_id);
-    }
-
     petri_net::port_id_type transition_t::add_port (port_t const& port)
     {
       petri_net::port_id_type const port_id (port_id_counter_++);

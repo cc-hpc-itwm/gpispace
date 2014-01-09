@@ -16,6 +16,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/range/algorithm.hpp>
 #include <boost/bind.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include <list>
@@ -344,7 +345,7 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
                       )
     );
 
-  we::mgmt::type::activity_t activity (transition);
+  we::mgmt::type::activity_t activity (transition, boost::none);
   activity.add_input ( transition.input_port_by_name ("in")
                      , pnet::type::value::read ("1L")
                      );
@@ -352,7 +353,7 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   we::mgmt::layer::id_type const id (generate_id());
 
   {
-    we::mgmt::type::activity_t activity_expected (transition);
+    we::mgmt::type::activity_t activity_expected (transition, boost::none);
     activity_expected.add_output
       ( transition.output_port_by_name ("out")
       , pnet::type::value::read ("2L")
@@ -373,41 +374,32 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
     , true
     , we::type::property::type()
     );
-  petri_net::port_id_type const port_id_in
-    ( transition.add_port ( we::type::port_t ( "in"
-                                             , we::type::PORT_IN
-                                             , signature::CONTROL
-                                             , we::type::property::type()
-                                             )
-                          )
-    );
-  petri_net::port_id_type const port_id_out
-    ( transition.add_port ( we::type::port_t ( "out"
-                                             , we::type::PORT_OUT
-                                             , signature::CONTROL
-                                             , we::type::property::type()
-                                             )
-                          )
-    );
+  transition.add_port ( we::type::port_t ( "in"
+                                         , we::type::PORT_IN
+                                         , signature::CONTROL
+                                         , we::type::property::type()
+                                         )
+                      );
+  transition.add_port ( we::type::port_t ( "out"
+                                         , we::type::PORT_OUT
+                                         , signature::CONTROL
+                                         , we::type::property::type()
+                                         )
+                      );
 
-  we::mgmt::type::activity_t activity_output (transition);
+  we::mgmt::type::activity_t activity_output (transition, boost::none);
   activity_output.add_output
     (transition.output_port_by_name ("out"), value::CONTROL);
 
-  we::mgmt::type::activity_t activity_input (transition);
+  we::mgmt::type::activity_t activity_input (transition, boost::none);
   activity_input.add_input
     (transition.input_port_by_name ("in"), value::CONTROL);
 
-  //! \todo leaking implementation detail: maybe extract() should
-  //! remove those connections to outside that were introduced by
-  //! wrap()
-  transition.add_connection (port_id_out, 0, we::type::property::type());
-  transition.add_connection (1, port_id_in, we::type::property::type());
-  we::mgmt::type::activity_t activity_child (transition);
+  we::mgmt::type::activity_t activity_child (transition, petri_net::transition_id_type (0));
   activity_child.add_input
     (transition.input_port_by_name ("in"), value::CONTROL);
 
-  we::mgmt::type::activity_t activity_result (transition);
+  we::mgmt::type::activity_t activity_result (transition, petri_net::transition_id_type (0));
   activity_result.add_output
     (transition.output_port_by_name ("out"), value::CONTROL);
 
@@ -429,10 +421,11 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 
 namespace
 {
-  std::pair<we::type::transition_t, we::type::transition_t>
-    finished_shall_be_called_after_finished_make_net ( bool put_on_input
-                                                     , std::size_t token_count
-                                                     )
+  boost::tuple< we::type::transition_t
+              , we::type::transition_t
+              , petri_net::transition_id_type
+              >
+    net_with_childs (bool put_on_input, std::size_t token_count)
   {
     we::type::transition_t transition
       ( "module call"
@@ -470,51 +463,73 @@ namespace
       net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
     }
 
-    transition.add_connection (place_id_in, port_id_in, we::type::property::type());
-    transition.add_connection (port_id_out, place_id_out, we::type::property::type());
-
-    petri_net::transition_id_type const transition_id_A
-      (net.add_transition (transition));
-    petri_net::transition_id_type const transition_id_B
+    petri_net::transition_id_type const transition_id
       (net.add_transition (transition));
 
-    net.add_connection (petri_net::edge::TP, transition_id_A, place_id_out);
-    net.add_connection (petri_net::edge::TP, transition_id_B, place_id_out);
-    net.add_connection (petri_net::edge::PT, transition_id_A, place_id_in);
-    net.add_connection (petri_net::edge::PT, transition_id_B, place_id_in);
+    {
+      using petri_net::edge::TP;
+      using petri_net::edge::PT;
+      we::type::property::type empty;
 
-    return std::make_pair ( we::type::transition_t ( "net"
-                                                   , net
-                                                   , condition::type ("true")
-                                                   , true
-                                                   , we::type::property::type()
-                                                   )
-                          , transition
-                          );
+      net.add_connection (TP, transition_id, place_id_out, port_id_out, empty);
+      net.add_connection (PT, transition_id, place_id_in, port_id_in, empty);
+    }
+
+    return boost::make_tuple
+      ( we::type::transition_t ( "net"
+                               , net
+                               , condition::type ("true")
+                               , true
+                               , we::type::property::type()
+                               )
+      , transition
+      , transition_id
+      );
+  }
+
+  boost::tuple< we::mgmt::type::activity_t
+              , we::mgmt::type::activity_t
+              , we::mgmt::type::activity_t
+              , we::mgmt::type::activity_t
+              >
+    activity_with_child (std::size_t token_count)
+  {
+    petri_net::transition_id_type transition_id_child;
+    we::type::transition_t transition_in;
+    we::type::transition_t transition_out;
+    we::type::transition_t transition_child;
+    boost::tie (transition_in, transition_child, transition_id_child) =
+      net_with_childs (true, token_count);
+    boost::tie (transition_out, boost::tuples::ignore, boost::tuples::ignore) =
+      net_with_childs (false, token_count);
+
+    we::mgmt::type::activity_t activity_input (transition_in, boost::none);
+    we::mgmt::type::activity_t activity_output (transition_out, boost::none);
+
+    we::mgmt::type::activity_t activity_child
+      (transition_child, transition_id_child);
+    activity_child.add_input
+      (transition_child.input_port_by_name ("in"), value::CONTROL);
+
+    we::mgmt::type::activity_t activity_result
+      (transition_child, transition_id_child);
+    activity_result.add_output
+      (transition_child.output_port_by_name ("out"), value::CONTROL);
+
+    return boost::make_tuple
+      (activity_input, activity_output, activity_child, activity_result);
   }
 }
 
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_one_child, daemon)
 {
-  we::type::transition_t transition_in;
-  we::type::transition_t transition_out;
-  we::type::transition_t transition_child;
-  boost::tie (transition_in, transition_child) =
-    finished_shall_be_called_after_finished_make_net (true, 1);
-  boost::tie (transition_out, boost::tuples::ignore) =
-    finished_shall_be_called_after_finished_make_net (false, 1);
-
-  we::mgmt::type::activity_t activity_input (transition_in);
-  we::mgmt::type::activity_t activity_output (transition_out);
-
-  we::mgmt::type::activity_t activity_child (transition_child);
-  activity_child.add_input
-    (transition_child.input_port_by_name ("in"), value::CONTROL);
-
-  we::mgmt::type::activity_t activity_result (transition_child);
-  activity_result.add_output
-    (transition_child.output_port_by_name ("out"), value::CONTROL);
+  we::mgmt::type::activity_t activity_input;
+  we::mgmt::type::activity_t activity_output;
+  we::mgmt::type::activity_t activity_child;
+  we::mgmt::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (1);
 
   we::mgmt::layer::id_type const id (generate_id());
 
@@ -536,24 +551,12 @@ BOOST_FIXTURE_TEST_CASE
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_two_childs, daemon)
 {
-  we::type::transition_t transition_in;
-  we::type::transition_t transition_out;
-  we::type::transition_t transition_child;
-  boost::tie (transition_in, transition_child) =
-    finished_shall_be_called_after_finished_make_net (true, 2);
-  boost::tie (transition_out, boost::tuples::ignore) =
-    finished_shall_be_called_after_finished_make_net (false, 2);
-
-  we::mgmt::type::activity_t activity_input (transition_in);
-  we::mgmt::type::activity_t activity_output (transition_out);
-
-  we::mgmt::type::activity_t activity_child (transition_child);
-  activity_child.add_input
-    (transition_child.input_port_by_name ("in"), value::CONTROL);
-
-  we::mgmt::type::activity_t activity_result (transition_child);
-  activity_result.add_output
-    (transition_child.output_port_by_name ("out"), value::CONTROL);
+  we::mgmt::type::activity_t activity_input;
+  we::mgmt::type::activity_t activity_output;
+  we::mgmt::type::activity_t activity_child;
+  we::mgmt::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
 
   we::mgmt::layer::id_type const id (generate_id());
 
@@ -584,24 +587,12 @@ BOOST_FIXTURE_TEST_CASE
 BOOST_FIXTURE_TEST_CASE
   (canceled_shall_be_called_after_cancel_one_child, daemon)
 {
-  we::type::transition_t transition_in;
-  we::type::transition_t transition_out;
-  we::type::transition_t transition_child;
-  boost::tie (transition_in, transition_child) =
-    finished_shall_be_called_after_finished_make_net (true, 1);
-  boost::tie (transition_out, boost::tuples::ignore) =
-    finished_shall_be_called_after_finished_make_net (false, 1);
-
-  we::mgmt::type::activity_t activity_input (transition_in);
-  we::mgmt::type::activity_t activity_output (transition_out);
-
-  we::mgmt::type::activity_t activity_child (transition_child);
-  activity_child.add_input
-    (transition_child.input_port_by_name ("in"), value::CONTROL);
-
-  we::mgmt::type::activity_t activity_result (transition_child);
-  activity_result.add_output
-    (transition_child.output_port_by_name ("out"), value::CONTROL);
+  we::mgmt::type::activity_t activity_input;
+  we::mgmt::type::activity_t activity_output;
+  we::mgmt::type::activity_t activity_child;
+  we::mgmt::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (1);
 
   we::mgmt::layer::id_type const id (generate_id());
 
@@ -629,24 +620,12 @@ BOOST_FIXTURE_TEST_CASE
 BOOST_FIXTURE_TEST_CASE
   (canceled_shall_be_called_after_cancel_two_childs, daemon)
 {
-  we::type::transition_t transition_in;
-  we::type::transition_t transition_out;
-  we::type::transition_t transition_child;
-  boost::tie (transition_in, transition_child) =
-    finished_shall_be_called_after_finished_make_net (true, 2);
-  boost::tie (transition_out, boost::tuples::ignore) =
-    finished_shall_be_called_after_finished_make_net (false, 2);
-
-  we::mgmt::type::activity_t activity_input (transition_in);
-  we::mgmt::type::activity_t activity_output (transition_out);
-
-  we::mgmt::type::activity_t activity_child (transition_child);
-  activity_child.add_input
-    (transition_child.input_port_by_name ("in"), value::CONTROL);
-
-  we::mgmt::type::activity_t activity_result (transition_child);
-  activity_result.add_output
-    (transition_child.output_port_by_name ("out"), value::CONTROL);
+  we::mgmt::type::activity_t activity_input;
+  we::mgmt::type::activity_t activity_output;
+  we::mgmt::type::activity_t activity_child;
+  we::mgmt::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
 
   we::mgmt::layer::id_type const id (generate_id());
 
@@ -680,26 +659,56 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
+  ( canceled_shall_be_called_after_cancel_two_childs_with_one_child_finished
+  , daemon
+  )
+{
+  we::mgmt::type::activity_t activity_input;
+  we::mgmt::type::activity_t activity_output;
+  we::mgmt::type::activity_t activity_child;
+  we::mgmt::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
+
+  we::mgmt::layer::id_type const id (generate_id());
+
+  we::mgmt::layer::id_type child_id_A;
+  we::mgmt::layer::id_type child_id_B;
+
+  {
+    expect_submit const _A (this, &child_id_A, activity_child, id);
+    expect_submit const _B (this, &child_id_B, activity_child, id);
+
+    do_submit (id, activity_input);
+  }
+
+  do_finished (child_id_A, activity_result);
+
+  {
+    expect_cancel const _ (this, child_id_B);
+
+    do_cancel (id);
+  }
+
+  {
+    expect_canceled const _ (this, id);
+
+    //! \todo There is an uncheckable(?) race here: rts_canceled may
+    //! be called before do_canceled (second child)!
+
+    do_canceled (child_id_B);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
   (sibling_jobs_shall_be_canceled_on_child_failure, daemon)
 {
-  we::type::transition_t transition_in;
-  we::type::transition_t transition_out;
-  we::type::transition_t transition_child;
-  boost::tie (transition_in, transition_child) =
-    finished_shall_be_called_after_finished_make_net (true, 2);
-  boost::tie (transition_out, boost::tuples::ignore) =
-    finished_shall_be_called_after_finished_make_net (false, 2);
-
-  we::mgmt::type::activity_t activity_input (transition_in);
-  we::mgmt::type::activity_t activity_output (transition_out);
-
-  we::mgmt::type::activity_t activity_child (transition_child);
-  activity_child.add_input
-    (transition_child.input_port_by_name ("in"), value::CONTROL);
-
-  we::mgmt::type::activity_t activity_result (transition_child);
-  activity_result.add_output
-    (transition_child.output_port_by_name ("out"), value::CONTROL);
+  we::mgmt::type::activity_t activity_input;
+  we::mgmt::type::activity_t activity_output;
+  we::mgmt::type::activity_t activity_child;
+  we::mgmt::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
 
   we::mgmt::layer::id_type const id (generate_id());
 
@@ -737,24 +746,12 @@ BOOST_FIXTURE_TEST_CASE
 {
   const std::size_t N (10);
 
-  we::type::transition_t transition_in;
-  we::type::transition_t transition_out;
-  we::type::transition_t transition_child;
-  boost::tie (transition_in, transition_child) =
-    finished_shall_be_called_after_finished_make_net (true, N);
-  boost::tie (transition_out, boost::tuples::ignore) =
-    finished_shall_be_called_after_finished_make_net (false, N);
-
-  we::mgmt::type::activity_t activity_input (transition_in);
-  we::mgmt::type::activity_t activity_output (transition_out);
-
-  we::mgmt::type::activity_t activity_child (transition_child);
-  activity_child.add_input
-    (transition_child.input_port_by_name ("in"), value::CONTROL);
-
-  we::mgmt::type::activity_t activity_result (transition_child);
-  activity_result.add_output
-    (transition_child.output_port_by_name ("out"), value::CONTROL);
+  we::mgmt::type::activity_t activity_input;
+  we::mgmt::type::activity_t activity_output;
+  we::mgmt::type::activity_t activity_child;
+  we::mgmt::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (N);
 
   we::mgmt::layer::id_type const id (generate_id());
 
@@ -821,26 +818,12 @@ BOOST_AUTO_TEST_CASE (performance_finished_shall_be_called_after_finished_N_chil
   const std::size_t num_activities (10);
   const std::size_t num_child_per_activity (250);
 
-  we::type::transition_t transition_in;
-  we::type::transition_t transition_out;
-  we::type::transition_t transition_child;
-  boost::tie (transition_in, transition_child) =
-    finished_shall_be_called_after_finished_make_net
-      (true, num_child_per_activity);
-  boost::tie (transition_out, boost::tuples::ignore) =
-    finished_shall_be_called_after_finished_make_net
-      (false, num_child_per_activity);
-
-  we::mgmt::type::activity_t activity_input (transition_in);
-  we::mgmt::type::activity_t activity_output (transition_out);
-
-  we::mgmt::type::activity_t activity_child (transition_child);
-  activity_child.add_input
-    (transition_child.input_port_by_name ("in"), value::CONTROL);
-
-  we::mgmt::type::activity_t activity_result (transition_child);
-  activity_result.add_output
-    (transition_child.output_port_by_name ("out"), value::CONTROL);
+  we::mgmt::type::activity_t activity_input;
+  we::mgmt::type::activity_t activity_output;
+  we::mgmt::type::activity_t activity_child;
+  we::mgmt::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (num_child_per_activity);
 
   std::vector<we::mgmt::layer::id_type> child_ids;
   child_ids.reserve (num_child_per_activity * num_activities);
