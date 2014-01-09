@@ -68,6 +68,7 @@ namespace petri_net
 
     place_id_type add_place (const place::type&);
     transition_id_type add_transition (const we::type::transition_t&);
+
     void add_connection ( edge::type
                         , transition_id_type
                         , place_id_type
@@ -96,9 +97,6 @@ namespace petri_net
       port_to_place (transition_id_type, port_id_type) const;
     boost::optional<port_id_type>
       place_to_port (transition_id_type, place_id_type) const;
-
-    void delete_place (place_id_type);
-    void delete_transition (transition_id_type);
 
     void put_value (place_id_type, const pnet::type::value::value_type&);
 
@@ -234,9 +232,6 @@ namespace petri_net
     void disable (transition_id_type);
 
     we::mgmt::type::activity_t extract_activity (transition_id_type);
-
-    void delete_edge_out (transition_id_type, place_id_type);
-    void delete_edge_in (transition_id_type, place_id_type);
 
     class cross_type
     {

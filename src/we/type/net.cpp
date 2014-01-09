@@ -239,18 +239,6 @@ namespace petri_net
     return pos->get_right();
   }
 
-  void net::delete_edge_out (transition_id_type tid, place_id_type pid)
-  {
-    _adj_tp.erase (adj_tp_type::value_type (tid, pid));
-  }
-  void net::delete_edge_in (transition_id_type tid, place_id_type pid)
-  {
-    _adj_pt_consume.erase (adj_pt_type::value_type (pid, tid));
-    _adj_pt_read.erase (adj_pt_type::value_type (pid, tid));
-
-    update_enabled (tid);
-  }
-
   namespace
   {
     typedef boost::any_range
@@ -266,88 +254,6 @@ namespace petri_net
       , const petri_net::place_id_type&
       , std::ptrdiff_t
       > place_id_range_type;
-  }
-
-  void net::delete_place (place_id_type pid)
-  {
-    // make the token deletion visible to delete_connection
-    _token_by_place_id.erase (pid);
-
-    std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
-    std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
-
-    transition_id_range_type consume
-      (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
-    transition_id_range_type read
-      (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
-
-    BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
-    {
-      stack_in.push (std::make_pair (tid, pid));
-      // TODO: get port and remove place from there
-    }
-
-    BOOST_FOREACH ( transition_id_type transition_id
-                  , _adj_tp.right.equal_range (pid)
-                  | boost::adaptors::map_values
-                  )
-    {
-      stack_out.push (std::make_pair (transition_id, pid));
-      // TODO: get port and remove place from there
-    }
-
-    while (!stack_out.empty())
-    {
-      delete_edge_out (stack_out.top().first, stack_out.top().second);
-      stack_out.pop();
-    }
-    while (!stack_in.empty())
-    {
-      delete_edge_in (stack_in.top().first, stack_in.top().second);
-      stack_in.pop();
-    }
-
-    _pmap.erase (pid);
-  }
-
-  void net::delete_transition (transition_id_type tid)
-  {
-    std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
-    std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
-
-    BOOST_FOREACH ( place_id_type place_id
-                  , _adj_tp.left.equal_range (tid) | boost::adaptors::map_values
-                  )
-    {
-      stack_out.push (std::make_pair (tid, place_id));
-    }
-
-    place_id_range_type consume
-      (_adj_pt_consume.right.equal_range (tid) | boost::adaptors::map_values);
-    place_id_range_type read
-      (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
-
-    BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
-    {
-      stack_in.push (std::make_pair (tid, place_id));
-    }
-
-    while (!stack_out.empty())
-    {
-      delete_edge_out (stack_out.top().first, stack_out.top().second);
-      stack_out.pop();
-    }
-    while (!stack_in.empty())
-    {
-      delete_edge_in (stack_in.top().first, stack_in.top().second);
-      stack_in.pop();
-    }
-
-    _tmap.erase (tid);
-
-    _enabled.erase (tid);
-    _enabled.erase_priority (tid);
-    _enabled_choice.erase (tid);
   }
 
   void net::put_value ( place_id_type pid
