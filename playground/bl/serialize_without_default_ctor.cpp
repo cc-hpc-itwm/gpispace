@@ -14,7 +14,7 @@
 //! \note Serialize & deserialize serializable classes
 
 /*
-  namespace serialize
+  namespace serialization
   {
     void serialize<Archive, T> (Archive& ar, const T& x);
     T deserialize<Archive, T> (Archive& ar);
@@ -40,7 +40,7 @@
   #define SERIALIZE_CONSTRUCT(TYPE, VARIABLE_NAME, ...)
 */
 
-namespace serialize
+namespace serialization
 {
   namespace
   {
@@ -118,9 +118,9 @@ namespace serialize
     (Archive& _ARCHIVE, TYPE* VARIABLE_NAME, const unsigned int)
 
 #define SERIALIZE_SAVE_TO_ARCHIVE(WHAT)                                   \
-  serialize::serialize (_ARCHIVE, WHAT)
+  ::serialization::serialize (_ARCHIVE, WHAT)
 #define SERIALIZE_LOAD_FROM_ARCHIVE(TYPE, VARIABLE_NAME)                  \
-  TYPE VARIABLE_NAME (serialize::deserialize<TYPE> (_ARCHIVE))
+  TYPE VARIABLE_NAME (::serialization::deserialize<TYPE> (_ARCHIVE))
 #define SERIALIZE_CONSTRUCT(TYPE, VARIABLE_NAME, ...)                     \
   ::new (VARIABLE_NAME) TYPE (__VA_ARGS__)
 
@@ -169,13 +169,13 @@ SERIALIZE_LOAD_CONSTRUCT_DATA_DEF (type, x)
   inline void save_construct_data
     (Archive& _ARCHIVE, const type* x, const unsigned int)
   {
-    serialize::serialize (_ARCHIVE, x->_);
+    ::serialization::serialize (_ARCHIVE, x->_);
   }
   template<class Archive>
   inline void load_construct_data
     (Archive& _ARCHIVE, type* x, const unsigned int)
   {
-    std::string str (serialize::deserialize<std::string> (_ARCHIVE));
+    std::string str (::serialization::deserialize<std::string> (_ARCHIVE));
 
     ::new (x) type (str);
   }
@@ -264,14 +264,14 @@ int main (int, char**)
 
 
     boost::archive::text_oarchive ar_out (ss);
-    serialize::serialize (ar_out, _);
+    ::serialization::serialize (ar_out, _);
   }
 
   std::cout << "\n";
 
   {
     boost::archive::text_iarchive ar_in (ss);
-    const type_3 _ (serialize::deserialize<type_3> (ar_in));
+    const type_3 _ (::serialization::deserialize<type_3> (ar_in));
   }
 
   return 0;
