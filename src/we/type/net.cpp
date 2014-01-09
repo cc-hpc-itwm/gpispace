@@ -369,24 +369,20 @@ namespace petri_net
                   , activity.input()
                   )
     {
-      context.bind_ref
-        ( activity.transition().ports().at (top.second).name()
-        , top.first
-        );
+      context.bind_ref (transition.ports().at (top.second).name(), top.first);
     }
 
-    activity.transition().expression()->ast().eval_all (context);
+    transition.expression()->ast().eval_all (context);
 
     BOOST_FOREACH
       ( we::type::transition_t::port_map_t::value_type const& p
-      , activity.transition().ports()
+      , transition.ports()
       )
     {
       if (p.second.is_output())
       {
         put_value
-          ( port_to_place().at (*activity.transition_id())
-          .left.find (p.first)->get_right()
+          ( _port_to_place.at (transition_id).left.find (p.first)->get_right()
           , context.value (p.second.name())
           );
       }
