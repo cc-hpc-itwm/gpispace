@@ -2,7 +2,7 @@
 #include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
 #include <we/mgmt/layer.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>

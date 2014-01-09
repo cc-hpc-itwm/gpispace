@@ -3,7 +3,7 @@
 #ifndef WE_TEST_OPERATOR_EQUAL_HPP
 #define WE_TEST_OPERATOR_EQUAL_HPP
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <we/type/place.hpp>
 #include <we/type/net.hpp>

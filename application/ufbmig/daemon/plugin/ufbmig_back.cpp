@@ -20,7 +20,7 @@
 #include "progress.hpp"
 
 // ufbmig types
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/net.hpp>
 #include <pnetc/type/config.hpp>
 #include <pnetc/type/config/op.hpp>

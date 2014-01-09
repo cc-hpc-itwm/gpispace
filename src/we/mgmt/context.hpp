@@ -5,7 +5,7 @@
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
 
-#include <we/mgmt/type/activity.fwd.hpp>
+#include <we/type/activity.fwd.hpp>
 
 namespace we
 {

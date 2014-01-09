@@ -3,7 +3,7 @@
 #ifndef WE_MGMT_TYPE_ACTIVITY_HPP
 #define WE_MGMT_TYPE_ACTIVITY_HPP 1
 
-#include <we/mgmt/type/activity.fwd.hpp>
+#include <we/type/activity.fwd.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/transition.hpp>

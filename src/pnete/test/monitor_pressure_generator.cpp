@@ -8,7 +8,7 @@
 
 #include <sdpa/daemon/NotificationService.hpp>
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/transition.hpp>
 
 using namespace sdpa::daemon;

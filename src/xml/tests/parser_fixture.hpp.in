@@ -6,7 +6,7 @@
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/test/operator_equal.hpp>
 
 #include <fhg/util/boost/test.hpp>

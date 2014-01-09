@@ -3,7 +3,7 @@
 #ifndef WE_MGMT_LAYER_HPP
 #define WE_MGMT_LAYER_HPP 1
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>

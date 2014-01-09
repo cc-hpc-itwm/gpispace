@@ -4,7 +4,7 @@
 
 //! \todo eliminate this include
 #include <we/type/net.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <iostream>
 #include <fstream>

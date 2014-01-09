@@ -8,7 +8,7 @@
 
 #include <we/mgmt/context.hpp>
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <we/type/value/show.hpp>
 

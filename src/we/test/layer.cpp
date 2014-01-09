@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <we/mgmt/layer.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/test/operator_equal.hpp>
 #include <we/type/expression.hpp>
 #include <we/type/module_call.hpp>

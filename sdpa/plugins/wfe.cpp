@@ -34,7 +34,7 @@
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
 #include <we/mgmt/context.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/expression.fwd.hpp>
 #include <we/type/module_call.hpp>
 //! \todo eliminate this include (that completes the type transition_t::data)

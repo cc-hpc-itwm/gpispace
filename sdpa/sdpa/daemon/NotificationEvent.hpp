@@ -6,7 +6,7 @@
 #include <plugins/wfe.hpp>
 
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>

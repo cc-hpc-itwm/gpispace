@@ -3,7 +3,7 @@
 #include <fhg/revision.hpp>
 
 #include <we/expr/parse/parser.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
 #include <we/type/value.hpp>

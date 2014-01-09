@@ -7,7 +7,7 @@
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
 #include <we/type/port.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/mgmt/context.hpp>
 
 #include <we/type/value.hpp>

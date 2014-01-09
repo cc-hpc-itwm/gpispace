@@ -6,7 +6,7 @@
 #include <xml/parse/id/types.fwd.hpp>
 #include <xml/parse/state.fwd.hpp>
 
-#include <we/mgmt/type/activity.fwd.hpp>
+#include <we/type/activity.fwd.hpp>
 
 #include <string>
 

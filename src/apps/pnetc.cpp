@@ -2,7 +2,7 @@
 
 #include <we/type/transition.hpp>
 #include <we/type/net.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <xml/parse/parser.hpp>
 
@@ -10,7 +10,7 @@
 
 #include <fhg/revision.hpp>
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <iostream>
 

@@ -6,7 +6,7 @@
 #include <we/type/net.fwd.hpp>
 
 #include <we/container/priostore.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
