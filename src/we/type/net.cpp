@@ -200,6 +200,12 @@ namespace petri_net
                       , const pnet::type::value::value_type& value
                       )
   {
+    do_update (do_put_value (pid, value));
+  }
+
+  net::to_be_updated_type net::do_put_value
+    (place_id_type pid, const pnet::type::value::value_type& value)
+  {
     const place::type& place (_pmap.at (pid));
 
     std::list<pnet::type::value::value_type>& tokens (_token_by_place_id[pid]);
@@ -210,14 +216,24 @@ namespace petri_net
         )
       );
 
+    return std::make_pair (pid, tokenpos);
+  }
+
+  void net::do_update (to_be_updated_type const& to_be_updated)
+  {
     transition_id_range_type consume
-      (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
+      ( _adj_pt_consume.left.equal_range (to_be_updated.first)
+      | boost::adaptors::map_values
+      );
     transition_id_range_type read
-      (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
+      ( _adj_pt_read.left.equal_range (to_be_updated.first)
+      | boost::adaptors::map_values
+      );
 
     BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
     {
-      update_enabled_put_token (tid, pid, tokenpos);
+      update_enabled_put_token
+        (tid, to_be_updated.first, to_be_updated.second);
     }
   }
 

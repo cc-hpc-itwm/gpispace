@@ -255,6 +255,14 @@ namespace petri_net
       ) const;
     void do_delete (std::list<token_to_be_deleted_type> const&);
 
+    typedef std::pair< place_id_type
+                     , std::list<pnet::type::value::value_type>::iterator
+                     > to_be_updated_type;
+
+    to_be_updated_type do_put_value
+      (place_id_type, pnet::type::value::value_type const&);
+    void do_update (to_be_updated_type const&);
+
     class cross_type
     {
     public:
