@@ -466,8 +466,7 @@ namespace petri_net
                       , pnet::type::value::value_type const& value
                       )
       {
-        //! \note ownership goes from _token_by_place_id to context!
-        _context.bind (_transition.ports().at (port_id).name(), value);
+        _context.bind_ref (_transition.ports().at (port_id).name(), value);
       }
 
     private:
