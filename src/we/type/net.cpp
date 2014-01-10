@@ -487,7 +487,7 @@ namespace petri_net
 
     transition.expression()->ast().eval_all (context);
 
-    do_delete (tokens_to_be_deleted);
+    std::list<to_be_updated_type> pending_updates;
 
     BOOST_FOREACH
       ( we::type::transition_t::port_map_t::value_type const& p
@@ -496,11 +496,20 @@ namespace petri_net
     {
       if (p.second.is_output())
       {
-        put_value
-          ( _port_to_place.at (tid).left.find (p.first)->get_right()
-          , context.value (p.second.name())
+        pending_updates.push_back
+          ( do_put_value
+            ( _port_to_place.at (tid).left.find (p.first)->get_right()
+            , context.value (p.second.name())
+            )
           );
       }
+    }
+
+    do_delete (tokens_to_be_deleted);
+
+    BOOST_FOREACH (to_be_updated_type const& to_be_updated, pending_updates)
+    {
+      do_update (to_be_updated);
     }
   }
 
