@@ -350,16 +350,16 @@ namespace petri_net
     _enabled_choice.erase (tid);
   }
 
-  void net::do_extract
+  std::list<net::token_to_be_deleted_type> net::do_extract
     ( transition_id_type tid
     , we::type::transition_t const& transition
     , boost::function<void ( port_id_type
                            , pnet::type::value::value_type const&
                            )
                       > fun
-    )
+    ) const
   {
-    boost::unordered_set<transition_id_type> transitions_to_update;
+    std::list<token_to_be_deleted_type> tokens_to_be_deleted;
 
     typedef std::pair< place_id_type
                      , pos_and_distance_type
@@ -380,23 +380,41 @@ namespace petri_net
          == _adj_pt_read.end()
          )
       {
-        _token_by_place_id.at (pid).erase (token);
-
-        transition_id_range_type consume
-          (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
-        transition_id_range_type read
-          (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
-
-        BOOST_FOREACH (transition_id_type t, boost::join (consume, read))
-        {
-          transitions_to_update.insert (t);
-        }
+        tokens_to_be_deleted.push_back (std::make_pair (pid, token));
       }
     }
 
-    BOOST_FOREACH (transition_id_type t, transitions_to_update)
+    return tokens_to_be_deleted;
+  }
+
+  void net::do_delete
+    (std::list<token_to_be_deleted_type> const& tokens_to_be_deleted)
+  {
+    BOOST_FOREACH ( token_to_be_deleted_type const& token_to_be_deleted
+                  , tokens_to_be_deleted
+                  )
     {
-      update_enabled (t);
+      _token_by_place_id
+        .at (token_to_be_deleted.first).erase (token_to_be_deleted.second);
+    }
+
+    BOOST_FOREACH ( token_to_be_deleted_type const& token_to_be_deleted
+                  , tokens_to_be_deleted
+                  )
+    {
+      transition_id_range_type consume
+        ( _adj_pt_consume.left.equal_range (token_to_be_deleted.first)
+        | boost::adaptors::map_values
+        );
+      transition_id_range_type read
+        ( _adj_pt_read.left.equal_range (token_to_be_deleted.first)
+        | boost::adaptors::map_values
+        );
+
+      BOOST_FOREACH (transition_id_type t, boost::join (consume, read))
+      {
+        update_enabled (t);
+      }
     }
   }
 
@@ -405,9 +423,13 @@ namespace petri_net
   {
     we::type::activity_t act (transition, tid);
 
-    do_extract ( tid, transition
-               , boost::bind (&we::type::activity_t::add_input, &act, _1, _2)
-               );
+    do_delete
+      ( do_extract ( tid, transition
+                   , boost::bind ( &we::type::activity_t::add_input, &act
+                                 , _1, _2
+                                 )
+                   )
+      );
 
     return act;
   }
@@ -444,9 +466,12 @@ namespace petri_net
   {
     expr::eval::context context;
 
-    do_extract (tid, transition, context_bind (context, transition));
+    std::list<token_to_be_deleted_type> const tokens_to_be_deleted
+      (do_extract (tid, transition, context_bind (context, transition)));
 
     transition.expression()->ast().eval_all (context);
+
+    do_delete (tokens_to_be_deleted);
 
     BOOST_FOREACH
       ( we::type::transition_t::port_map_t::value_type const& p

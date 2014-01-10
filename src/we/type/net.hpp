@@ -242,12 +242,18 @@ namespace petri_net
     we::type::activity_t extract_activity
       (transition_id_type, we::type::transition_t const&);
     void fire_expression (transition_id_type, we::type::transition_t const&);
-    void do_extract
+
+    typedef std::pair< place_id_type
+                     , std::list<pnet::type::value::value_type>::iterator
+                     > token_to_be_deleted_type;
+
+    std::list<token_to_be_deleted_type> do_extract
       ( transition_id_type
       , we::type::transition_t const&
       , boost::function
           <void (port_id_type, pnet::type::value::value_type const&)>
-      );
+      ) const;
+    void do_delete (std::list<token_to_be_deleted_type> const&);
 
     class cross_type
     {
