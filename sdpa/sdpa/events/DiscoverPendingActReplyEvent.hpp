@@ -10,12 +10,12 @@ namespace sdpa
 {
   namespace events
   {
-    class DiscoverPendingActReplyEvent : public sdpa::events::JobEvent
+    class DiscoverJobStatesReplyEvent : public sdpa::events::JobEvent
     {
     public:
       typedef boost::shared_ptr<JobEvent> Ptr;
 
-      DiscoverPendingActReplyEvent ( const address_t& a_from
+      DiscoverJobStatesReplyEvent ( const address_t& a_from
                                     , const address_t& a_to
                                     , const sdpa::job_id_t& a_job_id
                                     , const std::string& discover_id
@@ -28,12 +28,12 @@ namespace sdpa
 
       std::string str() const
       {
-        return "DiscoverPendingActReplyEvent(" + job_id ().str () + ")";
+        return "DiscoverJobStatesReplyEvent(" + job_id ().str () + ")";
       }
 
       virtual void handleBy (EventHandler* handler)
       {
-        //handler->handleDiscoverPendingActReplyEvent (this);
+        //handler->handleDiscoverJobStatesReplyEvent (this);
       }
 
       const std::string& discover_id() const { return discover_id_; }
@@ -46,7 +46,7 @@ namespace sdpa
       pnet::type::value::value_type discover_result_;
     };
 
-    SAVE_CONSTRUCT_DATA_DEF (DiscoverPendingActReplyEvent, e)
+    SAVE_CONSTRUCT_DATA_DEF (DiscoverJobStatesReplyEvent, e)
      {
        SAVE_JOBEVENT_CONSTRUCT_DATA (e);
        SAVE_TO_ARCHIVE (e->discover_id());
@@ -56,13 +56,13 @@ namespace sdpa
        SAVE_TO_ARCHIVE (res);
      }
 
-     LOAD_CONSTRUCT_DATA_DEF (DiscoverPendingActReplyEvent, e)
+     LOAD_CONSTRUCT_DATA_DEF (DiscoverJobStatesReplyEvent, e)
      {
        LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
        LOAD_FROM_ARCHIVE (std::string, disc_id);
        LOAD_FROM_ARCHIVE (std::string, res);
        pnet::type::value::value_type disc_res(pnet::type::value::read (res));
-       ::new (e) DiscoverPendingActReplyEvent (from, to, job_id, disc_id, disc_res);
+       ::new (e) DiscoverJobStatesReplyEvent (from, to, job_id, disc_id, disc_res);
      }
   }
 }
