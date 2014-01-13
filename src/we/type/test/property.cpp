@@ -68,7 +68,8 @@ BOOST_AUTO_TEST_CASE (set_value)
 BOOST_AUTO_TEST_CASE (get_value)
 {
   BOOST_REQUIRE_EQUAL (::dump (p.get ("A.A.A")), "value_of (A.A.A)");
-  BOOST_REQUIRE_EQUAL (p.get_val ("A.A.A"), "value_of (A.A.A)");
+  BOOST_REQUIRE (p.get_maybe_val ("A.A.A"));
+  BOOST_REQUIRE_EQUAL (*p.get_maybe_val ("A.A.A"), "value_of (A.A.A)");
   const boost::optional<const prop::value_type &> maybe_val
     (p.get_maybe_val ("A.A.A"));
   BOOST_REQUIRE_EQUAL (!!maybe_val, true);
@@ -80,8 +81,7 @@ BOOST_AUTO_TEST_CASE (get_value)
 BOOST_AUTO_TEST_CASE (missing_binding)
 {
   BOOST_REQUIRE_THROW (p.get ("A.A.B"), prop::exception::missing_binding);
-  BOOST_REQUIRE_THROW
-    (p.get_val ("A.A.B"), prop::exception::missing_binding);
+  BOOST_REQUIRE (!p.get_maybe_val ("A.A.B"));
   BOOST_REQUIRE_EQUAL (p.get_maybe_val ("A.A.B"), boost::none);
   BOOST_REQUIRE_EQUAL
     (p.get_with_default ("A.A.B", default_value), default_value);
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE (not_a_value)
                         "  <property key=\"A\">value_of (A.A.A)</property>\n"
                         "</properties>\n"
                       );
-  BOOST_REQUIRE_THROW (p.get_val ("A"), prop::exception::not_a_val);
+  BOOST_REQUIRE (!p.get_maybe_val ("A"));
   BOOST_REQUIRE_EQUAL (p.get_maybe_val ("A"), boost::none);
   BOOST_REQUIRE_EQUAL
     (p.get_with_default ("A", default_value), default_value);
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE (not_a_value)
   BOOST_REQUIRE_EQUAL ( ::dump (p.get ("A.A"))
                       , "<property key=\"A\">value_of (A.A.A)</property>\n"
                       );
-  BOOST_REQUIRE_THROW (p.get_val ("A.A"), prop::exception::not_a_val);
+  BOOST_REQUIRE (!p.get_maybe_val ("A.A"));
   BOOST_REQUIRE_EQUAL (p.get_maybe_val ("A.A"), boost::none);
   BOOST_REQUIRE_EQUAL
     (p.get_with_default ("A.A", default_value), default_value);
@@ -355,7 +355,8 @@ BOOST_AUTO_TEST_CASE (remove_value)
 BOOST_AUTO_TEST_CASE (get_value_second_top_level_tree)
 {
   BOOST_REQUIRE_EQUAL (::dump (p.get ("B.A.A")), "value_of (B.A.A)");
-  BOOST_REQUIRE_EQUAL (p.get_val ("B.A.A"), "value_of (B.A.A)");
+  BOOST_REQUIRE (p.get_maybe_val ("B.A.A"));
+  BOOST_REQUIRE_EQUAL (*p.get_maybe_val ("B.A.A"), "value_of (B.A.A)");
   const boost::optional<const prop::value_type &> maybe_val
     (p.get_maybe_val ("B.A.A"));
   BOOST_REQUIRE_EQUAL (!!maybe_val, true);
@@ -369,7 +370,7 @@ BOOST_AUTO_TEST_CASE (get_subtree_second_top_level_tree)
   BOOST_REQUIRE_EQUAL ( ::dump (p.get ("B.A"))
                       , "<property key=\"A\">value_of (B.A.A)</property>\n"
                       );
-  BOOST_REQUIRE_THROW (p.get_val ("B.A"), prop::exception::not_a_val);
+  BOOST_REQUIRE (!p.get_maybe_val ("B.A"));
   BOOST_REQUIRE_EQUAL (p.get_maybe_val ("B.A"), boost::none);
   BOOST_REQUIRE_EQUAL
     (p.get_with_default ("B.A", default_value), default_value);
