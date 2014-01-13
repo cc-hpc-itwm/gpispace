@@ -108,6 +108,9 @@ namespace we
           (const path_iterator& pos, const path_iterator& end) const;
         const mapped_type& get (const path_type& path) const;
 
+        const boost::optional<const value_type&> get_maybe_val
+          (const path_iterator& pos, const path_iterator& end) const;
+
       public:
         type();
 
@@ -124,8 +127,6 @@ namespace we
 
         const mapped_type& get (const std::string& path) const;
 
-        const boost::optional<const value_type&> get_maybe_val
-          (const path_iterator& pos, const path_iterator& end) const;
         const boost::optional<const value_type&>
           get_maybe_val (const path_type& path) const;
         const boost::optional<const value_type&>
