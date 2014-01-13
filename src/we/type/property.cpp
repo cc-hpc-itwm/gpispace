@@ -256,41 +256,6 @@ namespace we
         return get_maybe_val (util::split (path));
       }
 
-      // ----------------------------------------------------------------- //
-
-      void type::del (const path_iterator& pos, const path_iterator& end)
-      {
-        if (pos == end)
-        {
-          throw exception::empty_path ("del");
-        }
-
-        if (map.find (*pos) != map.end())
-        {
-          if (std::distance (pos, end) == 1)
-          {
-            map.erase (*pos);
-          }
-          else
-          {
-            type& t
-              (boost::apply_visitor (visitor_get_map<type&>(), map[*pos]));
-
-            t.del (pos + 1, end);
-          }
-        }
-      }
-
-      void type::del (const path_type& path)
-      {
-        del (path.begin(), path.end());
-      }
-
-      void type::del (const std::string& path)
-      {
-        del (util::split (path));
-      }
-
       bool type::has (const path_iterator& pos, const path_iterator& end) const
       {
         if (pos == end)

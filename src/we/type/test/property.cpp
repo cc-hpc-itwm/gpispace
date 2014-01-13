@@ -267,91 +267,6 @@ BOOST_AUTO_TEST_CASE (multiple_top_level_trees)
                       );
 }
 
-BOOST_AUTO_TEST_CASE (remove_tree)
-{
-  BOOST_REQUIRE_EQUAL ( ::dump (p)
-                      , "<properties name=\"A\">\n"
-                        "  <properties name=\"A\">\n"
-                        "    <property key=\"A\">value_of (A.A.A)</property>\n"
-                        "    <property key=\"B\">value_of (A.A.B)</property>\n"
-                        "    <property key=\"C\">value_of (A.A.C)</property>\n"
-                        "  </properties>\n"
-                        "  <properties name=\"B\">\n"
-                        "    <property key=\"A\">value_of (A.B.A)</property>\n"
-                        "    <property key=\"B\">value_of (A.B.B)</property>\n"
-                        "  </properties>\n"
-                        "  <properties name=\"C\">\n"
-                        "    <property key=\"A\">value_of (A.C.A)</property>\n"
-                        "    <property key=\"B\">value_of (A.C.B)</property>\n"
-                        "  </properties>\n"
-                        "</properties><properties name=\"B\">\n"
-                        "  <properties name=\"A\">\n"
-                        "    <property key=\"A\">value_of (B.A.A)</property>\n"
-                        "  </properties>\n"
-                        "</properties>\n"
-                      );
-
-  p.del ("A.B");
-
-  BOOST_REQUIRE_EQUAL ( ::dump (p)
-                      , "<properties name=\"A\">\n"
-                        "  <properties name=\"A\">\n"
-                        "    <property key=\"A\">value_of (A.A.A)</property>\n"
-                        "    <property key=\"B\">value_of (A.A.B)</property>\n"
-                        "    <property key=\"C\">value_of (A.A.C)</property>\n"
-                        "  </properties>\n"
-                        "  <properties name=\"C\">\n"
-                        "    <property key=\"A\">value_of (A.C.A)</property>\n"
-                        "    <property key=\"B\">value_of (A.C.B)</property>\n"
-                        "  </properties>\n"
-                        "</properties><properties name=\"B\">\n"
-                        "  <properties name=\"A\">\n"
-                        "    <property key=\"A\">value_of (B.A.A)</property>\n"
-                        "  </properties>\n"
-                        "</properties>\n"
-                      );
-}
-
-BOOST_AUTO_TEST_CASE (remove_value)
-{
-  BOOST_REQUIRE_EQUAL ( ::dump (p)
-                      , "<properties name=\"A\">\n"
-                        "  <properties name=\"A\">\n"
-                        "    <property key=\"A\">value_of (A.A.A)</property>\n"
-                        "    <property key=\"B\">value_of (A.A.B)</property>\n"
-                        "    <property key=\"C\">value_of (A.A.C)</property>\n"
-                        "  </properties>\n"
-                        "  <properties name=\"C\">\n"
-                        "    <property key=\"A\">value_of (A.C.A)</property>\n"
-                        "    <property key=\"B\">value_of (A.C.B)</property>\n"
-                        "  </properties>\n"
-                        "</properties><properties name=\"B\">\n"
-                        "  <properties name=\"A\">\n"
-                        "    <property key=\"A\">value_of (B.A.A)</property>\n"
-                        "  </properties>\n"
-                        "</properties>\n"
-                      );
-
-  p.del ("A.A.A");
-
-  BOOST_REQUIRE_EQUAL ( ::dump (p)
-                      , "<properties name=\"A\">\n"
-                        "  <properties name=\"A\">\n"
-                        "    <property key=\"B\">value_of (A.A.B)</property>\n"
-                        "    <property key=\"C\">value_of (A.A.C)</property>\n"
-                        "  </properties>\n"
-                        "  <properties name=\"C\">\n"
-                        "    <property key=\"A\">value_of (A.C.A)</property>\n"
-                        "    <property key=\"B\">value_of (A.C.B)</property>\n"
-                        "  </properties>\n"
-                        "</properties><properties name=\"B\">\n"
-                        "  <properties name=\"A\">\n"
-                        "    <property key=\"A\">value_of (B.A.A)</property>\n"
-                        "  </properties>\n"
-                        "</properties>\n"
-                      );
-}
-
 BOOST_AUTO_TEST_CASE (get_value_second_top_level_tree)
 {
   BOOST_REQUIRE_EQUAL (::dump (p.get ("B.A.A")), "value_of (B.A.A)");
@@ -382,10 +297,15 @@ BOOST_AUTO_TEST_CASE (overwrite_tree_with_value)
   BOOST_REQUIRE_EQUAL ( ::dump (p)
                       , "<properties name=\"A\">\n"
                         "  <properties name=\"A\">\n"
+                        "    <property key=\"A\">value_of (A.A.A)</property>\n"
                         "    <properties name=\"B\">\n"
                         "      <property key=\"A\">value_of (A.A.B.A)</property>\n"
                         "    </properties>\n"
                         "    <property key=\"C\">value_of (A.A.C)</property>\n"
+                        "  </properties>\n"
+                        "  <properties name=\"B\">\n"
+                        "    <property key=\"A\">value_of (A.B.A)</property>\n"
+                        "    <property key=\"B\">value_of (A.B.B)</property>\n"
                         "  </properties>\n"
                         "  <properties name=\"C\">\n"
                         "    <property key=\"A\">value_of (A.C.A)</property>\n"
@@ -437,6 +357,9 @@ BOOST_AUTO_TEST_CASE (visit_all_leafs)
   VAL ("A.C.B");
   VAL ("A.C.A");
   VAL ("A.A.C");
+  VAL ("A.A.A");
+  VAL ("A.B.A");
+  VAL ("A.B.B");
   VAL ("A.A.B.A");
 
 #undef VAL

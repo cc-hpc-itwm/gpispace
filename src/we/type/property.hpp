@@ -132,10 +132,6 @@ namespace we
         const boost::optional<const value_type&>
           get_maybe_val (const std::string& path) const;
 
-        void del (const path_iterator& pos, const path_iterator& end);
-        void del (const path_type& path);
-        void del (const std::string& path);
-
         bool has (const path_iterator& pos, const path_iterator& end) const;
         bool has (const path_type& path) const;
         bool has (const std::string& path) const;
