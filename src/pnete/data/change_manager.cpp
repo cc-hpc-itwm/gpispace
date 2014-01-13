@@ -270,7 +270,7 @@ namespace fhg
               , _handle (handle)
               , _key (key)
               , _new_value (val)
-              , _old_value (handle.get().properties().get_val (key))
+              , _old_value (*handle.get().properties().get_maybe_val (key))
           { }
 
           virtual void undo()
