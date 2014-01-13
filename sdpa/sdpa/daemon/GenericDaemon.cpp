@@ -104,8 +104,8 @@ GenericDaemon::GenericDaemon( const std::string name
                            , boost::bind (&GenericDaemon::finished, this, _1, _2)
                            , boost::bind (&GenericDaemon::failed, this, _1, _2, _3)
                            , boost::bind (&GenericDaemon::canceled, this, _1)
-                           , &discover
-                           , &discovered
+                           , boost::bind (&GenericDaemon::discover, this, _1, _2)
+                           , boost::bind (&GenericDaemon::discovered, this, _1, _2)
                            , boost::bind (&GenericDaemon::gen_id, this)
                            , *_random_extraction_engine
                            )
@@ -1332,4 +1332,13 @@ bool GenericDaemon::noChildJobRunning(const sdpa::job_id_t& jobId) const
   return jobManager().noChildJobRunning(jobId);
 }
 
+void GenericDaemon::discover (we::mgmt::layer::id_type discover_id, we::mgmt::layer::id_type job_id)
+{
+  // generate DiscoverJobStatestEvent with the source WE and send it to self
+}
+
+void GenericDaemon::discovered (we::mgmt::layer::id_type discover_id, pnet::type::value::value_type)
+{
+  // generate a DiscoverJobStatestReplyEvent and and send it to the master
+}
 }}

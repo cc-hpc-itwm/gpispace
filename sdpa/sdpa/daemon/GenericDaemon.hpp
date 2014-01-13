@@ -105,6 +105,8 @@ namespace sdpa {
       void canceled(const we::mgmt::layer::id_type& id);
       virtual void pause(const job_id_t& id ) = 0;
       virtual void resume(const job_id_t& id ) = 0;
+      void discover (we::mgmt::layer::id_type discover_id, we::mgmt::layer::id_type job_id);
+      void discovered (we::mgmt::layer::id_type discover_id, pnet::type::value::value_type);
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
