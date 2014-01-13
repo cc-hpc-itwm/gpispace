@@ -289,9 +289,14 @@ namespace xml
                                , const we::type::property::value_type& value
                                )
       {
-        if (path.size() > 0 && path[0] == "pnetc")
+        we::type::property::path_type::const_iterator pos (path.begin());
+        we::type::property::path_type::const_iterator const end (path.end());
+
+        if (pos != end && *pos == "pnetc")
         {
-          if (path.size() > 1 && path[1] == "search_path")
+          ++pos;
+
+          if (pos != end && *pos == "search_path")
           {
             const boost::filesystem::path absolute (value);
 
@@ -323,9 +328,10 @@ namespace xml
               }
             }
           }
-          else if (  path.size() > 2
-                  && path[1] == "warning"
-                  && path[2] == "inline-many-output-ports"
+          else if (  pos != end
+                  && *pos == "warning"
+                  && boost::next (pos) != end
+                  && *boost::next (pos) == "inline-many-output-ports"
                   )
           {
             /* do nothing, it's known */
