@@ -104,12 +104,6 @@ namespace we
                , const path_iterator& zero
                ) const;
 
-        const boost::optional<const value_type&>
-          get_maybe_val ( const path_iterator& pos
-                        , const path_iterator& end
-                        , const path_iterator& zero
-                        ) const;
-
       public:
         type();
 

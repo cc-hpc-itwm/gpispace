@@ -165,15 +165,6 @@ namespace we
         }
       }
 
-      const boost::optional<const value_type&>
-        type::get_maybe_val ( const path_iterator& pos
-                            , const path_iterator& end
-                            , const path_iterator& zero
-                            ) const
-      {
-        return get2 (pos, end, zero);
-      }
-
       type::type () : map () {}
 
       const map_type& type::get_map (void) const { return map; }
@@ -250,7 +241,7 @@ namespace we
       const boost::optional<const value_type&> type::get_maybe_val
         (const path_iterator& pos, const path_iterator& end) const
       {
-        return get_maybe_val (pos, end, pos);
+        return get2 (pos, end, pos);
       }
 
       const boost::optional<const value_type&>
@@ -272,7 +263,7 @@ namespace we
                                                , const value_type& dflt
                                                ) const
       {
-        return get_maybe_val (pos, end, pos).get_value_or (dflt);
+        return get2 (pos, end, pos).get_value_or (dflt);
       }
 
       const value_type& type::get_with_default ( const path_type& path
