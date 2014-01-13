@@ -231,6 +231,7 @@ namespace sdpa {
 
       sdpa::master_info_list_t m_arrMasterInfo;
       sdpa::subscriber_map_t m_listSubscribers;
+      umap_disc_id_ag_id_t _umap_disc_id_ag_id;
 
     protected:
       JobManager _job_manager;
@@ -268,7 +269,6 @@ namespace sdpa {
       void handle_events();
 
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
-      umap_disc_id_ag_id_t _umap_disc_id_ag_id;
     };
   }
 }
