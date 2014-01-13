@@ -91,6 +91,7 @@ namespace we
       public:
         type();
 
+        std::list<std::pair<key_type, mapped_type> > list() const;
         const map_type& get_map (void) const;
 
         boost::optional<mapped_type>

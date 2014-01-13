@@ -6,6 +6,7 @@
 #include <fhg/util/split.hpp>
 #include <fhg/util/xml.hpp>
 
+#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
 
@@ -108,6 +109,20 @@ namespace we
       type::type () : map () {}
 
       const map_type& type::get_map (void) const { return map; }
+
+      std::list<std::pair<key_type, mapped_type> > type::list() const
+      {
+        std::list<std::pair<key_type, mapped_type> > l;
+
+        typedef std::pair<key_type, mapped_type> key_mapped_type;
+
+        BOOST_FOREACH (key_mapped_type const& key_mapped, map)
+        {
+          l.push_back (key_mapped);
+        }
+
+        return l;
+      }
 
       // ----------------------------------------------------------------- //
 
