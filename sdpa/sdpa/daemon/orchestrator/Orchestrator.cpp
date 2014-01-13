@@ -483,12 +483,11 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
     return;
   }
 
-  _umap_disc_id_ag_id.insert(umap_disc_id_ag_id_t::value_type(pEvt->discover_id(), pEvt->from()));
-
   boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
 
   if(worker_id)
   {
+      _umap_disc_id_ag_id.insert(umap_disc_id_ag_id_t::value_type(pEvt->discover_id(), pEvt->from()));
       DMLOG(TRACE, "Tell the worker "<<*worker_id<<" to collect the states of all child job/activities related to the job "<<pEvt->job_id());
       events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( name()
                                                                                        , *worker_id
