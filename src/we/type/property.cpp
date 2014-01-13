@@ -258,30 +258,6 @@ namespace we
 
       // ----------------------------------------------------------------- //
 
-      const value_type& type::get_with_default ( const path_iterator& pos
-                                               , const path_iterator& end
-                                               , const value_type& dflt
-                                               ) const
-      {
-        return get2 (pos, end, pos).get_value_or (dflt);
-      }
-
-      const value_type& type::get_with_default ( const path_type& path
-                                               , const value_type& dflt
-                                               ) const
-      {
-        return get_with_default (path.begin(), path.end(), dflt);
-      }
-
-      const value_type& type::get_with_default ( const std::string& path
-                                               , const value_type& dflt
-                                               ) const
-      {
-        return get_with_default (util::split (path), dflt);
-      }
-
-      // ----------------------------------------------------------------- //
-
       void type::del (const path_iterator& pos, const path_iterator& end)
       {
         if (pos == end)

@@ -69,8 +69,8 @@ namespace fhg
         bool place::is_implicit() const
         {
           return fhg::util::read_bool
-            ( get().properties().get_with_default
-              ("fhg.pnete.is_implicit_place", "false")
+            ( get().properties().get_maybe_val
+              ("fhg.pnete.is_implicit_place").get_value_or ("false")
             );
         }
 

@@ -131,17 +131,6 @@ namespace we
         const boost::optional<const value_type&>
           get_maybe_val (const std::string& path) const;
 
-        const value_type& get_with_default ( const path_iterator& pos
-                                           , const path_iterator& end
-                                           , const value_type& dflt
-                                           ) const;
-        const value_type& get_with_default ( const path_type& path
-                                           , const value_type& dflt
-                                           ) const;
-        const value_type& get_with_default ( const std::string& path
-                                           , const value_type& dflt
-                                           ) const;
-
         void del (const path_iterator& pos, const path_iterator& end);
         void del (const path_type& path);
         void del (const std::string& path);

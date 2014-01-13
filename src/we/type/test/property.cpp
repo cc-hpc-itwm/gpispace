@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE (get_value)
   BOOST_REQUIRE_EQUAL (!!maybe_val, true);
   BOOST_REQUIRE_EQUAL (*maybe_val, "value_of (A.A.A)");
   BOOST_REQUIRE_EQUAL
-    (p.get_with_default ("A.A.A", default_value), "value_of (A.A.A)");
+    (p.get_maybe_val ("A.A.A").get_value_or (default_value), "value_of (A.A.A)");
 }
 
 BOOST_AUTO_TEST_CASE (missing_binding)
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE (missing_binding)
   BOOST_REQUIRE (!p.get_maybe_val ("A.A.B"));
   BOOST_REQUIRE_EQUAL (p.get_maybe_val ("A.A.B"), boost::none);
   BOOST_REQUIRE_EQUAL
-    (p.get_with_default ("A.A.B", default_value), default_value);
+    (p.get_maybe_val ("A.A.B").get_value_or (default_value), default_value);
 }
 
 BOOST_AUTO_TEST_CASE (not_a_value)
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (not_a_value)
   BOOST_REQUIRE (!p.get_maybe_val ("A"));
   BOOST_REQUIRE_EQUAL (p.get_maybe_val ("A"), boost::none);
   BOOST_REQUIRE_EQUAL
-    (p.get_with_default ("A", default_value), default_value);
+    (p.get_maybe_val ("A").get_value_or (default_value), default_value);
 
   BOOST_REQUIRE_EQUAL ( ::dump (p.get ("A.A"))
                       , "<property key=\"A\">value_of (A.A.A)</property>\n"
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE (not_a_value)
   BOOST_REQUIRE (!p.get_maybe_val ("A.A"));
   BOOST_REQUIRE_EQUAL (p.get_maybe_val ("A.A"), boost::none);
   BOOST_REQUIRE_EQUAL
-    (p.get_with_default ("A.A", default_value), default_value);
+    (p.get_maybe_val ("A.A").get_value_or (default_value), default_value);
 }
 
 BOOST_AUTO_TEST_CASE (overwrite_subtree)
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE (get_value_second_top_level_tree)
   BOOST_REQUIRE_EQUAL (!!maybe_val, true);
   BOOST_REQUIRE_EQUAL (*maybe_val, "value_of (B.A.A)");
   BOOST_REQUIRE_EQUAL
-    (p.get_with_default ("B.A.A", default_value), "value_of (B.A.A)");
+    (p.get_maybe_val ("B.A.A").get_value_or (default_value), "value_of (B.A.A)");
 }
 
 BOOST_AUTO_TEST_CASE (get_subtree_second_top_level_tree)
@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE (get_subtree_second_top_level_tree)
   BOOST_REQUIRE (!p.get_maybe_val ("B.A"));
   BOOST_REQUIRE_EQUAL (p.get_maybe_val ("B.A"), boost::none);
   BOOST_REQUIRE_EQUAL
-    (p.get_with_default ("B.A", default_value), default_value);
+    (p.get_maybe_val ("B.A").get_value_or (default_value), default_value);
 }
 
 BOOST_AUTO_TEST_CASE (overwrite_tree_with_value)

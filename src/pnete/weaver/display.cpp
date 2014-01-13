@@ -61,8 +61,8 @@ namespace fhg
           bool is_hard_hidden (const ID& id)
         {
           return fhg::util::read_bool
-            ( id.get().properties().get_with_default
-              ("fhg.pnete.is_hard_hidden", "false")
+            ( id.get().properties().get_maybe_val
+              ("fhg.pnete.is_hard_hidden").get_value_or ("false")
             );
         }
 

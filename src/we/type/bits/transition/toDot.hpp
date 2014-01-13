@@ -171,13 +171,13 @@ namespace we { namespace type {
         {
           const std::string prefix ("pretty.dot.shape");
 
-          condition = prop.get_with_default (prefix + ".condition", "record");
-          port_in = prop.get_with_default (prefix + ".port-in", "house");
-          port_out = prop.get_with_default (prefix + ".port-out", "invhouse");
-          port_tunnel = prop.get_with_default (prefix + ".port-tunnel", "ellipse");
-          expression = prop.get_with_default (prefix + ".expression", "none");
-          modcall = prop.get_with_default (prefix + ".modcall", "box");
-          place = prop.get_with_default (prefix + ".place", "ellipse");
+          condition = prop.get_maybe_val (prefix + ".condition").get_value_or ("record");
+          port_in = prop.get_maybe_val (prefix + ".port-in").get_value_or ("house");
+          port_out = prop.get_maybe_val (prefix + ".port-out").get_value_or ("invhouse");
+          port_tunnel = prop.get_maybe_val (prefix + ".port-tunnel").get_value_or ("ellipse");
+          expression = prop.get_maybe_val (prefix + ".expression").get_value_or ("none");
+          modcall = prop.get_maybe_val (prefix + ".modcall").get_value_or ("box");
+          place = prop.get_maybe_val (prefix + ".place").get_value_or ("ellipse");
         }
 
         template<typename Port>
@@ -203,14 +203,12 @@ namespace we { namespace type {
         {
           const std::string prefix ("pretty.dot.color");
 
-          internal = prop.get_with_default (prefix + ".internal", "white");
-          external = prop.get_with_default (prefix + ".external", "dimgray");
-          modcall = prop.get_with_default (prefix + ".modcall", "yellow");
-          expression = prop.get_with_default (prefix + ".expression", "white");
-          node = prop.get_with_default (prefix + ".node", "white");
-          subnet_internal = prop.get_with_default ( prefix + ".subnet_internal"
-                                                  , "grey"
-                                                  );
+          internal = prop.get_maybe_val (prefix + ".internal").get_value_or ("white");
+          external = prop.get_maybe_val (prefix + ".external").get_value_or ("dimgray");
+          modcall = prop.get_maybe_val (prefix + ".modcall").get_value_or ("yellow");
+          expression = prop.get_maybe_val (prefix + ".expression").get_value_or ("white");
+          node = prop.get_maybe_val (prefix + ".node").get_value_or ("white");
+          subnet_internal = prop.get_maybe_val (prefix + ".subnet_internal").get_value_or ("grey");
         }
       }
 
@@ -224,9 +222,9 @@ namespace we { namespace type {
           const std::string prefix ("pretty.dot.style");
 
           association =
-            prop.get_with_default (prefix + ".association", "dotted");
+            prop.get_maybe_val (prefix + ".association").get_value_or ("dotted");
           read_connection =
-            prop.get_with_default (prefix + ".read-connection", "dashed");
+            prop.get_maybe_val (prefix + ".read-connection").get_value_or ("dashed");
         }
       }
 
@@ -454,9 +452,7 @@ namespace we { namespace type {
               if (opts.show_virtual)
                 {
                   if (  "true"
-                     == place.property().get_with_default ( "virtual"
-                                                          , "false"
-                                                          )
+                     == place.property().get_maybe_val ("virtual").get_value_or ("false")
                      )
                     {
                       virt << endl << property ("virtual");
