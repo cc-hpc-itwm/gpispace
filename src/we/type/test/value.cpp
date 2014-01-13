@@ -9,6 +9,7 @@
 #include <we/type/value/of_type.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
+#include <we/type/value/positions.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 #include <we/type/value/wrap.hpp>
@@ -18,6 +19,7 @@
 #include <we/field.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
+#include <we/type/value/path/split.hpp>
 
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/num.hpp>
@@ -1055,4 +1057,70 @@ BOOST_AUTO_TEST_CASE (dump)
   dump_throw_depth ("Struct[k:=0]", "k", "0");
   dump_throw_depth ("Struct[k:=0, Struct:=[]]", "k", "0");
   dump_throw_depth ("Struct[deeper:=Struct[], k:=0]", "k", "0");
+}
+
+namespace
+{
+  typedef std::pair< std::list<std::string>
+                   , pnet::type::value::value_type
+                   > position_type;
+}
+
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (position_type, os, position)
+{
+  os << "Position " << FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER (position.first)
+     << ": " << FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER (position.second);
+}
+
+BOOST_AUTO_TEST_CASE (positions)
+{
+  using pnet::type::value::value_type;
+  using pnet::type::value::path::split;
+
+#define LITERAL(literal...)                                             \
+  {                                                                     \
+    std::list<position_type> positions;                                 \
+    positions.push_back                                                 \
+      (std::make_pair (std::list<std::string>(), literal));             \
+    BOOST_REQUIRE_EQUAL                                                 \
+      (pnet::type::value::positions (literal), positions);              \
+  }
+
+  LITERAL (we::type::literal::control());
+  LITERAL (true);
+  LITERAL (0);
+  LITERAL (0L);
+  LITERAL (0U);
+  LITERAL (0UL);
+  LITERAL (0.0f);
+  LITERAL (0.0);
+  LITERAL ('c');
+  LITERAL ("");
+  LITERAL (bitsetofint::type());
+  LITERAL (bytearray::type());
+  LITERAL (std::list<value_type>());
+  LITERAL (std::set<value_type>());
+  LITERAL (std::map<value_type, value_type>());
+
+#undef LITERAL
+
+  std::list<position_type> positions;
+  value_type value;
+
+  pnet::type::value::poke ("a", value, 0);
+  positions.push_back (std::make_pair (split ("a"), 0));
+
+  BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
+
+  pnet::type::value::poke ("b", value, 0L);
+  positions.push_back (std::make_pair (split ("b"), 0L));
+
+  BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
+
+  pnet::type::value::poke ("c.1", value, "foo");
+  positions.push_back (std::make_pair (split ("c.1"), "foo"));
+  pnet::type::value::poke ("c.2", value, "bar");
+  positions.push_back (std::make_pair (split ("c.2"), "bar"));
+
+  BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
 }
