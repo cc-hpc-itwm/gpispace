@@ -206,22 +206,33 @@ namespace fhg
         {
           const ::we::type::property::path_type path
             (we::type::property::util::split (key));
+          ::we::type::property::path_type::const_iterator pos (path.begin());
+          ::we::type::property::path_type::const_iterator const end (path.end());
 
-          if (path.size() > 1 && path[0] == "fhg" && path[1] == "pnete")
+          if (pos != end && *pos == "fhg")
           {
-            if (path.size() > 2 && path[2] == "position")
+            ++pos;
+
+            if (pos != end && *pos == "pnete")
             {
-              if (path.size() > 3)
+              ++pos;
+
+              if (pos != end && *pos == "position")
               {
-                if (path[3] == "x")
+                ++pos;
+
+                if (pos != end)
                 {
-                  set_just_pos_but_not_in_property
-                    (read_qreal (value), pos().y());
-                }
-                else if (path[3] == "y")
-                {
-                  set_just_pos_but_not_in_property
-                    (pos().x(), read_qreal (value));
+                  if (*pos == "x")
+                  {
+                    set_just_pos_but_not_in_property
+                      (read_qreal (value), this->pos().y());
+                  }
+                  else if (*pos == "y")
+                  {
+                    set_just_pos_but_not_in_property
+                      (this->pos().x(), read_qreal (value));
+                  }
                 }
               }
             }

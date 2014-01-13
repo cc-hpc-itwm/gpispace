@@ -486,24 +486,35 @@ namespace fhg
             const ::we::type::property::path_type path
               (we::type::property::util::split (key));
 
-            if ( path.size() == 4
-               && path[0] == "fhg" && path[1] == "pnete"
-               && (path[2] == "position" || path[2] == "outer_position")
+
+            ::we::type::property::path_type::const_iterator pos (path.begin());
+            ::we::type::property::path_type::const_iterator const end (path.end());
+
+            if (  std::distance (pos, end) == 4
+               && *pos == "fhg" && *boost::next (pos) == "pnete"
+               && (  *boost::next (boost::next (pos)) == "position"
+                  || *boost::next (boost::next (pos)) == "outer_position"
+                  )
                )
             {
-              if (  (parentItem() == NULL && path[2] == "position")
-                 || (parentItem() != NULL && path[2] == "outer_position")
+              ++pos;
+              ++pos;
+
+              if (  (parentItem() == NULL && *pos == "position")
+                 || (parentItem() != NULL && *pos == "outer_position")
                  )
               {
-                if (path[3] == "x")
+                ++pos;
+
+                if (*pos == "x")
                 {
                   set_just_pos_but_not_in_property
-                    (read_qreal (value), pos().y());
+                    (read_qreal (value), this->pos().y());
                 }
-                else if (path[3] == "y")
+                else if (*pos == "y")
                 {
                   set_just_pos_but_not_in_property
-                    (pos().x(), read_qreal (value));
+                    (this->pos().x(), read_qreal (value));
                 }
               }
             }
