@@ -288,7 +288,7 @@ namespace fhg
           else
           {
             const boost::optional<std::string> tunnel_direction
-              (handle().get().properties().get_maybe_val
+              (handle().get().properties().get
                 ("fhg.pnete.tunnel.direction")
               );
 

@@ -53,7 +53,7 @@ namespace fhg
           bool is_hard_hidden (const ID& id)
         {
           return fhg::util::read_bool
-            ( id.get().properties().get_maybe_val
+            ( id.get().properties().get
               ("fhg.pnete.is_hard_hidden").get_value_or ("false")
             );
         }
@@ -69,18 +69,18 @@ namespace fhg
                                      : "fhg.pnete.outer_position"
                                      );
 
-          if (!id.get().properties().get_maybe_val (var_name + ".x"))
+          if (!id.get().properties().get (var_name + ".x"))
           {
             id.get_ref().properties().set (var_name + ".x", "0.0");
           }
-          if (!id.get().properties().get_maybe_val (var_name + ".y"))
+          if (!id.get().properties().get (var_name + ".y"))
           {
             id.get_ref().properties().set (var_name + ".y", "0.0");
           }
 
           item->set_just_pos_but_not_in_property
-            ( read_qreal (id.get().properties().get_maybe_val (var_name + ".x"))
-            , read_qreal (id.get().properties().get_maybe_val (var_name + ".y"))
+            ( read_qreal (id.get().properties().get (var_name + ".x"))
+            , read_qreal (id.get().properties().get (var_name + ".y"))
             );
         }
 

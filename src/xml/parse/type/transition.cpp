@@ -970,7 +970,7 @@ namespace xml
                 const std::string
                   key ("pnetc.warning.inline-many-output-ports");
                 const boost::optional<const ::we::type::property::value_type&>
-                  warning_switch (properties.get_maybe_val (key));
+                  warning_switch (properties.get (key));
 
                 if (!warning_switch || *warning_switch != "off")
                 {

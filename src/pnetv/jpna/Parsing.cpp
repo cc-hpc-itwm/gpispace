@@ -106,7 +106,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             transitions_[tid] = transition;
 
             /* If there is a limit on number of firings, implement it using an additional place. */
-            if (boost::optional<const we::type::property::value_type &> limit = t.prop().get_maybe_val("fhg.pnetv.firings_limit")) {
+            if (boost::optional<const we::type::property::value_type &> limit = t.prop().get("fhg.pnetv.firings_limit")) {
                 Place *place = petriNet_->createPlace();
                 place->setName("limit!" + t.name());
                 place->setInitialMarking(boost::lexical_cast<TokenCount>(*limit));

@@ -32,7 +32,7 @@ namespace we
                              , value_type
                              > mapped_type;
 
-      typedef std::vector<key_type> path_type;
+      typedef std::list<key_type> path_type;
       typedef path_type::const_iterator path_iterator;
       typedef boost::unordered_map<key_type, mapped_type> map_type;
 
@@ -47,19 +47,6 @@ namespace we
 
       namespace exception
       {
-        class missing_binding : public fhg::util::backtracing_exception
-        {
-        private:
-          std::string nice ( path_type::const_iterator pos
-                           , const path_type::const_iterator end
-                           );
-
-        public:
-          missing_binding ( path_type::const_iterator pos
-                          , const path_type::const_iterator end
-                          );
-        };
-
         class empty_path : public std::runtime_error
         {
         public:
@@ -87,44 +74,34 @@ namespace we
 
         // ----------------------------------------------------------------- //
 
-        const mapped_type& get ( const path_iterator& pos
-                               , const path_iterator& end
-                               , const path_iterator& zero
-                               ) const;
-
         boost::optional<const mapped_type&>
-          get2 ( const path_iterator& pos
-               , const path_iterator& end
-               , const path_iterator& zero
-               ) const;
+          get ( const path_iterator& pos
+              , const path_iterator& end
+              , const path_iterator& zero
+              ) const;
 
-        const mapped_type& get
+        const boost::optional<const value_type&> get
           (const path_iterator& pos, const path_iterator& end) const;
-        const mapped_type& get (const path_type& path) const;
 
-        const boost::optional<const value_type&> get_maybe_val
-          (const path_iterator& pos, const path_iterator& end) const;
+        boost::optional<mapped_type> set ( const path_iterator& pos
+                                         , const path_iterator& end
+                                         , const value_type& val
+                                         );
 
       public:
         type();
 
         const map_type& get_map (void) const;
 
-        boost::optional<mapped_type> set ( const path_iterator& pos
-                                         , const path_iterator& end
-                                         , const value_type& val
-                                         );
         boost::optional<mapped_type>
           set (const path_type& path, const value_type& val);
         boost::optional<mapped_type>
           set (const std::string& path, const value_type& val);
 
-        const mapped_type& get (const std::string& path) const;
-
         const boost::optional<const value_type&>
-          get_maybe_val (const path_type& path) const;
+          get (const path_type& path) const;
         const boost::optional<const value_type&>
-          get_maybe_val (const std::string& path) const;
+          get (const std::string& path) const;
       };
 
       namespace dump

@@ -7,6 +7,7 @@
 #include <fhg/util/xml.hpp>
 
 #include <boost/optional.hpp>
+#include <boost/utility.hpp>
 
 namespace we
 {
@@ -24,30 +25,6 @@ namespace we
 
       namespace exception
       {
-        std::string missing_binding::nice ( path_type::const_iterator pos
-                                          , const path_type::const_iterator end
-                                          )
-        {
-          std::ostringstream s;
-
-          s << "missing binding for ";
-
-          for (; std::distance (pos, end) > 1; ++pos)
-          {
-            s << *pos << ".";
-          }
-
-          s << *pos;
-
-          return s.str();
-        }
-
-        missing_binding::missing_binding ( path_type::const_iterator pos
-                                         , const path_type::const_iterator end
-                                         )
-          : fhg::util::backtracing_exception (nice (pos, end))
-        {}
-
         empty_path::empty_path (const std::string& pre)
           : std::runtime_error (pre + ": empty path")
         {}
@@ -96,10 +73,10 @@ namespace we
       // ******************************************************************* //
 
       boost::optional<const mapped_type&>
-        type::get2 ( const path_iterator& pos
-                   , const path_iterator& end
-                   , const path_iterator& zero
-                   ) const
+        type::get ( const path_iterator& pos
+                  , const path_iterator& end
+                  , const path_iterator& zero
+                  ) const
       {
         if (pos == end)
         {
@@ -124,23 +101,8 @@ namespace we
                                                )
                         );
 
-          return t.get2 (pos + 1, end, zero);
+          return t.get (boost::next (pos), end, zero);
         }
-      }
-
-      const mapped_type& type::get ( const path_iterator& pos
-                                   , const path_iterator& end
-                                   , const path_iterator& zero
-                                   ) const
-      {
-        boost::optional<const mapped_type&> mapped (get2 (pos, end, zero));
-
-        if (!mapped)
-        {
-          throw exception::missing_binding (zero, end);
-        }
-
-        return *mapped;
       }
 
       type::type () : map () {}
@@ -176,7 +138,7 @@ namespace we
         {
           type t (boost::apply_visitor (mk_type(), map[*pos]));
 
-          old_value = t.set (pos + 1, end, val);
+          old_value = t.set (boost::next (pos), end, val);
 
           map[*pos] = t;
         }
@@ -198,28 +160,10 @@ namespace we
 
       // ----------------------------------------------------------------- //
 
-      const mapped_type& type::get
+      const boost::optional<const value_type&> type::get
         (const path_iterator& pos, const path_iterator& end) const
       {
-        return get (pos, end, pos);
-      }
-
-      const mapped_type& type::get (const path_type& path) const
-      {
-        return get (path.begin(), path.end());
-      }
-
-      const mapped_type& type::get (const std::string& path) const
-      {
-        return get (util::split (path));
-      }
-
-      // ----------------------------------------------------------------- //
-
-      const boost::optional<const value_type&> type::get_maybe_val
-        (const path_iterator& pos, const path_iterator& end) const
-      {
-        boost::optional<const mapped_type&> mapped (get2 (pos, end, pos));
+        boost::optional<const mapped_type&> mapped (get (pos, end, pos));
 
         if (!mapped)
         {
@@ -230,15 +174,15 @@ namespace we
       }
 
       const boost::optional<const value_type&>
-        type::get_maybe_val (const path_type& path) const
+        type::get (const path_type& path) const
       {
-        return get_maybe_val (path.begin(), path.end());
+        return get (path.begin(), path.end());
       }
 
       const boost::optional<const value_type&>
-        type::get_maybe_val (const std::string& path) const
+        type::get (const std::string& path) const
       {
-        return get_maybe_val (util::split (path));
+        return get (util::split (path));
       }
 
       namespace dump
