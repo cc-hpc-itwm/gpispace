@@ -92,7 +92,7 @@ namespace we
                                , const path_iterator& zero
                                ) const;
 
-        boost::optional<const value_type&>
+        boost::optional<const mapped_type&>
           get2 ( const path_iterator& pos
                , const path_iterator& end
                , const path_iterator& zero

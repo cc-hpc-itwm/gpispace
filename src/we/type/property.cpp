@@ -95,7 +95,7 @@ namespace we
 
       // ******************************************************************* //
 
-      boost::optional<const value_type&>
+      boost::optional<const mapped_type&>
         type::get2 ( const path_iterator& pos
                    , const path_iterator& end
                    , const path_iterator& zero
@@ -115,8 +115,7 @@ namespace we
 
         if (std::distance (pos, end) == 1)
         {
-          return
-            fhg::util::boost::get_or_none<const value_type&> (map_pos->second);
+          return map_pos->second;
         }
         else
         {
@@ -237,7 +236,14 @@ namespace we
       const boost::optional<const value_type&> type::get_maybe_val
         (const path_iterator& pos, const path_iterator& end) const
       {
-        return get2 (pos, end, pos);
+        boost::optional<const mapped_type&> mapped (get2 (pos, end, pos));
+
+        if (!mapped)
+        {
+          return boost::none;
+        }
+
+        return fhg::util::boost::get_or_none<const value_type&> (*mapped);
       }
 
       const boost::optional<const value_type&>
