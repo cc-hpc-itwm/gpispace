@@ -512,4 +512,18 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   }
 }
 
+void Orchestrator::handleDiscoverJobStatestReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
+{
+   DMLOG(TRACE, "handleDiscoverJobStatestReplyEvent( discovery_id: " << pEvt->discover_id() << ")");
+
+   sdpa::agent_id_t issuer(_umap_disc_id_ag_id.at( pEvt->discover_id()));
+   events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
+                                                                                                 , issuer
+                                                                                                 , pEvt->job_id()
+                                                                                                 , pEvt->discover_id()
+                                                                                                 , pEvt->discover_result() ));
+   _umap_disc_id_ag_id.erase(issuer);
+   sendEventToOther(pDiscReplyEvt);
+}
+
 }} // end namespaces
