@@ -2,7 +2,7 @@
 #define SDPA_EVENTS_CODEC_HPP 1
 
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
-#include <sdpa/events/DiscoverPendingActReplyEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
