@@ -19,6 +19,8 @@
 #include <pnete/ui/graph/style/cap.hpp>
 #include <pnete/ui/graph/style/predicate.hpp>
 
+#include <we/type/value/path/split.hpp>
+
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/require.hpp>
 
@@ -484,7 +486,7 @@ namespace fhg
               );
 
             const ::we::type::property::path_type path
-              (we::type::property::util::split (key));
+              (pnet::type::value::path::split (key));
 
 
             ::we::type::property::path_type::const_iterator pos (path.begin());

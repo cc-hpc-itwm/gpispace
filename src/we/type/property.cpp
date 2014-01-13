@@ -2,6 +2,8 @@
 
 #include <we/type/property.hpp>
 
+#include <we/type/value/path/split.hpp>
+
 #include <fhg/util/boost/variant.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/xml.hpp>
@@ -170,7 +172,7 @@ namespace we
       boost::optional<mapped_type>
         type::set (const std::string& path, const value_type& val)
       {
-        return set (util::split (path), val);
+        return set (pnet::type::value::path::split (path), val);
       }
 
       // ----------------------------------------------------------------- //
@@ -197,7 +199,7 @@ namespace we
       const boost::optional<const value_type&>
         type::get (const std::string& path) const
       {
-        return get (util::split (path));
+        return get (pnet::type::value::path::split (path));
       }
 
       namespace dump
