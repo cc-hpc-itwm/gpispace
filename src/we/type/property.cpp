@@ -194,18 +194,7 @@ namespace we
                             , const path_iterator& zero
                             ) const
       {
-        try
-        {
-          return get_val (pos, end, zero);
-        }
-        catch (const exception::missing_binding&)
-        {
-          return boost::none;
-        }
-        catch (const exception::not_a_val&)
-        {
-          return boost::none;
-        }
+        return get2 (pos, end, zero);
       }
 
       type::type () : map () {}
