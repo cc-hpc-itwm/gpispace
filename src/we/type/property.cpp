@@ -133,31 +133,14 @@ namespace we
                                    , const path_iterator& zero
                                    ) const
       {
-        if (pos == end)
-        {
-          throw exception::empty_path ("get");
-        }
+        boost::optional<const mapped_type&> mapped (get2 (pos, end, zero));
 
-        map_type::const_iterator map_pos (map.find (*pos));
-
-        if (map_pos == map.end())
+        if (!mapped)
         {
           throw exception::missing_binding (zero, end);
         }
 
-        if (std::distance (pos, end) == 1)
-        {
-          return map_pos->second;
-        }
-        else
-        {
-          const type& t ( boost::apply_visitor ( visitor_get_map<const type&>()
-                                               , map_pos->second
-                                               )
-                        );
-
-          return t.get (pos + 1, end, zero);
-        }
+        return *mapped;
       }
 
       type::type () : map () {}
