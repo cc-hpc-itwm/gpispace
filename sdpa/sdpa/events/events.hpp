@@ -1,7 +1,7 @@
 #ifndef SDPA_EVENTS_EVENTS_HPP
 #define SDPA_EVENTS_EVENTS_HPP 1
 
-#include <sdpa/events/DiscoverPendingActEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverPendingActReplyEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
