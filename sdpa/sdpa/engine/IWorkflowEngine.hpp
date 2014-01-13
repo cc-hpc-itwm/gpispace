@@ -6,8 +6,10 @@
 #include <we/mgmt/layer.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
+#include <sdpa/types.hpp>
 
 typedef std::list<we::type::requirement_t> requirement_list_t;
+typedef boost::unordered_map<we::mgmt::layer::id_type, sdpa::agent_id_t> umap_disc_id_ag_id_t;
 
 class job_requirements_t
 {
