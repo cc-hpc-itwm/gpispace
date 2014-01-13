@@ -55,10 +55,6 @@ namespace we
         not_a_map::not_a_map (const std::string& pre)
           : std::runtime_error (pre + ": not a map")
         {}
-
-        not_a_val::not_a_val (const std::string& pre)
-          : std::runtime_error (pre + ": not a val")
-        {}
       }
 
       // ******************************************************************* //

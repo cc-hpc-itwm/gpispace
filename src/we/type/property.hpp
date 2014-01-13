@@ -71,12 +71,6 @@ namespace we
         public:
           not_a_map (const std::string& pre);
         };
-
-        class not_a_val : public std::runtime_error
-        {
-        public:
-          not_a_val (const std::string& pre);
-        };
       }
 
       struct type
