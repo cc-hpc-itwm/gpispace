@@ -388,21 +388,20 @@ namespace fhg
 
             void operator () (const ::we::type::property::type& props) const
             {
-              for ( ::we::type::property::map_type::const_iterator
-                      p (props.get_map().begin()), end (props.get_map().end())
-                  ; p != end
-                  ; ++p
-                  )
-                {
-                  WEAVE(property::open) (p->first);
-                  boost::apply_visitor(*this, p->second);
-                  WEAVE(property::close) ();
-                }
+              BOOST_FOREACH
+                (::we::type::property::list_type::value_type const& p
+                , props.list()
+                )
+              {
+                WEAVE(property::open) (p.first);
+                boost::apply_visitor(*this, p.second);
+                WEAVE(property::close) ();
+              }
             }
           };
         } // namespace visitor
 
-        FUN(property, ::we::type::property::map_type::const_iterator::value_type, prop)
+        FUN(property, ::we::type::property::list_type::const_iterator::value_type, prop)
         {
           WEAVE(property::open) (prop.first);
           boost::apply_visitor(visitor::property<State>(_state),prop.second);

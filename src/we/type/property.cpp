@@ -16,6 +16,8 @@ namespace we
   {
     namespace property
     {
+      typedef boost::unordered_map<key_type, mapped_type> map_type;
+
       namespace util
       {
         path_type split (const key_type& s, const char& sep)
@@ -108,11 +110,9 @@ namespace we
 
       type::type () : map () {}
 
-      const map_type& type::get_map (void) const { return map; }
-
-      std::list<std::pair<key_type, mapped_type> > type::list() const
+      list_type type::list() const
       {
-        std::list<std::pair<key_type, mapped_type> > l;
+        list_type l;
 
         typedef std::pair<key_type, mapped_type> key_mapped_type;
 
@@ -271,18 +271,15 @@ namespace we
 
         void dump (::fhg::util::xml::xmlstream& s, const type& p)
         {
-          for ( map_type::const_iterator pos (p.get_map().begin())
-              ; pos != p.get_map().end()
-              ; ++pos
-              )
-            {
-              boost::apply_visitor (visitor_dump (s, pos->first), pos->second);
-            }
+          BOOST_FOREACH (map_type::value_type const& pos, p.list())
+          {
+            boost::apply_visitor (visitor_dump (s, pos.first), pos.second);
+          }
         }
         void ordered_dump (::fhg::util::xml::xmlstream& s, const type& p)
         {
           typedef std::map<key_type, mapped_type> ordered_map_type;
-          ordered_map_type ordered (p.get_map().begin(), p.get_map().end());
+          ordered_map_type ordered (p.list().begin(), p.list().end());
 
           for ( ordered_map_type::const_iterator pos (ordered.begin())
               ; pos != ordered.end()
@@ -329,17 +326,14 @@ namespace we
 
             void operator () (const type& t) const
             {
-              for ( map_type::const_iterator pos (t.get_map().begin())
-                  ; pos != t.get_map().end()
-                  ; ++pos
-                  )
-                {
-                  path.push_back (pos->first);
+              BOOST_FOREACH (map_type::value_type const& pos, t.list())
+              {
+                path.push_back (pos.first);
 
-                  boost::apply_visitor (*this, pos->second);
+                boost::apply_visitor (*this, pos.second);
 
-                  path.pop_back ();
-                }
+                path.pop_back ();
+              }
             }
           };
         }
@@ -349,17 +343,14 @@ namespace we
           stack_type stack;
           path_type path;
 
-          for ( map_type::const_iterator pos (t.get_map().begin())
-              ; pos != t.get_map().end()
-              ; ++pos
-              )
-            {
-              path.push_back (pos->first);
+          BOOST_FOREACH (map_type::value_type const& pos, t.list())
+          {
+            path.push_back (pos.first);
 
-              boost::apply_visitor (visitor_dfs (stack, path), pos->second);
+            boost::apply_visitor (visitor_dfs (stack, path), pos.second);
 
-              path.pop_back ();
-            }
+            path.pop_back ();
+          }
 
           return stack;
         }

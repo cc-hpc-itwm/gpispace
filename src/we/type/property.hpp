@@ -23,18 +23,7 @@ namespace we
   {
     namespace property
     {
-      typedef std::string key_type;
-      typedef std::string value_type;
-
-      struct type;
-
-      typedef boost::variant < boost::recursive_wrapper<type>
-                             , value_type
-                             > mapped_type;
-
-      typedef std::list<key_type> path_type;
       typedef path_type::const_iterator path_iterator;
-      typedef boost::unordered_map<key_type, mapped_type> map_type;
 
       // ******************************************************************* //
 
@@ -63,7 +52,7 @@ namespace we
       struct type
       {
       private:
-        map_type map;
+        boost::unordered_map<key_type, mapped_type> map;
 
         friend class boost::serialization::access;
         template<typename Archive>
@@ -92,7 +81,6 @@ namespace we
         type();
 
         std::list<std::pair<key_type, mapped_type> > list() const;
-        const map_type& get_map (void) const;
 
         boost::optional<mapped_type>
           set (const path_type& path, const value_type& val);

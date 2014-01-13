@@ -26,7 +26,6 @@ namespace we
                              > mapped_type;
 
       typedef std::list<key_type> path_type;
-      typedef boost::unordered_map<key_type, mapped_type> map_type;
       typedef std::list<std::pair<key_type, mapped_type> > list_type;
 
       namespace exception
