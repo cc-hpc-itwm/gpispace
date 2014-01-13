@@ -20,6 +20,11 @@
 #include <fhg/assert.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/job_states.hpp>
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/poke.hpp>
+
 
 namespace sdpa {
   namespace daemon {
@@ -458,6 +463,51 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
 
       events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id().str()) );
       sendEventToOther(pErrorEvt);
+  }
+}
+
+void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
+{
+  Job* pJob;
+
+  pJob = jobManager().findJob(pEvt->job_id());
+  if(!pJob)
+  {
+    DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
+    sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
+                                                     , pEvt->from()
+                                                     , events::ErrorEvent::SDPA_EJOBNOTFOUND
+                                                     , "No such job found" )
+                                                    ));
+
+    return;
+  }
+
+  boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
+
+  if(worker_id)
+  {
+      DMLOG(TRACE, "Tell the worker "<<*worker_id<<" to collect the states of all child job/activities related to the job "<<pEvt->job_id());
+      events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( name()
+                                                                                       , *worker_id
+                                                                                       , pEvt->job_id()
+                                                                                       , pEvt->discover_id()) );
+      sendEventToOther(pDiscEvt);
+  }
+  else // the job is in pending, it hsn't been submitted to any worker, yet
+  {
+      pnet::type::value::value_type discover_result;
+      pnet::type::value::poke ("id", discover_result, pJob->id());
+      pnet::type::value::poke ("state", discover_result, "PENDING");
+      pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
+
+      events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent(pEvt->from()
+                                                                                                   , name()
+                                                                                                   , pEvt->job_id()
+                                                                                                   , pEvt->discover_id()
+                                                                                                   , discover_result ));
+
+      sendEventToOther(pDiscReplyEvt);
   }
 }
 
