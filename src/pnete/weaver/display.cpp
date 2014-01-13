@@ -37,24 +37,16 @@ namespace fhg
     {
       namespace
       {
-        struct read_qreal_visitor : public boost::static_visitor<qreal>
+        qreal read_qreal (boost::optional<const std::string&> inp)
         {
-          qreal operator() (const std::string& inp) const
-          {
-            util::parse::position_string pos (inp);
-            util::parse::require::skip_spaces (pos);
-            return util::read_double (pos);
-          }
-          template<typename T>
-            qreal operator() (T) const
+          if (!inp)
           {
             throw std::runtime_error ("bad input: not a string");
           }
-        };
-        template<typename T>
-          qreal read_qreal (const T& i)
-        {
-          return boost::apply_visitor (read_qreal_visitor(), i);
+
+          util::parse::position_string pos (*inp);
+          util::parse::require::skip_spaces (pos);
+          return util::read_double (pos);
         }
 
         template<typename ID>
@@ -87,8 +79,8 @@ namespace fhg
           }
 
           item->set_just_pos_but_not_in_property
-            ( read_qreal (id.get().properties().get (var_name + ".x"))
-            , read_qreal (id.get().properties().get (var_name + ".y"))
+            ( read_qreal (id.get().properties().get_maybe_val (var_name + ".x"))
+            , read_qreal (id.get().properties().get_maybe_val (var_name + ".y"))
             );
         }
 
