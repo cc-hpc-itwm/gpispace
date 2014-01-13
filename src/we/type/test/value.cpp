@@ -900,7 +900,6 @@ namespace
 
     fhg::util::boost::test::require_exception<std::runtime_error>
       ( boost::bind (&pnet::type::value::dump, os, value)
-      , "std::runtime_error"
       , ( boost::format ("cannot dump the plain value '%1%'")
         % pnet::type::value::show (value)
         ).str()
@@ -917,7 +916,6 @@ namespace
 
     fhg::util::boost::test::require_exception<std::runtime_error>
       ( boost::bind (&pnet::type::value::dump, os, pnet::type::value::read (v))
-      , "std::runtime_error"
       , ( boost::format ("cannot dump the single level property"
                         " with key '%1%' and value '%2%'"
                         ) % key % val
