@@ -268,6 +268,7 @@ namespace sdpa {
       void handle_events();
 
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
+      umap_disc_id_ag_id_t _umap_disc_id_ag_id;
     };
   }
 }
