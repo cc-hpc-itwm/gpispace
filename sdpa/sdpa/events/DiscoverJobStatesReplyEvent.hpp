@@ -33,7 +33,7 @@ namespace sdpa
 
       virtual void handleBy (EventHandler* handler)
       {
-        //handler->handleDiscoverJobStatesReplyEvent (this);
+        handler->handleDiscoverJobStatesReplyEvent (this);
       }
 
       const std::string& discover_id() const { return discover_id_; }
