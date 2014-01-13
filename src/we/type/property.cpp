@@ -2,6 +2,7 @@
 
 #include <we/type/property.hpp>
 
+#include <fhg/util/boost/variant.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/xml.hpp>
 
@@ -112,6 +113,40 @@ namespace we
       }
 
       // ******************************************************************* //
+
+      boost::optional<const value_type&>
+        type::get2 ( const path_iterator& pos
+                   , const path_iterator& end
+                   , const path_iterator& zero
+                   ) const
+      {
+        if (pos == end)
+        {
+          return boost::none;
+        }
+
+        map_type::const_iterator map_pos (map.find (*pos));
+
+        if (map_pos == map.end())
+        {
+          return boost::none;
+        }
+
+        if (std::distance (pos, end) == 1)
+        {
+          return
+            fhg::util::boost::get_or_none<const value_type&> (map_pos->second);
+        }
+        else
+        {
+          const type& t ( boost::apply_visitor ( visitor_get_map<const type&>()
+                                               , map_pos->second
+                                               )
+                        );
+
+          return t.get2 (pos + 1, end, zero);
+        }
+      }
 
       const mapped_type& type::get ( const path_iterator& pos
                                    , const path_iterator& end

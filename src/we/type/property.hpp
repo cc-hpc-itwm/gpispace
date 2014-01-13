@@ -98,6 +98,12 @@ namespace we
                                , const path_iterator& zero
                                ) const;
 
+        boost::optional<const value_type&>
+          get2 ( const path_iterator& pos
+               , const path_iterator& end
+               , const path_iterator& zero
+               ) const;
+
         const value_type& get_val ( const path_iterator& pos
                                   , const path_iterator& end
                                   , const path_iterator& zero
