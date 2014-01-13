@@ -77,11 +77,11 @@ namespace fhg
                                      : "fhg.pnete.outer_position"
                                      );
 
-          if (!id.get().properties().has (var_name + ".x"))
+          if (!id.get().properties().get_maybe_val (var_name + ".x"))
           {
             id.get_ref().properties().set (var_name + ".x", "0.0");
           }
-          if (!id.get().properties().has (var_name + ".y"))
+          if (!id.get().properties().get_maybe_val (var_name + ".y"))
           {
             id.get_ref().properties().set (var_name + ".y", "0.0");
           }
