@@ -30,7 +30,7 @@ namespace sdpa
 
       virtual void handleBy (EventHandler* handler)
       {
-        //handler->handleDiscoverJobStatestEvent (this);
+        handler->handleDiscoverJobStatestEvent (this);
       }
 
     private:
