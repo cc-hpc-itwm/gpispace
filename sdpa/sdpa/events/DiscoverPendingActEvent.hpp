@@ -7,12 +7,12 @@ namespace sdpa
 {
   namespace events
   {
-    class DiscoverPendingActEvent : public sdpa::events::JobEvent
+    class DiscoverJobStatestEvent : public sdpa::events::JobEvent
     {
     public:
-      typedef boost::shared_ptr<DiscoverPendingActEvent> Ptr;
+      typedef boost::shared_ptr<DiscoverJobStatestEvent> Ptr;
 
-      DiscoverPendingActEvent ( const address_t& a_from
+      DiscoverJobStatestEvent ( const address_t& a_from
                               , const address_t& a_to
                               , const sdpa::job_id_t& a_job_id
                               , const std::string& discover_id
@@ -23,31 +23,31 @@ namespace sdpa
 
       std::string str() const
       {
-        return "DiscoverPendingActEvent(" + job_id ().str () + ")";
+        return "DiscoverJobStatestEvent(" + job_id ().str () + ")";
       }
 
       const std::string& discover_id() const { return discover_id_; }
 
       virtual void handleBy (EventHandler* handler)
       {
-        //handler->handleDiscoverPendingActEvent (this);
+        //handler->handleDiscoverJobStatestEvent (this);
       }
 
     private:
       std::string discover_id_;
     };
 
-    SAVE_CONSTRUCT_DATA_DEF (DiscoverPendingActEvent, e)
+    SAVE_CONSTRUCT_DATA_DEF (DiscoverJobStatestEvent, e)
     {
       SAVE_JOBEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->discover_id());
     }
 
-    LOAD_CONSTRUCT_DATA_DEF (DiscoverPendingActEvent, e)
+    LOAD_CONSTRUCT_DATA_DEF (DiscoverJobStatestEvent, e)
     {
       LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
       LOAD_FROM_ARCHIVE ( std::string, disc_id);
-      ::new (e) DiscoverPendingActEvent (from, to, job_id, disc_id);
+      ::new (e) DiscoverJobStatestEvent (from, to, job_id, disc_id);
     }
   }
 }

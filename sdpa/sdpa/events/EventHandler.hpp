@@ -5,7 +5,7 @@ namespace sdpa
 {
   namespace events
   {
-    class DiscoverPendingActEvent;
+    class DiscoverJobStatestEvent;
     class DiscoverPendingActReplyEvent;
     class CancelJobAckEvent;
     class CancelJobEvent;
@@ -58,7 +58,7 @@ namespace sdpa
       virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) {}
       virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *) {}
       virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *) {}
-      virtual void handleDiscoverPendingActEvent (const sdpa::events::DiscoverPendingActEvent *) {}
+      virtual void handleDiscoverJobStatestEvent (const sdpa::events::DiscoverJobStatestEvent *) {}
       virtual void handleDiscoverPendingActReplyEvent (const sdpa::events::DiscoverPendingActReplyEvent *) {}
     };
   }

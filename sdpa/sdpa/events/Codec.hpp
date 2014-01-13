@@ -71,7 +71,7 @@ namespace sdpa
         boost::serialization::void_cast_register<TYPE, BASE>();         \
         ar.template register_type<TYPE>()
 
-        REGISTER (DiscoverPendingActEvent, JobEvent);
+        REGISTER (DiscoverJobStatestEvent, JobEvent);
         REGISTER (DiscoverPendingActReplyEvent, JobEvent);
         REGISTER (CancelJobAckEvent, JobEvent);
         REGISTER (CancelJobEvent, JobEvent);
