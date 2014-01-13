@@ -8,7 +8,7 @@
 #include <fhg/util/backtracing_exception.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
-#include <stack>
+#include <list>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional/optional_fwd.hpp>
@@ -98,7 +98,7 @@ namespace we
       namespace traverse
       {
         typedef std::pair<path_type, value_type> pair_type;
-        typedef std::stack<pair_type> stack_type;
+        typedef std::list<pair_type> stack_type;
 
         stack_type dfs (const type& t);
       }

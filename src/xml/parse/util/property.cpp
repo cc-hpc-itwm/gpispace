@@ -5,6 +5,7 @@
 #include <xml/parse/error.hpp>
 #include <xml/parse/warning.hpp>
 
+#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
 namespace xml
@@ -54,17 +55,13 @@ namespace xml
                   , const property::type& y
                   )
         {
-          property::traverse::stack_type stack (property::traverse::dfs (y));
-
-          while (!stack.empty())
-            {
-              const property::traverse::pair_type & elem (stack.top());
-
-              ::xml::parse::util::property::set
-                  (state, x, elem.first, elem.second);
-
-              stack.pop();
-            }
+          BOOST_FOREACH ( property::traverse::pair_type const& path_and_value
+                        , property::traverse::dfs (y)
+                        )
+          {
+            ::xml::parse::util::property::set
+              (state, x, path_and_value.first, path_and_value.second);
+          }
         }
       }
     }

@@ -269,7 +269,7 @@ namespace we
 
             void operator () (const value_type& v) const
             {
-              stack.push (std::make_pair (path, v));
+              stack.push_back (std::make_pair (path, v));
             }
 
             void operator () (const type& t) const
