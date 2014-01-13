@@ -27,13 +27,6 @@ namespace we
 
       // ******************************************************************* //
 
-      namespace util
-      {
-        path_type split (const key_type& s, const char& sep = '.');
-      }
-
-      // ******************************************************************* //
-
       namespace exception
       {
         class empty_path : public std::runtime_error

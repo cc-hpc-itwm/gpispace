@@ -20,14 +20,6 @@ namespace we
     {
       typedef boost::unordered_map<key_type, mapped_type> map_type;
 
-      namespace util
-      {
-        path_type split (const key_type& s, const char& sep)
-        {
-          return fhg::util::split<key_type, path_type> (s, sep);
-        }
-      }
-
       namespace exception
       {
         empty_path::empty_path (const std::string& pre)
