@@ -88,21 +88,6 @@ namespace we
           }
         };
 
-        class visitor_get_val : public boost::static_visitor<const value_type&>
-        {
-        public:
-          const value_type& operator () (const value_type& v) const
-          {
-            return v;
-          }
-
-          template<typename T>
-          const value_type& operator () (const T&) const
-          {
-            throw exception::not_a_val ("visitor_get_val");
-          }
-        };
-
         class is_value : public boost::static_visitor<bool>
         {
         public:
@@ -178,14 +163,6 @@ namespace we
 
           return t.get (pos + 1, end, zero);
         }
-      }
-
-      const value_type& type::get_val ( const path_iterator& pos
-                                      , const path_iterator& end
-                                      , const path_iterator& zero
-                                      ) const
-      {
-        return boost::apply_visitor (visitor_get_val(), get (pos, end, zero));
       }
 
       const boost::optional<const value_type&>
@@ -266,24 +243,6 @@ namespace we
       const mapped_type& type::get (const std::string& path) const
       {
         return get (util::split (path));
-      }
-
-      // ----------------------------------------------------------------- //
-
-      const value_type& type::get_val
-        (const path_iterator& pos, const path_iterator& end) const
-      {
-        return get_val (pos, end, pos);
-      }
-
-      const value_type& type::get_val (const path_type& path) const
-      {
-        return get_val (path.begin(), path.end());
-      }
-
-      const value_type& type::get_val (const std::string& path) const
-      {
-        return get_val (util::split (path));
       }
 
       // ----------------------------------------------------------------- //

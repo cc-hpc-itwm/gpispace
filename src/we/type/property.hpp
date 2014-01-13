@@ -104,23 +104,11 @@ namespace we
                , const path_iterator& zero
                ) const;
 
-        const value_type& get_val ( const path_iterator& pos
-                                  , const path_iterator& end
-                                  , const path_iterator& zero
-                                  ) const;
-
         const boost::optional<const value_type&>
           get_maybe_val ( const path_iterator& pos
                         , const path_iterator& end
                         , const path_iterator& zero
                         ) const;
-
-        // ----------------------------------------------------------------- //
-
-        const value_type& get_val
-          (const path_iterator& pos, const path_iterator& end) const;
-        const value_type& get_val (const path_type& path) const;
-        const value_type& get_val (const std::string& path) const;
 
       public:
         type();
