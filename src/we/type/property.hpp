@@ -143,12 +143,6 @@ namespace we
         typedef std::stack<pair_type> stack_type;
 
         stack_type dfs (const type& t);
-        stack_type dfs ( const type& t
-                       , const path_iterator pre_pos
-                       , const path_iterator pre_end
-                       );
-        stack_type dfs (const type& t, const path_type& path);
-        stack_type dfs (const type& t, const std::string& path);
       }
     }
   }

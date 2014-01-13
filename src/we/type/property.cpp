@@ -404,51 +404,6 @@ namespace we
 
           return stack;
         }
-
-        stack_type dfs ( const type& t
-                       , const path_iterator pre_pos
-                       , const path_iterator pre_end
-                       )
-        {
-          if (pre_pos == pre_end)
-          {
-            return dfs (t);
-          }
-          else
-          {
-            for ( map_type::const_iterator pos (t.get_map().begin())
-                ; pos != t.get_map().end()
-                ; ++pos
-                )
-            {
-              if (pos->first == *pre_pos)
-              {
-                if (boost::apply_visitor (is_value(), pos->second))
-                {
-                  return stack_type();
-                }
-
-                return dfs ( boost::apply_visitor
-                             (visitor_get_map<const type&>(), pos->second)
-                           , pre_pos + 1
-                           , pre_end
-                           );
-              }
-            }
-          }
-
-          return stack_type();
-        }
-
-        stack_type dfs (const type& t, const path_type& path)
-        {
-          return dfs (t, path.begin(), path.end());
-        }
-
-        stack_type dfs (const type& t, const std::string& path)
-        {
-          return dfs (t, util::split (path));
-        }
       }
     }
   }
