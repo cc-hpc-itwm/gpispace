@@ -5,17 +5,19 @@
 
 #include <we/type/property.fwd.hpp>
 
+#include <we/type/value/read.hpp>
+#include <we/type/value/show.hpp>
+
 #include <fhg/util/backtracing_exception.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
-#include <list>
-
 #include <boost/lexical_cast.hpp>
 #include <boost/optional/optional_fwd.hpp>
-#include <boost/serialization/map.hpp>
 #include <boost/serialization/nvp.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/variant.hpp>
+#include <boost/serialization/map.hpp>
+
+#include <list>
+#include <sstream>
 
 namespace we
 {
@@ -45,35 +47,44 @@ namespace we
       struct type
       {
       private:
-        boost::unordered_map<key_type, mapped_type> map;
+        pnet::type::value::value_type _value;
 
         friend class boost::serialization::access;
         template<typename Archive>
-        void serialize (Archive& ar, const unsigned int)
+        void save (Archive& ar, const unsigned int) const
         {
-          ar & BOOST_SERIALIZATION_NVP(map);
+          std::ostringstream oss;
+          oss << pnet::type::value::show (_value);
+          std::string const val (oss.str());
+          ar & val;
         }
+        template<typename Archive>
+        void load (Archive& ar, const unsigned int)
+        {
+          std::string val;
+          ar & val;
+          _value = pnet::type::value::read (val);
+        }
+        BOOST_SERIALIZATION_SPLIT_MEMBER()
 
         // ----------------------------------------------------------------- //
-
-        boost::optional<const mapped_type&>
-          get ( const path_iterator& pos
-              , const path_iterator& end
-              , const path_iterator& zero
-              ) const;
-
-        const boost::optional<const value_type&> get
-          (const path_iterator& pos, const path_iterator& end) const;
 
         boost::optional<mapped_type> set ( const path_iterator& pos
                                          , const path_iterator& end
                                          , const value_type& val
                                          );
 
+      const boost::optional<const value_type&> get
+        (const path_iterator& pos, const path_iterator& end) const;
+
       public:
         type();
 
-        std::list<std::pair<key_type, mapped_type> > list() const;
+        pnet::type::value::value_type const& value() const
+        {
+          return _value;
+        }
+        std::list<std::pair<key_type, mapped_type> > const& list() const;
 
         boost::optional<mapped_type>
           set (const path_type& path, const value_type& val);

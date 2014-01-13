@@ -386,17 +386,23 @@ namespace fhg
               WEAVE(property::value) (v);
             }
 
-            void operator () (const ::we::type::property::type& props) const
+            void operator () (const pnet::type::value::structured_type& props) const
             {
               BOOST_FOREACH
                 (::we::type::property::list_type::value_type const& p
-                , props.list()
+                , props
                 )
               {
                 WEAVE(property::open) (p.first);
                 boost::apply_visitor(*this, p.second);
                 WEAVE(property::close) ();
               }
+            }
+
+            template<typename T>
+              void operator() (T const&) const
+            {
+              throw std::runtime_error ("BUMMER, weaver::property");
             }
           };
         } // namespace visitor

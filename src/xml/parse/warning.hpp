@@ -391,8 +391,8 @@ namespace xml
           std::ostringstream s;
 
           s << "property " << fhg::util::join (key, ".")
-            << " value " << old_val
-            << " overwritten by value " << new_val
+            << " value " << pnet::type::value::show (old_val)
+            << " overwritten by value " << pnet::type::value::show (new_val)
             << " in " << path
             ;
 
