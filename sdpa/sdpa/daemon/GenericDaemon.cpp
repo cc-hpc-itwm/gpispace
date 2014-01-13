@@ -72,18 +72,6 @@ namespace
   }
 }
 
-namespace
-{
-  void discover (we::mgmt::layer::id_type, we::mgmt::layer::id_type)
-  {
-    throw std::runtime_error ("discover called: NYI");
-  }
-  void discovered (we::mgmt::layer::id_type, std::set<pnet::type::value::value_type>)
-  {
-    throw std::runtime_error ("discovered called: NYI");
-  }
-}
-
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , const master_info_list_t arrMasterInfo
