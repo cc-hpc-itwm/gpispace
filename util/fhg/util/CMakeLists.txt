@@ -12,6 +12,7 @@ endif()
 
 set (hdrs
   alphanum.hpp
+  daemonize.hpp
 
   join.hpp
   read_bool.hpp
@@ -46,6 +47,7 @@ set (hdrs
 
 set (srcs
   backtracing_exception.cpp
+  daemonize.cpp
   program_info.c
   threadname.cpp
   remove_prefix.cpp
