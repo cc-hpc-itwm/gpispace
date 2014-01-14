@@ -48,15 +48,7 @@ namespace fhg
     {
       while (!m_stop || !m_workload.empty ())
       {
-        boost::function<void()> w;
-        try
-        {
-          w = m_workload.get ();
-        }
-        catch (boost::thread_interrupted const &)
-        {
-          break;
-        }
+        boost::function<void()> w (m_workload.get());
 
         {
           boost::this_thread::disable_interruption di;
