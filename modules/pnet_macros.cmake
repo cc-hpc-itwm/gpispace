@@ -19,7 +19,7 @@ macro(PNET_COMPILE)
         --Woverwrite-file=false
         --Wbackup-file=false
         --force-overwrite-file=true
-        --Winline-many-output-ports=false
+        --Winline_many_output_ports=false
         --Wshadow-struct=false
         --Windependent-place=false
         --Wduplicate-external-function=false

@@ -112,7 +112,7 @@ namespace we { namespace type {
         path.push_back (key);
 
         boost::optional<const property::value_type&> expr
-          (prop().get_maybe_val (path));
+          (prop().get (path));
 
         if (!expr)
         {

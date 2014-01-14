@@ -5,6 +5,9 @@
 #include <xml/parse/error.hpp>
 #include <xml/parse/warning.hpp>
 
+#include <we/type/value/positions.hpp>
+
+#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
 namespace xml
@@ -23,8 +26,9 @@ namespace xml
                  , const property::value_type& value
                  )
         {
-          const boost::optional<property::mapped_type> old
-            (prop.set (path, value));
+          const boost::optional<pnet::type::value::value_type> old
+            (prop.get (path));
+          prop.set (path, value);
 
           if (old)
             {
@@ -54,17 +58,21 @@ namespace xml
                   , const property::type& y
                   )
         {
-          property::traverse::stack_type stack (property::traverse::dfs (y));
+          typedef std::pair< std::list<std::string>
+                           , pnet::type::value::value_type
+                           > path_and_value_type;
 
-          while (!stack.empty())
-            {
-              const property::traverse::pair_type & elem (stack.top());
-
-              ::xml::parse::util::property::set
-                  (state, x, elem.first, elem.second);
-
-              stack.pop();
-            }
+          BOOST_FOREACH ( path_and_value_type const& path_and_value
+                        , pnet::type::value::positions (y.value())
+                        )
+          {
+            ::xml::parse::util::property::set
+              ( state
+              , x
+              , path_and_value.first
+              , boost::get<std::string> (path_and_value.second)
+              );
+          }
         }
       }
     }

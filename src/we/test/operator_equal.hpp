@@ -18,7 +18,7 @@ namespace we
     {
       bool operator== (type const& lhs, type const& rhs)
       {
-        return lhs.get_map() == rhs.get_map();
+        return lhs.list() == rhs.list();
       }
     }
   }
