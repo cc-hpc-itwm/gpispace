@@ -35,10 +35,8 @@ namespace we
         }
         pnet::type::value::structured_type const& list() const;
 
-        boost::optional<pnet::type::value::value_type>
-          set (const path_type& path, const value_type& val);
-        boost::optional<pnet::type::value::value_type>
-          set (const std::string& path, const value_type& val);
+        void set (const path_type& path, const value_type& val);
+        void set (const std::string& path, const value_type& val);
 
         const boost::optional<const value_type&>
           get (const path_type& path) const;
@@ -66,11 +64,10 @@ namespace we
         }
         BOOST_SERIALIZATION_SPLIT_MEMBER()
 
-        boost::optional<pnet::type::value::value_type>
-          set ( const path_type::const_iterator& pos
-              , const path_type::const_iterator& end
-              , const value_type& val
-              );
+        void set ( const path_type::const_iterator& pos
+                 , const path_type::const_iterator& end
+                 , const value_type& val
+                 );
 
         const boost::optional<const value_type&> get
           ( const path_type::const_iterator& pos

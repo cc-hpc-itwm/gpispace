@@ -29,28 +29,20 @@ namespace we
         return boost::get<pnet::type::value::structured_type const&> (_value);
       }
 
-      boost::optional<pnet::type::value::value_type>
-        type::set ( const path_type::const_iterator& pos
-                  , const path_type::const_iterator& end
-                  , const value_type& val
-                  )
+      void type::set ( const path_type::const_iterator& pos
+                     , const path_type::const_iterator& end
+                     , const value_type& val
+                     )
       {
-        boost::optional<pnet::type::value::value_type> old_value
-          (pnet::type::value::peek (pos, end, _value));
-
         pnet::type::value::poke (pos, end, _value, val);
-
-        return old_value;
       }
 
-      boost::optional<pnet::type::value::value_type>
-        type::set (const path_type& path, const value_type& val)
+      void type::set (const path_type& path, const value_type& val)
       {
         return set (path.begin(), path.end(), val);
       }
 
-      boost::optional<pnet::type::value::value_type>
-        type::set (const std::string& path, const value_type& val)
+      void type::set (const std::string& path, const value_type& val)
       {
         return set (pnet::type::value::path::split (path), val);
       }
