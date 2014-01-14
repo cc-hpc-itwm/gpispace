@@ -159,7 +159,7 @@ namespace xml
         , _OWbackup_file ("Wbackup-file")
         , _OWduplicate_external_function ("Wduplicate-external-function")
         , _OWproperty_unknown ("Wproperty-unknown")
-        , _OWinline_many_output_ports ("Winline-many-output-ports")
+        , _OWinline_many_output_ports ("Winline_many_output_ports")
         , _OWvirtual_place_not_tunneled ("Wvirtual-place-not-tunneled")
         , _OWduplicate_template_parameter ("Wduplicate-template-parameter")
         , _OWsynthesize_anonymous_function ("Wsynthesize-anonymous-function")
@@ -331,7 +331,7 @@ namespace xml
           else if (  pos != end
                   && *pos == "warning"
                   && boost::next (pos) != end
-                  && *boost::next (pos) == "inline-many-output-ports"
+                  && *boost::next (pos) == "inline_many_output_ports"
                   )
           {
             /* do nothing, it's known */
