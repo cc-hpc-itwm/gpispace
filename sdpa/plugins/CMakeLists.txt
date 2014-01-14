@@ -75,19 +75,6 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
   COMPONENT plugins
 )
 
-fhg_add_plugin(wfe_eval wfe_eval.cpp
-  EXPORTS WFE_EVAL
-  LINK_LIBRARIES pnet
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  INSTALL
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
-  COMPONENT plugins
-)
-
 fhg_add_plugin(sdpac sdpac.cpp
   EXPORTS SDPAC
   LINK_LIBRARIES sdpa
