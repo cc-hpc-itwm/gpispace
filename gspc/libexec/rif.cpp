@@ -35,6 +35,58 @@ public:
   {
   }
 
+  FHG_PLUGIN_START()
+  {
+    size_t nthreads = fhg_kernel ()->get ("nthreads", 4L);
+
+    gspc::net::initialize (nthreads);
+
+    gspc::net::server::default_service_demux().handle
+      ("/service/echo", gspc::net::service::echo ());
+
+    m_server = gspc::net::serve ( fhg_kernel()->get ("url", "tcp://*")
+                                , gspc::net::server::default_queue_manager()
+                                );
+
+    MLOG (DEBUG, "listening on " << m_server->url ());
+
+    signal (SIGCHLD, SIG_DFL);
+
+    m_supervisor.onChildFailed.connect
+      (boost::bind (&RifImpl::on_child_failed, this, _1));
+    m_supervisor.onChildStarted.connect
+      (boost::bind (&RifImpl::on_child_started, this, _1));
+    m_supervisor.onChildTerminated.connect
+      (boost::bind (&RifImpl::on_child_terminated, this, _1));
+
+    m_supervisor.start ();
+
+    gspc::net::server::default_service_demux().handle
+      ("/service/rif", boost::bind (&RifImpl::handle, this, _1, _2, _3));
+    FHG_PLUGIN_STARTED();
+  }
+
+  FHG_PLUGIN_STOP()
+  {
+    m_supervisor.onChildFailed.connect
+      (boost::bind (&RifImpl::on_child_failed, this, _1));
+    m_supervisor.onChildStarted.connect
+      (boost::bind (&RifImpl::on_child_started, this, _1));
+    m_supervisor.onChildTerminated.connect
+      (boost::bind (&RifImpl::on_child_terminated, this, _1));
+
+    m_supervisor.stop ();
+
+    if (m_server)
+    {
+      m_server->stop ();
+    }
+
+    gspc::net::shutdown ();
+
+    FHG_PLUGIN_STOPPED();
+  }
+
   void shutdown ()
   {
     fhg_kernel ()->shutdown ();
@@ -202,58 +254,6 @@ public:
   void on_child_terminated (gspc::rif::supervisor_t::child_info_t const &chld)
   {
     MLOG (WARN, "child terminated: " << chld.descriptor.name);
-  }
-
-  FHG_PLUGIN_START()
-  {
-    size_t nthreads = fhg_kernel ()->get ("nthreads", 4L);
-
-    gspc::net::initialize (nthreads);
-
-    gspc::net::server::default_service_demux().handle
-      ("/service/echo", gspc::net::service::echo ());
-
-    m_server = gspc::net::serve ( fhg_kernel()->get ("url", "tcp://*")
-                                , gspc::net::server::default_queue_manager()
-                                );
-
-    MLOG (DEBUG, "listening on " << m_server->url ());
-
-    signal (SIGCHLD, SIG_DFL);
-
-    m_supervisor.onChildFailed.connect
-      (boost::bind (&RifImpl::on_child_failed, this, _1));
-    m_supervisor.onChildStarted.connect
-      (boost::bind (&RifImpl::on_child_started, this, _1));
-    m_supervisor.onChildTerminated.connect
-      (boost::bind (&RifImpl::on_child_terminated, this, _1));
-
-    m_supervisor.start ();
-
-    gspc::net::server::default_service_demux().handle
-      ("/service/rif", boost::bind (&RifImpl::handle, this, _1, _2, _3));
-    FHG_PLUGIN_STARTED();
-  }
-
-  FHG_PLUGIN_STOP()
-  {
-    m_supervisor.onChildFailed.connect
-      (boost::bind (&RifImpl::on_child_failed, this, _1));
-    m_supervisor.onChildStarted.connect
-      (boost::bind (&RifImpl::on_child_started, this, _1));
-    m_supervisor.onChildTerminated.connect
-      (boost::bind (&RifImpl::on_child_terminated, this, _1));
-
-    m_supervisor.stop ();
-
-    if (m_server)
-    {
-      m_server->stop ();
-    }
-
-    gspc::net::shutdown ();
-
-    FHG_PLUGIN_STOPPED();
   }
 
   void handle ( std::string const &dst
