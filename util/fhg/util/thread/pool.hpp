@@ -1,13 +1,12 @@
 #ifndef FHG_UTIL_THREAD_POOL_HPP
 #define FHG_UTIL_THREAD_POOL_HPP
 
-#include <list>
-#include <vector>
-#include <boost/thread.hpp>
-#include <boost/function.hpp>
-#include <boost/utility.hpp>
-
 #include <fhg/util/thread/queue.hpp>
+
+#include <boost/function.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/thread.hpp>
+#include <boost/utility.hpp>
 
 namespace fhg
 {
@@ -24,9 +23,7 @@ namespace fhg
     private:
       void worker (size_t rank);
 
-      typedef std::vector<boost::thread *>    thread_list_t;
-
-      thread_list_t m_threads;
+      boost::ptr_vector<boost::thread> m_threads;
       fhg::thread::queue<boost::function<void()> > m_workload;
     };
 

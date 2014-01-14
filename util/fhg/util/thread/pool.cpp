@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <boost/format.hpp>
+#include <boost/foreach.hpp>
 
 #include <fhg/util/threadname.hpp>
 #include <fhg/util/get_cpucount.h>
@@ -23,7 +24,7 @@ namespace fhg
         m_threads.push_back
           (new boost::thread (&pool_t::worker, this, i));
         fhg::util::set_threadname
-          ( *m_threads.back ()
+          ( m_threads.back ()
           , (boost::format ("%1%-%2%") % name % i).str ()
           );
       }
@@ -31,14 +32,11 @@ namespace fhg
 
     pool_t::~pool_t()
     {
-      for (std::size_t i = 0 ; i != m_threads.size () ; ++i)
+      BOOST_FOREACH (boost::thread& thread, m_threads)
       {
-        m_threads [i]->interrupt ();
-        m_threads [i]->join ();
-        delete m_threads [i];
+        thread.interrupt();
+        thread.join();
       }
-
-      m_threads.clear ();
     }
 
     void pool_t::worker (size_t rank)
