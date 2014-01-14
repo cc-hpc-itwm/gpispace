@@ -12,13 +12,13 @@ namespace fhg
   {
     pool_t::pool_t (std::size_t nthread, std::string const &name)
       : m_stop (true)
-      , m_nthread (nthread)
+      , m_nthread ( nthread == 0
+                  ? throw std::invalid_argument
+                    ("fhg::thread::pool_t: nthreads needs to be > 0")
+                  : nthread
+                  )
       , m_pool_name (name)
     {
-      if (0 == m_nthread)
-        throw std::invalid_argument
-          ("fhg::thread::pool_t: nthreads needs to be > 0");
-
       m_stop = false;
 
       for (std::size_t i = 0 ; i != m_nthread ; ++i)
