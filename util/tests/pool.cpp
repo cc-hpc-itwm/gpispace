@@ -32,12 +32,12 @@ BOOST_AUTO_TEST_CASE (simple_pool)
   if (ncpu < 0)
     ncpu = 1;
 
-  pool_t pool (ncpu);
+  {
+    pool_t pool (ncpu);
 
-  for (size_t i = 0 ; i < NUM_ITERATIONS; ++i)
-    pool.execute (s_work, s_work_callback);
-
-  pool.stop ();
+    for (size_t i = 0 ; i < NUM_ITERATIONS; ++i)
+      pool.execute (s_work, s_work_callback);
+  }
 
   BOOST_REQUIRE_EQUAL (s_work_count, NUM_ITERATIONS);
 }
