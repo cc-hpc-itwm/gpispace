@@ -14,6 +14,7 @@
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/daemonize.hpp>
 
 #include <boost/tokenizer.hpp>
 
@@ -106,32 +107,9 @@ int main (int argc, char **argv)
     }
   }
 
-  // everything is fine so far, daemonize
   if (vm.count ("daemonize"))
   {
-    if (pid_t child = fork())
-    {
-      if (child == -1)
-      {
-        LLOG (ERROR, logger, "could not fork: " << strerror(errno));
-        exit(EXIT_FAILURE);
-      }
-      else
-      {
-        exit (EXIT_SUCCESS);
-      }
-    }
-    setsid();
-    close(0); close(1); close(2);
-    int fd = open("/dev/null", O_RDWR);
-    if (-1 == dup(fd))
-    {
-      LLOG (WARN, logger, "could not duplicate /dev/null to stdout: " << strerror(errno));
-    }
-    if (-1 == dup(fd))
-    {
-      LLOG (WARN, logger, "could not duplicate /dev/null to stdout: " << strerror(errno));
-    }
+    fhg::util::fork_and_daemonize_child_and_abandon_parent();
   }
 
   if (pidfile_fd >= 0)

@@ -21,6 +21,7 @@
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
+#include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/get_home_dir.hpp>
 #include <fhg/util/program_info.h>
@@ -360,31 +361,15 @@ int setup_and_run_fhgkernel ( bool daemonize
     }
   }
 
-  // everything is fine so far, daemonize
   if (daemonize)
   {
-    if (pid_t child = fork())
+    try
     {
-      if (child == -1)
-      {
-        LLOG (ERROR, logger, "could not fork: " << strerror(errno));
-        exit(EXIT_FAILURE);
-      }
-      else
-      {
-        exit (EXIT_SUCCESS);
-      }
+      fhg::util::fork_and_daemonize_child_and_abandon_parent();
     }
-    setsid();
-    close(0); close(1); close(2);
-    int fd = open("/dev/null", O_RDWR);
-    if (-1 == dup(fd))
+    catch (const std::exception& ex)
     {
-      LLOG (WARN, logger, "could not duplicate /dev/null to stdout: " << strerror(errno));
-    }
-    if (-1 == dup(fd))
-    {
-      LLOG (WARN, logger, "could not duplicate /dev/null to stdout: " << strerror(errno));
+      LLOG (ERROR, logger, "daemonize failed: " << ex.what());
     }
   }
 

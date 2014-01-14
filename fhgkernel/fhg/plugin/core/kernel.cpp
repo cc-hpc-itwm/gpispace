@@ -15,6 +15,7 @@
 #include <fhg/plugin/core/null_storage.hpp>
 #include <fhg/plugin/core/file_storage.hpp>
 
+#include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/threadname.hpp>
 
@@ -659,14 +660,7 @@ namespace fhg
         (boost::lexical_cast<bool>(get("kernel.daemonize", "0")));
       if (daemonize)
       {
-        if (0 == fork())
-        {
-          setsid();
-        }
-        else
-        {
-          _exit (0);
-        }
+        fhg::util::fork_and_daemonize_child_and_abandon_parent();
       }
 
       while (!m_stop_requested)

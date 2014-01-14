@@ -22,6 +22,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
+#include <fhg/util/daemonize.hpp>
 #include <fhg/revision.hpp>
 
 #include <gpi-space/gpi/api.hpp>
@@ -708,43 +709,15 @@ int main (int ac, char *av[])
       }
     }
 
-    // everything is fine so far, daemonize
     if (daemonize)
     {
-      if (pid_t child = fork())
+      try
       {
-        if (child == -1)
-        {
-          LOG(ERROR, "could not fork: " << strerror(errno));
-          exit(EXIT_FAILURE);
-        }
-        else
-        {
-          exit (EXIT_SUCCESS);
-        }
+        fhg::util::fork_and_daemonize_child_and_abandon_parent();
       }
-      setsid();
-      close (0); close (1); close (2);
-      int fd = open ("/dev/null", O_RDWR);
-      // duplicate to stdout
-      if (dup (fd) < 0)
+      catch (const std::exception& ex)
       {
-        // should never happen actually
-        LOG ( ERROR
-            , "could not duplicate file descriptor to stdout: "
-            << strerror(errno)
-            );
-        exit (EXIT_FAILURE);
-      }
-
-      // duplicate to stderr
-      if (dup (fd) < 0)
-      {
-        // should never happen actually
-        LOG ( ERROR
-            , "could not duplicate file descriptor to stderr: "
-            << strerror(errno)
-            );
+        LOG (ERROR, ex.what());
         exit (EXIT_FAILURE);
       }
     }
