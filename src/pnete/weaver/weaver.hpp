@@ -388,10 +388,10 @@ namespace fhg
 
             void operator () (const pnet::type::value::structured_type& props) const
             {
-              BOOST_FOREACH
-                (::we::type::property::list_type::value_type const& p
-                , props
-                )
+              typedef std::pair<std::string, pnet::type::value::value_type>
+                prop_type;
+
+              BOOST_FOREACH (prop_type const& p, props)
               {
                 WEAVE(property::open) (p.first);
                 boost::apply_visitor(*this, p.second);
@@ -407,7 +407,7 @@ namespace fhg
           };
         } // namespace visitor
 
-        FUN(property, ::we::type::property::list_type::const_iterator::value_type, prop)
+        FUN(property, pnet::type::value::structured_type::const_iterator::value_type, prop)
         {
           WEAVE(property::open) (prop.first);
           boost::apply_visitor(visitor::property<State>(_state),prop.second);

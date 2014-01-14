@@ -35,8 +35,7 @@ namespace we
         {
           return _value;
         }
-        std::list<std::pair<key_type, pnet::type::value::value_type> > const&
-          list() const;
+        pnet::type::value::structured_type const& list() const;
 
         boost::optional<pnet::type::value::value_type>
           set (const path_type& path, const value_type& val);

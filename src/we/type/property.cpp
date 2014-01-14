@@ -24,8 +24,7 @@ namespace we
         : _value (pnet::type::value::structured_type())
       {}
 
-      std::list<std::pair<key_type, pnet::type::value::value_type> > const&
-        type::list() const
+      pnet::type::value::structured_type const& type::list() const
       {
         return boost::get<pnet::type::value::structured_type const&> (_value);
       }

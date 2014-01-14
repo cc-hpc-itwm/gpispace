@@ -24,7 +24,6 @@ namespace we
       struct type;
 
       typedef std::list<key_type> path_type;
-      typedef std::list<std::pair<key_type, pnet::type::value::value_type> > list_type;
 
       namespace exception
       {
