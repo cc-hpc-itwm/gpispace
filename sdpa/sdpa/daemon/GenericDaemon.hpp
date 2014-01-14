@@ -95,16 +95,11 @@ namespace sdpa {
       bool isTop() { return m_arrMasterInfo.empty(); }
 
       // WE interface
-      void submit( const we::layer::id_type & id
-                 , const we::type::activity_t&
-                 , const we::layer::id_type& parent_id
-                         );
+      void submit( const we::layer::id_type & id, const we::type::activity_t&);
       void cancel(const we::layer::id_type & id);
       virtual void finished(const we::layer::id_type & id, const we::type::activity_t& result);
       virtual void failed( const we::layer::id_type& wfId, int errc, std::string const& reason);
       void canceled(const we::layer::id_type& id);
-      virtual void pause(const job_id_t& id ) = 0;
-      virtual void resume(const job_id_t& id ) = 0;
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
@@ -137,8 +132,6 @@ namespace sdpa {
       virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* );
       virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* ) = 0;
       //virtual void handleJobResultsReplyEvent (const sdpa::events::JobResultsReplyEvent *) ?!
-      virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *);
-      virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *);
       virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent* );
       virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent* );
       //virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) ?!
@@ -176,16 +169,10 @@ namespace sdpa {
 
     public:
       // forwarding to jobManager() only:
-      //void addJob( const sdpa::job_id_t& jid, Job* pJob, const job_requirements_t& reqList = job_requirements_t())
-      void addJob ( const sdpa::job_id_t& job_id
-                    , const job_desc_t desc
-                    , const job_id_t &parent
-                    , bool is_master_job
-                    , const worker_id_t& owner
-                    , const job_requirements_t& req_list = job_requirements_t()
-                  )
+      void TEST_add_dummy_job
+        (const sdpa::job_id_t& job_id, const job_requirements_t& req_list)
       {
-        return jobManager().addJob(job_id, desc, parent, is_master_job, owner, req_list);
+        return jobManager().addJob (job_id, job_id, false, "", req_list);
       }
       bool hasJobs()
       {
@@ -213,9 +200,6 @@ namespace sdpa {
       {
         scheduler()->getWorkerCapabilities(worker_id, wCpbset);
       }
-
-      bool noChildJobStalled(const sdpa::job_id_t& jobId) const;
-      bool noChildJobRunning(const sdpa::job_id_t& jobId) const;
 
     protected:
       const JobManager& jobManager() const { return _job_manager; }

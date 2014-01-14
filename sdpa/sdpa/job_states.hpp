@@ -18,7 +18,6 @@ namespace sdpa
         // non-terminal states
       , PENDING
       , RUNNING
-      , STALLED
       , CANCELING
       };
 
@@ -53,8 +52,6 @@ namespace sdpa
         return "SDPA::Canceled";
       case CANCELING:
         return "SDPA::Canceling";
-      case STALLED:
-        return "SDPA::Stalled";
       default:
         return "Strange job state";
       }

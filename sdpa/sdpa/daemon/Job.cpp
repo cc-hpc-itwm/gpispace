@@ -6,13 +6,11 @@ namespace sdpa {
   namespace daemon {
     Job::Job( const job_id_t id
               , const job_desc_t desc
-              , const boost::optional<job_id_t> &parent
               , bool is_master_job
               , const worker_id_t& owner
             )
         : id_(id)
         , desc_(desc)
-        , parent_(parent)
         , _is_master_job (is_master_job)
         , result_()
         , m_error_code(0)
@@ -25,11 +23,6 @@ namespace sdpa {
     const job_id_t & Job::id() const
     {
       return id_;
-    }
-
-    const boost::optional<job_id_t> & Job::parent() const
-    {
-      return parent_;
     }
 
     const job_desc_t & Job::description() const
@@ -109,42 +102,6 @@ namespace sdpa {
       evt.ptrScheduler()->schedule(id());
     }
 
-    void Job::action_job_stalled(const MSMStalledEvent& evt)
-    {
-      DLLOG (TRACE, _logger, "The job "<<id()<<" changed its status from RUNNING to STALLED");
-      if(evt.ptrAgent()) {
-        // notify the the job owner that the job has no subtasks running
-        // and at least one is in pending or stalled
-        if( evt.ptrAgent()->noChildJobRunning(id()) )
-        {
-          DLLOG (TRACE, _logger, "Send  JobStalledEvent for the job "<<id()<<" to the master "<<owner());
-            events::JobStalledEvent::Ptr pEvt(new events::JobStalledEvent( evt.ptrAgent()->name()
-                                                                           , owner()
-                                                                           , id()));
-            evt.ptrAgent()->sendEventToOther(pEvt);
-        }
-      }
-    }
-
-    void Job::action_resume_job(const MSMResumeJobEvent& evt)
-    {
-      DLLOG (TRACE, _logger, "The job "<<id()<<" changed its status from STALLED to RUNNING");
-      if(evt.ptrAgent())
-      {
-        //if( evt.ptrAgent()->noChildJobStalled(id()) )
-        {
-          DLLOG (TRACE, _logger, "Send  JobRunningEvent for the job "<<id()<<" to the master "<<owner());
-            // notify the the job owner that the job makes progress
-            sdpa::events::JobRunningEvent::Ptr pEvt(
-                new sdpa::events::JobRunningEvent( evt.ptrAgent()->name()
-                                                   , owner()
-                                                   , id()
-                                                  ));
-            evt.ptrAgent()->sendEventToOther(pEvt);
-         }
-      }
-    }
-
     void Job::action_retrieve_job_results(const MSMRetrieveJobResultsEvent& e)
     {
       const events::JobResultsReplyEvent::Ptr pResReply(
@@ -192,21 +149,9 @@ namespace sdpa {
       process_event(MSMRescheduleEvent (pSched));
     }
 
-    void Job::Pause(GenericDaemon* pAgent)
-    {
-      lock_type lock(mtx_);
-      process_event (MSMStalledEvent (pAgent));
-    }
-
-    void Job::Resume (GenericDaemon* pAgent)
-    {
-      lock_type lock(mtx_);
-      process_event (MSMResumeJobEvent (pAgent));
-    }
-
     void Job::Dispatch()
     {
       lock_type lock(mtx_);
-      process_event (MSMResumeJobEvent (NULL));
+      process_event (MSMDispatchJobEvent (NULL));
     }
 }}

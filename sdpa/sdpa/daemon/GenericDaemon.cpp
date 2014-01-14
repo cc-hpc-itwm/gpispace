@@ -87,7 +87,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer
-                           ( boost::bind (&GenericDaemon::submit, this, _1, _2, _3)
+                           ( boost::bind (&GenericDaemon::submit, this, _1, _2)
                            , boost::bind (&GenericDaemon::cancel, this, _1)
                            , boost::bind (&GenericDaemon::finished, this, _1, _2)
                            , boost::bind (&GenericDaemon::failed, this, _1, _2, _3)
@@ -214,8 +214,6 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
                                                           worker_id,
                                                           ptrJob->id(),
                                                           ptrJob->description(),
-                                                                         //! \todo There is a parent known for this job: ptrJob->parent()
-                                                                         boost::none,
                                                           worker_list));
 
         sendEventToOther(pSubmitEvt);
@@ -289,7 +287,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   try {
     // One should parse the workflow in order to be able to create a valid job
     bool b_master_job(e.is_external() && hasWorkflowEngine());
-    jobManager().addJob(job_id, e.description(), e.parent_id(), b_master_job, e.from());
+    jobManager().addJob(job_id, e.description(), b_master_job, e.from());
   }
   catch(std::bad_alloc const &ex)
   {
@@ -542,7 +540,6 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
  */
 void GenericDaemon::submit( const we::layer::id_type& activityId
                           , const we::type::activity_t& activity
-                          , const we::layer::id_type& parent_id
                           )
 {
   const we::type::schedule_data schedule_data
@@ -577,7 +574,7 @@ void GenericDaemon::submit( const we::layer::id_type& activityId
   jobManager().addJobRequirements(job_id, jobReqs);
 
   // don't forget to set here the job's preferences
-  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string(), sdpa::job_id_t (parent_id)) );
+  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string()) );
   sendEventToSelf(pEvtSubmitJob);
 
   _.dont();
@@ -1119,7 +1116,6 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 
         case sdpa::status::PENDING:
         case sdpa::status::RUNNING:
-        case sdpa::status::STALLED:
         case sdpa::status::CANCELING:
           // send nothing to the master if the job is not completed
           break;
@@ -1301,25 +1297,4 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
     sendEventToOther(pErrorEvt);
   }
 }
-
-void GenericDaemon::handleJobStalledEvent (const events::JobStalledEvent *pEvt)
-{
-  pause(pEvt->job_id());
-}
-
-void GenericDaemon::handleJobRunningEvent (const events::JobRunningEvent *pEvt)
-{
-  resume(pEvt->job_id());
-}
-
-bool GenericDaemon::noChildJobStalled(const sdpa::job_id_t& jobId) const
-{
-  return jobManager().noChildJobStalled(jobId);
-}
-
-bool GenericDaemon::noChildJobRunning(const sdpa::job_id_t& jobId) const
-{
-  return jobManager().noChildJobRunning(jobId);
-}
-
 }}

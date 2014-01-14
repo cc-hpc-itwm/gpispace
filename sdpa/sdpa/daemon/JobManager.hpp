@@ -28,7 +28,6 @@ namespace sdpa
 
       void addJob ( const sdpa::job_id_t& job_id
                   , const job_desc_t desc
-                  , const boost::optional<job_id_t> &parent
                   , bool is_master_job
                   , const worker_id_t& owner
                   , const job_requirements_t& = job_requirements_t()
@@ -42,9 +41,6 @@ namespace sdpa
       bool hasJobs() const;
 
       void resubmitResults (GenericDaemon*) const;
-
-      bool noChildJobStalled(const sdpa::job_id_t& jobId) const;
-      bool noChildJobRunning(const sdpa::job_id_t& jobId) const;
 
   protected:
       mutable mutex_type _job_map_and_requirements_mutex;

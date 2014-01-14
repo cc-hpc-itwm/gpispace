@@ -26,8 +26,6 @@ namespace sdpa
     class CapabilitiesLostEvent;
     class SubscribeEvent;
     class SubscribeAckEvent;
-    class JobStalledEvent;
-    class JobRunningEvent;
 
     class EventHandler
     {
@@ -54,8 +52,6 @@ namespace sdpa
       virtual void handleCapabilitiesLostEvent (const sdpa::events::CapabilitiesLostEvent*) {}
       virtual void handleSubscribeEvent (const sdpa::events::SubscribeEvent*) {}
       virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) {}
-      virtual void handleJobStalledEvent (const sdpa::events::JobStalledEvent *) {}
-      virtual void handleJobRunningEvent (const sdpa::events::JobRunningEvent *) {}
     };
   }
 }

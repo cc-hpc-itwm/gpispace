@@ -26,7 +26,7 @@ namespace we
       typedef sdpa::job_id_t id_type;
 
       layer ( // submit: external activities from submitted net -> child jobs
-              boost::function<void (id_type, type::activity_t, id_type parent)> rts_submit
+              boost::function<void (id_type, type::activity_t)> rts_submit
               // reply to cancel (parent)/on failure (child) -> child jobs
             , boost::function<void (id_type)> rts_cancel
               // reply to submit on success -> top level
@@ -57,7 +57,7 @@ namespace we
 
 
     private:
-      boost::function<void (id_type, type::activity_t, id_type)> _rts_submit;
+      boost::function<void (id_type, type::activity_t)> _rts_submit;
       boost::function<void (id_type)> _rts_cancel;
       boost::function<void (id_type, type::activity_t)> _rts_finished;
       boost::function<void (id_type, int, std::string)> _rts_failed;

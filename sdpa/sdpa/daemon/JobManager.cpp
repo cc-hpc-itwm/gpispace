@@ -32,7 +32,6 @@ namespace sdpa
 
     void JobManager::addJob ( const sdpa::job_id_t& job_id
                             , const job_desc_t desc
-                            , const boost::optional<job_id_t> &parent
                             , bool is_master_job
                             , const worker_id_t& owner
                             , const job_requirements_t& job_req_list
@@ -40,7 +39,7 @@ namespace sdpa
     {
       lock_type _ (_job_map_and_requirements_mutex);
 
-      Job* pJob = new Job( job_id, desc, parent, is_master_job, owner );
+      Job* pJob = new Job( job_id, desc, is_master_job, owner );
 
       job_map_.insert(std::make_pair (job_id, pJob));
 
@@ -132,7 +131,6 @@ namespace sdpa
           break;
 
         case sdpa::status::RUNNING:
-        case sdpa::status::STALLED:
         case sdpa::status::CANCELING:
           // don't send anything to the master if the job is not completed or in a pending state
           break;
@@ -147,46 +145,6 @@ namespace sdpa
       lock_type _ (_job_map_and_requirements_mutex);
 
       return !job_map_.empty();
-    }
-
-    bool JobManager::noChildJobStalled(const sdpa::job_id_t& jobId) const
-    {
-      lock_type lock(_job_map_and_requirements_mutex);
-      BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
-      {
-        assert(pJob);
-        if( pJob->parent()==jobId && pJob->getStatus()==sdpa::status::STALLED )
-            return false;
-      }
-
-      BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
-      {
-        assert(pJob);
-        if( pJob->parent()==jobId && !pJob->completed()  )
-          return true;
-      }
-
-      return false;
-    }
-
-    bool JobManager::noChildJobRunning(const sdpa::job_id_t& jobId) const
-    {
-     lock_type lock(_job_map_and_requirements_mutex);
-     BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
-     {
-       assert(pJob);
-       if( pJob->parent()==jobId && pJob->getStatus()==sdpa::status::RUNNING )
-           return false;
-     }
-
-     BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
-     {
-       assert(pJob);
-       if( pJob->parent()==jobId && !pJob->completed()  )
-         return true;
-     }
-
-     return false;
     }
   }
 }

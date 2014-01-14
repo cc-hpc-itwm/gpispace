@@ -9,7 +9,7 @@
 namespace we
 {
     layer::layer
-        ( boost::function<void (id_type, type::activity_t, id_type)> rts_submit
+        ( boost::function<void (id_type, type::activity_t)> rts_submit
         , boost::function<void (id_type)> rts_cancel
         , boost::function<void (id_type, type::activity_t)> rts_finished
         , boost::function<void (id_type, int, std::string)> rts_failed
@@ -246,7 +246,7 @@ namespace we
         {
           const id_type child_id (_rts_id_generator());
           _running_jobs.started (activity_data._id, child_id);
-          _rts_submit (child_id, *activity, activity_data._id);
+          _rts_submit (child_id, *activity);
           was_active = true;
         }
 

@@ -7,8 +7,6 @@
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/JobResultsReplyEvent.hpp>
-#include <sdpa/events/JobRunningEvent.hpp>
-#include <sdpa/events/JobStalledEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
@@ -44,7 +42,6 @@ namespace sdpa {
 
       // The list of FSM states
       struct Pending : public boost::msm::front::state<>{};
-      struct Stalled : public boost::msm::front::state<>{};
       struct Running : public boost::msm::front::state<>{};
       struct Finished : public boost::msm::front::state<>{};
       struct Failed : public boost::msm::front::state<>{};
@@ -60,17 +57,10 @@ namespace sdpa {
       private:
         SchedulerBase* m_pScheduler;
       };
-      struct MSMStalledEvent{
-        MSMStalledEvent(GenericDaemon* pAgent)
-          : m_pAgent(pAgent)
-        {}
-        GenericDaemon* ptrAgent() const { return m_pAgent; }
-      private:
-        GenericDaemon* m_pAgent;
-      };
-      struct MSMResumeJobEvent
+
+      struct MSMDispatchJobEvent
       {
-        MSMResumeJobEvent(GenericDaemon* pAgent)
+        MSMDispatchJobEvent(GenericDaemon* pAgent)
           : m_pAgent(pAgent)
         {}
         GenericDaemon* ptrAgent() const { return m_pAgent; }
@@ -98,8 +88,6 @@ namespace sdpa {
       virtual void action_job_failed(const events::JobFailedEvent&) = 0;
       virtual void action_job_finished(const events::JobFinishedEvent&) = 0;
       virtual void action_reschedule_job(const MSMRescheduleEvent&) = 0;
-      virtual void action_job_stalled(const MSMStalledEvent&) = 0;
-      virtual void action_resume_job(const MSMResumeJobEvent&) = 0;
       virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&) = 0;
 
       typedef JobFSM_ sm; // makes transition table cleaner
@@ -108,23 +96,16 @@ namespace sdpa {
         <
         //      Start           Event                                   Next           Action                Guard
         //      +---------------+---------------------------------------+--------------+---------------------+-----
-        _row<   Pending,        MSMResumeJobEvent,                      Running >,
+        _row<   Pending,        MSMDispatchJobEvent,                      Running >,
         _row<   Pending,        events::CancelJobEvent, 		Canceled>,
         a_row<  Pending,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished >,
         a_row<  Pending,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
-        a_row<  Pending,        MSMStalledEvent,                        Stalled,        &sm::action_job_stalled >,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        a_row<  Stalled,        MSMResumeJobEvent,        		Running,        &sm::action_resume_job >,
-        a_row<  Stalled,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
-        a_irow< Stalled,        MSMStalledEvent,                                        &sm::action_job_stalled >,
-        _row<   Stalled,        sdpa::events::CancelJobEvent,           Canceling>,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished>,
         a_row<  Running,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
         _row<   Running,        events::CancelJobEvent,                 Canceling>,
         a_row<  Running,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
-        a_row<  Running,        MSMStalledEvent,        		Stalled,        &sm::action_job_stalled >,
-        _irow<  Running,        MSMResumeJobEvent>,
+        _irow<  Running,        MSMDispatchJobEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Finished,       events::JobFinishedEvent>,
@@ -136,15 +117,12 @@ namespace sdpa {
         a_row<  Canceling, 	sdpa::events::JobFinishedEvent,      	Canceled,       &sm::action_job_finished>,
         a_row<  Canceling, 	sdpa::events::JobFailedEvent,           Canceled,       &sm::action_job_failed>,
         _irow<  Canceling,      sdpa::events::CancelJobEvent>,
-        _irow<  Canceling,      MSMResumeJobEvent>,
-        _irow<  Canceling,      MSMStalledEvent>,
+        _irow<  Canceling,      MSMDispatchJobEvent>,
         //      +---------------+-------------------------------------------+-------------------+---------------------+-----
         a_irow< Canceled,       MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
         _irow<  Canceled,       events::CancelJobAckEvent>,
         _irow<  Canceled,       events::JobFinishedEvent>,
-        _irow<  Canceled,       events::JobFailedEvent>,
-        _irow<  Canceled,       MSMResumeJobEvent>,
-        _irow<  Canceled,       MSMStalledEvent>
+        _irow<  Canceled,       events::JobFailedEvent>
         >{};
 
       //! \note This table refers to the order in which states are
@@ -154,7 +132,6 @@ namespace sdpa {
       {
         static status::code const state_codes[] =
           { status::PENDING
-          , status::STALLED
           , status::RUNNING
           , status::FINISHED
           , status::FAILED
@@ -193,20 +170,17 @@ namespace sdpa {
 
       Job ( const job_id_t id
           , const job_desc_t desc
-          , const boost::optional<job_id_t> &parent
           , bool is_master_job
           , const worker_id_t& owner
           );
 
       const job_id_t& id() const;
-      const boost::optional<job_id_t>& parent() const;
       const job_desc_t& description() const;
       const job_result_t& result() const;
 
       int error_code() const;
       std::string error_message () const;
 
-      //! \todo Should somehow be equivalent to having a parent
       bool isMasterJob() const;
 
       void set_owner(const worker_id_t& owner);
@@ -222,8 +196,6 @@ namespace sdpa {
       virtual void action_job_failed(const events::JobFailedEvent&);
       virtual void action_job_finished(const events::JobFinishedEvent&);
       virtual void action_reschedule_job(const MSMRescheduleEvent&);
-      virtual void action_job_stalled(const MSMStalledEvent&);
-      virtual void action_resume_job(const MSMResumeJobEvent&);
       virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&);
 
       //transitions
@@ -236,14 +208,11 @@ namespace sdpa {
       void Reschedule(SchedulerBase*);
 
       void Dispatch();
-      void Pause(GenericDaemon*);
-      void Resume(GenericDaemon*);
 
     private:
       mutable mutex_type mtx_;
       job_id_t id_;
       job_desc_t desc_;
-      boost::optional<job_id_t> parent_;
 
       bool _is_master_job;
       job_result_t result_;

@@ -114,10 +114,10 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
       // about the status of the job (either finished, or failed
       // the group is finished when all the partial results are "finished"
       if(bTaskGroupComputed) {
-          DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" finished");
           if(scheduler()->groupFinished(actId))
           {
             pJob->JobFinished(pEvt);
+            DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
             workflowEngine()->finished
               (actId, we::type::activity_t (pEvt->result()));
           }
@@ -131,6 +131,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
             pJob->JobFailed(pJobFailedEvt);
             delete pJobFailedEvt;
 
+            DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has failed");
             workflowEngine()->failed( actId,
                                       sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
                                       "One of tasks of the group failed with the actual reservation!");
@@ -687,44 +688,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
       LLOG (WARN, _logger, "the JobManager could not delete the job: "<< pEvt->job_id());
     }
   }
-}
-
-void Agent::pause(const job_id_t& jobId)
-{
-  Job* pJob(jobManager().findJob(jobId));
-  if(pJob)
-  {
-      pJob->Pause(NULL);
-      if(!pJob->isMasterJob() && pJob->parent())
-      {
-          Job* pMasterJob(jobManager().findJob(*pJob->parent()));
-          if(pMasterJob)
-            pMasterJob->Pause(this);
-      }
-
-      return;
-   }
-
-  DLLOG (ERROR, _logger, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
-}
-
-void Agent::resume(const job_id_t& jobId)
-{
-  Job* pJob(jobManager().findJob(jobId));
-  if(pJob)
-  {
-      pJob->Resume(NULL);
-      if(!pJob->isMasterJob() && pJob->parent())
-      {
-          Job* pMasterJob(jobManager().findJob(*pJob->parent()));
-          if(pMasterJob)
-            pMasterJob->Resume(this);
-      }
-
-      return;
-  }
-
-  DLLOG (WARN, _logger, "Couldn't mark the worker job "<<jobId<<" as RUNNING. The job was not found!");
 }
 
 }} // end namespaces
