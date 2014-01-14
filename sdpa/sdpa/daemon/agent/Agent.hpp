@@ -43,6 +43,7 @@ namespace sdpa {
         virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* )
           { throw std::runtime_error("Not implemented.The agent should not call handleDeleteJobEvent!"); }
         virtual void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt);
+        virtual void handleDiscoverJobStatestReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt);
 
         void cancelPendingJob (const sdpa::events::CancelJobEvent& evt);
 

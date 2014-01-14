@@ -736,4 +736,9 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
 
 }
 
+void Agent::handleDiscoverJobStatestReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
+{
+
+}
+
 }} // end namespaces
