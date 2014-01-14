@@ -17,12 +17,10 @@ BOOST_AUTO_TEST_CASE (simple_pool)
 {
   static const size_t NUM_ITERATIONS = 100;
 
-  using namespace fhg::thread;
-
   fhg::thread::atomic<int> counter (0);
 
   {
-    pool_t pool (13);
+    fhg::thread::pool_t pool (13);
 
     for (size_t i = 0 ; i < NUM_ITERATIONS; ++i)
       pool.execute (boost::bind (&sleep_and_increase, &counter));
