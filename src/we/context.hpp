@@ -5,12 +5,10 @@
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.fwd.hpp>
 
-#include <we/mgmt/type/activity.fwd.hpp>
+#include <we/type/activity.fwd.hpp>
 
 namespace we
 {
-  namespace mgmt
-  {
     /* context requirements
 
        internal
@@ -43,7 +41,7 @@ namespace we
     class context
     {
     protected:
-      typedef we::mgmt::type::activity_t activity_t;
+      typedef we::type::activity_t activity_t;
       typedef petri_net::net net_t;
       typedef we::type::module_call_t mod_t;
       typedef we::type::expression_t expr_t;
@@ -58,7 +56,6 @@ namespace we
 
       virtual ~context() {}
     };
-  }
 }
 
 #endif

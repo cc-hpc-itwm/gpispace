@@ -35,7 +35,7 @@ using namespace std;
 using namespace sdpa::daemon;
 
 WorkerManager::WorkerManager()
-  : SDPA_INIT_LOGGER("sdpa::daemon::WorkerManager")
+  : _logger (fhg::log::Logger::get ("sdpa::daemon::WorkerManager"))
 {}
 
 Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
@@ -108,7 +108,7 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
     //if( it->second->name() ==  workerId )
     if( it->first == workerId )
     {
-      //SDPA_LOG_ERROR("An worker with the id "<<workerId<<" already exist into the worker map!");
+      //LLOG (ERROR, _logger, "An worker with the id "<<workerId<<" already exist into the worker map!");
       bFound = true;
       throw WorkerAlreadyExistException(workerId, agent_uuid);
     }
@@ -121,11 +121,11 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 
   if (pWorker->capacity())
   {
-    DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<*pWorker->capacity());
+    DLLOG (TRACE, _logger, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<*pWorker->capacity());
   }
   else
   {
-    DMLOG (TRACE, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and unlimited capacity");
+    DLLOG (TRACE, _logger, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and unlimited capacity");
   }
 }
 
@@ -133,7 +133,7 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
-  DLOG(TRACE, "Dispatch the job " << jobId.str() );
+  DLLOG (TRACE, _logger, "Dispatch the job " << jobId );
   common_queue_.push(jobId);
 }
 
@@ -159,14 +159,14 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
     Worker::ptr_t ptrWorker = findWorker(worker_id);
     // delete job from worker's queues
 
-    DLOG(TRACE, "Deleting the job " << job_id.str() << " from the "<<worker_id<<"'s queues!");
+    DLLOG (TRACE, _logger, "Deleting the job " << job_id << " from the "<<worker_id<<"'s queues!");
     ptrWorker->deleteJob(job_id);
   }
   catch(JobNotDeletedException const &) {
-    SDPA_LOG_ERROR("Could not delete the job "<<job_id.str()<<"!");
+    LLOG (ERROR, _logger, "Could not delete the job "<<job_id<<"!");
   }
   catch(WorkerNotFoundException const &) {
-    SDPA_LOG_ERROR("Worker "<<worker_id<<" not found!");
+    LLOG (ERROR, _logger, "Worker "<<worker_id<<" not found!");
   }
 }
 
@@ -179,7 +179,7 @@ void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId )
     throw WorkerNotFoundException(workerId);
 
   worker_map_.erase (w);
-  DMLOG (TRACE, "worker " << workerId << " removed");
+  DLLOG (TRACE, _logger, "worker " << workerId << " removed");
 }
 
 bool WorkerManager::has_job(const sdpa::job_id_t& job_id)

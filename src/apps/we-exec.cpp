@@ -1,8 +1,8 @@
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
-#include <we/mgmt/context.hpp>
-#include <we/mgmt/layer.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/context.hpp>
+#include <we/layer.hpp>
+#include <we/type/activity.hpp>
 
 #include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
@@ -26,13 +26,13 @@
 
 namespace
 {
-  struct context : public we::mgmt::context
+  struct context : public we::context
   {
-    context ( const we::mgmt::layer::id_type& id
+    context ( const we::layer::id_type& id
             , we::loader::loader* loader
-            , we::mgmt::layer* layer
-            , boost::function<we::mgmt::layer::id_type
-                               (we::mgmt::layer::id_type const&)
+            , we::layer* layer
+            , boost::function<we::layer::id_type
+                               (we::layer::id_type const&)
                              > const& new_id
             )
       : _id (id)
@@ -41,23 +41,23 @@ namespace
       , _new_id (new_id)
     {}
 
-    virtual void handle_internally (we::mgmt::type::activity_t& act, net_t const& n)
+    virtual void handle_internally (we::type::activity_t& act, net_t const& n)
     {
       handle_externally (act, n);
     }
-    virtual void handle_internally (we::mgmt::type::activity_t&, mod_t const&)
+    virtual void handle_internally (we::type::activity_t&, mod_t const&)
     {
       throw std::runtime_error ("NO internal mod here!");
     }
-    virtual void handle_internally (we::mgmt::type::activity_t&, expr_t const&)
+    virtual void handle_internally (we::type::activity_t&, expr_t const&)
     {
       throw std::runtime_error ("NO internal expr here!");
     }
-    virtual void handle_externally (we::mgmt::type::activity_t& act, net_t const&)
+    virtual void handle_externally (we::type::activity_t& act, net_t const&)
     {
       _layer->submit (_new_id (_id), act);
     }
-    virtual void handle_externally (we::mgmt::type::activity_t& act, mod_t const& mod)
+    virtual void handle_externally (we::type::activity_t& act, mod_t const& mod)
     {
       try
       {
@@ -72,17 +72,17 @@ namespace
         _layer->failed (_id, fhg::error::MODULE_CALL_FAILED, ex.what());
       }
     }
-    virtual void handle_externally (we::mgmt::type::activity_t&, expr_t const&)
+    virtual void handle_externally (we::type::activity_t&, expr_t const&)
     {
       throw std::runtime_error ("NO external expr here!");
     }
 
 
   private:
-    we::mgmt::layer::id_type _id;
+    we::layer::id_type _id;
     we::loader::loader* _loader;
-    we::mgmt::layer* _layer;
-    boost::function<we::mgmt::layer::id_type (we::mgmt::layer::id_type const&)>
+    we::layer* _layer;
+    boost::function<we::layer::id_type (we::layer::id_type const&)>
       _new_id;
   };
 
@@ -91,13 +91,13 @@ namespace
     job_t()
     {}
 
-    job_t (const we::mgmt::layer::id_type& id_, const we::mgmt::type::activity_t& act_)
+    job_t (const we::layer::id_type& id_, const we::type::activity_t& act_)
       : id (id_)
       , act (act_)
     {}
 
-    we::mgmt::layer::id_type id;
-    we::mgmt::type::activity_t act;
+    we::layer::id_type id;
+    we::type::activity_t act;
   };
 
   namespace
@@ -114,13 +114,13 @@ namespace
 
   struct sdpa_daemon
   {
-    typedef boost::unordered_map< we::mgmt::layer::id_type
-                                , we::mgmt::layer::id_type
+    typedef boost::unordered_map< we::layer::id_type
+                                , we::layer::id_type
                                 > id_map_t;
 
     sdpa_daemon ( std::size_t num_worker
                 , we::loader::loader* loader
-                , we::mgmt::type::activity_t const act
+                , we::type::activity_t const act
                 , boost::optional<std::size_t> const timeout
                 , boost::mt19937& random_extraction_engine
                 )
@@ -192,17 +192,17 @@ namespace
       MLOG (INFO, "SDPA layer worker-" << rank << " stopped");
     }
 
-    we::mgmt::layer::id_type gen_id()
+    we::layer::id_type gen_id()
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id);
 
       return boost::lexical_cast<std::string> (++_id);
     }
 
-    we::mgmt::layer::id_type
-      add_mapping (const we::mgmt::layer::id_type& old_id)
+    we::layer::id_type
+      add_mapping (const we::layer::id_type& old_id)
     {
-      we::mgmt::layer::id_type const new_id (gen_id());
+      we::layer::id_type const new_id (gen_id());
 
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
 
@@ -210,12 +210,12 @@ namespace
 
       return new_id;
     }
-    boost::optional<we::mgmt::layer::id_type>
-      get_and_delete_mapping (const we::mgmt::layer::id_type& id)
+    boost::optional<we::layer::id_type>
+      get_and_delete_mapping (const we::layer::id_type& id)
     {
       boost::unique_lock<boost::recursive_mutex> const _ (_mutex_id_map);
 
-      boost::optional<we::mgmt::layer::id_type> mapped;
+      boost::optional<we::layer::id_type> mapped;
 
       id_map_t::iterator pos (id_map_.find (id));
 
@@ -251,19 +251,19 @@ namespace
       return *_result;
     }
 
-    void submit ( const we::mgmt::layer::id_type& id
-                , const we::mgmt::type::activity_t& act
-                , const we::mgmt::layer::id_type& parent_id
+    void submit ( const we::layer::id_type& id
+                , const we::type::activity_t& act
+                , const we::layer::id_type& parent_id
                 )
     {
       jobs_.put (job_t (id, act));
     }
 
-    void cancel (const we::mgmt::layer::id_type& id)
+    void cancel (const we::layer::id_type& id)
     {
       std::cout << "cancel[" << id << "]" << std::endl;
 
-      boost::optional<we::mgmt::layer::id_type> const mapped
+      boost::optional<we::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
       if (mapped)
@@ -272,9 +272,9 @@ namespace
       }
     }
 
-    void finished (const we::mgmt::layer::id_type& id, we::mgmt::type::activity_t act)
+    void finished (const we::layer::id_type& id, we::type::activity_t act)
     {
-      boost::optional<we::mgmt::layer::id_type> const mapped
+      boost::optional<we::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
       act.collect_output();
@@ -286,11 +286,11 @@ namespace
       else if (id == _job_id)
       {
         std::cout << "finished [" << id << "]" << std::endl;
-        BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
+        BOOST_FOREACH ( const we::type::activity_t::token_on_port_t& top
                       , act.output()
                       )
         {
-          std::cout << act.transition().get_port (top.second).name()
+          std::cout << act.transition().ports().at (top.second).name()
                     << " => " << pnet::type::value::show (top.first) << std::endl;
         }
 
@@ -303,12 +303,12 @@ namespace
       }
     }
 
-    void failed ( const we::mgmt::layer::id_type& id
+    void failed ( const we::layer::id_type& id
                 , const int error_code
                 , const std::string& reason
                 )
     {
-      boost::optional<we::mgmt::layer::id_type> const mapped
+      boost::optional<we::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
       if (mapped)
@@ -329,9 +329,9 @@ namespace
       }
     }
 
-    void canceled (const we::mgmt::layer::id_type& id)
+    void canceled (const we::layer::id_type& id)
     {
-      boost::optional<we::mgmt::layer::id_type> const mapped
+      boost::optional<we::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
       if (mapped)
@@ -370,7 +370,7 @@ namespace
     mutable boost::condition_variable _condition_job_status_changed;
     boost::recursive_mutex _mutex_id;
     unsigned long _id;
-    we::mgmt::layer mgmt_layer_;
+    we::layer mgmt_layer_;
     mutable boost::recursive_mutex _mutex_id_map;
     id_map_t  id_map_;
     fhg::thread::queue<job_t> jobs_;
@@ -378,7 +378,7 @@ namespace
     we::loader::loader* _loader;
     sdpa::status::code _job_status;
     boost::optional<std::string> _result;
-    we::mgmt::layer::id_type _job_id;
+    we::layer::id_type _job_id;
     boost::thread _timeout_thread;
   };
 }
@@ -478,8 +478,8 @@ try
     ( num_worker
     , &loader
     , path_to_act == "-"
-    ? we::mgmt::type::activity_t (std::cin)
-    : we::mgmt::type::activity_t (boost::filesystem::path (path_to_act))
+    ? we::type::activity_t (std::cin)
+    : we::type::activity_t (boost::filesystem::path (path_to_act))
     , cancel_after
     , random_extraction_engine
     );

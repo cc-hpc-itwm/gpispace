@@ -26,8 +26,6 @@ set (hdrs
   getenv.hpp
 
   xml.hpp
-  bool.hpp
-  bool_io.hpp
 
   counter.hpp
   backtracing_exception.hpp

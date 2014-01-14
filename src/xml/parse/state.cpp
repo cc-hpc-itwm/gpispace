@@ -6,6 +6,8 @@
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
 
+#include <boost/foreach.hpp>
+
 namespace xml
 {
   namespace parse
@@ -280,11 +282,6 @@ namespace xml
       we::type::property::path_type& type::prop_path()
       {
         return _prop_path;
-      }
-
-      const we::type::optimize::options::type& type::options_optimize() const
-      {
-        return _options_optimize;
       }
 
       void
@@ -787,7 +784,6 @@ namespace xml
 #undef STRINGVAL
 
         desc.add (net);
-        _options_optimize.add_options (desc);
 
         desc.add (xml);
         desc.add (depend);

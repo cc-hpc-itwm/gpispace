@@ -5,18 +5,12 @@
 
 #include <we/expr/parse/parser.hpp>
 
-#include <we/type/id.hpp>
-
 #include <we/exception.hpp>
 
-#include <boost/function.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/serialization/nvp.hpp>
 
 #include <string>
-
-#include <sys/time.h>
-#include <fhglog/LogMacros.hpp>
-#include <iomanip>
 
 namespace condition
 {
@@ -48,7 +42,9 @@ namespace condition
         //! \todo do not initialize parser immediately, think of some other way
         // (pnetput should not parse the whole net just to put some tokens)
       , _parser (exp)
-    {}
+    {
+      boost::trim (_expression);
+    }
 
     // should correspond!
     type ( const std::string& exp
@@ -56,7 +52,9 @@ namespace condition
          )
       : _expression (exp)
       , _parser (p)
-    {}
+    {
+      boost::trim (_expression);
+    }
 
     const std::string& expression() const
     {

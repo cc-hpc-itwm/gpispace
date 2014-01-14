@@ -3,11 +3,13 @@
 #ifndef WE_MGMT_LAYER_HPP
 #define WE_MGMT_LAYER_HPP 1
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
 #include <we/type/value.hpp>
+
+#include <sdpa/types.hpp>
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
@@ -19,30 +21,25 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     class layer
     {
     public:
-      typedef std::string id_type;
-      typedef std::string encoded_type;
-      typedef std::string reason_type;
-      typedef std::string result_type;
+      typedef sdpa::job_id_t id_type;
 
       layer ( // submit: external activities from submitted net -> child jobs
-              boost::function<void (id_type, type::activity_t, id_type parent)>
+              boost::function<void (id_type, type::activity_t, id_type parent)> rts_submit
               // reply to cancel (parent)/on failure (child) -> child jobs
-            , boost::function<void (id_type)>
+            , boost::function<void (id_type)> rts_cancel
               // reply to submit on success -> top level
-            , boost::function<void (id_type, type::activity_t)>
+            , boost::function<void (id_type, type::activity_t)> rts_finished
               // reply to submit on failure (of child) -> top level
-            , boost::function<void (id_type, int errorcode, std::string reason)>
+            , boost::function<void (id_type, int errorcode, std::string reason)> rts_failed
               // reply to cancel (parent) -> top level
-            , boost::function<void (id_type)>
+            , boost::function<void (id_type)> rts_canceled
               // reply to discover (parent) -> child jobs
-            , boost::function<void (id_type discover_id, id_type)>
+            , boost::function<void (id_type discover_id, id_type)> rts_discover
               // result of discover (parent) -> top level
-            , boost::function<void (id_type discover_id, std::set<pnet::type::value::value_type>)>
+            , boost::function<void (id_type discover_id, std::set<pnet::type::value::value_type>)> rts_discovered
             , boost::function<id_type()> rts_id_generator
             , boost::mt19937& random_extraction_engine
             );
@@ -79,6 +76,10 @@ namespace we
       boost::function<void (id_type, std::set<pnet::type::value::value_type>)> _rts_discovered;
       boost::function<id_type()> _rts_id_generator;
 
+      void rts_finished_and_forget (id_type, type::activity_t);
+      void rts_failed_and_forget (id_type, int ec, std::string);
+      void rts_canceled_and_forget (id_type);
+
 
       struct activity_data_type
       {
@@ -87,8 +88,6 @@ namespace we
           , _activity (activity)
         {}
 
-        boost::optional<type::activity_t>
-          fire_internally_and_extract_external (boost::mt19937&);
         void child_finished (type::activity_t);
 
         id_type _id;
@@ -103,6 +102,8 @@ namespace we
         void remove_and_apply
           (id_type, boost::function<void (activity_data_type)>);
         void apply (id_type, boost::function<void (activity_data_type&)>);
+
+        void forget (id_type);
 
       private:
         struct list_with_id_lookup
@@ -174,7 +175,6 @@ namespace we
       void finalize_finished
         (activity_data_type&, type::activity_t, id_type parent, id_type child);
     };
-  }
 }
 
 #endif

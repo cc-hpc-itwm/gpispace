@@ -12,9 +12,9 @@ namespace sdpa
 {
   namespace com
   {
-    static void kvs_error_handler (boost::system::error_code const &)
+    void NetworkStrategy::kvs_error_handler (boost::system::error_code const &)
     {
-      MLOG (ERROR, "could not contact KVS, terminating");
+      LLOG (ERROR, _logger, "could not contact KVS, terminating");
       kill (getpid (), SIGTERM);
     }
 
@@ -23,7 +23,7 @@ namespace sdpa
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
-      : SDPA_INIT_LOGGER ("NetworkStrategy " + peer_name)
+      : _logger (fhg::log::Logger::get ("NetworkStrategy " + peer_name))
       , _event_handler (event_handler)
       , m_peer ( new fhg::com::peer_t ( peer_name
                                       , fhg::com::host_t (host)
@@ -34,7 +34,8 @@ namespace sdpa
       , m_thread (&fhg::com::peer_t::run, m_peer)
       , m_shutting_down (false)
     {
-      m_peer->set_kvs_error_handler (kvs_error_handler);
+      m_peer->set_kvs_error_handler
+        (boost::bind (&NetworkStrategy::kvs_error_handler, this, _1));
       m_peer->start ();
       m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
     }
@@ -53,7 +54,7 @@ namespace sdpa
 
       // convert event to fhg::com::message_t
 
-      DLOG(TRACE, "sending event: " << sdpa_event->str());
+      DLLOG(TRACE, _logger, "sending event: " << sdpa_event->str());
 
       fhg::com::message_t msg;
       msg.header.dst = m_peer->resolve_name (sdpa_event->to());
@@ -85,7 +86,8 @@ namespace sdpa
     {
       if (ec)
       {
-        DMLOG ( WARN
+        DLLOG ( WARN
+              , _logger
               , "send failed:"
               << " ec := " << ec
               << " msg := " << ec.message ()
@@ -116,12 +118,12 @@ namespace sdpa
         {
           sdpa::events::SDPAEvent::Ptr evt
             (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
-          DLOG(TRACE, "received event: " << evt->str());
+          DLLOG(TRACE, _logger, "received event: " << evt->str());
           _event_handler (evt);
         }
         catch (std::exception const & ex)
         {
-          LOG(WARN, "could not handle incoming message: " << ex.what());
+          LLOG(WARN, _logger, "could not handle incoming message: " << ex.what());
         }
 
         m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));

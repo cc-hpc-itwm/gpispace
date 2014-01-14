@@ -9,8 +9,10 @@
 
 #include <xml/parse/type/function.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/map.hpp>
 #include <boost/variant.hpp>
 
 namespace fhg

@@ -103,11 +103,11 @@ namespace sdpa {
       void run();
 
     protected:
+      GenericDaemon* ptr_comm_handler_;
+      fhg::log::Logger::ptr_t _logger;
+
       JobQueue pending_jobs_queue_;
       WorkerManager _worker_manager;
-
-      GenericDaemon* ptr_comm_handler_;
-      SDPA_DECLARE_LOGGER();
 
       mutable mutex_type mtx_;
       condition_type cond_feed_workers;

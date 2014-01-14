@@ -14,3 +14,6 @@ if (ENABLE_PNET_EDITOR)
   add_executable (dummy_server dummy_server.cpp ${wrapped_cpps_server})
   target_link_libraries (dummy_server ${QT_LIBRARIES} fhg_util_qt fhg-util)
 endif()
+
+add_executable (serialize_without_default_ctor serialize_without_default_ctor.cpp)
+target_link_libraries (serialize_without_default_ctor ${Boost_SERIALIZATION_LIBRARY})

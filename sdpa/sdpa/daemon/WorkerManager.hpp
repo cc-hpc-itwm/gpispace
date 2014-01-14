@@ -78,7 +78,7 @@ namespace sdpa { namespace daemon {
 protected:
     worker_map_t  worker_map_;
 
-    SDPA_DECLARE_LOGGER();
+    fhg::log::Logger::ptr_t _logger;
 
     JobQueue common_queue_;
 

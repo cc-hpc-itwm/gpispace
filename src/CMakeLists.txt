@@ -51,8 +51,8 @@ add_library (pnet
   we/expr/token/type.cpp
   we/field.cpp
   we/loader/loader.cpp
-  we/mgmt/layer.cpp
-  we/mgmt/type/activity.cpp
+  we/layer.cpp
+  we/type/activity.cpp
   we/require_type.cpp
   we/signature_of.cpp
   we/type/bitsetofint.cpp

@@ -10,6 +10,7 @@
 #include <pnete/data/handle/place.fwd.hpp>
 
 #include <we/type/port.hpp>
+#include <we/type/property.hpp>
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/port.fwd.hpp>

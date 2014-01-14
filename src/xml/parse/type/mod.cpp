@@ -12,6 +12,9 @@
 
 #include <boost/foreach.hpp>
 
+//! \todo remove, needed to make petri_net::net a complete type
+#include <we/type/net.hpp>
+
 namespace xml
 {
   namespace parse

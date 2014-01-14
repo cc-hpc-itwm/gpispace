@@ -40,8 +40,6 @@ namespace sdpa
     {
       lock_type _ (_job_map_and_requirements_mutex);
 
-      DMLOG (TRACE, "Add new job into the job manager");
-
       Job* pJob = new Job( job_id, desc, parent, is_master_job, owner );
 
       job_map_.insert(std::make_pair (job_id, pJob));
@@ -139,7 +137,7 @@ namespace sdpa
           // don't send anything to the master if the job is not completed or in a pending state
           break;
         default:
-          throw std::runtime_error("The job "+job->id().str()+" has an invalid/unknown state");
+          throw std::runtime_error("The job "+job->id()+" has an invalid/unknown state");
         }
       }
     }

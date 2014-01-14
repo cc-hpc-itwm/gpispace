@@ -1,0 +1,160 @@
+typedef std::vector<char> buffer_type;
+typedef boost::function<buffer_type (buffer_type)> filter_type;
+typedef boost::posix_time::time_duration timeout_type;
+typedef boost::function<void (buffer_type)> handler_type;
+
+template<typename Protocol>
+  connection_type<Protocoll> connect_client
+    ( boost::asio::endpoint
+    , boost::asio::io_service&
+    , filter_type encrypt
+    , filter_type decrypt
+    , handler_type
+    , boost::function<void (connection_type<Protocol>*)> on_disconnect
+    , boost::optional<timeout_type>
+    );
+
+template<typename Protocol>
+class acceptor
+{
+  acceptor ( boost::asio::endpoint
+           , boost::asio::io_service&
+           , filter_type encrypt
+           , filter_type decrypt
+           , boost::function<handler_type (connection_type<Protocol>*)>
+           , boost::function<void (connection_type<Protocol>*)> on_disconnect
+           , boost::function<void (connection_type<Protocol>)> handle
+           );
+
+  void accept()
+  {
+    char* connection_dummy (new char[sizeof (connection_type)]);
+    connection_type* connection (connection_dummy);
+    handler_type handler (_create_handler (connection));
+    ::new (connection) connection_type (..., handler);
+  }
+}
+
+template<typename Protocol>
+class connection_type
+{
+  connection_type ( typename Protocol::socket
+                  , filter_type
+                  , handler_type
+                  , boost::function<void (connection_type<Protocol>*)>
+                  );
+  void send (buffer_type);
+};
+
+typedef connection_type<boost::asio::ip::tcp> tcp_connection_type;
+typedef connection_type<boost::asio::ip::unix> unix_connection_type;
+
+struct server
+{
+  server()
+    : _acceptor (..., &create_handler, ...)
+    , _service_manager()
+  {
+  }
+
+  handler_type create_handler (connection_type* connection)
+  {
+    return boost::bind (&operator(), _service_manager, connection, _1);
+  }
+
+  void handle (connection_type*, buffer_type);
+};
+
+struct service_manager
+{
+  add (std::string, boost::function<void (buffer_type, connection_type*)>);
+
+  void operator() (connection*, buffer_type) const
+  {
+    fhg::util::parse_postion_string pos (buffer_type);
+    unsigned int len (parse_uint (pos));
+    std::string name (take_len_chars (pos));
+    _handler.at (name) (buffer_type (pos.rest()), connection);
+  }
+
+  boost::unordered_map<std::string, handler_type> _handler;
+}
+
+struct agent
+{
+  agent()
+    : _service_manager ()
+    , _ping_service (_service_manager, "ping", &ping())
+    , _worker_register_service (_service_manager, "worker_register", &worker_register())
+    , _submit_job_server (_service_manager, "submit_job", &submit_job())
+    , _acceptor (... service_manager ...) // like  server
+    , _master_connection (connect_client (master_host, ...., &handle_master_message));
+  {}
+
+  void ping (tcp_connection_type* connection, buffer_type buffer)
+  {
+    connection->send (buffer);
+  }
+
+  void worker_register (tcp_connection_type* connection, buffer_type buffer)
+  {
+    worker_register (buffer, connection);
+
+    connection->send ("registered");
+  }
+
+  void submit_job (tcp_connection_type* connection, buffer_type buffer)
+  {
+    SubmitJobEvent const evt (buffer);
+
+    connection->rpc
+      ("submit_job_ack", submit_job (evt.job_id(), evt.desc()));
+  }
+
+  job_id_type submit_job ( boost::optional<job_id_type> job_id
+                         , we::type::activity const& act
+                         )
+  {
+    if (!job_id)
+    {
+      job_id = generate_job_id();
+    }
+
+    _layer->submit (*job_id, act);
+
+    return *job_id;
+  }
+
+  void worker_register (std::string name, connection_type*)
+  {
+    boost::mute::scoped_lock const _ (_workers_mutex);
+
+    if (contains)
+    {
+      throw
+    };
+
+    _workers.insert (workers_type::value_type (name, connection));
+
+  }
+
+  void worker_connection_lost (tcp_connection_type*)
+  {
+    boost::mute::scoped_lock const _ (_workers_mutex);
+
+    _workers.right.erase (connection);
+
+    //! \todo re-schedule
+  }
+
+  mutable boost::mutex _workers_mutex;
+  struct worker_info
+  {
+    set<job_id_type> _jobs;
+  };
+  boost::bimap< set_of<std::string>
+              , set_of<tcp_connection*>
+              , set_of_relation<>
+              , with_info<worker_info>
+              > _workers;
+};

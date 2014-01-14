@@ -31,7 +31,7 @@ namespace sdpa
 
       std::string str() const
       {
-        return "JobStatusReplyEvent(" + job_id().str() + ")";
+        return "JobStatusReplyEvent(" + job_id() + ")";
       }
 
       sdpa::status::code status() const

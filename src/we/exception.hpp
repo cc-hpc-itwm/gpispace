@@ -119,51 +119,6 @@ namespace pnet
       };
     }
 
-    namespace connection
-    {
-      template<typename FROM, typename TO>
-      class no_such : public std::runtime_error
-      {
-      public:
-        no_such (FROM const& from, TO const& to)
-          : std::runtime_error
-            ( ( boost::format ("no such connection: %1% -> %2%") % from % to
-              ).str()
-            )
-          , _from (from)
-          , _to (to)
-        {}
-        ~no_such() throw() {}
-
-        MEMBER (from, FROM);
-        MEMBER (to, TO);
-      };
-    }
-
-    namespace place
-    {
-      class no_such : public std::runtime_error
-      {
-      public:
-        no_such (petri_net::place_id_type const&);
-        ~no_such() throw() {}
-
-        MEMBER (place_id, petri_net::place_id_type);
-      };
-    }
-
-    namespace transition
-    {
-      class no_such : public std::runtime_error
-      {
-      public:
-        no_such (petri_net::transition_id_type const&);
-        ~no_such() throw() {}
-
-        MEMBER (transition_id, petri_net::transition_id_type);
-      };
-    }
-
 #undef MEMBER
   }
 }

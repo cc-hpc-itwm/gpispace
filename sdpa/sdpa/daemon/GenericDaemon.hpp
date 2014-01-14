@@ -21,7 +21,6 @@
 #include <fhg/assert.hpp>
 
 #include <sdpa/capability.hpp>
-#include <sdpa/logging.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
 #include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
@@ -60,6 +59,8 @@
 #include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
 
+#include <fhglog/fhglog.hpp>
+
 #define OVERWRITTEN_IN_TEST virtual
 
 namespace sdpa {
@@ -82,7 +83,6 @@ namespace sdpa {
                    );
       virtual ~GenericDaemon();
 
-      SDPA_DECLARE_LOGGER();
       const std::string& name() const;
 
       const unsigned int& rank() const { return m_nRank; }
@@ -95,14 +95,14 @@ namespace sdpa {
       bool isTop() { return m_arrMasterInfo.empty(); }
 
       // WE interface
-      void submit( const we::mgmt::layer::id_type & id
-                 , const we::mgmt::type::activity_t&
-                 , const we::mgmt::layer::id_type& parent_id
+      void submit( const we::layer::id_type & id
+                 , const we::type::activity_t&
+                 , const we::layer::id_type& parent_id
                          );
-      void cancel(const we::mgmt::layer::id_type & id);
-      virtual void finished(const we::mgmt::layer::id_type & id, const we::mgmt::type::activity_t& result);
-      virtual void failed( const we::mgmt::layer::id_type& wfId, int errc, std::string const& reason);
-      void canceled(const we::mgmt::layer::id_type& id);
+      void cancel(const we::layer::id_type & id);
+      virtual void finished(const we::layer::id_type & id, const we::type::activity_t& result);
+      virtual void failed( const we::layer::id_type& wfId, int errc, std::string const& reason);
+      void canceled(const we::layer::id_type& id);
       virtual void pause(const job_id_t& id ) = 0;
       virtual void resume(const job_id_t& id ) = 0;
 
@@ -159,7 +159,7 @@ namespace sdpa {
 
       // workflow engine
     public:
-      we::mgmt::layer* workflowEngine() const { return ptr_workflow_engine_.get(); }
+      we::layer* workflowEngine() const { return ptr_workflow_engine_.get(); }
       bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
     protected:
@@ -172,7 +172,7 @@ namespace sdpa {
 
     private:
       // jobs
-      std::string gen_id() { return sdpa::JobId ().str (); }
+      std::string gen_id();
 
     public:
       // forwarding to jobManager() only:
@@ -223,6 +223,8 @@ namespace sdpa {
 
       // data members
     protected:
+      fhg::log::Logger::ptr_t _logger;
+
       std::string _name;
 
       mutex_type mtx_;
@@ -234,7 +236,7 @@ namespace sdpa {
       JobManager _job_manager;
       SchedulerBase::ptr_t ptr_scheduler_;
       boost::optional<boost::mt19937> _random_extraction_engine;
-      boost::scoped_ptr<we::mgmt::layer> ptr_workflow_engine_;
+      boost::scoped_ptr<we::layer> ptr_workflow_engine_;
 
     private:
 

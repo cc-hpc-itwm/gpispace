@@ -689,7 +689,7 @@ namespace xml
 
             pid_of_place.insert (std::make_pair (place.name(), pid->second));
 
-            const place::type place_real (we_net.get_place (pid->second));
+            const place::type place_real (we_net.places().at (pid->second));
 
             if (!(place_real.signature() == place.signature_or_throw()))
             {
@@ -746,8 +746,9 @@ namespace xml
               (pid, util::generic_we_parse (token, "parse token").eval_all());
           }
 
-          if (  we_net.in_to_place (pid).empty()
-             && we_net.out_of_place (pid).empty()
+          if (  boost::empty (we_net.transition_to_place().right.equal_range (pid))
+             && boost::empty (we_net.place_to_transition_consume().left.equal_range (pid))
+             && boost::empty (we_net.place_to_transition_read().left.equal_range (pid))
              && (!place.is_virtual())
              )
           {

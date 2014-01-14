@@ -33,6 +33,7 @@ BOOST_AUTO_TEST_CASE (encode_decode)
   BOOST_REQUIRE_EQUAL (fhg::log::LogEvent::from_string (evts).encoded(), evts);
 }
 
+#ifdef NDEBUG
 BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
 {
   fhg::log::LogEvent evt (gen_event());
@@ -52,12 +53,9 @@ BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
   t += fhg::util::now();
 
   BOOST_REQUIRE_EQUAL (count, max * int (first_encoded_char));
-#ifndef NDEBUG
-  BOOST_REQUIRE_LT (t, 5.0);
-#else
   BOOST_REQUIRE_LT (t, 1.0);
-#endif
 }
+#endif
 
 BOOST_AUTO_TEST_CASE (decode_with_time_constraint)
 {
