@@ -2,4 +2,5 @@
 
 fhg_add_application_test (example_workerlist
   SCRIPT test
+  RESOURCE_LOCK starts_drts_environment
 )

@@ -9,28 +9,35 @@ DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 DIR_SOURCE="${DIR_TEST}/.."
 
 OUT="${DIR_BUILD}/workerlist.out"
+HOSTFILE="${DIR_BUILD}/hostfile"
 
-make_src='make BUILDDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
+make_src='make BUILDDIR="${DIR_BUILD}" LIB_DESTDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
 
 cleanup()
 {
+  sdpa stop
+  rm -rf "${HOSTFILE}"
+  eval ${make_src} uninstall
   eval ${make_src} clean
   cleanup_dir_build
-}
-
-run_with_eval_plugin()
-{
-    fhgkernel -s plugin.wfe.library_path="$SDPA_HOME/libexec/sdpa/apps/workerlist/modules" \
-              -L "${SDPA_HOME}/libexec/fhg/plugins" \
-        wfe wfe_eval < "${DIR_BUILD}/workerlist.pnet.put" > "${OUT}"
 }
 
 trap 'cleanup' EXIT
 
 measured "build-wrapper" ${make_src} lib put                || die $EX_ERR_RUN
 measured "install" ${make_src} install                      || die $EX_ERR_RUN
-measured "run" run_with_eval_plugin                         || die $EX_ERR_RUN
 
-workers=$(pnetget -p workers < "${OUT}")
+hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 
-test "${workers}" = "List (\"worker-localhost-1\")"         || die $EX_ERR_RES
+measured "setup" SDPA_PERFORM_UNATTENDED_SETUP=1 sdpa setup || die $EX_ERR_ENV
+
+measured "boot" sdpa boot -A "${DIR_BUILD}" -M -f "${HOSTFILE}" worker:1      \
+                                                            || die $EX_ERR_BOOT
+
+measured "submit" ${make_src} submit                        || die $EX_ERR_RUN
+
+expected="List (\"worker-$(hostname)-1\")"
+
+test "$(pnetget -i "${OUT}" -p workers)" == "${expected}"   || die $EX_ERR_RES
+
+sdpa stop                                                   || die $EX_ERR_STOP
