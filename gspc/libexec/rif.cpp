@@ -29,8 +29,6 @@ public:
   {
   }
 
-  gspc::rif::manager_t & mgr () { return m_mgr; }
-
   void shutdown ()
   {
     fhg_kernel ()->shutdown ();
@@ -270,7 +268,7 @@ public:
 
     if (command == "exec")
     {
-      gspc::rif::proc_t p = mgr ().exec (argv);
+      gspc::rif::proc_t p = m_mgr.exec (argv);
 
       if (p < 0)
       {
@@ -295,7 +293,7 @@ public:
       gspc::rif::proc_list_t procs;
       if (argv.empty ())
       {
-        procs = mgr ().processes ();
+        procs = m_mgr.processes ();
       }
       else
       {
@@ -318,7 +316,7 @@ public:
         sstr << "[" << p << "] ";
 
         int status;
-        int rc = mgr ().wait (p, &status, boost::posix_time::seconds (0));
+        int rc = m_mgr.wait (p, &status, boost::posix_time::seconds (0));
         if (-ESRCH == rc)
         {
           sstr << "no such process";
@@ -341,7 +339,7 @@ public:
       gspc::rif::proc_list_t procs;
       if (argv.empty ())
       {
-        procs = mgr ().processes ();
+        procs = m_mgr.processes ();
       }
       else
       {
@@ -360,7 +358,7 @@ public:
 
       BOOST_FOREACH (gspc::rif::proc_t p, procs)
       {
-        int rc = mgr ().term (p, boost::posix_time::seconds (1));
+        int rc = m_mgr.term (p, boost::posix_time::seconds (1));
         if (rc < 0)
         {
           std::stringstream sstr;
@@ -418,7 +416,7 @@ public:
       gspc::rif::proc_list_t procs;
       if (argv.size () == 1)
       {
-        procs = mgr ().processes ();
+        procs = m_mgr.processes ();
       }
       else
       {
@@ -440,7 +438,7 @@ public:
         std::stringstream sstr;
 
         sstr << "[" << p << "] ";
-        int rc = mgr ().kill (p, sig);
+        int rc = m_mgr.kill (p, sig);
         if (rc < 0)
         {
           sstr << "failed: " << strerror (-rc) << std::endl;
@@ -457,7 +455,7 @@ public:
       gspc::rif::proc_list_t procs;
       if (argv.empty ())
       {
-        procs = mgr ().processes ();
+        procs = m_mgr.processes ();
       }
       else
       {
@@ -476,7 +474,7 @@ public:
 
       BOOST_FOREACH (gspc::rif::proc_t p, procs)
       {
-        mgr ().remove (p);
+        m_mgr.remove (p);
       }
     }
     else if (command == "ps")
@@ -484,7 +482,7 @@ public:
       gspc::rif::proc_list_t procs;
       if (argv.empty ())
       {
-        procs = mgr ().processes ();
+        procs = m_mgr.processes ();
       }
       else
       {
@@ -506,7 +504,7 @@ public:
       BOOST_FOREACH (gspc::rif::proc_t p, procs)
       {
         gspc::rif::proc_info_t info;
-        int rc = mgr ().proc_info (p, info);
+        int rc = m_mgr.proc_info (p, info);
 
         if (0 == rc)
         {
@@ -567,7 +565,7 @@ public:
       gspc::rif::proc_list_t procs;
       if (argv.size () == 1)
       {
-        procs = mgr ().processes ();
+        procs = m_mgr.processes ();
       }
       else
       {
@@ -593,12 +591,12 @@ public:
         while (maxlen > 0)
         {
           char buf [4096];
-          int rc = mgr ().read ( p
-                                      , fd
-                                      , buf
-                                      , std::min (sizeof(buf), maxlen)
-                                      , ec
-                                      );
+          int rc = m_mgr.read ( p
+                              , fd
+                              , buf
+                              , std::min (sizeof(buf), maxlen)
+                              , ec
+                              );
           if (rc > 0)
           {
             buf [rc] = 0;
@@ -662,9 +660,9 @@ public:
       for (size_t i = 2 ; i < argv.size () ; ++i)
       {
         boost::system::error_code ec;
-        mgr ().write (p, fd, argv [i].c_str (), argv [i].size (), ec);
+        m_mgr.write (p, fd, argv [i].c_str (), argv [i].size (), ec);
         if (i < (argv.size () - 1))
-          mgr ().write (p, fd, " ", 1, ec);
+          m_mgr.write (p, fd, " ", 1, ec);
 
         if (ec)
         {
@@ -691,7 +689,7 @@ public:
         return;
       }
 
-      mgr ().setenv (argv [0], argv [1]);
+      m_mgr.setenv (argv [0], argv [1]);
     }
     else if (command == "getenv")
     {
@@ -706,7 +704,7 @@ public:
       }
 
       std::string val;
-      if (0 == mgr ().getenv (argv [0], val))
+      if (0 == m_mgr.getenv (argv [0], val))
       {
         rply.set_body (val);
       }
@@ -723,11 +721,11 @@ public:
         return;
       }
 
-      mgr ().delenv (argv [0]);
+      m_mgr.delenv (argv [0]);
     }
     else if (command == "env")
     {
-      gspc::rif::env_t env = mgr ().env ();
+      gspc::rif::env_t env = m_mgr.env ();
       BOOST_FOREACH (gspc::rif::env_t::value_type const &e, env)
       {
         rply.add_body (e.first);
