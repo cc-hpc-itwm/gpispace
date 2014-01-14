@@ -733,7 +733,34 @@ void Agent::resume(const job_id_t& jobId)
 
 void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
 {
+  Job* pJob;
 
+  pJob = jobManager().findJob(pEvt->job_id());
+  if(!pJob)
+  {
+      DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
+      sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
+                                                   , pEvt->from()
+                                                   , events::ErrorEvent::SDPA_EJOBNOTFOUND
+                                                   , "No such job found" )
+                                                  ));
+
+      return;
+  }
+
+  // if the event came from outside, forward it to the workflow engine
+  if(pEvt->is_external())
+  {
+      workflowEngine()->discover(pEvt->discover_id(), pEvt->job_id());
+  }
+  else
+  {
+      pnet::type::value::value_type discover_result;
+      pnet::type::value::poke ("id", discover_result, pJob->id());
+      pnet::type::value::poke ("state", discover_result, sdpa::status::show(pJob->getStatus()));
+
+      workflowEngine()->discovered(pEvt->discover_id(), discover_result);
+  }
 }
 
 void Agent::handleDiscoverJobStatestReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
