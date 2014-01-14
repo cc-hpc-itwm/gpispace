@@ -150,10 +150,10 @@ namespace we
 
           void operator() (we::net& net) const
           {
-            if (_transition.ports().at (_port_id).has_associated_place())
+            if (_transition.ports().at (_port_id).associated_place())
             {
               net.put_value
-                ( _transition.ports().at (_port_id).associated_place()
+                ( *_transition.ports().at (_port_id).associated_place()
                 , _value
                 );
             }
@@ -198,11 +198,11 @@ namespace we
             {
               if (p.second.is_output())
               {
-                if (p.second.has_associated_place())
+                if (p.second.associated_place())
                 {
                   const we::port_id_type& port_id (p.first);
                   const we::place_id_type& pid
-                    (p.second.associated_place());
+                    (*p.second.associated_place());
 
                   BOOST_FOREACH ( const pnet::type::value::value_type& token
                                 , net.get_token (pid)

@@ -648,14 +648,14 @@ namespace we { namespace type {
                           , t.ports()
                           )
             {
-              if (p.second.has_associated_place())
+              if (p.second.associated_place())
               {
                 level (s, l + 1)
                   << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
                   << arrow
                   << name (id_trans
                           , "place_"
-                          + boost::lexical_cast<std::string> (p.second.associated_place())
+                          + boost::lexical_cast<std::string> (*p.second.associated_place())
                           )
                   << association()
                   << std::endl

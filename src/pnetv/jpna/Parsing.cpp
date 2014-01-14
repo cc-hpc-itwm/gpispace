@@ -166,8 +166,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
         FOREACH(const transition_t::port_map_t::value_type &item, transition.ports()) {
           const we::type::port_t &port = item.second;
 
-            if (port.has_associated_place()) {
-                we::place_id_type pid = port.associated_place();
+            if (port.associated_place()) {
+                we::place_id_type pid = *port.associated_place();
 
                 Place *place = ::jpna::find(places_, pid);
                 place->setInitialMarking(place->initialMarking() + 1);

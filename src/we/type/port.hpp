@@ -71,14 +71,12 @@ namespace we
 
       PortDirection direction() const { return _direction; }
       const pnet::type::signature::signature_type& signature() const { return _signature; }
-      const we::place_id_type& associated_place() const { return *_associated_place; }
-      we::place_id_type& associated_place() { return *_associated_place; }
+      const boost::optional<we::place_id_type>& associated_place() const { return _associated_place; }
       const we::type::property::type & property() const { return _properties; }
 
       bool is_input() const { return _direction == PORT_IN; }
       bool is_output() const { return _direction == PORT_OUT; }
       bool is_tunnel() const { return _direction == PORT_TUNNEL; }
-      bool has_associated_place() const { return _associated_place; }
 
     private:
       std::string _name;

@@ -39,13 +39,13 @@ namespace we
          << ", "
         ;
 
-      if (!p.has_associated_place())
+      if (!p.associated_place())
         {
           os << "not associated";
         }
       else
         {
-          os << "associated with place " << p.associated_place();
+          os << "associated with place " << *p.associated_place();
         }
       os << "}";
 
