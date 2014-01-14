@@ -5,11 +5,9 @@
 #include <we/type/value/path/split.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
-#include <we/type/value/positions.hpp>
 #include <we/type/value/dump.hpp>
 
 #include <fhg/util/boost/variant.hpp>
-#include <fhg/util/split.hpp>
 #include <fhg/util/xml.hpp>
 
 #include <boost/foreach.hpp>
@@ -22,17 +20,6 @@ namespace we
   {
     namespace property
     {
-      namespace exception
-      {
-        empty_path::empty_path (const std::string& pre)
-          : std::runtime_error (pre + ": empty path")
-        {}
-
-        not_a_map::not_a_map (const std::string& pre)
-          : std::runtime_error (pre + ": not a map")
-        {}
-      }
-
       type::type ()
         : _value (pnet::type::value::structured_type())
       {}
@@ -110,33 +97,6 @@ namespace we
         dump::dump (xs, t);
 
         return s;
-      }
-
-      // ******************************************************************* //
-
-      namespace traverse
-      {
-        stack_type dfs (const type& t)
-        {
-          stack_type s;
-
-          typedef std::pair< std::list<std::string>
-                           , pnet::type::value::value_type
-                           > position_type;
-
-          BOOST_FOREACH ( position_type const& position
-                        , pnet::type::value::positions (t.value())
-                        )
-          {
-            s.push_back
-              ( std::make_pair ( position.first
-                               , boost::get<std::string> (position.second)
-                               )
-              );
-          }
-
-          return s;
-        }
       }
     }
   }

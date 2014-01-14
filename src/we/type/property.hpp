@@ -8,7 +8,6 @@
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 
-#include <fhg/util/backtracing_exception.hpp>
 #include <fhg/util/xml.fwd.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -27,25 +26,27 @@ namespace we
     {
       typedef path_type::const_iterator path_iterator;
 
-      // ******************************************************************* //
-
-      namespace exception
-      {
-        class empty_path : public std::runtime_error
-        {
-        public:
-          empty_path (const std::string& pre);
-        };
-
-        class not_a_map : public std::runtime_error
-        {
-        public:
-          not_a_map (const std::string& pre);
-        };
-      }
-
       struct type
       {
+      public:
+        type();
+
+        pnet::type::value::value_type const& value() const
+        {
+          return _value;
+        }
+        std::list<std::pair<key_type, mapped_type> > const& list() const;
+
+        boost::optional<mapped_type>
+          set (const path_type& path, const value_type& val);
+        boost::optional<mapped_type>
+          set (const std::string& path, const value_type& val);
+
+        const boost::optional<const value_type&>
+          get (const path_type& path) const;
+        const boost::optional<const value_type&>
+          get (const std::string& path) const;
+
       private:
         pnet::type::value::value_type _value;
 
@@ -67,34 +68,14 @@ namespace we
         }
         BOOST_SERIALIZATION_SPLIT_MEMBER()
 
-        // ----------------------------------------------------------------- //
-
         boost::optional<mapped_type> set ( const path_iterator& pos
                                          , const path_iterator& end
                                          , const value_type& val
                                          );
 
-      const boost::optional<const value_type&> get
-        (const path_iterator& pos, const path_iterator& end) const;
+        const boost::optional<const value_type&> get
+          (const path_iterator& pos, const path_iterator& end) const;
 
-      public:
-        type();
-
-        pnet::type::value::value_type const& value() const
-        {
-          return _value;
-        }
-        std::list<std::pair<key_type, mapped_type> > const& list() const;
-
-        boost::optional<mapped_type>
-          set (const path_type& path, const value_type& val);
-        boost::optional<mapped_type>
-          set (const std::string& path, const value_type& val);
-
-        const boost::optional<const value_type&>
-          get (const path_type& path) const;
-        const boost::optional<const value_type&>
-          get (const std::string& path) const;
       };
 
       namespace dump
@@ -103,16 +84,6 @@ namespace we
       }
 
       std::ostream& operator<< (std::ostream& s, const type& t);
-
-      // ******************************************************************* //
-
-      namespace traverse
-      {
-        typedef std::pair<path_type, value_type> pair_type;
-        typedef std::list<pair_type> stack_type;
-
-        stack_type dfs (const type& t);
-      }
     }
   }
 }
