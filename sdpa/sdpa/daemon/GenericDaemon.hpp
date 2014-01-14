@@ -233,7 +233,7 @@ namespace sdpa {
 
       sdpa::master_info_list_t m_arrMasterInfo;
       sdpa::subscriber_map_t m_listSubscribers;
-      umap_disc_id_ag_id_t _umap_disc_id_ag_id;
+      map_discover_ids_t m_map_discover_ids;
 
     protected:
       JobManager _job_manager;

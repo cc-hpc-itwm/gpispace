@@ -487,7 +487,7 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
 
   if(worker_id)
   {
-      _umap_disc_id_ag_id.insert(umap_disc_id_ag_id_t::value_type(pEvt->discover_id(), pEvt->from()));
+      m_map_discover_ids.insert(map_discover_ids_t::value_type(pEvt->discover_id(), pEvt->from()));
       DMLOG(TRACE, "Tell the worker "<<*worker_id<<" to collect the states of all child job/activities related to the job "<<pEvt->job_id());
       events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( name()
                                                                                        , *worker_id
@@ -516,13 +516,13 @@ void Orchestrator::handleDiscoverJobStatestReplyEvent (const sdpa::events::Disco
 {
    DMLOG(TRACE, "handleDiscoverJobStatestReplyEvent( discovery_id: " << pEvt->discover_id() << ")");
 
-   sdpa::agent_id_t issuer(_umap_disc_id_ag_id.at( pEvt->discover_id()));
+   sdpa::agent_id_t issuer(m_map_discover_ids.at( pEvt->discover_id()));
    events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                  , issuer
                                                                                                  , pEvt->job_id()
                                                                                                  , pEvt->discover_id()
                                                                                                  , pEvt->discover_result() ));
-   _umap_disc_id_ag_id.erase(issuer);
+   m_map_discover_ids.erase(issuer);
    sendEventToOther(pDiscReplyEvt);
 }
 

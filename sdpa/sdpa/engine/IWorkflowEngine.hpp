@@ -9,7 +9,7 @@
 #include <sdpa/types.hpp>
 
 typedef std::list<we::type::requirement_t> requirement_list_t;
-typedef boost::unordered_map<we::layer::id_type, sdpa::agent_id_t> umap_disc_id_ag_id_t;
+typedef boost::unordered_map<we::layer::id_type, sdpa::agent_id_t> map_discover_ids_t;
 
 class job_requirements_t
 {
@@ -31,3 +31,4 @@ private:
 };
 
 #endif //IWORKFLOWENGINE_HPP
+
