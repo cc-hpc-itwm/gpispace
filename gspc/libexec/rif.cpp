@@ -21,11 +21,11 @@
 #include <gspc/rif/util.hpp>
 
 class RifImpl;
-static RifImpl *s_rif = 0;
 
 static void s_handle_rif ( std::string const &dst
                          , gspc::net::frame const &rqst
                          , gspc::net::user_ptr user
+                         , RifImpl*
                          );
 
 class RifImpl : FHG_PLUGIN
@@ -35,12 +35,6 @@ public:
     : m_mgr ()
     , m_supervisor (m_mgr)
   {
-    s_rif = this;
-  }
-
-  ~RifImpl ()
-  {
-    s_rif = 0;
   }
 
   gspc::rif::manager_t & mgr () { return m_mgr; }
@@ -228,7 +222,7 @@ public:
     m_supervisor.start ();
 
     gspc::net::server::default_service_demux().handle
-      ("/service/rif", &s_handle_rif);
+      ("/service/rif", boost::bind (&s_handle_rif, _1, _2, _3, this));
     FHG_PLUGIN_STARTED();
   }
 
@@ -253,6 +247,7 @@ public:
 void s_handle_rif ( std::string const &dst
                   , gspc::net::frame const &rqst
                   , gspc::net::user_ptr user
+                  , RifImpl *s_rif
                   )
 {
   std::string const cmd (rqst.get_body ());
