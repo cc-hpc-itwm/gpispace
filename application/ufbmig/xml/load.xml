@@ -1,7 +1,7 @@
 <defun>
   <properties name="pnetc">
     <properties name="warning">
-      <property key="inline-many-output-ports" value="off"/>
+      <property key="inline_many_output_ports" value="off"/>
     </properties>
   </properties>
   <in name="assigned_package" type="assigned_package" place="assigned_package"/>

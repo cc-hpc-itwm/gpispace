@@ -349,7 +349,7 @@ namespace fhg
 
         WSIG(tv, properties::open, ::we::type::property::type, props)
         {
-          xs ("property", props.get_map(), from::property);
+          xs ("property", props.list(), from::property);
         }
 
         WSIG(tv, property::open, ::we::type::property::key_type, key)

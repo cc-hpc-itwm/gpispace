@@ -37,32 +37,24 @@ namespace fhg
     {
       namespace
       {
-        struct read_qreal_visitor : public boost::static_visitor<qreal>
+        qreal read_qreal (boost::optional<const std::string&> inp)
         {
-          qreal operator() (const std::string& inp) const
-          {
-            util::parse::position_string pos (inp);
-            util::parse::require::skip_spaces (pos);
-            return util::read_double (pos);
-          }
-          template<typename T>
-            qreal operator() (T) const
+          if (!inp)
           {
             throw std::runtime_error ("bad input: not a string");
           }
-        };
-        template<typename T>
-          qreal read_qreal (const T& i)
-        {
-          return boost::apply_visitor (read_qreal_visitor(), i);
+
+          util::parse::position_string pos (*inp);
+          util::parse::require::skip_spaces (pos);
+          return util::read_double (pos);
         }
 
         template<typename ID>
           bool is_hard_hidden (const ID& id)
         {
           return fhg::util::read_bool
-            ( id.get().properties().get_with_default
-              ("fhg.pnete.is_hard_hidden", "false")
+            ( id.get().properties().get
+              ("fhg.pnete.is_hard_hidden").get_value_or ("false")
             );
         }
 
@@ -77,11 +69,11 @@ namespace fhg
                                      : "fhg.pnete.outer_position"
                                      );
 
-          if (!id.get().properties().has (var_name + ".x"))
+          if (!id.get().properties().get (var_name + ".x"))
           {
             id.get_ref().properties().set (var_name + ".x", "0.0");
           }
-          if (!id.get().properties().has (var_name + ".y"))
+          if (!id.get().properties().get (var_name + ".y"))
           {
             id.get_ref().properties().set (var_name + ".y", "0.0");
           }
