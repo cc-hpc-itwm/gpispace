@@ -731,4 +731,9 @@ void Agent::resume(const job_id_t& jobId)
   DLLOG (WARN, _logger, "Couldn't mark the worker job "<<jobId<<" as RUNNING. The job was not found!");
 }
 
+void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
+{
+
+}
+
 }} // end namespaces
