@@ -23,7 +23,10 @@ class QWidget;
 
 namespace sdpa
 {
-  class Client;
+  namespace client
+  {
+    class Client;
+  }
 }
 
 namespace fhg
@@ -40,17 +43,17 @@ namespace fhg
         Q_OBJECT;
 
       public:
-        remote_job_waiting (sdpa::Client*, const std::string&);
+        remote_job_waiting (sdpa::client::Client*, const std::string&);
 
       protected:
         virtual void run();
 
       signals:
-        void remote_job_finished (sdpa::Client*, const QString&);
-        void remote_job_failed (sdpa::Client*, const QString&);
+        void remote_job_finished (sdpa::client::Client*, const QString&);
+        void remote_job_failed (sdpa::client::Client*, const QString&);
 
       private:
-        sdpa::Client* _client;
+        sdpa::client::Client* _client;
         std::string _job_id;
       };
 
@@ -89,8 +92,8 @@ namespace fhg
         void open_remote_logging();
         void open_remote_execution();
 
-        void remote_job_finished (sdpa::Client*, const QString&);
-        void remote_job_failed (sdpa::Client*, const QString&);
+        void remote_job_finished (sdpa::client::Client*, const QString&);
+        void remote_job_failed (sdpa::client::Client*, const QString&);
 
       protected:
         virtual void closeEvent (QCloseEvent*);
