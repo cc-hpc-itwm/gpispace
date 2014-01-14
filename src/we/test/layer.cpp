@@ -671,8 +671,8 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id_B;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child, id);
-    expect_submit const _B (this, &child_id_B, activity_child, id);
+    expect_submit const _A (this, &child_id_A, activity_child);
+    expect_submit const _B (this, &child_id_B, activity_child);
 
     do_submit (id, activity_input);
   }
