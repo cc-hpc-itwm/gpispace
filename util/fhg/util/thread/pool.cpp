@@ -45,13 +45,11 @@ namespace fhg
     {
       while (true)
       {
-        boost::function<void()> w (m_workload.get());
+        const boost::function<void()> w (m_workload.get());
 
-        {
-          boost::this_thread::disable_interruption di;
+        const boost::this_thread::disable_interruption _;
 
-          w();
-        }
+        w();
       }
     }
 
