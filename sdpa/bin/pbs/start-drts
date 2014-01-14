@@ -239,14 +239,14 @@ then
 fi
 logprefix="${logdir}/${name}"
 
-bin="$(which fhgkernel)"
+bin="$(which drts-kernel)"
 if [ ! -x "$bin" ] ; then
-  log "# could not find fhgkernel in the path!"
+  log "# could not find drts-kernel in the path!"
   exit 1
 fi
 
 # check if still running
-still_running=$(ps -C fhgkernel -o pid=)
+still_running=$(ps -C drts-kernel -o pid=)
 for p in $still_running ; do
     name_opt=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
 
@@ -315,11 +315,10 @@ cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
 cfg="$cfg -s plugin.wfe.gui_url=$gui"
 cfg="$cfg -s plugin.wfe.library_path=${lib_path}"
 
-plugins=(numa logc kvs progress netd wfe drts)
 if [ x"$gpi_enabled" == x"true" ] ; then
-    plugins+=(gpi gpi_compat)
+    cfg="$cfg --gpi_enabled"
 fi
-cmd="${bin} $cfg ${plugins[@]}"
+cmd="${bin} $cfg"
 
 export FHGLOG_to_file="${logprefix}.log"
 log "Running $cmd on node $hostname" >/dev/null 2>&1
