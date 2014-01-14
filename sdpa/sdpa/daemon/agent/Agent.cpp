@@ -751,6 +751,7 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
   // if the event came from outside, forward it to the workflow engine
   if(pEvt->is_external())
   {
+      m_map_discover_ids.insert(map_discover_ids_t::value_type(pEvt->discover_id(), pEvt->from()));
       workflowEngine()->discover(pEvt->discover_id(), pEvt->job_id());
   }
   else
