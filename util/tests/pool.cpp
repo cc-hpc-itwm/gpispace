@@ -1,12 +1,6 @@
 #define BOOST_TEST_MODULE FhgUtilThreadPool
 #include <boost/test/unit_test.hpp>
 
-#include <stdlib.h>
-
-#include <iostream>
-
-#include <vector>
-
 #include <fhg/util/thread/atomic.hpp>
 #include <fhg/util/thread/pool.hpp>
 
