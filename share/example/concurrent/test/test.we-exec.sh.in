@@ -23,7 +23,6 @@ cleanup()
 
 trap 'cleanup' EXIT
 
-measured "build-wrapper" ${make_src} lib                    || die $EX_ERR_RUN
 measured "run" WE_EXEC_WORKER=4 ${make_src} run             || die $EX_ERR_RUN
 
 grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
