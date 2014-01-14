@@ -54,7 +54,7 @@ namespace we
 
       // ----------------------------------------------------------------- //
 
-      const boost::optional<const value_type&> type::get
+      boost::optional<const value_type&> type::get
         ( const path_type::const_iterator& pos
         , const path_type::const_iterator& end
         ) const
@@ -70,13 +70,13 @@ namespace we
         return fhg::util::boost::get_or_none<const value_type&> (*mapped);
       }
 
-      const boost::optional<const value_type&>
+      boost::optional<const value_type&>
         type::get (const path_type& path) const
       {
         return get (path.begin(), path.end());
       }
 
-      const boost::optional<const value_type&>
+      boost::optional<const value_type&>
         type::get (const std::string& path) const
       {
         return get (pnet::type::value::path::split (path));

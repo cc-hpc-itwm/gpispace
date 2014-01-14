@@ -35,10 +35,8 @@ namespace we
         void set (const path_type& path, const value_type& val);
         void set (const std::string& path, const value_type& val);
 
-        const boost::optional<const value_type&>
-          get (const path_type& path) const;
-        const boost::optional<const value_type&>
-          get (const std::string& path) const;
+        boost::optional<const value_type&> get (const path_type& path) const;
+        boost::optional<const value_type&> get (const std::string& path) const;
 
       private:
         pnet::type::value::value_type _value;
@@ -66,7 +64,7 @@ namespace we
                  , const value_type& val
                  );
 
-        const boost::optional<const value_type&> get
+        boost::optional<const value_type&> get
           ( const path_type::const_iterator& pos
           , const path_type::const_iterator& end
           ) const;
