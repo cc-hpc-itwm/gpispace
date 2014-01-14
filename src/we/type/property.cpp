@@ -52,8 +52,6 @@ namespace we
         return set (pnet::type::value::path::split (path), val);
       }
 
-      // ----------------------------------------------------------------- //
-
       boost::optional<const value_type&> type::get
         ( const path_type::const_iterator& pos
         , const path_type::const_iterator& end
