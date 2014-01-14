@@ -26,8 +26,6 @@ namespace fhg
 
       typedef std::vector<boost::thread *>    thread_list_t;
 
-      std::size_t   m_nthread;
-      std::string   m_pool_name;
       thread_list_t m_threads;
       fhg::thread::queue<boost::function<void()> > m_workload;
     };
