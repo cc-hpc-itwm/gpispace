@@ -23,22 +23,15 @@ namespace fhg
       pool_t (std::size_t nthread, std::string const &name="threadpool");
       ~pool_t();
 
-      void start ();
-      void stop ();
-
       void execute (work_t f);
       void execute (work_t f, callback_t cb);
     private:
-      typedef boost::mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> unique_lock;
-
       void worker (size_t rank);
 
       typedef std::vector<boost::thread *>    thread_list_t;
       typedef std::pair<work_t, callback_t>   work_item_t;
       typedef fhg::thread::queue<work_item_t> work_queue_t;
 
-      mutable mutex_type m_mutex;
       bool          m_stop;
       std::size_t   m_nthread;
       std::string   m_pool_name;

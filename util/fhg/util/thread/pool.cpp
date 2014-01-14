@@ -24,23 +24,6 @@ namespace fhg
       if (0 == m_nthread)
         throw std::invalid_argument
           ("fhg::thread::pool_t: nthreads needs to be > 0");
-      start();
-    }
-
-    pool_t::~pool_t()
-    {
-      if (!m_stop)
-      {
-        stop();
-      }
-    }
-
-    void pool_t::start ()
-    {
-      unique_lock lock (m_mutex);
-
-      if (m_threads.size ())
-        return;
 
       m_stop = false;
 
@@ -55,10 +38,8 @@ namespace fhg
       }
     }
 
-    void pool_t::stop ()
+    pool_t::~pool_t()
     {
-      unique_lock lock (m_mutex);
-
       m_stop = true;
 
       for (std::size_t i = 0 ; i != m_threads.size () ; ++i)
@@ -101,11 +82,6 @@ namespace fhg
 
     void pool_t::execute (work_t w, callback_t cb)
     {
-      if (m_stop)
-      {
-        return;
-      }
-
       m_workload.put (std::make_pair (w, cb));
     }
 
