@@ -29,10 +29,7 @@ namespace we
       public:
         type();
 
-        pnet::type::value::value_type const& value() const
-        {
-          return _value;
-        }
+        pnet::type::value::value_type const& value() const;
         pnet::type::value::structured_type const& list() const;
 
         void set (const path_type& path, const value_type& val);
