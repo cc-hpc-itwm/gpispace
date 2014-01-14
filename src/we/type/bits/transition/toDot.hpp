@@ -14,6 +14,7 @@
 #include <sstream>
 
 #include <boost/foreach.hpp>
+#include <boost/optional.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -355,7 +356,7 @@ namespace we { namespace type {
       , id_type &
       , const options<Pred> &
       , const level_type = 1
-      , const we::priority_type& = we::priority_invalid()
+      , boost::optional<const we::priority_type&> = boost::none
       );
 
       template<typename Pred>
@@ -572,7 +573,7 @@ namespace we { namespace type {
       , id_type & id
       , const options<Pred> & opts
       , const level_type l
-      , const we::priority_type & prio
+      , boost::optional<const we::priority_type &> prio
       )
       {
         std::ostringstream s;
@@ -587,11 +588,11 @@ namespace we { namespace type {
 
         if (opts.show_priority)
           {
-            if (prio != we::priority_invalid())
+            if (prio)
               {
-                if (prio > we::priority_type (0))
+                if (*prio > we::priority_type (0))
                   {
-                    priority << "| priority: " << prio;
+                    priority << "| priority: " << *prio;
                   }
               }
           }
