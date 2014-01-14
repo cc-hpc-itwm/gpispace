@@ -46,7 +46,7 @@ namespace fhg
 
     void pool_t::worker (size_t rank)
     {
-      while (!m_stop || !m_workload.empty ())
+      while (!m_stop)
       {
         boost::function<void()> w (m_workload.get());
 
