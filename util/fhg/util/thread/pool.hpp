@@ -16,7 +16,7 @@ namespace fhg
     {
     public:
       explicit
-      pool_t (std::size_t nthread, std::string const &name="threadpool");
+      pool_t (std::size_t nthread);
       ~pool_t();
 
       void execute (boost::function<void()> f);
