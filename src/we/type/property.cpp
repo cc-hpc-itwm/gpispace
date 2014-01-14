@@ -30,8 +30,8 @@ namespace we
       }
 
       boost::optional<pnet::type::value::value_type>
-        type::set ( const path_iterator& pos
-                  , const path_iterator& end
+        type::set ( const path_type::const_iterator& pos
+                  , const path_type::const_iterator& end
                   , const value_type& val
                   )
       {
@@ -58,7 +58,9 @@ namespace we
       // ----------------------------------------------------------------- //
 
       const boost::optional<const value_type&> type::get
-        (const path_iterator& pos, const path_iterator& end) const
+        ( const path_type::const_iterator& pos
+        , const path_type::const_iterator& end
+        ) const
       {
         boost::optional<const pnet::type::value::value_type&> mapped
           (pnet::type::value::peek (pos, end, _value));

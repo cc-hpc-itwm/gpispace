@@ -24,8 +24,6 @@ namespace we
   {
     namespace property
     {
-      typedef path_type::const_iterator path_iterator;
-
       struct type
       {
       public:
@@ -69,13 +67,15 @@ namespace we
         BOOST_SERIALIZATION_SPLIT_MEMBER()
 
         boost::optional<pnet::type::value::value_type>
-          set ( const path_iterator& pos
-              , const path_iterator& end
+          set ( const path_type::const_iterator& pos
+              , const path_type::const_iterator& end
               , const value_type& val
               );
 
         const boost::optional<const value_type&> get
-          (const path_iterator& pos, const path_iterator& end) const;
+          ( const path_type::const_iterator& pos
+          , const path_type::const_iterator& end
+          ) const;
 
       };
 
