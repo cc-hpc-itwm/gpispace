@@ -50,7 +50,7 @@ namespace fhg
     {
       while (!m_stop || !m_workload.empty ())
       {
-        work_item_t w;
+        boost::function<void()> w;
         try
         {
           w = m_workload.get ();
@@ -63,25 +63,14 @@ namespace fhg
         {
           boost::this_thread::disable_interruption di;
 
-          w.first ();
-          w.second ();
+          w();
         }
       }
     }
 
-    namespace
+    void pool_t::execute (boost::function<void()> w)
     {
-      void nop() {}
-    }
-
-    void pool_t::execute (work_t w)
-    {
-      execute (w, &nop);
-    }
-
-    void pool_t::execute (work_t w, callback_t cb)
-    {
-      m_workload.put (std::make_pair (w, cb));
+      m_workload.put (w);
     }
 
     namespace detail
