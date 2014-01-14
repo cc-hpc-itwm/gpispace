@@ -26,8 +26,9 @@ namespace xml
                  , const property::value_type& value
                  )
         {
-          const boost::optional<pnet::type::value::value_type> old
-            (prop.set (path, value));
+          const boost::optional<pnet::type::value::value_type const&> old
+            (prop.get (path));
+          prop.set (path, value);
 
           if (old)
             {
