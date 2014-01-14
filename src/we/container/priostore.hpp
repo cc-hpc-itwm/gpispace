@@ -18,24 +18,24 @@ namespace we
     struct priority_store
     {
     public:
-      petri_net::priority_type
-      get_priority (const petri_net::transition_id_type&) const;
+      we::priority_type
+      get_priority (const we::transition_id_type&) const;
 
-      void set_priority ( const petri_net::transition_id_type&
-                        , const petri_net::priority_type&
+      void set_priority ( const we::transition_id_type&
+                        , const we::priority_type&
                         );
-      void erase_priority (const petri_net::transition_id_type&);
+      void erase_priority (const we::transition_id_type&);
 
-      void insert (const petri_net::transition_id_type&);
-      void erase (const petri_net::transition_id_type&);
+      void insert (const we::transition_id_type&);
+      void erase (const we::transition_id_type&);
 
       bool empty() const;
-      bool elem (const petri_net::transition_id_type&) const;
+      bool elem (const we::transition_id_type&) const;
 
       template<typename Engine>
-      const petri_net::transition_id_type& random (Engine& engine) const
+      const we::transition_id_type& random (Engine& engine) const
       {
-        const std::vector<petri_net::transition_id_type>& v
+        const std::vector<we::transition_id_type>& v
           (_prio_map.begin()->second);
         boost::uniform_int<std::size_t> rand (0, v.size()-1);
 
@@ -43,22 +43,22 @@ namespace we
       }
 
     private:
-      typedef std::map< petri_net::priority_type
-                      , std::vector<petri_net::transition_id_type>
-                      , std::greater<petri_net::priority_type>
+      typedef std::map< we::priority_type
+                      , std::vector<we::transition_id_type>
+                      , std::greater<we::priority_type>
                       > prio_map_t;
-      typedef boost::unordered_map< petri_net::transition_id_type
-                                  , petri_net::priority_type
+      typedef boost::unordered_map< we::transition_id_type
+                                  , we::priority_type
                                   > get_prio_t;
 
       prio_map_t _prio_map;
       get_prio_t _get_prio;
 
-      void erase ( const petri_net::transition_id_type&
+      void erase ( const we::transition_id_type&
                  , const prio_map_t::iterator&
                  );
-      void insert ( const petri_net::transition_id_type&
-                  , const petri_net::priority_type&
+      void insert ( const we::transition_id_type&
+                  , const we::priority_type&
                   );
     };
   }

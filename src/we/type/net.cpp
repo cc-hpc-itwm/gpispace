@@ -14,7 +14,7 @@
 
 #include <stack>
 
-namespace petri_net
+namespace we
 {
   net::net()
     : _place_id()
@@ -182,16 +182,16 @@ namespace petri_net
   namespace
   {
     typedef boost::any_range
-      < const petri_net::transition_id_type
+      < const we::transition_id_type
       , boost::single_pass_traversal_tag
-      , const petri_net::transition_id_type&
+      , const we::transition_id_type&
       , std::ptrdiff_t
       > transition_id_range_type;
 
     typedef boost::any_range
-      < const petri_net::place_id_type
+      < const we::place_id_type
       , boost::single_pass_traversal_tag
-      , const petri_net::place_id_type&
+      , const we::place_id_type&
       , std::ptrdiff_t
       > place_id_range_type;
   }

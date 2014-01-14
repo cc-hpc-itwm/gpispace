@@ -7,7 +7,7 @@
 
 #include <limits>
 
-namespace petri_net
+namespace we
 {
 #define INVALID(_prefix)                                                \
   const _prefix ## _type& _prefix ## _invalid()                         \

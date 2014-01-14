@@ -10,7 +10,7 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/functional/hash.hpp>
 
-namespace petri_net
+namespace we
 {
   template<typename POD_TYPE, class client_type>
   struct id_base_type
@@ -97,7 +97,7 @@ namespace petri_net
   }
 
 #define INHERIT_ID_TYPE(_name,_type)                                    \
-  struct _name : public ::petri_net::id_base_type<_type, _name>         \
+  struct _name : public ::we::id_base_type<_type, _name>         \
   {                                                                     \
     _name () : id_base_type<_type,_name>() {}                           \
     _name (const _type& value) : id_base_type<_type,_name> (value) {}   \

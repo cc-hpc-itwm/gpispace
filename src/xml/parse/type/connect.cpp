@@ -19,7 +19,7 @@ namespace xml
                                  , const util::position_type& pod
                                  , const std::string& place
                                  , const std::string& port
-                                 , const ::petri_net::edge::type& direction
+                                 , const ::we::edge::type& direction
                                  , const we::type::property::type& properties
                                  )
         : with_position_of_definition (pod)
@@ -50,24 +50,24 @@ namespace xml
       {
         return parent()->resolved_function().get().ports().get
           ( std::make_pair ( port()
-                           , petri_net::edge::is_PT (direction())
+                           , we::edge::is_PT (direction())
                            ? we::type::PORT_IN
                            : we::type::PORT_OUT
                            )
           );
       }
 
-      const ::petri_net::edge::type& connect_type::direction() const
+      const ::we::edge::type& connect_type::direction() const
       {
         return _direction;
       }
-      const ::petri_net::edge::type& connect_type::direction_impl
-        (const ::petri_net::edge::type& direction_)
+      const ::we::edge::type& connect_type::direction_impl
+        (const ::we::edge::type& direction_)
       {
         return _direction = direction_;
       }
-      const ::petri_net::edge::type& connect_type::direction
-        (const ::petri_net::edge::type& direction_)
+      const ::we::edge::type& connect_type::direction
+        (const ::we::edge::type& direction_)
       {
         if (has_parent())
         {
@@ -105,7 +105,7 @@ namespace xml
       connect_type::unique_key_type connect_type::unique_key() const
       {
         return boost::make_tuple
-          (_place, _port, petri_net::edge::is_PT (_direction));
+          (_place, _port, we::edge::is_PT (_direction));
       }
 
 
@@ -132,7 +132,7 @@ namespace xml
       {
         void dump (::fhg::util::xml::xmlstream& s, const connect_type& c)
         {
-          s.open ("connect-" + petri_net::edge::enum_to_string (c.direction()));
+          s.open ("connect-" + we::edge::enum_to_string (c.direction()));
           s.attr ("port", c.port());
           s.attr ("place", c.place());
 

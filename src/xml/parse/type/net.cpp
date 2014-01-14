@@ -661,15 +661,15 @@ namespace xml
 
       // ******************************************************************* //
 
-      boost::unordered_map<std::string, petri_net::place_id_type>
-      net_synthesize ( petri_net::net& we_net
+      boost::unordered_map<std::string, we::place_id_type>
+      net_synthesize ( we::net& we_net
                      , const place_map_map_type & place_map_map
                      , const net_type& net
                      , const state::type & state
                      )
       {
         typedef boost::unordered_map< std::string
-                                    , petri_net::place_id_type
+                                    , we::place_id_type
                                     > pid_of_place_type;
 
         pid_of_place_type pid_of_place;
@@ -711,7 +711,7 @@ namespace xml
               prop.set ("virtual", "true");
             }
 
-            const petri_net::place_id_type pid
+            const we::place_id_type pid
               ( we_net.add_place ( place::type
                                    ( place.name()
                                    , place.signature_or_throw()
@@ -738,7 +738,7 @@ namespace xml
 
         BOOST_FOREACH (const place_type& place, net.places().values())
         {
-          const petri_net::place_id_type pid (pid_of_place.at (place.name()));
+          const we::place_id_type pid (pid_of_place.at (place.name()));
 
           BOOST_FOREACH (const place_type::token_type& token, place.tokens)
           {

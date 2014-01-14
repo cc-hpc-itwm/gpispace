@@ -3,7 +3,7 @@
 #ifndef _FHG_PNETE_DATA_HANDLE_NET_FWD_HPP
 #define _FHG_PNETE_DATA_HANDLE_NET_FWD_HPP 1
 
-//! \todo remove, needed to make petri_net::net a complete type
+//! \todo remove, needed to make we::net a complete type
 #include <we/type/net.hpp>
 
 namespace fhg

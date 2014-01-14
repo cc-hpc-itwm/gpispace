@@ -30,7 +30,7 @@ namespace xml
         , PARENT_CONS_PARAM(net)
         , const util::position_type& pod
         , const std::string& name
-        , const boost::optional<petri_net::priority_type>& priority
+        , const boost::optional<we::priority_type>& priority
         , const boost::optional<bool>& finline
         , const boost::optional<bool>& internal
         )
@@ -103,7 +103,7 @@ namespace xml
         , const structs_type& structs
         , const conditions_type& conditions
         , const requirements_type& requirements
-        , const boost::optional<petri_net::priority_type>& priority
+        , const boost::optional<we::priority_type>& priority
         , const boost::optional<bool>& finline
         , const boost::optional<bool>& internal
         , const we::type::property::type& properties
@@ -323,7 +323,7 @@ namespace xml
         if ( _connections.has
              ( boost::make_tuple ( place
                                  , connection.get().port()
-                                 , petri_net::edge::is_PT
+                                 , we::edge::is_PT
                                    (connection.get().direction())
                                  )
              )
@@ -341,20 +341,20 @@ namespace xml
       }
 
       void transition_type::connection_direction
-        (const id::ref::connect& connection, const petri_net::edge::type& dir)
+        (const id::ref::connect& connection, const we::edge::type& dir)
       {
         if (connection.get().direction() == dir)
         {
           return;
         }
 
-        if ( ( petri_net::edge::is_PT (connection.get().direction())
-             != petri_net::edge::is_PT (dir)
+        if ( ( we::edge::is_PT (connection.get().direction())
+             != we::edge::is_PT (dir)
              )
            && _connections.has
              ( boost::make_tuple ( connection.get().place()
                                  , connection.get().port()
-                                 , petri_net::edge::is_PT (dir)
+                                 , we::edge::is_PT (dir)
                                  )
              )
            )
@@ -489,7 +489,7 @@ namespace xml
         assert (has_parent());
 
         const std::string direction
-          (petri_net::edge::enum_to_string (connect.direction()));
+          (we::edge::enum_to_string (connect.direction()));
 
         const boost::optional<const id::ref::place&> id_place
           (connect.resolved_place());
@@ -667,7 +667,7 @@ namespace xml
       void transition_synthesize
         ( const id::ref::transition & id_transition
         , const state::type & state
-        , petri_net::net & we_net
+        , we::net & we_net
         , const place_map_map_type & pids
         )
       {
@@ -799,9 +799,9 @@ namespace xml
               );
 
             {
-              boost::unordered_map<std::string, petri_net::port_id_type>
+              boost::unordered_map<std::string, we::port_id_type>
                 port_id_in;
-              boost::unordered_map<std::string, petri_net::port_id_type>
+              boost::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
               BOOST_FOREACH (const port_type& port, fun.ports().values())
@@ -836,7 +836,7 @@ namespace xml
                 }
               }
 
-              const petri_net::transition_id_type tid_in
+              const we::transition_id_type tid_in
                 (we_net.add_transition (trans_in));
 
               BOOST_FOREACH (const port_type& port, fun.ports().values())
@@ -844,7 +844,7 @@ namespace xml
                 if (port.direction() == we::type::PORT_IN && port.place)
                 {
                   we_net.add_connection
-                    ( petri_net::edge::TP
+                    ( we::edge::TP
                     , tid_in
                     , get_pid (pid_of_place, prefix + *port.place)
                     , port_id_out.at (port.name())
@@ -857,7 +857,7 @@ namespace xml
                             , trans.connections().values()
                             )
               {
-                if (petri_net::edge::is_PT (connect.direction()))
+                if (we::edge::is_PT (connect.direction()))
                 {
                   we_net.add_connection
                     ( connect.direction()
@@ -891,9 +891,9 @@ namespace xml
               );
 
             {
-              boost::unordered_map<std::string, petri_net::port_id_type>
+              boost::unordered_map<std::string, we::port_id_type>
                 port_id_in;
-              boost::unordered_map<std::string, petri_net::port_id_type>
+              boost::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
               BOOST_FOREACH (const port_type& port, fun.ports().values())
@@ -930,7 +930,7 @@ namespace xml
 
               std::size_t num_outport (0);
 
-              const petri_net::transition_id_type tid_out
+              const we::transition_id_type tid_out
                 (we_net.add_transition (trans_out));
 
               BOOST_FOREACH (const port_type& port, fun.ports().values())
@@ -938,7 +938,7 @@ namespace xml
                 if (port.direction() == we::type::PORT_OUT && port.place)
                 {
                   we_net.add_connection
-                    ( petri_net::edge::PT
+                    ( we::edge::PT
                     , tid_out
                     , get_pid (pid_of_place, prefix + *port.place)
                     , port_id_in.at (port.name())
@@ -951,7 +951,7 @@ namespace xml
                             , trans.connections().values()
                             )
               {
-                if (!petri_net::edge::is_PT (connect.direction()))
+                if (!we::edge::is_PT (connect.direction()))
                 {
                   we_net.add_connection
                     ( connect.direction()
@@ -989,9 +989,9 @@ namespace xml
 
           { // not unfold
 
-            boost::unordered_map<std::string, petri_net::port_id_type>
+            boost::unordered_map<std::string, we::port_id_type>
               port_id_in;
-            boost::unordered_map<std::string, petri_net::port_id_type>
+            boost::unordered_map<std::string, we::port_id_type>
               port_id_out;
 
             we::type::transition_t we_trans
@@ -1006,7 +1006,7 @@ namespace xml
                                )
               );
 
-            const petri_net::transition_id_type tid
+            const we::transition_id_type tid
               (we_net.add_transition (we_trans));
 
             if (trans.priority)
@@ -1018,7 +1018,7 @@ namespace xml
                           , trans.connections().values()
                           )
             {
-              if (petri_net::edge::is_PT (connect.direction()))
+              if (we::edge::is_PT (connect.direction()))
               {
                 we_net.add_connection
                   ( connect.direction()

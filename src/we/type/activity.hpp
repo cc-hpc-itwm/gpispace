@@ -34,7 +34,7 @@ namespace we
       {
       public:
         typedef std::pair< pnet::type::value::value_type
-                         , petri_net::port_id_type
+                         , we::port_id_type
                          > token_on_port_t;
         typedef std::vector<token_on_port_t> token_on_port_list_t;
         typedef token_on_port_list_t input_t;
@@ -44,7 +44,7 @@ namespace we
         explicit activity_t ();
         explicit activity_t
           ( const we::type::transition_t&
-          , boost::optional<petri_net::transition_id_type> const&
+          , boost::optional<we::transition_id_type> const&
           );
 
         explicit activity_t (const boost::filesystem::path&);
@@ -63,17 +63,17 @@ namespace we
 
         const input_t& input() const;
         void add_input
-          ( petri_net::port_id_type const&
+          ( we::port_id_type const&
           , pnet::type::value::value_type const&
           );
 
         const output_t& output() const;
         void add_output
-          ( petri_net::port_id_type const&
+          ( we::port_id_type const&
           , pnet::type::value::value_type const&
           );
 
-        boost::optional<petri_net::transition_id_type> const&
+        boost::optional<we::transition_id_type> const&
           transition_id() const;
 
       private:
@@ -100,7 +100,7 @@ namespace we
           {
             std::string rep;
             ar & rep;
-            petri_net::port_id_type port_id;
+            we::port_id_type port_id;
             ar & port_id;
             l.push_back (std::make_pair ( pnet::type::value::read (rep)
                                         , port_id
@@ -132,7 +132,7 @@ namespace we
 
       private:
         we::type::transition_t _transition;
-        boost::optional<petri_net::transition_id_type> _transition_id;
+        boost::optional<we::transition_id_type> _transition_id;
 
         input_t _input;
         output_t _output;

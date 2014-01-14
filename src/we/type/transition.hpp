@@ -30,18 +30,18 @@ namespace we { namespace type {
     private:
       typedef boost::variant< module_call_t
                             , expression_t
-                            , boost::recursive_wrapper<petri_net::net>
+                            , boost::recursive_wrapper<we::net>
                             > data_type;
 
-      typedef std::pair< petri_net::place_id_type
+      typedef std::pair< we::place_id_type
                        , we::type::property::type
                        > pid_with_prop_t;
 
     public:
-      typedef std::pair< petri_net::port_id_type
+      typedef std::pair< we::port_id_type
                        , we::type::property::type
                        > port_id_with_prop_t;
-      typedef boost::unordered_map<petri_net::port_id_type, port_t> port_map_t;
+      typedef boost::unordered_map<we::port_id_type, port_t> port_map_t;
 
       transition_t ()
         : name_ ("<<transition unknown>>")
@@ -77,17 +77,17 @@ namespace we { namespace type {
       data_type& data();
 
       boost::optional<const expression_t&> expression() const;
-      boost::optional<const petri_net::net&> net() const;
+      boost::optional<const we::net&> net() const;
       boost::optional<const module_call_t&> module_call() const;
 
       bool is_internal() const;
 
       const condition::type& condition() const;
 
-      petri_net::port_id_type add_port (port_t const&);
+      we::port_id_type add_port (port_t const&);
 
-      petri_net::port_id_type input_port_by_name (const std::string&) const;
-      const petri_net::port_id_type& output_port_by_name (const std::string&) const;
+      we::port_id_type input_port_by_name (const std::string&) const;
+      const we::port_id_type& output_port_by_name (const std::string&) const;
 
       const port_map_t& ports() const;
 
@@ -99,7 +99,7 @@ namespace we { namespace type {
       template<typename T>
         boost::optional<T> get_schedule_data
           ( std::vector<std::pair< pnet::type::value::value_type
-                                 , petri_net::port_id_type
+                                 , we::port_id_type
                                  >
                        > const& input
           , const std::string& key
@@ -124,7 +124,7 @@ namespace we { namespace type {
         expr::eval::context context;
 
         typedef std::pair< pnet::type::value::value_type
-                         , petri_net::port_id_type
+                         , we::port_id_type
                          > token_on_port_t;
 
         BOOST_FOREACH (token_on_port_t const& top, input)
@@ -142,7 +142,7 @@ namespace we { namespace type {
       condition::type condition_;
 
       port_map_t ports_;
-      petri_net::port_id_type port_id_counter_;
+      we::port_id_type port_id_counter_;
 
       we::type::property::type prop_;
 

@@ -355,7 +355,7 @@ namespace we { namespace type {
       , id_type &
       , const options<Pred> &
       , const level_type = 1
-      , const petri_net::priority_type& = petri_net::priority_invalid()
+      , const we::priority_type& = we::priority_invalid()
       );
 
       template<typename Pred>
@@ -407,11 +407,11 @@ namespace we { namespace type {
         // ----------------------------------------------------------------- //
 
         std::string operator ()
-        (const petri_net::net & net) const
+        (const we::net & net) const
         {
           typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::pair< std::string
-                           , petri_net::port_id_type
+                           , we::port_id_type
                            > extra_connection_type;
           typedef boost::unordered_map< std::string
                                       , std::list<extra_connection_type>
@@ -426,11 +426,11 @@ namespace we { namespace type {
             << "subgraph cluster_net_" << id_net << " {"
             << std::endl;
 
-          typedef std::pair<petri_net::place_id_type, place::type> ip_type;
+          typedef std::pair<we::place_id_type, place::type> ip_type;
 
           BOOST_FOREACH (const ip_type& ip, net.places())
             {
-              const petri_net::place_id_type& place_id (ip.first);
+              const we::place_id_type& place_id (ip.first);
               const place::type& place (ip.second);
               const std::string place_dot_name
                 (name (id_net, "place_" + boost::lexical_cast<std::string> (place_id)));
@@ -473,14 +473,14 @@ namespace we { namespace type {
                 ;
             }
 
-          typedef std::pair<petri_net::transition_id_type,transition_t> it_type;
+          typedef std::pair<we::transition_id_type,transition_t> it_type;
 
           BOOST_FOREACH (const it_type& it, net.transitions())
             {
-              const petri_net::transition_id_type& trans_id (it.first);
+              const we::transition_id_type& trans_id (it.first);
               const transition_t& trans (it.second);
               const id_type id_trans (++id);
-              const petri_net::priority_type prio
+              const we::priority_type prio
                 (net.get_transition_priority (trans_id));
 
               s << to_dot (trans, id, opts, l + 1, prio);
@@ -506,7 +506,7 @@ namespace we { namespace type {
                  )
               {
                 BOOST_FOREACH
-                  ( petri_net::net::port_to_place_with_info_type::value_type
+                  ( we::net::port_to_place_with_info_type::value_type
                   const& port_to_place
                   , net.port_to_place().at (trans_id)
                   )
@@ -527,7 +527,7 @@ namespace we { namespace type {
               if (net.place_to_port().find (trans_id) !=  net.place_to_port().end())
               {
                 BOOST_FOREACH
-                  ( petri_net::net::place_to_port_with_info_type::value_type
+                  ( we::net::place_to_port_with_info_type::value_type
                   const& place_to_port
                   , net.place_to_port().at (trans_id)
                   )
@@ -541,7 +541,7 @@ namespace we { namespace type {
                             , "port_" + boost::lexical_cast<std::string> (place_to_port.get_right())
                             )
                     << (  net.place_to_transition_read().find
-                       ( petri_net::net::adj_pt_type::value_type
+                       ( we::net::adj_pt_type::value_type
                        (place_to_port.get_left(), trans_id)
                        )
                        != net.place_to_transition_read().end()
@@ -572,7 +572,7 @@ namespace we { namespace type {
       , id_type & id
       , const options<Pred> & opts
       , const level_type l
-      , const petri_net::priority_type & prio
+      , const we::priority_type & prio
       )
       {
         std::ostringstream s;
@@ -587,9 +587,9 @@ namespace we { namespace type {
 
         if (opts.show_priority)
           {
-            if (prio != petri_net::priority_invalid())
+            if (prio != we::priority_invalid())
               {
-                if (prio > petri_net::priority_type (0))
+                if (prio > we::priority_type (0))
                   {
                     priority << "| priority: " << prio;
                   }

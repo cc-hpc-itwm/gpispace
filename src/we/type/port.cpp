@@ -39,7 +39,7 @@ namespace we
          << ", "
         ;
 
-      if (p.associated_place() == petri_net::place_id_invalid())
+      if (p.associated_place() == we::place_id_invalid())
         {
           os << "not associated";
         }

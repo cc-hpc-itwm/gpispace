@@ -410,10 +410,10 @@ namespace xml
             , boost::format ( "connect-%1% %2% <-> %3%"
                               " (existing connection is connect-%4%)"
                             )
-            % petri_net::edge::enum_to_string (late.get().direction())
+            % we::edge::enum_to_string (late.get().direction())
             % late.get().place()
             % late.get().port()
-            % petri_net::edge::enum_to_string (early.get().direction())
+            % we::edge::enum_to_string (early.get().direction())
             )
       {}
 

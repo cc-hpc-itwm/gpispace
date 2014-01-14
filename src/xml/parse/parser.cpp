@@ -271,7 +271,7 @@ namespace xml
 
       id::ref::connect connect_type ( const xml_node_type* node
                                     , state::type& state
-                                    , const petri_net::edge::type& direction
+                                    , const we::edge::type& direction
                                     )
       {
         we::type::property::type properties;
@@ -460,8 +460,8 @@ namespace xml
                             , "transition"
                             , state.file_in_progress()
                             )
-            , fhg::util::boost::fmap<std::string, petri_net::priority_type>
-              ( boost::lexical_cast<petri_net::priority_type>
+            , fhg::util::boost::fmap<std::string, we::priority_type>
+              ( boost::lexical_cast<we::priority_type>
               , optional (node, "priority")
               )
             , fhg::util::boost::fmap<std::string, bool>
@@ -511,20 +511,20 @@ namespace xml
             else if (child_name == "connect-in")
             {
               transition.get_ref().push_connection
-                (connect_type (child, state, petri_net::edge::PT));
+                (connect_type (child, state, we::edge::PT));
             }
             else if (child_name == "connect-out")
             {
               transition.get_ref().push_connection
-                (connect_type (child, state, petri_net::edge::TP));
+                (connect_type (child, state, we::edge::TP));
             }
             else if (child_name == "connect-inout")
             {
               const id::ref::connect connection_in
-                (connect_type (child, state, petri_net::edge::PT));
+                (connect_type (child, state, we::edge::PT));
               const id::ref::connect connection_out
                 (connection_in.get().clone());
-              connection_out.get_ref().direction (petri_net::edge::TP);
+              connection_out.get_ref().direction (we::edge::TP);
 
               transition.get_ref().push_connection (connection_in);
               transition.get_ref().push_connection (connection_out);
@@ -532,7 +532,7 @@ namespace xml
             else if (child_name == "connect-read")
             {
               transition.get_ref().push_connection
-                (connect_type (child, state, petri_net::edge::PT_READ));
+                (connect_type (child, state, we::edge::PT_READ));
             }
             else if (child_name == "condition")
             {
@@ -1601,8 +1601,8 @@ namespace xml
         function.get_ref().name (boost::optional<std::string>("anonymous"));
       }
 
-      boost::unordered_map<std::string, petri_net::port_id_type> port_id_in;
-      boost::unordered_map<std::string, petri_net::port_id_type> port_id_out;
+      boost::unordered_map<std::string, we::port_id_type> port_id_in;
+      boost::unordered_map<std::string, we::port_id_type> port_id_out;
 
       we::type::transition_t trans
         (function.get_ref().synthesize ( *function.get().name()

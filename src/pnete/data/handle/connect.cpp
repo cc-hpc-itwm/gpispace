@@ -24,7 +24,7 @@ namespace fhg
 
         bool connect::is_in() const
         {
-          return petri_net::edge::is_PT (get().direction());
+          return we::edge::is_PT (get().direction());
         }
         bool connect::is_out() const
         {
@@ -32,7 +32,7 @@ namespace fhg
         }
         bool connect::is_read() const
         {
-          return petri_net::edge::is_pt_read (get().direction());
+          return we::edge::is_pt_read (get().direction());
         }
 
         void connect::is_read (const bool& s) const

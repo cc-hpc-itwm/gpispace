@@ -44,7 +44,7 @@ namespace xml
                         , PARENT_CONS_PARAM(net)
                         , const util::position_type&
                         , const std::string& name
-                        , const boost::optional<petri_net::priority_type>& priority
+                        , const boost::optional<we::priority_type>& priority
                         , const boost::optional<bool>& finline
                         , const boost::optional<bool>& internal
                         );
@@ -65,7 +65,7 @@ namespace xml
                         , const structs_type& structs
                         , const conditions_type&
                         , const requirements_type& requirements
-                        , const boost::optional<petri_net::priority_type>& priority
+                        , const boost::optional<we::priority_type>& priority
                         , const boost::optional<bool>& finline
                         , const boost::optional<bool>& internal
                         , const we::type::property::type& properties
@@ -104,7 +104,7 @@ namespace xml
 
         void connection_place (const id::ref::connect&, const std::string&);
         void connection_direction
-          (const id::ref::connect&, const petri_net::edge::type&);
+          (const id::ref::connect&, const we::edge::type&);
 
         void place_map_real (const id::ref::place_map&, const std::string&);
 
@@ -175,7 +175,7 @@ namespace xml
       public:
         requirements_type requirements;
 
-        boost::optional<petri_net::priority_type> priority;
+        boost::optional<we::priority_type> priority;
         boost::optional<bool> finline;
         boost::optional<bool> internal;
 
@@ -188,7 +188,7 @@ namespace xml
       void transition_synthesize
         ( const id::ref::transition & id_transition
         , const state::type & state
-        , petri_net::net& we_net
+        , we::net& we_net
         , const place_map_map_type & pids
         );
 

@@ -282,7 +282,7 @@ namespace fhg
           push (append (name));
         }
         WSIGE(tv, transition::close) { pop(); }
-        WSIG(tv, transition::priority, boost::optional<petri_net::priority_type>, prio)
+        WSIG(tv, transition::priority, boost::optional<we::priority_type>, prio)
         {
           append_maybe_key_value ("priority", "%i", prio);
         }
@@ -523,7 +523,7 @@ namespace fhg
 
         WSIG(tv, connection::open, ::xml::parse::id::ref::connect, connection)
         {
-          push (append (petri_net::edge::enum_to_string (connection.get().direction())));
+          push (append (we::edge::enum_to_string (connection.get().direction())));
         }
         WSIGE(tv, connection::close) { pop(); }
         WSIG(tv, connection::port, std::string, port)

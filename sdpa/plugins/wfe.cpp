@@ -81,7 +81,7 @@ namespace
       if (act.transition().net())
       {
         while ( boost::optional<we::type::activity_t> sub
-              = boost::get<petri_net::net&> (act.transition().data())
+              = boost::get<we::net&> (act.transition().data())
               . fire_expressions_and_extract_activity_random (_engine)
               )
         {

@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-namespace petri_net
+namespace we
 {
   namespace edge
   {

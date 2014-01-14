@@ -29,7 +29,7 @@
 #include <list>
 #include <sstream>
 
-namespace petri_net
+namespace we
 {
   class net
   {

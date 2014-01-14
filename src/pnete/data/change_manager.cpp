@@ -565,8 +565,8 @@ namespace fhg
           (ACTION_ARG_LIST, const handle::connect& connect, bool read)
         {
           connect.get_ref().direction ( read
-                                      ? petri_net::edge::PT_READ
-                                      : petri_net::edge::PT
+                                      ? we::edge::PT_READ
+                                      : we::edge::PT
                                       );
           EMIT_SIGNAL (&signal::connection_direction_changed, connect);
         }
@@ -1198,8 +1198,8 @@ namespace fhg
                        , place.get().name()
                        , port.get().name()
                        , port.is_input()
-                       ? petri_net::edge::PT
-                       : petri_net::edge::TP
+                       ? we::edge::PT
+                       : we::edge::TP
                        ).make_reference_id()
                      )
                    );
