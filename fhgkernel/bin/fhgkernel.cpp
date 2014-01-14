@@ -28,7 +28,6 @@ int main(int ac, char **av)
 
   desc.add_options()
     ("help,h", "this message")
-    ("verbose,v", "be verbose")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
     ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
     ("state,S", po::value<std::string>(&state_path), "state directory to use")
