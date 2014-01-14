@@ -21,7 +21,7 @@ namespace fhg
 
       void execute (boost::function<void()> f);
     private:
-      void worker (size_t rank);
+      void worker();
 
       boost::ptr_vector<boost::thread> m_threads;
       fhg::thread::queue<boost::function<void()> > m_workload;

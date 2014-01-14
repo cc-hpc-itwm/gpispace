@@ -21,8 +21,7 @@ namespace fhg
 
       for (std::size_t i = 0 ; i != nthread ; ++i)
       {
-        m_threads.push_back
-          (new boost::thread (&pool_t::worker, this, i));
+        m_threads.push_back (new boost::thread (&pool_t::worker, this));
         fhg::util::set_threadname
           ( m_threads.back ()
           , (boost::format ("%1%-%2%") % name % i).str ()
@@ -39,7 +38,7 @@ namespace fhg
       }
     }
 
-    void pool_t::worker (size_t rank)
+    void pool_t::worker()
     {
       while (true)
       {
