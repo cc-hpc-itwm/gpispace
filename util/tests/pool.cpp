@@ -10,12 +10,10 @@
 #include <fhg/util/thread/atomic.hpp>
 #include <fhg/util/thread/pool.hpp>
 
-static fhg::thread::atomic<int> s_work_count (0);
-
-static void s_work ()
+static void s_work (fhg::thread::atomic<int>* counter)
 {
   usleep (rand () % 500);
-  ++s_work_count;
+  ++*counter;
 }
 
 BOOST_AUTO_TEST_CASE (simple_pool)
@@ -24,12 +22,14 @@ BOOST_AUTO_TEST_CASE (simple_pool)
 
   using namespace fhg::thread;
 
+  fhg::thread::atomic<int> counter (0);
+
   {
     pool_t pool (13);
 
     for (size_t i = 0 ; i < NUM_ITERATIONS; ++i)
-      pool.execute (s_work);
+      pool.execute (boost::bind (&s_work, &counter));
   }
 
-  BOOST_REQUIRE_EQUAL (s_work_count, NUM_ITERATIONS);
+  BOOST_REQUIRE_EQUAL (counter, NUM_ITERATIONS);
 }
