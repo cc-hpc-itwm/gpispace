@@ -26,8 +26,6 @@ namespace fhg
       boost::ptr_vector<boost::thread> m_threads;
       fhg::thread::queue<boost::function<void()> > m_workload;
     };
-
-    pool_t & global_pool ();
   }
 }
 

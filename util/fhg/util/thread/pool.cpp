@@ -50,34 +50,5 @@ namespace fhg
     {
       m_workload.put (w);
     }
-
-    namespace detail
-    {
-      struct init_global_pool_t
-      {
-        init_global_pool_t ()
-          : pool (0)
-        {
-          int ncpu = fhg_get_cpucount ();
-          if (ncpu < 0) ncpu = 1;
-
-          pool = new pool_t (ncpu);
-        };
-
-        ~init_global_pool_t ()
-        {
-          delete pool;
-          pool = NULL;
-        }
-
-        pool_t *pool;
-      };
-    }
-
-    pool_t & global_pool ()
-    {
-      static detail::init_global_pool_t gpool;
-      return *gpool.pool;
-    }
   }
 }
