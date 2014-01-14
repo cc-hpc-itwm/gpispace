@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/mgmt/layer.hpp>
+#include <we/layer.hpp>
 
 #include <fhg/util/starts_with.hpp>
 
@@ -8,8 +8,6 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     layer::layer
         ( boost::function<void (id_type, type::activity_t)> rts_submit
         , boost::function<void (id_type)> rts_cancel
@@ -49,54 +47,33 @@ namespace we
         return (port.is_output() ? "_out_" : "_in_") + port.name();
       }
 
-      type::activity_t wrap (type::activity_t& activity)
+      type::activity_t wrap (type::activity_t const& activity)
       {
-        we::type::transition_t& transition_inner (activity.transition());
-
         petri_net::net net;
+
+        petri_net::transition_id_type const transition_id
+          (net.add_transition (activity.transition()));
 
         boost::unordered_map<std::string, petri_net::place_id_type> place_ids;
 
         BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , transition_inner.ports()
+                      , activity.transition().ports()
                       )
         {
           petri_net::place_id_type const place_id
             (net.add_place (place::type (wrapped_name (p.second), p.second.signature())));
 
-          if (p.second.is_output())
-          {
-            transition_inner.add_connection
-              (p.first, place_id, we::type::property::type());
-          }
-          else if (p.second.is_input())
-          {
-            transition_inner.add_connection
-              (place_id, p.first, we::type::property::type());
-          }
-          else
-          {
-            throw std::runtime_error ("tried to wrap, found tunnel port!?");
-          }
-
-          place_ids.insert (std::make_pair (wrapped_name (p.second), place_id));
-        }
-
-        petri_net::transition_id_type const transition_id
-          (net.add_transition (transition_inner));
-
-        BOOST_FOREACH
-          ( we::type::port_t const& port
-          , transition_inner.ports() | boost::adaptors::map_values
-          )
-        {
           net.add_connection
-            ( port.is_output() ? petri_net::edge::TP
-            : port.is_input() ? petri_net::edge::PT
+            ( p.second.is_output() ? petri_net::edge::TP
+            : p.second.is_input() ? petri_net::edge::PT
             : throw std::runtime_error ("tried to wrap, found tunnel port!?")
             , transition_id
-            , place_ids.find (wrapped_name (port))->second
+            , place_id
+            , p.first
+            , we::type::property::type()
             );
+
+          place_ids.insert (std::make_pair (wrapped_name (p.second), place_id));
         }
 
         BOOST_FOREACH ( const type::activity_t::input_t::value_type& top
@@ -104,81 +81,43 @@ namespace we
                       )
         {
           we::type::port_t const& port
-            (transition_inner.ports().at (top.second));
+            (activity.transition().ports().at (top.second));
 
           net.put_value
             (place_ids.find (wrapped_name (port))->second, top.first);
         }
 
-        we::type::transition_t
+        //! \todo copy output too
+
+        we::type::transition_t const
           transition_net_wrapper ( wrapped_activity_prefix()
-                                 + transition_inner.name()
+                                 + activity.transition().name()
                                  , net
                                  , condition::type ("true")
                                  , true
                                  , we::type::property::type()
                                  );
 
-        BOOST_FOREACH
-          ( we::type::port_t const& port
-          , transition_inner.ports() | boost::adaptors::map_values
-          )
-        {
-          transition_net_wrapper.add_port
-            ( we::type::port_t ( wrapped_name (port)
-                               , port.direction()
-                               , port.signature()
-                               , place_ids.find (wrapped_name (port))->second
-                               , port.property()
-                               )
-            );
-        }
-
-        return type::activity_t (transition_net_wrapper);
+        return type::activity_t
+          (transition_net_wrapper, activity.transition_id());
       }
 
-      type::activity_t unwrap (type::activity_t& activity)
+      type::activity_t unwrap (type::activity_t const& activity)
       {
-        petri_net::net net (*activity.transition().net());
-        we::type::transition_t transition_inner
-          (net.transitions().begin()->second);
+        petri_net::net const& net (*activity.transition().net());
+
+        type::activity_t activity_inner
+          (net.transitions().begin()->second, activity.transition_id());
 
         BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , transition_inner.ports()
-                      )
-        {
-          if (p.second.is_output())
-          {
-            transition_inner.remove_connection_out (p.first);
-          }
-          else
-          {
-            petri_net::place_id_type const place_id
-              ( activity.transition().ports().at
-                ( activity.transition().input_port_by_name
-                  (wrapped_name (p.second))
-                )
-              .associated_place()
-              );
-
-            transition_inner.remove_connection_in (place_id);
-          }
-        }
-
-        type::activity_t activity_inner (transition_inner);
-
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , transition_inner.ports()
+                      , activity_inner.transition().ports()
                       )
         {
           if (p.second.is_output())
           {
             petri_net::place_id_type const place_id
-              ( activity.transition().ports().at
-                ( activity.transition().output_port_by_name
-                  (wrapped_name (p.second))
-                )
-              .associated_place()
+              ( net.port_to_place().at (net.transitions().begin()->first)
+              .left.find (p.first)->get_right()
               );
 
             BOOST_FOREACH ( const pnet::type::value::value_type& token
@@ -189,6 +128,8 @@ namespace we
             }
           }
         }
+
+        //! \todo copy input too
 
         return activity_inner;
       }
@@ -291,11 +232,15 @@ namespace we
         bool was_active (false);
 
         //! \todo How to cancel if the net is inside
-        //! fire_internally_and_extract_external (endless loop in
-        //! expressions)?
+        //! fire_expression_and_extract_activity_random (endless loop
+        //! in expressions)?
 
         if ( boost::optional<type::activity_t> activity
-           = activity_data.fire_internally_and_extract_external
+
+             //! \note We wrap all input activites in a net.
+           = boost::get<petri_net::net&>
+             (activity_data._activity.transition().data())
+           . fire_expressions_and_extract_activity_random
                (_random_extraction_engine)
            )
         {
@@ -513,58 +458,6 @@ namespace we
 
     // activity_data_type
 
-    boost::optional<type::activity_t>
-      layer::activity_data_type::fire_internally_and_extract_external
-        (boost::mt19937& random_extraction_engine)
-    {
-      //! \note We wrap all input activites in a net.
-      petri_net::net& net
-        (boost::get<petri_net::net&> (_activity.transition().data()));
-
-      while (net.can_fire())
-      {
-        type::activity_t activity
-          (net.extract_activity_random (random_extraction_engine));
-
-        if (!activity.transition().expression())
-        {
-          return activity;
-        }
-        else
-        {
-          expr::eval::context context;
-
-          BOOST_FOREACH ( const type::activity_t::input_t::value_type& top
-                        , activity.input()
-                        )
-          {
-            context.bind_ref
-              ( activity.transition().ports().at (top.second).name()
-              , top.first
-              );
-          }
-
-          activity.transition().expression()->ast().eval_all (context);
-
-          BOOST_FOREACH
-            ( we::type::transition_t::port_map_t::value_type const& p
-            , activity.transition().ports()
-            )
-          {
-            if (p.second.is_output())
-            {
-              net.put_value
-                ( activity.transition().inner_to_outer().at (p.first).first
-                , context.value (p.second.name())
-                );
-            }
-          }
-        }
-      }
-
-      return boost::none;
-    }
-
     void layer::activity_data_type::child_finished (type::activity_t child)
     {
       //! \note We wrap all input activites in a net.
@@ -576,7 +469,8 @@ namespace we
                     )
       {
         net.put_value
-          ( child.transition().inner_to_outer().at (top.second).first
+          ( net.port_to_place().at (*child.transition_id())
+          .left.find (top.second)->get_right()
           , top.first
           );
       }
@@ -640,5 +534,4 @@ namespace we
         fun (child);
       }
     }
-  }
 }

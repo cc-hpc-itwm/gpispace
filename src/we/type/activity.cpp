@@ -6,9 +6,9 @@
 
 #include <we/expr/eval/context.hpp>
 
-#include <we/mgmt/context.hpp>
+#include <we/context.hpp>
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <we/type/value/show.hpp>
 
@@ -23,20 +23,22 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     namespace type
     {
       activity_t::activity_t ()
       {}
 
-      activity_t::activity_t (const we::type::transition_t& transition)
+      activity_t::activity_t
+        ( const we::type::transition_t& transition
+        , boost::optional<petri_net::transition_id_type> const& transition_id
+        )
         : _transition (transition)
+        , _transition_id (transition_id)
       {}
 
       namespace
       {
-        void decode (std::istream& s, we::mgmt::type::activity_t& t)
+        void decode (std::istream& s, activity_t& t)
         {
           try
             {
@@ -87,39 +89,6 @@ namespace we
 
       namespace
       {
-        class visitor_activity_extractor
-          : public boost::static_visitor<activity_t>
-        {
-        private:
-          boost::mt19937& _engine;
-
-        public:
-          visitor_activity_extractor (boost::mt19937& engine)
-            : _engine (engine)
-          {}
-
-          activity_t operator() (petri_net::net& net) const
-          {
-            return net.extract_activity_random (_engine);
-          }
-
-          template<typename T>
-          activity_t operator() (T&) const
-          {
-            throw std::runtime_error ("STRANGE: activity_extractor");
-          }
-        };
-      }
-
-      activity_t activity_t::extract (boost::mt19937& engine)
-      {
-        return boost::apply_visitor ( visitor_activity_extractor (engine)
-                                    , _transition.data()
-                                    );
-      }
-
-      namespace
-      {
         class visitor_activity_injector : public boost::static_visitor<>
         {
         private:
@@ -137,7 +106,8 @@ namespace we
                           )
               {
                 parent.put_value
-                  ( _child.transition().inner_to_outer().at (top.second).first
+                  ( parent.port_to_place().at (*_child.transition_id())
+                  .left.find (top.second)->get_right()
                   , top.first
                   );
               }
@@ -163,15 +133,16 @@ namespace we
         class visitor_add_input : public boost::static_visitor<>
         {
         private:
-          we::type::transition_t& _transition;
+          we::type::transition_t const& _transition;
           petri_net::port_id_type const& _port_id;
           pnet::type::value::value_type const& _value;
 
         public:
-          visitor_add_input ( we::type::transition_t& transition
-                            , petri_net::port_id_type const& port_id
-                            , pnet::type::value::value_type const& value
-                            )
+          visitor_add_input
+            ( we::type::transition_t const& transition
+            , petri_net::port_id_type const& port_id
+            , pnet::type::value::value_type const& value
+            )
             : _transition (transition)
             , _port_id (port_id)
             , _value (value)
@@ -352,31 +323,6 @@ namespace we
           (executor (*this, ctxt), transition().data());
       }
 
-      namespace
-      {
-        class visitor_can_fire : public boost::static_visitor<bool>
-        {
-        public:
-          bool operator () (const petri_net::net& net) const
-          {
-            return net.can_fire();
-          }
-          bool operator () (const we::type::module_call_t&) const
-          {
-            return false;
-          }
-          bool operator () (const we::type::expression_t&) const
-          {
-            return false;
-          }
-        };
-      }
-
-      bool activity_t::can_fire() const
-      {
-        return boost::apply_visitor (visitor_can_fire(), transition().data());
-      }
-
       const activity_t::input_t& activity_t::input() const
       {
         return _input;
@@ -395,10 +341,10 @@ namespace we
         _output.push_back (output_t::value_type (value, port_id));
       }
 
-      std::ostream& operator<< (std::ostream& os, const activity_t& a)
+      boost::optional<petri_net::transition_id_type> const&
+        activity_t::transition_id() const
       {
-        return os << a.to_string();
+        return _transition_id;
       }
     }
-  }
 }

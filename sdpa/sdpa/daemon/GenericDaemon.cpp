@@ -86,7 +86,7 @@ GenericDaemon::GenericDaemon( const std::string name
     ptr_scheduler_()
   , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
   , ptr_workflow_engine_ ( create_wfe
-                         ? new we::mgmt::layer
+                         ? new we::layer
                            ( boost::bind (&GenericDaemon::submit, this, _1, _2)
                            , boost::bind (&GenericDaemon::cancel, this, _1)
                            , boost::bind (&GenericDaemon::finished, this, _1, _2)
@@ -538,8 +538,8 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GS about activity status transitions.
  */
-void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
-                          , const we::mgmt::type::activity_t& activity
+void GenericDaemon::submit( const we::layer::id_type& activityId
+                          , const we::type::activity_t& activity
                           )
 {
   const we::type::schedule_data schedule_data
@@ -563,7 +563,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
         return;
     }
 
-  on_scope_exit _ ( boost::bind ( &we::mgmt::layer::failed, workflowEngine()
+  on_scope_exit _ ( boost::bind ( &we::layer::failed, workflowEngine()
                               , activityId
                               , fhg::error::UNEXPECTED_ERROR
                               , "Exception in GenericDaemon::submit()"
@@ -584,7 +584,7 @@ void GenericDaemon::submit( const we::mgmt::layer::id_type& activityId
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
  */
-void GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId)
+void GenericDaemon::cancel(const we::layer::id_type& activityId)
 {
   DLLOG (TRACE, _logger, "The workflow engine requests the cancellation of the activity " << activityId);
 
@@ -608,7 +608,7 @@ void GenericDaemon::cancel(const we::mgmt::layer::id_type& activityId)
  * Notify the SDPA that a workflow finished (state transition
  * from running to finished).
  */
-void GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const we::mgmt::type::activity_t& result)
+void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::type::activity_t& result)
 {
   DLLOG (TRACE, _logger, "activity finished: " << workflowId);
   // generate a JobFinishedEvent for self!
@@ -630,7 +630,7 @@ void GenericDaemon::finished(const we::mgmt::layer::id_type& workflowId, const w
  * Notify the SDPA that a workflow failed (state transition
  * from running to failed).
  */
-void GenericDaemon::failed( const we::mgmt::layer::id_type& workflowId
+void GenericDaemon::failed( const we::layer::id_type& workflowId
                           , int error_code
                           , std::string const & reason
                           )
@@ -661,7 +661,7 @@ void GenericDaemon::failed( const we::mgmt::layer::id_type& workflowId
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */
-void GenericDaemon::canceled(const we::mgmt::layer::id_type& workflowId)
+void GenericDaemon::canceled(const we::layer::id_type& workflowId)
 {
   DLLOG (TRACE, _logger, "activity canceled: " << workflowId);
   // generate a JobCanceledEvent for self!
@@ -715,7 +715,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
     }
     else
     {
-      const we::mgmt::type::activity_t act (pJob->description());
+      const we::type::activity_t act (pJob->description());
       if (m_guiService)
       {
        std::list<std::string> workers; workers.push_back (name());

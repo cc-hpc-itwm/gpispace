@@ -3,7 +3,7 @@
 #ifndef WE_MGMT_LAYER_HPP
 #define WE_MGMT_LAYER_HPP 1
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
@@ -20,8 +20,6 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     class layer
     {
     public:
@@ -78,8 +76,6 @@ namespace we
           , _activity (activity)
         {}
 
-        boost::optional<type::activity_t>
-          fire_internally_and_extract_external (boost::mt19937&);
         void child_finished (type::activity_t);
 
         id_type _id;
@@ -162,7 +158,6 @@ namespace we
       void finalize_finished
         (activity_data_type&, type::activity_t, id_type parent, id_type child);
     };
-  }
 }
 
 #endif

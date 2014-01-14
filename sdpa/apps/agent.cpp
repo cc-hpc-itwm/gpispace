@@ -10,7 +10,7 @@
 #include <boost/foreach.hpp>
 
 #include <sdpa/daemon/agent/Agent.hpp>
-#include <we/mgmt/layer.hpp>
+#include <we/layer.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/read_bool.hpp>

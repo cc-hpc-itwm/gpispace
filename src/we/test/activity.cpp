@@ -7,8 +7,8 @@
 #include <we/type/place.hpp>
 #include <we/type/value.hpp>
 #include <we/type/port.hpp>
-#include <we/mgmt/type/activity.hpp>
-#include <we/mgmt/context.hpp>
+#include <we/type/activity.hpp>
+#include <we/context.hpp>
 
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/expression.hpp>
@@ -20,9 +20,9 @@ using petri_net::edge::TP;
 
 typedef we::type::transition_t transition_t;
 typedef petri_net::net pnet_t;
-typedef we::mgmt::type::activity_t activity_t;
+typedef we::type::activity_t activity_t;
 
-struct exec_context : public we::mgmt::context
+struct exec_context : public we::context
 {
   virtual void handle_internally (activity_t&, net_t const&)
   {
@@ -119,21 +119,16 @@ int main (int, char **)
       (we::type::port_t ("pair",we::type::PORT_OUT,sig_pair))
     );
 
-  trans_inner.add_connection
-    (pid_vid, port_id_vid, we::type::property::type());
-  trans_inner.add_connection
-    (pid_store, port_id_store_in, we::type::property::type());
-  trans_inner.add_connection
-    (port_id_pair, pid_pair, we::type::property::type());
-  trans_inner.add_connection
-    (port_id_store_out, pid_store, we::type::property::type());
-
   petri_net::transition_id_type tid (net.add_transition (trans_inner));
 
-  net.add_connection (PT, tid, pid_store);
-  net.add_connection (TP, tid, pid_store);
-  net.add_connection (PT_READ, tid, pid_vid);
-  net.add_connection (TP, tid, pid_pair);
+  {
+    we::type::property::type empty;
+
+    net.add_connection (PT, tid, pid_store, port_id_store_in, empty);
+    net.add_connection (TP, tid, pid_store, port_id_store_out, empty);
+    net.add_connection (PT_READ, tid, pid_vid, port_id_vid, empty);
+    net.add_connection (TP, tid, pid_pair, port_id_pair, empty);
+  }
 
   net.put_value (pid_vid, 0L);
   net.put_value (pid_vid, 1L);
@@ -171,7 +166,7 @@ int main (int, char **)
   tnet.add_port
     (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair, pid_pair));
 
-  activity_t act ( tnet );
+  activity_t act ( tnet, boost::none );
 
   {
     std::string act_encoded (act.to_string());
@@ -181,18 +176,19 @@ int main (int, char **)
               << std::endl;
   }
 
-  std::cout << "can_fire = " << act.can_fire() << std::endl;
-
   boost::mt19937 engine;
 
-  while (act.can_fire())
+  if (act.transition().net())
   {
-    activity_t sub = act.extract (engine);
-
-    exec_context ctxt;
-    sub.execute (&ctxt);
-
-    act.inject (sub);
+    while ( boost::optional<we::type::activity_t> sub
+          = boost::get<petri_net::net&> (act.transition().data())
+          . fire_expressions_and_extract_activity_random (engine)
+          )
+    {
+      exec_context ctxt;
+      sub->execute (&ctxt);
+      act.inject (*sub);
+    }
   }
 
   act.collect_output();

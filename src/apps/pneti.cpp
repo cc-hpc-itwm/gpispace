@@ -6,7 +6,7 @@
 #include <we/type/requirement.hpp>
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <fhg/revision.hpp>
 
@@ -95,10 +95,10 @@ try
     return 0;
   }
 
-  we::mgmt::type::activity_t act
+  we::type::activity_t act
     ( input == "-"
-    ? we::mgmt::type::activity_t (std::cin)
-    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    ? we::type::activity_t (std::cin)
+    : we::type::activity_t (boost::filesystem::path (input))
     );
 
   std::cout << act.transition().requirements();

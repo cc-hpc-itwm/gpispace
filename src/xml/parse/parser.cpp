@@ -40,7 +40,7 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/boost/optional.hpp>
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
 
@@ -1589,7 +1589,7 @@ namespace xml
       type::dump::dump (s, function.get());
     }
 
-    we::mgmt::type::activity_t xml_to_we
+    we::type::activity_t xml_to_we
       ( const xml::parse::id::ref::function& function
       , const xml::parse::state::type& state
       )
@@ -1612,9 +1612,7 @@ namespace xml
                                        )
         );
 
-      we::type::optimize::optimize (trans, state.options_optimize());
-
-      return we::mgmt::type::activity_t (trans);
+      return we::type::activity_t (trans, boost::none);
     }
   } // namespace parse
 } // namespace xml

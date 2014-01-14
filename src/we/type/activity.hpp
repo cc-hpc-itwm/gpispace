@@ -3,12 +3,12 @@
 #ifndef WE_MGMT_TYPE_ACTIVITY_HPP
 #define WE_MGMT_TYPE_ACTIVITY_HPP 1
 
-#include <we/mgmt/type/activity.fwd.hpp>
+#include <we/type/activity.fwd.hpp>
 
 #include <we/type/id.hpp>
 #include <we/type/transition.hpp>
 
-#include <we/mgmt/context.fwd.hpp>
+#include <we/context.fwd.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/read.hpp>
@@ -16,8 +16,10 @@
 
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/optional.hpp>
 
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 #include <boost/random.hpp>
 
 #include <vector>
@@ -26,8 +28,6 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     namespace type
     {
       class activity_t
@@ -42,7 +42,10 @@ namespace we
 
       public:
         explicit activity_t ();
-        explicit activity_t (const we::type::transition_t&);
+        explicit activity_t
+          ( const we::type::transition_t&
+          , boost::optional<petri_net::transition_id_type> const&
+          );
 
         explicit activity_t (const boost::filesystem::path&);
         explicit activity_t (std::istream&);
@@ -50,17 +53,13 @@ namespace we
 
         std::string to_string() const;
 
-        //! \todo DIRTY! Why lock and return a ref? Eliminate!!
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
 
-        activity_t extract (boost::mt19937& engine);
         void inject (const activity_t&);
         void collect_output();
 
         void execute (context*);
-
-        bool can_fire() const;
 
         const input_t& input() const;
         void add_input
@@ -73,6 +72,9 @@ namespace we
           ( petri_net::port_id_type const&
           , pnet::type::value::value_type const&
           );
+
+        boost::optional<petri_net::transition_id_type> const&
+          transition_id() const;
 
       private:
         template<class Archive>
@@ -112,6 +114,7 @@ namespace we
           void save (Archive& ar, const unsigned int) const
         {
           ar & BOOST_SERIALIZATION_NVP(_transition);
+          ar & BOOST_SERIALIZATION_NVP(_transition_id);
 
           save (ar, _input);
           save (ar, _output);
@@ -120,6 +123,7 @@ namespace we
         void load (Archive& ar, const unsigned int)
         {
           ar & BOOST_SERIALIZATION_NVP(_transition);
+          ar & BOOST_SERIALIZATION_NVP(_transition_id);
 
           load (ar, _input);
           load (ar, _output);
@@ -128,14 +132,12 @@ namespace we
 
       private:
         we::type::transition_t _transition;
+        boost::optional<petri_net::transition_id_type> _transition_id;
 
         input_t _input;
         output_t _output;
       };
-
-      std::ostream& operator<< (std::ostream&, const activity_t&);
     }
-  }
 }
 
 #endif

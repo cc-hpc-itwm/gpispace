@@ -95,11 +95,11 @@ namespace sdpa {
       bool isTop() { return m_arrMasterInfo.empty(); }
 
       // WE interface
-      void submit( const we::mgmt::layer::id_type & id, const we::mgmt::type::activity_t&);
-      void cancel(const we::mgmt::layer::id_type & id);
-      virtual void finished(const we::mgmt::layer::id_type & id, const we::mgmt::type::activity_t& result);
-      virtual void failed( const we::mgmt::layer::id_type& wfId, int errc, std::string const& reason);
-      void canceled(const we::mgmt::layer::id_type& id);
+      void submit( const we::layer::id_type & id, const we::type::activity_t&);
+      void cancel(const we::layer::id_type & id);
+      virtual void finished(const we::layer::id_type & id, const we::type::activity_t& result);
+      virtual void failed( const we::layer::id_type& wfId, int errc, std::string const& reason);
+      void canceled(const we::layer::id_type& id);
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
@@ -152,7 +152,7 @@ namespace sdpa {
 
       // workflow engine
     public:
-      we::mgmt::layer* workflowEngine() const { return ptr_workflow_engine_.get(); }
+      we::layer* workflowEngine() const { return ptr_workflow_engine_.get(); }
       bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
     protected:
@@ -220,7 +220,7 @@ namespace sdpa {
       JobManager _job_manager;
       SchedulerBase::ptr_t ptr_scheduler_;
       boost::optional<boost::mt19937> _random_extraction_engine;
-      boost::scoped_ptr<we::mgmt::layer> ptr_workflow_engine_;
+      boost::scoped_ptr<we::layer> ptr_workflow_engine_;
 
     private:
 

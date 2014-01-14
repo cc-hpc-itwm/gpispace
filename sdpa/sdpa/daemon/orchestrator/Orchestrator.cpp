@@ -108,7 +108,7 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   if( (pEvt->is_external()) )
   {
     Worker::worker_id_t worker_id = pEvt->from();
-    we::mgmt::layer::id_type act_id = pEvt->job_id();
+    we::layer::id_type act_id = pEvt->job_id();
 
     try {
       DLLOG (TRACE, _logger, "Notify the subscribers that the job "<<act_id<<" finished");
@@ -183,7 +183,7 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
   if( pEvt->is_external() )
   {
       Worker::worker_id_t worker_id = pEvt->from();
-      we::mgmt::layer::id_type actId = pJob->id();
+      we::layer::id_type actId = pJob->id();
 
       try {
         events::JobFailedEvent::Ptr ptrEvtJobFailed(new  events::JobFailedEvent(*pEvt));

@@ -159,9 +159,9 @@ init_unit_test_suite (int ac, char *av[])
 
   {
     test_suite* ts1 = BOOST_TEST_SUITE( "plugin_kernel" );
-    //    ts1->add (BOOST_TEST_CASE(&test_start_stop_kernel));
+    ts1->add (BOOST_TEST_CASE(&test_start_stop_kernel));
     ts1->add (BOOST_TEST_CASE(&test_restart_kernel));
-    //ts1->add (BOOST_TEST_CASE (&test_load_unload_plugin));
+    ts1->add (BOOST_TEST_CASE (&test_load_unload_plugin));
 
     framework::master_test_suite().add( ts1 );
   }

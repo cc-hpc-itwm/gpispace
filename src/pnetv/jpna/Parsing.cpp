@@ -15,7 +15,7 @@
 #include <we/type/transition.hpp>
 #include <we/type/net.hpp>
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 
@@ -116,46 +116,45 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         FOREACH ( const petri_net::net::adj_pt_type::value_type& pt
-                , net.place_to_transition()
+                , net.place_to_transition_consume()
                 )
         {
-          if (pt.info == petri_net::edge::PT)
-          {
-            Place *place = find(places_, pt.left);
-            Transition *transition = find(transitions_, pt.right);
+          Place *place = ::jpna::find(places_, pt.left);
+          Transition *transition = ::jpna::find(transitions_, pt.right);
 
-            /* Transition consumes the token on input place. */
-            transition->addInputPlace(place);
-          }
-          else
-          {
-            Place *place = find(places_, pt.left);
-            Transition *transition = find(transitions_, pt.right);
+          /* Transition consumes the token on input place. */
+          transition->addInputPlace(place);
+        }
+        FOREACH ( const petri_net::net::adj_pt_type::value_type& pt
+                , net.place_to_transition_read()
+                )
+        {
+          Place *place = ::jpna::find(places_, pt.left);
+          Transition *transition = ::jpna::find(transitions_, pt.right);
 
-            /* Transition takes a token and instantly puts it back. */
-            transition->addInputPlace(place);
-            transition->addOutputPlace(place);
-          }
+          /* Transition takes a token and instantly puts it back. */
+          transition->addInputPlace(place);
+          transition->addOutputPlace(place);
         }
         FOREACH ( const petri_net::net::adj_tp_type::value_type& tp
                 , net.transition_to_place()
                 )
         {
-          Transition *transition = find(transitions_, tp.left);
-          Place *place = find(places_, tp.right);
+          Transition *transition = ::jpna::find(transitions_, tp.left);
+          Place *place = ::jpna::find(places_, tp.right);
 
           /* Executing the transition puts a token on output place. */
           transition->addOutputPlace(place);
         }
 
-        FOREACH ( const petri_net::transition_id_type& id
-                , net.transitions() | boost::adaptors::map_keys
-                )
-        {
-            const transition_t &transition = net.get_transition(id);
+        typedef std::pair<petri_net::transition_id_type, we::type::transition_t>
+          id_and_transition_type;
 
-            TransitionVisitor visitor(petriNet_->name() + "::" + transition.name(), petriNets_);
-            visitor(transition);
+        FOREACH
+          (id_and_transition_type const id_and_transition, net.transitions())
+        {
+            TransitionVisitor visitor(petriNet_->name() + "::" + id_and_transition.second.name(), petriNets_);
+            visitor(id_and_transition.second);
         }
     }
 
@@ -170,7 +169,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             if (port.has_associated_place()) {
                 petri_net::place_id_type pid = port.associated_place();
 
-                Place *place = find(places_, pid);
+                Place *place = ::jpna::find(places_, pid);
                 place->setInitialMarking(place->initialMarking() + 1);
 
             }
@@ -193,7 +192,7 @@ void parse(const char *filename, boost::ptr_vector<PetriNet> &petriNets) {
 }
 
 void parse(const char *filename, std::istream &in, boost::ptr_vector<PetriNet> &petriNets) {
-  we::mgmt::type::activity_t activity (in);
+  we::type::activity_t activity (in);
 
     TransitionVisitor visitor(filename, petriNets);
     visitor(activity.transition());

@@ -7,8 +7,8 @@
 #include <we/type/transition.hpp>
 #include <we/type/place.hpp>
 #include <we/type/port.hpp>
-#include <we/mgmt/type/activity.hpp>
-#include <we/mgmt/context.hpp>
+#include <we/type/activity.hpp>
+#include <we/context.hpp>
 
 #include <we/type/value.hpp>
 
@@ -24,7 +24,7 @@ using petri_net::edge::TP;
 
 typedef we::type::transition_t transition_t;
 typedef petri_net::net pnet_t;
-typedef we::mgmt::type::activity_t activity_t;
+typedef we::type::activity_t activity_t;
 typedef activity_t::input_t input_t;
 
 namespace dummy
@@ -91,21 +91,24 @@ namespace module
   }
 }
 
-struct exec_context : public we::mgmt::context
+struct exec_context : public we::context
 {
   boost::mt19937 _engine;
 
   virtual void handle_internally (activity_t& act, net_t const&)
   {
     // submit to self
-    while (act.can_fire())
+    if (act.transition().net())
     {
-      activity_t sub = act.extract (_engine);
-
-      sub.execute (this);
-
-      act.inject (sub);
-
+      while ( boost::optional<we::type::activity_t> sub
+            = boost::get<petri_net::net&> (act.transition().data())
+            . fire_expressions_and_extract_activity_random (_engine)
+            )
+      {
+        exec_context ctxt;
+        sub->execute (&ctxt);
+        act.inject (*sub);
+      }
     }
 
     act.collect_output();

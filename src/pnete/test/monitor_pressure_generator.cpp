@@ -8,7 +8,7 @@
 
 #include <sdpa/daemon/NotificationService.hpp>
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/transition.hpp>
 
 using namespace sdpa::daemon;
@@ -21,12 +21,13 @@ struct activity
     : _id ((boost::format ("%1%") % ++id_counter).str())
     , _workers()
     , _state (NotificationEvent::STATE_STARTED)
-    , _act (we::type::transition_t ( "activity-" + _id
-                                   , we::type::expression_t()
-                                   , condition::type ("true")
-                                   , true
-                                   , we::type::property::type()
-                                   )
+    , _act ( we::type::transition_t ( "activity-" + _id
+                                    , we::type::expression_t()
+                                    , condition::type ("true")
+                                    , true
+                                    , we::type::property::type()
+                                    )
+           , boost::none
            )
   {
     _workers.push_back (worker);
@@ -67,7 +68,7 @@ struct activity
   std::string _id;
   std::list<std::string> _workers;
   sdpa::daemon::NotificationEvent::state_t _state;
-  we::mgmt::type::activity_t _act;
+  we::type::activity_t _act;
 };
 
 std::string worker_gen()
