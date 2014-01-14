@@ -10,12 +10,6 @@ namespace fhg
 {
   namespace thread
   {
-    namespace detail
-    {
-      static void s_default_callback (void)
-      {}
-    }
-
     pool_t::pool_t (std::size_t nthread, std::string const &name)
       : m_stop (true)
       , m_nthread (nthread)
@@ -75,9 +69,14 @@ namespace fhg
       }
     }
 
+    namespace
+    {
+      void nop() {}
+    }
+
     void pool_t::execute (work_t w)
     {
-      execute (w, &detail::s_default_callback);
+      execute (w, &nop);
     }
 
     void pool_t::execute (work_t w, callback_t cb)
