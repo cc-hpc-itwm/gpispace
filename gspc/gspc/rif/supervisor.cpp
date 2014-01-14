@@ -4,10 +4,10 @@
 
 #include <boost/bind.hpp>
 
-#include <fhg/util/thread/pool.hpp>
-
 #include "supervisor.hpp"
 #include "manager.hpp"
+
+#include <fhg/util/get_cpucount.h>
 
 namespace gspc
 {
@@ -18,7 +18,8 @@ namespace gspc
                                , size_t max_start_time
                                , child_descriptor_list_t const & children
                                )
-      : m_process_manager (process_manager)
+      : _thread_pool (std::max (fhg_get_cpucount(), 1))
+      , m_process_manager (process_manager)
       , m_max_restarts (max_restarts)
       , m_max_start_time (max_start_time)
     {
@@ -160,7 +161,7 @@ namespace gspc
 
           if (child->info.restart)
           {
-            fhg::thread::global_pool().execute
+            _thread_pool.execute
               (boost::bind ( &supervisor_t::start_child
                            , this
                            , child->info.descriptor.name
@@ -199,7 +200,7 @@ namespace gspc
 
       if (s == gspc::rif::PROCESS_TERMINATED)
       {
-        fhg::thread::global_pool().execute
+        _thread_pool.execute
           (boost::bind ( &supervisor_t::handle_terminated_child
                        , this
                        , child
