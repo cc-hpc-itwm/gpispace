@@ -4,7 +4,7 @@
 
 //! \todo eliminate this include
 #include <we/type/net.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -50,7 +50,7 @@ namespace
     const std::string& _name;
   };
 
-  void tl (std::ostream& os, const we::mgmt::type::activity_t& a)
+  void tl (std::ostream& os, const we::type::activity_t& a)
   {
     boost::apply_visitor ( list_transition_name (os, a.transition().name())
                          , a.transition().data()
@@ -107,10 +107,10 @@ try
       return EXIT_SUCCESS;
     }
 
-  const we::mgmt::type::activity_t act
+  const we::type::activity_t act
     ( input == "-"
-    ? we::mgmt::type::activity_t (std::cin)
-    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    ? we::type::activity_t (std::cin)
+    : we::type::activity_t (boost::filesystem::path (input))
     );
 
   if (output == "-")

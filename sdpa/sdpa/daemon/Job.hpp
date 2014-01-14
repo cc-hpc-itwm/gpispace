@@ -1,7 +1,6 @@
 #ifndef SDPA_JOB_HPP
 #define SDPA_JOB_HPP 1
 
-#include <sdpa/common.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
@@ -15,10 +14,11 @@
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/job_states.hpp>
-#include <sdpa/logging.hpp>
 #include <sdpa/types.hpp>
 
 #include <fhg/assert.hpp>
+
+#include <fhglog/fhglog.hpp>
 
 #include <boost/msm/back/state_machine.hpp>
 #include <boost/msm/front/state_machine_def.hpp>
@@ -38,6 +38,8 @@ namespace sdpa {
     // front-end: define the FSM structure
     struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
     {
+      JobFSM_() : _logger (fhg::log::Logger::get ("JobFSM")) {}
+      fhg::log::Logger::ptr_t _logger;
       virtual ~JobFSM_() {}
 
       // The list of FSM states
@@ -168,7 +170,7 @@ namespace sdpa {
       template <class FSM, class Event>
       void no_transition(Event const& e, FSM&, int state)
       {
-        DMLOG(ERROR,  "No transition from state "
+        DLLOG (ERROR, _logger, "No transition from state "
                                          + sdpa::status::show(state_code(state))
                                          + " on event "
                                          + typeid(e).name()

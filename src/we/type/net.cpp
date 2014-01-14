@@ -5,10 +5,10 @@
 #include <we/type/condition.hpp>
 
 #include <we/require_type.hpp>
-#include <we/exception.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/range/join.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
 
@@ -21,8 +21,11 @@ namespace petri_net
     , _pmap()
     , _transition_id()
     , _tmap()
-    , _adj_pt()
+    , _adj_pt_consume()
+    , _adj_pt_read()
     , _adj_tp()
+    , _port_to_place()
+    , _place_to_port()
     , _token_by_place_id()
     , _enabled()
     , _enabled_choice()
@@ -32,8 +35,11 @@ namespace petri_net
     , _pmap (other._pmap)
     , _transition_id (other._transition_id)
     , _tmap (other._tmap)
-    , _adj_pt (other._adj_pt)
+    , _adj_pt_consume (other._adj_pt_consume)
+    , _adj_pt_read (other._adj_pt_read)
     , _adj_tp (other._adj_tp)
+    , _port_to_place (other._port_to_place)
+    , _place_to_port (other._place_to_port)
     , _token_by_place_id (other._token_by_place_id)
     , _enabled (other._enabled)
     , _enabled_choice()
@@ -46,8 +52,11 @@ namespace petri_net
     _pmap = other._pmap;
     _transition_id = other._transition_id;
     _tmap = other._tmap;
-    _adj_pt = other._adj_pt;
+    _adj_pt_consume = other._adj_pt_consume;
+    _adj_pt_read = other._adj_pt_read;
     _adj_tp = other._adj_tp;
+    _port_to_place = other._port_to_place;
+    _place_to_port = other._place_to_port;
     _token_by_place_id = other._token_by_place_id;
     _enabled = other._enabled;
 
@@ -57,7 +66,7 @@ namespace petri_net
   }
   void net::get_enabled_choice (const net& other)
   {
-    typedef boost::unordered_map< petri_net::place_id_type
+    typedef boost::unordered_map< place_id_type
                                 , pos_and_distance_type
                                 > enabled_by_place_id_type;
 
@@ -98,59 +107,44 @@ namespace petri_net
     return tid;
   }
 
-  void net::add_connection
-    (edge::type type, transition_id_type transition_id, place_id_type place_id)
+  void net::add_connection ( edge::type type
+                           , transition_id_type transition_id
+                           , place_id_type place_id
+                           , port_id_type port_id
+                           , we::type::property::type const& property
+                           )
   {
-    if (type == edge::TP)
+    switch (type)
     {
+    case edge::TP:
       _adj_tp.insert (adj_tp_type::value_type (transition_id, place_id));
-    }
-    else
-    {
-      _adj_pt.insert (adj_pt_type::value_type (place_id, transition_id, type));
-
+      _port_to_place[transition_id].insert
+        (port_to_place_with_info_type::value_type (port_id, place_id, property));
+      break;
+    case edge::PT:
+      _adj_pt_consume.insert (adj_pt_type::value_type (place_id, transition_id));
+      _place_to_port[transition_id].insert
+        (place_to_port_with_info_type::value_type (place_id, port_id, property));
       update_enabled (transition_id);
+      break;
+    case edge::PT_READ:
+      _adj_pt_read.insert (adj_pt_type::value_type (place_id, transition_id));
+      _place_to_port[transition_id].insert
+        (place_to_port_with_info_type::value_type (place_id, port_id, property));
+      update_enabled (transition_id);
+      break;
     }
   }
 
-  void net::set_transition_priority ( const transition_id_type& tid
-                                    , const priority_type& prio
-                                    )
+  void net::set_transition_priority (transition_id_type tid, priority_type prio)
   {
     _enabled.set_priority (tid, prio);
   }
 
   priority_type
-  net::get_transition_priority (const transition_id_type& tid) const
+  net::get_transition_priority (transition_id_type tid) const
   {
     return _enabled.get_priority (tid);
-  }
-
-  const place::type& net::get_place (const place_id_type& pid) const
-  {
-    boost::unordered_map<place_id_type, place::type>::const_iterator const
-      pos (_pmap.find (pid));
-
-    if (pos == _pmap.end())
-    {
-      throw pnet::exception::place::no_such (pid);
-    }
-
-    return pos->second;
-  }
-
-  const we::type::transition_t&
-  net::get_transition (const transition_id_type& tid) const
-  {
-    boost::unordered_map<transition_id_type, we::type::transition_t>
-      ::const_iterator const pos (_tmap.find (tid));
-
-    if (pos == _tmap.end())
-    {
-      throw pnet::exception::transition::no_such (tid);
-    }
-
-    return pos->second;
   }
 
   const boost::unordered_map<place_id_type,place::type>& net::places() const
@@ -168,175 +162,51 @@ namespace petri_net
   {
     return _adj_tp;
   }
-  net::adj_pt_type const& net::place_to_transition() const
+  net::adj_pt_type const& net::place_to_transition_consume() const
   {
-    return _adj_pt;
+    return _adj_pt_consume;
+  }
+  net::adj_pt_type const& net::place_to_transition_read() const
+  {
+    return _adj_pt_read;
+  }
+  net::port_to_place_type const& net::port_to_place() const
+  {
+    return _port_to_place;
+  }
+  net::place_to_port_type const& net::place_to_port() const
+  {
+    return _place_to_port;
   }
 
-  void net::modify_transitions
-    ( const boost::function<void ( const transition_id_type&
-                                 , we::type::transition_t&
-                                 )>& f
-    )
+  namespace
   {
-    typedef std::pair<const transition_id_type, we::type::transition_t> it_type;
-    BOOST_FOREACH (it_type& it, _tmap)
-    {
-      f (it.first, it.second);
-    }
+    typedef boost::any_range
+      < const petri_net::transition_id_type
+      , boost::single_pass_traversal_tag
+      , const petri_net::transition_id_type&
+      , std::ptrdiff_t
+      > transition_id_range_type;
+
+    typedef boost::any_range
+      < const petri_net::place_id_type
+      , boost::single_pass_traversal_tag
+      , const petri_net::place_id_type&
+      , std::ptrdiff_t
+      > place_id_range_type;
   }
 
-  net::place_id_range_type
-    net::out_of_transition (const transition_id_type& tid) const
-  {
-    return _adj_tp.left.equal_range (tid) | boost::adaptors::map_values;
-  }
-  net::place_id_range_type
-    net::in_to_transition (const transition_id_type& tid) const
-  {
-    return _adj_pt.right.equal_range (tid) | boost::adaptors::map_values;
-  }
-  net::transition_id_range_type
-    net::out_of_place (const place_id_type& pid) const
-  {
-    return _adj_pt.left.equal_range (pid) | boost::adaptors::map_values;
-  }
-  net::transition_id_range_type
-    net::in_to_place (const place_id_type& pid) const
-  {
-    return _adj_tp.right.equal_range (pid) | boost::adaptors::map_values;
-  }
-
-  bool net::is_read_connection ( const transition_id_type& tid
-                               , const place_id_type& pid
-                               ) const
-  {
-    adj_pt_type::const_iterator const pos
-      (_adj_pt.find (adj_pt_type::value_type (pid, tid)));
-
-    if (pos == _adj_pt.end())
-    {
-      throw pnet::exception::connection::no_such
-        <transition_id_type, place_id_type> (tid, pid);
-    }
-
-    return pos->info == edge::PT_READ;
-  }
-
-  void net::delete_edge_out ( const transition_id_type& tid
-                            , const place_id_type& pid
-                            )
-  {
-    _adj_tp.erase (adj_tp_type::value_type (tid, pid));
-  }
-  void net::delete_edge_in ( const transition_id_type& tid
-                           , const place_id_type& pid
-                           )
-  {
-    _adj_pt.erase (adj_pt_type::value_type (pid, tid));
-
-    update_enabled (tid);
-  }
-
-  void net::delete_place (const place_id_type& pid)
-  {
-    // make the token deletion visible to delete_connection
-    _token_by_place_id.erase (pid);
-
-    std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
-    std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
-
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , out_of_place (pid)
-                  )
-    {
-      stack_in.push (std::make_pair (tid, pid));
-      // TODO: get port and remove place from there
-    }
-
-    BOOST_FOREACH ( const transition_id_type& transition_id
-                  , in_to_place (pid)
-                  )
-    {
-      stack_out.push (std::make_pair (transition_id, pid));
-      // TODO: get port and remove place from there
-    }
-
-    while (!stack_out.empty())
-    {
-      delete_edge_out (stack_out.top().first, stack_out.top().second);
-      stack_out.pop();
-    }
-    while (!stack_in.empty())
-    {
-      delete_edge_in (stack_in.top().first, stack_in.top().second);
-      stack_in.pop();
-    }
-
-    _pmap.erase (pid);
-  }
-
-  void net::delete_transition (const transition_id_type& tid)
-  {
-    std::stack<std::pair<transition_id_type, place_id_type> > stack_out;
-    std::stack<std::pair<transition_id_type, place_id_type> > stack_in;
-
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , out_of_transition (tid)
-                  )
-    {
-      stack_out.push (std::make_pair (tid, place_id));
-    }
-
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , in_to_transition (tid)
-                  )
-    {
-      stack_in.push (std::make_pair (tid, place_id));
-    }
-
-    while (!stack_out.empty())
-    {
-      delete_edge_out (stack_out.top().first, stack_out.top().second);
-      stack_out.pop();
-    }
-    while (!stack_in.empty())
-    {
-      delete_edge_in (stack_in.top().first, stack_in.top().second);
-      stack_in.pop();
-    }
-
-    _tmap.erase (tid);
-
-    _enabled.erase (tid);
-    _enabled.erase_priority (tid);
-    _enabled_choice.erase (tid);
-  }
-
-  place_id_type net::modify_place ( const place_id_type& pid
-                                  , const place::type& place
-                                  )
-  {
-    _pmap[pid] = place;
-
-    return pid;
-  }
-
-  transition_id_type
-  net::modify_transition ( const transition_id_type& tid
-                         , const we::type::transition_t& transition
-                         )
-  {
-    _tmap[tid] = transition;
-
-    return tid;
-  }
-
-  void net::put_value ( const place_id_type& pid
+  void net::put_value ( place_id_type pid
                       , const pnet::type::value::value_type& value
                       )
   {
-    const place::type& place (get_place (pid));
+    do_update (do_put_value (pid, value));
+  }
+
+  net::to_be_updated_type net::do_put_value
+    (place_id_type pid, const pnet::type::value::value_type& value)
+  {
+    const place::type& place (_pmap.at (pid));
 
     std::list<pnet::type::value::value_type>& tokens (_token_by_place_id[pid]);
     std::list<pnet::type::value::value_type>::iterator const tokenpos
@@ -346,11 +216,24 @@ namespace petri_net
         )
       );
 
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , out_of_place (pid)
-                  )
+    return std::make_pair (pid, tokenpos);
+  }
+
+  void net::do_update (to_be_updated_type const& to_be_updated)
+  {
+    transition_id_range_type consume
+      ( _adj_pt_consume.left.equal_range (to_be_updated.first)
+      | boost::adaptors::map_values
+      );
+    transition_id_range_type read
+      ( _adj_pt_read.left.equal_range (to_be_updated.first)
+      | boost::adaptors::map_values
+      );
+
+    BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
     {
-      update_enabled_put_token (tid, pid, tokenpos);
+      update_enabled_put_token
+        (tid, to_be_updated.first, to_be_updated.second);
     }
   }
 
@@ -365,7 +248,7 @@ namespace petri_net
   }
 
   const std::list<pnet::type::value::value_type>&
-  net::get_token (const place_id_type& pid) const
+  net::get_token (place_id_type pid) const
   {
     typedef boost::unordered_map< place_id_type
                                 , std::list<pnet::type::value::value_type>
@@ -376,30 +259,31 @@ namespace petri_net
     return (pos != _token_by_place_id.end()) ? pos->second : no_tokens();
   }
 
-  void net::delete_all_token (const place_id_type& pid)
+  void net::delete_all_token (place_id_type pid)
   {
     _token_by_place_id.erase (pid);
 
-    BOOST_FOREACH ( const transition_id_type& tid
-                  , out_of_place (pid)
-                  )
+    transition_id_range_type consume
+      (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
+    transition_id_range_type read
+      (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
+
+    BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
     {
       disable (tid);
     }
   }
 
-  bool net::can_fire() const
-  {
-    return not _enabled.empty();
-  }
-
-  void net::update_enabled (const transition_id_type& tid)
+  void net::update_enabled (transition_id_type tid)
   {
     cross_type cross;
 
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , in_to_transition (tid)
-                  )
+    place_id_range_type consume
+      (_adj_pt_consume.right.equal_range (tid) | boost::adaptors::map_values);
+    place_id_range_type read
+      (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
+
+    BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
     {
       std::list<pnet::type::value::value_type>&
         tokens (_token_by_place_id[place_id]);
@@ -414,7 +298,7 @@ namespace petri_net
       cross.push (place_id, tokens);
     }
 
-    if (cross.enables (get_transition (tid)))
+    if (cross.enables (this, tid))
     {
       _enabled.insert (tid);
       cross.write_to (_enabled_choice[tid]);
@@ -426,8 +310,8 @@ namespace petri_net
   }
 
   void net::update_enabled_put_token
-    ( const transition_id_type& tid
-    , const place_id_type& pid
+    ( transition_id_type tid
+    , place_id_type pid
     , const std::list<pnet::type::value::value_type>::iterator& token
     )
   {
@@ -438,9 +322,12 @@ namespace petri_net
 
     cross_type cross;
 
-    BOOST_FOREACH ( const place_id_type& place_id
-                  , in_to_transition (tid)
-                  )
+    place_id_range_type consume
+      (_adj_pt_consume.right.equal_range (tid) | boost::adaptors::map_values);
+    place_id_range_type read
+      (_adj_pt_read.right.equal_range (tid) | boost::adaptors::map_values);
+
+    BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
     {
       if (place_id == pid)
       {
@@ -462,7 +349,7 @@ namespace petri_net
       }
     }
 
-    if (cross.enables (get_transition (tid)))
+    if (cross.enables (this, tid))
     {
       _enabled.insert (tid);
       cross.write_to (_enabled_choice[tid]);
@@ -473,19 +360,22 @@ namespace petri_net
     }
   }
 
-  void net::disable (const transition_id_type& tid)
+  void net::disable (transition_id_type tid)
   {
     _enabled.erase (tid);
     _enabled_choice.erase (tid);
   }
 
-  we::mgmt::type::activity_t
-  net::extract_activity (const transition_id_type& tid)
+  std::list<net::token_to_be_deleted_type> net::do_extract
+    ( transition_id_type tid
+    , we::type::transition_t const& transition
+    , boost::function<void ( port_id_type
+                           , pnet::type::value::value_type const&
+                           )
+                      > fun
+    ) const
   {
-    const we::type::transition_t& transition (get_transition (tid));
-    we::mgmt::type::activity_t act (transition);
-
-    boost::unordered_set<transition_id_type> transitions_to_update;
+    std::list<token_to_be_deleted_type> tokens_to_be_deleted;
 
     typedef std::pair< place_id_type
                      , pos_and_distance_type
@@ -493,32 +383,133 @@ namespace petri_net
 
     BOOST_FOREACH (const place_and_token_type& pt, _enabled_choice.at (tid))
     {
-      const place_id_type& pid (pt.first);
+      place_id_type pid (pt.first);
       const pos_and_distance_type& pos_and_distance (pt.second);
       const std::list<pnet::type::value::value_type>::iterator&
         token (pos_and_distance.first);
 
-      act.add_input (transition.outer_to_inner().at (pid).first, *token);
+      fun (_place_to_port.at (tid).left.find (pid)->get_right(), *token);
 
-      if (!is_read_connection (tid, pid))
+      //! \todo save the information whether or not it is a read
+      //! connection in _enabled_choice and omit that conditional
+      if (  _adj_pt_read.find (adj_pt_type::value_type (pid, tid))
+         == _adj_pt_read.end()
+         )
       {
-        _token_by_place_id.at (pid).erase (token);
-
-        BOOST_FOREACH ( const transition_id_type& t
-                      , out_of_place (pid)
-                      )
-        {
-          transitions_to_update.insert (t);
-        }
+        tokens_to_be_deleted.push_back (std::make_pair (pid, token));
       }
     }
 
-    BOOST_FOREACH (const transition_id_type& t, transitions_to_update)
+    return tokens_to_be_deleted;
+  }
+
+  void net::do_delete
+    (std::list<token_to_be_deleted_type> const& tokens_to_be_deleted)
+  {
+    BOOST_FOREACH ( token_to_be_deleted_type const& token_to_be_deleted
+                  , tokens_to_be_deleted
+                  )
     {
-      update_enabled (t);
+      _token_by_place_id
+        .at (token_to_be_deleted.first).erase (token_to_be_deleted.second);
     }
 
+    BOOST_FOREACH ( token_to_be_deleted_type const& token_to_be_deleted
+                  , tokens_to_be_deleted
+                  )
+    {
+      transition_id_range_type consume
+        ( _adj_pt_consume.left.equal_range (token_to_be_deleted.first)
+        | boost::adaptors::map_values
+        );
+      transition_id_range_type read
+        ( _adj_pt_read.left.equal_range (token_to_be_deleted.first)
+        | boost::adaptors::map_values
+        );
+
+      BOOST_FOREACH (transition_id_type t, boost::join (consume, read))
+      {
+        update_enabled (t);
+      }
+    }
+  }
+
+  we::type::activity_t net::extract_activity
+    (transition_id_type tid, we::type::transition_t const& transition)
+  {
+    we::type::activity_t act (transition, tid);
+
+    do_delete
+      ( do_extract ( tid, transition
+                   , boost::bind ( &we::type::activity_t::add_input, &act
+                                 , _1, _2
+                                 )
+                   )
+      );
+
     return act;
+  }
+
+  namespace
+  {
+    class context_bind
+    {
+    public:
+      context_bind ( expr::eval::context& context
+                   , we::type::transition_t const& transition
+                   )
+        : _context (context)
+        , _transition (transition)
+      {}
+
+      void operator() ( port_id_type port_id
+                      , pnet::type::value::value_type const& value
+                      )
+      {
+        _context.bind_ref (_transition.ports().at (port_id).name(), value);
+      }
+
+    private:
+      expr::eval::context& _context;
+      we::type::transition_t const& _transition;
+    };
+  }
+
+  void net::fire_expression ( transition_id_type tid
+                            , we::type::transition_t const& transition
+                            )
+  {
+    expr::eval::context context;
+
+    std::list<token_to_be_deleted_type> const tokens_to_be_deleted
+      (do_extract (tid, transition, context_bind (context, transition)));
+
+    transition.expression()->ast().eval_all (context);
+
+    std::list<to_be_updated_type> pending_updates;
+
+    BOOST_FOREACH
+      ( we::type::transition_t::port_map_t::value_type const& p
+      , transition.ports()
+      )
+    {
+      if (p.second.is_output())
+      {
+        pending_updates.push_back
+          ( do_put_value
+            ( _port_to_place.at (tid).left.find (p.first)->get_right()
+            , context.value (p.second.name())
+            )
+          );
+      }
+    }
+
+    do_delete (tokens_to_be_deleted);
+
+    BOOST_FOREACH (to_be_updated_type const& to_be_updated, pending_updates)
+    {
+      do_update (to_be_updated);
+    }
   }
 
 
@@ -573,7 +564,7 @@ namespace petri_net
     return false;
   }
 
-  bool net::cross_type::enables (we::type::transition_t const& transition)
+  bool net::cross_type::enables (net* const n, transition_id_type transition_id)
   {
     //! \note that means the transitions without in-port cannot fire
     //! instead of fire unconditionally
@@ -581,6 +572,9 @@ namespace petri_net
     {
       return false;
     }
+
+    we::type::transition_t const& transition
+      (n->_tmap.at (transition_id));
 
     //! \todo use is_const_true and boost::optional...
     if (transition.condition().expression() == "true")
@@ -592,13 +586,13 @@ namespace petri_net
     {
       expr::eval::context context;
 
-      typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
+      typedef std::pair<place_id_type, iterators_type> pits_type;
 
       BOOST_FOREACH (const pits_type& pits, _m)
       {
         context.bind_ref
-          ( transition.get_port
-            (transition.outer_to_inner().at (pits.first).first).name()
+          ( transition.ports()
+          .at (n->_place_to_port.at (transition_id).left.find (pits.first)->get_right()).name()
           , *pits.second.pos_and_distance().first
           );
       }
@@ -612,14 +606,14 @@ namespace petri_net
 
     return false;
   }
-  void net::cross_type::write_to (boost::unordered_map< petri_net::place_id_type
+  void net::cross_type::write_to (boost::unordered_map< place_id_type
                                                       , pos_and_distance_type
                                                       >& choice
                                  ) const
   {
     choice.clear();
 
-    typedef std::pair<petri_net::place_id_type, iterators_type> pits_type;
+    typedef std::pair<place_id_type, iterators_type> pits_type;
 
     BOOST_FOREACH (const pits_type& pits, _m)
     {
@@ -627,13 +621,13 @@ namespace petri_net
         (std::make_pair (pits.first, pits.second.pos_and_distance()));
     }
   }
-  void net::cross_type::push ( const petri_net::place_id_type& place_id
+  void net::cross_type::push ( place_id_type place_id
                              , std::list<pnet::type::value::value_type>& tokens
                              )
   {
     _m.insert (std::make_pair (place_id, iterators_type (tokens)));
   }
-  void net::cross_type::push ( const petri_net::place_id_type& place_id
+  void net::cross_type::push ( place_id_type place_id
                              , const std::list<pnet::type::value::value_type>::iterator& token
                              )
   {

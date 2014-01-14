@@ -20,6 +20,7 @@
 #define SDPA_ID_GENERATOR_HPP 1
 
 #include <fhg/util/hostname.hpp>
+#include <fhg/util/counter.hpp>
 #include <sys/types.h> // pid_t
 #include <unistd.h> // getpid
 #include <string.h> // memset
@@ -27,62 +28,46 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 
-namespace sdpa {
-  namespace detail
-  {
-    struct dflt_tag
-    {
-      static const char *name ()
-      {
-        return "id";
-      }
-    };
-  }
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
-  template <class Tag>
+namespace sdpa {
   class id_generator
   {
-  private:
-    typedef boost::mutex mutex_type;
-    typedef boost::lock_guard<mutex_type> lock_type;
-
   public:
 
+  template <class Tag>
 	static id_generator& instance()
 	{
-	  static id_generator<Tag> gen;
+	  static id_generator gen (Tag::name());
 	  return gen;
 	}
 
 	std::string next()
 	{
-          size_t id;
-          {
-            lock_type lock (mtx_);
-            id = m_count++;
-          }
-
-          std::ostringstream os;
-          os << m_id_prefix << "." << id;
-          return os.str ();
-        }
-  private:
-    id_generator()
-      : mtx_ ()
-      , m_count (0)
+    std::size_t id;
     {
-      std::ostringstream sstr;
-      sstr << fhg::util::hostname() << "." << Tag::name () << "." << time (0) << "." << getpid();
-
-      m_id_prefix = sstr.str ();
+      boost::mutex::scoped_lock const _ (_counter_mutex);
+      id = _counter++;
     }
+    return _prefix + boost::lexical_cast<std::string> (id);
+  }
 
-    mutable mutex_type mtx_;
-    size_t      m_count;
-    std::string m_id_prefix;
+    id_generator (std::string const& name)
+      : _counter()
+      , _prefix ( ( boost::format ("%1%.%2%.%3%.%4%.")
+                  % fhg::util::hostname()
+                  % name
+                  % time (0)
+                  % getpid()
+                  ).str()
+                )
+    {}
+
+    mutable boost::mutex _counter_mutex;
+    std::size_t _counter;
+    std::string _prefix;
   };
-
-  typedef id_generator<detail::dflt_tag> dflt_id_generator;
 }
 
 #endif

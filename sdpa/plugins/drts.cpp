@@ -35,6 +35,8 @@
 #include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/frame_builder.hpp>
 
+#include <boost/serialization/shared_ptr.hpp>
+
 class DRTSImpl : FHG_PLUGIN
                , public drts::DRTS
                , public sdpa::events::EventHandler
@@ -532,26 +534,26 @@ public:
                                      , e->from()
                                      , sdpa::events::ErrorEvent::SDPA_EPERM
                                      , "you are not yet connected"
-                                     , e->job_id()
+                                     , *e->job_id()
                                      )
         );
       return;
     }
     else if (m_graceful_shutdown_requested)
     {
-      MLOG (WARN, "refusing job " << e->job_id () << " : shutting down");
+      MLOG (WARN, "refusing job " << *e->job_id () << " : shutting down");
       send_event
         (new sdpa::events::ErrorEvent( m_my_name
                                      , e->from()
                                      , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
                                      , "I am going to shut down!"
-                                     , e->job_id()
+                                     , *e->job_id()
                                      )
         );
       return;
     }
 
-    job_ptr_t job (new drts::Job( drts::Job::ID(e->job_id())
+    job_ptr_t job (new drts::Job( drts::Job::ID(*e->job_id())
                                 , drts::Job::Description(e->description())
                                 , drts::Job::Owner(e->from())
                                 )
@@ -572,7 +574,7 @@ public:
                    , e->from()
                    , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
                    , "I am busy right now, please try again later!"
-                   , e->job_id()
+                   , *e->job_id()
                    ));
         return;
       }

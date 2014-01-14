@@ -5,6 +5,8 @@
 #include <pnete/data/change_manager.hpp>
 #include <pnete/data/internal.hpp>
 
+#include <we/type/property.hpp>
+
 #include <fhg/util/backtracing_exception.hpp>
 
 #include <QObject>

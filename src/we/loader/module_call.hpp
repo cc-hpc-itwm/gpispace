@@ -3,7 +3,7 @@
 
 #include <we/expr/eval/context.hpp>
 #include <we/loader/loader.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/module_call.hpp>
 #include <we/type/port.hpp>
@@ -16,7 +16,7 @@ namespace we
   {
     static void module_call ( we::loader::loader& loader
                             , gspc::drts::context* context
-                            , we::mgmt::type::activity_t& act
+                            , we::type::activity_t& act
                             , const we::type::module_call_t& module_call
                             )
     {
@@ -32,7 +32,7 @@ namespace we
 
       BOOST_FOREACH (const token_on_port_type& token_on_port, act.input())
       {
-        in.bind_ref ( act.transition().get_port (token_on_port.second).name()
+        in.bind_ref ( act.transition().ports().at (token_on_port.second).name()
                     , token_on_port.first
                     );
       }

@@ -416,17 +416,19 @@ int main (int argc, char **argv) {
       return 0;
     }
 
+    fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("sdpac"));
+
     try
     {
       // initialize the KVS
 
-      LOG(INFO, "initializing KVS at " << kvs_url);
+      LLOG (INFO, logger, "initializing KVS at " << kvs_url);
 
       std::vector<std::string> parts;
       fhg::util::split(kvs_url, ":", std::back_inserter(parts));
       if (parts.size() != 2)
       {
-        LOG(ERROR, "invalid kvs url: expected host:port, got: " << kvs_url);
+        LLOG (ERROR, logger, "invalid kvs url: expected host:port, got: " << kvs_url);
         return EXIT_FAILURE;
       }
       else
@@ -459,9 +461,9 @@ int main (int argc, char **argv) {
       args = cfg.get<std::vector<std::string> >("arg");
     }
 
-    LOG(INFO, "***************************************************");
-    LOG(INFO, fhg::project_summary() << " (" << fhg::project_version() << ")");
-    LOG(INFO, "***************************************************");
+    LLOG (INFO, logger, "***************************************************");
+    LLOG (INFO, logger, fhg::project_summary() << " (" << fhg::project_version() << ")");
+    LLOG (INFO, logger, "***************************************************");
 
     sdpa::client::Client api ( cfg.is_set("orchestrator")
                              ? cfg.get<std::string>("orchestrator")

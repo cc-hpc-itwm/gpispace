@@ -23,7 +23,7 @@ namespace sdpa
 
       std::string str() const
       {
-        return "DiscoverJobStatestEvent(" + job_id ().str () + ")";
+        return "DiscoverJobStatestEvent(" + job_id () + ")";
       }
 
       const std::string& discover_id() const { return discover_id_; }

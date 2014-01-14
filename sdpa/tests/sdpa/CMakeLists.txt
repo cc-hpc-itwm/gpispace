@@ -243,7 +243,6 @@ set (tests
   test_Inotify.cpp
   test_CancelJob.cpp
   test_SynchronizedQueue.cpp
-  test_JobId.cpp
   test_CoallocationScheduler.cpp
   test_SimpleScheduler.cpp
   restart_drts_worker_while_jobs_are_running.cpp
@@ -260,10 +259,7 @@ foreach (test ${tests})
     fhg_add_test (${test}
       PROJECT sdpa
       BOOST_UNIT_TEST # all of them?
-      LINK_LIBRARIES sdpa-daemon
-                     sdpa-com
-                     sdpa-client
-                     sdpa
+      LINK_LIBRARIES sdpa
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}

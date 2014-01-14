@@ -3,43 +3,26 @@
 #ifndef WE_TYPE_TRANSITION_HPP
 #define WE_TYPE_TRANSITION_HPP 1
 
-#include <we/type/port.hpp>
-#include <we/type/module_call.hpp>
-#include <we/type/expression.hpp>
+#include <we/expr/eval/context.hpp>
 #include <we/type/condition.hpp>
-#include <we/type/signature.hpp>
-#include <we/type/property.hpp>
+#include <we/type/expression.hpp>
 #include <we/type/id.hpp>
+#include <we/type/module_call.hpp>
+#include <we/type/net.fwd.hpp>
+#include <we/type/port.hpp>
+#include <we/type/property.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/value.hpp>
 
-#include <we/type/net.fwd.hpp>
-
-#include <we/expr/eval/context.hpp>
-
-#include <we/exception.hpp>
-
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <boost/foreach.hpp>
-
-#include <boost/unordered_set.hpp>
+#include <boost/optional.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/variant.hpp>
 #include <boost/unordered_map.hpp>
-
+#include <boost/unordered_set.hpp>
 #include <boost/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
-#include <boost/serialization/variant.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/version.hpp>
-
-#include <boost/format.hpp>
-#include <boost/optional.hpp>
-#include <boost/range/adaptor/map.hpp>
-
-#include <boost/lexical_cast.hpp>
-
-#include <stdexcept>
 
 namespace we { namespace type {
     struct transition_t
@@ -58,13 +41,6 @@ namespace we { namespace type {
       typedef std::pair< petri_net::port_id_type
                        , we::type::property::type
                        > port_id_with_prop_t;
-      typedef boost::unordered_map< petri_net::place_id_type
-                                  , port_id_with_prop_t
-                                  > outer_to_inner_t;
-      typedef boost::unordered_map< petri_net::port_id_type
-                                  , pid_with_prop_t
-                                  > inner_to_outer_t;
-
       typedef boost::unordered_map<petri_net::port_id_type, port_t> port_map_t;
 
       transition_t ()
@@ -72,8 +48,6 @@ namespace we { namespace type {
         , data_ (expression_t())
         , internal_ (true)
         , condition_("true")
-        , outer_to_inner_()
-        , inner_to_outer_()
         , ports_()
         , port_id_counter_ (0)
         , prop_()
@@ -91,219 +65,36 @@ namespace we { namespace type {
         , data_ (typ)
         , internal_ (intern)
         , condition_ (_condition)
-        , outer_to_inner_()
-        , inner_to_outer_()
         , ports_()
         , port_id_counter_ (0)
         , prop_(prop)
         , _requirements()
       { }
 
+      const std::string& name() const;
+
+      const data_type& data() const;
+      data_type& data();
+
       boost::optional<const expression_t&> expression() const;
       boost::optional<const petri_net::net&> net() const;
       boost::optional<const module_call_t&> module_call() const;
 
-      const condition::type& condition() const
-      {
-        return condition_;
-      }
+      bool is_internal() const;
 
-      const std::string& name (void) const
-      {
-        return name_;
-      }
+      const condition::type& condition() const;
 
-      bool is_internal (void) const
-      {
-        return internal_;
-      }
+      petri_net::port_id_type add_port (port_t const&);
 
-      void set_internal(bool x)
-      {
-        internal_ = x;
-      }
+      petri_net::port_id_type input_port_by_name (const std::string&) const;
+      const petri_net::port_id_type& output_port_by_name (const std::string&) const;
 
-      const data_type& data (void) const
-      {
-        return data_;
-      }
+      const port_map_t& ports() const;
 
-      data_type& data (void)
-      {
-        return data_;
-      }
+      const we::type::property::type& prop() const;
 
-      std::list<we::type::requirement_t> const& requirements (void) const
-      {
-        return _requirements;
-      }
-
-    private:
-      void connect_outer_to_inner ( const petri_net::place_id_type& pid
-                                  , const petri_net::port_id_type& port
-                                  , const we::type::property::type& prop
-                                  )
-      {
-        outer_to_inner_.insert
-          (outer_to_inner_t::value_type (pid, std::make_pair(port, prop)));
-      }
-
-      void connect_inner_to_outer ( const petri_net::port_id_type& port
-                                  , const petri_net::place_id_type& pid
-                                  , const we::type::property::type& prop
-                                  )
-      {
-        inner_to_outer_.insert
-          (inner_to_outer_t::value_type (port, std::make_pair(pid, prop)));
-      }
-
-    public:
-      void re_connect_inner_to_outer ( const petri_net::port_id_type& port
-                                     , const petri_net::place_id_type& pid
-                                     , const we::type::property::type& prop
-                                     )
-      {
-        remove_connection_out (port);
-
-        connect_inner_to_outer (port, pid, prop);
-      }
-
-      void re_connect_outer_to_inner ( const petri_net::place_id_type& pid_old
-                                     , const petri_net::place_id_type& pid_new
-                                     , const petri_net::port_id_type& port
-                                     , const we::type::property::type& prop
-                                     )
-      {
-        remove_connection_in (pid_old);
-
-        connect_outer_to_inner (pid_new, port, prop);
-      }
-
-      inner_to_outer_t const& inner_to_outer() const
-      {
-        return inner_to_outer_;
-      }
-      outer_to_inner_t const& outer_to_inner() const
-      {
-        return outer_to_inner_;
-      }
-
-      void add_connection ( const petri_net::place_id_type& pid
-                          , const std::string& name
-                          , const we::type::property::type& prop
-                          = we::type::property::type()
-                          )
-      {
-        connect_outer_to_inner (pid, input_port_by_name (name), prop);
-      }
-      void remove_connection_in (const petri_net::place_id_type& place_id)
-      {
-        outer_to_inner_.erase (place_id);
-      }
-      void remove_connection_out (const petri_net::port_id_type& port_id)
-      {
-        inner_to_outer_.erase (port_id);
-      }
-      void add_connection ( const std::string& name
-                          , const petri_net::place_id_type& pid
-                          , const we::type::property::type& prop
-                          = we::type::property::type()
-                          )
-      {
-        connect_inner_to_outer (output_port_by_name (name), pid, prop);
-      }
-
-      void add_port (port_t const& port)
-      {
-        ports_.insert (std::make_pair (port_id_counter_++, port));
-      }
-
-      void erase_port (const petri_net::port_id_type& port_id)
-      {
-        ports_.erase (port_id);
-        remove_connection_out (port_id);
-      }
-
-      petri_net::port_id_type input_port_by_name (const std::string& port_name) const
-      {
-        BOOST_FOREACH (port_map_t::value_type const& p, ports_)
-        {
-          if ((p.second.is_input()) && p.second.name() == port_name)
-          {
-            return p.first;
-          }
-        }
-        throw pnet::exception::port::unknown (name(), port_name);
-      }
-
-      const petri_net::port_id_type& output_port_by_name (const std::string& port_name) const
-      {
-        BOOST_FOREACH (port_map_t::value_type const& p, ports_)
-        {
-          if ((p.second.is_output()) && p.second.name() == port_name)
-          {
-            return p.first;
-          }
-        }
-        throw pnet::exception::port::unknown (name(), port_name);
-      }
-
-      const port_t& get_port (const petri_net::port_id_type& port_id) const
-      {
-        try
-        {
-          return ports_.at (port_id);
-        }
-        catch (const std::out_of_range &)
-        {
-          throw pnet::exception::port::unknown
-            (name(), boost::lexical_cast<std::string> (port_id));
-        }
-      }
-
-      port_t& get_port (const petri_net::port_id_type& port_id)
-      {
-        return ports_[port_id];
-      }
-
-      // UNSAFE: does not check for multiple connections! Use with care!
-      //! \todo remove
-      void UNSAFE_re_associate_port ( const petri_net::place_id_type& pid_old
-                                    , const petri_net::place_id_type& pid_new
-                                    )
-      {
-        BOOST_FOREACH ( we::type::port_t& port
-                      , ports_ | boost::adaptors::map_values
-                      )
-          {
-            if (port.associated_place() == pid_old)
-            {
-              port.associated_place() = pid_new;
-
-              return;
-            }
-          }
-
-        throw std::runtime_error
-          ( ( boost::format ("called UNSAFE_re_associate and it failed."
-                            " trans '%1%', pid_old '%2%'"
-                            )
-            % name()
-            % pid_old
-            )
-          . str()
-          );
-      }
-
-      const we::type::property::type& prop (void) const { return prop_; }
-
-      const port_map_t& ports() const { return ports_; }
-      port_map_t& ports() { return ports_; }
-
-      void add_requirement (we::type::requirement_t const& r)
-      {
-        _requirements.push_back (r);
-      }
+      std::list<we::type::requirement_t> const& requirements() const;
+      void add_requirement (we::type::requirement_t const&);
 
       template<typename T>
         boost::optional<T> get_schedule_data
@@ -338,12 +129,11 @@ namespace we { namespace type {
 
         BOOST_FOREACH (token_on_port_t const& top, input)
         {
-          context.bind_ref (get_port (top.second).name(), top.first);
+          context.bind_ref (ports().at (top.second).name(), top.first);
         }
 
         return boost::get<T> (e.ast().eval_all (context));
       }
-
 
     private:
       std::string name_;
@@ -351,8 +141,6 @@ namespace we { namespace type {
       bool internal_;
       condition::type condition_;
 
-      outer_to_inner_t outer_to_inner_;
-      inner_to_outer_t inner_to_outer_;
       port_map_t ports_;
       petri_net::port_id_type port_id_counter_;
 
@@ -360,7 +148,6 @@ namespace we { namespace type {
 
       std::list<we::type::requirement_t> _requirements;
 
-    private:
       friend class boost::serialization::access;
       template <typename Archive>
       void save(Archive& ar, const unsigned int) const
@@ -369,8 +156,6 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(data_);
         ar & BOOST_SERIALIZATION_NVP(internal_);
         ar & BOOST_SERIALIZATION_NVP(condition_);
-        ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
-        ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
@@ -384,38 +169,14 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(data_);
         ar & BOOST_SERIALIZATION_NVP(internal_);
         ar & BOOST_SERIALIZATION_NVP(condition_);
-        ar & BOOST_SERIALIZATION_NVP(outer_to_inner_);
-        ar & BOOST_SERIALIZATION_NVP(inner_to_outer_);
         ar & BOOST_SERIALIZATION_NVP(ports_);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
-
-        if (version > 0)
-        {
-          ar & BOOST_SERIALIZATION_NVP(_requirements);
-        }
+        ar & BOOST_SERIALIZATION_NVP(_requirements);
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
-
-    // ********************************************************************* //
-
-    boost::optional<transition_t::port_id_with_prop_t>
-    output_port_by_pid (transition_t const&, const petri_net::place_id_type&);
-
-    boost::optional<transition_t::port_id_with_prop_t const&>
-    input_port_by_pid (transition_t const&, const petri_net::place_id_type&);
-
-    boost::unordered_set<std::string>
-    port_names (transition_t const&, const we::type::PortDirection&);
-
-    boost::optional<const port_t&>
-    get_port_by_associated_pid ( transition_t const&
-                               , const petri_net::place_id_type&
-                               );
   }
 }
-
-BOOST_CLASS_VERSION(we::type::transition_t, 1)
 
 #endif

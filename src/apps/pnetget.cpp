@@ -5,7 +5,7 @@
 
 //! \todo eliminate this include (that completes type transition_t::data)
 #include <we/type/net.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 
 #include <we/type/value/show.hpp>
@@ -43,7 +43,7 @@ namespace detail
 
 struct match_every_port
 {
-  bool operator() (const we::mgmt::type::activity_t::token_on_port_t)
+  bool operator() (const we::type::activity_t::token_on_port_t)
   {
     return true;
   }
@@ -55,7 +55,7 @@ struct match_equal_port
     : port(p)
   {}
 
-  bool operator() (const we::mgmt::type::activity_t::token_on_port_t & subject)
+  bool operator() (const we::type::activity_t::token_on_port_t & subject)
   {
     return subject.second == port;
   }
@@ -70,7 +70,7 @@ struct output_token
   {}
   output_token const & operator *() const { return *this; }
   output_token const & operator++(int) const { return *this; }
-  output_token const & operator=(const we::mgmt::type::activity_t::token_on_port_t & subject) const
+  output_token const & operator=(const we::type::activity_t::token_on_port_t & subject) const
   {
     out << pnet::type::value::show (subject.first) << delim;
     return *this;
@@ -88,7 +88,7 @@ struct output_port_and_token
   {}
   output_port_and_token const & operator *() const { return *this; }
   output_port_and_token const & operator++(int) const { return *this; }
-  output_port_and_token const & operator=(const we::mgmt::type::activity_t::token_on_port_t & subject) const
+  output_port_and_token const & operator=(const we::type::activity_t::token_on_port_t & subject) const
   {
     out << "on " << subject.second << ": " << pnet::type::value::show (subject.first) << delim;
     return *this;
@@ -171,10 +171,10 @@ try
     return EX_USAGE;
   }
 
-  we::mgmt::type::activity_t act
+  we::type::activity_t act
     ( input == "-"
-    ? we::mgmt::type::activity_t (std::cin)
-    : we::mgmt::type::activity_t (boost::filesystem::path (input))
+    ? we::type::activity_t (std::cin)
+    : we::type::activity_t (boost::filesystem::path (input))
     );
 
   act.collect_output();

@@ -5,13 +5,10 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     namespace type
     {
       class activity_t;
     }
-  }
 }
 
 #endif

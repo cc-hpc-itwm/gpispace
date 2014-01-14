@@ -8,6 +8,7 @@
 
 #include <xml/parse/type/function.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
 #include <QAction>

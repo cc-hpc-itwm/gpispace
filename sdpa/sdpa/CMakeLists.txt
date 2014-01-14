@@ -1,21 +1,24 @@
-add_subdirectory(daemon)
-
-add_library (sdpa-client client.cpp)
-
-set (hdrs
-  common.hpp
-  JobId.hpp
-  logging.hpp
-  types.hpp
-  job_states.hpp
-  id_generator.hpp
-)
-
 set (srcs
-  JobId.cpp
+  client.cpp
+  com/NetworkStrategy.cpp
+  daemon/GenericDaemon.cpp
+  daemon/Job.cpp
+  daemon/JobManager.cpp
+  daemon/scheduler/SchedulerBase.cpp
+  daemon/scheduler/CoallocationScheduler.cpp
+  daemon/scheduler/SimpleScheduler.cpp
+  daemon/Worker.cpp
+  daemon/WorkerManager.cpp
+  daemon/agent/Agent.cpp
+  daemon/orchestrator/Orchestrator.cpp
 )
 
-ADD_LIBRARY(sdpa ${hdrs} ${srcs})
-target_link_libraries (sdpa ${Boost_SERIALIZATION_LIBRARY} ${Boost_DATE_TIME_LIBRARY} we-dev)
-
-add_subdirectory (com)
+ADD_LIBRARY(sdpa ${srcs})
+target_link_libraries (sdpa
+  ${Boost_SERIALIZATION_LIBRARY}
+  ${Boost_DATE_TIME_LIBRARY}
+  ${FhgCom_LIBRARY}
+  ${Boost_THREAD_LIBRARY}
+  ${UTIL_LIBRARIES}
+  ${ZLIB_LIBRARIES}
+  pnet)

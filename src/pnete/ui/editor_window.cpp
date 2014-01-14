@@ -30,8 +30,8 @@
 
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
-#include <we/mgmt/context.hpp>
-#include <we/mgmt/type/activity.hpp>
+#include <we/context.hpp>
+#include <we/type/activity.hpp>
 
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
@@ -607,7 +607,7 @@ namespace fhg
       namespace
       {
         //! \note Context copied from we-eval.
-        class eval_context : public we::mgmt::context
+        class eval_context : public we::context
         {
           boost::mt19937 _engine;
 
@@ -616,39 +616,44 @@ namespace fhg
             : loader (module_loader)
           { }
 
-          virtual void handle_internally (we::mgmt::type::activity_t& act, net_t const&)
+          virtual void handle_internally (we::type::activity_t& act, net_t const&)
           {
-            while (act.can_fire())
+            if (act.transition().net())
             {
-              we::mgmt::type::activity_t sub (act.extract (_engine));
-              sub.execute (this);
-              act.inject (sub);
+              while ( boost::optional<we::type::activity_t> sub
+                    = boost::get<petri_net::net&> (act.transition().data())
+                    . fire_expressions_and_extract_activity_random (_engine)
+                    )
+              {
+                sub->execute (this);
+                act.inject (*sub);
+              }
             }
 
             act.collect_output ();
           }
 
-          virtual void handle_internally (we::mgmt::type::activity_t& act, mod_t const& mod)
+          virtual void handle_internally (we::type::activity_t& act, mod_t const& mod)
           {
             //!\todo pass a real gspc::drts::context here
             we::loader::module_call (loader, 0, act, mod);
           }
 
-          virtual void handle_internally (we::mgmt::type::activity_t& , expr_t const&)
+          virtual void handle_internally (we::type::activity_t& , expr_t const&)
           {
           }
 
-          virtual void handle_externally (we::mgmt::type::activity_t& act, net_t const& n)
+          virtual void handle_externally (we::type::activity_t& act, net_t const& n)
           {
             handle_internally (act, n);
           }
 
-          virtual void handle_externally (we::mgmt::type::activity_t& act, mod_t const& mod)
+          virtual void handle_externally (we::type::activity_t& act, mod_t const& mod)
           {
             handle_internally (act, mod);
           }
 
-          virtual void handle_externally (we::mgmt::type::activity_t& act, expr_t const& e)
+          virtual void handle_externally (we::type::activity_t& act, expr_t const& e)
           {
             handle_internally (act, e);
           }
@@ -667,7 +672,7 @@ namespace fhg
           return boost::none;
         }
 
-        std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
+        std::pair<we::type::activity_t, xml::parse::id::ref::function>
           prepare_activity ( const QStack<document_view*>& accessed_widgets
                            , const boost::filesystem::path& temporary_path
                            )
@@ -729,7 +734,7 @@ namespace fhg
             (xml::parse::xml_to_we (function, state), function);
         }
 
-        bool put_token ( we::mgmt::type::activity_t& activity
+        bool put_token ( we::type::activity_t& activity
                        , const std::string& port_name
                        , const std::string& value
                        )
@@ -765,14 +770,14 @@ namespace fhg
         }
 
         void show_results_of_activity
-          (const we::mgmt::type::activity_t& activity)
+          (const we::type::activity_t& activity)
         {
-          BOOST_FOREACH ( const we::mgmt::type::activity_t::token_on_port_t& top
+          BOOST_FOREACH ( const we::type::activity_t::token_on_port_t& top
                         , activity.output()
                         )
           {
             std::stringstream tmp;
-            tmp << "on " << activity.transition().get_port (top.second).name()
+            tmp << "on " << activity.transition().ports().at (top.second).name()
                 << ": " << pnet::type::value::show (top.first);
             QMessageBox msgBox;
             msgBox.setText (QString::fromStdString (tmp.str()));
@@ -781,7 +786,7 @@ namespace fhg
         }
 
         void execute_activity_locally
-          ( we::mgmt::type::activity_t activity
+          ( we::type::activity_t activity
           , const boost::filesystem::path& temporary_path
           )
         {
@@ -864,7 +869,7 @@ namespace fhg
         client->result (job_id, output_string);
         client->remove (job_id);
 
-        const we::mgmt::type::activity_t output (output_string);
+        const we::type::activity_t output (output_string);
         show_results_of_activity (output);
       }
 
@@ -932,39 +937,41 @@ namespace fhg
         }
 
         void request_tokens_for_ports
-          ( std::pair < we::mgmt::type::activity_t
+          ( std::pair < we::type::activity_t
                       , xml::parse::id::ref::function
                       >* activity_and_fun
           )
         {
           BOOST_FOREACH
-            ( const std::string& port_name
-            , we::type::port_names ( activity_and_fun->first.transition()
-                                   , we::type::PORT_IN
-                                   )
+            ( const we::type::port_t& port
+            , activity_and_fun->first.transition().ports()
+            | boost::adaptors::map_values
             )
           {
-            bool retry (true);
-            while (retry)
+            if (port.direction() == we::type::PORT_IN)
             {
-              const boost::optional<const xml::parse::id::ref::port&> xml_port
-                (activity_and_fun->second.get().get_port_in (port_name));
-
-              bool ok;
-              const std::string value
-                ( prompt_for ( QString::fromStdString (port_name)
-                             , xml_port
-                             ? xml_port->get().type()
-                             : boost::optional<std::string> (boost::none)
-                             , &ok
-                             )
-                );
-              if (!ok)
+              bool retry (true);
+              while (retry)
               {
-                return;
-              }
+                const boost::optional<const xml::parse::id::ref::port&> xml_port
+                  (activity_and_fun->second.get().get_port_in (port.name()));
 
-              retry = put_token (activity_and_fun->first, port_name, value);
+                bool ok;
+                const std::string value
+                  ( prompt_for ( QString::fromStdString (port.name())
+                               , xml_port
+                               ? xml_port->get().type()
+                               : boost::optional<std::string> (boost::none)
+                               , &ok
+                               )
+                  );
+                if (!ok)
+                {
+                  return;
+                }
+
+                retry = put_token (activity_and_fun->first, port.name(), value);
+              }
             }
           }
         }
@@ -975,7 +982,7 @@ namespace fhg
       {
         const fhg::util::temporary_path temporary_path;
 
-        std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
+        std::pair<we::type::activity_t, xml::parse::id::ref::function>
           activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
         request_tokens_for_ports (&activity_and_fun);
@@ -1026,7 +1033,7 @@ namespace fhg
       {
         const fhg::util::temporary_path temporary_path;
 
-        std::pair<we::mgmt::type::activity_t, xml::parse::id::ref::function>
+        std::pair<we::type::activity_t, xml::parse::id::ref::function>
           activity_and_fun (prepare_activity (_accessed_widgets, temporary_path));
 
         request_tokens_for_ports (&activity_and_fun);
@@ -1046,7 +1053,7 @@ namespace fhg
       {
         const fhg::util::temporary_path temporary_path;
 
-        we::mgmt::type::activity_t activity
+        we::type::activity_t activity
           (prepare_activity (_accessed_widgets, temporary_path).first);
 
         const QString input_filename

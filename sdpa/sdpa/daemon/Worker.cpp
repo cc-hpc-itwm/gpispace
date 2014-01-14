@@ -13,7 +13,7 @@ Worker::Worker(	const worker_id_t& name,
 				const unsigned int& rank,
 				const sdpa::worker_id_t& agent_uuid,
 				const location_t &location)
-  : SDPA_INIT_LOGGER(std::string("sdpa.daemon.worker.") + name),
+  : _logger (fhg::log::Logger::get ("sdpa.daemon.worker." + name)),
     name_(name),
     capacity_(cap),
     rank_(rank),
@@ -51,7 +51,7 @@ void Worker::update()
 void Worker::submit(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
-  DMLOG (TRACE, "appending job(" << jobId.str() << ") to the submitted queue");
+  DLLOG (TRACE, _logger, "appending job(" << jobId << ") to the submitted queue");
   setLastTimeServed(fhg::util::now());
   submitted_.push(jobId);
 }
@@ -63,12 +63,12 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
   {
       acknowledged_.push(job_id);
       submitted_.erase(job_id);
-      DMLOG(TRACE, "acknowledged job(" << job_id.str() << ")");
+      DLLOG (TRACE, _logger, "acknowledged job(" << job_id << ")");
       return true;
   }
   catch (const sdpa::daemon::NotFoundItem& ex)
   {
-      SDPA_LOG_WARN("The job " << job_id.str() << " could not be acknowledged. It was not found into the worker's submitted queue!");
+    LLOG (WARN, _logger, "The job " << job_id << " could not be acknowledged. It was not found into the worker's submitted queue!");
       return false;
   }
 }
@@ -104,12 +104,12 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
       sdpa::capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
       if( itwcpb == capabilities_.end() ) {
           capabilities_.insert(*it);
-          DMLOG (TRACE, "The worker "<<name()<<" gained the capability:"<<*it);
+          DLLOG (TRACE, _logger, "The worker "<<name()<<" gained the capability:"<<*it);
           bModified = true;
       }
       else
 	if( itwcpb->depth()>it->depth() ) {
-	    SDPA_LOG_INFO("Worker " << name() << ": updated the depth of the capability:\n   "<<*it<<" from "<<itwcpb->depth()<<" to "<<it->depth() );
+      LLOG (INFO, _logger, "Worker " << name() << ": updated the depth of the capability:\n   "<<*it<<" from "<<itwcpb->depth()<<" to "<<it->depth() );
 	    const_cast<sdpa::capability_t&>(*itwcpb).setDepth(it->depth());
 	    bModified = true;
 	}
@@ -126,7 +126,7 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
       if( itwcpb != capabilities_.end() ) {
           capabilities_.erase(itwcpb);
 
-          //LOG( TRACE, "worker " << name() << " lost capability: "
+          //LLOG (TRACE, _logger, "worker " << name() << " lost capability: "
           //<< *it << " (" << std::count(capabilities_.begin(), capabilities_.end(), *it) << ")");
       }
   }

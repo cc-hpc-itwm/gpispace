@@ -101,9 +101,10 @@ DEFAULT_PLUGIN_DRTS_MAX_RECONNECT="128"
 # override defaults by:
 #
 #     1. /etc/sdpa/defaults
-#     2. /usr/local/etc/sdpa/defaults
-#     3. $SDPA_HOME/etc/sdpa/defaults
-#     4. $HOME/.sdpa.defaults
+#     2. /usr/etc/sdpa/defaults
+#     3. /usr/local/etc/sdpa/defaults
+#     4. $SDPA_HOME/etc/sdpa/defaults
+#     5. $HOME/.sdpa.defaults
 #
 
 for system_default in "/etc/sdpa/defaults"               \

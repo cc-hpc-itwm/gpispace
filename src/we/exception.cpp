@@ -129,25 +129,5 @@ namespace pnet
         , _port_name (port_name)
       {}
     }
-
-    namespace place
-    {
-      no_such::no_such (petri_net::place_id_type const& place_id)
-        : std::runtime_error
-          ((boost::format ("no place with id '%1%'") % place_id).str())
-        , _place_id (place_id)
-      {}
-    }
-
-    namespace transition
-    {
-      no_such::no_such (petri_net::transition_id_type const& transition_id)
-        : std::runtime_error
-          ( ( boost::format ("no transition with id '%1%'") % transition_id
-            ).str()
-          )
-        , _transition_id (transition_id)
-      {}
-    }
   }
 }

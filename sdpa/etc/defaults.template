@@ -10,12 +10,12 @@
 # for any questions.                                                           #
 #                                                                              #
 #                                                                              #
-# This  is a template  file, rename  this file  to "sdpa.system.defaults"  to  #
-# be effective.                                                                #
+# This is a template file, rename this file to "defaults" to be effective.     #
 #                                                                              #
 # Paths that are searched for this file are (in order):                        #
 #                                                                              #
 #    /etc/sdpa/defaults                                                        #
+#    /usr/etc/sdpa/defaults                                                    #
 #    /usr/local/etc/sdpa/sdpa/defaults                                         #
 #    $SDPA_HOME/etc/sdpa/defaults                                              #
 #    ~/.sdpa/defaults                                                          #

@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/mgmt/layer.hpp>
+#include <we/layer.hpp>
 
 #include <fhg/util/starts_with.hpp>
 
@@ -8,8 +8,6 @@
 
 namespace we
 {
-  namespace mgmt
-  {
     layer::layer
         ( boost::function<void (id_type, type::activity_t, id_type)> rts_submit
         , boost::function<void (id_type)> rts_cancel
@@ -53,54 +51,33 @@ namespace we
         return (port.is_output() ? "_out_" : "_in_") + port.name();
       }
 
-      type::activity_t wrap (type::activity_t& activity)
+      type::activity_t wrap (type::activity_t const& activity)
       {
-        we::type::transition_t& transition_inner (activity.transition());
-
         petri_net::net net;
+
+        petri_net::transition_id_type const transition_id
+          (net.add_transition (activity.transition()));
 
         boost::unordered_map<std::string, petri_net::place_id_type> place_ids;
 
-        BOOST_FOREACH ( we::type::port_t const& port
-                      , transition_inner.ports() | boost::adaptors::map_values
+        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                      , activity.transition().ports()
                       )
         {
           petri_net::place_id_type const place_id
-            (net.add_place (place::type (wrapped_name (port), port.signature())));
+            (net.add_place (place::type (wrapped_name (p.second), p.second.signature())));
 
-          if (port.is_output())
-          {
-            transition_inner.add_connection
-              (port.name(), place_id, we::type::property::type());
-          }
-          else if (port.is_input())
-          {
-            transition_inner.add_connection
-              (place_id, port.name(), we::type::property::type());
-          }
-          else
-          {
-            throw std::runtime_error ("tried to wrap, found tunnel port!?");
-          }
-
-          place_ids.insert (std::make_pair (wrapped_name (port), place_id));
-        }
-
-        petri_net::transition_id_type const transition_id
-          (net.add_transition (transition_inner));
-
-        BOOST_FOREACH
-          ( we::type::port_t const& port
-          , transition_inner.ports() | boost::adaptors::map_values
-          )
-        {
           net.add_connection
-            ( port.is_output() ? petri_net::edge::TP
-            : port.is_input() ? petri_net::edge::PT
+            ( p.second.is_output() ? petri_net::edge::TP
+            : p.second.is_input() ? petri_net::edge::PT
             : throw std::runtime_error ("tried to wrap, found tunnel port!?")
             , transition_id
-            , place_ids.find (wrapped_name (port))->second
+            , place_id
+            , p.first
+            , we::type::property::type()
             );
+
+          place_ids.insert (std::make_pair (wrapped_name (p.second), place_id));
         }
 
         BOOST_FOREACH ( const type::activity_t::input_t::value_type& top
@@ -108,81 +85,43 @@ namespace we
                       )
         {
           we::type::port_t const& port
-            (transition_inner.get_port (top.second));
+            (activity.transition().ports().at (top.second));
 
           net.put_value
             (place_ids.find (wrapped_name (port))->second, top.first);
         }
 
-        we::type::transition_t
+        //! \todo copy output too
+
+        we::type::transition_t const
           transition_net_wrapper ( wrapped_activity_prefix()
-                                 + transition_inner.name()
+                                 + activity.transition().name()
                                  , net
                                  , condition::type ("true")
                                  , true
                                  , we::type::property::type()
                                  );
 
-        BOOST_FOREACH
-          ( we::type::port_t const& port
-          , transition_inner.ports() | boost::adaptors::map_values
-          )
-        {
-          transition_net_wrapper.add_port
-            ( we::type::port_t ( wrapped_name (port)
-                               , port.direction()
-                               , port.signature()
-                               , place_ids.find (wrapped_name (port))->second
-                               , port.property()
-                               )
-            );
-        }
-
-        return type::activity_t (transition_net_wrapper);
+        return type::activity_t
+          (transition_net_wrapper, activity.transition_id());
       }
 
-      type::activity_t unwrap (type::activity_t& activity)
+      type::activity_t unwrap (type::activity_t const& activity)
       {
-        petri_net::net net (*activity.transition().net());
-        we::type::transition_t transition_inner
-          (net.transitions().begin()->second);
+        petri_net::net const& net (*activity.transition().net());
+
+        type::activity_t activity_inner
+          (net.transitions().begin()->second, activity.transition_id());
 
         BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , transition_inner.ports()
-                      )
-        {
-          if (p.second.is_output())
-          {
-            transition_inner.remove_connection_out (p.first);
-          }
-          else
-          {
-            petri_net::place_id_type const place_id
-              ( activity.transition().get_port
-                ( activity.transition().input_port_by_name
-                  (wrapped_name (p.second))
-                )
-              .associated_place()
-              );
-
-            transition_inner.remove_connection_in (place_id);
-          }
-        }
-
-        type::activity_t activity_inner (transition_inner);
-
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , transition_inner.ports()
+                      , activity_inner.transition().ports()
                       )
         {
           if (p.second.is_output())
           {
             petri_net::place_id_type const place_id
-              ( activity.transition().get_port
-                ( activity.transition().output_port_by_name
-                  (wrapped_name (p.second))
-                )
-              .associated_place()
+              ( net.port_to_place().at (net.transitions().begin()->first)
+              .left.find (p.first)->get_right()
               );
 
             BOOST_FOREACH ( const pnet::type::value::value_type& token
@@ -193,6 +132,8 @@ namespace we
             }
           }
         }
+
+        //! \todo copy input too
 
         return activity_inner;
       }
@@ -229,7 +170,8 @@ namespace we
 
     void layer::cancel (id_type id)
     {
-      request_cancel (id, boost::bind (_rts_canceled, id));
+      request_cancel
+        (id, boost::bind (&layer::rts_canceled_and_forget, this, id));
     }
 
     void layer::failed (id_type id, int error_code, std::string reason)
@@ -239,8 +181,11 @@ namespace we
 
       _running_jobs.terminated (*parent, id);
 
-      request_cancel
-        (*parent, boost::bind (_rts_failed, *parent, error_code, reason));
+      request_cancel ( *parent
+                     , boost::bind ( &layer::rts_failed_and_forget
+                                   , this, *parent, error_code, reason
+                                   )
+                     );
     }
 
     void layer::request_cancel (id_type id, boost::function<void()> after)
@@ -252,6 +197,8 @@ namespace we
     void layer::cancel_child_jobs
       (activity_data_type activity_data, boost::function<void()> after)
     {
+      //! \note Not a race: nobody can insert new running jobs as we
+      //! have ownership of activity
       if (!_running_jobs.contains (activity_data._id))
       {
         after();
@@ -350,11 +297,15 @@ namespace we
         bool was_active (false);
 
         //! \todo How to cancel if the net is inside
-        //! fire_internally_and_extract_external (endless loop in
-        //! expressions)?
+        //! fire_expression_and_extract_activity_random (endless loop
+        //! in expressions)?
 
         if ( boost::optional<type::activity_t> activity
-           = activity_data.fire_internally_and_extract_external
+
+             //! \note We wrap all input activites in a net.
+           = boost::get<petri_net::net&>
+             (activity_data._activity.transition().data())
+           . fire_expressions_and_extract_activity_random
                (_random_extraction_engine)
            )
         {
@@ -370,16 +321,33 @@ namespace we
         }
         else
         {
-          _rts_finished ( activity_data._id
-                        , fhg::util::starts_with
-                          ( wrapped_activity_prefix()
-                          , activity_data._activity.transition().name()
-                          )
-                        ? unwrap (activity_data._activity)
-                        : activity_data._activity
-                        );
+          rts_finished_and_forget
+            ( activity_data._id
+            , fhg::util::starts_with
+              ( wrapped_activity_prefix()
+              , activity_data._activity.transition().name()
+              )
+            ? unwrap (activity_data._activity)
+            : activity_data._activity
+            );
         }
       }
+    }
+
+    void layer::rts_finished_and_forget (id_type id, type::activity_t activity)
+    {
+      _rts_finished (id, activity);
+      _nets_to_extract_from.forget (id);
+    }
+    void layer::rts_failed_and_forget (id_type id, int ec, std::string message)
+    {
+      _rts_failed (id, ec, message);
+      _nets_to_extract_from.forget (id);
+    }
+    void layer::rts_canceled_and_forget (id_type id)
+    {
+      _rts_canceled (id);
+      _nets_to_extract_from.forget (id);
     }
 
 
@@ -452,17 +420,28 @@ namespace we
 
       if (pos != _to_be_removed.end())
       {
-        BOOST_FOREACH ( std::pair<boost::function<void (activity_data_type&)>
-                      BOOST_PP_COMMA() bool
-                      > fun_and_do_put
-                      , pos->second
-                      )
+        to_be_removed_type::mapped_type::iterator fun_and_do_put_it
+          (pos->second.begin());
+
+        while (fun_and_do_put_it != pos->second.end())
         {
+          std::pair<boost::function<void (activity_data_type&)>, bool>
+            fun_and_do_put (*fun_and_do_put_it);
+          fun_and_do_put_it = pos->second.erase (fun_and_do_put_it);
+
           fun_and_do_put.first (activity_data);
           do_put = do_put && (active = fun_and_do_put.second);
+
+          if (!active)
+          {
+            break;
+          }
         }
 
-        _to_be_removed.erase (pos);
+        if (fun_and_do_put_it == pos->second.end())
+        {
+          _to_be_removed.erase (pos);
+        }
       }
 
       if (do_put)
@@ -533,60 +512,16 @@ namespace we
       }
     }
 
+    void layer::async_remove_queue::forget (id_type id)
+    {
+      boost::mutex::scoped_lock const container_lock (_container_mutex);
+
+      _to_be_removed.erase (id);
+    }
+
+
 
     // activity_data_type
-
-    boost::optional<type::activity_t>
-      layer::activity_data_type::fire_internally_and_extract_external
-        (boost::mt19937& random_extraction_engine)
-    {
-      //! \note We wrap all input activites in a net.
-      petri_net::net& net
-        (boost::get<petri_net::net&> (_activity.transition().data()));
-
-      while (net.can_fire())
-      {
-        type::activity_t activity
-          (net.extract_activity_random (random_extraction_engine));
-
-        if (!activity.transition().expression())
-        {
-          return activity;
-        }
-        else
-        {
-          expr::eval::context context;
-
-          BOOST_FOREACH ( const type::activity_t::input_t::value_type& top
-                        , activity.input()
-                        )
-          {
-            context.bind_ref
-              ( activity.transition().get_port (top.second).name()
-              , top.first
-              );
-          }
-
-          activity.transition().expression()->ast().eval_all (context);
-
-          BOOST_FOREACH
-            ( we::type::transition_t::port_map_t::value_type const& p
-            , activity.transition().ports()
-            )
-          {
-            if (p.second.is_output())
-            {
-              net.put_value
-                ( activity.transition().inner_to_outer().at (p.first).first
-                , context.value (p.second.name())
-                );
-            }
-          }
-        }
-      }
-
-      return boost::none;
-    }
 
     void layer::activity_data_type::child_finished (type::activity_t child)
     {
@@ -599,7 +534,8 @@ namespace we
                     )
       {
         net.put_value
-          ( child.transition().inner_to_outer().at (top.second).first
+          ( net.port_to_place().at (*child.transition_id())
+          .left.find (top.second)->get_right()
           , top.first
           );
       }
@@ -663,5 +599,4 @@ namespace we
         fun (child);
       }
     }
-  }
 }

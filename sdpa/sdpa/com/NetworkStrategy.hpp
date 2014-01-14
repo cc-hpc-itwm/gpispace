@@ -1,8 +1,9 @@
 #ifndef SDPA_COM_NETWORK_STRATEGY_HPP
 #define SDPA_COM_NETWORK_STRATEGY_HPP 1
 
-#include <sdpa/logging.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
+
+#include <fhglog/fhglog.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
@@ -30,7 +31,9 @@ namespace sdpa
       void handle_send (boost::shared_ptr<events::SDPAEvent> const & e, boost::system::error_code const & ec);
       void handle_recv (boost::system::error_code const & ec);
 
-      SDPA_DECLARE_LOGGER();
+      void kvs_error_handler (boost::system::error_code const &);
+
+      fhg::log::Logger::ptr_t _logger;
 
       boost::function<void (sdpa::events::SDPAEvent::Ptr)> _event_handler;
 

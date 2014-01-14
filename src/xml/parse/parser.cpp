@@ -40,7 +40,7 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/boost/optional.hpp>
 
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
 
@@ -1589,7 +1589,7 @@ namespace xml
       type::dump::dump (s, function.get());
     }
 
-    we::mgmt::type::activity_t xml_to_we
+    we::type::activity_t xml_to_we
       ( const xml::parse::id::ref::function& function
       , const xml::parse::state::type& state
       )
@@ -1601,12 +1601,18 @@ namespace xml
         function.get_ref().name (boost::optional<std::string>("anonymous"));
       }
 
+      boost::unordered_map<std::string, petri_net::port_id_type> port_id_in;
+      boost::unordered_map<std::string, petri_net::port_id_type> port_id_out;
+
       we::type::transition_t trans
-        (function.get_ref().synthesize (*function.get().name(), state));
+        (function.get_ref().synthesize ( *function.get().name()
+                                       , state
+                                       , port_id_in
+                                       , port_id_out
+                                       )
+        );
 
-      we::type::optimize::optimize (trans, state.options_optimize());
-
-      return we::mgmt::type::activity_t (trans);
+      return we::type::activity_t (trans, boost::none);
     }
   } // namespace parse
 } // namespace xml

@@ -2,9 +2,14 @@
 
 #include <we/type/transition.hpp>
 
+#include <we/exception.hpp>
 #include <we/type/net.hpp>
 
 #include <fhg/util/boost/variant.hpp>
+
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace we
 {
@@ -23,78 +28,83 @@ namespace we
       return fhg::util::boost::get_or_none<const module_call_t&> (data());
     }
 
-    // ********************************************************************* //
-
-    boost::optional<transition_t::port_id_with_prop_t>
-    output_port_by_pid ( transition_t const& trans
-                       , const petri_net::place_id_type& pid
-                       )
+    const condition::type& transition_t::condition() const
     {
-      BOOST_FOREACH ( transition_t::inner_to_outer_t::value_type const& p
-                    , trans.inner_to_outer()
-                    )
+      return condition_;
+    }
+
+    const std::string& transition_t::name() const
+    {
+      return name_;
+    }
+
+    bool transition_t::is_internal() const
+    {
+      return internal_;
+    }
+
+    const transition_t::data_type& transition_t::data() const
+    {
+      return data_;
+    }
+    transition_t::data_type& transition_t::data()
+    {
+      return data_;
+    }
+
+    std::list<we::type::requirement_t> const& transition_t::requirements() const
+    {
+      return _requirements;
+    }
+
+    petri_net::port_id_type transition_t::add_port (port_t const& port)
+    {
+      petri_net::port_id_type const port_id (port_id_counter_++);
+
+      ports_.insert (std::make_pair (port_id, port));
+
+      return port_id;
+    }
+
+    petri_net::port_id_type transition_t::input_port_by_name
+      (const std::string& port_name) const
+    {
+      BOOST_FOREACH (port_map_t::value_type const& p, ports_)
       {
-        if (p.second.first == pid)
+        if ((p.second.is_input()) && p.second.name() == port_name)
         {
-          return std::make_pair (p.first, p.second.second);
+          return p.first;
         }
       }
-
-      return boost::none;
+      throw pnet::exception::port::unknown (name(), port_name);
     }
 
-    boost::optional<transition_t::port_id_with_prop_t const&>
-    input_port_by_pid ( transition_t const& trans
-                      , const petri_net::place_id_type& pid
-                      )
+    const petri_net::port_id_type& transition_t::output_port_by_name
+      (const std::string& port_name) const
     {
-      transition_t::outer_to_inner_t::const_iterator const pos
-        (trans.outer_to_inner().find (pid));
-
-      if (pos != trans.outer_to_inner().end())
+      BOOST_FOREACH (port_map_t::value_type const& p, ports_)
       {
-        return pos->second;
-      }
-
-      return boost::none;
-    }
-
-    boost::unordered_set<std::string>
-    port_names (transition_t const& trans, const we::type::PortDirection& d)
-    {
-      boost::unordered_set<std::string> names;
-
-      BOOST_FOREACH ( we::type::port_t const& port
-                    , trans.ports() | boost::adaptors::map_values
-                    )
-      {
-        if (d == port.direction())
+        if ((p.second.is_output()) && p.second.name() == port_name)
         {
-          names.insert (port.name());
+          return p.first;
         }
       }
-
-      return names;
+      throw pnet::exception::port::unknown (name(), port_name);
     }
 
-    boost::optional<const port_t&>
-    get_port_by_associated_pid ( transition_t const& trans
-                               , const petri_net::place_id_type& pid
-                               )
+    const we::type::property::type& transition_t::prop() const
     {
-      BOOST_FOREACH ( we::type::port_t const& port
-                    , trans.ports() | boost::adaptors::map_values
-                    )
-      {
-        if (port.associated_place() == pid)
-        {
-          return port;
-        }
-      }
-
-      return boost::none;
+      return prop_;
     }
 
-    // ********************************************************************* //
+    const transition_t::port_map_t& transition_t::ports() const
+    {
+      return ports_;
+    }
+
+    void transition_t::add_requirement (we::type::requirement_t const& r)
+    {
+      _requirements.push_back (r);
+    }
   }
 }

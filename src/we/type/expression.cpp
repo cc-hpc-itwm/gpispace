@@ -2,6 +2,8 @@
 
 #include <we/type/expression.hpp>
 
+#include <boost/algorithm/string.hpp>
+
 #include <ostream>
 
 namespace we
@@ -16,13 +18,17 @@ namespace we
     expression_t::expression_t (const std::string& expr)
       : _expr (expr)
       , _ast (expr)
-    {}
+   {
+     boost::trim (_expr);
+   }
 
     // should correspond!
     expression_t::expression_t (const std::string& expr, const ast_t& ast)
       : _expr (expr)
       , _ast (ast)
-    {}
+    {
+      boost::trim (_expr);
+    }
 
     const std::string& expression_t::expression() const
     {

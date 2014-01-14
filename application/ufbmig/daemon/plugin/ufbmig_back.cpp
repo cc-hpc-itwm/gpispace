@@ -11,8 +11,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/error_codes.hpp>
-#include <fhg/util/bool.hpp>
-#include <fhg/util/bool_io.hpp>
+#include <fhg/util/read_bool.hpp>
 
 // plugin interfaces
 #include "sdpactl.hpp"
@@ -21,7 +20,7 @@
 #include "progress.hpp"
 
 // ufbmig types
-#include <we/mgmt/type/activity.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/net.hpp>
 #include <pnetc/type/config.hpp>
 #include <pnetc/type/config/op.hpp>
@@ -36,11 +35,11 @@
 namespace
 {
   std::list<pnet::type::value::value_type>
-  get ( we::mgmt::type::activity_t const & act
+  get ( we::type::activity_t const & act
       , std::string const & port
       )
   {
-    typedef we::mgmt::type::activity_t::output_t output_t;
+    typedef we::type::activity_t::output_t output_t;
 
     std::list<pnet::type::value::value_type> tokens;
     const petri_net::port_id_type port_id
@@ -164,7 +163,7 @@ public:
   FHG_PLUGIN_START()
   {
     m_control_sdpa =
-      fhg_kernel()->get<fhg::util::bool_t>("control_sdpa", "true");
+      fhg::util::read_bool (fhg_kernel()->get ("control_sdpa", "true"));
     m_check_interval =
       fhg_kernel ()->get<std::size_t>("check_interval", 1800);
     // (10**6) / fhg_kernel ()->tick_time () * 360 // seconds
@@ -384,7 +383,7 @@ public:
 
     const std::string wf (read_workflow_from_file(m_wf_path_prepare));
 
-    we::mgmt::type::activity_t act (wf);
+    we::type::activity_t act (wf);
 
     update_progress (95);
 
@@ -419,7 +418,7 @@ public:
 
     const std::string wf (read_workflow_from_file(m_wf_path_initialize));
 
-    we::mgmt::type::activity_t act (wf);
+    we::type::activity_t act (wf);
 
     // place tokens
     try
@@ -466,7 +465,7 @@ public:
 
     const std::string wf(read_workflow_from_file(m_wf_path_mask));
 
-    we::mgmt::type::activity_t act (wf);
+    we::type::activity_t act (wf);
 
     // place tokens
     try
@@ -508,7 +507,7 @@ public:
 
     const std::string wf (read_workflow_from_file(m_wf_path_calculate));
 
-    we::mgmt::type::activity_t act (wf);
+    we::type::activity_t act (wf);
 
     // place tokens
     try
@@ -552,7 +551,7 @@ public:
 
     const std::string wf(read_workflow_from_file(m_wf_path_finalize));
 
-    we::mgmt::type::activity_t act (wf);
+    we::type::activity_t act (wf);
 
     // place tokens
     try
@@ -880,7 +879,7 @@ private:
     return ec;
   }
 
-  int handle_initialize_result (we::mgmt::type::activity_t const &result)
+  int handle_initialize_result (we::type::activity_t const &result)
   {
     try
     {
@@ -897,17 +896,17 @@ private:
     return 0;
   }
 
-  int handle_update_salt_mask_result (we::mgmt::type::activity_t const &result)
+  int handle_update_salt_mask_result (we::type::activity_t const &result)
   {
     return 0;
   }
 
-  int handle_calculate_result (we::mgmt::type::activity_t const &result)
+  int handle_calculate_result (we::type::activity_t const &result)
   {
     return 0;
   }
 
-  int handle_finalize_result (we::mgmt::type::activity_t const &result)
+  int handle_finalize_result (we::type::activity_t const &result)
   {
     if (fs::exists(m_file_with_config))
     {
@@ -937,7 +936,7 @@ private:
     {
       try
       {
-        we::mgmt::type::activity_t result (j.result);
+        we::type::activity_t result (j.result);
 
         switch (j.type)
         {

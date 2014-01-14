@@ -24,7 +24,7 @@ namespace sdpa
 
       std::string str() const
       {
-        return "CancelJobAckEvent(" + job_id ().str () + ")";
+        return "CancelJobAckEvent(" + job_id () + ")";
       }
       std::string const& result() const
       {
