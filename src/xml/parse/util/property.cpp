@@ -5,6 +5,8 @@
 #include <xml/parse/error.hpp>
 #include <xml/parse/warning.hpp>
 
+#include <we/type/value/positions.hpp>
+
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 
@@ -55,12 +57,20 @@ namespace xml
                   , const property::type& y
                   )
         {
-          BOOST_FOREACH ( property::traverse::pair_type const& path_and_value
-                        , property::traverse::dfs (y)
+          typedef std::pair< std::list<std::string>
+                           , pnet::type::value::value_type
+                           > path_and_value_type;
+
+          BOOST_FOREACH ( path_and_value_type const& path_and_value
+                        , pnet::type::value::positions (y.value())
                         )
           {
             ::xml::parse::util::property::set
-              (state, x, path_and_value.first, path_and_value.second);
+              ( state
+              , x
+              , path_and_value.first
+              , boost::get<std::string> (path_and_value.second)
+              );
           }
         }
       }
