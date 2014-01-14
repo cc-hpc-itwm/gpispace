@@ -109,12 +109,9 @@ fi
 cmd=()
 cmd+=(/usr/bin/env)
 cmd+=(LD_LIBRARY_PATH="$(gspc --lib-path)")
-cmd+=("$(gspc --bin-path)/fhgkernel")
-cmd+=(-s plugin.netd.url="tcp://*:${rif_port}")
+cmd+=("$(gspc --bin-path)/gspc-rif-kernel")
+cmd+=(--netd_url "tcp://*:${rif_port}")
 cmd+=(-L "$(gspc --plugin-path)")
-cmd+=(--daemonize)
-cmd+=(rif)
-cmd+=(netd)
 
 function bootstrap_pbsdsh ()
 {
