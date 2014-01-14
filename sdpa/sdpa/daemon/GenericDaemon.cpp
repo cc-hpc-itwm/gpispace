@@ -24,6 +24,7 @@
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
@@ -1337,8 +1338,15 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
   sendEventToSelf(pDiscEvt);
 }
 
-void GenericDaemon::discovered (we::layer::id_type discover_id, pnet::type::value::value_type)
+void GenericDaemon::discovered (we::layer::id_type discover_id, pnet::type::value::value_type discover_result)
 {
   // generate a DiscoverJobStatestReplyEvent and and send it to the master
+  DMLOG(TRACE, "Communicate to the agent the result of the discover operation with the id "<<discover_id);
+  events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt( new events::DiscoverJobStatesReplyEvent( sdpa::daemon::WE
+                                                                                             , name()
+                                                                                             , discover_id
+                                                                                             , discover_result));
+
+  sendEventToSelf(pDiscReplyEvt);
 }
 }}
