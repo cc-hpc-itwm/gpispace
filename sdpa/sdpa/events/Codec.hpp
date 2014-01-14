@@ -72,7 +72,7 @@ namespace sdpa
         ar.template register_type<TYPE>()
 
         REGISTER (DiscoverJobStatesEvent, JobEvent);
-        REGISTER (DiscoverJobStatesReplyEvent, JobEvent);
+        REGISTER (DiscoverJobStatesReplyEvent, MgmtEvent);
         REGISTER (CancelJobAckEvent, JobEvent);
         REGISTER (CancelJobEvent, JobEvent);
         REGISTER (CapabilitiesGainedEvent, MgmtEvent);
