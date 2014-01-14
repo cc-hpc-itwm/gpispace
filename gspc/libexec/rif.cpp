@@ -33,10 +33,6 @@ public:
     , m_mgr ()
     , m_supervisor (m_mgr)
   {
-  }
-
-  FHG_PLUGIN_START()
-  {
     size_t nthreads = fhg_kernel ()->get ("nthreads", 4L);
 
     gspc::net::initialize (nthreads);
@@ -63,10 +59,9 @@ public:
 
     gspc::net::server::default_service_demux().handle
       ("/service/rif", boost::bind (&RifImpl::handle, this, _1, _2, _3));
-    FHG_PLUGIN_STARTED();
   }
 
-  FHG_PLUGIN_STOP()
+  ~RifImpl()
   {
     m_supervisor.onChildFailed.connect
       (boost::bind (&RifImpl::on_child_failed, this, _1));
@@ -83,7 +78,15 @@ public:
     }
 
     gspc::net::shutdown ();
+  }
 
+  FHG_PLUGIN_START()
+  {
+    FHG_PLUGIN_STARTED();
+  }
+
+  FHG_PLUGIN_STOP()
+  {
     FHG_PLUGIN_STOPPED();
   }
 
