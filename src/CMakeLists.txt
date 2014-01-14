@@ -59,7 +59,6 @@ add_library (pnet
   we/type/bytearray.cpp
   we/type/connection.cpp
   we/type/expression.cpp
-  we/type/id.cpp
   we/type/literal/control.cpp
   we/type/net.cpp
   we/type/place.cpp
