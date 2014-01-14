@@ -19,6 +19,10 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 
 #include <sdpa/daemon/Job.hpp>
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/poke.hpp>
 #include <fhg/assert.hpp>
 #include <sstream>
 
