@@ -2,6 +2,7 @@
 
 include (fhg_test_macros)
 
+add_subdirectory (credit/test)
 add_subdirectory (hello_world/test)
 add_subdirectory (sequence/test)
 add_subdirectory (avg_stddev/test)
