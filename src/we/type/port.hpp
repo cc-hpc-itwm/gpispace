@@ -10,6 +10,7 @@
 
 #include <boost/optional.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/optional.hpp>
 
 #include <iosfwd>
 #include <limits>
@@ -35,7 +36,7 @@ namespace we
       port_t ()
         : _name("default")
         , _direction(PORT_IN)
-        , _associated_place(we::place_id_invalid())
+        , _associated_place(boost::none)
       {}
 
       port_t ( const std::string & name
@@ -47,7 +48,7 @@ namespace we
         : _name(name)
         , _direction(direction)
         , _signature(signature)
-        , _associated_place(we::place_id_invalid())
+        , _associated_place(boost::none)
         , _properties(prop)
       {}
 
@@ -70,20 +71,20 @@ namespace we
 
       PortDirection direction() const { return _direction; }
       const pnet::type::signature::signature_type& signature() const { return _signature; }
-      const we::place_id_type& associated_place() const { return _associated_place; }
-      we::place_id_type& associated_place() { return _associated_place; }
+      const we::place_id_type& associated_place() const { return *_associated_place; }
+      we::place_id_type& associated_place() { return *_associated_place; }
       const we::type::property::type & property() const { return _properties; }
 
       bool is_input() const { return _direction == PORT_IN; }
       bool is_output() const { return _direction == PORT_OUT; }
       bool is_tunnel() const { return _direction == PORT_TUNNEL; }
-      bool has_associated_place() const { return _associated_place != we::place_id_invalid(); }
+      bool has_associated_place() const { return _associated_place; }
 
     private:
       std::string _name;
       PortDirection _direction;
       pnet::type::signature::signature_type _signature;
-      we::place_id_type _associated_place;
+      boost::optional<we::place_id_type> _associated_place;
       we::type::property::type _properties;
 
       friend class boost::serialization::access;

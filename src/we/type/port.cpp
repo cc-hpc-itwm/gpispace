@@ -39,7 +39,7 @@ namespace we
          << ", "
         ;
 
-      if (p.associated_place() == we::place_id_invalid())
+      if (!p.has_associated_place())
         {
           os << "not associated";
         }
