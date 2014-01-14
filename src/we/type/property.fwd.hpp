@@ -23,10 +23,8 @@ namespace we
 
       struct type;
 
-      typedef pnet::type::value::value_type mapped_type;
-
       typedef std::list<key_type> path_type;
-      typedef std::list<std::pair<key_type, mapped_type> > list_type;
+      typedef std::list<std::pair<key_type, pnet::type::value::value_type> > list_type;
 
       namespace exception
       {

@@ -35,11 +35,12 @@ namespace we
         {
           return _value;
         }
-        std::list<std::pair<key_type, mapped_type> > const& list() const;
+        std::list<std::pair<key_type, pnet::type::value::value_type> > const&
+          list() const;
 
-        boost::optional<mapped_type>
+        boost::optional<pnet::type::value::value_type>
           set (const path_type& path, const value_type& val);
-        boost::optional<mapped_type>
+        boost::optional<pnet::type::value::value_type>
           set (const std::string& path, const value_type& val);
 
         const boost::optional<const value_type&>
@@ -68,10 +69,11 @@ namespace we
         }
         BOOST_SERIALIZATION_SPLIT_MEMBER()
 
-        boost::optional<mapped_type> set ( const path_iterator& pos
-                                         , const path_iterator& end
-                                         , const value_type& val
-                                         );
+        boost::optional<pnet::type::value::value_type>
+          set ( const path_iterator& pos
+              , const path_iterator& end
+              , const value_type& val
+              );
 
         const boost::optional<const value_type&> get
           (const path_iterator& pos, const path_iterator& end) const;

@@ -24,17 +24,19 @@ namespace we
         : _value (pnet::type::value::structured_type())
       {}
 
-      std::list<std::pair<key_type, mapped_type> > const& type::list() const
+      std::list<std::pair<key_type, pnet::type::value::value_type> > const&
+        type::list() const
       {
         return boost::get<pnet::type::value::structured_type const&> (_value);
       }
 
-      boost::optional<mapped_type> type::set ( const path_iterator& pos
-                                             , const path_iterator& end
-                                             , const value_type& val
-                                             )
+      boost::optional<pnet::type::value::value_type>
+        type::set ( const path_iterator& pos
+                  , const path_iterator& end
+                  , const value_type& val
+                  )
       {
-        boost::optional<mapped_type> old_value
+        boost::optional<pnet::type::value::value_type> old_value
           (pnet::type::value::peek (pos, end, _value));
 
         pnet::type::value::poke (pos, end, _value, val);
@@ -42,13 +44,13 @@ namespace we
         return old_value;
       }
 
-      boost::optional<mapped_type>
+      boost::optional<pnet::type::value::value_type>
         type::set (const path_type& path, const value_type& val)
       {
         return set (path.begin(), path.end(), val);
       }
 
-      boost::optional<mapped_type>
+      boost::optional<pnet::type::value::value_type>
         type::set (const std::string& path, const value_type& val)
       {
         return set (pnet::type::value::path::split (path), val);
@@ -59,7 +61,7 @@ namespace we
       const boost::optional<const value_type&> type::get
         (const path_iterator& pos, const path_iterator& end) const
       {
-        boost::optional<const mapped_type&> mapped
+        boost::optional<const pnet::type::value::value_type&> mapped
           (pnet::type::value::peek (pos, end, _value));
 
         if (!mapped)
