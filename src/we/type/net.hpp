@@ -220,7 +220,7 @@ namespace petri_net
     we::container::priority_store _enabled;
 
     typedef std::pair< std::list<pnet::type::value::value_type>::iterator
-                     , std::size_t
+                     , std::list<pnet::type::value::value_type>::iterator::difference_type
                      > pos_and_distance_type;
 
     boost::unordered_map
