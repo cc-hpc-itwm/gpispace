@@ -31,8 +31,6 @@
           <cinclude href="iostream"/>
           <code><![CDATA[
             std::cout << "### step-2 " << v << std::endl;
-
-            sleep (1);
           ]]></code>
         </module>
       </defun>
