@@ -94,8 +94,6 @@
             << std::endl
             ;
 
-            sleep (3);
-
             return wo.wl.v;
             ]]></code>
           </module>
