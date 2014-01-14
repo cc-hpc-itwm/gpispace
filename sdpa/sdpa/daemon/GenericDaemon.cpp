@@ -23,6 +23,7 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
@@ -1327,6 +1328,13 @@ bool GenericDaemon::noChildJobRunning(const sdpa::job_id_t& jobId) const
 void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
 {
   // generate DiscoverJobStatestEvent with the source WE and send it to self
+  DMLOG(TRACE, "Tell the agent to collect the states of all child job/activities related to the job "<<job_id);
+  events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( sdpa::daemon::WE
+                                                                                    , name()
+                                                                                    , job_id
+                                                                                    , discover_id ));
+
+  sendEventToSelf(pDiscEvt);
 }
 
 void GenericDaemon::discovered (we::layer::id_type discover_id, pnet::type::value::value_type)
