@@ -1,11 +1,8 @@
-#include "pool.hpp"
+#include <fhg/util/thread/pool.hpp>
 
 #include <stdexcept>
-#include <boost/format.hpp>
-#include <boost/foreach.hpp>
 
-#include <fhg/util/threadname.hpp>
-#include <fhg/util/get_cpucount.h>
+#include <boost/foreach.hpp>
 
 namespace fhg
 {
