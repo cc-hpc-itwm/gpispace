@@ -11,8 +11,7 @@ namespace fhg
   namespace thread
   {
     pool_t::pool_t (std::size_t nthread, std::string const &name)
-      : m_stop (false)
-      , m_nthread ( nthread == 0
+      : m_nthread ( nthread == 0
                   ? throw std::invalid_argument
                     ("fhg::thread::pool_t: nthreads needs to be > 0")
                   : nthread
@@ -32,8 +31,6 @@ namespace fhg
 
     pool_t::~pool_t()
     {
-      m_stop = true;
-
       for (std::size_t i = 0 ; i != m_threads.size () ; ++i)
       {
         m_threads [i]->interrupt ();
@@ -46,7 +43,7 @@ namespace fhg
 
     void pool_t::worker (size_t rank)
     {
-      while (!m_stop)
+      while (true)
       {
         boost::function<void()> w (m_workload.get());
 
