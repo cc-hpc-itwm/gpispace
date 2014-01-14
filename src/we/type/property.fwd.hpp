@@ -24,12 +24,6 @@ namespace we
       struct type;
 
       typedef std::list<key_type> path_type;
-
-      namespace exception
-      {
-        class missing_binding;
-        class empty_path;
-      }
     }
   }
 }
