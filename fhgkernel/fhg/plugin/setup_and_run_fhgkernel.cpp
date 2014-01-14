@@ -456,13 +456,9 @@ int setup_and_run_fhgkernel ( bool daemonize
     }
   }
 
-  fhg::thread::global_pool ().start ();
-
   atexit(&shutdown_kernel);
 
   int rc = kernel->run_and_unload (false);
-
-  fhg::thread::global_pool ().stop ();
 
   DLLOG (TRACE, logger, "shutting down... (" << rc << ")");
 

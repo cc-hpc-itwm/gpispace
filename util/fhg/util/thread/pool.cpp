@@ -24,6 +24,7 @@ namespace fhg
       if (0 == m_nthread)
         throw std::invalid_argument
           ("fhg::thread::pool_t: nthreads needs to be > 0");
+      start();
     }
 
     pool_t::~pool_t()
@@ -119,13 +120,12 @@ namespace fhg
           if (ncpu < 0) ncpu = 1;
 
           pool = new pool_t (ncpu, "global-pool");
-          pool->start ();
         };
 
         ~init_global_pool_t ()
         {
-          pool->stop ();
           delete pool;
+          pool = NULL;
         }
 
         pool_t *pool;
