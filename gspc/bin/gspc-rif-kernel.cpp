@@ -57,10 +57,9 @@ int main(int ac, char **av)
 
   std::vector<std::string> mods_to_load;
   mods_to_load.push_back ("rif");
-  mods_to_load.push_back ("netd");
 
   std::vector<std::string> config_vars;
-  config_vars.push_back ("plugin.netd.url=" + netd_url);
+  config_vars.push_back ("plugin.rif.url=" + netd_url);
 
   return setup_and_run_fhgkernel ( true // daemonize
                                  , false //keep-going
