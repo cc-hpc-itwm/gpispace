@@ -33,43 +33,6 @@
 #include <ucontext.h>
 #include <unistd.h>
 
-namespace
-{
-  void crit_err_hdlr ( int sig_num, siginfo_t* info, void* context
-                     , fhg::log::Logger::ptr_t logger
-                     )
-  {
-   sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
-                          (&(static_cast<ucontext*> (context)->uc_mcontext))
-                        ));
-
-#if __WORDSIZE == 32
-   unsigned long caller_address (mcontext->eip);
-#else
-#if __WORDSIZE == 64
-   unsigned long caller_address (mcontext->rip);
-#else
-#error Unable to get caller_address on this architecture.
-#endif
-#endif
-
-   fprintf ( stderr
-           , "signal %d (%s), address is %p from %p\n"
-           , sig_num, strsignal(sig_num), info->si_addr, (void*)caller_address
-           );
-
-   std::ostringstream log_message;
-   log_message << "received signal "
-               << sig_num << " (" << strsignal(sig_num) << "),"
-               << " address is " << (void*)info->si_addr
-               << " from " << (void*)caller_address;
-
-   LLOG (ERROR, logger, fhg::util::make_backtrace (log_message.str()));
-
-   _exit (EXIT_FAILURE);
-  }
-}
-
 int setup_and_run_fhgkernel ( bool daemonize
                             , bool keep_going
                             , std::vector<std::string> mods_to_load
@@ -138,10 +101,8 @@ int setup_and_run_fhgkernel ( bool daemonize
   }
 
   fhg::util::signal_handler_manager signal_handlers;
-  signal_handlers.add (SIGSEGV, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
-  signal_handlers.add (SIGBUS, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
-  signal_handlers.add (SIGABRT, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
-  signal_handlers.add (SIGFPE, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
+
+  signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
 
   signal_handlers.add (SIGTERM, boost::bind (&fhg::core::kernel_t::stop, &kernel));
   signal_handlers.add (SIGINT, boost::bind (&fhg::core::kernel_t::stop, &kernel));
