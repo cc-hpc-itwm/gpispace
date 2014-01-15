@@ -24,7 +24,6 @@ namespace we
       void set_priority ( const we::transition_id_type&
                         , const we::priority_type&
                         );
-      void erase_priority (const we::transition_id_type&);
 
       void insert (const we::transition_id_type&);
       void erase (const we::transition_id_type&);

@@ -59,16 +59,6 @@ BOOST_AUTO_TEST_CASE (get_set_priority)
   BOOST_REQUIRE_EQUAL (ps.get_priority (0), we::priority_type (1));
 }
 
-BOOST_AUTO_TEST_CASE (erase_priority)
-{
-  we::container::priority_store ps;
-
-  ps.set_priority (0, 1);
-  ps.erase_priority (0);
-
-  BOOST_REQUIRE_EQUAL (ps.get_priority (0), we::priority_type());
-}
-
 BOOST_AUTO_TEST_CASE (extract_random_with_highest_priority)
 {
   we::container::priority_store ps;

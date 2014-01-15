@@ -91,23 +91,6 @@ namespace we
       }
     }
 
-    void priority_store::erase_priority (const we::transition_id_type& x)
-    {
-      const bool is_elem (elem (x));
-
-      if (elem (x))
-      {
-        erase (x);
-      }
-
-      _get_prio.erase (x);
-
-      if (is_elem)
-      {
-        insert (x);
-      }
-    }
-
     void priority_store::insert (const we::transition_id_type& x)
     {
       insert (x, get_priority (x));
