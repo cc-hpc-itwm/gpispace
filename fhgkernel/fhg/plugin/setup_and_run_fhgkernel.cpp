@@ -193,8 +193,6 @@ int setup_and_run_fhgkernel ( bool daemonize
 
   DLLOG (TRACE, logger, "shutting down... (" << rc << ")");
 
-  kernel.unload_all();
-
   GLOBAL_kernel = 0;
 
   return rc;
