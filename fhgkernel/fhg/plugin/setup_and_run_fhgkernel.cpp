@@ -56,22 +56,25 @@ void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
                       ));
 
 #if __WORDSIZE == 32
- /* Get the address at the time the signal was raised from the EIP (x86) */
  unsigned long caller_address (mcontext->eip);
-#else /* __WORDSIZE == 64 */
+#else
+#if __WORDSIZE == 64
  unsigned long caller_address (mcontext->rip);
-#endif /* __WORDSIZE == 64 */
+#else
+#error Unable to get caller_address on this architecture.
+#endif
+#endif
 
- fprintf(stderr, "signal %d (%s), address is %p from %p\n",
-  sig_num, strsignal(sig_num), info->si_addr,
- (void*)caller_address);
+ fprintf ( stderr
+         , "signal %d (%s), address is %p from %p\n"
+         , sig_num, strsignal(sig_num), info->si_addr, (void*)caller_address
+         );
 
  std::ostringstream log_message;
  log_message << "received signal "
              << sig_num << " (" << strsignal(sig_num) << "),"
              << " address is " << (void*)info->si_addr
-             << " from " << caller_address
-   ;
+             << " from " << (void*)caller_address;
 
  LLOG (ERROR, GLOBAL_logger, fhg::util::make_backtrace (log_message.str()));
 }
