@@ -103,7 +103,6 @@ namespace we
     const transition_id_type tid (_transition_id++);
 
     _tmap.insert (std::make_pair (tid, transition));
-    _enabled.set_priority (tid, transition.priority());
 
     return tid;
   }
@@ -275,7 +274,7 @@ namespace we
 
     if (cross.enables (this, tid))
     {
-      _enabled.insert (tid);
+      _enabled.insert (tid, _tmap.at (tid).priority());
       cross.write_to (_enabled_choice[tid]);
     }
     else
@@ -289,7 +288,7 @@ namespace we
     , to_be_updated_type const& to_be_updated
     )
   {
-    if (_enabled.elem (tid))
+    if (_enabled.elem (tid, _tmap.at (tid).priority()))
     {
       return;
     }
@@ -325,7 +324,7 @@ namespace we
 
     if (cross.enables (this, tid))
     {
-      _enabled.insert (tid);
+      _enabled.insert (tid, _tmap.at (tid).priority());
       cross.write_to (_enabled_choice[tid]);
     }
     else
@@ -336,7 +335,7 @@ namespace we
 
   void net::disable (transition_id_type tid)
   {
-    _enabled.erase (tid);
+    _enabled.erase (tid, _tmap.at (tid).priority());
     _enabled_choice.erase (tid);
   }
 

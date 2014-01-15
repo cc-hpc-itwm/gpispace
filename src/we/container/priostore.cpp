@@ -56,54 +56,19 @@ namespace we
       }
     }
 
-    void priority_store::insert ( const we::transition_id_type& x
-                                , const we::priority_type& prio
-                                )
+    void priority_store::insert (const we::transition_id_type& x, we::priority_type priority)
     {
-      vec_insert (_prio_map[prio], x);
+      vec_insert (_prio_map[priority], x);
     }
 
-    we::priority_type
-    priority_store::get_priority (const we::transition_id_type& x) const
+    void priority_store::erase (const we::transition_id_type& x, we::priority_type priority)
     {
-      const get_prio_t::const_iterator pos (_get_prio.find (x));
-
-      return (pos == _get_prio.end())
-        ? we::priority_type() : pos->second;
+      erase (x, _prio_map.find (priority));
     }
 
-    void priority_store::set_priority ( const we::transition_id_type& x
-                                      , const we::priority_type& prio
-                                      )
+    bool priority_store::elem (const we::transition_id_type& x, we::priority_type priority) const
     {
-      const bool is_elem (elem (x));
-
-      if (is_elem)
-      {
-        erase (x);
-      }
-
-      _get_prio[x] = prio;
-
-      if (is_elem)
-      {
-        insert (x, prio);
-      }
-    }
-
-    void priority_store::insert (const we::transition_id_type& x)
-    {
-      insert (x, get_priority (x));
-    }
-
-    void priority_store::erase (const we::transition_id_type& x)
-    {
-      erase (x, _prio_map.find (get_priority (x)));
-    }
-
-    bool priority_store::elem (const we::transition_id_type& x) const
-    {
-      const prio_map_t::const_iterator pos (_prio_map.find (get_priority (x)));
+      const prio_map_t::const_iterator pos (_prio_map.find (priority));
 
       return (pos != _prio_map.end()) && vec_elem (pos->second, x);
     }
