@@ -13,6 +13,7 @@
 
 namespace place
 {
+  //! \todo add properties
   struct type
   {
   public:
