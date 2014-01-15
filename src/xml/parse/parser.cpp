@@ -1609,6 +1609,10 @@ namespace xml
                                        , state
                                        , port_id_in
                                        , port_id_out
+                                       , boost::none
+                                       , type::conditions_type()
+                                       , we::type::property::type()
+                                       , type::requirements_type()
                                        )
         );
 

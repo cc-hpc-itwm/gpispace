@@ -202,10 +202,10 @@ namespace xml
           , const state::type&
           , boost::unordered_map<std::string, we::port_id_type>& port_id_in
           , boost::unordered_map<std::string, we::port_id_type>& port_id_out
-          , const boost::optional<bool>& = boost::none
-          , const conditions_type& = conditions_type()
-          , const we::type::property::type& = we::type::property::type()
-          , const requirements_type& = requirements_type()
+          , const boost::optional<bool>&
+          , const conditions_type&
+          , const we::type::property::type&
+          , const requirements_type&
           ) const;
 
         // ***************************************************************** //
