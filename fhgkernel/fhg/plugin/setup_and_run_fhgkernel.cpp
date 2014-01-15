@@ -144,11 +144,12 @@ int setup_and_run_fhgkernel ( bool daemonize
   install_signal_handler (SIGTERM, &shutdown_global_kernel, true);
   install_signal_handler (SIGINT, &shutdown_global_kernel, true);
 
-  GLOBAL_kernel = new fhg::core::kernel_t (state_path);
-  GLOBAL_kernel->set_name (kernel_name);
+  fhg::core::kernel_t kernel (state_path);
+  GLOBAL_kernel = &kernel;
+  kernel.set_name (kernel_name);
   BOOST_FOREACH (std::string const & p, search_path)
   {
-    GLOBAL_kernel->add_search_path (p);
+    kernel.add_search_path (p);
   }
 
   BOOST_FOREACH (std::string const & p, config_vars)
@@ -162,7 +163,7 @@ int setup_and_run_fhgkernel ( bool daemonize
     else
     {
       DLLOG (TRACE, logger, "setting " << kv.first << " to " << kv.second);
-      GLOBAL_kernel->put(kv.first, kv.second);
+      kernel.put(kv.first, kv.second);
     }
   }
 
@@ -170,7 +171,7 @@ int setup_and_run_fhgkernel ( bool daemonize
   {
     try
     {
-      int ec = GLOBAL_kernel->load_plugin (p);
+      int ec = kernel.load_plugin (p);
       if (ec != 0)
         throw std::runtime_error (strerror (ec));
     }
@@ -179,8 +180,8 @@ int setup_and_run_fhgkernel ( bool daemonize
       LLOG (ERROR, logger, "could not load `" << p << "' : " << ex.what());
       if (! keep_going)
       {
-        GLOBAL_kernel->stop();
-        GLOBAL_kernel->unload_all();
+        kernel.stop();
+        kernel.unload_all();
         return EXIT_FAILURE;
       }
     }
@@ -188,15 +189,13 @@ int setup_and_run_fhgkernel ( bool daemonize
 
   atexit (&shutdown_kernel);
 
-  int rc = GLOBAL_kernel->run_and_unload (false);
+  int rc = kernel.run_and_unload (false);
 
   DLLOG (TRACE, logger, "shutting down... (" << rc << ")");
 
-  GLOBAL_kernel->unload_all();
+  kernel.unload_all();
 
-  fhg::core::kernel_t *tmp_kernel = GLOBAL_kernel;
   GLOBAL_kernel = 0;
-  delete tmp_kernel;
 
   return rc;
 }
