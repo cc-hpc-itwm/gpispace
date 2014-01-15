@@ -27,7 +27,6 @@ if (ENABLE_PNET_EDITOR OR ENABLE_SDPA_GUI)
 endif()
 
 add_library (pnet
-  we/container/priostore.cpp
   we/exception.cpp
   we/expr/eval/context.cpp
   we/expr/eval/eval.cpp
