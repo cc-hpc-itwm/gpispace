@@ -218,7 +218,7 @@ namespace we
                   throw std::runtime_error
                     ( "output port ("
                     + boost::lexical_cast<std::string> (p.first)
-                    + ", " + boost::lexical_cast<std::string> (p.second) + ") "
+                    + ", " + p.second.name() + ") "
                     + "is not associated with any place!"
                     );
                 }
