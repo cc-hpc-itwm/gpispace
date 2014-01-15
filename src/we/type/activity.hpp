@@ -67,7 +67,7 @@ namespace we
           , pnet::type::value::value_type const&
           );
 
-        const output_t& output() const;
+        output_t output() const;
         void add_output
           ( we::port_id_type const&
           , pnet::type::value::value_type const&
