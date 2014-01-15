@@ -158,9 +158,5 @@ int setup_and_run_fhgkernel ( bool daemonize
   signal_handlers.add (SIGTERM, boost::bind (&fhg::core::kernel_t::stop, &kernel));
   signal_handlers.add (SIGINT, boost::bind (&fhg::core::kernel_t::stop, &kernel));
 
-  int rc = kernel.run_and_unload (false);
-
-  DLLOG (TRACE, logger, "shutting down... (" << rc << ")");
-
-  return rc;
+  return kernel.run_and_unload (false);
 }
