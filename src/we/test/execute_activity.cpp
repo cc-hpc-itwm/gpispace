@@ -110,8 +110,6 @@ struct exec_context : public we::context
         act.inject (*sub);
       }
     }
-
-    act.collect_output();
   }
 
   virtual void handle_internally (activity_t&, mod_t const&)

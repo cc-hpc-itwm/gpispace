@@ -191,8 +191,6 @@ int main (int, char **)
     }
   }
 
-  act.collect_output();
-
   if ( act.output().empty() )
   {
     return EXIT_FAILURE;

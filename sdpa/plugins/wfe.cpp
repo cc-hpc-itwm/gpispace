@@ -94,8 +94,6 @@ namespace
           }
         }
       }
-
-      act.collect_output();
     }
 
     virtual void handle_internally (we::type::activity_t& act, mod_t const& mod)
@@ -495,7 +493,6 @@ private:
           wfe_exec_context ctxt (*m_loader, *task);
 
           task->activity.execute (&ctxt);
-          task->activity.collect_output();
 
           if (task->state == wfe_task_t::CANCELED)
           {
