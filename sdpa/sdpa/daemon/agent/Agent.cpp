@@ -703,14 +703,12 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
   {
       if(!pJob)
       {
-         DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
+         DLLOG(TRACE, _logger, "Job "<<pEvt->job_id()<<" not found!");
 
-         // only if the message was external
-         sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
-                                                      , pEvt->from()
-                                                      , events::ErrorEvent::SDPA_EJOBNOTFOUND
-                                                      , "No such job found" )
-                                                     ));
+         sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
+                                                                                                             , pEvt->from()
+                                                                                                             , pEvt->discover_id()
+                                                                                                             , pnet::type::value::value_type())));
 
          return;
       }
