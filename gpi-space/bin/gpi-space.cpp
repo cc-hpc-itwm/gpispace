@@ -23,6 +23,7 @@
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/util/daemonize.hpp>
+#include <fhg/util/pidfile_writer.hpp>
 #include <fhg/revision.hpp>
 
 #include <gpi-space/gpi/api.hpp>
@@ -695,25 +696,18 @@ int main (int ac, char *av[])
 
     cleanup_kvs ();
 
-    int pidfile_fd = -1;
-
     if (0 != strlen (pidfile))
-    {
-      pidfile_fd = open(pidfile, O_CREAT|O_RDWR, 0640);
-      if (pidfile_fd < 0)
-      {
-        LOG( ERROR, "could not open pidfile for writing: "
-           << strerror(errno)
-           );
-        exit(EXIT_FAILURE);
-      }
-    }
-
-    if (daemonize)
     {
       try
       {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent();
+        fhg::util::pidfile_writer const pidfile_writer (pidfile);
+
+        if (daemonize)
+        {
+          fhg::util::fork_and_daemonize_child_and_abandon_parent();
+        }
+
+        pidfile_writer.write();
       }
       catch (const std::exception& ex)
       {
@@ -721,31 +715,12 @@ int main (int ac, char *av[])
         exit (EXIT_FAILURE);
       }
     }
-
-    if (pidfile_fd >= 0)
+    else
     {
-      if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
+      if (daemonize)
       {
-        LOG( ERROR, "could not lock pidfile: "
-           << strerror(errno)
-           );
-        exit(EX_STILL_RUNNING);
+        fhg::util::fork_and_daemonize_child_and_abandon_parent();
       }
-
-      char buf[32];
-      if (ftruncate(pidfile_fd, 0) == -1)
-      {
-        LOG(ERROR, "could not truncate pidfile: " << strerror(errno));
-        exit(EXIT_FAILURE);
-      }
-      snprintf(buf, sizeof(buf), "%d\n", getpid());
-
-      if (write(pidfile_fd, buf, strlen(buf)) != (int)strlen(buf))
-      {
-        LOG(ERROR, "could not write pid to file: " << strerror(errno));
-        exit(EXIT_FAILURE);
-      }
-      fsync(pidfile_fd);
     }
   }
 

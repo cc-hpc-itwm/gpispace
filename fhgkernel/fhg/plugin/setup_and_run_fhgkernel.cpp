@@ -24,6 +24,7 @@
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/get_home_dir.hpp>
+#include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/program_info.h>
 #include <fhg/util/thread/pool.hpp>
 #include <fhg/plugin/plugin.hpp>
@@ -347,54 +348,23 @@ int setup_and_run_fhgkernel ( bool daemonize
     }
   }
 
-  int pidfile_fd = -1;
-
   if (not pidfile.empty())
   {
-    pidfile_fd = open(pidfile.c_str(), O_CREAT|O_RDWR, 0640);
-    if (pidfile_fd < 0)
-    {
-      LLOG ( ERROR, logger, "could not open pidfile for writing: "
-         << strerror(errno)
-         );
-      exit(EXIT_FAILURE);
-    }
-  }
+    fhg::util::pidfile_writer const pidfile_writer (pidfile);
 
-  if (daemonize)
-  {
-    try
+    if (daemonize)
     {
       fhg::util::fork_and_daemonize_child_and_abandon_parent();
     }
-    catch (const std::exception& ex)
-    {
-      LLOG (ERROR, logger, "daemonize failed: " << ex.what());
-    }
+
+    pidfile_writer.write();
   }
-
-  if (pidfile_fd >= 0)
+  else
   {
-    if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
+    if (daemonize)
     {
-      LLOG ( ERROR, logger, "could not lock pidfile: "
-         << strerror(errno)
-         );
-      exit(EX_STILL_RUNNING);
+      fhg::util::fork_and_daemonize_child_and_abandon_parent();
     }
-
-    char buf[32];
-    if (0 != ftruncate(pidfile_fd, 0))
-    {
-      LLOG (WARN, logger, "could not truncate pidfile: " << strerror(errno));
-    }
-    snprintf(buf, sizeof(buf), "%d\n", getpid());
-    if (write(pidfile_fd, buf, strlen(buf)) <= 0)
-    {
-      LLOG (ERROR, logger, "could not write pid: " << strerror(errno));
-      exit(EXIT_FAILURE);
-    }
-    fsync(pidfile_fd);
   }
 
   install_signal_handler();

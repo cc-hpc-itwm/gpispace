@@ -11,6 +11,7 @@
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/daemonize.hpp>
+#include <fhg/util/pidfile_writer.hpp>
 
 #include <boost/tokenizer.hpp>
 
@@ -26,7 +27,6 @@ int main (int argc, char **argv)
     string orchUrl;
     string kvsUrl;
     string pidfile;
-    bool daemonize = false;
 
     FHGLOG_SETUP();
 
@@ -77,39 +77,23 @@ int main (int argc, char **argv)
       }
     }
 
-    if (vm.count ("daemonize"))
-      daemonize = true;
-
-    int pidfile_fd = -1;
-
     if (not pidfile.empty())
     {
-      pidfile_fd = open(pidfile.c_str(), O_CREAT|O_RDWR, 0640);
-      if (pidfile_fd < 0)
-      {
-        LLOG (ERROR, logger, "could not open pidfile for writing: "<< strerror(errno));
-        exit(EXIT_FAILURE);
-      }
-    }
+      fhg::util::pidfile_writer const pidfile_writer (pidfile);
 
-    if (daemonize)
-    {
-      fhg::util::fork_and_daemonize_child_and_abandon_parent();
-    }
-
-    if (pidfile_fd >= 0)
-    {
-      if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
+      if (vm.count ("daemonize"))
       {
-        LLOG (ERROR, logger, "could not lock pidfile: "<< strerror(errno));
-        exit(EX_STILL_RUNNING);
+        fhg::util::fork_and_daemonize_child_and_abandon_parent();
       }
 
-      char buf[32];
-      ftruncate(pidfile_fd, 0);
-      snprintf(buf, sizeof(buf), "%d\n", getpid());
-      write(pidfile_fd, buf, strlen(buf));
-      fsync(pidfile_fd);
+      pidfile_writer.write();
+    }
+    else
+    {
+      if (vm.count ("daemonize"))
+      {
+        fhg::util::fork_and_daemonize_child_and_abandon_parent();
+      }
     }
 
     try {
