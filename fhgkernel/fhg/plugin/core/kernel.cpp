@@ -546,10 +546,6 @@ namespace fhg
     void kernel_t::stop ()
     {
       m_stop_requested = true;
-      if (! m_running)
-      {
-        return;
-      }
     }
 
     void kernel_t::reset ()
