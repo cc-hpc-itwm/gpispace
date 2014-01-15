@@ -259,21 +259,6 @@ namespace we
     return (pos != _token_by_place_id.end()) ? pos->second : no_tokens();
   }
 
-  void net::delete_all_token (place_id_type pid)
-  {
-    _token_by_place_id.erase (pid);
-
-    transition_id_range_type consume
-      (_adj_pt_consume.left.equal_range (pid) | boost::adaptors::map_values);
-    transition_id_range_type read
-      (_adj_pt_read.left.equal_range (pid) | boost::adaptors::map_values);
-
-    BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
-    {
-      disable (tid);
-    }
-  }
-
   void net::update_enabled (transition_id_type tid)
   {
     cross_type cross;

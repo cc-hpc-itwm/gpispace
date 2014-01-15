@@ -97,8 +97,6 @@ namespace we
     const std::list<pnet::type::value::value_type>&
       get_token (place_id_type) const;
 
-    void delete_all_token (place_id_type);
-
     template<typename Engine>
     boost::optional<we::type::activity_t>
     fire_expressions_and_extract_activity_random (Engine& engine)
