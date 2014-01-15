@@ -44,9 +44,4 @@ namespace place
     , _signature (signature)
     , _prop (prop)
   {}
-
-  std::ostream& operator<< (std::ostream& s, const type& p)
-  {
-    return s << p.name();
-  }
 }
