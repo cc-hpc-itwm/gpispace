@@ -66,7 +66,6 @@ namespace we
         , _properties(prop)
       {}
 
-      std::string & name() { return _name; }
       const std::string & name() const { return _name; }
 
       PortDirection direction() const { return _direction; }
