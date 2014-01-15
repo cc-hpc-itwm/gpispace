@@ -49,7 +49,7 @@ namespace
 #include <ucontext.h>
 typedef struct ucontext sig_ucontext_t;
 
-void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
+void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext)
 {
  sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
                         (&(static_cast<sig_ucontext_t*> (ucontext)->uc_mcontext))
@@ -77,12 +77,8 @@ void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
              << " from " << (void*)caller_address;
 
  LLOG (ERROR, GLOBAL_logger, fhg::util::make_backtrace (log_message.str()));
-}
 
-void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext)
-{
-  log_backtrace (sig_num, info, ucontext);
-  _exit(EXIT_FAILURE);
+ _exit(EXIT_FAILURE);
 }
 
 // END OF BORROWED CODE
