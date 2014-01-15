@@ -96,8 +96,6 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP(_properties);
       }
     };
-
-    std::ostream& operator<< (std::ostream&, const port_t&);
   }
 }
 

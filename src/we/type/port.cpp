@@ -27,29 +27,5 @@ namespace we
     {
       return s << "port-" << enum_to_string (p);
     }
-
-    std::ostream& operator<< (std::ostream& os, const port_t& p)
-    {
-      os << "{port, "
-         << p.direction()
-         << ", "
-         << p.name()
-         << ", "
-         << pnet::type::signature::show (p.signature())
-         << ", "
-        ;
-
-      if (!p.associated_place())
-        {
-          os << "not associated";
-        }
-      else
-        {
-          os << "associated with place " << *p.associated_place();
-        }
-      os << "}";
-
-      return os;
-    }
   }
 }
