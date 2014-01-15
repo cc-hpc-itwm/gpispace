@@ -28,8 +28,6 @@ namespace we
 
     std::string enum_to_string (const PortDirection&);
 
-    std::ostream& operator<< (std::ostream&, const PortDirection&);
-
     struct port_t
     {
     public:

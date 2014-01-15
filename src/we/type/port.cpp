@@ -22,10 +22,5 @@ namespace we
         throw std::runtime_error ("STRANGE: unknown PortDirection");
       }
     }
-
-    std::ostream& operator<< (std::ostream& s, const PortDirection& p)
-    {
-      return s << "port-" << enum_to_string (p);
-    }
   }
 }
