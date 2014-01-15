@@ -18,12 +18,12 @@
 #include <we/type/expression.fwd.hpp>
 #include <we/type/net.fwd.hpp>
 
-using petri_net::edge::PT;
-using petri_net::edge::PT_READ;
-using petri_net::edge::TP;
+using we::edge::PT;
+using we::edge::PT_READ;
+using we::edge::TP;
 
 typedef we::type::transition_t transition_t;
-typedef petri_net::net pnet_t;
+typedef we::net pnet_t;
 typedef we::type::activity_t activity_t;
 typedef activity_t::input_t input_t;
 
@@ -63,7 +63,7 @@ namespace module
         )
     {
       const pnet::type::value::value_type& token (top->first);
-      const petri_net::port_id_type& port_id (top->second);
+      const we::port_id_type& port_id (top->second);
 
       context.bind ( act.transition().ports().at (port_id).name()
                    , token
@@ -83,7 +83,7 @@ namespace module
         ; ++ton
         )
     {
-      const petri_net::port_id_type& port_id
+      const we::port_id_type& port_id
         (act.transition().output_port_by_name (ton->second));
 
       act.add_output (port_id, ton->first);
@@ -101,7 +101,7 @@ struct exec_context : public we::context
     if (act.transition().net())
     {
       while ( boost::optional<we::type::activity_t> sub
-            = boost::get<petri_net::net&> (act.transition().data())
+            = boost::get<we::net&> (act.transition().data())
             . fire_expressions_and_extract_activity_random (_engine)
             )
       {

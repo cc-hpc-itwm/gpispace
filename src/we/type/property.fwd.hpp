@@ -3,8 +3,10 @@
 #ifndef _WE_TYPE_PROPERTY_FWD_HPP
 #define _WE_TYPE_PROPERTY_FWD_HPP
 
+#include <we/type/value.hpp>
+
 #include <string>
-#include <vector>
+#include <list>
 
 #include <boost/unordered/unordered_map_fwd.hpp>
 #include <boost/variant/variant_fwd.hpp>
@@ -21,18 +23,7 @@ namespace we
 
       struct type;
 
-      typedef boost::variant < boost::recursive_wrapper<type>
-                             , value_type
-                             > mapped_type;
-
-      typedef std::vector<key_type> path_type;
-      typedef boost::unordered_map<key_type, mapped_type> map_type;
-
-      namespace exception
-      {
-        class missing_binding;
-        class empty_path;
-      }
+      typedef std::list<key_type> path_type;
     }
   }
 }

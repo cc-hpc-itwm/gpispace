@@ -386,23 +386,28 @@ namespace fhg
               WEAVE(property::value) (v);
             }
 
-            void operator () (const ::we::type::property::type& props) const
+            void operator () (const pnet::type::value::structured_type& props) const
             {
-              for ( ::we::type::property::map_type::const_iterator
-                      p (props.get_map().begin()), end (props.get_map().end())
-                  ; p != end
-                  ; ++p
-                  )
-                {
-                  WEAVE(property::open) (p->first);
-                  boost::apply_visitor(*this, p->second);
-                  WEAVE(property::close) ();
-                }
+              typedef std::pair<std::string, pnet::type::value::value_type>
+                prop_type;
+
+              BOOST_FOREACH (prop_type const& p, props)
+              {
+                WEAVE(property::open) (p.first);
+                boost::apply_visitor(*this, p.second);
+                WEAVE(property::close) ();
+              }
+            }
+
+            template<typename T>
+              void operator() (T const&) const
+            {
+              throw std::runtime_error ("BUMMER, weaver::property");
             }
           };
         } // namespace visitor
 
-        FUN(property, ::we::type::property::map_type::const_iterator::value_type, prop)
+        FUN(property, pnet::type::value::structured_type::const_iterator::value_type, prop)
         {
           WEAVE(property::open) (prop.first);
           boost::apply_visitor(visitor::property<State>(_state),prop.second);

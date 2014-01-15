@@ -61,7 +61,7 @@ struct daemon
 {
   daemon()
     : _cnt()
-    , layer ( boost::bind (&daemon::submit, this, _1, _2, _3)
+    , layer ( boost::bind (&daemon::submit, this, _1, _2)
             , boost::bind (&daemon::cancel, this, _1)
             , boost::bind (&daemon::finished, this, _1, _2)
             , boost::bind (&daemon::failed, this, _1, _2, _3)
@@ -111,26 +111,21 @@ struct daemon
   DECLARE_EXPECT_CLASS ( submit
                        , we::layer::id_type* id
         BOOST_PP_COMMA() we::type::activity_t act
-        BOOST_PP_COMMA() we::layer::id_type parent
                        , _id (id)
         BOOST_PP_COMMA() _act (act)
-        BOOST_PP_COMMA() _parent (parent)
                        , we::layer::id_type* _id
                        ; we::type::activity_t _act
-                       ; we::layer::id_type _parent
-                       , _act == act && _parent == parent
+                       , _act == act
                        );
 
-  void submit ( we::layer::id_type id
-              , we::type::activity_t act
-              , we::layer::id_type parent
-              )
+  void submit
+    (we::layer::id_type id, we::type::activity_t act)
   {
     INC_IN_PROGRESS (jobs_rts);
 
     std::list<expect_submit*>::iterator const e
       ( boost::find_if ( _to_submit
-                       , boost::bind (&expect_submit::eq, _1, &id, act, parent)
+                       , boost::bind (&expect_submit::eq, _1, &id, act)
                        )
         );
 
@@ -468,11 +463,11 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   activity_input.add_input
     (transition.input_port_by_name ("in"), value::CONTROL);
 
-  we::type::activity_t activity_child (transition, petri_net::transition_id_type (0));
+  we::type::activity_t activity_child (transition, we::transition_id_type (0));
   activity_child.add_input
     (transition.input_port_by_name ("in"), value::CONTROL);
 
-  we::type::activity_t activity_result (transition, petri_net::transition_id_type (0));
+  we::type::activity_t activity_result (transition, we::transition_id_type (0));
   activity_result.add_output
     (transition.output_port_by_name ("out"), value::CONTROL);
 
@@ -483,7 +478,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 
     we::layer::id_type child_id;
     {
-      expect_submit const _ (this, &child_id, activity_child, id);
+      expect_submit const _ (this, &child_id, activity_child);
 
       do_submit (id, activity_input);
     }
@@ -496,7 +491,7 @@ namespace
 {
   boost::tuple< we::type::transition_t
               , we::type::transition_t
-              , petri_net::transition_id_type
+              , we::transition_id_type
               >
     net_with_childs (bool put_on_input, std::size_t token_count)
   {
@@ -507,7 +502,7 @@ namespace
       , true
       , we::type::property::type()
       );
-    petri_net::port_id_type const port_id_in
+    we::port_id_type const port_id_in
       ( transition.add_port ( we::type::port_t ( "in"
                                                , we::type::PORT_IN
                                                , signature::CONTROL
@@ -515,7 +510,7 @@ namespace
                                                )
                             )
       );
-    petri_net::port_id_type const port_id_out
+    we::port_id_type const port_id_out
       ( transition.add_port ( we::type::port_t ( "out"
                                                , we::type::PORT_OUT
                                                , signature::CONTROL
@@ -524,11 +519,11 @@ namespace
                             )
       );
 
-    petri_net::net net;
+    we::net net;
 
-    petri_net::place_id_type const place_id_in
+    we::place_id_type const place_id_in
       (net.add_place (place::type ("in", signature::CONTROL)));
-    petri_net::place_id_type const place_id_out
+    we::place_id_type const place_id_out
       (net.add_place (place::type ("out", signature::CONTROL)));
 
     for (std::size_t i (0); i < token_count; ++i)
@@ -536,12 +531,12 @@ namespace
       net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
     }
 
-    petri_net::transition_id_type const transition_id
+    we::transition_id_type const transition_id
       (net.add_transition (transition));
 
     {
-      using petri_net::edge::TP;
-      using petri_net::edge::PT;
+      using we::edge::TP;
+      using we::edge::PT;
       we::type::property::type empty;
 
       net.add_connection (TP, transition_id, place_id_out, port_id_out, empty);
@@ -567,7 +562,7 @@ namespace
               >
     activity_with_child (std::size_t token_count)
   {
-    petri_net::transition_id_type transition_id_child;
+    we::transition_id_type transition_id_child;
     we::type::transition_t transition_in;
     we::type::transition_t transition_out;
     we::type::transition_t transition_child;
@@ -609,7 +604,7 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id;
 
   {
-    expect_submit const _ (this, &child_id, activity_child, id);
+    expect_submit const _ (this, &child_id, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -637,8 +632,8 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id_B;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child, id);
-    expect_submit const _B (this, &child_id_B, activity_child, id);
+    expect_submit const _A (this, &child_id_A, activity_child);
+    expect_submit const _B (this, &child_id_B, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -672,7 +667,7 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id;
 
   {
-    expect_submit const _ (this, &child_id, activity_child, id);
+    expect_submit const _ (this, &child_id, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -706,8 +701,8 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id_B;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child, id);
-    expect_submit const _B (this, &child_id_B, activity_child, id);
+    expect_submit const _A (this, &child_id_A, activity_child);
+    expect_submit const _B (this, &child_id_B, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -749,8 +744,8 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id_B;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child, id);
-    expect_submit const _B (this, &child_id_B, activity_child, id);
+    expect_submit const _A (this, &child_id_A, activity_child);
+    expect_submit const _B (this, &child_id_B, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -789,8 +784,8 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id_B;
 
   {
-    expect_submit const _A (this, &child_id_A, activity_child, id);
-    expect_submit const _B (this, &child_id_B, activity_child, id);
+    expect_submit const _A (this, &child_id_A, activity_child);
+    expect_submit const _B (this, &child_id_B, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -835,7 +830,7 @@ BOOST_FIXTURE_TEST_CASE
     _.reserve (N);
     for (std::size_t i (0); i < N; ++i)
     {
-      _.push_back (new expect_submit (this, &child_ids[i], activity_child, id));
+      _.push_back (new expect_submit (this, &child_ids[i], activity_child));
     }
 
     do_submit (id, activity_input);
@@ -859,7 +854,6 @@ namespace
   void submit_fake ( std::vector<we::layer::id_type>* ids
                    , we::layer::id_type id
                    , we::type::activity_t
-                   , we::layer::id_type
                    )
   {
     ids->push_back (id);
@@ -924,8 +918,8 @@ BOOST_AUTO_TEST_CASE
   boost::mt19937 _random_engine;
 
   we::layer layer
-    ( boost::bind (&submit_fake, &child_ids, _1, _2, _3)
-    , &cancel
+    ( boost::bind (&submit_fake, &child_ids, _1, _2)
+    , boost::bind (&cancel, _1)
     , boost::bind (&finished_fake, &finished, _1, _2)
     , &failed
     , &canceled
@@ -979,7 +973,7 @@ BOOST_FIXTURE_TEST_CASE
 
   we::layer::id_type child_id;
   {
-    expect_submit _ (this, &child_id, activity_child, id);
+    expect_submit _ (this, &child_id, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -1031,8 +1025,8 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id_A;
   we::layer::id_type child_id_B;
   {
-    expect_submit _A (this, &child_id_A, activity_child, id);
-    expect_submit _B (this, &child_id_B, activity_child, id);
+    expect_submit _A (this, &child_id_A, activity_child);
+    expect_submit _B (this, &child_id_B, activity_child);
 
     do_submit (id, activity_input);
   }

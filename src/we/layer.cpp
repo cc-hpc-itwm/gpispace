@@ -9,7 +9,7 @@
 namespace we
 {
     layer::layer
-        ( boost::function<void (id_type, type::activity_t, id_type)> rts_submit
+        ( boost::function<void (id_type, type::activity_t)> rts_submit
         , boost::function<void (id_type)> rts_cancel
         , boost::function<void (id_type, type::activity_t)> rts_finished
         , boost::function<void (id_type, int, std::string)> rts_failed
@@ -53,23 +53,23 @@ namespace we
 
       type::activity_t wrap (type::activity_t const& activity)
       {
-        petri_net::net net;
+        we::net net;
 
-        petri_net::transition_id_type const transition_id
+        we::transition_id_type const transition_id
           (net.add_transition (activity.transition()));
 
-        boost::unordered_map<std::string, petri_net::place_id_type> place_ids;
+        boost::unordered_map<std::string, we::place_id_type> place_ids;
 
         BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
                       , activity.transition().ports()
                       )
         {
-          petri_net::place_id_type const place_id
+          we::place_id_type const place_id
             (net.add_place (place::type (wrapped_name (p.second), p.second.signature())));
 
           net.add_connection
-            ( p.second.is_output() ? petri_net::edge::TP
-            : p.second.is_input() ? petri_net::edge::PT
+            ( p.second.is_output() ? we::edge::TP
+            : p.second.is_input() ? we::edge::PT
             : throw std::runtime_error ("tried to wrap, found tunnel port!?")
             , transition_id
             , place_id
@@ -108,7 +108,7 @@ namespace we
 
       type::activity_t unwrap (type::activity_t const& activity)
       {
-        petri_net::net const& net (*activity.transition().net());
+        we::net const& net (*activity.transition().net());
 
         type::activity_t activity_inner
           (net.transitions().begin()->second, activity.transition_id());
@@ -119,7 +119,7 @@ namespace we
         {
           if (p.second.is_output())
           {
-            petri_net::place_id_type const place_id
+            we::place_id_type const place_id
               ( net.port_to_place().at (net.transitions().begin()->first)
               .left.find (p.first)->get_right()
               );
@@ -303,7 +303,7 @@ namespace we
         if ( boost::optional<type::activity_t> activity
 
              //! \note We wrap all input activites in a net.
-           = boost::get<petri_net::net&>
+           = boost::get<we::net&>
              (activity_data._activity.transition().data())
            . fire_expressions_and_extract_activity_random
                (_random_extraction_engine)
@@ -311,7 +311,7 @@ namespace we
         {
           const id_type child_id (_rts_id_generator());
           _running_jobs.started (activity_data._id, child_id);
-          _rts_submit (child_id, *activity, activity_data._id);
+          _rts_submit (child_id, *activity);
           was_active = true;
         }
 
@@ -526,8 +526,8 @@ namespace we
     void layer::activity_data_type::child_finished (type::activity_t child)
     {
       //! \note We wrap all input activites in a net.
-      petri_net::net& net
-        (boost::get<petri_net::net&> (_activity.transition().data()));
+      we::net& net
+        (boost::get<we::net&> (_activity.transition().data()));
 
       BOOST_FOREACH ( const type::activity_t::token_on_port_t& top
                     , child.output()

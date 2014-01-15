@@ -14,12 +14,12 @@
 #include <we/type/expression.hpp>
 #include <we/type/net.fwd.hpp>
 
-using petri_net::edge::PT;
-using petri_net::edge::PT_READ;
-using petri_net::edge::TP;
+using we::edge::PT;
+using we::edge::PT_READ;
+using we::edge::TP;
 
 typedef we::type::transition_t transition_t;
-typedef petri_net::net pnet_t;
+typedef we::net pnet_t;
 typedef we::type::activity_t activity_t;
 
 struct exec_context : public we::context
@@ -55,7 +55,7 @@ int main (int, char **)
   // ************************************ //
   pnet_t net;
 
-  petri_net::place_id_type pid_vid (net.add_place (place::type ("vid",std::string("long"))));
+  we::place_id_type pid_vid (net.add_place (place::type ("vid",std::string("long"))));
 
   pnet::type::signature::structure_type sig_store_fields;
 
@@ -71,7 +71,7 @@ int main (int, char **)
   pnet::type::signature::structured_type sig_store
     (std::make_pair (std::string ("store"), sig_store_fields));
 
-  petri_net::place_id_type pid_store (net.add_place (place::type("store", sig_store)));
+  we::place_id_type pid_store (net.add_place (place::type("store", sig_store)));
 
   transition_t trans_inner
     ( "trans_inner"
@@ -100,26 +100,26 @@ int main (int, char **)
   pnet::type::signature::structured_type sig_pair
     (std::make_pair (std::string ("pair"), sig_pair_fields));
 
-  petri_net::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
+  we::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
 
-  petri_net::port_id_type const port_id_vid
+  we::port_id_type const port_id_vid
     ( trans_inner.add_port
       (we::type::port_t ("vid",we::type::PORT_IN,std::string("long")))
     );
-  petri_net::port_id_type const port_id_store_out
+  we::port_id_type const port_id_store_out
     ( trans_inner.add_port
       (we::type::port_t ("store",we::type::PORT_OUT,sig_store))
     );
-  petri_net::port_id_type const port_id_store_in
+  we::port_id_type const port_id_store_in
     ( trans_inner.add_port
       (we::type::port_t ("store",we::type::PORT_IN,sig_store))
     );
-  petri_net::port_id_type const& port_id_pair
+  we::port_id_type const& port_id_pair
     ( trans_inner.add_port
       (we::type::port_t ("pair",we::type::PORT_OUT,sig_pair))
     );
 
-  petri_net::transition_id_type tid (net.add_transition (trans_inner));
+  we::transition_id_type tid (net.add_transition (trans_inner));
 
   {
     we::type::property::type empty;
@@ -181,7 +181,7 @@ int main (int, char **)
   if (act.transition().net())
   {
     while ( boost::optional<we::type::activity_t> sub
-          = boost::get<petri_net::net&> (act.transition().data())
+          = boost::get<we::net&> (act.transition().data())
           . fire_expressions_and_extract_activity_random (engine)
           )
     {

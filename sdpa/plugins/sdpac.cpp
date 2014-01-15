@@ -87,7 +87,6 @@ public:
                                  , m_orchestrator
                                  , boost::none
                                  , wf
-                                 , boost::none // parent job id
                                  )
               );
     if (request(req, rep) == 0)

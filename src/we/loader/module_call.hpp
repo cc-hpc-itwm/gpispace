@@ -21,9 +21,9 @@ namespace we
                             )
     {
       typedef std::pair< pnet::type::value::value_type
-                       , petri_net::port_id_type
+                       , we::port_id_type
                        > token_on_port_type;
-      typedef std::pair< petri_net::port_id_type
+      typedef std::pair< we::port_id_type
                        , we::type::port_t
                        > port_by_id_type;
 
@@ -44,7 +44,7 @@ namespace we
                     , act.transition().ports()
                     )
         {
-          const petri_net::port_id_type& port_id (port_by_id.first);
+          const we::port_id_type& port_id (port_by_id.first);
           const we::type::port_t& port (port_by_id.second);
 
           if (port.is_output())

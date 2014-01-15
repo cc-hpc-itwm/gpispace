@@ -42,7 +42,7 @@ namespace
     typedef we::type::activity_t::output_t output_t;
 
     std::list<pnet::type::value::value_type> tokens;
-    const petri_net::port_id_type port_id
+    const we::port_id_type port_id
       (act.transition().output_port_by_name (port));
 
     for ( output_t::const_iterator out(act.output().begin())

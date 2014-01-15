@@ -202,7 +202,7 @@ namespace sdpa
     sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
     {
       return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
-        (sdpa::events::SubmitJobEvent (_name, orchestrator_, boost::none, desc, boost::none)).job_id();
+        (sdpa::events::SubmitJobEvent (_name, orchestrator_, boost::none, desc)).job_id();
     }
 
     void Client::cancelJob(const job_id_t &jid)

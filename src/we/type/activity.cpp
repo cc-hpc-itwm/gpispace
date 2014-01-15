@@ -30,7 +30,7 @@ namespace we
 
       activity_t::activity_t
         ( const we::type::transition_t& transition
-        , boost::optional<petri_net::transition_id_type> const& transition_id
+        , boost::optional<we::transition_id_type> const& transition_id
         )
         : _transition (transition)
         , _transition_id (transition_id)
@@ -99,7 +99,7 @@ namespace we
             : _child (child)
           {}
 
-          void operator() (petri_net::net& parent) const
+          void operator() (we::net& parent) const
           {
             BOOST_FOREACH ( const activity_t::token_on_port_t& top
                           , _child.output()
@@ -134,13 +134,13 @@ namespace we
         {
         private:
           we::type::transition_t const& _transition;
-          petri_net::port_id_type const& _port_id;
+          we::port_id_type const& _port_id;
           pnet::type::value::value_type const& _value;
 
         public:
           visitor_add_input
             ( we::type::transition_t const& transition
-            , petri_net::port_id_type const& port_id
+            , we::port_id_type const& port_id
             , pnet::type::value::value_type const& value
             )
             : _transition (transition)
@@ -148,12 +148,12 @@ namespace we
             , _value (value)
           {}
 
-          void operator() (petri_net::net& net) const
+          void operator() (we::net& net) const
           {
-            if (_transition.ports().at (_port_id).has_associated_place())
+            if (_transition.ports().at (_port_id).associated_place())
             {
               net.put_value
-                ( _transition.ports().at (_port_id).associated_place()
+                ( *_transition.ports().at (_port_id).associated_place()
                 , _value
                 );
             }
@@ -166,7 +166,7 @@ namespace we
       }
 
       void activity_t::add_input
-        ( petri_net::port_id_type const& port_id
+        ( we::port_id_type const& port_id
         , pnet::type::value::value_type const& value
         )
       {
@@ -189,7 +189,7 @@ namespace we
             : _activity (activity)
           {}
 
-          void operator() (petri_net::net& net) const
+          void operator() (we::net& net) const
           {
             BOOST_FOREACH
               ( we::type::transition_t::port_map_t::value_type const& p
@@ -198,11 +198,11 @@ namespace we
             {
               if (p.second.is_output())
               {
-                if (p.second.has_associated_place())
+                if (p.second.associated_place())
                 {
-                  const petri_net::port_id_type& port_id (p.first);
-                  const petri_net::place_id_type& pid
-                    (p.second.associated_place());
+                  const we::port_id_type& port_id (p.first);
+                  const we::place_id_type& pid
+                    (*p.second.associated_place());
 
                   BOOST_FOREACH ( const pnet::type::value::value_type& token
                                 , net.get_token (pid)
@@ -218,7 +218,7 @@ namespace we
                   throw std::runtime_error
                     ( "output port ("
                     + boost::lexical_cast<std::string> (p.first)
-                    + ", " + boost::lexical_cast<std::string> (p.second) + ") "
+                    + ", " + p.second.name() + ") "
                     + "is not associated with any place!"
                     );
                 }
@@ -266,7 +266,7 @@ namespace we
             , _ctxt (ctxt)
           {}
 
-          void operator () (petri_net::net const& net) const
+          void operator () (we::net const& net) const
           {
             if (_activity.transition().is_internal())
               {
@@ -334,14 +334,14 @@ namespace we
       }
 
       void activity_t::add_output
-        ( petri_net::port_id_type const& port_id
+        ( we::port_id_type const& port_id
         , pnet::type::value::value_type const& value
         )
       {
         _output.push_back (output_t::value_type (value, port_id));
       }
 
-      boost::optional<petri_net::transition_id_type> const&
+      boost::optional<we::transition_id_type> const&
         activity_t::transition_id() const
       {
         return _transition_id;

@@ -50,12 +50,12 @@ class TransitionVisitor: public boost::static_visitor<void> {
     /**
      * Places present in the workflow.
      */
-    boost::unordered_map<petri_net::place_id_type, Place *> places_;
+    boost::unordered_map<we::place_id_type, Place *> places_;
 
     /**
      * Transitions present in the workflow.
      */
-    boost::unordered_map<petri_net::transition_id_type, Transition *> transitions_;
+    boost::unordered_map<we::transition_id_type, Transition *> transitions_;
 
     public:
 
@@ -73,14 +73,14 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
     void operator()(const we::type::module_call_t & mod_call) { return; }
 
-    void operator()(const petri_net::net &net) {
+    void operator()(const we::net &net) {
         typedef we::type::transition_t transition_t;
 
         /* Translate places. */
-        typedef std::pair<petri_net::place_id_type, place::type> ip_type;
+        typedef std::pair<we::place_id_type, place::type> ip_type;
 
         BOOST_FOREACH (const ip_type& ip, net.places()) {
-            const petri_net::place_id_type& pid (ip.first);
+            const we::place_id_type& pid (ip.first);
             const place::type &p (ip.second);
 
             Place *place = petriNet_->createPlace();
@@ -89,11 +89,11 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         /* Translate transitions. */
-        typedef std::pair<petri_net::transition_id_type, transition_t> it_type;
+        typedef std::pair<we::transition_id_type, transition_t> it_type;
 
         FOREACH (const it_type& it, net.transitions())
         {
-          const petri_net::transition_id_type& tid (it.first);
+          const we::transition_id_type& tid (it.first);
           const transition_t& t (it.second);
 
             std::ostringstream condition;
@@ -106,7 +106,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             transitions_[tid] = transition;
 
             /* If there is a limit on number of firings, implement it using an additional place. */
-            if (boost::optional<const we::type::property::value_type &> limit = t.prop().get_maybe_val("fhg.pnetv.firings_limit")) {
+            if (boost::optional<const we::type::property::value_type &> limit = t.prop().get("fhg.pnetv.firings_limit")) {
                 Place *place = petriNet_->createPlace();
                 place->setName("limit!" + t.name());
                 place->setInitialMarking(boost::lexical_cast<TokenCount>(*limit));
@@ -115,7 +115,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        FOREACH ( const petri_net::net::adj_pt_type::value_type& pt
+        FOREACH ( const we::net::adj_pt_type::value_type& pt
                 , net.place_to_transition_consume()
                 )
         {
@@ -125,7 +125,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
           /* Transition consumes the token on input place. */
           transition->addInputPlace(place);
         }
-        FOREACH ( const petri_net::net::adj_pt_type::value_type& pt
+        FOREACH ( const we::net::adj_pt_type::value_type& pt
                 , net.place_to_transition_read()
                 )
         {
@@ -136,7 +136,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
           transition->addInputPlace(place);
           transition->addOutputPlace(place);
         }
-        FOREACH ( const petri_net::net::adj_tp_type::value_type& tp
+        FOREACH ( const we::net::adj_tp_type::value_type& tp
                 , net.transition_to_place()
                 )
         {
@@ -147,7 +147,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
           transition->addOutputPlace(place);
         }
 
-        typedef std::pair<petri_net::transition_id_type, we::type::transition_t>
+        typedef std::pair<we::transition_id_type, we::type::transition_t>
           id_and_transition_type;
 
         FOREACH
@@ -166,8 +166,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
         FOREACH(const transition_t::port_map_t::value_type &item, transition.ports()) {
           const we::type::port_t &port = item.second;
 
-            if (port.has_associated_place()) {
-                petri_net::place_id_type pid = port.associated_place();
+            if (port.associated_place()) {
+                we::place_id_type pid = *port.associated_place();
 
                 Place *place = ::jpna::find(places_, pid);
                 place->setInitialMarking(place->initialMarking() + 1);

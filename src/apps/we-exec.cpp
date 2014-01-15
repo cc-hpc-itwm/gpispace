@@ -126,7 +126,7 @@ namespace
                 )
         : _mutex_id()
         , _id (0)
-        , mgmt_layer_ ( boost::bind (&sdpa_daemon::submit, this, _1, _2, _3)
+        , mgmt_layer_ ( boost::bind (&sdpa_daemon::submit, this, _1, _2)
                       , boost::bind (&sdpa_daemon::cancel, this, _1)
                       , boost::bind (&sdpa_daemon::finished, this, _1, _2)
                       , boost::bind (&sdpa_daemon::failed, this, _1, _2, _3)
@@ -251,9 +251,8 @@ namespace
       return *_result;
     }
 
-    void submit ( const we::layer::id_type& id
+     void submit ( const we::layer::id_type& id
                 , const we::type::activity_t& act
-                , const we::layer::id_type& parent_id
                 )
     {
       jobs_.put (job_t (id, act));

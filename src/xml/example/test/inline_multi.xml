@@ -12,7 +12,7 @@
     <transition name="t3" inline="true">
       <properties name="pnetc">
         <properties name="warning">
-          <property key="inline-many-output-ports" value="off"/>
+          <property key="inline_many_output_ports" value="off"/>
         </properties>
       </properties>
       <include-function href="inline_multi.defun.xml"/>

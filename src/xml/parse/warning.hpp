@@ -383,7 +383,7 @@ namespace xml
       {
       private:
         std::string nice ( const we::type::property::path_type & key
-                         , const we::type::property::mapped_type & old_val
+                         , const pnet::type::value::value_type & old_val
                          , const we::type::property::value_type & new_val
                          , const boost::filesystem::path & path
                          )
@@ -391,8 +391,8 @@ namespace xml
           std::ostringstream s;
 
           s << "property " << fhg::util::join (key, ".")
-            << " value " << old_val
-            << " overwritten by value " << new_val
+            << " value " << pnet::type::value::show (old_val)
+            << " overwritten by value " << pnet::type::value::show (new_val)
             << " in " << path
             ;
 
@@ -400,7 +400,7 @@ namespace xml
         }
       public:
         property_overwritten ( const we::type::property::path_type & key
-                             , const we::type::property::mapped_type & old_val
+                             , const pnet::type::value::value_type & old_val
                              , const we::type::property::value_type & new_val
                              , const boost::filesystem::path & path
                              )

@@ -19,9 +19,9 @@ namespace we
     {
       return fhg::util::boost::get_or_none<const expression_t&> (data());
     }
-    boost::optional<const petri_net::net&> transition_t::net() const
+    boost::optional<const we::net&> transition_t::net() const
     {
-      return fhg::util::boost::get_or_none<const petri_net::net&> (data());
+      return fhg::util::boost::get_or_none<const we::net&> (data());
     }
     boost::optional<const module_call_t&> transition_t::module_call() const
     {
@@ -57,16 +57,16 @@ namespace we
       return _requirements;
     }
 
-    petri_net::port_id_type transition_t::add_port (port_t const& port)
+    we::port_id_type transition_t::add_port (port_t const& port)
     {
-      petri_net::port_id_type const port_id (port_id_counter_++);
+      we::port_id_type const port_id (port_id_counter_++);
 
       ports_.insert (std::make_pair (port_id, port));
 
       return port_id;
     }
 
-    petri_net::port_id_type transition_t::input_port_by_name
+    we::port_id_type transition_t::input_port_by_name
       (const std::string& port_name) const
     {
       BOOST_FOREACH (port_map_t::value_type const& p, ports_)
@@ -79,7 +79,7 @@ namespace we
       throw pnet::exception::port::unknown (name(), port_name);
     }
 
-    const petri_net::port_id_type& transition_t::output_port_by_name
+    const we::port_id_type& transition_t::output_port_by_name
       (const std::string& port_name) const
     {
       BOOST_FOREACH (port_map_t::value_type const& p, ports_)

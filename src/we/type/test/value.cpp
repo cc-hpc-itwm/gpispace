@@ -9,14 +9,17 @@
 #include <we/type/value/of_type.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
+#include <we/type/value/positions.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/show.hpp>
 #include <we/type/value/wrap.hpp>
 #include <we/type/value/unwrap.hpp>
 #include <we/type/value/to_value.hpp>
+#include <we/type/value/dump.hpp>
 #include <we/field.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
+#include <we/type/value/path/split.hpp>
 
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/num.hpp>
@@ -25,6 +28,11 @@
 #include <fhg/util/boost/test/printer/list.hpp>
 #include <fhg/util/boost/test/printer/set.hpp>
 #include <fhg/util/boost/test/printer/map.hpp>
+#include <fhg/util/boost/test/require_exception.hpp>
+
+#include <fhg/util/xml.hpp>
+
+#include <boost/format.hpp>
 
 #include <sstream>
 
@@ -871,4 +879,248 @@ BOOST_AUTO_TEST_CASE (wrap_generated)
     BOOST_CHECK_EQUAL (pnet::type::value::to_value (s), mv.begin()->first);
     BOOST_CHECK_EQUAL (pnet::type::value::to_value (s), mv.begin()->second);
   }
+}
+
+namespace
+{
+  void dump_okay (std::string const& v, std::string const& expected)
+  {
+    std::ostringstream oss;
+    fhg::util::xml::xmlstream os (oss);
+
+    pnet::type::value::dump (os, pnet::type::value::read (v));
+
+    BOOST_REQUIRE_EQUAL (oss.str(), expected);
+  }
+
+  void dump_throw_plain (std::string const& v)
+  {
+    std::ostringstream oss;
+    fhg::util::xml::xmlstream os (oss);
+
+    pnet::type::value::value_type const value (pnet::type::value::read (v));
+
+    fhg::util::boost::test::require_exception<std::runtime_error>
+      ( boost::bind (&pnet::type::value::dump, os, value)
+      , ( boost::format ("cannot dump the plain value '%1%'")
+        % pnet::type::value::show (value)
+        ).str()
+      );
+  }
+
+  void dump_throw_depth ( std::string const& v
+                        , std::string const& key
+                        , std::string const& val
+                        )
+  {
+    std::ostringstream oss;
+    fhg::util::xml::xmlstream os (oss);
+
+    fhg::util::boost::test::require_exception<std::runtime_error>
+      ( boost::bind (&pnet::type::value::dump, os, pnet::type::value::read (v))
+      , ( boost::format ("cannot dump the single level property"
+                        " with key '%1%' and value '%2%'"
+                        ) % key % val
+        ).str()
+      );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (dump)
+{
+  dump_okay ( "Struct[]", "");
+  dump_okay ( "Struct [root := Struct[]]"
+            , "<properties name=\"root\"/>"
+            );
+  dump_okay ( "Struct [root := Struct [k := []]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">[]</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := true]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">true</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0U]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0U</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0L]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0L</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0UL]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0UL</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0.0f]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0.00000f</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 0.0]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">0.00000</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := 'c']]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">'c'</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := \"\"]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">\"\"</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := {}]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">{}</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := y()]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">y()</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := List()]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">List ()</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := Set{}]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">Set {}</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [root := Struct [k := Map[]]]"
+            , "<properties name=\"root\">\n"
+              "  <property key=\"k\">Map []</property>\n"
+              "</properties>"
+            );
+  dump_okay ( "Struct [fhg := Struct [ drts := Struct"
+              "                             [ schedule := Struct"
+              "                                        [ num_worker := 12L"
+              "                                        , memory := 4294967296L"
+              "                                        ]"
+              "                             ]"
+              "                      , pnete := Struct"
+              "                              [ invisible := true"
+              "                              , position := Struct [ x := 24"
+              "                                                   , y := 36"
+              "                                                   ]"
+              "                              ]"
+              "                      ]"
+              "       ]"
+            , "<properties name=\"fhg\">\n"
+              "  <properties name=\"drts\">\n"
+              "    <properties name=\"schedule\">\n"
+              "      <property key=\"num_worker\">12L</property>\n"
+              "      <property key=\"memory\">4294967296L</property>\n"
+              "    </properties>\n"
+              "  </properties>\n"
+              "  <properties name=\"pnete\">\n"
+              "    <property key=\"invisible\">true</property>\n"
+              "    <properties name=\"position\">\n"
+              "      <property key=\"x\">24</property>\n"
+              "      <property key=\"y\">36</property>\n"
+              "    </properties>\n"
+              "  </properties>\n"
+              "</properties>"
+            );
+
+  dump_throw_plain ("[]");
+  dump_throw_plain ("true");
+  dump_throw_plain ("0");
+  dump_throw_plain ("0U");
+  dump_throw_plain ("0L");
+  dump_throw_plain ("0UL");
+  dump_throw_plain ("0.0f");
+  dump_throw_plain ("0.0");
+  dump_throw_plain ("'c'");
+  dump_throw_plain ("\"\"");
+  dump_throw_plain ("{}");
+  dump_throw_plain ("y()");
+  dump_throw_plain ("List()");
+  dump_throw_plain ("Set{}");
+  dump_throw_plain ("Map[]");
+
+  dump_throw_depth ("Struct[k:=0]", "k", "0");
+  dump_throw_depth ("Struct[k:=0, Struct:=[]]", "k", "0");
+  dump_throw_depth ("Struct[deeper:=Struct[], k:=0]", "k", "0");
+}
+
+namespace
+{
+  typedef std::pair< std::list<std::string>
+                   , pnet::type::value::value_type
+                   > position_type;
+}
+
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (position_type, os, position)
+{
+  os << "Position " << FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER (position.first)
+     << ": " << FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER (position.second);
+}
+
+BOOST_AUTO_TEST_CASE (positions)
+{
+  using pnet::type::value::value_type;
+  using pnet::type::value::path::split;
+
+#define LITERAL(literal...)                                             \
+  {                                                                     \
+    std::list<position_type> positions;                                 \
+    positions.push_back                                                 \
+      (std::make_pair (std::list<std::string>(), literal));             \
+    BOOST_REQUIRE_EQUAL                                                 \
+      (pnet::type::value::positions (literal), positions);              \
+  }
+
+  LITERAL (we::type::literal::control());
+  LITERAL (true);
+  LITERAL (0);
+  LITERAL (0L);
+  LITERAL (0U);
+  LITERAL (0UL);
+  LITERAL (0.0f);
+  LITERAL (0.0);
+  LITERAL ('c');
+  LITERAL ("");
+  LITERAL (bitsetofint::type());
+  LITERAL (bytearray::type());
+  LITERAL (std::list<value_type>());
+  LITERAL (std::set<value_type>());
+  LITERAL (std::map<value_type, value_type>());
+
+#undef LITERAL
+
+  std::list<position_type> positions;
+  value_type value;
+
+  pnet::type::value::poke ("a", value, 0);
+  positions.push_back (std::make_pair (split ("a"), 0));
+
+  BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
+
+  pnet::type::value::poke ("b", value, 0L);
+  positions.push_back (std::make_pair (split ("b"), 0L));
+
+  BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
+
+  pnet::type::value::poke ("c.1", value, "foo");
+  positions.push_back (std::make_pair (split ("c.1"), "foo"));
+  pnet::type::value::poke ("c.2", value, "bar");
+  positions.push_back (std::make_pair (split ("c.2"), "bar"));
+
+  BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
 }

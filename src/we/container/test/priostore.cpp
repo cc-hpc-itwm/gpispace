@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE (get_default_priority)
 {
   we::container::priority_store ps;
 
-  BOOST_REQUIRE_EQUAL (ps.get_priority (0), petri_net::priority_type());
+  BOOST_REQUIRE_EQUAL (ps.get_priority (0), we::priority_type());
 }
 
 BOOST_AUTO_TEST_CASE (get_set_priority)
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE (get_set_priority)
 
   ps.set_priority (0, 1);
 
-  BOOST_REQUIRE_EQUAL (ps.get_priority (0), petri_net::priority_type (1));
+  BOOST_REQUIRE_EQUAL (ps.get_priority (0), we::priority_type (1));
 }
 
 BOOST_AUTO_TEST_CASE (erase_priority)
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE (erase_priority)
   ps.set_priority (0, 1);
   ps.erase_priority (0);
 
-  BOOST_REQUIRE_EQUAL (ps.get_priority (0), petri_net::priority_type());
+  BOOST_REQUIRE_EQUAL (ps.get_priority (0), we::priority_type());
 }
 
 BOOST_AUTO_TEST_CASE (extract_random_with_highest_priority)
@@ -76,26 +76,26 @@ BOOST_AUTO_TEST_CASE (extract_random_with_highest_priority)
 
   ps.insert (0);
 
-  BOOST_REQUIRE_EQUAL (ps.random (engine), petri_net::transition_id_type (0));
+  BOOST_REQUIRE_EQUAL (ps.random (engine), we::transition_id_type (0));
 
   ps.insert (0);
   ps.insert (1);
   ps.set_priority (1, 1);
 
-  BOOST_REQUIRE_EQUAL (ps.random (engine), petri_net::transition_id_type (1));
+  BOOST_REQUIRE_EQUAL (ps.random (engine), we::transition_id_type (1));
 
   ps.erase (1);
 
-  BOOST_REQUIRE_EQUAL (ps.random (engine), petri_net::transition_id_type (0));
+  BOOST_REQUIRE_EQUAL (ps.random (engine), we::transition_id_type (0));
 
   ps.insert (1);
 
-  BOOST_REQUIRE_EQUAL (ps.random (engine), petri_net::transition_id_type (1));
+  BOOST_REQUIRE_EQUAL (ps.random (engine), we::transition_id_type (1));
 
   ps.insert (0);
   ps.insert (1);
   ps.set_priority (0, 1);
   ps.set_priority (1, 2);
 
-  BOOST_REQUIRE_EQUAL (ps.random (engine), petri_net::transition_id_type (1));
+  BOOST_REQUIRE_EQUAL (ps.random (engine), we::transition_id_type (1));
 }

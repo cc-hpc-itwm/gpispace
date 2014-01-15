@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace petri_net
+namespace we
 {
   namespace edge
   {

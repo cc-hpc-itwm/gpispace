@@ -55,9 +55,6 @@ namespace sdpa {
 
       template <typename T>
       void notifySubscribers(const T& ptrEvt);
-
-      virtual void pause(const job_id_t& id );
-      virtual void resume(const job_id_t& id );
     };
   }
 }

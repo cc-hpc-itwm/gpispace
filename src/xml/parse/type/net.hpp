@@ -165,8 +165,8 @@ namespace xml
 
       // ******************************************************************* //
 
-      boost::unordered_map<std::string, petri_net::place_id_type>
-      net_synthesize ( petri_net::net& we_net
+      boost::unordered_map<std::string, we::place_id_type>
+      net_synthesize ( we::net& we_net
                      , const place_map_map_type & place_map_map
                      , const net_type & net
                      , const state::type & state

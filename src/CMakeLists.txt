@@ -59,7 +59,6 @@ add_library (pnet
   we/type/bytearray.cpp
   we/type/connection.cpp
   we/type/expression.cpp
-  we/type/id.cpp
   we/type/literal/control.cpp
   we/type/net.cpp
   we/type/place.cpp
@@ -86,8 +85,10 @@ add_library (pnet
   we/type/value/path/split.cpp
   we/type/value/peek.cpp
   we/type/value/poke.cpp
+  we/type/value/positions.cpp
   we/type/value/read.cpp
   we/type/value/show.cpp
+  we/type/value/dump.cpp
 
   we/loader/Module.cpp
 

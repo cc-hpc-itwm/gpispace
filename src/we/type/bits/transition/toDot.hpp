@@ -14,6 +14,7 @@
 #include <sstream>
 
 #include <boost/foreach.hpp>
+#include <boost/optional.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -171,13 +172,13 @@ namespace we { namespace type {
         {
           const std::string prefix ("pretty.dot.shape");
 
-          condition = prop.get_with_default (prefix + ".condition", "record");
-          port_in = prop.get_with_default (prefix + ".port-in", "house");
-          port_out = prop.get_with_default (prefix + ".port-out", "invhouse");
-          port_tunnel = prop.get_with_default (prefix + ".port-tunnel", "ellipse");
-          expression = prop.get_with_default (prefix + ".expression", "none");
-          modcall = prop.get_with_default (prefix + ".modcall", "box");
-          place = prop.get_with_default (prefix + ".place", "ellipse");
+          condition = prop.get (prefix + ".condition").get_value_or ("record");
+          port_in = prop.get (prefix + ".port-in").get_value_or ("house");
+          port_out = prop.get (prefix + ".port-out").get_value_or ("invhouse");
+          port_tunnel = prop.get (prefix + ".port-tunnel").get_value_or ("ellipse");
+          expression = prop.get (prefix + ".expression").get_value_or ("none");
+          modcall = prop.get (prefix + ".modcall").get_value_or ("box");
+          place = prop.get (prefix + ".place").get_value_or ("ellipse");
         }
 
         template<typename Port>
@@ -203,14 +204,12 @@ namespace we { namespace type {
         {
           const std::string prefix ("pretty.dot.color");
 
-          internal = prop.get_with_default (prefix + ".internal", "white");
-          external = prop.get_with_default (prefix + ".external", "dimgray");
-          modcall = prop.get_with_default (prefix + ".modcall", "yellow");
-          expression = prop.get_with_default (prefix + ".expression", "white");
-          node = prop.get_with_default (prefix + ".node", "white");
-          subnet_internal = prop.get_with_default ( prefix + ".subnet_internal"
-                                                  , "grey"
-                                                  );
+          internal = prop.get (prefix + ".internal").get_value_or ("white");
+          external = prop.get (prefix + ".external").get_value_or ("dimgray");
+          modcall = prop.get (prefix + ".modcall").get_value_or ("yellow");
+          expression = prop.get (prefix + ".expression").get_value_or ("white");
+          node = prop.get (prefix + ".node").get_value_or ("white");
+          subnet_internal = prop.get (prefix + ".subnet_internal").get_value_or ("grey");
         }
       }
 
@@ -224,9 +223,9 @@ namespace we { namespace type {
           const std::string prefix ("pretty.dot.style");
 
           association =
-            prop.get_with_default (prefix + ".association", "dotted");
+            prop.get (prefix + ".association").get_value_or ("dotted");
           read_connection =
-            prop.get_with_default (prefix + ".read-connection", "dashed");
+            prop.get (prefix + ".read-connection").get_value_or ("dashed");
         }
       }
 
@@ -357,7 +356,7 @@ namespace we { namespace type {
       , id_type &
       , const options<Pred> &
       , const level_type = 1
-      , const petri_net::priority_type& = petri_net::priority_invalid()
+      , boost::optional<const we::priority_type&> = boost::none
       );
 
       template<typename Pred>
@@ -409,11 +408,11 @@ namespace we { namespace type {
         // ----------------------------------------------------------------- //
 
         std::string operator ()
-        (const petri_net::net & net) const
+        (const we::net & net) const
         {
           typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::pair< std::string
-                           , petri_net::port_id_type
+                           , we::port_id_type
                            > extra_connection_type;
           typedef boost::unordered_map< std::string
                                       , std::list<extra_connection_type>
@@ -428,11 +427,11 @@ namespace we { namespace type {
             << "subgraph cluster_net_" << id_net << " {"
             << std::endl;
 
-          typedef std::pair<petri_net::place_id_type, place::type> ip_type;
+          typedef std::pair<we::place_id_type, place::type> ip_type;
 
           BOOST_FOREACH (const ip_type& ip, net.places())
             {
-              const petri_net::place_id_type& place_id (ip.first);
+              const we::place_id_type& place_id (ip.first);
               const place::type& place (ip.second);
               const std::string place_dot_name
                 (name (id_net, "place_" + boost::lexical_cast<std::string> (place_id)));
@@ -454,9 +453,7 @@ namespace we { namespace type {
               if (opts.show_virtual)
                 {
                   if (  "true"
-                     == place.property().get_with_default ( "virtual"
-                                                          , "false"
-                                                          )
+                     == place.property().get ("virtual").get_value_or ("false")
                      )
                     {
                       virt << endl << property ("virtual");
@@ -477,14 +474,14 @@ namespace we { namespace type {
                 ;
             }
 
-          typedef std::pair<petri_net::transition_id_type,transition_t> it_type;
+          typedef std::pair<we::transition_id_type,transition_t> it_type;
 
           BOOST_FOREACH (const it_type& it, net.transitions())
             {
-              const petri_net::transition_id_type& trans_id (it.first);
+              const we::transition_id_type& trans_id (it.first);
               const transition_t& trans (it.second);
               const id_type id_trans (++id);
-              const petri_net::priority_type prio
+              const we::priority_type prio
                 (net.get_transition_priority (trans_id));
 
               s << to_dot (trans, id, opts, l + 1, prio);
@@ -510,7 +507,7 @@ namespace we { namespace type {
                  )
               {
                 BOOST_FOREACH
-                  ( petri_net::net::port_to_place_with_info_type::value_type
+                  ( we::net::port_to_place_with_info_type::value_type
                   const& port_to_place
                   , net.port_to_place().at (trans_id)
                   )
@@ -531,7 +528,7 @@ namespace we { namespace type {
               if (net.place_to_port().find (trans_id) !=  net.place_to_port().end())
               {
                 BOOST_FOREACH
-                  ( petri_net::net::place_to_port_with_info_type::value_type
+                  ( we::net::place_to_port_with_info_type::value_type
                   const& place_to_port
                   , net.place_to_port().at (trans_id)
                   )
@@ -545,7 +542,7 @@ namespace we { namespace type {
                             , "port_" + boost::lexical_cast<std::string> (place_to_port.get_right())
                             )
                     << (  net.place_to_transition_read().find
-                       ( petri_net::net::adj_pt_type::value_type
+                       ( we::net::adj_pt_type::value_type
                        (place_to_port.get_left(), trans_id)
                        )
                        != net.place_to_transition_read().end()
@@ -576,7 +573,7 @@ namespace we { namespace type {
       , id_type & id
       , const options<Pred> & opts
       , const level_type l
-      , const petri_net::priority_type & prio
+      , boost::optional<const we::priority_type &> prio
       )
       {
         std::ostringstream s;
@@ -591,11 +588,11 @@ namespace we { namespace type {
 
         if (opts.show_priority)
           {
-            if (prio != petri_net::priority_invalid())
+            if (prio)
               {
-                if (prio > petri_net::priority_type (0))
+                if (*prio > we::priority_type (0))
                   {
-                    priority << "| priority: " << prio;
+                    priority << "| priority: " << *prio;
                   }
               }
           }
@@ -651,14 +648,14 @@ namespace we { namespace type {
                           , t.ports()
                           )
             {
-              if (p.second.has_associated_place())
+              if (p.second.associated_place())
               {
                 level (s, l + 1)
                   << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
                   << arrow
                   << name (id_trans
                           , "place_"
-                          + boost::lexical_cast<std::string> (p.second.associated_place())
+                          + boost::lexical_cast<std::string> (*p.second.associated_place())
                           )
                   << association()
                   << std::endl

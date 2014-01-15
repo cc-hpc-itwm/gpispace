@@ -14,7 +14,7 @@
 
 #include <stack>
 
-namespace petri_net
+namespace we
 {
   net::net()
     : _place_id()
@@ -182,16 +182,16 @@ namespace petri_net
   namespace
   {
     typedef boost::any_range
-      < const petri_net::transition_id_type
+      < const we::transition_id_type
       , boost::single_pass_traversal_tag
-      , const petri_net::transition_id_type&
+      , const we::transition_id_type&
       , std::ptrdiff_t
       > transition_id_range_type;
 
     typedef boost::any_range
-      < const petri_net::place_id_type
+      < const we::place_id_type
       , boost::single_pass_traversal_tag
-      , const petri_net::place_id_type&
+      , const we::place_id_type&
       , std::ptrdiff_t
       > place_id_range_type;
   }
@@ -216,24 +216,24 @@ namespace petri_net
         )
       );
 
-    return std::make_pair (pid, tokenpos);
+    return boost::make_tuple
+      (pid, tokenpos, std::distance (tokens.begin(), tokenpos));
   }
 
   void net::do_update (to_be_updated_type const& to_be_updated)
   {
     transition_id_range_type consume
-      ( _adj_pt_consume.left.equal_range (to_be_updated.first)
+      ( _adj_pt_consume.left.equal_range (to_be_updated.get<0>())
       | boost::adaptors::map_values
       );
     transition_id_range_type read
-      ( _adj_pt_read.left.equal_range (to_be_updated.first)
+      ( _adj_pt_read.left.equal_range (to_be_updated.get<0>())
       | boost::adaptors::map_values
       );
 
     BOOST_FOREACH (transition_id_type tid, boost::join (consume, read))
     {
-      update_enabled_put_token
-        (tid, to_be_updated.first, to_be_updated.second);
+      update_enabled_put_token (tid, to_be_updated);
     }
   }
 
@@ -311,8 +311,7 @@ namespace petri_net
 
   void net::update_enabled_put_token
     ( transition_id_type tid
-    , place_id_type pid
-    , const std::list<pnet::type::value::value_type>::iterator& token
+    , to_be_updated_type const& to_be_updated
     )
   {
     if (_enabled.elem (tid))
@@ -329,9 +328,9 @@ namespace petri_net
 
     BOOST_FOREACH (place_id_type place_id, boost::join (consume, read))
     {
-      if (place_id == pid)
+      if (place_id == to_be_updated.get<0>())
       {
-        cross.push (place_id, token);
+        cross.push (place_id, to_be_updated.get<1>(), to_be_updated.get<2>());
       }
       else
       {
@@ -518,12 +517,17 @@ namespace petri_net
   net::cross_type::iterators_type::iterators_type (std::list<pnet::type::value::value_type>& tokens)
     : _begin (tokens.begin())
     , _end (tokens.end())
-    , _pos_and_distance (tokens.begin(), 0)
+    , _distance_from_zero (0)
+    , _pos_and_distance (tokens.begin(), _distance_from_zero)
   {}
-  net::cross_type::iterators_type::iterators_type (const std::list<pnet::type::value::value_type>::iterator& token)
+  net::cross_type::iterators_type::iterators_type
+    ( const std::list<pnet::type::value::value_type>::iterator& token
+    , const std::list<pnet::type::value::value_type>::iterator::difference_type& distance_from_zero
+    )
     : _begin (token)
     , _end (boost::next (token))
-    , _pos_and_distance (token, 0)
+    , _distance_from_zero (distance_from_zero)
+    , _pos_and_distance (token, distance_from_zero)
   {}
   bool net::cross_type::iterators_type::end() const
   {
@@ -541,7 +545,7 @@ namespace petri_net
   void net::cross_type::iterators_type::rewind()
   {
     _pos_and_distance.first = _begin;
-    _pos_and_distance.second = 0;
+    _pos_and_distance.second = _distance_from_zero;
   }
 
   bool net::cross_type::do_step
@@ -627,11 +631,13 @@ namespace petri_net
   {
     _m.insert (std::make_pair (place_id, iterators_type (tokens)));
   }
-  void net::cross_type::push ( place_id_type place_id
-                             , const std::list<pnet::type::value::value_type>::iterator& token
-                             )
+  void net::cross_type::push
+    ( place_id_type place_id
+    , const std::list<pnet::type::value::value_type>::iterator& token
+    , const std::list<pnet::type::value::value_type>::iterator::difference_type& distance_from_zero
+    )
   {
-    _m.insert (std::make_pair (place_id, iterators_type (token)));
+    _m.insert
+      (std::make_pair (place_id, iterators_type (token, distance_from_zero)));
   }
-
 }

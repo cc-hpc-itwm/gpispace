@@ -18,7 +18,7 @@ namespace we
     {
       bool operator== (type const& lhs, type const& rhs)
       {
-        return lhs.get_map() == rhs.get_map();
+        return lhs.list() == rhs.list();
       }
     }
   }
@@ -42,19 +42,19 @@ namespace place
   }
 }
 
-namespace petri_net
+namespace we
 {
   namespace
   {
-    std::map< petri_net::place_id_type
+    std::map< we::place_id_type
             , std::list<pnet::type::value::value_type>
             > tokens (net const& n)
     {
-      std::map< petri_net::place_id_type
+      std::map< we::place_id_type
               , std::list<pnet::type::value::value_type>
               > tokens_on_place;
 
-      BOOST_FOREACH ( petri_net::place_id_type const& place_id
+      BOOST_FOREACH ( we::place_id_type const& place_id
                     , n.places() | boost::adaptors::map_keys
                     )
       {

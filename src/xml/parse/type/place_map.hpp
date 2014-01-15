@@ -11,7 +11,7 @@
 
 #include <fhg/util/xml.fwd.hpp>
 
-#include <we/type/id.hpp> //petri_net::place_id_type
+#include <we/type/id.hpp> //we::place_id_type
 #include <we/type/property.hpp>
 
 #include <string>
@@ -71,7 +71,7 @@ namespace xml
       };
 
       typedef boost::unordered_map< std::string
-                                  , petri_net::place_id_type
+                                  , we::place_id_type
                                   > place_map_map_type;
 
       namespace dump

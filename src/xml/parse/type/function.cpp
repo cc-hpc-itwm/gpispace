@@ -655,24 +655,24 @@ namespace xml
         const conditions_type& _conditions;
         we::type::property::type _properties;
         const requirements_type& _trans_requirements;
-        boost::unordered_map<std::string, petri_net::port_id_type>& _port_id_in;
-        boost::unordered_map<std::string, petri_net::port_id_type>& _port_id_out;
+        boost::unordered_map<std::string, we::port_id_type>& _port_id_in;
+        boost::unordered_map<std::string, we::port_id_type>& _port_id_out;
 
         typedef we::type::transition_t we_transition_type;
 
-        typedef petri_net::net we_net_type;
+        typedef we::net we_net_type;
         typedef we::type::module_call_t we_module_type;
         typedef we::type::expression_t we_expr_type;
         typedef condition::type we_cond_type;
 
         typedef boost::unordered_map< std::string
-                                    , petri_net::place_id_type
+                                    , we::place_id_type
                                     > pid_of_place_type;
 
         void add_port
           (we_transition_type& transition, we::type::port_t const& port) const
         {
-          petri_net::port_id_type const port_id (transition.add_port (port));
+          we::port_id_type const port_id (transition.add_port (port));
 
           if (port.is_output())
           {
@@ -781,8 +781,8 @@ namespace xml
           , const conditions_type& conditions
           , const we::type::property::type& trans_properties
           , const requirements_type& trans_requirements
-          , boost::unordered_map<std::string, petri_net::port_id_type>& port_id_in
-          , boost::unordered_map<std::string, petri_net::port_id_type>& port_id_out
+          , boost::unordered_map<std::string, we::port_id_type>& port_id_in
+          , boost::unordered_map<std::string, we::port_id_type>& port_id_out
           )
           : _name (name)
           , state (_state)
@@ -873,8 +873,8 @@ namespace xml
       we::type::transition_t function_type::synthesize
         ( const std::string& name
         , const state::type& state
-        , boost::unordered_map<std::string, petri_net::port_id_type>& port_id_in
-        , boost::unordered_map<std::string, petri_net::port_id_type>& port_id_out
+        , boost::unordered_map<std::string, we::port_id_type>& port_id_in
+        , boost::unordered_map<std::string, we::port_id_type>& port_id_out
         , const boost::optional<bool>& trans_internal
         , const conditions_type& conditions
         , const we::type::property::type& trans_properties

@@ -19,13 +19,11 @@ namespace sdpa
         , const address_t& a_to
         , const boost::optional<sdpa::job_id_t>& a_job_id
         , const job_desc_t& a_description
-        , const boost::optional<sdpa::job_id_t>& a_parent_id
         , const sdpa::worker_id_list_t& worker_list = sdpa::worker_id_list_t()
         )
           : SDPAEvent( a_from, a_to)
           , _job_id (a_job_id)
           , desc_ (a_description)
-          , parent_ (a_parent_id)
           , worker_list_ (worker_list)
       {}
 
@@ -42,10 +40,6 @@ namespace sdpa
       {
         return desc_;
       }
-      const boost::optional<sdpa::job_id_t>& parent_id() const
-      {
-        return parent_;
-      }
       const sdpa::worker_id_list_t& worker_list() const
       {
         return worker_list_;
@@ -59,7 +53,6 @@ namespace sdpa
     private:
       boost::optional<sdpa::job_id_t> _job_id;
       sdpa::job_desc_t desc_;
-      boost::optional<sdpa::job_id_t> parent_;
       sdpa::worker_id_list_t worker_list_;
     };
 
@@ -68,7 +61,6 @@ namespace sdpa
       SAVE_SDPAEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->job_id());
       SAVE_TO_ARCHIVE (e->description());
-      SAVE_TO_ARCHIVE (e->parent_id());
       SAVE_TO_ARCHIVE (e->worker_list());
     }
 
@@ -77,11 +69,9 @@ namespace sdpa
       LOAD_SDPAEVENT_CONSTRUCT_DATA (from, to);
       LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
       LOAD_FROM_ARCHIVE (sdpa::job_desc_t, description);
-      LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, parent_id);
       LOAD_FROM_ARCHIVE (sdpa::worker_id_list_t, worker_list);
 
-      ::new (e) SubmitJobEvent
-          (from, to, job_id, description, parent_id, worker_list);
+      ::new (e) SubmitJobEvent (from, to, job_id, description, worker_list);
     }
   }
 }

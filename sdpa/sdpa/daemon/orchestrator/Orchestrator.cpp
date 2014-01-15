@@ -385,30 +385,6 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
   _.dont();
 }
 
-void Orchestrator::pause(const job_id_t& jobId)
-{
-  Job* pJob(jobManager().findJob(jobId));
-  if(pJob)
-  {
-    pJob->Pause(NULL);
-    return;
-  }
-
-  DLLOG (WARN, _logger, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
-}
-
-void Orchestrator::resume(const job_id_t& jobId)
-{
-  Job* pJob(jobManager().findJob(jobId));
-  if(pJob)
-  {
-      pJob->Resume(NULL);
-      return;
-  }
-
-  DLLOG (WARN, _logger, "Couldn't mark the worker job "<<jobId<<" as STALLED. The job was not found!");
-}
-
 void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt )
 {
   Job* pJob = jobManager().findJob(pEvt->job_id());

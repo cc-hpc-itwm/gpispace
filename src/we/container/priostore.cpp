@@ -10,7 +10,7 @@ namespace we
   {
     namespace
     {
-      using petri_net::transition_id_type;
+      using we::transition_id_type;
 
       typedef std::vector<transition_id_type> vec_type;
       typedef std::pair<vec_type::iterator,vec_type::iterator> pit_type;
@@ -41,7 +41,7 @@ namespace we
       }
     }
 
-    void priority_store::erase ( const petri_net::transition_id_type& x
+    void priority_store::erase ( const we::transition_id_type& x
                                , const prio_map_t::iterator& pos
                                )
     {
@@ -56,24 +56,24 @@ namespace we
       }
     }
 
-    void priority_store::insert ( const petri_net::transition_id_type& x
-                                , const petri_net::priority_type& prio
+    void priority_store::insert ( const we::transition_id_type& x
+                                , const we::priority_type& prio
                                 )
     {
       vec_insert (_prio_map[prio], x);
     }
 
-    petri_net::priority_type
-    priority_store::get_priority (const petri_net::transition_id_type& x) const
+    we::priority_type
+    priority_store::get_priority (const we::transition_id_type& x) const
     {
       const get_prio_t::const_iterator pos (_get_prio.find (x));
 
       return (pos == _get_prio.end())
-        ? petri_net::priority_type() : pos->second;
+        ? we::priority_type() : pos->second;
     }
 
-    void priority_store::set_priority ( const petri_net::transition_id_type& x
-                                      , const petri_net::priority_type& prio
+    void priority_store::set_priority ( const we::transition_id_type& x
+                                      , const we::priority_type& prio
                                       )
     {
       const bool is_elem (elem (x));
@@ -91,7 +91,7 @@ namespace we
       }
     }
 
-    void priority_store::erase_priority (const petri_net::transition_id_type& x)
+    void priority_store::erase_priority (const we::transition_id_type& x)
     {
       const bool is_elem (elem (x));
 
@@ -108,17 +108,17 @@ namespace we
       }
     }
 
-    void priority_store::insert (const petri_net::transition_id_type& x)
+    void priority_store::insert (const we::transition_id_type& x)
     {
       insert (x, get_priority (x));
     }
 
-    void priority_store::erase (const petri_net::transition_id_type& x)
+    void priority_store::erase (const we::transition_id_type& x)
     {
       erase (x, _prio_map.find (get_priority (x)));
     }
 
-    bool priority_store::elem (const petri_net::transition_id_type& x) const
+    bool priority_store::elem (const we::transition_id_type& x) const
     {
       const prio_map_t::const_iterator pos (_prio_map.find (get_priority (x)));
 

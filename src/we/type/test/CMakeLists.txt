@@ -24,12 +24,6 @@ fhg_add_test (bitsetofint.cpp
   LINK_LIBRARIES pnet
 )
 
-fhg_add_test (property.cpp
-  BOOST_UNIT_TEST
-  PROJECT we_type
-  LINK_LIBRARIES pnet
-)
-
 add_executable (mk_cpp mk_cpp.cpp)
 target_link_libraries (mk_cpp pnet ${Boost_PROGRAM_OPTIONS_LIBRARY})
 

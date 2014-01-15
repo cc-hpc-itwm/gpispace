@@ -1,0 +1,10 @@
+### work 0 of [0..5), credit 0 => length 3, sleep 5 seconds
+### write 0 of [0..5), credit 0, length 3, offset 0
+### work 1 of [0..5), credit 1 => length 3, sleep 4 seconds
+### write 1 of [0..5), credit 1, length 3, offset 3
+### work 2 of [0..5), credit 2 => length 10, sleep 3 seconds
+### write 2 of [0..5), credit 2, length 10, offset 6
+### work 3 of [0..5), credit 3 => length 6, sleep 2 seconds
+### write 3 of [0..5), credit 3, length 6, offset 16
+### work 4 of [0..5), credit 4 => length 1, sleep 1 seconds
+### write 4 of [0..5), credit 4, length 1, offset 22

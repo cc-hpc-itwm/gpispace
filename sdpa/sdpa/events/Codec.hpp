@@ -15,8 +15,6 @@
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/JobResultsReplyEvent.hpp>
-#include <sdpa/events/JobRunningEvent.hpp>
-#include <sdpa/events/JobStalledEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
@@ -85,8 +83,6 @@ namespace sdpa
         REGISTER (JobFinishedAckEvent, JobEvent);
         REGISTER (JobFinishedEvent, JobEvent);
         REGISTER (JobResultsReplyEvent, JobEvent);
-        REGISTER (JobRunningEvent, JobEvent);
-        REGISTER (JobStalledEvent, JobEvent);
         REGISTER (JobStatusReplyEvent, JobEvent);
         REGISTER (QueryJobStatusEvent, JobEvent);
         REGISTER (RetrieveJobResultsEvent, JobEvent);

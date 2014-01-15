@@ -23,12 +23,13 @@
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <list>
 #include <sstream>
 
-namespace petri_net
+namespace we
 {
   class net
   {
@@ -220,7 +221,7 @@ namespace petri_net
     we::container::priority_store _enabled;
 
     typedef std::pair< std::list<pnet::type::value::value_type>::iterator
-                     , std::size_t
+                     , std::list<pnet::type::value::value_type>::iterator::difference_type
                      > pos_and_distance_type;
 
     boost::unordered_map
@@ -230,11 +231,15 @@ namespace petri_net
 
     void get_enabled_choice (const net&);
 
+    typedef boost::tuple< place_id_type
+                        , std::list<pnet::type::value::value_type>::iterator
+                        , std::list<pnet::type::value::value_type>::iterator::difference_type
+                        > to_be_updated_type;
+
     void update_enabled (transition_id_type);
     void update_enabled_put_token
       ( transition_id_type
-      , place_id_type
-      , const std::list<pnet::type::value::value_type>::iterator&
+      , to_be_updated_type const&
       );
 
     void disable (transition_id_type);
@@ -255,10 +260,6 @@ namespace petri_net
       ) const;
     void do_delete (std::list<token_to_be_deleted_type> const&);
 
-    typedef std::pair< place_id_type
-                     , std::list<pnet::type::value::value_type>::iterator
-                     > to_be_updated_type;
-
     to_be_updated_type do_put_value
       (place_id_type, pnet::type::value::value_type const&);
     void do_update (to_be_updated_type const&);
@@ -274,13 +275,17 @@ namespace petri_net
       void push (place_id_type, std::list<pnet::type::value::value_type>&);
       void push ( place_id_type
                 , const std::list<pnet::type::value::value_type>::iterator&
+                , const std::list<pnet::type::value::value_type>::iterator::difference_type&
                 );
     private:
       class iterators_type
       {
       public:
         iterators_type (std::list<pnet::type::value::value_type>&);
-        iterators_type (const std::list<pnet::type::value::value_type>::iterator&);
+        iterators_type
+          ( const std::list<pnet::type::value::value_type>::iterator&
+          , const std::list<pnet::type::value::value_type>::iterator::difference_type&
+          );
         bool end() const;
         const pos_and_distance_type& pos_and_distance() const;
         void operator++();
@@ -288,6 +293,7 @@ namespace petri_net
       private:
         std::list<pnet::type::value::value_type>::iterator _begin;
         std::list<pnet::type::value::value_type>::iterator _end;
+        std::list<pnet::type::value::value_type>::iterator::difference_type _distance_from_zero;
         pos_and_distance_type _pos_and_distance;
       };
 

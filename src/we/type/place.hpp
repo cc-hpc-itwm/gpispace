@@ -13,6 +13,7 @@
 
 namespace place
 {
+  //! \todo add properties
   struct type
   {
   public:
@@ -46,8 +47,6 @@ namespace place
       ar & BOOST_SERIALIZATION_NVP(_prop);
     }
   };
-
-  std::ostream& operator<< (std::ostream&, const type&);
 }
 
 #endif
