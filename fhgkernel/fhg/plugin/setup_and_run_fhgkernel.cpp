@@ -123,97 +123,19 @@ static void sigusr_hdlr(int sig_num, siginfo_t * info, void * ucontext)
   }
 }
 
-void install_signal_handler()
+namespace
 {
-  struct sigaction sigact;
-
-  // install critical handlers
-  sigact.sa_sigaction = crit_err_hdlr;
-  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
-
-  if (sigaction(SIGSEGV, &sigact, (struct sigaction *)NULL) != 0)
+  void install_signal_handler
+    (int signum, void (*handler) (int, siginfo_t*, void*), bool restartable)
   {
-    fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGSEGV, strsignal(SIGSEGV));
+    struct sigaction sigact;
+    sigact.sa_sigaction = handler;
+    sigact.sa_flags = restartable ? (SA_RESTART | SA_SIGINFO) : SA_SIGINFO;
 
-    exit(EXIT_FAILURE);
-  }
-
-  if (sigaction(SIGBUS, &sigact, (struct sigaction *)NULL) != 0)
-  {
-    fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGBUS, strsignal(SIGBUS));
-
-    exit(EXIT_FAILURE);
-  }
-
-  if (sigaction(SIGABRT, &sigact, (struct sigaction *)NULL) != 0)
-  {
-    fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGABRT, strsignal(SIGABRT));
-
-    exit(EXIT_FAILURE);
-  }
-
-  if (sigaction(SIGFPE, &sigact, (struct sigaction *)NULL) != 0)
-  {
-    fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGFPE, strsignal(SIGFPE));
-
-    exit(EXIT_FAILURE);
-  }
-
-  // install informative handlers
-  sigact.sa_sigaction = sigterm_hdlr;
-  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
-
-  if (sigaction(SIGTERM, &sigact, (struct sigaction *)NULL) != 0)
-  {
-    fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGTERM, strsignal(SIGTERM));
-
-    exit(EXIT_FAILURE);
-  }
-
-  sigact.sa_sigaction = sigint_hdlr;
-  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
-
-  if (sigaction(SIGINT, &sigact, (struct sigaction *)NULL) != 0)
-  {
-    fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGINT, strsignal(SIGINT));
-
-    exit(EXIT_FAILURE);
-  }
-
-  sigact.sa_sigaction = sigpipe_hdlr;
-  sigact.sa_flags = SA_SIGINFO;
-  if (sigaction(SIGPIPE, &sigact, (struct sigaction *)NULL) != 0)
-  {
-    fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGPIPE, strsignal(SIGPIPE));
-
-    exit(EXIT_FAILURE);
-  }
-
-  sigact.sa_sigaction = sigusr_hdlr;
-  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
-  if (sigaction(SIGUSR1, &sigact, (struct sigaction *)NULL) != 0)
-  {
-    fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGUSR1, strsignal(SIGUSR1));
-
-    exit(EXIT_FAILURE);
-  }
-
-  sigact.sa_sigaction = sigusr_hdlr;
-  sigact.sa_flags = SA_RESTART | SA_SIGINFO;
-  if (sigaction(SIGUSR2, &sigact, (struct sigaction *)NULL) != 0)
-  {
-    fprintf(stderr, "error setting signal handler for %d (%s)\n",
-           SIGUSR2, strsignal(SIGUSR2));
-
-    exit(EXIT_FAILURE);
+    if (sigaction (signum, &sigact, NULL) < 0)
+    {
+      throw std::runtime_error ("unable to set up signal handler for " + std::string (strsignal (signum)));
+    }
   }
 }
 
@@ -249,7 +171,19 @@ int setup_and_run_fhgkernel ( bool daemonize
     }
   }
 
-  install_signal_handler();
+  install_signal_handler (SIGSEGV, &crit_err_hdlr, true);
+  install_signal_handler (SIGBUS, &crit_err_hdlr, true);
+  install_signal_handler (SIGABRT, &crit_err_hdlr, true);
+  install_signal_handler (SIGFPE, &crit_err_hdlr, true);
+
+  install_signal_handler (SIGTERM, &sigterm_hdlr, true);
+
+  install_signal_handler (SIGINT, &sigint_hdlr, true);
+
+  install_signal_handler (SIGPIPE, &sigpipe_hdlr, false);
+
+  install_signal_handler (SIGUSR1, &sigusr_hdlr, true);
+  install_signal_handler (SIGUSR2, &sigusr_hdlr, true);
 
   kernel = new fhg::core::kernel_t (state_path);
   kernel->set_name (kernel_name);
