@@ -51,29 +51,26 @@ typedef struct ucontext sig_ucontext_t;
 
 void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
 {
- void *             caller_address;
- sig_ucontext_t *   uc;
-
- uc = (sig_ucontext_t *)ucontext;
- sigcontext* mcontext
-   (static_cast<sigcontext*> (static_cast<void*> (&uc->uc_mcontext)));
+ sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
+                        (&(static_cast<sig_ucontext_t*> (ucontext)->uc_mcontext))
+                      ));
 
 #if __WORDSIZE == 32
  /* Get the address at the time the signal was raised from the EIP (x86) */
- caller_address = (void *) mcontext->eip;
+ unsigned long caller_address (mcontext->eip);
 #else /* __WORDSIZE == 64 */
- caller_address = (void *) mcontext->rip;
+ unsigned long caller_address (mcontext->rip);
 #endif /* __WORDSIZE == 64 */
 
  fprintf(stderr, "signal %d (%s), address is %p from %p\n",
   sig_num, strsignal(sig_num), info->si_addr,
-  (void *)caller_address);
+ (void*)caller_address);
 
  std::ostringstream log_message;
  log_message << "received signal "
              << sig_num << " (" << strsignal(sig_num) << "),"
              << " address is " << (void*)info->si_addr
-             << " from " << (void*)(caller_address)
+             << " from " << caller_address
    ;
 
  LLOG (ERROR, GLOBAL_logger, fhg::util::make_backtrace (log_message.str()));
