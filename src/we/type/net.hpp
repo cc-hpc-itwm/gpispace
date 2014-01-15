@@ -47,17 +47,17 @@ namespace we
       , boost::bimaps::set_of_relation<>
       > adj_pt_type;
     typedef boost::bimaps::bimap
-        < port_id_type
-        , place_id_type
-        , boost::bimaps::left_based
-        , boost::bimaps::with_info<we::type::property::type>
-        > port_to_place_with_info_type;
+      < port_id_type
+      , place_id_type
+      , boost::bimaps::left_based
+      , boost::bimaps::with_info<we::type::property::type>
+      > port_to_place_with_info_type;
     typedef boost::bimaps::bimap
-        < place_id_type
-        , port_id_type
-        , boost::bimaps::left_based
-        , boost::bimaps::with_info<we::type::property::type>
-        > place_to_port_with_info_type;
+      < place_id_type
+      , port_id_type
+      , boost::bimaps::left_based
+      , boost::bimaps::with_info<we::type::property::type>
+      > place_to_port_with_info_type;
     typedef boost::unordered_map< transition_id_type
                                 , port_to_place_with_info_type
                                 > port_to_place_type;
