@@ -487,7 +487,7 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   }
 }
 
-void Orchestrator::handleDiscoverJobStatestReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
+void Orchestrator::handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
 {
    DMLOG(TRACE, "handleDiscoverJobStatestReplyEvent( discovery_id: " << pEvt->discover_id() << ")");
 
