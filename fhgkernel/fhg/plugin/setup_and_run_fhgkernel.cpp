@@ -39,9 +39,9 @@
 
 namespace
 {
-  fhg::log::Logger::ptr_t GLOBAL_logger;
-
-  void crit_err_hdlr(int sig_num, siginfo_t* info, void* context)
+  void crit_err_hdlr ( int sig_num, siginfo_t* info, void* context
+                     , fhg::log::Logger::ptr_t logger
+                     )
   {
    sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
                           (&(static_cast<ucontext*> (context)->uc_mcontext))
@@ -68,18 +68,9 @@ namespace
                << " address is " << (void*)info->si_addr
                << " from " << (void*)caller_address;
 
-   LLOG (ERROR, GLOBAL_logger, fhg::util::make_backtrace (log_message.str()));
+   LLOG (ERROR, logger, fhg::util::make_backtrace (log_message.str()));
 
-   _exit(EXIT_FAILURE);
-  }
-
-  fhg::core::kernel_t* GLOBAL_kernel = 0;
-  void shutdown_global_kernel (int sig_num, siginfo_t *info, void *ucontext)
-  {
-    if (GLOBAL_kernel)
-    {
-      GLOBAL_kernel->stop();
-    }
+   _exit (EXIT_FAILURE);
   }
 }
 
@@ -94,8 +85,6 @@ int setup_and_run_fhgkernel ( bool daemonize
                             , fhg::log::Logger::ptr_t logger
                             )
 {
-  assert (!GLOBAL_kernel);
-
   fhg::plugin::magically_check_license (logger);
 
   if (not pidfile.empty())
@@ -117,18 +106,9 @@ int setup_and_run_fhgkernel ( bool daemonize
     }
   }
 
-  fhg::util::signal_handler_manager signal_handlers;
-  signal_handlers.add (SIGSEGV, &crit_err_hdlr);
-  signal_handlers.add (SIGBUS, &crit_err_hdlr);
-  signal_handlers.add (SIGABRT, &crit_err_hdlr);
-  signal_handlers.add (SIGFPE, &crit_err_hdlr);
-
-  signal_handlers.add (SIGTERM, &shutdown_global_kernel);
-  signal_handlers.add (SIGINT, &shutdown_global_kernel);
-
   fhg::core::kernel_t kernel (state_path);
-  GLOBAL_kernel = &kernel;
   kernel.set_name (kernel_name);
+
   BOOST_FOREACH (std::string const & p, search_path)
   {
     kernel.add_search_path (p);
@@ -169,11 +149,18 @@ int setup_and_run_fhgkernel ( bool daemonize
     }
   }
 
+  fhg::util::signal_handler_manager signal_handlers;
+  signal_handlers.add (SIGSEGV, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
+  signal_handlers.add (SIGBUS, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
+  signal_handlers.add (SIGABRT, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
+  signal_handlers.add (SIGFPE, boost::bind (&crit_err_hdlr, _1, _2, _3, logger));
+
+  signal_handlers.add (SIGTERM, boost::bind (&fhg::core::kernel_t::stop, &kernel));
+  signal_handlers.add (SIGINT, boost::bind (&fhg::core::kernel_t::stop, &kernel));
+
   int rc = kernel.run_and_unload (false);
 
   DLLOG (TRACE, logger, "shutting down... (" << rc << ")");
-
-  GLOBAL_kernel = 0;
 
   return rc;
 }
