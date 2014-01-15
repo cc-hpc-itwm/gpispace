@@ -73,9 +73,9 @@ namespace we
     place_id_type add_place (const place::type&);
     transition_id_type add_transition (const we::type::transition_t&);
 
-    const boost::unordered_map<place_id_type,place::type>& places() const;
-    const boost::unordered_map<transition_id_type,we::type::transition_t>&
-    transitions() const;
+    const boost::unordered_map<place_id_type, place::type>& places() const;
+    const boost::unordered_map<transition_id_type, we::type::transition_t>&
+      transitions() const;
 
     void add_connection ( edge::type
                         , transition_id_type
@@ -124,7 +124,7 @@ namespace we
 
   private:
     place_id_type _place_id;
-    boost::unordered_map<place_id_type,place::type> _pmap;
+    boost::unordered_map<place_id_type, place::type> _pmap;
 
     transition_id_type _transition_id;
     boost::unordered_map<transition_id_type, we::type::transition_t> _tmap;
