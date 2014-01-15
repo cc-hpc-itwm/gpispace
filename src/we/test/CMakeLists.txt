@@ -52,8 +52,3 @@ fhg_add_test (execute_activity.cpp
   PROJECT we
   LINK_LIBRARIES pnet
 )
-
-fhg_add_test (port.cpp
-  PROJECT we
-  LINK_LIBRARIES pnet
-)
