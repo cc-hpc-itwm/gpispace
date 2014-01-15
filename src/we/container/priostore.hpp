@@ -41,10 +41,6 @@ namespace we
                       > prio_map_t;
 
       prio_map_t _prio_map;
-
-      void erase ( const we::transition_id_type&
-                 , const prio_map_t::iterator&
-                 );
     };
   }
 }

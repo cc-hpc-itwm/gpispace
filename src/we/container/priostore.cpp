@@ -41,10 +41,15 @@ namespace we
       }
     }
 
-    void priority_store::erase ( const we::transition_id_type& x
-                               , const prio_map_t::iterator& pos
-                               )
+    void priority_store::insert (const we::transition_id_type& x, we::priority_type priority)
     {
+      vec_insert (_prio_map[priority], x);
+    }
+
+    void priority_store::erase (const we::transition_id_type& x, we::priority_type priority)
+    {
+      prio_map_t::iterator const pos (_prio_map.find (priority));
+
       if (pos != _prio_map.end())
       {
         vec_erase (pos->second, x);
@@ -54,16 +59,6 @@ namespace we
           _prio_map.erase (pos);
         }
       }
-    }
-
-    void priority_store::insert (const we::transition_id_type& x, we::priority_type priority)
-    {
-      vec_insert (_prio_map[priority], x);
-    }
-
-    void priority_store::erase (const we::transition_id_type& x, we::priority_type priority)
-    {
-      erase (x, _prio_map.find (priority));
     }
 
     bool priority_store::elem (const we::transition_id_type& x, we::priority_type priority) const
