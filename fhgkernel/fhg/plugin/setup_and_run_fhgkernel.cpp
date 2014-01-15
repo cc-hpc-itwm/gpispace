@@ -72,54 +72,28 @@ namespace
    _exit(EXIT_FAILURE);
   }
 
-  fhg::core::kernel_t *kernel = 0;
-
+  fhg::core::kernel_t* GLOBAL_kernel = 0;
   void shutdown_kernel ()
   {
-    if (kernel)
+    if (GLOBAL_kernel)
     {
-      kernel->stop();
+      GLOBAL_kernel->stop();
+    }
+  }
+  void shutdown_global_kernel (int sig_num, siginfo_t *info, void *ucontext)
+  {
+    if (GLOBAL_kernel)
+    {
+      GLOBAL_kernel->stop();
     }
   }
 
   void handle_sig_pipe() {}
-
-  void sigterm_hdlr(int sig_num, siginfo_t * info, void * ucontext)
-  {
-    if (kernel)
-    {
-      if (0 == kernel->handle_signal (sig_num, info, ucontext))
-      {
-        kernel->stop();
-      }
-    }
-  }
-
   void sigpipe_hdlr(int sig_num, siginfo_t * info, void * ucontext)
   {
-    if (kernel)
+    if (GLOBAL_kernel)
     {
-      kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
-      kernel->handle_signal (sig_num, info, ucontext);
-    }
-  }
-
-  void sigint_hdlr(int sig_num, siginfo_t *info, void *ucontext)
-  {
-    if (kernel)
-    {
-      if (0 == kernel->handle_signal (sig_num, info, ucontext))
-      {
-        kernel->stop();
-      }
-    }
-  }
-
-  void sigusr_hdlr(int sig_num, siginfo_t * info, void * ucontext)
-  {
-    if (kernel)
-    {
-      kernel->handle_signal (sig_num, info, ucontext);
+      GLOBAL_kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
     }
   }
 
@@ -148,7 +122,7 @@ int setup_and_run_fhgkernel ( bool daemonize
                             , fhg::log::Logger::ptr_t logger
                             )
 {
-  assert (!kernel);
+  assert (!GLOBAL_kernel);
 
   fhg::plugin::magically_check_license (logger);
 
@@ -176,20 +150,16 @@ int setup_and_run_fhgkernel ( bool daemonize
   install_signal_handler (SIGABRT, &crit_err_hdlr, true);
   install_signal_handler (SIGFPE, &crit_err_hdlr, true);
 
-  install_signal_handler (SIGTERM, &sigterm_hdlr, true);
-
-  install_signal_handler (SIGINT, &sigint_hdlr, true);
+  install_signal_handler (SIGTERM, &shutdown_global_kernel, true);
+  install_signal_handler (SIGINT, &shutdown_global_kernel, true);
 
   install_signal_handler (SIGPIPE, &sigpipe_hdlr, false);
 
-  install_signal_handler (SIGUSR1, &sigusr_hdlr, true);
-  install_signal_handler (SIGUSR2, &sigusr_hdlr, true);
-
-  kernel = new fhg::core::kernel_t (state_path);
-  kernel->set_name (kernel_name);
+  GLOBAL_kernel = new fhg::core::kernel_t (state_path);
+  GLOBAL_kernel->set_name (kernel_name);
   BOOST_FOREACH (std::string const & p, search_path)
   {
-    kernel->add_search_path (p);
+    GLOBAL_kernel->add_search_path (p);
   }
 
   BOOST_FOREACH (std::string const & p, config_vars)
@@ -203,7 +173,7 @@ int setup_and_run_fhgkernel ( bool daemonize
     else
     {
       DLLOG (TRACE, logger, "setting " << kv.first << " to " << kv.second);
-      kernel->put(kv.first, kv.second);
+      GLOBAL_kernel->put(kv.first, kv.second);
     }
   }
 
@@ -211,7 +181,7 @@ int setup_and_run_fhgkernel ( bool daemonize
   {
     try
     {
-      int ec = kernel->load_plugin (p);
+      int ec = GLOBAL_kernel->load_plugin (p);
       if (ec != 0)
         throw std::runtime_error (strerror (ec));
     }
@@ -220,23 +190,23 @@ int setup_and_run_fhgkernel ( bool daemonize
       LLOG (ERROR, logger, "could not load `" << p << "' : " << ex.what());
       if (! keep_going)
       {
-        kernel->stop();
-        kernel->unload_all();
+        GLOBAL_kernel->stop();
+        GLOBAL_kernel->unload_all();
         return EXIT_FAILURE;
       }
     }
   }
 
-  atexit(&shutdown_kernel);
+  atexit (&shutdown_kernel);
 
-  int rc = kernel->run_and_unload (false);
+  int rc = GLOBAL_kernel->run_and_unload (false);
 
   DLLOG (TRACE, logger, "shutting down... (" << rc << ")");
 
-  kernel->unload_all();
+  GLOBAL_kernel->unload_all();
 
-  fhg::core::kernel_t *tmp_kernel = kernel;
-  kernel = 0;
+  fhg::core::kernel_t *tmp_kernel = GLOBAL_kernel;
+  GLOBAL_kernel = 0;
   delete tmp_kernel;
 
   return rc;

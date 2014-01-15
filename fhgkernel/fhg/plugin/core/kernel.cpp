@@ -319,37 +319,6 @@ namespace fhg
       return m_plugins.find(name) != m_plugins.end();
     }
 
-    int kernel_t::handle_signal (int signum, siginfo_t *info, void *ctxt)
-    {
-      plugin_map_t to_signal;
-      {
-        if (not m_mtx_plugins.try_lock ())
-        {
-          DMLOG (WARN, "ignoring signal: mutex still locked");
-          errno = EAGAIN;
-          return -1;
-        }
-        to_signal = m_plugins;
-
-        m_mtx_plugins.unlock ();
-      }
-
-      DMLOG (DEBUG, "handling signal: " << signum);
-
-      for ( plugin_map_t::iterator it = to_signal.begin ()
-          ; it != to_signal.end()
-          ; ++it
-          )
-      {
-        it->second->plugin()->handle_plugin_signal ( signum
-                                                   , info
-                                                   , ctxt
-                                                   );
-      }
-
-      return 0;
-    }
-
     namespace
     {
       bool is_owner_of_task ( const std::string & p
