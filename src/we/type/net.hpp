@@ -142,6 +142,57 @@ namespace we
 
     token_by_place_id_type _token_by_place_id;
 
+    typedef std::map< we::priority_type
+                    , boost::unordered_set<we::transition_id_type>
+                    , std::greater<we::priority_type>
+                    > enabled_type;
+
+    enabled_type _enabled;
+
+    typedef std::pair< std::list<pnet::type::value::value_type>::iterator
+                     , std::list<pnet::type::value::value_type>::iterator::difference_type
+                     > pos_and_distance_type;
+
+    boost::unordered_map
+      < transition_id_type
+      , boost::unordered_map<place_id_type, pos_and_distance_type>
+      > _enabled_choice;
+
+    void get_enabled_choice (const net&);
+
+    typedef boost::tuple< place_id_type
+                        , std::list<pnet::type::value::value_type>::iterator
+                        , std::list<pnet::type::value::value_type>::iterator::difference_type
+                        > to_be_updated_type;
+
+    void update_enabled (transition_id_type);
+    void update_enabled_put_token
+      ( transition_id_type
+      , to_be_updated_type const&
+      );
+
+    void disable (transition_id_type);
+
+    we::type::activity_t extract_activity
+      (transition_id_type, we::type::transition_t const&);
+    void fire_expression (transition_id_type, we::type::transition_t const&);
+
+    typedef std::pair< place_id_type
+                     , std::list<pnet::type::value::value_type>::iterator
+                     > token_to_be_deleted_type;
+
+    std::list<token_to_be_deleted_type> do_extract
+      ( transition_id_type
+      , we::type::transition_t const&
+      , boost::function
+          <void (port_id_type, pnet::type::value::value_type const&)>
+      ) const;
+    void do_delete (std::list<token_to_be_deleted_type> const&);
+
+    to_be_updated_type do_put_value
+      (place_id_type, pnet::type::value::value_type const&);
+    void do_update (to_be_updated_type const&);
+
     friend class boost::serialization::access;
     template<typename Archive>
     void save (Archive& ar, const unsigned int) const
@@ -218,57 +269,6 @@ namespace we
       }
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-    typedef std::map< we::priority_type
-                    , boost::unordered_set<we::transition_id_type>
-                    , std::greater<we::priority_type>
-                    > enabled_type;
-
-    enabled_type _enabled;
-
-    typedef std::pair< std::list<pnet::type::value::value_type>::iterator
-                     , std::list<pnet::type::value::value_type>::iterator::difference_type
-                     > pos_and_distance_type;
-
-    boost::unordered_map
-      < transition_id_type
-      , boost::unordered_map<place_id_type, pos_and_distance_type>
-      > _enabled_choice;
-
-    void get_enabled_choice (const net&);
-
-    typedef boost::tuple< place_id_type
-                        , std::list<pnet::type::value::value_type>::iterator
-                        , std::list<pnet::type::value::value_type>::iterator::difference_type
-                        > to_be_updated_type;
-
-    void update_enabled (transition_id_type);
-    void update_enabled_put_token
-      ( transition_id_type
-      , to_be_updated_type const&
-      );
-
-    void disable (transition_id_type);
-
-    we::type::activity_t extract_activity
-      (transition_id_type, we::type::transition_t const&);
-    void fire_expression (transition_id_type, we::type::transition_t const&);
-
-    typedef std::pair< place_id_type
-                     , std::list<pnet::type::value::value_type>::iterator
-                     > token_to_be_deleted_type;
-
-    std::list<token_to_be_deleted_type> do_extract
-      ( transition_id_type
-      , we::type::transition_t const&
-      , boost::function
-          <void (port_id_type, pnet::type::value::value_type const&)>
-      ) const;
-    void do_delete (std::list<token_to_be_deleted_type> const&);
-
-    to_be_updated_type do_put_value
-      (place_id_type, pnet::type::value::value_type const&);
-    void do_update (to_be_updated_type const&);
 
     class cross_type
     {
