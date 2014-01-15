@@ -696,24 +696,25 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 
 void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
 {
-  Job* pJob;
+  Job* pJob = jobManager().findJob(pEvt->job_id());
 
-  pJob = jobManager().findJob(pEvt->job_id());
-  if(!pJob)
-  {
-      DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
-      sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
-                                                   , pEvt->from()
-                                                   , events::ErrorEvent::SDPA_EJOBNOTFOUND
-                                                   , "No such job found" )
-                                                  ));
-
-      return;
-  }
-
-  // if the event came from outside, forward it to the workflow engine
+   // if the event came from outside, forward it to the workflow engine
   if(pEvt->is_external())
   {
+      if(!pJob)
+      {
+         DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
+
+         // only if the message was external
+         sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
+                                                      , pEvt->from()
+                                                      , events::ErrorEvent::SDPA_EJOBNOTFOUND
+                                                      , "No such job found" )
+                                                     ));
+
+         return;
+      }
+
       m_map_discover_ids.insert(map_discover_ids_t::value_type(pEvt->discover_id(), pEvt->from()));
       workflowEngine()->discover(pEvt->discover_id(), pEvt->job_id());
   }
