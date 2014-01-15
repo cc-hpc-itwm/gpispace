@@ -85,12 +85,6 @@ void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext)
   _exit(EXIT_FAILURE);
 }
 
-void noncrit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext)
-{
-  log_backtrace (sig_num, info, ucontext);
-  LLOG (INFO, GLOBAL_logger, "trying to continue anyways");
-}
-
 // END OF BORROWED CODE
 
 static const int EX_STILL_RUNNING = 4;
@@ -181,10 +175,6 @@ void install_signal_handler()
 
     exit(EXIT_FAILURE);
   }
-
-  // install non-critical handlers
-  //sigact.sa_sigaction = noncrit_err_hdlr;
-  //sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
   // install informative handlers
   sigact.sa_sigaction = sigterm_hdlr;
