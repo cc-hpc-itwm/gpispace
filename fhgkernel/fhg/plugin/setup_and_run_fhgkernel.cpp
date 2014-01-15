@@ -24,6 +24,7 @@
 
 #include <fhg/util/backtracing_exception.hpp>
 #include <fhg/util/daemonize.hpp>
+#include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/get_home_dir.hpp>
 #include <fhg/util/pidfile_writer.hpp>
@@ -80,19 +81,6 @@ namespace
       GLOBAL_kernel->stop();
     }
   }
-
-  void install_signal_handler
-    (int signum, void (*handler) (int, siginfo_t*, void*), bool restartable)
-  {
-    struct sigaction sigact;
-    sigact.sa_sigaction = handler;
-    sigact.sa_flags = restartable ? (SA_RESTART | SA_SIGINFO) : SA_SIGINFO;
-
-    if (sigaction (signum, &sigact, NULL) < 0)
-    {
-      throw std::runtime_error ("unable to set up signal handler for " + std::string (strsignal (signum)));
-    }
-  }
 }
 
 int setup_and_run_fhgkernel ( bool daemonize
@@ -129,13 +117,14 @@ int setup_and_run_fhgkernel ( bool daemonize
     }
   }
 
-  install_signal_handler (SIGSEGV, &crit_err_hdlr, true);
-  install_signal_handler (SIGBUS, &crit_err_hdlr, true);
-  install_signal_handler (SIGABRT, &crit_err_hdlr, true);
-  install_signal_handler (SIGFPE, &crit_err_hdlr, true);
+  fhg::util::signal_handler_manager signal_handlers;
+  signal_handlers.add (SIGSEGV, &crit_err_hdlr);
+  signal_handlers.add (SIGBUS, &crit_err_hdlr);
+  signal_handlers.add (SIGABRT, &crit_err_hdlr);
+  signal_handlers.add (SIGFPE, &crit_err_hdlr);
 
-  install_signal_handler (SIGTERM, &shutdown_global_kernel, true);
-  install_signal_handler (SIGINT, &shutdown_global_kernel, true);
+  signal_handlers.add (SIGTERM, &shutdown_global_kernel);
+  signal_handlers.add (SIGINT, &shutdown_global_kernel);
 
   fhg::core::kernel_t kernel (state_path);
   GLOBAL_kernel = &kernel;
