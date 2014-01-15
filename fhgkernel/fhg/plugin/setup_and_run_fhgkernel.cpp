@@ -21,6 +21,7 @@
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
+#include <fhg/util/backtracing_exception.hpp>
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/get_home_dir.hpp>
@@ -50,10 +51,7 @@ typedef struct ucontext sig_ucontext_t;
 
 void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
 {
- void *             array[50];
  void *             caller_address;
- char **            messages;
- int                size, i;
  sig_ucontext_t *   uc;
 
  uc = (sig_ucontext_t *)ucontext;
@@ -71,34 +69,14 @@ void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
   sig_num, strsignal(sig_num), info->si_addr,
   (void *)caller_address);
 
- size = backtrace(array, 50);
-
- /* overwrite sigaction with caller's address */
- array[1] = caller_address;
-
- messages = backtrace_symbols(array, size);
-
- /* skip first stack frame (points here) */
- for (i = 1; i < size && messages != NULL; ++i)
- {
-  fprintf(stderr, "[bt]: (%d) %s\n", i, messages[i]);
- }
-
  std::ostringstream log_message;
  log_message << "received signal "
              << sig_num << " (" << strsignal(sig_num) << "),"
              << " address is " << (void*)info->si_addr
              << " from " << (void*)(caller_address)
-             << std::endl
    ;
- for (i = 1; i < size && messages != NULL; ++i)
- {
-   log_message << "[bt]: (" << i << ") " << messages[i] << std::endl;
- }
 
- LLOG (ERROR, GLOBAL_logger, log_message.str());
-
- free(messages);
+ LLOG (ERROR, GLOBAL_logger, fhg::util::make_backtrace (log_message.str()));
 }
 
 void crit_err_hdlr(int sig_num, siginfo_t * info, void * ucontext)
