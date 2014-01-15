@@ -137,17 +137,6 @@ namespace we
     }
   }
 
-  void net::set_transition_priority (transition_id_type tid, priority_type prio)
-  {
-    _enabled.set_priority (tid, prio);
-  }
-
-  priority_type
-  net::get_transition_priority (transition_id_type tid) const
-  {
-    return _enabled.get_priority (tid);
-  }
-
   const boost::unordered_map<place_id_type,place::type>& net::places() const
   {
     return _pmap;
