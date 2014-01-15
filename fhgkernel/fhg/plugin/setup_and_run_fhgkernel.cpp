@@ -45,14 +45,8 @@ namespace
 //
 // by: jschmier, http://stackoverflow.com/users/203667/jschmier
 
-/* This structure mirrors the one found in /usr/include/asm/ucontext.h */
-typedef struct _sig_ucontext {
- unsigned long     uc_flags;
- struct ucontext   *uc_link;
- stack_t           uc_stack;
- struct sigcontext uc_mcontext;
- sigset_t          uc_sigmask;
-} sig_ucontext_t;
+#include <ucontext.h>
+typedef struct ucontext sig_ucontext_t;
 
 void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
 {
@@ -63,12 +57,14 @@ void log_backtrace(int sig_num, siginfo_t * info, void * ucontext)
  sig_ucontext_t *   uc;
 
  uc = (sig_ucontext_t *)ucontext;
+ sigcontext* mcontext
+   (static_cast<sigcontext*> (static_cast<void*> (&uc->uc_mcontext)));
 
 #if __WORDSIZE == 32
  /* Get the address at the time the signal was raised from the EIP (x86) */
- caller_address = (void *) uc->uc_mcontext.eip;
+ caller_address = (void *) mcontext->eip;
 #else /* __WORDSIZE == 64 */
- caller_address = (void *) uc->uc_mcontext.rip;
+ caller_address = (void *) mcontext->rip;
 #endif /* __WORDSIZE == 64 */
 
  fprintf(stderr, "signal %d (%s), address is %p from %p\n",
