@@ -103,6 +103,7 @@ namespace we
     const transition_id_type tid (_transition_id++);
 
     _tmap.insert (std::make_pair (tid, transition));
+    _enabled.set_priority (tid, transition.priority());
 
     return tid;
   }

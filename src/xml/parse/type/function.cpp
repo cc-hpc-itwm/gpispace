@@ -657,6 +657,7 @@ namespace xml
         const requirements_type& _trans_requirements;
         boost::unordered_map<std::string, we::port_id_type>& _port_id_in;
         boost::unordered_map<std::string, we::port_id_type>& _port_id_out;
+        we::priority_type _priority;
 
         typedef we::type::transition_t we_transition_type;
 
@@ -783,6 +784,7 @@ namespace xml
           , const requirements_type& trans_requirements
           , boost::unordered_map<std::string, we::port_id_type>& port_id_in
           , boost::unordered_map<std::string, we::port_id_type>& port_id_out
+          , we::priority_type priority
           )
           : _name (name)
           , state (_state)
@@ -793,6 +795,7 @@ namespace xml
           , _trans_requirements (trans_requirements)
           , _port_id_in (port_id_in)
           , _port_id_out (port_id_out)
+          , _priority (priority)
         {
           util::property::join (state, _properties, fun.properties());
         }
@@ -810,6 +813,7 @@ namespace xml
             , condition()
             , _internal.get_value_or (true)
             , _properties
+            , _priority
             );
 
           add_ports (trans, fun.ports());
@@ -828,6 +832,7 @@ namespace xml
             , condition()
             , _internal.get_value_or (false)
             , _properties
+            , _priority
             );
 
           add_ports (trans, fun.ports());
@@ -861,6 +866,7 @@ namespace xml
             , condition()
             , _internal.get_value_or (true)
             , properties
+            , _priority
             );
 
           add_ports (trans, fun.ports(), pid_of_place);
@@ -879,6 +885,7 @@ namespace xml
         , const conditions_type& conditions
         , const we::type::property::type& trans_properties
         , const requirements_type& trans_requirements
+        , we::priority_type priority
         ) const
       {
         return boost::apply_visitor
@@ -891,6 +898,7 @@ namespace xml
                                 , trans_requirements
                                 , port_id_in
                                 , port_id_out
+                                , priority
                                 )
           , content()
           );

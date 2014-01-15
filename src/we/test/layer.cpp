@@ -324,6 +324,7 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
     , condition::type ("true")
     , true
     , we::type::property::type()
+    , we::priority_type()
     );
   transition.add_port
     (we::type::port_t ( "in"
@@ -368,6 +369,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
     , condition::type ("true")
     , true
     , we::type::property::type()
+    , we::priority_type()
     );
   transition.add_port ( we::type::port_t ( "in"
                                          , we::type::PORT_IN
@@ -428,6 +430,7 @@ namespace
       , condition::type ("true")
       , true
       , we::type::property::type()
+      , we::priority_type()
       );
     we::port_id_type const port_id_in
       ( transition.add_port ( we::type::port_t ( "in"
@@ -476,6 +479,7 @@ namespace
                                , condition::type ("true")
                                , true
                                , we::type::property::type()
+                               , we::priority_type()
                                )
       , transition
       , transition_id

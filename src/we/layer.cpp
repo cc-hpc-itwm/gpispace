@@ -96,6 +96,7 @@ namespace we
                                  , condition::type ("true")
                                  , true
                                  , we::type::property::type()
+                                 , we::priority_type()
                                  );
 
         return type::activity_t

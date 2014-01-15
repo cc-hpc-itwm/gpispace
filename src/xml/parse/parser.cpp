@@ -1613,6 +1613,7 @@ namespace xml
                                        , type::conditions_type()
                                        , we::type::property::type()
                                        , type::requirements_type()
+                                       , we::priority_type()
                                        )
         );
 

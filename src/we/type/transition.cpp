@@ -106,5 +106,10 @@ namespace we
     {
       _requirements.push_back (r);
     }
+
+    we::priority_type transition_t::priority() const
+    {
+      return _priority;
+    }
   }
 }

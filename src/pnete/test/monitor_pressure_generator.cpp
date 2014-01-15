@@ -26,6 +26,7 @@ struct activity
                                     , condition::type ("true")
                                     , true
                                     , we::type::property::type()
+                                    , we::priority_type()
                                     )
            , boost::none
            )

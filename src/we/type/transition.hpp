@@ -52,6 +52,7 @@ namespace we { namespace type {
         , port_id_counter_ (0)
         , prop_()
         , _requirements()
+        , _priority()
       {}
 
       template <typename Type>
@@ -60,6 +61,7 @@ namespace we { namespace type {
                    , condition::type const& _condition
                    , bool intern
                    , const we::type::property::type& prop
+                   , we::priority_type priority
                    )
         : name_ (name)
         , data_ (typ)
@@ -69,6 +71,7 @@ namespace we { namespace type {
         , port_id_counter_ (0)
         , prop_(prop)
         , _requirements()
+        , _priority (priority)
       { }
 
       const std::string& name() const;
@@ -95,6 +98,8 @@ namespace we { namespace type {
 
       std::list<we::type::requirement_t> const& requirements() const;
       void add_requirement (we::type::requirement_t const&);
+
+      we::priority_type priority() const;
 
       template<typename T>
         boost::optional<T> get_schedule_data
@@ -147,6 +152,7 @@ namespace we { namespace type {
       we::type::property::type prop_;
 
       std::list<we::type::requirement_t> _requirements;
+      we::priority_type _priority;
 
       friend class boost::serialization::access;
       template <typename Archive>
@@ -160,6 +166,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
         ar & BOOST_SERIALIZATION_NVP(_requirements);
+        ar & BOOST_SERIALIZATION_NVP(_priority);
       }
 
       template <typename Archive>
@@ -173,6 +180,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
         ar & BOOST_SERIALIZATION_NVP(_requirements);
+        ar & BOOST_SERIALIZATION_NVP(_priority);
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()
     };

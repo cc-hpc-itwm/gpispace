@@ -206,6 +206,7 @@ namespace xml
           , const conditions_type&
           , const we::type::property::type&
           , const requirements_type&
+          , we::priority_type
           ) const;
 
         // ***************************************************************** //
