@@ -149,9 +149,10 @@ namespace we
 
     enabled_type _enabled;
 
-    typedef std::pair< std::list<pnet::type::value::value_type>::iterator
-                     , std::list<pnet::type::value::value_type>::iterator::difference_type
-                     > pos_and_distance_type;
+    typedef std::pair
+      < std::list<pnet::type::value::value_type>::iterator
+      , std::list<pnet::type::value::value_type>::iterator::difference_type
+      > pos_and_distance_type;
 
     boost::unordered_map
       < transition_id_type
@@ -160,10 +161,11 @@ namespace we
 
     void get_enabled_choice (const net&);
 
-    typedef boost::tuple< place_id_type
-                        , std::list<pnet::type::value::value_type>::iterator
-                        , std::list<pnet::type::value::value_type>::iterator::difference_type
-                        > to_be_updated_type;
+    typedef boost::tuple
+      < place_id_type
+      , std::list<pnet::type::value::value_type>::iterator
+      , std::list<pnet::type::value::value_type>::iterator::difference_type
+      > to_be_updated_type;
 
     void update_enabled (transition_id_type);
     void update_enabled_put_token
