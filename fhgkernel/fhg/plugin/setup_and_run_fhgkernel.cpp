@@ -8,6 +8,7 @@
 #include <ucontext.h>
 #include <unistd.h>
 
+#include <ucontext.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -38,93 +39,90 @@
 namespace
 {
   fhg::log::Logger::ptr_t GLOBAL_logger;
-}
 
-#include <ucontext.h>
-
-void crit_err_hdlr(int sig_num, siginfo_t* info, void* context)
-{
- sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
-                        (&(static_cast<ucontext*> (context)->uc_mcontext))
-                      ));
+  void crit_err_hdlr(int sig_num, siginfo_t* info, void* context)
+  {
+   sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
+                          (&(static_cast<ucontext*> (context)->uc_mcontext))
+                        ));
 
 #if __WORDSIZE == 32
- unsigned long caller_address (mcontext->eip);
+   unsigned long caller_address (mcontext->eip);
 #else
 #if __WORDSIZE == 64
- unsigned long caller_address (mcontext->rip);
+   unsigned long caller_address (mcontext->rip);
 #else
 #error Unable to get caller_address on this architecture.
 #endif
 #endif
 
- fprintf ( stderr
-         , "signal %d (%s), address is %p from %p\n"
-         , sig_num, strsignal(sig_num), info->si_addr, (void*)caller_address
-         );
+   fprintf ( stderr
+           , "signal %d (%s), address is %p from %p\n"
+           , sig_num, strsignal(sig_num), info->si_addr, (void*)caller_address
+           );
 
- std::ostringstream log_message;
- log_message << "received signal "
-             << sig_num << " (" << strsignal(sig_num) << "),"
-             << " address is " << (void*)info->si_addr
-             << " from " << (void*)caller_address;
+   std::ostringstream log_message;
+   log_message << "received signal "
+               << sig_num << " (" << strsignal(sig_num) << "),"
+               << " address is " << (void*)info->si_addr
+               << " from " << (void*)caller_address;
 
- LLOG (ERROR, GLOBAL_logger, fhg::util::make_backtrace (log_message.str()));
+   LLOG (ERROR, GLOBAL_logger, fhg::util::make_backtrace (log_message.str()));
 
- _exit(EXIT_FAILURE);
-}
+   _exit(EXIT_FAILURE);
+  }
 
-static const int EX_STILL_RUNNING = 4;
-static fhg::core::kernel_t *kernel = 0;
+  fhg::core::kernel_t *kernel = 0;
 
-static void shutdown_kernel ()
-{
-  if (kernel) kernel->stop();
-}
-
-static void handle_sig_pipe() {}
-
-void sigterm_hdlr(int sig_num, siginfo_t * info, void * ucontext)
-{
-  if (kernel)
+  void shutdown_kernel ()
   {
-    if (0 == kernel->handle_signal (sig_num, info, ucontext))
+    if (kernel)
     {
-      shutdown_kernel ();
+      kernel->stop();
     }
   }
-}
 
-void sigpipe_hdlr(int sig_num, siginfo_t * info, void * ucontext)
-{
-  if (kernel)
-  {
-    kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
-    kernel->handle_signal (sig_num, info, ucontext);
-  }
-}
+  void handle_sig_pipe() {}
 
-void sigint_hdlr(int sig_num, siginfo_t *info, void *ucontext)
-{
-  if (kernel)
+  void sigterm_hdlr(int sig_num, siginfo_t * info, void * ucontext)
   {
-    if (0 == kernel->handle_signal (sig_num, info, ucontext))
+    if (kernel)
     {
-      shutdown_kernel ();
+      if (0 == kernel->handle_signal (sig_num, info, ucontext))
+      {
+        kernel->stop();
+      }
     }
   }
-}
 
-static void sigusr_hdlr(int sig_num, siginfo_t * info, void * ucontext)
-{
-  if (kernel)
+  void sigpipe_hdlr(int sig_num, siginfo_t * info, void * ucontext)
   {
-    kernel->handle_signal (sig_num, info, ucontext);
+    if (kernel)
+    {
+      kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
+      kernel->handle_signal (sig_num, info, ucontext);
+    }
   }
-}
 
-namespace
-{
+  void sigint_hdlr(int sig_num, siginfo_t *info, void *ucontext)
+  {
+    if (kernel)
+    {
+      if (0 == kernel->handle_signal (sig_num, info, ucontext))
+      {
+        kernel->stop();
+      }
+    }
+  }
+
+  void sigusr_hdlr(int sig_num, siginfo_t * info, void * ucontext)
+  {
+    if (kernel)
+    {
+      kernel->handle_signal (sig_num, info, ucontext);
+    }
+  }
+
   void install_signal_handler
     (int signum, void (*handler) (int, siginfo_t*, void*), bool restartable)
   {
