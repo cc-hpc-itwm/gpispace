@@ -73,13 +73,6 @@ namespace
   }
 
   fhg::core::kernel_t* GLOBAL_kernel = 0;
-  void shutdown_kernel ()
-  {
-    if (GLOBAL_kernel)
-    {
-      GLOBAL_kernel->stop();
-    }
-  }
   void shutdown_global_kernel (int sig_num, siginfo_t *info, void *ucontext)
   {
     if (GLOBAL_kernel)
@@ -186,8 +179,6 @@ int setup_and_run_fhgkernel ( bool daemonize
       }
     }
   }
-
-  atexit (&shutdown_kernel);
 
   int rc = kernel.run_and_unload (false);
 
