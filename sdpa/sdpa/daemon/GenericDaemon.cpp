@@ -244,7 +244,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 {
   const events::SubmitJobEvent& e (*evt);
 
-  DLLOG(TRACE, _logger, "got job submission from " << e.from() << ": job-id := " << e.job_id());
+  DLLOG(TRACE, _logger, "got job submission from " << e.from() << ": job-id := " << e.job_id ().get_value_or ("NONE"));
 
   if(e.is_external())
   {
@@ -284,7 +284,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     return;
   }
 
-  DLLOG (TRACE, _logger, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
+  DLLOG (TRACE, _logger, "Receive new job from "<<e.from() << " with job-id: " << e.job_id ().get_value_or ("NONE"));
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
