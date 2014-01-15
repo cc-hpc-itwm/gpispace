@@ -1,41 +1,37 @@
 // alexander.petry@itwm.fraunhofer.de
 
+#include <fhg/plugin/core/kernel.hpp>
+#include <fhg/plugin/core/license.hpp>
+#include <fhg/plugin/plugin.hpp>
+#include <fhg/util/backtracing_exception.hpp>
+#include <fhg/util/daemonize.hpp>
+#include <fhg/util/get_home_dir.hpp>
+#include <fhg/util/pidfile_writer.hpp>
+#include <fhg/util/program_info.h>
+#include <fhg/util/signal_handler_manager.hpp>
+#include <fhg/util/split.hpp>
+#include <fhg/util/thread/pool.hpp>
+
+#include <fhglog/LogMacros.hpp>
+
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include <execinfo.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <ucontext.h>
 #include <unistd.h>
-
-#include <ucontext.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <signal.h>
-
-#include <vector>
-#include <string>
-#include <iostream>
-
-#include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
-
-#include <fhg/util/backtracing_exception.hpp>
-#include <fhg/util/daemonize.hpp>
-#include <fhg/util/signal_handler_manager.hpp>
-#include <fhg/util/split.hpp>
-#include <fhg/util/get_home_dir.hpp>
-#include <fhg/util/pidfile_writer.hpp>
-#include <fhg/util/program_info.h>
-#include <fhg/util/thread/pool.hpp>
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/core/kernel.hpp>
-
-#include <fhg/plugin/core/license.hpp>
-
-#include <fhglog/LogMacros.hpp>
 
 namespace
 {
