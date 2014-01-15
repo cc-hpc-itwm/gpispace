@@ -5,7 +5,6 @@
 
 #include <we/type/net.fwd.hpp>
 
-#include <we/container/priostore.hpp>
 #include <we/type/activity.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
@@ -20,11 +19,14 @@
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
+#include <boost/random.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/utility.hpp>
 
 #include <list>
 #include <sstream>
@@ -100,7 +102,11 @@ namespace we
     {
       while (!_enabled.empty())
       {
-        transition_id_type const transition_id (_enabled.random (engine));
+        boost::unordered_set<we::transition_id_type> const& transition_ids
+          (_enabled.begin()->second);
+        boost::uniform_int<std::size_t> random (0, transition_ids.size() - 1);
+        transition_id_type const transition_id
+          (*boost::next (transition_ids.begin(), random (engine)));
         we::type::transition_t const& transition (_tmap.at (transition_id));
 
         if (transition.expression())
@@ -213,7 +219,12 @@ namespace we
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
-    we::container::priority_store _enabled;
+    typedef std::map< we::priority_type
+                    , boost::unordered_set<we::transition_id_type>
+                    , std::greater<we::priority_type>
+                    > enabled_type;
+
+    enabled_type _enabled;
 
     typedef std::pair< std::list<pnet::type::value::value_type>::iterator
                      , std::list<pnet::type::value::value_type>::iterator::difference_type

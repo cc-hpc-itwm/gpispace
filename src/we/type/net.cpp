@@ -274,7 +274,7 @@ namespace we
 
     if (cross.enables (this, tid))
     {
-      _enabled.insert (tid, _tmap.at (tid).priority());
+      _enabled[_tmap.at (tid).priority()].insert (tid);
       cross.write_to (_enabled_choice[tid]);
     }
     else
@@ -288,9 +288,14 @@ namespace we
     , to_be_updated_type const& to_be_updated
     )
   {
-    if (_enabled.elem (tid, _tmap.at (tid).priority()))
     {
-      return;
+      enabled_type::const_iterator const pos
+        (_enabled.find (_tmap.at (tid).priority()));
+
+      if (pos != _enabled.end() && pos->second.find (tid) != pos->second.end())
+      {
+        return;
+      }
     }
 
     cross_type cross;
@@ -324,7 +329,7 @@ namespace we
 
     if (cross.enables (this, tid))
     {
-      _enabled.insert (tid, _tmap.at (tid).priority());
+      _enabled[_tmap.at (tid).priority()].insert (tid);
       cross.write_to (_enabled_choice[tid]);
     }
     else
@@ -335,7 +340,19 @@ namespace we
 
   void net::disable (transition_id_type tid)
   {
-    _enabled.erase (tid, _tmap.at (tid).priority());
+    enabled_type::iterator const pos
+      (_enabled.find (_tmap.at (tid).priority()));
+
+    if (pos != _enabled.end())
+    {
+      pos->second.erase (tid);
+
+      if (pos->second.empty())
+      {
+        _enabled.erase (pos);
+      }
+    }
+
     _enabled_choice.erase (tid);
   }
 
