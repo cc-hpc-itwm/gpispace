@@ -16,6 +16,52 @@
 
 namespace we
 {
+  namespace
+  {
+    class cross_type
+    {
+      typedef std::pair< std::list<pnet::type::value::value_type>::iterator
+                       , std::list<pnet::type::value::value_type>::iterator::difference_type
+                       > pos_and_distance_type;
+    public:
+      bool enables (net* const, transition_id_type);
+      void write_to ( boost::unordered_map< place_id_type
+                                          , pos_and_distance_type
+                                          >&
+                    ) const;
+      void push (place_id_type, std::list<pnet::type::value::value_type>&);
+      void push ( place_id_type
+                , const std::list<pnet::type::value::value_type>::iterator&
+                , const std::list<pnet::type::value::value_type>::iterator::difference_type&
+                );
+    private:
+      class iterators_type
+      {
+      public:
+        iterators_type (std::list<pnet::type::value::value_type>&);
+        iterators_type
+          ( const std::list<pnet::type::value::value_type>::iterator&
+          , const std::list<pnet::type::value::value_type>::iterator::difference_type&
+          );
+        bool end() const;
+        const pos_and_distance_type& pos_and_distance() const;
+        void operator++();
+        void rewind();
+      private:
+        std::list<pnet::type::value::value_type>::iterator _begin;
+        std::list<pnet::type::value::value_type>::iterator _end;
+        std::list<pnet::type::value::value_type>::iterator::difference_type _distance_from_zero;
+        pos_and_distance_type _pos_and_distance;
+      };
+
+      typedef boost::unordered_map<place_id_type, iterators_type> map_type;
+
+      map_type _m;
+
+      bool do_step (map_type::iterator, map_type::iterator const&);
+    };
+  }
+
   net::net()
     : _place_id()
     , _pmap()
@@ -505,13 +551,13 @@ namespace we
 
   // cross_type
 
-  net::cross_type::iterators_type::iterators_type (std::list<pnet::type::value::value_type>& tokens)
+  cross_type::iterators_type::iterators_type (std::list<pnet::type::value::value_type>& tokens)
     : _begin (tokens.begin())
     , _end (tokens.end())
     , _distance_from_zero (0)
     , _pos_and_distance (tokens.begin(), _distance_from_zero)
   {}
-  net::cross_type::iterators_type::iterators_type
+  cross_type::iterators_type::iterators_type
     ( const std::list<pnet::type::value::value_type>::iterator& token
     , const std::list<pnet::type::value::value_type>::iterator::difference_type& distance_from_zero
     )
@@ -520,26 +566,26 @@ namespace we
     , _distance_from_zero (distance_from_zero)
     , _pos_and_distance (token, distance_from_zero)
   {}
-  bool net::cross_type::iterators_type::end() const
+  bool cross_type::iterators_type::end() const
   {
     return _end == _pos_and_distance.first;
   }
-  const net::pos_and_distance_type& net::cross_type::iterators_type::pos_and_distance() const
+  const cross_type::pos_and_distance_type& cross_type::iterators_type::pos_and_distance() const
   {
     return _pos_and_distance;
   }
-  void net::cross_type::iterators_type::operator++()
+  void cross_type::iterators_type::operator++()
   {
     ++_pos_and_distance.first;
     ++_pos_and_distance.second;
   }
-  void net::cross_type::iterators_type::rewind()
+  void cross_type::iterators_type::rewind()
   {
     _pos_and_distance.first = _begin;
     _pos_and_distance.second = _distance_from_zero;
   }
 
-  bool net::cross_type::do_step
+  bool cross_type::do_step
   (map_type::iterator slot, map_type::iterator const& end)
   {
     while (slot != end)
@@ -559,7 +605,7 @@ namespace we
     return false;
   }
 
-  bool net::cross_type::enables (net* const n, transition_id_type transition_id)
+  bool cross_type::enables (net* const n, transition_id_type transition_id)
   {
     //! \note that means the transitions without in-port cannot fire
     //! instead of fire unconditionally
@@ -569,7 +615,7 @@ namespace we
     }
 
     we::type::transition_t const& transition
-      (n->_tmap.at (transition_id));
+      (n->transitions().at (transition_id));
 
     //! \todo use is_const_true and boost::optional...
     if (transition.condition().expression() == "true")
@@ -587,7 +633,7 @@ namespace we
       {
         context.bind_ref
           ( transition.ports()
-          .at (n->_place_to_port.at (transition_id).left.find (pits.first)->get_right()).name()
+          .at (n->place_to_port().at (transition_id).left.find (pits.first)->get_right()).name()
           , *pits.second.pos_and_distance().first
           );
       }
@@ -601,10 +647,10 @@ namespace we
 
     return false;
   }
-  void net::cross_type::write_to (boost::unordered_map< place_id_type
-                                                      , pos_and_distance_type
-                                                      >& choice
-                                 ) const
+  void cross_type::write_to (boost::unordered_map< place_id_type
+                                                 , pos_and_distance_type
+                                                 >& choice
+                            ) const
   {
     choice.clear();
 
@@ -616,13 +662,13 @@ namespace we
         (std::make_pair (pits.first, pits.second.pos_and_distance()));
     }
   }
-  void net::cross_type::push ( place_id_type place_id
-                             , std::list<pnet::type::value::value_type>& tokens
-                             )
+  void cross_type::push ( place_id_type place_id
+                        , std::list<pnet::type::value::value_type>& tokens
+                        )
   {
     _m.insert (std::make_pair (place_id, iterators_type (tokens)));
   }
-  void net::cross_type::push
+  void cross_type::push
     ( place_id_type place_id
     , const std::list<pnet::type::value::value_type>::iterator& token
     , const std::list<pnet::type::value::value_type>::iterator::difference_type& distance_from_zero

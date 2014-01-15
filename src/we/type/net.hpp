@@ -269,46 +269,6 @@ namespace we
       }
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-    class cross_type
-    {
-    public:
-      bool enables (net* const, transition_id_type);
-      void write_to (boost::unordered_map< place_id_type
-                                         , pos_and_distance_type
-                                         >&
-                    ) const;
-      void push (place_id_type, std::list<pnet::type::value::value_type>&);
-      void push ( place_id_type
-                , const std::list<pnet::type::value::value_type>::iterator&
-                , const std::list<pnet::type::value::value_type>::iterator::difference_type&
-                );
-    private:
-      class iterators_type
-      {
-      public:
-        iterators_type (std::list<pnet::type::value::value_type>&);
-        iterators_type
-          ( const std::list<pnet::type::value::value_type>::iterator&
-          , const std::list<pnet::type::value::value_type>::iterator::difference_type&
-          );
-        bool end() const;
-        const pos_and_distance_type& pos_and_distance() const;
-        void operator++();
-        void rewind();
-      private:
-        std::list<pnet::type::value::value_type>::iterator _begin;
-        std::list<pnet::type::value::value_type>::iterator _end;
-        std::list<pnet::type::value::value_type>::iterator::difference_type _distance_from_zero;
-        pos_and_distance_type _pos_and_distance;
-      };
-
-      typedef boost::unordered_map<place_id_type, iterators_type> map_type;
-
-      map_type _m;
-
-      bool do_step (map_type::iterator, map_type::iterator const&);
-    };
   };
 }
 
