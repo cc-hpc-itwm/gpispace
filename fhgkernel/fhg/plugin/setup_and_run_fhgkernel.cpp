@@ -136,8 +136,6 @@ int setup_and_run_fhgkernel ( bool daemonize
       LLOG (ERROR, logger, "could not load `" << p << "' : " << ex.what());
       if (! keep_going)
       {
-        kernel.stop();
-        kernel.unload_all();
         return EXIT_FAILURE;
       }
     }
