@@ -214,7 +214,7 @@ namespace sdpa
     pnet::type::value::value_type Client::discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id)
     {
       return send_and_wait_for_reply<sdpa::events::DiscoverJobStatesReplyEvent>
-        (sdpa::events::DiscoverJobStatesEvent (_name, orchestrator_, discover_id, job_id)).discover_result();
+        (sdpa::events::DiscoverJobStatesEvent (_name, orchestrator_, job_id, discover_id)).discover_result();
 
       pnet::type::value::value_type c;
       return c;
