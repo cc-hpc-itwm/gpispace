@@ -88,15 +88,6 @@ namespace
     }
   }
 
-  void handle_sig_pipe() {}
-  void sigpipe_hdlr(int sig_num, siginfo_t * info, void * ucontext)
-  {
-    if (GLOBAL_kernel)
-    {
-      GLOBAL_kernel->schedule("kernel", "sigpipe", &handle_sig_pipe);
-    }
-  }
-
   void install_signal_handler
     (int signum, void (*handler) (int, siginfo_t*, void*), bool restartable)
   {
@@ -152,8 +143,6 @@ int setup_and_run_fhgkernel ( bool daemonize
 
   install_signal_handler (SIGTERM, &shutdown_global_kernel, true);
   install_signal_handler (SIGINT, &shutdown_global_kernel, true);
-
-  install_signal_handler (SIGPIPE, &sigpipe_hdlr, false);
 
   GLOBAL_kernel = new fhg::core::kernel_t (state_path);
   GLOBAL_kernel->set_name (kernel_name);
