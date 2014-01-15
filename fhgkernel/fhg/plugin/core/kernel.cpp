@@ -48,6 +48,21 @@ namespace fhg
       initialize_storage ();
     }
 
+    kernel_t::kernel_t ( std::string const& state_path
+                       , std::string const& name
+                       , fhg::core::kernel_t::search_path_t search_path
+                       )
+      : m_state_path (state_path)
+      , m_tick_time (5 * 100 * 1000)
+      , m_stop_requested (false)
+      , m_running (false)
+      , m_storage (0)
+      , m_name (name)
+      , m_search_path (search_path)
+    {
+      initialize_storage ();
+    }
+
     kernel_t::~kernel_t ()
     {
       if (m_running)

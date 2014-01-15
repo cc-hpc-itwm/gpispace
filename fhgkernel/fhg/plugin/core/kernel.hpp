@@ -120,6 +120,10 @@ namespace fhg
 
       explicit
       kernel_t (std::string const &state_path = "");
+      kernel_t ( std::string const& state_path
+               , std::string const& name
+               , fhg::core::kernel_t::search_path_t search_path
+               );
       ~kernel_t ();
 
       int run ();

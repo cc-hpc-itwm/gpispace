@@ -106,13 +106,7 @@ int setup_and_run_fhgkernel ( bool daemonize
     }
   }
 
-  fhg::core::kernel_t kernel (state_path);
-  kernel.set_name (kernel_name);
-
-  BOOST_FOREACH (std::string const & p, search_path)
-  {
-    kernel.add_search_path (p);
-  }
+  fhg::core::kernel_t kernel (state_path, kernel_name, search_path);
 
   BOOST_FOREACH (std::string const & p, config_vars)
   {
