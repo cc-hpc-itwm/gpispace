@@ -148,6 +148,8 @@ int setup_and_run_fhgkernel ( bool daemonize
                             , fhg::log::Logger::ptr_t logger
                             )
 {
+  assert (!kernel);
+
   fhg::plugin::magically_check_license (logger);
 
   if (not pidfile.empty())
