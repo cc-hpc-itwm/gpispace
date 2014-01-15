@@ -10,7 +10,6 @@ usage: $(basename "$0") [options]
     -d: dry run
     -n: name prefix
     -p: pattern
-    -S: signal (=$signal)
     -v: be verbose
     -T timeout (=$timeout): seconds to wait before SIGKILL
 EOF
@@ -21,7 +20,6 @@ dry_run=false
 name_prefix=''
 pattern=
 verbose=false
-signal=TERM
 timeout=3
 
 while getopts ":hi:dn:p:vS:T:" opt; do
@@ -44,9 +42,6 @@ while getopts ":hi:dn:p:vS:T:" opt; do
             ;;
         v)
             verbose=true
-            ;;
-        S)
-            signal=$(echo "$OPTARG" | tr 'a-z' 'A-Z')
             ;;
         T)
             timeout=$OPTARG
@@ -137,11 +132,7 @@ for p in $still_running ; do
 
     if echo "$name" | grep -q "^${pattern}$" ; then
         debug "drts matches pattern '^${pattern}\$'"
-        if [ "$signal" = "TERM" -o "$signal" = "15" ] ; then
-            term_drts "$p" "$name"
-        else
-            signal_drts "$signal" "$p" "$name"
-        fi
+        term_drts "$p" "$name"
     fi
 done
 wait
