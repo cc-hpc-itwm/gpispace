@@ -5,8 +5,9 @@
 
 #include <we/type/id.hpp>
 
-#include <boost/unordered_map.hpp>
 #include <boost/random.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/utility.hpp>
 
 #include <map>
 #include <vector>
@@ -25,18 +26,18 @@ namespace we
       bool elem (const we::transition_id_type&, we::priority_type) const;
 
       template<typename Engine>
-      const we::transition_id_type& random (Engine& engine) const
+      we::transition_id_type random (Engine& engine) const
       {
-        const std::vector<we::transition_id_type>& v
+        const boost::unordered_set<we::transition_id_type>& v
           (_prio_map.begin()->second);
         boost::uniform_int<std::size_t> rand (0, v.size()-1);
 
-        return v.at (rand (engine));
+        return *boost::next (v.begin(), rand (engine));
       }
 
     private:
       typedef std::map< we::priority_type
-                      , std::vector<we::transition_id_type>
+                      , boost::unordered_set<we::transition_id_type>
                       , std::greater<we::priority_type>
                       > prio_map_t;
 
