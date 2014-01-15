@@ -65,8 +65,6 @@ public:
   FHG_PLUGIN_START()
   {
     m_shutting_down = false;
-    m_job_in_progress = false;
-    m_graceful_shutdown_requested = false;
 
     m_reconnect_counter = 0;
     m_my_name =      fhg_kernel()->get_name ();
@@ -380,25 +378,6 @@ public:
     }
   }
 
-  FHG_ON_SIGNAL(sig, info, ctxt)
-  {
-    if (sig != SIGUSR2)
-      return;
-
-    DMLOG (TRACE, "initiating graceful shutdown due to signal := " << sig);
-    bool something_running;
-    {
-      lock_type lck (m_job_in_progress_mutex);
-      something_running = m_job_in_progress;
-      m_graceful_shutdown_requested = true;
-    }
-
-    if (not something_running)
-    {
-      fhg_kernel ()->shutdown ();
-    }
-  }
-
   int exec (drts::job_desc_t const &, drts::job_id_t &, drts::JobListener *)
   {
     // parse job
@@ -534,19 +513,6 @@ public:
                                      , e->from()
                                      , sdpa::events::ErrorEvent::SDPA_EPERM
                                      , "you are not yet connected"
-                                     , *e->job_id()
-                                     )
-        );
-      return;
-    }
-    else if (m_graceful_shutdown_requested)
-    {
-      MLOG (WARN, "refusing job " << *e->job_id () << " : shutting down");
-      send_event
-        (new sdpa::events::ErrorEvent( m_my_name
-                                     , e->from()
-                                     , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
-                                     , "I am going to shut down!"
                                      , *e->job_id()
                                      )
         );
@@ -797,18 +763,9 @@ private:
 
     for (;;)
     {
-      if (m_graceful_shutdown_requested)
-      {
-        fhg_kernel ()->shutdown ();
-        break;
-      }
-
-      { lock_type lck (m_job_in_progress_mutex); m_job_in_progress = false; }
       drts_on_cancel_clear ();
 
       job_ptr_t job = m_pending_jobs.get();
-
-      { lock_type lck (m_job_in_progress_mutex); m_job_in_progress = true; }
 
       if (drts::Job::PENDING == job->cmp_and_swp_state( drts::Job::PENDING
                                                       , drts::Job::RUNNING
@@ -1398,9 +1355,6 @@ private:
   mutable mutex_type m_job_arrived_mutex;
   mutable mutex_type m_reconnect_counter_mutex;
   condition_type     m_job_arrived;
-  mutable mutex_type m_job_in_progress_mutex;
-  bool               m_job_in_progress;
-  bool               m_graceful_shutdown_requested;
 
   fhg::util::thread::event<std::string> m_connected_event;
 
