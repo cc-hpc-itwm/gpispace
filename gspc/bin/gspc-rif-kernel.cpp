@@ -1,7 +1,9 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <fhg/plugin/core/kernel.hpp> // search_path_t
-#include <fhg/plugin/setup_and_run_fhgkernel.hpp>
+#include <fhg/plugin/core/license.hpp>
+#include <fhg/util/daemonize.hpp>
+#include <fhg/util/signal_handler_manager.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
@@ -55,20 +57,26 @@ int main(int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-  std::vector<std::string> mods_to_load;
-  mods_to_load.push_back ("rif");
+  fhg::plugin::magically_check_license (logger);
 
-  std::vector<std::string> config_vars;
-  config_vars.push_back ("plugin.rif.url=" + netd_url);
+  fhg::util::fork_and_daemonize_child_and_abandon_parent();
 
-  return setup_and_run_fhgkernel ( true // daemonize
-                                 , false //keep-going
-                                 , mods_to_load
-                                 , config_vars
-                                 , "" // state_path
-                                 , "" // pid_file
-                                 , "gspc-rif"
-                                 , search_path
-                                 , logger
-                                 );
+  fhg::core::kernel_t kernel ("", "gspc-rif", search_path);
+
+  kernel.put ("plugin.rif.url", netd_url);
+
+  const int ec (kernel.load_plugin ("rif"));
+  if (ec != 0)
+  {
+    throw std::runtime_error (strerror (ec));
+  }
+
+  fhg::util::signal_handler_manager signal_handlers;
+
+  signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
+
+  signal_handlers.add (SIGTERM, boost::bind (&fhg::core::kernel_t::stop, &kernel));
+  signal_handlers.add (SIGINT, boost::bind (&fhg::core::kernel_t::stop, &kernel));
+
+  return kernel.run_and_unload (false);
 }
