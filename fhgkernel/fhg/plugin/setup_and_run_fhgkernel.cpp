@@ -277,76 +277,7 @@ int setup_and_run_fhgkernel ( bool daemonize
                             , fhg::log::Logger::ptr_t logger
                             )
 {
-  {
-    std::string gspc_home;
-    {
-      namespace fs = boost::filesystem;
-
-      char buf [4096];
-      int rc;
-
-      rc = fhg_get_executable_path (buf, sizeof (buf));
-      if (rc < 0)
-      {
-        LLOG (ERROR, logger, "could not discover my own path");
-        return EXIT_FAILURE;
-      }
-
-      gspc_home = fs::path (buf).parent_path ().parent_path ().string ();
-    }
-    std::string curdir;
-    {
-      char buf [4096];
-      getcwd (buf, sizeof(buf));
-      curdir = buf;
-    }
-
-    std::vector<std::string> files;
-    files.push_back ("/etc/gspc/gspc.lic");
-    files.push_back (gspc_home + "/etc/gspc/gspc.lic");
-    files.push_back (fhg::util::get_home_dir () + "/.gspc.lic");
-    files.push_back (curdir + "/gspc.lic");
-
-    int rc = -1;
-    BOOST_FOREACH (std::string const &licfile, files)
-    {
-      rc = fhg::plugin::check_license_file (licfile);
-      if (rc == fhg::plugin::LICENSE_VALID)
-      {
-        break;
-      }
-      else
-      {
-        switch (rc)
-        {
-        case fhg::plugin::LICENSE_EXPIRED:
-          LLOG (ERROR, logger, "license '" << licfile << "' has expired");
-          break;
-        case fhg::plugin::LICENSE_CORRUPT:
-          LLOG (ERROR, logger, "license '" << licfile << "' is corrupt");
-            break;
-        case fhg::plugin::LICENSE_VERSION_MISMATCH:
-          LLOG (ERROR, logger, "license '" << licfile << "' has a different version");
-          break;
-        case fhg::plugin::LICENSE_NOT_VERIFYABLE:
-          LLOG (ERROR, logger, "license '" << licfile << "' is not verifyable");
-          break;
-        default:
-          LLOG (ERROR, logger, "license '" << licfile << "' is invalid");
-          break;
-        }
-      }
-    }
-
-    if (rc != fhg::plugin::LICENSE_VALID)
-    {
-      if (rc == -1)
-      {
-        std::cerr << "no license found" << std::endl;
-      }
-      return EXIT_FAILURE;
-    }
-  }
+  fhg::plugin::magically_check_license (logger);
 
   if (not pidfile.empty())
   {
