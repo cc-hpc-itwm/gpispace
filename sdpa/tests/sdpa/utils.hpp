@@ -188,13 +188,6 @@ namespace utils
       _kernel->unload_all();
     }
 
-    void add_capability(std::string const &cap)
-    {
-      drts::DRTS *drts_plugin = _kernel->lookup_plugin_as<drts::DRTS>("drts");
-      BOOST_REQUIRE(drts_plugin);
-      drts_plugin->add_virtual_capability(cap);
-    }
-
     boost::shared_ptr<fhg::core::kernel_t> _kernel;
     boost::thread _thread;
   };
