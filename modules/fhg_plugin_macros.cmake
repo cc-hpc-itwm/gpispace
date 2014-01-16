@@ -4,7 +4,7 @@ include(car_cdr_macros)
 macro(FHG_ADD_PLUGIN)
   PARSE_ARGUMENTS(PLUGIN
     "LINK_LIBRARIES;HEADERS;DEPENDS"
-    "BUILTIN;VERBOSE;INSTALL"
+    "VERBOSE;INSTALL"
     ${ARGN}
     )
   CAR(PLUGIN_NAME ${PLUGIN_DEFAULT_ARGS})
@@ -30,21 +30,6 @@ macro(FHG_ADD_PLUGIN)
     install(TARGETS ${PLUGIN_NAME}-plugin LIBRARY DESTINATION ${PLUGIN_DESTINATION_DIR} COMPONENT "plugins")
     if (PLUGIN_HEADERS)
       install(FILES ${PLUGIN_HEADERS} DESTINATION ${HEADER_DESTINATION_DIR} COMPONENT "plugins")
-    endif()
-  endif()
-
-  string(TOUPPER ${PLUGIN_NAME} upper_name)
-  if (PLUGIN_BUILTIN OR BUILTIN_${upper_name}_PLUGIN)
-    add_library(${PLUGIN_NAME}-plugin.static ${PLUGIN_SOURCES})
-    set_target_properties(${PLUGIN_NAME}-plugin.static PROPERTIES OUTPUT_NAME ${PLUGIN_NAME})
-    set_target_properties(${PLUGIN_NAME}-plugin.static PROPERTIES COMPILE_FLAGS "-DFHG_STATIC_PLUGIN=1")
-    target_link_libraries(${PLUGIN_NAME}-plugin.static ${PLUGIN_LINK_LIBRARIES})
-    foreach (d ${PLUGIN_DEPENDS})
-      add_dependencies(${PLUGIN_NAME}-plugin.static ${d})
-    endforeach()
-    list(APPEND builtin-plugins "${PLUGIN_NAME}-plugin.static")
-    if (PLUGIN_INSTALL)
-      install(TARGETS ${PLUGIN_NAME}-plugin.static ARCHIVE DESTINATION ${PLUGIN_DESTINATION_DIR} COMPONENT "plugins")
     endif()
   endif()
 endmacro()
