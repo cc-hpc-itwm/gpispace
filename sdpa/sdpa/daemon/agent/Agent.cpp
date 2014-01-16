@@ -698,6 +698,7 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
 {
   sdpa::job_id_t job_id(pEvt->job_id());
   Job* pJob = jobManager().findJob(job_id);
+  pnet::type::value::value_type discover_result;
 
    // if the event came from outside, forward it to the workflow engine
   if(pEvt->is_external())
@@ -706,10 +707,13 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
       {
          DLLOG(TRACE, _logger, "Job "<<job_id<<" not found!");
 
+         pnet::type::value::poke ("id", discover_result, job_id);
+         pnet::type::value::poke ("state", discover_result, std::string("UNKNOWN"));
+
          sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                              , pEvt->from()
                                                                                                              , pEvt->discover_id()
-                                                                                                             , pnet::type::value::value_type())));
+                                                                                                             , discover_result)));
 
          return;
       }
