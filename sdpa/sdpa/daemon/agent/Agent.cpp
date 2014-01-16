@@ -709,7 +709,7 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
 
          pnet::type::value::poke ("id", discover_result, job_id);
          pnet::type::value::poke ("state", discover_result, sdpa::status::UNKNOWN);
-         // put here the set of children
+         pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
 
          sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                              , pEvt->from()
@@ -728,11 +728,13 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
       {
           pnet::type::value::poke ("id", discover_result, job_id);
           pnet::type::value::poke ("state", discover_result, sdpa::status::UNKNOWN);
+          pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
       }
       else
       {
           pnet::type::value::poke ("id", discover_result, job_id);
           pnet::type::value::poke ("state", discover_result, pJob->getStatus());
+          pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
       }
 
       workflowEngine()->discovered(pEvt->discover_id(), discover_result);

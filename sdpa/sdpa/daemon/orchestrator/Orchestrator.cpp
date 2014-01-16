@@ -455,6 +455,7 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
 
       pnet::type::value::poke ("id", discover_result, pEvt->job_id());
       pnet::type::value::poke ("state", discover_result, sdpa::status::UNKNOWN);
+      pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
 
       sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                          , pEvt->from()
