@@ -5,10 +5,8 @@
 #include <string.h>
 
 #include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/builtin/numa.hpp>
 
 class NumaImpl : FHG_PLUGIN
-               , public fhg::numa::Numa
 {
 public:
   NumaImpl ()
