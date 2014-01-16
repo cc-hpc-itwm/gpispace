@@ -31,7 +31,6 @@ fhg_add_plugin(ufbmig_back ufbmig_back.cpp
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   HEADERS ufbmig_back.hpp
-  COMPONENT plugins
   DEPENDS pnet-ufbmig_init pnet-ufbmig_calc pnet-ufbmig_done pnet-ufbmig_mask
   INSTALL
 )
@@ -48,7 +47,6 @@ fhg_add_plugin(ufbmig_front ufbmig_front.cpp ${CMAKE_SOURCE_DIR}/sdpa/plugins/ob
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   HEADERS ufbmig_front.hpp ufbmig_msg_types.hpp
-  COMPONENT plugins
   INSTALL
 )
 
@@ -58,7 +56,6 @@ fhg_add_plugin(ufbmig_test ufbmig_test.cpp
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   HEADERS ufbmig_front.hpp
-  COMPONENT plugins
   INSTALL
 )
 
@@ -69,7 +66,6 @@ fhg_add_plugin(isim_dummy isim_dummy.cpp
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   HEADERS isim.hpp reactor.hpp
-  COMPONENT plugins
   INSTALL
 )
 
@@ -85,6 +81,5 @@ fhg_add_plugin(isim isim.cpp
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   HEADERS isim.hpp
-  COMPONENT plugins
   INSTALL
 )

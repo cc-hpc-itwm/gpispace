@@ -12,7 +12,6 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS drts_callbacks.h
-  COMPONENT plugins
 )
 
 fhg_add_plugin(kvsd kvsd.cpp
@@ -24,7 +23,6 @@ fhg_add_plugin(kvsd kvsd.cpp
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
-  COMPONENT plugins
 )
 
 fhg_add_plugin(kvs kvs.cpp
@@ -36,7 +34,6 @@ fhg_add_plugin(kvs kvs.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS kvs.hpp
-  COMPONENT plugins
 )
 
 fhg_add_plugin(kvs_dummy kvs_dummy.cpp
@@ -45,7 +42,6 @@ fhg_add_plugin(kvs_dummy kvs_dummy.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS kvs.hpp
-  COMPONENT plugins
 )
 
 find_package (HWLOC REQUIRED QUIET)
@@ -63,7 +59,6 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
                  ${HWLOC_SHARED_LIBRARY}
   INSTALL
   HEADERS wfe.hpp observable.hpp
-  COMPONENT plugins
 )
 
 fhg_add_plugin(sdpac sdpac.cpp
@@ -76,7 +71,6 @@ fhg_add_plugin(sdpac sdpac.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS sdpac.hpp
-  COMPONENT plugins
 )
 
 fhg_add_plugin(net net.cpp
@@ -87,7 +81,6 @@ fhg_add_plugin(net net.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS net.hpp
-  COMPONENT plugins
 )
 
 fhg_add_plugin(sdpactl sdpactl.cpp
@@ -97,7 +90,6 @@ fhg_add_plugin(sdpactl sdpactl.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS sdpactl.hpp
-  COMPONENT plugins
 )
 
 fhg_add_plugin(progress progress.cpp
@@ -107,7 +99,6 @@ fhg_add_plugin(progress progress.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS progress.hpp progress.h
-  COMPONENT plugins
 )
 
 fhg_add_plugin(logd logd.cpp observable.cpp
@@ -117,7 +108,6 @@ fhg_add_plugin(logd logd.cpp observable.cpp
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
-  COMPONENT plugins
 )
 
 fhg_add_plugin(logc logc.cpp
@@ -127,7 +117,6 @@ fhg_add_plugin(logc logc.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS logc.hpp
-  COMPONENT plugins
 )
 
 fhg_add_plugin(netd netd.cpp
@@ -138,5 +127,4 @@ fhg_add_plugin(netd netd.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS netd.hpp
-  COMPONENT plugins
 )

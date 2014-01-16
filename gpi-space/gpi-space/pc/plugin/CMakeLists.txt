@@ -13,7 +13,6 @@ fhg_add_plugin(gpi gpi.cpp
     ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS gpi.hpp
-  COMPONENT plugins
 )
 
 fhg_add_plugin(gpi_compat gpi_compat.cpp
@@ -22,5 +21,4 @@ fhg_add_plugin(gpi_compat gpi_compat.cpp
     ${Boost_SERIALIZATION_LIBRARY}
     fhg-util
   INSTALL
-  COMPONENT plugins
 )

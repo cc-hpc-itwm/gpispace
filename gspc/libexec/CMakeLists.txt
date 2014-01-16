@@ -14,5 +14,4 @@ fhg_add_plugin(kvsd2 kvsd.cpp
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
-  COMPONENT plugins
 )
