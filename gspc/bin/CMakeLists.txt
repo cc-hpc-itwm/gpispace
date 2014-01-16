@@ -108,7 +108,7 @@ install (TARGETS gspcd gspc-kvs
 include_directories (${FhgKernel_INCLUDE_DIR})
 
 add_executable (gspc-rif-kernel gspc-rif-kernel.cpp)
-target_link_libraries (gspc-rif-kernel fhg-plugin we-dev ${UTIL_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_THREAD_LIBRARY})
+target_link_libraries (gspc-rif-kernel rifimpl fhg-plugin we-dev ${UTIL_LIBRARIES} ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_THREAD_LIBRARY})
 
 install (TARGETS gspc-rif-kernel
   RUNTIME

@@ -29,21 +29,21 @@
 #include <gspc/rif/supervisor.hpp>
 #include <gspc/rif/util.hpp>
 
-  RifImpl::RifImpl()
-    : m_server()
+  RifImpl::RifImpl ( boost::function<void()> request_shutdown
+                   , size_t nthreads, std::string netd_url
+                   )
+    : _request_shutdown (request_shutdown)
+    , m_server()
     , m_mgr ()
     , m_supervisor (m_mgr)
   {
-    size_t nthreads = fhg_kernel ()->get ("nthreads", 4L);
-
     gspc::net::initialize (nthreads);
 
     gspc::net::server::default_service_demux().handle
       ("/service/echo", gspc::net::service::echo ());
 
-    m_server = gspc::net::serve ( fhg_kernel()->get ("url", "tcp://*")
-                                , gspc::net::server::default_queue_manager()
-                                );
+    m_server = gspc::net::serve
+      (netd_url, gspc::net::server::default_queue_manager());
 
     MLOG (DEBUG, "listening on " << m_server->url ());
 
@@ -79,21 +79,6 @@
     }
 
     gspc::net::shutdown ();
-  }
-
-  int RifImpl::fhg_plugin_start ()
-  {
-    FHG_PLUGIN_STARTED();
-  }
-
-  int RifImpl::fhg_plugin_stop ()
-  {
-    FHG_PLUGIN_STOPPED();
-  }
-
-  void RifImpl::shutdown ()
-  {
-    fhg_kernel ()->shutdown ();
   }
 
   int RifImpl::supervise (std::list<std::string> argv)
@@ -776,7 +761,7 @@
     }
     else if (command == "shutdown")
     {
-      shutdown ();
+      _request_shutdown();
     }
     else if (command == "supervise")
     {
@@ -816,14 +801,3 @@
 
     user->deliver (rply);
   }
-
-EXPORT_FHG_PLUGIN( rif
-                 , RifImpl
-                 , "rif"
-                 , "provides access to the rif infrastructure"
-                 , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "0.0.1"
-                 , "NA"
-                 , ""
-                 , ""
-                 );

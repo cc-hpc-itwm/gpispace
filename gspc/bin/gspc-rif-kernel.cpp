@@ -1,9 +1,11 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <fhg/plugin/core/kernel.hpp> // search_path_t
+#include <libexec/rif.hpp>
+
 #include <fhg/plugin/core/license.hpp>
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
+#include <fhg/util/thread/event.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
@@ -21,16 +23,12 @@ int main(int ac, char **av)
 
   po::options_description desc("options");
 
-  fhg::core::kernel_t::search_path_t search_path;
-
+  const size_t nthreads (4);
   std::string netd_url;
 
   desc.add_options()
     ("help,h", "this message")
     ("netd_url", po::value<std::string>(&netd_url), "url to listen on")
-    ( "add-search-path,L", po::value<fhg::core::kernel_t::search_path_t>(&search_path)
-    , "add a path to the search path for plugins"
-    )
     ;
 
   po::variables_map vm;
@@ -61,22 +59,24 @@ int main(int ac, char **av)
 
   fhg::util::fork_and_daemonize_child_and_abandon_parent();
 
-  fhg::core::kernel_t kernel ("", "gspc-rif", search_path);
+  fhg::util::thread::event<> stop_requested;
+  const boost::function<void()> request_stop
+    (boost::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
-  kernel.put ("plugin.rif.url", netd_url);
 
-  const int ec (kernel.load_plugin ("rif"));
-  if (ec != 0)
-  {
-    throw std::runtime_error (strerror (ec));
-  }
+  const RifImpl rif_impl (request_stop, nthreads, netd_url);
+
 
   fhg::util::signal_handler_manager signal_handlers;
 
   signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
 
-  signal_handlers.add (SIGTERM, boost::bind (&fhg::core::kernel_t::stop, &kernel));
-  signal_handlers.add (SIGINT, boost::bind (&fhg::core::kernel_t::stop, &kernel));
+  //! \note boost::bind allows ignoring the three parameters passed
+  signal_handlers.add (SIGTERM, boost::bind (request_stop));
+  signal_handlers.add (SIGINT, boost::bind (request_stop));
 
-  return kernel.run_and_unload (false);
+
+  stop_requested.wait();
+
+  return 0;
 }

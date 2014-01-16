@@ -3,26 +3,21 @@
 #ifndef GSPC_LIBEXEC_RIF_HPP
 #define GSPC_LIBEXEC_RIF_HPP
 
-#include <fhg/plugin/plugin.hpp>
-
 #include <gspc/net/frame.hpp>
 #include <gspc/net/server.hpp>
 #include <gspc/net/user.hpp>
 #include <gspc/rif/manager.hpp>
 #include <gspc/rif/supervisor.hpp>
 
-class RifImpl : FHG_PLUGIN
+class RifImpl
 {
 public:
-  RifImpl();
+  RifImpl ( boost::function<void()> request_shutdown
+          , size_t nthreads, std::string netd_url
+          );
   ~RifImpl();
 
-  FHG_PLUGIN_START();
-  FHG_PLUGIN_STOP();
-
 private:
-  void shutdown ();
-
   int supervise (std::list<std::string> argv);
 
   void on_child_failed (gspc::rif::supervisor_t::child_info_t const &chld);
@@ -33,6 +28,8 @@ private:
               , gspc::net::frame const &rqst
               , gspc::net::user_ptr user
               );
+
+  boost::function<void()> _request_shutdown;
 
   gspc::net::server_ptr_t m_server;
   gspc::rif::manager_t m_mgr;
