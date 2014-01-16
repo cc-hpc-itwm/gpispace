@@ -454,7 +454,7 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
       DLLOG(TRACE, _logger, "Job "<<pEvt->job_id()<<" not found!");
 
       pnet::type::value::poke ("id", discover_result, pEvt->job_id());
-      pnet::type::value::poke ("state", discover_result, std::string("UNKNOWN"));
+      pnet::type::value::poke ("state", discover_result, sdpa::status::UNKNOWN);
 
       sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                          , pEvt->from()
@@ -480,7 +480,7 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   {
       pnet::type::value::value_type discover_result;
       pnet::type::value::poke ("id", discover_result, pJob->id());
-      pnet::type::value::poke ("state", discover_result, sdpa::status::show(pJob->getStatus()));
+      pnet::type::value::poke ("state", discover_result, pJob->getStatus());
       pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
 
       events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
