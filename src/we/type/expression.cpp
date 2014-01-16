@@ -23,7 +23,7 @@ namespace we
    }
 
     // should correspond!
-    expression_t::expression_t (const std::string& expr, const ast_t& ast)
+    expression_t::expression_t (const std::string& expr, const expr::parse::parser& ast)
       : _expr (expr)
       , _ast (ast)
     {
@@ -35,7 +35,7 @@ namespace we
       return _expr;
     }
 
-    const expression_t::ast_t& expression_t::ast() const
+    const expr::parse::parser& expression_t::ast() const
     {
       return _ast;
     }
