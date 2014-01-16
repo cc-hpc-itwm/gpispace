@@ -87,45 +87,19 @@ namespace we
         return oss.str();
       }
 
-      namespace
+      void activity_t::inject (const activity_t& child)
       {
-        class visitor_activity_injector : public boost::static_visitor<>
+        we::type::net_type& net
+          (boost::get<we::type::net_type&> (_transition.data()));
+
+        BOOST_FOREACH (const activity_t::token_on_port_t& top, child.output())
         {
-        private:
-          const activity_t& _child;
-
-        public:
-          visitor_activity_injector (const activity_t& child)
-            : _child (child)
-          {}
-
-          void operator() (we::type::net_type& parent) const
-          {
-            BOOST_FOREACH ( const activity_t::token_on_port_t& top
-                          , _child.output()
-                          )
-              {
-                parent.put_value
-                  ( parent.port_to_place().at (*_child.transition_id())
-                  .left.find (top.second)->get_right()
-                  , top.first
-                  );
-              }
-          }
-
-          template <typename A>
-          void operator() (A&) const
-          {
-            throw std::runtime_error ("STRANGE: activity_injector");
-          }
-        };
-      }
-
-      void activity_t::inject (const activity_t& subact)
-      {
-        boost::apply_visitor ( visitor_activity_injector (subact)
-                             , _transition.data()
-                             );
+          net.put_value
+            ( net.port_to_place().at (*child.transition_id())
+            .left.find (top.second)->get_right()
+            , top.first
+            );
+        }
       }
 
       namespace
