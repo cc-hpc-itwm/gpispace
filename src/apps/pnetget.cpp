@@ -145,7 +145,7 @@ try
 
   if (vm.count("help"))
     {
-      std::cout << argv[0] << ": get tokens from output ports" << std::endl;
+      std::cout << argv[0] << ": get tokens from ports" << std::endl;
 
       std::cout << desc << std::endl;
 
