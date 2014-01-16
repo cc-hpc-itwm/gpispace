@@ -101,7 +101,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
             Transition *transition = petriNet_->createTransition();
             transition->setName(t.name() + "[" + condition.str() + "]");
-            transition->setConditionAlwaysTrue(t.condition().is_const_true());
+            transition->setConditionAlwaysTrue(!t.condition());
             transition->setPriority (t.priority());
             transitions_[tid] = transition;
 

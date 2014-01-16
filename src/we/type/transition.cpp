@@ -28,7 +28,7 @@ namespace we
       return fhg::util::boost::get_or_none<const module_call_t&> (data());
     }
 
-    const condition::type& transition_t::condition() const
+    boost::optional<expression_t> const& transition_t::condition() const
     {
       return condition_;
     }

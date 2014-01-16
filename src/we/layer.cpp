@@ -93,7 +93,7 @@ namespace we
           transition_net_wrapper ( wrapped_activity_prefix()
                                  + activity.transition().name()
                                  , net
-                                 , condition::type ("true")
+                                 , boost::none
                                  , true
                                  , we::type::property::type()
                                  , we::priority_type()

@@ -664,7 +664,6 @@ namespace xml
         typedef we::type::net_type we_net_type;
         typedef we::type::module_call_t we_module_type;
         typedef we::type::expression_t we_expr_type;
-        typedef condition::type we_cond_type;
 
         typedef boost::unordered_map< std::string
                                     , we::place_id_type
@@ -763,14 +762,14 @@ namespace xml
           return _name;
         }
 
-        we_cond_type condition (void) const
+        we::type::expression_t condition (void) const
         {
           const std::string cond ((fun.conditions() + _conditions).flatten());
 
           expr::parse::parser parsed_condition
             (util::we_parse (cond, "condition", "function", name(), fun.position_of_definition().path()));
 
-          return we_cond_type (cond, parsed_condition);
+          return we::type::expression_t (cond, parsed_condition);
         }
 
       public:

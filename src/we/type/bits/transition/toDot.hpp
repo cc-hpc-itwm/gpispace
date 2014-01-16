@@ -604,10 +604,10 @@ namespace we { namespace type {
 
         std::ostringstream cond;
 
-        if (boost::lexical_cast<std::string> (t.condition()) != "true")
+        if (t.condition())
         {
           std::ostringstream oss;
-          oss << expr::parse::parser (boost::lexical_cast<std::string> (t.condition()));
+          oss << t.condition()->ast();
 
           cond << "|" << lines ('&', quote (oss.str()));
         }

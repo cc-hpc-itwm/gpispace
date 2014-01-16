@@ -2,7 +2,6 @@
 
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
-#include <we/type/condition.hpp>
 
 #include <we/require_type.hpp>
 
@@ -619,8 +618,7 @@ namespace we
       we::type::transition_t const& transition
         (n->transitions().at (transition_id));
 
-      //! \todo use is_const_true and boost::optional...
-      if (transition.condition().expression() == "true")
+      if (!transition.condition())
       {
         return true;
       }
@@ -640,7 +638,7 @@ namespace we
             );
         }
 
-        if (transition.condition().parser().eval_all_bool (context))
+        if (transition.condition()->ast().eval_all_bool (context))
         {
           return true;
         }

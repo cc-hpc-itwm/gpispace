@@ -4,7 +4,6 @@
 #define WE_TYPE_TRANSITION_HPP 1
 
 #include <we/expr/eval/context.hpp>
-#include <we/type/condition.hpp>
 #include <we/type/expression.hpp>
 #include <we/type/id.hpp>
 #include <we/type/module_call.hpp>
@@ -47,7 +46,7 @@ namespace we { namespace type {
         : name_ ("<<transition unknown>>")
         , data_ (expression_t())
         , internal_ (true)
-        , condition_("true")
+        , condition_ (boost::none)
         , ports_()
         , port_id_counter_ (0)
         , prop_()
@@ -58,7 +57,7 @@ namespace we { namespace type {
       template <typename Type>
       transition_t ( const std::string& name
                    , Type const& typ
-                   , condition::type const& _condition
+                   , boost::optional<expression_t> const& _condition
                    , bool intern
                    , const we::type::property::type& prop
                    , we::priority_type priority
@@ -85,7 +84,7 @@ namespace we { namespace type {
 
       bool is_internal() const;
 
-      const condition::type& condition() const;
+      boost::optional<expression_t> const& condition() const;
 
       we::port_id_type add_port (port_t const&);
 
@@ -144,7 +143,7 @@ namespace we { namespace type {
       std::string name_;
       data_type data_;
       bool internal_;
-      condition::type condition_;
+      boost::optional<expression_t> condition_;
 
       port_map_t ports_;
       we::port_id_type port_id_counter_;

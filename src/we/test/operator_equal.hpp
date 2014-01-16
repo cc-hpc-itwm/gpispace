@@ -24,14 +24,6 @@ namespace we
   }
 }
 
-namespace condition
-{
-  bool operator== (type const& lhs, type const& rhs)
-  {
-    return lhs.expression() == rhs.expression();
-  }
-}
-
 namespace place
 {
   bool operator== (type const& lhs, type const& rhs)

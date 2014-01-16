@@ -793,7 +793,7 @@ namespace xml
             we::type::transition_t trans_in
               ( prefix + "IN"
               , we::type::expression_t()
-              , condition::type (cond_in, parsed_condition_in)
+              , we::type::expression_t (cond_in, parsed_condition_in)
               , true
               , properties
               , we::priority_type()
@@ -872,21 +872,10 @@ namespace xml
             }
 
             // going out of the subnet
-            const std::string cond_out ("true");
-
-            expr::parse::parser parsed_condition_out
-              ( util::we_parse ( cond_out
-                               , "condition"
-                               , "unfold"
-                               , trans.name()
-                               , trans.position_of_definition().path()
-                               )
-              );
-
             we::type::transition_t trans_out
               ( prefix + "OUT"
               , we::type::expression_t()
-              , condition::type (cond_out, parsed_condition_out)
+              , boost::none
               , true
               , properties
               , we::priority_type()
