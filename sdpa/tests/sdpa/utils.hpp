@@ -8,7 +8,6 @@
 #include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <sdpa/plugins/drts.hpp>
 
 #include <fhg/plugin/core/kernel.hpp>
 #include <fhg/plugin/plugin.hpp>

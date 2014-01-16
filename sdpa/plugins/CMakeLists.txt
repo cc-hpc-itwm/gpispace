@@ -14,7 +14,7 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
-  HEADERS drts.hpp drts_callbacks.h
+  HEADERS drts_callbacks.h
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
   PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins

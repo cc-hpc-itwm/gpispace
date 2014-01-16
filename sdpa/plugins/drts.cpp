@@ -1,4 +1,3 @@
-#include "drts.hpp"
 #include "master.hpp"
 #include "job.hpp"
 #include "wfe.hpp"
@@ -36,6 +35,47 @@
 #include <gspc/net/frame_builder.hpp>
 
 #include <boost/serialization/shared_ptr.hpp>
+
+namespace drts
+{
+  typedef std::string job_desc_t;
+  typedef std::string job_id_t;
+
+  namespace status
+  {
+    enum status_t
+      {
+        PENDING = 0
+        , RUNNING = 1
+        , FINISHED = 2
+        , PAUSED = 3
+        , CANCELED = 4
+        , FAILED = 5
+      };
+  }
+
+  class JobListener
+  {
+  public:
+    virtual ~JobListener() {}
+    virtual void jobStatusChanged(job_id_t const &, drts::status::status_t) = 0;
+  };
+
+  class DRTS
+  {
+  public:
+    virtual ~DRTS() {}
+
+    virtual int exec (job_desc_t const &, job_id_t &, JobListener *) = 0;
+    virtual status::status_t query (job_id_t const & jobid) = 0;
+    virtual int cancel (job_id_t const & jobid) = 0;
+    virtual int results (job_id_t const & jobid, std::string &) = 0;
+    virtual int remove (job_id_t const & jobid) = 0;
+    virtual void add_virtual_capability (std::string const &cap) = 0;
+    virtual void del_virtual_capability (std::string const &cap) = 0;
+    // virtual capabilities_t capabilities() const = 0;
+  };
+}
 
 class DRTSImpl : FHG_PLUGIN
                , public drts::DRTS
