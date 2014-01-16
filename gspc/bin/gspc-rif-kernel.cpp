@@ -77,5 +77,5 @@ int main(int ac, char **av)
 
   stop_requested.wait();
 
-  return 0;
+  return EXIT_SUCCESS;
 }
