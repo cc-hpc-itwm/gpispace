@@ -15,6 +15,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <sstream>
@@ -41,16 +42,18 @@ namespace we
         void decode (std::istream& s, activity_t& t)
         {
           try
-            {
-              boost::archive::text_iarchive ar (s);
+          {
+            boost::archive::text_iarchive ar (s);
 
-              ar >> BOOST_SERIALIZATION_NVP (t);
-            }
+            ar >> BOOST_SERIALIZATION_NVP (t);
+          }
           catch (std::exception const &ex)
-            {
-              throw std::runtime_error
-                (std::string ("deserialization error: ") + ex.what ());
-            }
+          {
+            throw std::runtime_error
+              ( ( boost::format ("deserialization error: '%1%'") % ex.what()
+                ).str()
+              );
+          }
         }
       }
 
@@ -59,10 +62,10 @@ namespace we
         std::ifstream stream (path.string().c_str());
 
         if (!stream)
-          {
-            throw std::runtime_error
-              ("failed to open " + path.string() + "for reading");
-          }
+        {
+          throw std::runtime_error
+            ((boost::format ("could not open '%1%' for reading") % path).str());
+        }
 
         decode (stream, *this);
       }
