@@ -33,9 +33,11 @@ namespace gspc
   namespace rif
   {
     daemon::daemon ( boost::function<void()> request_shutdown
+                   , fhg::log::Logger::ptr_t logger
                    , size_t nthreads, std::string netd_url
                    )
       : _request_shutdown (request_shutdown)
+      , _logger (logger)
       , m_server()
       , m_mgr ()
       , m_supervisor (m_mgr)
@@ -48,7 +50,7 @@ namespace gspc
       m_server = net::serve
         (netd_url, net::server::default_queue_manager());
 
-      MLOG (DEBUG, "listening on " << m_server->url ());
+      LLOG (DEBUG, _logger, "listening on " << m_server->url ());
 
       signal (SIGCHLD, SIG_DFL);
 
@@ -237,15 +239,15 @@ namespace gspc
 
     void daemon::on_child_failed (supervisor_t::child_info_t const &chld)
     {
-      MLOG (WARN, "child failed: " << chld.descriptor.name);
+      LLOG (WARN, _logger, "child failed: " << chld.descriptor.name);
     }
     void daemon::on_child_started (supervisor_t::child_info_t const &chld)
     {
-      MLOG (INFO, "child started: " << chld.descriptor.name);
+      LLOG (INFO, _logger, "child started: " << chld.descriptor.name);
     }
     void daemon::on_child_terminated (supervisor_t::child_info_t const &chld)
     {
-      MLOG (WARN, "child terminated: " << chld.descriptor.name);
+      LLOG (WARN, _logger, "child terminated: " << chld.descriptor.name);
     }
 
     void daemon::handle ( std::string const &dst

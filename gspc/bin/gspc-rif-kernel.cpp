@@ -64,7 +64,7 @@ int main(int ac, char **av)
     (boost::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
 
-  const gspc::rif::daemon rif (request_stop, nthreads, netd_url);
+  const gspc::rif::daemon rif (request_stop, logger, nthreads, netd_url);
 
 
   fhg::util::signal_handler_manager signal_handlers;

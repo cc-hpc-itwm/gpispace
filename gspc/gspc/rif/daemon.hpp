@@ -9,6 +9,8 @@
 #include <gspc/rif/manager.hpp>
 #include <gspc/rif/supervisor.hpp>
 
+#include <fhglog/Logger.hpp>
+
 namespace gspc
 {
   namespace rif
@@ -17,6 +19,7 @@ namespace gspc
     {
     public:
       daemon ( boost::function<void()> request_shutdown
+             , fhg::log::Logger::ptr_t logger
              , size_t nthreads, std::string netd_url
              );
       ~daemon();
@@ -34,6 +37,7 @@ namespace gspc
                   );
 
       boost::function<void()> _request_shutdown;
+      fhg::log::Logger::ptr_t _logger;
 
       gspc::net::server_ptr_t m_server;
       gspc::rif::manager_t m_mgr;
