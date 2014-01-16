@@ -723,9 +723,16 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
   }
   else
   {
-      pnet::type::value::value_type discover_result;
-      pnet::type::value::poke ("id", discover_result, job_id);
-      pnet::type::value::poke ("state", discover_result, sdpa::status::show(pJob->getStatus()));
+      if(!pJob)
+      {
+          pnet::type::value::poke ("id", discover_result, job_id);
+          pnet::type::value::poke ("state", discover_result, std::string("UNKNOWN"));
+      }
+      else
+      {
+          pnet::type::value::poke ("id", discover_result, job_id);
+          pnet::type::value::poke ("state", discover_result, sdpa::status::show(pJob->getStatus()));
+      }
 
       workflowEngine()->discovered(pEvt->discover_id(), discover_result);
   }
