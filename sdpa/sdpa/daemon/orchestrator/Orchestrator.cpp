@@ -469,14 +469,14 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   if(worker_id)
   {
       m_map_discover_ids.insert(map_discover_ids_t::value_type(pEvt->discover_id(), pEvt->from()));
-      DMLOG(TRACE, "Tell the worker "<<*worker_id<<" to collect the states of all child job/activities related to the job "<<pEvt->job_id());
+      DLLOG(TRACE, _logger, "Tell the worker "<<*worker_id<<" to collect the states of all child job/activities related to the job "<<pEvt->job_id());
       events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( name()
                                                                                        , *worker_id
                                                                                        , pEvt->job_id()
                                                                                        , pEvt->discover_id()) );
       sendEventToOther(pDiscEvt);
   }
-  else // the job is in pending, it hsn't been submitted to any worker, yet
+  else
   {
       pnet::type::value::value_type discover_result;
       pnet::type::value::poke ("id", discover_result, pJob->id());
@@ -494,8 +494,6 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
 
 void Orchestrator::handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
 {
-   DMLOG(TRACE, "handleDiscoverJobStatestReplyEvent( discovery_id: " << pEvt->discover_id() << ")");
-
    sdpa::agent_id_t issuer(m_map_discover_ids.at( pEvt->discover_id()));
    events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                  , issuer
