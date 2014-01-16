@@ -32,7 +32,6 @@ namespace we
 
       const std::string& expression() const;
       const ast_t& ast() const;
-      bool is_empty() const;
 
       bool simplify (const expr::parse::util::name_set_t& needed_bindings);
 

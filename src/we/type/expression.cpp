@@ -40,11 +40,6 @@ namespace we
       return _ast;
     }
 
-    bool expression_t::is_empty() const
-    {
-      return _expr.empty();
-    }
-
     bool expression_t::simplify
     (const expr::parse::util::name_set_t& needed_bindings)
     {
