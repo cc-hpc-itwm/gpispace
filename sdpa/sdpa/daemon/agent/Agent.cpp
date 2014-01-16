@@ -696,14 +696,15 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 
 void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
 {
-  Job* pJob = jobManager().findJob(pEvt->job_id());
+  sdpa::job_id_t job_id(pEvt->job_id());
+  Job* pJob = jobManager().findJob(job_id);
 
    // if the event came from outside, forward it to the workflow engine
   if(pEvt->is_external())
   {
       if(!pJob)
       {
-         DLLOG(TRACE, _logger, "Job "<<pEvt->job_id()<<" not found!");
+         DLLOG(TRACE, _logger, "Job "<<job_id<<" not found!");
 
          sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                              , pEvt->from()
@@ -714,12 +715,12 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
       }
 
       m_map_discover_ids.insert(map_discover_ids_t::value_type(pEvt->discover_id(), pEvt->from()));
-      workflowEngine()->discover(pEvt->discover_id(), pEvt->job_id());
+      workflowEngine()->discover(pEvt->discover_id(), job_id);
   }
   else
   {
       pnet::type::value::value_type discover_result;
-      pnet::type::value::poke ("id", discover_result, pJob->id());
+      pnet::type::value::poke ("id", discover_result, job_id);
       pnet::type::value::poke ("state", discover_result, sdpa::status::show(pJob->getStatus()));
 
       workflowEngine()->discovered(pEvt->discover_id(), discover_result);
