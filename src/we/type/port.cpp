@@ -2,10 +2,6 @@
 
 #include <we/type/port.hpp>
 
-#include <we/type/signature/show.hpp>
-
-#include <iostream>
-
 namespace we
 {
   namespace type
