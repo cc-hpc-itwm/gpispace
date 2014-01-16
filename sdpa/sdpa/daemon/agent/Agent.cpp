@@ -747,5 +747,6 @@ void Agent::handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobSt
                                                                                                       , master_name
                                                                                                       , pEvt->discover_id()
                                                                                                       , pEvt->discover_result())));
+  m_map_discover_ids.erase(pEvt->discover_id());
 }
 }} // end namespaces
