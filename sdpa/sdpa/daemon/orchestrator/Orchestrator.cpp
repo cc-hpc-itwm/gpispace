@@ -447,16 +447,21 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   Job* pJob;
 
   pJob = jobManager().findJob(pEvt->job_id());
+  pnet::type::value::value_type discover_result;
+
   if(!pJob)
   {
-    DMLOG(TRACE, "Job "<<pEvt->job_id()<<" not found!");
-    sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
-                                                     , pEvt->from()
-                                                     , events::ErrorEvent::SDPA_EJOBNOTFOUND
-                                                     , "No such job found" )
-                                                    ));
+      DLLOG(TRACE, _logger, "Job "<<pEvt->job_id()<<" not found!");
 
-    return;
+      pnet::type::value::poke ("id", discover_result, pEvt->job_id());
+      pnet::type::value::poke ("state", discover_result, std::string("UNKNOWN"));
+
+      sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
+                                                                                                         , pEvt->from()
+                                                                                                         , pEvt->discover_id()
+                                                                                                         , discover_result)));
+
+      return;
   }
 
   boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
