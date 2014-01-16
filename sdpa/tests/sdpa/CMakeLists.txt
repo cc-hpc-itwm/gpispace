@@ -17,7 +17,6 @@ get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
 get_target_property(TESTS_FVM_PC_FAKE_MODULE fvm-pc-fake.shared LOCATION)
 
 fhg_add_plugin (fvm-fake fvm-fake.cpp
-  EXPORTS FVM
   LINK_LIBRARIES ${TESTS_FVM_PC_FAKE_MODULE}
   DEPENDS fvm-pc-fake.shared
   )

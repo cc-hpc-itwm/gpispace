@@ -5,7 +5,6 @@ include_directories (${FhgKernel_INCLUDE_DIR})
 include_directories (${FhgLog_INCLUDE_DIR})
 
 fhg_add_plugin(kvsd2 kvsd.cpp
-  EXPORTS KVSD
   LINK_LIBRARIES libgspc.shared
                  ${FhgLog_LIBRARY_SHARED}
                  ${Boost_THREAD_LIBRARY}

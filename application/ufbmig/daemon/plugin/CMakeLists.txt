@@ -23,7 +23,6 @@ get_target_property(UFBMIG_INIT_INC pnet-ufbmig_init PNET_GENERATE_DIR)
 include_directories(${UFBMIG_INIT_INC})
 
 fhg_add_plugin(ufbmig_back ufbmig_back.cpp
-  EXPORTS UFBMIG_BACK
   LINK_LIBRARIES pnet
                  ${FhgLog_LIBRARY_SHARED}
                  ${Boost_FILESYSTEM_LIBRARY}
@@ -36,7 +35,6 @@ fhg_add_plugin(ufbmig_back ufbmig_back.cpp
 )
 
 fhg_add_plugin(ufbmig_front ufbmig_front.cpp ${CMAKE_SOURCE_DIR}/sdpa/plugins/observable.cpp
-  EXPORTS UFBMIG_FRONT
   LINK_LIBRARIES ${PSPROMIGIF_LIBRARY}
                  ${FhgLog_LIBRARY_SHARED}
                  ${HWLOC_SHARED_LIBRARY}
@@ -51,7 +49,6 @@ fhg_add_plugin(ufbmig_front ufbmig_front.cpp ${CMAKE_SOURCE_DIR}/sdpa/plugins/ob
 )
 
 fhg_add_plugin(ufbmig_test ufbmig_test.cpp
-  EXPORTS UFBMIG_TEST
   LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
@@ -60,7 +57,6 @@ fhg_add_plugin(ufbmig_test ufbmig_test.cpp
 )
 
 fhg_add_plugin(isim_dummy isim_dummy.cpp
-  EXPORTS ISIM
   LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
@@ -70,7 +66,6 @@ fhg_add_plugin(isim_dummy isim_dummy.cpp
 )
 
 fhg_add_plugin(isim isim.cpp
-  EXPORTS ISIM
   LINK_LIBRARIES ${PSPROMIGIF_LIBRARY}
                  ${FhgLog_LIBRARY_SHARED}
                  ${HWLOC_SHARED_LIBRARY}

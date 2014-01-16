@@ -2,7 +2,6 @@ include(fhg_plugin_macros)
 
 # distributed runtime system plugin, aka interface to SDPA agent
 fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
-  EXPORTS DRTS
   LINK_LIBRARIES sdpa
                  ${FhgCom_LIBRARY}
                  ${GSPC_LIBRARY_SHARED}
@@ -15,7 +14,6 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
 )
 
 fhg_add_plugin(kvsd kvsd.cpp
-  EXPORTS KVSD
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY_SHARED}
                  fhg-util
@@ -26,7 +24,6 @@ fhg_add_plugin(kvsd kvsd.cpp
 )
 
 fhg_add_plugin(kvs kvs.cpp
-  EXPORTS KVS
   LINK_LIBRARIES fhg-util
                  ${FhgCom_LIBRARY}
                  ${Boost_SERIALIZATION_LIBRARY}
@@ -37,7 +34,6 @@ fhg_add_plugin(kvs kvs.cpp
 )
 
 fhg_add_plugin(kvs_dummy kvs_dummy.cpp
-  EXPORTS KVS
   LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
@@ -48,7 +44,6 @@ find_package (HWLOC REQUIRED QUIET)
 include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
 fhg_add_plugin(wfe wfe.cpp observable.cpp
-  EXPORTS WFE
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  pnet
                  ${GSPC_LIBRARY_SHARED}
@@ -62,7 +57,6 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
 )
 
 fhg_add_plugin(sdpac sdpac.cpp
-  EXPORTS SDPAC
   LINK_LIBRARIES sdpa
                  ${FhgCom_LIBRARY}
                  ${GSPC_LIBRARY_SHARED}
@@ -74,7 +68,6 @@ fhg_add_plugin(sdpac sdpac.cpp
 )
 
 fhg_add_plugin(net net.cpp
-  EXPORTS Peer
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
@@ -84,7 +77,6 @@ fhg_add_plugin(net net.cpp
 )
 
 fhg_add_plugin(sdpactl sdpactl.cpp
-  EXPORTS Control
   LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
@@ -93,7 +85,6 @@ fhg_add_plugin(sdpactl sdpactl.cpp
 )
 
 fhg_add_plugin(progress progress.cpp
-  EXPORTS Progress
   LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
@@ -102,7 +93,6 @@ fhg_add_plugin(progress progress.cpp
 )
 
 fhg_add_plugin(logd logd.cpp observable.cpp
-  EXPORTS Logd
   LINK_LIBRARIES ${FhgLog_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
@@ -111,7 +101,6 @@ fhg_add_plugin(logd logd.cpp observable.cpp
 )
 
 fhg_add_plugin(logc logc.cpp
-  EXPORTS Logc
   LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
@@ -120,7 +109,6 @@ fhg_add_plugin(logc logc.cpp
 )
 
 fhg_add_plugin(netd netd.cpp
-  EXPORTS NETD
   LINK_LIBRARIES ${GSPC_LIBRARY_SHARED}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_DATE_TIME_LIBRARY}
