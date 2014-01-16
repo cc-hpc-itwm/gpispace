@@ -35,8 +35,6 @@ namespace we
 
       void rename (const std::string& from, const std::string& to);
 
-      void add (const expression_t&);
-
     private:
       std::string _expr;
       expr::parse::parser _ast;

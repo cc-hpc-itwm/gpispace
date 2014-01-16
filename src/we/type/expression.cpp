@@ -64,12 +64,6 @@ namespace we
       _expr = _ast.string();
     }
 
-    void expression_t::add (const expression_t& other)
-    {
-      _ast.add (other.ast());
-      _expr = _ast.string();
-    }
-
     std::ostream& operator<< (std::ostream& os, const expression_t& e)
     {
       return os << e.expression();
