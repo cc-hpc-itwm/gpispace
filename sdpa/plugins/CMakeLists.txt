@@ -1,18 +1,5 @@
 include(fhg_plugin_macros)
 
-# distributed runtime system plugin, aka interface to SDPA agent
-fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
-  LINK_LIBRARIES sdpa
-                 ${FhgCom_LIBRARY}
-                 ${GSPC_LIBRARY_SHARED}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_DATE_TIME_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  INSTALL
-  HEADERS drts_callbacks.h
-)
-
 fhg_add_plugin(kvsd kvsd.cpp
   LINK_LIBRARIES ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY_SHARED}
