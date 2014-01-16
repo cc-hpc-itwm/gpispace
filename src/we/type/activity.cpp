@@ -276,8 +276,6 @@ namespace we
           {
             if (p.second.is_output())
             {
-              if (p.second.associated_place())
-              {
                 const we::port_id_type& port_id (p.first);
                 const we::place_id_type& pid
                   (*p.second.associated_place());
@@ -288,16 +286,6 @@ namespace we
                 {
                   output.push_back (std::make_pair (token, port_id));
                 }
-              }
-              else
-              {
-                throw std::runtime_error
-                  ( "output port ("
-                  + boost::lexical_cast<std::string> (p.first)
-                  + ", " + p.second.name() + ") "
-                  + "is not associated with any place!"
-                  );
-              }
             }
           }
 

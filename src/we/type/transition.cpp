@@ -59,6 +59,16 @@ namespace we
 
     we::port_id_type transition_t::add_port (port_t const& port)
     {
+      if (net() && port.is_output() && !port.associated_place())
+      {
+        throw std::runtime_error
+          ( ( boost::format ("Error when adding output port '%1%' to net '%2%':"
+                            " Not associated with any place"
+                            ) % port.name() % name()
+            ).str()
+          );
+      }
+
       we::port_id_type const port_id (port_id_counter_++);
 
       ports_.insert (std::make_pair (port_id, port));
