@@ -7,24 +7,6 @@
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/builtin/numa.hpp>
 
-static fhg::numa::Numa *s_global_instance = 0;
-
-namespace fhg
-{
-  namespace numa
-  {
-    size_t get_socket ()
-    {
-      return s_global_instance->socket ();
-    }
-
-    unsigned long get_cpuset ()
-    {
-      return s_global_instance->cpuset ();
-    }
-  }
-}
-
 class NumaImpl : FHG_PLUGIN
                , public fhg::numa::Numa
 {
@@ -33,71 +15,57 @@ public:
   {
     hwloc_topology_init (&m_topology);
     hwloc_topology_load (m_topology);
-    m_topodepth = hwloc_topology_get_depth (m_topology);
-
-    s_global_instance = this;
   }
 
   ~NumaImpl ()
   {
     hwloc_topology_destroy (m_topology);
-
-    s_global_instance = 0;
   }
 
   FHG_PLUGIN_START()
   {
-    m_socket = fhg_kernel()->get<size_t>("socket", -1);
+    const size_t target_socket (fhg_kernel()->get<size_t> ("socket", -1));
 
-    int rc;
-
-    rc = hwloc_get_type_depth (m_topology, HWLOC_OBJ_SOCKET);
-    if (rc == HWLOC_TYPE_DEPTH_UNKNOWN)
+    if (target_socket == (size_t)-1)
     {
-      MLOG (WARN, "could not get number of sockets");
+      FHG_PLUGIN_STARTED();
     }
-    else
+
+    const int depth (hwloc_get_type_depth (m_topology, HWLOC_OBJ_SOCKET));
+    if (depth == HWLOC_TYPE_DEPTH_UNKNOWN)
     {
-      size_t nsock = hwloc_get_nbobjs_by_depth (m_topology, rc);
-
-      DMLOG (TRACE, "number of available sockets: " << nsock);
-
-      if (m_socket != (size_t)-1)
-      {
-        if (m_socket < nsock)
-        {
-          hwloc_obj_t obj;
-          char buf [256];
-
-          obj = hwloc_get_obj_by_type (m_topology, HWLOC_OBJ_SOCKET, m_socket);
-          rc = hwloc_set_cpubind ( m_topology
-                                 , obj->cpuset
-                                 , HWLOC_CPUBIND_PROCESS
-                                 );
-          m_cpuset = hwloc_bitmap_to_ulong (obj->cpuset);
-          hwloc_bitmap_snprintf (buf, sizeof(buf), obj->cpuset);
-
-          if (rc < 0)
-          {
-            MLOG ( WARN
-                 , "could not bind to socket #" << m_socket << " with cpuset " << buf
-                 << ": " << strerror (errno)
-                 );
-          }
-          else
-          {
-            MLOG ( TRACE
-                 , "bound to socket #" << m_socket << " with cpuset " << buf
-                 );
-          }
-        }
-        else
-        {
-          MLOG (ERROR, "socket out of range: " << m_socket << "/" << (nsock-1));
-          FHG_PLUGIN_FAILED (EINVAL);
-        }
-      }
+      MLOG (ERROR, "could not get number of sockets");
+      FHG_PLUGIN_FAILED (EINVAL);
     }
+
+    const size_t available_sockets
+      (hwloc_get_nbobjs_by_depth (m_topology, depth));
+
+    DMLOG (TRACE, "number of available sockets: " << available_sockets);
+
+    if (target_socket >= available_sockets)
+    {
+      MLOG (ERROR, "socket out of range: " << target_socket << "/" << (available_sockets-1));
+      FHG_PLUGIN_FAILED (EINVAL);
+    }
+
+    const hwloc_obj_t obj
+      (hwloc_get_obj_by_type (m_topology, HWLOC_OBJ_SOCKET, target_socket));
+
+    char buf [256];
+    hwloc_bitmap_snprintf (buf, sizeof(buf), obj->cpuset);
+
+    if (hwloc_set_cpubind (m_topology, obj->cpuset, HWLOC_CPUBIND_PROCESS) < 0)
+    {
+      MLOG ( ERROR
+           , "could not bind to socket #" << target_socket
+           << " with cpuset " << buf << ": " << strerror (errno)
+           );
+      FHG_PLUGIN_FAILED (EINVAL);
+    }
+
+
+    MLOG (TRACE, "bound to socket #" << target_socket << " with cpuset " << buf);
 
     FHG_PLUGIN_STARTED();
   }
@@ -107,20 +75,8 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 
-  size_t socket () const
-  {
-    return m_socket;
-  }
-
-  unsigned long cpuset () const
-  {
-    return m_cpuset;
-  }
 private:
-  size_t           m_socket;
   hwloc_topology_t m_topology;
-  int              m_topodepth;
-  unsigned long    m_cpuset;
 };
 
 EXPORT_FHG_PLUGIN( numa
