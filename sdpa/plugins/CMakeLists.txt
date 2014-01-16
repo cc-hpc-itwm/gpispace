@@ -59,6 +59,9 @@ fhg_add_plugin(kvs_dummy kvs_dummy.cpp
   COMPONENT plugins
 )
 
+find_package (HWLOC REQUIRED QUIET)
+include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
+
 fhg_add_plugin(wfe wfe.cpp observable.cpp
   EXPORTS WFE
   LINK_LIBRARIES ${FhgCom_LIBRARY}
@@ -68,6 +71,7 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
+                 ${HWLOC_SHARED_LIBRARY}
   INSTALL
   HEADERS wfe.hpp observable.hpp
   HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"

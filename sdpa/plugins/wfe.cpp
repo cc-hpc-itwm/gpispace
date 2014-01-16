@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include <boost/format.hpp>
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
@@ -39,6 +40,9 @@
 #include <we/type/module_call.hpp>
 //! \todo eliminate this include (that completes the type transition_t::data)
 #include <we/type/net.hpp>
+
+#include <errno.h>
+#include <hwloc.h>
 
 namespace
 {
@@ -163,6 +167,64 @@ namespace
 
     we::loader::loader & loader;
   };
+
+  class numa_socket_setter
+  {
+  public:
+    numa_socket_setter()
+    {
+      hwloc_topology_init (&m_topology);
+      hwloc_topology_load (m_topology);
+    }
+
+    ~numa_socket_setter()
+    {
+      hwloc_topology_destroy (m_topology);
+    }
+
+    void bind (size_t target_socket) const
+    {
+      const int depth (hwloc_get_type_depth (m_topology, HWLOC_OBJ_SOCKET));
+      if (depth == HWLOC_TYPE_DEPTH_UNKNOWN)
+      {
+        throw std::runtime_error ("could not get number of sockets");
+      }
+
+      const size_t available_sockets
+        (hwloc_get_nbobjs_by_depth (m_topology, depth));
+
+      if (target_socket >= available_sockets)
+      {
+        throw std::runtime_error
+          ( boost::str ( boost::format ("socket out of range: %1%/%2%")
+                       % target_socket
+                       % (available_sockets-1)
+                       )
+          );
+      }
+
+      const hwloc_obj_t obj
+        (hwloc_get_obj_by_type (m_topology, HWLOC_OBJ_SOCKET, target_socket));
+
+      char cpuset_string [256];
+      hwloc_bitmap_snprintf (cpuset_string, sizeof(cpuset_string), obj->cpuset);
+
+      if (hwloc_set_cpubind (m_topology, obj->cpuset, HWLOC_CPUBIND_PROCESS) < 0)
+      {
+        throw std::runtime_error
+          ( boost::str
+            ( boost::format ("could not bind to socket #%1% with cpuset %2%: %3%")
+            % target_socket
+            % cpuset_string
+            % strerror (errno)
+            )
+          );
+      }
+    }
+
+  private:
+    hwloc_topology_t m_topology;
+  };
 }
 
 class WFEImpl : FHG_PLUGIN
@@ -181,6 +243,21 @@ public:
 
   FHG_PLUGIN_START()
   {
+    const size_t target_socket (fhg_kernel()->get<size_t> ("socket", -1));
+
+    if (target_socket != (size_t)-1)
+    {
+      try
+      {
+        _numa_socket_setter.bind (target_socket);
+      }
+      catch (std::exception const& ex)
+      {
+        LOG (ERROR, ex.what());
+        FHG_PLUGIN_FAILED (-1);
+      }
+    }
+
     assert (! m_worker);
     assert (! m_loader);
     m_loader = new we::loader::loader();
@@ -529,6 +606,8 @@ private:
       task->done.notify(task->errc);
     }
   }
+
+  numa_socket_setter _numa_socket_setter;
 
   mutable mutex_type m_mutex;
   map_of_tasks_t m_task_map;
