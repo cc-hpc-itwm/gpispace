@@ -49,9 +49,8 @@ int main(int ac, char **av)
 
   if (vm.count("help"))
   {
-    std::cout << av[0] << " [options]" << std::endl;
-    std::cout << std::endl;
-    std::cout << desc << std::endl;
+    LLOG (INFO, logger, av[0] << " [options]");
+    LLOG (INFO, logger, desc);
     return EXIT_SUCCESS;
   }
 
