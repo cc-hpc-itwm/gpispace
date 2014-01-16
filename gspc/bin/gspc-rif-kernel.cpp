@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <libexec/rif.hpp>
+#include <gspc/rif/daemon.hpp>
 
 #include <fhg/plugin/core/license.hpp>
 #include <fhg/util/daemonize.hpp>
@@ -64,7 +64,7 @@ int main(int ac, char **av)
     (boost::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
 
-  const RifImpl rif_impl (request_stop, nthreads, netd_url);
+  const gspc::rif::daemon rif (request_stop, nthreads, netd_url);
 
 
   fhg::util::signal_handler_manager signal_handlers;
