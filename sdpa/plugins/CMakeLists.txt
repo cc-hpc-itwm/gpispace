@@ -1,8 +1,5 @@
 include(fhg_plugin_macros)
 
-set(PLUGIN_DESTINATION_DIR "libexec/fhg/plugins")
-set(HEADER_DESTINATION_DIR "include/fhg/plugins")
-
 # distributed runtime system plugin, aka interface to SDPA agent
 fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
   EXPORTS DRTS
@@ -15,8 +12,6 @@ fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS drts_callbacks.h
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -29,8 +24,6 @@ fhg_add_plugin(kvsd kvsd.cpp
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -43,8 +36,6 @@ fhg_add_plugin(kvs kvs.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS kvs.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -54,8 +45,6 @@ fhg_add_plugin(kvs_dummy kvs_dummy.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS kvs.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -74,8 +63,6 @@ fhg_add_plugin(wfe wfe.cpp observable.cpp
                  ${HWLOC_SHARED_LIBRARY}
   INSTALL
   HEADERS wfe.hpp observable.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -89,8 +76,6 @@ fhg_add_plugin(sdpac sdpac.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS sdpac.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -102,8 +87,6 @@ fhg_add_plugin(net net.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS net.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -114,8 +97,6 @@ fhg_add_plugin(sdpactl sdpactl.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS sdpactl.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -126,8 +107,6 @@ fhg_add_plugin(progress progress.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS progress.hpp progress.h
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -138,8 +117,6 @@ fhg_add_plugin(logd logd.cpp observable.cpp
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -150,8 +127,6 @@ fhg_add_plugin(logc logc.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS logc.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
 
@@ -163,7 +138,5 @@ fhg_add_plugin(netd netd.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS netd.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
   COMPONENT plugins
 )
