@@ -19,9 +19,9 @@ namespace we
     {
       return fhg::util::boost::get_or_none<const expression_t&> (data());
     }
-    boost::optional<const we::net&> transition_t::net() const
+    boost::optional<const we::type::net_type&> transition_t::net() const
     {
-      return fhg::util::boost::get_or_none<const we::net&> (data());
+      return fhg::util::boost::get_or_none<const we::type::net_type&> (data());
     }
     boost::optional<const module_call_t&> transition_t::module_call() const
     {

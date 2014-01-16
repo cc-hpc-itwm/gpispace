@@ -661,7 +661,7 @@ namespace xml
 
         typedef we::type::transition_t we_transition_type;
 
-        typedef we::net we_net_type;
+        typedef we::type::net_type we_net_type;
         typedef we::type::module_call_t we_module_type;
         typedef we::type::expression_t we_expr_type;
         typedef condition::type we_cond_type;

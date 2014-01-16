@@ -662,7 +662,7 @@ namespace xml
       // ******************************************************************* //
 
       boost::unordered_map<std::string, we::place_id_type>
-      net_synthesize ( we::net& we_net
+      net_synthesize ( we::type::net_type& we_net
                      , const place_map_map_type & place_map_map
                      , const net_type& net
                      , const state::type & state

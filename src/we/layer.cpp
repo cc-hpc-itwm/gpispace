@@ -49,7 +49,7 @@ namespace we
 
       type::activity_t wrap (type::activity_t const& activity)
       {
-        we::net net;
+        we::type::net_type net;
 
         we::transition_id_type const transition_id
           (net.add_transition (activity.transition()));
@@ -105,7 +105,7 @@ namespace we
 
       type::activity_t unwrap (type::activity_t const& activity)
       {
-        we::net const& net (*activity.transition().net());
+        we::type::net_type const& net (*activity.transition().net());
 
         type::activity_t activity_inner
           (net.transitions().begin()->second, activity.transition_id());
@@ -239,7 +239,7 @@ namespace we
         if ( boost::optional<type::activity_t> activity
 
              //! \note We wrap all input activites in a net.
-           = boost::get<we::net&>
+           = boost::get<we::type::net_type&>
              (activity_data._activity.transition().data())
            . fire_expressions_and_extract_activity_random
                (_random_extraction_engine)
@@ -462,8 +462,8 @@ namespace we
     void layer::activity_data_type::child_finished (type::activity_t child)
     {
       //! \note We wrap all input activites in a net.
-      we::net& net
-        (boost::get<we::net&> (_activity.transition().data()));
+      we::type::net_type& net
+        (boost::get<we::type::net_type&> (_activity.transition().data()));
 
       BOOST_FOREACH ( const type::activity_t::token_on_port_t& top
                     , child.output()

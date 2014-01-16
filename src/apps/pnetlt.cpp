@@ -32,7 +32,7 @@ namespace
     {}
     void operator() (const we::type::module_call_t&) const
     {}
-    void operator() (const we::net& n) const
+    void operator() (const we::type::net_type& n) const
     {
       BOOST_FOREACH ( const we::type::transition_t& t
                     , n.transitions() | boost::adaptors::map_values

@@ -408,7 +408,7 @@ namespace we { namespace type {
         // ----------------------------------------------------------------- //
 
         std::string operator ()
-        (const we::net & net) const
+        (const we::type::net_type & net) const
         {
           typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::pair< std::string
@@ -505,7 +505,7 @@ namespace we { namespace type {
                  )
               {
                 BOOST_FOREACH
-                  ( we::net::port_to_place_with_info_type::value_type
+                  ( we::type::net_type::port_to_place_with_info_type::value_type
                   const& port_to_place
                   , net.port_to_place().at (trans_id)
                   )
@@ -526,7 +526,7 @@ namespace we { namespace type {
               if (net.place_to_port().find (trans_id) !=  net.place_to_port().end())
               {
                 BOOST_FOREACH
-                  ( we::net::place_to_port_with_info_type::value_type
+                  ( we::type::net_type::place_to_port_with_info_type::value_type
                   const& place_to_port
                   , net.place_to_port().at (trans_id)
                   )
@@ -540,7 +540,7 @@ namespace we { namespace type {
                             , "port_" + boost::lexical_cast<std::string> (place_to_port.get_right())
                             )
                     << (  net.place_to_transition_read().find
-                       ( we::net::adj_pt_type::value_type
+                       ( we::type::net_type::adj_pt_type::value_type
                        (place_to_port.get_left(), trans_id)
                        )
                        != net.place_to_transition_read().end()

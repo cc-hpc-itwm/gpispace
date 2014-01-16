@@ -449,7 +449,7 @@ namespace
                             )
       );
 
-    we::net net;
+    we::type::net_type net;
 
     we::place_id_type const place_id_in
       (net.add_place (place::type ("in", signature::CONTROL)));
