@@ -1,3 +1,7 @@
+// alexander.petry@itwm.fraunhofer.de
+
+#include <libexec/rif.hpp>
+
 #include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/hostname.hpp>
@@ -25,10 +29,7 @@
 #include <gspc/rif/supervisor.hpp>
 #include <gspc/rif/util.hpp>
 
-class RifImpl : FHG_PLUGIN
-{
-public:
-  RifImpl ()
+  RifImpl::RifImpl()
     : m_server()
     , m_mgr ()
     , m_supervisor (m_mgr)
@@ -61,7 +62,7 @@ public:
       ("/service/rif", boost::bind (&RifImpl::handle, this, _1, _2, _3));
   }
 
-  ~RifImpl()
+  RifImpl::~RifImpl()
   {
     m_supervisor.onChildFailed.connect
       (boost::bind (&RifImpl::on_child_failed, this, _1));
@@ -80,22 +81,22 @@ public:
     gspc::net::shutdown ();
   }
 
-  FHG_PLUGIN_START()
+  int RifImpl::fhg_plugin_start ()
   {
     FHG_PLUGIN_STARTED();
   }
 
-  FHG_PLUGIN_STOP()
+  int RifImpl::fhg_plugin_stop ()
   {
     FHG_PLUGIN_STOPPED();
   }
 
-  void shutdown ()
+  void RifImpl::shutdown ()
   {
     fhg_kernel ()->shutdown ();
   }
 
-  int supervise (std::list<std::string> argv)
+  int RifImpl::supervise (std::list<std::string> argv)
   {
     gspc::rif::child_descriptor_t child;
     child.name = "";
@@ -246,20 +247,20 @@ public:
     return m_supervisor.add_child (child);
   }
 
-  void on_child_failed (gspc::rif::supervisor_t::child_info_t const &chld)
+  void RifImpl::on_child_failed (gspc::rif::supervisor_t::child_info_t const &chld)
   {
     MLOG (WARN, "child failed: " << chld.descriptor.name);
   }
-  void on_child_started (gspc::rif::supervisor_t::child_info_t const &chld)
+  void RifImpl::on_child_started (gspc::rif::supervisor_t::child_info_t const &chld)
   {
     MLOG (INFO, "child started: " << chld.descriptor.name);
   }
-  void on_child_terminated (gspc::rif::supervisor_t::child_info_t const &chld)
+  void RifImpl::on_child_terminated (gspc::rif::supervisor_t::child_info_t const &chld)
   {
     MLOG (WARN, "child terminated: " << chld.descriptor.name);
   }
 
-  void handle ( std::string const &dst
+  void RifImpl::handle ( std::string const &dst
               , gspc::net::frame const &rqst
               , gspc::net::user_ptr user
               )
@@ -815,11 +816,6 @@ public:
 
     user->deliver (rply);
   }
-
-  gspc::net::server_ptr_t m_server;
-  gspc::rif::manager_t m_mgr;
-  gspc::rif::supervisor_t m_supervisor;
-};
 
 EXPORT_FHG_PLUGIN( rif
                  , RifImpl
