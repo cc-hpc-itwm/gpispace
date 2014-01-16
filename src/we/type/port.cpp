@@ -5,7 +5,6 @@
 #include <we/type/signature/show.hpp>
 
 #include <iostream>
-#include <stdexcept>
 
 namespace we
 {
@@ -18,8 +17,6 @@ namespace we
       case PORT_IN: return "in";
       case PORT_OUT: return "out";
       case PORT_TUNNEL: return "tunnel";
-      default:
-        throw std::runtime_error ("STRANGE: unknown PortDirection");
       }
     }
   }
