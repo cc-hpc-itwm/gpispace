@@ -65,6 +65,7 @@ namespace we { namespace type {
         : name_ (name)
         , data_ (typ)
         , internal_ (intern)
+          //! \todo check is_const_true, better check user input earlier
         , condition_ (_condition)
         , ports_()
         , port_id_counter_ (0)
