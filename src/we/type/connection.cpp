@@ -2,8 +2,6 @@
 
 #include <we/type/connection.hpp>
 
-#include <stdexcept>
-
 namespace we
 {
   namespace edge
@@ -25,8 +23,6 @@ namespace we
       case PT_READ: return "read";
       case TP: return "out";
       }
-
-      throw std::runtime_error ("enum_to_string for invalid enum value");
     }
   }
 }
