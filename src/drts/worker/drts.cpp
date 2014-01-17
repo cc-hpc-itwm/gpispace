@@ -341,7 +341,7 @@ private:
 public:
   int execute ( std::string const &job_id
               , std::string const &job_description
-              , std::string & result
+              , we::type::activity_t & result
               , std::string & error_message
               , std::list<std::string> const & worker_list
               )
@@ -387,7 +387,7 @@ public:
         task.done.wait(ec);
       }
 
-      result = task.activity.to_string();
+      result = task.activity;
 
       if (fhg::error::NO_ERROR == ec)
       {
@@ -1224,7 +1224,7 @@ private:
 
           MLOG(TRACE, "executing job " << job->id());
 
-          std::string result;
+          we::type::activity_t result;
           std::string error_message;
           int ec = m_wfe->execute ( job->id()
                                   , job->description()
@@ -1232,7 +1232,7 @@ private:
                                   , error_message
                                   , job->worker_list ()
                                   );
-          job->set_result (result);
+          job->set_result (result.to_string());
           job->set_result_code (ec);
           job->set_message (error_message);
 
