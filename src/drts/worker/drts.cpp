@@ -241,19 +241,12 @@ class WFEImpl
   typedef fhg::thread::queue<wfe_task_t*> task_list_t;
   typedef std::map<std::string, wfe_task_t *> map_of_tasks_t;
 public:
-  WFEImpl (fhg::plugin::Kernel* fhg_kernel)
+  WFEImpl ( boost::optional<std::size_t> target_socket
+          , std::string search_path
+          , boost::optional<std::string> gui_url
+          , std::string worker_name
+          )
   {
-    const std::size_t target_socket_
-      (fhg_kernel->get<std::size_t> ("socket", -1));
-    const boost::optional<std::size_t> target_socket
-      (boost::make_optional (target_socket_ != std::size_t (-1), target_socket_));
-    const std::string search_path
-      (fhg_kernel->get("library_path", fhg::util::getenv("PC_LIBRARY_PATH")));
-    const std::string gui_url_ (fhg_kernel->get ("gui_url", ""));
-    const boost::optional<std::string> gui_url
-      (boost::make_optional (!gui_url_.empty(), gui_url_));
-    const std::string worker_name (fhg_kernel->get_name ());
-
     if (target_socket)
     {
       _numa_socket_setter.bind (*target_socket);
@@ -649,7 +642,16 @@ public:
       (fhg_kernel()->get<std::size_t> ("max_reconnect_attempts", "0"));
     std::list<std::string> master_list;
     std::list<std::string> capability_list;
-    WFEImpl* wfe (new WFEImpl (fhg_kernel()));
+    const std::size_t target_socket_
+      (fhg_kernel()->get<std::size_t> ("socket", -1));
+    const boost::optional<std::size_t> target_socket
+      (boost::make_optional (target_socket_ != std::size_t (-1), target_socket_));
+    const std::string search_path
+      (fhg_kernel()->get("library_path", fhg::util::getenv("PC_LIBRARY_PATH")));
+    const std::string gui_url_ (fhg_kernel()->get ("gui_url", ""));
+    const boost::optional<std::string> gui_url
+      (boost::make_optional (!gui_url_.empty(), gui_url_));
+    WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name));
     //! \note optional
     fhg::plugin::Capability* cap (fhg_kernel()->acquire< fhg::plugin::Capability>("gpi"));
     fhg::com::host_t host (fhg_kernel()->get("host", "*"));
