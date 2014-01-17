@@ -372,10 +372,8 @@ public:
     }
   }
 
-
   int execute ( std::string const &job_id
               , std::string const &job_description
-              , wfe::capabilities_t const&
               , std::string & result
               , std::string & error_message
               , std::list<std::string> const & worker_list

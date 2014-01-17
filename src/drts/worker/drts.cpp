@@ -679,7 +679,6 @@ private:
           std::string error_message;
           int ec = m_wfe->execute ( job->id()
                                   , job->description()
-                                  , std::map<std::string, fhg::plugin::Capability*>()
                                   , result
                                   , error_message
                                   , job->worker_list ()
