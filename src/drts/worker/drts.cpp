@@ -88,10 +88,7 @@ class DRTSImpl : FHG_PLUGIN
 
   typedef fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> event_queue_t;
 
-  typedef boost::shared_ptr<drts::Master> master_ptr;
-  typedef std::map< std::string
-                  , master_ptr
-                  > map_of_masters_t;
+  typedef std::map<std::string, bool> map_of_masters_t;
 
   typedef boost::shared_ptr<drts::Job> job_ptr_t;
   typedef std::map< std::string
@@ -259,7 +256,18 @@ public:
         if (m_masters.find (master) == m_masters.end ())
         {
           DMLOG(TRACE, "adding master \"" << master << "\"");
-          m_masters.insert (std::make_pair(master, create_master(master)));
+
+          if (master.empty())
+          {
+            throw std::runtime_error ("empty master specified!");
+          }
+
+          if (master == m_my_name)
+          {
+            throw std::runtime_error ("cannot be my own master!");
+          }
+
+          m_masters.insert (std::make_pair(master, false));
         }
         else
         {
@@ -386,7 +394,7 @@ public:
           ; ++master_it
           )
       {
-        if (master_it->second->is_connected())
+        if (master_it->second)
         {
           send_event
             (new sdpa::events::CapabilitiesGainedEvent( m_my_name
@@ -481,15 +489,15 @@ public:
     map_of_masters_t::iterator master_it (m_masters.find(e->from()));
     if (master_it != m_masters.end())
     {
-      if (!master_it->second->is_connected())
+      if (!master_it->second)
       {
-        DMLOG(TRACE, "successfully connected to " << master_it->second->name());
-        master_it->second->is_connected(true);
+        DMLOG(TRACE, "successfully connected to " << master_it->first);
+        master_it->second = true;
 
         notify_capabilities_to_master (master_it->first);
         resend_outstanding_events (master_it->first);
 
-        m_connected_event.notify(master_it->second->name());
+        m_connected_event.notify(master_it->first);
       }
 
       {
@@ -545,7 +553,7 @@ public:
       MLOG(ERROR, "got SubmitJob from unknown source: " << e->from());
       return;
     }
-    else if (! master->second->is_connected())
+    else if (! master->second)
     {
       MLOG(WARN, "got SubmitJob from not yet connected master: " << e->from());
       send_event
@@ -1042,7 +1050,7 @@ private:
         ; ++master_it
         )
     {
-      if (not master_it->second->is_connected())
+      if (not master_it->second)
         continue;
 
       send_event
@@ -1060,7 +1068,7 @@ private:
         ; ++master_it
         )
     {
-      if (not master_it->second->is_connected())
+      if (not master_it->second)
         continue;
 
       send_event
@@ -1181,21 +1189,6 @@ private:
     }
   }
 
-  master_ptr create_master (std::string master)
-  {
-    if (master.empty())
-    {
-      throw std::runtime_error ("empty master specified!");
-    }
-
-    if (master == m_my_name)
-    {
-      throw std::runtime_error ("cannot be my own master!");
-    }
-
-    return master_ptr (new drts::Master (master));
-  }
-
   void start_connect ()
   {
     bool at_least_one_disconnected = false;
@@ -1206,7 +1199,7 @@ private:
         ; ++master_it
         )
     {
-      if (! master_it->second->is_connected())
+      if (! master_it->second)
       {
         sdpa::events::WorkerRegistrationEvent::Ptr evt
           (new sdpa::events::WorkerRegistrationEvent( m_my_name
@@ -1298,13 +1291,13 @@ private:
         const std::string other_name(m_peer->resolve (addr, "*unknown*"));
 
         map_of_masters_t::iterator master(m_masters.find(other_name));
-        if (master != m_masters.end() && master->second->is_connected())
+        if (master != m_masters.end() && master->second)
         {
           DMLOG ( INFO
                 , "connection to " << other_name << " lost: " << ec.message()
                 );
 
-          master->second->is_connected(false);
+          master->second = false;
 
           fhg_kernel()->schedule ( "connect"
                                  , boost::bind( &DRTSImpl::start_connect
