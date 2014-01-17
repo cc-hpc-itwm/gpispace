@@ -3,7 +3,7 @@
 include_directories (${CMAKE_SOURCE_DIR}/sdpa/plugins) #wfe
 
 include(fhg_plugin_macros)
-fhg_add_plugin(drts drts.cpp master.cpp job.cpp drts_callbacks.cpp
+fhg_add_plugin(drts drts.cpp job.cpp drts_callbacks.cpp
   LINK_LIBRARIES sdpa
                  ${FhgCom_LIBRARY}
                  ${GSPC_LIBRARY_SHARED}

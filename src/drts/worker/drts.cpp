@@ -1,4 +1,3 @@
-#include "master.hpp"
 #include "job.hpp"
 #include "wfe.hpp"
 #include "observable.hpp"
