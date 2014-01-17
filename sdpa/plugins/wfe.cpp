@@ -49,7 +49,6 @@ namespace
   struct wfe_task_t
   {
     typedef boost::posix_time::ptime time_type;
-    typedef std::map<std::string, std::string> meta_data_t;
     typedef std::list<std::string> worker_list_t;
 
     enum state_t
@@ -65,7 +64,6 @@ namespace
     int        errc;
     we::type::activity_t activity;
     fhg::util::thread::event<int> done;
-    meta_data_t meta;
     worker_list_t workers;
     std::string error_message;
   };
@@ -369,7 +367,7 @@ public:
     {
       _notification_service->notify
         ( sdpa::daemon::NotificationEvent
-           (fhg_kernel()->get_name (), task.id, state, task.activity, task.meta)
+           (fhg_kernel()->get_name (), task.id, state, task.activity)
         );
     }
   }
@@ -381,7 +379,6 @@ public:
               , std::string & result
               , std::string & error_message
               , std::list<std::string> const & worker_list
-              , wfe::meta_data_t const & meta_data
               )
   {
     int ec = fhg::error::NO_ERROR;
@@ -389,7 +386,6 @@ public:
     wfe_task_t task;
     task.state = wfe_task_t::PENDING;
     task.id = job_id;
-    task.meta = meta_data;
     task.workers = worker_list;
 
     {
