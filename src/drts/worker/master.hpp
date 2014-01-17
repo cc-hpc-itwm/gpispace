@@ -41,10 +41,6 @@ namespace drts
 
     std::string m_name;
     bool _is_connected;
-
-    size_t m_num_send;
-    size_t m_num_recv;
-    size_t m_num_jobs_recv;
   };
 }
 
