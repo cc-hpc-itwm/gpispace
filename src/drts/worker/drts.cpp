@@ -55,97 +55,76 @@ class DRTSImpl : FHG_PLUGIN
   typedef std::map<std::string, capability_info_t> map_of_capabilities_t;
 public:
   FHG_PLUGIN_START()
+  try
   {
+    //! \todo ctor parameters
+    const std::string name (fhg_kernel()->get_name());
+    const std::size_t backlog_size
+      (fhg_kernel()->get<std::size_t> ("backlog", "3"));
+    const bool terminate_on_failure
+      (fhg::util::read_bool (fhg_kernel()->get ("terminate_on_failure", "false")));
+    const std::size_t max_reconnect_attempts
+      (fhg_kernel()->get<std::size_t> ("max_reconnect_attempts", "0"));
+    std::list<std::string> master_list;
+    std::list<std::string> capability_list;
+    wfe::WFE* wfe (fhg_kernel()->acquire<wfe::WFE> ("wfe"));
+    //! \note optional
+    fhg::plugin::Capability* cap (fhg_kernel()->acquire< fhg::plugin::Capability>("gpi"));
+    fhg::com::host_t host (fhg_kernel()->get("host", "*"));
+    fhg::com::port_t port (fhg_kernel()->get("port", "0"));
+
+    if (!wfe)
+    {
+      throw std::runtime_error ("could not access workflow-engine plugin");
+    }
+    {
+      const std::string master_names (fhg_kernel()->get("master", ""));
+      const std::string virtual_capabilities (fhg_kernel()->get("capabilities", ""));
+      fhg::util::split (master_names, ",", std::back_inserter(master_list));
+      fhg::util::split (virtual_capabilities, ",", std::back_inserter(capability_list));
+    }
+
+
+
     m_shutting_down = false;
 
     m_reconnect_counter = 0;
-    m_my_name =      fhg_kernel()->get_name ();
-    try
-    {
-      m_backlog_size = fhg_kernel()->get<size_t>("backlog", "3");
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG( ERROR
-          , "could not parse backlog size: "
-          << fhg_kernel()->get("backlog", "3")
-          << ": " << ex.what()
-          );
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-    try
-    {
-      m_terminate_on_failure = fhg::util::read_bool
-        (fhg_kernel()->get("terminate_on_failure", "false"));
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG( ERROR
-          , "could not parse bool from `terminate_on_failure' config key: "
-          << ex.what()
-          );
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-
-    try
-    {
-      m_max_reconnect_attempts =
-        fhg_kernel()->get<std::size_t>("max_reconnect_attempts", "0");
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG( ERROR
-          , "could not parse 'max_reconnect_attempts' from config: "
-          << ex.what()
-          );
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-
-    m_wfe = fhg_kernel()->acquire<wfe::WFE>("wfe");
-    if (0 == m_wfe)
-    {
-      MLOG(ERROR, "could not access workflow-engine plugin!");
-      FHG_PLUGIN_FAILED(ELIBACC);
-    }
+    m_my_name = name;
+    m_backlog_size = backlog_size;
+    m_terminate_on_failure = terminate_on_failure;
+    m_max_reconnect_attempts = max_reconnect_attempts;
+    m_wfe = wfe;
 
     // parse virtual capabilities
+    BOOST_FOREACH (std::string const & cap, capability_list)
     {
-      std::string virtual_capabilities (fhg_kernel()->get("capabilities", ""));
-      std::list<std::string> capability_list;
-      fhg::util::split( virtual_capabilities
-                      , ","
-                      , std::back_inserter(capability_list)
-                      );
-      BOOST_FOREACH (std::string const & cap, capability_list)
+      if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
       {
-        if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
-        {
-          std::pair<std::string, std::string> capability_and_type
-            = fhg::util::split_string (cap, "-");
-          if (capability_and_type.second.empty ())
-            capability_and_type.second = "virtual";
+        std::pair<std::string, std::string> capability_and_type
+          = fhg::util::split_string (cap, "-");
+        if (capability_and_type.second.empty ())
+          capability_and_type.second = "virtual";
 
-          const std::string & cap_name = capability_and_type.first;
-          const std::string & cap_type = capability_and_type.second;
+        const std::string & cap_name = capability_and_type.first;
+        const std::string & cap_type = capability_and_type.second;
 
-          DMLOG ( TRACE
-                , "adding capability: " << cap_name
-                << " of type: " << cap_type
-                );
+        DMLOG ( TRACE
+              , "adding capability: " << cap_name
+              << " of type: " << cap_type
+              );
 
-          m_virtual_capabilities.insert
-            (std::make_pair ( cap
-                            , std::make_pair ( sdpa::Capability ( cap_name
-                                                                , cap_type
-                                                                , m_my_name
-                                                                )
-                                             , new fhg::plugin::Capability( cap_name
-                                                                          , cap_type
-                                                                          )
-                                             )
-                            )
-            );
-        }
+        m_virtual_capabilities.insert
+          (std::make_pair ( cap
+                          , std::make_pair ( sdpa::Capability ( cap_name
+                                                              , cap_type
+                                                              , m_my_name
+                                                              )
+                                           , new fhg::plugin::Capability( cap_name
+                                                                        , cap_type
+                                                                        )
+                                           )
+                          )
+          );
       }
     }
 
@@ -154,8 +133,6 @@ public:
     //      acquire_all<T>() -> [(name, T*)]
     //
     // to get access to all plugins of a particular type
-    fhg::plugin::Capability *cap
-      = fhg_kernel()->acquire< fhg::plugin::Capability>("gpi");
     if (cap)
     {
       MLOG( INFO, "gained capability: " << cap->capability_name()
@@ -180,63 +157,42 @@ public:
     fhg::util::set_threadname (*m_event_thread, "[drts-events]");
 
     // initialize peer
-    m_peer.reset
-      (new fhg::com::peer_t ( m_my_name
-                            , fhg::com::host_t(fhg_kernel()->get("host", "*"))
-                            , fhg::com::port_t(fhg_kernel()->get("port", "0"))
-                            )
-      );
+    m_peer.reset (new fhg::com::peer_t (m_my_name, host, port));
     m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
     fhg::util::set_threadname (*m_peer_thread, "[drts-peer]");
-    try
-    {
-      m_peer->start();
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG(ERROR, "could not start peer: " << ex.what());
-      FHG_PLUGIN_FAILED(EAGAIN);
-    }
+    m_peer->start();
 
     start_receiver();
 
+    if (master_list.empty())
     {
-      const std::string master_names (fhg_kernel()->get("master", ""));
-
-      std::list<std::string> master_list;
-      fhg::util::split(master_names, ",", std::back_inserter(master_list));
-
-      BOOST_FOREACH (std::string const & master, master_list)
-      {
-        if (m_masters.find (master) == m_masters.end ())
-        {
-          DMLOG(TRACE, "adding master \"" << master << "\"");
-
-          if (master.empty())
-          {
-            throw std::runtime_error ("empty master specified!");
-          }
-
-          if (master == m_my_name)
-          {
-            throw std::runtime_error ("cannot be my own master!");
-          }
-
-          m_masters.insert (std::make_pair(master, false));
-        }
-        else
-        {
-          MLOG( WARN
-              , "master already specified, ignoring new one: " << master
-              );
-        }
-      }
+      throw std::runtime_error ("no masters specified");
     }
 
-    if (m_masters.empty())
+    BOOST_FOREACH (std::string const & master, master_list)
     {
-      MLOG(ERROR, "no masters specified, giving up");
-      FHG_PLUGIN_FAILED(EINVAL);
+      if (m_masters.find (master) == m_masters.end ())
+      {
+        DMLOG(TRACE, "adding master \"" << master << "\"");
+
+        if (master.empty())
+        {
+          throw std::runtime_error ("empty master specified!");
+        }
+
+        if (master == m_my_name)
+        {
+          throw std::runtime_error ("cannot be my own master!");
+        }
+
+        m_masters.insert (std::make_pair(master, false));
+      }
+      else
+      {
+        MLOG( WARN
+            , "master already specified, ignoring new one: " << master
+            );
+      }
     }
 
     restore_jobs ();
@@ -264,6 +220,12 @@ public:
 
     FHG_PLUGIN_STARTED();
   }
+  catch (std::exception const &ex)
+  {
+    MLOG (ERROR, ex.what());
+    FHG_PLUGIN_FAILED (-1);
+  }
+
 
   FHG_PLUGIN_STOP()
   {
