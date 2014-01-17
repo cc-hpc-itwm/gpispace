@@ -177,19 +177,11 @@ namespace
   class numa_socket_setter
   {
   public:
-    numa_socket_setter()
+    numa_socket_setter (size_t target_socket)
     {
       hwloc_topology_init (&m_topology);
       hwloc_topology_load (m_topology);
-    }
 
-    ~numa_socket_setter()
-    {
-      hwloc_topology_destroy (m_topology);
-    }
-
-    void bind (size_t target_socket) const
-    {
       const int depth (hwloc_get_type_depth (m_topology, HWLOC_OBJ_SOCKET));
       if (depth == HWLOC_TYPE_DEPTH_UNKNOWN)
       {
@@ -228,6 +220,11 @@ namespace
       }
     }
 
+    ~numa_socket_setter()
+    {
+      hwloc_topology_destroy (m_topology);
+    }
+
   private:
     hwloc_topology_t m_topology;
   };
@@ -246,12 +243,11 @@ public:
           , boost::optional<std::string> gui_url
           , std::string worker_name
           )
+    : _numa_socket_setter ( target_socket
+                          ? numa_socket_setter (*target_socket)
+                          : boost::optional<numa_socket_setter>()
+                          )
   {
-    if (target_socket)
-    {
-      _numa_socket_setter.bind (*target_socket);
-    }
-
     _worker_name = worker_name;
 
     m_loader = new we::loader::loader();
@@ -592,7 +588,7 @@ private:
     }
   }
 
-  numa_socket_setter _numa_socket_setter;
+  boost::optional<numa_socket_setter> _numa_socket_setter;
 
   std::string _worker_name;
 
