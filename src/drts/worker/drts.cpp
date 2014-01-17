@@ -228,6 +228,29 @@ namespace
   private:
     hwloc_topology_t m_topology;
   };
+
+  struct scoped_service_handler : boost::noncopyable
+  {
+    scoped_service_handler ( std::string name
+                           , boost::function<void ( std::string const &dst
+                                                  , gspc::net::frame const &rqst
+                                                  , gspc::net::user_ptr user
+                                                  )> function
+                           , gspc::net::server::service_demux_t& service_demux
+                           )
+      : _name (name)
+      , _service_demux (service_demux)
+    {
+      _service_demux.handle (_name, function);
+    }
+    ~scoped_service_handler()
+    {
+      _service_demux.unhandle (_name);
+    }
+  private:
+    std::string _name;
+    gspc::net::server::service_demux_t& _service_demux;
+  };
 }
 
 class WFEImpl
@@ -237,6 +260,7 @@ public:
           , std::string search_path
           , boost::optional<std::string> gui_url
           , std::string worker_name
+          , gspc::net::server::service_demux_t& service_demux
           )
     : _numa_socket_setter ( target_socket
                           ? numa_socket_setter (*target_socket)
@@ -251,6 +275,21 @@ public:
                             ? sdpa::daemon::NotificationService (*gui_url)
                             : boost::optional<sdpa::daemon::NotificationService>()
                             )
+    , _current_job_service
+      ( "/service/drts/current-job"
+      , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
+      , service_demux
+      )
+    , _set_search_path_service
+      ( "/service/drts/search-path/set"
+      , boost::bind (&WFEImpl::service_set_search_path, this, _1, _2, _3)
+      , service_demux
+      )
+    , _get_search_path_service
+      ( "/service/drts/search-path/get"
+      , boost::bind (&WFEImpl::service_get_search_path, this, _1, _2, _3)
+      , service_demux
+      )
     , m_worker (&WFEImpl::execution_thread, this)
   {
     {
@@ -278,29 +317,10 @@ public:
     }
 
     fhg::util::set_threadname (m_worker, "[drts]");
-
-    gspc::net::server::default_service_demux().handle
-      ("/service/drts/current-job"
-      , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
-      );
-
-    gspc::net::server::default_service_demux().handle
-      ("/service/drts/search-path/set"
-      , boost::bind (&WFEImpl::service_set_search_path, this, _1, _2, _3)
-      );
-
-    gspc::net::server::default_service_demux().handle
-      ("/service/drts/search-path/get"
-      , boost::bind (&WFEImpl::service_get_search_path, this, _1, _2, _3)
-      );
   }
 
   ~WFEImpl()
   {
-    gspc::net::server::default_service_demux().unhandle ("/service/drts/current-job");
-    gspc::net::server::default_service_demux().unhandle ("/service/drts/search-path/get");
-    gspc::net::server::default_service_demux().unhandle ("/service/drts/search-path/set");
-
     {
       boost::mutex::scoped_lock task_map_lock (m_mutex);
       while (! m_task_map.empty ())
@@ -583,6 +603,10 @@ private:
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
 
+  scoped_service_handler _current_job_service;
+  scoped_service_handler _set_search_path_service;
+  scoped_service_handler _get_search_path_service;
+
   boost::thread m_worker;
 };
 
@@ -620,7 +644,7 @@ public:
     const std::string gui_url_ (fhg_kernel()->get ("gui_url", ""));
     const boost::optional<std::string> gui_url
       (boost::make_optional (!gui_url_.empty(), gui_url_));
-    WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name));
+    WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name, gspc::net::server::default_service_demux()));
     //! \note optional
     fhg::plugin::Capability* cap (fhg_kernel()->acquire< fhg::plugin::Capability>("gpi"));
     fhg::com::host_t host (fhg_kernel()->get("host", "*"));
