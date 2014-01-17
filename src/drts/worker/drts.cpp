@@ -248,10 +248,16 @@ public:
                           : boost::optional<numa_socket_setter>()
                           )
     , _worker_name (worker_name)
+    , m_task_map()
+    , m_tasks()
+    , m_current_task (NULL)
     , m_loader()
+    , _notification_service ( gui_url
+                            ? sdpa::daemon::NotificationService (*gui_url)
+                            : boost::optional<sdpa::daemon::NotificationService>()
+                            )
+    , m_worker (&WFEImpl::execution_thread, this)
   {
-    m_current_task = 0;
-
     {
       // initalize loader with paths
       search_path_appender appender(m_loader);
@@ -268,6 +274,7 @@ public:
               );
       }
 
+
       // TODO: figure out, why this doesn't work as it is supposed to
       // adjust ld_library_path
       std::string ld_library_path (fhg::util::getenv("LD_LIBRARY_PATH", ""));
@@ -275,8 +282,7 @@ public:
       setenv("LD_LIBRARY_PATH", ld_library_path.c_str(), true);
     }
 
-    m_worker.reset(new boost::thread(&WFEImpl::execution_thread, this));
-    fhg::util::set_threadname (*m_worker, "[drts]");
+    fhg::util::set_threadname (m_worker, "[drts]");
 
     gspc::net::server::default_service_demux().handle
       ("/service/drts/current-job"
@@ -292,37 +298,21 @@ public:
       ("/service/drts/search-path/get"
       , boost::bind (&WFEImpl::service_get_search_path, this, _1, _2, _3)
       );
-
-    _notification_service = boost::none;
-
-    if (gui_url)
-    {
-      _notification_service = sdpa::daemon::NotificationService (*gui_url);
-    }
   }
 
   ~WFEImpl()
   {
-    _notification_service = boost::none;
-
     gspc::net::server::default_service_demux().unhandle ("/service/drts/current-job");
     gspc::net::server::default_service_demux().unhandle ("/service/drts/search-path/get");
     gspc::net::server::default_service_demux().unhandle ("/service/drts/search-path/set");
 
-    if (m_worker)
+    m_worker.interrupt();
+    boost::posix_time::time_duration timeout =
+      boost::posix_time::seconds (15);
+    if (not m_worker.timed_join (timeout))
     {
-      m_worker->interrupt();
-      boost::posix_time::time_duration timeout =
-        boost::posix_time::seconds (15);
-      if (not m_worker->timed_join (timeout))
-      {
-        LOG (WARN, "could not interrupt user-code, aborting");
-        _exit (66);
-      }
-      else
-      {
-        m_worker.reset();
-      }
+      LOG (WARN, "could not interrupt user-code, aborting");
+      _exit (66);
     }
 
     {
@@ -595,9 +585,10 @@ private:
   wfe_task_t *m_current_task;
 
   we::loader::loader m_loader;
-  boost::shared_ptr<boost::thread> m_worker;
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
+
+  boost::thread m_worker;
 };
 
 class DRTSImpl : FHG_PLUGIN
