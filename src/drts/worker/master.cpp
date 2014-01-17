@@ -4,7 +4,7 @@ namespace drts
 {
   Master::Master(std::string const &a_name)
     : m_name (a_name)
-    , m_state(Master::NOT_CONNECTED)
+    , _is_connected (false)
 
     , m_last_recv(boost::posix_time::from_time_t(0))
     , m_last_send(boost::posix_time::from_time_t(0))

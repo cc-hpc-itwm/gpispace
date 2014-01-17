@@ -18,22 +18,17 @@ namespace drts
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef boost::posix_time::ptime time_type;
   public:
-    enum state_code
-      {
-        CONNECTED = 0
-      , NOT_CONNECTED
-      };
 
     explicit Master(std::string const& name);
 
     inline bool is_connected () const
     {
-      return m_state == CONNECTED;
+      return _is_connected;
     }
 
     inline void is_connected (bool b)
     {
-      m_state = b ? CONNECTED : NOT_CONNECTED;
+      _is_connected = b;
     }
 
     std::string const & name() const { return m_name; }
@@ -50,7 +45,7 @@ namespace drts
     mutable mutex_type m_stats_mutex;
 
     std::string m_name;
-    state_code m_state;
+    bool _is_connected;
     time_type m_last_recv;
     time_type m_last_send;
     time_type m_last_job_recv;
