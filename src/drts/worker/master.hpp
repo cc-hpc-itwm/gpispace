@@ -36,7 +36,6 @@ namespace drts
     void update_recv();
     void update_send();
 
-    time_type last_recv() const { return m_last_recv; }
     time_type last_job_recv() const { return m_last_job_recv; }
 
     void job_received();
@@ -45,7 +44,6 @@ namespace drts
 
     std::string m_name;
     bool _is_connected;
-    time_type m_last_recv;
     time_type m_last_job_recv;
 
     size_t m_num_send;

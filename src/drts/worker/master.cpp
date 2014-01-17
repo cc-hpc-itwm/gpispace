@@ -6,7 +6,6 @@ namespace drts
     : m_name (a_name)
     , _is_connected (false)
 
-    , m_last_recv(boost::posix_time::from_time_t(0))
     , m_last_job_recv(boost::posix_time::from_time_t(0))
 
     , m_num_send(0)
@@ -18,7 +17,6 @@ namespace drts
   {
     lock_type lock(m_stats_mutex);
     ++m_num_recv;
-    m_last_recv = boost::posix_time::microsec_clock::universal_time();
   }
 
   void Master::update_send()
