@@ -1,6 +1,5 @@
 #include "job.hpp"
 #include "wfe.hpp"
-#include "observable.hpp"
 #include "drts_callbacks.h"
 
 #include <errno.h>
@@ -79,7 +78,6 @@ namespace drts
 class DRTSImpl : FHG_PLUGIN
                , public drts::DRTS
                , public sdpa::events::EventHandler
-               , public observe::Observable
 {
   typedef boost::mutex mutex_type;
   typedef boost::condition_variable condition_type;
