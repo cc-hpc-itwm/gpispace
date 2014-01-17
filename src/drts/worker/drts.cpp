@@ -247,16 +247,15 @@ public:
                           ? numa_socket_setter (*target_socket)
                           : boost::optional<numa_socket_setter>()
                           )
+    , m_loader()
   {
     _worker_name = worker_name;
-
-    m_loader = new we::loader::loader();
 
     m_current_task = 0;
 
     {
       // initalize loader with paths
-      search_path_appender appender(*m_loader);
+      search_path_appender appender(m_loader);
       fhg::util::split(search_path, ":", appender);
 
       if (search_path.empty())
@@ -339,9 +338,6 @@ public:
         m_task_map.erase (task->id);
       }
     }
-
-    delete m_loader;
-    m_loader = NULL;
   }
 
 private:
@@ -498,7 +494,7 @@ private:
       //! \todo is that lock needed really? what does it lock?
       lock_type lock (m_mutex);
 
-      rply.set_body (m_loader->search_path());
+      rply.set_body (m_loader.search_path());
     }
 
     user->deliver (rply);
@@ -514,9 +510,9 @@ private:
     {
       std::string search_path (rqst.get_body ());
 
-      search_path_appender appender(*m_loader);
+      search_path_appender appender(m_loader);
       lock_type lock (m_mutex);
-      m_loader->clear_search_path ();
+      m_loader.clear_search_path ();
       fhg::util::split(search_path, ":", appender);
     }
 
@@ -550,7 +546,7 @@ private:
       {
         try
         {
-          wfe_exec_context ctxt (*m_loader, *task);
+          wfe_exec_context ctxt (m_loader, *task);
 
           task->activity.execute (&ctxt);
           task->activity.collect_output();
@@ -599,7 +595,7 @@ private:
   mutable mutex_type m_current_task_mutex;
   wfe_task_t *m_current_task;
 
-  we::loader::loader* m_loader;
+  we::loader::loader m_loader;
   boost::shared_ptr<boost::thread> m_worker;
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
