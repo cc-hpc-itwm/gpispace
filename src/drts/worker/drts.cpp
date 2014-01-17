@@ -456,10 +456,9 @@ public:
       }
       else
       {
-    	sdpa::worker_id_list_t workerList(e->worker_list());
     	DLOG( INFO, "Worker "<<m_my_name<<": received from "
     			             <<e->from()<<" the job " << job->id()
-    	   			  	     <<", assigned to "<<workerList );
+    	   			  	     <<", assigned to "<<e->worker_list() );
 
         send_event (new sdpa::events::SubmitJobAckEvent( m_my_name
                                                        , job->owner()
