@@ -296,6 +296,9 @@ cfg="$cfg -s plugin.drts.master=$master"
 cfg="$cfg -s plugin.drts.backlog=$backlog"
 cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f "${config_file}" -g plugin.drts.max_reconnect_attempts -v 128)"
 cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
+cfg="$cfg -s plugin.drts.gui_url=$gui"
+cfg="$cfg -s plugin.drts.library_path=${lib_path}"
+cfg="$cfg -s plugin.drts.numa_socket=$numa_socket"
 
 # config values (gpi plugin)
 if [ -z "$gpi_socket" ] ; then
@@ -307,11 +310,6 @@ cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.sta
 
 # config values (gpi_compat plugin)
 cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
-
-# config values (wfe plugin)
-cfg="$cfg -s plugin.wfe.gui_url=$gui"
-cfg="$cfg -s plugin.wfe.library_path=${lib_path}"
-cfg="$cfg -s plugin.wfe.numa_socket=$numa_socket"
 
 if [ x"$gpi_enabled" == x"true" ] ; then
     cfg="$cfg --gpi_enabled"

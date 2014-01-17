@@ -27,22 +27,6 @@ fhg_add_plugin(kvs_dummy kvs_dummy.cpp
   HEADERS kvs.hpp
 )
 
-find_package (HWLOC REQUIRED QUIET)
-include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
-
-fhg_add_plugin(wfe wfe.cpp observable.cpp
-  LINK_LIBRARIES ${FhgCom_LIBRARY}
-                 pnet
-                 ${GSPC_LIBRARY_SHARED}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-                 ${HWLOC_SHARED_LIBRARY}
-  INSTALL
-  HEADERS wfe.hpp observable.hpp
-)
-
 fhg_add_plugin(sdpac sdpac.cpp
   LINK_LIBRARIES sdpa
                  ${FhgCom_LIBRARY}

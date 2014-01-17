@@ -68,8 +68,7 @@ int main(int ac, char **av)
   mods_to_load.push_back ("kvs");
   mods_to_load.push_back ("progress"); // requires kvs
   mods_to_load.push_back ("netd");
-  mods_to_load.push_back ("wfe");
-  mods_to_load.push_back ("drts"); // requires drts, wfe
+  mods_to_load.push_back ("drts"); // requires drts
 
   if (vm.count ("gpi_enabled"))
   {

@@ -1,6 +1,7 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-include_directories (${CMAKE_SOURCE_DIR}/sdpa/plugins) #wfe
+find_package (HWLOC REQUIRED QUIET)
+include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
 include(fhg_plugin_macros)
 fhg_add_plugin(drts drts.cpp job.cpp drts_callbacks.cpp
