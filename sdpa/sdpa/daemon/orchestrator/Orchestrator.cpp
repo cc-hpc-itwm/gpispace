@@ -447,6 +447,8 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   Job* pJob;
 
   pJob = jobManager().findJob(pEvt->job_id());
+
+  std::set<pnet::type::value::value_type> set_disc_res;
   pnet::type::value::value_type discover_result;
 
   if(!pJob)
@@ -457,10 +459,12 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
       pnet::type::value::poke ("state", discover_result, sdpa::status::UNKNOWN);
       pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
 
+      set_disc_res.insert(discover_result);
+
       sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                          , pEvt->from()
                                                                                                          , pEvt->discover_id()
-                                                                                                         , discover_result)));
+                                                                                                         , set_disc_res)));
 
       return;
   }
@@ -484,10 +488,12 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
       pnet::type::value::poke ("state", discover_result, pJob->getStatus());
       pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
 
+      set_disc_res.insert(discover_result);
+
       events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                    , pEvt->from()
                                                                                                    , pEvt->discover_id()
-                                                                                                   , discover_result ));
+                                                                                                   , set_disc_res ));
 
       sendEventToOther(pDiscReplyEvt);
   }
