@@ -33,9 +33,6 @@ namespace drts
 
     std::string const & name() const { return m_name; }
 
-    void update_recv();
-    void update_send();
-
   private:
     mutable mutex_type m_stats_mutex;
 

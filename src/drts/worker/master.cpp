@@ -6,12 +6,4 @@ namespace drts
     : m_name (a_name)
     , _is_connected (false)
   {}
-
-  void Master::update_recv()
-  {
-  }
-
-  void Master::update_send()
-  {
-  }
 }

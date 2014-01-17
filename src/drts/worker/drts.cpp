@@ -774,12 +774,6 @@ private:
       try
       {
         sdpa::events::SDPAEvent::Ptr evt(m_event_queue.get());
-        map_of_masters_t::iterator m(m_masters.find(evt->from()));
-        if (m != m_masters.end())
-        {
-          m->second->update_recv();
-        }
-
         evt->handleBy(this);
       }
       catch (boost::thread_interrupted const & irq)
@@ -1224,8 +1218,6 @@ private:
           );
 
         send_event(evt);
-
-        master->update_send();
 
         at_least_one_disconnected = true;
       }
