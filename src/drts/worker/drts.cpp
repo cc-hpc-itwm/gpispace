@@ -59,9 +59,6 @@ namespace
 {
   struct wfe_task_t
   {
-    typedef boost::posix_time::ptime time_type;
-    typedef std::list<std::string> worker_list_t;
-
     enum state_t
     {
       PENDING
@@ -75,7 +72,7 @@ namespace
     int        errc;
     we::type::activity_t activity;
     fhg::util::thread::event<int> done;
-    worker_list_t workers;
+    std::list<std::string> workers;
     std::string error_message;
   };
 
