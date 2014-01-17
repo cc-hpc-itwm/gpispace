@@ -36,7 +36,6 @@ namespace drts
     void update_recv();
     void update_send();
 
-    void job_received();
   private:
     mutable mutex_type m_stats_mutex;
 

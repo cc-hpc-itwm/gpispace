@@ -22,10 +22,4 @@ namespace drts
     lock_type lock(m_stats_mutex);
     ++m_num_send;
   }
-
-  void Master::job_received()
-  {
-    lock_type lock(m_stats_mutex);
-    ++m_num_jobs_recv;
-  }
 }
