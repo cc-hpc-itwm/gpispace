@@ -301,15 +301,6 @@ public:
     gspc::net::server::default_service_demux().unhandle ("/service/drts/search-path/get");
     gspc::net::server::default_service_demux().unhandle ("/service/drts/search-path/set");
 
-    m_worker.interrupt();
-    boost::posix_time::time_duration timeout =
-      boost::posix_time::seconds (15);
-    if (not m_worker.timed_join (timeout))
-    {
-      LOG (WARN, "could not interrupt user-code, aborting");
-      _exit (66);
-    }
-
     {
       boost::mutex::scoped_lock task_map_lock (m_mutex);
       while (! m_task_map.empty ())
@@ -321,6 +312,15 @@ public:
 
         m_task_map.erase (task->id);
       }
+    }
+
+    m_worker.interrupt();
+    boost::posix_time::time_duration timeout =
+      boost::posix_time::seconds (15);
+    if (not m_worker.timed_join (timeout))
+    {
+      LOG (WARN, "could not interrupt user-code, aborting");
+      _exit (66);
     }
   }
 
