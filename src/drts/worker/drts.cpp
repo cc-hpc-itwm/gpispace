@@ -1049,12 +1049,12 @@ private:
     }
   }
 
-  int send_job_result_to_master (job_ptr_t const & job)
+  void send_job_result_to_master (job_ptr_t const & job)
   {
     switch (job->state())
     {
     case drts::Job::FINISHED:
-      return send_event (new sdpa::events::JobFinishedEvent ( m_my_name
+      send_event (new sdpa::events::JobFinishedEvent ( m_my_name
                                                             , job->owner()
                                                             , job->id()
                                                             , job->result()
@@ -1063,7 +1063,7 @@ private:
       break;
     case drts::Job::FAILED:
       {
-        return send_event
+        send_event
           (new sdpa::events::JobFailedEvent ( m_my_name
                                             , job->owner()
                                             , job->id()
@@ -1075,7 +1075,7 @@ private:
       break;
     case drts::Job::CANCELED:
       {
-        return send_event
+        send_event
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job->owner()
                                                , job->id()
@@ -1085,7 +1085,7 @@ private:
       }
       break;
     default:
-      return -EINVAL;
+      throw std::runtime_error ("invalid job state in send_job_result_to_master");
     }
   }
 
@@ -1216,30 +1216,18 @@ private:
     }
   }
 
-  int send_event (sdpa::events::SDPAEvent *e)
+  void send_event (sdpa::events::SDPAEvent *e)
   {
-    return send_event(sdpa::events::SDPAEvent::Ptr(e));
+    send_event(sdpa::events::SDPAEvent::Ptr(e));
   }
 
-  int send_event (sdpa::events::SDPAEvent::Ptr const & evt)
+  void send_event (sdpa::events::SDPAEvent::Ptr const & evt)
   {
     static sdpa::events::Codec codec;
 
     const std::string encoded_evt (codec.encode(evt.get()));
 
-    try
-    {
-      m_peer->send (evt->to(), encoded_evt);
-    }
-    catch (std::exception const &ex)
-    {
-      DMLOG ( WARN, "could not send "
-            << evt->str() << " to " << evt->to() << ": " << ex.what()
-            );
-      return -ESRCH;
-    }
-
-    return 0;
+    m_peer->send (evt->to(), encoded_evt);
   }
 
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt)
