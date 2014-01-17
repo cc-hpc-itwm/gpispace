@@ -37,6 +37,11 @@ namespace sdpa
       return c == CANCELED;
     }
 
+    inline bool is_pending (code c)
+    {
+      return c == PENDING;
+    }
+
     inline std::string show(int code)
     {
       switch (code)

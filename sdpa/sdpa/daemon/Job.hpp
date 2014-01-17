@@ -192,6 +192,7 @@ namespace sdpa {
       bool completed() const;
       bool is_running() const;
       bool is_canceled() const;
+      bool is_pending() const;
 
       // job FSM actions
       virtual void action_job_failed(const events::JobFailedEvent&);
