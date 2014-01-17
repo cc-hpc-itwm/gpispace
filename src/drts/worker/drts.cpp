@@ -232,11 +232,6 @@ namespace
 
 class WFEImpl
 {
-  typedef boost::mutex mutex_type;
-  typedef boost::lock_guard<mutex_type> lock_type;
-
-  typedef fhg::thread::queue<wfe_task_t*> task_list_t;
-  typedef std::map<std::string, wfe_task_t *> map_of_tasks_t;
 public:
   WFEImpl ( boost::optional<std::size_t> target_socket
           , std::string search_path
@@ -316,7 +311,7 @@ public:
     }
 
     {
-      lock_type task_map_lock (m_mutex);
+      boost::mutex::scoped_lock task_map_lock (m_mutex);
       while (! m_task_map.empty ())
       {
         wfe_task_t *task = m_task_map.begin ()->second;
@@ -359,7 +354,7 @@ public:
     task.workers = worker_list;
 
     {
-      lock_type task_map_lock(m_mutex);
+      boost::mutex::scoped_lock task_map_lock(m_mutex);
       m_task_map.insert(std::make_pair(job_id, &task));
     }
 
@@ -430,7 +425,7 @@ public:
     }
 
     {
-      lock_type task_map_lock(m_mutex);
+      boost::mutex::scoped_lock task_map_lock(m_mutex);
       m_task_map.erase (job_id);
     }
 
@@ -439,8 +434,8 @@ public:
 
   int cancel (std::string const &job_id)
   {
-    lock_type job_map_lock(m_mutex);
-    map_of_tasks_t::iterator task_it (m_task_map.find(job_id));
+    boost::mutex::scoped_lock job_map_lock(m_mutex);
+    std::map<std::string, wfe_task_t *>::iterator task_it (m_task_map.find(job_id));
     if (task_it == m_task_map.end())
     {
       MLOG(WARN, "could not find task " << job_id);
@@ -462,7 +457,7 @@ private:
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
     {
-      lock_type lock (m_current_task_mutex);
+      boost::mutex::scoped_lock lock (m_current_task_mutex);
       if (m_current_task)
       {
         rply.set_body (m_current_task->activity.transition().name());
@@ -481,7 +476,7 @@ private:
 
     {
       //! \todo is that lock needed really? what does it lock?
-      lock_type lock (m_mutex);
+      boost::mutex::scoped_lock lock (m_mutex);
 
       rply.set_body (m_loader.search_path());
     }
@@ -500,7 +495,7 @@ private:
       std::string search_path (rqst.get_body ());
 
       search_path_appender appender(m_loader);
-      lock_type lock (m_mutex);
+      boost::mutex::scoped_lock lock (m_mutex);
       m_loader.clear_search_path ();
       fhg::util::split(search_path, ":", appender);
     }
@@ -513,14 +508,14 @@ private:
     for (;;)
     {
       {
-        lock_type lock (m_current_task_mutex);
+        boost::mutex::scoped_lock lock (m_current_task_mutex);
         m_current_task = 0;
       }
 
       wfe_task_t *task = m_tasks.get();
 
       {
-        lock_type lock (m_current_task_mutex);
+        boost::mutex::scoped_lock lock (m_current_task_mutex);
         m_current_task = task;
       }
 
@@ -577,11 +572,11 @@ private:
 
   std::string _worker_name;
 
-  mutable mutex_type m_mutex;
-  map_of_tasks_t m_task_map;
-  task_list_t m_tasks;
+  mutable boost::mutex m_mutex;
+  std::map<std::string, wfe_task_t *> m_task_map;
+  fhg::thread::queue<wfe_task_t*> m_tasks;
 
-  mutable mutex_type m_current_task_mutex;
+  mutable boost::mutex m_current_task_mutex;
   wfe_task_t *m_current_task;
 
   we::loader::loader m_loader;
@@ -594,22 +589,14 @@ private:
 class DRTSImpl : FHG_PLUGIN
                , public sdpa::events::EventHandler
 {
-  typedef boost::mutex mutex_type;
-  typedef boost::condition_variable condition_type;
-  typedef boost::unique_lock<mutex_type> lock_type;
-
-  typedef fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> event_queue_t;
-
   typedef std::map<std::string, bool> map_of_masters_t;
 
-  typedef boost::shared_ptr<drts::Job> job_ptr_t;
   typedef std::map< std::string
-                  , job_ptr_t
+                  , boost::shared_ptr<drts::Job>
                   > map_of_jobs_t;
-  typedef fhg::thread::queue<job_ptr_t> job_queue_t;
-
-  typedef std::pair<sdpa::Capability, fhg::plugin::Capability*> capability_info_t;
-  typedef std::map<std::string, capability_info_t> map_of_capabilities_t;
+  typedef std::map< std::string
+                  , std::pair<sdpa::Capability, fhg::plugin::Capability*>
+                  > map_of_capabilities_t;
 public:
   FHG_PLUGIN_START()
   try
@@ -701,7 +688,7 @@ public:
           << " of type " << cap->capability_type()
           );
 
-      lock_type cap_lock(m_capabilities_mutex);
+      boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
       m_capabilities.insert
         (std::make_pair ( cap->capability_name()
                         , std::make_pair (sdpa::Capability ( cap->capability_name ()
@@ -832,7 +819,7 @@ public:
     m_wfe = 0;
 
     {
-      lock_type job_map_lock (m_job_map_mutex);
+      boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
       fhg_kernel()->storage()->save("jobs", m_jobs);
     }
 
@@ -858,7 +845,7 @@ public:
           << " of type " << cap->capability_type()
           );
 
-      lock_type cap_lock(m_capabilities_mutex);
+      boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
       m_capabilities.insert
         (std::make_pair ( cap->capability_name()
                         , std::make_pair (sdpa::Capability ( cap->capability_name ()
@@ -893,7 +880,7 @@ public:
 
   FHG_ON_PLUGIN_PREUNLOAD(plugin)
   {
-    lock_type cap_lock(m_capabilities_mutex);
+    boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
     map_of_capabilities_t::iterator cap(m_capabilities.find(plugin));
     if (cap != m_capabilities.end())
     {
@@ -926,7 +913,7 @@ public:
       }
 
       {
-        lock_type lock_reconnect_counter (m_reconnect_counter_mutex);
+        boost::mutex::scoped_lock lock_reconnect_counter (m_reconnect_counter_mutex);
         m_reconnect_counter = 0;
       }
     }
@@ -992,7 +979,7 @@ public:
       return;
     }
 
-    job_ptr_t job (new drts::Job( drts::Job::ID(*e->job_id())
+    boost::shared_ptr<drts::Job> job (new drts::Job( drts::Job::ID(*e->job_id())
                                 , drts::Job::Description(e->description())
                                 , drts::Job::Owner(e->from())
                                 )
@@ -1001,7 +988,7 @@ public:
     job->worker_list (e->worker_list ());
 
     {
-      lock_type job_map_lock(m_job_map_mutex);
+      boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
 
       if (m_backlog_size && m_pending_jobs.size() >= m_backlog_size)
       {
@@ -1036,14 +1023,14 @@ public:
       }
     }
 
-    //    lock_type lock(m_job_arrived_mutex);
+    //    boost::mutex::scoped_lock lock(m_job_arrived_mutex);
     m_job_arrived.notify_all();
   }
 
   virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
   {
     // locate the job
-    lock_type job_map_lock (m_job_map_mutex);
+    boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
     MLOG(TRACE, "got cancelation request for job: " << e->job_id());
@@ -1113,7 +1100,7 @@ public:
   virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
   {
     // locate the job
-    lock_type job_map_lock (m_job_map_mutex);
+    boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
     if (job_it == m_jobs.end())
     {
@@ -1151,7 +1138,7 @@ public:
   virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e)
   {
     // locate the job
-    lock_type job_map_lock (m_job_map_mutex);
+    boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
     if (job_it == m_jobs.end())
     {
@@ -1224,7 +1211,7 @@ private:
     {
       drts_on_cancel_clear ();
 
-      job_ptr_t job = m_pending_jobs.get();
+      boost::shared_ptr<drts::Job> job = m_pending_jobs.get();
 
       if (drts::Job::PENDING == job->cmp_and_swp_state( drts::Job::PENDING
                                                       , drts::Job::RUNNING
@@ -1297,13 +1284,13 @@ private:
         }
 
         {
-          lock_type lock(m_job_computed_mutex);
+          boost::mutex::scoped_lock lock(m_job_computed_mutex);
           m_job_computed.notify_one();
         }
       }
       else
       {
-        lock_type job_map_lock (m_job_map_mutex);
+        boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
         map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
         if (job_it != m_jobs.end())
         {
@@ -1318,7 +1305,7 @@ private:
 
   void add_virtual_capability (std::string const &cap)
   {
-    lock_type cap_lock(m_capabilities_mutex);
+    boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
 
     if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
     {
@@ -1342,7 +1329,7 @@ private:
 
   void del_virtual_capability (std::string const &cap)
   {
-    lock_type cap_lock(m_capabilities_mutex);
+    boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
 
     typedef map_of_capabilities_t::iterator cap_it_t;
     cap_it_t cap_it = m_virtual_capabilities.find (cap);
@@ -1404,7 +1391,7 @@ private:
                               , gspc::net::user_ptr user
                               )
   {
-    lock_type cap_lock(m_capabilities_mutex);
+    boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
 
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
@@ -1431,7 +1418,7 @@ private:
   void notify_capabilities_to_master (std::string const &master)
   {
     sdpa::capabilities_set_t caps;
-    lock_type capabilities_lock(m_capabilities_mutex);
+    boost::mutex::scoped_lock capabilities_lock(m_capabilities_mutex);
 
     typedef map_of_capabilities_t::const_iterator const_cap_it_t;
     for ( const_cap_it_t cap_it(m_capabilities.begin())
@@ -1506,20 +1493,20 @@ private:
         ; ++it
         )
     {
-      job_ptr_t job (it->second);
+      boost::shared_ptr<drts::Job> job (it->second);
 
       switch (job->state())
       {
       case drts::Job::FINISHED:
         {
-          lock_type job_map_lock (m_job_map_mutex);
+          boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
           MLOG(INFO, "restoring information of finished job: " << job->id());
           m_jobs[it->first] = job;
         }
         break;
       case drts::Job::FAILED:
         {
-          lock_type job_map_lock (m_job_map_mutex);
+          boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
           MLOG(INFO, "restoring information of failed job: " << job->id());
           m_jobs[it->first] = job;
         }
@@ -1543,13 +1530,13 @@ private:
   void resend_outstanding_events (std::string const &master)
   {
     MLOG(TRACE, "resending outstanding notifications to " << master);
-    lock_type job_map_lock (m_job_map_mutex);
+    boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
     for ( map_of_jobs_t::iterator job_it (m_jobs.begin()), end (m_jobs.end())
         ; job_it != end
         ; ++job_it
         )
     {
-      job_ptr_t job (job_it->second);
+      boost::shared_ptr<drts::Job> job (job_it->second);
       MLOG( TRACE
           , "checking job"
           << " id := " << job->id()
@@ -1566,7 +1553,7 @@ private:
     }
   }
 
-  void send_job_result_to_master (job_ptr_t const & job)
+  void send_job_result_to_master (boost::shared_ptr<drts::Job> const & job)
   {
     switch (job->state())
     {
@@ -1639,7 +1626,7 @@ private:
     {
       if (m_max_reconnect_attempts)
       {
-        lock_type lock_reconnect_rounter (m_reconnect_counter_mutex);
+        boost::mutex::scoped_lock lock_reconnect_rounter (m_reconnect_counter_mutex);
         if (m_reconnect_counter < m_max_reconnect_attempts)
         {
           ++m_reconnect_counter;
@@ -1774,27 +1761,28 @@ private:
   std::size_t m_max_reconnect_attempts;
   std::size_t m_reconnect_counter;
 
-  event_queue_t m_event_queue;
+  fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>  m_event_queue;
   boost::shared_ptr<boost::thread>    m_event_thread;
   boost::shared_ptr<boost::thread>    m_execution_thread;
 
-  mutable mutex_type m_job_map_mutex;
-  mutable mutex_type m_job_computed_mutex;
-  condition_type     m_job_computed;
-  mutable mutex_type m_job_arrived_mutex;
-  mutable mutex_type m_reconnect_counter_mutex;
-  condition_type     m_job_arrived;
+  mutable boost::mutex m_job_map_mutex;
+  mutable boost::mutex m_job_computed_mutex;
+  boost::condition_variable     m_job_computed;
+  mutable boost::mutex m_job_arrived_mutex;
+  mutable boost::mutex m_reconnect_counter_mutex;
+  boost::condition_variable     m_job_arrived;
 
   fhg::util::thread::event<std::string> m_connected_event;
 
-  mutable mutex_type m_capabilities_mutex;
+  mutable boost::mutex m_capabilities_mutex;
   map_of_capabilities_t m_capabilities;
   map_of_capabilities_t m_virtual_capabilities;
 
   // jobs + their states
   size_t m_backlog_size;
   map_of_jobs_t m_jobs;
-  job_queue_t m_pending_jobs;
+
+  fhg::thread::queue<boost::shared_ptr<drts::Job> > m_pending_jobs;
 };
 
 EXPORT_FHG_PLUGIN( drts
