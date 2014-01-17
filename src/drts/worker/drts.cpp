@@ -1206,7 +1206,7 @@ private:
         ; ++master_it
         )
     {
-      boost::shared_ptr<drts::Master> master (master_it->second);
+      master_ptr master (master_it->second);
 
       if (! master->is_connected())
       {
