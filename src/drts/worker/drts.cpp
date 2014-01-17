@@ -467,8 +467,6 @@ public:
                    );
         m_jobs.insert (std::make_pair(job->id(), job));
 
-        job->entered(boost::posix_time::microsec_clock::universal_time());
-
         fhg_kernel()->storage()->save("jobs", m_jobs);
 
         m_pending_jobs.put(job);
@@ -677,7 +675,8 @@ private:
       {
         try
         {
-          job->started(boost::posix_time::microsec_clock::universal_time());
+          const boost::posix_time::ptime started
+            (boost::posix_time::microsec_clock::universal_time());
 
           MLOG(TRACE, "executing job " << job->id());
 
@@ -695,13 +694,14 @@ private:
           job->set_result_code (ec);
           job->set_message (error_message);
 
-          job->completed(boost::posix_time::microsec_clock::universal_time());
+          const boost::posix_time::ptime completed
+            (boost::posix_time::microsec_clock::universal_time());
 
           MLOG( TRACE
               , "job returned."
               << " error-code := " << job->result_code()
               << " error-message := " << job->message()
-              << " total-time := " << (job->completed() - job->started())
+              << " total-time := " << (completed - started)
               );
 
           if (fhg::error::NO_ERROR == ec)
