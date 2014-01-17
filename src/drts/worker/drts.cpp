@@ -486,8 +486,8 @@ public:
         DMLOG(TRACE, "successfully connected to " << master_it->second->name());
         master_it->second->is_connected(true);
 
-        notify_capabilities_to_master (master_it->second);
-        resend_outstanding_events (master_it->second);
+        notify_capabilities_to_master (master_it->first);
+        resend_outstanding_events (master_it->first);
 
         m_connected_event.notify(master_it->second->name());
       }
@@ -1003,7 +1003,7 @@ private:
     user->deliver (rply);
   }
 
-  void notify_capabilities_to_master (master_ptr const &master)
+  void notify_capabilities_to_master (std::string const &master)
   {
     sdpa::capabilities_set_t caps;
     lock_type capabilities_lock(m_capabilities_mutex);
@@ -1028,7 +1028,7 @@ private:
     if (! caps.empty())
     {
       send_event(new sdpa::events::CapabilitiesGainedEvent( m_my_name
-                                                          , master->name()
+                                                          , master
                                                           , caps
                                                           )
                 );
@@ -1115,9 +1115,9 @@ private:
     }
   }
 
-  void resend_outstanding_events (master_ptr const &master)
+  void resend_outstanding_events (std::string const &master)
   {
-    MLOG(TRACE, "resending outstanding notifications to " << master->name());
+    MLOG(TRACE, "resending outstanding notifications to " << master);
     lock_type job_map_lock (m_job_map_mutex);
     for ( map_of_jobs_t::iterator job_it (m_jobs.begin()), end (m_jobs.end())
         ; job_it != end
@@ -1131,7 +1131,7 @@ private:
           << " state := " << job->state()
           << " owner := " << job->owner()
           );
-      if (   (job->owner() == master->name())
+      if (   (job->owner() == master)
          && (job->state() >= drts::Job::FINISHED)
          )
       {
@@ -1206,13 +1206,11 @@ private:
         ; ++master_it
         )
     {
-      master_ptr master (master_it->second);
-
-      if (! master->is_connected())
+      if (! master_it->second->is_connected())
       {
         sdpa::events::WorkerRegistrationEvent::Ptr evt
           (new sdpa::events::WorkerRegistrationEvent( m_my_name
-                                                    , master->name()
+                                                    , master_it->first
                                                     , m_backlog_size
                                                     )
           );
