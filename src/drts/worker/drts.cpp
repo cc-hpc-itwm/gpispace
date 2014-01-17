@@ -1069,7 +1069,6 @@ public:
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job_it->second->owner()
                                                , job_it->second->id()
-                                               , job_it->second->result()
                                                )
           );
       }
@@ -1583,7 +1582,6 @@ private:
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job->owner()
                                                , job->id()
-                                               , job->result()
                                                )
           );
       }
