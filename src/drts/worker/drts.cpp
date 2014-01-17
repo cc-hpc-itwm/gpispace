@@ -34,49 +34,7 @@
 
 #include <boost/serialization/shared_ptr.hpp>
 
-namespace drts
-{
-  typedef std::string job_desc_t;
-  typedef std::string job_id_t;
-
-  namespace status
-  {
-    enum status_t
-      {
-        PENDING = 0
-        , RUNNING = 1
-        , FINISHED = 2
-        , PAUSED = 3
-        , CANCELED = 4
-        , FAILED = 5
-      };
-  }
-
-  class JobListener
-  {
-  public:
-    virtual ~JobListener() {}
-    virtual void jobStatusChanged(job_id_t const &, drts::status::status_t) = 0;
-  };
-
-  class DRTS
-  {
-  public:
-    virtual ~DRTS() {}
-
-    virtual int exec (job_desc_t const &, job_id_t &, JobListener *) = 0;
-    virtual status::status_t query (job_id_t const & jobid) = 0;
-    virtual int cancel (job_id_t const & jobid) = 0;
-    virtual int results (job_id_t const & jobid, std::string &) = 0;
-    virtual int remove (job_id_t const & jobid) = 0;
-    virtual void add_virtual_capability (std::string const &cap) = 0;
-    virtual void del_virtual_capability (std::string const &cap) = 0;
-    // virtual capabilities_t capabilities() const = 0;
-  };
-}
-
 class DRTSImpl : FHG_PLUGIN
-               , public drts::DRTS
                , public sdpa::events::EventHandler
 {
   typedef boost::mutex mutex_type;
@@ -421,61 +379,6 @@ public:
 
       m_capabilities.erase(cap);
     }
-  }
-
-  int exec (drts::job_desc_t const &, drts::job_id_t &, drts::JobListener *)
-  {
-    // parse job
-    //   if ok:
-    //      assign job id
-    //      state == pending
-    //      schedule job with attached listener
-    //   else:
-    //      return -EINVAL
-    return -EPERM;
-  }
-
-  drts::status::status_t query (drts::job_id_t const & jobid)
-  {
-    return drts::status::FAILED;
-  }
-
-  int cancel (drts::job_id_t const & jobid)
-  {
-    return -ESRCH;
-  }
-
-  int results (drts::job_id_t const & jobid, std::string &)
-  {
-    return -ESRCH;
-  }
-
-  int remove (drts::job_id_t const & jobid)
-  {
-    return -ESRCH;
-  }
-
-  int add_agent (std::string const & name)
-  {
-    // 1. remember agent in agent map
-    //   state - not connected
-    // 2. send registration event to agent
-    //   re-schedule registration send
-    // 3. when we receive an acknowledge
-    //   change agents state to 'connected'
-    //   no re-schedule of registration
-    // 4. on connection lost -> del_agent
-    return 0;
-  }
-
-  int del_agent (std::string const & name)
-  {
-    //  change state to 'not-connected'
-    //  if there are jobs from that agent:
-    //     remember finished jobs (with timestamp)
-    //     what should happen with not yet executed jobs?
-    //  else: remove agent
-    return 0;
   }
 
   // event handler callbacks
