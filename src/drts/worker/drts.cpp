@@ -1363,6 +1363,7 @@ private:
   boost::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
   std::string m_my_name;
+  //! \todo Two sets for connected and unconnected masters?
   map_of_masters_t m_masters;
   std::size_t m_max_reconnect_attempts;
   std::size_t m_reconnect_counter;
