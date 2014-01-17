@@ -1,45 +1,59 @@
-#include <sdpa/daemon/NotificationEvent.hpp>
-#include <sdpa/daemon/NotificationService.hpp>
+#include "drts_callbacks.h"
+#include "job.hpp"
 
-#include <list>
-#include <map>
-#include <string>
-
-#include <boost/format.hpp>
-#include <boost/thread.hpp>
-#include <boost/function.hpp>
-#include <boost/optional.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-#include <fhg/util/thread/queue.hpp>
-#include <fhg/util/thread/event.hpp>
-#include <fhg/util/getenv.hpp>
-#include <fhg/util/threadname.hpp>
-#include <fhg/util/split.hpp>
 #include <fhg/error_codes.hpp>
+#include <fhg/plugin/capability.hpp>
+#include <fhg/plugin/plugin.hpp>
+#include <fhg/util/getenv.hpp>
+#include <fhg/util/read_bool.hpp>
+#include <fhg/util/split.hpp>
+#include <fhg/util/thread/event.hpp>
+#include <fhg/util/thread/queue.hpp>
+#include <fhg/util/threadname.hpp>
+
+#include <fhgcom/peer.hpp>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/capability.hpp>
 
+#include <gspc/drts/context.hpp>
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/user.hpp>
 
-#include <gspc/drts/context.hpp>
+#include <sdpa/daemon/NotificationEvent.hpp>
+#include <sdpa/daemon/NotificationService.hpp>
+#include <sdpa/events/Codec.hpp>
+#include <sdpa/events/EventHandler.hpp>
+#include <sdpa/events/events.hpp>
+#include <sdpa/types.hpp>
 
+#include <we/context.hpp>
 #include <we/loader/loader.hpp>
 #include <we/loader/module_call.hpp>
-#include <we/context.hpp>
 #include <we/type/activity.hpp>
 #include <we/type/expression.fwd.hpp>
 #include <we/type/module_call.hpp>
 //! \todo eliminate this include (that completes the type transition_t::data)
 #include <we/type/net.hpp>
 
-#include <errno.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/format.hpp>
+#include <boost/function.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
 #include <hwloc.h>
+
+#include <list>
+#include <map>
+#include <string>
+#include <vector>
+
+#include <errno.h>
 
 namespace
 {
@@ -604,41 +618,6 @@ private:
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
 };
-
-#include "job.hpp"
-#include "drts_callbacks.h"
-
-#include <errno.h>
-
-#include <map>
-#include <list>
-#include <vector>
-
-#include <fhglog/LogMacros.hpp>
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/capability.hpp>
-#include <fhg/util/thread/queue.hpp>
-#include <fhg/util/thread/event.hpp>
-#include <fhg/util/read_bool.hpp>
-#include <fhg/util/split.hpp>
-#include <fhg/util/threadname.hpp>
-#include <fhg/error_codes.hpp>
-
-#include <sdpa/events/EventHandler.hpp>
-#include <sdpa/events/Codec.hpp>
-#include <sdpa/events/events.hpp>
-
-#include <fhgcom/peer.hpp>
-
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/shared_ptr.hpp>
-#include <sdpa/types.hpp>
-
-#include <gspc/net/server/default_service_demux.hpp>
-#include <gspc/net/frame_builder.hpp>
-
-#include <boost/serialization/shared_ptr.hpp>
 
 class DRTSImpl : FHG_PLUGIN
                , public sdpa::events::EventHandler
