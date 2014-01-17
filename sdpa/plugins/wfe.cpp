@@ -241,13 +241,22 @@ public:
 
   FHG_PLUGIN_START()
   {
-    const size_t target_socket (fhg_kernel()->get<size_t> ("socket", -1));
+    const std::size_t target_socket_
+      (fhg_kernel()->get<std::size_t> ("socket", -1));
+    const boost::optional<std::size_t> target_socket
+      (boost::make_optional (target_socket_ != -1, target_socket_));
+    const std::string search_path
+      (fhg_kernel()->get("library_path", fhg::util::getenv("PC_LIBRARY_PATH")));
+    const std::string gui_url_ (fhg_kernel()->get ("gui_url", ""));
+    const boost::optional<std::string> gui_url
+      (boost::make_optional (!gui_url_.empty(), gui_url_));
+    const std::string worker_name (fhg_kernel()->get_name ());
 
-    if (target_socket != (size_t)-1)
+    if (target_socket)
     {
       try
       {
-        _numa_socket_setter.bind (target_socket);
+        _numa_socket_setter.bind (*target_socket);
       }
       catch (std::exception const& ex)
       {
@@ -255,6 +264,8 @@ public:
         FHG_PLUGIN_FAILED (-1);
       }
     }
+
+    _worker_name = worker_name;
 
     assert (! m_worker);
     assert (! m_loader);
@@ -264,9 +275,6 @@ public:
 
     {
       // initalize loader with paths
-      std::string search_path
-        (fhg_kernel()->get("library_path", fhg::util::getenv("PC_LIBRARY_PATH")));
-
       search_path_appender appender(*m_loader);
       fhg::util::split(search_path, ":", appender);
 
@@ -308,10 +316,9 @@ public:
 
     _notification_service = boost::none;
 
-    const std::string url (fhg_kernel()->get ("gui_url", ""));
-    if (not url.empty())
+    if (gui_url)
     {
-      _notification_service = sdpa::daemon::NotificationService (url);
+      _notification_service = sdpa::daemon::NotificationService (*gui_url);
     }
 
     FHG_PLUGIN_STARTED();
@@ -367,7 +374,7 @@ public:
     {
       _notification_service->notify
         ( sdpa::daemon::NotificationEvent
-           (fhg_kernel()->get_name (), task.id, state, task.activity)
+           (_worker_name, task.id, state, task.activity)
         );
     }
   }
@@ -602,6 +609,8 @@ private:
   }
 
   numa_socket_setter _numa_socket_setter;
+
+  std::string _worker_name;
 
   mutable mutex_type m_mutex;
   map_of_tasks_t m_task_map;
