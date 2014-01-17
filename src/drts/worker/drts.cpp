@@ -247,10 +247,9 @@ public:
                           ? numa_socket_setter (*target_socket)
                           : boost::optional<numa_socket_setter>()
                           )
+    , _worker_name (worker_name)
     , m_loader()
   {
-    _worker_name = worker_name;
-
     m_current_task = 0;
 
     {
