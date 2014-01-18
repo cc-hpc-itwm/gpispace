@@ -156,7 +156,7 @@ namespace we { namespace type {
 
       friend class boost::serialization::access;
       template <typename Archive>
-      void save(Archive& ar, const unsigned int) const
+      void serialize(Archive & ar, const unsigned int version)
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
@@ -168,21 +168,6 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(_requirements);
         ar & BOOST_SERIALIZATION_NVP(_priority);
       }
-
-      template <typename Archive>
-      void load(Archive & ar, const unsigned int version)
-      {
-        ar & BOOST_SERIALIZATION_NVP(name_);
-        ar & BOOST_SERIALIZATION_NVP(data_);
-        ar & BOOST_SERIALIZATION_NVP(internal_);
-        ar & BOOST_SERIALIZATION_NVP(condition_);
-        ar & BOOST_SERIALIZATION_NVP(ports_);
-        ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
-        ar & BOOST_SERIALIZATION_NVP(prop_);
-        ar & BOOST_SERIALIZATION_NVP(_requirements);
-        ar & BOOST_SERIALIZATION_NVP(_priority);
-      }
-      BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
   }
 }
