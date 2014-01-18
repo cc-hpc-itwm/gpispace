@@ -1,20 +1,49 @@
-# petry@itwm.fraunhofer.de
+# mirko.rahn@itwm.fraunhofer.de
 
 source "@CMAKE_BINARY_DIR@/test/env.sh"
 source "@CMAKE_BINARY_DIR@/test/measured.sh"
 source "@CMAKE_BINARY_DIR@/test/die.sh"
 source "@CMAKE_BINARY_DIR@/test/dir_build.sh"
 
-tmpdir="${DIR_BUILD}"
+DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
+
+DIR_SOURCE="${DIR_TEST}/../xml"
+
+OUT="${DIR_BUILD}/selftest.out"
+HOSTFILE="${DIR_BUILD}/hostfile"
+
+make+=( make -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
+make+=( MAIN=selftest )
+make+=( XML=selftest.xml )
+make+=( PUT_PORT=\'challenge=\\\"$$\\\"\' )
+make+=( BUILDDIR="${DIR_BUILD}" )
+make+=( LIB_DESTDIR="${DIR_BUILD}" )
+make+=( -C "${DIR_SOURCE}" )
 
 cleanup()
 {
-  rm -rf "${DIR_BUILD}"/*
+  sdpa stop
+  rm -f "${HOSTFILE}"
+  eval ${make[@]} uninstall
+  eval ${make[@]} clean
   cleanup_dir_build
 }
 
 trap 'cleanup' EXIT
-mkdir -p "${tmpdir}"
-echo $(hostname) > ${tmpdir}/nodes
 
-measured "run" PBS_NODEFILE=${tmpdir}/nodes SDPA_STATE_DIR=${tmpdir}/state sdpa selftest </dev/null  || die $EX_ERR_RUN
+measured "build-wrapper" ${make[@]} lib                     || die $EX_ERR_RUN
+measured "install" ${make[@]} install                       || die $EX_ERR_RUN
+
+hostname > "${HOSTFILE}"                                    || die $EX_ERR_ENV
+
+measured "setup" SDPA_PERFORM_UNATTENDED_SETUP=1 sdpa setup || die $EX_ERR_ENV
+
+measured "boot" sdpa boot -A "${DIR_BUILD}" -M -f "${HOSTFILE}" work:1        \
+                                                            || die $EX_ERR_BOOT
+
+measured "submit" ${make[@]} submit                         || die $EX_ERR_RUN
+
+test "$(pnetget -i "${OUT}" -p response)" == "\"sdpa.response.$$\""          \
+                                                            || die $EX_ERR_RES
+
+sdpa stop                                                   || die $EX_ERR_STOP
