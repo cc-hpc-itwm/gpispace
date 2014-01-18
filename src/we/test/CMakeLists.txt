@@ -52,3 +52,5 @@ fhg_add_test (execute_activity.cpp
   PROJECT we
   LINK_LIBRARIES pnet
 )
+
+add_subdirectory (transition_cannot_fire_when_input_port_is_not_connected)
