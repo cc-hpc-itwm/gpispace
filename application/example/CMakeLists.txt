@@ -5,5 +5,3 @@ add_subdirectory(atomic)
 add_subdirectory(inotify)
 
 include (fhg_test_macros)
-
-add_subdirectory(workerlist/test)
