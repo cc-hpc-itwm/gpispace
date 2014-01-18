@@ -8,11 +8,11 @@ DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
 DIR_SOURCE="${DIR_TEST}/.."
 
-OUT="${DIR_BUILD}/split_join.out"
+OUT="${DIR_BUILD}/@SPLIT_JOIN_MAIN@.out"
 HOSTFILE="${DIR_BUILD}/hostfile"
 
 make+=( make -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
-make+=( MAIN=split_join )
+make+=( MAIN=@SPLIT_JOIN_MAIN@ )
 make+=( PUT_PORT=I=10000L )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
 make+=( BUILDDIR="${DIR_BUILD}" )
