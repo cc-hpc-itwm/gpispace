@@ -6,5 +6,4 @@ add_subdirectory(inotify)
 
 include (fhg_test_macros)
 
-add_subdirectory(stresstest/test)
 add_subdirectory(workerlist/test)
