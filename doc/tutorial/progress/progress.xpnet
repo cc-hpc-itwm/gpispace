@@ -127,7 +127,7 @@
         <in name="app" type="string" />
         <out name="trigger" type="control" />
 
-        <module name="progress_example" function="trigger finalize (trigger, app)">
+        <module name="progress_example" function="finalize (trigger, app)">
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="fhg/plugins/progress.h"/>
 
