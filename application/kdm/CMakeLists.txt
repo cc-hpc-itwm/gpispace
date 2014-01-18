@@ -195,22 +195,7 @@ install(FILES ${hdrs}
   COMPONENT sdk
   )
 
-install(PROGRAMS kdm
-  DESTINATION ${SDPA_APPS_DIR}/kdm/bin
-  COMPONENT examples
-)
-
 install(TARGETS determine_size do_load do_write
   LIBRARY
   DESTINATION libexec/sdpa
-  COMPONENT modules)
-
-install(TARGETS sinc_mod filter_mod simple_process_mod filter_trace_mod
-  LIBRARY
-  DESTINATION ${SDPA_APPS_DIR}/kdm/lib
-  COMPONENT modules)
-
-install(TARGETS kdm_mod kdmfull_mod
-  LIBRARY
-  DESTINATION ${SDPA_APPS_DIR}/kdm/lib
   COMPONENT modules)
