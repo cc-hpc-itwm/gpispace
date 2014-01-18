@@ -615,6 +615,11 @@ namespace we
       we::type::transition_t const& transition
         (n->transitions().at (transition_id));
 
+      if (_m.size() < transition.ports_input().size())
+      {
+        return false;
+      }
+
       if (!transition.condition())
       {
         return true;
