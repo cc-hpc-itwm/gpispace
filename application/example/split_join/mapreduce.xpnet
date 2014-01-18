@@ -20,7 +20,7 @@
         <in name="i" type="long"/>
         <out name="o" type="long"/>
         <expression>
-          ${o} := ${i}^2
+          ${o} := ${i} * ${i}
         </expression>
       </defun>
       <connect-in port="i" place="i"/>
