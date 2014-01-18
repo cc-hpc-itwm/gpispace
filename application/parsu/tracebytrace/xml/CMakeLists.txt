@@ -5,10 +5,6 @@ set (xml
    tracebytrace.xml.in
 )
 
-install(FILES ${xml}
-  DESTINATION ${PARSU_TRACEBYTRACE}
-  COMPONENT applications)
-
 # include(pnet_macros)
 
 # pnet_compile(parsu_tracebytrace tracebytrace.xml.in

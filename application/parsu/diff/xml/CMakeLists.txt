@@ -5,10 +5,6 @@ set (xml
    diff.xml.in
 )
 
-install(FILES ${xml}
-  DESTINATION ${PARSU_DIFF}
-  COMPONENT applications)
-
 # include(pnet_macros)
 
 # pnet_compile(parsu_diff diff.xml.in

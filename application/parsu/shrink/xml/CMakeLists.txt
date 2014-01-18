@@ -5,10 +5,6 @@ set (xml
    shrink.xml.in
 )
 
-install(FILES ${xml}
-  DESTINATION ${PARSU_SHRINK}
-  COMPONENT applications)
-
 # include(pnet_macros)
 
 # pnet_compile(parsu_shrink shrink.xml.in

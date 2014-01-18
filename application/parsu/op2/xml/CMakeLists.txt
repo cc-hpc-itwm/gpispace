@@ -5,10 +5,6 @@ set (xml
    op2.xml.in
 )
 
-install(FILES ${xml}
-  DESTINATION ${PARSU_OPTWO}
-  COMPONENT applications)
-
 # include(pnet_macros)
 
 # pnet_compile(parsu_op2 op2.xml.in

@@ -5,10 +5,6 @@ set (xml
    stack.xml.in
 )
 
-install(FILES ${xml}
-  DESTINATION ${PARSU_STACK}
-  COMPONENT applications)
-
 # include(pnet_macros)
 
 # pnet_compile(parsu_stack stack.xml.in
