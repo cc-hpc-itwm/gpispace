@@ -11,7 +11,7 @@ DIR_SOURCE="${DIR_TEST}/.."
 OUT="${DIR_BUILD}/workerlist.out"
 HOSTFILE="${DIR_BUILD}/hostfile"
 
-make_src='make BUILDDIR="${DIR_BUILD}" LIB_DESTDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
+make_src='make -f "${SDPA_HOME}/share/sdpa/make/common.mk" MAIN=workerlist CXXLIBRARYPATHS=$(SDPA_HOME)/lib PUT_PORT=trigger=[] BUILDDIR="${DIR_BUILD}" LIB_DESTDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
 
 cleanup()
 {
