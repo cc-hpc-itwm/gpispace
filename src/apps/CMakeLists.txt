@@ -44,15 +44,6 @@ fhg_add_runtime_executable (
 )
 
 fhg_add_runtime_executable (
-  pnetlt.cpp
-  LINK_LIBRARIES fhg-revision
-                 pnet
-                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-)
-
-fhg_add_runtime_executable (
   pnetc.cpp
   LINK_LIBRARIES fhg-revision
                  pnet
