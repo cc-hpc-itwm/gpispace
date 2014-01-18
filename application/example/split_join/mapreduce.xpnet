@@ -12,7 +12,7 @@
       <include-function href="split.xpnet"/>
       <connect-in port="I" place="I"/>
       <connect-out port="i" place="i"/>
-      <connect-out port="N" place="N"/>
+      <place-map virtual="N" real="N"/>
     </transition>
 
     <transition name="work">
@@ -30,7 +30,7 @@
     <transition name="join" inline="true">
       <include-function href="join.xpnet"/>
       <connect-in port="o" place="o"/>
-      <connect-in port="N" place="N"/>
+      <place-map virtual="N" real="N"/>
       <connect-out port="O" place="O"/>
     </transition>
   </net>

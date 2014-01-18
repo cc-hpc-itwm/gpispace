@@ -1,7 +1,7 @@
 <defun name="split">
   <in name="I" type="long" place="I"/>
   <out name="i" type="long" place="i"/>
-  <out name="N" type="long" place="N"/>
+  <tunnel name="N" type="long" place="N"/>
   <net>
     <struct name="state_t">
       <field name="N" type="long"/>
@@ -9,7 +9,7 @@
     </struct>
 
     <place name="I" type="long"/>
-    <place name="N" type="long"/>
+    <place name="N" type="long" virtual="true"/>
     <place name="i" type="long"/>
     <place name="state" type="state_t"/>
 
