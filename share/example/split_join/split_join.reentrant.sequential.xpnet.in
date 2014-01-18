@@ -1,4 +1,4 @@
-<defun name="split_join_reentrant_sequential">
+<defun name="split_join_@SPLIT_VERSION@_reentrant_sequential">
   <in name="I" type="long" place="I"/>
   <out name="O" type="long" place="O"/>
   <net>
@@ -24,7 +24,7 @@
     <place name="I_critical" type="long"/>
 
     <transition name="split" inline="true">
-      <include-function href="split.xpnet"/>
+      <include-function href="split.@SPLIT_VERSION@.xpnet"/>
       <connect-in port="I" place="I_critical"/>
       <connect-out port="i" place="i"/>
       <place-map virtual="N" real="N"/>

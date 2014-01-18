@@ -4,7 +4,7 @@ source "@CMAKE_BINARY_DIR@/test/env.sh"
 source "@CMAKE_BINARY_DIR@/test/dir_build.sh"
 source "@CMAKE_BINARY_DIR@/test/measured.sh"
 
-DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
+DIR_TEST="@CMAKE_CURRENT_BINARY_DIR@"
 
 DIR_SOURCE="${DIR_TEST}/.."
 
