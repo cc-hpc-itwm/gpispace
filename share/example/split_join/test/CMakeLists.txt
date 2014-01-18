@@ -5,6 +5,8 @@ set (versions
   split_join.parallel_split_join
 )
 
+set (EXPECTED_OUTPUT "333383335000L")
+
 foreach (SPLIT_JOIN_MAIN ${versions})
   fhg_add_application_test (example_${SPLIT_JOIN_MAIN}_we-exec
     SCRIPT test.we-exec

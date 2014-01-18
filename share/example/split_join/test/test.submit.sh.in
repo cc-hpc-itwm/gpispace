@@ -38,6 +38,7 @@ measured "boot" sdpa boot -A "${DIR_BUILD}" -M -f "${HOSTFILE}" work:4        \
 
 measured "submit" ${make[@]} submit                         || die $EX_ERR_RUN
 
-test "$(pnetget -i "${OUT}" -p O)" == "333383335000L"       || die $EX_ERR_RES
+test "$(pnetget -i "${OUT}" -p O)" == "$(echo -e "@EXPECTED_OUTPUT@")"       \
+                                                            || die $EX_ERR_RES
 
 sdpa stop                                                   || die $EX_ERR_STOP
