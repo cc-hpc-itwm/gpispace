@@ -11,6 +11,5 @@ pnet_compile(asian wrapper.xml
            -O3
   BUILD
   DEPENDS process
-  INSTALL "${SDPA_APPS_DIR}/asian"
   COMPONENT applications
 )
