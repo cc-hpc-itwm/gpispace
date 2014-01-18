@@ -623,7 +623,35 @@ namespace we { namespace type {
           ;
 
         BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
-                      , t.ports()
+                      , t.ports_input()
+                      )
+        {
+          level (s, l + 1)
+            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+            << node ( shape::port (p.second)
+                    , with_signature ( p.second.name()
+                                     , p.second.signature()
+                                     , opts
+                                     )
+                    )
+            ;
+        }
+        BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
+                      , t.ports_output()
+                      )
+        {
+          level (s, l + 1)
+            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+            << node ( shape::port (p.second)
+                    , with_signature ( p.second.name()
+                                     , p.second.signature()
+                                     , opts
+                                     )
+                    )
+            ;
+        }
+        BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
+                      , t.ports_tunnel()
                       )
         {
           level (s, l + 1)
@@ -643,7 +671,43 @@ namespace we { namespace type {
                  (transition_visitor_dot<Pred> (id, l + 1, opts), t.data());
 
             BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
-                          , t.ports()
+                          , t.ports_input()
+                          )
+            {
+              if (p.second.associated_place())
+              {
+                level (s, l + 1)
+                  << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+                  << arrow
+                  << name (id_trans
+                          , "place_"
+                          + boost::lexical_cast<std::string> (*p.second.associated_place())
+                          )
+                  << association()
+                  << std::endl
+                  ;
+              }
+            }
+            BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
+                          , t.ports_output()
+                          )
+            {
+              if (p.second.associated_place())
+              {
+                level (s, l + 1)
+                  << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+                  << arrow
+                  << name (id_trans
+                          , "place_"
+                          + boost::lexical_cast<std::string> (*p.second.associated_place())
+                          )
+                  << association()
+                  << std::endl
+                  ;
+              }
+            }
+            BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
+                          , t.ports_tunnel()
                           )
             {
               if (p.second.associated_place())

@@ -127,10 +127,10 @@ namespace we
 
           void operator() (we::type::net_type& net) const
           {
-            if (_transition.ports().at (_port_id).associated_place())
+            if (_transition.ports_input().at (_port_id).associated_place())
             {
               net.put_value
-                ( *_transition.ports().at (_port_id).associated_place()
+                ( *_transition.ports_input().at (_port_id).associated_place()
                 , _value
                 );
             }
@@ -206,7 +206,7 @@ namespace we
                 )
               {
                 context.bind_ref
-                  ( _activity.transition().ports().at (top->second).name()
+                  ( _activity.transition().ports_input().at (top->second).name()
                   , top->first
                   );
               }
@@ -215,13 +215,10 @@ namespace we
 
             BOOST_FOREACH
               ( we::type::transition_t::port_map_t::value_type const& p
-              , _activity.transition().ports()
+              , _activity.transition().ports_output()
               )
             {
-              if (p.second.is_output())
-              {
                 _activity.add_output (p.first, context.value (p.second.name()));
-              }
             }
 
             return _ctxt->handle_internally (_activity, expr);
@@ -248,11 +245,9 @@ namespace we
 
           BOOST_FOREACH
             ( we::type::transition_t::port_map_t::value_type const& p
-            , _transition.ports()
+            , _transition.ports_output()
             )
           {
-            if (p.second.is_output())
-            {
                 const we::port_id_type& port_id (p.first);
                 const we::place_id_type& pid
                   (*p.second.associated_place());
@@ -263,7 +258,6 @@ namespace we
                 {
                   output.push_back (std::make_pair (token, port_id));
                 }
-            }
           }
 
           return output;

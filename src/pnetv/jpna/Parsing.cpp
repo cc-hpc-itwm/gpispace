@@ -163,7 +163,29 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
         boost::apply_visitor(*this, transition.data());
 
-        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports()) {
+        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_input()) {
+          const we::type::port_t &port = item.second;
+
+            if (port.associated_place()) {
+                we::place_id_type pid = *port.associated_place();
+
+                Place *place = ::jpna::find(places_, pid);
+                place->setInitialMarking(place->initialMarking() + 1);
+
+            }
+        }
+        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_output()) {
+          const we::type::port_t &port = item.second;
+
+            if (port.associated_place()) {
+                we::place_id_type pid = *port.associated_place();
+
+                Place *place = ::jpna::find(places_, pid);
+                place->setInitialMarking(place->initialMarking() + 1);
+
+            }
+        }
+        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_tunnel()) {
           const we::type::port_t &port = item.second;
 
             if (port.associated_place()) {

@@ -103,7 +103,9 @@ namespace we
         && lhs.data() == rhs.data()
         && lhs.is_internal() == rhs.is_internal()
         && lhs.condition() == rhs.condition()
-        && lhs.ports() == rhs.ports()
+        && lhs.ports_input() == rhs.ports_input()
+        && lhs.ports_output() == rhs.ports_output()
+        && lhs.ports_tunnel() == rhs.ports_tunnel()
         && lhs.prop() == rhs.prop()
         && lhs.requirements() == rhs.requirements();
     }

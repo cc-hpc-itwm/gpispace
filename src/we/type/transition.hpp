@@ -47,7 +47,9 @@ namespace we { namespace type {
         , data_ (expression_t())
         , internal_ (true)
         , condition_ (boost::none)
-        , ports_()
+        , _ports_input()
+        , _ports_output()
+        , _ports_tunnel()
         , port_id_counter_ (0)
         , prop_()
         , _requirements()
@@ -67,7 +69,9 @@ namespace we { namespace type {
         , internal_ (intern)
           //! \todo check is_const_true, better check user input earlier
         , condition_ (_condition)
-        , ports_()
+        , _ports_input()
+        , _ports_output()
+        , _ports_tunnel()
         , port_id_counter_ (0)
         , prop_(prop)
         , _requirements()
@@ -92,7 +96,9 @@ namespace we { namespace type {
       we::port_id_type input_port_by_name (const std::string&) const;
       const we::port_id_type& output_port_by_name (const std::string&) const;
 
-      const port_map_t& ports() const;
+      port_map_t const& ports_input() const;
+      port_map_t const& ports_output() const;
+      port_map_t const& ports_tunnel() const;
 
       const we::type::property::type& prop() const;
 
@@ -134,7 +140,7 @@ namespace we { namespace type {
 
         BOOST_FOREACH (token_on_port_t const& top, input)
         {
-          context.bind_ref (ports().at (top.second).name(), top.first);
+          context.bind_ref (ports_input().at (top.second).name(), top.first);
         }
 
         return boost::get<T> (e.ast().eval_all (context));
@@ -146,7 +152,9 @@ namespace we { namespace type {
       bool internal_;
       boost::optional<expression_t> condition_;
 
-      port_map_t ports_;
+      port_map_t _ports_input;
+      port_map_t _ports_output;
+      port_map_t _ports_tunnel;
       we::port_id_type port_id_counter_;
 
       we::type::property::type prop_;
@@ -162,7 +170,9 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(data_);
         ar & BOOST_SERIALIZATION_NVP(internal_);
         ar & BOOST_SERIALIZATION_NVP(condition_);
-        ar & BOOST_SERIALIZATION_NVP(ports_);
+        ar & BOOST_SERIALIZATION_NVP(_ports_input);
+        ar & BOOST_SERIALIZATION_NVP(_ports_output);
+        ar & BOOST_SERIALIZATION_NVP(_ports_tunnel);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
         ar & BOOST_SERIALIZATION_NVP(_requirements);

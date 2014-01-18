@@ -775,7 +775,7 @@ namespace fhg
                         )
           {
             std::stringstream tmp;
-            tmp << "on " << activity.transition().ports().at (top.second).name()
+            tmp << "on " << activity.transition().ports_input().at (top.second).name()
                 << ": " << pnet::type::value::show (top.first);
             QMessageBox msgBox;
             msgBox.setText (QString::fromStdString (tmp.str()));
@@ -941,12 +941,10 @@ namespace fhg
         {
           BOOST_FOREACH
             ( const we::type::port_t& port
-            , activity_and_fun->first.transition().ports()
+            , activity_and_fun->first.transition().ports_input()
             | boost::adaptors::map_values
             )
           {
-            if (port.direction() == we::type::PORT_IN)
-            {
               bool retry (true);
               while (retry)
               {
@@ -969,7 +967,6 @@ namespace fhg
 
                 retry = put_token (activity_and_fun->first, port.name(), value);
               }
-            }
           }
         }
       }
