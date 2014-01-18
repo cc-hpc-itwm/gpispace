@@ -53,7 +53,6 @@
 
     <transition name="initialize">
       <defun>
-        <in name="trigger" type="control"/>
         <in name="sleeptime" type="long"/>
         <in name="seed" type="long"/>
         <in name="num_long" type="long"/>
