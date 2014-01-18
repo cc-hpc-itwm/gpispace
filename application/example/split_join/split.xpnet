@@ -18,8 +18,8 @@
         <in name="I" type="long"/>
         <out name="state" type="state_t"/>
         <expression>
-          ${state.i} := 1L;
           ${state.N} := ${I};
+          ${state.i} := 1L;
         </expression>
       </defun>
       <connect-in port="I" place="I"/>
