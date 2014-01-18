@@ -6,9 +6,6 @@
 				             , response
                                           )">
     <cinclude href="fhglog/fhglog.hpp"/>
-    <cinclude href="errno.h"/>
-    <cinclude href="stdexcept"/>
-    <cinclude href="fstream"/>
     <code><![CDATA[
         LOG (INFO, "SDPA selftest");
 
