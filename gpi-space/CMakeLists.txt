@@ -90,6 +90,4 @@ if (ENABLE_COMPATIBILITY_API)
   add_subdirectory (compat)
 endif()
 
-if (BUILD_TESTING)
   add_subdirectory (tests)
-endif()

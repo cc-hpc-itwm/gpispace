@@ -25,6 +25,4 @@ add_subdirectory (plugins)
 add_subdirectory (bin)
 add_subdirectory (etc)
 
-if (BUILD_TESTING)
   add_subdirectory (tests)
-endif (BUILD_TESTING)

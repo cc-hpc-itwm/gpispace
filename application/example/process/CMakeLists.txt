@@ -43,6 +43,4 @@ install(TARGETS process.shared
   COMPONENT modules)
 
 include (CTest)
-if (BUILD_TESTING)
   add_subdirectory (test)
-endif (BUILD_TESTING)
