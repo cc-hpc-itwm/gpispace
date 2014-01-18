@@ -1,4 +1,4 @@
-<defun name="mapreduce">
+<defun name="split_join">
   <in name="I" type="long" place="I"/>
   <out name="O" type="long" place="O"/>
   <net>
