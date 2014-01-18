@@ -5,6 +5,7 @@ set (versions
   split_join.parallel_split_join
 )
 
+set (PUT_PORT "I=10000L")
 set (EXPECTED_OUTPUT "333383335000L")
 
 foreach (SPLIT_JOIN_MAIN ${versions})
