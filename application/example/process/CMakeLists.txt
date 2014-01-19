@@ -24,5 +24,4 @@ install(TARGETS process.shared
   DESTINATION libexec/sdpa
   COMPONENT modules)
 
-include (CTest)
   add_subdirectory (test)
