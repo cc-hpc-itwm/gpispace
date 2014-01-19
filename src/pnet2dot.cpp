@@ -153,27 +153,19 @@ namespace
 
   std::string bgcolor (const std::string& color)
   {
-    std::ostringstream s;
-
-    s << keyval ("bgcolor", color);
-
-    return s.str();
+    return keyval ("bgcolor", color);
   }
 
   std::string node (const std::string& shape, const std::string& label)
   {
-    std::ostringstream s;
-
-    s << brackets ( keyval ("shape", shape)
-                  + ", "
-                  + keyval ("label", label)
-                  + ", "
-                  + keyval ("style", "filled")
-                  + ", "
-                  + keyval ("fillcolor", color::node)
-                  );
-
-    return s.str();
+    return brackets ( keyval ("shape", shape)
+                    + ", "
+                    + keyval ("label", label)
+                    + ", "
+                    + keyval ("style", "filled")
+                    + ", "
+                    + keyval ("fillcolor", color::node)
+                    );
   }
 
   std::string association()
