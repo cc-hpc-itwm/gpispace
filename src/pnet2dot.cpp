@@ -149,26 +149,13 @@ namespace we { namespace type {
 
       namespace shape
       {
-        static std::string condition;
-        static std::string port_in;
-        static std::string port_out;
-        static std::string port_tunnel;
-        static std::string expression;
-        static std::string modcall;
-        static std::string place;
-
-        inline void init (const we::type::property::type & prop)
-        {
-          const std::string prefix ("pretty.dot.shape");
-
-          condition = prop.get (prefix + ".condition").get_value_or ("record");
-          port_in = prop.get (prefix + ".port-in").get_value_or ("house");
-          port_out = prop.get (prefix + ".port-out").get_value_or ("invhouse");
-          port_tunnel = prop.get (prefix + ".port-tunnel").get_value_or ("ellipse");
-          expression = prop.get (prefix + ".expression").get_value_or ("none");
-          modcall = prop.get (prefix + ".modcall").get_value_or ("box");
-          place = prop.get (prefix + ".place").get_value_or ("ellipse");
-        }
+        static std::string condition = "record";
+        static std::string port_in = "house";
+        static std::string port_out = "invhouse";
+        static std::string port_tunnel = "ellipse";
+        static std::string expression = "none";
+        static std::string modcall = "box";
+        static std::string place = "ellipse";
 
         inline std::string port (const port_t& p)
         {
@@ -181,47 +168,18 @@ namespace we { namespace type {
 
       namespace color
       {
-        static std::string internal;
-        static std::string external;
-        static std::string modcall;
-        static std::string expression;
-        static std::string node;
-        static std::string subnet_internal;
-
-        inline void init (const we::type::property::type & prop)
-        {
-          const std::string prefix ("pretty.dot.color");
-
-          internal = prop.get (prefix + ".internal").get_value_or ("white");
-          external = prop.get (prefix + ".external").get_value_or ("dimgray");
-          modcall = prop.get (prefix + ".modcall").get_value_or ("yellow");
-          expression = prop.get (prefix + ".expression").get_value_or ("white");
-          node = prop.get (prefix + ".node").get_value_or ("white");
-          subnet_internal = prop.get (prefix + ".subnet_internal").get_value_or ("grey");
-        }
+        static std::string internal = "white";
+        static std::string external = "dimgray";
+        static std::string modcall = "yellow";
+        static std::string expression = "white";
+        static std::string node = "white";
+        static std::string subnet_internal = "grey";
       }
 
       namespace style
       {
-        static std::string association;
-        static std::string read_connection;
-
-        inline void init (const we::type::property::type & prop)
-        {
-          const std::string prefix ("pretty.dot.style");
-
-          association =
-            prop.get (prefix + ".association").get_value_or ("dotted");
-          read_connection =
-            prop.get (prefix + ".read-connection").get_value_or ("dashed");
-        }
-      }
-
-      inline void init (const we::type::property::type & prop)
-      {
-        shape::init (prop);
-        color::init (prop);
-        style::init (prop);
+        static std::string association = "dotted";
+        static std::string read_connection = "dashed";
       }
 
       inline std::string node ( const std::string & shape
@@ -852,8 +810,6 @@ try
     }
 
     we::type::dot::id_type id (0);
-
-    we::type::dot::init (act.transition().prop());
 
     ostream << "digraph \"" << act.transition().name() << "\" {" << std::endl;
     ostream << "compound=true" << std::endl;
