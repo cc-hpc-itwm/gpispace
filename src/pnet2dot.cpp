@@ -316,15 +316,7 @@ namespace we { namespace type {
         std::string operator ()
         (const we::type::net_type & net) const
         {
-          typedef std::pair< std::string
-                           , we::port_id_type
-                           > extra_connection_type;
-          typedef boost::unordered_map< std::string
-                                      , std::list<extra_connection_type>
-                                      > extra_connection_by_transition_type;
-
           std::ostringstream s;
-          extra_connection_by_transition_type ecbt;
 
           const id_type id_net (id);
 
@@ -388,22 +380,6 @@ namespace we { namespace type {
               const id_type id_trans (++id);
 
               s << to_dot (trans, id, opts, l + 1, trans.priority());
-
-              if (opts.show_tunnel_connection)
-                {
-                  BOOST_FOREACH ( const extra_connection_type& ec
-                                , ecbt[trans.name()]
-                                )
-                    {
-                      level (s, l + 1)
-                        << name (id_trans, "port_" + boost::lexical_cast<std::string>(ec.second))
-                        << arrow
-                        << ec.first
-                        << association()
-                        << std::endl
-                        ;
-                    }
-                }
 
               if (  net.port_to_place().find (trans_id)
                  != net.port_to_place().end()
