@@ -156,14 +156,6 @@ namespace we { namespace type {
         static std::string expression = "none";
         static std::string modcall = "box";
         static std::string place = "ellipse";
-
-        inline std::string port (const port_t& p)
-        {
-          return p.is_input()
-            ? port_in
-            : (p.is_output() ? port_out : port_tunnel)
-            ;
-        }
       }
 
       namespace color
@@ -549,7 +541,7 @@ namespace we { namespace type {
         {
           level (s, l + 1)
             << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
-            << node ( shape::port (p.second)
+            << node ( shape::port_in
                     , with_signature ( p.second.name()
                                      , p.second.signature()
                                      , opts
@@ -563,7 +555,7 @@ namespace we { namespace type {
         {
           level (s, l + 1)
             << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
-            << node ( shape::port (p.second)
+            << node ( shape::port_out
                     , with_signature ( p.second.name()
                                      , p.second.signature()
                                      , opts
@@ -577,7 +569,7 @@ namespace we { namespace type {
         {
           level (s, l + 1)
             << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
-            << node ( shape::port (p.second)
+            << node ( shape::port_tunnel
                     , with_signature ( p.second.name()
                                      , p.second.signature()
                                      , opts
