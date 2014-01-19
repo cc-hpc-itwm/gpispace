@@ -240,7 +240,6 @@ namespace
     , id_type&
     , const options&
     , fhg::util::indenter&
-    , boost::optional<we::priority_type>
     );
 
   class visit_transition : public boost::static_visitor<std::string>
@@ -338,7 +337,7 @@ namespace
         const id_type id_trans (++id);
 
         ++_indent;
-        s << to_dot (trans, id, opts, _indent, trans.priority());
+        s << to_dot (trans, id, opts, _indent);
         --_indent;
 
         if (net.port_to_place().find (trans_id) != net.port_to_place().end())
@@ -400,7 +399,6 @@ namespace
     , id_type& id
     , const options& opts
     , fhg::util::indenter& indent
-    , boost::optional<we::priority_type> prio
     )
   {
     std::ostringstream s;
@@ -411,11 +409,11 @@ namespace
 
     std::ostringstream priority;
 
-    if (opts.show_priority && prio)
+    if (opts.show_priority)
     {
-      if (*prio > we::priority_type (0))
+      if (t.priority() > we::priority_type (0))
       {
-        priority << "| priority: " << *prio;
+        priority << "| priority: " << t.priority();
       }
     }
 
@@ -555,10 +553,7 @@ namespace
     os << "digraph \"" << activity.transition().name() << "\" {"
        << "\n" << "compound=true"
        << "\n" << "rankdir=LR"
-       << to_dot ( activity.transition()
-                 , id, options, indent
-                 , activity.transition().priority()
-                 )
+       << to_dot (activity.transition(), id, options, indent)
        << "\n" << "} /* " << activity.transition().name() << " */" << "\n";
   }
 }
