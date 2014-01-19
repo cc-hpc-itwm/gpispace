@@ -93,7 +93,6 @@ set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$EN
 
 include (fhg_test_macros)
 
-include (CheckCompiler)
 include (CompilerFlags)
 
 if (NOT DEBUG_FHGLOG)
