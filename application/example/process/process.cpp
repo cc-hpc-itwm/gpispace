@@ -164,16 +164,12 @@ namespace process
                                 , const std::size_t & block_size
                                 )
     {
-      DLOG (TRACE, "start thread circular read");
-
       char * buf (new char[block_size]);
 
       bytes_read = 0;
 
       while (fd != -1)
         {
-          DLOG (TRACE, "try to circ read " << block_size << " bytes");
-
           const int r (read (fd, buf, block_size));
 
           if (r < 0)
@@ -183,23 +179,17 @@ namespace process
             }
           else if (r == 0)
             {
-              DLOG (TRACE, "circ read pipe closed");
-
               fd = -1;
             }
           else
             {
               bytes_read += r;
 
-              DLOG (TRACE, "circ read " << r << " bytes, sum " << bytes_read);
-
               std::copy (buf, buf + r, std::back_inserter (circ_buf));
             }
         }
 
       delete[] buf;
-
-      DLOG (TRACE, "done thread circular read");
     }
 
     static void reader ( int fd
@@ -209,8 +199,6 @@ namespace process
                        , const std::size_t & block_size
                        )
     {
-      DLOG (TRACE, "start thread read");
-
       char * buf (static_cast<char *>(output));
 
       bytes_read = 0;
@@ -219,8 +207,6 @@ namespace process
         {
           const std::size_t to_read
             (std::min (block_size, max_size - bytes_read));
-
-          DLOG (TRACE, "try to read " << to_read << " bytes");
 
           const int r (read (fd, buf, to_read));
 
@@ -231,20 +217,14 @@ namespace process
             }
           else if (r == 0)
             {
-              DLOG (TRACE, "read pipe closed");
-
               fd = -1;
             }
           else
             {
               buf += r;
               bytes_read += r;
-
-              DLOG (TRACE, "read " << r << " bytes, sum " << bytes_read);
             }
         }
-
-      DLOG (TRACE, "done thread read");
     }
 
     static void reader_from_file ( boost::barrier & barrier
@@ -278,15 +258,11 @@ namespace process
                        , const std::size_t & block_size
                        )
     {
-      DLOG (TRACE, "start thread write");
-
       char * buf (static_cast<char *> (const_cast<void *> (input)));
 
       while (fd != -1 && bytes_left > 0)
         {
           const std::size_t to_write (std::min (block_size, bytes_left));
-
-          DLOG (TRACE, "try to write " << to_write << " bytes");
 
           const int w (write (fd, buf, to_write));
 
@@ -297,15 +273,12 @@ namespace process
             }
           else if (w == 0)
             {
-              DLOG (TRACE, "write pipe closed");
               fd = -1;
             }
           else
             {
               buf += w;
               bytes_left -= w;
-
-              DLOG (TRACE, "written " << w << " bytes, left " << bytes_left);
             }
         }
 
@@ -313,8 +286,6 @@ namespace process
       {
         detail::try_close(&fd);
       }
-
-      DLOG (TRACE, "done thread write");
     }
 
     static void writer_from_file ( boost::barrier & barrier
@@ -499,8 +470,6 @@ namespace process
             ; ++param
             )
           {
-            DLOG (TRACE, "unlink " << param->second);
-
             unlink (param->second.c_str());
           }
       }
@@ -599,8 +568,6 @@ namespace process
 
     reader_barrier.wait ();
 
-    DLOG (TRACE, "prepare commandline");
-
     std::vector<std::string> cmdline;
     fhg::util::split (command, " ", std::back_inserter (cmdline));
 
@@ -668,11 +635,7 @@ namespace process
     else
       {
         // parent
-        DLOG (TRACE, "prepare pipes");
-
         detail::prepare_parent_pipes (in, out, err);
-
-        DLOG (TRACE, "start threads");
 
         boost::thread thread_buf_stdin
           ( thread::writer
@@ -699,15 +662,9 @@ namespace process
           , PIPE_BUF
           );
 
-        DLOG (TRACE, "await child");
-
         int status (0);
 
         waitpid (pid, &status, 0);
-
-        DMLOG (TRACE, "child returned: " << status);
-
-        DLOG (TRACE, "join threads");
 
         thread_buf_stdin.join();
         thread_buf_stdout.join();
@@ -715,8 +672,6 @@ namespace process
 
         writers.join_all();
         readers.join_all();
-
-        DLOG (TRACE, "close pipes");
 
         detail::try_close (in + detail::WR);
         detail::try_close (out + detail::RD);
@@ -735,8 +690,6 @@ namespace process
             ret.exit_code = status;
             LOG(ERROR, "strange child status: " << status);
           }
-
-        DMLOG (TRACE, "finished command: " << command << ": " << ret.exit_code);
       }
 
     {
