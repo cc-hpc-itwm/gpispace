@@ -707,7 +707,7 @@ try
       );
   }
 
-  we::type::activity_t act
+  we::type::activity_t const act
     ( input == "-"
     ? we::type::activity_t (std::cin)
     : we::type::activity_t (boost::filesystem::path (input))
