@@ -20,7 +20,6 @@
 #include <boost/unordered_map.hpp>
 #include <boost/filesystem.hpp>
 
-#include <fhglog/LogMacros.hpp>
 #include <fhg/util/split.hpp>
 
 #include <process.hpp>
@@ -33,8 +32,6 @@ namespace process
 
     inline void put_error (const std::string & msg)
     {
-      MLOG (ERROR, msg);
-
       throw std::runtime_error (msg);
     }
 
@@ -60,7 +57,7 @@ namespace process
 
     template<>
     inline void do_error<int> (const std::string & msg, int err)
-    {
+   {
       std::ostringstream sstr;
 
       sstr << msg << ": " << strerror (err);
@@ -174,8 +171,7 @@ namespace process
 
           if (r < 0)
             {
-              MLOG(ERROR, "circ read failed: " << strerror(errno));
-              break;
+              detail::do_error ("circ read failed", errno);
             }
           else if (r == 0)
             {
@@ -212,7 +208,7 @@ namespace process
 
           if (r < 0)
             {
-              MLOG(ERROR, "read from stdout failed: " << strerror(errno));
+              detail::do_error ("read from stdout failed", errno);
               break;
             }
           else if (r == 0)
@@ -241,8 +237,7 @@ namespace process
 
       if (fd == -1)
         {
-          MLOG(ERROR, "open file for reading failed: " << filename << ": " << strerror(errno));
-          return;
+          detail::do_error ("open file " + filename + " for reading failed", errno);
         }
 
       thread::reader (fd, buf, max_size, bytes_read, PIPE_BUF);
@@ -268,8 +263,7 @@ namespace process
 
           if (w < 0)
             {
-              MLOG(ERROR, "write stdin failed: " << strerror(errno));
-              fd = -1;
+              detail::do_error ("write stdin failed", errno);
             }
           else if (w == 0)
             {
@@ -301,8 +295,7 @@ namespace process
 
       if (fd == -1)
         {
-          MLOG(ERROR, "open file for writing failed: " << filename << ": " << strerror(errno));
-          return;
+          detail::do_error ("open file " + filename + "for writing failed", errno);
         }
 
       thread::writer (fd, buf, bytes_left, PIPE_BUF);
@@ -608,8 +601,7 @@ namespace process
 
     if (pid < 0)
       {
-        ret.exit_code = 254;
-        LOG(ERROR, "fork failed: " << strerror(errno));
+        detail::do_error ("fork failed", errno);
       }
     else if (pid == pid_t (0))
       {
@@ -687,8 +679,7 @@ namespace process
           }
         else
           {
-            ret.exit_code = status;
-            LOG(ERROR, "strange child status: " << status);
+            detail::do_error ("strange child status: ", status);
           }
       }
 
