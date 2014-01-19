@@ -70,8 +70,8 @@ namespace we { namespace type {
       }
 
       inline std::string parens ( const std::string & s
-                                , const std::string open = "("
-                                , const std::string close = ")"
+                                , const std::string open
+                                , const std::string close
                                 )
       {
         return open + s + close;
