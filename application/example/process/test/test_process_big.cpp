@@ -43,9 +43,7 @@ BOOST_AUTO_TEST_CASE (process_big)
   }
 
   {
-    const std::size_t ret (process::execute ("cat", in, size, out, size));
-
-    BOOST_REQUIRE_EQUAL (ret, size);
+    BOOST_REQUIRE_EQUAL (process::execute ("cat", in, size, out, size), size);
 
     for (std::size_t i (0); i < count; ++i)
     {
@@ -55,9 +53,7 @@ BOOST_AUTO_TEST_CASE (process_big)
 
   // inplace
   {
-    const std::size_t ret (process::execute ("cat", in, size, in, size));
-
-    BOOST_REQUIRE_EQUAL (ret, size);
+    BOOST_REQUIRE_EQUAL (process::execute ("cat", in, size, in, size), size);
 
     for (std::size_t i (0); i < count; ++i)
     {
