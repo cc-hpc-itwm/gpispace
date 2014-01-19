@@ -719,45 +719,44 @@ namespace we { namespace type {
 
 namespace
 {
-template<typename T>
-bool name_not_starts_with (const std::string & p, const T & x)
-{
-  return !fhg::util::starts_with (p, x.name());
-}
-
-template<typename T>
-bool name_not_ends_with (const std::string & s, const T & x)
-{
-  return !fhg::util::ends_with (s, x.name());
-}
-
-typedef std::vector<std::string> vec_type;
-
-template<typename T>
-bool all ( boost::function<bool (const std::string &, const T &)> f
-         , const vec_type & ys
-         , const T & x
-         )
-{
-  BOOST_FOREACH (std::string const& y, ys)
+  bool name_not_starts_with
+    (const std::string & p, const we::type::transition_t & x)
   {
-    if (!f (y, x))
-    {
-      return false;
-    }
+    return !fhg::util::starts_with (p, x.name());
   }
 
-  return true;
-}
+  bool name_not_ends_with
+    (const std::string & s, const we::type::transition_t & x)
+  {
+    return !fhg::util::ends_with (s, x.name());
+  }
 
-template<typename T>
-bool pred_and ( const boost::function<bool (const T &)> f
-              , const boost::function<bool (const T &)> g
-              , const T & x
-              )
-{
-  return f(x) && g(x);
-}
+  typedef std::vector<std::string> vec_type;
+
+  bool all ( boost::function
+             <bool (const std::string &, const we::type::transition_t &)> f
+           , const vec_type & ys
+           , const we::type::transition_t & x
+           )
+  {
+    BOOST_FOREACH (std::string const& y, ys)
+    {
+      if (!f (y, x))
+      {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  bool pred_and ( const boost::function<bool (const we::type::transition_t &)> f
+                , const boost::function<bool (const we::type::transition_t &)> g
+                , const we::type::transition_t & x
+                )
+  {
+    return f(x) && g(x);
+  }
 }
 
 int
@@ -876,22 +875,22 @@ try
     }
 
   boost::function<bool (const we::type::transition_t &)> not_starts
-    ( boost::bind ( all<we::type::transition_t>
-                  , name_not_starts_with<we::type::transition_t>
+    ( boost::bind ( all
+                  , name_not_starts_with
                   , not_starts_with
                   , _1
                   )
     );
 
   boost::function<bool (const we::type::transition_t &)> not_ends
-    ( boost::bind ( all<we::type::transition_t>
-                  , name_not_ends_with<we::type::transition_t>
+    ( boost::bind ( all
+                  , name_not_ends_with
                   , not_ends_with
                   , _1
                   )
     );
 
-  options.predicate = pred_t ( boost::bind ( pred_and<we::type::transition_t>
+  options.predicate = pred_t ( boost::bind ( pred_and
                                            , not_starts
                                            , not_ends
                                            , _1
