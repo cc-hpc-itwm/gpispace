@@ -22,258 +22,248 @@
 #include <iostream>
 #include <sstream>
 
+namespace
+{
+  namespace shape
+  {
+    static std::string const condition ("record");
+    static std::string const port_in ("house");
+    static std::string const port_out ("invhouse");
+    static std::string const port_tunnel ("ellipse");
+    static std::string const expression ("none");
+    static std::string const modcall ("box");
+    static std::string const place ("ellipse");
+  }
+
+  namespace color
+  {
+    static std::string const internal ("white");
+    static std::string const external ("dimgray");
+    static std::string const modcall ("yellow");
+    static std::string const expression ("white");
+    static std::string const node ("white");
+    static std::string const subnet_internal ("grey");
+  }
+
+  namespace style
+  {
+    static std::string const association ("dotted");
+    static std::string const read_connection ("dashed");
+  }
+
+  typedef unsigned long id_type;
+  typedef unsigned long level_type;
+
+  static const std::string endl = "\\n";
+  static const std::string arrow = " -> ";
+
+  std::ostream & level (std::ostream & s, const level_type & level)
+  {
+    for (level_type i (0); i < level; ++i)
+    {
+      s << "  ";
+    }
+
+    return s;
+  }
+
+  std::string parens ( const std::string & s
+                     , const std::string open
+                     , const std::string close
+                     )
+  {
+    return open + s + close;
+  }
+
+  std::string brackets (const std::string & s)
+  {
+    return " " + parens (s, "[", "]");
+  }
+
+  std::string props (const std::string & s)
+  {
+    return parens (s, ":: ", " ::");
+  }
+
+  std::string dquote (const std::string & s)
+  {
+    return parens (s, "\"", "\"");
+  }
+
+  std::string lines (const char & b, const std::string & s)
+  {
+    std::string l;
+
+    std::string::const_iterator pos (s.begin());
+    const std::string::const_iterator end (s.end());
+
+    while (pos != end)
+    {
+      if (*pos == b)
+      {
+        ++pos;
+
+        while (pos != end && (isspace (*pos) || *pos == b))
+        {
+          ++pos;
+        }
+
+        l += endl;
+      }
+      else
+      {
+        l += *pos;
+
+        ++pos;
+      }
+    }
+
+    return l;
+  }
+
+  std::string quote (const char & c)
+  {
+    switch (c)
+    {
+    case '{': return "\\{";
+    case '}': return "\\}";
+    case '>': return "\\>";
+    case '<': return "\\<";
+    case '"': return "\\\"";
+    case '|': return "\\|";
+    default: return std::string (1, c);
+    }
+  }
+
+  std::string quote (const std::string & s)
+  {
+    std::string q;
+
+    for (std::string::const_iterator pos (s.begin()); pos != s.end(); ++pos)
+    {
+      q += quote (*pos);
+    }
+
+    return lines (';', q);
+  }
+
+  std::string keyval ( const std::string & key
+                     , const std::string & val
+                     )
+  {
+    return key + " = " + dquote (val);
+  }
+
+  std::string name (const id_type & id, const std::string & _name)
+  {
+    std::ostringstream s;
+
+    s << "n" << id << "_" << _name;
+
+    return s.str();
+  }
+
+  std::string bgcolor (const std::string & color)
+  {
+    std::ostringstream s;
+
+    s << keyval ("bgcolor", color) << std::endl;
+
+    return s.str();
+  }
+
+  std::string node ( const std::string & shape
+                   , const std::string & label
+                   )
+  {
+    std::ostringstream s;
+
+    s << brackets ( keyval ("shape", shape)
+                  + ", "
+                  + keyval ("label", label)
+                  + ", "
+                  + keyval ("style", "filled")
+                  + ", "
+                  + keyval ("fillcolor", color::node)
+                  )
+      << std::endl
+      ;
+
+    return s.str();
+  }
+
+  std::string association (void)
+  {
+    return brackets ( keyval ("style", style::association)
+                    + ", "
+                    + keyval ("dir", "none")
+                    );
+  }
+
+  class options
+  {
+  public:
+    bool full;
+    std::list<boost::function <bool (we::type::transition_t const&)> >
+      filter;
+    bool show_token;
+    bool show_signature;
+    bool show_priority;
+    bool show_intext;
+    bool show_virtual;
+    bool show_real;
+    bool show_tunnel_connection;
+
+    bool should_be_expanded (const we::type::transition_t & x) const
+    {
+      BOOST_FOREACH
+        (boost::function <bool (we::type::transition_t const&)> f, filter)
+      {
+        if (f (x))
+        {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    options ()
+      : full (false)
+      , filter()
+      , show_token (true)
+      , show_signature (true)
+      , show_priority (true)
+      , show_intext (false)
+      , show_virtual (false)
+      , show_real (false)
+      , show_tunnel_connection (true)
+    {}
+  };
+
+  std::string with_signature ( const std::string & name
+                             , const pnet::type::signature::signature_type & sig
+                             , const options & opts
+                             )
+  {
+    std::ostringstream s;
+
+    s << name;
+
+    if (opts.show_signature)
+    {
+      s << endl
+        << pnet::type::signature::show (sig)
+        ;
+    }
+
+    return s.str();
+  }
+}
+
 namespace we { namespace type {
 
     namespace dot {
-      namespace shape
-      {
-        static std::string const condition ("record");
-        static std::string const port_in ("house");
-        static std::string const port_out ("invhouse");
-        static std::string const port_tunnel ("ellipse");
-        static std::string const expression ("none");
-        static std::string const modcall ("box");
-        static std::string const place ("ellipse");
-      }
-
-      namespace color
-      {
-        static std::string const internal ("white");
-        static std::string const external ("dimgray");
-        static std::string const modcall ("yellow");
-        static std::string const expression ("white");
-        static std::string const node ("white");
-        static std::string const subnet_internal ("grey");
-      }
-
-      namespace style
-      {
-        static std::string const association ("dotted");
-        static std::string const read_connection ("dashed");
-      }
-
-      typedef unsigned long id_type;
-      typedef unsigned long level_type;
-
-      static const std::string endl = "\\n";
-      static const std::string arrow = " -> ";
-
-      inline
-      std::ostream & level (std::ostream & s, const level_type & level)
-      {
-        for (level_type i (0); i < level; ++i)
-          {
-            s << "  ";
-          }
-
-        return s;
-      }
-
-      inline std::string parens ( const std::string & s
-                                , const std::string open
-                                , const std::string close
-                                )
-      {
-        return open + s + close;
-      }
-
-      inline std::string brackets (const std::string & s)
-      {
-        return " " + parens (s, "[", "]");
-      }
-
-      inline std::string props (const std::string & s)
-      {
-        return parens (s, ":: ", " ::");
-      }
-
-      inline std::string dquote (const std::string & s)
-      {
-        return parens (s, "\"", "\"");
-      }
-
-      inline std::string lines (const char & b, const std::string & s)
-      {
-        std::string l;
-
-        std::string::const_iterator pos (s.begin());
-        const std::string::const_iterator end (s.end());
-
-        while (pos != end)
-          {
-            if (*pos == b)
-              {
-                ++pos;
-
-                while (pos != end && (isspace (*pos) || *pos == b))
-                  {
-                    ++pos;
-                  }
-
-                l += endl;
-              }
-            else
-              {
-                l += *pos;
-
-                ++pos;
-              }
-          }
-
-        return l;
-      }
-
-      inline std::string quote (const char & c)
-      {
-        switch (c)
-          {
-          case '{': return "\\{";
-          case '}': return "\\}";
-          case '>': return "\\>";
-          case '<': return "\\<";
-          case '"': return "\\\"";
-          case '|': return "\\|";
-          default: return std::string (1, c);
-          }
-      }
-
-      inline std::string quote (const std::string & s)
-      {
-        std::string q;
-
-        for (std::string::const_iterator pos (s.begin()); pos != s.end(); ++pos)
-          {
-            q += quote (*pos);
-          }
-
-        return lines (';', q);
-      }
-
-      inline std::string keyval ( const std::string & key
-                                , const std::string & val
-                                )
-      {
-        return key + " = " + dquote (val);
-      }
-
-      inline std::string name (const id_type & id, const std::string & _name)
-      {
-        std::ostringstream s;
-
-        s << "n" << id << "_" << _name;
-
-        return s.str();
-      }
-
-      inline std::string bgcolor (const std::string & color)
-      {
-        std::ostringstream s;
-
-        s << keyval ("bgcolor", color) << std::endl;
-
-        return s.str();
-      }
-
-      inline std::string node ( const std::string & shape
-                              , const std::string & label
-                              )
-      {
-        std::ostringstream s;
-
-        s << brackets ( keyval ("shape", shape)
-                      + ", "
-                      + keyval ("label", label)
-                      + ", "
-                      + keyval ("style", "filled")
-                      + ", "
-                      + keyval ("fillcolor", color::node)
-                      )
-          << std::endl
-          ;
-
-        return s.str();
-      }
-
-      inline std::string association (void)
-      {
-        return brackets ( keyval ("style", style::association)
-                        + ", "
-                        + keyval ("dir", "none")
-                        );
-      }
-
-      inline std::string property ( const std::string & prop
-                                  , const std::string & val
-                                  )
-      {
-        return props (quote (prop) + ": " + quote (val));
-      }
-
-      inline std::string property (const std::string & prop)
-      {
-        return props (quote (prop));
-      }
-
-      class options
-      {
-      public:
-        bool full;
-        std::list<boost::function <bool (we::type::transition_t const&)> >
-          filter;
-        bool show_token;
-        bool show_signature;
-        bool show_priority;
-        bool show_intext;
-        bool show_virtual;
-        bool show_real;
-        bool show_tunnel_connection;
-
-        bool should_be_expanded (const we::type::transition_t & x) const
-        {
-          BOOST_FOREACH
-            (boost::function <bool (we::type::transition_t const&)> f, filter)
-          {
-            if (f (x))
-            {
-              return false;
-            }
-          }
-
-          return true;
-        }
-
-        options ()
-          : full (false)
-          , filter()
-          , show_token (true)
-          , show_signature (true)
-          , show_priority (true)
-          , show_intext (false)
-          , show_virtual (false)
-          , show_real (false)
-          , show_tunnel_connection (true)
-        {}
-      };
-
-      inline std::string with_signature ( const std::string & name
-                                        , const pnet::type::signature::signature_type & sig
-                                        , const options & opts
-                                        )
-      {
-        std::ostringstream s;
-
-        s << name;
-
-        if (opts.show_signature)
-          {
-            s << endl
-              << pnet::type::signature::show (sig)
-              ;
-          }
-
-        return s.str();
-      }
-
       inline std::string to_dot
       ( const transition_t &
       , id_type &
@@ -670,7 +660,7 @@ try
   vec_type not_starts_with;
   vec_type not_ends_with;
 
-  we::type::dot::options options;
+  options options;
 
   po::options_description desc ("General");
   po::options_description show ("Show");
@@ -801,7 +791,7 @@ try
       throw std::runtime_error ("failed to open " + output + " for writing");
     }
 
-    we::type::dot::id_type id (0);
+    id_type id (0);
 
     ostream << "digraph \"" << act.transition().name() << "\" {" << std::endl;
     ostream << "compound=true" << std::endl;
