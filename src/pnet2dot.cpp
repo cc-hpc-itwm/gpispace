@@ -303,12 +303,11 @@ namespace we { namespace type {
         }
       };
 
-      template<typename Pred>
       class options
       {
       public:
         bool full;
-        Pred predicate;
+        generic predicate;
         bool show_token;
         bool show_signature;
         bool show_priority;
@@ -330,27 +329,25 @@ namespace we { namespace type {
         {}
       };
 
-      template <typename Pred>
       inline std::string to_dot
       ( const transition_t &
       , id_type &
-      , const options<Pred> &
+      , const options &
       , const level_type = 1
       , boost::optional<we::priority_type> = boost::none
       );
 
-      template<typename Pred>
       class transition_visitor_dot : public boost::static_visitor<std::string>
       {
       private:
         id_type & id;
         const level_type l;
-        const options<Pred> & opts;
+        const options & opts;
 
       public:
         transition_visitor_dot ( id_type & _id
                                , const level_type & _l
-                               , const options<Pred> & _opts
+                               , const options & _opts
                                )
           : id (_id)
           , l (_l)
@@ -537,11 +534,10 @@ namespace we { namespace type {
         }
       };
 
-      template <typename Pred>
       inline std::string to_dot
       ( const transition_t & t
       , id_type & id
-      , const options<Pred> & opts
+      , const options & opts
       , const level_type l
       , boost::optional<we::priority_type> prio
       )
@@ -594,7 +590,7 @@ namespace we { namespace type {
                   )
           ;
 
-        BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
+        BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
                       , t.ports_input()
                       )
         {
@@ -608,7 +604,7 @@ namespace we { namespace type {
                     )
             ;
         }
-        BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
+        BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
                       , t.ports_output()
                       )
         {
@@ -622,7 +618,7 @@ namespace we { namespace type {
                     )
             ;
         }
-        BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
+        BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
                       , t.ports_tunnel()
                       )
         {
@@ -640,9 +636,9 @@ namespace we { namespace type {
         if (opts.predicate (t))
           {
             s << boost::apply_visitor
-                 (transition_visitor_dot<Pred> (id, l + 1, opts), t.data());
+                 (transition_visitor_dot (id, l + 1, opts), t.data());
 
-            BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
+            BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
                           , t.ports_input()
                           )
             {
@@ -660,7 +656,7 @@ namespace we { namespace type {
                   ;
               }
             }
-            BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
+            BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
                           , t.ports_output()
                           )
             {
@@ -678,7 +674,7 @@ namespace we { namespace type {
                   ;
               }
             }
-            BOOST_FOREACH ( typename transition_t::port_map_t::value_type const& p
+            BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
                           , t.ports_tunnel()
                           )
             {
@@ -769,9 +765,7 @@ try
   vec_type not_starts_with;
   vec_type not_ends_with;
 
-  typedef we::type::dot::generic pred_t;
-
-  we::type::dot::options<pred_t> options;
+  we::type::dot::options options;
 
   po::options_description desc ("General");
   po::options_description show ("Show");
@@ -888,7 +882,7 @@ try
                   )
     );
 
-  options.predicate = pred_t ( boost::bind ( pred_and
+  options.predicate = we::type::dot::generic ( boost::bind ( pred_and
                                            , not_starts
                                            , not_ends
                                            , _1
