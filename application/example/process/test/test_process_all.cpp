@@ -5,14 +5,8 @@
 
 #include <process.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
-#include <iostream>
-
 BOOST_AUTO_TEST_CASE (process_all)
 {
-  FHGLOG_SETUP();
-
   BOOST_REQUIRE_GT (boost::unit_test::framework::master_test_suite().argc, 1);
 
   const std::string prog
