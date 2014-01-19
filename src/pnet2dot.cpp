@@ -24,17 +24,12 @@
 
 namespace we { namespace type {
 
-    // ********************************************************************** //
-    // toDot
-
     namespace dot {
       typedef unsigned long id_type;
       typedef unsigned long level_type;
 
       static const std::string endl = "\\n";
       static const std::string arrow = " -> ";
-
-      // ******************************************************************* //
 
       inline
       std::ostream & level (std::ostream & s, const level_type & level)
@@ -46,8 +41,6 @@ namespace we { namespace type {
 
         return s;
       }
-
-      // ******************************************************************* //
 
       inline std::string parens ( const std::string & s
                                 , const std::string open = "("
@@ -71,8 +64,6 @@ namespace we { namespace type {
       {
         return parens (s, "\"", "\"");
       }
-
-      // ******************************************************************* //
 
       inline std::string lines (const char & b, const std::string & s)
       {
@@ -105,8 +96,6 @@ namespace we { namespace type {
         return l;
       }
 
-      // ******************************************************************* //
-
       inline std::string quote (const char & c)
       {
         switch (c)
@@ -133,8 +122,6 @@ namespace we { namespace type {
         return lines (';', q);
       }
 
-      // ******************************************************************* //
-
       inline std::string keyval ( const std::string & key
                                 , const std::string & val
                                 )
@@ -159,8 +146,6 @@ namespace we { namespace type {
 
         return s.str();
       }
-
-      // ******************************************************************* //
 
       namespace shape
       {
@@ -240,8 +225,6 @@ namespace we { namespace type {
         style::init (prop);
       }
 
-      // ******************************************************************* //
-
       inline std::string node ( const std::string & shape
                               , const std::string & label
                               )
@@ -302,9 +285,6 @@ namespace we { namespace type {
         return props (quote (prop));
       }
 
-      // ******************************************************************* //
-      // predicates about when to expand a transition
-
       template<typename T> static bool all (const T &) { return true; };
 
       template<typename T>
@@ -352,8 +332,6 @@ namespace we { namespace type {
         {}
       };
 
-      // ******************************************************************* //
-
       template <typename Pred>
       inline std::string to_dot
       ( const transition_t &
@@ -381,8 +359,6 @@ namespace we { namespace type {
           , opts (_opts)
         {}
 
-        // ----------------------------------------------------------------- //
-
         std::string operator () (const expression_t & expr) const
         {
           std::ostringstream s;
@@ -395,8 +371,6 @@ namespace we { namespace type {
           return s.str();
         }
 
-        // ----------------------------------------------------------------- //
-
         std::string operator () (const module_call_t & mod_call) const
         {
           std::ostringstream s;
@@ -408,8 +382,6 @@ namespace we { namespace type {
 
           return s.str();
         }
-
-        // ----------------------------------------------------------------- //
 
         std::string operator ()
         (const we::type::net_type & net) const
@@ -566,8 +538,6 @@ namespace we { namespace type {
           return s.str();
         }
       };
-
-      // ******************************************************************* //
 
       template <typename Pred>
       inline std::string to_dot
@@ -747,8 +717,6 @@ namespace we { namespace type {
   }
 }
 
-// ************************************************************************* //
-
 namespace detail {
   template<typename Pred>
   void to_dot ( std::ostream & os
@@ -768,8 +736,6 @@ namespace detail {
   }
 }
 
-// ************************************************************************* //
-
 template<typename T>
 bool name_not_starts_with (const std::string & p, const T & x)
 {
@@ -781,8 +747,6 @@ bool name_not_ends_with (const std::string & s, const T & x)
 {
   return !fhg::util::ends_with (s, x.name());
 }
-
-// ************************************************************************* //
 
 typedef std::vector<std::string> vec_type;
 
@@ -813,8 +777,6 @@ bool pred_and ( const boost::function<bool (const T &)> f
 {
   return f(x) && g(x);
 }
-
-// ************************************************************************* //
 
 namespace po = boost::program_options;
 
