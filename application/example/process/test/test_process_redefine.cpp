@@ -1,14 +1,11 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE process_redefine
+#include <boost/test/unit_test.hpp>
 
 #include <process.hpp>
-#include <iostream>
-#include <cstdlib>
 
-#include <stdexcept>
-
-#include <require.hpp>
-
-int
-main ()
+BOOST_AUTO_TEST_CASE (process_redefine)
 {
   process::file_const_buffer file (NULL, 0, "%redefinition%");
 
@@ -28,14 +25,9 @@ main ()
     }
   catch (const std::runtime_error & e)
     {
-      std::cout << "catched exception:" << std::endl << e.what() << std::endl;
-
-      REQUIRE (  std::string (e.what())
-              == std::string ("redefinition of key: %redefinition%")
-              );
+      BOOST_REQUIRE_EQUAL
+        ( std::string (e.what())
+        , std::string ("redefinition of key: %redefinition%")
+        );
     }
-
-  std::cout << "SUCCESS" << std::endl;
-
-  return EXIT_SUCCESS;
 }

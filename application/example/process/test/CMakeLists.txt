@@ -29,6 +29,7 @@ fhg_add_test (test_process_all.cpp
 )
 
 fhg_add_test (test_process_redefine.cpp
+  BOOST_UNIT_TEST
   LINK_LIBRARIES process
 )
 
