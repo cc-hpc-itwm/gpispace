@@ -411,10 +411,7 @@ namespace
 
     if (opts.show_priority)
     {
-      if (t.priority() > we::priority_type (0))
-      {
-        priority << "| priority: " << t.priority();
-      }
+      priority << "| priority: " << t.priority();
     }
 
     std::ostringstream intext;
