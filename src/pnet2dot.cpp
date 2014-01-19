@@ -268,8 +268,8 @@ namespace we { namespace type {
       ( const transition_t &
       , id_type &
       , const options &
-      , const level_type = 1
-      , boost::optional<we::priority_type> = boost::none
+      , const level_type
+      , boost::optional<we::priority_type>
       );
 
       class transition_visitor_dot : public boost::static_visitor<std::string>
@@ -771,7 +771,7 @@ try
     ostream << "digraph \"" << act.transition().name() << "\" {" << std::endl;
     ostream << "compound=true" << std::endl;
     ostream << "rankdir=LR" << std::endl;
-    ostream << we::type::dot::to_dot (act.transition(), id, options);
+    ostream << we::type::dot::to_dot (act.transition(), id, options, 1, boost::none);
     ostream << "} /* " << act.transition().name() << " */" << std::endl;
 
   return EXIT_SUCCESS;
