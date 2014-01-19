@@ -188,7 +188,6 @@ namespace
     bool show_priority;
     bool show_intext;
     bool show_virtual;
-    bool show_real;
     bool show_tunnel_connection;
 
     bool should_be_expanded (const we::type::transition_t& x) const
@@ -213,7 +212,6 @@ namespace
       , show_priority (true)
       , show_intext (false)
       , show_virtual (false)
-      , show_real (false)
       , show_tunnel_connection (true)
     {}
   };
@@ -638,10 +636,6 @@ try
     ( "virtual"
     , BOOLVAL (options.show_virtual)
     , "whether or not to show the virtual flag"
-    )
-    ( "real"
-    , BOOLVAL (options.show_real)
-    , "whether or not to show the real places, associated with a place"
     )
     ( "tunnel-connection"
     , BOOLVAL (options.show_tunnel_connection)
