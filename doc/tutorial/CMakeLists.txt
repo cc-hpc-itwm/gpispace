@@ -1,7 +1,5 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-include (fhg_test_macros)
-
 add_subdirectory (avg_stddev/test)
 add_subdirectory (credit/test)
 add_subdirectory (hello_world/test)
