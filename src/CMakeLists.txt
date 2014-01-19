@@ -31,7 +31,6 @@ add_library (pnet
   we/expr/eval/context.cpp
   we/expr/eval/eval.cpp
   we/expr/eval/refnode.cpp
-  we/expr/type/calculate.cpp
   we/expr/exception.cpp
   we/expr/parse/action.cpp
   we/expr/parse/node.cpp
