@@ -717,6 +717,8 @@ namespace we { namespace type {
   }
 }
 
+namespace
+{
 template<typename T>
 bool name_not_starts_with (const std::string & p, const T & x)
 {
@@ -757,6 +759,7 @@ bool pred_and ( const boost::function<bool (const T &)> f
               )
 {
   return f(x) && g(x);
+}
 }
 
 int
