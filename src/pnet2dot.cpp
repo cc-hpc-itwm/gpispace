@@ -264,30 +264,12 @@ namespace we { namespace type {
         return props (quote (prop));
       }
 
-      static bool all (const we::type::transition_t &) { return true; };
-
-      class generic
-      {
-      private:
-        boost::function<bool (const we::type::transition_t &)> f;
-
-      public:
-        generic () : f (all) {}
-
-        generic (boost::function<bool (we::type::transition_t const&)> _f)
-          : f (_f) {}
-
-        bool operator () (const we::type::transition_t & x) const
-        {
-          return f (x);
-        }
-      };
-
       class options
       {
       public:
         bool full;
-        generic predicate;
+        std::list<boost::function <bool (we::type::transition_t const&)> >
+          filter;
         bool show_token;
         bool show_signature;
         bool show_priority;
@@ -296,9 +278,23 @@ namespace we { namespace type {
         bool show_real;
         bool show_tunnel_connection;
 
+        bool should_be_expanded (const we::type::transition_t & x) const
+        {
+          BOOST_FOREACH
+            (boost::function <bool (we::type::transition_t const&)> f, filter)
+          {
+            if (f (x))
+            {
+              return false;
+            }
+          }
+
+          return true;
+        }
+
         options ()
           : full (false)
-          , predicate()
+          , filter()
           , show_token (true)
           , show_signature (true)
           , show_priority (true)
@@ -632,7 +628,7 @@ namespace we { namespace type {
             ;
         }
 
-        if (opts.predicate (t))
+        if (opts.should_be_expanded (t))
           {
             s << boost::apply_visitor
                  (transition_visitor_dot (id, l + 1, opts), t.data());
@@ -710,48 +706,6 @@ namespace we { namespace type {
   }
 }
 
-namespace
-{
-  bool name_not_starts_with
-    (const std::string & p, const we::type::transition_t & x)
-  {
-    return !fhg::util::starts_with (p, x.name());
-  }
-
-  bool name_not_ends_with
-    (const std::string & s, const we::type::transition_t & x)
-  {
-    return !fhg::util::ends_with (s, x.name());
-  }
-
-  typedef std::vector<std::string> vec_type;
-
-  bool all ( boost::function
-             <bool (const std::string &, const we::type::transition_t &)> f
-           , const vec_type & ys
-           , const we::type::transition_t & x
-           )
-  {
-    BOOST_FOREACH (std::string const& y, ys)
-    {
-      if (!f (y, x))
-      {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  bool pred_and ( const boost::function<bool (const we::type::transition_t &)> f
-                , const boost::function<bool (const we::type::transition_t &)> g
-                , const we::type::transition_t & x
-                )
-  {
-    return f(x) && g(x);
-  }
-}
-
 int
 main (int argc, char ** argv)
 try
@@ -760,6 +714,8 @@ try
 
   std::string input;
   std::string output;
+
+  typedef std::vector<std::string> vec_type;
 
   vec_type not_starts_with;
   vec_type not_ends_with;
@@ -865,28 +821,22 @@ try
       output = "/dev/stdout";
     }
 
-  boost::function<bool (const we::type::transition_t &)> not_starts
-    ( boost::bind ( all
-                  , name_not_starts_with
-                  , not_starts_with
-                  , _1
-                  )
-    );
-
-  boost::function<bool (const we::type::transition_t &)> not_ends
-    ( boost::bind ( all
-                  , name_not_ends_with
-                  , not_ends_with
-                  , _1
-                  )
-    );
-
-  options.predicate = we::type::dot::generic ( boost::bind ( pred_and
-                                           , not_starts
-                                           , not_ends
-                                           , _1
-                                           )
-                             );
+  BOOST_FOREACH (std::string const& p, not_starts_with)
+  {
+    options.filter.push_back
+      ( boost::bind ( &fhg::util::starts_with, p
+                    , boost::bind (&we::type::transition_t::name, _1)
+                    )
+      );
+  }
+  BOOST_FOREACH (std::string const& s, not_ends_with)
+  {
+    options.filter.push_back
+      ( boost::bind ( &fhg::util::ends_with, s
+                    , boost::bind (&we::type::transition_t::name, _1)
+                    )
+      );
+  }
 
   we::type::activity_t act
     ( input == "-"
