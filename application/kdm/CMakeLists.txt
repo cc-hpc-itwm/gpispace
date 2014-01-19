@@ -5,7 +5,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src
 		    ${CMAKE_CURRENT_SOURCE_DIR}/src/structures
 		    ${CMAKE_CURRENT_SOURCE_DIR}/src/filehandler
 		    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
-                    ${CMAKE_CURRENT_SOURCE_DIR}/../example
+                    ${CMAKE_SOURCE_DIR}/share
                     ${CMAKE_SOURCE_DIR}/gspc
                     )
 
