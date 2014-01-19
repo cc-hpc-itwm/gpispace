@@ -147,9 +147,7 @@ namespace
     return lines (';', q);
   }
 
-  std::string keyval ( const std::string& key
-                     , const std::string& val
-                     )
+  std::string keyval (const std::string& key, const std::string& val)
   {
     return key + " = " + dquote (val);
   }
@@ -172,9 +170,7 @@ namespace
     return s.str();
   }
 
-  std::string node ( const std::string& shape
-                   , const std::string& label
-                   )
+  std::string node (const std::string& shape, const std::string& label)
   {
     std::ostringstream s;
 
@@ -186,8 +182,7 @@ namespace
                   + ", "
                   + keyval ("fillcolor", color::node)
                   )
-      << std::endl
-      ;
+      << std::endl;
 
     return s.str();
   }
@@ -252,371 +247,329 @@ namespace
 
     if (opts.show_signature)
     {
-      s << endl
-        << pnet::type::signature::show (sig)
-        ;
+      s << endl << pnet::type::signature::show (sig);
     }
 
     return s.str();
   }
 
-      std::string to_dot
-      ( const we::type::transition_t&
-      , id_type&
-      , const options&
-      , const level_type
-      , boost::optional<we::priority_type>
-      );
+  std::string to_dot
+    ( const we::type::transition_t&
+    , id_type&
+    , const options&
+    , const level_type
+    , boost::optional<we::priority_type>
+    );
 
-      class transition_visitor_dot : public boost::static_visitor<std::string>
+  class transition_visitor_dot : public boost::static_visitor<std::string>
+  {
+  private:
+    id_type& id;
+    const level_type l;
+    const options& opts;
+
+  public:
+    transition_visitor_dot
+      (id_type& _id, const level_type& _l, const options& _opts)
+      : id (_id)
+      , l (_l)
+      , opts (_opts)
+    {}
+
+    std::string operator() (const we::type::expression_t& expr) const
+    {
+      std::ostringstream s;
+
+      level (s, l)
+        << name (id, "expression")
+        << node (shape::expression, quote (boost::lexical_cast<std::string> (expr)));
+
+      return s.str();
+    }
+
+    std::string operator() (const we::type::module_call_t& mod_call) const
+    {
+      std::ostringstream s;
+
+      level (s, l)
+        << name (id, "modcall")
+        << node (shape::modcall, boost::lexical_cast<std::string> (mod_call));
+
+      return s.str();
+    }
+
+    std::string operator() (const we::type::net_type& net) const
+    {
+      std::ostringstream s;
+
+      const id_type id_net (id);
+
+      level (s, l) << "subgraph cluster_net_" << id_net << " {" << std::endl;
+
+      typedef std::pair<we::place_id_type, place::type> ip_type;
+
+      BOOST_FOREACH (const ip_type& ip, net.places())
       {
-      private:
-        id_type& id;
-        const level_type l;
-        const options& opts;
+        const we::place_id_type& place_id (ip.first);
+        const place::type& place (ip.second);
+        const std::string place_dot_name
+          (name (id_net, "place_" + boost::lexical_cast<std::string> (place_id)));
 
-      public:
-        transition_visitor_dot ( id_type& _id
-                               , const level_type& _l
-                               , const options& _opts
-                               )
-          : id (_id)
-          , l (_l)
-          , opts (_opts)
-        {}
+        std::ostringstream token;
 
-        std::string operator() (const we::type::expression_t& expr) const
+        if (opts.show_token)
         {
-          std::ostringstream s;
-
-          level (s, l)
-            << name (id, "expression")
-            << node (shape::expression, quote (boost::lexical_cast<std::string> (expr)))
-            ;
-
-          return s.str();
-        }
-
-        std::string operator() (const we::type::module_call_t& mod_call) const
-        {
-          std::ostringstream s;
-
-          level (s, l)
-            << name (id, "modcall")
-            << node (shape::modcall, boost::lexical_cast<std::string> (mod_call))
-            ;
-
-          return s.str();
-        }
-
-        std::string operator()
-        (const we::type::net_type& net) const
-        {
-          std::ostringstream s;
-
-          const id_type id_net (id);
-
-          level (s, l)
-            << "subgraph cluster_net_" << id_net << " {"
-            << std::endl;
-
-          typedef std::pair<we::place_id_type, place::type> ip_type;
-
-          BOOST_FOREACH (const ip_type& ip, net.places())
-            {
-              const we::place_id_type& place_id (ip.first);
-              const place::type& place (ip.second);
-              const std::string place_dot_name
-                (name (id_net, "place_" + boost::lexical_cast<std::string> (place_id)));
-
-              std::ostringstream token;
-
-              if (opts.show_token)
-                {
-                  BOOST_FOREACH ( const pnet::type::value::value_type& t
-                                , net.get_token (place_id)
-                                )
-                  {
-                    token << endl << pnet::type::value::show (t);
-                  }
-                }
-
-              std::ostringstream virt;
-
-              if (opts.show_virtual)
-                {
-                  if (  "true"
-                     == place.property().get ("virtual").get_value_or ("false")
-                     )
-                    {
-                      virt << endl << props ("virtual");
-                    }
-                }
-
-              level (s, l + 1)
-                << place_dot_name
-                << node
-                   ( shape::place
-                   , with_signature ( place.name()
-                                    , place.signature()
-                                    , opts
-                                    )
-                   + quote (token.str())
-                   + virt.str()
-                   )
-                ;
-            }
-
-          typedef std::pair<we::transition_id_type,we::type::transition_t> it_type;
-
-          BOOST_FOREACH (const it_type& it, net.transitions())
-            {
-              const we::transition_id_type& trans_id (it.first);
-              const we::type::transition_t& trans (it.second);
-              const id_type id_trans (++id);
-
-              s << to_dot (trans, id, opts, l + 1, trans.priority());
-
-              if (  net.port_to_place().find (trans_id)
-                 != net.port_to_place().end()
-                 )
-              {
-                BOOST_FOREACH
-                  ( we::type::net_type::port_to_place_with_info_type::value_type
-                  const& port_to_place
-                  , net.port_to_place().at (trans_id)
-                  )
-                {
-                  level (s, l + 1)
-                    << name ( id_trans
-                            , "port_" + boost::lexical_cast<std::string> (port_to_place.get_left())
-                            )
-                    << arrow
-                    << name ( id_net
-                            , "place_" + boost::lexical_cast<std::string> (port_to_place.get_right())
-                            )
-                    << std::endl
-                    ;
-                }
-              }
-
-              if (net.place_to_port().find (trans_id) !=  net.place_to_port().end())
-              {
-                BOOST_FOREACH
-                  ( we::type::net_type::place_to_port_with_info_type::value_type
-                  const& place_to_port
-                  , net.place_to_port().at (trans_id)
-                  )
-                {
-                  level (s, l + 1)
-                    << name ( id_net
-                            , "place_" + boost::lexical_cast<std::string> (place_to_port.get_left())
-                            )
-                    << arrow
-                    << name ( id_trans
-                            , "port_" + boost::lexical_cast<std::string> (place_to_port.get_right())
-                            )
-                    << (  net.place_to_transition_read().find
-                       ( we::type::net_type::adj_pt_type::value_type
-                       (place_to_port.get_left(), trans_id)
-                       )
-                       != net.place_to_transition_read().end()
-                       ? brackets (keyval ("style", style::read_connection))
-                       : ""
-                       )
-                    << std::endl
-                    ;
-                }
-              }
-            }
-
-          level (s, l + 1) << bgcolor (color::internal);
-
-          level (s, l)
-            << "} /* " << "cluster_net_" << id_net << " */"
-            << std::endl;
-
-          return s.str();
-        }
-      };
-
-      std::string to_dot
-      ( const we::type::transition_t& t
-      , id_type& id
-      , const options& opts
-      , const level_type l
-      , boost::optional<we::priority_type> prio
-      )
-      {
-        std::ostringstream s;
-
-        const id_type id_trans (id);
-
-        level (s, l)
-          << "subgraph cluster_" << id_trans << " {"
-          << std::endl;
-
-        std::ostringstream priority;
-
-        if (opts.show_priority)
+          BOOST_FOREACH ( const pnet::type::value::value_type& t
+                        , net.get_token (place_id)
+                        )
           {
-            if (prio)
-              {
-                if (*prio > we::priority_type (0))
-                  {
-                    priority << "| priority: " << *prio;
-                  }
-              }
+            token << endl << pnet::type::value::show (t);
           }
+        }
 
-        std::ostringstream intext;
+        std::ostringstream virt;
 
-        if (opts.show_intext)
-          {
-            intext << "|" << (t.is_internal() ? "internal" : "external");
-          }
-
-        std::ostringstream cond;
-
-        if (t.condition())
+        if (opts.show_virtual)
         {
-          std::ostringstream oss;
-          oss << t.condition()->ast();
-
-          cond << "|" << lines ('&', quote (oss.str()));
+          if (  "true"
+             == place.property().get ("virtual").get_value_or ("false")
+             )
+          {
+            virt << endl << props ("virtual");
+          }
         }
 
         level (s, l + 1)
-          << name (id_trans, "condition")
-          << node ( shape::condition
-                  , t.name()
-                  + cond.str()
-                  + intext.str()
-                  + priority.str()
-                  )
-          ;
-
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , t.ports_input()
-                      )
-        {
-          level (s, l + 1)
-            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
-            << node ( shape::port_in
-                    , with_signature ( p.second.name()
-                                     , p.second.signature()
-                                     , opts
-                                     )
-                    )
-            ;
-        }
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , t.ports_output()
-                      )
-        {
-          level (s, l + 1)
-            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
-            << node ( shape::port_out
-                    , with_signature ( p.second.name()
-                                     , p.second.signature()
-                                     , opts
-                                     )
-                    )
-            ;
-        }
-        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                      , t.ports_tunnel()
-                      )
-        {
-          level (s, l + 1)
-            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
-            << node ( shape::port_tunnel
-                    , with_signature ( p.second.name()
-                                     , p.second.signature()
-                                     , opts
-                                     )
-                    )
-            ;
-        }
-
-        if (opts.should_be_expanded (t))
-          {
-            s << boost::apply_visitor
-                 (transition_visitor_dot (id, l + 1, opts), t.data());
-
-            BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                          , t.ports_input()
-                          )
-            {
-              if (p.second.associated_place())
-              {
-                level (s, l + 1)
-                  << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
-                  << arrow
-                  << name (id_trans
-                          , "place_"
-                          + boost::lexical_cast<std::string> (*p.second.associated_place())
-                          )
-                  << association()
-                  << std::endl
-                  ;
-              }
-            }
-            BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                          , t.ports_output()
-                          )
-            {
-              if (p.second.associated_place())
-              {
-                level (s, l + 1)
-                  << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
-                  << arrow
-                  << name (id_trans
-                          , "place_"
-                          + boost::lexical_cast<std::string> (*p.second.associated_place())
-                          )
-                  << association()
-                  << std::endl
-                  ;
-              }
-            }
-            BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
-                          , t.ports_tunnel()
-                          )
-            {
-              if (p.second.associated_place())
-              {
-                level (s, l + 1)
-                  << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
-                  << arrow
-                  << name (id_trans
-                          , "place_"
-                          + boost::lexical_cast<std::string> (*p.second.associated_place())
-                          )
-                  << association()
-                  << std::endl
-                  ;
-              }
-            }
-          }
-
-        level (s, l + 1)
-          << bgcolor ( t.expression() ? color::expression
-                     : t.module_call() ? color::modcall
-                     : t.is_internal() ? color::subnet_internal
-                     : color::external
-                     );
-
-        level (s, l)
-          << "} /* " << "cluster_" << id_trans << " == " << t.name() << " */"
-          << std::endl;
-
-        return s.str();
+          << place_dot_name
+          << node
+             ( shape::place
+             , with_signature (place.name(), place.signature(), opts)
+             + quote (token.str())
+             + virt.str()
+             );
       }
+
+      typedef std::pair<we::transition_id_type,we::type::transition_t> it_type;
+
+      BOOST_FOREACH (const it_type& it, net.transitions())
+      {
+        const we::transition_id_type& trans_id (it.first);
+        const we::type::transition_t& trans (it.second);
+        const id_type id_trans (++id);
+
+        s << to_dot (trans, id, opts, l + 1, trans.priority());
+
+        if (net.port_to_place().find (trans_id) != net.port_to_place().end())
+        {
+          BOOST_FOREACH
+            ( we::type::net_type::port_to_place_with_info_type::value_type
+              const& port_to_place
+            , net.port_to_place().at (trans_id)
+            )
+          {
+            level (s, l + 1)
+              << name ( id_trans
+                      , "port_" + boost::lexical_cast<std::string> (port_to_place.get_left())
+                      )
+              << arrow
+              << name ( id_net
+                      , "place_" + boost::lexical_cast<std::string> (port_to_place.get_right())
+                      )
+              << std::endl;
+          }
+        }
+
+        if (net.place_to_port().find (trans_id) !=  net.place_to_port().end())
+        {
+          BOOST_FOREACH
+            ( we::type::net_type::place_to_port_with_info_type::value_type
+              const& place_to_port
+            , net.place_to_port().at (trans_id)
+            )
+          {
+            level (s, l + 1)
+              << name ( id_net
+                      , "place_" + boost::lexical_cast<std::string> (place_to_port.get_left())
+                      )
+              << arrow
+              << name ( id_trans
+                      , "port_" + boost::lexical_cast<std::string> (place_to_port.get_right())
+                      )
+              << (  net.place_to_transition_read().find
+                    ( we::type::net_type::adj_pt_type::value_type
+                     (place_to_port.get_left(), trans_id)
+                    )
+                 != net.place_to_transition_read().end()
+                 ? brackets (keyval ("style", style::read_connection))
+                 : ""
+                 )
+              << std::endl;
+          }
+        }
+      }
+
+      level (s, l + 1) << bgcolor (color::internal);
+
+      level (s, l) << "} /* " << "cluster_net_" << id_net << " */" << std::endl;
+
+      return s.str();
+    }
+  };
+
+  std::string to_dot
+    ( const we::type::transition_t& t
+    , id_type& id
+    , const options& opts
+    , const level_type l
+    , boost::optional<we::priority_type> prio
+    )
+  {
+    std::ostringstream s;
+
+    const id_type id_trans (id);
+
+    level (s, l) << "subgraph cluster_" << id_trans << " {" << std::endl;
+
+    std::ostringstream priority;
+
+    if (opts.show_priority && prio)
+    {
+      if (*prio > we::priority_type (0))
+      {
+        priority << "| priority: " << *prio;
+      }
+    }
+
+    std::ostringstream intext;
+
+    if (opts.show_intext)
+    {
+      intext << "|" << (t.is_internal() ? "internal" : "external");
+    }
+
+    std::ostringstream cond;
+
+    if (t.condition())
+    {
+      std::ostringstream oss;
+      oss << t.condition()->ast();
+
+      cond << "|" << lines ('&', quote (oss.str()));
+    }
+
+    level (s, l + 1)
+      << name (id_trans, "condition")
+      << node ( shape::condition
+              , t.name()
+              + cond.str()
+              + intext.str()
+              + priority.str()
+              );
+
+    BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                  , t.ports_input()
+                  )
+    {
+      level (s, l + 1)
+        << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+        << node ( shape::port_in
+                , with_signature (p.second.name(), p.second.signature(), opts)
+                );
+    }
+    BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                  , t.ports_output()
+                  )
+    {
+      level (s, l + 1)
+        << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+        << node ( shape::port_out
+                , with_signature (p.second.name(), p.second.signature(), opts)
+                );
+    }
+    BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                  , t.ports_tunnel()
+                  )
+    {
+      level (s, l + 1)
+        << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+        << node ( shape::port_tunnel
+                , with_signature (p.second.name(), p.second.signature(), opts)
+                );
+    }
+
+    if (opts.should_be_expanded (t))
+    {
+      s << boost::apply_visitor
+        (transition_visitor_dot (id, l + 1, opts), t.data());
+
+      BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                    , t.ports_input()
+                    )
+      {
+        if (p.second.associated_place())
+        {
+          level (s, l + 1)
+            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+            << arrow
+            << name (id_trans
+                    , "place_"
+                    + boost::lexical_cast<std::string> (*p.second.associated_place())
+                    )
+            << association()
+            << std::endl;
+        }
+      }
+      BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                    , t.ports_output()
+                    )
+      {
+        if (p.second.associated_place())
+        {
+          level (s, l + 1)
+            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+            << arrow
+            << name (id_trans
+                    , "place_"
+                    + boost::lexical_cast<std::string> (*p.second.associated_place())
+                    )
+            << association()
+            << std::endl;
+        }
+      }
+      BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
+                    , t.ports_tunnel()
+                    )
+      {
+        if (p.second.associated_place())
+        {
+          level (s, l + 1)
+            << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
+            << arrow
+            << name (id_trans
+                    , "place_"
+                    + boost::lexical_cast<std::string> (*p.second.associated_place())
+                    )
+            << association()
+            << std::endl;
+        }
+      }
+    }
+
+    level (s, l + 1) << bgcolor ( t.expression() ? color::expression
+                                : t.module_call() ? color::modcall
+                                : t.is_internal() ? color::subnet_internal
+                                : color::external
+                                );
+
+    level (s, l)
+      << "} /* " << "cluster_" << id_trans << " == " << t.name() << " */"
+      << std::endl;
+
+    return s.str();
+  }
 }
 
-int
-main (int argc, char ** argv)
+int main (int argc, char** argv)
 try
 {
   namespace po = boost::program_options;
@@ -635,100 +588,98 @@ try
   po::options_description show ("Show");
   po::options_description expand ("Expand");
 
-#define BOOLVAL(x) po::value<bool>(&x)->default_value(x)->implicit_value(true)
+#define BOOLVAL(x) \
+  po::value<bool> (&x)->default_value (x)->implicit_value (true)
 
   show.add_options()
     ( "full-signatures"
-    , BOOLVAL(options.full)
+    , BOOLVAL (options.full)
     , "whether or not to show full signatures"
     )
     ( "token"
-    , BOOLVAL(options.show_token)
+    , BOOLVAL (options.show_token)
     , "whether or not to show the tokens on a place"
     )
     ( "signature"
-    , BOOLVAL(options.show_signature)
+    , BOOLVAL (options.show_signature)
     , "whether or not to show the place and port signatures"
     )
     ( "priority"
-    , BOOLVAL(options.show_priority)
+    , BOOLVAL (options.show_priority)
     , "whether or not to show the transition priority"
     )
     ( "intext"
-    , BOOLVAL(options.show_intext)
+    , BOOLVAL (options.show_intext)
     , "whether or not to show the transition internal/external flag"
     )
     ( "virtual"
-    , BOOLVAL(options.show_virtual)
+    , BOOLVAL (options.show_virtual)
     , "whether or not to show the virtual flag"
     )
     ( "real"
-    , BOOLVAL(options.show_real)
+    , BOOLVAL (options.show_real)
     , "whether or not to show the real places, associated with a place"
     )
     ( "tunnel-connection"
-    , BOOLVAL(options.show_tunnel_connection)
+    , BOOLVAL (options.show_tunnel_connection)
     , "whether or not to show the tunnel connections"
-    )
-    ;
+    );
 
   expand.add_options()
     ( "not-starts-with"
-    , po::value<vec_type>(&not_starts_with)
+    , po::value<vec_type> (&not_starts_with)
     , "do not expand transitions that start with a certain prefix"
     )
     ( "not-ends-with"
-    , po::value<vec_type>(&not_ends_with)
+    , po::value<vec_type> (&not_ends_with)
     , "do not expand transitions that end with a certain suffix"
-    )
-    ;
+    );
 
   desc.add_options()
     ( "help,h", "this message")
     ( "version,V", "print version information")
     ( "input,i"
-    , po::value<std::string>(&input)->default_value("-")
+    , po::value<std::string> (&input)->default_value ("-")
     , "input file name, - for stdin, first positional parameter"
     )
     ( "output,o"
-    , po::value<std::string>(&output)->default_value("-")
+    , po::value<std::string> (&output)->default_value ("-")
     , "output file name, - for stdout, second positional parameter"
-    )
-    ;
+    );
 
   desc.add (show).add (expand);
 
 #undef BOOLVAL
 
   po::positional_options_description p;
-  p.add("input", 1).add("output", 2);
+  p.add ("input", 1).add ("output", 2);
 
   po::variables_map vm;
-  po::store( po::command_line_parser(argc, argv)
-           . options(desc).positional(p).run()
-           , vm
-           );
-  po::notify(vm);
+  po::store ( po::command_line_parser(argc, argv)
+            . options (desc).positional (p).run()
+            , vm
+            );
+  po::notify (vm);
 
-  if (vm.count("help"))
-    {
-      std::cout << argv[0] << ": convert to graphviz format" << std::endl;
+  if (vm.count ("help"))
+  {
+    std::cout << argv[0] << ": convert to graphviz format" << std::endl;
+    std::cout << desc << std::endl;
 
-      std::cout << desc << std::endl;
-      return EXIT_SUCCESS;
-    }
+    return EXIT_SUCCESS;
+  }
 
-  if (vm.count("version"))
-    {
-      std::cout << fhg::project_info ("pnet2dot");
+  if (vm.count ("version"))
+  {
+    std::cout << fhg::project_info ("pnet2dot");
 
-      return EXIT_SUCCESS;
-    }
+    return EXIT_SUCCESS;
+  }
 
   if (output == "-")
-    {
-      output = "/dev/stdout";
-    }
+  {
+    output = "/dev/stdout";
+  }
 
   BOOST_FOREACH (std::string const& p, not_starts_with)
   {
@@ -756,22 +707,23 @@ try
   std::ofstream ostream (output.c_str());
 
   if (!ostream)
-    {
-      throw std::runtime_error ("failed to open " + output + " for writing");
-    }
+  {
+    throw std::runtime_error ("failed to open " + output + " for writing");
+  }
 
-    id_type id (0);
+  id_type id (0);
 
-    ostream << "digraph \"" << act.transition().name() << "\" {" << std::endl;
-    ostream << "compound=true" << std::endl;
-    ostream << "rankdir=LR" << std::endl;
-    ostream << to_dot (act.transition(), id, options, 1, boost::none);
-    ostream << "} /* " << act.transition().name() << " */" << std::endl;
+  ostream << "digraph \"" << act.transition().name() << "\" {" << std::endl;
+  ostream << "compound=true" << std::endl;
+  ostream << "rankdir=LR" << std::endl;
+  ostream << to_dot (act.transition(), id, options, 1, boost::none);
+  ostream << "} /* " << act.transition().name() << " */" << std::endl;
 
   return EXIT_SUCCESS;
 }
 catch (const std::exception& e)
 {
   std::cerr << e.what() << std::endl;
+
   return EXIT_FAILURE;
 }
