@@ -209,7 +209,7 @@ namespace
       , filter()
       , show_token (true)
       , show_signature (true)
-      , show_priority (true)
+      , show_priority (false)
       , show_intext (false)
       , show_virtual (false)
       , show_tunnel_connection (true)
