@@ -717,25 +717,6 @@ namespace we { namespace type {
   }
 }
 
-namespace detail {
-  template<typename Pred>
-  void to_dot ( std::ostream & os
-              , const we::type::activity_t& a
-              , const Pred & pred
-              )
-  {
-    we::type::dot::id_type id (0);
-
-    we::type::dot::init (a.transition().prop());
-
-    os << "digraph \"" << a.transition().name() << "\" {" << std::endl;
-    os << "compound=true" << std::endl;
-    os << "rankdir=LR" << std::endl;
-    os << we::type::dot::to_dot (a.transition(), id, pred);
-    os << "} /* " << a.transition().name() << " */" << std::endl;
-  }
-}
-
 template<typename T>
 bool name_not_starts_with (const std::string & p, const T & x)
 {
@@ -929,7 +910,15 @@ try
       throw std::runtime_error ("failed to open " + output + " for writing");
     }
 
-  detail::to_dot (ostream, act, options);
+    we::type::dot::id_type id (0);
+
+    we::type::dot::init (act.transition().prop());
+
+    ostream << "digraph \"" << act.transition().name() << "\" {" << std::endl;
+    ostream << "compound=true" << std::endl;
+    ostream << "rankdir=LR" << std::endl;
+    ostream << we::type::dot::to_dot (act.transition(), id, options);
+    ostream << "} /* " << act.transition().name() << " */" << std::endl;
 
   return EXIT_SUCCESS;
 }
