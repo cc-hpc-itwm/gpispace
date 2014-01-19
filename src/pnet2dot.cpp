@@ -243,7 +243,7 @@ namespace
     , boost::optional<we::priority_type>
     );
 
-  class transition_visitor_dot : public boost::static_visitor<std::string>
+  class visit_transition : public boost::static_visitor<std::string>
   {
   private:
     id_type& id;
@@ -251,7 +251,7 @@ namespace
     const options& opts;
 
   public:
-    transition_visitor_dot
+    visit_transition
       (id_type& _id, fhg::util::indenter& indent, const options& _opts)
       : id (_id)
       , _indent (indent)
@@ -479,8 +479,7 @@ namespace
     if (opts.should_be_expanded (t))
     {
       ++indent;
-      s << boost::apply_visitor
-        (transition_visitor_dot (id, indent, opts), t.data());
+      s << boost::apply_visitor (visit_transition (id, indent, opts), t.data());
       --indent;
 
       BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
