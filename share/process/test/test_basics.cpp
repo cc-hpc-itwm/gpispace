@@ -1,20 +1,9 @@
 #define BOOST_TEST_MODULE ProcessBasics
 #include <boost/test/unit_test.hpp>
 
-#include <fhglog/LogMacros.hpp>
 #include <csignal>
 
 #include <process.hpp>
-
-struct Setup
-{
-  Setup ()
-  {
-    FHGLOG_SETUP();
-  }
-};
-
-BOOST_GLOBAL_FIXTURE( Setup )
 
 struct F
 {
