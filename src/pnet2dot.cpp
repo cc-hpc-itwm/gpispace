@@ -57,7 +57,7 @@ namespace
   static const std::string endl ("\\n");
   static const std::string arrow (" -> ");
 
-  std::ostream & level (std::ostream & s, const level_type & level)
+  std::ostream& level (std::ostream& s, const level_type& level)
   {
     for (level_type i (0); i < level; ++i)
     {
@@ -67,7 +67,7 @@ namespace
     return s;
   }
 
-  std::string parens ( const std::string & s
+  std::string parens ( const std::string& s
                      , const std::string open
                      , const std::string close
                      )
@@ -75,22 +75,22 @@ namespace
     return open + s + close;
   }
 
-  std::string brackets (const std::string & s)
+  std::string brackets (const std::string& s)
   {
     return " " + parens (s, "[", "]");
   }
 
-  std::string props (const std::string & s)
+  std::string props (const std::string& s)
   {
     return parens (s, ":: ", " ::");
   }
 
-  std::string dquote (const std::string & s)
+  std::string dquote (const std::string& s)
   {
     return parens (s, "\"", "\"");
   }
 
-  std::string lines (const char & b, const std::string & s)
+  std::string lines (const char& b, const std::string& s)
   {
     std::string l;
 
@@ -121,7 +121,7 @@ namespace
     return l;
   }
 
-  std::string quote (const char & c)
+  std::string quote (const char& c)
   {
     switch (c)
     {
@@ -135,7 +135,7 @@ namespace
     }
   }
 
-  std::string quote (const std::string & s)
+  std::string quote (const std::string& s)
   {
     std::string q;
 
@@ -147,14 +147,14 @@ namespace
     return lines (';', q);
   }
 
-  std::string keyval ( const std::string & key
-                     , const std::string & val
+  std::string keyval ( const std::string& key
+                     , const std::string& val
                      )
   {
     return key + " = " + dquote (val);
   }
 
-  std::string name (const id_type & id, const std::string & _name)
+  std::string name (const id_type& id, const std::string& _name)
   {
     std::ostringstream s;
 
@@ -163,7 +163,7 @@ namespace
     return s.str();
   }
 
-  std::string bgcolor (const std::string & color)
+  std::string bgcolor (const std::string& color)
   {
     std::ostringstream s;
 
@@ -172,8 +172,8 @@ namespace
     return s.str();
   }
 
-  std::string node ( const std::string & shape
-                   , const std::string & label
+  std::string node ( const std::string& shape
+                   , const std::string& label
                    )
   {
     std::ostringstream s;
@@ -214,7 +214,7 @@ namespace
     bool show_real;
     bool show_tunnel_connection;
 
-    bool should_be_expanded (const we::type::transition_t & x) const
+    bool should_be_expanded (const we::type::transition_t& x) const
     {
       BOOST_FOREACH
         (boost::function <bool (we::type::transition_t const&)> f, filter)
@@ -241,9 +241,9 @@ namespace
     {}
   };
 
-  std::string with_signature ( const std::string & name
-                             , const pnet::type::signature::signature_type & sig
-                             , const options & opts
+  std::string with_signature ( const std::string& name
+                             , const pnet::type::signature::signature_type& sig
+                             , const options& opts
                              )
   {
     std::ostringstream s;
@@ -261,9 +261,9 @@ namespace
   }
 
       std::string to_dot
-      ( const we::type::transition_t &
-      , id_type &
-      , const options &
+      ( const we::type::transition_t&
+      , id_type&
+      , const options&
       , const level_type
       , boost::optional<we::priority_type>
       );
@@ -271,21 +271,21 @@ namespace
       class transition_visitor_dot : public boost::static_visitor<std::string>
       {
       private:
-        id_type & id;
+        id_type& id;
         const level_type l;
-        const options & opts;
+        const options& opts;
 
       public:
-        transition_visitor_dot ( id_type & _id
-                               , const level_type & _l
-                               , const options & _opts
+        transition_visitor_dot ( id_type& _id
+                               , const level_type& _l
+                               , const options& _opts
                                )
           : id (_id)
           , l (_l)
           , opts (_opts)
         {}
 
-        std::string operator () (const we::type::expression_t & expr) const
+        std::string operator () (const we::type::expression_t& expr) const
         {
           std::ostringstream s;
 
@@ -297,7 +297,7 @@ namespace
           return s.str();
         }
 
-        std::string operator () (const we::type::module_call_t & mod_call) const
+        std::string operator () (const we::type::module_call_t& mod_call) const
         {
           std::ostringstream s;
 
@@ -310,7 +310,7 @@ namespace
         }
 
         std::string operator ()
-        (const we::type::net_type & net) const
+        (const we::type::net_type& net) const
         {
           std::ostringstream s;
 
@@ -441,9 +441,9 @@ namespace
       };
 
       std::string to_dot
-      ( const we::type::transition_t & t
-      , id_type & id
-      , const options & opts
+      ( const we::type::transition_t& t
+      , id_type& id
+      , const options& opts
       , const level_type l
       , boost::optional<we::priority_type> prio
       )
