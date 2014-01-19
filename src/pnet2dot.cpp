@@ -284,21 +284,20 @@ namespace we { namespace type {
         return props (quote (prop));
       }
 
-      template<typename T> static bool all (const T &) { return true; };
+      static bool all (const we::type::transition_t &) { return true; };
 
-      template<typename T>
       class generic
       {
       private:
-        boost::function<bool (const T &)> f;
+        boost::function<bool (const we::type::transition_t &)> f;
 
       public:
-        generic () : f (all<T>) {}
+        generic () : f (all) {}
 
-        template<typename F>
-        generic (F _f) : f (_f) {}
+        generic (boost::function<bool (we::type::transition_t const&)> _f)
+          : f (_f) {}
 
-        bool operator () (const T & x) const
+        bool operator () (const we::type::transition_t & x) const
         {
           return f (x);
         }
@@ -770,7 +769,7 @@ try
   vec_type not_starts_with;
   vec_type not_ends_with;
 
-  typedef we::type::dot::generic<we::type::transition_t> pred_t;
+  typedef we::type::dot::generic pred_t;
 
   we::type::dot::options<pred_t> options;
 
