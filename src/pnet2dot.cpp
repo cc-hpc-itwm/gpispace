@@ -778,12 +778,12 @@ bool pred_and ( const boost::function<bool (const T &)> f
   return f(x) && g(x);
 }
 
-namespace po = boost::program_options;
-
 int
 main (int argc, char ** argv)
 try
 {
+  namespace po = boost::program_options;
+
   std::string input;
   std::string output;
 
