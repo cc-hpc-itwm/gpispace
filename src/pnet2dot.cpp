@@ -10,6 +10,7 @@
 
 #include <fhg/revision.hpp>
 #include <fhg/util/starts_with.hpp>
+#include <fhg/util/indenter.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
@@ -52,20 +53,9 @@ namespace
   }
 
   typedef unsigned long id_type;
-  typedef unsigned long level_type;
 
   static const std::string endl ("\\n");
   static const std::string arrow (" -> ");
-
-  std::ostream& level (std::ostream& s, const level_type& level)
-  {
-    for (level_type i (0); i < level; ++i)
-    {
-      s << "  ";
-    }
-
-    return s;
-  }
 
   std::string parens ( const std::string& s
                      , const std::string open
@@ -165,7 +155,7 @@ namespace
   {
     std::ostringstream s;
 
-    s << keyval ("bgcolor", color) << std::endl;
+    s << keyval ("bgcolor", color);
 
     return s.str();
   }
@@ -181,8 +171,7 @@ namespace
                   + keyval ("style", "filled")
                   + ", "
                   + keyval ("fillcolor", color::node)
-                  )
-      << std::endl;
+                  );
 
     return s.str();
   }
@@ -257,7 +246,7 @@ namespace
     ( const we::type::transition_t&
     , id_type&
     , const options&
-    , const level_type
+    , fhg::util::indenter&
     , boost::optional<we::priority_type>
     );
 
@@ -265,14 +254,14 @@ namespace
   {
   private:
     id_type& id;
-    const level_type l;
+    fhg::util::indenter& _indent;
     const options& opts;
 
   public:
     transition_visitor_dot
-      (id_type& _id, const level_type& _l, const options& _opts)
+      (id_type& _id, fhg::util::indenter& indent, const options& _opts)
       : id (_id)
-      , l (_l)
+      , _indent (indent)
       , opts (_opts)
     {}
 
@@ -280,7 +269,7 @@ namespace
     {
       std::ostringstream s;
 
-      level (s, l)
+      s << _indent
         << name (id, "expression")
         << node (shape::expression, quote (boost::lexical_cast<std::string> (expr)));
 
@@ -291,7 +280,7 @@ namespace
     {
       std::ostringstream s;
 
-      level (s, l)
+      s << _indent
         << name (id, "modcall")
         << node (shape::modcall, boost::lexical_cast<std::string> (mod_call));
 
@@ -304,7 +293,7 @@ namespace
 
       const id_type id_net (id);
 
-      level (s, l) << "subgraph cluster_net_" << id_net << " {" << std::endl;
+      s << _indent << "subgraph cluster_net_" << id_net << " {";
 
       typedef std::pair<we::place_id_type, place::type> ip_type;
 
@@ -339,7 +328,7 @@ namespace
           }
         }
 
-        level (s, l + 1)
+        s << fhg::util::deeper (_indent)
           << place_dot_name
           << node
              ( shape::place
@@ -357,7 +346,9 @@ namespace
         const we::type::transition_t& trans (it.second);
         const id_type id_trans (++id);
 
-        s << to_dot (trans, id, opts, l + 1, trans.priority());
+        ++_indent;
+        s << to_dot (trans, id, opts, _indent, trans.priority());
+        --_indent;
 
         if (net.port_to_place().find (trans_id) != net.port_to_place().end())
         {
@@ -367,15 +358,14 @@ namespace
             , net.port_to_place().at (trans_id)
             )
           {
-            level (s, l + 1)
+            s << fhg::util::deeper (_indent)
               << name ( id_trans
                       , "port_" + boost::lexical_cast<std::string> (port_to_place.get_left())
                       )
               << arrow
               << name ( id_net
                       , "place_" + boost::lexical_cast<std::string> (port_to_place.get_right())
-                      )
-              << std::endl;
+                      );
           }
         }
 
@@ -387,7 +377,7 @@ namespace
             , net.place_to_port().at (trans_id)
             )
           {
-            level (s, l + 1)
+            s << fhg::util::deeper (_indent)
               << name ( id_net
                       , "place_" + boost::lexical_cast<std::string> (place_to_port.get_left())
                       )
@@ -402,15 +392,13 @@ namespace
                  != net.place_to_transition_read().end()
                  ? brackets (keyval ("style", style::read_connection))
                  : ""
-                 )
-              << std::endl;
+                 );
           }
         }
       }
 
-      level (s, l + 1) << bgcolor (color::internal);
-
-      level (s, l) << "} /* " << "cluster_net_" << id_net << " */" << std::endl;
+      s << fhg::util::deeper (_indent) << bgcolor (color::internal)
+        << _indent << "} /* " << "cluster_net_" << id_net << " */";
 
       return s.str();
     }
@@ -420,7 +408,7 @@ namespace
     ( const we::type::transition_t& t
     , id_type& id
     , const options& opts
-    , const level_type l
+    , fhg::util::indenter& indent
     , boost::optional<we::priority_type> prio
     )
   {
@@ -428,7 +416,7 @@ namespace
 
     const id_type id_trans (id);
 
-    level (s, l) << "subgraph cluster_" << id_trans << " {" << std::endl;
+    s << indent << "subgraph cluster_" << id_trans << " {";
 
     std::ostringstream priority;
 
@@ -457,7 +445,7 @@ namespace
       cond << "|" << lines ('&', quote (oss.str()));
     }
 
-    level (s, l + 1)
+    s << fhg::util::deeper (indent)
       << name (id_trans, "condition")
       << node ( shape::condition
               , t.name()
@@ -470,7 +458,7 @@ namespace
                   , t.ports_input()
                   )
     {
-      level (s, l + 1)
+      s << fhg::util::deeper (indent)
         << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
         << node ( shape::port_in
                 , with_signature (p.second.name(), p.second.signature(), opts)
@@ -480,7 +468,7 @@ namespace
                   , t.ports_output()
                   )
     {
-      level (s, l + 1)
+      s << fhg::util::deeper (indent)
         << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
         << node ( shape::port_out
                 , with_signature (p.second.name(), p.second.signature(), opts)
@@ -490,7 +478,7 @@ namespace
                   , t.ports_tunnel()
                   )
     {
-      level (s, l + 1)
+      s << fhg::util::deeper (indent)
         << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
         << node ( shape::port_tunnel
                 , with_signature (p.second.name(), p.second.signature(), opts)
@@ -499,8 +487,10 @@ namespace
 
     if (opts.should_be_expanded (t))
     {
+      ++indent;
       s << boost::apply_visitor
-        (transition_visitor_dot (id, l + 1, opts), t.data());
+        (transition_visitor_dot (id, indent, opts), t.data());
+      --indent;
 
       BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
                     , t.ports_input()
@@ -508,15 +498,14 @@ namespace
       {
         if (p.second.associated_place())
         {
-          level (s, l + 1)
+          s << fhg::util::deeper (indent)
             << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
             << arrow
             << name (id_trans
                     , "place_"
                     + boost::lexical_cast<std::string> (*p.second.associated_place())
                     )
-            << association()
-            << std::endl;
+            << association();
         }
       }
       BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
@@ -525,15 +514,14 @@ namespace
       {
         if (p.second.associated_place())
         {
-          level (s, l + 1)
+          s << fhg::util::deeper (indent)
             << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
             << arrow
             << name (id_trans
                     , "place_"
                     + boost::lexical_cast<std::string> (*p.second.associated_place())
                     )
-            << association()
-            << std::endl;
+            << association();
         }
       }
       BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
@@ -542,28 +530,26 @@ namespace
       {
         if (p.second.associated_place())
         {
-          level (s, l + 1)
+          s << fhg::util::deeper (indent)
             << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
             << arrow
             << name (id_trans
                     , "place_"
                     + boost::lexical_cast<std::string> (*p.second.associated_place())
                     )
-            << association()
-            << std::endl;
+            << association();
         }
       }
     }
 
-    level (s, l + 1) << bgcolor ( t.expression() ? color::expression
-                                : t.module_call() ? color::modcall
-                                : t.is_internal() ? color::subnet_internal
-                                : color::external
-                                );
-
-    level (s, l)
-      << "} /* " << "cluster_" << id_trans << " == " << t.name() << " */"
-      << std::endl;
+    s << fhg::util::deeper (indent)
+      << bgcolor ( t.expression() ? color::expression
+                 : t.module_call() ? color::modcall
+                 : t.is_internal() ? color::subnet_internal
+                 : color::external
+                 )
+      << indent
+      << "} /* " << "cluster_" << id_trans << " == " << t.name() << " */";
 
     return s.str();
   }
@@ -574,12 +560,13 @@ namespace
               )
   {
     id_type id (0);
+    fhg::util::indenter indent (1);
 
-    os << "digraph \"" << activity.transition().name() << "\" {" << std::endl
-       << "compound=true" << std::endl
-       << "rankdir=LR" << std::endl
-       << to_dot (activity.transition(), id, options, 1, boost::none)
-       << "} /* " << activity.transition().name() << " */" << std::endl;
+    os << "digraph \"" << activity.transition().name() << "\" {"
+       << "\n" << "compound=true"
+       << "\n" << "rankdir=LR"
+       << to_dot (activity.transition(), id, options, indent, boost::none)
+       << "\n" << "} /* " << activity.transition().name() << " */" << "\n";
   }
 }
 
