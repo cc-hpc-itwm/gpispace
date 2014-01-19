@@ -23,7 +23,7 @@ make+=( -C "${DIR_SOURCE}")
 cleanup()
 {
   sdpa stop
-  rm -rf "${HOSTFILE}"
+  rm -f "${HOSTFILE}"
   eval ${make[@]} uninstall
   eval ${make[@]} clean
   cleanup_dir_build

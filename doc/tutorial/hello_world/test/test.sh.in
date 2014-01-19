@@ -26,7 +26,7 @@ make_mod='make DIR_BUILD=${DIR_BUILD} -C "${DIR_MODULE}"'
 
 cleanup()
 {
-  rm -rf "${CMP}"
+  rm -f "${CMP}"
   eval ${make[@]} clean
   eval ${make_mod} clean
   cleanup_dir_build

@@ -23,7 +23,7 @@ make+=( -C "${DIR_SOURCE}" )
 
 cleanup()
 {
-  rm -rf "${CMP}"
+  rm -f "${CMP}"
   eval ${make[@]} clean
   cleanup_dir_build
 }

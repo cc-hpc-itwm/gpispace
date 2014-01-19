@@ -16,7 +16,7 @@ make_src='make BUILDDIR="${DIR_BUILD}" LIB_DESTDIR="${DIR_BUILD}" -C "${DIR_SOUR
 cleanup()
 {
   sdpa stop
-  rm -rf "${HOSTFILE}"
+  rm -f "${HOSTFILE}"
   eval ${make_src} uninstall
   eval ${make_src} clean
   cleanup_dir_build

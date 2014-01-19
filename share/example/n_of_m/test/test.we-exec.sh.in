@@ -16,7 +16,7 @@ make_src='make BUILDDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
 
 cleanup()
 {
-  rm -rf "${CMP}"
+  rm -f "${CMP}"
   eval ${make_src} clean
   cleanup_dir_build
 }

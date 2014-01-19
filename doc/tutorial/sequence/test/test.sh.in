@@ -16,7 +16,7 @@ make_expr='make BUILDDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
 
 cleanup()
 {
-  rm -rf ${CMP}
+  rm -f ${CMP}
   eval ${make_expr} clean
   cleanup_dir_build
 }
