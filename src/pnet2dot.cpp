@@ -316,7 +316,6 @@ namespace we { namespace type {
         std::string operator ()
         (const we::type::net_type & net) const
         {
-          typedef transition_t::port_map_t::value_type pmv_t;
           typedef std::pair< std::string
                            , we::port_id_type
                            > extra_connection_type;
