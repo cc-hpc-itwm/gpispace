@@ -739,17 +739,15 @@ bool all ( boost::function<bool (const std::string &, const T &)> f
          , const T & x
          )
 {
-  bool all_okay (true);
-
-  for ( vec_type::const_iterator y (ys.begin())
-      ; y != ys.end() && all_okay
-      ; ++y
-      )
+  BOOST_FOREACH (std::string const& y, ys)
+  {
+    if (!f (y, x))
     {
-      all_okay &= f (*y, x);
+      return false;
     }
+  }
 
-  return all_okay;
+  return true;
 }
 
 template<typename T>
