@@ -259,13 +259,9 @@ namespace
 
     return s.str();
   }
-}
 
-namespace we { namespace type {
-
-    namespace dot {
-      inline std::string to_dot
-      ( const transition_t &
+      std::string to_dot
+      ( const we::type::transition_t &
       , id_type &
       , const options &
       , const level_type
@@ -289,7 +285,7 @@ namespace we { namespace type {
           , opts (_opts)
         {}
 
-        std::string operator () (const expression_t & expr) const
+        std::string operator () (const we::type::expression_t & expr) const
         {
           std::ostringstream s;
 
@@ -301,7 +297,7 @@ namespace we { namespace type {
           return s.str();
         }
 
-        std::string operator () (const module_call_t & mod_call) const
+        std::string operator () (const we::type::module_call_t & mod_call) const
         {
           std::ostringstream s;
 
@@ -371,12 +367,12 @@ namespace we { namespace type {
                 ;
             }
 
-          typedef std::pair<we::transition_id_type,transition_t> it_type;
+          typedef std::pair<we::transition_id_type,we::type::transition_t> it_type;
 
           BOOST_FOREACH (const it_type& it, net.transitions())
             {
               const we::transition_id_type& trans_id (it.first);
-              const transition_t& trans (it.second);
+              const we::type::transition_t& trans (it.second);
               const id_type id_trans (++id);
 
               s << to_dot (trans, id, opts, l + 1, trans.priority());
@@ -444,8 +440,8 @@ namespace we { namespace type {
         }
       };
 
-      inline std::string to_dot
-      ( const transition_t & t
+      std::string to_dot
+      ( const we::type::transition_t & t
       , id_type & id
       , const options & opts
       , const level_type l
@@ -500,7 +496,7 @@ namespace we { namespace type {
                   )
           ;
 
-        BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
+        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
                       , t.ports_input()
                       )
         {
@@ -514,7 +510,7 @@ namespace we { namespace type {
                     )
             ;
         }
-        BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
+        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
                       , t.ports_output()
                       )
         {
@@ -528,7 +524,7 @@ namespace we { namespace type {
                     )
             ;
         }
-        BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
+        BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
                       , t.ports_tunnel()
                       )
         {
@@ -548,7 +544,7 @@ namespace we { namespace type {
             s << boost::apply_visitor
                  (transition_visitor_dot (id, l + 1, opts), t.data());
 
-            BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
+            BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
                           , t.ports_input()
                           )
             {
@@ -566,7 +562,7 @@ namespace we { namespace type {
                   ;
               }
             }
-            BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
+            BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
                           , t.ports_output()
                           )
             {
@@ -584,7 +580,7 @@ namespace we { namespace type {
                   ;
               }
             }
-            BOOST_FOREACH ( transition_t::port_map_t::value_type const& p
+            BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
                           , t.ports_tunnel()
                           )
             {
@@ -617,8 +613,6 @@ namespace we { namespace type {
 
         return s.str();
       }
-    }
-  }
 }
 
 int
@@ -771,7 +765,7 @@ try
     ostream << "digraph \"" << act.transition().name() << "\" {" << std::endl;
     ostream << "compound=true" << std::endl;
     ostream << "rankdir=LR" << std::endl;
-    ostream << we::type::dot::to_dot (act.transition(), id, options, 1, boost::none);
+    ostream << to_dot (act.transition(), id, options, 1, boost::none);
     ostream << "} /* " << act.transition().name() << " */" << std::endl;
 
   return EXIT_SUCCESS;
