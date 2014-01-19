@@ -7,40 +7,34 @@ add_executable (deinterleave deinterleave.c)
 add_executable (rotate rotate.c)
 set_target_properties (rotate PROPERTIES COMPILE_FLAGS -std=c99)
 
-set (tests
-     test_process_file_input
-     test_process_file_output
-     test_process_all
-     test_process_redefine
-     test_process_big
-    )
+fhg_add_test (test_process_file_input.cpp
+  ARGS ${CMAKE_CURRENT_BINARY_DIR}/interleave
+  LINK_LIBRARIES process ${FhgLog_LIBRARY}
+  DEPENDS interleave
+)
 
-foreach (test ${tests})
-  add_executable (${test} "${test}.cpp")
-  target_link_libraries(${test} process)
-  target_link_libraries(${test} ${FhgLog_LIBRARY})
-  target_link_libraries(${test} pthread)
-endforeach (test ${tests})
+fhg_add_test (test_process_file_output.cpp
+  ARGS ${CMAKE_CURRENT_BINARY_DIR}/deinterleave
+  LINK_LIBRARIES process ${FhgLog_LIBRARY}
+  DEPENDS deinterleave
+)
 
-add_dependencies (test_process_file_input interleave)
-add_test ("test_process_file_input"
-           test_process_file_input ${CMAKE_CURRENT_BINARY_DIR}/interleave
-         )
+fhg_add_test (test_process_all.cpp
+  ARGS ${CMAKE_CURRENT_BINARY_DIR}/rotate
+  LINK_LIBRARIES process ${FhgLog_LIBRARY}
+  DEPENDS rotate
+)
 
-add_dependencies (test_process_file_output deinterleave)
-add_test ("test_process_file_output"
-           test_process_file_output ${CMAKE_CURRENT_BINARY_DIR}/deinterleave
-         )
+fhg_add_test (test_process_redefine.cpp
+  LINK_LIBRARIES process ${FhgLog_LIBRARY}
+)
 
-add_dependencies (test_process_all rotate)
-add_test ("test_process_all"
-           test_process_all ${CMAKE_CURRENT_BINARY_DIR}/rotate
-         )
-
-add_test ("test_process_redefine" test_process_redefine)
-add_test ("test_process_big" test_process_big 1048576)
+fhg_add_test (test_process_big.cpp
+  ARGS 1048576
+  LINK_LIBRARIES process ${FhgLog_LIBRARY}
+)
 
 fhg_add_test (test_basics.cpp
   BOOST_UNIT_TEST
-  LINK_LIBRARIES process ${FhgLog_LIBRARY} pthread
+  LINK_LIBRARIES process ${FhgLog_LIBRARY}
 )
