@@ -192,7 +192,7 @@ namespace
     return s.str();
   }
 
-  std::string association (void)
+  std::string association ()
   {
     return brackets ( keyval ("style", style::association)
                     + ", "
