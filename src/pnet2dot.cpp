@@ -1,24 +1,26 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include <we/type/transition.hpp>
+#include <we/expr/parse/parser.hpp>
 #include <we/type/activity.hpp>
-
-// mirko.rahn@itwm.fraunhofer.de
-
-#include <we/type/transition.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
-
-#include <we/type/value/show.hpp>
 #include <we/type/signature/show.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/value/show.hpp>
 
-#include <we/expr/parse/parser.hpp>
-#include <sstream>
+#include <fhg/revision.hpp>
+#include <fhg/util/starts_with.hpp>
 
 #include <boost/foreach.hpp>
-#include <boost/optional.hpp>
-#include <boost/range/adaptor/map.hpp>
+#include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
+#include <boost/program_options.hpp>
+#include <boost/range/adaptor/map.hpp>
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 namespace we { namespace type {
 
@@ -744,16 +746,6 @@ namespace we { namespace type {
     }
   }
 }
-
-#include <iostream>
-#include <fstream>
-
-#include <boost/program_options.hpp>
-#include <boost/function.hpp>
-
-#include <fhg/util/starts_with.hpp>
-
-#include <fhg/revision.hpp>
 
 // ************************************************************************* //
 
