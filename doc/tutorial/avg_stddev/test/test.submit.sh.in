@@ -50,7 +50,7 @@ measured "boot" sdpa boot -A "${DIR_BUILD}" -M -f "${HOSTFILE}" work:4        \
 
 measured "submit" ${make_src} submit                        || die $EX_ERR_RUN
 
-test $(pnetget -i "${OUT}" -p avg) == "0.000193708"         || die $EX_ERR_RES
-test $(pnetget -i "${OUT}" -p stddev) == "0.999908"         || die $EX_ERR_RES
+test "$(pnetget -i "${OUT}" -p avg)" == "0.000193708"       || die $EX_ERR_RES
+test "$(pnetget -i "${OUT}" -p stddev)" == "0.999908"       || die $EX_ERR_RES
 
 sdpa stop                                                   || die $EX_ERR_STOP
