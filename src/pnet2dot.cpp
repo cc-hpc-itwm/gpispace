@@ -192,7 +192,7 @@ namespace
     return s.str();
   }
 
-  std::string association ()
+  std::string association()
   {
     return brackets ( keyval ("style", style::association)
                     + ", "
@@ -228,7 +228,7 @@ namespace
       return true;
     }
 
-    options ()
+    options()
       : full (false)
       , filter()
       , show_token (true)
@@ -285,7 +285,7 @@ namespace
           , opts (_opts)
         {}
 
-        std::string operator () (const we::type::expression_t& expr) const
+        std::string operator() (const we::type::expression_t& expr) const
         {
           std::ostringstream s;
 
@@ -297,7 +297,7 @@ namespace
           return s.str();
         }
 
-        std::string operator () (const we::type::module_call_t& mod_call) const
+        std::string operator() (const we::type::module_call_t& mod_call) const
         {
           std::ostringstream s;
 
@@ -309,7 +309,7 @@ namespace
           return s.str();
         }
 
-        std::string operator ()
+        std::string operator()
         (const we::type::net_type& net) const
         {
           std::ostringstream s;
@@ -637,7 +637,7 @@ try
 
 #define BOOLVAL(x) po::value<bool>(&x)->default_value(x)->implicit_value(true)
 
-  show.add_options ()
+  show.add_options()
     ( "full-signatures"
     , BOOLVAL(options.full)
     , "whether or not to show full signatures"
@@ -672,7 +672,7 @@ try
     )
     ;
 
-  expand.add_options ()
+  expand.add_options()
     ( "not-starts-with"
     , po::value<vec_type>(&not_starts_with)
     , "do not expand transitions that start with a certain prefix"
