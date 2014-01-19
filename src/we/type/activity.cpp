@@ -105,53 +105,26 @@ namespace we
         }
       }
 
-      namespace
-      {
-        class visitor_add_input : public boost::static_visitor<>
-        {
-        private:
-          we::type::transition_t const& _transition;
-          we::port_id_type const& _port_id;
-          pnet::type::value::value_type const& _value;
-
-        public:
-          visitor_add_input
-            ( we::type::transition_t const& transition
-            , we::port_id_type const& port_id
-            , pnet::type::value::value_type const& value
-            )
-            : _transition (transition)
-            , _port_id (port_id)
-            , _value (value)
-          {}
-
-          void operator() (we::type::net_type& net) const
-          {
-            if (_transition.ports_input().at (_port_id).associated_place())
-            {
-              net.put_value
-                ( *_transition.ports_input().at (_port_id).associated_place()
-                , _value
-                );
-            }
-          }
-
-          template<typename T>
-          void operator() (T&) const
-          {}
-        };
-      }
-
       void activity_t::add_input
         ( we::port_id_type const& port_id
         , pnet::type::value::value_type const& value
         )
       {
-        boost::apply_visitor ( visitor_add_input (_transition, port_id, value)
-                             , _transition.data()
-                             );
-
-        _input.push_back (input_t::value_type (value, port_id));
+        if (_transition.net())
+        {
+          //! \todo is the conditional neccessary? isn't is ensured already?
+          if (_transition.ports_input().at (port_id).associated_place())
+          {
+            boost::get<we::type::net_type&>(_transition.data()).put_value
+              ( *_transition.ports_input().at (port_id).associated_place()
+              , value
+              );
+          }
+        }
+        else
+        {
+          _input.push_back (input_t::value_type (value, port_id));
+        }
       }
 
       const we::type::transition_t& activity_t::transition() const
