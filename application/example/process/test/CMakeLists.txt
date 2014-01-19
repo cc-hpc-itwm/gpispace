@@ -8,6 +8,7 @@ add_executable (rotate rotate.c)
 set_target_properties (rotate PROPERTIES COMPILE_FLAGS -std=c99)
 
 fhg_add_test (test_process_file_input.cpp
+  BOOST_UNIT_TEST
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/interleave
   LINK_LIBRARIES process
   DEPENDS interleave
