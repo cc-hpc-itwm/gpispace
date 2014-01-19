@@ -713,11 +713,11 @@ try
 
   id_type id (0);
 
-  ostream << "digraph \"" << act.transition().name() << "\" {" << std::endl;
-  ostream << "compound=true" << std::endl;
-  ostream << "rankdir=LR" << std::endl;
-  ostream << to_dot (act.transition(), id, options, 1, boost::none);
-  ostream << "} /* " << act.transition().name() << " */" << std::endl;
+  ostream << "digraph \"" << act.transition().name() << "\" {" << std::endl
+          << "compound=true" << std::endl
+          << "rankdir=LR" << std::endl
+          << to_dot (act.transition(), id, options, 1, boost::none)
+          << "} /* " << act.transition().name() << " */" << std::endl;
 
   return EXIT_SUCCESS;
 }
