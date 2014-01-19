@@ -244,26 +244,6 @@ namespace we { namespace type {
         return s.str();
       }
 
-      template<typename Opts>
-      inline std::string with_signature ( const std::string & name
-                                        , const pnet::type::signature::signature_type & sig
-                                        , const Opts & opts
-                                        )
-      {
-        std::ostringstream s;
-
-        s << name;
-
-        if (opts.show_signature)
-          {
-            s << endl
-              << pnet::type::signature::show (sig)
-              ;
-          }
-
-        return s.str();
-      }
-
       inline std::string association (void)
       {
         return brackets ( keyval ("style", style::association)
@@ -328,6 +308,25 @@ namespace we { namespace type {
           , show_tunnel_connection (true)
         {}
       };
+
+      inline std::string with_signature ( const std::string & name
+                                        , const pnet::type::signature::signature_type & sig
+                                        , const options & opts
+                                        )
+      {
+        std::ostringstream s;
+
+        s << name;
+
+        if (opts.show_signature)
+          {
+            s << endl
+              << pnet::type::signature::show (sig)
+              ;
+          }
+
+        return s.str();
+      }
 
       inline std::string to_dot
       ( const transition_t &
