@@ -10,14 +10,14 @@ set_target_properties (rotate PROPERTIES COMPILE_FLAGS -std=c99)
 fhg_add_test (test_process_file_input.cpp
   BOOST_UNIT_TEST
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/interleave
-  LINK_LIBRARIES process
+  LINK_LIBRARIES process fhg-util
   DEPENDS interleave
 )
 
 fhg_add_test (test_process_file_output.cpp
   BOOST_UNIT_TEST
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/deinterleave
-  LINK_LIBRARIES process
+  LINK_LIBRARIES process fhg-util
   DEPENDS deinterleave
 )
 
