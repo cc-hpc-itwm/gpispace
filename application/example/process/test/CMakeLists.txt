@@ -20,6 +20,7 @@ fhg_add_test (test_process_file_output.cpp
 )
 
 fhg_add_test (test_process_all.cpp
+  BOOST_UNIT_TEST
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/rotate
   LINK_LIBRARIES process ${FhgLog_LIBRARY}
   DEPENDS rotate

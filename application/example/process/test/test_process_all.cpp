@@ -1,25 +1,22 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE process_all
+#include <boost/test/unit_test.hpp>
 
 #include <process.hpp>
-#include <iostream>
-#include <cstdlib>
-
-#include <require.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
-int
-main (int argc, char ** argv)
+#include <iostream>
+
+BOOST_AUTO_TEST_CASE (process_all)
 {
   FHGLOG_SETUP();
 
-  if (argc < 2)
-    {
-      std::cerr << "usage: " << argv[0] << " path_to_rotate" << std::endl;
+  BOOST_REQUIRE_GT (boost::unit_test::framework::master_test_suite().argc, 1);
 
-      exit (EXIT_FAILURE);
-    }
-
-  const std::string prog (argv[1]);
+  const std::string prog
+    (boost::unit_test::framework::master_test_suite().argv[1]);
   const std::string command (prog + " %FILE1% %FILE2% %FILE3% %FILE4%");
 
   char in_stdin[6] = "Hallo";
@@ -58,35 +55,32 @@ main (int argc, char ** argv)
                        )
     );
 
-  REQUIRE (ret.bytes_read_stdout == 7);
-  REQUIRE (out_stdout[0] == 'a');
-  REQUIRE (out_stdout[1] == 'b');
-  REQUIRE (out_stdout[2] == 'c');
-  REQUIRE (out_stdout[3] == 'd');
-  REQUIRE (out_stdout[4] == 'e');
-  REQUIRE (out_stdout[5] == 'f');
-  REQUIRE (out_stdout[6] == 'g');
+  BOOST_REQUIRE_EQUAL (ret.bytes_read_stdout, 7);
+  BOOST_REQUIRE_EQUAL (out_stdout[0], 'a');
+  BOOST_REQUIRE_EQUAL (out_stdout[1], 'b');
+  BOOST_REQUIRE_EQUAL (out_stdout[2], 'c');
+  BOOST_REQUIRE_EQUAL (out_stdout[3], 'd');
+  BOOST_REQUIRE_EQUAL (out_stdout[4], 'e');
+  BOOST_REQUIRE_EQUAL (out_stdout[5], 'f');
+  BOOST_REQUIRE_EQUAL (out_stdout[6], 'g');
 
-  REQUIRE (ret.bytes_read_files_output.size() == 2);
+  BOOST_REQUIRE_EQUAL (ret.bytes_read_files_output.size(), 2);
 
-  REQUIRE (ret.bytes_read_files_output[0] == 5);
-  REQUIRE (out_file3[0] == 'H');
-  REQUIRE (out_file3[1] == 'a');
-  REQUIRE (out_file3[2] == 'l');
-  REQUIRE (out_file3[3] == 'l');
-  REQUIRE (out_file3[4] == 'o');
+  BOOST_REQUIRE_EQUAL (ret.bytes_read_files_output[0], 5);
+  BOOST_REQUIRE_EQUAL (out_file3[0], 'H');
+  BOOST_REQUIRE_EQUAL (out_file3[1], 'a');
+  BOOST_REQUIRE_EQUAL (out_file3[2], 'l');
+  BOOST_REQUIRE_EQUAL (out_file3[3], 'l');
+  BOOST_REQUIRE_EQUAL (out_file3[4], 'o');
 
-  REQUIRE (ret.bytes_read_files_output[1] == 3);
-  REQUIRE (out_file4[0] == '1');
-  REQUIRE (out_file4[1] == '2');
-  REQUIRE (out_file4[2] == '3');
+  BOOST_REQUIRE_EQUAL (ret.bytes_read_files_output[1], 3);
+  BOOST_REQUIRE_EQUAL (out_file4[0], '1');
+  BOOST_REQUIRE_EQUAL (out_file4[1], '2');
+  BOOST_REQUIRE_EQUAL (out_file4[2], '3');
 
-  REQUIRE (ret.bytes_read_stderr == 23);
-  REQUIRE (  std::string (buf_stderr.begin(), buf_stderr.end())
-          == "23 bytes sent to stderr"
-          );
-
-  std::cout << "SUCCESS" << std::endl;
-
-  return EXIT_SUCCESS;
+  BOOST_REQUIRE_EQUAL (ret.bytes_read_stderr, 23);
+  BOOST_REQUIRE_EQUAL
+    ( std::string (buf_stderr.begin(), buf_stderr.end())
+    , "23 bytes sent to stderr"
+    );
 }
