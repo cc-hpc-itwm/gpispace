@@ -149,29 +149,29 @@ namespace we { namespace type {
 
       namespace shape
       {
-        static std::string condition = "record";
-        static std::string port_in = "house";
-        static std::string port_out = "invhouse";
-        static std::string port_tunnel = "ellipse";
-        static std::string expression = "none";
-        static std::string modcall = "box";
-        static std::string place = "ellipse";
+        static std::string const condition = "record";
+        static std::string const port_in = "house";
+        static std::string const port_out = "invhouse";
+        static std::string const port_tunnel = "ellipse";
+        static std::string const expression = "none";
+        static std::string const modcall = "box";
+        static std::string const place = "ellipse";
       }
 
       namespace color
       {
-        static std::string internal = "white";
-        static std::string external = "dimgray";
-        static std::string modcall = "yellow";
-        static std::string expression = "white";
-        static std::string node = "white";
-        static std::string subnet_internal = "grey";
+        static std::string const internal = "white";
+        static std::string const external = "dimgray";
+        static std::string const modcall = "yellow";
+        static std::string const expression = "white";
+        static std::string const node = "white";
+        static std::string const subnet_internal = "grey";
       }
 
       namespace style
       {
-        static std::string association = "dotted";
-        static std::string read_connection = "dashed";
+        static std::string const association = "dotted";
+        static std::string const read_connection = "dashed";
       }
 
       inline std::string node ( const std::string & shape
