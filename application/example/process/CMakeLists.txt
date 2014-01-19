@@ -10,9 +10,6 @@ include_directories(${UTIL_INCLUDE_DIR})
 
 include_directories (${FhgLog_INCLUDE_DIR})
 
-add_library(exec_mod SHARED process.cpp exec_mod.cpp)
-set_target_properties(exec_mod PROPERTIES OUTPUT_NAME exec)
-
 set (hdrs
   process.hpp
 )
@@ -22,14 +19,6 @@ add_library(process.shared SHARED ${hdrs} process.cpp)
 set_target_properties(process.shared PROPERTIES OUTPUT_NAME process)
 target_link_libraries (process ${Boost_FILESYSTEM_LIBRARY})
 target_link_libraries (process.shared ${Boost_FILESYSTEM_LIBRARY})
-
-set (xmls
-  exec.xml
-  )
-
-install(FILES ${xmls}
-  DESTINATION share/sdpa/xml/process
-  COMPONENT examples)
 
 install(FILES ${hdrs}
   DESTINATION include/process
