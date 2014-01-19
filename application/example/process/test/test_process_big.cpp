@@ -1,25 +1,16 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE process_big
+#include <boost/test/unit_test.hpp>
 
 #include <process.hpp>
-#include <iostream>
-#include <cstdlib>
 
-#include <require.hpp>
-
-#include <fhglog/LogMacros.hpp>
-
-int
-main (int argc, char ** argv)
+BOOST_AUTO_TEST_CASE (process_big)
 {
-  FHGLOG_SETUP();
+  BOOST_REQUIRE_GT (boost::unit_test::framework::master_test_suite().argc, 1);
 
-  if (argc < 2)
-    {
-      std::cerr << "usage: " << argv[0] << " size" << std::endl;
-
-      exit (EXIT_FAILURE);
-    }
-
-  const std::size_t size (atoi (argv[1]));
+  const std::size_t size
+    (atoi (boost::unit_test::framework::master_test_suite().argv[1]));
   const std::size_t count (size / sizeof (int));
 
   int * in = new int[count];
@@ -34,11 +25,11 @@ main (int argc, char ** argv)
   {
     const std::size_t ret (process::execute ("cat", in, size, out, size));
 
-    REQUIRE (ret == size);
+    BOOST_REQUIRE_EQUAL (ret, size);
 
     for (std::size_t i (0); i < count; ++i)
       {
-        REQUIRE (in[i] == out[i]);
+        BOOST_REQUIRE_EQUAL (in[i], out[i]);
       }
   }
 
@@ -46,18 +37,14 @@ main (int argc, char ** argv)
   {
     const std::size_t ret (process::execute ("cat", in, size, in, size));
 
-    REQUIRE (ret == size);
+    BOOST_REQUIRE_EQUAL (ret, size);
 
     for (std::size_t i (0); i < count; ++i)
       {
-        REQUIRE (in[i] == out[i]);
+        BOOST_REQUIRE_EQUAL (in[i], out[i]);
       }
   }
 
   delete[] in;
   delete[] out;
-
-  std::cout << "SUCCESS" << std::endl;
-
-  return EXIT_SUCCESS;
 }
