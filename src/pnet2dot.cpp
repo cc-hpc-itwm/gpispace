@@ -240,6 +240,8 @@ namespace
     , id_type&
     , const options&
     , fhg::util::indenter&
+    , boost::optional<we::type::activity_t::input_t>
+    , boost::optional<we::type::activity_t::output_t>
     );
 
   class visit_transition : public boost::static_visitor<std::string>
@@ -337,7 +339,7 @@ namespace
         const id_type id_trans (++id);
 
         ++_indent;
-        s << to_dot (trans, id, opts, _indent);
+        s << to_dot (trans, id, opts, _indent, boost::none, boost::none);
         --_indent;
 
         if (net.port_to_place().find (trans_id) != net.port_to_place().end())
@@ -399,6 +401,8 @@ namespace
     , id_type& id
     , const options& opts
     , fhg::util::indenter& indent
+    , boost::optional<we::type::activity_t::input_t> input
+    , boost::optional<we::type::activity_t::output_t> output
     )
   {
     std::ostringstream s;
@@ -444,20 +448,52 @@ namespace
                   , t.ports_input()
                   )
     {
+      std::ostringstream token;
+
+      if (opts.show_token && input)
+      {
+        BOOST_FOREACH ( we::type::activity_t::input_t::value_type const& vp
+                      , *input
+                      )
+        {
+          if (vp.second == p.first)
+          {
+            token << endl << pnet::type::value::show (vp.first);
+          }
+        }
+      }
+
       s << fhg::util::deeper (indent)
         << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
         << node ( shape::port_in
                 , with_signature (p.second.name(), p.second.signature(), opts)
+                + quote (token.str())
                 );
     }
     BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
                   , t.ports_output()
                   )
     {
+      std::ostringstream token;
+
+      if (opts.show_token && output)
+      {
+        BOOST_FOREACH ( we::type::activity_t::output_t::value_type const& vp
+                      , *output
+                      )
+        {
+          if (vp.second == p.first)
+          {
+            token << endl << pnet::type::value::show (vp.first);
+          }
+        }
+      }
+
       s << fhg::util::deeper (indent)
         << name (id_trans, "port_" + boost::lexical_cast<std::string> (p.first))
         << node ( shape::port_out
                 , with_signature (p.second.name(), p.second.signature(), opts)
+                + quote (token.str())
                 );
     }
     BOOST_FOREACH ( we::type::transition_t::port_map_t::value_type const& p
@@ -550,7 +586,10 @@ namespace
     os << "digraph \"" << activity.transition().name() << "\" {"
        << "\n" << "compound=true"
        << "\n" << "rankdir=LR"
-       << to_dot (activity.transition(), id, options, indent)
+       << to_dot ( activity.transition(), id, options, indent
+                 , activity.input()
+                 , activity.output()
+                 )
        << "\n" << "} /* " << activity.transition().name() << " */" << "\n";
   }
 }
