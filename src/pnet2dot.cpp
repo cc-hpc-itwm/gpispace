@@ -293,8 +293,6 @@ namespace
       {
         const we::place_id_type& place_id (ip.first);
         const place::type& place (ip.second);
-        const std::string place_dot_name
-          (name (id_net, "place_" + boost::lexical_cast<std::string> (place_id)));
 
         std::ostringstream token;
 
@@ -321,7 +319,9 @@ namespace
         }
 
         s << fhg::util::deeper (_indent)
-          << place_dot_name
+          << name ( id_net
+                  , "place_" + boost::lexical_cast<std::string> (place_id)
+                  )
           << node
              ( shape::place
              , with_signature (place.name(), place.signature(), opts)
