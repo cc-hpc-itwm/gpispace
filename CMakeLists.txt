@@ -15,7 +15,6 @@ set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Cop
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION (WITH_MANPAGES "Build manpages" YES)
-OPTION (ENABLE_FVM_PC "Build the deprecated fvm-pc libraries" ON)
 OPTION (ENABLE_SDPA_GUI "Build the monitor gui" YES)
 OPTION (ENABLE_GPI_SPACE "Build the gpi-space interface" YES)
 OPTION (ENABLE_GPI_FUSE "Build the gpi fuse module" OFF)
@@ -210,9 +209,7 @@ set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
 include (CTest)
 add_subdirectory (fhglog)
-if (ENABLE_FVM_PC)
   add_subdirectory (fvm-pc)
-endif()
 add_subdirectory (util)
 add_subdirectory (fhgkernel)
 add_subdirectory (gspc)
