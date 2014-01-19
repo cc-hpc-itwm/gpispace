@@ -555,7 +555,10 @@ namespace
     os << "digraph \"" << activity.transition().name() << "\" {"
        << "\n" << "compound=true"
        << "\n" << "rankdir=LR"
-       << to_dot (activity.transition(), id, options, indent, boost::none)
+       << to_dot ( activity.transition()
+                 , id, options, indent
+                 , activity.transition().priority()
+                 )
        << "\n" << "} /* " << activity.transition().name() << " */" << "\n";
   }
 }
