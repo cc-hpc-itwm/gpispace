@@ -372,7 +372,7 @@ namespace we { namespace type {
                      == place.property().get ("virtual").get_value_or ("false")
                      )
                     {
-                      virt << endl << property ("virtual");
+                      virt << endl << props ("virtual");
                     }
                 }
 
