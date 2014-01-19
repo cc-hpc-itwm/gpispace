@@ -170,8 +170,7 @@ namespace we { namespace type {
           place = prop.get (prefix + ".place").get_value_or ("ellipse");
         }
 
-        template<typename Port>
-        inline std::string port (const Port& p)
+        inline std::string port (const port_t& p)
         {
           return p.is_input()
             ? port_in
