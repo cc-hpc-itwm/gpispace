@@ -73,16 +73,6 @@ include_directories(${MMGR_INCLUDE_DIR})
 find_package (LibRT REQUIRED QUIET)
 include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
 
-find_package (ZMQ QUIET)
-if (ZMQ_FOUND)
-  include_directories (SYSTEM ${ZMQ_INCLUDE_DIR})
-endif ()
-
-find_package (CZMQ QUIET)
-if (CZMQ_FOUND)
-  include_directories (SYSTEM ${CZMQ_INCLUDE_DIR})
-endif()
-
 add_subdirectory (gpi-space)
 add_subdirectory (bin)
 
