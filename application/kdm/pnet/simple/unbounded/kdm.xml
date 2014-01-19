@@ -1,6 +1,5 @@
 <defun name="kdm_simple">
 
-  <include-properties href="prop/pretty.dot.xml"/>
   <include-structs href="types.xml"/>
 
   <in name="config_file" type="string" place="config_file"/>
