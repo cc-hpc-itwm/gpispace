@@ -37,10 +37,10 @@ BOOST_AUTO_TEST_CASE (process_big)
   scoped_allocation out (count);
 
   for (std::size_t i (0); i < count; ++i)
-    {
-      in[i] = i;
-      out[i] = 0;
-    }
+  {
+    in[i] = i;
+    out[i] = 0;
+  }
 
   {
     const std::size_t ret (process::execute ("cat", in, size, out, size));
@@ -48,9 +48,9 @@ BOOST_AUTO_TEST_CASE (process_big)
     BOOST_REQUIRE_EQUAL (ret, size);
 
     for (std::size_t i (0); i < count; ++i)
-      {
-        BOOST_REQUIRE_EQUAL (in[i], out[i]);
-      }
+    {
+      BOOST_REQUIRE_EQUAL (in[i], out[i]);
+    }
   }
 
   // inplace
@@ -60,8 +60,8 @@ BOOST_AUTO_TEST_CASE (process_big)
     BOOST_REQUIRE_EQUAL (ret, size);
 
     for (std::size_t i (0); i < count; ++i)
-      {
-        BOOST_REQUIRE_EQUAL (in[i], out[i]);
-      }
+    {
+      BOOST_REQUIRE_EQUAL (in[i], out[i]);
+    }
   }
 }
