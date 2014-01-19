@@ -3,7 +3,6 @@
 #include <fhglog/fhglog.hpp>
 
 #include <fvm-pc/pc.hpp>
-#include <fvm-pc/util.hpp>
 
 #include <iostream>
 #include <sstream>
