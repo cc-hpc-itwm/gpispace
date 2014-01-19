@@ -54,8 +54,8 @@ namespace
   typedef unsigned long id_type;
   typedef unsigned long level_type;
 
-  static const std::string endl = "\\n";
-  static const std::string arrow = " -> ";
+  static const std::string endl ("\\n");
+  static const std::string arrow (" -> ");
 
   std::ostream & level (std::ostream & s, const level_type & level)
   {
