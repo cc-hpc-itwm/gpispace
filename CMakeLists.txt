@@ -170,10 +170,6 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../../../lib/")
 
-
-include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/json_spirit)
-
-
 # replacement for find_package (<one of our subprojects>)
 set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util ${CMAKE_BINARY_DIR}/util)
 set (UTIL_LIBRARIES fhg-revision fhg-util)
@@ -234,7 +230,7 @@ set (CPACK_PACKAGE_VERSION_MINOR "${V_MINOR}")
 set (CPACK_PACKAGE_VERSION_PATCH "${V_PATCH}")
 INCLUDE (CPack)
 
-add_subdirectory (playground/ap)
+add_subdirectory (playground/ap/licensing)
 add_subdirectory (playground/bl)
 add_subdirectory (doc)
 add_subdirectory (share)
