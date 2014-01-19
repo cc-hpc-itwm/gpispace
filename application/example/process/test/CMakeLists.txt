@@ -15,6 +15,7 @@ fhg_add_test (test_process_file_input.cpp
 )
 
 fhg_add_test (test_process_file_output.cpp
+  BOOST_UNIT_TEST
   ARGS ${CMAKE_CURRENT_BINARY_DIR}/deinterleave
   LINK_LIBRARIES process
   DEPENDS deinterleave
