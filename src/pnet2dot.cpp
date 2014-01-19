@@ -586,8 +586,6 @@ namespace
 int main (int argc, char** argv)
 try
 {
-  namespace po = boost::program_options;
-
   std::string input;
   std::string output;
 
@@ -598,12 +596,12 @@ try
 
   options options;
 
-  po::options_description desc ("General");
-  po::options_description show ("Show");
-  po::options_description expand ("Expand");
+  boost::program_options::options_description desc ("General");
+  boost::program_options::options_description show ("Show");
+  boost::program_options::options_description expand ("Expand");
 
 #define BOOLVAL(x) \
-  po::value<bool> (&x)->default_value (x)->implicit_value (true)
+  boost::program_options::value<bool> (&x)->default_value (x)->implicit_value (true)
 
   show.add_options()
     ( "full-signatures"
@@ -641,11 +639,11 @@ try
 
   expand.add_options()
     ( "not-starts-with"
-    , po::value<vec_type> (&not_starts_with)
+    , boost::program_options::value<vec_type> (&not_starts_with)
     , "do not expand transitions that start with a certain prefix"
     )
     ( "not-ends-with"
-    , po::value<vec_type> (&not_ends_with)
+    , boost::program_options::value<vec_type> (&not_ends_with)
     , "do not expand transitions that end with a certain suffix"
     );
 
@@ -653,11 +651,11 @@ try
     ( "help,h", "this message")
     ( "version,V", "print version information")
     ( "input,i"
-    , po::value<std::string> (&input)->default_value ("-")
+    , boost::program_options::value<std::string> (&input)->default_value ("-")
     , "input file name, - for stdin, first positional parameter"
     )
     ( "output,o"
-    , po::value<std::string> (&output)->default_value ("-")
+    , boost::program_options::value<std::string> (&output)->default_value ("-")
     , "output file name, - for stdout, second positional parameter"
     );
 
@@ -665,15 +663,16 @@ try
 
 #undef BOOLVAL
 
-  po::positional_options_description p;
+  boost::program_options::positional_options_description p;
   p.add ("input", 1).add ("output", 2);
 
-  po::variables_map vm;
-  po::store ( po::command_line_parser(argc, argv)
-            . options (desc).positional (p).run()
-            , vm
-            );
-  po::notify (vm);
+  boost::program_options::variables_map vm;
+  boost::program_options::store
+    ( boost::program_options::command_line_parser(argc, argv)
+    . options (desc).positional (p).run()
+    , vm
+    );
+  boost::program_options::notify (vm);
 
   if (vm.count ("help"))
   {
