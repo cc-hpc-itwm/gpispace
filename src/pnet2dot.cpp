@@ -11,6 +11,7 @@
 #include <fhg/revision.hpp>
 #include <fhg/util/starts_with.hpp>
 #include <fhg/util/indenter.hpp>
+#include <fhg/util/read_bool.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
@@ -308,14 +309,12 @@ namespace
 
         std::ostringstream virt;
 
-        if (opts.show_virtual)
+        if ( opts.show_virtual
+           && fhg::util::read_bool
+              (place.property().get ("virtual").get_value_or ("false"))
+           )
         {
-          if (  "true"
-             == place.property().get ("virtual").get_value_or ("false")
-             )
-          {
             virt << endl << props ("virtual");
-          }
         }
 
         s << fhg::util::deeper (_indent)
