@@ -567,6 +567,20 @@ namespace
 
     return s.str();
   }
+
+  void to_dot ( std::ostream& os
+              , we::type::activity_t const& activity
+              , options const& options
+              )
+  {
+    id_type id (0);
+
+    os << "digraph \"" << activity.transition().name() << "\" {" << std::endl
+       << "compound=true" << std::endl
+       << "rankdir=LR" << std::endl
+       << to_dot (activity.transition(), id, options, 1, boost::none)
+       << "} /* " << activity.transition().name() << " */" << std::endl;
+  }
 }
 
 int main (int argc, char** argv)
@@ -676,11 +690,6 @@ try
     return EXIT_SUCCESS;
   }
 
-  if (output == "-")
-  {
-    output = "/dev/stdout";
-  }
-
   BOOST_FOREACH (std::string const& p, not_starts_with)
   {
     options.filter.push_back
@@ -704,20 +713,21 @@ try
     : we::type::activity_t (boost::filesystem::path (input))
     );
 
-  std::ofstream ostream (output.c_str());
-
-  if (!ostream)
+  if (output == "-")
   {
-    throw std::runtime_error ("failed to open " + output + " for writing");
+    to_dot (std::cout, act, options);
   }
+  else
+  {
+    std::ofstream ostream (output.c_str());
 
-  id_type id (0);
+    if (!ostream)
+    {
+      throw std::runtime_error ("failed to open " + output + " for writing");
+    }
 
-  ostream << "digraph \"" << act.transition().name() << "\" {" << std::endl
-          << "compound=true" << std::endl
-          << "rankdir=LR" << std::endl
-          << to_dot (act.transition(), id, options, 1, boost::none)
-          << "} /* " << act.transition().name() << " */" << std::endl;
+    to_dot (ostream, act, options);
+  }
 
   return EXIT_SUCCESS;
 }
