@@ -24,6 +24,7 @@ make_gen='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
 cleanup()
 {
   rm -f "${CMP}"
+  rm -f "${RESULT}"
   rm -f "${DAT}"
   rm -f "${HOSTFILE}"
   eval ${make[@]} clean

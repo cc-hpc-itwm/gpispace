@@ -17,6 +17,7 @@ make+=( -C "${DIR_SOURCE}" )
 
 cleanup()
 {
+  rm -f "${RESULT}"
   eval ${make[@]} clean
   cleanup_dir_build
 }
