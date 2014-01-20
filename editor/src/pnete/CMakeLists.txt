@@ -1,5 +1,25 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
+##### FOR MERGE ONLY vvvvvvvvv
+  find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
+  find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
+
+  include_directories ( ${CMAKE_SOURCE_DIR}/sdpa
+                        ${FhgKernel_INCLUDE_DIR}
+                        ${FhgLog_INCLUDE_DIR}
+                        ${CMAKE_SOURCE_DIR}/editor/src
+                        ${CMAKE_SOURCE_DIR}/src
+                        ${CMAKE_SOURCE_DIR}/gspc
+                        ${CMAKE_SOURCE_DIR}/util
+                        ${CMAKE_SOURCE_DIR} # to have sdpa plugins in sdpa/plugins, not plugins/
+                      )
+  include_directories (SYSTEM ${GRAPHVIZ_INCLUDE_DIR})
+
+  set (LIB_PREFIX "fhg_pnete_")
+
+  include(${QT_USE_FILE})
+##### FOR MERGE ONLY ^^^^^^^^^
+
 set (base_sources
   data/change_manager.cpp
   data/internal.cpp

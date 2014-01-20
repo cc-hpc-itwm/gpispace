@@ -22,7 +22,6 @@ if (ENABLE_PNET_EDITOR OR ENABLE_SDPA_GUI)
 
   include(${QT_USE_FILE})
 
-  add_subdirectory (pnete)
   add_subdirectory (util)
 endif()
 

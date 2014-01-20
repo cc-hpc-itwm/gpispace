@@ -211,6 +211,9 @@ if (ENABLE_GPI_FUSE)
   add_subdirectory (gpi-fuse)
 endif (ENABLE_GPI_FUSE)
 add_subdirectory (application)
+##### FOR MERGE ONLY vvvvvvvvv
+add_subdirectory (editor/src/pnete)
+##### FOR MERGE ONLY ^^^^^^^^^
 add_subdirectory (src)
 add_subdirectory (sdpa)
 add_subdirectory(bundle)
