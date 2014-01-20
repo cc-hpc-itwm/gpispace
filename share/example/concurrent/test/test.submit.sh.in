@@ -17,7 +17,6 @@ cleanup()
 {
   sdpa stop
   rm -f "${HOSTFILE}"
-  eval ${make_src} uninstall
   eval ${make_src} clean
   cleanup_dir_build
 }
