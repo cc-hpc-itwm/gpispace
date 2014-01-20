@@ -7,10 +7,12 @@ set_target_properties (process.shared PROPERTIES OUTPUT_NAME process)
 target_link_libraries (process
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_THREAD_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
 )
 target_link_libraries (process.shared
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_THREAD_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
 )
 
 install (FILES process.hpp
