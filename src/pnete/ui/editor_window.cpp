@@ -775,7 +775,7 @@ namespace fhg
                         )
           {
             std::stringstream tmp;
-            tmp << "on " << activity.transition().ports_input().at (top.second).name()
+            tmp << "on " << activity.transition().ports_output().at (top.second).name()
                 << ": " << pnet::type::value::show (top.first);
             QMessageBox msgBox;
             msgBox.setText (QString::fromStdString (tmp.str()));
