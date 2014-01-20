@@ -41,3 +41,10 @@ test 1000 -eq $(cat "${OUT}" | grep call_cnt         \
                              | awk '{print $3}'      \
                              | tr '\n' '+'           \
                              | sed 's/\+$/\n/' | bc)        || die $EX_ERR_RES
+
+rm -f "${CMP}"                                           || die $EX_ERR_CLEANUP
+rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP
+measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

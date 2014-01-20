@@ -44,3 +44,11 @@ test "$(pnetget -i "${RESULT}" -p out)" == "$(echo -e "[]\n[]")"             \
                                                             || die $EX_ERR_RES
 cat "${OUT}" | grep ^\* > "${CMP}"                          || die $EX_ERR_OTHER
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
+
+rm -f "${CMP}"                                           || die $EX_ERR_CLEANUP
+rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP
+measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+measured "clean-module" ${make_mod} clean                || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

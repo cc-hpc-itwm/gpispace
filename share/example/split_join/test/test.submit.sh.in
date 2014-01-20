@@ -43,3 +43,10 @@ test "$(pnetget -i "${OUT}" -p O)" == "$(echo -e "@EXPECTED_OUTPUT@")"       \
                                                             || die $EX_ERR_RES
 
 measured "stop" sdpa stop                                   || die $EX_ERR_STOP
+
+rm -f "${HOSTFILE}"                                      || die $EX_ERR_CLEANUP
+rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP
+measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

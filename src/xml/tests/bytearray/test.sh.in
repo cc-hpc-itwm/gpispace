@@ -29,3 +29,8 @@ test -s "${OUT}"                                             || die $EX_ERR_RUN
 
 res=$(pnetget -i "${OUT}" -p point)                          || die $EX_ERR_ENV
 test "$res" == "Struct [x := 1.00000, y := 2.00000]"         || die $EX_ERR_RES
+
+measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

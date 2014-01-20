@@ -50,3 +50,13 @@ grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
 
 test "$(pnetget -i "${RESULT}" -p avg)" == "0.000193708"    || die $EX_ERR_RES
 test "$(pnetget -i "${RESULT}" -p stddev)" == "0.999908"    || die $EX_ERR_RES
+
+rm -f "${CMP}"                                           || die $EX_ERR_CLEANUP
+rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP
+rm -f "${DAT}"                                           || die $EX_ERR_CLEANUP
+rm -f "${HOSTFILE}"                                      || die $EX_ERR_CLEANUP
+measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+measured "clean-data" ${make_gen} clean                  || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

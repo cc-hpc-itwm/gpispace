@@ -54,3 +54,12 @@ test "$(pnetget -i "${OUT}" -p avg)" == "0.000193708"       || die $EX_ERR_RES
 test "$(pnetget -i "${OUT}" -p stddev)" == "0.999908"       || die $EX_ERR_RES
 
 measured "stop" sdpa stop                                   || die $EX_ERR_STOP
+
+rm -f "${DAT}"                                           || die $EX_ERR_CLEANUP
+rm -f "${HOSTFILE}"                                      || die $EX_ERR_CLEANUP
+measured "uninstall" ${make_src} uninstall               || die $EX_ERR_CLEANUP
+measured "clean" ${make_src} clean                       || die $EX_ERR_CLEANUP
+measured "clean-data" ${make_gen} clean                  || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT
