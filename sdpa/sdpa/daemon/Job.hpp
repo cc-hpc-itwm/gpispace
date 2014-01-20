@@ -97,7 +97,7 @@ namespace sdpa {
         //      Start           Event                                   Next           Action                Guard
         //      +---------------+---------------------------------------+--------------+---------------------+-----
         _row<   Pending,        MSMDispatchJobEvent,                      Running >,
-        _row<   Pending,        events::CancelJobEvent, 		Canceled>,
+        _row<   Pending,        events::CancelJobEvent, 		Canceling>,
         a_row<  Pending,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished >,
         a_row<  Pending,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
         a_irow< Pending,        MSMRescheduleEvent,                                     &sm::action_reschedule_job >,

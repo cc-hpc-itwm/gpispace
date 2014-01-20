@@ -441,41 +441,7 @@ namespace
 
 void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
-  if(hasWorkflowEngine())
-    workflowEngine()->canceled(evt.job_id ());
 
-  sdpa::job_id_t jobId = evt.job_id();
-  Job* pJob(jobManager().findJob(jobId));
-
-  if(pJob)
-  {
-    DLLOG (TRACE, _logger, "Canceling the pending job "<<jobId<<" ... ");
-
-    pJob->CancelJob(&evt);
-    ptr_scheduler_->delete_job (jobId);
-
-    if(!isTop())
-    {
-      on_scope_exit _ ( boost::bind ( &Agent::sendEventToOther
-                                    , this
-                                    , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
-                                                                       , evt.from()
-                                                                       , events::ErrorEvent::SDPA_EUNKNOWN
-                                                                       , "Exception in Agent::cancelPendingJob"
-                                                                       )
-                                                      )
-                                    )
-                      );
-
-      jobManager().deleteJob(jobId);
-
-      _.dont();
-    }
-  }
-  else
-  {
-    DLLOG (WARN, _logger, "The job "<< evt.job_id() << "could not be canceled! Exception occurred: couln't find it!");
-  }
 }
 
 template <typename T>
@@ -517,88 +483,70 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
       }
 
      return;
-   }
+  }
 
-  if(pJob->getStatus() == sdpa::status::CANCELED)
+  if (pEvt->is_external())
   {
-      sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
+      if(pJob->getStatus() == sdpa::status::CANCELING)
+      {
+         sendEventToOther( events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
+                                                             , pEvt->from()
+                                                             , events::ErrorEvent::SDPA_EJOBALREADYCANCELED
+                                                             , "A cancelation request for this job was already posted!" )
+                                                  ));
+         return;
+      }
+
+      if(pJob->completed())
+      {
+
+          sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , pEvt->from()
-                                                          , events::ErrorEvent::SDPA_EJOBALREADYCANCELED
-                                                          , "Job already canceled" )
+                                                          , events::ErrorEvent::SDPA_EJOBTERMINATED
+                                                          , "Cannot cancel an already terminated job, its current status is: "
+                                                             + sdpa::status::show(pJob->getStatus()) )
                                                ));
-      return;
+
+          return;
+      }
+
+      // a Cancel message came from the upper level -> forward cancellation request to WE
+      DLLOG (TRACE, _logger, "Cancel the workflow "<<pEvt->job_id()<<". Current status is: "<<sdpa::status::show(pJob->getStatus()));
+      workflowEngine()->cancel(pEvt->job_id());
+      pJob->CancelJob(pEvt);
+      DLLOG (TRACE, _logger, "The current status of the workflow "<<pEvt->job_id()<<" is: "<<sdpa::status::show(pJob->getStatus()));
   }
-
-  if(pJob->completed())
+  else // the workflow engine issued the cancelation order for this job
   {
-    sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
-                                                        , pEvt->from()
-                                                        , events::ErrorEvent::SDPA_EJOBTERMINATED
-                                                        , "Cannot cancel an already terminated job, its current status is: "
-                                                           + sdpa::status::show(pJob->getStatus()) )
-                                             ));
-    return;
-  }
-
-
-  if( isTop() )
-  {
-    // send immediately an acknowledgment to the component that requested the cancellation
-    events::CancelJobAckEvent::Ptr pCancelAckEvt(new events::CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
-    sendEventToOther(pCancelAckEvt);
-    if(!isSubscriber(pEvt->from()))
-      sendEventToOther(pCancelAckEvt);
-
-    notifySubscribers(pCancelAckEvt);
-  }
-
-  if(!pEvt->is_external() || !hasWorkflowEngine())
-  {
-    on_scope_exit _ ( boost::bind ( &Agent::sendEventToOther
-                                  , this
-                                  , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
-                                                                     , pEvt->from()
-                                                                     , events::ErrorEvent::SDPA_EUNKNOWN
-                                                                     , "Exception in Agent::handleCancelJobEvent"
-                                                                     )
-                                                    )
-                                  )
-                    );
-    if (isTop()) _.dont();
-
     boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
+
+    events::CancelJobEvent::Ptr pCancelEvt( new events::CancelJobEvent( name()
+                                                                       , worker_id.get_value_or("")
+                                                                       , pEvt->job_id() ) );
+    // change the job status to "Canceling"
+    pJob->CancelJob(pEvt);
+    DLLOG (TRACE, _logger, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
 
     if(worker_id)
     {
       DLLOG (TRACE, _logger, "Tell the worker "<<*worker_id<<" to cancel the job "<<pEvt->job_id());
-      events::CancelJobEvent::Ptr pCancelEvt( new events::CancelJobEvent( name()
-                                                          , *worker_id
-                                                          , pEvt->job_id() ) );
       sendEventToOther(pCancelEvt);
-
-      // change the job status to "Canceling"
-      pJob->CancelJob(pEvt);
-      DLLOG (TRACE, _logger, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
     }
     else
     {
-      // possible situations:
-      // 1) the job wasn't yet assigned to any worker
-      // 1) is in the pending queue of a certain worker
-      // 1) the job was submitted to an worker but was not yet acknowledged
-      cancelPendingJob(*pEvt);
-    }
+        workflowEngine()->canceled(pEvt->job_id());
 
-    _.dont();
+        DLLOG (TRACE, _logger, "Canceling the pending job "<<pEvt->job_id()<<" ... ");
+
+        // reply with an ack here
+        events::CancelJobAckEvent evtCancelAck(name(), pEvt->from(), pEvt->job_id());
+        pJob->CancelJobAck(&evtCancelAck);
+        ptr_scheduler_->delete_job (pEvt->job_id());
+
+        jobManager().deleteJob(pEvt->job_id());
+    }
   }
-  else // a Cancel message came from the upper level -> forward cancellation request to WE
-  {
-    we::layer::id_type workflowId = pEvt->job_id();
-    DLLOG (TRACE, _logger, "Cancel the workflow "<<workflowId<<". Current status is: "<<sdpa::status::show(pJob->getStatus()));
-    workflowEngine()->cancel(workflowId);
-    pJob->CancelJob(pEvt);
-    DLLOG (TRACE, _logger, "The current status of the workflow "<<workflowId<<" is: "<<sdpa::status::show(pJob->getStatus()));
-  }
+
 }
 
 void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
