@@ -13,7 +13,7 @@ OUT="${DIR_BUILD}/${MAIN}.out"
 HOSTFILE="${DIR_BUILD}/hostfile"
 
 make+=( make -f "${SDPA_HOME}/share/sdpa/make/common.mk")
-make+=( MAIN="${MAIN} )
+make+=( MAIN="${MAIN}" )
 make+=( CXXLIBRARYPATHS="${SDPA_HOME}/lib" )
 make+=( PUT_PORT=trigger=[])
 make+=( BUILDDIR="${DIR_BUILD}" )
