@@ -85,6 +85,7 @@ add_library (pnet
   we/type/value/poke.cpp
   we/type/value/positions.cpp
   we/type/value/read.cpp
+  we/type/value/remove.cpp
   we/type/value/show.cpp
   we/type/value/dump.cpp
 
