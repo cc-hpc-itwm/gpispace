@@ -38,4 +38,4 @@ measured "submit" ${make_src} submit                        || die $EX_ERR_RUN
 
 test "$(pnetget -i "${OUT}" -p done)" == "[]"               || die $EX_ERR_RES
 
-sdpa stop                                                   || die $EX_ERR_STOP
+measured "stop" sdpa stop                                   || die $EX_ERR_STOP

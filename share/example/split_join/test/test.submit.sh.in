@@ -41,4 +41,4 @@ measured "submit" ${make[@]} submit                         || die $EX_ERR_RUN
 test "$(pnetget -i "${OUT}" -p O)" == "$(echo -e "@EXPECTED_OUTPUT@")"       \
                                                             || die $EX_ERR_RES
 
-sdpa stop                                                   || die $EX_ERR_STOP
+measured "stop" sdpa stop                                   || die $EX_ERR_STOP

@@ -40,4 +40,4 @@ expected="Struct [in := 196347269L, total := 250000000L]"
 
 test "$(pnetget -i "${OUT}" -p ratio)" == "${expected}"     || die $EX_ERR_RES
 
-sdpa stop                                                   || die $EX_ERR_STOP
+measured "stop" sdpa stop                                   || die $EX_ERR_STOP

@@ -47,4 +47,4 @@ expected="List (\"worker-$(hostname)-1\")"
 
 test "$(pnetget -i "${OUT}" -p workers)" == "${expected}"   || die $EX_ERR_RES
 
-sdpa stop                                                   || die $EX_ERR_STOP
+measured "stop" sdpa stop                                   || die $EX_ERR_STOP
