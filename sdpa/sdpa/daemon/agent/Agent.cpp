@@ -112,12 +112,12 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
       // update the status of the reservation
       scheduler()->workerFinished(worker_id, actId);
 
-      bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
+      bool bAllPartResCollected(scheduler()->allPartialResultsCollected(actId));
 
       // if all the partial results were collected, notify the workflow engine
       // about the status of the job (either finished, or failed
       // the group is finished when all the partial results are "finished"
-      if(bTaskGroupComputed)
+      if(bAllPartResCollected)
       {
           if(pJob->is_canceling())
           {
@@ -154,7 +154,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
       try {
           DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
           // if all partial results were collected, release the reservation
-          if(bTaskGroupComputed) {
+          if(bAllPartResCollected) {
              scheduler()->releaseReservation(pJob->id());
           }
           scheduler()->deleteWorkerJob( worker_id, pJob->id() );
@@ -171,7 +171,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 
       try {
         //delete it also from job_map_
-        if(bTaskGroupComputed) {
+        if(bAllPartResCollected) {
             DLLOG (TRACE, _logger, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
            jobManager().deleteJob(pEvt->job_id());
         }
@@ -315,9 +315,9 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
       // update the status of the reservation
 
       scheduler()->workerFailed(worker_id, actId);
-      bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
+      bool bAllPartResCollected(scheduler()->allPartialResultsCollected(actId));
 
-      if(bTaskGroupComputed) {
+      if(bAllPartResCollected) {
 
           if(pJob->is_canceling())
           {
@@ -343,7 +343,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
       try {
         DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
         // if all the partial results were collected, release the reservation
-        if(bTaskGroupComputed) {
+        if(bAllPartResCollected) {
            scheduler()->releaseReservation(pJob->id());
         }
         scheduler()->deleteWorkerJob( worker_id, pJob->id() );
@@ -361,7 +361,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
       try {
         //delete it also from job_map_
         DLLOG (TRACE, _logger, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-        if(bTaskGroupComputed) {
+        if(bAllPartResCollected) {
             jobManager().deleteJob(pEvt->job_id());
         }
       }
