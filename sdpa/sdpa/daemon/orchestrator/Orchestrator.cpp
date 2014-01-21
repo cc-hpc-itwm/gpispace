@@ -22,7 +22,6 @@
 #include <sdpa/job_states.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
-#include <we/type/value.hpp>
 #include <we/type/value/poke.hpp>
 
 
