@@ -10,7 +10,6 @@ macro(FHG_ADD_TEST)
   CAR(TEST_SOURCE ${TEST_DEFAULT_ARGS})
   CDR(TEST_ADDITIONAL_SOURCES ${TEST_DEFAULT_ARGS})
 
-  if (BUILD_TESTING)
     if (TEST_BOOST_UNIT_TEST)
       set (TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} ${Boost_TEST_EXEC_MONITOR_LIBRARY})
       set (TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
@@ -45,24 +44,26 @@ macro(FHG_ADD_TEST)
     foreach (d ${TEST_DEPENDS})
       add_dependencies(${tc_name} ${d})
     endforeach()
-  endif()
 endmacro()
 
 macro (fhg_add_application_test)
-  parse_arguments (TEST "SCRIPT;RESOURCE_LOCK" "" ${ARGN})
+  parse_arguments (TEST "SCRIPT;SCRIPT_OUT;RESOURCE_LOCK" "" ${ARGN})
 
   car (TEST_NAME ${TEST_DEFAULT_ARGS})
 
-  if (BUILD_TESTING)
+  if (TEST_SCRIPT_OUT)
+    set (SCRIPT_OUT ${TEST_SCRIPT_OUT})
+  else()
+    set (SCRIPT_OUT ${CMAKE_CURRENT_BINARY_DIR}/${TEST_SCRIPT}.sh)
+  endif()
+
     configure_file (
       ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_SCRIPT}.sh.in
-      ${CMAKE_CURRENT_BINARY_DIR}/${TEST_SCRIPT}.sh
+      ${SCRIPT_OUT}
       @ONLY
     )
 
-    add_test (NAME ${TEST_NAME}
-              COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/${TEST_SCRIPT}.sh
-    )
+    add_test (NAME ${TEST_NAME} COMMAND bash ${SCRIPT_OUT})
 
     set (REQUIRED_FILES
       ${CMAKE_BINARY_DIR}/test/die.sh
@@ -82,5 +83,4 @@ macro (fhg_add_application_test)
         PROPERTIES RESOURCE_LOCK ${TEST_RESOURCE_LOCK}
         )
     endif()
-  endif()
 endmacro()

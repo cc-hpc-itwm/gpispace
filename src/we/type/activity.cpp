@@ -15,6 +15,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <sstream>
@@ -41,16 +42,18 @@ namespace we
         void decode (std::istream& s, activity_t& t)
         {
           try
-            {
-              boost::archive::text_iarchive ar (s);
+          {
+            boost::archive::text_iarchive ar (s);
 
-              ar >> BOOST_SERIALIZATION_NVP (t);
-            }
+            ar >> BOOST_SERIALIZATION_NVP (t);
+          }
           catch (std::exception const &ex)
-            {
-              throw std::runtime_error
-                (std::string ("deserialization error: ") + ex.what ());
-            }
+          {
+            throw std::runtime_error
+              ( ( boost::format ("deserialization error: '%1%'") % ex.what()
+                ).str()
+              );
+          }
         }
       }
 
@@ -59,10 +62,10 @@ namespace we
         std::ifstream stream (path.string().c_str());
 
         if (!stream)
-          {
-            throw std::runtime_error
-              ("failed to open " + path.string() + "for reading");
-          }
+        {
+          throw std::runtime_error
+            ((boost::format ("could not open '%1%' for reading") % path).str());
+        }
 
         decode (stream, *this);
       }
@@ -87,82 +90,19 @@ namespace we
         return oss.str();
       }
 
-      namespace
+      void activity_t::inject (const activity_t& child)
       {
-        class visitor_activity_injector : public boost::static_visitor<>
+        we::type::net_type& net
+          (boost::get<we::type::net_type&> (_transition.data()));
+
+        BOOST_FOREACH (const activity_t::token_on_port_t& top, child.output())
         {
-        private:
-          const activity_t& _child;
-
-        public:
-          visitor_activity_injector (const activity_t& child)
-            : _child (child)
-          {}
-
-          void operator() (we::type::net_type& parent) const
-          {
-            BOOST_FOREACH ( const activity_t::token_on_port_t& top
-                          , _child.output()
-                          )
-              {
-                parent.put_value
-                  ( parent.port_to_place().at (*_child.transition_id())
-                  .left.find (top.second)->get_right()
-                  , top.first
-                  );
-              }
-          }
-
-          template <typename A>
-          void operator() (A&) const
-          {
-            throw std::runtime_error ("STRANGE: activity_injector");
-          }
-        };
-      }
-
-      void activity_t::inject (const activity_t& subact)
-      {
-        boost::apply_visitor ( visitor_activity_injector (subact)
-                             , _transition.data()
-                             );
-      }
-
-      namespace
-      {
-        class visitor_add_input : public boost::static_visitor<>
-        {
-        private:
-          we::type::transition_t const& _transition;
-          we::port_id_type const& _port_id;
-          pnet::type::value::value_type const& _value;
-
-        public:
-          visitor_add_input
-            ( we::type::transition_t const& transition
-            , we::port_id_type const& port_id
-            , pnet::type::value::value_type const& value
-            )
-            : _transition (transition)
-            , _port_id (port_id)
-            , _value (value)
-          {}
-
-          void operator() (we::type::net_type& net) const
-          {
-            if (_transition.ports().at (_port_id).associated_place())
-            {
-              net.put_value
-                ( *_transition.ports().at (_port_id).associated_place()
-                , _value
-                );
-            }
-          }
-
-          template<typename T>
-          void operator() (T&) const
-          {}
-        };
+          net.put_value
+            ( net.port_to_place().at (*child.transition_id())
+            .left.find (top.second)->get_right()
+            , top.first
+            );
+        }
       }
 
       void activity_t::add_input
@@ -170,11 +110,21 @@ namespace we
         , pnet::type::value::value_type const& value
         )
       {
-        boost::apply_visitor ( visitor_add_input (_transition, port_id, value)
-                             , _transition.data()
-                             );
-
-        _input.push_back (input_t::value_type (value, port_id));
+        if (_transition.net())
+        {
+          //! \todo is the conditional neccessary? isn't is ensured already?
+          if (_transition.ports_input().at (port_id).associated_place())
+          {
+            boost::get<we::type::net_type&>(_transition.data()).put_value
+              ( *_transition.ports_input().at (port_id).associated_place()
+              , value
+              );
+          }
+        }
+        else
+        {
+          _input.push_back (input_t::value_type (value, port_id));
+        }
       }
 
       const we::type::transition_t& activity_t::transition() const
@@ -229,7 +179,7 @@ namespace we
                 )
               {
                 context.bind_ref
-                  ( _activity.transition().ports().at (top->second).name()
+                  ( _activity.transition().ports_input().at (top->second).name()
                   , top->first
                   );
               }
@@ -238,13 +188,10 @@ namespace we
 
             BOOST_FOREACH
               ( we::type::transition_t::port_map_t::value_type const& p
-              , _activity.transition().ports()
+              , _activity.transition().ports_output()
               )
             {
-              if (p.second.is_output())
-              {
                 _activity.add_output (p.first, context.value (p.second.name()));
-              }
             }
 
             return _ctxt->handle_internally (_activity, expr);
@@ -271,13 +218,9 @@ namespace we
 
           BOOST_FOREACH
             ( we::type::transition_t::port_map_t::value_type const& p
-            , _transition.ports()
+            , _transition.ports_output()
             )
           {
-            if (p.second.is_output())
-            {
-              if (p.second.associated_place())
-              {
                 const we::port_id_type& port_id (p.first);
                 const we::place_id_type& pid
                   (*p.second.associated_place());
@@ -288,17 +231,6 @@ namespace we
                 {
                   output.push_back (std::make_pair (token, port_id));
                 }
-              }
-              else
-              {
-                throw std::runtime_error
-                  ( "output port ("
-                  + boost::lexical_cast<std::string> (p.first)
-                  + ", " + p.second.name() + ") "
-                  + "is not associated with any place!"
-                  );
-              }
-            }
           }
 
           return output;

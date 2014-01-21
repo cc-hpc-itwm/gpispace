@@ -1,1 +1,0 @@
-nre-pcc -f init.init -i config_file="/scratch/petry/sdpa/depth_remig3D.in" -o number_of_frequencies -o number_of_depthlevels -o number_of_parallel_propagators -o memhandle_for_temp_outputvolume_update -o memhandle_for_temp_outputvolume_calc -o memhandle_for_configuration -o seq

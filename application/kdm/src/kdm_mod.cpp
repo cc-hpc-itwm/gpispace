@@ -2,7 +2,6 @@
 
 #include <fhglog/fhglog.hpp>
 #include <fvm-pc/pc.hpp>
-#include <fvm-pc/util.hpp>
 
 #include <we/type/value/show.hpp>
 #include <we/type/value/peek.hpp>

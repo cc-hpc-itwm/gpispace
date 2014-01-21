@@ -15,10 +15,7 @@ set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Cop
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
 OPTION (WITH_MANPAGES "Build manpages" YES)
-OPTION (ENABLE_APPLICATION "Build with application" YES)
-OPTION (ENABLE_FVM_PC "Build the deprecated fvm-pc libraries" ON)
 OPTION (ENABLE_SDPA_GUI "Build the monitor gui" YES)
-OPTION (ENABLE_GPI_SPACE "Build the gpi-space interface" YES)
 OPTION (ENABLE_GPI_FUSE "Build the gpi fuse module" OFF)
 OPTION (ENABLE_PNET_EDITOR "Build the pnet editor" YES)
 OPTION (INSTALL_AS_BUNDLE "Install as a bundle" NO)
@@ -86,8 +83,6 @@ endif()
 set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/etc/modules/soft/sdpa/sdpa.in
-                ${CMAKE_CURRENT_BINARY_DIR}/etc/modules/soft/sdpa/${PROJECT_VERSION} @ONLY)
 
 cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
@@ -96,7 +91,6 @@ set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$EN
 
 include (fhg_test_macros)
 
-include (CheckCompiler)
 include (CompilerFlags)
 
 if (NOT DEBUG_FHGLOG)
@@ -174,10 +168,6 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_INSTALL_RPATH "\$ORIGIN/:\$ORIGIN/../lib/:\$ORIGIN/../../../lib/")
 
-
-include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/json_spirit)
-
-
 # replacement for find_package (<one of our subprojects>)
 set (UTIL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/util ${CMAKE_BINARY_DIR}/util)
 set (UTIL_LIBRARIES fhg-revision fhg-util)
@@ -211,22 +201,16 @@ set (SDPA_APPS_DIR "libexec/sdpa/apps")
 
 include (CTest)
 add_subdirectory (fhglog)
-if (ENABLE_FVM_PC)
   add_subdirectory (fvm-pc)
-endif()
 add_subdirectory (util)
 add_subdirectory (fhgkernel)
 add_subdirectory (gspc)
 add_subdirectory (fhgcom)
-if (ENABLE_GPI_SPACE)
   add_subdirectory (gpi-space)
-endif (ENABLE_GPI_SPACE)
 if (ENABLE_GPI_FUSE)
   add_subdirectory (gpi-fuse)
 endif (ENABLE_GPI_FUSE)
-if (ENABLE_APPLICATION)
-  add_subdirectory (application)
-endif (ENABLE_APPLICATION)
+add_subdirectory (application)
 add_subdirectory (src)
 add_subdirectory (sdpa)
 add_subdirectory(bundle)
@@ -244,7 +228,9 @@ set (CPACK_PACKAGE_VERSION_MINOR "${V_MINOR}")
 set (CPACK_PACKAGE_VERSION_PATCH "${V_PATCH}")
 INCLUDE (CPack)
 
-add_subdirectory (playground/ap)
+add_subdirectory (playground/ap/licensing)
 add_subdirectory (playground/bl)
 add_subdirectory (doc)
 add_subdirectory (share)
+
+add_subdirectory (BROKEN/application/cc)

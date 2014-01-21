@@ -81,7 +81,7 @@ int main (int, char **)
         "${pair.bid}   := ${store.bid}                         ;"
         "${pair.vid}   := ${vid}                               "
       )
-    , condition::type ("!bitset_is_element (${store.seen}, ${vid})")
+    , we::type::expression_t ("!bitset_is_element (${store.seen}, ${vid})")
     , true
     , we::type::property::type()
     , we::priority_type()
@@ -155,7 +155,7 @@ int main (int, char **)
   // ************************************ //
 
   transition_t tnet ("tnet", net
-                    , condition::type ("true")
+                    , boost::none
                     , true, we::type::property::type()
                     , we::priority_type()
                     );

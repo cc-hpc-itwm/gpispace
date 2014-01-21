@@ -56,6 +56,7 @@ namespace we
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
 
+        // allowed for net_type only
         void inject (const activity_t&);
 
         void execute (context*);

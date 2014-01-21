@@ -24,12 +24,6 @@ fhg_add_test (exception.cpp
   LINK_LIBRARIES pnet
 )
 
-fhg_add_test (expr_type_calculate.cpp
-  BOOST_UNIT_TEST
-  PROJECT we
-  LINK_LIBRARIES pnet
-)
-
 fhg_add_test (expr_parser.cpp
   BOOST_UNIT_TEST
   PROJECT we
@@ -52,3 +46,5 @@ fhg_add_test (execute_activity.cpp
   PROJECT we
   LINK_LIBRARIES pnet
 )
+
+add_subdirectory (transition_cannot_fire_when_input_port_is_not_connected)

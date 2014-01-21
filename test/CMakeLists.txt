@@ -1,4 +1,3 @@
-if (BUILD_TESTING)
   find_package (HWLOC REQUIRED QUIET)
 
   set (prefixes
@@ -13,4 +12,3 @@ if (BUILD_TESTING)
   foreach (prefix ${prefixes})
     configure_file (${prefix}.sh.in ${prefix}.sh @ONLY)
   endforeach()
-endif()

@@ -321,7 +321,7 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   we::type::transition_t transition
     ( "expression"
     , we::type::expression_t ("${out} := ${in} + 1L")
-    , condition::type ("true")
+    , boost::none
     , true
     , we::type::property::type()
     , we::priority_type()
@@ -366,7 +366,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   we::type::transition_t transition
     ( "module call"
     , we::type::module_call_t ("m", "f")
-    , condition::type ("true")
+    , boost::none
     , true
     , we::type::property::type()
     , we::priority_type()
@@ -427,7 +427,7 @@ namespace
     we::type::transition_t transition
       ( "module call"
       , we::type::module_call_t ("m", "f")
-      , condition::type ("true")
+      , boost::none
       , true
       , we::type::property::type()
       , we::priority_type()
@@ -476,7 +476,7 @@ namespace
     return boost::make_tuple
       ( we::type::transition_t ( "net"
                                , net
-                               , condition::type ("true")
+                               , boost::none
                                , true
                                , we::type::property::type()
                                , we::priority_type()

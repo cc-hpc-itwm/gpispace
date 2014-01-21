@@ -32,7 +32,7 @@ namespace we
 
       BOOST_FOREACH (const token_on_port_type& token_on_port, act.input())
       {
-        in.bind_ref ( act.transition().ports().at (token_on_port.second).name()
+        in.bind_ref ( act.transition().ports_input().at (token_on_port.second).name()
                     , token_on_port.first
                     );
       }
@@ -41,16 +41,13 @@ namespace we
         (module_call.function(), context, in, out);
 
       BOOST_FOREACH ( const port_by_id_type& port_by_id
-                    , act.transition().ports()
+                    , act.transition().ports_output()
                     )
         {
           const we::port_id_type& port_id (port_by_id.first);
           const we::type::port_t& port (port_by_id.second);
 
-          if (port.is_output())
-          {
             act.add_output (port_id, out.value (port.name()));
-          }
         }
     }
   }

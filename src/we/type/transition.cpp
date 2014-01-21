@@ -28,7 +28,7 @@ namespace we
       return fhg::util::boost::get_or_none<const module_call_t&> (data());
     }
 
-    const condition::type& transition_t::condition() const
+    boost::optional<expression_t> const& transition_t::condition() const
     {
       return condition_;
     }
@@ -61,7 +61,29 @@ namespace we
     {
       we::port_id_type const port_id (port_id_counter_++);
 
-      ports_.insert (std::make_pair (port_id, port));
+      switch (port.direction())
+      {
+      case PORT_IN:
+        _ports_input.insert (std::make_pair (port_id, port));
+        break;
+
+      case PORT_OUT:
+        if (net() && !port.associated_place())
+        {
+          throw std::runtime_error
+            ( ( boost::format ("Error when adding output port '%1%' to net '%2%':"
+                              " Not associated with any place"
+                              ) % port.name() % name()
+              ).str()
+            );
+        }
+        _ports_output.insert (std::make_pair (port_id, port));
+        break;
+
+      case PORT_TUNNEL:
+        _ports_tunnel.insert (std::make_pair (port_id, port));
+        break;
+      }
 
       return port_id;
     }
@@ -69,9 +91,9 @@ namespace we
     we::port_id_type transition_t::input_port_by_name
       (const std::string& port_name) const
     {
-      BOOST_FOREACH (port_map_t::value_type const& p, ports_)
+      BOOST_FOREACH (port_map_t::value_type const& p, _ports_input)
       {
-        if ((p.second.is_input()) && p.second.name() == port_name)
+        if (p.second.name() == port_name)
         {
           return p.first;
         }
@@ -82,9 +104,9 @@ namespace we
     const we::port_id_type& transition_t::output_port_by_name
       (const std::string& port_name) const
     {
-      BOOST_FOREACH (port_map_t::value_type const& p, ports_)
+      BOOST_FOREACH (port_map_t::value_type const& p, _ports_output)
       {
-        if ((p.second.is_output()) && p.second.name() == port_name)
+        if (p.second.name() == port_name)
         {
           return p.first;
         }
@@ -97,9 +119,17 @@ namespace we
       return prop_;
     }
 
-    const transition_t::port_map_t& transition_t::ports() const
+    const transition_t::port_map_t& transition_t::ports_input() const
     {
-      return ports_;
+      return _ports_input;
+    }
+    const transition_t::port_map_t& transition_t::ports_output() const
+    {
+      return _ports_output;
+    }
+    const transition_t::port_map_t& transition_t::ports_tunnel() const
+    {
+      return _ports_tunnel;
     }
 
     void transition_t::add_requirement (we::type::requirement_t const& r)

@@ -65,7 +65,7 @@ namespace module
       const pnet::type::value::value_type& token (top->first);
       const we::port_id_type& port_id (top->second);
 
-      context.bind ( act.transition().ports().at (port_id).name()
+      context.bind ( act.transition().ports_input().at (port_id).name()
                    , token
                    );
     }

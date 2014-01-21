@@ -2,7 +2,6 @@
 
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
-#include <we/type/condition.hpp>
 
 #include <we/require_type.hpp>
 
@@ -504,7 +503,7 @@ namespace we
                         , pnet::type::value::value_type const& value
                         )
         {
-          _context.bind_ref (_transition.ports().at (port_id).name(), value);
+          _context.bind_ref (_transition.ports_input().at (port_id).name(), value);
         }
 
       private:
@@ -528,18 +527,15 @@ namespace we
 
       BOOST_FOREACH
         ( we::type::transition_t::port_map_t::value_type const& p
-        , transition.ports()
+        , transition.ports_output()
         )
       {
-        if (p.second.is_output())
-        {
           pending_updates.push_back
             ( do_put_value
               ( _port_to_place.at (tid).left.find (p.first)->get_right()
               , context.value (p.second.name())
               )
             );
-        }
       }
 
       do_delete (tokens_to_be_deleted);
@@ -619,8 +615,12 @@ namespace we
       we::type::transition_t const& transition
         (n->transitions().at (transition_id));
 
-      //! \todo use is_const_true and boost::optional...
-      if (transition.condition().expression() == "true")
+      if (_m.size() < transition.ports_input().size())
+      {
+        return false;
+      }
+
+      if (!transition.condition())
       {
         return true;
       }
@@ -634,13 +634,13 @@ namespace we
         BOOST_FOREACH (const pits_type& pits, _m)
         {
           context.bind_ref
-            ( transition.ports()
+            ( transition.ports_input()
             .at (n->place_to_port().at (transition_id).left.find (pits.first)->get_right()).name()
             , *pits.second.pos_and_distance().first
             );
         }
 
-        if (transition.condition().parser().eval_all_bool (context))
+        if (transition.condition()->ast().eval_all_bool (context))
         {
           return true;
         }

@@ -1,3 +1,0 @@
-<defun name="exec_selftest">
-  <module name="exec" function="selftest"/>
-</defun>
