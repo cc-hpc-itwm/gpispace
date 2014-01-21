@@ -13,7 +13,6 @@ class LogcPluginImpl;
 
 namespace
 {
-  LogcPluginImpl *global_logc = 0;
   fhg::log::Appender::ptr_t GLOBAL_logc_destination;
 }
 
@@ -40,13 +39,11 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
-    global_logc = this;
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
-    global_logc = NULL;
     GLOBAL_logc_destination.reset();
 
     FHG_PLUGIN_STOPPED();
@@ -59,7 +56,7 @@ void fhg_emit_log_message ( const char *filename
                           , const char * msg
                           )
 {
-  if (global_logc)
+  if (GLOBAL_logc_destination)
   {
     GLOBAL_logc_destination->append(fhg::log::LogEvent ( fhg::log::INFO
                                              , filename
