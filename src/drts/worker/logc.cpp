@@ -11,7 +11,10 @@
 
 class LogcPluginImpl;
 
-static LogcPluginImpl *global_logc = 0;
+namespace
+{
+  LogcPluginImpl *global_logc = 0;
+}
 
 class LogcPluginImpl : FHG_PLUGIN
 {
@@ -19,6 +22,10 @@ public:
   LogcPluginImpl ()
   {
     global_logc = this;
+  }
+  ~LogcPluginImpl()
+  {
+    global_logc = NULL;
   }
 
   FHG_PLUGIN_START()
