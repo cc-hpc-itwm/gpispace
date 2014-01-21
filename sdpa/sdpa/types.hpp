@@ -48,29 +48,29 @@ namespace sdpa {
     void incConsecRegAttempts() { nConsecRegAttempts_++;}
     void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
 
-	private:
-		std::string name_;
-		bool registered_;
-		unsigned int nConsecNetFailCnt_;
-		unsigned int nConsecRegAttempts_;
-	};
+  private:
+    std::string name_;
+    bool registered_;
+    unsigned int nConsecNetFailCnt_;
+    unsigned int nConsecRegAttempts_;
+  };
 
-    typedef std::vector<MasterInfo> master_info_list_t;
+  typedef std::vector<MasterInfo> master_info_list_t;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const sdpa::worker_id_list_t& worker_list)
+{
+  os<<"(";
+  for(sdpa::worker_id_list_t::const_iterator it=worker_list.begin(); it!=worker_list.end(); it++)
+  {
+      os<<*it;
+      if( boost::next(it) != worker_list.end() )
+        os<<",";
+      else
+        os<<")";
   }
 
-   inline std::ostream& operator<<(std::ostream& os, const sdpa::worker_id_list_t& worker_list)
-   {
-     os<<"(";
-     for(sdpa::worker_id_list_t::const_iterator it=worker_list.begin(); it!=worker_list.end(); it++)
-     {
-       os<<*it;
-       if( boost::next(it) != worker_list.end() )
-               os<<",";
-       else
-               os<<")";
-     }
-
-     return os;
-   }
+ return os;
+}
 
 #endif
