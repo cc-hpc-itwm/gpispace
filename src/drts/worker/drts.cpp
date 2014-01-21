@@ -616,6 +616,9 @@ private:
   boost::thread m_worker;
 };
 
+void drts_on_cancel_clear();
+int drts_on_cancel();
+
 class DRTSImpl : FHG_PLUGIN
                , public sdpa::events::EventHandler
 {

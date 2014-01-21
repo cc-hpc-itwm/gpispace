@@ -11,8 +11,6 @@ extern "C" {
 #endif
   typedef void (*DrtsCancelHandler)(void*);
   extern int drts_on_cancel_add (DrtsCancelHandler, void*);
-  extern void drts_on_cancel_clear ();
-  extern int drts_on_cancel ();
 #ifdef __cplusplus
 }
 #endif
