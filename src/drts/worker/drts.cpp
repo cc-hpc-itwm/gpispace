@@ -616,8 +616,54 @@ private:
   boost::thread m_worker;
 };
 
-void drts_on_cancel_clear();
-int drts_on_cancel();
+namespace
+{
+  typedef std::pair<DrtsCancelHandler, void*> handler_t;
+  typedef std::list<handler_t> handler_list_t;
+
+  handler_list_t s_handler_list;
+  boost::mutex s_handler_list_mtx;
+}
+
+int drts_on_cancel_add (DrtsCancelHandler h, void *data)
+{
+  boost::mutex::scoped_lock const _ (s_handler_list_mtx);
+  s_handler_list.push_back (std::make_pair (h, data));
+  return 0;
+}
+
+void drts_on_cancel_clear ()
+{
+  boost::mutex::scoped_lock const _ (s_handler_list_mtx);
+  s_handler_list.clear ();
+}
+
+int drts_on_cancel ()
+{
+  int ec = 0;
+
+  handler_list_t to_call;
+  {
+    boost::mutex::scoped_lock const _ (s_handler_list_mtx);
+    to_call.swap (s_handler_list);
+  }
+
+  while (not to_call.empty ())
+  {
+    handler_t handler = to_call.back ();
+    to_call.pop_back ();
+    try
+    {
+      handler.first (handler.second);
+    }
+    catch (...)
+    {
+      ec = -1;
+    }
+  }
+
+  return ec;
+}
 
 class DRTSImpl : FHG_PLUGIN
                , public sdpa::events::EventHandler
@@ -1836,55 +1882,6 @@ private:
 
   gspc::net::server_ptr_t m_server;
 };
-
-typedef std::pair<DrtsCancelHandler, void*> handler_t;
-typedef std::list<handler_t> handler_list_t;
-
-namespace
-{
-  handler_list_t s_handler_list;
-  boost::mutex s_handler_list_mtx;
-}
-
-int drts_on_cancel_add (DrtsCancelHandler h, void *data)
-{
-  boost::mutex::scoped_lock const _ (s_handler_list_mtx);
-  s_handler_list.push_back (std::make_pair (h, data));
-  return 0;
-}
-
-void drts_on_cancel_clear ()
-{
-  boost::mutex::scoped_lock const _ (s_handler_list_mtx);
-  s_handler_list.clear ();
-}
-
-int drts_on_cancel ()
-{
-  int ec = 0;
-
-  handler_list_t to_call;
-  {
-    boost::mutex::scoped_lock const _ (s_handler_list_mtx);
-    to_call.swap (s_handler_list);
-  }
-
-  while (not to_call.empty ())
-  {
-    handler_t handler = to_call.back ();
-    to_call.pop_back ();
-    try
-    {
-      handler.first (handler.second);
-    }
-    catch (...)
-    {
-      ec = -1;
-    }
-  }
-
-  return ec;
-}
 
 EXPORT_FHG_PLUGIN( drts
                  , DRTSImpl
