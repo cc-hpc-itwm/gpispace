@@ -15,7 +15,6 @@ static const int n_discover_ops(3);
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 {
-  using pnet::type::value::value_type;
   using pnet::type::value::peek;
   using pnet::type::value::show;
 
@@ -27,10 +26,10 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 
   sdpa::client::Client client (orchestrator.name());
 
-  value_type disc_res(client.discoverJobStates("disc_id_0", "inexistent_job_id"));
+  sdpa::discovery_info_t disc_res(client.discoverJobStates("disc_id_0", "inexistent_job_id"));
 
-  std::set<value_type> set_res(boost::get<std::set<value_type> >(disc_res));
-  BOOST_FOREACH(const value_type& v, set_res)
+  std::set<sdpa::discovery_info_t> set_res(boost::get<std::set<sdpa::discovery_info_t> >(disc_res));
+  BOOST_FOREACH(const sdpa::discovery_info_t& v, set_res)
   {
     BOOST_REQUIRE_EQUAL(boost::get<int>(peek("state", v).get()), sdpa::status::UNKNOWN);
   }
@@ -38,7 +37,6 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
-  using pnet::type::value::value_type;
   using pnet::type::value::peek;
   using pnet::type::value::show;
 
@@ -51,7 +49,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
   sdpa::client::Client client (orchestrator.name());
   sdpa::job_id_t job_id = client.submitJob (workflow);
 
-  value_type disc_res;
+  sdpa::discovery_info_t disc_res;
 
   for(int i=0; i<n_discover_ops; i++)
   {
@@ -62,8 +60,8 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
   }
 
   // invariant: after some time, the leaf jobs are always in pending
-  std::set<value_type> set_res(boost::get<std::set<value_type> >(disc_res));
-  BOOST_FOREACH(const value_type& v, set_res)
+  std::set<sdpa::discovery_info_t> set_res(boost::get<std::set<sdpa::discovery_info_t> >(disc_res));
+  BOOST_FOREACH(const sdpa::discovery_info_t& v, set_res)
   {
     BOOST_REQUIRE_EQUAL(boost::get<int>(peek("state", v).get()), sdpa::status::PENDING);
   }
@@ -71,7 +69,6 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 {
-  using pnet::type::value::value_type;
   using pnet::type::value::peek;
   using pnet::type::value::show;
 
@@ -87,7 +84,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   sdpa::client::Client client (orchestrator.name());
   sdpa::job_id_t job_id = client.submitJob (workflow);
 
-  value_type disc_res;
+  sdpa::discovery_info_t disc_res;
   for(int i=0; i<n_discover_ops; i++)
   {
     std::ostringstream oss;
@@ -97,8 +94,8 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   }
 
   // invariant: after some time, the leaf jobs are always in pending
-  std::set<value_type> set_res(boost::get<std::set<value_type> >(disc_res));
-  BOOST_FOREACH(const value_type& v, set_res)
+  std::set<sdpa::discovery_info_t> set_res(boost::get<std::set<sdpa::discovery_info_t> >(disc_res));
+  BOOST_FOREACH(const sdpa::discovery_info_t& v, set_res)
   {
      BOOST_REQUIRE_EQUAL(boost::get<int>(peek("state", v).get()), sdpa::status::PENDING);
   }
@@ -106,7 +103,6 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 {
-  using pnet::type::value::value_type;
   using pnet::type::value::peek;
   using pnet::type::value::show;
 
@@ -149,7 +145,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   sdpa::client::Client client (orchestrator.name());
   sdpa::job_id_t job_id = client.submitJob (workflow);
 
-  value_type disc_res;
+  sdpa::discovery_info_t disc_res;
   for(int i=0; i<n_discover_ops; i++)
   {
       std::ostringstream oss;
@@ -158,11 +154,11 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
       boost::this_thread::sleep (discover_interval);
   }
 
-  std::set<value_type> set_res(boost::get<std::set<value_type> >(disc_res));
+  std::set<sdpa::discovery_info_t> set_res(boost::get<std::set<sdpa::discovery_info_t> >(disc_res));
 
   // invariant: after some time, the task B is always in pending
   bool b_at_least_one_job_in_pending(false);
-  BOOST_FOREACH(const value_type& v, set_res)
+  BOOST_FOREACH(const sdpa::discovery_info_t& v, set_res)
   {
     if( boost::get<int>(peek("state", v).get()) == sdpa::status::PENDING )
     {

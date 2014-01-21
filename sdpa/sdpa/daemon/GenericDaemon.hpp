@@ -101,7 +101,7 @@ namespace sdpa {
       virtual void failed( const we::layer::id_type& wfId, int errc, std::string const& reason);
       void canceled(const we::layer::id_type& id);
       void discover (we::layer::id_type discover_id, we::layer::id_type job_id);
-      void discovered (we::layer::id_type discover_id, pnet::type::value::value_type);
+      void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);

@@ -447,23 +447,16 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
 
   pJob = jobManager().findJob(pEvt->job_id());
 
-  std::set<pnet::type::value::value_type> set_disc_res;
-  pnet::type::value::value_type discover_result;
+  sdpa::discovery_info_t discover_result;
 
   if(!pJob)
   {
       DLLOG(TRACE, _logger, "Job "<<pEvt->job_id()<<" not found!");
 
-      pnet::type::value::poke ("id", discover_result, pEvt->job_id());
-      pnet::type::value::poke ("state", discover_result, sdpa::status::UNKNOWN);
-      pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
-
-      set_disc_res.insert(discover_result);
-
       sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                          , pEvt->from()
                                                                                                          , pEvt->discover_id()
-                                                                                                         , set_disc_res)));
+                                                                                                         , discover_result) ));
 
       return;
   }
@@ -482,17 +475,10 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   }
   else
   {
-      pnet::type::value::value_type discover_result;
-      pnet::type::value::poke ("id", discover_result, pJob->id());
-      pnet::type::value::poke ("state", discover_result, pJob->getStatus());
-      pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
-
-      set_disc_res.insert(discover_result);
-
       events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                    , pEvt->from()
                                                                                                    , pEvt->discover_id()
-                                                                                                   , set_disc_res ));
+                                                                                                   , discover_result ));
 
       sendEventToOther(pDiscReplyEvt);
   }

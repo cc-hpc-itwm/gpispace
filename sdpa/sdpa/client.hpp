@@ -40,7 +40,7 @@ namespace sdpa
       status::code queryJob(const job_id_t &, job_info_t &);
       void deleteJob(const job_id_t &);
       result_t retrieveResults(const job_id_t &);
-      pnet::type::value::value_type discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id);
+      sdpa::discovery_info_t discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id);
 
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);

@@ -986,15 +986,14 @@ BOOST_FIXTURE_TEST_CASE
     do_discover (discover_id, id);
   }
 
-  using pnet::type::value::value_type;
   using pnet::type::value::poke;
 
-  value_type discover_result_child;
-  poke ("id", discover_result_child, child_id);
+  sdpa::discovery_info_t discover_result_child;
+  /*poke ("id", discover_result_child, child_id);
   poke ("state", discover_result_child, "PENDING");
-  poke ("childs", discover_result_child, std::set<value_type>());
+  poke ("childs", discover_result_child, std::set<sdpa::discovery_info_t>());*/
 
-  std::set<value_type> discover_result;
+  std::set<sdpa::discovery_info_t> discover_result;
   discover_result.insert (discover_result_child);
 
   {
@@ -1040,20 +1039,19 @@ BOOST_FIXTURE_TEST_CASE
     do_discover (discover_id, id);
   }
 
-  using pnet::type::value::value_type;
   using pnet::type::value::poke;
 
-  value_type discover_result_child_A;
-  poke ("id", discover_result_child_A, child_id_A);
+  sdpa::discovery_info_t discover_result_child_A;
+  /*poke ("id", discover_result_child_A, child_id_A);
   poke ("state", discover_result_child_A, "PENDING");
-  poke ("childs", discover_result_child_A, std::set<value_type>());
+  poke ("childs", discover_result_child_A, std::set<sdpa::discovery_info_t>());*/
 
-  value_type discover_result_child_B;
-  poke ("id", discover_result_child_B, child_id_B);
+  sdpa::discovery_info_t discover_result_child_B;
+  /*poke ("id", discover_result_child_B, child_id_B);
   poke ("state", discover_result_child_B, "RUNNING");
-  poke ("childs", discover_result_child_B, std::set<value_type>());
+  poke ("childs", discover_result_child_B, std::set<sdpa::discovery_info_t>());*/
 
-  std::set<value_type> discover_result;
+  std::set<sdpa::discovery_info_t> discover_result;
   discover_result.insert (discover_result_child_A);
   discover_result.insert (discover_result_child_B);
 

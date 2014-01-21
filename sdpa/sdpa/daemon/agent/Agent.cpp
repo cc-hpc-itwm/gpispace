@@ -666,8 +666,7 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
 {
   sdpa::job_id_t job_id(pEvt->job_id());
   Job* pJob = jobManager().findJob(job_id);
-  std::set<pnet::type::value::value_type> set_disc_res;
-  pnet::type::value::value_type discover_result;
+  sdpa::discovery_info_t discover_result;
 
    // if the event came from outside, forward it to the workflow engine
   if(pEvt->is_external())
@@ -676,15 +675,10 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
       {
          DLLOG(TRACE, _logger, "Job "<<job_id<<" not found!");
 
-         pnet::type::value::poke ("id", discover_result, job_id);
-         pnet::type::value::poke ("state", discover_result, sdpa::status::UNKNOWN);
-         pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
-
-         set_disc_res.insert(discover_result);
          sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                              , pEvt->from()
                                                                                                              , pEvt->discover_id()
-                                                                                                             , set_disc_res)));
+                                                                                                             , discover_result)));
 
          return;
       }
@@ -694,10 +688,6 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
   }
   else
   {
-    pnet::type::value::poke ("id", discover_result, job_id);
-    pnet::type::value::poke ("state", discover_result, pJob? pJob->getStatus():sdpa::status::UNKNOWN);
-    pnet::type::value::poke ("children", discover_result, std::set<pnet::type::value::value_type>());
-
     workflowEngine()->discovered(pEvt->discover_id(), discover_result);
   }
 }

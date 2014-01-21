@@ -211,7 +211,7 @@ namespace sdpa
         (sdpa::events::CancelJobEvent (_name, orchestrator_, jid));
     }
 
-    pnet::type::value::value_type Client::discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id)
+    sdpa::discovery_info_t Client::discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id)
     {
       return send_and_wait_for_reply<sdpa::events::DiscoverJobStatesReplyEvent>
         (sdpa::events::DiscoverJobStatesEvent (_name, orchestrator_, job_id, discover_id)).discover_result();

@@ -39,7 +39,7 @@ namespace we
               // reply to discover (parent) -> child jobs
             , boost::function<void (id_type discover_id, id_type)> rts_discover
               // result of discover (parent) -> top level
-            , boost::function<void (id_type discover_id, std::set<pnet::type::value::value_type>)> rts_discovered
+            , boost::function<void (id_type discover_id, sdpa::discovery_info_t)> rts_discovered
             , boost::function<id_type()> rts_id_generator
             , boost::mt19937& random_extraction_engine
             );
@@ -64,7 +64,7 @@ namespace we
       void discover (id_type discover_id, id_type);
 
       // reply to _rts_discover (after top level discovered/failure) -> childs only
-      void discovered (id_type discover_id, pnet::type::value::value_type);
+      void discovered (id_type discover_id, sdpa::discovery_info_t);
 
     private:
       boost::function<void (id_type, type::activity_t)> _rts_submit;
@@ -73,7 +73,7 @@ namespace we
       boost::function<void (id_type, int, std::string)> _rts_failed;
       boost::function<void (id_type)> _rts_canceled;
       boost::function<void (id_type, id_type)> _rts_discover;
-      boost::function<void (id_type, std::set<pnet::type::value::value_type>)> _rts_discovered;
+      boost::function<void (id_type, sdpa::discovery_info_t)> _rts_discovered;
       boost::function<id_type()> _rts_id_generator;
 
       void rts_finished_and_forget (id_type, type::activity_t);

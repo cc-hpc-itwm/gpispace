@@ -1314,7 +1314,7 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
   sendEventToSelf(pDiscEvt);
 }
 
-void GenericDaemon::discovered (we::layer::id_type discover_id, pnet::type::value::value_type discover_result)
+void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
 {
   // generate a DiscoverJobStatestReplyEvent and and send it to the master
   sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id));

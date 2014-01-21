@@ -15,7 +15,7 @@ namespace we
         , boost::function<void (id_type, int, std::string)> rts_failed
         , boost::function<void (id_type)> rts_canceled
         , boost::function<void (id_type, id_type)> rts_discover
-        , boost::function<void (id_type, std::set<pnet::type::value::value_type>)> rts_discovered
+        , boost::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
         , boost::function<id_type()> rts_id_generator
         , boost::mt19937& random_extraction_engine
         )
@@ -243,7 +243,7 @@ namespace we
 
     void layer::discover (id_type discover_id, id_type id)
     {
-      boost::mutex::scoped_lock const _ (_discover_state_mutex);
+      /*boost::mutex::scoped_lock const _ (_discover_state_mutex);
       assert (_discover_state.find (discover_id) == _discover_state.end());
 
       std::pair<std::size_t, std::set<pnet::type::value::value_type> > state
@@ -266,16 +266,16 @@ namespace we
       else
       {
         _discover_state.insert (std::make_pair (discover_id, state));
-      }
+      }*/
     }
 
     void layer::discovered
-      (id_type discover_id, pnet::type::value::value_type result)
+      (id_type discover_id, sdpa::discovery_info_t result)
     {
-      boost::mutex::scoped_lock const _ (_discover_state_mutex);
+      /*boost::mutex::scoped_lock const _ (_discover_state_mutex);
       assert (_discover_state.find (discover_id) != _discover_state.end());
 
-      std::pair<std::size_t, std::set<pnet::type::value::value_type> >& state
+      std::pair<std::size_t, std::set<sdpa::discovery_info_t> >& state
         (_discover_state.find (discover_id)->second);
 
       state.second.insert (result);
@@ -285,7 +285,7 @@ namespace we
       if (state.first == std::size_t (0))
       {
         _rts_discovered (discover_id, state.second);
-      }
+      }*/
     }
 
     void layer::extract_from_nets()

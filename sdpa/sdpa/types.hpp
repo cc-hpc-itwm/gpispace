@@ -57,9 +57,8 @@ namespace sdpa {
   };
 
   typedef std::vector<MasterInfo> master_info_list_t;
+  typedef pnet::type::value::value_type discovery_info_t;
 }
-
-typedef pnet::type::value::value_type discovery_info_t;
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::worker_id_list_t& worker_list)
 {
