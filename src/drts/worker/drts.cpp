@@ -671,15 +671,11 @@ public:
     const std::string netd_url (fhg_kernel()->get ("netd_url", "tcp://*"));
     kvs::KeyValueStore* kvs (fhg_kernel()->acquire<kvs::KeyValueStore> ("kvs"));
 
-    if (logc_url.empty())
+    if (!logc_url.empty())
     {
-      throw std::runtime_error
-        ("no remote logging URL specified, please set plugin.drts.logc_url");
+      GLOBAL_logc_destination.reset
+        (new fhg::log::remote::RemoteAppender(logc_url));
     }
-
-    GLOBAL_logc_destination.reset
-      (new fhg::log::remote::RemoteAppender(logc_url));
-
 
     gspc::net::initialize (netd_nthreads);
 
