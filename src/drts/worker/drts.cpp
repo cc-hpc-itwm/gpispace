@@ -377,9 +377,8 @@ public:
               , std::list<std::string> const & worker_list
               )
   {
-    int ec = fhg::error::NO_ERROR;
-
     wfe_task_t task (job_id, worker_list);
+    int ec = task.errc = fhg::error::NO_ERROR;
 
     try
     {
@@ -407,7 +406,7 @@ public:
 
       result = task.activity;
 
-      if (fhg::error::NO_ERROR == ec)
+      if (fhg::error::NO_ERROR == task.errc)
       {
         MLOG(TRACE, "task finished: " << task.id);
         task.state = wfe_task_t::FINISHED;
@@ -415,7 +414,7 @@ public:
 
         emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
       }
-      else if (fhg::error::EXECUTION_CANCELED == ec)
+      else if (fhg::error::EXECUTION_CANCELED == task.errc)
       {
         DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::CANCELED;
@@ -437,7 +436,7 @@ public:
       m_task_map.erase (job_id);
     }
 
-    return ec;
+    return task.errc;
   }
 
   int cancel (std::string const &job_id)
