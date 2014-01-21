@@ -1812,8 +1812,11 @@ typedef boost::mutex mutex_type;
 typedef boost::condition_variable condition_type;
 typedef boost::unique_lock<mutex_type> lock_type;
 
-static handler_list_t s_handler_list;
-static mutex_type s_handler_list_mtx;
+namespace
+{
+  handler_list_t s_handler_list;
+  mutex_type s_handler_list_mtx;
+}
 
 int drts_on_cancel_add (DrtsCancelHandler h, void *data)
 {
