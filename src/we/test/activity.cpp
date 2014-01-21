@@ -84,6 +84,7 @@ int main (int, char **)
     , condition::type ("!bitset_is_element (${store.seen}, ${vid})")
     , true
     , we::type::property::type()
+    , we::priority_type()
     );
 
   pnet::type::signature::structure_type sig_pair_fields;
@@ -156,6 +157,7 @@ int main (int, char **)
   transition_t tnet ("tnet", net
                     , condition::type ("true")
                     , true, we::type::property::type()
+                    , we::priority_type()
                     );
   tnet.add_port
     (we::type::port_t ("vid", we::type::PORT_IN, std::string("long"), pid_vid));

@@ -796,6 +796,7 @@ namespace xml
               , condition::type (cond_in, parsed_condition_in)
               , true
               , properties
+              , we::priority_type()
               );
 
             {
@@ -888,6 +889,7 @@ namespace xml
               , condition::type (cond_out, parsed_condition_out)
               , true
               , properties
+              , we::priority_type()
               );
 
             {
@@ -1003,16 +1005,13 @@ namespace xml
                                , trans.conditions()
                                , trans.properties()
                                , trans.requirements
+                               , trans.priority
+                               ? *trans.priority : we::priority_type()
                                )
               );
 
             const we::transition_id_type tid
               (we_net.add_transition (we_trans));
-
-            if (trans.priority)
-              {
-                we_net.set_transition_priority (tid, *trans.priority);
-              }
 
             BOOST_FOREACH ( const connect_type& connect
                           , trans.connections().values()

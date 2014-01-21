@@ -356,7 +356,7 @@ namespace we { namespace type {
       , id_type &
       , const options<Pred> &
       , const level_type = 1
-      , boost::optional<const we::priority_type&> = boost::none
+      , boost::optional<we::priority_type> = boost::none
       );
 
       template<typename Pred>
@@ -481,10 +481,8 @@ namespace we { namespace type {
               const we::transition_id_type& trans_id (it.first);
               const transition_t& trans (it.second);
               const id_type id_trans (++id);
-              const we::priority_type prio
-                (net.get_transition_priority (trans_id));
 
-              s << to_dot (trans, id, opts, l + 1, prio);
+              s << to_dot (trans, id, opts, l + 1, trans.priority());
 
               if (opts.show_tunnel_connection)
                 {
@@ -573,7 +571,7 @@ namespace we { namespace type {
       , id_type & id
       , const options<Pred> & opts
       , const level_type l
-      , boost::optional<const we::priority_type &> prio
+      , boost::optional<we::priority_type> prio
       )
       {
         std::ostringstream s;

@@ -5,7 +5,6 @@
 
 #include <we/type/net.fwd.hpp>
 
-#include <we/container/priostore.hpp>
 #include <we/type/activity.hpp>
 #include <we/serialize/unordered_map.hpp>
 #include <we/type/connection.hpp>
@@ -20,11 +19,14 @@
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
+#include <boost/random.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/utility.hpp>
 
 #include <list>
 #include <sstream>
@@ -45,17 +47,17 @@ namespace we
       , boost::bimaps::set_of_relation<>
       > adj_pt_type;
     typedef boost::bimaps::bimap
-        < port_id_type
-        , place_id_type
-        , boost::bimaps::left_based
-        , boost::bimaps::with_info<we::type::property::type>
-        > port_to_place_with_info_type;
+      < port_id_type
+      , place_id_type
+      , boost::bimaps::left_based
+      , boost::bimaps::with_info<we::type::property::type>
+      > port_to_place_with_info_type;
     typedef boost::bimaps::bimap
-        < place_id_type
-        , port_id_type
-        , boost::bimaps::left_based
-        , boost::bimaps::with_info<we::type::property::type>
-        > place_to_port_with_info_type;
+      < place_id_type
+      , port_id_type
+      , boost::bimaps::left_based
+      , boost::bimaps::with_info<we::type::property::type>
+      > place_to_port_with_info_type;
     typedef boost::unordered_map< transition_id_type
                                 , port_to_place_with_info_type
                                 > port_to_place_type;
@@ -71,19 +73,16 @@ namespace we
     place_id_type add_place (const place::type&);
     transition_id_type add_transition (const we::type::transition_t&);
 
+    const boost::unordered_map<place_id_type, place::type>& places() const;
+    const boost::unordered_map<transition_id_type, we::type::transition_t>&
+      transitions() const;
+
     void add_connection ( edge::type
                         , transition_id_type
                         , place_id_type
                         , port_id_type
                         , we::type::property::type const&
                         );
-
-    void set_transition_priority (transition_id_type, priority_type);
-    priority_type get_transition_priority (transition_id_type) const;
-
-    const boost::unordered_map<place_id_type,place::type>& places() const;
-    const boost::unordered_map<transition_id_type,we::type::transition_t>&
-    transitions() const;
 
     adj_tp_type const& transition_to_place() const;
     adj_pt_type const& place_to_transition_consume() const;
@@ -97,15 +96,17 @@ namespace we
     const std::list<pnet::type::value::value_type>&
       get_token (place_id_type) const;
 
-    void delete_all_token (place_id_type);
-
     template<typename Engine>
     boost::optional<we::type::activity_t>
     fire_expressions_and_extract_activity_random (Engine& engine)
     {
       while (!_enabled.empty())
       {
-        transition_id_type const transition_id (_enabled.random (engine));
+        boost::unordered_set<we::transition_id_type> const& transition_ids
+          (_enabled.begin()->second);
+        boost::uniform_int<std::size_t> random (0, transition_ids.size() - 1);
+        transition_id_type const transition_id
+          (*boost::next (transition_ids.begin(), random (engine)));
         we::type::transition_t const& transition (_tmap.at (transition_id));
 
         if (transition.expression())
@@ -123,7 +124,7 @@ namespace we
 
   private:
     place_id_type _place_id;
-    boost::unordered_map<place_id_type,place::type> _pmap;
+    boost::unordered_map<place_id_type, place::type> _pmap;
 
     transition_id_type _transition_id;
     boost::unordered_map<transition_id_type, we::type::transition_t> _tmap;
@@ -140,6 +141,59 @@ namespace we
                                 > token_by_place_id_type;
 
     token_by_place_id_type _token_by_place_id;
+
+    typedef std::map< we::priority_type
+                    , boost::unordered_set<we::transition_id_type>
+                    , std::greater<we::priority_type>
+                    > enabled_type;
+
+    enabled_type _enabled;
+
+    typedef std::pair
+      < std::list<pnet::type::value::value_type>::iterator
+      , std::list<pnet::type::value::value_type>::iterator::difference_type
+      > pos_and_distance_type;
+
+    boost::unordered_map
+      < transition_id_type
+      , boost::unordered_map<place_id_type, pos_and_distance_type>
+      > _enabled_choice;
+
+    void get_enabled_choice (const net&);
+
+    typedef boost::tuple
+      < place_id_type
+      , std::list<pnet::type::value::value_type>::iterator
+      , std::list<pnet::type::value::value_type>::iterator::difference_type
+      > to_be_updated_type;
+
+    void update_enabled (transition_id_type);
+    void update_enabled_put_token
+      ( transition_id_type
+      , to_be_updated_type const&
+      );
+
+    void disable (transition_id_type);
+
+    we::type::activity_t extract_activity
+      (transition_id_type, we::type::transition_t const&);
+    void fire_expression (transition_id_type, we::type::transition_t const&);
+
+    typedef std::pair< place_id_type
+                     , std::list<pnet::type::value::value_type>::iterator
+                     > token_to_be_deleted_type;
+
+    std::list<token_to_be_deleted_type> do_extract
+      ( transition_id_type
+      , we::type::transition_t const&
+      , boost::function
+          <void (port_id_type, pnet::type::value::value_type const&)>
+      ) const;
+    void do_delete (std::list<token_to_be_deleted_type> const&);
+
+    to_be_updated_type do_put_value
+      (place_id_type, pnet::type::value::value_type const&);
+    void do_update (to_be_updated_type const&);
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -217,92 +271,6 @@ namespace we
       }
     }
     BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-    we::container::priority_store _enabled;
-
-    typedef std::pair< std::list<pnet::type::value::value_type>::iterator
-                     , std::list<pnet::type::value::value_type>::iterator::difference_type
-                     > pos_and_distance_type;
-
-    boost::unordered_map
-      < transition_id_type
-      , boost::unordered_map<place_id_type, pos_and_distance_type>
-      > _enabled_choice;
-
-    void get_enabled_choice (const net&);
-
-    typedef boost::tuple< place_id_type
-                        , std::list<pnet::type::value::value_type>::iterator
-                        , std::list<pnet::type::value::value_type>::iterator::difference_type
-                        > to_be_updated_type;
-
-    void update_enabled (transition_id_type);
-    void update_enabled_put_token
-      ( transition_id_type
-      , to_be_updated_type const&
-      );
-
-    void disable (transition_id_type);
-
-    we::type::activity_t extract_activity
-      (transition_id_type, we::type::transition_t const&);
-    void fire_expression (transition_id_type, we::type::transition_t const&);
-
-    typedef std::pair< place_id_type
-                     , std::list<pnet::type::value::value_type>::iterator
-                     > token_to_be_deleted_type;
-
-    std::list<token_to_be_deleted_type> do_extract
-      ( transition_id_type
-      , we::type::transition_t const&
-      , boost::function
-          <void (port_id_type, pnet::type::value::value_type const&)>
-      ) const;
-    void do_delete (std::list<token_to_be_deleted_type> const&);
-
-    to_be_updated_type do_put_value
-      (place_id_type, pnet::type::value::value_type const&);
-    void do_update (to_be_updated_type const&);
-
-    class cross_type
-    {
-    public:
-      bool enables (net* const, transition_id_type);
-      void write_to (boost::unordered_map< place_id_type
-                                         , pos_and_distance_type
-                                         >&
-                    ) const;
-      void push (place_id_type, std::list<pnet::type::value::value_type>&);
-      void push ( place_id_type
-                , const std::list<pnet::type::value::value_type>::iterator&
-                , const std::list<pnet::type::value::value_type>::iterator::difference_type&
-                );
-    private:
-      class iterators_type
-      {
-      public:
-        iterators_type (std::list<pnet::type::value::value_type>&);
-        iterators_type
-          ( const std::list<pnet::type::value::value_type>::iterator&
-          , const std::list<pnet::type::value::value_type>::iterator::difference_type&
-          );
-        bool end() const;
-        const pos_and_distance_type& pos_and_distance() const;
-        void operator++();
-        void rewind();
-      private:
-        std::list<pnet::type::value::value_type>::iterator _begin;
-        std::list<pnet::type::value::value_type>::iterator _end;
-        std::list<pnet::type::value::value_type>::iterator::difference_type _distance_from_zero;
-        pos_and_distance_type _pos_and_distance;
-      };
-
-      typedef boost::unordered_map<place_id_type, iterators_type> map_type;
-
-      map_type _m;
-
-      bool do_step (map_type::iterator, map_type::iterator const&);
-    };
   };
 }
 
