@@ -20,7 +20,12 @@
 #include <gspc/drts/context.hpp>
 #include <gspc/net/frame.hpp>
 #include <gspc/net/frame_builder.hpp>
+#include <gspc/net/io.hpp>
+#include <gspc/net/serve.hpp>
+#include <gspc/net/server.hpp>
+#include <gspc/net/server/default_queue_manager.hpp>
 #include <gspc/net/server/default_service_demux.hpp>
+#include <gspc/net/service/echo.hpp>
 #include <gspc/net/user.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
@@ -29,6 +34,8 @@
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/events.hpp>
 #include <sdpa/types.hpp>
+
+#include <plugins/kvs.hpp>
 
 #include <we/context.hpp>
 #include <we/loader/loader.hpp>
@@ -660,6 +667,9 @@ public:
       fhg::util::split (master_names, ",", std::back_inserter(master_list));
       fhg::util::split (virtual_capabilities, ",", std::back_inserter(capability_list));
     }
+    const std::size_t netd_nthreads (fhg_kernel()->get ("netd_nthreads", 4L));
+    const std::string netd_url (fhg_kernel()->get ("netd_url", "tcp://*"));
+    kvs::KeyValueStore* kvs (fhg_kernel()->acquire<kvs::KeyValueStore> ("kvs"));
 
     if (logc_url.empty())
     {
@@ -669,6 +679,17 @@ public:
 
     GLOBAL_logc_destination.reset
       (new fhg::log::remote::RemoteAppender(logc_url));
+
+
+    gspc::net::initialize (netd_nthreads);
+
+    gspc::net::server::default_service_demux().handle
+      ("/service/echo", gspc::net::service::echo ());
+
+    m_server = gspc::net::serve
+      (netd_url, gspc::net::server::default_queue_manager());
+
+    kvs->put ("gspc.net.url." + name, m_server->url());
 
 
     m_shutting_down = false;
@@ -866,6 +887,14 @@ public:
         m_virtual_capabilities.erase(m_virtual_capabilities.begin());
       }
     }
+
+    if (m_server)
+    {
+      m_server->stop ();
+    }
+
+    gspc::net::shutdown ();
+
 
     GLOBAL_logc_destination.reset();
 
@@ -1819,6 +1848,8 @@ private:
   map_of_jobs_t m_jobs;
 
   fhg::thread::queue<boost::shared_ptr<drts::Job> > m_pending_jobs;
+
+  gspc::net::server_ptr_t m_server;
 };
 
 typedef std::pair<DrtsCancelHandler, void*> handler_t;
