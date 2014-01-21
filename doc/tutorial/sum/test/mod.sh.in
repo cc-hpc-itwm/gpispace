@@ -23,6 +23,7 @@ make_mod='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
 cleanup()
 {
   rm -f "${CMP}"
+  rm -f "${RESULT}"
   eval ${make[@]} clean
   eval ${make_mod} clean
   cleanup_dir_build
@@ -37,3 +38,11 @@ measured "run" WE_EXEC_WORKER=1 ${make[@]} run              || die $EX_ERR_RUN
 grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
 test "$(pnetget -i "${RESULT}" -p s)" == "$(echo -e "7L\n1L")"               \
                                                             || die $EX_ERR_RES
+
+rm -f "${CMP}"                                           || die $EX_ERR_CLEANUP
+rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP
+measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+measured "clean-module" ${make_mod} clean                || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

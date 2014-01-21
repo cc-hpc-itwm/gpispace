@@ -29,6 +29,9 @@ die()
       $EX_ERR_STOP)
           print_fail_reason "EX_ERR_STOP"
           ;;
+      $EX_ERR_CLEANUP)
+          print_fail_reason "EX_ERR_CLEANUP"
+          ;;
       *)
           print_fail_reason "UNKNOWN-$1"
           ;;

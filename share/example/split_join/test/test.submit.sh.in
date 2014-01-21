@@ -10,6 +10,7 @@ DIR_SOURCE="${DIR_TEST}/.."
 
 OUT="${DIR_BUILD}/@SPLIT_JOIN_MAIN@.out"
 HOSTFILE="${DIR_BUILD}/hostfile"
+RESULT="$(mktemp --tmpdir="${DIR_BUILD}")"
 
 make+=( make -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
 make+=( MAIN=@SPLIT_JOIN_MAIN@ )
@@ -22,7 +23,7 @@ cleanup()
 {
   sdpa stop
   rm -f "${HOSTFILE}"
-  eval ${make[@]} uninstall
+  rm -f "${RESULT}"
   eval ${make[@]} clean
   cleanup_dir_build
 }
@@ -41,4 +42,11 @@ measured "submit" ${make[@]} submit                         || die $EX_ERR_RUN
 test "$(pnetget -i "${OUT}" -p O)" == "$(echo -e "@EXPECTED_OUTPUT@")"       \
                                                             || die $EX_ERR_RES
 
-sdpa stop                                                   || die $EX_ERR_STOP
+measured "stop" sdpa stop                                   || die $EX_ERR_STOP
+
+rm -f "${HOSTFILE}"                                      || die $EX_ERR_CLEANUP
+rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP
+measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

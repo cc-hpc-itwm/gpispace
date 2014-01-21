@@ -17,7 +17,6 @@ cleanup()
 {
   sdpa stop
   rm -f "${HOSTFILE}"
-  eval ${make_src} uninstall
   eval ${make_src} clean
   cleanup_dir_build
 }
@@ -35,4 +34,10 @@ measured "submit" ${make_src} submit                        || die $EX_ERR_RUN
 
 test "$(pnetget -i "${OUT}" -p done)" == "[]"               || die $EX_ERR_RES
 
-sdpa stop                                                   || die $EX_ERR_STOP
+measured "stop" sdpa stop                                   || die $EX_ERR_STOP
+
+rm -f "${HOSTFILE}"                                      || die $EX_ERR_CLEANUP
+measured "clean" ${make_src} clean                       || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT
