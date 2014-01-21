@@ -77,5 +77,4 @@ fhg_add_plugin(netd netd.cpp
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
-  HEADERS netd.hpp
 )

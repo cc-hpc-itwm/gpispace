@@ -1,4 +1,3 @@
-#include "netd.hpp"
 #include "kvs.hpp"
 
 #include <boost/bind.hpp>
@@ -18,7 +17,6 @@
 #include <fhg/plugin/plugin.hpp>
 
 class DaemonImpl : FHG_PLUGIN
-               , public fhg::net::Daemon
 {
 public:
   FHG_PLUGIN_START()
