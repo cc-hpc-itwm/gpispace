@@ -55,14 +55,6 @@ fhg_add_plugin(sdpactl sdpactl.cpp
   HEADERS sdpactl.hpp
 )
 
-fhg_add_plugin(progress progress.cpp
-  LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  INSTALL
-  HEADERS progress.hpp progress.h
-)
-
 fhg_add_plugin(logd logd.cpp observable.cpp
   LINK_LIBRARIES ${FhgLog_LIBRARY_SHARED}
                  ${Boost_SERIALIZATION_LIBRARY}
