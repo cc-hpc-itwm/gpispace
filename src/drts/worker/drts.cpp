@@ -83,6 +83,12 @@ namespace
     fhg::util::thread::event<int> done;
     std::list<std::string> workers;
     std::string error_message;
+
+    wfe_task_t (std::string id, std::list<std::string> workers)
+      : id (id)
+      , state (wfe_task_t::PENDING)
+      , workers (workers)
+    {}
   };
 
   struct wfe_exec_context : public we::context
@@ -375,10 +381,7 @@ public:
   {
     int ec = fhg::error::NO_ERROR;
 
-    wfe_task_t task;
-    task.state = wfe_task_t::PENDING;
-    task.id = job_id;
-    task.workers = worker_list;
+    wfe_task_t task (job_id, worker_list);
 
     {
       boost::mutex::scoped_lock task_map_lock(m_mutex);
