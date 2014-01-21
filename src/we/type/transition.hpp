@@ -30,7 +30,7 @@ namespace we { namespace type {
     private:
       typedef boost::variant< module_call_t
                             , expression_t
-                            , boost::recursive_wrapper<we::net>
+                            , boost::recursive_wrapper<we::type::net_type>
                             > data_type;
 
       typedef std::pair< we::place_id_type
@@ -80,7 +80,7 @@ namespace we { namespace type {
       data_type& data();
 
       boost::optional<const expression_t&> expression() const;
-      boost::optional<const we::net&> net() const;
+      boost::optional<const we::type::net_type&> net() const;
       boost::optional<const module_call_t&> module_call() const;
 
       bool is_internal() const;

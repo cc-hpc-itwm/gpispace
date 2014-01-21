@@ -99,7 +99,7 @@ namespace we
             : _child (child)
           {}
 
-          void operator() (we::net& parent) const
+          void operator() (we::type::net_type& parent) const
           {
             BOOST_FOREACH ( const activity_t::token_on_port_t& top
                           , _child.output()
@@ -148,7 +148,7 @@ namespace we
             , _value (value)
           {}
 
-          void operator() (we::net& net) const
+          void operator() (we::type::net_type& net) const
           {
             if (_transition.ports().at (_port_id).associated_place())
             {
@@ -201,7 +201,7 @@ namespace we
             , _ctxt (ctxt)
           {}
 
-          void operator () (we::net const& net) const
+          void operator () (we::type::net_type const& net) const
           {
             if (_activity.transition().is_internal())
               {

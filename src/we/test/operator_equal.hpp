@@ -44,45 +44,42 @@ namespace place
 
 namespace we
 {
-  namespace
+  namespace type
   {
-    std::map< we::place_id_type
-            , std::list<pnet::type::value::value_type>
-            > tokens (net const& n)
+    namespace
     {
       std::map< we::place_id_type
               , std::list<pnet::type::value::value_type>
-              > tokens_on_place;
-
-      BOOST_FOREACH ( we::place_id_type const& place_id
-                    , n.places() | boost::adaptors::map_keys
-                    )
+              > tokens (net_type const& n)
       {
-        tokens_on_place.insert
-          (std::make_pair (place_id, n.get_token (place_id)));
+        std::map< we::place_id_type
+                , std::list<pnet::type::value::value_type>
+                > tokens_on_place;
+
+        BOOST_FOREACH ( we::place_id_type const& place_id
+                      , n.places() | boost::adaptors::map_keys
+                      )
+        {
+          tokens_on_place.insert
+            (std::make_pair (place_id, n.get_token (place_id)));
+        }
+
+        return tokens_on_place;
       }
-
-      return tokens_on_place;
     }
-  }
 
-  bool operator== (net const& lhs, net const& rhs)
-  {
-    return lhs.places() == rhs.places()
-      && lhs.transitions() == rhs.transitions()
-      && lhs.transition_to_place() == rhs.transition_to_place()
-      && lhs.place_to_transition_consume() == rhs.place_to_transition_consume()
-      && lhs.place_to_transition_read() == rhs.place_to_transition_read()
-      && lhs.port_to_place() == rhs.port_to_place()
-      && lhs.place_to_port() == rhs.place_to_port()
-      && tokens (lhs) == tokens (rhs);
-  }
-}
+    bool operator== (net_type const& lhs, net_type const& rhs)
+    {
+      return lhs.places() == rhs.places()
+        && lhs.transitions() == rhs.transitions()
+        && lhs.transition_to_place() == rhs.transition_to_place()
+        && lhs.place_to_transition_consume() == rhs.place_to_transition_consume()
+        && lhs.place_to_transition_read() == rhs.place_to_transition_read()
+        && lhs.port_to_place() == rhs.port_to_place()
+        && lhs.place_to_port() == rhs.place_to_port()
+        && tokens (lhs) == tokens (rhs);
+    }
 
-namespace we
-{
-  namespace type
-  {
     bool operator== (port_t const& lhs, port_t const& rhs)
     {
       return lhs.name() == rhs.name()

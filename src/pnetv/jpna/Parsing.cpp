@@ -73,7 +73,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
     void operator()(const we::type::module_call_t & mod_call) { return; }
 
-    void operator()(const we::net &net) {
+    void operator()(const we::type::net_type &net) {
         typedef we::type::transition_t transition_t;
 
         /* Translate places. */
@@ -115,7 +115,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        FOREACH ( const we::net::adj_pt_type::value_type& pt
+        FOREACH ( const we::type::net_type::adj_pt_type::value_type& pt
                 , net.place_to_transition_consume()
                 )
         {
@@ -125,7 +125,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
           /* Transition consumes the token on input place. */
           transition->addInputPlace(place);
         }
-        FOREACH ( const we::net::adj_pt_type::value_type& pt
+        FOREACH ( const we::type::net_type::adj_pt_type::value_type& pt
                 , net.place_to_transition_read()
                 )
         {
@@ -136,7 +136,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
           transition->addInputPlace(place);
           transition->addOutputPlace(place);
         }
-        FOREACH ( const we::net::adj_tp_type::value_type& tp
+        FOREACH ( const we::type::net_type::adj_tp_type::value_type& tp
                 , net.transition_to_place()
                 )
         {
