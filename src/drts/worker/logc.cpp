@@ -23,9 +23,9 @@ public:
 
   FHG_PLUGIN_START()
   {
-    m_url = fhg_kernel()->get("url", "");
+    std::string logc_url (fhg_kernel()->get("url", ""));
 
-    if ("" == m_url)
+    if (logc_url.empty())
     {
       MLOG(ERROR, "no remote logging URL specified, please set plugin.logc.url");
       FHG_PLUGIN_FAILED(EINVAL);
@@ -33,11 +33,11 @@ public:
 
     try
     {
-      m_destination.reset (new fhg::log::remote::RemoteAppender(m_url));
+      m_destination.reset (new fhg::log::remote::RemoteAppender(logc_url));
     }
     catch (std::exception const &ex)
     {
-      MLOG(ERROR, "could not start appender to url: " << m_url << ": " << ex.what());
+      MLOG(ERROR, "could not start appender to url: " << logc_url << ": " << ex.what());
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
@@ -65,7 +65,6 @@ public:
   }
 
 private:
-  std::string m_url;
   fhg::log::Appender::ptr_t m_destination;
 };
 
