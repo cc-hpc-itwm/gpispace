@@ -638,10 +638,8 @@ void drts_on_cancel_clear ()
   s_handler_list.clear ();
 }
 
-int drts_on_cancel ()
+void drts_on_cancel ()
 {
-  int ec = 0;
-
   handler_list_t to_call;
   {
     boost::mutex::scoped_lock const _ (s_handler_list_mtx);
@@ -652,17 +650,9 @@ int drts_on_cancel ()
   {
     handler_t handler = to_call.back ();
     to_call.pop_back ();
-    try
-    {
-      handler.first (handler.second);
-    }
-    catch (...)
-    {
-      ec = -1;
-    }
-  }
 
-  return ec;
+    handler.first (handler.second);
+  }
 }
 
 class DRTSImpl : FHG_PLUGIN
