@@ -14,7 +14,7 @@ fhg_add_plugin(drts drts.cpp job.cpp
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
-  HEADERS drts_callbacks.h logc.hpp magically_available_functions.hpp
+  HEADERS drts_callbacks.h magically_available_functions.hpp
 )
 
 add_executable (drts-kernel drts-kernel.cpp)

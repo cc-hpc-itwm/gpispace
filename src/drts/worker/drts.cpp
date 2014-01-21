@@ -616,11 +616,6 @@ private:
   boost::thread m_worker;
 };
 
-namespace
-{
-  fhg::log::Appender::ptr_t GLOBAL_logc_destination;
-}
-
 class DRTSImpl : FHG_PLUGIN
                , public sdpa::events::EventHandler
 {
@@ -660,7 +655,6 @@ public:
     fhg::plugin::Capability* cap (fhg_kernel()->acquire< fhg::plugin::Capability>("gpi"));
     fhg::com::host_t host (fhg_kernel()->get("host", "*"));
     fhg::com::port_t port (fhg_kernel()->get("port", "0"));
-    const std::string logc_url (fhg_kernel()->get("logc_url", ""));
     {
       const std::string master_names (fhg_kernel()->get("master", ""));
       const std::string virtual_capabilities (fhg_kernel()->get("capabilities", ""));
@@ -670,12 +664,6 @@ public:
     const std::size_t netd_nthreads (fhg_kernel()->get ("netd_nthreads", 4L));
     const std::string netd_url (fhg_kernel()->get ("netd_url", "tcp://*"));
     kvs::KeyValueStore* kvs (fhg_kernel()->acquire<kvs::KeyValueStore> ("kvs"));
-
-    if (!logc_url.empty())
-    {
-      GLOBAL_logc_destination.reset
-        (new fhg::log::remote::RemoteAppender(logc_url));
-    }
 
     gspc::net::initialize (netd_nthreads);
 
@@ -891,8 +879,6 @@ public:
 
     gspc::net::shutdown ();
 
-
-    GLOBAL_logc_destination.reset();
 
     FHG_PLUGIN_STOPPED();
   }
@@ -1895,24 +1881,6 @@ int drts_on_cancel ()
   }
 
   return ec;
-}
-
-void fhg_emit_log_message ( const char *filename
-                          , const char *function
-                          , size_t line
-                          , const char * msg
-                          )
-{
-  if (GLOBAL_logc_destination)
-  {
-    GLOBAL_logc_destination->append ( fhg::log::LogEvent ( fhg::log::INFO
-                                                         , filename
-                                                         , function
-                                                         , line
-                                                         , msg
-                                                         )
-                                    );
-  }
 }
 
 EXPORT_FHG_PLUGIN( drts
