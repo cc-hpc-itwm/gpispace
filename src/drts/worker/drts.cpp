@@ -1809,7 +1809,6 @@ typedef std::pair<DrtsCancelHandler, void*> handler_t;
 typedef std::list<handler_t> handler_list_t;
 
 typedef boost::mutex mutex_type;
-typedef boost::condition_variable condition_type;
 typedef boost::unique_lock<mutex_type> lock_type;
 
 namespace
