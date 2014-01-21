@@ -627,8 +627,6 @@ namespace fhg
                 act.inject (*sub);
               }
             }
-
-            act.collect_output ();
           }
 
           virtual void handle_internally (we::type::activity_t& act, mod_t const& mod)
@@ -795,7 +793,6 @@ namespace fhg
 
           //! \todo Somehow redirect stdout to buffer
           activity.execute (&context);
-          activity.collect_output();
 
           show_results_of_activity (activity);
         }

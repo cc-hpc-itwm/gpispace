@@ -262,8 +262,6 @@ namespace
       boost::optional<we::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
-      act.collect_output();
-
       if (mapped)
       {
         mgmt_layer_.finished (*mapped, act);

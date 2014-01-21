@@ -57,7 +57,6 @@ namespace we
         we::type::transition_t& transition();
 
         void inject (const activity_t&);
-        void collect_output();
 
         void execute (context*);
 

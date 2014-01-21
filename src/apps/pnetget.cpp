@@ -177,8 +177,6 @@ try
     : we::type::activity_t (boost::filesystem::path (input))
     );
 
-  act.collect_output();
-
   {
     std::ofstream stream (output.c_str());
 
