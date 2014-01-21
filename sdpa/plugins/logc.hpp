@@ -5,18 +5,10 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#ifdef __cpluplus
-extern "C" {
-#endif
-
   void fhg_emit_log_message ( const char *filename
                             , const char *function
                             , size_t line
                             , const char * msg
                             );
-
-#ifdef __cpluplus
-}
-#endif
 
 #endif
