@@ -5,6 +5,7 @@
 #include <we/type/value/path/split.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
+#include <we/type/value/remove.hpp>
 #include <we/type/value/dump.hpp>
 
 #include <fhg/util/boost/variant.hpp>
@@ -78,6 +79,23 @@ namespace we
         type::get (const std::string& path) const
       {
         return get (pnet::type::value::path::split (path));
+      }
+
+      void type::del ( const path_type::const_iterator& pos
+                     , const path_type::const_iterator& end
+                     )
+      {
+        pnet::type::value::remove (pos, end, _value);
+      }
+
+      void type::del (const path_type& path)
+      {
+        return del (path.begin(), path.end());
+      }
+
+      void type::del (const std::string& path)
+      {
+        return del (pnet::type::value::path::split (path));
       }
 
       namespace dump

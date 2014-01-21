@@ -1,7 +1,0 @@
-[client]
-orchestrator = "orchestrator_0"
-location = "0.0.0.0"
-
-[network]
-timeout = 10000
-location = orchestrator_0:127.0.0.1:5000

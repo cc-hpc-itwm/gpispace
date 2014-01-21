@@ -16,7 +16,7 @@ make_expr='make BUILDDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
 
 cleanup()
 {
-  rm -rf ${CMP}
+  rm -f ${CMP}
   eval ${make_expr} clean
   cleanup_dir_build
 }
@@ -29,3 +29,9 @@ measured "run" WE_EXEC_WORKER=1 ${make_expr} run            || die $EX_ERR_RUN
 grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
 cat "${OUT}" | grep ^i > "${CMP}"                           || die $EX_ERR_OTHER
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
+
+rm -f "${CMP}"                                           || die $EX_ERR_CLEANUP
+measured "clean" ${make_expr} clean                      || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

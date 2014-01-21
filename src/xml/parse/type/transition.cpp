@@ -667,7 +667,7 @@ namespace xml
       void transition_synthesize
         ( const id::ref::transition & id_transition
         , const state::type & state
-        , we::net & we_net
+        , we::type::net_type & we_net
         , const place_map_map_type & pids
         )
       {
@@ -793,9 +793,10 @@ namespace xml
             we::type::transition_t trans_in
               ( prefix + "IN"
               , we::type::expression_t()
-              , condition::type (cond_in, parsed_condition_in)
+              , we::type::expression_t (cond_in, parsed_condition_in)
               , true
               , properties
+              , we::priority_type()
               );
 
             {
@@ -871,23 +872,13 @@ namespace xml
             }
 
             // going out of the subnet
-            const std::string cond_out ("true");
-
-            expr::parse::parser parsed_condition_out
-              ( util::we_parse ( cond_out
-                               , "condition"
-                               , "unfold"
-                               , trans.name()
-                               , trans.position_of_definition().path()
-                               )
-              );
-
             we::type::transition_t trans_out
               ( prefix + "OUT"
               , we::type::expression_t()
-              , condition::type (cond_out, parsed_condition_out)
+              , boost::none
               , true
               , properties
+              , we::priority_type()
               );
 
             {
@@ -1003,16 +994,13 @@ namespace xml
                                , trans.conditions()
                                , trans.properties()
                                , trans.requirements
+                               , trans.priority
+                               ? *trans.priority : we::priority_type()
                                )
               );
 
             const we::transition_id_type tid
               (we_net.add_transition (we_trans));
-
-            if (trans.priority)
-              {
-                we_net.set_transition_priority (tid, *trans.priority);
-              }
 
             BOOST_FOREACH ( const connect_type& connect
                           , trans.connections().values()

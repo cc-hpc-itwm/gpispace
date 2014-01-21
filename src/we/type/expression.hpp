@@ -22,27 +22,22 @@ namespace we
   {
     struct expression_t
     {
-      typedef expr::parse::parser ast_t;
-
       expression_t ();
       expression_t (const std::string& expr);
 
       // should correspond!
-      expression_t (const std::string& expr, const ast_t& ast);
+      expression_t (const std::string& expr, const expr::parse::parser& ast);
 
       const std::string& expression() const;
-      const ast_t& ast() const;
-      bool is_empty() const;
+      const expr::parse::parser& ast() const;
 
       bool simplify (const expr::parse::util::name_set_t& needed_bindings);
 
       void rename (const std::string& from, const std::string& to);
 
-      void add (const expression_t&);
-
     private:
       std::string _expr;
-      ast_t _ast;
+      expr::parse::parser _ast;
 
       friend class boost::serialization::access;
       template <typename Archive>
@@ -55,7 +50,7 @@ namespace we
       {
 	std::string tmp;
 	ar >> boost::serialization::make_nvp ("expr", tmp);
-	_ast = ast_t (tmp);
+	_ast = expr::parse::parser (tmp);
 	_expr = tmp;
       }
       BOOST_SERIALIZATION_SPLIT_MEMBER()

@@ -15,6 +15,4 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/fhgcom/ns_uuid.cpp.in ${CMAKE_CURREN
 add_subdirectory (fhgcom)
 add_subdirectory (bin)
 
-if (BUILD_TESTING)
   add_subdirectory (tests)
-endif()

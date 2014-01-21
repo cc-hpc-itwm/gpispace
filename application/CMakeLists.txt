@@ -1,9 +1,6 @@
 add_subdirectory(example)
 add_subdirectory(kdm)
-add_subdirectory(parsu)
 add_subdirectory(asian)
-add_subdirectory(cc)
-add_subdirectory(selftest)
 add_subdirectory(transform_file)
 add_subdirectory(mapreduce)
 

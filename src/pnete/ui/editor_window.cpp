@@ -621,7 +621,7 @@ namespace fhg
             if (act.transition().net())
             {
               while ( boost::optional<we::type::activity_t> sub
-                    = boost::get<we::net&> (act.transition().data())
+                    = boost::get<we::type::net_type&> (act.transition().data())
                     . fire_expressions_and_extract_activity_random (_engine)
                     )
               {
@@ -629,8 +629,6 @@ namespace fhg
                 act.inject (*sub);
               }
             }
-
-            act.collect_output ();
           }
 
           virtual void handle_internally (we::type::activity_t& act, mod_t const& mod)
@@ -777,7 +775,7 @@ namespace fhg
                         )
           {
             std::stringstream tmp;
-            tmp << "on " << activity.transition().ports().at (top.second).name()
+            tmp << "on " << activity.transition().ports_output().at (top.second).name()
                 << ": " << pnet::type::value::show (top.first);
             QMessageBox msgBox;
             msgBox.setText (QString::fromStdString (tmp.str()));
@@ -797,7 +795,6 @@ namespace fhg
 
           //! \todo Somehow redirect stdout to buffer
           activity.execute (&context);
-          activity.collect_output();
 
           show_results_of_activity (activity);
         }
@@ -944,12 +941,10 @@ namespace fhg
         {
           BOOST_FOREACH
             ( const we::type::port_t& port
-            , activity_and_fun->first.transition().ports()
+            , activity_and_fun->first.transition().ports_input()
             | boost::adaptors::map_values
             )
           {
-            if (port.direction() == we::type::PORT_IN)
-            {
               bool retry (true);
               while (retry)
               {
@@ -972,7 +967,6 @@ namespace fhg
 
                 retry = put_token (activity_and_fun->first, port.name(), value);
               }
-            }
           }
         }
       }

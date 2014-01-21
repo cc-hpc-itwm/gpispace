@@ -1,0 +1,20 @@
+<defun name="e">
+  <in name="i" type="long" place="i"/>
+  <out name="o" type="long" place="o"/>
+  <net>
+    <place name="i" type="long"/>
+    <place name="o" type="long"/>
+    <transition name="e">
+      <defun>
+        <in name="s" type="long"/>
+        <in name="i" type="long"/>
+        <out name="o" type="long"/>
+        <expression>
+          ${o} := ${i} + ${s}
+        </expression>
+      </defun>
+      <connect-out port="o" place="o"/>
+      <connect-in port="i" place="i"/>
+    </transition>
+  </net>
+</defun>

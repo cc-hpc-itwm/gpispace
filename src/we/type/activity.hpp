@@ -56,8 +56,8 @@ namespace we
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
 
+        // allowed for net_type only
         void inject (const activity_t&);
-        void collect_output();
 
         void execute (context*);
 
@@ -67,7 +67,7 @@ namespace we
           , pnet::type::value::value_type const&
           );
 
-        const output_t& output() const;
+        output_t output() const;
         void add_output
           ( we::port_id_type const&
           , pnet::type::value::value_type const&

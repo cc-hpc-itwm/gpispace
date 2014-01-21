@@ -27,12 +27,10 @@ if (ENABLE_PNET_EDITOR OR ENABLE_SDPA_GUI)
 endif()
 
 add_library (pnet
-  we/container/priostore.cpp
   we/exception.cpp
   we/expr/eval/context.cpp
   we/expr/eval/eval.cpp
   we/expr/eval/refnode.cpp
-  we/expr/type/calculate.cpp
   we/expr/exception.cpp
   we/expr/parse/action.cpp
   we/expr/parse/node.cpp
@@ -87,6 +85,7 @@ add_library (pnet
   we/type/value/poke.cpp
   we/type/value/positions.cpp
   we/type/value/read.cpp
+  we/type/value/remove.cpp
   we/type/value/show.cpp
   we/type/value/dump.cpp
 
@@ -135,7 +134,58 @@ target_link_libraries (pnet fhg-util ${Boost_SERIALIZATION_LIBRARY})
 
 add_subdirectory (xml/tests)
 
-add_subdirectory (apps)
+include (fhg_executable_macros)
+
+fhg_add_runtime_executable (
+  we-exec.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 we-dev # for the client only
+                 ${FhgLog_LIBRARY}
+                 ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+                 ${CMAKE_DL_LIBS}
+)
+
+fhg_add_runtime_executable (
+  pnetget.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+)
+
+fhg_add_runtime_executable (
+  pnetput.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+)
+
+fhg_add_runtime_executable (
+  pnet2dot.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+)
+
+fhg_add_runtime_executable (
+  pnetc.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnet
+                 ${Boost_FILESYSTEM_LIBRARY}
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+)
 
 add_subdirectory(pnetv)
 add_subdirectory (we)

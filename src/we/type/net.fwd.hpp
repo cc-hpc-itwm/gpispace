@@ -5,7 +5,10 @@
 
 namespace we
 {
-  class net;
+  namespace type
+  {
+    class net_type;
+  }
 }
 
 #endif

@@ -38,6 +38,9 @@ namespace we
         boost::optional<const value_type&> get (const path_type& path) const;
         boost::optional<const value_type&> get (const std::string& path) const;
 
+        void del (const path_type& path);
+        void del (const std::string& path);
+
       private:
         pnet::type::value::value_type _value;
 
@@ -69,6 +72,9 @@ namespace we
           , const path_type::const_iterator& end
           ) const;
 
+        void del ( const path_type::const_iterator& pos
+                 , const path_type::const_iterator& end
+                 );
       };
 
       namespace dump

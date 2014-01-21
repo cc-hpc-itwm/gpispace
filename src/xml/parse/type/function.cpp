@@ -657,13 +657,13 @@ namespace xml
         const requirements_type& _trans_requirements;
         boost::unordered_map<std::string, we::port_id_type>& _port_id_in;
         boost::unordered_map<std::string, we::port_id_type>& _port_id_out;
+        we::priority_type _priority;
 
         typedef we::type::transition_t we_transition_type;
 
-        typedef we::net we_net_type;
+        typedef we::type::net_type we_net_type;
         typedef we::type::module_call_t we_module_type;
         typedef we::type::expression_t we_expr_type;
-        typedef condition::type we_cond_type;
 
         typedef boost::unordered_map< std::string
                                     , we::place_id_type
@@ -762,14 +762,14 @@ namespace xml
           return _name;
         }
 
-        we_cond_type condition (void) const
+        we::type::expression_t condition (void) const
         {
           const std::string cond ((fun.conditions() + _conditions).flatten());
 
           expr::parse::parser parsed_condition
             (util::we_parse (cond, "condition", "function", name(), fun.position_of_definition().path()));
 
-          return we_cond_type (cond, parsed_condition);
+          return we::type::expression_t (cond, parsed_condition);
         }
 
       public:
@@ -783,6 +783,7 @@ namespace xml
           , const requirements_type& trans_requirements
           , boost::unordered_map<std::string, we::port_id_type>& port_id_in
           , boost::unordered_map<std::string, we::port_id_type>& port_id_out
+          , we::priority_type priority
           )
           : _name (name)
           , state (_state)
@@ -793,6 +794,7 @@ namespace xml
           , _trans_requirements (trans_requirements)
           , _port_id_in (port_id_in)
           , _port_id_out (port_id_out)
+          , _priority (priority)
         {
           util::property::join (state, _properties, fun.properties());
         }
@@ -810,6 +812,7 @@ namespace xml
             , condition()
             , _internal.get_value_or (true)
             , _properties
+            , _priority
             );
 
           add_ports (trans, fun.ports());
@@ -828,6 +831,7 @@ namespace xml
             , condition()
             , _internal.get_value_or (false)
             , _properties
+            , _priority
             );
 
           add_ports (trans, fun.ports());
@@ -861,6 +865,7 @@ namespace xml
             , condition()
             , _internal.get_value_or (true)
             , properties
+            , _priority
             );
 
           add_ports (trans, fun.ports(), pid_of_place);
@@ -879,6 +884,7 @@ namespace xml
         , const conditions_type& conditions
         , const we::type::property::type& trans_properties
         , const requirements_type& trans_requirements
+        , we::priority_type priority
         ) const
       {
         return boost::apply_visitor
@@ -891,6 +897,7 @@ namespace xml
                                 , trans_requirements
                                 , port_id_in
                                 , port_id_out
+                                , priority
                                 )
           , content()
           );

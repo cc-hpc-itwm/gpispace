@@ -8,20 +8,29 @@ DIR_SOURCE="@CMAKE_CURRENT_SOURCE_DIR@"
 
 OUT="${DIR_BUILD}/bytearray.out"
 
-make_src='make -f "${SDPA_HOME}/share/sdpa/make/common.mk" -C "${DIR_SOURCE}" BUILDDIR="${DIR_BUILD}" MAIN=bytearray PUT_PORT="point=Struct[x:=1.0,y:=2.0]"'
+make+=( make -f "${SDPA_HOME}/share/sdpa/make/common.mk" )
+make+=( MAIN=bytearray )
+make+=( BUILDDIR="${DIR_BUILD}" )
+make+=( PUT_PORT="point=Struct[x:=1.0,y:=2.0]" )
+make+=( -C "${DIR_SOURCE}" )
 
 cleanup()
 {
-  eval ${make_src} clean
+  eval ${make[@]} clean
   cleanup_dir_build
 }
 
 trap 'cleanup' EXIT
 
-measured "build-wrapper" ${make_src} lib                     || die $EX_ERR_RUN
-measured "run" WE_EXEC_OUTPUT="${OUT}" ${make_src} run       || die $EX_ERR_RUN
+measured "build-wrapper" ${make[@]} lib                      || die $EX_ERR_RUN
+measured "run" WE_EXEC_OUTPUT="${OUT}" ${make[@]} run        || die $EX_ERR_RUN
 
 test -s "${OUT}"                                             || die $EX_ERR_RUN
 
 res=$(pnetget -i "${OUT}" -p point)                          || die $EX_ERR_ENV
 test "$res" == "Struct [x := 1.00000, y := 2.00000]"         || die $EX_ERR_RES
+
+measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

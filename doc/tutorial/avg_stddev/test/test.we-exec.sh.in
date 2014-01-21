@@ -8,20 +8,26 @@ DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
 DIR_SOURCE="${DIR_TEST}/.."
 DIR_MODULE="${DIR_SOURCE}/src"
+RESULT="$(mktemp --tmpdir="${DIR_BUILD}")"
 
 OUT="${DIR_BUILD}/avg_stddev.out"
-CMP="${DIR_BUILD}/run.out"
-CMP_ORIG="${DIR_TEST}/out.cmp"
 DAT="${DIR_BUILD}/dat"
 HOSTFILE="${DIR_BUILD}/hostfile"
 
-make_src='make BUILDDIR="${DIR_BUILD}" DATFILE="${DAT}" -C "${DIR_SOURCE}"'
+make+=( make BUILDDIR="${DIR_BUILD}" )
+make+=( WE_EXEC_OUTPUT="${RESULT}" )
+make+=( DATFILE="${DAT}" )
+make+=( -C "${DIR_SOURCE}" )
+
 make_gen='make DIR_BUILD="${DIR_BUILD}" -C "${DIR_MODULE}"'
 
 cleanup()
 {
-  rm -rf "${CMP}" "${DAT}" "${HOSTFILE}"
-  eval ${make_src} clean
+  rm -f "${CMP}"
+  rm -f "${RESULT}"
+  rm -f "${DAT}"
+  rm -f "${HOSTFILE}"
+  eval ${make[@]} clean
   eval ${make_gen} clean
   cleanup_dir_build
 }
@@ -37,9 +43,20 @@ measured "setup-data"                                                        \
          -m 0                                                                \
          -g 1                                                                \
          -o "${DAT}"                                        || die $EX_ERR_RUN
-measured "build-wrapper" ${make_src} lib                    || die $EX_ERR_RUN
-measured "run" WE_EXEC_WORKER=10 ${make_src} run            || die $EX_ERR_RUN
+measured "build-wrapper" ${make[@]} lib                     || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=10 ${make[@]} run             || die $EX_ERR_RUN
 
 grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
-cat "${OUT}" | grep '=>' | sort > "${CMP}"                  || die $EX_ERR_OTHER
-diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
+
+test "$(pnetget -i "${RESULT}" -p avg)" == "0.000193708"    || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p stddev)" == "0.999908"    || die $EX_ERR_RES
+
+rm -f "${CMP}"                                           || die $EX_ERR_CLEANUP
+rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP
+rm -f "${DAT}"                                           || die $EX_ERR_CLEANUP
+rm -f "${HOSTFILE}"                                      || die $EX_ERR_CLEANUP
+measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+measured "clean-data" ${make_gen} clean                  || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

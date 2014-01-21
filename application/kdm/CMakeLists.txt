@@ -5,7 +5,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src
 		    ${CMAKE_CURRENT_SOURCE_DIR}/src/structures
 		    ${CMAKE_CURRENT_SOURCE_DIR}/src/filehandler
 		    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
-                    ${CMAKE_CURRENT_SOURCE_DIR}/../example
+                    ${CMAKE_SOURCE_DIR}/share
                     ${CMAKE_SOURCE_DIR}/gspc
                     )
 
@@ -195,22 +195,7 @@ install(FILES ${hdrs}
   COMPONENT sdk
   )
 
-install(PROGRAMS kdm
-  DESTINATION ${SDPA_APPS_DIR}/kdm/bin
-  COMPONENT examples
-)
-
 install(TARGETS determine_size do_load do_write
   LIBRARY
   DESTINATION libexec/sdpa
-  COMPONENT modules)
-
-install(TARGETS sinc_mod filter_mod simple_process_mod filter_trace_mod
-  LIBRARY
-  DESTINATION ${SDPA_APPS_DIR}/kdm/lib
-  COMPONENT modules)
-
-install(TARGETS kdm_mod kdmfull_mod
-  LIBRARY
-  DESTINATION ${SDPA_APPS_DIR}/kdm/lib
   COMPONENT modules)
