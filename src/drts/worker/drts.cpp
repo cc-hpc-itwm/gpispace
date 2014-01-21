@@ -381,11 +381,6 @@ public:
 
     wfe_task_t task (job_id, worker_list);
 
-    {
-      boost::mutex::scoped_lock task_map_lock(m_mutex);
-      m_task_map.insert(std::make_pair(job_id, &task));
-    }
-
     try
     {
       task.activity = we::type::activity_t (job_description);
@@ -398,13 +393,14 @@ public:
 
       emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
 
-      {
-        boost::mutex::scoped_lock task_map_lock(m_mutex);
-        m_task_map.erase (job_id);
-      }
-
       return fhg::error::INVALID_JOB_DESCRIPTION;
     }
+
+    {
+      boost::mutex::scoped_lock task_map_lock(m_mutex);
+      m_task_map.insert(std::make_pair(job_id, &task));
+    }
+
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
