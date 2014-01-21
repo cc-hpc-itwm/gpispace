@@ -1882,7 +1882,7 @@ void fhg_emit_log_message ( const char *filename
                                                          , filename
                                                          , function
                                                          , line
-                                                         , message
+                                                         , msg
                                                          )
                                     );
   }
