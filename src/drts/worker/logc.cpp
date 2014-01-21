@@ -14,6 +14,7 @@ class LogcPluginImpl;
 namespace
 {
   LogcPluginImpl *global_logc = 0;
+  fhg::log::Appender::ptr_t GLOBAL_logc_destination;
 }
 
 class LogcPluginImpl : FHG_PLUGIN
@@ -31,7 +32,7 @@ public:
 
     try
     {
-      m_destination.reset (new fhg::log::remote::RemoteAppender(logc_url));
+      GLOBAL_logc_destination.reset (new fhg::log::remote::RemoteAppender(logc_url));
     }
     catch (std::exception const &ex)
     {
@@ -46,7 +47,7 @@ public:
   FHG_PLUGIN_STOP()
   {
     global_logc = NULL;
-    m_destination.reset();
+    GLOBAL_logc_destination.reset();
 
     FHG_PLUGIN_STOPPED();
   }
@@ -57,7 +58,7 @@ public:
            , const char * message
            )
   {
-    m_destination->append(fhg::log::LogEvent ( fhg::log::INFO
+    GLOBAL_logc_destination->append(fhg::log::LogEvent ( fhg::log::INFO
                                              , filename
                                              , function
                                              , line
@@ -65,9 +66,6 @@ public:
                                              )
                          );
   }
-
-private:
-  fhg::log::Appender::ptr_t m_destination;
 };
 
 void fhg_emit_log_message ( const char *filename
