@@ -653,7 +653,7 @@ public:
     fhg::plugin::Capability* cap (fhg_kernel()->acquire< fhg::plugin::Capability>("gpi"));
     fhg::com::host_t host (fhg_kernel()->get("host", "*"));
     fhg::com::port_t port (fhg_kernel()->get("port", "0"));
-
+    const std::string logc_url (fhg_kernel()->get("logc_url", ""));
     {
       const std::string master_names (fhg_kernel()->get("master", ""));
       const std::string virtual_capabilities (fhg_kernel()->get("capabilities", ""));
@@ -661,7 +661,6 @@ public:
       fhg::util::split (virtual_capabilities, ",", std::back_inserter(capability_list));
     }
 
-    const std::string logc_url (fhg_kernel()->get("logc_url", ""));
     if (logc_url.empty())
     {
       throw std::runtime_error
