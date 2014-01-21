@@ -51,21 +51,6 @@ public:
 
     FHG_PLUGIN_STOPPED();
   }
-
-  void log ( const char * filename
-           , const char * function
-           , const size_t line
-           , const char * message
-           )
-  {
-    GLOBAL_logc_destination->append(fhg::log::LogEvent ( fhg::log::INFO
-                                             , filename
-                                             , function
-                                             , line
-                                             , message
-                                             )
-                         );
-  }
 };
 
 void fhg_emit_log_message ( const char *filename
@@ -75,7 +60,15 @@ void fhg_emit_log_message ( const char *filename
                           )
 {
   if (global_logc)
-    global_logc->log (filename, function, line, msg);
+  {
+    GLOBAL_logc_destination->append(fhg::log::LogEvent ( fhg::log::INFO
+                                             , filename
+                                             , function
+                                             , line
+                                             , message
+                                             )
+                         );
+  }
 }
 
 EXPORT_FHG_PLUGIN( logc
