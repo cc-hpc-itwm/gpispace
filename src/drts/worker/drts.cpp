@@ -401,31 +401,9 @@ public:
       m_task_map.insert(std::make_pair(job_id, &task));
     }
 
-
-      // TODO get walltime from activity properties
-      boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
-
       m_tasks.put(&task);
 
-      if (walltime > boost::posix_time::seconds(0))
-      {
-        MLOG(INFO, "task has a walltime of " << walltime);
-        if (! task.done.timed_wait(ec, boost::get_system_time()+walltime))
-        {
-          // abort task, i.e. restart worker
-
-          // this is  required to ensure  that the execution thread  is actually
-          // finished with this task
-          task.done.wait(ec);
-
-          task.state = wfe_task_t::FAILED;
-          ec = fhg::error::WALLTIME_EXCEEDED;
-        }
-      }
-      else
-      {
-        task.done.wait(ec);
-      }
+      task.done.wait(ec);
 
       result = task.activity;
 
