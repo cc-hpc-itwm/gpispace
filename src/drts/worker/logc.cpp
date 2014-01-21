@@ -41,8 +41,6 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
-    DMLOG(TRACE, "LOGC sending events to " << m_url);
-
     FHG_PLUGIN_STARTED();
   }
 
