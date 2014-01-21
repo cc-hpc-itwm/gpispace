@@ -80,7 +80,6 @@ namespace
     state_t state;
     int        errc;
     we::type::activity_t activity;
-    fhg::util::thread::event<int> done;
     gspc::drts::context context;
     std::string error_message;
 
@@ -301,7 +300,6 @@ public:
       , boost::bind (&WFEImpl::service_get_search_path, this, _1, _2, _3)
       , service_demux
       )
-    , m_worker (&WFEImpl::execution_thread, this)
   {
     {
       // initalize loader with paths
@@ -326,8 +324,6 @@ public:
       ld_library_path = search_path + ":" + ld_library_path;
       setenv("LD_LIBRARY_PATH", ld_library_path.c_str(), true);
     }
-
-    fhg::util::set_threadname (m_worker, "[drts]");
   }
 
   ~WFEImpl()
@@ -339,19 +335,9 @@ public:
         wfe_task_t *task = m_task_map.begin ()->second;
         task->state = wfe_task_t::CANCELED;
         task->error_message = "plugin shutdown";
-        task->done.notify(fhg::error::EXECUTION_CANCELED);
 
         m_task_map.erase (task->id);
       }
-    }
-
-    m_worker.interrupt();
-    boost::posix_time::time_duration timeout =
-      boost::posix_time::seconds (15);
-    if (not m_worker.timed_join (timeout))
-    {
-      LOG (WARN, "could not interrupt user-code, aborting");
-      _exit (66);
     }
   }
 
@@ -378,7 +364,7 @@ public:
               )
   {
     wfe_task_t task (job_id, worker_list);
-    int ec = task.errc = fhg::error::NO_ERROR;
+    task.errc = fhg::error::NO_ERROR;
 
     try
     {
@@ -400,36 +386,85 @@ public:
       m_task_map.insert(std::make_pair(job_id, &task));
     }
 
-      m_tasks.put(&task);
+    {
+      boost::mutex::scoped_lock lock (m_current_task_mutex);
+      m_current_task = &task;
+    }
 
-      task.done.wait(ec);
+    emit_task (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
 
-      result = task.activity;
-
-      if (fhg::error::NO_ERROR == task.errc)
+    if (task.state != wfe_task_t::PENDING)
+    {
+      task.errc = fhg::error::EXECUTION_CANCELED;
+      task.error_message = "canceled";
+    }
+    else
+    {
+      try
       {
-        MLOG(TRACE, "task finished: " << task.id);
-        task.state = wfe_task_t::FINISHED;
-        error_message = task.error_message;
+        wfe_exec_context ctxt (m_loader, task);
 
-        emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
+        task.activity.execute (&ctxt);
+
+        if (task.state == wfe_task_t::CANCELED)
+        {
+          task.errc = fhg::error::EXECUTION_CANCELED;
+          task.error_message = "canceled";
+        }
+        else
+        {
+          task.state = wfe_task_t::FINISHED;
+          task.errc = fhg::error::NO_ERROR;
+          task.error_message = "success";
+        }
       }
-      else if (fhg::error::EXECUTION_CANCELED == task.errc)
+      catch (std::exception const & ex)
       {
-        DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
-        task.state = wfe_task_t::CANCELED;
-        error_message = task.error_message;
-
-        emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELED);
-      }
-      else
-      {
-        MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
         task.state = wfe_task_t::FAILED;
-        error_message = task.error_message;
-
-        emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
+        // TODO: more detailed error codes
+        task.errc = fhg::error::MODULE_CALL_FAILED;
+        task.error_message = ex.what();
       }
+      catch (...)
+      {
+        task.state = wfe_task_t::FAILED;
+        task.errc = fhg::error::UNEXPECTED_ERROR;
+        task.error_message =
+          "UNKNOWN REASON, exception not derived from std::exception";
+      }
+    }
+
+    {
+      boost::mutex::scoped_lock lock (m_current_task_mutex);
+      m_current_task = 0;
+    }
+
+    result = task.activity;
+
+    if (fhg::error::NO_ERROR == task.errc)
+    {
+      MLOG(TRACE, "task finished: " << task.id);
+      task.state = wfe_task_t::FINISHED;
+      error_message = task.error_message;
+
+      emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
+    }
+    else if (fhg::error::EXECUTION_CANCELED == task.errc)
+    {
+      DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
+      task.state = wfe_task_t::CANCELED;
+      error_message = task.error_message;
+
+      emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELED);
+    }
+    else
+    {
+      MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
+      task.state = wfe_task_t::FAILED;
+      error_message = task.error_message;
+
+      emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
+    }
 
     {
       boost::mutex::scoped_lock task_map_lock(m_mutex);
@@ -510,70 +545,6 @@ private:
     user->deliver (rply);
   }
 
-  void execution_thread ()
-  {
-    for (;;)
-    {
-      {
-        boost::mutex::scoped_lock lock (m_current_task_mutex);
-        m_current_task = 0;
-      }
-
-      wfe_task_t *task = m_tasks.get();
-
-      {
-        boost::mutex::scoped_lock lock (m_current_task_mutex);
-        m_current_task = task;
-      }
-
-      emit_task (*task, sdpa::daemon::NotificationEvent::STATE_STARTED);
-
-      if (task->state != wfe_task_t::PENDING)
-      {
-        task->errc = fhg::error::EXECUTION_CANCELED;
-        task->error_message = "canceled";
-      }
-      else
-      {
-        try
-        {
-          wfe_exec_context ctxt (m_loader, *task);
-
-          task->activity.execute (&ctxt);
-
-          if (task->state == wfe_task_t::CANCELED)
-          {
-            task->errc = fhg::error::EXECUTION_CANCELED;
-            task->error_message = "canceled";
-          }
-          else
-          {
-            task->state = wfe_task_t::FINISHED;
-            task->errc = fhg::error::NO_ERROR;
-            task->error_message = "success";
-          }
-        }
-        catch (std::exception const & ex)
-        {
-          task->state = wfe_task_t::FAILED;
-          // TODO: more detailed error codes
-          task->errc = fhg::error::MODULE_CALL_FAILED;
-          task->error_message = ex.what();
-        }
-        catch (...)
-        {
-          task->state = wfe_task_t::FAILED;
-          task->errc = fhg::error::UNEXPECTED_ERROR;
-          task->error_message =
-            "UNKNOWN REASON, exception not derived from std::exception";
-          task->done.notify(1);
-        }
-      }
-
-      task->done.notify(task->errc);
-    }
-  }
-
   boost::optional<numa_socket_setter> _numa_socket_setter;
 
   std::string _worker_name;
@@ -592,8 +563,6 @@ private:
   scoped_service_handler _current_job_service;
   scoped_service_handler _set_search_path_service;
   scoped_service_handler _get_search_path_service;
-
-  boost::thread m_worker;
 };
 
 namespace
