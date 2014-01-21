@@ -15,6 +15,7 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhglog/LogMacros.hpp>
+#include <fhglog/remote/appender.hpp>
 
 #include <gspc/drts/context.hpp>
 #include <gspc/net/frame.hpp>
@@ -608,6 +609,11 @@ private:
   boost::thread m_worker;
 };
 
+namespace
+{
+  fhg::log::Appender::ptr_t GLOBAL_logc_destination;
+}
+
 class DRTSImpl : FHG_PLUGIN
                , public sdpa::events::EventHandler
 {
@@ -655,6 +661,15 @@ public:
       fhg::util::split (virtual_capabilities, ",", std::back_inserter(capability_list));
     }
 
+    const std::string logc_url (fhg_kernel()->get("logc_url", ""));
+    if (logc_url.empty())
+    {
+      throw std::runtime_error
+        ("no remote logging URL specified, please set plugin.drts.logc_url");
+    }
+
+    GLOBAL_logc_destination.reset
+      (new fhg::log::remote::RemoteAppender(logc_url));
 
 
     m_shutting_down = false;
@@ -852,6 +867,8 @@ public:
         m_virtual_capabilities.erase(m_virtual_capabilities.begin());
       }
     }
+
+    GLOBAL_logc_destination.reset();
 
     FHG_PLUGIN_STOPPED();
   }
@@ -1852,6 +1869,24 @@ int drts_on_cancel ()
   }
 
   return ec;
+}
+
+void fhg_emit_log_message ( const char *filename
+                          , const char *function
+                          , size_t line
+                          , const char * msg
+                          )
+{
+  if (GLOBAL_logc_destination)
+  {
+    GLOBAL_logc_destination->append ( fhg::log::LogEvent ( fhg::log::INFO
+                                                         , filename
+                                                         , function
+                                                         , line
+                                                         , message
+                                                         )
+                                    );
+  }
 }
 
 EXPORT_FHG_PLUGIN( drts

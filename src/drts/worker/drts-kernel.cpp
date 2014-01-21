@@ -64,7 +64,6 @@ int main(int ac, char **av)
   }
 
   std::vector<std::string> mods_to_load;
-  mods_to_load.push_back ("logc");
   mods_to_load.push_back ("kvs");
   mods_to_load.push_back ("progress"); // requires kvs
   mods_to_load.push_back ("netd");

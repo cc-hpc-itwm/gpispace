@@ -6,6 +6,14 @@
 //! \todo These functions should obviously be non-magically-available
 //! via drts_context or alike.
 
+#include <cstddef>
+
+void fhg_emit_log_message ( const char *filename
+                          , const char *function
+                          , size_t line
+                          , const char * msg
+                          );
+
 #ifdef __cplusplus
 extern "C" {
 #endif
