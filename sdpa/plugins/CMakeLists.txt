@@ -70,11 +70,3 @@ fhg_add_plugin(logd logd.cpp observable.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
 )
-
-fhg_add_plugin(netd netd.cpp
-  LINK_LIBRARIES ${GSPC_LIBRARY_SHARED}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_DATE_TIME_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  INSTALL
-)
