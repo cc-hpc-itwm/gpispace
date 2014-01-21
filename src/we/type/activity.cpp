@@ -328,9 +328,50 @@ namespace we
         return _input;
       }
 
-      const activity_t::output_t& activity_t::output() const
+      activity_t::output_t activity_t::output() const
       {
-        return _output;
+        if (_transition.net())
+        {
+          output_t output;
+
+          BOOST_FOREACH
+            ( we::type::transition_t::port_map_t::value_type const& p
+            , _transition.ports()
+            )
+          {
+            if (p.second.is_output())
+            {
+              if (p.second.associated_place())
+              {
+                const we::port_id_type& port_id (p.first);
+                const we::place_id_type& pid
+                  (*p.second.associated_place());
+
+                BOOST_FOREACH ( const pnet::type::value::value_type& token
+                              , _transition.net()->get_token (pid)
+                              )
+                {
+                  output.push_back (std::make_pair (token, port_id));
+                }
+              }
+              else
+              {
+                throw std::runtime_error
+                  ( "output port ("
+                  + boost::lexical_cast<std::string> (p.first)
+                  + ", " + p.second.name() + ") "
+                  + "is not associated with any place!"
+                  );
+              }
+            }
+          }
+
+          return output;
+        }
+        else
+        {
+          return _output;
+        }
       }
 
       void activity_t::add_output

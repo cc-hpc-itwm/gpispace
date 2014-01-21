@@ -236,8 +236,10 @@ try
             std::cerr << "no such output port: " << port << std::endl;
             return EX_USAGE;
           }
-          detail::copy_if( act.output().begin()
-                         , act.output().end()
+          we::type::activity_t::output_t output (act.output());
+
+          detail::copy_if( output.begin()
+                         , output.end()
                          , output_token(stream, "\n")
                          , match_equal_port(port_id)
                          );
@@ -245,8 +247,10 @@ try
       }
       else
       {
-        detail::copy_if( act.output().begin()
-                       , act.output().end()
+        we::type::activity_t::output_t output (act.output());
+
+        detail::copy_if( output.begin()
+                       , output.end()
                        , output_port_and_token(stream, "\n")
                        , match_every_port()
                        );
