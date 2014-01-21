@@ -19,15 +19,6 @@ namespace
 class LogcPluginImpl : FHG_PLUGIN
 {
 public:
-  LogcPluginImpl ()
-  {
-    global_logc = this;
-  }
-  ~LogcPluginImpl()
-  {
-    global_logc = NULL;
-  }
-
   FHG_PLUGIN_START()
   {
     std::string logc_url (fhg_kernel()->get("url", ""));
@@ -48,11 +39,13 @@ public:
       FHG_PLUGIN_FAILED(EINVAL);
     }
 
+    global_logc = this;
     FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
+    global_logc = NULL;
     m_destination.reset();
 
     FHG_PLUGIN_STOPPED();
