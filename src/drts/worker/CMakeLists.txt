@@ -4,6 +4,14 @@ find_package (HWLOC REQUIRED QUIET)
 include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
 include(fhg_plugin_macros)
+fhg_add_plugin(logc logc.cpp
+  LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+  INSTALL
+  HEADERS logc.hpp
+)
+
 fhg_add_plugin(drts drts.cpp job.cpp magically_available_functions.cpp
   LINK_LIBRARIES sdpa
                  ${FhgCom_LIBRARY}

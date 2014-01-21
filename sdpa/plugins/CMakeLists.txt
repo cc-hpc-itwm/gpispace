@@ -71,14 +71,6 @@ fhg_add_plugin(logd logd.cpp observable.cpp
   INSTALL
 )
 
-fhg_add_plugin(logc logc.cpp
-  LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  INSTALL
-  HEADERS logc.hpp
-)
-
 fhg_add_plugin(netd netd.cpp
   LINK_LIBRARIES ${GSPC_LIBRARY_SHARED}
                  ${Boost_THREAD_LIBRARY}
