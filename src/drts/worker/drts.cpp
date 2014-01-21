@@ -1,6 +1,4 @@
-#include "drts_callbacks.h"
 #include "job.hpp"
-#include <drts/worker/magically_available_functions.hpp>
 
 #include <fhg/error_codes.hpp>
 #include <fhg/plugin/capability.hpp>
@@ -486,6 +484,7 @@ public:
     else
     {
       task_it->second->state = wfe_task_t::CANCELED;
+      task_it->second->context.module_call_do_cancel();
     }
 
     return 0;
@@ -564,45 +563,6 @@ private:
   scoped_service_handler _set_search_path_service;
   scoped_service_handler _get_search_path_service;
 };
-
-namespace
-{
-  typedef std::pair<DrtsCancelHandler, void*> handler_t;
-  typedef std::list<handler_t> handler_list_t;
-
-  handler_list_t s_handler_list;
-  boost::mutex s_handler_list_mtx;
-}
-
-int drts_on_cancel_add (DrtsCancelHandler h, void *data)
-{
-  boost::mutex::scoped_lock const _ (s_handler_list_mtx);
-  s_handler_list.push_back (std::make_pair (h, data));
-  return 0;
-}
-
-void drts_on_cancel_clear ()
-{
-  boost::mutex::scoped_lock const _ (s_handler_list_mtx);
-  s_handler_list.clear ();
-}
-
-void drts_on_cancel ()
-{
-  handler_list_t to_call;
-  {
-    boost::mutex::scoped_lock const _ (s_handler_list_mtx);
-    to_call.swap (s_handler_list);
-  }
-
-  while (not to_call.empty ())
-  {
-    handler_t handler = to_call.back ();
-    to_call.pop_back ();
-
-    handler.first (handler.second);
-  }
-}
 
 class DRTSImpl : FHG_PLUGIN
                , public sdpa::events::EventHandler
@@ -1113,7 +1073,6 @@ public:
       {
         MLOG (TRACE, "trying to cancel running job " << e->job_id());
         m_wfe->cancel (e->job_id());
-        drts_on_cancel ();
       }
       else if (job_it->second->state() == drts::Job::FAILED)
       {
@@ -1245,8 +1204,6 @@ private:
   {
     for (;;)
     {
-      drts_on_cancel_clear ();
-
       boost::shared_ptr<drts::Job> job = m_pending_jobs.get();
 
       if (drts::Job::PENDING == job->cmp_and_swp_state( drts::Job::PENDING
