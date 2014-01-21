@@ -11,7 +11,7 @@ fhg_add_plugin(logc logc.cpp
   INSTALL
 )
 
-fhg_add_plugin(drts drts.cpp job.cpp magically_available_functions.cpp
+fhg_add_plugin(drts drts.cpp job.cpp
   LINK_LIBRARIES sdpa
                  ${FhgCom_LIBRARY}
                  ${GSPC_LIBRARY_SHARED}
