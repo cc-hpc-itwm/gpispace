@@ -389,6 +389,22 @@ public:
     try
     {
       task.activity = we::type::activity_t (job_description);
+    }
+    catch (std::exception const & ex)
+    {
+      MLOG(ERROR, "could not parse activity: " << ex.what());
+      task.state = wfe_task_t::FAILED;
+      error_message = ex.what();
+
+      emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
+
+      {
+        boost::mutex::scoped_lock task_map_lock(m_mutex);
+        m_task_map.erase (job_id);
+      }
+
+      return fhg::error::INVALID_JOB_DESCRIPTION;
+    }
 
       // TODO get walltime from activity properties
       boost::posix_time::time_duration walltime = boost::posix_time::seconds(0);
@@ -441,16 +457,6 @@ public:
 
         emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
       }
-    }
-    catch (std::exception const & ex)
-    {
-      MLOG(ERROR, "could not parse activity: " << ex.what());
-      task.state = wfe_task_t::FAILED;
-      ec = fhg::error::INVALID_JOB_DESCRIPTION;
-      error_message = ex.what();
-
-      emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
-    }
 
     {
       boost::mutex::scoped_lock task_map_lock(m_mutex);
