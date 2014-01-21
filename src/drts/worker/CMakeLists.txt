@@ -4,7 +4,7 @@ find_package (HWLOC REQUIRED QUIET)
 include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
 include(fhg_plugin_macros)
-fhg_add_plugin(drts drts.cpp job.cpp drts_callbacks.cpp
+fhg_add_plugin(drts drts.cpp job.cpp magically_available_functions.cpp
   LINK_LIBRARIES sdpa
                  ${FhgCom_LIBRARY}
                  ${GSPC_LIBRARY_SHARED}
@@ -13,7 +13,7 @@ fhg_add_plugin(drts drts.cpp job.cpp drts_callbacks.cpp
                  ${Boost_DATE_TIME_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
-  HEADERS drts_callbacks.h
+  HEADERS drts_callbacks.h magically_available_functions.hpp
 )
 
 add_executable (drts-kernel drts-kernel.cpp)

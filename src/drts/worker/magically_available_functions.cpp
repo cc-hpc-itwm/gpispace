@@ -1,4 +1,6 @@
-#include "drts_callbacks.h"
+// bernd.loerwald@itwm.fraunhofer.de
+
+#include <drts/worker/magically_available_functions.hpp>
 
 #include <list>
 #include <utility>
