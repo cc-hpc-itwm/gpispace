@@ -53,6 +53,8 @@ public:
 
   FHG_PLUGIN_STOP()
   {
+    m_destination.reset();
+
     FHG_PLUGIN_STOPPED();
   }
 
