@@ -81,13 +81,13 @@ namespace
     int        errc;
     we::type::activity_t activity;
     fhg::util::thread::event<int> done;
-    std::list<std::string> workers;
+    gspc::drts::context context;
     std::string error_message;
 
     wfe_task_t (std::string id, std::list<std::string> workers)
       : id (id)
       , state (wfe_task_t::PENDING)
-      , workers (workers)
+      , context (workers)
     {}
   };
 
@@ -98,7 +98,6 @@ namespace
     wfe_exec_context (we::loader::loader& module_loader, wfe_task_t& target)
       : loader (module_loader)
       , task (target)
-      , context (task.workers)
     {}
 
     virtual void handle_internally (we::type::activity_t& act, net_t const&)
@@ -125,7 +124,7 @@ namespace
     {
       try
       {
-        we::loader::module_call (loader, &context, act, mod);
+        we::loader::module_call (loader, &task.context, act, mod);
       }
       catch (std::exception const &ex)
       {
@@ -158,7 +157,6 @@ namespace
   private:
     we::loader::loader& loader;
     wfe_task_t& task;
-    gspc::drts::context context;
   };
 
   struct search_path_appender
