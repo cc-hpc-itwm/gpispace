@@ -29,13 +29,13 @@ public:
 
     gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
 
-    m_url = fhg_kernel()->get ("url", "tcp://*");
+    const std::string netd_url (fhg_kernel()->get ("url", "tcp://*"));
 
-    m_server = gspc::net::serve (m_url, gspc::net::server::default_queue_manager());
+    m_server = gspc::net::serve (netd_url, gspc::net::server::default_queue_manager());
 
-    m_listen_url = m_server->url ();
+    const std::string listen_url (m_server->url());
 
-    MLOG (DEBUG, "listening on " << m_listen_url);
+    MLOG (DEBUG, "listening on " << listen_url);
 
     kvs::KeyValueStore *kvs = fhg_kernel ()->acquire<kvs::KeyValueStore>("kvs");
     if (kvs)
@@ -44,7 +44,7 @@ public:
       {
         kvs->put ( "gspc.net.url."
                  + fhg_kernel ()->get_name ()
-                 , m_listen_url
+                 , listen_url
                  );
       }
       catch (std::exception const &ex)
@@ -70,9 +70,6 @@ public:
     FHG_PLUGIN_STOPPED();
   }
 private:
-  std::string             m_url;
-  std::string             m_listen_url;
-
   gspc::net::server_ptr_t m_server;
 };
 
