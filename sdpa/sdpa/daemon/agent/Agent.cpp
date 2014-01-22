@@ -666,7 +666,6 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
 {
   sdpa::job_id_t job_id(pEvt->job_id());
   Job* pJob = jobManager().findJob(job_id);
-  sdpa::discovery_info_t discover_result;
 
    // if the event came from outside, forward it to the workflow engine
   if(pEvt->is_external())
@@ -675,6 +674,7 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
       {
          DLLOG(TRACE, _logger, "Job "<<job_id<<" not found!");
 
+         sdpa::discovery_info_t discover_result(pEvt->job_id(), boost::none, sdpa::discovery_info_set_t());
          sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                              , pEvt->from()
                                                                                                              , pEvt->discover_id()
@@ -688,7 +688,12 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
   }
   else
   {
-    workflowEngine()->discovered(pEvt->discover_id(), discover_result);
+      boost::optional<sdpa::status::code> status = boost::none;
+      if(pJob)
+        status = pJob->getStatus();
+
+      sdpa::discovery_info_t discover_result(pEvt->job_id(), status, sdpa::discovery_info_set_t());
+      workflowEngine()->discovered(pEvt->discover_id(), discover_result);
   }
 }
 
