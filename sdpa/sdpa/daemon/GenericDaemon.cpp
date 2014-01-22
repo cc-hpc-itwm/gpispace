@@ -1318,7 +1318,6 @@ void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_
 {
   // generate a DiscoverJobStatestReplyEvent and and send it to the master
   sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id));
-  DLLOG(TRACE, _logger,  "WE: tell the master \""<<master_name<<"\" the discover_result("<<discover_id<<"): "<<pnet::type::value::show(discover_result));
   sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                       , master_name
                                                                                                       , discover_id
