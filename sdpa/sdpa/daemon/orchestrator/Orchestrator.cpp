@@ -447,16 +447,15 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
 
   pJob = jobManager().findJob(pEvt->job_id());
 
-  sdpa::discovery_info_t discover_result;
-
   if(!pJob)
   {
       DLLOG(TRACE, _logger, "Job "<<pEvt->job_id()<<" not found!");
+      sdpa::discovery_info_t discover_result(pEvt->job_id(), boost::none, sdpa::discovery_info_set_t());
 
       sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                          , pEvt->from()
                                                                                                          , pEvt->discover_id()
-                                                                                                         , discover_result) ));
+                                                                                                         , discover_result)));
 
       return;
   }
@@ -475,6 +474,7 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   }
   else
   {
+      sdpa::discovery_info_t discover_result(pEvt->job_id(),pJob->getStatus(), sdpa::discovery_info_set_t());
       events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                    , pEvt->from()
                                                                                                    , pEvt->discover_id()
