@@ -49,18 +49,14 @@ namespace sdpa
      {
        SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
        SAVE_TO_ARCHIVE (e->discover_id());
-       std::ostringstream oss;
-       oss << pnet::type::value::show (e->discover_result());
-       std::string res(oss.str());
-       SAVE_TO_ARCHIVE (res);
+       SAVE_TO_ARCHIVE (e->discover_result());
      }
 
      LOAD_CONSTRUCT_DATA_DEF (DiscoverJobStatesReplyEvent, e)
      {
        LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
        LOAD_FROM_ARCHIVE (std::string, disc_id);
-       LOAD_FROM_ARCHIVE (std::string, res);
-       sdpa::discovery_info_t disc_res(pnet::type::value::read (res));
+       LOAD_FROM_ARCHIVE (sdpa::discovery_info_t, disc_res);
        ::new (e) DiscoverJobStatesReplyEvent (from, to, disc_id, disc_res);
      }
   }
