@@ -3,12 +3,13 @@
 
 #include <string>
 #include <vector>
-#include <set>
 #include <list>
 #include <map>
+#include <set>
 #include <iostream>
 #include <boost/foreach.hpp>
 #include <we/type/value.hpp>
+#include <sdpa/job_states.hpp>
 
 namespace sdpa {
 	typedef std::string job_id_t;
@@ -57,7 +58,79 @@ namespace sdpa {
   };
 
   typedef std::vector<MasterInfo> master_info_list_t;
-  typedef pnet::type::value::value_type discovery_info_t;
+  //typedef pnet::type::value::value_type discovery_info_t;
+  struct discovery_info_t;
+
+  typedef std::set<discovery_info_t> discovery_info_set_t;
+  struct discovery_info_t
+  {
+    discovery_info_t ()
+          : _job_id ("")
+          , _state (boost::none)
+          , _children (discovery_info_set_t())
+        {}
+    discovery_info_t (job_id_t job_id
+                     , boost::optional<sdpa::status::code> state
+                     , discovery_info_set_t children
+                    )
+       : _job_id (job_id)
+       , _state (state)
+       , _children (children)
+     {}
+
+    const job_id_t& job_id() const { return _job_id; }
+    const boost::optional<sdpa::status::code> state() const { return _state; }
+    const discovery_info_set_t children() const { return _children; }
+
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int file_version)
+    {
+      ar & _job_id;
+      ar & _state;
+      ar & _children;
+    }
+
+    bool operator<( const discovery_info_t& other ) const
+    {
+      return _job_id < other.job_id();
+    }
+
+    bool operator==( const discovery_info_t& other ) const
+    {
+      return  _job_id == other.job_id()
+               && _state == other.state()
+               && _children == other.children();
+    }
+
+  private:
+    job_id_t _job_id;
+    boost::optional<sdpa::status::code> _state;
+    discovery_info_set_t _children;
+  };
+}
+
+inline std::ostream& operator<<(std::ostream& os, const sdpa::discovery_info_t& disc_info)
+{
+  std::string state("NONE");
+  if(disc_info.state())
+    state = sdpa::status::show(disc_info.state().get());
+
+  os<<"["<<disc_info.job_id()<<", "<<state;
+  if(disc_info.children().empty())
+    os<<"]";
+  else
+  {
+      os<<", [";
+      bool b_first=true;
+      BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_info.children())
+      {
+        b_first?b_first=false:os<<", ";
+        os<<child_info;
+      }
+      os<<"]";
+  }
+
+   return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::worker_id_list_t& worker_list)
