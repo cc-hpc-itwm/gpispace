@@ -9,6 +9,8 @@
 #include <we/type/value.hpp>
 #include <we/type/value/show.hpp>
 
+#include <fhg/util/parse/require.hpp>
+
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
@@ -75,13 +77,17 @@ int main (int argc, char** argv) try
 
   BOOST_FOREACH (std::string const& inp, input_spec)
   {
-    const std::string port_name (inp.substr (0, inp.find ('=')));
-    const std::string value (inp.substr (inp.find ('=') + 1));
+    fhg::util::parse::position_string pos (inp);
 
-    const pnet::type::value::value_type val
-      (expr::parse::parser (value).eval_all());
+    fhg::util::parse::require::skip_spaces (pos);
+    const std::string port_name (fhg::util::parse::require::identifier (pos));
+    fhg::util::parse::require::skip_spaces (pos);
+    fhg::util::parse::require::require (pos, '=');
 
-    act.add_input (act.transition().input_port_by_name (port_name), val);
+    act.add_input
+      ( act.transition().input_port_by_name (port_name)
+      , expr::parse::parser (fhg::util::parse::require::rest (pos)).eval_all()
+      );
   }
 
   if (output == "-")
