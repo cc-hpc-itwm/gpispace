@@ -8,6 +8,7 @@ namespace xml
 {
   namespace parse
   {
+    //! \todo do not re-implement fhg::util::parse::require::identifier
     std::string parse_name (fhg::util::parse::position& pos)
     {
       std::string name;
