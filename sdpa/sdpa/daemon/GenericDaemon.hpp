@@ -61,6 +61,8 @@
 
 #include <fhglog/fhglog.hpp>
 
+typedef boost::unordered_map<we::layer::id_type, sdpa::agent_id_t> map_discover_ids_t;
+
 #define OVERWRITTEN_IN_TEST virtual
 
 namespace sdpa {
