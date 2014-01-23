@@ -80,6 +80,7 @@ namespace sdpa {
 
     const job_id_t& job_id() const { return _job_id; }
     const boost::optional<sdpa::status::code> state() const { return _state; }
+    void set_state(const sdpa::status::code state) { _state = state; }
     const discovery_info_set_t children() const { return _children; }
     void add_child_info(const discovery_info_t& child_info) { _children.insert(child_info); }
 
