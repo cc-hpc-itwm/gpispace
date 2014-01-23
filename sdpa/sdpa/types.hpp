@@ -81,6 +81,7 @@ namespace sdpa {
     const job_id_t& job_id() const { return _job_id; }
     const boost::optional<sdpa::status::code> state() const { return _state; }
     const discovery_info_set_t children() const { return _children; }
+    void add_child_info(const discovery_info_t& child_info) { _children.insert(child_info); }
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int file_version)
@@ -111,11 +112,13 @@ namespace sdpa {
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::discovery_info_t& disc_info)
 {
-  std::string state("NONE");
+  std::string state;
   if(disc_info.state())
     state = sdpa::status::show(disc_info.state().get());
 
-  os<<"["<<disc_info.job_id()<<", "<<state;
+  os<<"["<<disc_info.job_id();
+  if(disc_info.state())
+     os<<", "<<sdpa::status::show(disc_info.state().get());
   if(disc_info.children().empty())
     os<<"]";
   else
