@@ -99,9 +99,13 @@ namespace sdpa {
 
     bool operator==( const discovery_info_t& other ) const
     {
-      return  _job_id == other.job_id()
-               && _state == other.state()
-               && _children == other.children();
+      if( (_state && !other.state()) || (!_state && other.state()) )
+        return false;
+
+      if(_state)
+        return  _job_id == other.job_id() && *_state == *other.state() && _children == other.children();
+      else
+        return  _job_id == other.job_id() && _children == other.children();
     }
 
   private:
@@ -121,7 +125,7 @@ inline std::ostream& operator<<(std::ostream& os, const sdpa::discovery_info_t& 
   if(disc_info.state())
      os<<", "<<sdpa::status::show(disc_info.state().get());
   if(disc_info.children().empty())
-    os<<"]";
+    os<<", []]";
   else
   {
       os<<", [";
