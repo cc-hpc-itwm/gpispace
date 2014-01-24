@@ -274,16 +274,16 @@ struct daemon
 
   DECLARE_EXPECT_CLASS ( discovered
                        , we::layer::id_type discover_id
-        BOOST_PP_COMMA() std::set<pnet::type::value::value_type> result
+        BOOST_PP_COMMA() sdpa::discovery_info_t result
                        , _discover_id (discover_id)
         BOOST_PP_COMMA() _result (result)
                        , we::layer::id_type _discover_id
-                       ; std::set<pnet::type::value::value_type> _result
+                       ; sdpa::discovery_info_t _result
                        , _discover_id == discover_id && _result == result
                        );
 
   void discovered ( we::layer::id_type discover_id
-                  , std::set<pnet::type::value::value_type> result
+                  , sdpa::discovery_info_t result
                   )
   {
     std::list<expect_discovered*>::iterator const e
@@ -351,7 +351,7 @@ struct daemon
     layer.discover (discover_id, id);
   }
   void do_discovered
-    (we::layer::id_type discover_id, pnet::type::value::value_type result)
+    (we::layer::id_type discover_id, sdpa::discovery_info_t result)
   {
     DEC_IN_PROGRESS (replies);
 
@@ -959,6 +959,7 @@ BOOST_AUTO_TEST_CASE
 }
 #endif
 
+
 BOOST_FIXTURE_TEST_CASE
   (discovered_shall_be_called_after_discover_one_child, daemon)
 {
@@ -986,15 +987,13 @@ BOOST_FIXTURE_TEST_CASE
     do_discover (discover_id, id);
   }
 
-  using pnet::type::value::poke;
+  sdpa::discovery_info_t discover_result_child( child_id
+                                                , sdpa::status::PENDING
+                                                , sdpa::discovery_info_set_t());
 
-  sdpa::discovery_info_t discover_result_child;
-  /*poke ("id", discover_result_child, child_id);
-  poke ("state", discover_result_child, "PENDING");
-  poke ("childs", discover_result_child, std::set<sdpa::discovery_info_t>());*/
-
-  std::set<sdpa::discovery_info_t> discover_result;
-  discover_result.insert (discover_result_child);
+  sdpa::discovery_info_set_t child_disc_set;
+  child_disc_set.insert(discover_result_child);
+  sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
 
   {
     expect_discovered _ (this, discover_id, discover_result);
@@ -1041,19 +1040,18 @@ BOOST_FIXTURE_TEST_CASE
 
   using pnet::type::value::poke;
 
-  sdpa::discovery_info_t discover_result_child_A;
-  /*poke ("id", discover_result_child_A, child_id_A);
-  poke ("state", discover_result_child_A, "PENDING");
-  poke ("childs", discover_result_child_A, std::set<sdpa::discovery_info_t>());*/
+  sdpa::discovery_info_t discover_result_child_A( child_id_A
+                                                  , sdpa::status::PENDING
+                                                  , sdpa::discovery_info_set_t());
 
-  sdpa::discovery_info_t discover_result_child_B;
-  /*poke ("id", discover_result_child_B, child_id_B);
-  poke ("state", discover_result_child_B, "RUNNING");
-  poke ("childs", discover_result_child_B, std::set<sdpa::discovery_info_t>());*/
+  sdpa::discovery_info_t discover_result_child_B( child_id_B
+                                                  , sdpa::status::PENDING
+                                                  , sdpa::discovery_info_set_t());
 
-  std::set<sdpa::discovery_info_t> discover_result;
-  discover_result.insert (discover_result_child_A);
-  discover_result.insert (discover_result_child_B);
+  sdpa::discovery_info_set_t child_disc_set;
+  child_disc_set.insert(discover_result_child_A);
+  child_disc_set.insert(discover_result_child_B);
+  sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
 
   do_discovered (discover_id, discover_result_child_A);
 
