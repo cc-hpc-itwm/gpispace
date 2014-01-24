@@ -1304,8 +1304,6 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
 
 void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
 {
-  // generate DiscoverJobStatestEvent with the source WE and send it to self
-  DMLOG(TRACE, "Tell the agent to collect the states of all child job/activities related to the job "<<job_id);
   events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( sdpa::daemon::WE
                                                                                     , name()
                                                                                     , job_id
@@ -1316,7 +1314,6 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
 
 void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
 {
-  // generate a DiscoverJobStatestReplyEvent and and send it to the master
   sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
   sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                       , master_name
