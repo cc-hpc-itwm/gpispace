@@ -1317,10 +1317,11 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
 void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
 {
   // generate a DiscoverJobStatestReplyEvent and and send it to the master
-  sdpa::agent_id_t master_name;
+  sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
   sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                       , master_name
                                                                                                       , discover_id
                                                                                                       , discover_result)));
+  m_map_discover_ids.erase(discover_id);
 }
 }}
