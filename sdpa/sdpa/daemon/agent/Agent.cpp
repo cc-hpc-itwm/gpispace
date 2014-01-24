@@ -672,8 +672,6 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
   {
       if(!pJob)
       {
-         DLLOG(TRACE, _logger, "Job "<<job_id<<" not found!");
-
          sdpa::discovery_info_t discover_result(pEvt->job_id(), boost::none, sdpa::discovery_info_set_t());
          sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                              , pEvt->from()
@@ -699,8 +697,6 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
 
 void Agent::handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
 {
-
-  // forward the message to the upper level
   sdpa::agent_id_t master_name(m_map_discover_ids.at( pEvt->discover_id()).disc_issuer() );
   sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                       , master_name
