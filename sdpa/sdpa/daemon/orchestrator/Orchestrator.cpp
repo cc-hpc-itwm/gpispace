@@ -464,6 +464,7 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
 
   if(worker_id)
   {
+      m_map_discover_ids.insert( std::make_pair( pEvt->discover_id(), job_info_t(pEvt->from(), pEvt->job_id(), pJob->getStatus()) ));
       DLLOG(TRACE, _logger, "Tell the worker "<<*worker_id<<" to collect the states of all child job/activities related to the job "<<pEvt->job_id());
       events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( name()
                                                                                        , *worker_id
@@ -485,12 +486,16 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
 
 void Orchestrator::handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
 {
-   sdpa::agent_id_t issuer;
-   events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
+  sdpa::agent_id_t issuer(m_map_discover_ids.at( pEvt->discover_id()).disc_issuer() );
+  sdpa::discovery_info_t disc_res(  pEvt->discover_result() );
+  disc_res.set_state(m_map_discover_ids.at(pEvt->discover_id()).job_status());
+
+  events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                  , issuer
                                                                                                  , pEvt->discover_id()
-                                                                                                 , pEvt->discover_result() ));
+                                                                                                 , disc_res ));
    sendEventToOther(pDiscReplyEvt);
+   m_map_discover_ids.erase(pEvt->discover_id());
 }
 
 }} // end namespaces
