@@ -226,7 +226,7 @@ set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_
                                                                         	-p n_workers_A="2L"
                                                                         	-p n_tasks_B="1L"
                                                                         	-p n_workers_B="3L"
-                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet")
+                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet")
 
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"
                    COMMAND ${command}
