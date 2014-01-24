@@ -683,7 +683,6 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
          return;
       }
 
-      m_map_discover_ids.insert(map_discover_ids_t::value_type(pEvt->discover_id(), pEvt->from()));
       workflowEngine()->discover(pEvt->discover_id(), job_id);
   }
   else
@@ -701,11 +700,10 @@ void Agent::handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobSt
 {
 
   // forward the message to the upper level
-  sdpa::agent_id_t master_name(m_map_discover_ids.at(pEvt->discover_id()));
+  sdpa::agent_id_t master_name; //(m_map_discover_ids.at(pEvt->discover_id()));
   sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                       , master_name
                                                                                                       , pEvt->discover_id()
                                                                                                       , pEvt->discover_result())));
-  m_map_discover_ids.erase(pEvt->discover_id());
 }
 }} // end namespaces
