@@ -149,7 +149,7 @@ namespace we
 
       mutable boost::mutex _discover_state_mutex;
       boost::unordered_map
-        < id_type, std::pair<std::size_t, std::set<pnet::type::value::value_type> >
+        < id_type, std::pair<std::size_t, sdpa::discovery_info_t >
         > _discover_state;
 
       struct locked_parent_child_relation_type
