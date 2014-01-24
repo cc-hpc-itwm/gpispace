@@ -4,7 +4,6 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/job_states.hpp>
 #include <sdpa/types.hpp>
-#include <we/type/value.hpp>
 #include <we/layer.hpp>
 
 #include <fhg/util/thread/queue.hpp>
