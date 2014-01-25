@@ -126,35 +126,6 @@ namespace xml
       void module_type::sanity_check() const
       {
         assert (has_parent());
-
-        const function_type& outer_function (*parent());
-        if (_port_return)
-        {
-          if (!outer_function.is_known_port (*_port_return))
-          {
-            throw error::function_description_with_unknown_port
-              ( "return"
-              , *_port_return
-              , name()
-              , function()
-              , outer_function.position_of_definition().path()
-              );
-          }
-        }
-
-        BOOST_FOREACH (const std::string& port, _port_arg)
-        {
-          if (!outer_function.is_known_port (port))
-          {
-            throw error::function_description_with_unknown_port
-              ( "argument"
-              , port
-              , name()
-              , function()
-              , outer_function.position_of_definition().path()
-              );
-          }
-        }
       }
 
       id::ref::module module_type::clone

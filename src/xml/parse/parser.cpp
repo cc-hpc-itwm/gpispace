@@ -921,6 +921,8 @@ namespace xml
         parse_function_signature ( const std::string& input
                                  , const std::string& _name
                                  , const util::position_type& pod
+                                 , id::ref::function const& outer_function
+                                 , std::string const& module_name
                                  )
         {
           // implement the grammar
@@ -945,6 +947,17 @@ namespace xml
             {
               port_return = function;
               function = parse_name (pos);
+
+              if (!outer_function.get().is_known_port (*port_return))
+              {
+                throw error::function_description_with_unknown_port
+                  ( "return"
+                  , *port_return
+                  , module_name
+                  , function
+                  , outer_function.get().position_of_definition().path()
+                  );
+              }
             }
 
             if (!pos.end())
@@ -964,6 +977,17 @@ namespace xml
               while (!pos.end() && *pos != ')')
               {
                 port_arg.push_back (parse_name (pos));
+
+                if (!outer_function.get().is_known_port (port_arg.back()))
+                {
+                  throw error::function_description_with_unknown_port
+                    ( "argument"
+                    , port_arg.back()
+                    , module_name
+                    , function
+                    , outer_function.get().position_of_definition().path()
+                    );
+                }
 
                 if (!pos.end() && *pos != ')')
                 {
@@ -1016,6 +1040,7 @@ namespace xml
 
       id::ref::module module_type ( const xml_node_type* node
                                   , state::type& state
+                                  , id::ref::function const& outer_function
                                   )
       {
         const id::module id (state.id_mapper()->next_id());
@@ -1030,7 +1055,9 @@ namespace xml
           < std::string
           , boost::optional<std::string>
           , std::list<std::string>
-          > sig (parse_function_signature (signature, name, pod));
+          > sig ( parse_function_signature
+                  (signature, name, pod, outer_function, name)
+                );
         const std::string function (sig.get<0>());
         const boost::optional<std::string> port_return (sig.get<1>());
         const std::list<std::string> port_arg (sig.get<2>());
@@ -1415,7 +1442,8 @@ namespace xml
             }
             else if (child_name == "module")
             {
-              function.get_ref().content (module_type (child, state));
+              function.get_ref()
+                .content (module_type (child, state, function));
             }
             else if (child_name == "net")
             {
