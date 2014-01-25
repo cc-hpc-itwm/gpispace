@@ -1,0 +1,3 @@
+<defun>
+  <module name="m" function="r f()"/>
+</defun>

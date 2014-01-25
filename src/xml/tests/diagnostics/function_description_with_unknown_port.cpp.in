@@ -1,0 +1,56 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE function_description_with_unknown_port
+
+#include <xml/parse/parser.hpp>
+#include <xml/parse/state.hpp>
+#include <xml/parse/error.hpp>
+
+#include <fhg/util/boost/test/require_exception.hpp>
+
+#include <boost/bind.hpp>
+
+namespace
+{
+  void parse_and_post_process (std::string const& filename)
+  {
+    xml::parse::state::type state;
+
+    xml::parse::post_processing_passes
+      (xml::parse::just_parse (state, filename), &state);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (function_description_with_unknown_return_port)
+{
+  std::string const filename
+    ("@XML_PARSE_TEST_XPNETS_DIR@/"
+     "diagnostics/function_description_with_unknown_return_port.xpnet"
+    );
+
+  fhg::util::boost::test::require_exception
+    <xml::parse::error::function_description_with_unknown_port>
+  ( boost::bind (&parse_and_post_process, filename)
+  , boost::format ("ERROR: unknown %1% port %2%"
+                   " in description of function %3%.%4% in %5%\n"
+                  )
+  % "return" % "r" % "m" % "f" % boost::filesystem::path (filename)
+  );
+}
+
+BOOST_AUTO_TEST_CASE (function_description_with_unknown_argument_port)
+{
+  std::string const filename
+    ("@XML_PARSE_TEST_XPNETS_DIR@/"
+     "diagnostics/function_description_with_unknown_argument_port.xpnet"
+    );
+
+  fhg::util::boost::test::require_exception
+    <xml::parse::error::function_description_with_unknown_port>
+  ( boost::bind (&parse_and_post_process, filename)
+  , boost::format ("ERROR: unknown %1% port %2%"
+                   " in description of function %3%.%4% in %5%\n"
+                  )
+  % "argument" % "p" % "m" % "f" % boost::filesystem::path (filename)
+  );
+}
