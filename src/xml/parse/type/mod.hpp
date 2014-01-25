@@ -65,8 +65,6 @@ namespace xml
 
         bool operator== (const module_type&) const;
 
-        void sanity_check() const;
-
         id::ref::module clone
           ( const boost::optional<parent_id_type>& parent = boost::none
           , const boost::optional<id::mapper*>& mapper = boost::none

@@ -514,23 +514,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      void net_type::sanity_check (const state::type & state) const
-      {
-        assert (has_parent());
-
-        BOOST_FOREACH (const transition_type& transition, transitions().values())
-        {
-          transition.sanity_check (state);
-        }
-
-        BOOST_FOREACH (const function_type& function, functions().values())
-        {
-          function.sanity_check (state);
-        }
-      }
-
-      // ***************************************************************** //
-
       void net_type::type_check (const state::type & state) const
       {
         BOOST_FOREACH (const transition_type& trans, transitions().values())

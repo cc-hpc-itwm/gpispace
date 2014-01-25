@@ -123,11 +123,6 @@ namespace xml
           ;
       }
 
-      void module_type::sanity_check() const
-      {
-        assert (has_parent());
-      }
-
       id::ref::module module_type::clone
         ( const boost::optional<parent_id_type>& parent
         , const boost::optional<id::mapper*>& mapper

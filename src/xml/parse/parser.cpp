@@ -1599,7 +1599,6 @@ namespace xml
       function.get_ref().specialize (*state);
 
       function.get_ref().type_check (*state);
-      function.get_ref().sanity_check (*state);
     }
 
     void generate_cpp ( const id::ref::function& function

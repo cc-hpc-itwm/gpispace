@@ -452,35 +452,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      namespace
-      {
-        class transition_sanity_check : public boost::static_visitor<void>
-        {
-        private:
-          const state::type & state;
-
-        public:
-          transition_sanity_check (const state::type & _state)
-            : state (_state)
-          { }
-
-          void operator () (const id::ref::use&) const { return; }
-          void operator () (const id::ref::function& id_function) const
-          {
-            id_function.get().sanity_check (state);
-          }
-        };
-      }
-
-      void transition_type::sanity_check (const state::type & state) const
-      {
-        boost::apply_visitor ( transition_sanity_check (state)
-                             , function_or_use()
-                             );
-      }
-
-      // ***************************************************************** //
-
       //! \todo move to connect_type
       void transition_type::type_check ( const connect_type & connect
                                        , const state::type & state

@@ -138,10 +138,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        void sanity_check (const state::type & state) const;
-
-        // ***************************************************************** //
-
         void type_check (const connect_type&, const state::type&) const;
         void type_check (const state::type & state) const;
 

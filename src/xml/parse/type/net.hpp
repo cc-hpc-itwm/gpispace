@@ -133,10 +133,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        void sanity_check (const state::type & state) const;
-
-        // ***************************************************************** //
-
         void type_check (const state::type & state) const;
 
         void set_prefix (const std::string & prefix);
