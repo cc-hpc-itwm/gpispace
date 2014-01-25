@@ -1176,7 +1176,10 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::place place_type (const xml_node_type* node, state::type& state)
+      id::ref::place place_type ( const xml_node_type* node
+                                , state::type& state
+                                , id::ref::function const& outer_function
+                                )
       {
         const id::place id (state.id_mapper()->next_id());
 
@@ -1200,6 +1203,18 @@ namespace xml
               (fhg::util::read_bool, optional (node, "virtual"))
             ).make_reference_id()
           );
+
+        if (  place.get().is_virtual()
+           && !outer_function.get().is_known_tunnel (place.get().name())
+           )
+        {
+          state.warn
+            ( warning::virtual_place_not_tunneled
+              ( place.get().name()
+              , outer_function.get().position_of_definition().path()
+              )
+            );
+        }
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -1244,7 +1259,10 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::net net_type (const xml_node_type* node, state::type& state)
+      id::ref::net net_type ( const xml_node_type* node
+                            , state::type& state
+                            , id::ref::function const& outer_function
+                            )
       {
         const id::net id (state.id_mapper()->next_id());
 
@@ -1276,7 +1294,8 @@ namespace xml
             }
             else if (child_name == "place")
             {
-              net.get_ref().push_place (place_type (child, state));
+              net.get_ref()
+                .push_place (place_type (child, state, outer_function));
             }
             else if (child_name == "transition")
             {
@@ -1447,7 +1466,7 @@ namespace xml
             }
             else if (child_name == "net")
             {
-              function.get_ref().content (net_type (child, state));
+              function.get_ref().content (net_type (child, state, function));
             }
             else if (child_name == "condition")
             {

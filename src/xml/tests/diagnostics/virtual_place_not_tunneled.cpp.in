@@ -10,22 +10,13 @@
 
 #include <boost/bind.hpp>
 
-namespace
-{
-  void parse_and_post_process (std::string const& filename)
-  {
-    xml::parse::state::type state;
-
-    state.Werror() = true;
-    state.Wvirtual_place_not_tunneled() = true;
-
-    xml::parse::post_processing_passes
-      (xml::parse::just_parse (state, filename), &state);
-  }
-}
-
 BOOST_AUTO_TEST_CASE (virtual_place_not_tunneled)
 {
+  xml::parse::state::type state;
+
+  state.Werror() = true;
+  state.Wvirtual_place_not_tunneled() = true;
+
   std::string const filename
     ("@XML_PARSE_TEST_XPNETS_DIR@/"
      "diagnostics/virtual_place_not_tunneled.xpnet"
@@ -33,7 +24,7 @@ BOOST_AUTO_TEST_CASE (virtual_place_not_tunneled)
 
   fhg::util::boost::test::require_exception
     <xml::parse::warning::virtual_place_not_tunneled>
-  ( boost::bind (&parse_and_post_process, filename)
+  ( boost::bind (&xml::parse::just_parse, boost::ref (state), filename)
   , boost::format ("WARNING: the virtual place %1% is not tunneled in %2%.")
   % "v" % boost::filesystem::path (filename)
   );

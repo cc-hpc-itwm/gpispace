@@ -527,22 +527,6 @@ namespace xml
         {
           function.sanity_check (state);
         }
-
-        const function_type& outer_function (*parent());
-
-        BOOST_FOREACH (const place_type& place, places().values())
-        {
-          if ( place.is_virtual()
-            && !outer_function.is_known_tunnel (place.name())
-             )
-          {
-            state.warn
-              ( warning::virtual_place_not_tunneled ( place.name()
-                                                    , outer_function.position_of_definition().path()
-                                                    )
-              );
-          }
-        }
       }
 
       // ***************************************************************** //
