@@ -177,7 +177,7 @@ namespace sdpa {
 
       // workflow engine
     public:
-      we::layer* workflowEngine() const { return ptr_workflow_engine_.get(); }
+      we::layer* workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
     protected:
@@ -188,7 +188,7 @@ namespace sdpa {
       // workers
       OVERWRITTEN_IN_TEST void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
-    private:
+    protected:
       // jobs
       std::string gen_id();
 
@@ -246,7 +246,7 @@ namespace sdpa {
       JobManager _job_manager;
       SchedulerBase::ptr_t ptr_scheduler_;
       boost::optional<boost::mt19937> _random_extraction_engine;
-      boost::scoped_ptr<we::layer> ptr_workflow_engine_;
+      we::layer* ptr_workflow_engine_;
 
     private:
 
