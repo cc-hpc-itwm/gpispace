@@ -1047,7 +1047,7 @@ namespace fhg
         }
         QString spinbox_to_string (const QSpinBox* box)
         {
-          return QString ("%1").arg (box->value());
+          return QString ("%1L").arg (box->value());
         }
         QString spinbox_to_memory_size_type (const QSpinBox* box)
         {
