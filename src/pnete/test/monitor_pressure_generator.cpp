@@ -23,9 +23,10 @@ struct activity
     , _state (NotificationEvent::STATE_STARTED)
     , _act ( we::type::transition_t ( "activity-" + _id
                                     , we::type::expression_t()
-                                    , condition::type ("true")
+                                    , boost::none
                                     , true
                                     , we::type::property::type()
+                                    , we::priority_type()
                                     )
            , boost::none
            )

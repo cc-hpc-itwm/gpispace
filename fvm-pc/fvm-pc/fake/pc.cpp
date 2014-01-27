@@ -233,7 +233,7 @@ static fvmCommHandleState_t check_bounds
 , const fvmSize_t size /* should stay inside the space allocated for handle */
 , const Arena_t Arena
 , POffset_t PBaseOffset
-, const char * /*descr*/
+, const char * descr
 )
 {
   MemSize_t HandleSize = 0;

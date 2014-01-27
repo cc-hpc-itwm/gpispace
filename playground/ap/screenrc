@@ -1,9 +1,0 @@
-defutf8 on
-startup_message off
-caption always "%{= d} %{+b dr}%H%{= dg} | %c %{= dy}%d.%m.%Y | %{= dw}%?%-Lw%?%{b}%n*%f %t%?(%u)%?%{= dw}%?%+Lw%?%{= d}"
-autodetach on
-
-bind x
-bind ^X
-vbell off
-

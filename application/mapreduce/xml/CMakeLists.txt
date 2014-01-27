@@ -4,7 +4,6 @@ pnet_compile( mapreduce mapreduce.xpnet
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   OUTPUT mapreduce.pnet
   GENERATE mapreduce
-  INSTALL ${SDPA_APPS_DIR}/mapreduce
   CXXFLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/..
            -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog

@@ -23,7 +23,7 @@ namespace we
    }
 
     // should correspond!
-    expression_t::expression_t (const std::string& expr, const ast_t& ast)
+    expression_t::expression_t (const std::string& expr, const expr::parse::parser& ast)
       : _expr (expr)
       , _ast (ast)
     {
@@ -35,14 +35,9 @@ namespace we
       return _expr;
     }
 
-    const expression_t::ast_t& expression_t::ast() const
+    const expr::parse::parser& expression_t::ast() const
     {
       return _ast;
-    }
-
-    bool expression_t::is_empty() const
-    {
-      return _expr.empty();
     }
 
     bool expression_t::simplify
@@ -66,12 +61,6 @@ namespace we
     void expression_t::rename (const std::string& from, const std::string& to)
     {
       _ast.rename (from, to);
-      _expr = _ast.string();
-    }
-
-    void expression_t::add (const expression_t& other)
-    {
-      _ast.add (other.ast());
       _expr = _ast.string();
     }
 

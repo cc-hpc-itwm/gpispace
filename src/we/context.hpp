@@ -42,7 +42,7 @@ namespace we
     {
     protected:
       typedef we::type::activity_t activity_t;
-      typedef we::net net_t;
+      typedef we::type::net_type net_t;
       typedef we::type::module_call_t mod_t;
       typedef we::type::expression_t expr_t;
 

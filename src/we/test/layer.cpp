@@ -394,9 +394,10 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   we::type::transition_t transition
     ( "expression"
     , we::type::expression_t ("${out} := ${in} + 1L")
-    , condition::type ("true")
+    , boost::none
     , true
     , we::type::property::type()
+    , we::priority_type()
     );
   transition.add_port
     (we::type::port_t ( "in"
@@ -438,9 +439,10 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   we::type::transition_t transition
     ( "module call"
     , we::type::module_call_t ("m", "f")
-    , condition::type ("true")
+    , boost::none
     , true
     , we::type::property::type()
+    , we::priority_type()
     );
   transition.add_port ( we::type::port_t ( "in"
                                          , we::type::PORT_IN
@@ -498,9 +500,10 @@ namespace
     we::type::transition_t transition
       ( "module call"
       , we::type::module_call_t ("m", "f")
-      , condition::type ("true")
+      , boost::none
       , true
       , we::type::property::type()
+      , we::priority_type()
       );
     we::port_id_type const port_id_in
       ( transition.add_port ( we::type::port_t ( "in"
@@ -519,7 +522,7 @@ namespace
                             )
       );
 
-    we::net net;
+    we::type::net_type net;
 
     we::place_id_type const place_id_in
       (net.add_place (place::type ("in", signature::CONTROL)));
@@ -546,9 +549,10 @@ namespace
     return boost::make_tuple
       ( we::type::transition_t ( "net"
                                , net
-                               , condition::type ("true")
+                               , boost::none
                                , true
                                , we::type::property::type()
+                               , we::priority_type()
                                )
       , transition
       , transition_id

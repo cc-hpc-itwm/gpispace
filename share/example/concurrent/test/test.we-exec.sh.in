@@ -7,26 +7,30 @@ source "@CMAKE_BINARY_DIR@/test/measured.sh"
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
 DIR_SOURCE="${DIR_TEST}/.."
+RESULT="$(mktemp --tmpdir="${DIR_BUILD}")"
 
 OUT="${DIR_BUILD}/concurrent.out"
 CMP="${DIR_BUILD}/run.out"
 CMP_ORIG="${DIR_TEST}/out.cmp"
 
-make_src='make BUILDDIR="${DIR_BUILD}" -C "${DIR_SOURCE}"'
+make+=( make BUILDDIR="${DIR_BUILD}" )
+make+=( WE_EXEC_OUTPUT="${RESULT}" )
+make+=( -C "${DIR_SOURCE}" )
 
 cleanup()
 {
-  rm -rf "${CMP}"
-  eval ${make_src} clean
+  rm -f "${CMP}"
+  rm -f "${RESULT}"
+  eval ${make[@]} clean
   cleanup_dir_build
 }
 
 trap 'cleanup' EXIT
 
-measured "run" WE_EXEC_WORKER=4 ${make_src} run             || die $EX_ERR_RUN
+measured "run" WE_EXEC_WORKER=4 ${make[@]} run              || die $EX_ERR_RUN
 
 grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-test 1 -eq $(grep ^done "${OUT}" | wc -l)                   || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p done)" == "[]"            || die $EX_ERR_RES
 cat "${OUT}" | grep call_cnt_        \
              | sed 's/.*call_cnt_//' \
              | awk '{print $1}'      \
@@ -37,3 +41,10 @@ test 1000 -eq $(cat "${OUT}" | grep call_cnt         \
                              | awk '{print $3}'      \
                              | tr '\n' '+'           \
                              | sed 's/\+$/\n/' | bc)        || die $EX_ERR_RES
+
+rm -f "${CMP}"                                           || die $EX_ERR_CLEANUP
+rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP
+measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP
+cleanup_dir_build                                        || die $EX_ERR_CLEANUP
+
+trap - EXIT

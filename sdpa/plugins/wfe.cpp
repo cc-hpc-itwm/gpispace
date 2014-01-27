@@ -81,7 +81,7 @@ namespace
       if (act.transition().net())
       {
         while ( boost::optional<we::type::activity_t> sub
-              = boost::get<we::net&> (act.transition().data())
+              = boost::get<we::type::net_type&> (act.transition().data())
               . fire_expressions_and_extract_activity_random (_engine)
               )
         {
@@ -94,8 +94,6 @@ namespace
           }
         }
       }
-
-      act.collect_output();
     }
 
     virtual void handle_internally (we::type::activity_t& act, mod_t const& mod)
@@ -495,7 +493,6 @@ private:
           wfe_exec_context ctxt (*m_loader, *task);
 
           task->activity.execute (&ctxt);
-          task->activity.collect_output();
 
           if (task->state == wfe_task_t::CANCELED)
           {

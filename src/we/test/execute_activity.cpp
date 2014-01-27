@@ -23,7 +23,7 @@ using we::edge::PT_READ;
 using we::edge::TP;
 
 typedef we::type::transition_t transition_t;
-typedef we::net pnet_t;
+typedef we::type::net_type pnet_t;
 typedef we::type::activity_t activity_t;
 typedef activity_t::input_t input_t;
 
@@ -65,7 +65,7 @@ namespace module
       const pnet::type::value::value_type& token (top->first);
       const we::port_id_type& port_id (top->second);
 
-      context.bind ( act.transition().ports().at (port_id).name()
+      context.bind ( act.transition().ports_input().at (port_id).name()
                    , token
                    );
     }
@@ -101,7 +101,7 @@ struct exec_context : public we::context
     if (act.transition().net())
     {
       while ( boost::optional<we::type::activity_t> sub
-            = boost::get<we::net&> (act.transition().data())
+            = boost::get<we::type::net_type&> (act.transition().data())
             . fire_expressions_and_extract_activity_random (_engine)
             )
       {
@@ -110,8 +110,6 @@ struct exec_context : public we::context
         act.inject (*sub);
       }
     }
-
-    act.collect_output();
   }
 
   virtual void handle_internally (activity_t&, mod_t const&)

@@ -73,7 +73,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
     void operator()(const we::type::module_call_t & mod_call) { return; }
 
-    void operator()(const we::net &net) {
+    void operator()(const we::type::net_type &net) {
         typedef we::type::transition_t transition_t;
 
         /* Translate places. */
@@ -101,8 +101,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
             Transition *transition = petriNet_->createTransition();
             transition->setName(t.name() + "[" + condition.str() + "]");
-            transition->setConditionAlwaysTrue(t.condition().is_const_true());
-            transition->setPriority(net.get_transition_priority(tid));
+            transition->setConditionAlwaysTrue(!t.condition());
+            transition->setPriority (t.priority());
             transitions_[tid] = transition;
 
             /* If there is a limit on number of firings, implement it using an additional place. */
@@ -115,7 +115,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
             }
         }
 
-        FOREACH ( const we::net::adj_pt_type::value_type& pt
+        FOREACH ( const we::type::net_type::adj_pt_type::value_type& pt
                 , net.place_to_transition_consume()
                 )
         {
@@ -125,7 +125,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
           /* Transition consumes the token on input place. */
           transition->addInputPlace(place);
         }
-        FOREACH ( const we::net::adj_pt_type::value_type& pt
+        FOREACH ( const we::type::net_type::adj_pt_type::value_type& pt
                 , net.place_to_transition_read()
                 )
         {
@@ -136,7 +136,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
           transition->addInputPlace(place);
           transition->addOutputPlace(place);
         }
-        FOREACH ( const we::net::adj_tp_type::value_type& tp
+        FOREACH ( const we::type::net_type::adj_tp_type::value_type& tp
                 , net.transition_to_place()
                 )
         {
@@ -163,7 +163,29 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
         boost::apply_visitor(*this, transition.data());
 
-        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports()) {
+        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_input()) {
+          const we::type::port_t &port = item.second;
+
+            if (port.associated_place()) {
+                we::place_id_type pid = *port.associated_place();
+
+                Place *place = ::jpna::find(places_, pid);
+                place->setInitialMarking(place->initialMarking() + 1);
+
+            }
+        }
+        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_output()) {
+          const we::type::port_t &port = item.second;
+
+            if (port.associated_place()) {
+                we::place_id_type pid = *port.associated_place();
+
+                Place *place = ::jpna::find(places_, pid);
+                place->setInitialMarking(place->initialMarking() + 1);
+
+            }
+        }
+        FOREACH(const transition_t::port_map_t::value_type &item, transition.ports_tunnel()) {
           const we::type::port_t &port = item.second;
 
             if (port.associated_place()) {

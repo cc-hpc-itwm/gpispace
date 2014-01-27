@@ -21,8 +21,6 @@ install (TARGETS pnetv
 add_subdirectory(jpn)
 add_subdirectory(jpna)
 
-if (BUILD_TESTING)
 	add_subdirectory(tests)
-endif()
 
 # vim:set et sts=4 sw=4 nospell:

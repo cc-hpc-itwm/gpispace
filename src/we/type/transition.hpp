@@ -4,7 +4,6 @@
 #define WE_TYPE_TRANSITION_HPP 1
 
 #include <we/expr/eval/context.hpp>
-#include <we/type/condition.hpp>
 #include <we/type/expression.hpp>
 #include <we/type/id.hpp>
 #include <we/type/module_call.hpp>
@@ -30,7 +29,7 @@ namespace we { namespace type {
     private:
       typedef boost::variant< module_call_t
                             , expression_t
-                            , boost::recursive_wrapper<we::net>
+                            , boost::recursive_wrapper<we::type::net_type>
                             > data_type;
 
       typedef std::pair< we::place_id_type
@@ -47,28 +46,36 @@ namespace we { namespace type {
         : name_ ("<<transition unknown>>")
         , data_ (expression_t())
         , internal_ (true)
-        , condition_("true")
-        , ports_()
+        , condition_ (boost::none)
+        , _ports_input()
+        , _ports_output()
+        , _ports_tunnel()
         , port_id_counter_ (0)
         , prop_()
         , _requirements()
+        , _priority()
       {}
 
       template <typename Type>
       transition_t ( const std::string& name
                    , Type const& typ
-                   , condition::type const& _condition
+                   , boost::optional<expression_t> const& _condition
                    , bool intern
                    , const we::type::property::type& prop
+                   , we::priority_type priority
                    )
         : name_ (name)
         , data_ (typ)
         , internal_ (intern)
+          //! \todo check is_const_true, better check user input earlier
         , condition_ (_condition)
-        , ports_()
+        , _ports_input()
+        , _ports_output()
+        , _ports_tunnel()
         , port_id_counter_ (0)
         , prop_(prop)
         , _requirements()
+        , _priority (priority)
       { }
 
       const std::string& name() const;
@@ -77,24 +84,28 @@ namespace we { namespace type {
       data_type& data();
 
       boost::optional<const expression_t&> expression() const;
-      boost::optional<const we::net&> net() const;
+      boost::optional<const we::type::net_type&> net() const;
       boost::optional<const module_call_t&> module_call() const;
 
       bool is_internal() const;
 
-      const condition::type& condition() const;
+      boost::optional<expression_t> const& condition() const;
 
       we::port_id_type add_port (port_t const&);
 
       we::port_id_type input_port_by_name (const std::string&) const;
       const we::port_id_type& output_port_by_name (const std::string&) const;
 
-      const port_map_t& ports() const;
+      port_map_t const& ports_input() const;
+      port_map_t const& ports_output() const;
+      port_map_t const& ports_tunnel() const;
 
       const we::type::property::type& prop() const;
 
       std::list<we::type::requirement_t> const& requirements() const;
       void add_requirement (we::type::requirement_t const&);
+
+      we::priority_type priority() const;
 
       template<typename T>
         boost::optional<T> get_schedule_data
@@ -129,7 +140,7 @@ namespace we { namespace type {
 
         BOOST_FOREACH (token_on_port_t const& top, input)
         {
-          context.bind_ref (ports().at (top.second).name(), top.first);
+          context.bind_ref (ports_input().at (top.second).name(), top.first);
         }
 
         return boost::get<T> (e.ast().eval_all (context));
@@ -139,42 +150,34 @@ namespace we { namespace type {
       std::string name_;
       data_type data_;
       bool internal_;
-      condition::type condition_;
+      boost::optional<expression_t> condition_;
 
-      port_map_t ports_;
+      port_map_t _ports_input;
+      port_map_t _ports_output;
+      port_map_t _ports_tunnel;
       we::port_id_type port_id_counter_;
 
       we::type::property::type prop_;
 
       std::list<we::type::requirement_t> _requirements;
+      we::priority_type _priority;
 
       friend class boost::serialization::access;
       template <typename Archive>
-      void save(Archive& ar, const unsigned int) const
+      void serialize(Archive & ar, const unsigned int version)
       {
         ar & BOOST_SERIALIZATION_NVP(name_);
         ar & BOOST_SERIALIZATION_NVP(data_);
         ar & BOOST_SERIALIZATION_NVP(internal_);
         ar & BOOST_SERIALIZATION_NVP(condition_);
-        ar & BOOST_SERIALIZATION_NVP(ports_);
+        ar & BOOST_SERIALIZATION_NVP(_ports_input);
+        ar & BOOST_SERIALIZATION_NVP(_ports_output);
+        ar & BOOST_SERIALIZATION_NVP(_ports_tunnel);
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
         ar & BOOST_SERIALIZATION_NVP(_requirements);
+        ar & BOOST_SERIALIZATION_NVP(_priority);
       }
-
-      template <typename Archive>
-      void load(Archive & ar, const unsigned int version)
-      {
-        ar & BOOST_SERIALIZATION_NVP(name_);
-        ar & BOOST_SERIALIZATION_NVP(data_);
-        ar & BOOST_SERIALIZATION_NVP(internal_);
-        ar & BOOST_SERIALIZATION_NVP(condition_);
-        ar & BOOST_SERIALIZATION_NVP(ports_);
-        ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
-        ar & BOOST_SERIALIZATION_NVP(prop_);
-        ar & BOOST_SERIALIZATION_NVP(_requirements);
-      }
-      BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
   }
 }

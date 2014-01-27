@@ -4,7 +4,6 @@ pnet_compile (kdm kdm.xpnet
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   OUTPUT kdm.pnet
   GENERATE kdm
-  INSTALL ${SDPA_APPS_DIR}/kdm
   CXXFLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/..
            -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
@@ -20,7 +19,6 @@ pnet_compile (kdmopt kdmopt.xpnet
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   OUTPUT kdmopt.pnet
   GENERATE kdm
-  INSTALL ${SDPA_APPS_DIR}/kdm
   CXXFLAGS -I${CMAKE_CURRENT_SOURCE_DIR}/..
            -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog

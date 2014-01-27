@@ -11,6 +11,7 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/positions.hpp>
 #include <we/type/value/read.hpp>
+#include <we/type/value/remove.hpp>
 #include <we/type/value/show.hpp>
 #include <we/type/value/wrap.hpp>
 #include <we/type/value/unwrap.hpp>
@@ -349,6 +350,85 @@ BOOST_AUTO_TEST_CASE (poke)
     BOOST_CHECK_NE (peek ("i", v), boost::none);
     BOOST_CHECK_NE (peek ("i", *peek ("i", v)), boost::none);
     BOOST_CHECK_EQUAL (*peek ("i", *peek ("i", v)), i);
+  }
+}
+
+namespace
+{
+  void remove_from_val (std::string path, pnet::type::value::value_type& v)
+  {
+    pnet::type::value::remove (path, v);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (remove)
+{
+  using pnet::type::value::value_type;
+  using pnet::type::value::poke;
+
+  {
+    value_type v (1);
+    pnet::type::value::remove (std::list<std::string>(), v);
+
+    BOOST_REQUIRE_EQUAL (v, value_type());
+  }
+  {
+    value_type v (1);
+
+    fhg::util::boost::test::require_exception<std::runtime_error>
+      ( boost::bind (&remove_from_val, "bar", v)
+      , "value_type::remove: trying to remove from unstructured value"
+      );
+  }
+
+  {
+    value_type v;
+    poke ("foo", v, value_type (1));
+    pnet::type::value::remove (std::list<std::string>(), v);
+
+    BOOST_REQUIRE_EQUAL (v, value_type());
+  }
+  {
+    value_type v;
+    poke ("foo", v, value_type (1));
+
+    fhg::util::boost::test::require_exception<std::runtime_error>
+      ( boost::bind (&remove_from_val, "bar", v)
+      , "value_type::remove: key not found"
+      );
+  }
+
+  {
+    value_type v;
+    poke ("foo", v, value_type (1));
+    pnet::type::value::remove ("foo", v);
+
+    BOOST_REQUIRE_EQUAL (v, value_type (structured_type()));
+  }
+
+  {
+    value_type v;
+    poke ("baz", poke ("foo", v, value_type (structured_type())), value_type (3));
+    poke ("bar", v, value_type (2));
+    pnet::type::value::remove ("foo", v);
+
+    value_type r;
+    poke ("bar", r, value_type (2));
+
+    BOOST_REQUIRE_EQUAL (v, r);
+  }
+
+  {
+    value_type v;
+    poke ("baz", poke ("foo", v, value_type (structured_type())), value_type (3));
+    poke ("bar", v, value_type (2));
+    pnet::type::value::remove ("foo.baz", v);
+
+    value_type r;
+    poke ("foo", r, value_type (structured_type()));
+    poke ("bar", r, value_type (2));
+
+    BOOST_REQUIRE_EQUAL (v, r);
   }
 }
 

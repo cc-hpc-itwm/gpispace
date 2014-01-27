@@ -1,0 +1,58 @@
+<defun name="split">
+  <in name="I" type="long" place="I"/>
+  <out name="i" type="long" place="i"/>
+  <tunnel name="N" type="long" place="N"/>
+  <net>
+    <struct name="state_t">
+      <field name="N" type="long"/>
+      <field name="i" type="long"/>
+    </struct>
+
+    <place name="I" type="long"/>
+    <place name="N" type="long" virtual="true"/>
+    <place name="i" type="long"/>
+    <place name="state" type="state_t"/>
+
+    <transition name="init">
+      <defun>
+        <in name="I" type="long"/>
+        <out name="state" type="state_t"/>
+        <expression>
+          ${state.N} := ${I};
+          ${state.i} := 1L;
+        </expression>
+      </defun>
+      <connect-in port="I" place="I"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="split">
+      <defun>
+        <in name="state" type="state_t"/>
+        <out name="state" type="state_t"/>
+        <out name="i" type="long"/>
+        <expression>
+          ${i} := ${state.i};
+          ${state.i} := ${state.i} + 1L
+        </expression>
+        <condition>${state.i} :le: ${state.N}</condition>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-out port="state" place="state"/>
+      <connect-out port="i" place="i"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state_t"/>
+        <out name="N" type="long"/>
+        <expression>
+          ${N} := ${state.N}
+        </expression>
+        <condition>${state.i} :gt: ${state.N}</condition>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-out port="N" place="N"/>
+    </transition>
+  </net>
+</defun>

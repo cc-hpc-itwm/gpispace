@@ -1,0 +1,19 @@
+<defun name="selftest">
+  <in name="challenge" type="string" />
+  <out name="response" type="string" />
+
+  <module name="selftest" function="selftest ( challenge
+				             , response
+                                          )">
+    <cinclude href="fhglog/fhglog.hpp"/>
+    <code><![CDATA[
+        LOG (INFO, "SDPA selftest");
+
+        LOG (INFO, "===> challenge := " << challenge);
+
+        response = "sdpa.response." + challenge;
+
+        LOG (INFO, "===> response := " << response);
+    ]]></code>
+  </module>
+</defun>

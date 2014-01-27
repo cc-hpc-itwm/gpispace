@@ -19,7 +19,7 @@ using we::edge::PT_READ;
 using we::edge::TP;
 
 typedef we::type::transition_t transition_t;
-typedef we::net pnet_t;
+typedef we::type::net_type pnet_t;
 typedef we::type::activity_t activity_t;
 
 struct exec_context : public we::context
@@ -81,9 +81,10 @@ int main (int, char **)
         "${pair.bid}   := ${store.bid}                         ;"
         "${pair.vid}   := ${vid}                               "
       )
-    , condition::type ("!bitset_is_element (${store.seen}, ${vid})")
+    , we::type::expression_t ("!bitset_is_element (${store.seen}, ${vid})")
     , true
     , we::type::property::type()
+    , we::priority_type()
     );
 
   pnet::type::signature::structure_type sig_pair_fields;
@@ -154,8 +155,9 @@ int main (int, char **)
   // ************************************ //
 
   transition_t tnet ("tnet", net
-                    , condition::type ("true")
+                    , boost::none
                     , true, we::type::property::type()
+                    , we::priority_type()
                     );
   tnet.add_port
     (we::type::port_t ("vid", we::type::PORT_IN, std::string("long"), pid_vid));
@@ -181,7 +183,7 @@ int main (int, char **)
   if (act.transition().net())
   {
     while ( boost::optional<we::type::activity_t> sub
-          = boost::get<we::net&> (act.transition().data())
+          = boost::get<we::type::net_type&> (act.transition().data())
           . fire_expressions_and_extract_activity_random (engine)
           )
     {
@@ -190,8 +192,6 @@ int main (int, char **)
       act.inject (*sub);
     }
   }
-
-  act.collect_output();
 
   if ( act.output().empty() )
   {

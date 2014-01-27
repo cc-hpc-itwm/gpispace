@@ -45,14 +45,11 @@ namespace
     const we::port_id_type port_id
       (act.transition().output_port_by_name (port));
 
-    for ( output_t::const_iterator out(act.output().begin())
-        ; out != act.output().end()
-        ; ++out
-        )
-      {
-        if (out->second == port_id)
-          tokens.push_back (out->first);
-      }
+    BOOST_FOREACH (output_t::value_type const& out, act.output())
+    {
+      if (out.second == port_id)
+        tokens.push_back (out.first);
+    }
 
     return tokens;
   }
