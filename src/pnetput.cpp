@@ -9,9 +9,10 @@
 #include <we/type/value.hpp>
 #include <we/type/value/show.hpp>
 
+#include <fhg/util/parse/require.hpp>
+
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
-#include <boost/unordered_map.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -74,39 +75,19 @@ int main (int argc, char** argv) try
     : we::type::activity_t (boost::filesystem::path (input))
     );
 
-  typedef boost::unordered_map< std::string
-                              , pnet::type::value::value_type
-                              > port_values_type;
-
-  port_values_type port_values;
-
   BOOST_FOREACH (std::string const& inp, input_spec)
   {
-    const std::string port_name (inp.substr (0, inp.find ('=')));
-    const std::string value (inp.substr (inp.find ('=') + 1));
+    fhg::util::parse::position_string pos (inp);
 
-    const pnet::type::value::value_type val
-      (expr::parse::parser (value).eval_all());
+    fhg::util::parse::require::skip_spaces (pos);
+    const std::string port_name (fhg::util::parse::require::identifier (pos));
+    fhg::util::parse::require::skip_spaces (pos);
+    fhg::util::parse::require::require (pos, '=');
 
-    if (not act.transition().net())
-    {
-      const port_values_type::const_iterator pos
-        (port_values.find (port_name));
-
-      if (pos != port_values.end())
-      {
-        std::cerr
-          << "WARNING! On port " << port_name
-          << " the put of value " << pnet::type::value::show (val)
-          << " overwrites the put of value "
-          << pnet::type::value::show (pos->second)
-          << std::endl;
-      }
-
-      port_values[port_name] = val;
-    }
-
-    act.add_input (act.transition().input_port_by_name (port_name), val);
+    act.add_input
+      ( act.transition().input_port_by_name (port_name)
+      , expr::parse::parser (fhg::util::parse::require::rest (pos)).eval_all()
+      );
   }
 
   if (output == "-")

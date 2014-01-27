@@ -514,39 +514,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      void net_type::sanity_check (const state::type & state) const
-      {
-        assert (has_parent());
-
-        BOOST_FOREACH (const transition_type& transition, transitions().values())
-        {
-          transition.sanity_check (state);
-        }
-
-        BOOST_FOREACH (const function_type& function, functions().values())
-        {
-          function.sanity_check (state);
-        }
-
-        const function_type& outer_function (*parent());
-
-        BOOST_FOREACH (const place_type& place, places().values())
-        {
-          if ( place.is_virtual()
-            && !outer_function.is_known_tunnel (place.name())
-             )
-          {
-            state.warn
-              ( warning::virtual_place_not_tunneled ( place.name()
-                                                    , outer_function.position_of_definition().path()
-                                                    )
-              );
-          }
-        }
-      }
-
-      // ***************************************************************** //
-
       void net_type::type_check (const state::type & state) const
       {
         BOOST_FOREACH (const transition_type& trans, transitions().values())

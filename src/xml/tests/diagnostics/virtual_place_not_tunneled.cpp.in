@@ -1,0 +1,31 @@
+// mirko.rahn@itwm.fraunhofer.de
+
+#define BOOST_TEST_MODULE virtual_place_not_tunneled
+
+#include <xml/parse/parser.hpp>
+#include <xml/parse/state.hpp>
+#include <xml/parse/warning.hpp>
+
+#include <fhg/util/boost/test/require_exception.hpp>
+
+#include <boost/bind.hpp>
+
+BOOST_AUTO_TEST_CASE (virtual_place_not_tunneled)
+{
+  xml::parse::state::type state;
+
+  state.Werror() = true;
+  state.Wvirtual_place_not_tunneled() = true;
+
+  std::string const filename
+    ("@XML_PARSE_TEST_XPNETS_DIR@/"
+     "diagnostics/virtual_place_not_tunneled.xpnet"
+    );
+
+  fhg::util::boost::test::require_exception
+    <xml::parse::warning::virtual_place_not_tunneled>
+  ( boost::bind (&xml::parse::just_parse, boost::ref (state), filename)
+  , boost::format ("WARNING: the virtual place %1% is not tunneled in %2%.")
+  % "v" % boost::filesystem::path (filename)
+  );
+}

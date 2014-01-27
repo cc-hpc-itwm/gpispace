@@ -5,26 +5,6 @@
 
 #include <process.hpp>
 
-namespace
-{
-  struct scoped_allocation
-  {
-    scoped_allocation (std::size_t size)
-      : _ptr (new int[size])
-    {}
-    ~scoped_allocation()
-    {
-      delete[] _ptr;
-    }
-    operator int* ()
-    {
-      return _ptr;
-    }
-  private:
-    int* _ptr;
-  };
-}
-
 BOOST_AUTO_TEST_CASE (process_big)
 {
   BOOST_REQUIRE_GT (boost::unit_test::framework::master_test_suite().argc, 1);
@@ -33,8 +13,8 @@ BOOST_AUTO_TEST_CASE (process_big)
     (atoi (boost::unit_test::framework::master_test_suite().argv[1]));
   const std::size_t count (size / sizeof (int));
 
-  scoped_allocation in (count);
-  scoped_allocation out (count);
+  std::vector<int> in (count);
+  std::vector<int> out (count);
 
   for (std::size_t i (0); i < count; ++i)
   {
@@ -43,7 +23,7 @@ BOOST_AUTO_TEST_CASE (process_big)
   }
 
   {
-    BOOST_REQUIRE_EQUAL (process::execute ("cat", in, size, out, size), size);
+    BOOST_REQUIRE_EQUAL (process::execute ("cat", &in[0], size, &out[0], size), size);
 
     for (std::size_t i (0); i < count; ++i)
     {
@@ -53,7 +33,7 @@ BOOST_AUTO_TEST_CASE (process_big)
 
   // inplace
   {
-    BOOST_REQUIRE_EQUAL (process::execute ("cat", in, size, in, size), size);
+    BOOST_REQUIRE_EQUAL (process::execute ("cat", &in[0], size, &in[0], size), size);
 
     for (std::size_t i (0); i < count; ++i)
     {

@@ -578,37 +578,6 @@ namespace xml
 
       namespace
       {
-        class function_sanity_check : public boost::static_visitor<void>
-        {
-        private:
-          const state::type & state;
-
-        public:
-          function_sanity_check (const state::type & _state)
-            : state (_state)
-          {}
-
-          void operator () (const id::ref::expression &) const { return; }
-          void operator () (const id::ref::module& id) const
-          {
-            id.get().sanity_check();
-          }
-          void operator () (const id::ref::net& id) const
-          {
-            id.get().sanity_check (state);
-          }
-        };
-      }
-
-      void function_type::sanity_check (const state::type & state) const
-      {
-        boost::apply_visitor (function_sanity_check (state), content());
-      }
-
-      // ***************************************************************** //
-
-      namespace
-      {
         class function_type_check : public boost::static_visitor<void>
         {
         public:

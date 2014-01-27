@@ -30,10 +30,5 @@ fhg_add_test (util_position.cpp
   DESCRIPTION "test xml_util_position"
 )
 
-fhg_add_test (diagnostics.cpp
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES pnet ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY}
-  DESCRIPTION "check parser diagnostics"
-)
-
 add_subdirectory (bytearray)
+add_subdirectory (diagnostics)

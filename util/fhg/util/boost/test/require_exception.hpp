@@ -53,6 +53,13 @@ namespace fhg
           }
         }
 
+        template<typename E>
+        void require_exception ( boost::function<void()> f
+                               , boost::format const& format
+                               )
+        {
+          require_exception<E> (f, format.str());
+        }
       }
     }
   }
