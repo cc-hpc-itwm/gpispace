@@ -1342,9 +1342,9 @@ namespace fhg
         {
           QMap<QString, boost::function<QString()> > value_getters;
 
-          QDialog* dialog (new QDialog);
-          dialog->setWindowTitle ("Please enter input values");
-          new QVBoxLayout (dialog);
+          QDialog dialog (new QDialog);
+          dialog.setWindowTitle ("Please enter input values");
+          new QVBoxLayout (&dialog);
 
           QMap<boost::optional<QString>, QStringList> port_groups;
 
@@ -1354,80 +1354,78 @@ namespace fhg
             | boost::adaptors::map_values
             )
           {
-            {
-              const QString port_name (QString::fromStdString (port.name()));
+            const QString port_name (QString::fromStdString (port.name()));
 
-              const QStringList parts (port_name.split ("__xxx__"));
-              if (parts.size() == 2)
+            const QStringList parts (port_name.split ("__xxx__"));
+            if (parts.size() == 2)
+            {
+              port_groups[parts[0]].append (parts[1]);
+            }
+            else
+            {
+              port_groups[boost::none].append (port_name);
+            }
+          }
+
+          foreach (const boost::optional<QString>& group, sort (port_groups.keys()))
+          {
+            QGroupBox* box (new QGroupBox (group.get_value_or ("Global")));
+
+            dialog.layout()->addWidget (box);
+
+            QFormLayout* box_layout (new QFormLayout (box));
+
+            BOOST_FOREACH (const QString& val, sort (port_groups[group]))
+            {
+              const QString port_name (group ? *group + "__xxx__" + val : val);
+
+              if (port_name.startsWith ("REFLECT_"))
               {
-                port_groups[parts[0]].append (parts[1]);
+                continue;
               }
-              else
-              {
-                port_groups[boost::none].append (port_name);
-              }
+
+              const boost::optional<const xml::parse::id::ref::port&> xml_port
+                (activity_and_fun->second.get().get_port_in (port_name.toStdString()));
+
+              const std::pair<QWidget*, boost::function<QString()> > ret
+                ( widget_for_item ( xml_port->get().type()
+                                  , opt_std_to_qstring
+                                  ( xml_port->get().properties().get
+                                  ("fhg.pnete.port.default")
+                                  )
+                                  )
+                );
+              box_layout->addRow (val, ret.first);
+              value_getters[port_name] = ret.second;
             }
+          }
 
-            foreach (const boost::optional<QString>& group, sort (port_groups.keys()))
-            {
-              QGroupBox* box (new QGroupBox (group.get_value_or ("Global")));
+          QDialogButtonBox* buttons
+            ( new QDialogButtonBox ( QDialogButtonBox::Abort | QDialogButtonBox::Ok
+                                   , Qt::Horizontal
+                                   , &dialog
+                                   )
+            );
 
-              dialog->layout()->addWidget (box);
+          dialog.connect (buttons, SIGNAL (accepted()), SLOT (accept()));
+          dialog.connect (buttons, SIGNAL (rejected()), SLOT (reject()));
 
-              QFormLayout* box_layout (new QFormLayout (box));
+          dialog.layout()->addWidget (buttons);
 
-              BOOST_FOREACH (const QString& val, sort (port_groups[group]))
-              {
-                const QString port_name (group ? *group + "__xxx__" + val : val);
+          if (!value_getters.empty() && !dialog.exec())
+          {
+            return false;
+          }
 
-                if (port_name.startsWith ("REFLECT_"))
-                {
-                  continue;
-                }
-
-                const boost::optional<const xml::parse::id::ref::port&> xml_port
-                  (activity_and_fun->second.get().get_port_in (port_name.toStdString()));
-
-                const std::pair<QWidget*, boost::function<QString()> > ret
-                  ( widget_for_item ( xml_port->get().type()
-                                    , opt_std_to_qstring
-                                      ( xml_port->get().properties().get
-                                        ("fhg.pnete.port.default")
-                                      )
-                                    )
-                  );
-                box_layout->addRow (val, ret.first);
-                value_getters[port_name] = ret.second;
-              }
-            }
-
-            QDialogButtonBox* buttons
-              ( new QDialogButtonBox ( QDialogButtonBox::Abort | QDialogButtonBox::Ok
-                                     , Qt::Horizontal
-                                     , dialog
-                                     )
-              );
-
-            dialog->connect (buttons, SIGNAL (accepted()), SLOT (accept()));
-            dialog->connect (buttons, SIGNAL (rejected()), SLOT (reject()));
-
-            dialog->layout()->addWidget (buttons);
-
-            if (!value_getters.empty() && !dialog->exec())
-            {
-              return false;
-            }
-
-            QMap<QString, boost::function<QString()> >::const_iterator i
-              (value_getters.constBegin());
-            while (i != value_getters.constEnd())
-            {
-              put_token ( activity_and_fun->first
-                        , i.key().toStdString()
-                        , i.value()().toStdString()
-                        );
-              ++i;
-            }
+          QMap<QString, boost::function<QString()> >::const_iterator i
+            (value_getters.constBegin());
+          while (i != value_getters.constEnd())
+          {
+            put_token ( activity_and_fun->first
+                      , i.key().toStdString()
+                      , i.value()().toStdString()
+                      );
+            ++i;
           }
 
           return true;
