@@ -1015,8 +1015,8 @@ namespace fhg
           we::type::activity_t activity
             (xml::parse::xml_to_we (function, state));
 
-          put_token (activity, "REFLECT_seislib_slot_num_generator", (boost::format ("%1%") % slot_gen_count).str());
-          put_token (activity, "REFLECT_seislib_slot_num_store", (boost::format ("%1%") % slot_store_count).str());
+          put_token (activity, "REFLECT_seislib_slot_num_generator", (boost::format ("%1%L") % slot_gen_count).str());
+          put_token (activity, "REFLECT_seislib_slot_num_store", (boost::format ("%1%L") % slot_store_count).str());
 
           return std::make_pair (activity, function);
         }
