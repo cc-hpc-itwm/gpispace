@@ -1051,14 +1051,14 @@ namespace fhg
         }
         QString spinbox_to_memory_size_type (const QSpinBox* box)
         {
-          return QString ("[size:=%1L]")
+          return QString ("Struct [size:=%1L]")
             .arg ((1UL << 20) * static_cast<long> (box->value()));
         }
         QString file_line_edit_to_file_type (const util::qt::file_line_edit* edit)
         {
           const QString name (edit->text());
 
-          return QString ("[name:=\"%1\",type:=\"%2\"]")
+          return QString ("Struct [name:=\"%1\",type:=\"%2\"]")
             .arg (name)
             .arg ( name.endsWith ("sgy") ? "segy"
                  : name.endsWith ("segy") ? "segy"
@@ -1067,7 +1067,7 @@ namespace fhg
         }
         QString file_line_edit_to_function_type (const util::qt::file_line_edit* edit)
         {
-          return QString ("[binary:=\"%1\"]").arg (edit->text());
+          return QString ("Struct [binary:=\"%1\"]").arg (edit->text());
         }
         QString maybe_file_type_token_name_or_string (const QString& t)
         {
