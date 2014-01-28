@@ -202,8 +202,7 @@ namespace pnet
                             ) const
             {
               os << fhg::util::deeper (indent)
-                 << (first ? "   " : "&& ")
-                 << "(this->" << name << " == rhs." << name << ")";
+                 << "&& (this->" << name << " == rhs." << name << ")";
 
               first = false;
             }
@@ -234,7 +233,11 @@ namespace pnet
               traverse (print_field_decl (_os, _indent), s);
 
               ctor_default (s);
-              ctor (s);
+
+              if (!s.second.empty())
+              {
+                ctor (s);
+              }
               operator_eq (s);
               operator_less (s);
 
@@ -261,11 +264,18 @@ namespace pnet
                   << fhg::util::cpp::block::open (_indent)
                   << _indent << "return ";
 
-              traverse (print_field_operator_less (_os, _indent, prefix), s);
-
-              if (not prefix.empty())
+              if (s.second.empty())
               {
-                _os << std::string (2 * (prefix.size() - 1), ')');
+                _os << "false";
+              }
+              else
+              {
+                traverse (print_field_operator_less (_os, _indent, prefix), s);
+
+                if (not prefix.empty())
+                {
+                  _os << std::string (2 * (prefix.size() - 1), ')');
+                }
               }
 
               _os << ";"
@@ -280,7 +290,7 @@ namespace pnet
               _os << _indent << "bool operator== ("
                   << s.first << " const& rhs) const"
                   << fhg::util::cpp::block::open (_indent)
-                  << _indent << "return";
+                  << _indent << "return true";
 
               traverse (print_field_operator_eq (_os, _indent, first), s);
 
@@ -660,11 +670,18 @@ namespace pnet
                   << block::open (_indent)
                   << _indent << "return " << s.first;
 
-              bool first (true);
+              if (s.second.empty())
+              {
+                _os << "();";
+              }
+              else
+              {
+                bool first (true);
 
-              traverse (print_from_value (_os, _indent, first), s);
+                traverse (print_from_value (_os, _indent, first), s);
 
-              _os << fhg::util::deeper (_indent) << ");";
+                _os << fhg::util::deeper (_indent) << ");";
+              }
 
               _os << block::close (_indent);
             }
