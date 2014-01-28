@@ -13,9 +13,6 @@ namespace drts
     , m_result ()
     , m_result_code (0)
     , m_message ("")
-    , m_entered(boost::posix_time::microsec_clock::universal_time())
-    , m_started(boost::posix_time::from_time_t(0))
-    , m_completed(boost::posix_time::from_time_t(0))
   {}
 
   Job::state_t Job::cmp_and_swp_state( Job::state_t expected

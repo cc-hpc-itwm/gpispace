@@ -5,15 +5,21 @@
 #include <list>
 #include <string>
 
+#include <boost/function.hpp>
+
 namespace gspc
 {
   namespace drts
   {
     class context
     {
+    private:
+      static void nop() {}
+
     public:
       context (std::list<std::string> const &worker_list)
         : m_worker_list (worker_list)
+        , _module_call_do_cancel (nop)
       {}
 
       const std::list<std::string> &worker_list () const { return m_worker_list; }
@@ -24,8 +30,19 @@ namespace gspc
 
         return w.substr (host_start, host_end-host_start);
       }
+
+      void set_module_call_do_cancel (boost::function<void()> fun)
+      {
+        _module_call_do_cancel = fun;
+      }
+      void module_call_do_cancel()
+      {
+        _module_call_do_cancel();
+      }
+
     private:
       std::list<std::string> m_worker_list;
+      boost::function<void()> _module_call_do_cancel;
     };
   }
 }

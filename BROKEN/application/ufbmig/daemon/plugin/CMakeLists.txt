@@ -22,11 +22,7 @@ include_directories(${CMAKE_SOURCE_DIR}/gpi-space/gpi-space/pc/plugin)
 get_target_property(UFBMIG_INIT_INC pnet-ufbmig_init PNET_GENERATE_DIR)
 include_directories(${UFBMIG_INIT_INC})
 
-set(PLUGIN_DESTINATION_DIR "libexec/fhg/plugins")
-set(HEADER_DESTINATION_DIR "include/fhg/plugins")
-
 fhg_add_plugin(ufbmig_back ufbmig_back.cpp
-  EXPORTS UFBMIG_BACK
   LINK_LIBRARIES pnet
                  ${FhgLog_LIBRARY_SHARED}
                  ${Boost_FILESYSTEM_LIBRARY}
@@ -34,15 +30,11 @@ fhg_add_plugin(ufbmig_back ufbmig_back.cpp
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   HEADERS ufbmig_back.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
-  COMPONENT plugins
   DEPENDS pnet-ufbmig_init pnet-ufbmig_calc pnet-ufbmig_done pnet-ufbmig_mask
   INSTALL
 )
 
 fhg_add_plugin(ufbmig_front ufbmig_front.cpp ${CMAKE_SOURCE_DIR}/sdpa/plugins/observable.cpp
-  EXPORTS UFBMIG_FRONT
   LINK_LIBRARIES ${PSPROMIGIF_LIBRARY}
                  ${FhgLog_LIBRARY_SHARED}
                  ${HWLOC_SHARED_LIBRARY}
@@ -53,39 +45,27 @@ fhg_add_plugin(ufbmig_front ufbmig_front.cpp ${CMAKE_SOURCE_DIR}/sdpa/plugins/ob
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   HEADERS ufbmig_front.hpp ufbmig_msg_types.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
-  COMPONENT plugins
   INSTALL
 )
 
 fhg_add_plugin(ufbmig_test ufbmig_test.cpp
-  EXPORTS UFBMIG_TEST
   LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   HEADERS ufbmig_front.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
-  COMPONENT plugins
   INSTALL
 )
 
 fhg_add_plugin(isim_dummy isim_dummy.cpp
-  EXPORTS ISIM
   LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   HEADERS isim.hpp reactor.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
-  COMPONENT plugins
   INSTALL
 )
 
 fhg_add_plugin(isim isim.cpp
-  EXPORTS ISIM
   LINK_LIBRARIES ${PSPROMIGIF_LIBRARY}
                  ${FhgLog_LIBRARY_SHARED}
                  ${HWLOC_SHARED_LIBRARY}
@@ -96,8 +76,5 @@ fhg_add_plugin(isim isim.cpp
                  ${Boost_THREAD_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
   HEADERS isim.hpp
-  HEADER_DESTINATION "${HEADER_DESTINATION_DIR}"
-  PLUGIN_DESTINATION "${PLUGIN_DESTINATION_DIR}"
-  COMPONENT plugins
   INSTALL
 )

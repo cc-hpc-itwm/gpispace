@@ -1,4 +1,4 @@
-// alexander.petry@itwm.fraunhofer.de
+// bernd.loerwald@itwm.fraunhofer.de
 
 #include <fhg/plugin/core/kernel.hpp> // search_path_t
 #include <fhg/plugin/setup_and_run_fhgkernel.hpp>
@@ -19,11 +19,10 @@ int main(int ac, char **av)
 
   po::options_description desc("options");
 
-  std::vector<std::string> mods_to_load;
   std::vector<std::string> config_vars;
   std::string state_path;
   std::string pidfile;
-  std::string kernel_name ("fhgkernel");
+  std::string kernel_name;
   fhg::core::kernel_t::search_path_t search_path;
 
   desc.add_options()
@@ -33,24 +32,18 @@ int main(int ac, char **av)
     ("state,S", po::value<std::string>(&state_path), "state directory to use")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
+    ("gpi_enabled", "load gpi api")
     ( "keep-going,k", "just log errors, but do not refuse to start")
-    ( "load,l"
-    , po::value<std::vector<std::string> >(&mods_to_load)
-    , "modules to load"
-    )
     ( "add-search-path,L", po::value<fhg::core::kernel_t::search_path_t>(&search_path)
     , "add a path to the search path for plugins"
     )
     ;
 
-  po::positional_options_description p;
-  p.add("load", -1);
-
   po::variables_map vm;
   try
   {
     po::store( po::command_line_parser(ac, av)
-             . options(desc).positional(p).run()
+             . options(desc).run()
              , vm
              );
   }
@@ -68,6 +61,16 @@ int main(int ac, char **av)
     std::cout << std::endl;
     std::cout << desc << std::endl;
     return EXIT_SUCCESS;
+  }
+
+  std::vector<std::string> mods_to_load;
+  mods_to_load.push_back ("kvs");
+  mods_to_load.push_back ("drts");
+
+  if (vm.count ("gpi_enabled"))
+  {
+    mods_to_load.push_back ("gpi");
+    mods_to_load.push_back ("gpi_compat");
   }
 
   return setup_and_run_fhgkernel ( vm.count ("daemonize")

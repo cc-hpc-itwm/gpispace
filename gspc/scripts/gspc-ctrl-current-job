@@ -34,10 +34,10 @@ fi
 failed=0
 for u in ${urls[@]}
 do
-    current_job=$(gspcnet-req       \
-        -d /service/wfe/current-job \
-        -b ""                       \
-        --no-headers                \
+    current_job=$(gspcnet-req        \
+        -d /service/drts/current-job \
+        -b ""                        \
+        --no-headers                 \
         "${u}")
     ec=$?
 

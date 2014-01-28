@@ -100,23 +100,6 @@ namespace drts
       return *this;
     }
 
-    boost::posix_time::ptime const & entered () const { return m_entered; }
-    boost::posix_time::ptime const & started () const { return m_started; }
-    boost::posix_time::ptime const & completed () const { return m_completed; }
-
-    Job& entered   (boost::posix_time::ptime const &t) {
-      m_entered = t;
-      return *this;
-    }
-    Job& started   (boost::posix_time::ptime const &t) {
-      m_started = t;
-      return *this;
-    }
-    Job& completed (boost::posix_time::ptime const &t) {
-      m_completed = t;
-      return *this;
-    }
-
     std::list<std::string> const &worker_list () const
     {
       return m_worker_list;
@@ -139,13 +122,6 @@ namespace drts
       ar & BOOST_SERIALIZATION_NVP(m_owner);
       ar & BOOST_SERIALIZATION_NVP(m_state);
       ar & BOOST_SERIALIZATION_NVP(m_result);
-
-      if (version > 0)
-      {
-        ar & BOOST_SERIALIZATION_NVP(m_entered);
-        ar & BOOST_SERIALIZATION_NVP(m_started);
-        ar & BOOST_SERIALIZATION_NVP(m_completed);
-      }
 
       if (version > 1)
       {
@@ -170,11 +146,6 @@ namespace drts
     int         m_result_code;
     std::string m_message;
     std::list<std::string> m_worker_list;
-
-    // timestamps
-    boost::posix_time::ptime m_entered;
-    boost::posix_time::ptime m_started;
-    boost::posix_time::ptime m_completed;
   };
 }
 

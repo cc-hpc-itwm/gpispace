@@ -15,6 +15,7 @@
 #include <fhg/plugin/core/null_storage.hpp>
 #include <fhg/plugin/core/file_storage.hpp>
 
+#include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/threadname.hpp>
 
@@ -43,6 +44,21 @@ namespace fhg
       , m_stop_requested (false)
       , m_running (false)
       , m_storage (0)
+    {
+      initialize_storage ();
+    }
+
+    kernel_t::kernel_t ( std::string const& state_path
+                       , std::string const& name
+                       , fhg::core::kernel_t::search_path_t search_path
+                       )
+      : m_state_path (state_path)
+      , m_tick_time (5 * 100 * 1000)
+      , m_stop_requested (false)
+      , m_running (false)
+      , m_storage (0)
+      , m_name (name)
+      , m_search_path (search_path)
     {
       initialize_storage ();
     }
@@ -318,37 +334,6 @@ namespace fhg
       return m_plugins.find(name) != m_plugins.end();
     }
 
-    int kernel_t::handle_signal (int signum, siginfo_t *info, void *ctxt)
-    {
-      plugin_map_t to_signal;
-      {
-        if (not m_mtx_plugins.try_lock ())
-        {
-          DMLOG (WARN, "ignoring signal: mutex still locked");
-          errno = EAGAIN;
-          return -1;
-        }
-        to_signal = m_plugins;
-
-        m_mtx_plugins.unlock ();
-      }
-
-      DMLOG (DEBUG, "handling signal: " << signum);
-
-      for ( plugin_map_t::iterator it = to_signal.begin ()
-          ; it != to_signal.end()
-          ; ++it
-          )
-      {
-        it->second->plugin()->handle_plugin_signal ( signum
-                                                   , info
-                                                   , ctxt
-                                                   );
-      }
-
-      return 0;
-    }
-
     namespace
     {
       bool is_owner_of_task ( const std::string & p
@@ -576,10 +561,6 @@ namespace fhg
     void kernel_t::stop ()
     {
       m_stop_requested = true;
-      if (! m_running)
-      {
-        return;
-      }
     }
 
     void kernel_t::reset ()
@@ -659,14 +640,7 @@ namespace fhg
         (boost::lexical_cast<bool>(get("kernel.daemonize", "0")));
       if (daemonize)
       {
-        if (0 == fork())
-        {
-          setsid();
-        }
-        else
-        {
-          _exit (0);
-        }
+        fhg::util::fork_and_daemonize_child_and_abandon_parent();
       }
 
       while (!m_stop_requested)

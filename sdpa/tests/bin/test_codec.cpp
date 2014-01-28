@@ -45,10 +45,8 @@ namespace
 
 BOOST_AUTO_TEST_CASE (CancelJobAck)
 {
-  CancelJobAckEvent e ("foo", "bar", "job-id-1", "result");
-  CancelJobAckEvent* r (encode_decode_job_event (e));
-
-  BOOST_REQUIRE_EQUAL (r->result(), e.result());
+  CancelJobAckEvent e ("foo", "bar", "job-id-1");
+  encode_decode_job_event (e);
 }
 
 BOOST_AUTO_TEST_CASE (CancelJob)

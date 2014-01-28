@@ -11,6 +11,8 @@
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
+#include <fhg/util/daemonize.hpp>
+
 static fhg::com::io_service_pool pool (1);
 static fhg::com::kvs::server::kvsd *g_kvsd (0);
 
@@ -151,36 +153,9 @@ int main(int ac, char *av[])
     }
   }
 
-  // everything is fine so far, daemonize
   if (daemonize)
   {
-    if (pid_t child = fork())
-    {
-      if (child == -1)
-      {
-        LOG(ERROR, "could not fork: " << strerror(errno));
-        exit(EXIT_FAILURE);
-      }
-      else
-      {
-        exit (EXIT_SUCCESS);
-      }
-    }
-    setsid();
-    close(0); close(1); close(2);
-    int fd = open("/dev/null", O_RDWR);
-    if (fd < 0)
-    {
-      LOG (ERROR, "could not open(/dev/null): " << strerror (errno));
-    }
-    if (dup(fd) < 0)
-    {
-      LOG (WARN, "could not dup(): " << strerror (errno));
-    }
-    if (dup(fd) < 0)
-    {
-      LOG (WARN, "could not dup(): " << strerror (errno));
-    }
+    fhg::util::fork_and_daemonize_child_and_abandon_parent();
   }
 
   if (pidfile_fd >= 0)

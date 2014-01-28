@@ -20,11 +20,9 @@
 #include <pnete/ui/size.hpp>
 #include <pnete/ui/transition_library_view.hpp>
 
-#include <fhg/plugin/core/kernel.hpp>
 #include <fhg/util/temporary_path.hpp>
 
-#include <sdpa/plugins/sdpactl.hpp>
-#include <sdpa/plugins/sdpac.hpp>
+#include <sdpa/client.hpp>
 
 #include <util/qt/parent.hpp>
 
@@ -798,49 +796,21 @@ namespace fhg
 
           show_results_of_activity (activity);
         }
-
-        template<typename T>
-          T* load_plugin (fhg::core::kernel_t& kernel, const std::string& name)
-        {
-          if (!kernel.is_plugin_loaded (name))
-          {
-            kernel.load_plugin (name);
-          }
-
-          if (!kernel.is_plugin_loaded (name))
-          {
-            throw std::runtime_error (name + " failed loading");
-          }
-
-          T* plugin (kernel.lookup_plugin_as<T> (name));
-          if (!plugin)
-          {
-            throw std::runtime_error (name + " did not provide correct interface");
-          }
-
-          return plugin;
-        }
       }
 
       remote_job_waiting::remote_job_waiting
-        (sdpa::Client* client, const std::string& job_id)
+        (sdpa::client::Client* client, const std::string& job_id)
           : _client (client)
           , _job_id (job_id)
       { }
 
       void remote_job_waiting::run()
       {
-        std::string status_message;
-        int error_code (-1);
-        int status (-1);
-        while ( (status = _client->status (_job_id, error_code, status_message)) > sdpa::status::CANCELED
-              && error_code == 0
-              )
-        {
-          msleep (10);
-        }
+        sdpa::client::job_info_t job_info;
+        sdpa::status::code status
+          (_client->wait_for_terminal_state (_job_id, job_info));
 
-        if (error_code)
+        if (status != sdpa::status::FINISHED)
         {
           emit remote_job_failed (_client, QString::fromStdString (_job_id));
         }
@@ -851,7 +821,7 @@ namespace fhg
       }
 
       void editor_window::remote_job_failed
-        (sdpa::Client* client, const QString& job_id)
+        (sdpa::client::Client* client, const QString& job_id)
       {
         QMessageBox msgBox;
         msgBox.setText (job_id + " failed.");
@@ -859,14 +829,12 @@ namespace fhg
       }
 
       void editor_window::remote_job_finished
-        (sdpa::Client* client, const QString& job_id_)
+        (sdpa::client::Client* client, const QString& job_id_)
       {
         const std::string job_id (job_id_.toStdString());
-        std::string output_string;
-        client->result (job_id, output_string);
-        client->remove (job_id);
+        const we::type::activity_t output (client->retrieveResults (job_id));
+        client->deleteJob (job_id);
 
-        const we::type::activity_t output (output_string);
         show_results_of_activity (output);
       }
 
@@ -984,35 +952,25 @@ namespace fhg
         //! \todo Add search path into config (temporarily)!
         // loader.append_search_path (temporary_path / "pnetc" / "op");
 
-        //! \todo Setup plugin search path.
-        static fhg::core::kernel_t kernel;
+        //! \todo Configurable name of orchestrator, non-static
+        static sdpa::client::Client client ("orchestrator");
 
-        sdpa::Client* client (load_plugin<sdpa::Client> (kernel, "sdpac"));
+        const std::string job_id
+          (client.submitJob (activity_and_fun.first.to_string()));
+        remote_job_waiting* waiter (new remote_job_waiting (&client, job_id));
+        connect ( waiter
+                , SIGNAL (remote_job_failed (sdpa::client::Client*,QString))
+                , this
+                , SLOT (remote_job_failed (sdpa::client::Client*,QString))
+                );
+        connect ( waiter
+                , SIGNAL (remote_job_finished (sdpa::client::Client*,QString))
+                , this
+                , SLOT (remote_job_finished (sdpa::client::Client*,QString))
+                );
+        connect (waiter, SIGNAL (finished()), waiter, SLOT (deleteLater()));
 
-        std::string job_id;
-        if (client->submit (activity_and_fun.first.to_string(), job_id) == 0)
-        {
-          remote_job_waiting* waiter (new remote_job_waiting (client, job_id));
-          connect ( waiter
-                  , SIGNAL (remote_job_failed (sdpa::Client*,QString))
-                  , this
-                  , SLOT (remote_job_failed (sdpa::Client*,QString))
-                  );
-          connect ( waiter
-                  , SIGNAL (remote_job_finished (sdpa::Client*,QString))
-                  , this
-                  , SLOT (remote_job_finished (sdpa::Client*,QString))
-                  );
-          connect (waiter, SIGNAL (finished()), waiter, SLOT (deleteLater()));
-
-          waiter->start();
-        }
-        else
-        {
-          QMessageBox msgBox;
-          msgBox.setText ("submitting job failed.");
-          msgBox.exec();
-        }
+        waiter->start();
       }
       catch (const std::runtime_error& e)
       {

@@ -1,141 +1,51 @@
-#include "pool.hpp"
+#include <fhg/util/thread/pool.hpp>
 
 #include <stdexcept>
-#include <boost/format.hpp>
 
-#include <fhg/util/threadname.hpp>
-#include <fhg/util/get_cpucount.h>
+#include <boost/foreach.hpp>
 
 namespace fhg
 {
   namespace thread
   {
-    namespace detail
+    pool_t::pool_t (std::size_t nthread)
     {
-      static void s_default_callback (void)
-      {}
-    }
-
-    pool_t::pool_t (std::size_t nthread, std::string const &name)
-      : m_stop (true)
-      , m_nthread (nthread)
-      , m_pool_name (name)
-    {
-      if (0 == m_nthread)
+      if (nthread == 0)
+      {
         throw std::invalid_argument
           ("fhg::thread::pool_t: nthreads needs to be > 0");
+      }
+
+      for (std::size_t i = 0 ; i != nthread ; ++i)
+      {
+        m_threads.push_back (new boost::thread (&pool_t::worker, this));
+      }
     }
 
     pool_t::~pool_t()
     {
-      if (!m_stop)
+      BOOST_FOREACH (boost::thread& thread, m_threads)
       {
-        stop();
+        thread.interrupt();
+        thread.join();
       }
     }
 
-    void pool_t::start ()
+    void pool_t::worker()
     {
-      unique_lock lock (m_mutex);
-
-      if (m_threads.size ())
-        return;
-
-      m_stop = false;
-
-      for (std::size_t i = 0 ; i != m_nthread ; ++i)
+      while (true)
       {
-        m_threads.push_back
-          (new boost::thread (&pool_t::worker, this, i));
-        fhg::util::set_threadname
-          ( *m_threads.back ()
-          , (boost::format ("%1%-%2%") % m_pool_name % i).str ()
-          );
+        const boost::function<void()> w (m_workload.get());
+
+        const boost::this_thread::disable_interruption _;
+
+        w();
       }
     }
 
-    void pool_t::stop ()
+    void pool_t::execute (boost::function<void()> w)
     {
-      unique_lock lock (m_mutex);
-
-      m_stop = true;
-
-      for (std::size_t i = 0 ; i != m_threads.size () ; ++i)
-      {
-        m_threads [i]->interrupt ();
-        m_threads [i]->join ();
-        delete m_threads [i];
-      }
-
-      m_threads.clear ();
-    }
-
-    void pool_t::worker (size_t rank)
-    {
-      while (!m_stop || !m_workload.empty ())
-      {
-        work_item_t w;
-        try
-        {
-          w = m_workload.get ();
-        }
-        catch (boost::thread_interrupted const &)
-        {
-          break;
-        }
-
-        {
-          boost::this_thread::disable_interruption di;
-
-          w.first ();
-          w.second ();
-        }
-      }
-    }
-
-    void pool_t::execute (work_t w)
-    {
-      execute (w, &detail::s_default_callback);
-    }
-
-    void pool_t::execute (work_t w, callback_t cb)
-    {
-      if (m_stop)
-      {
-        return;
-      }
-
-      m_workload.put (std::make_pair (w, cb));
-    }
-
-    namespace detail
-    {
-      struct init_global_pool_t
-      {
-        init_global_pool_t ()
-          : pool (0)
-        {
-          int ncpu = fhg_get_cpucount ();
-          if (ncpu < 0) ncpu = 1;
-
-          pool = new pool_t (ncpu, "global-pool");
-          pool->start ();
-        };
-
-        ~init_global_pool_t ()
-        {
-          pool->stop ();
-          delete pool;
-        }
-
-        pool_t *pool;
-      };
-    }
-
-    pool_t & global_pool ()
-    {
-      static detail::init_global_pool_t gpool;
-      return *gpool.pool;
+      m_workload.put (w);
     }
   }
 }
