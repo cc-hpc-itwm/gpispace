@@ -134,6 +134,7 @@ add_library (pnet
 target_link_libraries (pnet fhg-util ${Boost_SERIALIZATION_LIBRARY})
 
 add_subdirectory (xml/tests)
+add_subdirectory (xml/parse/type/test)
 
 include (fhg_executable_macros)
 
