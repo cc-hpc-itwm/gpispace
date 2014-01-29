@@ -107,56 +107,57 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   {
     Worker::worker_id_t worker_id = pEvt->from();
     we::layer::id_type actId = pEvt->job_id();
+    bool bAllPartResCollected(false);
 
-      // update the status of the reservation
-      scheduler()->workerFinished(worker_id, actId);
+    try {
+        // update the status of the reservation
+        scheduler()->workerFinished(worker_id, actId);
 
-      bool bAllPartResCollected(scheduler()->allPartialResultsCollected(actId));
+        bool bAllPartResCollected = scheduler()->allPartialResultsCollected(actId);
 
-      // if all the partial results were collected, notify the workflow engine
-      // about the status of the job (either finished, or failed
-      // the group is finished when all the partial results are "finished"
-      if(bAllPartResCollected)
-      {
-          if(pJob->is_canceling())
-          {
-              DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has been canceled");
-              events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
-              pJob->CancelJobAck(&evtCancelAck);
-              workflowEngine()->canceled(actId);
-          }
-          else
-            if(scheduler()->groupFinished(actId))
+        // if all the partial results were collected, notify the workflow engine
+        // about the status of the job (either finished, or failed
+        // the group is finished when all the partial results are "finished"
+        if(bAllPartResCollected)
+        {
+            if(pJob->is_canceling())
             {
-              pJob->JobFinished(pEvt);
-              DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
-              workflowEngine()->finished
-                (actId, we::type::activity_t (pEvt->result()));
+                DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has been canceled");
+                events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
+                pJob->CancelJobAck(&evtCancelAck);
+                workflowEngine()->canceled(actId);
             }
             else
-            {
-              events::JobFailedEvent* pJobFailedEvt(new events::JobFailedEvent( name()
-                                                                               , pEvt->from()
-                                                                               , pEvt->job_id()
-                                                                               , fhg::error::UNEXPECTED_ERROR
-                                                                               , "One of tasks of the group failed with the actual reservation!"));
-              pJob->JobFailed(pJobFailedEvt);
-              delete pJobFailedEvt;
+              if(scheduler()->groupFinished(actId))
+              {
+                pJob->JobFinished(pEvt);
+                DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
+                workflowEngine()->finished
+                  (actId, we::type::activity_t (pEvt->result()));
+              }
+              else
+              {
+                events::JobFailedEvent* pJobFailedEvt(new events::JobFailedEvent( name()
+                                                                                 , pEvt->from()
+                                                                                 , pEvt->job_id()
+                                                                                 , fhg::error::UNEXPECTED_ERROR
+                                                                                 , "One of tasks of the group failed with the actual reservation!"));
+                pJob->JobFailed(pJobFailedEvt);
+                delete pJobFailedEvt;
 
-              DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has failed");
-              workflowEngine()->failed( actId,
-                                        sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
-                                        "One of tasks of the group failed with the actual reservation!");
-            }
-      }
+                DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has failed");
+                workflowEngine()->failed( actId,
+                                          sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
+                                          "One of tasks of the group failed with the actual reservation!");
+              }
+        }
 
-      try {
-          DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
-          // if all partial results were collected, release the reservation
-          if(bAllPartResCollected) {
-             scheduler()->releaseReservation(pJob->id());
-          }
-          scheduler()->deleteWorkerJob( worker_id, pJob->id() );
+        DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
+        // if all partial results were collected, release the reservation
+        if(bAllPartResCollected) {
+           scheduler()->releaseReservation(pJob->id());
+        }
+        scheduler()->deleteWorkerJob( worker_id, pJob->id() );
       }
       catch(WorkerNotFoundException const &)
       {
@@ -313,37 +314,38 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 
       // update the status of the reservation
 
-      scheduler()->workerFailed(worker_id, actId);
-      bool bAllPartResCollected(scheduler()->allPartialResultsCollected(actId));
-
-      if(bAllPartResCollected) {
-
-          if(pJob->is_canceling())
-          {
-              DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has been canceled");
-              events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
-              pJob->CancelJobAck(&evtCancelAck);
-              workflowEngine()->canceled(actId);
-          }
-          else
-            {
-               DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
-               pJob->JobFailed(pEvt);
-               workflowEngine()->failed( actId
-                                        , pEvt->error_code()
-                                        , pEvt->error_message()
-                                        );
-            }
-
-          // cancel the other jobs assigned to the workers which are
-          // in the reservation list
-      }
-
+      bool bAllPartResCollected(false);
       try {
-        DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
-        // if all the partial results were collected, release the reservation
-        if(bAllPartResCollected) {
-           scheduler()->releaseReservation(pJob->id());
+          scheduler()->workerFailed(worker_id, actId);
+          bAllPartResCollected=scheduler()->allPartialResultsCollected(actId);
+
+          if(bAllPartResCollected)
+          {
+              if(pJob->is_canceling())
+              {
+                  DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has been canceled");
+                  events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
+                  pJob->CancelJobAck(&evtCancelAck);
+                  workflowEngine()->canceled(actId);
+              }
+              else
+              {
+                  DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
+                  pJob->JobFailed(pEvt);
+                  workflowEngine()->failed( actId
+                                            , pEvt->error_code()
+                                            , pEvt->error_message()
+                                          );
+              }
+
+              // cancel the other jobs assigned to the workers which are
+              // in the reservation list
+          }
+
+          DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
+          // if all the partial results were collected, release the reservation
+          if(bAllPartResCollected) {
+              scheduler()->releaseReservation(pJob->id());
         }
         scheduler()->deleteWorkerJob( worker_id, pJob->id() );
       }
