@@ -1,5 +1,3 @@
-#include <signal.h>
-
 #include <iostream>
 
 #include <fhglog/LogMacros.hpp>

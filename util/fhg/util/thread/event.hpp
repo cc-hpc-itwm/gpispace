@@ -9,8 +9,10 @@ namespace fhg
   {
     namespace thread
     {
+      template <typename T = void> class event;
+
       template <typename T>
-      class event : boost::noncopyable
+        class event : boost::noncopyable
       {
         typedef boost::mutex mutex_type;
         typedef boost::condition_variable condition_type;
@@ -72,6 +74,52 @@ namespace fhg
           m_event = u;
           m_signalled = true;
           m_condition.notify_one();
+        }
+      };
+
+      template<>
+        class event<void> : boost::noncopyable
+      {
+        bool _signalled;
+        mutable boost::mutex _mutex;
+        mutable boost::condition_variable _condition;
+      public:
+
+        event()
+          : _signalled (false)
+        {}
+
+        void wait()
+        {
+          boost::mutex::scoped_lock lock (_mutex);
+
+          while (!_signalled)
+          {
+            _condition.wait(lock);
+          }
+
+          _signalled = false;
+        }
+
+        bool timed_wait (boost::system_time const& abs_time)
+        {
+          boost::mutex::scoped_lock lock (_mutex);
+          while (!_signalled)
+          {
+            if (!_condition.timed_wait (lock, abs_time))
+            {
+              return false;
+            }
+          }
+          _signalled = false;
+          return true;
+        }
+
+        void notify()
+        {
+          boost::mutex::scoped_lock const lock (_mutex);
+          _signalled = true;
+          _condition.notify_one();
         }
       };
     }

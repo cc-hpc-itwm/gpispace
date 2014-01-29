@@ -3,7 +3,6 @@ include_directories(${FVM_INCLUDE_DIR})
 include(fhg_plugin_macros)
 
 fhg_add_plugin(gpi gpi.cpp
-  EXPORTS GPI
   LINK_LIBRARIES
     gpi-space-pc-client-static
     gpi-space-pc-segment
@@ -13,17 +12,11 @@ fhg_add_plugin(gpi gpi.cpp
     ${Boost_SYSTEM_LIBRARY}
   INSTALL
   HEADERS gpi.hpp
-  HEADER_DESTINATION include/fhg/plugins
-  PLUGIN_DESTINATION libexec/fhg/plugins
-  COMPONENT plugins
 )
 
 fhg_add_plugin(gpi_compat gpi_compat.cpp
-  EXPORTS GPI
   LINK_LIBRARIES
     ${Boost_SERIALIZATION_LIBRARY}
     fhg-util
   INSTALL
-  PLUGIN_DESTINATION libexec/fhg/plugins
-  COMPONENT plugins
 )

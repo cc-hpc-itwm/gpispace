@@ -141,6 +141,7 @@ if (ENABLE_PNET_EDITOR)
                           "fhg_util_qt"
                           pnet
                           fhg-util
+                          sdpa
                           ${FhgLog_LIBRARY}
                           ${UTIL_LIBRARIES}
                           ${Boost_FILESYSTEM_LIBRARY}

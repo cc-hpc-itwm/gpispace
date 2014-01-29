@@ -22,6 +22,8 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 
+#include <fhg/util/daemonize.hpp>
+#include <fhg/util/pidfile_writer.hpp>
 #include <fhg/revision.hpp>
 
 #include <gpi-space/gpi/api.hpp>
@@ -694,85 +696,31 @@ int main (int ac, char *av[])
 
     cleanup_kvs ();
 
-    int pidfile_fd = -1;
-
     if (0 != strlen (pidfile))
     {
-      pidfile_fd = open(pidfile, O_CREAT|O_RDWR, 0640);
-      if (pidfile_fd < 0)
+      try
       {
-        LOG( ERROR, "could not open pidfile for writing: "
-           << strerror(errno)
-           );
-        exit(EXIT_FAILURE);
-      }
-    }
+        fhg::util::pidfile_writer const pidfile_writer (pidfile);
 
-    // everything is fine so far, daemonize
-    if (daemonize)
-    {
-      if (pid_t child = fork())
-      {
-        if (child == -1)
+        if (daemonize)
         {
-          LOG(ERROR, "could not fork: " << strerror(errno));
-          exit(EXIT_FAILURE);
+          fhg::util::fork_and_daemonize_child_and_abandon_parent();
         }
-        else
-        {
-          exit (EXIT_SUCCESS);
-        }
-      }
-      setsid();
-      close (0); close (1); close (2);
-      int fd = open ("/dev/null", O_RDWR);
-      // duplicate to stdout
-      if (dup (fd) < 0)
-      {
-        // should never happen actually
-        LOG ( ERROR
-            , "could not duplicate file descriptor to stdout: "
-            << strerror(errno)
-            );
-        exit (EXIT_FAILURE);
-      }
 
-      // duplicate to stderr
-      if (dup (fd) < 0)
+        pidfile_writer.write();
+      }
+      catch (const std::exception& ex)
       {
-        // should never happen actually
-        LOG ( ERROR
-            , "could not duplicate file descriptor to stderr: "
-            << strerror(errno)
-            );
+        LOG (ERROR, ex.what());
         exit (EXIT_FAILURE);
       }
     }
-
-    if (pidfile_fd >= 0)
+    else
     {
-      if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
+      if (daemonize)
       {
-        LOG( ERROR, "could not lock pidfile: "
-           << strerror(errno)
-           );
-        exit(EX_STILL_RUNNING);
+        fhg::util::fork_and_daemonize_child_and_abandon_parent();
       }
-
-      char buf[32];
-      if (ftruncate(pidfile_fd, 0) == -1)
-      {
-        LOG(ERROR, "could not truncate pidfile: " << strerror(errno));
-        exit(EXIT_FAILURE);
-      }
-      snprintf(buf, sizeof(buf), "%d\n", getpid());
-
-      if (write(pidfile_fd, buf, strlen(buf)) != (int)strlen(buf))
-      {
-        LOG(ERROR, "could not write pid to file: " << strerror(errno));
-        exit(EXIT_FAILURE);
-      }
-      fsync(pidfile_fd);
     }
   }
 

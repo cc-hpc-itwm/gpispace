@@ -510,7 +510,6 @@ EOF
     fi
 
     log "-: setting up the DRTS"
-    put "kernel.plugins" "logc,kvs,progress,wfe,gpi,gpi_compat,drts"
     put "kernel.lazy" $(get "kernel.lazy" "${DEFAULT_KERNEL_LOAD_LAZY:?}")
 
     log "-: configuring plugins"

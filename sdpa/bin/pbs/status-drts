@@ -49,7 +49,7 @@ function status ()
 {
     local name="$1" ; shift
     local pids=
-    pids=$(ps -C fhgkernel -o pid=)
+    pids=$(ps -C drts-kernel -o pid=)
 
     if [ -n "$name" ] ; then
         for p in $pids ; do

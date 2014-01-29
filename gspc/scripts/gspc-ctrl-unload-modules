@@ -33,8 +33,8 @@ fi
 
 for u in ${urls[@]}
 do
-    gspcnet-req -d /service/wfe/unload-modules \
-                -b ""                          \
-                --no-headers                   \
+    gspcnet-req -d /service/drts/unload-modules \
+                -b ""                           \
+                --no-headers                    \
                 "${u}"
 done

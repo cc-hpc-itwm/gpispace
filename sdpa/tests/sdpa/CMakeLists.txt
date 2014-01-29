@@ -17,7 +17,6 @@ get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
 get_target_property(TESTS_FVM_PC_FAKE_MODULE fvm-pc-fake.shared LOCATION)
 
 fhg_add_plugin (fvm-fake fvm-fake.cpp
-  EXPORTS FVM
   LINK_LIBRARIES ${TESTS_FVM_PC_FAKE_MODULE}
   DEPENDS fvm-pc-fake.shared
   )
@@ -28,7 +27,6 @@ set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
 
 get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
 get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
-get_target_property(TESTS_WFE_PLUGIN_PATH wfe-plugin LOCATION)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -108,20 +106,6 @@ set(command ${PNETPUT_LOCATION}
    )
 
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
-                   COMMAND ${command}
-                   COMMENT "putting tokens into atomic workflow: ${command}"
-                   DEPENDS pnet-atomic-test-wf-gen
-)
-
-set(command ${PNETPUT_LOCATION}
-       --if  "${ATOMIC_PNET_LOCATION}"
-       -p n_A=10L
-       -p n_B=10L
-       -p shared_file=\\"atomic_wfe_plugin_test.txt\\"
-       --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic_wfe_plugin_test.pnet"
-   )
-
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic_wfe_plugin_test.pnet
                    COMMAND ${command}
                    COMMENT "putting tokens into atomic workflow: ${command}"
                    DEPENDS pnet-atomic-test-wf-gen
@@ -250,7 +234,6 @@ set (tests
   test_Subscriber.cpp
   test_SubmitJobFails.cpp
   test_TransformFile.cpp
-  test_wfe_plugin.cpp
   test_InvalidNbWorkersReq.cpp
 )
 
@@ -286,7 +269,6 @@ add_custom_target(sdpa-test-workflows ALL
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic_wfe_plugin_test.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"

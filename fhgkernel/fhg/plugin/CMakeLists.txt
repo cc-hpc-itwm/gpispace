@@ -18,6 +18,7 @@ set (core_srcs
   core/file_storage.cpp
   core/null_storage.cpp
   core/license.cpp
+  setup_and_run_fhgkernel.cpp
 )
 
 add_library(fhg-plugin ${core_srcs})
