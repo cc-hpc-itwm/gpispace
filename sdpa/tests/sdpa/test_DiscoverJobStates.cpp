@@ -277,8 +277,6 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
       }
     }
   }
-
-  DMLOG(DEBUG, disc_res);
 }
 
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
