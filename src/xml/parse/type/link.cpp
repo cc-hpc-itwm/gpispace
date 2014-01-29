@@ -61,6 +61,8 @@ namespace xml
             default: p += *inp; ++inp; break;
             }
           }
+
+          p += "/";
         }
 
         return p + _href;
