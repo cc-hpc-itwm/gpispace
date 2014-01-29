@@ -4,3 +4,4 @@ build
 .metadata
 .project
 .settings
+.dir-locals.el
