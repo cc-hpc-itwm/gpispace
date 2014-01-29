@@ -239,14 +239,14 @@ then
 fi
 logprefix="${logdir}/${name}"
 
-bin="$(which fhgkernel)"
+bin="$(which drts-kernel)"
 if [ ! -x "$bin" ] ; then
-  log "# could not find fhgkernel in the path!"
+  log "# could not find drts-kernel in the path!"
   exit 1
 fi
 
 # check if still running
-still_running=$(ps -C fhgkernel -o pid=)
+still_running=$(ps -C drts-kernel -o pid=)
 for p in $still_running ; do
     name_opt=$(cat /proc/$p/cmdline | tr '\0' '\n' | grep -A1 -e '^-n$' | tail -n 1)
 
@@ -286,19 +286,14 @@ kvs_port=$(echo "$kvs_url" | cut -d: -f2)
 cfg="$cfg -s plugin.kvs.host=$kvs_host"
 cfg="$cfg -s plugin.kvs.port=$kvs_port"
 
-# config values (logc plugin)
-logc_port=$(fhgcfg -f "${config_file}" -g plugin.logd.port -v "3456")
-logc_host=$(head -n 1 "${state_dir}/nodefile")
-cfg="$cfg -s plugin.logc.url=${logc_host}:${logc_port}"
-
-# config values (numa plugin)
-cfg="$cfg -s plugin.numa.socket=$numa_socket"
-
 # config values (drts plugin)
 cfg="$cfg -s plugin.drts.master=$master"
 cfg="$cfg -s plugin.drts.backlog=$backlog"
 cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f "${config_file}" -g plugin.drts.max_reconnect_attempts -v 128)"
 cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
+cfg="$cfg -s plugin.drts.gui_url=$gui"
+cfg="$cfg -s plugin.drts.library_path=${lib_path}"
+cfg="$cfg -s plugin.drts.numa_socket=$numa_socket"
 
 # config values (gpi plugin)
 if [ -z "$gpi_socket" ] ; then
@@ -311,15 +306,10 @@ cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.sta
 # config values (gpi_compat plugin)
 cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
 
-# config values (wfe plugin)
-cfg="$cfg -s plugin.wfe.gui_url=$gui"
-cfg="$cfg -s plugin.wfe.library_path=${lib_path}"
-
-plugins=(numa logc kvs progress netd wfe drts)
 if [ x"$gpi_enabled" == x"true" ] ; then
-    plugins+=(gpi gpi_compat)
+    cfg="$cfg --gpi_enabled"
 fi
-cmd="${bin} $cfg ${plugins[@]}"
+cmd="${bin} $cfg"
 
 export FHGLOG_to_file="${logprefix}.log"
 log "Running $cmd on node $hostname" >/dev/null 2>&1

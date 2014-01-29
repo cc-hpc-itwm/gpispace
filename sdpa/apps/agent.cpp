@@ -14,6 +14,8 @@
 #include <boost/filesystem/path.hpp>
 #include <fhgcom/kvs/kvsc.hpp>
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/daemonize.hpp>
+#include <fhg/util/pidfile_writer.hpp>
 
 #include <boost/tokenizer.hpp>
 
@@ -92,70 +94,23 @@ int main (int argc, char **argv)
 
   sdpa::master_info_list_t listMasterInfo;
 
-  int pidfile_fd = -1;
-
   if (not pidfile.empty())
   {
-    pidfile_fd = open(pidfile.c_str(), O_CREAT|O_RDWR, 0640);
-    if (pidfile_fd < 0)
+    fhg::util::pidfile_writer const pidfile_writer (pidfile);
+
+    if (vm.count ("daemonize"))
     {
-      LLOG (ERROR, logger, "could not open pidfile for writing: "
-         << strerror(errno)
-         );
-      exit(EXIT_FAILURE);
+      fhg::util::fork_and_daemonize_child_and_abandon_parent();
     }
+
+    pidfile_writer.write();
   }
-
-  // everything is fine so far, daemonize
-  if (vm.count ("daemonize"))
+  else
   {
-    if (pid_t child = fork())
+    if (vm.count ("daemonize"))
     {
-      if (child == -1)
-      {
-        LLOG (ERROR, logger, "could not fork: " << strerror(errno));
-        exit(EXIT_FAILURE);
-      }
-      else
-      {
-        exit (EXIT_SUCCESS);
-      }
+      fhg::util::fork_and_daemonize_child_and_abandon_parent();
     }
-    setsid();
-    close(0); close(1); close(2);
-    int fd = open("/dev/null", O_RDWR);
-    if (-1 == dup(fd))
-    {
-      LLOG (WARN, logger, "could not duplicate /dev/null to stdout: " << strerror(errno));
-    }
-    if (-1 == dup(fd))
-    {
-      LLOG (WARN, logger, "could not duplicate /dev/null to stdout: " << strerror(errno));
-    }
-  }
-
-  if (pidfile_fd >= 0)
-  {
-    if (lockf(pidfile_fd, F_TLOCK, 0) < 0)
-    {
-      LLOG (ERROR, logger, "could not lock pidfile: "
-         << strerror(errno)
-         );
-      exit(EX_STILL_RUNNING);
-    }
-
-    char buf[32];
-    if (0 != ftruncate(pidfile_fd, 0))
-    {
-      LLOG (WARN, logger, "could not truncate pidfile: " << strerror(errno));
-    }
-    snprintf(buf, sizeof(buf), "%d\n", getpid());
-    if (write(pidfile_fd, buf, strlen(buf)) <= 0)
-    {
-      LLOG (ERROR, logger, "could not write pid: " << strerror(errno));
-      exit(EXIT_FAILURE);
-    }
-    fsync(pidfile_fd);
   }
 
   {

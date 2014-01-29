@@ -41,6 +41,7 @@ set (gspc_src
   kvs/impl/kvs_net_frontend.cpp
   kvs/impl/kvs_net_service.cpp
 
+  rif/daemon.cpp
   rif/util.cpp
   rif/pipe.cpp
   rif/buffer.cpp

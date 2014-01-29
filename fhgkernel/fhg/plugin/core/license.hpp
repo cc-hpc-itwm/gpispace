@@ -1,6 +1,8 @@
 #ifndef FHG_PLUGIN_CORE_LICENSE_HPP
 #define FHG_PLUGIN_CORE_LICENSE_HPP
 
+#include <fhglog/Logger.hpp>
+
 #include <string>
 
 namespace fhg
@@ -19,6 +21,8 @@ namespace fhg
 
     int check_license (std::string const &license);
     int check_license_file (std::string const &path);
+
+    void magically_check_license (fhg::log::Logger::ptr_t);
   }
 }
 

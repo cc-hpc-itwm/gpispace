@@ -20,6 +20,8 @@
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 #include <gspc/ctl/system.hpp>
 
+#include <fhg/util/daemonize.hpp>
+
 #include <boost/scoped_ptr.hpp>
 
 #include <iostream>
@@ -55,52 +57,6 @@ namespace gspc
         }
 
         return true;
-      }
-
-      int s_daemonize ()
-      {
-        if (pid_t child = fork())
-        {
-          return child;
-        }
-
-        setsid ();
-        chdir ("/");
-        umask (0);
-
-        if (pid_t pid = fork ())
-        {
-          if (pid > 0)
-          {
-            exit (0);
-          }
-          else
-          {
-            exit (EX_SOFTWARE);
-          }
-        }
-
-        close(0);
-        close(1);
-        close(2);
-
-        if (open("/dev/null", O_RDONLY) < 0)
-        {
-          syslog (LOG_ERR | LOG_USER, "unable to open stdin: /dev/null: %m");
-          exit (EX_IOERR);
-        }
-        if (open ("/dev/null", O_WRONLY) < 0)
-        {
-          syslog (LOG_ERR | LOG_USER, "unable to open stdout: /dev/null: %m");
-          exit (EX_IOERR);
-        }
-        if (dup (1) < 0)
-        {
-          syslog (LOG_ERR | LOG_USER, "unable to duplicate stdout->stderr: %m");
-          exit (EX_IOERR);
-        }
-
-        return 0;
       }
     }
 
@@ -300,6 +256,21 @@ namespace gspc
       }
 
       return 0;
+    }
+
+    namespace
+    {
+      int s_daemonize ()
+      {
+        try
+        {
+          return fhg::util::fork_and_daemonize_child().get_value_or (0);
+        }
+        catch (const std::exception&)
+        {
+          return -1;
+        }
+      }
     }
 
     int session_t::daemonize_then_run (session_info_t &si) const

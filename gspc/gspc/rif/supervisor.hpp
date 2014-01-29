@@ -11,6 +11,8 @@
 #include <gspc/rif/types.hpp>
 #include <gspc/rif/process_handler.hpp>
 
+#include <fhg/util/thread/pool.hpp>
+
 namespace gspc
 {
   namespace rif
@@ -144,6 +146,8 @@ namespace gspc
 
       const child_t *lookup_child (const proc_t &pid) const;
       child_t *lookup_child (const proc_t &pid);
+
+      fhg::thread::pool_t _thread_pool;
 
       mutable boost::shared_mutex m_mutex;
 

@@ -5,6 +5,8 @@
 #include <fhg/plugin/core/plugin_kernel_mediator.hpp>
 #include <fhg/plugin/core/kernel.hpp>
 
+#include <signal.h>
+
 namespace fhg
 {
   namespace core

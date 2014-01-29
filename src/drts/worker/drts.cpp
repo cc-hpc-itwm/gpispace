@@ -1,161 +1,668 @@
-#include "drts.hpp"
-#include "master.hpp"
 #include "job.hpp"
-#include "wfe.hpp"
-#include "observable.hpp"
-#include "drts_callbacks.h"
 
-#include <errno.h>
-
-#include <map>
-#include <list>
-#include <vector>
-
-#include <fhglog/LogMacros.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <fhg/error_codes.hpp>
 #include <fhg/plugin/capability.hpp>
-#include <fhg/util/thread/queue.hpp>
-#include <fhg/util/thread/event.hpp>
+#include <fhg/plugin/plugin.hpp>
+#include <fhg/util/getenv.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
+#include <fhg/util/thread/event.hpp>
+#include <fhg/util/thread/queue.hpp>
 #include <fhg/util/threadname.hpp>
-#include <fhg/error_codes.hpp>
-
-#include <sdpa/events/EventHandler.hpp>
-#include <sdpa/events/Codec.hpp>
-#include <sdpa/events/events.hpp>
 
 #include <fhgcom/peer.hpp>
 
-#include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
-#include <boost/shared_ptr.hpp>
+#include <fhglog/LogMacros.hpp>
+#include <fhglog/remote/appender.hpp>
+
+#include <gspc/drts/context.hpp>
+#include <gspc/net/frame.hpp>
+#include <gspc/net/frame_builder.hpp>
+#include <gspc/net/io.hpp>
+#include <gspc/net/serve.hpp>
+#include <gspc/net/server.hpp>
+#include <gspc/net/server/default_queue_manager.hpp>
+#include <gspc/net/server/default_service_demux.hpp>
+#include <gspc/net/service/echo.hpp>
+#include <gspc/net/user.hpp>
+
+#include <sdpa/daemon/NotificationEvent.hpp>
+#include <sdpa/daemon/NotificationService.hpp>
+#include <sdpa/events/Codec.hpp>
+#include <sdpa/events/EventHandler.hpp>
+#include <sdpa/events/events.hpp>
 #include <sdpa/types.hpp>
 
-#include <gspc/net/server/default_service_demux.hpp>
-#include <gspc/net/frame_builder.hpp>
+#include <plugins/kvs.hpp>
 
+#include <we/context.hpp>
+#include <we/loader/loader.hpp>
+#include <we/loader/module_call.hpp>
+#include <we/type/activity.hpp>
+#include <we/type/expression.fwd.hpp>
+#include <we/type/module_call.hpp>
+//! \todo eliminate this include (that completes the type transition_t::data)
+#include <we/type/net.hpp>
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/format.hpp>
+#include <boost/function.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
+#include <hwloc.h>
+
+#include <list>
+#include <map>
+#include <string>
+#include <vector>
+
+#include <errno.h>
+
+namespace
+{
+  struct wfe_task_t
+  {
+    enum state_t
+    {
+      PENDING
+    , CANCELED
+    , FINISHED
+    , FAILED
+    };
+
+    std::string id;
+    state_t state;
+    int        errc;
+    we::type::activity_t activity;
+    gspc::drts::context context;
+    std::string error_message;
+
+    wfe_task_t (std::string id, std::list<std::string> workers)
+      : id (id)
+      , state (wfe_task_t::PENDING)
+      , context (workers)
+    {}
+  };
+
+  struct wfe_exec_context : public we::context
+  {
+    boost::mt19937 _engine;
+
+    wfe_exec_context (we::loader::loader& module_loader, wfe_task_t& target)
+      : loader (module_loader)
+      , task (target)
+    {}
+
+    virtual void handle_internally (we::type::activity_t& act, net_t const&)
+    {
+      if (act.transition().net())
+      {
+        while ( boost::optional<we::type::activity_t> sub
+              = boost::get<we::type::net_type&> (act.transition().data())
+              . fire_expressions_and_extract_activity_random (_engine)
+              )
+        {
+          sub->execute (this);
+          act.inject (*sub);
+
+          if (task.state == wfe_task_t::CANCELED)
+          {
+            break;
+          }
+        }
+      }
+    }
+
+    virtual void handle_internally (we::type::activity_t& act, mod_t const& mod)
+    {
+      try
+      {
+        we::loader::module_call (loader, &task.context, act, mod);
+      }
+      catch (std::exception const &ex)
+      {
+        throw std::runtime_error
+          ( "call to '" + mod.module() + "::" + mod.function() + "'"
+          + " failed: " + ex.what()
+          );
+      }
+    }
+
+    virtual void handle_internally (we::type::activity_t&, expr_t const&)
+    {
+    }
+
+    virtual void handle_externally (we::type::activity_t& act, net_t const& n)
+    {
+      handle_internally (act, n);
+    }
+
+    virtual void handle_externally (we::type::activity_t& act, mod_t const& module_call)
+    {
+      handle_internally (act, module_call);
+    }
+
+    virtual void handle_externally (we::type::activity_t& act, expr_t const& e)
+    {
+      handle_internally (act, e);
+    }
+
+  private:
+    we::loader::loader& loader;
+    wfe_task_t& task;
+  };
+
+  struct search_path_appender
+  {
+    explicit search_path_appender(we::loader::loader& ld)
+      : loader (ld)
+    {}
+
+    search_path_appender& operator = (std::string const& p)
+    {
+      if (not p.empty ())
+        loader.append_search_path (p);
+      return *this;
+    }
+
+    search_path_appender& operator* ()
+    {
+      return *this;
+    }
+
+    search_path_appender& operator++(int)
+    {
+      return *this;
+    }
+
+    we::loader::loader & loader;
+  };
+
+  class numa_socket_setter
+  {
+  public:
+    numa_socket_setter (size_t target_socket)
+    {
+      hwloc_topology_init (&m_topology);
+      hwloc_topology_load (m_topology);
+
+      const int depth (hwloc_get_type_depth (m_topology, HWLOC_OBJ_SOCKET));
+      if (depth == HWLOC_TYPE_DEPTH_UNKNOWN)
+      {
+        throw std::runtime_error ("could not get number of sockets");
+      }
+
+      const size_t available_sockets
+        (hwloc_get_nbobjs_by_depth (m_topology, depth));
+
+      if (target_socket >= available_sockets)
+      {
+        throw std::runtime_error
+          ( boost::str ( boost::format ("socket out of range: %1%/%2%")
+                       % target_socket
+                       % (available_sockets-1)
+                       )
+          );
+      }
+
+      const hwloc_obj_t obj
+        (hwloc_get_obj_by_type (m_topology, HWLOC_OBJ_SOCKET, target_socket));
+
+      char cpuset_string [256];
+      hwloc_bitmap_snprintf (cpuset_string, sizeof(cpuset_string), obj->cpuset);
+
+      if (hwloc_set_cpubind (m_topology, obj->cpuset, HWLOC_CPUBIND_PROCESS) < 0)
+      {
+        throw std::runtime_error
+          ( boost::str
+            ( boost::format ("could not bind to socket #%1% with cpuset %2%: %3%")
+            % target_socket
+            % cpuset_string
+            % strerror (errno)
+            )
+          );
+      }
+    }
+
+    ~numa_socket_setter()
+    {
+      hwloc_topology_destroy (m_topology);
+    }
+
+  private:
+    hwloc_topology_t m_topology;
+  };
+
+  struct scoped_service_handler : boost::noncopyable
+  {
+    scoped_service_handler ( std::string name
+                           , boost::function<void ( std::string const &dst
+                                                  , gspc::net::frame const &rqst
+                                                  , gspc::net::user_ptr user
+                                                  )> function
+                           , gspc::net::server::service_demux_t& service_demux
+                           )
+      : _name (name)
+      , _service_demux (service_demux)
+    {
+      _service_demux.handle (_name, function);
+    }
+    ~scoped_service_handler()
+    {
+      _service_demux.unhandle (_name);
+    }
+  private:
+    std::string _name;
+    gspc::net::server::service_demux_t& _service_demux;
+  };
+}
+
+class WFEImpl
+{
+public:
+  WFEImpl ( boost::optional<std::size_t> target_socket
+          , std::string search_path
+          , boost::optional<std::string> gui_url
+          , std::string worker_name
+          , gspc::net::server::service_demux_t& service_demux
+          )
+    : _numa_socket_setter ( target_socket
+                          ? numa_socket_setter (*target_socket)
+                          : boost::optional<numa_socket_setter>()
+                          )
+    , _worker_name (worker_name)
+    , m_task_map()
+    , m_tasks()
+    , m_current_task (NULL)
+    , m_loader()
+    , _notification_service ( gui_url
+                            ? sdpa::daemon::NotificationService (*gui_url)
+                            : boost::optional<sdpa::daemon::NotificationService>()
+                            )
+    , _current_job_service
+      ( "/service/drts/current-job"
+      , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
+      , service_demux
+      )
+    , _set_search_path_service
+      ( "/service/drts/search-path/set"
+      , boost::bind (&WFEImpl::service_set_search_path, this, _1, _2, _3)
+      , service_demux
+      )
+    , _get_search_path_service
+      ( "/service/drts/search-path/get"
+      , boost::bind (&WFEImpl::service_get_search_path, this, _1, _2, _3)
+      , service_demux
+      )
+  {
+    {
+      // initalize loader with paths
+      search_path_appender appender(m_loader);
+      fhg::util::split(search_path, ":", appender);
+
+      if (search_path.empty())
+      {
+        MLOG(WARN, "loader has an empty search path, try setting environment variable PC_LIBRARY_PATH or variable plugin.drts.library_path");
+      }
+      else
+      {
+        DMLOG ( DEBUG
+              , "initialized loader with search path: " << search_path
+              );
+      }
+
+
+      // TODO: figure out, why this doesn't work as it is supposed to
+      // adjust ld_library_path
+      std::string ld_library_path (fhg::util::getenv("LD_LIBRARY_PATH", ""));
+      ld_library_path = search_path + ":" + ld_library_path;
+      setenv("LD_LIBRARY_PATH", ld_library_path.c_str(), true);
+    }
+  }
+
+  ~WFEImpl()
+  {
+    {
+      boost::mutex::scoped_lock task_map_lock (m_mutex);
+      while (! m_task_map.empty ())
+      {
+        wfe_task_t *task = m_task_map.begin ()->second;
+        task->state = wfe_task_t::CANCELED;
+        task->error_message = "plugin shutdown";
+
+        m_task_map.erase (task->id);
+      }
+    }
+  }
+
+private:
+  void emit_task ( const wfe_task_t& task
+                 , sdpa::daemon::NotificationEvent::state_t state
+                 )
+  {
+    if (_notification_service)
+    {
+      _notification_service->notify
+        ( sdpa::daemon::NotificationEvent
+           (_worker_name, task.id, state, task.activity)
+        );
+    }
+  }
+
+public:
+  int execute ( std::string const &job_id
+              , std::string const &job_description
+              , we::type::activity_t & result
+              , std::string & error_message
+              , std::list<std::string> const & worker_list
+              )
+  {
+    wfe_task_t task (job_id, worker_list);
+    task.errc = fhg::error::NO_ERROR;
+
+    try
+    {
+      task.activity = we::type::activity_t (job_description);
+    }
+    catch (std::exception const & ex)
+    {
+      MLOG(ERROR, "could not parse activity: " << ex.what());
+      task.state = wfe_task_t::FAILED;
+      error_message = ex.what();
+
+      emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
+
+      return fhg::error::INVALID_JOB_DESCRIPTION;
+    }
+
+    {
+      boost::mutex::scoped_lock task_map_lock(m_mutex);
+      m_task_map.insert(std::make_pair(job_id, &task));
+    }
+
+    {
+      boost::mutex::scoped_lock lock (m_current_task_mutex);
+      m_current_task = &task;
+    }
+
+    emit_task (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
+
+    if (task.state != wfe_task_t::PENDING)
+    {
+      task.errc = fhg::error::EXECUTION_CANCELED;
+      task.error_message = "canceled";
+    }
+    else
+    {
+      try
+      {
+        wfe_exec_context ctxt (m_loader, task);
+
+        task.activity.execute (&ctxt);
+
+        if (task.state == wfe_task_t::CANCELED)
+        {
+          task.errc = fhg::error::EXECUTION_CANCELED;
+          task.error_message = "canceled";
+        }
+        else
+        {
+          task.state = wfe_task_t::FINISHED;
+          task.errc = fhg::error::NO_ERROR;
+          task.error_message = "success";
+        }
+      }
+      catch (std::exception const & ex)
+      {
+        task.state = wfe_task_t::FAILED;
+        // TODO: more detailed error codes
+        task.errc = fhg::error::MODULE_CALL_FAILED;
+        task.error_message = ex.what();
+      }
+      catch (...)
+      {
+        task.state = wfe_task_t::FAILED;
+        task.errc = fhg::error::UNEXPECTED_ERROR;
+        task.error_message =
+          "UNKNOWN REASON, exception not derived from std::exception";
+      }
+    }
+
+    {
+      boost::mutex::scoped_lock lock (m_current_task_mutex);
+      m_current_task = 0;
+    }
+
+    result = task.activity;
+
+    if (fhg::error::NO_ERROR == task.errc)
+    {
+      MLOG(TRACE, "task finished: " << task.id);
+      task.state = wfe_task_t::FINISHED;
+      error_message = task.error_message;
+
+      emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
+    }
+    else if (fhg::error::EXECUTION_CANCELED == task.errc)
+    {
+      DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
+      task.state = wfe_task_t::CANCELED;
+      error_message = task.error_message;
+
+      emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELED);
+    }
+    else
+    {
+      MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
+      task.state = wfe_task_t::FAILED;
+      error_message = task.error_message;
+
+      emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
+    }
+
+    {
+      boost::mutex::scoped_lock task_map_lock(m_mutex);
+      m_task_map.erase (job_id);
+    }
+
+    return task.errc;
+  }
+
+  int cancel (std::string const &job_id)
+  {
+    boost::mutex::scoped_lock job_map_lock(m_mutex);
+    std::map<std::string, wfe_task_t *>::iterator task_it (m_task_map.find(job_id));
+    if (task_it == m_task_map.end())
+    {
+      MLOG(WARN, "could not find task " << job_id);
+      return -ESRCH;
+    }
+    else
+    {
+      task_it->second->state = wfe_task_t::CANCELED;
+      task_it->second->context.module_call_do_cancel();
+    }
+
+    return 0;
+  }
+private:
+  void service_current_job ( std::string const &dst
+                           , gspc::net::frame const &rqst
+                           , gspc::net::user_ptr user
+                           )
+  {
+    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
+
+    {
+      boost::mutex::scoped_lock lock (m_current_task_mutex);
+      if (m_current_task)
+      {
+        rply.set_body (m_current_task->activity.transition().name());
+      }
+    }
+
+    user->deliver (rply);
+  }
+
+  void service_get_search_path ( std::string const &dst
+                               , gspc::net::frame const &rqst
+                               , gspc::net::user_ptr user
+                               )
+  {
+    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
+
+    {
+      //! \todo is that lock needed really? what does it lock?
+      boost::mutex::scoped_lock lock (m_mutex);
+
+      rply.set_body (m_loader.search_path());
+    }
+
+    user->deliver (rply);
+  }
+
+  void service_set_search_path ( std::string const &dst
+                               , gspc::net::frame const &rqst
+                               , gspc::net::user_ptr user
+                               )
+  {
+    gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
+
+    {
+      std::string search_path (rqst.get_body ());
+
+      search_path_appender appender(m_loader);
+      boost::mutex::scoped_lock lock (m_mutex);
+      m_loader.clear_search_path ();
+      fhg::util::split(search_path, ":", appender);
+    }
+
+    user->deliver (rply);
+  }
+
+  boost::optional<numa_socket_setter> _numa_socket_setter;
+
+  std::string _worker_name;
+
+  mutable boost::mutex m_mutex;
+  std::map<std::string, wfe_task_t *> m_task_map;
+  fhg::thread::queue<wfe_task_t*> m_tasks;
+
+  mutable boost::mutex m_current_task_mutex;
+  wfe_task_t *m_current_task;
+
+  we::loader::loader m_loader;
+
+  boost::optional<sdpa::daemon::NotificationService> _notification_service;
+
+  scoped_service_handler _current_job_service;
+  scoped_service_handler _set_search_path_service;
+  scoped_service_handler _get_search_path_service;
+};
 
 class DRTSImpl : FHG_PLUGIN
-               , public drts::DRTS
                , public sdpa::events::EventHandler
-               , public observe::Observable
 {
-  typedef boost::mutex mutex_type;
-  typedef boost::condition_variable condition_type;
-  typedef boost::unique_lock<mutex_type> lock_type;
+  typedef std::map<std::string, bool> map_of_masters_t;
 
-  typedef fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> event_queue_t;
-
-  typedef boost::shared_ptr<drts::Master> master_ptr;
   typedef std::map< std::string
-                  , master_ptr
-                  > map_of_masters_t;
-
-  typedef boost::shared_ptr<drts::Job> job_ptr_t;
-  typedef std::map< std::string
-                  , job_ptr_t
+                  , boost::shared_ptr<drts::Job>
                   > map_of_jobs_t;
-  typedef fhg::thread::queue<job_ptr_t> job_queue_t;
-
-  typedef std::pair<sdpa::Capability, fhg::plugin::Capability*> capability_info_t;
-  typedef std::map<std::string, capability_info_t> map_of_capabilities_t;
+  typedef std::map< std::string
+                  , std::pair<sdpa::Capability, fhg::plugin::Capability*>
+                  > map_of_capabilities_t;
 public:
   FHG_PLUGIN_START()
+  try
   {
+    //! \todo ctor parameters
+    const std::string name (fhg_kernel()->get_name());
+    const std::size_t backlog_size
+      (fhg_kernel()->get<std::size_t> ("backlog", "3"));
+    const bool terminate_on_failure
+      (fhg::util::read_bool (fhg_kernel()->get ("terminate_on_failure", "false")));
+    const std::size_t max_reconnect_attempts
+      (fhg_kernel()->get<std::size_t> ("max_reconnect_attempts", "0"));
+    std::list<std::string> master_list;
+    std::list<std::string> capability_list;
+    const std::size_t target_socket_
+      (fhg_kernel()->get<std::size_t> ("socket", -1));
+    const boost::optional<std::size_t> target_socket
+      (boost::make_optional (target_socket_ != std::size_t (-1), target_socket_));
+    const std::string search_path
+      (fhg_kernel()->get("library_path", fhg::util::getenv("PC_LIBRARY_PATH")));
+    const std::string gui_url_ (fhg_kernel()->get ("gui_url", ""));
+    const boost::optional<std::string> gui_url
+      (boost::make_optional (!gui_url_.empty(), gui_url_));
+    WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name, gspc::net::server::default_service_demux()));
+    //! \note optional
+    fhg::plugin::Capability* cap (fhg_kernel()->acquire< fhg::plugin::Capability>("gpi"));
+    fhg::com::host_t host (fhg_kernel()->get("host", "*"));
+    fhg::com::port_t port (fhg_kernel()->get("port", "0"));
+    {
+      const std::string master_names (fhg_kernel()->get("master", ""));
+      const std::string virtual_capabilities (fhg_kernel()->get("capabilities", ""));
+      fhg::util::split (master_names, ",", std::back_inserter(master_list));
+      fhg::util::split (virtual_capabilities, ",", std::back_inserter(capability_list));
+    }
+    const std::size_t netd_nthreads (fhg_kernel()->get ("netd_nthreads", 4L));
+    const std::string netd_url (fhg_kernel()->get ("netd_url", "tcp://*"));
+    kvs::KeyValueStore* kvs (fhg_kernel()->acquire<kvs::KeyValueStore> ("kvs"));
+
+    gspc::net::initialize (netd_nthreads);
+
+    gspc::net::server::default_service_demux().handle
+      ("/service/echo", gspc::net::service::echo ());
+
+    m_server = gspc::net::serve
+      (netd_url, gspc::net::server::default_queue_manager());
+
+    kvs->put ("gspc.net.url." + name, m_server->url());
+
+
     m_shutting_down = false;
-    m_job_in_progress = false;
-    m_graceful_shutdown_requested = false;
 
     m_reconnect_counter = 0;
-    m_my_name =      fhg_kernel()->get_name ();
-    try
-    {
-      m_backlog_size = fhg_kernel()->get<size_t>("backlog", "3");
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG( ERROR
-          , "could not parse backlog size: "
-          << fhg_kernel()->get("backlog", "3")
-          << ": " << ex.what()
-          );
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-    try
-    {
-      m_terminate_on_failure = fhg::util::read_bool
-        (fhg_kernel()->get("terminate_on_failure", "false"));
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG( ERROR
-          , "could not parse bool from `terminate_on_failure' config key: "
-          << ex.what()
-          );
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-
-    try
-    {
-      m_max_reconnect_attempts =
-        fhg_kernel()->get<std::size_t>("max_reconnect_attempts", "0");
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG( ERROR
-          , "could not parse 'max_reconnect_attempts' from config: "
-          << ex.what()
-          );
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-
-    m_wfe = fhg_kernel()->acquire<wfe::WFE>("wfe");
-    if (0 == m_wfe)
-    {
-      MLOG(ERROR, "could not access workflow-engine plugin!");
-      FHG_PLUGIN_FAILED(ELIBACC);
-    }
+    m_my_name = name;
+    m_backlog_size = backlog_size;
+    m_terminate_on_failure = terminate_on_failure;
+    m_max_reconnect_attempts = max_reconnect_attempts;
+    m_wfe = wfe;
 
     // parse virtual capabilities
+    BOOST_FOREACH (std::string const & cap, capability_list)
     {
-      std::string virtual_capabilities (fhg_kernel()->get("capabilities", ""));
-      std::list<std::string> capability_list;
-      fhg::util::split( virtual_capabilities
-                      , ","
-                      , std::back_inserter(capability_list)
-                      );
-      BOOST_FOREACH (std::string const & cap, capability_list)
+      if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
       {
-        if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
-        {
-          std::pair<std::string, std::string> capability_and_type
-            = fhg::util::split_string (cap, "-");
-          if (capability_and_type.second.empty ())
-            capability_and_type.second = "virtual";
+        std::pair<std::string, std::string> capability_and_type
+          = fhg::util::split_string (cap, "-");
+        if (capability_and_type.second.empty ())
+          capability_and_type.second = "virtual";
 
-          const std::string & cap_name = capability_and_type.first;
-          const std::string & cap_type = capability_and_type.second;
+        const std::string & cap_name = capability_and_type.first;
+        const std::string & cap_type = capability_and_type.second;
 
-          DMLOG ( TRACE
-                , "adding capability: " << cap_name
-                << " of type: " << cap_type
-                );
+        DMLOG ( TRACE
+              , "adding capability: " << cap_name
+              << " of type: " << cap_type
+              );
 
-          m_virtual_capabilities.insert
-            (std::make_pair ( cap
-                            , std::make_pair ( sdpa::Capability ( cap_name
-                                                                , cap_type
-                                                                , m_my_name
-                                                                )
-                                             , new fhg::plugin::Capability( cap_name
-                                                                          , cap_type
-                                                                          )
-                                             )
-                            )
-            );
-        }
+        m_virtual_capabilities.insert
+          (std::make_pair ( cap
+                          , std::make_pair ( sdpa::Capability ( cap_name
+                                                              , cap_type
+                                                              , m_my_name
+                                                              )
+                                           , new fhg::plugin::Capability( cap_name
+                                                                        , cap_type
+                                                                        )
+                                           )
+                          )
+          );
       }
     }
 
@@ -164,15 +671,13 @@ public:
     //      acquire_all<T>() -> [(name, T*)]
     //
     // to get access to all plugins of a particular type
-    fhg::plugin::Capability *cap
-      = fhg_kernel()->acquire< fhg::plugin::Capability>("gpi");
     if (cap)
     {
       MLOG( INFO, "gained capability: " << cap->capability_name()
           << " of type " << cap->capability_type()
           );
 
-      lock_type cap_lock(m_capabilities_mutex);
+      boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
       m_capabilities.insert
         (std::make_pair ( cap->capability_name()
                         , std::make_pair (sdpa::Capability ( cap->capability_name ()
@@ -190,52 +695,42 @@ public:
     fhg::util::set_threadname (*m_event_thread, "[drts-events]");
 
     // initialize peer
-    m_peer.reset
-      (new fhg::com::peer_t ( m_my_name
-                            , fhg::com::host_t(fhg_kernel()->get("host", "*"))
-                            , fhg::com::port_t(fhg_kernel()->get("port", "0"))
-                            )
-      );
+    m_peer.reset (new fhg::com::peer_t (m_my_name, host, port));
     m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
     fhg::util::set_threadname (*m_peer_thread, "[drts-peer]");
-    try
-    {
-      m_peer->start();
-    }
-    catch (std::exception const &ex)
-    {
-      MLOG(ERROR, "could not start peer: " << ex.what());
-      FHG_PLUGIN_FAILED(EAGAIN);
-    }
+    m_peer->start();
 
     start_receiver();
 
+    if (master_list.empty())
     {
-      const std::string master_names (fhg_kernel()->get("master", ""));
-
-      std::list<std::string> master_list;
-      fhg::util::split(master_names, ",", std::back_inserter(master_list));
-
-      BOOST_FOREACH (std::string const & master, master_list)
-      {
-        if (m_masters.find (master) == m_masters.end ())
-        {
-          DMLOG(TRACE, "adding master \"" << master << "\"");
-          m_masters.insert (std::make_pair(master, create_master(master)));
-        }
-        else
-        {
-          MLOG( WARN
-              , "master already specified, ignoring new one: " << master
-              );
-        }
-      }
+      throw std::runtime_error ("no masters specified");
     }
 
-    if (m_masters.empty())
+    BOOST_FOREACH (std::string const & master, master_list)
     {
-      MLOG(ERROR, "no masters specified, giving up");
-      FHG_PLUGIN_FAILED(EINVAL);
+      if (m_masters.find (master) == m_masters.end ())
+      {
+        DMLOG(TRACE, "adding master \"" << master << "\"");
+
+        if (master.empty())
+        {
+          throw std::runtime_error ("empty master specified!");
+        }
+
+        if (master == m_my_name)
+        {
+          throw std::runtime_error ("cannot be my own master!");
+        }
+
+        m_masters.insert (std::make_pair(master, false));
+      }
+      else
+      {
+        MLOG( WARN
+            , "master already specified, ignoring new one: " << master
+            );
+      }
     }
 
     restore_jobs ();
@@ -263,6 +758,12 @@ public:
 
     FHG_PLUGIN_STARTED();
   }
+  catch (std::exception const &ex)
+  {
+    MLOG (ERROR, ex.what());
+    FHG_PLUGIN_FAILED (-1);
+  }
+
 
   FHG_PLUGIN_STOP()
   {
@@ -303,10 +804,11 @@ public:
     m_peer_thread.reset();
     m_peer.reset();
 
+    delete m_wfe;
     m_wfe = 0;
 
     {
-      lock_type job_map_lock (m_job_map_mutex);
+      boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
       fhg_kernel()->storage()->save("jobs", m_jobs);
     }
 
@@ -317,6 +819,14 @@ public:
         m_virtual_capabilities.erase(m_virtual_capabilities.begin());
       }
     }
+
+    if (m_server)
+    {
+      m_server->stop ();
+    }
+
+    gspc::net::shutdown ();
+
 
     FHG_PLUGIN_STOPPED();
   }
@@ -332,7 +842,7 @@ public:
           << " of type " << cap->capability_type()
           );
 
-      lock_type cap_lock(m_capabilities_mutex);
+      boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
       m_capabilities.insert
         (std::make_pair ( cap->capability_name()
                         , std::make_pair (sdpa::Capability ( cap->capability_name ()
@@ -348,7 +858,7 @@ public:
           ; ++master_it
           )
       {
-        if (master_it->second->is_connected())
+        if (master_it->second)
         {
           send_event
             (new sdpa::events::CapabilitiesGainedEvent( m_my_name
@@ -367,7 +877,7 @@ public:
 
   FHG_ON_PLUGIN_PREUNLOAD(plugin)
   {
-    lock_type cap_lock(m_capabilities_mutex);
+    boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
     map_of_capabilities_t::iterator cap(m_capabilities.find(plugin));
     if (cap != m_capabilities.end())
     {
@@ -380,80 +890,6 @@ public:
     }
   }
 
-  FHG_ON_SIGNAL(sig, info, ctxt)
-  {
-    if (sig != SIGUSR2)
-      return;
-
-    DMLOG (TRACE, "initiating graceful shutdown due to signal := " << sig);
-    bool something_running;
-    {
-      lock_type lck (m_job_in_progress_mutex);
-      something_running = m_job_in_progress;
-      m_graceful_shutdown_requested = true;
-    }
-
-    if (not something_running)
-    {
-      fhg_kernel ()->shutdown ();
-    }
-  }
-
-  int exec (drts::job_desc_t const &, drts::job_id_t &, drts::JobListener *)
-  {
-    // parse job
-    //   if ok:
-    //      assign job id
-    //      state == pending
-    //      schedule job with attached listener
-    //   else:
-    //      return -EINVAL
-    return -EPERM;
-  }
-
-  drts::status::status_t query (drts::job_id_t const & jobid)
-  {
-    return drts::status::FAILED;
-  }
-
-  int cancel (drts::job_id_t const & jobid)
-  {
-    return -ESRCH;
-  }
-
-  int results (drts::job_id_t const & jobid, std::string &)
-  {
-    return -ESRCH;
-  }
-
-  int remove (drts::job_id_t const & jobid)
-  {
-    return -ESRCH;
-  }
-
-  int add_agent (std::string const & name)
-  {
-    // 1. remember agent in agent map
-    //   state - not connected
-    // 2. send registration event to agent
-    //   re-schedule registration send
-    // 3. when we receive an acknowledge
-    //   change agents state to 'connected'
-    //   no re-schedule of registration
-    // 4. on connection lost -> del_agent
-    return 0;
-  }
-
-  int del_agent (std::string const & name)
-  {
-    //  change state to 'not-connected'
-    //  if there are jobs from that agent:
-    //     remember finished jobs (with timestamp)
-    //     what should happen with not yet executed jobs?
-    //  else: remove agent
-    return 0;
-  }
-
   // event handler callbacks
   //    implemented events
   virtual void handleWorkerRegistrationAckEvent
@@ -462,19 +898,19 @@ public:
     map_of_masters_t::iterator master_it (m_masters.find(e->from()));
     if (master_it != m_masters.end())
     {
-      if (!master_it->second->is_connected())
+      if (!master_it->second)
       {
-        DMLOG(TRACE, "successfully connected to " << master_it->second->name());
-        master_it->second->is_connected(true);
+        DMLOG(TRACE, "successfully connected to " << master_it->first);
+        master_it->second = true;
 
-        notify_capabilities_to_master (master_it->second);
-        resend_outstanding_events (master_it->second);
+        notify_capabilities_to_master (master_it->first);
+        resend_outstanding_events (master_it->first);
 
-        m_connected_event.notify(master_it->second->name());
+        m_connected_event.notify(master_it->first);
       }
 
       {
-        lock_type lock_reconnect_counter (m_reconnect_counter_mutex);
+        boost::mutex::scoped_lock lock_reconnect_counter (m_reconnect_counter_mutex);
         m_reconnect_counter = 0;
       }
     }
@@ -526,7 +962,7 @@ public:
       MLOG(ERROR, "got SubmitJob from unknown source: " << e->from());
       return;
     }
-    else if (! master->second->is_connected())
+    else if (! master->second)
     {
       MLOG(WARN, "got SubmitJob from not yet connected master: " << e->from());
       send_event
@@ -539,21 +975,8 @@ public:
         );
       return;
     }
-    else if (m_graceful_shutdown_requested)
-    {
-      MLOG (WARN, "refusing job " << *e->job_id () << " : shutting down");
-      send_event
-        (new sdpa::events::ErrorEvent( m_my_name
-                                     , e->from()
-                                     , sdpa::events::ErrorEvent::SDPA_EJOBREJECTED
-                                     , "I am going to shut down!"
-                                     , *e->job_id()
-                                     )
-        );
-      return;
-    }
 
-    job_ptr_t job (new drts::Job( drts::Job::ID(*e->job_id())
+    boost::shared_ptr<drts::Job> job (new drts::Job( drts::Job::ID(*e->job_id())
                                 , drts::Job::Description(e->description())
                                 , drts::Job::Owner(e->from())
                                 )
@@ -562,7 +985,7 @@ public:
     job->worker_list (e->worker_list ());
 
     {
-      lock_type job_map_lock(m_job_map_mutex);
+      boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
 
       if (m_backlog_size && m_pending_jobs.size() >= m_backlog_size)
       {
@@ -580,10 +1003,9 @@ public:
       }
       else
       {
-    	sdpa::worker_id_list_t workerList(e->worker_list());
     	DLOG( INFO, "Worker "<<m_my_name<<": received from "
     			             <<e->from()<<" the job " << job->id()
-    	   			  	     <<", assigned to "<<workerList );
+    	   			  	     <<", assigned to "<<e->worker_list() );
 
         send_event (new sdpa::events::SubmitJobAckEvent( m_my_name
                                                        , job->owner()
@@ -592,22 +1014,20 @@ public:
                    );
         m_jobs.insert (std::make_pair(job->id(), job));
 
-        job->entered(boost::posix_time::microsec_clock::universal_time());
-
         fhg_kernel()->storage()->save("jobs", m_jobs);
 
         m_pending_jobs.put(job);
       }
     }
 
-    //    lock_type lock(m_job_arrived_mutex);
+    //    boost::mutex::scoped_lock lock(m_job_arrived_mutex);
     m_job_arrived.notify_all();
   }
 
   virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
   {
     // locate the job
-    lock_type job_map_lock (m_job_map_mutex);
+    boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
     MLOG(TRACE, "got cancelation request for job: " << e->job_id());
@@ -646,7 +1066,6 @@ public:
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job_it->second->owner()
                                                , job_it->second->id()
-                                               , job_it->second->result()
                                                )
           );
       }
@@ -654,7 +1073,6 @@ public:
       {
         MLOG (TRACE, "trying to cancel running job " << e->job_id());
         m_wfe->cancel (e->job_id());
-        drts_on_cancel ();
       }
       else if (job_it->second->state() == drts::Job::FAILED)
       {
@@ -677,7 +1095,7 @@ public:
   virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
   {
     // locate the job
-    lock_type job_map_lock (m_job_map_mutex);
+    boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
     if (job_it == m_jobs.end())
     {
@@ -715,7 +1133,7 @@ public:
   virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e)
   {
     // locate the job
-    lock_type job_map_lock (m_job_map_mutex);
+    boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
     map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
     if (job_it == m_jobs.end())
     {
@@ -768,12 +1186,6 @@ private:
       try
       {
         sdpa::events::SDPAEvent::Ptr evt(m_event_queue.get());
-        map_of_masters_t::iterator m(m_masters.find(evt->from()));
-        if (m != m_masters.end())
-        {
-          m->second->update_recv();
-        }
-
         evt->handleBy(this);
       }
       catch (boost::thread_interrupted const & irq)
@@ -790,25 +1202,9 @@ private:
 
   void job_execution_thread ()
   {
-    wfe::meta_data_t meta_data;
-    meta_data["agent.name"] = m_my_name;
-    meta_data["agent.pid"]  = boost::lexical_cast<std::string>(getpid());
-    meta_data["agent.host"] = boost::asio::ip::host_name();
-
     for (;;)
     {
-      if (m_graceful_shutdown_requested)
-      {
-        fhg_kernel ()->shutdown ();
-        break;
-      }
-
-      { lock_type lck (m_job_in_progress_mutex); m_job_in_progress = false; }
-      drts_on_cancel_clear ();
-
-      job_ptr_t job = m_pending_jobs.get();
-
-      { lock_type lck (m_job_in_progress_mutex); m_job_in_progress = true; }
+      boost::shared_ptr<drts::Job> job = m_pending_jobs.get();
 
       if (drts::Job::PENDING == job->cmp_and_swp_state( drts::Job::PENDING
                                                       , drts::Job::RUNNING
@@ -817,31 +1213,31 @@ private:
       {
         try
         {
-          job->started(boost::posix_time::microsec_clock::universal_time());
+          const boost::posix_time::ptime started
+            (boost::posix_time::microsec_clock::universal_time());
 
           MLOG(TRACE, "executing job " << job->id());
 
-          std::string result;
+          we::type::activity_t result;
           std::string error_message;
           int ec = m_wfe->execute ( job->id()
                                   , job->description()
-                                  , std::map<std::string, fhg::plugin::Capability*>()
                                   , result
                                   , error_message
                                   , job->worker_list ()
-                                  , meta_data
                                   );
-          job->set_result (result);
+          job->set_result (result.to_string());
           job->set_result_code (ec);
           job->set_message (error_message);
 
-          job->completed(boost::posix_time::microsec_clock::universal_time());
+          const boost::posix_time::ptime completed
+            (boost::posix_time::microsec_clock::universal_time());
 
           MLOG( TRACE
               , "job returned."
               << " error-code := " << job->result_code()
               << " error-message := " << job->message()
-              << " total-time := " << (job->completed() - job->started())
+              << " total-time := " << (completed - started)
               );
 
           if (fhg::error::NO_ERROR == ec)
@@ -881,13 +1277,13 @@ private:
         }
 
         {
-          lock_type lock(m_job_computed_mutex);
+          boost::mutex::scoped_lock lock(m_job_computed_mutex);
           m_job_computed.notify_one();
         }
       }
       else
       {
-        lock_type job_map_lock (m_job_map_mutex);
+        boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
         map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
         if (job_it != m_jobs.end())
         {
@@ -902,7 +1298,7 @@ private:
 
   void add_virtual_capability (std::string const &cap)
   {
-    lock_type cap_lock(m_capabilities_mutex);
+    boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
 
     if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
     {
@@ -926,7 +1322,7 @@ private:
 
   void del_virtual_capability (std::string const &cap)
   {
-    lock_type cap_lock(m_capabilities_mutex);
+    boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
 
     typedef map_of_capabilities_t::iterator cap_it_t;
     cap_it_t cap_it = m_virtual_capabilities.find (cap);
@@ -988,7 +1384,7 @@ private:
                               , gspc::net::user_ptr user
                               )
   {
-    lock_type cap_lock(m_capabilities_mutex);
+    boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
 
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
@@ -1012,10 +1408,10 @@ private:
     user->deliver (rply);
   }
 
-  void notify_capabilities_to_master (master_ptr const &master)
+  void notify_capabilities_to_master (std::string const &master)
   {
     sdpa::capabilities_set_t caps;
-    lock_type capabilities_lock(m_capabilities_mutex);
+    boost::mutex::scoped_lock capabilities_lock(m_capabilities_mutex);
 
     typedef map_of_capabilities_t::const_iterator const_cap_it_t;
     for ( const_cap_it_t cap_it(m_capabilities.begin())
@@ -1037,7 +1433,7 @@ private:
     if (! caps.empty())
     {
       send_event(new sdpa::events::CapabilitiesGainedEvent( m_my_name
-                                                          , master->name()
+                                                          , master
                                                           , caps
                                                           )
                 );
@@ -1051,7 +1447,7 @@ private:
         ; ++master_it
         )
     {
-      if (not master_it->second->is_connected())
+      if (not master_it->second)
         continue;
 
       send_event
@@ -1069,7 +1465,7 @@ private:
         ; ++master_it
         )
     {
-      if (not master_it->second->is_connected())
+      if (not master_it->second)
         continue;
 
       send_event
@@ -1090,20 +1486,20 @@ private:
         ; ++it
         )
     {
-      job_ptr_t job (it->second);
+      boost::shared_ptr<drts::Job> job (it->second);
 
       switch (job->state())
       {
       case drts::Job::FINISHED:
         {
-          lock_type job_map_lock (m_job_map_mutex);
+          boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
           MLOG(INFO, "restoring information of finished job: " << job->id());
           m_jobs[it->first] = job;
         }
         break;
       case drts::Job::FAILED:
         {
-          lock_type job_map_lock (m_job_map_mutex);
+          boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
           MLOG(INFO, "restoring information of failed job: " << job->id());
           m_jobs[it->first] = job;
         }
@@ -1124,23 +1520,23 @@ private:
     }
   }
 
-  void resend_outstanding_events (master_ptr const &master)
+  void resend_outstanding_events (std::string const &master)
   {
-    MLOG(TRACE, "resending outstanding notifications to " << master->name());
-    lock_type job_map_lock (m_job_map_mutex);
+    MLOG(TRACE, "resending outstanding notifications to " << master);
+    boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
     for ( map_of_jobs_t::iterator job_it (m_jobs.begin()), end (m_jobs.end())
         ; job_it != end
         ; ++job_it
         )
     {
-      job_ptr_t job (job_it->second);
+      boost::shared_ptr<drts::Job> job (job_it->second);
       MLOG( TRACE
           , "checking job"
           << " id := " << job->id()
           << " state := " << job->state()
           << " owner := " << job->owner()
           );
-      if (   (job->owner() == master->name())
+      if (   (job->owner() == master)
          && (job->state() >= drts::Job::FINISHED)
          )
       {
@@ -1150,12 +1546,12 @@ private:
     }
   }
 
-  int send_job_result_to_master (job_ptr_t const & job)
+  void send_job_result_to_master (boost::shared_ptr<drts::Job> const & job)
   {
     switch (job->state())
     {
     case drts::Job::FINISHED:
-      return send_event (new sdpa::events::JobFinishedEvent ( m_my_name
+      send_event (new sdpa::events::JobFinishedEvent ( m_my_name
                                                             , job->owner()
                                                             , job->id()
                                                             , job->result()
@@ -1164,7 +1560,7 @@ private:
       break;
     case drts::Job::FAILED:
       {
-        return send_event
+        send_event
           (new sdpa::events::JobFailedEvent ( m_my_name
                                             , job->owner()
                                             , job->id()
@@ -1176,33 +1572,17 @@ private:
       break;
     case drts::Job::CANCELED:
       {
-        return send_event
+        send_event
           (new sdpa::events::CancelJobAckEvent ( m_my_name
                                                , job->owner()
                                                , job->id()
-                                               , job->result()
                                                )
           );
       }
       break;
     default:
-      return -EINVAL;
+      throw std::runtime_error ("invalid job state in send_job_result_to_master");
     }
-  }
-
-  master_ptr create_master (std::string master)
-  {
-    if (master.empty())
-    {
-      throw std::runtime_error ("empty master specified!");
-    }
-
-    if (master == m_my_name)
-    {
-      throw std::runtime_error ("cannot be my own master!");
-    }
-
-    return master_ptr (new drts::Master (master));
   }
 
   void start_connect ()
@@ -1215,20 +1595,16 @@ private:
         ; ++master_it
         )
     {
-      boost::shared_ptr<drts::Master> master (master_it->second);
-
-      if (! master->is_connected())
+      if (! master_it->second)
       {
         sdpa::events::WorkerRegistrationEvent::Ptr evt
           (new sdpa::events::WorkerRegistrationEvent( m_my_name
-                                                    , master->name()
+                                                    , master_it->first
                                                     , m_backlog_size
                                                     )
           );
 
         send_event(evt);
-
-        master->update_send();
 
         at_least_one_disconnected = true;
       }
@@ -1242,7 +1618,7 @@ private:
     {
       if (m_max_reconnect_attempts)
       {
-        lock_type lock_reconnect_rounter (m_reconnect_counter_mutex);
+        boost::mutex::scoped_lock lock_reconnect_rounter (m_reconnect_counter_mutex);
         if (m_reconnect_counter < m_max_reconnect_attempts)
         {
           ++m_reconnect_counter;
@@ -1311,13 +1687,13 @@ private:
         const std::string other_name(m_peer->resolve (addr, "*unknown*"));
 
         map_of_masters_t::iterator master(m_masters.find(other_name));
-        if (master != m_masters.end() && master->second->is_connected())
+        if (master != m_masters.end() && master->second)
         {
           DMLOG ( INFO
                 , "connection to " << other_name << " lost: " << ec.message()
                 );
 
-          master->second->is_connected(false);
+          master->second = false;
 
           fhg_kernel()->schedule ( "connect"
                                  , boost::bind( &DRTSImpl::start_connect
@@ -1336,30 +1712,18 @@ private:
     }
   }
 
-  int send_event (sdpa::events::SDPAEvent *e)
+  void send_event (sdpa::events::SDPAEvent *e)
   {
-    return send_event(sdpa::events::SDPAEvent::Ptr(e));
+    send_event(sdpa::events::SDPAEvent::Ptr(e));
   }
 
-  int send_event (sdpa::events::SDPAEvent::Ptr const & evt)
+  void send_event (sdpa::events::SDPAEvent::Ptr const & evt)
   {
     static sdpa::events::Codec codec;
 
     const std::string encoded_evt (codec.encode(evt.get()));
 
-    try
-    {
-      m_peer->send (evt->to(), encoded_evt);
-    }
-    catch (std::exception const &ex)
-    {
-      DMLOG ( WARN, "could not send "
-            << evt->str() << " to " << evt->to() << ": " << ex.what()
-            );
-      return -ESRCH;
-    }
-
-    return 0;
+    m_peer->send (evt->to(), encoded_evt);
   }
 
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt)
@@ -1378,40 +1742,41 @@ private:
   bool m_shutting_down;
   bool m_terminate_on_failure;
 
-  wfe::WFE *m_wfe;
+  WFEImpl *m_wfe;
 
   boost::shared_ptr<boost::thread>    m_peer_thread;
   boost::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
   std::string m_my_name;
+  //! \todo Two sets for connected and unconnected masters?
   map_of_masters_t m_masters;
   std::size_t m_max_reconnect_attempts;
   std::size_t m_reconnect_counter;
 
-  event_queue_t m_event_queue;
+  fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>  m_event_queue;
   boost::shared_ptr<boost::thread>    m_event_thread;
   boost::shared_ptr<boost::thread>    m_execution_thread;
 
-  mutable mutex_type m_job_map_mutex;
-  mutable mutex_type m_job_computed_mutex;
-  condition_type     m_job_computed;
-  mutable mutex_type m_job_arrived_mutex;
-  mutable mutex_type m_reconnect_counter_mutex;
-  condition_type     m_job_arrived;
-  mutable mutex_type m_job_in_progress_mutex;
-  bool               m_job_in_progress;
-  bool               m_graceful_shutdown_requested;
+  mutable boost::mutex m_job_map_mutex;
+  mutable boost::mutex m_job_computed_mutex;
+  boost::condition_variable     m_job_computed;
+  mutable boost::mutex m_job_arrived_mutex;
+  mutable boost::mutex m_reconnect_counter_mutex;
+  boost::condition_variable     m_job_arrived;
 
   fhg::util::thread::event<std::string> m_connected_event;
 
-  mutable mutex_type m_capabilities_mutex;
+  mutable boost::mutex m_capabilities_mutex;
   map_of_capabilities_t m_capabilities;
   map_of_capabilities_t m_virtual_capabilities;
 
   // jobs + their states
   size_t m_backlog_size;
   map_of_jobs_t m_jobs;
-  job_queue_t m_pending_jobs;
+
+  fhg::thread::queue<boost::shared_ptr<drts::Job> > m_pending_jobs;
+
+  gspc::net::server_ptr_t m_server;
 };
 
 EXPORT_FHG_PLUGIN( drts
@@ -1421,6 +1786,6 @@ EXPORT_FHG_PLUGIN( drts
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , "kvs,wfe"
+                 , "kvs"
                  , ""
                  );

@@ -8,7 +8,6 @@
 #include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <sdpa/plugins/drts.hpp>
 
 #include <fhg/plugin/core/kernel.hpp>
 #include <fhg/plugin/plugin.hpp>
@@ -138,12 +137,11 @@ namespace utils
       if(!cpbList.empty())
         kernel->put ("plugin.drts.capabilities", cpbList);
 
-      kernel->put ("plugin.wfe.library_path", strModulesPath);
+      kernel->put ("plugin.drts.library_path", strModulesPath);
 
       kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
-      kernel->load_plugin (TESTS_WFE_PLUGIN_PATH);
-      kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
       kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
+      kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
 
       return kernel;
     }
@@ -186,13 +184,6 @@ namespace utils
         _thread.join();
       }
       _kernel->unload_all();
-    }
-
-    void add_capability(std::string const &cap)
-    {
-      drts::DRTS *drts_plugin = _kernel->lookup_plugin_as<drts::DRTS>("drts");
-      BOOST_REQUIRE(drts_plugin);
-      drts_plugin->add_virtual_capability(cap);
     }
 
     boost::shared_ptr<fhg::core::kernel_t> _kernel;

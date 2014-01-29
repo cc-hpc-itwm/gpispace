@@ -3,8 +3,6 @@
 #ifndef SDPA_DAEMON_NOTIFICATION_EVENT_HPP
 #define SDPA_DAEMON_NOTIFICATION_EVENT_HPP
 
-#include <plugins/wfe.hpp>
-
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/type/activity.hpp>
 
@@ -34,13 +32,11 @@ namespace sdpa
                         , const std::string& activity_id
                         , const state_t& activity_state
                         , const we::type::activity_t& activity
-                        , const wfe::meta_data_t& meta_data = wfe::meta_data_t()
                         )
         : _components ()
         , _activity_id (activity_id)
         , _activity_name (activity.transition().name())
         , _activity_state (activity_state)
-        , _meta_data (meta_data)
       {
         _components.push_back (component);
       }
@@ -49,13 +45,11 @@ namespace sdpa
                         , const std::string& activity_id
                         , const state_t& activity_state
                         , const we::type::activity_t& activity
-                        , const wfe::meta_data_t& meta_data = wfe::meta_data_t()
                         )
         : _components (components)
         , _activity_id (activity_id)
         , _activity_name (activity.transition().name())
         , _activity_state (activity_state)
-        , _meta_data (meta_data)
       {}
 
       NotificationEvent (const std::string encoded)
@@ -66,7 +60,6 @@ namespace sdpa
         archive & _activity_id;
         archive & _activity_name;
         archive & _activity_state;
-        archive & _meta_data;
       }
       std::string encoded() const
       {
@@ -76,7 +69,6 @@ namespace sdpa
         archive & _activity_id;
         archive & _activity_name;
         archive & _activity_state;
-        archive & _meta_data;
         return stream.str();
       }
 
@@ -84,14 +76,12 @@ namespace sdpa
       const std::string &activity_id() const { return _activity_id; }
       const std::string &activity_name() const { return _activity_name; }
       const state_t &activity_state() const { return _activity_state; }
-      const wfe::meta_data_t& meta_data() const { return _meta_data; }
 
     private:
       std::list<std::string> _components;
       std::string _activity_id;
       std::string _activity_name;
       state_t _activity_state;
-      wfe::meta_data_t _meta_data;
     };
   }
 }
