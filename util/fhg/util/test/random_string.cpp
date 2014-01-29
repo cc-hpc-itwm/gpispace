@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE (string_of_distribution)
   std::size_t count[2] = {0,0};
   std::size_t len (0);
 
-  while (count[0] == 0 && len < (1UL << 20))
+  while (count[0] == 0 || len < (1UL << 20))
   {
     std::string const s (fhg::util::random_string_of (chars));
 
