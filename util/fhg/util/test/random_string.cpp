@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE (string_of_distribution)
 
   double const ratio (double (count[1]) / double (count[0]));
 
-  BOOST_REQUIRE_LT (std::fabs (ratio - 2.0), 0.5);
+  BOOST_REQUIRE_LT (std::fabs (ratio - 2.0), 0.1);
 }
 
 BOOST_AUTO_TEST_CASE (string_without)
