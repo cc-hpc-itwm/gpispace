@@ -131,7 +131,7 @@ endif()
 
 find_package (Boost 1.47 REQUIRED QUIET COMPONENTS
   thread system filesystem serialization program_options
-  regex signals date_time test_exec_monitor unit_test_framework)
+  regex signals date_time test_exec_monitor unit_test_framework random)
 
 if (Boost_MAJOR_VERSION EQUAL 1)
   if (Boost_MINOR_VERSION EQUAL 48)
