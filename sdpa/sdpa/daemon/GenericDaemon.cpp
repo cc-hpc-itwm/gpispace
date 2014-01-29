@@ -543,8 +543,8 @@ void GenericDaemon::submit( const we::layer::id_type& activityId
                           )
 {
   const we::type::schedule_data schedule_data
-    ( activity.transition().get_schedule_data<long> (activity.input(), "num_worker")
-    , activity.transition().get_schedule_data<long> (activity.input(), "vmem")
+    ( activity.transition().get_schedule_data<unsigned long> (activity.input(), "num_worker")
+    , activity.transition().get_schedule_data<unsigned long> (activity.input(), "vmem")
     );
   job_requirements_t jobReqs(activity.transition().requirements(), schedule_data);
 
@@ -552,7 +552,7 @@ void GenericDaemon::submit( const we::layer::id_type& activityId
 
   job_id_t job_id(activityId);
 
-  if( schedule_data.num_worker() && schedule_data.num_worker().get()<=0)
+  if( schedule_data.num_worker() && schedule_data.num_worker().get() == 0)
   {
       workflowEngine()->failed (  activityId
                                , fhg::error::UNEXPECTED_ERROR

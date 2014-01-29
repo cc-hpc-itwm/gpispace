@@ -18,9 +18,9 @@ WE_EXEC_LOAD += $(SDPA_HOME)/libexec/sdpa/fake/libfvm-pc.so
 
 #PUT_PORT += input_file=\"/scratch/rotaru/data/words.110000\"
 PUT_PORT += n_tasks_A=10L
-PUT_PORT += n_workers_A=2L
+PUT_PORT += n_workers_A=2UL
 PUT_PORT += n_tasks_B=10L
-PUT_PORT += n_workers_B=6L
+PUT_PORT += n_workers_B=6UL
 -include example.mk
 
 ###############################################################################
