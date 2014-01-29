@@ -6,6 +6,7 @@
 #include <xml/parse/type/link.hpp>
 
 #include <fhg/util/xml.hpp>
+#include <fhg/util/random_string.hpp>
 
 #include <boost/format.hpp>
 
@@ -13,30 +14,9 @@
 #include <stdexcept>
 #include <sstream>
 
-//! \todo implement
-namespace fhg
-{
-  namespace util
-  {
-    namespace test
-    {
-      std::string const random_string()
-      {
-        return "foo";
-      }
-      std::string const random_string_without (std::string const& except)
-      {
-        BOOST_REQUIRE_EQUAL (except, "${}");
-
-        return "foo";
-      }
-    }
-  }
-}
-
 BOOST_AUTO_TEST_CASE (ctor_matches_member_observer)
 {
-  std::string const href (fhg::util::test::random_string());
+  std::string const href (fhg::util::random_string());
 
   {
     xml::parse::type::link_type l (href, boost::none);
@@ -45,7 +25,7 @@ BOOST_AUTO_TEST_CASE (ctor_matches_member_observer)
     BOOST_REQUIRE (!l.prefix());
   }
 
-  std::string const prefix (fhg::util::test::random_string());
+  std::string const prefix (fhg::util::random_string());
 
   {
     xml::parse::type::link_type l (href, prefix);
@@ -66,7 +46,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE (link_no_prefix)
 {
-  std::string const href (fhg::util::test::random_string());
+  std::string const href (fhg::util::random_string());
 
   BOOST_REQUIRE_EQUAL
     ( xml::parse::type::link_type (href, boost::none).link (&by_key_THROW)
@@ -76,8 +56,8 @@ BOOST_AUTO_TEST_CASE (link_no_prefix)
 
 BOOST_AUTO_TEST_CASE (link_with_prefix_no_variable)
 {
-  std::string const href (fhg::util::test::random_string());
-  std::string const prefix (fhg::util::test::random_string_without ("${}"));
+  std::string const href (fhg::util::random_string());
+  std::string const prefix (fhg::util::random_string_without ("${}"));
 
   BOOST_REQUIRE_EQUAL
     ( xml::parse::type::link_type (href, prefix).link (&by_key_THROW)
@@ -98,10 +78,18 @@ namespace
   }
 }
 
+namespace
+{
+  std::string random_variable_name()
+  {
+    return fhg::util::random_string_without ("${}\\");
+  }
+}
+
 BOOST_AUTO_TEST_CASE (link_with_prefix_is_variable)
 {
-  std::string const href (fhg::util::test::random_string());
-  std::string const varname (fhg::util::test::random_string_without ("${}"));
+  std::string const href (fhg::util::random_string());
+  std::string const varname (random_variable_name());
   std::string const varname_reverse (varname.rbegin(), varname.rend());
   std::string const prefix ("${" + varname + "}");
 
@@ -113,10 +101,10 @@ BOOST_AUTO_TEST_CASE (link_with_prefix_is_variable)
 
 BOOST_AUTO_TEST_CASE (link_with_prefix_many_variables)
 {
-  std::string const href (fhg::util::test::random_string());
-  std::string const varname1 (fhg::util::test::random_string_without ("${}"));
+  std::string const href (fhg::util::random_string());
+  std::string const varname1 (random_variable_name());
   std::string const varname1_reverse (varname1.rbegin(), varname1.rend());
-  std::string const varname2 (fhg::util::test::random_string_without ("${}"));
+  std::string const varname2 (random_variable_name());
   std::string const varname2_reverse (varname2.rbegin(), varname2.rend());
   std::string const prefix ("${" + varname1 + "}/${" + varname2 + "}");
 
@@ -131,7 +119,7 @@ BOOST_AUTO_TEST_CASE (dump_no_prefix)
   std::ostringstream oss;
   fhg::util::xml::xmlstream os (oss);
 
-  std::string const href (fhg::util::test::random_string());
+  std::string const href (fhg::util::random_string());
 
   xml::parse::type::dump::dump
     (os, xml::parse::type::link_type (href, boost::none));
@@ -145,8 +133,8 @@ BOOST_AUTO_TEST_CASE (dump_with_prefix)
   std::ostringstream oss;
   fhg::util::xml::xmlstream os (oss);
 
-  std::string const href (fhg::util::test::random_string());
-  std::string const prefix (fhg::util::test::random_string());
+  std::string const href (fhg::util::random_string());
+  std::string const prefix (fhg::util::random_string());
 
   xml::parse::type::dump::dump
     (os, xml::parse::type::link_type (href, prefix));
