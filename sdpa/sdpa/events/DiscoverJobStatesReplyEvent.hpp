@@ -1,9 +1,7 @@
-#ifndef SDPA_DISCOVER_PENDING_ACT_REPLY_EVENT_HPP
-#define SDPA_DISCOVER_PENDING_ACT_REPLY_EVENT_HPP 1
+#ifndef SDPA_DISCOVER_JOB_STATES_REPLY_EVENT_HPP
+#define SDPA_DISCOVER_JOB_STATES_REPLY_EVENT_HPP 1
 
 #include <sdpa/events/MgmtEvent.hpp>
-#include <we/type/value/show.hpp>
-#include <we/type/value/read.hpp>
 #include <sstream>
 
 namespace sdpa
