@@ -11,14 +11,6 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-boost::mutex generate_id_mutex;
-we::layer::id_type generate_id()
-{
- boost::mutex::scoped_lock const _ (generate_id_mutex);
- static unsigned long _cnt (0);
- return boost::lexical_cast<we::layer::id_type> (++_cnt);
-}
-
 namespace sdpa {
   namespace daemon {
     class TestAgent : public Agent
@@ -30,20 +22,7 @@ namespace sdpa {
                 , const sdpa::master_info_list_t arrMasterNames
                 , int rank )
         : Agent (name, url, arrMasterNames, rank, boost::none)
-      {
-        delete ptr_workflow_engine_;
-        ptr_workflow_engine_ =  new we::layer
-            ( boost::bind (&TestAgent::submit, this, _1, _2)
-            , boost::bind (&TestAgent::cancel, this, _1)
-            , boost::bind (&TestAgent::finished, this, _1, _2)
-            , boost::bind (&TestAgent::failed, this, _1, _2, _3)
-            , boost::bind (&TestAgent::canceled, this, _1)
-            , boost::bind (&TestAgent::discover, this, _1, _2)
-            , boost::bind (&TestAgent::discovered, this, _1, _2)
-            , boost::bind (&::generate_id)
-            , *_random_extraction_engine
-            );
-      }
+      {}
 
       std::string gen_id() { return GenericDaemon::gen_id(); }
       void discover (we::layer::id_type discover_id, we::layer::id_type job_id)
@@ -139,7 +118,7 @@ BOOST_AUTO_TEST_CASE(test_discover_activities)
   sdpa::master_info_list_t listMasterInfo;
   sdpa::daemon::TestAgent agent("agent_0", "127.0.0.1", listMasterInfo, 0);
 
-  we::layer::id_type const id (generate_id());
+  we::layer::id_type const id ("test_job");
 
   agent.workflowEngine()->submit (id, activity);
   //! Note it seems to have a race condition somewhere if we call layer submit and
