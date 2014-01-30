@@ -697,10 +697,13 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
 void Agent::handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
 {
   sdpa::agent_id_t master_name(m_map_discover_ids.at( pEvt->discover_id()).disc_issuer() );
+  sdpa::discovery_info_t disc_res(m_map_discover_ids.at( pEvt->discover_id()).job_id()
+                                  , m_map_discover_ids.at( pEvt->discover_id()).job_status()
+                                  , pEvt->discover_result().children() );
   sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                       , master_name
                                                                                                       , pEvt->discover_id()
-                                                                                                      , pEvt->discover_result())));
+                                                                                                      , disc_res)));
   m_map_discover_ids.erase(pEvt->discover_id());
 }
 }} // end namespaces
