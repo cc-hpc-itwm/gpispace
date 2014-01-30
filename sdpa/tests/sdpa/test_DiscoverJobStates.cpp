@@ -106,7 +106,7 @@ namespace sdpa {
         bool b_invariant(true);
         BOOST_FOREACH(const sdpa::discovery_info_t& child_info, _discovery_result.children())
         {
-          if(child_info.state() != sdpa::status::PENDING)
+          if(!child_info.state() || child_info.state().get() != sdpa::status::PENDING)
           {
               b_invariant = false;
               break;
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
     oss<<"disc_id_"<<i++;
     disc_res = (client.discoverJobStates(oss.str(), job_id));
 
-    b_invariant = (disc_res.state() == sdpa::status::PENDING);
+    b_invariant = (disc_res.state() && disc_res.state().get() == sdpa::status::PENDING);
   }
 }
 
@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
     b_invariant = true;
     BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
     {
-      if(child_info.state() != sdpa::status::PENDING)
+      if(!child_info.state() || child_info.state() != sdpa::status::PENDING)
       {
           b_invariant = false;
           break;
@@ -295,13 +295,6 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
     , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
     , kvs_host(), kvs_port()
     );
-  const utils::drts_worker worker_A_1
-    ( "drts_A_1", agent
-    , "A"
-    , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-
   const utils::drts_worker worker_B_0
     ( "drts_B_0", agent
     , "B"
@@ -322,28 +315,30 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 
   int i=0;
   sdpa::discovery_info_t disc_res;
-  bool b_invariant(false);
-  while(!b_invariant)
+
+  // invariant: after some time, all tasks are pending
+  bool b_all_pending(false);
+  do
   {
     std::ostringstream oss;
     oss<<"disc_id_"<<i++;
-    disc_res = (client.discoverJobStates(oss.str(), job_id));
-
-    // invariant: after some time, the task B is always in pending
-    b_invariant = true;
+    disc_res = client.discoverJobStates(oss.str(), job_id);
+    b_all_pending = true;
     BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
     {
-      BOOST_REQUIRE( child_info.state() == sdpa::status::PENDING || child_info.state() == sdpa::status::FINISHED );
-      if(child_info.state() != sdpa::status::PENDING)
-        b_invariant = false;
+      if(!child_info.state() || (child_info.state() && child_info.state().get() != sdpa::status::PENDING) )
+      {
+        b_all_pending = false;
+        break;
+      }
     }
-  }
+  } while(!b_all_pending || disc_res.children().size()!=2);
 }
 
 BOOST_AUTO_TEST_CASE (remove_workers)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");
@@ -398,19 +393,22 @@ BOOST_AUTO_TEST_CASE (remove_workers)
 
   int i=0;
   sdpa::discovery_info_t disc_res;
-  bool b_invariant(false);
-  while(!b_invariant)
-  {
-    std::ostringstream oss;
-    oss<<"disc_id_"<<i++;
-    disc_res = (client.discoverJobStates(oss.str(), job_id));
 
-    // invariant: after some time, the task B is always in pending
-    b_invariant = true;
-    BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
-    {
-      if(child_info.state() != sdpa::status::PENDING)
-        b_invariant = false;
-    }
-  }
+  // invariant: after some time, all tasks are pending
+  bool b_all_pending(false);
+  do
+  {
+     std::ostringstream oss;
+     oss<<"disc_id_"<<i++;
+     disc_res = client.discoverJobStates(oss.str(), job_id);
+     b_all_pending = true;
+     BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
+     {
+       if(!child_info.state() ||  child_info.state().get() != sdpa::status::PENDING)
+       {
+         b_all_pending = false;
+         break;
+       }
+     }
+  } while(!b_all_pending || disc_res.children().empty());
 }
