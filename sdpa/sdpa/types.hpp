@@ -11,6 +11,8 @@
 #include <we/type/value.hpp>
 #include <sdpa/job_states.hpp>
 
+#include <fhg/util/first_then.hpp>
+
 namespace sdpa {
 	typedef std::string job_id_t;
 	typedef std::list<job_id_t> job_id_list_t;
@@ -64,11 +66,7 @@ namespace sdpa {
   typedef std::set<discovery_info_t> discovery_info_set_t;
   struct discovery_info_t
   {
-    discovery_info_t ()
-          : _job_id ("")
-          , _state (boost::none)
-          , _children (discovery_info_set_t())
-        {}
+    discovery_info_t () {}
     discovery_info_t (job_id_t job_id
                      , boost::optional<sdpa::status::code> state
                      , discovery_info_set_t children
@@ -80,7 +78,6 @@ namespace sdpa {
 
     const job_id_t& job_id() const { return _job_id; }
     const boost::optional<sdpa::status::code> state() const { return _state; }
-    void set_state(const sdpa::status::code state) { _state = state; }
     const discovery_info_set_t children() const { return _children; }
     void add_child_info(const discovery_info_t& child_info) { _children.insert(child_info); }
 
@@ -117,23 +114,20 @@ namespace sdpa {
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::discovery_info_t& disc_info)
 {
-  std::string state;
-  if(disc_info.state())
-    state = sdpa::status::show(disc_info.state().get());
+  std::string state(disc_info.state() ? sdpa::status::show (disc_info.state().get()) : "NONE");
 
   os<<"["<<disc_info.job_id();
   if(disc_info.state())
-     os<<", "<<sdpa::status::show(disc_info.state().get());
+     os<<", "<<state;
   if(disc_info.children().empty())
     os<<", []]";
   else
   {
       os<<", [";
-      bool b_first=true;
+      fhg::util::first_then<std::string> const sep ("", ", ");
       BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_info.children())
       {
-        b_first?b_first=false:os<<", ";
-        os<<child_info;
+        os<<sep<<child_info;
       }
       os<<"]";
   }

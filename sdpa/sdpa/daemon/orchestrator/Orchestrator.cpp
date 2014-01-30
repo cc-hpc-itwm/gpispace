@@ -486,7 +486,6 @@ void Orchestrator::handleDiscoverJobStatesReplyEvent (const sdpa::events::Discov
 {
   sdpa::agent_id_t issuer(m_map_discover_ids.at( pEvt->discover_id()).disc_issuer() );
   sdpa::discovery_info_t disc_res(  pEvt->discover_result() );
-  disc_res.set_state(m_map_discover_ids.at(pEvt->discover_id()).job_status());
 
   events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                  , issuer
