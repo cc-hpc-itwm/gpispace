@@ -77,7 +77,7 @@ namespace sdpa {
         _cond_result.wait(lock_res);
       }
 
-      bool test_invariant()
+      bool has_two_pending_children()
       {
         if(_discovery_result.children().size()<2)
           return false;
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(test_discover_activities)
   boost::thread thrd_notify(boost::thread(&sdpa::daemon::TestAgent::notify_discovered, &agent));
 
   int i=0;
-  while(!agent.test_invariant())
+  while(!agent.has_two_pending_children())
   {
       std::ostringstream oss;
       oss<<"disc_id_"<<i++;
