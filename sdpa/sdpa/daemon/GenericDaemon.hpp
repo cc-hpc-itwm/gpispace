@@ -118,13 +118,13 @@ namespace sdpa {
       bool isTop() { return m_arrMasterInfo.empty(); }
 
       // WE interface
-      void submit( const we::layer::id_type & id, const we::type::activity_t&);
+      OVERWRITTEN_IN_TEST void submit( const we::layer::id_type & id, const we::type::activity_t&);
       void cancel(const we::layer::id_type & id);
       virtual void finished(const we::layer::id_type & id, const we::type::activity_t& result);
       virtual void failed( const we::layer::id_type& wfId, int errc, std::string const& reason);
       void canceled(const we::layer::id_type& id);
-      void discover (we::layer::id_type discover_id, we::layer::id_type job_id);
-      void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
+      OVERWRITTEN_IN_TEST void discover (we::layer::id_type discover_id, we::layer::id_type job_id);
+      OVERWRITTEN_IN_TEST void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
