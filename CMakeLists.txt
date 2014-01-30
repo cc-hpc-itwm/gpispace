@@ -232,5 +232,3 @@ add_subdirectory (playground/ap/licensing)
 add_subdirectory (playground/bl)
 add_subdirectory (doc)
 add_subdirectory (share)
-
-add_subdirectory (BROKEN/application/cc)
