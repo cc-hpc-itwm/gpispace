@@ -60,7 +60,6 @@ namespace sdpa {
   };
 
   typedef std::vector<MasterInfo> master_info_list_t;
-  //typedef pnet::type::value::value_type discovery_info_t;
   struct discovery_info_t;
 
   typedef std::set<discovery_info_t> discovery_info_set_t;
