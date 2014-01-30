@@ -688,11 +688,8 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
   }
   else
   {
-      boost::optional<sdpa::status::code> status = boost::none;
-      if(pJob)
-        status = pJob->getStatus();
-
-      sdpa::discovery_info_t discover_result(pEvt->job_id(), status, sdpa::discovery_info_set_t());
+      //! Note: the layer guarantees that the job was already submitted
+      sdpa::discovery_info_t discover_result(pEvt->job_id(), pJob->getStatus(), sdpa::discovery_info_set_t());
       workflowEngine()->discovered(pEvt->discover_id(), discover_result);
   }
 }
