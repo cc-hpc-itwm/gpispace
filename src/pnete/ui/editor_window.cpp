@@ -1428,9 +1428,9 @@ namespace fhg
                 , SLOT (remote_job_failed (sdpa::client::Client*,QString))
                 );
         connect ( waiter
-                , SIGNAL (remote_job_finished (sdpa::client::Client*,QString))
+                , SIGNAL (remote_job_finished (sdpa::client::Client*,QString, xml::parse::id::ref::function*))
                 , this
-                , SLOT (remote_job_finished (sdpa::client::Client*,QString))
+                , SLOT (remote_job_finished (sdpa::client::Client*,QString, xml::parse::id::ref::function*))
                 );
         connect (waiter, SIGNAL (finished()), waiter, SLOT (deleteLater()));
 
