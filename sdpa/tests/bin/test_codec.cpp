@@ -227,3 +227,32 @@ BOOST_AUTO_TEST_CASE (WorkerRegistration)
   BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
   BOOST_REQUIRE_EQUAL (r->agent_uuid(), e.agent_uuid());
 }
+
+BOOST_AUTO_TEST_CASE (DiscoverJobStates)
+{
+  DiscoverJobStatesEvent e("foo", "bar", "job_0", "disc_0");
+  DiscoverJobStatesEvent* r (encode_decode_job_event (e));
+
+  BOOST_REQUIRE_EQUAL (r->discover_id(), e.discover_id());
+}
+
+BOOST_AUTO_TEST_CASE (DiscoverJobStatesReply)
+{
+  sdpa::discovery_info_t disc_info_child_1("job_0_1", sdpa::status::PENDING, sdpa::discovery_info_set_t());
+  sdpa::discovery_info_t disc_info_child_2("job_0_2", sdpa::status::FINISHED, sdpa::discovery_info_set_t());
+  sdpa::discovery_info_t disc_info_child_3("job_0_3", sdpa::status::FAILED, sdpa::discovery_info_set_t());
+
+  sdpa::discovery_info_set_t disc_info_set;
+  disc_info_set.insert(disc_info_child_1);
+  disc_info_set.insert(disc_info_child_2);
+  disc_info_set.insert(disc_info_child_3);
+
+  sdpa::discovery_info_t disc_res("job_0", boost::none, disc_info_set);
+
+  DiscoverJobStatesReplyEvent e("foo", "bar", "disc_0", disc_res);
+  DiscoverJobStatesReplyEvent* r (encode_decode_mgmt_event (e));
+
+  BOOST_REQUIRE_EQUAL (r->discover_id(), e.discover_id());
+  BOOST_REQUIRE(r->discover_result() == e.discover_result());
+}
+
