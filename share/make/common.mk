@@ -1,4 +1,3 @@
-
 ifndef SDPA_HOME
  $(error variable SDPA_HOME not set)
 endif
@@ -7,6 +6,7 @@ endif
 
 SHELL := /bin/bash
 MAKEFLAGS += -r
+DEP += $(MAKEFILE_LIST)
 
 ###############################################################################
 
@@ -486,89 +486,89 @@ help:
 .PHONY: showconfig
 
 showconfig:
-	@echo "*** Necessary parameters:"
+	@echo '*** Necessary parameters:'
 	@echo
-	@echo "SDPA_HOME = $(SDPA_HOME)"
+	@echo 'SDPA_HOME = $(SDPA_HOME)'
 	@echo
-	@echo "MAIN     = $(MAIN)"
-	@echo "BUILDDIR = $(BUILDDIR)"
+	@echo 'MAIN     = $(MAIN)'
+	@echo 'BUILDDIR = $(BUILDDIR)'
 	@echo
-	@echo "*** External programs:"
+	@echo '*** External programs:'
 	@echo
-	@echo "TEE     = $(TEE)"
-	@echo "CMD_DOT = $(CMD_DOT)"
-	@echo "RM      = $(RM)"
-	@echo "XMLLINT = $(XMLLINT)"
+	@echo 'TEE     = $(TEE)'
+	@echo 'CMD_DOT = $(CMD_DOT)'
+	@echo 'RM      = $(RM)'
+	@echo 'XMLLINT = $(XMLLINT)'
 	@echo
-	@echo "*** GPI-Space paths and files:"
+	@echo '*** GPI-Space paths and files:'
 	@echo
-	@echo "DESTDIR         = $(DESTDIR)"
-	@echo "SDPA_INCLUDE    = $(SDPA_INCLUDE)"
-	@echo "SDPA_BIN        = $(SDPA_BIN)"
-	@echo "SDPA_XML_LIB    = $(SDPA_XML_LIB)"
-	@echo "SDPA_LIBEXEC    = $(SDPA_LIBEXEC)"
+	@echo 'DESTDIR         = $(DESTDIR)'
+	@echo 'SDPA_INCLUDE    = $(SDPA_INCLUDE)'
+	@echo 'SDPA_BIN        = $(SDPA_BIN)'
+	@echo 'SDPA_XML_LIB    = $(SDPA_XML_LIB)'
+	@echo 'SDPA_LIBEXEC    = $(SDPA_LIBEXEC)'
 	@echo
-	@echo "SDPA_XML_SCHEMA = $(SDPA_XML_SCHEMA)"
+	@echo 'SDPA_XML_SCHEMA = $(SDPA_XML_SCHEMA)'
 	@echo
-	@echo "*** Files:"
+	@echo '*** Files:'
 	@echo
-	@echo "XML              = $(XML)"
-	@echo "DEP_XML          = $(DEP_XML)"
-	@echo "NET              = $(NET)"
-	@echo "NET_NOINLINE     = $(NET_NOINLINE)"
-	@echo "NET_VERIFICATION = $(NET_VERIFICATION)"
-	@echo "NET_VALIDATION   = $(NET_VALIDATION)"
-	@echo "PUT              = $(PUT)"
-	@echo "GEN              = $(GEN)"
-	@echo "OUT              = $(OUT)"
-	@echo "DOT              = $(DOT)"
-	@echo "DOT_NOINLINE     = $(DOT_NOINLINE)"
-	@echo "PS               = $(PS)"
-	@echo "PS_NOINLINE      = $(PS_NOINLINE)"
-	@echo "SVG              = $(SVG)"
-	@echo "SVG_NOINLINE     = $(SVG_NOINLINE)"
+	@echo 'XML              = $(XML)'
+	@echo 'DEP_XML          = $(DEP_XML)'
+	@echo 'NET              = $(NET)'
+	@echo 'NET_NOINLINE     = $(NET_NOINLINE)'
+	@echo 'NET_VERIFICATION = $(NET_VERIFICATION)'
+	@echo 'NET_VALIDATION   = $(NET_VALIDATION)'
+	@echo 'PUT              = $(PUT)'
+	@echo 'GEN              = $(GEN)'
+	@echo 'OUT              = $(OUT)'
+	@echo 'DOT              = $(DOT)'
+	@echo 'DOT_NOINLINE     = $(DOT_NOINLINE)'
+	@echo 'PS               = $(PS)'
+	@echo 'PS_NOINLINE      = $(PS_NOINLINE)'
+	@echo 'SVG              = $(SVG)'
+	@echo 'SVG_NOINLINE     = $(SVG_NOINLINE)'
 	@echo
-	@echo "*** Dependencies and options:"
+	@echo '*** Dependencies and options:'
 	@echo
-	@echo "DEP               = $(DEP)"
-	@echo "PATH_LIB          = $(PATH_LIB)"
-	@echo "WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)"
-	@echo "LIB_DESTDIR       = $(LIB_DESTDIR)"
+	@echo 'DEP               = $(DEP)'
+	@echo 'PATH_LIB          = $(PATH_LIB)'
+	@echo 'WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)'
+	@echo 'LIB_DESTDIR       = $(LIB_DESTDIR)'
 	@echo
-	@echo "CXXINCLUDEPATHS   = $(CXXINCLUDEPATHS)"
-	@echo "CXXLIBRARYPATHS   = $(CXXLIBRARYPATHS)"
+	@echo 'CXXINCLUDEPATHS   = $(CXXINCLUDEPATHS)'
+	@echo 'CXXLIBRARYPATHS   = $(CXXLIBRARYPATHS)'
 	@echo
-	@echo "NOT_STARTS_WITH   = $(NOT_STARTS_WITH)"
-	@echo "NOT_ENDS_WITH     = $(NOT_ENDS_WITH)"
-	@echo "PNET2DOT_OPTS     = $(PNET2DOT_OPTS)"
+	@echo 'NOT_STARTS_WITH   = $(NOT_STARTS_WITH)'
+	@echo 'NOT_ENDS_WITH     = $(NOT_ENDS_WITH)'
+	@echo 'PNET2DOT_OPTS     = $(PNET2DOT_OPTS)'
 	@echo
-	@echo "PNETC_OPTS        = $(PNETC_OPTS)"
-	@echo "PNETC_LINK_PREFIX = $(PNETC_LINK_PREFIX)"
+	@echo 'PNETC_OPTS        = $(PNETC_OPTS)'
+	@echo 'PNETC_LINK_PREFIX = $(PNETC_LINK_PREFIX)'
 	@echo
-	@echo "PUT_PORT          = $(PUT_PORT)"
-	@echo "PNETPUT_OPTS      = $(PNETPUT_OPTS)"
+	@echo 'PUT_PORT          = $(PUT_PORT)'
+	@echo 'PNETPUT_OPTS      = $(PNETPUT_OPTS)'
 	@echo
-	@echo "PNETV_OPTS        = $(PNETV_OPTS)"
+	@echo 'PNETV_OPTS        = $(PNETV_OPTS)'
 	@echo
-	@echo "WE_EXEC_ENV       = $(WE_EXEC_ENV)"
-	@echo "WE_EXEC_CMD       = $(WE_EXEC_CMD)"
-	@echo "WE_EXEC_OUTPUT    = $(WE_EXEC_OUTPUT)"
-	@echo "WE_EXEC_WORKER    = $(WE_EXEC_WORKER)"
-	@echo "WE_EXEC_LOAD      = $(WE_EXEC_LOAD)"
-	@echo "WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)"
-	@echo "WE_EXEC_OPTS      = $(WE_EXEC_OPTS)"
+	@echo 'WE_EXEC_ENV       = $(WE_EXEC_ENV)'
+	@echo 'WE_EXEC_CMD       = $(WE_EXEC_CMD)'
+	@echo 'WE_EXEC_OUTPUT    = $(WE_EXEC_OUTPUT)'
+	@echo 'WE_EXEC_WORKER    = $(WE_EXEC_WORKER)'
+	@echo 'WE_EXEC_LOAD      = $(WE_EXEC_LOAD)'
+	@echo 'WE_EXEC_LIBPATHS  = $(WE_EXEC_LIBPATHS)'
+	@echo 'WE_EXEC_OPTS      = $(WE_EXEC_OPTS)'
 	@echo
-	@echo "BUILD             = $(BUILD)"
-	@echo "CLEAN             = $(CLEAN)"
+	@echo 'BUILD             = $(BUILD)'
+	@echo 'CLEAN             = $(CLEAN)'
 	@echo
-	@echo "*** Derived commands:"
+	@echo '*** Derived commands:'
 	@echo
-	@echo "PNETC                   = $(PNETC)"
-	@echo "PNETC_NOINLINE          = $(PNETC_NOINLINE)"
-	@echo "PNETC_LIST_DEPENDENCIES = $(PNETC_LIST_DEPENDENCIES)"
-	@echo "PNET2DOT                = $(PNET2DOT)"
-	@echo "PNETPUT                 = $(PNETPUT)"
-	@echo "PNETV                   = $(PNETV)"
-	@echo "WE_EXEC                 = $(WE_EXEC)"
-	@echo "SDPA                    = $(SDPA)"
-	@echo "XMLLINT                 = $(XMLLINT)"
+	@echo 'PNETC                   = $(PNETC)'
+	@echo 'PNETC_NOINLINE          = $(PNETC_NOINLINE)'
+	@echo 'PNETC_LIST_DEPENDENCIES = $(PNETC_LIST_DEPENDENCIES)'
+	@echo 'PNET2DOT                = $(PNET2DOT)'
+	@echo 'PNETPUT                 = $(PNETPUT)'
+	@echo 'PNETV                   = $(PNETV)'
+	@echo 'WE_EXEC                 = $(WE_EXEC)'
+	@echo 'SDPA                    = $(SDPA)'
+	@echo 'XMLLINT                 = $(XMLLINT)'

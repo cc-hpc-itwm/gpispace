@@ -1,22 +1,22 @@
 <defun name="compile">
   <in name="compiler" type="string" />
-  <in name="params" type="string" />
-  <in name="working_directory" type="string" />
-  <in name="build_environment" type="string" />
+  <in name="argv" type="list" />
+  <in name="cwd" type="string" />
 
   <out name="exit_code" type="long" />
   <out name="std_out" type="string" />
   <out name="std_err" type="string" />
 
   <module name="sdpacc" function="compile ( compiler
-                                          , params
-                                          , working_directory
-                                          , build_environment
+                                          , argv
+                                          , cwd
                                           , exit_code
                                           , std_out
                                           , std_err
                                           )">
     <cinclude href="fhglog/fhglog.hpp"/>
+    <cinclude href="we/type/value/show.hpp"/>
+    <cinclude href="boost/foreach.hpp"/>
     <cinclude href="errno.h"/>
     <cinclude href="unistd.h"/>
     <cinclude href="limits.h"/>
@@ -30,49 +30,50 @@
         LOG (INFO, "SDPACC compile");
 
         LOG (INFO, "===> compiler := " << compiler);
-        LOG (INFO, "===> params   := " << params);
-	LOG (INFO, "===> working directory := " << working_directory);
-	LOG (INFO, "===> build environment := " << build_environment);
+        LOG (INFO, "===> argv := " << pnet::type::value::show (argv));
+	LOG (INFO, "===> cwd := " << cwd);
 
-	char buf[PATH_MAX];
-	if (0 == getcwd(buf, sizeof(buf)))
+	char oldwd[PATH_MAX];
+	if (0 == getcwd(oldwd, sizeof(oldwd) - 1))
 	{
-	   LOG(WARN, "could not get current working path: " << strerror(errno));
-	   snprintf(buf, sizeof(buf), "/");
+           throw std::runtime_error
+              ( "could not get current working directory: "
+              + std::string (strerror (errno))
+              );
 	}
 
-	if (chdir(working_directory.c_str()) < 0)
+	if (chdir (cwd.c_str()) < 0)
 	{
-	  int ec = errno;
-	  LOG(ERROR, "could not change directory to " << working_directory << ": " << strerror(ec));
-	  throw std::runtime_error("change directory failed: " + working_directory);
+	  throw std::runtime_error
+              ( "change of working directory to '"
+              + cwd
+              + "' failed: "
+              + strerror (errno)
+              );
 	}
 
-	const std::string cmd (compiler + " " + params);
+        std::ostringstream cmd;
+        cmd << compiler;
 
-	LOG (INFO,"====> comand := " << cmd);
+        BOOST_FOREACH (pnet::type::value::value_type const &arg, argv)
+        {
+           cmd << " " << boost::get<std::string>(arg);
+        }
+
+	LOG (INFO,"====> comand := " << cmd.str ());
 
         process::circular_buffer buf_stderr;
 	char std_out_buf[1 << 20];
 	memset (std_out_buf, 0, sizeof(std_out_buf));
 
-	process::execute_return_type exec_result;
-        try
-        {
-	  exec_result =
-	    process::execute ( cmd
+	const process::execute_return_type exec_result =
+	    process::execute ( cmd.str()
                              , process::const_buffer (0, 0)
                              , process::buffer(&std_out_buf[0], sizeof(std_out_buf))
                              , buf_stderr
                              , process::file_const_buffer_list ()
                              , process::file_buffer_list ()
                              );
-        }
-        catch (std::exception const &ex)
-        {
-          LOG(ERROR, "compilation failed: " << ex.what());
-	  exec_result.exit_code = -EFAULT;
-        }
 
 	exit_code = exec_result.exit_code;
 
@@ -96,9 +97,14 @@
           LOG (INFO, "SDPACC done");
         }
 
-	if (chdir(buf) < 0)
+	if (chdir(oldwd) < 0)
 	{
-	  LOG(WARN, "could not change working directory back to: " << buf);
+	  throw std::runtime_error
+              ( "change of working directory to '"
+              + std::string (oldwd)
+              + "' failed: "
+              + strerror (errno)
+              );
 	}
     ]]></code>
   </module>

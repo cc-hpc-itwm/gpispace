@@ -1,33 +1,11 @@
 #!/bin/bash
 #
 # wrapper around a compiler similar to icecream
-#
-#
-# 1. prepare job description
-#
-#      take prepared pnet (or compile if not present)
-#
-# 2. place tokens
-#      working directory
-#      parameters
-#      compiler to use (name)
-#      build-environment + md5sum
-#
-# 3. submit
-#
-#      wait until finished
-#      check exit code token
-#      print stdout
-#      print stderr
 
 prog_name=$(basename $0)
 compiler="$prog_name"
 c_compiler="gcc"
 cxx_compiler="g++"
-
-if [ -z "$SDPACFLAGS" ] ; then
-   SDPACFLAGS="--network.timeout=10000 -t 25"
-fi
 
 if [ -n "$SDPACC_CC" ] ; then
     c_compiler="$SDPACC_CC"
@@ -57,12 +35,10 @@ if [ -z "$cxx_compiler" ] ; then
     exit 2
 fi
 
-args="$@"
-pnet="$SDPA_HOME/libexec/sdpa/apps/sdpacc/compile.pnet"
-
 pnet_tmp=$(mktemp)
 result=
 jobid=
+args=( "${@}" )
 
 trap 'cancel' EXIT
 
@@ -80,6 +56,7 @@ function isatty()
 
 function cancel()
 {
+    rm -f "${pnet_tmp}"
     if [ -z "$jobid" ] ; then
         return 0
     fi
@@ -93,6 +70,7 @@ function cancel()
     return $ec
 }
 
+
 function compile ()
 {
     prepare
@@ -101,11 +79,15 @@ function compile ()
 
 function prepare ()
 {
-    pnetput --if "${pnet}" --of "${pnet_tmp}" \
-              -p compiler=\""$compiler"\" \
-              -p params=\""$args"\" \
-              -p working_directory=\""$PWD"\" \
-              -p build_environment=\"\"
+    local argv_list=
+    local INLINE_PNET_OFFSET=
+    argv_list=$(echo -n "List("$(for a in "${args[@]}" ; do echo \"$a\", ; done); echo ")")
+    INLINE_PNET_OFFSET=$(awk '/^__SDPACC_PNET_INLINE_BEGIN__/ {print NR + 1; exit 0; }' "$0")
+    tail -n+${INLINE_PNET_OFFSET} "$0" | pnetput \
+        --of "${pnet_tmp}" \
+        -p compiler=\""$compiler"\" \
+        -p argv="$argv_list" \
+        -p cwd=\""$PWD"\"
 }
 
 function execute ()
@@ -177,3 +159,5 @@ case "$prog_name" in
 esac
 
 compile $@
+exit $?
+__SDPACC_PNET_INLINE_BEGIN__
