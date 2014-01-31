@@ -50,10 +50,6 @@ public:
     unsigned int m_kvs_timeout (120);
     m_kvs_timeout = fhg_kernel ()->get<unsigned int> ("timeout", m_kvs_timeout);
 
-    DMLOG( TRACE
-         , "initializing KeyValueStore @ [" << m_host << "]:" << m_port
-         );
-
     _kvs_client = new fhg::com::kvs::client::kvsc
       ( m_host , m_port
       , true // auto_reconnect
