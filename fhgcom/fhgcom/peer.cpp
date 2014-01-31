@@ -16,7 +16,6 @@ using boost::lambda::var;
 //using boost::lambda::_1;
 
 #include "peer.hpp"
-#include "kvs/kvsc.hpp"
 #include <fhg/util/thread/event.hpp>
 
 #include <cstdlib>
@@ -46,6 +45,7 @@ namespace fhg
       , cookie_(cookie)
       , my_addr_(p2p::address_t(name))
       , started_()
+      , _kvs_client (kvs::global_kvs())
       , io_service_()
       , io_service_work_(new boost::asio::io_service::work(io_service_))
       , acceptor_(io_service_)
@@ -173,7 +173,7 @@ namespace fhg
         {
           std::string prefix ("p2p.peer");
           prefix += "." + boost::lexical_cast<std::string>(my_addr_);
-          kvs::global_kvs()->del (prefix);
+          _kvs_client->del (prefix);
         }
         catch (std::exception const & ex)
         {
@@ -271,7 +271,7 @@ namespace fhg
         // lookup location information
         std::string prefix ("p2p.peer");
         prefix += "." + boost::lexical_cast<std::string>(addr);
-        kvs::values_type peer_info (kvs::global_kvs()->get (prefix));
+        kvs::values_type peer_info (_kvs_client->get (prefix));
 
         if (peer_info.empty())
         {
@@ -451,7 +451,7 @@ namespace fhg
           const std::string key
             ("p2p.peer." + boost::lexical_cast<std::string>(addr)+".name");
 
-          kvs::values_type v (kvs::global_kvs()->get (key));
+          kvs::values_type v (_kvs_client->get (key));
           if (v.size() == 1)
           {
             std::string name = v.begin()->second;
@@ -668,7 +668,7 @@ namespace fhg
 
       try
       {
-        kvs::global_kvs()->timed_put (values, 2 * 60 * 1000u);
+        _kvs_client->timed_put (values, 2 * 60 * 1000u);
       }
       catch (std::exception const &ex)
       {

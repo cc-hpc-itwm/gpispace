@@ -15,6 +15,7 @@
 
 #include <fhgcom/header.hpp>
 #include <fhgcom/connection.hpp>
+#include <fhgcom/kvs/kvsc.hpp>
 #include <fhgcom/peer_info.hpp>
 
 #include <fhg/util/thread/event.hpp>
@@ -143,6 +144,8 @@ namespace fhg
       std::string cookie_;
       p2p::address_t my_addr_;
       fhg::util::thread::event<boost::system::error_code> started_;
+
+      kvs::kvsc_ptr_t _kvs_client;
 
       boost::asio::io_service io_service_;
       boost::shared_ptr<boost::asio::io_service::work> io_service_work_;
