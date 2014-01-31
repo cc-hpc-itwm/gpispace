@@ -38,7 +38,7 @@ namespace sdpa
                    )
       : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
       , orchestrator_ (orchestrator)
-      , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
+      , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"), fhg::com::kvs::global_kvs())
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
       , _stopping (false)
     {

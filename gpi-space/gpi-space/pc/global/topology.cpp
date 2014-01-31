@@ -235,6 +235,7 @@ namespace gpi
           (new fhg::com::peer_t( detail::rank_to_name (m_rank)
                                , host
                                , port
+                               , fhg::com::kvs::global_kvs()
                                , cookie
                                )
           );

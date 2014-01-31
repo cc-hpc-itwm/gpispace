@@ -27,6 +27,7 @@ public:
     m_peer.reset (new fhg::com::peer_t ( m_name
                                        , fhg::com::host_t(fhg_kernel()->get("host", "*"))
                                        , fhg::com::port_t(fhg_kernel()->get("port", "0"))
+                                       , fhg::com::kvs::global_kvs()
                                        )
                  );
     m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));

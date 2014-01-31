@@ -695,7 +695,7 @@ public:
     fhg::util::set_threadname (*m_event_thread, "[drts-events]");
 
     // initialize peer
-    m_peer.reset (new fhg::com::peer_t (m_my_name, host, port));
+    m_peer.reset (new fhg::com::peer_t (m_my_name, host, port, fhg::com::kvs::global_kvs()));
     m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
     fhg::util::set_threadname (*m_peer_thread, "[drts-peer]");
     m_peer->start();

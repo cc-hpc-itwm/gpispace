@@ -40,6 +40,7 @@ namespace fhg
       peer_t ( std::string const & name
              , host_t const & host
              , port_t const & port
+             , kvs::kvsc_ptr_t kvs_client
              , std::string const & cookie = ""
              );
 

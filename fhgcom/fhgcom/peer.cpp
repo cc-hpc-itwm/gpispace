@@ -35,6 +35,7 @@ namespace fhg
     peer_t::peer_t ( std::string const & name
                    , host_t const & host
                    , port_t const & port
+                   , kvs::kvsc_ptr_t kvs_client
                    , std::string const & cookie
                    )
       : stopped_(true)
@@ -45,7 +46,7 @@ namespace fhg
       , cookie_(cookie)
       , my_addr_(p2p::address_t(name))
       , started_()
-      , _kvs_client (kvs::global_kvs())
+      , _kvs_client (kvs_client)
       , io_service_()
       , io_service_work_(new boost::asio::io_service::work(io_service_))
       , acceptor_(io_service_)
