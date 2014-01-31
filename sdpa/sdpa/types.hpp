@@ -11,8 +11,6 @@
 #include <we/type/value.hpp>
 #include <sdpa/job_states.hpp>
 
-#include <fhg/util/first_then.hpp>
-
 namespace sdpa {
 	typedef std::string job_id_t;
 	typedef std::list<job_id_t> job_id_list_t;
@@ -109,29 +107,6 @@ namespace sdpa {
     boost::optional<sdpa::status::code> _state;
     discovery_info_set_t _children;
   };
-}
-
-inline std::ostream& operator<<(std::ostream& os, const sdpa::discovery_info_t& disc_info)
-{
-  std::string state(disc_info.state() ? sdpa::status::show (disc_info.state().get()) : "NONE");
-
-  os<<"["<<disc_info.job_id();
-  if(disc_info.state())
-     os<<", "<<state;
-  if(disc_info.children().empty())
-    os<<", []]";
-  else
-  {
-      os<<", [";
-      fhg::util::first_then<std::string> const sep ("", ", ");
-      BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_info.children())
-      {
-        os<<sep<<child_info;
-      }
-      os<<"]";
-  }
-
-   return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::worker_id_list_t& worker_list)
