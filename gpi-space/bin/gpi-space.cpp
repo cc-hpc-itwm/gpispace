@@ -869,7 +869,7 @@ static int cleanup_kvs ()
     std::string peer_name = fhg::com::p2p::to_string
       (fhg::com::p2p::address_t ("gpi-"+boost::lexical_cast<std::string>(rnk)));
     std::string kvs_key = "p2p.peer." + peer_name;
-    fhg::com::kvs::del (kvs_key);
+    fhg::com::kvs::global_kvs()->del (kvs_key);
   }
   return 0;
 }

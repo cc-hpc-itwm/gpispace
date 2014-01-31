@@ -808,7 +808,7 @@ namespace gpi
             std::string peer_name = fhg::com::p2p::to_string
               (fhg::com::p2p::address_t (detail::rank_to_name (rnks[i])));
             std::string kvs_key = "p2p.peer." + peer_name;
-            fhg::com::kvs::del (kvs_key);
+            fhg::com::kvs::global_kvs()->del (kvs_key);
           }
 
           kill(getpid(), SIGTERM);
