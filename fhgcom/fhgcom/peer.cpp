@@ -173,7 +173,7 @@ namespace fhg
         {
           std::string prefix ("p2p.peer");
           prefix += "." + boost::lexical_cast<std::string>(my_addr_);
-          kvs::del (prefix);
+          kvs::global_kvs()->del (prefix);
         }
         catch (std::exception const & ex)
         {
@@ -271,7 +271,7 @@ namespace fhg
         // lookup location information
         std::string prefix ("p2p.peer");
         prefix += "." + boost::lexical_cast<std::string>(addr);
-        kvs::values_type peer_info (kvs::get_tree (prefix));
+        kvs::values_type peer_info (kvs::global_kvs()->get (prefix));
 
         if (peer_info.empty())
         {
@@ -450,9 +450,18 @@ namespace fhg
         {
           const std::string key
             ("p2p.peer." + boost::lexical_cast<std::string>(addr)+".name");
-          std::string name = kvs::get<std::string>(key);
-          reverse_lookup_cache_[addr] = name;
-          return name;
+
+          kvs::values_type v (kvs::global_kvs()->get (key));
+          if (v.size() == 1)
+          {
+            std::string name = v.begin()->second;
+            reverse_lookup_cache_[addr] = name;
+            return name;
+          }
+          else
+          {
+            throw std::runtime_error("kvs::get: returned 0 or more than 1 element");
+          }
         }
         catch (std::exception const & ex)
         {
@@ -659,7 +668,7 @@ namespace fhg
 
       try
       {
-        kvs::timed_put (values, 2 * 60 * 1000u);
+        kvs::global_kvs()->timed_put (values, 2 * 60 * 1000u);
       }
       catch (std::exception const &ex)
       {
