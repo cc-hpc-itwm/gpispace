@@ -41,7 +41,27 @@ public:
       , 1
       );
 
-    async_start();
+    try
+    {
+      fhg::com::kvs::global::get_kvs_info().start();
+
+      if (m_ping_interval)
+        fhg_kernel ()->schedule ( "kvs_ping"
+                                , boost::bind ( &KeyValueStorePlugin::kvs_ping
+                                              , this
+                                              )
+                                , m_ping_interval
+                                );
+    }
+    catch (std::exception const & ex)
+    {
+      MLOG (ERROR, "could not connect to KVS: " << ex.what()
+                << "HINT: make sure that the KVS is actually started and/or"
+                << " check the plugin.kvs.host and plugin.kvs.port settings"
+           );
+
+      fhg_kernel ()->shutdown ();
+    }
 
     FHG_PLUGIN_STARTED();
   }
@@ -100,31 +120,6 @@ public:
     }
   }
 private:
-  void async_start ()
-  {
-    try
-    {
-      fhg::com::kvs::global::get_kvs_info().start();
-
-      if (m_ping_interval)
-        fhg_kernel ()->schedule ( "kvs_ping"
-                                , boost::bind ( &KeyValueStorePlugin::kvs_ping
-                                              , this
-                                              )
-                                , m_ping_interval
-                                );
-    }
-    catch (std::exception const & ex)
-    {
-      MLOG (ERROR, "could not connect to KVS: " << ex.what()
-                << "HINT: make sure that the KVS is actually started and/or"
-                << " check the plugin.kvs.host and plugin.kvs.port settings"
-           );
-
-      fhg_kernel ()->shutdown ();
-    }
-  }
-
   void kvs_ping ()
   {
     if (! this->ping ())
