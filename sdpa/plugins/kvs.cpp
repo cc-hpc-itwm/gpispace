@@ -17,7 +17,6 @@ public:
     , m_ping_failed (0)
     , m_max_ping_failed (3)
     , m_kvs_timeout (120)
-    , m_terminate_on_connection_failure (true)
   {}
 
   FHG_PLUGIN_START()
@@ -29,9 +28,6 @@ public:
                                            );
     m_ping_interval =
       fhg_kernel ()->get<unsigned int> ("ping", m_ping_interval);
-    m_terminate_on_connection_failure =
-      fhg::util::read_bool
-        (fhg_kernel()->get ("terminate", boost::lexical_cast<std::string> (m_terminate_on_connection_failure)));
     m_kvs_timeout = fhg_kernel ()->get<unsigned int> ("timeout", m_kvs_timeout);
 
     DMLOG( TRACE
@@ -125,20 +121,7 @@ private:
                 << " check the plugin.kvs.host and plugin.kvs.port settings"
            );
 
-      if (m_terminate_on_connection_failure)
-      {
-        fhg_kernel ()->shutdown ();
-        return;
-      }
-      else
-      {
-        fhg_kernel()->schedule ( "kvs_connect"
-                               , boost::bind ( &KeyValueStorePlugin::async_start
-                                             , this
-                                             )
-                               , 10
-                               );
-      }
+      fhg_kernel ()->shutdown ();
     }
   }
 
@@ -150,12 +133,8 @@ private:
 
       if (m_ping_failed >= m_max_ping_failed)
       {
-        if (m_terminate_on_connection_failure)
-        {
-          MLOG (WARN, "lost connection to KVS, terminating...");
-          fhg_kernel ()->shutdown ();
-          return;
-        }
+        MLOG (WARN, "lost connection to KVS, terminating...");
+        fhg_kernel ()->shutdown ();
       }
     }
     else
@@ -177,7 +156,6 @@ private:
   unsigned int m_ping_failed;
   unsigned int m_max_ping_failed;
   unsigned int m_kvs_timeout;
-  bool         m_terminate_on_connection_failure;
 };
 
 
