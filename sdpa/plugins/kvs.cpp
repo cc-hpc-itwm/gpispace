@@ -60,7 +60,7 @@ public:
                 << " check the plugin.kvs.host and plugin.kvs.port settings"
            );
 
-      fhg_kernel ()->shutdown ();
+      FHG_PLUGIN_FAILED (-1);
     }
 
     FHG_PLUGIN_STARTED();
