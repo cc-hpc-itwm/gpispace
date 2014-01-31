@@ -81,11 +81,13 @@ BOOST_AUTO_TEST_CASE ( check_setup )
   // make sure that the kvs is reachable...
   using namespace fhg::com;
 
-  kvs::put ("fhg.com.test.PeerTest", 42);
-  int i = kvs::get<int>("fhg.com.test.PeerTest");
-  kvs::del ("fhg.com.test.PeerTest");
+  kvs::global_kvs()->put ("fhg.com.test.PeerTest", 42);
 
-  BOOST_CHECK_EQUAL (42, i);
+  const kvs::values_type v (kvs::global_kvs()->get ("fhg.com.test.PeerTest"));
+  BOOST_REQUIRE_EQUAL (v.size(), 1);
+  BOOST_REQUIRE_EQUAL (v.begin()->first, "fhg.com.test.PeerTest");
+  BOOST_REQUIRE_EQUAL (v.begin()->second, "42");
+  kvs::global_kvs()->del ("fhg.com.test.PeerTest");
 }
 
 BOOST_AUTO_TEST_CASE ( output_test )
