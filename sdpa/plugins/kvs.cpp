@@ -87,17 +87,7 @@ private:
   {
     while (true)
     {
-      bool ping_failed (false);
-      try
-      {
-        ping_failed = _kvs_client.ping ();
-      }
-      catch (std::exception const &ex)
-      {
-        ping_failed = true;
-      }
-
-      if (ping_failed)
+      if (!_kvs_client.ping())
       {
         ++_counter_ping_failed;
 
