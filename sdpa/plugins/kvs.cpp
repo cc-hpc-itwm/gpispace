@@ -69,17 +69,17 @@ public:
 
   void       put(key_type const & k, value_type const &value)
   {
-    fhg::com::kvs::put(k,value);
+    fhg::com::kvs::global_kvs()->put(k,value);
   }
 
   void       del(key_type const & k)
   {
-    fhg::com::kvs::del(k);
+    fhg::com::kvs::global_kvs()->del(k);
   }
 
   int        inc(key_type const & k, int step)
   {
-    return fhg::com::kvs::inc(k, step);
+    return fhg::com::kvs::global_kvs()->inc(k, step);
   }
 
   key_value_map_type list () const
@@ -89,14 +89,14 @@ public:
 
   key_value_map_type list (key_type const &prefix) const
   {
-    return fhg::com::kvs::get_tree (prefix);
+    return fhg::com::kvs::global_kvs()->get (prefix);
   }
 
   bool       ping () const
   {
     try
     {
-      return fhg::com::kvs::ping ();
+      return fhg::com::kvs::global_kvs()->ping ();
     }
     catch (std::exception const &ex)
     {
