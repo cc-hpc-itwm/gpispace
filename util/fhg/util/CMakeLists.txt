@@ -54,6 +54,7 @@ set (srcs
   pidfile_writer.cpp
   program_info.c
   threadname.cpp
+  random_string.cpp
   remove_prefix.cpp
   read_bool.cpp
   now.cpp
@@ -92,8 +93,17 @@ set_target_properties(fhg-util-shared
              VERSION     1
 )
 
-target_link_libraries (fhg-util ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY})
-target_link_libraries (fhg-util-shared ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries (fhg-util
+  ${Boost_THREAD_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_RANDOM_LIBRARY}
+)
+target_link_libraries (fhg-util-shared
+  ${Boost_THREAD_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
+  ${Boost_RANDOM_LIBRARY}
+  )
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util
