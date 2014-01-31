@@ -106,7 +106,7 @@ namespace
     {
       throw std::runtime_error ("discover called: NYI");
     }
-    void discovered (we::layer::id_type, std::set<pnet::type::value::value_type>)
+    void discovered (we::layer::id_type, sdpa::discovery_info_t)
     {
       throw std::runtime_error ("discovered called: NYI");
     }
