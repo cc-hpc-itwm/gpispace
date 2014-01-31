@@ -6,12 +6,15 @@
 
 #include <fhgcom/kvs/kvsc.hpp>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread.hpp>
+
 class KeyValueStorePlugin : FHG_PLUGIN
                           , public kvs::KeyValueStore
 {
 public:
   KeyValueStorePlugin ()
-    : m_ping_interval (10)
+    : m_ping_interval (boost::posix_time::seconds (5))
     , m_ping_failed (0)
     , m_max_ping_failed (3)
   {}
@@ -26,7 +29,11 @@ public:
                                            , m_max_ping_failed
                                            );
     m_ping_interval =
-      fhg_kernel ()->get<unsigned int> ("ping", m_ping_interval);
+      boost::posix_time::duration_from_string
+        ( fhg_kernel ()->get<std::string>
+          ("ping", boost::posix_time::to_simple_string (m_ping_interval))
+        );
+
     unsigned int m_kvs_timeout (120);
     m_kvs_timeout = fhg_kernel ()->get<unsigned int> ("timeout", m_kvs_timeout);
 
@@ -45,13 +52,7 @@ public:
     {
       fhg::com::kvs::global::get_kvs_info().start();
 
-      if (m_ping_interval)
-        fhg_kernel ()->schedule ( "kvs_ping"
-                                , boost::bind ( &KeyValueStorePlugin::kvs_ping
-                                              , this
-                                              )
-                                , m_ping_interval
-                                );
+      _ping_thread = new boost::thread (&KeyValueStorePlugin::kvs_ping, this);
     }
     catch (std::exception const & ex)
     {
@@ -68,6 +69,14 @@ public:
 
   FHG_PLUGIN_STOP()
   {
+    _ping_thread->interrupt();
+    if (_ping_thread->joinable())
+    {
+      _ping_thread->join();
+    }
+    delete _ping_thread;
+    _ping_thread = NULL;
+
     FHG_PLUGIN_STOPPED();
   }
 
@@ -122,32 +131,34 @@ public:
 private:
   void kvs_ping ()
   {
-    if (! this->ping ())
+    while (true)
     {
-      ++m_ping_failed;
-
-      if (m_ping_failed >= m_max_ping_failed)
+      if (! this->ping ())
       {
-        MLOG (WARN, "lost connection to KVS, terminating...");
-        fhg_kernel ()->shutdown ();
-      }
-    }
-    else
-    {
-      m_ping_failed = 0;
-    }
+        ++m_ping_failed;
 
-    fhg_kernel ()->schedule ( "kvs_ping"
-                            , boost::bind ( &KeyValueStorePlugin::kvs_ping
-                                          , this
-                                          )
-                            , m_ping_interval
-                            );
+        if (m_ping_failed >= m_max_ping_failed)
+        {
+          MLOG (WARN, "lost connection to KVS, terminating...");
+          fhg_kernel ()->shutdown ();
+          return;
+        }
+      }
+      else
+      {
+        m_ping_failed = 0;
+      }
+
+      boost::this_thread::sleep (m_ping_interval);
+    }
   }
 
-  unsigned int m_ping_interval;
+  boost::posix_time::time_duration m_ping_interval;
   unsigned int m_ping_failed;
   unsigned int m_max_ping_failed;
+
+  //! \todo don't be pointer!
+  boost::thread* _ping_thread;
 };
 
 
