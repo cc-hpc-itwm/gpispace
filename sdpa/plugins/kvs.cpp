@@ -94,7 +94,15 @@ public:
   {
     try
     {
-      return fhg::com::kvs::get<std::string>(k);
+      key_value_map_type v (list (k));
+      if (v.size() == 1)
+      {
+        return boost::lexical_cast<value_type>(v.begin()->second);
+      }
+      else
+      {
+        throw std::runtime_error("kvs::get: returned 0 or more than 1 element");
+      }
     }
     catch (std::exception const & ex)
     {
