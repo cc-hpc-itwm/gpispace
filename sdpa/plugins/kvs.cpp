@@ -20,6 +20,7 @@ public:
   {}
 
   FHG_PLUGIN_START()
+  try
   {
     _request_stop = boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel());
 
@@ -50,23 +51,20 @@ public:
       , 1
       );
 
-    try
-    {
       fhg::com::kvs::global::get_kvs_info().start();
 
       _ping_thread = new boost::thread (&KeyValueStorePlugin::kvs_ping, this);
-    }
-    catch (std::exception const & ex)
-    {
-      MLOG (ERROR, "could not connect to KVS: " << ex.what()
-                << "HINT: make sure that the KVS is actually started and/or"
-                << " check the plugin.kvs.host and plugin.kvs.port settings"
-           );
-
-      FHG_PLUGIN_FAILED (-1);
-    }
 
     FHG_PLUGIN_STARTED();
+  }
+  catch (std::exception const & ex)
+  {
+    MLOG (ERROR, "could not connect to KVS: " << ex.what()
+              << "HINT: make sure that the KVS is actually started and/or"
+              << " check the plugin.kvs.host and plugin.kvs.port settings"
+         );
+
+    FHG_PLUGIN_FAILED (-1);
   }
 
   FHG_PLUGIN_STOP()
