@@ -1765,7 +1765,7 @@ function program_status ()
     local p=$1 ; shift
     local rc=0
     local pid
-    pid=$(pidof "$p")
+    pid=$("${SDPA_SCRIPT_DIR}/pidof" "$p")
 
     if is_proc_alive "$p" "$pid" ; then
         return 0
