@@ -123,6 +123,12 @@ inline std::ostream& operator<<(std::ostream& os, const sdpa::discovery_info_t& 
   return os;
 }
 
+static std::string get_next_disc_id()
+{
+  static int i=0;
+  return (boost::format("discover_%1%") % i++).str();
+}
+
 BOOST_AUTO_TEST_CASE(test_discover_activities)
 {
 
@@ -143,12 +149,9 @@ BOOST_AUTO_TEST_CASE(test_discover_activities)
 
   boost::thread thrd_notify(boost::thread(&sdpa::daemon::TestAgent::notify_discovered, &agent));
 
-  int i=0;
   while(!agent.has_two_pending_children())
   {
-      std::ostringstream oss;
-      oss<<"disc_id_"<<i++;
-      agent.workflowEngine()->discover (oss.str(), id);
+      agent.workflowEngine()->discover (get_next_disc_id(), id);
       agent.wait_for_discovery_result();
   }
 
@@ -185,14 +188,10 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 
   sdpa::discovery_info_t disc_res;
 
-  int i=0;
   bool b_invariant(false);
   while(!b_invariant)
   {
-    std::ostringstream oss;
-    oss<<"disc_id_"<<i++;
-    disc_res = (client.discoverJobStates(oss.str(), job_id));
-
+    disc_res = (client.discoverJobStates(get_next_disc_id(), job_id));
     b_invariant = (disc_res.state() && disc_res.state().get() == sdpa::status::PENDING);
   }
 }
@@ -211,14 +210,11 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   sdpa::client::Client client (orchestrator.name());
   sdpa::job_id_t job_id = client.submitJob (workflow);
 
-  int i=0;
   sdpa::discovery_info_t disc_res;
   bool b_invariant(false);
   while(!b_invariant)
   {
-    std::ostringstream oss;
-    oss<<"disc_id_"<<i++;
-    disc_res = (client.discoverJobStates(oss.str(), job_id));
+    disc_res = (client.discoverJobStates(get_next_disc_id(), job_id));
 
     // invariant: after some time, the leaf jobs are always in pending
     b_invariant = true;
@@ -267,16 +263,13 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   sdpa::client::Client client (orchestrator.name());
   sdpa::job_id_t job_id = client.submitJob (workflow);
 
-  int i=0;
   sdpa::discovery_info_t disc_res;
 
   // invariant: after some time, all tasks are pending
   bool b_all_pending(false);
   do
   {
-    std::ostringstream oss;
-    oss<<"disc_id_"<<i++;
-    disc_res = client.discoverJobStates(oss.str(), job_id);
+    disc_res = client.discoverJobStates(get_next_disc_id(), job_id);
     b_all_pending = true;
     BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
     {
@@ -345,20 +338,17 @@ BOOST_AUTO_TEST_CASE (remove_workers)
   ptr_worker_A_1.reset();
   ptr_worker_B_2.reset();
 
-  int i=0;
   sdpa::discovery_info_t disc_res;
 
   // invariant: after some time, all tasks are pending
   bool b_all_pending(false);
   do
   {
-     std::ostringstream oss;
-     oss<<"disc_id_"<<i++;
-     disc_res = client.discoverJobStates(oss.str(), job_id);
+     disc_res = client.discoverJobStates(get_next_disc_id(), job_id);
      b_all_pending = true;
      BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
      {
-       if(!child_info.state() ||  child_info.state().get() != sdpa::status::PENDING)
+       if(!child_info.state() || child_info.state().get() != sdpa::status::PENDING)
        {
          b_all_pending = false;
          break;
