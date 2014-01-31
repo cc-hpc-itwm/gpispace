@@ -145,8 +145,7 @@ if (ENABLE_PNET_EDITOR)
                           ${Boost_FILESYSTEM_LIBRARY}
                           ${Boost_PROGRAM_OPTIONS_LIBRARY}
                           ${Boost_THREAD_LIBRARY}
-                          ${QT_LIBRARIES}
-                          fhg-plugin)
+                          ${QT_LIBRARIES})
 
   install (TARGETS pnete RUNTIME DESTINATION bin COMPONENT runtime)
 
