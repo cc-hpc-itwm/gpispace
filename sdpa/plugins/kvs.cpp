@@ -54,12 +54,12 @@ public:
          , "initializing KeyValueStore @ [" << m_host << "]:" << m_port
          );
 
-    _kvs_client = new fhg::com::kvs::client::kvsc;
-    _kvs_client->start ( m_host , m_port
-                       , true // auto_reconnect
-                       , boost::posix_time::seconds (m_kvs_timeout)
-                       , 1 // max_connection_attempts
-                       );
+    _kvs_client = new fhg::com::kvs::client::kvsc
+      ( m_host , m_port
+      , true // auto_reconnect
+      , boost::posix_time::seconds (m_kvs_timeout)
+      , 1 // max_connection_attempts
+      );
 
     _ping_thread = new boost::thread (&KeyValueStorePlugin::kvs_ping, this);
 
