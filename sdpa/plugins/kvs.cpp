@@ -21,6 +21,8 @@ public:
 
   FHG_PLUGIN_START()
   {
+    _request_stop = boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel());
+
     std::string  m_host ("localhost");
     m_host = fhg_kernel()->get("host", m_host);
     std::string  m_port ("2439");
@@ -140,7 +142,7 @@ private:
         if (m_ping_failed >= m_max_ping_failed)
         {
           MLOG (WARN, "lost connection to KVS, terminating...");
-          fhg_kernel ()->shutdown ();
+          _request_stop();
           return;
         }
       }
@@ -156,6 +158,8 @@ private:
   boost::posix_time::time_duration m_ping_interval;
   unsigned int m_ping_failed;
   unsigned int m_max_ping_failed;
+
+  boost::function<void()> _request_stop;
 
   //! \todo don't be pointer!
   boost::thread* _ping_thread;
