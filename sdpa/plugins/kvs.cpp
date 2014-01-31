@@ -28,6 +28,16 @@ public:
     m_host = fhg_kernel()->get("host", m_host);
     std::string  m_port ("2439");
     m_port = fhg_kernel()->get("port", m_port);
+
+    if (m_host.empty())
+    {
+      throw std::runtime_error ("kvs host empty");
+    }
+    if (m_port.empty())
+    {
+      throw std::runtime_error ("kvs port empty");
+    }
+
     m_max_ping_failed = fhg_kernel ()->get ( "max_ping_failed"
                                            , m_max_ping_failed
                                            );
