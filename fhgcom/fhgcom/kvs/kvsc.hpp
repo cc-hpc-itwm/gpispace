@@ -480,20 +480,23 @@ namespace fhg
       {
       public:
         template <typename Val>
-        scoped_entry_t ( std::string const & k
+        scoped_entry_t ( kvsc_ptr_t kvs_client
+                       , std::string const & k
                        , Val v
                        )
-        : key(k)
+          : _kvs_client (kvs_client)
+          , key(k)
         {
-          put (key, v);
+          _kvs_client->put (key, v);
         }
 
         ~scoped_entry_t ()
         {
-          del (key);
+          _kvs_client->del (key);
         }
 
       private:
+        kvsc_ptr_t _kvs_client;
         const std::string key;
       };
     }

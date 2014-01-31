@@ -53,7 +53,8 @@ namespace gpi_space
         // workaround until we have the above structure
         // put/del some entry to check the connection
         fhg::com::kvs::scoped_entry_t
-            ( "kvs.connection.check"
+            ( fhg::com::kvs::global_kvs()
+            , "kvs.connection.check"
             , boost::lexical_cast<std::string>(getpid())
             );
       }

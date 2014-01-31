@@ -887,7 +887,8 @@ static int configure_kvs (const config_t *cfg)
     // workaround until we have the above structure
     // put/del some entry to check the connection
     fhg::com::kvs::scoped_entry_t
-      ( "kvs.connection.check"
+      ( fhg::com::kvs::global_kvs()
+      , "kvs.connection.check"
       , "dummy value"
       );
   }
