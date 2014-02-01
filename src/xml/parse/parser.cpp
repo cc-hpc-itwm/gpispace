@@ -84,13 +84,11 @@ namespace xml
         }
         catch (const rapidxml::parse_error& e)
         {
-          const util::position_type position ( inp.data()
-                                             , e.where<char>()
-                                             , state.file_in_progress()
-                                             );
-
           throw std::runtime_error
-            ( ( boost::format ("Parse error: %1%: %2%") % position % e.what()
+            ( ( boost::format ("Parse error: %1%: %2%")
+              % util::position_type
+                (inp.data(), e.where<char>(), state.file_in_progress())
+              % e.what()
               ).str()
             );
         }
