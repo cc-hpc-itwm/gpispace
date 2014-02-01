@@ -152,7 +152,7 @@ namespace fhg
           }
 
           fhg::com::kvs::message::type
-          operator () (fhg::com::kvs::message::req_list const & m)
+          operator () (fhg::com::kvs::message::req_list const &)
           {
             fhg::com::kvs::message::list list;
             store_.entries (list.entries());
@@ -180,7 +180,7 @@ namespace fhg
           }
 
           fhg::com::kvs::message::type
-          operator () (fhg::com::kvs::message::msg_ping const & m)
+          operator () (fhg::com::kvs::message::msg_ping const &)
           {
             return fhg::com::kvs::message::error ();
           }

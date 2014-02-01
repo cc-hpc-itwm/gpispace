@@ -133,11 +133,11 @@ namespace fhg
           return _mode.top();
         }
 
-        void base_item::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
+        void base_item::hoverEnterEvent(QGraphicsSceneHoverEvent *)
         {
           mode_push (mode::HIGHLIGHT);
         }
-        void base_item::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
+        void base_item::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
         {
           mode_pop();
         }
@@ -149,7 +149,7 @@ namespace fhg
               _move_start = event->pos();
             }
         }
-        void base_item::mouseReleaseEvent (QGraphicsSceneMouseEvent* event)
+        void base_item::mouseReleaseEvent (QGraphicsSceneMouseEvent*)
         {
           if (mode() == mode::MOVE)
             {

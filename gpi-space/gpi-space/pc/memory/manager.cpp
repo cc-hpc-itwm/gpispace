@@ -499,7 +499,7 @@ namespace gpi
       }
 
       gpi::pc::type::size_t
-      manager_t::wait_on_queue ( const gpi::pc::type::process_id_t proc_id
+      manager_t::wait_on_queue ( const gpi::pc::type::process_id_t
                                , const gpi::pc::type::queue_id_t queue
                                )
       {

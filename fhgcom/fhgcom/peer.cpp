@@ -795,7 +795,7 @@ namespace fhg
       delete m;
     }
 
-    void peer_t::handle_user_data   (connection_t::ptr_t c, const message_t *m)
+    void peer_t::handle_user_data   (connection_t::ptr_t, const message_t *m)
     {
       assert (m);
 

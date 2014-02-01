@@ -97,7 +97,7 @@ struct counting_service_t
     , name (name)
   {}
 
-  void operator() ( std::string const &dst
+  void operator() ( std::string const &
                   , gspc::net::frame const &
                   , gspc::net::user_ptr
                   )

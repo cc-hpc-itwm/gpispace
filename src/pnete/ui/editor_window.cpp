@@ -821,7 +821,7 @@ namespace fhg
       }
 
       void editor_window::remote_job_failed
-        (sdpa::client::Client* client, const QString& job_id)
+        (sdpa::client::Client*, const QString& job_id)
       {
         QMessageBox msgBox;
         msgBox.setText (job_id + " failed.");

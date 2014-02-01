@@ -58,17 +58,17 @@ public:
     _expected_serveJob_calls.erase (_expected_serveJob_calls.find (jobId));
   }
 
-  void submitWorkflow(const we::layer::id_type& id)
+  void submitWorkflow(const we::layer::id_type&)
   {
     throw std::runtime_error ("trying to submit workflow in test casse which never should");
   }
 
-  void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
+  void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr&)
   {
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
-  void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& pEvt)
+  void sendEventToOther(const sdpa::events::SDPAEvent::Ptr&)
   {
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }

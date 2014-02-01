@@ -263,7 +263,7 @@ namespace mapreduce
       }
 
     // assume that the both input arrays are sorted reduced !!!!
-	size_t merge_and_reduce_arr_arr_2_buff( 	const int part_id,
+	size_t merge_and_reduce_arr_arr_2_buff( 	const int,
 										const size_t red_slot_size,
 										const std::vector<std::string>& arr_items_l,
 										const std::vector<std::string>& arr_items_r,
@@ -343,7 +343,7 @@ namespace mapreduce
 	}
 
 	 // assume that the both input arrays are sorted and reduced !!!!
-	size_t merge_and_reduce_arr_buff_2_buff(    const int part_id,
+	size_t merge_and_reduce_arr_buff_2_buff(    const int,
 													const size_t red_slot_size,
 													const std::vector<std::string>& arr_items,
 													char* in_buff,

@@ -34,7 +34,7 @@ namespace sdpa
     }
 
     Client::Client ( std::string orchestrator
-                   , boost::optional<boost::posix_time::time_duration> timeout
+                   , boost::optional<boost::posix_time::time_duration>
                    )
       : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
       , orchestrator_ (orchestrator)
@@ -186,7 +186,7 @@ namespace sdpa
     }
 
     sdpa::status::code Client::wait_for_terminal_state_polling
-      (job_id_t id, job_info_t& job_info)
+      (job_id_t id, job_info_t&)
     {
       sdpa::status::code state (queryJob (id));
       for (; !sdpa::status::is_terminal (state); state = queryJob (id))

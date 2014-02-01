@@ -10,7 +10,7 @@ namespace gspc
       return &_instance;
     }
 
-    void null_process_handler_t::onStateChange (proc_t p, process_state_t state)
+    void null_process_handler_t::onStateChange (proc_t, process_state_t)
     {}
   }
 }

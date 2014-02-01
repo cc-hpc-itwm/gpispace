@@ -319,7 +319,7 @@ namespace gpi
         global::memory_manager().unregister_memory (proc_id, seg_id);
       }
 
-      void manager_t::list_segments ( const gpi::pc::type::process_id_t proc_id
+      void manager_t::list_segments ( const gpi::pc::type::process_id_t
                                     , gpi::pc::type::segment::list_t &l
                                     ) const
       {
@@ -369,7 +369,7 @@ namespace gpi
       }
 
       void
-      manager_t::free ( const gpi::pc::type::process_id_t proc_id
+      manager_t::free ( const gpi::pc::type::process_id_t
                       , const gpi::pc::type::handle_id_t hdl
                       )
       {

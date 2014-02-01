@@ -300,7 +300,7 @@ namespace gpi
     }
 
     template <typename S>
-    char **basic_shell_t<S>::shell_completion (const char * text, int start, int end)
+    char **basic_shell_t<S>::shell_completion (const char * text, int start, int)
     {
       char **matches (NULL);
 

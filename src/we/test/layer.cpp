@@ -791,7 +791,7 @@ namespace
   }
 
   void finished_fake ( volatile bool* finished
-                     , we::layer::id_type id
+                     , we::layer::id_type
                      , we::type::activity_t
                      )
   {
@@ -799,7 +799,7 @@ namespace
   }
 
   void cancel (we::layer::id_type){}
-  void failed (we::layer::id_type, int errorcode, std::string reason){}
+  void failed (we::layer::id_type, int, std::string){}
   void canceled (we::layer::id_type){}
 
   boost::mutex generate_id_mutex;

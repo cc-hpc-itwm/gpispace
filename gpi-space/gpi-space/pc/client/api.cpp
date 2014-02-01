@@ -291,7 +291,7 @@ namespace gpi
       }
 
       gpi::pc::type::handle_t
-      api_t::memset (const gpi::pc::type::handle_t h, int value, size_t count)
+      api_t::memset (const gpi::pc::type::handle_t, int, size_t)
       {
         throw std::runtime_error("memset: not yet implemented");
       }

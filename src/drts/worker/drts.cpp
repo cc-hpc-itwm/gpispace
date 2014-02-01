@@ -490,7 +490,7 @@ public:
     return 0;
   }
 private:
-  void service_current_job ( std::string const &dst
+  void service_current_job ( std::string const &
                            , gspc::net::frame const &rqst
                            , gspc::net::user_ptr user
                            )
@@ -508,7 +508,7 @@ private:
     user->deliver (rply);
   }
 
-  void service_get_search_path ( std::string const &dst
+  void service_get_search_path ( std::string const &
                                , gspc::net::frame const &rqst
                                , gspc::net::user_ptr user
                                )
@@ -525,7 +525,7 @@ private:
     user->deliver (rply);
   }
 
-  void service_set_search_path ( std::string const &dst
+  void service_set_search_path ( std::string const &
                                , gspc::net::frame const &rqst
                                , gspc::net::user_ptr user
                                )
@@ -871,7 +871,7 @@ public:
     }
   }
 
-  FHG_ON_PLUGIN_UNLOAD(plugin)
+  FHG_ON_PLUGIN_UNLOAD()
   {
   }
 
@@ -1335,7 +1335,7 @@ private:
     }
   }
 
-  void service_capability_add ( std::string const &dst
+  void service_capability_add ( std::string const &
                               , gspc::net::frame const &rqst
                               , gspc::net::user_ptr user
                               )
@@ -1357,7 +1357,7 @@ private:
     user->deliver (rply);
   }
 
-  void service_capability_del ( std::string const &dst
+  void service_capability_del ( std::string const &
                               , gspc::net::frame const &rqst
                               , gspc::net::user_ptr user
                               )
@@ -1379,7 +1379,7 @@ private:
     user->deliver (rply);
   }
 
-  void service_capability_get ( std::string const &dst
+  void service_capability_get ( std::string const &
                               , gspc::net::frame const &rqst
                               , gspc::net::user_ptr user
                               )

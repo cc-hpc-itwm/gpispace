@@ -161,7 +161,7 @@ namespace fhg
           split_section_head ( section_head, state );
         }
 
-        void parse_include (std::string const & line, state_t & state)
+        void parse_include (std::string const &, state_t & state)
         {
           state.warn
             (exception::parse_error

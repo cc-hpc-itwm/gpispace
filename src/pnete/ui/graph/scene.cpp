@@ -1037,7 +1037,7 @@ namespace fhg
         void scene_type::connection_added
           ( const data::handle::connect& connection
           , const data::handle::place& place
-          , const data::handle::port& port
+          , const data::handle::port&
           )
         {
           if (place.parent_is (net()))

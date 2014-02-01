@@ -171,8 +171,8 @@ namespace fhg
         }
 
         void transition_item::paint ( QPainter* painter
-                                    , const QStyleOptionGraphicsItem *option
-                                    , QWidget *widget
+                                    , const QStyleOptionGraphicsItem *
+                                    , QWidget *
                                     )
         {
           style::draw_shape (this, painter);

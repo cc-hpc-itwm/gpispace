@@ -145,7 +145,7 @@ namespace gspc
         return 0;
       }
 
-      void service_demux_t::do_service_help ( std::string const &dst
+      void service_demux_t::do_service_help ( std::string const &
                                             , frame const &rqst
                                             , user_ptr user
                                             )

@@ -94,7 +94,7 @@ namespace fhg
             , _root (root)
           { }
 
-          template<int Type, typename T> void weave (const T & x) {}
+          template<int Type, typename T> void weave (const T &) {}
           template<int Type> void weave () {}
 
         private:
@@ -167,7 +167,7 @@ namespace fhg
             , _root (root)
           { }
 
-          template<int Type, typename T> void weave (const T & x) {}
+          template<int Type, typename T> void weave (const T &) {}
           template<int Type> void weave () {}
 
         private:
@@ -209,7 +209,7 @@ namespace fhg
             , _root (root)
           { }
 
-          template<int Type, typename T> void weave (const T & x) {}
+          template<int Type, typename T> void weave (const T &) {}
           template<int Type> void weave () {}
 
         private:

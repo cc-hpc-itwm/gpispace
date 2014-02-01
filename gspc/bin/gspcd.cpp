@@ -24,7 +24,7 @@
 
 static std::string puburl;
 
-static void long_usage (int lvl)
+static void long_usage (int)
 {
   std::cerr
     << "usage: gspcd [options] [--] [commands [args...]]"           << std::endl

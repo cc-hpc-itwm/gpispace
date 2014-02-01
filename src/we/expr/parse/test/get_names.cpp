@@ -8,7 +8,7 @@
 #include <string>
 
 int
-main (int argc, char ** argv)
+main()
 {
   const std::string input
     ("${x.a} * ${y.a} - ${z.coord.phi} + ${x.b} / sin (${t} + pi)");

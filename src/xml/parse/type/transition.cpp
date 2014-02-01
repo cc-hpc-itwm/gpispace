@@ -454,7 +454,7 @@ namespace xml
 
       //! \todo move to connect_type
       void transition_type::type_check ( const connect_type & connect
-                                       , const state::type & state
+                                       , const state::type &
                                        ) const
       {
         assert (has_parent());

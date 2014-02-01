@@ -113,7 +113,7 @@ void test_hierachy ()
 }
 
 test_suite*
-init_unit_test_suite (int ac, char *av[])
+init_unit_test_suite (int, char **)
 {
   test_suite* ts1 = BOOST_TEST_SUITE( "null_storage" );
   ts1->add( BOOST_TEST_CASE(&test_save_load_delete));

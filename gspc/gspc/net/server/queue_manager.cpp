@@ -423,7 +423,7 @@ namespace gspc
         return 0;
       }
 
-      int queue_manager_t::ack (user_ptr u, frame const &)
+      int queue_manager_t::ack (user_ptr, frame const &)
       {
         return -ENOTSUP;
       }

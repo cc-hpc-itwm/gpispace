@@ -369,7 +369,7 @@ double BlackStdDiv ( double S,
 double (*PAYOFF)   (double S, double K);
 double (*VALUE)    (double A, double B);
 
-double EuropeanValue (double A, double B)
+double EuropeanValue (double A, double)
 {
 	return A;
 };

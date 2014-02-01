@@ -29,7 +29,7 @@ namespace fs = boost::filesystem;
 #define START_SUCCESSFUL 0
 #define START_INCOMPLETE 1
 
-void fhgRegisterStaticPlugin(fhg_plugin_query q, fhg_plugin_create c)
+void fhgRegisterStaticPlugin(fhg_plugin_query q, fhg_plugin_create)
 {
   LOG(ERROR, "TODO: register static plugin: " << q()->name);
 }

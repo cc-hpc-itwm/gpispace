@@ -22,7 +22,7 @@ namespace fhg
               : stream_(os)
             {}
 
-            void operator() (put const & m)
+            void operator() (put const &)
             {
               stream_ << "PUT (.to be filled.)";
             }
@@ -59,7 +59,7 @@ namespace fhg
               stream_ << "LOAD " << m.file();
             }
 
-            void operator() (list const & m)
+            void operator() (list const &)
             {
               stream_ << "LIST";
             }

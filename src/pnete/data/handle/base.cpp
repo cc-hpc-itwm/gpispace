@@ -32,13 +32,13 @@ namespace fhg
             "of overloaded version.");
         }
 
-        void base::move (const QPointF& position, const bool outer) const
+        void base::move (const QPointF&, const bool) const
         {
           throw fhg::util::backtracing_exception
             ("handle::base::move() called instead of overloaded version.");
         }
 
-        void base::no_undo_move (const QPointF& position) const
+        void base::no_undo_move (const QPointF&) const
         {
           throw fhg::util::backtracing_exception
             ("handle::base::no_undo_move() called instead of "

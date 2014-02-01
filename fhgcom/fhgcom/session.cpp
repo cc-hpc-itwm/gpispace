@@ -60,7 +60,7 @@ void session::read_header ()
 }
 
 void session::handle_read_header ( const boost::system::error_code & error
-                                 , size_t bytes_recv
+                                 , size_t
                                  )
 {
   if (stopped_)

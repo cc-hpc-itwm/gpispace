@@ -21,7 +21,7 @@ namespace gpi_space
     return os;
   }
 
-  std::ostream & operator <<(std::ostream & os, logging::config const & lc)
+  std::ostream & operator <<(std::ostream & os, logging::config const &)
   {
     return os;
   }
@@ -43,7 +43,7 @@ namespace gpi_space
     return os;
   }
 
-  std::istream & operator >>(std::istream & is, gpi_space::config & c)
+  std::istream & operator >>(std::istream & is, gpi_space::config &)
   {
     return is;
   }

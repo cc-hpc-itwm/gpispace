@@ -27,7 +27,7 @@ namespace fhg
         public:
           explicit tv (QStandardItem * root);
 
-          template<int Type, typename T> void weave (const T & x) {}
+          template<int Type, typename T> void weave (const T &) {}
           template<int Type> void weave () {}
 
         private:
@@ -319,7 +319,7 @@ namespace fhg
           from::conditions (this, cond);
         }
 
-        WSIG(tv, place::open, ::xml::parse::id::ref::place, place)
+        WSIG(tv, place::open, ::xml::parse::id::ref::place, /*place*/)
         {
           push (append ("<<place>>"));
         }
@@ -414,7 +414,7 @@ namespace fhg
           append_key_value (tm.first, "%s", tm.second);
         }
 
-        WSIG(tv, specialize::open, ::xml::parse::id::ref::specialize, id)
+        WSIG(tv, specialize::open, ::xml::parse::id::ref::specialize, /*id*/)
         {
           push (append ("<<specialize>>"));
         }
@@ -441,7 +441,7 @@ namespace fhg
           xs ("condition", cs, from::expression_sequence);
         }
 
-        WSIG(tv, tmpl::open, ::xml::parse::id::ref::tmpl, t)
+        WSIG(tv, tmpl::open, ::xml::parse::id::ref::tmpl, /*t*/)
         {
           push (append ("<<template>>"));
         }
@@ -462,7 +462,7 @@ namespace fhg
         }
         WSIGE(tv, tmpl::close) { pop(); }
 
-        WSIG(tv, function::open, ::xml::parse::id::ref::function, fun)
+        WSIG(tv, function::open, ::xml::parse::id::ref::function, /*fun*/)
         {
           push (append ("<<function>>"));
         }
@@ -503,7 +503,7 @@ namespace fhg
           from::conditions (this, cs);
         }
 
-        WSIG(tv, place_map::open, ::xml::parse::id::ref::place_map, pm)
+        WSIG(tv, place_map::open, ::xml::parse::id::ref::place_map, /*pm*/)
         {
           push (append ("<<place_map>>"));
         }
@@ -541,7 +541,7 @@ namespace fhg
           xs ("expression", id.get().expressions(), from::expression_sequence);
         }
 
-        WSIG(tv, mod::open, ::xml::parse::id::ref::module, mod)
+        WSIG(tv, mod::open, ::xml::parse::id::ref::module, /*mod*/)
         {
           push (append ("module"));
         }
@@ -575,7 +575,7 @@ namespace fhg
           append_maybe ("code", code);
         }
 
-        WSIG(tv, net::open, ::xml::parse::id::ref::net, net)
+        WSIG(tv, net::open, ::xml::parse::id::ref::net, /*net*/)
         {
           push (append ("net"));
         }

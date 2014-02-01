@@ -346,7 +346,7 @@ namespace fhg
       }
 
       FileStorage::value_map_t::iterator
-      FileStorage::restore_value(path_t const & path)
+      FileStorage::restore_value(path_t const &)
       {
         return m_values.end();
       }

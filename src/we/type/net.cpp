@@ -405,7 +405,7 @@ namespace we
 
     std::list<net_type::token_to_be_deleted_type> net_type::do_extract
       ( transition_id_type tid
-      , we::type::transition_t const& transition
+      , we::type::transition_t const&
       , boost::function<void ( port_id_type
                              , pnet::type::value::value_type const&
                              )

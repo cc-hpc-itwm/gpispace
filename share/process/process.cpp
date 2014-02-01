@@ -228,7 +228,7 @@ namespace process
                                  , void * buf
                                  , const std::size_t max_size
                                  , std::size_t & bytes_read
-                                 , const std::size_t & block_size
+                                 , const std::size_t &
                                  )
     {
       barrier.wait ();
@@ -286,7 +286,7 @@ namespace process
                                  , const std::string & filename
                                  , const void * buf
                                  , std::size_t bytes_left
-                                 , const std::size_t & block_size
+                                 , const std::size_t &
                                  )
     {
       barrier.wait ();

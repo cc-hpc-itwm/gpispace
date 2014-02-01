@@ -122,7 +122,7 @@ namespace fhg
     }
 
     void connection_t::handle_read_data( const boost::system::error_code & ec
-                                       , std::size_t bytes_transferred
+                                       , std::size_t
                                        )
     {
       if (! ec)

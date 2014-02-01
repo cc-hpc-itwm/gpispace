@@ -851,24 +851,24 @@ namespace gpi
       }
 
       int
-      area_t::get_send_tasks ( area_t & src_area
-                             , const gpi::pc::type::memory_location_t src
-                             , const gpi::pc::type::memory_location_t dst
-                             , gpi::pc::type::size_t amount
-                             , gpi::pc::type::size_t queue
-                             , task_list_t & tasks
+      area_t::get_send_tasks ( area_t &
+                             , const gpi::pc::type::memory_location_t
+                             , const gpi::pc::type::memory_location_t
+                             , gpi::pc::type::size_t
+                             , gpi::pc::type::size_t
+                             , task_list_t &
                              )
       {
         throw std::runtime_error ("get_send_tasks() not implemented");
       }
 
       int
-      area_t::get_recv_tasks ( area_t & dst_area
-                             , const gpi::pc::type::memory_location_t dst
-                             , const gpi::pc::type::memory_location_t src
-                             , gpi::pc::type::size_t amount
-                             , gpi::pc::type::size_t queue
-                             , task_list_t & tasks
+      area_t::get_recv_tasks ( area_t &
+                             , const gpi::pc::type::memory_location_t
+                             , const gpi::pc::type::memory_location_t
+                             , gpi::pc::type::size_t
+                             , gpi::pc::type::size_t
+                             , task_list_t &
                              )
       {
         throw std::runtime_error ("get_recv_tasks() not implemented");

@@ -250,7 +250,7 @@ namespace gspc
       LLOG (WARN, _logger, "child terminated: " << chld.descriptor.name);
     }
 
-    void daemon::handle ( std::string const &dst
+    void daemon::handle ( std::string const &
                         , net::frame const &rqst
                         , net::user_ptr user
                         )

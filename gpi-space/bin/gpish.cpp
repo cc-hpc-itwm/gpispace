@@ -327,7 +327,7 @@ void shutdown_state ()
   state->capi.stop();
 }
 
-void initialize_shell (int ac, char *av[])
+void initialize_shell (int, char *av[])
 {
   std::string prompt;
   if (interactive)
@@ -436,7 +436,7 @@ int cmd_help (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-int cmd_exit (shell_t::argv_t const & av, shell_t & sh)
+int cmd_exit (shell_t::argv_t const &, shell_t & sh)
 {
   sh.stop ();
   return 0;
@@ -476,13 +476,13 @@ int cmd_open (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-int cmd_close (shell_t::argv_t const & av, shell_t & sh)
+int cmd_close (shell_t::argv_t const &, shell_t & sh)
 {
   sh.state().capi.stop();
   return 0;
 }
 
-int cmd_ping (shell_t::argv_t const & av, shell_t & sh)
+int cmd_ping (shell_t::argv_t const &, shell_t & sh)
 {
   if (sh.state().capi.ping ())
   {
@@ -496,19 +496,19 @@ int cmd_ping (shell_t::argv_t const & av, shell_t & sh)
   }
 }
 
-int cmd_info (shell_t::argv_t const & av, shell_t & sh)
+int cmd_info (shell_t::argv_t const &, shell_t & sh)
 {
   std::cout << sh.state().capi.collect_info () << std::endl;
   return 0;
 }
 
-int cmd_gc (shell_t::argv_t const & av, shell_t & sh)
+int cmd_gc (shell_t::argv_t const &, shell_t & sh)
 {
   sh.state().capi.garbage_collect ();
   return 0;
 }
 
-int cmd_unset (shell_t::argv_t const & av, shell_t & sh)
+int cmd_unset (shell_t::argv_t const & av, shell_t &)
 {
   if (av.size() < 2)
   {
@@ -525,7 +525,7 @@ int cmd_unset (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-int cmd_set (shell_t::argv_t const & av, shell_t & sh)
+int cmd_set (shell_t::argv_t const & av, shell_t &)
 {
   if (av.size() < 2)
   {
@@ -749,7 +749,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-int cmd_status (shell_t::argv_t const & av, shell_t & sh)
+int cmd_status (shell_t::argv_t const &, shell_t & sh)
 {
   std::cout << "connected: " << std::boolalpha << sh.state().capi.ping () << std::endl;
 
@@ -1516,7 +1516,7 @@ path_list_t collect_sockets (fs::path const & prefix)
   return paths;
 }
 
-static void print_progress( FILE *fp
+static void print_progress( FILE *
                           , const std::size_t current
                           , const std::size_t total
                           , const std::size_t bar_length

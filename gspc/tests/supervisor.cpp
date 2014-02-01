@@ -55,7 +55,7 @@ namespace
 
 BOOST_FIXTURE_TEST_SUITE (suite, F)
 
-static void s_child_failed ( gspc::rif::supervisor_t *sup
+static void s_child_failed ( gspc::rif::supervisor_t *
                            , bool *done
                            , gspc::rif::supervisor_t::child_info_t const &info
                            )
@@ -76,14 +76,14 @@ static void s_child_failed ( gspc::rif::supervisor_t *sup
   *done = true;
 }
 
-static void s_child_terminated ( gspc::rif::supervisor_t *sup
+static void s_child_terminated ( gspc::rif::supervisor_t *
                                , gspc::rif::supervisor_t::child_info_t const &info
                                )
 {
   std::cout << "child (" << info.descriptor.name << ") terminated" << std::endl;
 }
 
-static void s_child_started ( gspc::rif::supervisor_t *sup
+static void s_child_started ( gspc::rif::supervisor_t *
                             , gspc::rif::supervisor_t::child_info_t const &info
                             )
 {

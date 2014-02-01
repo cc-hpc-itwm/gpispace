@@ -19,7 +19,7 @@
 #include <gspc/net/io.hpp>
 #include <gspc/kvs/kvs.hpp>
 
-static void long_usage (int lvl)
+static void long_usage (int)
 {
   std::cerr
     << "usage: gspc-kvs [options] [--] [commands [args...]]"        << std::endl
@@ -120,7 +120,7 @@ namespace {
   }
 }
 
-int main (int argc, char *argv [], char *envp [])
+int main (int argc, char *argv [], char **)
 {
   int i;
   int help = 0;

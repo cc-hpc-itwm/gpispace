@@ -152,8 +152,8 @@ namespace fhg
         }
 
         void place_item::paint ( QPainter* painter
-                               , const QStyleOptionGraphicsItem* option
-                               , QWidget* widget
+                               , const QStyleOptionGraphicsItem*
+                               , QWidget*
                                )
         {
           painter->setOpacity (mode() == mode::HIGHLIGHT ? 1.0 : opacity());
