@@ -47,8 +47,10 @@
 #include <we/type/signature.hpp>
 
 #include <istream>
+#include <stdexcept>
 
 #include <boost/bind.hpp>
+#include <boost/format.hpp>
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
@@ -87,11 +89,10 @@ namespace xml
                                              , state.file_in_progress()
                                              );
 
-          std::ostringstream oss;
-
-          oss << "Parse error " << position << ": " << e.what();
-
-          throw rapidxml::parse_error (oss.str().c_str(), e.where<void>());
+          throw std::runtime_error
+            ( ( boost::format ("Parse error: %1%: %2%") % position % e.what()
+              ).str()
+            );
         }
 
         state.set_in_progress_position (inp.data());
