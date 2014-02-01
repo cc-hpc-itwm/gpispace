@@ -5,7 +5,7 @@
   <place name="z" type="string"/>
   <place name="pair" type="pair_pair"/>
 
-  <include-template href="template_pair_pair.xml" as="pair_pair"/>
+  <include-template href="template_pair_pair.xml"/>
 
   <specialize name="make_pair_pair" use="pair_pair">
     <type-map replace="T" with="long"/>

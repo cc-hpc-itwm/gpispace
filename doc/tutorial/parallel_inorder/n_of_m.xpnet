@@ -40,8 +40,10 @@
       <connect-out port="c" place="n_work"/>
     </transition>
 
-    <include-template href="credit/sequence_forward_credit.xpnet" as="sfc"/>
-    <specialize name="sequence_forward_credit_long" use="sfc">
+    <include-template href="credit/sequence_forward_credit.xpnet"/>
+    <specialize name="sequence_forward_credit_long"
+                use="sequence_forward_credit"
+    >
       <type-map replace="T" with="long"/>
       <type-map replace="WITH_CREDIT" with="long_with_credit"/>
       <type-get name="long_with_credit"/>
@@ -69,8 +71,8 @@
 
     <place name="config" type="config"/>
 
-    <include-template href="work.xpnet" as="work"/>
-    <specialize name="work_config" use="work">
+    <include-template href="work.xpnet"/>
+    <specialize name="work_config" use="work_n_of_m">
       <type-map replace="T" with="config"/>
     </specialize>
 

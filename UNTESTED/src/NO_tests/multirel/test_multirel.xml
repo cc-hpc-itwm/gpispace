@@ -45,7 +45,7 @@
     <place name="ms" type="long"/>
     <place name="mt" type="long"/>
     <place name="done" type="control"/>
-    <include-template href="dup.xml" as="dup"/>
+    <include-template href="dup.xml"/>
     <specialize name="dup_long" use="dup">
       <type-map replace="T" with="long"/>
     </specialize>
