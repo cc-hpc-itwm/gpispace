@@ -3,7 +3,7 @@
 cd /
 
 # cleanup for startup via gpid.exe...
-if [ x"$HOME" == x"/" ] ; then
+if [ x"$HOME" = x"/" ] ; then
    echo "I guess, I am running under gpid.exe..." >&2
    echo "fixing some environment variables..." >&2
    unset HOME

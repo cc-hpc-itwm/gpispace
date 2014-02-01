@@ -27,7 +27,7 @@ trap 'cleanup' EXIT
 
 measured "run" WE_EXEC_WORKER=4 ${make[@]} run              || die $EX_ERR_RUN
 
-test "$(pnetget -i "${RESULT}" -p O)" == "$(echo -e "@EXPECTED_OUTPUT@")"    \
+test "$(pnetget -i "${RESULT}" -p O)" = "$(echo -e "@EXPECTED_OUTPUT@")"     \
                                                             || die $EX_ERR_RES
 
 rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP

@@ -30,7 +30,7 @@ trap 'cleanup' EXIT
 measured "run" WE_EXEC_WORKER=4 ${make[@]} run              || die $EX_ERR_RUN
 
 grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-test "$(pnetget -i "${RESULT}" -p done)" == "[]"            || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p done)" = "[]"             || die $EX_ERR_RES
 cat "${OUT}" | grep call_cnt_        \
              | sed 's/.*call_cnt_//' \
              | awk '{print $1}'      \

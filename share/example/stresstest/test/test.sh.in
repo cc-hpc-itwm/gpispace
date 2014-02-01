@@ -28,7 +28,7 @@ measured "build-wrapper" ${make[@]} lib                     || die $EX_ERR_RUN
 measured "run" ${make[@]} run                               || die $EX_ERR_RUN
 
 grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-test "$(pnetget -i "${RESULT}" -p out)" == "[]"             || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p out)" = "[]"              || die $EX_ERR_RES
 
 rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP
 measured "clean" ${make[@]} clean                        || die $EX_ERR_CLEANUP

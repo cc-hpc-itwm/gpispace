@@ -13,7 +13,7 @@ function log ()
 
 function debug ()
 {
-    if [ x"$debug_enabled" == x"true" ] ; then
+    if [ x"$debug_enabled" = x"true" ] ; then
         log $@
     fi
 }
@@ -600,7 +600,7 @@ function to_human_readable_size ()
 
     local new_val="1"
     local tmp=$( echo "$size_value > 1024" | bc )
-    while test "$tmp" == "1" ; do
+    while test "$tmp" = "1" ; do
         new_val="$new_val*1024"
         size_value=$( echo "scale=2; $size_value/1024.0" | bc )
         tmp=$( echo "$size_value > 1024" | bc )
@@ -1339,7 +1339,7 @@ function node_loop ()
 function start_nre ()
 {
     local with_mediator=$(get "topology.with-mediator" "true")
-    if [ x"$with_mediator" == x"true" ] ; then
+    if [ x"$with_mediator" = x"true" ] ; then
         log "nres" >&2
         node_loop start_nre_on_node $@
     fi
@@ -1348,7 +1348,7 @@ function start_nre ()
 function stop_nre ()
 {
     with_mediator=$(get "topology.with-mediator" "true")
-    if [ x"$with_mediator" == x"true" ] ; then
+    if [ x"$with_mediator" = x"true" ] ; then
         log "nres" >&2
         node_loop stop_nre_on_node $@
         ec=$?
@@ -1361,7 +1361,7 @@ function status_nre ()
     local ec
 
     with_mediator=$(get "topology.with-mediator" "true")
-    if [ x"$with_mediator" == x"true" ] ; then
+    if [ x"$with_mediator" = x"true" ] ; then
         node_loop status_nre_on_node $@
         ec=$?
     else
@@ -1596,7 +1596,7 @@ function start_drts_on_node ()
     fi
 
     with_mediator=$(get "topology.with-mediator" "true")
-    if [ x"$with_mediator" == x"true" ] ; then
+    if [ x"$with_mediator" = x"true" ] ; then
         master="nre-$node"
     fi
 
@@ -1683,7 +1683,7 @@ function start_gpi ()
 
     local kvs_port=$(get "plugin.kvs.port" "2439")
 
-    if [ x"$gpi_enabled" == x"true" ] ; then
+    if [ x"$gpi_enabled" = x"true" ] ; then
         if ! status_kvs ; then
             start_kvs
         fi
@@ -1793,7 +1793,7 @@ function status_gpi ()
 {
     local ec=0
     local gpi_enabled=$(get "gpi.enabled" "true")
-    if [ x"$gpi_enabled" == x"true" ] ; then
+    if [ x"$gpi_enabled" = x"true" ] ; then
         program_status "gpi-space"
         ec=$?
     else

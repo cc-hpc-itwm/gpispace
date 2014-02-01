@@ -28,7 +28,7 @@ trap 'cleanup' EXIT
 measured "build-wrapper" ${make[@]} lib put                 || die $EX_ERR_RUN
 measured "run" ${make[@]} run                               || die $EX_ERR_RUN
 
-test "$(pnetget -i "${OUT}" -p exit_code)" == "0L"          || die $EX_ERR_RES
+test "$(pnetget -i "${OUT}" -p exit_code)" = "0L"           || die $EX_ERR_RES
 
 test -x "${DIR_BUILD}/hello"                                || die $EX_ERR_RES
 actual=$("${DIR_BUILD}/hello")                              || die $EX_ERR_RUN

@@ -32,9 +32,9 @@ EOF
 
 function is_fake_mode ()
 {
-    if [ "$dry_run" == "true" ] ; then
+    if [ "$dry_run" = "true" ] ; then
 	return 0
-    elif [ "$CLEAR_LOGS_REQUIRE_FORCE" == "true" -a "$use_force" == "false" ] ; then
+    elif [ "$CLEAR_LOGS_REQUIRE_FORCE" = "true" -a "$use_force" = "false" ] ; then
 	return 0
     fi
     return 1
@@ -95,7 +95,7 @@ fi
 
 if [ -z "$SDPA_NODEFILE" ] ; then
     echo "W: SDPA_NODEFILE is not defined!" >&2
-    if [ $use_force == "false" ] ; then
+    if [ $use_force = "false" ] ; then
 	echo "I: switching to dry_run for safety reasons, specify -f to override" >&2
 	dry_run="true"
     else
@@ -114,16 +114,16 @@ for logfile in "$dir"/*.log ; do
 	continue
     fi
 
-    if [ $err -eq 0 -a -n "$node" -a x"$tail" == x"log" ] ; then
+    if [ $err -eq 0 -a -n "$node" -a x"$tail" = x"log" ] ; then
 	if ! grep -q -e "$node" "$SDPA_NODEFILE" </dev/null 2>/dev/null; then
 	    remove "$logfile"
 	else
-	    if [ $remove_all == "true" ] ; then
+	    if [ $remove_all = "true" ] ; then
 		remove "$logfile" "(all)"
 	    fi
 	fi
     else
-	if [ $remove_unknown == "true" ] ; then
+	if [ $remove_unknown = "true" ] ; then
 	    remove "$logfile" "(unknown)"
 	fi
     fi

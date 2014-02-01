@@ -86,7 +86,7 @@ if [ -n "$pids" ] ; then
                 echo $p
             else
                 cmd="$(ps -p $p -o cmd=)"
-                if [ $long == false ] ; then
+                if [ $long = false ] ; then
                     cmd=$(echo $cmd | sed -e 's/.*-s plugin.drts.name=\([^ ]\+\).*/\1/')
                 fi
                 echo "pid $p := $cmd"

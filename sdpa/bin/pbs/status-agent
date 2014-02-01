@@ -65,7 +65,7 @@ if [ -n "$pids" ] ; then
     else
         for p in $pids ; do
             cmd="$(ps -p $p -o cmd=)"
-            if [ $long == false ] ; then
+            if [ $long = false ] ; then
                 cmd=$(echo $cmd | sed -e 's/.*-n \([^ ]\+\).*/\1/')
             fi
             echo "pid $p := $cmd"

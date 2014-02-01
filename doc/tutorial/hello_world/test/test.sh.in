@@ -40,7 +40,7 @@ measured "build-wrapper" ${make[@]} lib                     || die $EX_ERR_RUN
 measured "run" WE_EXEC_WORKER=1 ${make[@]} run              || die $EX_ERR_RUN
 
 grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-test "$(pnetget -i "${RESULT}" -p out)" == "$(echo -e "[]\n[]")"             \
+test "$(pnetget -i "${RESULT}" -p out)" = "$(echo -e "[]\n[]")"              \
                                                             || die $EX_ERR_RES
 cat "${OUT}" | grep ^\* > "${CMP}"                          || die $EX_ERR_OTHER
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
