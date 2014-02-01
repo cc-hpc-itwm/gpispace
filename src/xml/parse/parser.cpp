@@ -1323,25 +1323,8 @@ namespace xml
             {
               const std::string file
                 (required ("net_type", child, "href", state));
-              const boost::optional<std::string> as (optional (child, "as"));
 
               id::ref::tmpl tmpl (template_include (file, state));
-
-              if (as)
-              {
-                if (tmpl.get().name() && *tmpl.get().name() != *as)
-                {
-                  state.warn
-                    ( warning::overwrite_template_name_as
-                      ( *tmpl.get().name()
-                      , *as
-                      , state.file_in_progress()
-                      )
-                    );
-                }
-
-                tmpl.get_ref().name (*as);
-              }
 
               if (not tmpl.get().name())
               {

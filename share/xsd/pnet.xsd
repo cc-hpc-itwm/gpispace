@@ -28,7 +28,6 @@
 
   <xsd:complexType name="function_include_type">
     <xsd:attribute name="href" type="xsd:anyURI" use="required"/>
-    <xsd:attribute name="as" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="properties_include_type">
