@@ -503,7 +503,6 @@ namespace gpi
                                , const gpi::pc::type::queue_id_t queue
                                )
       {
-        DLOG(TRACE, "wait_on_queue(" << queue << ") by process " << proc_id);
         return m_transfer_mgr.wait_on_queue (queue);
       }
 
