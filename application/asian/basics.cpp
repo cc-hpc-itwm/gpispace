@@ -35,7 +35,7 @@
 
 
 
-	
+
 
 
 int imax(int value1, int value2)
@@ -73,13 +73,13 @@ Dividenden::Dividenden(double *Cdw, double *Ct, int CNr)
 {
 	Dw = new double[CNr];
 	t  = new double[CNr];
-	
+
 	for (int i=0; i<=CNr-1; i++)
 	{
 		Dw[i] = Cdw[i];
 		t[i]  = Ct[i];
 	};
-	
+
 	Nr = CNr;
 };
 
@@ -134,18 +134,18 @@ int Dividenden::NextDivNumber (double T)
 	Sort();
 	int NN = Nr;
 	while ( (T<t[NN-1]) && (NN>0) )
-	{	
+	{
 		NN--;
 	};
 	return NN;
-	
+
 };
 
 
 double Dividenden::FutureDividendValue (double  t0, double T,double  r)
 
 
-{	
+{
 	double value = 0.0;
 	for (int i=1; i<=Nr; i++)
 	{
@@ -153,20 +153,20 @@ double Dividenden::FutureDividendValue (double  t0, double T,double  r)
 	};
 	return value;
 };
-	
+
 double Dividenden::Maximum (double t0, double t1, double T, double r)
 {
 	double value = 0.0;
 	for (int i=1; i <=Nr; i++)
 	{
-		if ( (t0<=t[i-1]) && (t[i-1]<=t1)) 
+		if ( (t0<=t[i-1]) && (t[i-1]<=t1))
 		{
 			value = max(value,FutureDividendValue(t[i-1],T,r));
 		};
 	};
-	
+
 	value = max(value,FutureDividendValue(t1,T,r));
-	
+
 	return value;
 };
 
@@ -202,7 +202,7 @@ double Dividenden::T(int n)
 
 void Dividenden::Ausgabe()
 {
-	
+
 	for (int i=0; i<=Nr-1; i++)
 	{
 		printf("\n T(%d) = %f    D(%d) = %f",i,t[i],i,Dw[i]);
@@ -232,7 +232,7 @@ void Dividenden::Sort()
 	};
 
 };
-	
+
 
 double Dividenden::Mean( int FF,
 						 int LF,
@@ -240,7 +240,7 @@ double Dividenden::Mean( int FF,
 						 double T,
 						 double *TimeV,
 						 double *GewV)
-						 
+
 						 //std::vector<double> &TimeV,
 					     //std::vector<double> &GewV)
 {
@@ -251,18 +251,18 @@ double Dividenden::Mean( int FF,
 		EfGew += GewV[i];
 		for (int j=1; j<=Nr; j++)
 		{
-			if ( (TimeV[i]<=t[j-1]) && (t[j-1]<=T)) 
+			if ( (TimeV[i]<=t[j-1]) && (t[j-1]<=T))
 			{
 				value += Dw[j-1] * exp( r * (TimeV[i]-t[j-1]) ) * GewV[i];
 			};
 		};
 	};
-	
+
 	value /=EfGew;
 
 	return value;
 };
-	
+
 
 // ****************************************************************************
 // *****     European - Digital Option                                    *****
@@ -307,11 +307,11 @@ double BlackStd ( double S,
 
 {
 	double d1,d2,value;
-	
+
 	if ( S <= 0 || r<0 || d<0 || sigma<=0.0 || T<0 ) return -999.999;
 	if (T>0.0)
 		{
-			if (K>0) 
+			if (K>0)
 			{
 				d1 = (log(S/K)+(r-d+sigma*sigma/2.0)*T)/(sigma*sqrt(T));
 				d2 = d1-sigma*sqrt(T);
@@ -321,7 +321,7 @@ double BlackStd ( double S,
 			else
 			{
 				// F�r den Fall, dass die ausstehenden Dividenden gr�sser sind als K
-				
+
 				if (Art==Call)	{value = S*exp(-d*T)-K*exp(-r*T);}
 				else            {value = 0.0;};
 			};
@@ -352,20 +352,20 @@ double BlackStdDiv ( double S,
 					 double d,
 					 double sigma,
 					 double T,
-					 Dividenden &Div,						 	 
+					 Dividenden &Div,
 					 OptionTyp Art)
 
 {
-	
+
 	double Sd = Div.FitS(0.0,T,r,S);
 	// double Kd = K-Div.FutureDividendValue(T,10000.0,r);
 
 	if ( Sd <= 0 || K<=0 || r<0 || d<0 || sigma<=0.0 || T<0 ) return -999.999;
-	
+
 	return BlackStd(Sd,K,r,d,sigma,T,Art);
 };
 
-	
+
 double (*PAYOFF)   (double S, double K);
 double (*VALUE)    (double A, double B);
 
@@ -524,7 +524,7 @@ double RitchkenBinomial ( double S,
 // ****************************************************************************
 
 
-						  
+
 double BlackScholesWarrant ( double S0,
   						     double K,
 							 double r,
@@ -536,10 +536,10 @@ double BlackScholesWarrant ( double S0,
 							 long int NWarrants)
 
 {
-	
+
 	if ( S0<=0 || K<=0 || r<0 || d<0  || sigma<=0 ||  T<=0 ) {return -888.888;}
 	if (NShares <= 0 || NWarrants <= 0 ) { return -888.888;};
-	
+
 	const double eps = 0.0001;
 	double d1,d2;
 
@@ -553,7 +553,7 @@ double BlackScholesWarrant ( double S0,
 	double f1 = 1.0;
 
 	int count = 0;
-    
+
 	// Nullstellensuche mit Newton Laufvariable: Wert des Warrants
 	do
 	{
@@ -614,13 +614,13 @@ double BlackScholesExplizit( double S,
 	Grid = new double*[2];
 	Grid[0]=new double[Steps+1];
 	Grid[1]=new double[Steps+1];
-	
+
 	std::vector<double> Pu(Steps+1);
 	std::vector<double> Pm(Steps+1);
 	std::vector<double> Pd(Steps+1);
-	
-	
-	printf("dx:%f  dt:%f ",dx,dt);	
+
+
+	printf("dx:%f  dt:%f ",dx,dt);
 
 
 	int StepsU = int(ceil(ceil(Steps/smaxfact)));
@@ -639,7 +639,7 @@ double BlackScholesExplizit( double S,
 		Pd[j] = 0.5*(sigma*sigma*j*j - (r-d)*j) * dt;
 	};
 
-	
+
 	double LowerBoundary;
 	if (Art==Call)
 	{
@@ -651,19 +651,19 @@ double BlackScholesExplizit( double S,
 	};
 
 
-	
+
 	for (li=TSteps-1;li>=0; li--)
 	{
 		NG = ChangeGrid(li);
 		OG = ChangeGrid(li+1);
-		
+
 		for(j=1; j<=Steps; j++)
 		{
 			Grid[NG][j]  = Pu[j]*Grid[OG][j+1]+Pm[j]*Grid[OG][j]+Pd[j]*Grid[OG][j-1];
 			Grid[NG][j] /= (1+r*dt);
 		};
 
-		
+
 		Grid[NG][0] = LowerBoundary;
 		// Grid[NG][0] = 2*Grid[NG][Steps+1] - Grid[NG][Steps+2];
 		Grid[NG][Steps] = 2*Grid[NG][Steps-1] - Grid[NG][Steps-2];
@@ -675,22 +675,3 @@ double BlackScholesExplizit( double S,
 
 	return Grid[NG][StepsU];
 };
-	
-			
-
-
-		
-
-
-
-
-	
-
-	
-
-
-
-
-			
-			
-			
