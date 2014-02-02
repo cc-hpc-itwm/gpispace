@@ -35,7 +35,10 @@ namespace gpi
 
           if (boost::this_thread::get_id() != m_reader.get_id())
           {
-            m_reader.join ();
+            if (m_reader.joinable())
+            {
+              m_reader.join ();
+            }
           }
         }
 
