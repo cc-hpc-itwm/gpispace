@@ -405,7 +405,6 @@ namespace we
 
     std::list<net_type::token_to_be_deleted_type> net_type::do_extract
       ( transition_id_type tid
-      , we::type::transition_t const&
       , boost::function<void ( port_id_type
                              , pnet::type::value::value_type const&
                              )
@@ -477,7 +476,7 @@ namespace we
       we::type::activity_t act (transition, tid);
 
       do_delete
-        ( do_extract ( tid, transition
+        ( do_extract ( tid
                      , boost::bind ( &we::type::activity_t::add_input, &act
                                    , _1, _2
                                    )
@@ -519,7 +518,7 @@ namespace we
       expr::eval::context context;
 
       std::list<token_to_be_deleted_type> const tokens_to_be_deleted
-        (do_extract (tid, transition, context_bind (context, transition)));
+        (do_extract (tid, context_bind (context, transition)));
 
       transition.expression()->ast().eval_all (context);
 
