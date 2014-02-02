@@ -120,10 +120,8 @@ private:
   char                       *m_shm_com_ptr;
 };
 
-static void print_progress( FILE *fp
-                          , const std::size_t current
+static void print_progress( const std::size_t current
                           , const std::size_t total
-                          , const std::size_t width = 73
                           );
 
 typedef gpi::shell::basic_shell_t<my_state_t> shell_t;
@@ -599,7 +597,7 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
 
   while (src.offset < d.size)
   {
-    print_progress(stderr, src.offset, d.size);
+    print_progress(src.offset, d.size);
 
     std::size_t to_write = std::min( sh.state().com_size()
                                    , d.size - src.offset
@@ -613,7 +611,7 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     src.offset += to_write;
   }
 
-  print_progress(stderr, src.offset, d.size);
+  print_progress(src.offset, d.size);
   fprintf(stderr, "\n");
 
   time_type timer_end = boost::posix_time::microsec_clock::local_time();
@@ -712,7 +710,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
   {
     while (ifs.good() && (read_count < total_to_read))
     {
-      print_progress (stderr, read_count, total_to_read);
+      print_progress (read_count, total_to_read);
 
       std::size_t to_read = std::min( sh.state().com_size()
                                     , total_to_read - read_count
@@ -728,7 +726,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
       dst.offset += read_bytes;
     }
 
-    print_progress (stderr, read_count, total_to_read);
+    print_progress (read_count, total_to_read);
     fprintf(stderr, "\n");
 
     if (read_count < total_to_read)
@@ -1516,12 +1514,12 @@ path_list_t collect_sockets (fs::path const & prefix)
   return paths;
 }
 
-static void print_progress( FILE *
-                          , const std::size_t current
+static void print_progress( const std::size_t current
                           , const std::size_t total
-                          , const std::size_t bar_length
                           )
 {
+  static std::size_t const bar_length (73);
+
   double percent_done = (double)(current) / (double)(total);
 
   fprintf(stderr, "%3.0f%% [", percent_done*100);
