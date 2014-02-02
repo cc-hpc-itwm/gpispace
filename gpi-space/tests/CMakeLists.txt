@@ -1,16 +1,3 @@
-fhg_add_test (test_config.cpp
-  PROJECT gpi-space
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES gpi-space-pc-segment
-                 gpi-space-pc-memory
-                 gpi-space-static
-                 ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY}
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${CMAKE_THREAD_LIBS_INIT}
-                 fhg-util
-)
-
 fhg_add_test (test_handle_generator.cpp
   PROJECT gpi-space
   BOOST_UNIT_TEST
