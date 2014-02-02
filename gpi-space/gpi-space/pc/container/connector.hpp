@@ -60,8 +60,4 @@ namespace gpi
   }
 }
 
-#ifdef GPI_SPACE_HEADER_ONLY
-#  include "connector.ipp"
-#endif
-
 #endif

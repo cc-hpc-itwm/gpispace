@@ -1,7 +1,5 @@
 /* explicit instantiations */
 
-#ifndef GPI_SPACE_HEADER_ONLY
-
 #include "connector.ipp"
 #include "process.ipp"
 #include "manager.hpp"
@@ -17,5 +15,3 @@ namespace gpi
     }
   }
 }
-
-#endif

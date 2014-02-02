@@ -7,12 +7,8 @@ set (hdrs
 
 set (srcs
   manager.cpp
+  templates.cpp
   )
-
-if (GPI_SPACE_HEADER_ONLY)
-else (GPI_SPACE_HEADER_ONLY)
-  set (srcs ${srcs} templates.cpp)
-endif (GPI_SPACE_HEADER_ONLY)
 
 ADD_LIBRARY(gpi-space-pc-container ${hdrs} ${srcs})
 
