@@ -44,7 +44,7 @@ namespace gpi
           /**********************************************/
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::alloc_t & alloc)
+          operator () (const gpi::pc::proto::memory::alloc_t & alloc) const
           {
             try
             {
@@ -70,7 +70,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::free_t & free)
+          operator () (const gpi::pc::proto::memory::free_t & free) const
           {
             try
             {
@@ -90,7 +90,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::memcpy_t & cpy)
+          operator () (const gpi::pc::proto::memory::memcpy_t & cpy) const
           {
             try
             {
@@ -112,7 +112,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::wait_t & w)
+          operator () (const gpi::pc::proto::memory::wait_t & w) const
           {
             try
             {
@@ -130,7 +130,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::list_t & list)
+          operator () (const gpi::pc::proto::memory::list_t & list) const
           {
             try
             {
@@ -148,7 +148,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::info_t & info)
+          operator () (const gpi::pc::proto::memory::info_t & info) const
           {
             try
             {
@@ -170,7 +170,7 @@ namespace gpi
           /**********************************************/
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::register_t & register_segment)
+          operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
             try
             {
@@ -193,7 +193,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment)
+          operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment) const
           {
             try
             {
@@ -213,7 +213,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::attach_t & attach_segment)
+          operator () (const gpi::pc::proto::segment::attach_t & attach_segment) const
           {
             try
             {
@@ -233,7 +233,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::detach_t & detach_segment)
+          operator () (const gpi::pc::proto::segment::detach_t & detach_segment) const
           {
             try
             {
@@ -253,7 +253,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::list_t & list)
+          operator () (const gpi::pc::proto::segment::list_t & list) const
           {
             try
             {
@@ -277,7 +277,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::add_memory_t & add_mem)
+          operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
           {
             try
             {
@@ -297,7 +297,7 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::del_memory_t & del_mem)
+          operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
           {
             try
             {
@@ -317,14 +317,14 @@ namespace gpi
           /**********************************************/
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::control::ping_t &)
+          operator () (const gpi::pc::proto::control::ping_t &) const
           {
             gpi::pc::proto::control::pong_t pong;
             return gpi::pc::proto::control::message_t (pong);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::control::info_t &)
+          operator () (const gpi::pc::proto::control::info_t &) const
           {
             gpi::pc::proto::control::info_reply_t rpl;
             m_proc.collect_info (rpl.info);
@@ -332,19 +332,19 @@ namespace gpi
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::message_t & m)
+          operator () (const gpi::pc::proto::segment::message_t & m) const
           {
             return boost::apply_visitor (*this, m);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::message_t & m)
+          operator () (const gpi::pc::proto::memory::message_t & m) const
           {
             return boost::apply_visitor (*this, m);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::control::message_t & m)
+          operator () (const gpi::pc::proto::control::message_t & m) const
           {
             return boost::apply_visitor (*this, m);
           }
@@ -353,7 +353,7 @@ namespace gpi
 
           template <typename T>
           gpi::pc::proto::message_t
-          operator () (T const &)
+          operator () (T const &) const
           {
             gpi::pc::proto::error::error_t error;
             error.code = gpi::pc::proto::error::bad_request;
