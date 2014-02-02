@@ -184,10 +184,10 @@ namespace sdpa
     }
 
     sdpa::status::code Client::wait_for_terminal_state_polling
-      (job_id_t id, job_info_t&)
+      (job_id_t id, job_info_t& job_info)
     {
-      sdpa::status::code state (queryJob (id));
-      for (; !sdpa::status::is_terminal (state); state = queryJob (id))
+      sdpa::status::code state (queryJob (id, job_info));
+      for (; !sdpa::status::is_terminal (state); state = queryJob (id, job_info))
       {
         static const boost::posix_time::milliseconds sleep_duration (100);
         boost::this_thread::sleep (sleep_duration);
