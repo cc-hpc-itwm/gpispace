@@ -87,17 +87,4 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
 
 #endif
 
-#define FHG_IMPORT_PLUGIN(name)                                         \
-  extern void fhgRegisterStaticPlugin(fhg_plugin_query, fhg_plugin_create); \
-  extern const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name(); \
-  extern fhg::plugin::Plugin *fhg_get_plugin_instance_##name();         \
-  struct fhgStatic_##name##_initializer_t                               \
-  {                                                                     \
-    fhgStatic_##name##_initializer_t ()                                 \
-    {                                                                   \
-      fhgRegisterStaticPlugin(fhg_query_plugin_descriptor_##name, fhg_get_plugin_instance_##name); \
-    }                                                                   \
-  };                                                                    \
-  static fhgStatic_##name##_initializer_t __fhgStatic_initializer_##name
-
 #endif
