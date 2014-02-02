@@ -27,22 +27,15 @@ namespace gpi
           , m_id (id)
           , m_socket (socket)
           , m_reader
-            ( thread_t
-              ( new boost::thread (boost::bind ( &process_t::reader_thread_main
-                                               , this
-                                               , m_socket
-                                               )
-                                  )
-              )
-            )
+            (boost::bind (&process_t::reader_thread_main, this, m_socket))
         {}
         ~process_t()
         {
           close_socket (m_socket);
 
-          if ( boost::this_thread::get_id() != m_reader->get_id())
+          if (boost::this_thread::get_id() != m_reader.get_id())
           {
-            m_reader->join ();
+            m_reader.join ();
           }
         }
 
@@ -81,7 +74,6 @@ namespace gpi
         gpi::pc::type::size_t wait (const gpi::pc::type::queue_id_t);
         void collect_info (gpi::pc::type::info::descriptor_t &);
       private:
-        typedef boost::shared_ptr<boost::thread> thread_t;
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
 
@@ -101,7 +93,7 @@ namespace gpi
         manager_t & m_mgr;
         const gpi::pc::type::process_id_t m_id;
         int m_socket;
-        thread_t m_reader;
+        boost::thread m_reader;
       };
     }
   }
