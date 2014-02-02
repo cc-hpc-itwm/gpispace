@@ -601,9 +601,7 @@ namespace gpi
       {
         using namespace gpi::pc::proto;
 
-        typedef visitor::handle_message_t message_handler_t;
-        message_handler_t hdl (*this);
-        return boost::apply_visitor (hdl, msg);
+        return boost::apply_visitor (visitor::handle_message_t (*this), msg);
       }
 
       /********************************************************/
