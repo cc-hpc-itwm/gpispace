@@ -31,7 +31,6 @@ namespace gpi
 
       public:
         typedef manager_t self;
-        typedef gpi::pc::container::connector_t<manager_t> connector_type;
 
         explicit
         manager_t (std::string const & path_to_socket);
@@ -139,7 +138,7 @@ namespace gpi
         mutable mutex_type m_mutex;
         mutable mutex_type m_state_mutex;
         state_t m_state;
-        connector_type m_connector;
+        connector_t m_connector;
         gpi::pc::type::counter_t m_process_counter;
         std::vector<std::string> m_default_memory_urls;
 
