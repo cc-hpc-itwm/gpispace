@@ -547,7 +547,11 @@ namespace gpi
               break;
             }
 
-            message_t reply (handle_message (request));
+            message_t reply
+              (boost::apply_visitor ( visitor::handle_message_t (*this)
+                                    , request
+                                    )
+              );
 
             if (send (fd, reply) <= 0)
             {
@@ -595,13 +599,6 @@ namespace gpi
         {
           return err;
         }
-      }
-
-      gpi::pc::proto::message_t process_t::handle_message(const gpi::pc::proto::message_t &msg)
-      {
-        using namespace gpi::pc::proto;
-
-        return boost::apply_visitor (visitor::handle_message_t (*this), msg);
       }
 
       /********************************************************/

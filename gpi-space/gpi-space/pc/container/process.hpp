@@ -81,8 +81,6 @@ namespace gpi
                      );
         int send (const int fd, gpi::pc::proto::message_t const & msg);
 
-        gpi::pc::proto::message_t handle_message (const gpi::pc::proto::message_t &);
-
         int close_socket (const int fd);
         int checked_read (const int fd, void *buf, const size_t len);
         void decode_buffer (const char *buf, const size_t len, gpi::pc::proto::message_t &);
