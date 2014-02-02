@@ -11,7 +11,6 @@
 
 #include <fhgcom/kvs/store.hpp>
 #include <fhgcom/kvs/message/type.hpp>
-#include <fhgcom/kvs/message/show.hpp>
 
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
