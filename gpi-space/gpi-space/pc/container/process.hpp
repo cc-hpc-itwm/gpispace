@@ -90,7 +90,7 @@ namespace gpi
 
         manager_t & m_mgr;
         const gpi::pc::type::process_id_t m_id;
-        int m_socket;
+        int const m_socket;
         boost::thread m_reader;
       };
     }
