@@ -228,7 +228,6 @@ namespace process
                                  , void * buf
                                  , const std::size_t max_size
                                  , std::size_t & bytes_read
-                                 , const std::size_t &
                                  )
     {
       barrier.wait ();
@@ -286,7 +285,6 @@ namespace process
                                  , const std::string & filename
                                  , const void * buf
                                  , std::size_t bytes_left
-                                 , const std::size_t &
                                  )
     {
       barrier.wait ();
@@ -400,7 +398,6 @@ namespace process
                                , filename
                                , buf
                                , bytes_left
-                               , PIPE_BUF
                                );
     }
 
@@ -419,7 +416,6 @@ namespace process
                                , buf
                                , max_size
                                , boost::ref (bytes_read)
-                               , PIPE_BUF
                                );
     }
   }
