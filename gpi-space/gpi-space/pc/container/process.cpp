@@ -371,23 +371,6 @@ namespace gpi
         return m_id;
       }
 
-      void process_t::start ()
-      {
-        lock_type lock (m_mutex);
-        if (! m_reader)
-        {
-          assert (m_socket >= 0);
-
-          m_reader = thread_t
-            (new boost::thread(boost::bind ( &process_t::reader_thread_main
-                                           , this
-                                           , m_socket
-                                           )
-                              )
-            );
-        }
-      }
-
       void process_t::stop ()
       {
         lock_type lock (m_mutex);

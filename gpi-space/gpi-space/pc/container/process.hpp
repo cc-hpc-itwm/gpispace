@@ -26,10 +26,24 @@ namespace gpi
           : m_mgr (mgr)
           , m_id (id)
           , m_socket (socket)
-        {}
+        {
+          lock_type lock (m_mutex);
+
+          if (! m_reader)
+          {
+            assert (m_socket >= 0);
+
+            m_reader = thread_t
+              (new boost::thread(boost::bind ( &process_t::reader_thread_main
+                                             , this
+                                             , m_socket
+                                             )
+                                )
+              );
+          }
+        }
 
         gpi::pc::type::process_id_t get_id () const;
-        void start ();
         void stop ();
 
         // protocol implementation

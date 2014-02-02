@@ -223,16 +223,15 @@ namespace gpi
       {
         garbage_collect();
 
-        process_ptr_t proc (new process_t (*this, m_process_counter.inc(), fd));
+        gpi::pc::type::counter_t const id (m_process_counter.inc());
 
         lock_type lock (m_mutex);
 
-        m_processes[proc->get_id()] = proc;
-        m_processes[proc->get_id()]->start ();
+        m_processes[id] = process_ptr_t (new process_t (*this, id, fd));
 
         CLOG( INFO
             , "gpi.container"
-            , "process container " << proc->get_id() << " attached"
+            , "process container " << id << " attached"
             );
       }
 
