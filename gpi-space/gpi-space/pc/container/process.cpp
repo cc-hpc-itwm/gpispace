@@ -365,16 +365,7 @@ namespace gpi
           process_t & m_proc;
         };
       }
-    }
-  }
-}
 
-namespace gpi
-{
-  namespace pc
-  {
-    namespace container
-    {
       gpi::pc::type::process_id_t process_t::get_id () const
       {
         return m_id;
