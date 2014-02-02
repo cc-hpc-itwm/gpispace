@@ -90,7 +90,6 @@ namespace gpi
 
         int close_socket (const int fd);
         int checked_read (const int fd, void *buf, const size_t len);
-        void decode_buffer (const char *buf, const size_t len, gpi::pc::proto::message_t &);
 
         mutex_type m_mutex;
         manager_t & m_mgr;

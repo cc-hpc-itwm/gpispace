@@ -428,7 +428,9 @@ namespace gpi
 
         try
         {
-          decode_buffer (&buffer[0], header.length, msg);
+          std::stringstream sstr (std::string (&buffer[0], header.length));
+          boost::archive::binary_iarchive ia (sstr);
+          ia & msg;
         }
         catch (std::exception const & ex)
         {
@@ -509,13 +511,6 @@ namespace gpi
         }
 
         LOG(TRACE, "process container (" << m_id << ") terminated");
-      }
-
-      void process_t::decode_buffer (const char * buf, const size_t len, gpi::pc::proto::message_t & msg)
-      {
-        std::stringstream sstr (std::string (buf, len));
-        boost::archive::binary_iarchive ia (sstr);
-        ia & msg;
       }
 
       int process_t::checked_read (const int fd, void * buf, const size_t len)
