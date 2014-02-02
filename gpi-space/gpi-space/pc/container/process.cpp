@@ -370,12 +370,6 @@ namespace gpi
       {
         lock_type lock (m_mutex);
         close_socket (m_socket);
-        stop_thread ();
-        m_socket = -1;
-      }
-
-      void process_t::stop_thread ()
-      {
         assert (m_reader);
 
         if (boost::this_thread::get_id() != m_reader->get_id())
@@ -383,6 +377,7 @@ namespace gpi
           m_reader->join ();
           m_reader.reset ();
         }
+        m_socket = -1;
       }
 
       int process_t::close_socket (const int fd)
