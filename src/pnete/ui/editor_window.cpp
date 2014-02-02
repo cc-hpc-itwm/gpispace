@@ -806,9 +806,9 @@ namespace fhg
 
       void remote_job_waiting::run()
       {
-        sdpa::client::job_info_t job_info;
+        sdpa::client::job_info_t UNUSED_job_info;
         sdpa::status::code status
-          (_client->wait_for_terminal_state (_job_id, job_info));
+          (_client->wait_for_terminal_state (_job_id, UNUSED_job_info));
 
         if (status != sdpa::status::FINISHED)
         {

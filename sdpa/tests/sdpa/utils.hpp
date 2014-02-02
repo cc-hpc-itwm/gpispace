@@ -208,8 +208,8 @@ namespace utils
                                                 , const sdpa::job_id_t& id
                                                 )
     {
-      sdpa::client::job_info_t job_info;
-      return c.wait_for_terminal_state_polling (id, job_info);
+      sdpa::client::job_info_t UNUSED_job_info;
+      return c.wait_for_terminal_state_polling (id, UNUSED_job_info);
     }
 
     sdpa::client::result_t retrieve_job_results
@@ -231,8 +231,8 @@ namespace utils
     sdpa::status::code wait_for_terminal_state
       (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
-      sdpa::client::job_info_t job_info;
-      return c.wait_for_terminal_state (id, job_info);
+      sdpa::client::job_info_t UNUSED_job_info;
+      return c.wait_for_terminal_state (id, UNUSED_job_info);
     }
 
     sdpa::status::code wait_for_state_polling
