@@ -4,7 +4,6 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/config/config.hpp>
-#include <gpi-space/config/config_io.hpp>
 
 struct SetupLogging
 {
@@ -24,13 +23,5 @@ struct F
 };
 
 BOOST_FIXTURE_TEST_SUITE( suite, F )
-
-BOOST_AUTO_TEST_CASE ( config_io )
-{
-  gpi_space::config cfg;
-  std::ostringstream s;
-  s << cfg;
-  LOG(DEBUG, "cfg = " << s.str());
-}
 
 BOOST_AUTO_TEST_SUITE_END()
