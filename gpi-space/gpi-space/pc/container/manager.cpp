@@ -236,10 +236,7 @@ namespace gpi
       {
         garbage_collect();
 
-        gpi::pc::type::process_id_t proc_id (m_process_counter.inc());
-
-        process_ptr_t proc (new process_t (*this, proc_id, fd));
-        attach_process (proc);
+        attach_process (new process_t (*this, m_process_counter.inc(), fd));
       }
 
       void manager_t::handle_connector_error (int error)
