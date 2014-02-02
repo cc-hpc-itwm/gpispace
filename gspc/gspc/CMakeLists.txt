@@ -1,3 +1,6 @@
+# json has a lot that are used in debug only
+add_definitions (-Wno-unused-parameter)
+
 set (gspc_src
   net/constants.cpp
   net/io.cpp
