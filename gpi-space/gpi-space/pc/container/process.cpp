@@ -377,8 +377,6 @@ namespace gpi
         if (! m_reader)
         {
           assert (m_socket >= 0);
-          assert (m_socket >= 0);
-          assert (! m_reader);
 
           m_reader = thread_t
             (new boost::thread(boost::bind ( &process_t::reader_thread_main
