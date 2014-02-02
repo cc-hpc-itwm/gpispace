@@ -123,7 +123,6 @@ namespace gpi
         state_t get_state (void) const;
         void require_state (const state_t st) const;
 
-        void attach_process (process_ptr_t);
         void detach_process (const gpi::pc::type::process_id_t);
         void detach_memory_from_process (const gpi::pc::type::process_id_t);
         void garbage_collect ();

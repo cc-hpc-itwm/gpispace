@@ -184,19 +184,6 @@ namespace gpi
         global::topology().stop();
       }
 
-      void manager_t::attach_process (process_ptr_t proc)
-      {
-        lock_type lock (m_mutex);
-
-        m_processes[proc->get_id()] = proc;
-        m_processes[proc->get_id()]->start ();
-
-        CLOG( INFO
-            , "gpi.container"
-            , "process container " << proc->get_id() << " attached"
-            );
-      }
-
       void manager_t::detach_process (const gpi::pc::type::process_id_t id)
       {
         lock_type lock (m_mutex);
@@ -236,7 +223,17 @@ namespace gpi
       {
         garbage_collect();
 
-        attach_process (new process_t (*this, m_process_counter.inc(), fd));
+        process_ptr_t proc (new process_t (*this, m_process_counter.inc(), fd));
+
+        lock_type lock (m_mutex);
+
+        m_processes[proc->get_id()] = proc;
+        m_processes[proc->get_id()]->start ();
+
+        CLOG( INFO
+            , "gpi.container"
+            , "process container " << proc->get_id() << " attached"
+            );
       }
 
       void manager_t::handle_connector_error (int error)
