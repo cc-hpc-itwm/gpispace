@@ -547,13 +547,12 @@ namespace gpi
               break;
             }
 
-            message_t reply
-              (boost::apply_visitor ( visitor::handle_message_t (*this)
-                                    , request
-                                    )
-              );
-
-            if (send (fd, reply) <= 0)
+            if (send ( fd
+                     , boost::apply_visitor ( visitor::handle_message_t (*this)
+                                            , request
+                                            )
+                     ) <= 0
+               )
             {
               break;
             }
