@@ -84,9 +84,9 @@ namespace fhg
 
         bool dual_list_move_and_drag_proxy::dropMimeData
           ( const QMimeData* data
-          , Qt::DropAction action
-          , int row
-          , int column
+          , Qt::DropAction IF_FHG_ASSERT (action)
+          , int IF_FHG_ASSERT (row)
+          , int IF_FHG_ASSERT (column)
           , const QModelIndex& parent
           )
         {
