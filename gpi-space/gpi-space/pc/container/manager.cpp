@@ -197,10 +197,7 @@ namespace gpi
           throw std::runtime_error ("no such process");
         }
 
-        process_ptr_t proc (m_processes.at (id));
-        m_detached_processes.push_back (proc);
         m_processes.erase (id);
-        proc->stop ();
 
         global::memory_manager().garbage_collect (id);
 
@@ -213,10 +210,6 @@ namespace gpi
       void manager_t::garbage_collect ()
       {
         lock_type lock (m_mutex);
-        while (!m_detached_processes.empty())
-        {
-          m_detached_processes.pop_front();
-        }
       }
 
       void manager_t::handle_new_connection (int fd)

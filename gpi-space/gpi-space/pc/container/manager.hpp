@@ -142,7 +142,6 @@ namespace gpi
         std::vector<std::string> m_default_memory_urls;
 
         process_map_t m_processes;
-        process_list_t m_detached_processes;
       };
     }
   }

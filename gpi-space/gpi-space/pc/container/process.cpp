@@ -366,20 +366,6 @@ namespace gpi
         };
       }
 
-      void process_t::stop ()
-      {
-        lock_type lock (m_mutex);
-        close_socket (m_socket);
-        assert (m_reader);
-
-        if (boost::this_thread::get_id() != m_reader->get_id())
-        {
-          m_reader->join ();
-          m_reader.reset ();
-        }
-        m_socket = -1;
-      }
-
       int process_t::close_socket (const int fd)
       {
         shutdown (fd, SHUT_RDWR);

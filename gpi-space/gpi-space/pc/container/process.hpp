@@ -36,8 +36,15 @@ namespace gpi
               )
             )
         {}
+        ~process_t()
+        {
+          close_socket (m_socket);
 
-        void stop ();
+          if ( boost::this_thread::get_id() != m_reader->get_id())
+          {
+            m_reader->join ();
+          }
+        }
 
         // protocol implementation
 
