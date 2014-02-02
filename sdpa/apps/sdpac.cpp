@@ -71,7 +71,7 @@ namespace
     sdpa::client::job_info_t job_info;
     const sdpa::status::code status
       ( do_polling
-      ? api.wait_for_terminal_state_polling (job_id)
+      ? api.wait_for_terminal_state_polling (job_id, job_info)
       : api.wait_for_terminal_state (job_id, job_info)
       );
 

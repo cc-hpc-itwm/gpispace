@@ -142,7 +142,8 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_with_polling_client)
   sdpa::job_id_t job_id(client.submitJob (workflow));
 
   client.cancelJob(job_id);
-  client.wait_for_terminal_state_polling (job_id);
+  sdpa::client::job_info_t job_info;
+  client.wait_for_terminal_state_polling (job_id, job_info);
   BOOST_REQUIRE_EQUAL(client.queryJob(job_id), sdpa::status::CANCELED );
 
   BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);

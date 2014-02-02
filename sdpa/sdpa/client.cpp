@@ -184,7 +184,7 @@ namespace sdpa
     }
 
     sdpa::status::code Client::wait_for_terminal_state_polling
-      (job_id_t id)
+      (job_id_t id, job_info_t&)
     {
       sdpa::status::code state (queryJob (id));
       for (; !sdpa::status::is_terminal (state); state = queryJob (id))
