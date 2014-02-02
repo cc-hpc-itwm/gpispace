@@ -337,7 +337,6 @@ namespace gpi
                        , const gpi::pc::type::flags_t flags
                        )
       {
-//        check_permissions (permission::alloc_t (proc_id, seg_id));
         return global::memory_manager().alloc ( proc_id
                                               , seg_id
                                               , size
@@ -351,7 +350,6 @@ namespace gpi
                       , const gpi::pc::type::handle_id_t hdl
                       )
       {
-//        check_permissions (permission::free_t (proc_id, hdl));
         global::memory_manager().free (hdl);
       }
 
@@ -360,7 +358,6 @@ namespace gpi
                       , const gpi::pc::type::handle_id_t hdl
                       ) const
       {
-//        check_permissions (permission::info_t (proc_id, hdl));
         return global::memory_manager().info (hdl);
       }
 
@@ -370,7 +367,6 @@ namespace gpi
                                   , gpi::pc::type::handle::list_t & list
                                   ) const
       {
-//        check_permissions (permission::list_allocations_t (proc_id, seg_id));
         if (seg_id == gpi::pc::type::segment::SEG_INVAL)
           global::memory_manager().list_allocations(proc_id, list);
         else
