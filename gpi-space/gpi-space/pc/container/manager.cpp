@@ -225,9 +225,11 @@ namespace gpi
 
         gpi::pc::type::counter_t const id (m_process_counter.inc());
 
-        lock_type lock (m_mutex);
+        {
+          lock_type lock (m_mutex);
 
-        m_processes[id] = process_ptr_t (new process_t (*this, id, fd));
+          m_processes[id] = process_ptr_t (new process_t (*this, id, fd));
+        }
 
         CLOG( INFO
             , "gpi.container"
