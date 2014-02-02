@@ -5,6 +5,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/gpi/api.hpp>
+#include <gpi-space/pc/container/process.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
@@ -237,7 +238,7 @@ namespace gpi
 
         gpi::pc::type::process_id_t proc_id (m_process_counter.inc());
 
-        process_ptr_t proc (new process_type (*this, proc_id, fd));
+        process_ptr_t proc (new process_t (*this, proc_id, fd));
         attach_process (proc);
       }
 

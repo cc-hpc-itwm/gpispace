@@ -16,6 +16,8 @@ namespace gpi
   {
     namespace container
     {
+      class process_t;
+
       class manager_t
       {
         enum state_t
@@ -29,7 +31,6 @@ namespace gpi
 
       public:
         typedef manager_t self;
-        typedef gpi::pc::container::process_t<manager_t> process_type;
         typedef gpi::pc::container::connector_t<manager_t> connector_type;
 
         explicit
@@ -111,7 +112,7 @@ namespace gpi
                    , const gpi::pc::type::segment_id_t
                    );
       private:
-        typedef boost::shared_ptr<process_type> process_ptr_t;
+        typedef boost::shared_ptr<process_t> process_ptr_t;
         typedef boost::unordered_map< gpi::pc::type::process_id_t
                                     , process_ptr_t
                                     > process_map_t;

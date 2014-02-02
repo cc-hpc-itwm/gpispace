@@ -21,6 +21,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
+#include <gpi-space/pc/container/manager.hpp>
 #include <gpi-space/pc/container/message_visitor.hpp>
 
 namespace gpi
@@ -29,14 +30,12 @@ namespace gpi
   {
     namespace container
     {
-      template <typename M>
-      gpi::pc::type::process_id_t process_t<M>::get_id () const
+      gpi::pc::type::process_id_t process_t::get_id () const
       {
         return m_id;
       }
 
-      template <typename M>
-      void process_t<M>::start ()
+      void process_t::start ()
       {
         lock_type lock (m_mutex);
         if (! m_reader)
@@ -46,8 +45,7 @@ namespace gpi
         }
       }
 
-      template <typename M>
-      void process_t<M>::stop ()
+      void process_t::stop ()
       {
         lock_type lock (m_mutex);
         close_socket (m_socket);
@@ -55,14 +53,13 @@ namespace gpi
         m_socket = -1;
       }
 
-      template <typename M>
-      void process_t<M>::start_thread ()
+      void process_t::start_thread ()
       {
         assert (m_socket >= 0);
         assert (! m_reader);
 
         m_reader = thread_t
-          (new boost::thread(boost::bind ( &self::reader_thread_main
+          (new boost::thread(boost::bind ( &process_t::reader_thread_main
                                          , this
                                          , m_socket
                                          )
@@ -70,8 +67,7 @@ namespace gpi
           );
       }
 
-      template <typename M>
-      void process_t<M>::stop_thread ()
+      void process_t::stop_thread ()
       {
         assert (m_reader);
 
@@ -82,15 +78,13 @@ namespace gpi
         }
       }
 
-      template <typename M>
-      int process_t<M>::close_socket (const int fd)
+      int process_t::close_socket (const int fd)
       {
         shutdown (fd, SHUT_RDWR);
         return close (fd);
       }
 
-      template <typename M>
-      int process_t<M>::receive ( const int fd
+      int process_t::receive ( const int fd
                                 , gpi::pc::proto::message_t & msg
                                 , const size_t max_size
                                 )
@@ -158,8 +152,7 @@ namespace gpi
         return 1;
       }
 
-      template <typename M>
-      int process_t<M>::send (const int fd, gpi::pc::proto::message_t const & m)
+      int process_t::send (const int fd, gpi::pc::proto::message_t const & m)
       {
         using namespace gpi::pc::proto;
 
@@ -193,8 +186,7 @@ namespace gpi
         return 1;
       }
 
-      template <typename M>
-      void process_t<M>::reader_thread_main(const int fd)
+      void process_t::reader_thread_main(const int fd)
       {
         using namespace gpi::pc::proto;
 
@@ -228,16 +220,14 @@ namespace gpi
         LOG(TRACE, "process container (" << m_id << ") terminated");
       }
 
-      template <typename M>
-      void process_t<M>::decode_buffer (const char * buf, const size_t len, gpi::pc::proto::message_t & msg)
+      void process_t::decode_buffer (const char * buf, const size_t len, gpi::pc::proto::message_t & msg)
       {
         std::stringstream sstr (std::string (buf, len));
         boost::archive::binary_iarchive ia (sstr);
         ia & msg;
       }
 
-      template <typename M>
-      int process_t<M>::checked_read (const int fd, void * buf, const size_t len)
+      int process_t::checked_read (const int fd, void * buf, const size_t len)
       {
         int err;
         err = read (fd, buf, len);
@@ -262,12 +252,11 @@ namespace gpi
         }
       }
 
-      template <typename M>
-      gpi::pc::proto::message_t process_t<M>::handle_message(const gpi::pc::proto::message_t &msg)
+      gpi::pc::proto::message_t process_t::handle_message(const gpi::pc::proto::message_t &msg)
       {
         using namespace gpi::pc::proto;
 
-        typedef visitor::handle_message_t<self> message_handler_t;
+        typedef visitor::handle_message_t<process_t> message_handler_t;
         message_handler_t hdl (*this);
         return boost::apply_visitor (hdl, msg);
       }
@@ -278,9 +267,8 @@ namespace gpi
       /***                                                  ***/
       /********************************************************/
 
-      template <typename M>
       gpi::pc::type::handle_id_t
-      process_t<M>::alloc ( const gpi::pc::type::segment_id_t seg
+      process_t::alloc ( const gpi::pc::type::segment_id_t seg
                           , const gpi::pc::type::size_t size
                           , const std::string & name
                           , const gpi::pc::type::flags_t flags
@@ -289,31 +277,27 @@ namespace gpi
         return m_mgr.alloc (m_id, seg, size, name, flags);
       }
 
-      template <typename M>
-      void process_t<M>::free (const gpi::pc::type::handle_id_t hdl)
+      void process_t::free (const gpi::pc::type::handle_id_t hdl)
       {
         return m_mgr.free (m_id, hdl);
       }
 
-      template <typename M>
       gpi::pc::type::handle::descriptor_t
-      process_t<M>::info (const gpi::pc::type::handle_id_t hdl) const
+      process_t::info (const gpi::pc::type::handle_id_t hdl) const
       {
         return m_mgr.info (m_id, hdl);
       }
 
-      template <typename M>
       void
-      process_t<M>::list_allocations( const gpi::pc::type::segment_id_t seg
+      process_t::list_allocations( const gpi::pc::type::segment_id_t seg
                                     , gpi::pc::type::handle::list_t & l
                                     ) const
       {
         m_mgr.list_allocations (m_id, seg, l);
       }
 
-      template <typename M>
       gpi::pc::type::queue_id_t
-      process_t<M>::memcpy ( gpi::pc::type::memory_location_t const & dst
+      process_t::memcpy ( gpi::pc::type::memory_location_t const & dst
                            , gpi::pc::type::memory_location_t const & src
                            , const gpi::pc::type::size_t amount
                            , const gpi::pc::type::queue_id_t queue
@@ -322,8 +306,7 @@ namespace gpi
         return m_mgr.memcpy (m_id, dst, src, amount, queue);
       }
 
-      template <typename M>
-      gpi::pc::type::size_t process_t<M>::wait (const gpi::pc::type::queue_id_t queue)
+      gpi::pc::type::size_t process_t::wait (const gpi::pc::type::queue_id_t queue)
       {
         // this is not that easy to implement
         //    do we want to put the process container to sleep? - no
@@ -351,9 +334,8 @@ namespace gpi
         return m_mgr.wait_on_queue (m_id, queue);
       }
 
-      template <typename M>
       gpi::pc::type::segment_id_t
-      process_t<M>::register_segment ( std::string const & name
+      process_t::register_segment ( std::string const & name
                                      , const gpi::pc::type::size_t sz
                                      , const gpi::pc::type::flags_t flags
                                      )
@@ -363,50 +345,43 @@ namespace gpi
         return s_id;
       }
 
-      template <typename M>
       void
-      process_t<M>::unregister_segment(const gpi::pc::type::segment_id_t seg)
+      process_t::unregister_segment(const gpi::pc::type::segment_id_t seg)
       {
         m_mgr.unregister_segment (m_id, seg);
       }
 
-      template <typename M>
       gpi::pc::type::segment_id_t
-      process_t<M>::add_memory (std::string const &url)
+      process_t::add_memory (std::string const &url)
       {
         return m_mgr.add_memory (m_id, url);
       }
 
-      template <typename M>
       void
-      process_t<M>::del_memory (gpi::pc::type::segment_id_t seg_id)
+      process_t::del_memory (gpi::pc::type::segment_id_t seg_id)
       {
         m_mgr.del_memory (m_id, seg_id);
       }
 
-      template <typename M>
       void
-      process_t<M>::attach_segment(const gpi::pc::type::segment_id_t seg)
+      process_t::attach_segment(const gpi::pc::type::segment_id_t seg)
       {
         m_mgr.attach_process_to_segment (m_id, seg);
       }
 
-      template <typename M>
       void
-      process_t<M>::detach_segment(const gpi::pc::type::segment_id_t seg)
+      process_t::detach_segment(const gpi::pc::type::segment_id_t seg)
       {
         m_mgr.detach_process_from_segment (m_id, seg);
       }
 
-      template <typename M>
       void
-      process_t<M>::list_segments(gpi::pc::type::segment::list_t & l)
+      process_t::list_segments(gpi::pc::type::segment::list_t & l)
       {
         m_mgr.list_segments (m_id, l);
       }
 
-      template <typename M>
-      void process_t<M>::collect_info (gpi::pc::type::info::descriptor_t &d)
+      void process_t::collect_info (gpi::pc::type::info::descriptor_t &d)
       {
         m_mgr.collect_info (d);
       }

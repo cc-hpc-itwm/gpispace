@@ -13,15 +13,13 @@ namespace gpi
   {
     namespace container
     {
-      template <typename Manager>
+      class manager_t;
+
       class process_t : boost::noncopyable
       {
       public:
-        typedef Manager manager_type;
-        typedef process_t<manager_type> self;
-
         explicit
-        process_t ( manager_type & mgr
+        process_t ( manager_t & mgr
                   , const gpi::pc::type::process_id_t id
                   , const int socket
                   )
@@ -90,7 +88,7 @@ namespace gpi
         void decode_buffer (const char *buf, const size_t len, gpi::pc::proto::message_t &);
 
         mutex_type m_mutex;
-        manager_type & m_mgr;
+        manager_t & m_mgr;
         const gpi::pc::type::process_id_t m_id;
         int m_socket;
         thread_t m_reader;
