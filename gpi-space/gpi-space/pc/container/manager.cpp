@@ -273,8 +273,6 @@ namespace gpi
                                                               , const gpi::pc::type::flags_t flags
                                                               )
       {
-        // TODO: refactor here
-
         using namespace gpi::pc;
 
         fhg::util::url_t url;
