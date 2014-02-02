@@ -33,12 +33,9 @@ namespace gpi
     {
       namespace visitor
       {
-        template <typename P>
         struct handle_message_t : public boost::static_visitor<gpi::pc::proto::message_t>
         {
-          typedef P process_type;
-
-          handle_message_t (process_type & proc)
+          handle_message_t (process_t & proc)
             : m_proc (proc)
           {}
 
@@ -365,7 +362,7 @@ namespace gpi
           }
 
         private:
-          process_type & m_proc;
+          process_t & m_proc;
         };
       }
     }
@@ -604,7 +601,7 @@ namespace gpi
       {
         using namespace gpi::pc::proto;
 
-        typedef visitor::handle_message_t<process_t> message_handler_t;
+        typedef visitor::handle_message_t message_handler_t;
         message_handler_t hdl (*this);
         return boost::apply_visitor (hdl, msg);
       }
