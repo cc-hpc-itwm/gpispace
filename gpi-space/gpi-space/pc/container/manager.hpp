@@ -125,7 +125,6 @@ namespace gpi
 
         void detach_process (const gpi::pc::type::process_id_t);
         void detach_memory_from_process (const gpi::pc::type::process_id_t);
-        void garbage_collect ();
         void initialize_memory_manager ();
         void initialize_topology ();
         void shutdown_topology ();

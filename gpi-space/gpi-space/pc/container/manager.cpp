@@ -96,8 +96,6 @@ namespace gpi
           shutdown_topology ();
         }
 
-        garbage_collect();
-
         set_state (ST_STOPPED);
       }
 
@@ -207,15 +205,8 @@ namespace gpi
             );
       }
 
-      void manager_t::garbage_collect ()
-      {
-        lock_type lock (m_mutex);
-      }
-
       void manager_t::handle_new_connection (int fd)
       {
-        garbage_collect();
-
         gpi::pc::type::counter_t const id (m_process_counter.inc());
 
         {
