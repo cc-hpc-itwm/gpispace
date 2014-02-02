@@ -377,7 +377,16 @@ namespace gpi
         if (! m_reader)
         {
           assert (m_socket >= 0);
-          start_thread ();
+          assert (m_socket >= 0);
+          assert (! m_reader);
+
+          m_reader = thread_t
+            (new boost::thread(boost::bind ( &process_t::reader_thread_main
+                                           , this
+                                           , m_socket
+                                           )
+                              )
+            );
         }
       }
 
@@ -387,20 +396,6 @@ namespace gpi
         close_socket (m_socket);
         stop_thread ();
         m_socket = -1;
-      }
-
-      void process_t::start_thread ()
-      {
-        assert (m_socket >= 0);
-        assert (! m_reader);
-
-        m_reader = thread_t
-          (new boost::thread(boost::bind ( &process_t::reader_thread_main
-                                         , this
-                                         , m_socket
-                                         )
-                            )
-          );
       }
 
       void process_t::stop_thread ()

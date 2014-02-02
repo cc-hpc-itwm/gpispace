@@ -72,7 +72,6 @@ namespace gpi
         typedef boost::unique_lock<mutex_type> lock_type;
 
         void reader_thread_main (const int fd);
-        void start_thread ();
         void stop_thread ();
 
         int receive ( const int fd
