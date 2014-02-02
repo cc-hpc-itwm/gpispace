@@ -11,7 +11,6 @@ install (TARGETS gpi-space-pc-container
 
 install (FILES
   process.hpp
-  message_visitor.hpp
   connector.hpp
   manager.hpp
   DESTINATION include/gpi-space/pc/container
