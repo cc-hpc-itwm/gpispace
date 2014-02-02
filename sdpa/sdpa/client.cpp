@@ -33,9 +33,7 @@ namespace sdpa
       }
     }
 
-    Client::Client ( std::string orchestrator
-                   , boost::optional<boost::posix_time::time_duration>
-                   )
+    Client::Client (std::string orchestrator)
       : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
       , orchestrator_ (orchestrator)
       , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"), fhg::com::kvs::global_kvs())

@@ -27,9 +27,7 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      Client ( std::string orchestrator
-             , boost::optional<boost::posix_time::time_duration> = boost::none
-             );
+      Client (std::string orchestrator);
       ~Client();
 
       job_id_t submitJob(const job_desc_t &);

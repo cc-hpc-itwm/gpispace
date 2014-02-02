@@ -172,10 +172,6 @@ namespace
       "redirect log output to this file")
       ("logging.tostderr", "output to stderr")
       ;
-    network_opts_.add_options()
-      ("network.timeout", po::value<unsigned int>(),
-      "maximum time to wait for a reply (in milliseconds)")
-      ;
     specific_opts_.add_options()
       ( "orchestrator"
       , po::value<std::string>()->default_value ("orchestrator")
@@ -468,12 +464,6 @@ int main (int argc, char **argv) {
     sdpa::client::Client api ( cfg.is_set("orchestrator")
                              ? cfg.get<std::string>("orchestrator")
                              : throw std::runtime_error ("no orchestrator specified!")
-                             , cfg.is_set("network.timeout")
-                             ? boost::optional<boost::posix_time::time_duration>
-                               ( cfg.get<boost::posix_time::milliseconds>
-                                 ("network.timeout")
-                               )
-                             : boost::none
                              );
 
     if (command == "submit")
