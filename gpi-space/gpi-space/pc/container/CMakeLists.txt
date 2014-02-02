@@ -1,21 +1,18 @@
-set (hdrs
+add_library (gpi-space-pc-container
+  manager.cpp
+  templates.cpp
+)
+
+install (TARGETS gpi-space-pc-container
+  DESTINATION lib
+  COMPONENT libraries
+)
+
+install (FILES
   process.hpp
   message_visitor.hpp
   connector.hpp
   manager.hpp
-  )
-
-set (srcs
-  manager.cpp
-  templates.cpp
-  )
-
-ADD_LIBRARY(gpi-space-pc-container ${hdrs} ${srcs})
-
-install(TARGETS gpi-space-pc-container
-  DESTINATION lib
-  COMPONENT libraries)
-
-install(FILES ${hdrs}
   DESTINATION include/gpi-space/pc/container
-  COMPONENT headers)
+  COMPONENT headers
+)
