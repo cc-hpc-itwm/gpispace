@@ -366,11 +366,6 @@ namespace gpi
         };
       }
 
-      gpi::pc::type::process_id_t process_t::get_id () const
-      {
-        return m_id;
-      }
-
       void process_t::stop ()
       {
         lock_type lock (m_mutex);

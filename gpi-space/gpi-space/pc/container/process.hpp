@@ -37,7 +37,6 @@ namespace gpi
             )
         {}
 
-        gpi::pc::type::process_id_t get_id () const;
         void stop ();
 
         // protocol implementation
