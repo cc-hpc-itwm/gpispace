@@ -14,6 +14,22 @@
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
 
+#include <fhg/util/first_then.hpp>
+
+inline std::ostream& operator<<(std::ostream& os, const sdpa::discovery_info_t& disc_info)
+{
+  std::string state(disc_info.state() ? sdpa::status::show (disc_info.state().get()):"NONE");
+  os<<"["<<disc_info.job_id()<<", "<<state<<", [";
+  fhg::util::first_then<std::string> const sep ("", ", ");
+  BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_info.children())
+  {
+    os<<sep<<child_info;
+  }
+  os<<"]]";
+
+  return os;
+}
+
 namespace sdpa
 {
   namespace client
