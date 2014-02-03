@@ -4,6 +4,7 @@
 #include <fhg/plugin/capability.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
+#include <fhg/util/keep_alive.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -32,8 +33,6 @@
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/events.hpp>
 #include <sdpa/types.hpp>
-
-#include <plugins/kvs.hpp>
 
 #include <we/context.hpp>
 #include <we/loader/loader.hpp>
@@ -611,7 +610,41 @@ public:
     }
     const std::size_t netd_nthreads (fhg_kernel()->get ("netd_nthreads", 4L));
     const std::string netd_url (fhg_kernel()->get ("netd_url", "tcp://*"));
-    kvs::KeyValueStore* kvs (fhg_kernel()->acquire<kvs::KeyValueStore> ("kvs"));
+
+    const std::string kvs_host (fhg_kernel()->get ("kvs_host", "localhost"));
+    const std::string kvs_port (fhg_kernel()->get ("kvs_port", "2439"));
+    const unsigned int kvs_max_ping_failed (fhg_kernel ()->get ("kvs_max_ping_failed", 3));
+    const boost::posix_time::time_duration kvs_ping_interval
+      ( boost::posix_time::duration_from_string
+        ( fhg_kernel ()->get<std::string>
+          ( "kvs_ping"
+          , boost::posix_time::to_simple_string (boost::posix_time::seconds (5))
+          )
+        )
+      );
+    const boost::posix_time::time_duration kvs_timeout
+      ( boost::posix_time::duration_from_string
+        ( fhg_kernel ()->get<std::string>
+          ( "kvs_timeout"
+          , boost::posix_time::to_simple_string (boost::posix_time::seconds (120))
+          )
+        )
+      );
+
+    fhg::com::kvs::get_or_create_global_kvs
+      ( !kvs_host.empty() ? kvs_host : throw std::runtime_error ("kvs host empty")
+      , !kvs_port.empty() ? kvs_port : throw std::runtime_error ("kvs port empty")
+      , true // auto_reconnect
+      , kvs_timeout
+      , 1 // max_connection_attempts
+      );
+
+    _kvs_keep_alive = new fhg::util::keep_alive
+      ( boost::bind (&fhg::com::kvs::client::kvsc::ping, fhg::com::kvs::global_kvs())
+      , boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel())
+      , kvs_max_ping_failed
+      , kvs_ping_interval
+      );
 
     gspc::net::initialize (netd_nthreads);
 
@@ -827,6 +860,11 @@ public:
 
     gspc::net::shutdown ();
 
+    delete _kvs_keep_alive;
+    _kvs_keep_alive = NULL;
+
+    delete *fhg::com::kvs::global::get_kvs_info_ptr();
+    *fhg::com::kvs::global::get_kvs_info_ptr() = NULL;
 
     FHG_PLUGIN_STOPPED();
   }
@@ -1739,6 +1777,9 @@ private:
     }
   }
 
+  //! \todo don't be pointer!
+  fhg::util::keep_alive* _kvs_keep_alive;
+
   bool m_shutting_down;
   bool m_terminate_on_failure;
 
@@ -1786,6 +1827,6 @@ EXPORT_FHG_PLUGIN( drts
                  , "Alexander Petry <petry@itwm.fhg.de>"
                  , "0.0.1"
                  , "NA"
-                 , "kvs"
+                 , ""
                  , ""
                  );

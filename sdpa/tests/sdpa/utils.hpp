@@ -125,8 +125,8 @@ namespace utils
       boost::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
       kernel->set_name (drtsName);
 
-      kernel->put ("plugin.kvs.host", kvsHost);
-      kernel->put ("plugin.kvs.port", kvsPort);
+      kernel->put ("plugin.drts.kvs_host", kvsHost);
+      kernel->put ("plugin.drts.kvs_port", kvsPort);
 
       //see ~/.sdpa/configs/sdpa.rc
 
@@ -139,7 +139,6 @@ namespace utils
 
       kernel->put ("plugin.drts.library_path", strModulesPath);
 
-      kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
       kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
       kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
 

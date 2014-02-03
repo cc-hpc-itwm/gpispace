@@ -306,7 +306,7 @@ function setup_state ()
 
 function setup_kvs ()
 {
-    put "plugin.kvs.port" $(get "plugin.kvs.port" "${DEFAULT_KVS_PORT:?}")
+    put "plugin.drts.kvs_port" $(get "plugin.drts.kvs_port" "${DEFAULT_KVS_PORT:?}")
 
     log "I: kvs setup"
 
@@ -825,7 +825,7 @@ function generate_environment ()
         return 1
     fi
 
-    kvs_port=$(get "plugin.kvs.port")
+    kvs_port=$(get "plugin.drts.kvs_port")
     if [ -z "$kvs_port" ] ; then
         log "E: could not get kvs port from config!"
         return 1
@@ -1224,7 +1224,7 @@ function start_kvs ()
         log "E: kvs must be started on the master node"
         exit 1
     fi
-    kvs_port=$(get "plugin.kvs.port")
+    kvs_port=$(get "plugin.drts.kvs_port")
     if [ -z "$kvs_port" ] ; then
         log "E: could not get kvs port from config!"
         return 1
@@ -1681,7 +1681,7 @@ function start_gpi ()
     fi
     local log_host=$(echo "$log_url" | cut -d ':' -f 1)
 
-    local kvs_port=$(get "plugin.kvs.port" "2439")
+    local kvs_port=$(get "plugin.drts.kvs_port" "2439")
 
     if [ x"$gpi_enabled" = x"true" ] ; then
         if ! status_kvs ; then
