@@ -15,7 +15,6 @@ set (core_srcs
   core/kernel.cpp
   core/plugin_kernel_mediator.cpp
   core/license.cpp
-  setup_and_run_fhgkernel.cpp
 )
 
 add_library(fhg-plugin ${core_srcs})
