@@ -471,7 +471,7 @@ namespace fhg
             std::map<std::string, std::string>  v (list (k));
             if (v.size() == 1)
             {
-              return boost::lexical_cast<std::string>(v.begin()->second);
+              return v.begin()->second;
             }
             else
             {
