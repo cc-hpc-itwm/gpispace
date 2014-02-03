@@ -74,15 +74,7 @@ namespace fhg
 
     int PluginKernelMediator::load_plugin (std::string const &path)
     {
-      try
-      {
-        return m_kernel->load_plugin(path);
-      }
-      catch (std::exception const & ex)
-      {
-        LOG(ERROR, "could not load plugin from " << path << ": " << ex.what());
-        return -EINVAL;
-      }
+      return m_kernel->load_plugin(path);
     }
 
     int PluginKernelMediator::shutdown ()
