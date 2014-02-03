@@ -51,10 +51,7 @@ public:
     if (start_synchronous)
     {
       LOG(INFO, "gpi plugin starting in synchronous mode, this might take forever!");
-      while (!try_start())
-      {
-        boost::this_thread::sleep (boost::posix_time::seconds (2));
-      }
+      restart_loop();
     }
     else
     {
