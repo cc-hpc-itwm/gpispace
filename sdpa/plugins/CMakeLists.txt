@@ -10,13 +10,6 @@ fhg_add_plugin(kvs kvs.cpp
   HEADERS kvs.hpp
 )
 
-fhg_add_plugin(kvs_dummy kvs_dummy.cpp
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  INSTALL
-  HEADERS kvs.hpp
-)
-
 fhg_add_plugin(sdpac sdpac.cpp
   LINK_LIBRARIES sdpa
                  ${FhgCom_LIBRARY}
