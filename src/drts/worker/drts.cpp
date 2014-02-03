@@ -599,8 +599,6 @@ public:
     const boost::optional<std::string> gui_url
       (boost::make_optional (!gui_url_.empty(), gui_url_));
     WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name, gspc::net::server::default_service_demux()));
-    //! \note optional
-    fhg::plugin::Capability* cap (fhg_kernel()->acquire< fhg::plugin::Capability>("gpi"));
     fhg::com::host_t host (fhg_kernel()->get("host", "*"));
     fhg::com::port_t port (fhg_kernel()->get("port", "0"));
     {
@@ -698,29 +696,6 @@ public:
                           )
           );
       }
-    }
-
-    // TODO: add
-    //
-    //      acquire_all<T>() -> [(name, T*)]
-    //
-    // to get access to all plugins of a particular type
-    if (cap)
-    {
-      MLOG( INFO, "gained capability: " << cap->capability_name()
-          << " of type " << cap->capability_type()
-          );
-
-      boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
-      m_capabilities.insert
-        (std::make_pair ( cap->capability_name()
-                        , std::make_pair (sdpa::Capability ( cap->capability_name ()
-                                                           , cap->capability_type ()
-                                                           )
-                                         , cap
-                                         )
-                        )
-        );
     }
 
     assert (! m_event_thread);
