@@ -164,13 +164,7 @@ namespace fhg
                                  )
         );
 
-      rc = p->init();
-      if (rc)
-      {
-        throw std::runtime_error("something went wrong during plugin initialization");
-      }
-
-      rc = m->start ();
+      rc = p->init (m.get());
       if (rc == START_SUCCESSFUL) // started
       {
         {

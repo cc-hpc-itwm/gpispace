@@ -123,7 +123,7 @@ namespace fhg
       }
     }
 
-    int plugin_t::init ()
+    int plugin_t::init (fhg::plugin::Kernel *kernel)
     {
       char *error;
       fhg_plugin_create create_plugin;
@@ -138,21 +138,10 @@ namespace fhg
 
       m_plugin = create_plugin();
       dlerror();
-      return 0;
-    }
 
-    int plugin_t::start (fhg::plugin::Kernel *kernel)
-    {
-      if (m_plugin)
-      {
-        m_kernel = kernel;
-        m_started = true;
-        return m_plugin->fhg_plugin_start_entry(m_kernel);
-      }
-      else
-      {
-        return -EINVAL;
-      }
+      m_kernel = kernel;
+      m_started = true;
+      return m_plugin->fhg_plugin_start_entry(m_kernel);
     }
 
     int plugin_t::stop ()
