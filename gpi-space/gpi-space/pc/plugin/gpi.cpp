@@ -20,6 +20,7 @@ public:
   GpiPluginImpl()
     : Capability ("GPI", "PGAS")
     , api ("")
+    , _try_start_loop (NULL)
   {}
 
   virtual ~GpiPluginImpl()
@@ -29,14 +30,25 @@ public:
 
   FHG_PLUGIN_START()
   {
-    api.path (fhg_kernel()->get( "socket"
-                               , "/var/tmp/S-gpi-space."
-                               + boost::lexical_cast<std::string>(getuid())
-                               + "."
-                               + boost::lexical_cast<std::string>(0) // numa socket
-                               )
-             );
-    if (fhg_kernel()->get("startmode", "nowait")  == "wait")
+    const std::string socket_path
+      ( fhg_kernel()->get ( "socket"
+                          , "/var/tmp/S-gpi-space."
+                          + boost::lexical_cast<std::string>(getuid())
+                          + "."
+                          + boost::lexical_cast<std::string>(0) // numa socket
+                          )
+      );
+   const bool start_synchronous
+      (fhg_kernel()->get("startmode", "nowait") == "wait");
+   boost::optional<std::size_t> max_retries_until_defer_startup
+     ( start_synchronous
+     ? boost::optional<std::size_t>()
+     : fhg_kernel()->get<std::size_t> ("retries_to_defer", "1")
+     );
+
+    api.path (socket_path);
+
+    if (start_synchronous)
     {
       LOG(INFO, "gpi plugin starting in synchronous mode, this might take forever!");
       while (!try_start())
@@ -52,9 +64,7 @@ public:
     else
     {
       std::size_t retries_until_defer_startup
-        (fhg_kernel()->get<std::size_t>("retries_to_defer", "1"));
-      if (0 == retries_until_defer_startup)
-        retries_until_defer_startup = 1;
+        (std::max (max_retries_until_defer_startup.get_value_or (0), std::size_t (1)));
 
       bool connected = false;
 
@@ -76,12 +86,7 @@ public:
 
       if (! connected)
       {
-        fhg_kernel()->schedule( "connect"
-                              , boost::bind ( &GpiPluginImpl::restart_loop
-                                            , this
-                                            )
-                              , 0
-                              );
+        _try_start_loop = new boost::thread (&GpiPluginImpl::restart_loop, this);
       }
     }
     FHG_PLUGIN_STARTED();
@@ -89,6 +94,16 @@ public:
 
   FHG_PLUGIN_STOP()
   {
+    if (_try_start_loop)
+    {
+      _try_start_loop->interrupt();
+      if (_try_start_loop->joinable())
+      {
+        _try_start_loop->join();
+      }
+      delete _try_start_loop;
+      _try_start_loop = NULL;
+    }
     api.stop();
     FHG_PLUGIN_STOPPED();
   }
@@ -226,19 +241,16 @@ private:
 
   void restart_loop ()
   {
-    if (! try_start())
+    while (! try_start())
     {
-      fhg_kernel()->schedule( "connect"
-                            , boost::bind ( &GpiPluginImpl::restart_loop
-                                          , this
-                                          )
-                            , 5
-                            );
+      boost::this_thread::sleep (boost::posix_time::milliseconds (2500));
     }
   }
 
   mutable mutex_type     m_state_mtx;
   gpi::pc::client::api_t api;
+
+  boost::thread* _try_start_loop;
 };
 
 EXPORT_FHG_PLUGIN( gpi
