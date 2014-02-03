@@ -182,7 +182,6 @@ namespace utils
       {
         _thread.join();
       }
-      _kernel->unload_all();
     }
 
     boost::shared_ptr<fhg::core::kernel_t> _kernel;
