@@ -29,8 +29,6 @@ namespace fhg
 
       std::string get(std::string const & key, std::string const &dflt) const;
 
-      int load_plugin (std::string const &path);
-
       int kill ();
       int terminate ();
       int shutdown ();

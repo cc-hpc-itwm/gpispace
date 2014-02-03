@@ -72,11 +72,6 @@ namespace fhg
       return m_kernel->get("plugin." + m_plugin->name() + "." + key, dflt);
     }
 
-    int PluginKernelMediator::load_plugin (std::string const &path)
-    {
-      return m_kernel->load_plugin(path);
-    }
-
     int PluginKernelMediator::shutdown ()
     {
       DLOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");
