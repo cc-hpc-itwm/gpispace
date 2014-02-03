@@ -1,6 +1,6 @@
 #define BOOST_TEST_MODULE SynchronizedQueue
 
-#include <sdpa/sdpa/daemon/SynchronizedQueue.hpp>
+#include <sdpa/daemon/SynchronizedQueue.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
