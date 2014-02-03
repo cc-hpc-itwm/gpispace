@@ -1738,13 +1738,4 @@ private:
   fhg::thread::set _registration_threads;
 };
 
-EXPORT_FHG_PLUGIN( drts
-                 , DRTSImpl
-                 , "DRTS"
-                 , "provides access to the distributed runtime-system"
-                 , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "0.0.1"
-                 , "NA"
-                 , ""
-                 , ""
-                 );
+EXPORT_FHG_PLUGIN (drts, DRTSImpl, "");

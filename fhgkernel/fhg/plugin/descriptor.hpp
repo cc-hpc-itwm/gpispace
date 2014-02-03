@@ -4,15 +4,7 @@
 struct fhg_plugin_descriptor_t
 {
   const char *name;
-  const char *description;
-  const char *author;
-  const char *version;
-  const char *tstamp;
-  const char *license;
   const char *depends;
-  const char *featurekey;
-  // >= version 1.1
-  const char *provides;
 };
 
 #endif

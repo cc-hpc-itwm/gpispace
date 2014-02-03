@@ -29,21 +29,14 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
 #define FHG_ON_PLUGIN_UNLOAD(p) void fhg_on_plugin_unload(std::string const &p)
 #define FHG_ON_PLUGIN_PREUNLOAD(p) void fhg_on_plugin_preunload(std::string const &p)
 
-#define EXPORT_FHG_PLUGIN(name, cls, provides, desc, author, version, license, depends, key) \
+#define EXPORT_FHG_PLUGIN(name, cls, depends)                           \
   extern "C"                                                            \
   {                                                                     \
     const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor()        \
     {                                                                   \
       static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =     \
         { #name,                                                        \
-          desc,                                                         \
-          author,                                                       \
-          version,                                                      \
-          __DATE__ " " __TIME__,                                        \
-          license,                                                      \
           depends,                                                      \
-          key,                                                          \
-          provides                                                      \
         };                                                              \
       return &fhg_plugin_descriptor_##name;                             \
     }                                                                   \
