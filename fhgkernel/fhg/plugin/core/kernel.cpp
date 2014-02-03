@@ -44,7 +44,7 @@ namespace fhg
       if (m_running)
       {
         stop ();
-        wait_until_stopped ();
+        m_stopped.wait();
       }
 
       // unload all non-static plugins according to dependency graph
@@ -320,11 +320,6 @@ namespace fhg
     {
       m_stop_requested = true;
       _stop_request.notify();
-    }
-
-    void kernel_t::wait_until_stopped ()
-    {
-      m_stopped.wait();
     }
 
     int kernel_t::run ()

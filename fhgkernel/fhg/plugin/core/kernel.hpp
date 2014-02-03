@@ -31,7 +31,6 @@ namespace fhg
       int run_and_unload (bool do_unload);
 
       void stop ();
-      void wait_until_stopped ();
 
       int load_plugin (std::string const & entity);
       int load_plugin_by_name (std::string const & name);
