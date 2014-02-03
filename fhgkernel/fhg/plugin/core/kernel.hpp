@@ -53,7 +53,6 @@ namespace fhg
       std::string get(std::string const & key, std::string const &dflt) const;
       std::string put(std::string const & key, std::string const &value);
 
-      void set_name (std::string const &n);
       std::string const & get_name () const;
     private:
       void require_dependencies (fhg::core::plugin_t::ptr_t const &);

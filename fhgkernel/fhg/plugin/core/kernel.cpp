@@ -403,10 +403,5 @@ namespace fhg
     {
       return m_name;
     }
-
-    void kernel_t::set_name (std::string const &n)
-    {
-      m_name = n;
-    }
   }
 }
