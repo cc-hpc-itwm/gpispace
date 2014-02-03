@@ -863,9 +863,6 @@ public:
     delete _kvs_keep_alive;
     _kvs_keep_alive = NULL;
 
-    delete *fhg::com::kvs::global::get_kvs_info_ptr();
-    *fhg::com::kvs::global::get_kvs_info_ptr() = NULL;
-
     FHG_PLUGIN_STOPPED();
   }
 
