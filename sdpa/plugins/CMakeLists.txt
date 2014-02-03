@@ -1,15 +1,5 @@
 include(fhg_plugin_macros)
 
-fhg_add_plugin(kvsd kvsd.cpp
-  LINK_LIBRARIES ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY_SHARED}
-                 fhg-util
-                 ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  INSTALL
-)
-
 fhg_add_plugin(kvs kvs.cpp
   LINK_LIBRARIES fhg-util
                  ${FhgCom_LIBRARY}
