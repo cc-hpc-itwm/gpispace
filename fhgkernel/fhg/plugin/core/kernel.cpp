@@ -339,13 +339,6 @@ namespace fhg
       m_running = true;
       m_failed_path_cache.clear ();
 
-      const bool daemonize
-        (boost::lexical_cast<bool>(get("kernel.daemonize", "0")));
-      if (daemonize)
-      {
-        fhg::util::fork_and_daemonize_child_and_abandon_parent();
-      }
-
       _stop_request.wait();
 
       if (unload_at_end)
