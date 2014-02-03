@@ -11,35 +11,14 @@ namespace fhg
 {
   namespace core
   {
-    namespace permission
-    {
-      enum code
-        {
-          PRIVILEGED = 0,
-
-          SHUTDOWN  = 50,
-          TERMINATE = 100,
-
-          PLUGIN_MANAGEMENT = 200,
-          PLUGIN_LOAD = 201,
-          PLUGIN_UNLOAD = 202,
-        };
-    };
-
     PluginKernelMediator::PluginKernelMediator ( fhg::core::plugin_t::ptr_t const & p
                                                , kernel_t *k
-                                               , bool privileged
                                                )
       : m_plugin(p)
       , m_kernel(k)
     {
       assert (m_plugin);
       assert (m_kernel);
-
-      if (privileged)
-      {
-        m_permissions.insert (permission::PRIVILEGED);
-      }
     }
 
     int PluginKernelMediator::start ()
@@ -93,106 +72,57 @@ namespace fhg
       return m_kernel->get("plugin." + m_plugin->name() + "." + key, dflt);
     }
 
-    bool PluginKernelMediator::is_privileged () const
-    {
-      return m_permissions.find (0) != m_permissions.end ();
-    }
-
-    bool PluginKernelMediator::has_permission (int p) const
-    {
-      return is_privileged () || m_permissions.find (p) != m_permissions.end ();
-    }
-
     int PluginKernelMediator::load_plugin (std::string const &path)
     {
-      if (  has_permission (permission::PLUGIN_MANAGEMENT)
-         || has_permission (permission::PLUGIN_LOAD)
-         )
+      try
       {
-        try
-        {
-          return m_kernel->load_plugin(path);
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not load plugin from " << path << ": " << ex.what());
-          return -EINVAL;
-        }
+        return m_kernel->load_plugin(path);
       }
-      else
+      catch (std::exception const & ex)
       {
-        return -EPERM;
+        LOG(ERROR, "could not load plugin from " << path << ": " << ex.what());
+        return -EINVAL;
       }
     }
 
     int PluginKernelMediator::unload_plugin (std::string const &name)
     {
-      if (  has_permission (permission::PLUGIN_MANAGEMENT)
-         || has_permission (permission::PLUGIN_UNLOAD)
-         )
+      try
       {
-        try
-        {
-          return m_kernel->unload_plugin(name);
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not unload plugin " << name << ": " << ex.what());
-          return -EINVAL;
-        }
+        return m_kernel->unload_plugin(name);
       }
-      else
+      catch (std::exception const & ex)
       {
-        return -EPERM;
+        LOG(ERROR, "could not unload plugin " << name << ": " << ex.what());
+        return -EINVAL;
       }
     }
 
     int PluginKernelMediator::shutdown ()
     {
-      if (has_permission (permission::SHUTDOWN))
-      {
-        DLOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");
-        m_kernel->stop();
-        return 0;
-      }
-      else
-      {
-        return -EPERM;
-      }
+      DLOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");
+      m_kernel->stop();
+      return 0;
     }
 
     int PluginKernelMediator::kill ()
     {
-      if (has_permission(permission::TERMINATE))
-      {
-        LOG (WARN
-            , "plugin `" << m_plugin->name()
-            << "' requested to terminate the kernel!"
-            );
-        ::kill (SIGKILL, getpid ());
-        return 0;
-      }
-      else
-      {
-        return -EPERM;
-      }
+      LOG (WARN
+          , "plugin `" << m_plugin->name()
+          << "' requested to terminate the kernel!"
+          );
+      ::kill (SIGKILL, getpid ());
+      return 0;
     }
 
     int PluginKernelMediator::terminate ()
     {
-      if (has_permission(permission::TERMINATE))
-      {
-        LOG (WARN
-            , "plugin `" << m_plugin->name()
-            << "' requested to terminate the kernel!"
-            );
-        ::kill (SIGTERM, getpid ());
-        return 0;
-      }
-      else
-      {
-        return -EPERM;
-      }
+      LOG (WARN
+          , "plugin `" << m_plugin->name()
+          << "' requested to terminate the kernel!"
+          );
+      ::kill (SIGTERM, getpid ());
+      return 0;
     }
 
     std::string const & PluginKernelMediator::get_name () const

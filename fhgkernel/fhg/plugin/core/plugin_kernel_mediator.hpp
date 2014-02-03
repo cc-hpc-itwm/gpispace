@@ -17,7 +17,6 @@ namespace fhg
     public:
       PluginKernelMediator ( fhg::core::plugin_t::ptr_t const & plugin
                            , kernel_t *kernel
-                           , bool privileged = false
                            );
 
       virtual fhg::plugin::Plugin * acquire(std::string const & name);
@@ -39,12 +38,8 @@ namespace fhg
 
       std::string const & get_name () const;
     private:
-      bool is_privileged () const;
-      bool has_permission(int) const;
-
       fhg::core::plugin_t::ptr_t m_plugin;
       fhg::core::kernel_t *m_kernel;
-      std::set <int> m_permissions;
     };
   }
 }
