@@ -44,11 +44,11 @@ public:
       , 1 // max_connection_attempts
       );
 
-    _kvs_client_impl = new fhg::com::kvs::pinging_kvs_client
-      ( ping_interval
-      , max_ping_failed
+    _keep_alive = new fhg::com::kvs::keep_alive
+      ( boost::bind (&fhg::com::kvs::client::kvsc::ping, fhg::com::kvs::global_kvs())
       , boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel())
-      , fhg::com::kvs::global_kvs()
+      , max_ping_failed
+      , ping_interval
       );
 
     FHG_PLUGIN_STARTED();
@@ -65,8 +65,8 @@ public:
 
   FHG_PLUGIN_STOP()
   {
-    delete _kvs_client_impl;
-    _kvs_client_impl = NULL;
+    delete _keep_alive;
+    _keep_alive = NULL;
 
     delete *fhg::com::kvs::global::get_kvs_info_ptr();
     *fhg::com::kvs::global::get_kvs_info_ptr() = NULL;
@@ -76,7 +76,7 @@ public:
 
   value_type get (key_type const & k, value_type const &dflt) const
   {
-    std::map<std::string, std::string>  v (_kvs_client_impl->list (k));
+    std::map<std::string, std::string>  v (list (k));
     if (v.size() == 1)
     {
       return v.begin()->second;
@@ -90,32 +90,32 @@ public:
 
   void put (key_type const & k, value_type const &value)
   {
-    _kvs_client_impl->put (k, value);
+    fhg::com::kvs::global_kvs()->put (k, value);
   }
 
   void del (key_type const & k)
   {
-    _kvs_client_impl->del (k);
+    fhg::com::kvs::global_kvs()->del (k);
   }
 
   int inc (key_type const & k, int step)
   {
-    return _kvs_client_impl->inc (k, step);
+    return fhg::com::kvs::global_kvs()->inc (k, step);
   }
 
   key_value_map_type list() const
   {
-    return _kvs_client_impl->list ("");
+    return fhg::com::kvs::global_kvs()->list ("");
   }
 
   key_value_map_type list (key_type const &prefix) const
   {
-    return _kvs_client_impl->list (prefix);
+    return fhg::com::kvs::global_kvs()->list (prefix);
   }
 
 private:
   //! \todo don't be pointer!
-  fhg::com::kvs::pinging_kvs_client* _kvs_client_impl;
+  fhg::com::kvs::keep_alive* _keep_alive;
 };
 
 
