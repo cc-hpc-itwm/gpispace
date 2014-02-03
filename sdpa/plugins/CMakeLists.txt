@@ -29,11 +29,3 @@ fhg_add_plugin(net net.cpp
   INSTALL
   HEADERS net.hpp
 )
-
-fhg_add_plugin(sdpactl sdpactl.cpp
-  LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  INSTALL
-  HEADERS sdpactl.hpp
-)

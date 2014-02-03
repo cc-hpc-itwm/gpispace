@@ -7,3 +7,11 @@ fhg_add_plugin(logd logd.cpp observable.cpp
                  ${Boost_SYSTEM_LIBRARY}
   INSTALL
 )
+
+fhg_add_plugin(sdpactl sdpactl.cpp
+  LINK_LIBRARIES ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+  INSTALL
+  HEADERS sdpactl.hpp
+)
