@@ -128,5 +128,5 @@ int main(int ac, char **av)
   signal_handlers.add (SIGTERM, boost::bind (&fhg::core::kernel_t::stop, &kernel));
   signal_handlers.add (SIGINT, boost::bind (&fhg::core::kernel_t::stop, &kernel));
 
-  return kernel.run_and_unload (false);
+  return kernel.run();
 }

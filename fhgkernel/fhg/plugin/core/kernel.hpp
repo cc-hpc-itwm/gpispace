@@ -27,8 +27,7 @@ namespace fhg
                );
       ~kernel_t ();
 
-      int run ();
-      int run_and_unload (bool do_unload);
+      int run();
 
       void stop ();
 

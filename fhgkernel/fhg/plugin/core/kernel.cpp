@@ -322,12 +322,7 @@ namespace fhg
       _stop_request.notify();
     }
 
-    int kernel_t::run ()
-    {
-      return this->run_and_unload (true);
-    }
-
-    int kernel_t::run_and_unload (bool unload_at_end)
+    int kernel_t::run()
     {
       assert (! m_running);
 
@@ -335,11 +330,6 @@ namespace fhg
       m_failed_path_cache.clear ();
 
       _stop_request.wait();
-
-      if (unload_at_end)
-      {
-        unload_all ();
-      }
 
       m_running = false;
 
