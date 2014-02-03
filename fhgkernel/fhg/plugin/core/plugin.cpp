@@ -152,7 +152,7 @@ namespace fhg
       }
       else if (m_started)
       {
-        int rc = m_plugin->fhg_plugin_stop_entry(m_kernel);
+        int rc = m_plugin->fhg_plugin_stop();
 
         if (rc == 0)
         {
