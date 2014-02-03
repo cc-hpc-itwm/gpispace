@@ -11,7 +11,6 @@ int setup_and_run_fhgkernel ( bool daemonize
                             , bool keep_going
                             , std::vector<std::string> mods_to_load
                             , std::vector<std::string> config_vars
-                            , std::string state_path
                             , std::string pidfile
                             , std::string kernel_name
                             , fhg::core::kernel_t::search_path_t search_path

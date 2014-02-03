@@ -21,7 +21,6 @@ int main(int ac, char **av)
 
   std::vector<std::string> mods_to_load;
   std::vector<std::string> config_vars;
-  std::string state_path;
   std::string pidfile;
   std::string kernel_name ("fhgkernel");
   fhg::core::kernel_t::search_path_t search_path;
@@ -30,7 +29,6 @@ int main(int ac, char **av)
     ("help,h", "this message")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
     ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
-    ("state,S", po::value<std::string>(&state_path), "state directory to use")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
     ( "keep-going,k", "just log errors, but do not refuse to start")
@@ -74,7 +72,6 @@ int main(int ac, char **av)
                                  , vm.count ("keep-going")
                                  , mods_to_load
                                  , config_vars
-                                 , state_path
                                  , pidfile
                                  , kernel_name
                                  , search_path

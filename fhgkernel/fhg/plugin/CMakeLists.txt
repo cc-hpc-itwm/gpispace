@@ -8,15 +8,12 @@ set(hdrs
   plugin.hpp
   kernel.hpp
   capability.hpp
-  storage.hpp
 )
 
 set (core_srcs
   core/plugin.cpp
   core/kernel.cpp
   core/plugin_kernel_mediator.cpp
-  core/file_storage.cpp
-  core/null_storage.cpp
   core/license.cpp
   setup_and_run_fhgkernel.cpp
 )

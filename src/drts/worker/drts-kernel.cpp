@@ -74,7 +74,6 @@ int main(int ac, char **av)
                                  , vm.count ("keep-going")
                                  , mods_to_load
                                  , config_vars
-                                 , ""
                                  , pidfile
                                  , kernel_name
                                  , search_path

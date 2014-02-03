@@ -12,8 +12,6 @@
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/core/kernel.hpp>
-#include <fhg/plugin/core/null_storage.hpp>
-#include <fhg/plugin/core/file_storage.hpp>
 
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
@@ -32,27 +30,20 @@ namespace fhg
 {
   namespace core
   {
-    kernel_t::kernel_t (std::string const &state_path)
-      : m_state_path (state_path)
-      , m_stop_requested (false)
+    kernel_t::kernel_t()
+      : m_stop_requested (false)
       , m_running (false)
-      , m_storage (0)
     {
-      initialize_storage ();
     }
 
-    kernel_t::kernel_t ( std::string const& state_path
-                       , std::string const& name
+    kernel_t::kernel_t ( std::string const& name
                        , fhg::core::kernel_t::search_path_t search_path
                        )
-      : m_state_path (state_path)
-      , m_stop_requested (false)
+      : m_stop_requested (false)
       , m_running (false)
-      , m_storage (0)
       , m_name (name)
       , m_search_path (search_path)
     {
-      initialize_storage ();
     }
 
     kernel_t::~kernel_t ()
@@ -65,12 +56,6 @@ namespace fhg
 
       // unload all non-static plugins according to dependency graph
       unload_all ();
-
-      if (m_storage)
-      {
-        delete m_storage;
-        m_storage = 0;
-      }
     }
 
     plugin_t::ptr_t kernel_t::lookup_plugin(std::string const &name)
@@ -375,50 +360,6 @@ namespace fhg
     void kernel_t::wait_until_stopped ()
     {
       m_stopped.wait();
-    }
-
-    fhg::plugin::Storage* kernel_t::storage ()
-    {
-      return m_storage;
-    }
-
-    fhg::plugin::Storage* kernel_t::plugin_storage ()
-    {
-      return storage()->get_storage("plugin");
-    }
-
-    void kernel_t::initialize_storage()
-    {
-      assert (0 == m_storage);
-
-      if (! m_state_path.empty())
-      {
-        try
-        {
-          m_storage = new fhg::plugin::core::FileStorage ( m_state_path
-                                                         , O_CREAT
-                                                         );
-        }
-        catch (std::exception const &ex)
-        {
-          MLOG(ERROR, "could not create file storage: " << ex.what());
-          MLOG(WARN, "falling back to null-storage, persistence layer is not available!");
-        }
-      }
-
-      if (0 == m_storage)
-      {
-        m_storage = new fhg::plugin::core::NullStorage;
-      }
-
-      int ec = m_storage->add_storage("plugin");
-      if (0 != ec)
-      {
-        delete m_storage;
-        MLOG(ERROR, "could not create 'plugin' storage area: " << strerror(ec));
-        MLOG(WARN, "falling back to null-storage, persistence layer is not available!");
-        m_storage = new fhg::plugin::core::NullStorage;
-      }
     }
 
     int kernel_t::run ()

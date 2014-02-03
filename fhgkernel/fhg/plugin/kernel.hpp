@@ -9,7 +9,6 @@
 #include <boost/lexical_cast.hpp>
 
 #include <fhg/plugin/plugin_base.hpp>
-#include <fhg/plugin/storage.hpp>
 
 namespace fhg
 {
@@ -56,8 +55,6 @@ namespace fhg
       }
       virtual Plugin * acquire(std::string const & name) = 0;
       virtual void     release(std::string const & name) = 0;
-
-      virtual Storage *storage() = 0;
 
       virtual std::string get(std::string const & key, std::string const &dflt) const = 0;
 
