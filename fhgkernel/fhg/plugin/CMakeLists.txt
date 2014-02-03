@@ -35,7 +35,6 @@ install (TARGETS fhg-plugin-shared
   COMPONENT runtime
 )
 
-add_subdirectory(builtin)
 target_link_libraries (fhg-plugin ${FhgLog_LIBRARY})
 target_link_libraries (fhg-plugin-shared ${FhgLog_LIBRARY})
 
