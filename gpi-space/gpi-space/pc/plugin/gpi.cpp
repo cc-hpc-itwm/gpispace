@@ -53,12 +53,7 @@ public:
       LOG(INFO, "gpi plugin starting in synchronous mode, this might take forever!");
       while (!try_start())
       {
-        if (usleep (2 * 1000 * 1000) < 0)
-        {
-          int ec = errno;
-          LOG(ERROR, "usleep failed: " << strerror(ec));
-          FHG_PLUGIN_FAILED(EADDRNOTAVAIL);
-        }
+        boost::this_thread::sleep (boost::posix_time::seconds (2));
       }
     }
     else
@@ -76,7 +71,7 @@ public:
 
         if (! connected && retries_until_defer_startup)
         {
-          usleep(5000 * 1000);
+          boost::this_thread::sleep (boost::posix_time::seconds (5));
         }
         else
         {
