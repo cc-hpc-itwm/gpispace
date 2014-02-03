@@ -1,7 +1,6 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(hdrs
   descriptor.hpp
-  config.hpp
   plugin_base.hpp
   plugin.hpp
   kernel.hpp
