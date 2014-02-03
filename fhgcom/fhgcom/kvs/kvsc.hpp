@@ -431,6 +431,66 @@ namespace fhg
         const std::string key;
       };
 
+      class keep_alive
+      {
+      public:
+        keep_alive ( boost::function<bool()> check
+                   , boost::function<void()> on_fail
+                   , std::size_t maximum_failures
+                   , boost::posix_time::time_duration interval
+                   )
+          : _maximum_failures (maximum_failures)
+          , _failures()
+          , _interval (interval)
+          , _check (check)
+          , _on_fail (on_fail)
+          , _check_thread (&keep_alive::check, this)
+        {
+        }
+
+        ~keep_alive()
+        {
+          _check_thread.interrupt();
+          if (_check_thread.joinable())
+          {
+            _check_thread.join();
+          }
+        }
+
+        void check()
+        {
+          while (true)
+          {
+            if (!_check())
+            {
+              ++_failures;
+
+              if (_maximum_failures >= _failures)
+              {
+                _on_fail();
+                return;
+              }
+            }
+            else
+            {
+              _failures = 0;
+            }
+
+            boost::this_thread::sleep (_interval);
+          }
+        }
+
+        std::size_t _maximum_failures;
+        std::size_t _failures;
+
+        boost::posix_time::time_duration _interval;
+
+        boost::function<bool()> _check;
+        boost::function<void()> _on_fail;
+
+        boost::thread _check_thread;
+      };
+
       class pinging_kvs_client
       {
       public:
@@ -441,28 +501,19 @@ namespace fhg
                            , boost::function<void()> request_stop
                            , boost::posix_time::time_duration timeout
                            )
-          : _ping_interval (ping_interval)
-          , _counter_ping_failed (0)
-          , _max_ping_failed (max_ping_failed)
-          , _request_stop (request_stop)
-          , _kvs_client
+          : _kvs_client
             ( !host.empty() ? host : throw std::runtime_error ("kvs host empty")
             , !port.empty() ? port : throw std::runtime_error ("kvs port empty")
             , true // auto_reconnect
             , timeout
             , 1 // max_connection_attempts
             )
-          , _ping_thread (&pinging_kvs_client::check_for_ping, this)
+          , _keep_alive ( boost::bind (&client::kvsc::ping, &_kvs_client)
+                        , request_stop
+                        , max_ping_failed
+                        , ping_interval
+                        )
         {}
-
-        ~pinging_kvs_client()
-        {
-          _ping_thread.interrupt();
-          if (_ping_thread.joinable())
-          {
-            _ping_thread.join();
-          }
-        }
 
         std::string get (std::string const & k, std::string const &dflt) const
         {
@@ -499,39 +550,8 @@ namespace fhg
         }
 
       private:
-        void check_for_ping()
-        {
-          while (true)
-          {
-            if (!_kvs_client.ping())
-            {
-              ++_counter_ping_failed;
-
-              if (_counter_ping_failed >= _max_ping_failed)
-              {
-                MLOG (WARN, "lost connection to KVS, terminating...");
-                _request_stop();
-                return;
-              }
-            }
-            else
-            {
-              _counter_ping_failed = 0;
-            }
-
-            boost::this_thread::sleep (_ping_interval);
-          }
-        }
-
-        boost::posix_time::time_duration _ping_interval;
-        unsigned int _counter_ping_failed;
-        unsigned int _max_ping_failed;
-
-        boost::function<void()> _request_stop;
-
         fhg::com::kvs::client::kvsc _kvs_client;
-
-        boost::thread _ping_thread;
+        keep_alive _keep_alive;
       };
     }
   }
