@@ -11,7 +11,6 @@
 #include <fhg/assert.hpp>
 
 #include <fhg/plugin/core/exception.hpp>
-#include <fhg/plugin/magic.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/plugin.hpp>
 
@@ -240,20 +239,6 @@ namespace fhg
       {
         dlclose(handle);
         throw std::runtime_error("could not query plugin: no descriptor");
-      }
-
-      if (! force)
-      {
-        const std::string my_magic(FHG_PLUGIN_API_VERSION);
-        const std::string plugin_magic (desc->magic);
-        const std::string plugin_name (desc->name);
-
-        if (my_magic != plugin_magic)
-        {
-          dlclose(handle);
-          throw fhg::core::exception::plugin_version_magic_mismatch
-            (plugin_name, plugin_magic, my_magic);
-        }
       }
 
       return plugin_t::ptr_t( new plugin_t( desc->name

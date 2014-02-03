@@ -20,5 +20,3 @@ endif()
 
 # Reflect the package structure
 add_subdirectory(fhg)
-
-  add_subdirectory(tests)

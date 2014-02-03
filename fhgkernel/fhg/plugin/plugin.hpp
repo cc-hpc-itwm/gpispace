@@ -7,7 +7,6 @@
 #include <map>
 
 #include <fhg/assert.hpp>
-#include <fhg/plugin/magic.hpp>
 #include <fhg/plugin/descriptor.hpp>
 #include <fhg/plugin/plugin_base.hpp>
 #include <fhg/plugin/kernel.hpp>
@@ -35,8 +34,7 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
   const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor_##name()   \
   {                                                                     \
     static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =       \
-      { FHG_PLUGIN_API_VERSION,                                         \
-        #name,                                                          \
+      { #name,                                                          \
         desc,                                                           \
         author,                                                         \
         version,                                                        \
@@ -44,8 +42,6 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
         license,                                                        \
         depends,                                                        \
         key,                                                            \
-        FHG_PLUGIN_BUILD_REV,                                           \
-        FHG_PLUGIN_BUILD_COMPILER,                                      \
         provides                                                        \
       };                                                                \
     return &fhg_plugin_descriptor_##name;                               \
@@ -63,8 +59,7 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
     const fhg_plugin_descriptor_t *fhg_query_plugin_descriptor()        \
     {                                                                   \
       static fhg_plugin_descriptor_t fhg_plugin_descriptor_##name =     \
-        { FHG_PLUGIN_API_VERSION,                                       \
-          #name,                                                        \
+        { #name,                                                        \
           desc,                                                         \
           author,                                                       \
           version,                                                      \
@@ -72,8 +67,6 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
           license,                                                      \
           depends,                                                      \
           key,                                                          \
-          FHG_PLUGIN_BUILD_REV,                                         \
-          FHG_PLUGIN_BUILD_COMPILER,                                    \
           provides                                                      \
         };                                                              \
       return &fhg_plugin_descriptor_##name;                             \

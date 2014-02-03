@@ -3,7 +3,6 @@
 
 struct fhg_plugin_descriptor_t
 {
-  const char *magic;
   const char *name;
   const char *description;
   const char *author;
@@ -12,8 +11,6 @@ struct fhg_plugin_descriptor_t
   const char *license;
   const char *depends;
   const char *featurekey;
-  const char *buildrev;
-  const char *compiler;
   // >= version 1.1
   const char *provides;
 };
