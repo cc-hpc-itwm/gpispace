@@ -324,15 +324,6 @@ namespace fhg
       }
     }
 
-    void kernel_t::plugin_failed (std::string const &name, int ec)
-    {
-      LOG(ERROR, "plugin " << name << " failed with error-code: " << ec);
-      // inform all dependent plugins that a plugin failed
-      // this might be recursive
-      //    unload affected plugin
-      // we need an interface to tell the kernel to load/unload a plugin
-    }
-
     void kernel_t::require_dependencies (plugin_t::ptr_t const &plugin)
     {
       std::list<std::string> depends;
