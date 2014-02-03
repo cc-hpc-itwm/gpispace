@@ -85,19 +85,6 @@ namespace fhg
       }
     }
 
-    int PluginKernelMediator::unload_plugin (std::string const &name)
-    {
-      try
-      {
-        return m_kernel->unload_plugin(name);
-      }
-      catch (std::exception const & ex)
-      {
-        LOG(ERROR, "could not unload plugin " << name << ": " << ex.what());
-        return -EINVAL;
-      }
-    }
-
     int PluginKernelMediator::shutdown ()
     {
       DLOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");

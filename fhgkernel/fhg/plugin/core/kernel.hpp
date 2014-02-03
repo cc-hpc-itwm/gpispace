@@ -37,7 +37,6 @@ namespace fhg
       int load_plugin (std::string const & entity);
       int load_plugin_by_name (std::string const & name);
       int load_plugin_from_file (std::string const & file);
-      int unload_plugin (std::string const &name);
       bool is_plugin_loaded (std::string const &name);
 
       void unload_all ();

@@ -276,19 +276,6 @@ namespace fhg
       return m_plugins.find(name) != m_plugins.end();
     }
 
-    int kernel_t::unload_plugin (std::string const &name)
-    {
-      plugin_map_t::iterator it = m_plugins.find(name);
-      if (it != m_plugins.end())
-      {
-        return unload_plugin(it);
-      }
-      else
-      {
-        return -ESRCH;
-      }
-    }
-
     void kernel_t::require_dependencies (plugin_t::ptr_t const &plugin)
     {
       std::list<std::string> depends;
