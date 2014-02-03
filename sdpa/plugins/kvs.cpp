@@ -9,115 +9,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread.hpp>
 
-class pinging_kvs_client
-{
-public:
-  pinging_kvs_client ( std::string host
-                     , std::string port
-                     , boost::posix_time::time_duration ping_interval
-                     , unsigned int max_ping_failed
-                     , boost::function<void()> request_stop
-                     , boost::posix_time::time_duration timeout
-                     )
-    : _ping_interval (ping_interval)
-    , _counter_ping_failed (0)
-    , _max_ping_failed (max_ping_failed)
-    , _request_stop (request_stop)
-    , _kvs_client
-      ( !host.empty() ? host : throw std::runtime_error ("kvs host empty")
-      , !port.empty() ? port : throw std::runtime_error ("kvs port empty")
-      , true // auto_reconnect
-      , timeout
-      , 1 // max_connection_attempts
-      )
-    , _ping_thread (&pinging_kvs_client::check_for_ping, this)
-  {}
-
-  ~pinging_kvs_client()
-  {
-    _ping_thread.interrupt();
-    if (_ping_thread.joinable())
-    {
-      _ping_thread.join();
-    }
-  }
-
-  std::string get (std::string const & k, std::string const &dflt) const
-  {
-    try
-    {
-      std::map<std::string, std::string>  v (list (k));
-      if (v.size() == 1)
-      {
-        return boost::lexical_cast<std::string>(v.begin()->second);
-      }
-      else
-      {
-        throw std::runtime_error("kvs::get: returned 0 or more than 1 element");
-      }
-    }
-    catch (std::exception const & ex)
-    {
-      return dflt;
-    }
-  }
-
-  void put (std::string const & k, std::string const &value)
-  {
-    _kvs_client.put (k, value);
-  }
-
-  void del (std::string const & k)
-  {
-    _kvs_client.del (k);
-  }
-
-  int inc (std::string const & k, int step)
-  {
-    return _kvs_client.inc (k, step);
-  }
-
-  std::map<std::string, std::string> list (std::string const &prefix) const
-  {
-    return _kvs_client.get (prefix);
-  }
-
-private:
-  void check_for_ping()
-  {
-    while (true)
-    {
-      if (!_kvs_client.ping())
-      {
-        ++_counter_ping_failed;
-
-        if (_counter_ping_failed >= _max_ping_failed)
-        {
-          MLOG (WARN, "lost connection to KVS, terminating...");
-          _request_stop();
-          return;
-        }
-      }
-      else
-      {
-        _counter_ping_failed = 0;
-      }
-
-      boost::this_thread::sleep (_ping_interval);
-    }
-  }
-
-  boost::posix_time::time_duration _ping_interval;
-  unsigned int _counter_ping_failed;
-  unsigned int _max_ping_failed;
-
-  boost::function<void()> _request_stop;
-
-  fhg::com::kvs::client::kvsc _kvs_client;
-
-  boost::thread _ping_thread;
-};
-
 class KeyValueStorePlugin : FHG_PLUGIN
                           , public kvs::KeyValueStore
 {
@@ -145,7 +36,7 @@ public:
         )
       );
 
-    _kvs_client_impl = new pinging_kvs_client
+    _kvs_client_impl = new fhg::com::kvs::pinging_kvs_client
       ( host
       , port
       , ping_interval
@@ -208,7 +99,7 @@ public:
 
 private:
   //! \todo don't be pointer!
-  pinging_kvs_client* _kvs_client_impl;
+  fhg::com::kvs::pinging_kvs_client* _kvs_client_impl;
 };
 
 
