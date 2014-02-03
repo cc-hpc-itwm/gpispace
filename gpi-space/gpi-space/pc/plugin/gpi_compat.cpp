@@ -8,7 +8,9 @@
 #include <gpi-space/pc/type/flags.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -40,8 +42,14 @@ public:
       ( boost::lexical_cast<fvmSize_t>
         (fhg_kernel()->get<std::size_t> ("shm_size", 128U * (1<<20)))
       );
-    const useconds_t initialize_retry_interval
-      (fhg_kernel()->get<useconds_t> ("initialize_retry_interval", "2000000"));
+    const boost::posix_time::time_duration initialize_retry_interval
+      ( boost::posix_time::duration_from_string
+        ( fhg_kernel ()->get<std::string>
+          ( "initialize_retry_interval"
+          , boost::posix_time::to_simple_string (boost::posix_time::milliseconds (200))
+          )
+        )
+      );
     gpi::GPI* gpi_api (fhg_kernel()->acquire<gpi::GPI>("gpi"));
 
     gpi_compat = this;
@@ -171,7 +179,7 @@ public:
         }
         else
         {
-          usleep (m_initialize_retry_interval);
+          boost::this_thread::sleep (m_initialize_retry_interval);
         }
       }
     }
@@ -256,7 +264,7 @@ public:
   gpi::pc::type::handle_t            m_shm_hdl;
   gpi_state_t                        m_gpi_state;
 private:
-  useconds_t                         m_initialize_retry_interval;
+  boost::posix_time::time_duration   m_initialize_retry_interval;
   bool                               m_was_connected;
 };
 
