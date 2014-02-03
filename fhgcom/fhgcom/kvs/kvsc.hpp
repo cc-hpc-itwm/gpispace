@@ -466,20 +466,14 @@ namespace fhg
 
         std::string get (std::string const & k, std::string const &dflt) const
         {
-          try
+          std::map<std::string, std::string>  v (list (k));
+          if (v.size() == 1)
           {
-            std::map<std::string, std::string>  v (list (k));
-            if (v.size() == 1)
-            {
-              return v.begin()->second;
-            }
-            else
-            {
-              throw std::runtime_error("kvs::get: returned 0 or more than 1 element");
-            }
+            return v.begin()->second;
           }
-          catch (std::exception const & ex)
+          else
           {
+            //! \todo Should be throw: obviously bogus data.
             return dflt;
           }
         }
