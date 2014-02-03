@@ -33,52 +33,45 @@ class GPICompatPluginImpl : FHG_PLUGIN
   typedef boost::unique_lock<mutex_type> lock_type;
 public:
   FHG_PLUGIN_START()
+  try
   {
+    const std::string worker_name (fhg_kernel()->get_name());
+    const fvmSize_t shm_size
+      ( boost::lexical_cast<fvmSize_t>
+        (fhg_kernel()->get<std::size_t> ("shm_size", 128U * (1<<20)))
+      );
+    const useconds_t initialize_retry_interval
+      (fhg_kernel()->get<useconds_t> ("initialize_retry_interval", "2000000"));
+    gpi::GPI* gpi_api (fhg_kernel()->acquire<gpi::GPI>("gpi"));
+
     gpi_compat = this;
 
     m_gpi_state = ST_DISCONNECTED;
     m_shm_hdl = 0;
     m_shm_ptr = (void*)0;
     m_shm_id = 0;
+    m_shm_size = shm_size;
 
-    try
-    {
-      m_shm_size = boost::lexical_cast<fvmSize_t>
-        (fhg_kernel()->get<std::size_t>("shm_size", 128U * (1<<20)));
-    }
-    catch (std::exception const & ex)
-    {
-      LOG(ERROR, "could not parse plugin.gpi_compat.shm_size: " << ex.what());
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-
-    try
-    {
-      m_initialize_retry_interval =
-        fhg_kernel()->get<useconds_t>("initialize_retry_interval", "2000000");
-    }
-    catch (std::exception const &ex)
-    {
-      LOG( ERROR
-         , "could not parse plugin.gpi_compat.initialize_retry_interval: "
-         << ex.what()
-         );
-      FHG_PLUGIN_FAILED (EINVAL);
-    }
+    m_initialize_retry_interval = initialize_retry_interval;
 
     const std::string my_pid(boost::lexical_cast<std::string>(getpid()));
-    const std::string name_prefix (fhg_kernel()->get_name () + "-" + my_pid);
+    const std::string name_prefix (worker_name + "-" + my_pid);
     m_segment_name = name_prefix + "-shm";
     m_segment_handle_name = name_prefix + "-shm";
     m_global_handle_name = name_prefix + "-global";
     m_local_handle_name = name_prefix + "-local";
     m_scratch_handle_name = name_prefix + "-com";
 
-    api = fhg_kernel()->acquire<gpi::GPI>("gpi");
+    api = gpi_api;
 
     schedule_reinitialize_gpi ();
 
     FHG_PLUGIN_STARTED();
+  }
+  catch (std::runtime_error const& ex)
+  {
+    LOG (ERROR, ex.what());
+    FHG_PLUGIN_FAILED (-1);
   }
 
   FHG_PLUGIN_STOP()
