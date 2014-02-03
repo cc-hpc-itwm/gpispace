@@ -20,6 +20,5 @@ endif()
 
 # Reflect the package structure
 add_subdirectory(fhg)
-add_subdirectory(bin)
 
   add_subdirectory(tests)
