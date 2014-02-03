@@ -20,7 +20,6 @@ typedef fhg::plugin::Kernel* FHG_KERNEL_PTR;
 
 #define FHG_PLUGIN_START() int fhg_plugin_start ()
 #define FHG_PLUGIN_STARTED() return 0
-#define FHG_PLUGIN_INCOMPLETE() return 1
 #define FHG_PLUGIN_FAILED(err) fhg_assert(err > 0); return -err
 
 #define FHG_PLUGIN_STOP() int fhg_plugin_stop ()

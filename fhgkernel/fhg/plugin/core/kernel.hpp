@@ -64,7 +64,6 @@ namespace fhg
       std::string get(std::string const & key, std::string const &dflt) const;
       std::string put(std::string const & key, std::string const &value);
 
-      void plugin_start_completed(std::string const & name, int);
       void plugin_failed(std::string const &name, int);
 
       void set_name (std::string const &n);
@@ -72,7 +71,6 @@ namespace fhg
     private:
       void initialize_storage ();
       void require_dependencies (fhg::core::plugin_t::ptr_t const &);
-      void notify_plugin_load (std::string const & name);
 
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
@@ -86,7 +84,6 @@ namespace fhg
 
       mutable mutex_type m_mtx_plugins;
       mutable mutex_type m_mtx_load_plugin;
-      mutable mutex_type m_mtx_incomplete_plugins;
       mutable mutex_type m_mtx_config;
 
       std::string m_state_path;
@@ -94,7 +91,6 @@ namespace fhg
       fhg::util::thread::event<> _stop_request;
       bool m_running;
       plugin_map_t   m_plugins;
-      plugin_map_t   m_incomplete_plugins;
       plugin_names_t m_load_order;
 
       config_t m_config;

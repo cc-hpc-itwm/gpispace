@@ -27,7 +27,6 @@
 namespace fs = boost::filesystem;
 
 #define START_SUCCESSFUL 0
-#define START_INCOMPLETE 1
 
 namespace fhg
 {
@@ -239,14 +238,6 @@ namespace fhg
             other_mediator->plugin()->handle_plugin_loaded(p->name());
         }
       }
-      else if (rc == START_INCOMPLETE) // incomplete
-      {
-        lock_type plugins_lock (m_mtx_incomplete_plugins);
-        m_incomplete_plugins.insert (std::make_pair(p->name(), m));
-        m_load_order.push_back (p->name ());
-
-        MLOG(TRACE, "start of " << p->name() << " incomplete");
-      }
       else
       {
         m->stop();
@@ -333,37 +324,6 @@ namespace fhg
       }
     }
 
-    void kernel_t::plugin_start_completed(std::string const & name, int ec)
-    {
-      lock_type plugins_lock (m_mtx_incomplete_plugins);
-
-      plugin_map_t::iterator p_it (m_incomplete_plugins.find(name));
-      mediator_ptr m = p_it->second;
-      if (p_it == m_incomplete_plugins.end())
-      {
-        MLOG(WARN, "got completion event for illegal plugin: " << name);
-        return;
-      }
-      else
-      {
-        m_incomplete_plugins.erase (p_it);
-      }
-
-      if (ec)
-      {
-        m->stop();
-      }
-      else
-      {
-        lock_type plugins_lock (m_mtx_plugins);
-        m_plugins.insert (std::make_pair(name, m));
-
-        MLOG(TRACE, name << " plugin finished starting");
-
-        notify_plugin_load (name);
-      }
-    }
-
     void kernel_t::plugin_failed (std::string const &name, int ec)
     {
       LOG(ERROR, "plugin " << name << " failed with error-code: " << ec);
@@ -371,49 +331,6 @@ namespace fhg
       // this might be recursive
       //    unload affected plugin
       // we need an interface to tell the kernel to load/unload a plugin
-    }
-
-    void kernel_t::notify_plugin_load (std::string const & name)
-    {
-      // inform regular plugins
-      DMLOG(TRACE, "notifying plugins that " << name << " is now available...");
-      {
-        lock_type plugins_lock (m_mtx_plugins);
-        for ( plugin_map_t::iterator it (m_plugins.begin())
-            ; it != m_plugins.end()
-            ; ++it
-            )
-        {
-          it->second->plugin()->handle_plugin_loaded(name);
-        }
-      }
-
-      DMLOG(TRACE, "informing incomplete plugins that " << name << " is available ...");
-
-      // inform incomplete plugins
-      {
-        std::vector<mediator_ptr> to_inform;
-
-        {
-          lock_type lock (m_mtx_incomplete_plugins);
-          for ( plugin_map_t::iterator it (m_incomplete_plugins.begin())
-              ; it != m_incomplete_plugins.end()
-              ; ++it
-              )
-          {
-            to_inform.push_back(it->second);
-          }
-        }
-
-        for ( std::vector<mediator_ptr>::iterator it(to_inform.begin())
-            ; it != to_inform.end()
-            ; ++it
-            )
-        {
-          DMLOG(TRACE, "notifying " << (*it)->plugin()->name());
-          (*it)->plugin()->handle_plugin_loaded(name);
-        }
-      }
     }
 
     void kernel_t::require_dependencies (plugin_t::ptr_t const &plugin)
@@ -438,15 +355,6 @@ namespace fhg
 
     void kernel_t::unload_all ()
     {
-      {
-        lock_type plugins_lock (m_mtx_incomplete_plugins);
-        while (! m_incomplete_plugins.empty())
-        {
-          mediator_ptr m = m_incomplete_plugins.begin()->second;
-          m_incomplete_plugins.erase(m_incomplete_plugins.begin());
-        }
-      }
-
       {
         lock_type plugins_lock (m_mtx_plugins);
 

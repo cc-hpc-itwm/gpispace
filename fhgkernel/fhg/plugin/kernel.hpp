@@ -81,8 +81,6 @@ namespace fhg
         return get<T>(key, boost::lexical_cast<std::string>(dflt));
       }
 
-      virtual void start_completed(int) = 0;
-
       virtual int load_plugin (std::string const &path) = 0;
       virtual int unload_plugin (std::string const &name) = 0;
 

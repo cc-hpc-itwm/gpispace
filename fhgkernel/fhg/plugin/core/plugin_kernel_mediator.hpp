@@ -31,7 +31,6 @@ namespace fhg
       int stop ();
 
       std::string get(std::string const & key, std::string const &dflt) const;
-      void start_completed(int);
 
       int load_plugin (std::string const &path);
       int unload_plugin (std::string const &name);
