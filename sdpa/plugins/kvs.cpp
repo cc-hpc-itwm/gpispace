@@ -3,6 +3,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/read_bool.hpp>
+#include <fhg/util/keep_alive.hpp>
 
 #include <fhgcom/kvs/kvsc.hpp>
 
@@ -44,7 +45,7 @@ public:
       , 1 // max_connection_attempts
       );
 
-    _keep_alive = new fhg::com::kvs::keep_alive
+    _keep_alive = new fhg::util::keep_alive
       ( boost::bind (&fhg::com::kvs::client::kvsc::ping, fhg::com::kvs::global_kvs())
       , boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel())
       , max_ping_failed
@@ -115,7 +116,7 @@ public:
 
 private:
   //! \todo don't be pointer!
-  fhg::com::kvs::keep_alive* _keep_alive;
+  fhg::util::keep_alive* _keep_alive;
 };
 
 
