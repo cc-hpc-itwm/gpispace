@@ -767,8 +767,6 @@ public:
       }
     }
 
-    restore_jobs ();
-
     m_execution_thread.reset
       (new boost::thread(&DRTSImpl::job_execution_thread, this));
     fhg::util::set_threadname (*m_execution_thread, "[drts-execute]");
@@ -840,11 +838,6 @@ public:
 
     delete m_wfe;
     m_wfe = 0;
-
-    {
-      boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
-      fhg_kernel()->storage()->save("jobs", m_jobs);
-    }
 
     {
       while (not m_virtual_capabilities.empty())
@@ -1050,8 +1043,6 @@ public:
                    );
         m_jobs.insert (std::make_pair(job->id(), job));
 
-        fhg_kernel()->storage()->save("jobs", m_jobs);
-
         m_pending_jobs.put(job);
       }
     }
@@ -1162,8 +1153,6 @@ public:
 
     DMLOG(TRACE, "removing job " << e->job_id());
     m_jobs.erase (job_it);
-
-    fhg_kernel()->storage()->save("jobs", m_jobs);
   }
 
   virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e)
@@ -1202,8 +1191,6 @@ public:
 
     DMLOG(TRACE, "removing job " << e->job_id());
     m_jobs.erase (job_it);
-
-    fhg_kernel()->storage()->save("jobs", m_jobs);
   }
 
   // not implemented events
@@ -1325,8 +1312,6 @@ private:
         {
           DMLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
           m_jobs.erase(job_it);
-
-          fhg_kernel()->storage()->save("jobs", m_jobs);
         }
       }
     }
@@ -1510,49 +1495,6 @@ private:
                                                 , cap
                                                 )
         );
-    }
-  }
-
-  void restore_jobs()
-  {
-    map_of_jobs_t old_jobs;
-    fhg_kernel()->storage()->load("jobs", old_jobs);
-    for ( map_of_jobs_t::iterator it (old_jobs.begin()), end (old_jobs.end())
-        ; it != end
-        ; ++it
-        )
-    {
-      boost::shared_ptr<drts::Job> job (it->second);
-
-      switch (job->state())
-      {
-      case drts::Job::FINISHED:
-        {
-          boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
-          MLOG(INFO, "restoring information of finished job: " << job->id());
-          m_jobs[it->first] = job;
-        }
-        break;
-      case drts::Job::FAILED:
-        {
-          boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
-          MLOG(INFO, "restoring information of failed job: " << job->id());
-          m_jobs[it->first] = job;
-        }
-        break;
-      case drts::Job::PENDING:
-        MLOG(WARN, "ignoring old pending job: " << job->id());
-        break;
-      case drts::Job::RUNNING:
-        MLOG(WARN, "ignoring old running job: " << job->id());
-        break;
-      case drts::Job::CANCELED:
-        MLOG(WARN, "ignoring old canceled job: " << job->id());
-        break;
-      default:
-        MLOG(ERROR, "STRANGE job state: " << job->state());
-        break;
-      }
     }
   }
 
