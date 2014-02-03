@@ -30,7 +30,6 @@ namespace fhg
       , m_descriptor (my_desc)
       , m_flags (my_flags)
       , m_handle (my_handle)
-      , m_kernel (0)
       , m_started (false)
       , m_dependencies()
       , m_refcount(0)
@@ -139,9 +138,8 @@ namespace fhg
       m_plugin = create_plugin();
       dlerror();
 
-      m_kernel = kernel;
       m_started = true;
-      return m_plugin->fhg_plugin_start_entry(m_kernel);
+      return m_plugin->fhg_plugin_start_entry(kernel);
     }
 
     int plugin_t::stop ()

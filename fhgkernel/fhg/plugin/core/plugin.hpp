@@ -85,7 +85,6 @@ namespace fhg
       const fhg_plugin_descriptor_t *m_descriptor;
       int m_flags;
       void *m_handle;
-      fhg::plugin::Kernel *m_kernel;
 
       bool m_started;
       dependency_list_t m_dependencies;
