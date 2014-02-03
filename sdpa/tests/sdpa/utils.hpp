@@ -122,8 +122,8 @@ namespace utils
                        , const std::string& kvsPort
                        )
     {
-      boost::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
-      kernel->set_name (drtsName);
+      boost::shared_ptr<fhg::core::kernel_t> kernel
+        (new fhg::core::kernel_t (drtsName, fhg::core::kernel_t::search_path_t()));
 
       kernel->put ("plugin.drts.kvs_host", kvsHost);
       kernel->put ("plugin.drts.kvs_port", kvsPort);
