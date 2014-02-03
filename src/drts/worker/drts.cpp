@@ -875,10 +875,6 @@ public:
     }
   }
 
-  FHG_ON_PLUGIN_UNLOAD()
-  {
-  }
-
   FHG_ON_PLUGIN_PREUNLOAD(plugin)
   {
     boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
