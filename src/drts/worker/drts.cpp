@@ -621,7 +621,7 @@ public:
     m_server = gspc::net::serve
       (netd_url, gspc::net::server::default_queue_manager());
 
-    kvs->put ("gspc.net.url." + name, m_server->url());
+    fhg::com::kvs::global_kvs()->put ("gspc.net.url." + name, m_server->url());
 
 
     m_shutting_down = false;
