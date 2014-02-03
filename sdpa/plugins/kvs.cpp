@@ -70,6 +70,9 @@ public:
     delete _kvs_client_impl;
     _kvs_client_impl = NULL;
 
+    delete *fhg::com::kvs::global::get_kvs_info_ptr();
+    *fhg::com::kvs::global::get_kvs_info_ptr() = NULL;
+
     FHG_PLUGIN_STOPPED();
   }
 
