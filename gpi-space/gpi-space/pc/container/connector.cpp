@@ -1,5 +1,7 @@
 #include "connector.hpp"
 
+#include <gpi-space/pc/container/manager.hpp>
+
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/types.h>
@@ -20,8 +22,7 @@ namespace gpi
   {
     namespace container
     {
-      template <typename M>
-      connector_t<M>::~connector_t ()
+      connector_t::~connector_t ()
       {
         try
         {
@@ -33,8 +34,7 @@ namespace gpi
         }
       }
 
-      template <typename M>
-      void connector_t<M>::start ()
+      void connector_t::start ()
       {
         lock_type lock (m_mutex);
 
@@ -63,8 +63,7 @@ namespace gpi
         }
       }
 
-      template <typename M>
-      void connector_t<M>::stop ()
+      void connector_t::stop ()
       {
         lock_type lock (m_mutex);
         if (m_socket >= 0)
@@ -78,13 +77,12 @@ namespace gpi
         }
       }
 
-      template <typename M>
-      void connector_t<M>::start_thread ()
+      void connector_t::start_thread ()
       {
         assert (m_socket >= 0);
 
         m_listener = thread_t
-          (new boost::thread(boost::bind( &self::listener_thread_main
+          (new boost::thread(boost::bind( &connector_t::listener_thread_main
                                         , this
                                         , m_socket
                                         )
@@ -92,8 +90,7 @@ namespace gpi
           );
       }
 
-      template <typename M>
-      void connector_t<M>::stop_thread ()
+      void connector_t::stop_thread ()
       {
         assert (m_listener);
         if (boost::this_thread::get_id() != m_listener->get_id())
@@ -103,15 +100,13 @@ namespace gpi
         }
       }
 
-      template <typename M>
-      int connector_t<M>::close_socket (const int fd)
+      int connector_t::close_socket (const int fd)
       {
         shutdown (fd, SHUT_RDWR);
         return close (fd);
       }
 
-      template <typename M>
-      int connector_t<M>::open_socket (std::string const & path)
+      int connector_t::open_socket (std::string const & path)
       {
         int sfd, err;
         struct sockaddr_un my_addr;
@@ -158,8 +153,7 @@ namespace gpi
         return sfd;
       }
 
-      template <typename M>
-      int connector_t<M>::safe_unlink(std::string const & path)
+      int connector_t::safe_unlink(std::string const & path)
       {
         struct stat st;
         int err (0);
@@ -180,8 +174,7 @@ namespace gpi
         return -err;
       }
 
-      template <typename M>
-      void connector_t<M>::listener_thread_main(const int fd)
+      void connector_t::listener_thread_main(const int fd)
       {
         int cfd, err;
         struct sockaddr_un peer_addr;

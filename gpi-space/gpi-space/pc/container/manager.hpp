@@ -16,6 +16,8 @@ namespace gpi
   {
     namespace container
     {
+      class process_t;
+
       class manager_t
       {
         enum state_t
@@ -29,8 +31,6 @@ namespace gpi
 
       public:
         typedef manager_t self;
-        typedef gpi::pc::container::process_t<manager_t> process_type;
-        typedef gpi::pc::container::connector_t<manager_t> connector_type;
 
         explicit
         manager_t (std::string const & path_to_socket);
@@ -111,7 +111,7 @@ namespace gpi
                    , const gpi::pc::type::segment_id_t
                    );
       private:
-        typedef boost::shared_ptr<process_type> process_ptr_t;
+        typedef boost::shared_ptr<process_t> process_ptr_t;
         typedef boost::unordered_map< gpi::pc::type::process_id_t
                                     , process_ptr_t
                                     > process_map_t;
@@ -123,10 +123,8 @@ namespace gpi
         state_t get_state (void) const;
         void require_state (const state_t st) const;
 
-        void attach_process (process_ptr_t);
         void detach_process (const gpi::pc::type::process_id_t);
         void detach_memory_from_process (const gpi::pc::type::process_id_t);
-        void garbage_collect ();
         void initialize_memory_manager ();
         void initialize_topology ();
         void shutdown_topology ();
@@ -138,12 +136,11 @@ namespace gpi
         mutable mutex_type m_mutex;
         mutable mutex_type m_state_mutex;
         state_t m_state;
-        connector_type m_connector;
+        connector_t m_connector;
         gpi::pc::type::counter_t m_process_counter;
         std::vector<std::string> m_default_memory_urls;
 
         process_map_t m_processes;
-        process_list_t m_detached_processes;
       };
     }
   }

@@ -15,15 +15,13 @@ namespace gpi
   {
     namespace container
     {
-      template <typename Manager>
+      class manager_t;
+
       class connector_t : boost::noncopyable
       {
       public:
-        typedef Manager manager_type;
-        typedef connector_t<manager_type> self;
-
         explicit
-        connector_t (manager_type & mgr, std::string const & p)
+        connector_t (manager_t & mgr, std::string const & p)
           : m_mgr (mgr)
           , m_path (p)
           , m_socket (-1)
@@ -50,7 +48,7 @@ namespace gpi
         void handle_new_connection (int fd);
 
         mutex_type m_mutex;
-        manager_type & m_mgr;
+        manager_t & m_mgr;
         std::string m_path;
         thread_t m_listener;
         int m_socket;
@@ -59,9 +57,5 @@ namespace gpi
     }
   }
 }
-
-#ifdef GPI_SPACE_HEADER_ONLY
-#  include "connector.ipp"
-#endif
 
 #endif

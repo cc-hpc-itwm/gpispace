@@ -36,7 +36,7 @@ namespace gpi
         return message.c_str();
       }
 
-      int value;
+      const int value;
       const std::string user_message;
       const std::string message;
     };

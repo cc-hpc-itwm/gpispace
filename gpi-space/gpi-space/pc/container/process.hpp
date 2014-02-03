@@ -13,26 +13,34 @@ namespace gpi
   {
     namespace container
     {
-      template <typename Manager>
+      class manager_t;
+
       class process_t : boost::noncopyable
       {
       public:
-        typedef Manager manager_type;
-        typedef process_t<manager_type> self;
-
         explicit
-        process_t ( manager_type & mgr
+        process_t ( manager_t & mgr
                   , const gpi::pc::type::process_id_t id
                   , const int socket
                   )
           : m_mgr (mgr)
           , m_id (id)
           , m_socket (socket)
+          , m_reader
+            (boost::bind (&process_t::reader_thread_main, this, m_socket))
         {}
+        ~process_t()
+        {
+          close_socket (m_socket);
 
-        gpi::pc::type::process_id_t get_id () const;
-        void start ();
-        void stop ();
+          if (boost::this_thread::get_id() != m_reader.get_id())
+          {
+            if (m_reader.joinable())
+            {
+              m_reader.join ();
+            }
+          }
+        }
 
         // protocol implementation
 
@@ -69,13 +77,7 @@ namespace gpi
         gpi::pc::type::size_t wait (const gpi::pc::type::queue_id_t);
         void collect_info (gpi::pc::type::info::descriptor_t &);
       private:
-        typedef boost::shared_ptr<boost::thread> thread_t;
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-
         void reader_thread_main (const int fd);
-        void start_thread ();
-        void stop_thread ();
 
         int receive ( const int fd
                      , gpi::pc::proto::message_t & msg
@@ -83,24 +85,16 @@ namespace gpi
                      );
         int send (const int fd, gpi::pc::proto::message_t const & msg);
 
-        gpi::pc::proto::message_t handle_message (const gpi::pc::proto::message_t &);
-
         int close_socket (const int fd);
         int checked_read (const int fd, void *buf, const size_t len);
-        void decode_buffer (const char *buf, const size_t len, gpi::pc::proto::message_t &);
 
-        mutex_type m_mutex;
-        manager_type & m_mgr;
+        manager_t & m_mgr;
         const gpi::pc::type::process_id_t m_id;
-        int m_socket;
-        thread_t m_reader;
+        int const m_socket;
+        boost::thread m_reader;
       };
     }
   }
 }
-
-#ifdef GPI_SPACE_HEADER_ONLY
-#  include "process.ipp"
-#endif
 
 #endif

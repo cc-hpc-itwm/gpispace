@@ -5,6 +5,7 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/gpi/api.hpp>
+#include <gpi-space/pc/container/process.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
@@ -95,8 +96,6 @@ namespace gpi
           shutdown_topology ();
         }
 
-        garbage_collect();
-
         set_state (ST_STOPPED);
       }
 
@@ -183,19 +182,6 @@ namespace gpi
         global::topology().stop();
       }
 
-      void manager_t::attach_process (process_ptr_t proc)
-      {
-        lock_type lock (m_mutex);
-
-        m_processes[proc->get_id()] = proc;
-        m_processes[proc->get_id()]->start ();
-
-        CLOG( INFO
-            , "gpi.container"
-            , "process container " << proc->get_id() << " attached"
-            );
-      }
-
       void manager_t::detach_process (const gpi::pc::type::process_id_t id)
       {
         lock_type lock (m_mutex);
@@ -209,10 +195,7 @@ namespace gpi
           throw std::runtime_error ("no such process");
         }
 
-        process_ptr_t proc (m_processes.at (id));
-        m_detached_processes.push_back (proc);
         m_processes.erase (id);
-        proc->stop ();
 
         global::memory_manager().garbage_collect (id);
 
@@ -222,23 +205,20 @@ namespace gpi
             );
       }
 
-      void manager_t::garbage_collect ()
-      {
-        lock_type lock (m_mutex);
-        while (!m_detached_processes.empty())
-        {
-          m_detached_processes.pop_front();
-        }
-      }
-
       void manager_t::handle_new_connection (int fd)
       {
-        garbage_collect();
+        gpi::pc::type::counter_t const id (m_process_counter.inc());
 
-        gpi::pc::type::process_id_t proc_id (m_process_counter.inc());
+        {
+          lock_type lock (m_mutex);
 
-        process_ptr_t proc (new process_type (*this, proc_id, fd));
-        attach_process (proc);
+          m_processes[id] = process_ptr_t (new process_t (*this, id, fd));
+        }
+
+        CLOG( INFO
+            , "gpi.container"
+            , "process container " << id << " attached"
+            );
       }
 
       void manager_t::handle_connector_error (int error)
@@ -293,8 +273,6 @@ namespace gpi
                                                               , const gpi::pc::type::flags_t flags
                                                               )
       {
-        // TODO: refactor here
-
         using namespace gpi::pc;
 
         fhg::util::url_t url;
@@ -359,7 +337,6 @@ namespace gpi
                        , const gpi::pc::type::flags_t flags
                        )
       {
-//        check_permissions (permission::alloc_t (proc_id, seg_id));
         return global::memory_manager().alloc ( proc_id
                                               , seg_id
                                               , size
@@ -373,7 +350,6 @@ namespace gpi
                       , const gpi::pc::type::handle_id_t hdl
                       )
       {
-//        check_permissions (permission::free_t (proc_id, hdl));
         global::memory_manager().free (hdl);
       }
 
@@ -382,7 +358,6 @@ namespace gpi
                       , const gpi::pc::type::handle_id_t hdl
                       ) const
       {
-//        check_permissions (permission::info_t (proc_id, hdl));
         return global::memory_manager().info (hdl);
       }
 
@@ -392,7 +367,6 @@ namespace gpi
                                   , gpi::pc::type::handle::list_t & list
                                   ) const
       {
-//        check_permissions (permission::list_allocations_t (proc_id, seg_id));
         if (seg_id == gpi::pc::type::segment::SEG_INVAL)
           global::memory_manager().list_allocations(proc_id, list);
         else
