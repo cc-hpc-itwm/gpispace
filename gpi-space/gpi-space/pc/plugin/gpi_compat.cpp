@@ -72,7 +72,8 @@ public:
 
     api = gpi_api;
 
-    schedule_reinitialize_gpi ();
+    _reinitialize_thread = new boost::thread
+      (&GPICompatPluginImpl::schedule_reinitialize_gpi, this);
 
     FHG_PLUGIN_STARTED();
   }
@@ -84,6 +85,17 @@ public:
 
   FHG_PLUGIN_STOP()
   {
+    if (_reinitialize_thread)
+    {
+      _reinitialize_thread->interrupt();
+      if (_reinitialize_thread->joinable())
+      {
+        _reinitialize_thread->join();
+      }
+      _reinitialize_thread = NULL;
+      delete _reinitialize_thread;
+    }
+
     try
     {
       if (m_shm_hdl)
@@ -147,18 +159,13 @@ public:
 
   void schedule_reinitialize_gpi ()
   {
-    if (reinitialize_gpi_state() == -EAGAIN)
+    while (reinitialize_gpi_state() == -EAGAIN)
     {
       MLOG ( WARN
                 , "gpi plugin is not yet available, state initialization deferred!"
                 );
 
-      fhg_kernel()->schedule( "gpi_compat.setup"
-                            , boost::bind ( &GPICompatPluginImpl::schedule_reinitialize_gpi
-                                          , this
-                                          )
-                            , 2
-                            );
+      boost::this_thread::sleep (boost::posix_time::seconds (1));
     }
   }
 
@@ -265,6 +272,8 @@ public:
 private:
   boost::posix_time::time_duration   m_initialize_retry_interval;
   bool                               m_was_connected;
+
+  boost::thread* _reinitialize_thread;
 };
 
 int fvmConnect()
