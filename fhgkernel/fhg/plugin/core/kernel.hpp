@@ -91,6 +91,7 @@ namespace fhg
 
       std::string m_state_path;
       bool m_stop_requested;
+      fhg::util::thread::event<> _stop_request;
       bool m_running;
       plugin_map_t   m_plugins;
       plugin_map_t   m_incomplete_plugins;

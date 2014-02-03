@@ -488,6 +488,7 @@ namespace fhg
     void kernel_t::stop ()
     {
       m_stop_requested = true;
+      _stop_request.notify();
     }
 
     void kernel_t::wait_until_stopped ()
@@ -559,11 +560,7 @@ namespace fhg
         fhg::util::fork_and_daemonize_child_and_abandon_parent();
       }
 
-      while (!m_stop_requested)
-      {
-        //! \todo don't busy-sleep
-        usleep (5 * 1000 * 1000);
-      }
+      _stop_request.wait();
 
       if (unload_at_end)
       {
