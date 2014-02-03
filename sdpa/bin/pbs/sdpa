@@ -75,7 +75,6 @@ DEFAULT_WITH_MEDIATOR="false"
 DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
 DEFAULT_KVS_PORT=2439
-DEFAULT_LOGD_PORT=3456
 DEFAULT_LOG_URL=""
 DEFAULT_GUI_URL=""
 
@@ -426,7 +425,6 @@ to. It should be on the same host that you run the GUI on.
 
     put "log.server.url" "$url"
     put "log.server.level" "$lvl"
-    put "plugin.logd.port" "${DEFAULT_LOGD_PORT:?}"
 }
 
 function setup_temp ()
