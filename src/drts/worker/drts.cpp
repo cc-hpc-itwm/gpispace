@@ -8,6 +8,7 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/thread/event.hpp>
+#include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/threadname.hpp>
 
@@ -1620,6 +1621,17 @@ private:
     }
   }
 
+  void request_registration_soon()
+  {
+    _registration_threads.start
+      (boost::bind (&DRTSImpl::request_registration_after_sleep, this));
+  }
+  void request_registration_after_sleep()
+  {
+    boost::this_thread::sleep (boost::posix_time::milliseconds (2500));
+    start_connect();
+  }
+
   void start_connect ()
   {
     bool at_least_one_disconnected = false;
@@ -1673,12 +1685,7 @@ private:
 
     if (at_least_one_disconnected)
     {
-      fhg_kernel()->schedule ( "connect"
-                             , boost::bind( &DRTSImpl::start_connect
-                                          , this
-                                          )
-                             , 5
-                             );
+      request_registration_soon();
     }
   }
 
@@ -1730,12 +1737,7 @@ private:
 
           master->second = false;
 
-          fhg_kernel()->schedule ( "connect"
-                                 , boost::bind( &DRTSImpl::start_connect
-                                              , this
-                                              )
-                                 , 5
-                                 );
+          request_registration_soon();
         }
 
         start_receiver();
@@ -1815,6 +1817,8 @@ private:
   fhg::thread::queue<boost::shared_ptr<drts::Job> > m_pending_jobs;
 
   gspc::net::server_ptr_t m_server;
+
+  fhg::thread::set _registration_threads;
 };
 
 EXPORT_FHG_PLUGIN( drts
