@@ -59,11 +59,11 @@ public:
     }
     catch (std::exception const &ex)
     {
-      LOG( WARN
+      LOG( ERROR
          , "could not parse plugin.gpi_compat.initialize_retry_interval: "
          << ex.what()
          );
-      m_initialize_retry_interval = 500;
+      FHG_PLUGIN_FAILED (EINVAL);
     }
 
     const std::string my_pid(boost::lexical_cast<std::string>(getpid()));
