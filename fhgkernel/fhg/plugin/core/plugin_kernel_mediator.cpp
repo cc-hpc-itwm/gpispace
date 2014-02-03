@@ -100,26 +100,6 @@ namespace fhg
       return m_storage;
     }
 
-    size_t PluginKernelMediator::tick_time () const
-    {
-      return m_kernel->tick_time ();
-    }
-
-    void PluginKernelMediator::schedule( std::string const &name
-                                       , fhg::plugin::task_t task
-                                       )
-    {
-      m_kernel->schedule (m_plugin->name(), name, task);
-    }
-
-    void PluginKernelMediator::schedule( std::string const &name
-                                       , fhg::plugin::task_t task
-                                       , size_t ticks
-                                       )
-    {
-      m_kernel->schedule (m_plugin->name(), name, task, ticks);
-    }
-
     std::string PluginKernelMediator::get(std::string const & key, std::string const &dflt) const
     {
       return m_kernel->get("plugin." + m_plugin->name() + "." + key, dflt);

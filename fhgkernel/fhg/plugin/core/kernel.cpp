@@ -35,7 +35,6 @@ namespace fhg
   {
     kernel_t::kernel_t (std::string const &state_path)
       : m_state_path (state_path)
-      , m_tick_time (5 * 100 * 1000)
       , m_stop_requested (false)
       , m_running (false)
       , m_storage (0)
@@ -48,7 +47,6 @@ namespace fhg
                        , fhg::core::kernel_t::search_path_t search_path
                        )
       : m_state_path (state_path)
-      , m_tick_time (5 * 100 * 1000)
       , m_stop_requested (false)
       , m_running (false)
       , m_storage (0)
@@ -68,11 +66,6 @@ namespace fhg
 
       // unload all non-static plugins according to dependency graph
       unload_all ();
-
-      // warning:  we must  not have  any  tasks stored,  since we  would get  a
-      // segfault due to dynamic symbols
-      assert (m_task_queue.empty());
-      assert (m_pending_tasks.empty());
 
       if (m_storage)
       {
@@ -300,8 +293,6 @@ namespace fhg
         return -EBUSY;
       }
 
-      remove_pending_tasks(p->first);
-
       int rc = p->second->stop();
 
       for ( plugin_map_t::iterator it (m_plugins.begin())
@@ -327,39 +318,6 @@ namespace fhg
     {
       lock_type plugins_lock (m_mtx_plugins);
       return m_plugins.find(name) != m_plugins.end();
-    }
-
-    namespace
-    {
-      bool is_owner_of_task ( const std::string & p
-                            , const task_info_t & info
-                            )
-      {
-        return p == info.owner;
-      }
-    }
-
-    void kernel_t::remove_pending_tasks(std::string const &owner)
-    {
-      lock_type lock_pending (m_mtx_pending_tasks);
-
-      m_task_queue.remove_if
-        (boost::bind (&is_owner_of_task, owner, _1));
-
-      for ( task_list_t::iterator it = m_pending_tasks.begin()
-          ; it != m_pending_tasks.end()
-          ; // done explicitly
-          )
-      {
-        if (it->owner == owner)
-        {
-          it = m_pending_tasks.erase(it);
-        }
-        else
-        {
-          ++it;
-        }
-      }
     }
 
     int kernel_t::unload_plugin (std::string const &name)
@@ -393,7 +351,6 @@ namespace fhg
 
       if (ec)
       {
-        remove_pending_tasks(name);
         m->stop();
       }
       else
@@ -487,7 +444,6 @@ namespace fhg
         {
           mediator_ptr m = m_incomplete_plugins.begin()->second;
           m_incomplete_plugins.erase(m_incomplete_plugins.begin());
-          remove_pending_tasks (m->plugin()->name());
         }
       }
 
@@ -527,24 +483,6 @@ namespace fhg
           */
         }
       }
-    }
-
-    void kernel_t::schedule( std::string const &owner
-                           , std::string const &name
-                           , fhg::plugin::task_t task
-                           )
-    {
-      schedule (owner, name, task, 0);
-    }
-
-    void kernel_t::schedule( std::string const &owner
-                           , std::string const &name
-                           , fhg::plugin::task_t task
-                           , size_t ticks
-                           )
-    {
-      lock_type lock(m_mtx_pending_tasks);
-      m_pending_tasks.push_back(task_info_t(owner, name, task, ticks));
     }
 
     void kernel_t::stop ()
@@ -614,16 +552,10 @@ namespace fhg
 
     int kernel_t::run_and_unload (bool unload_at_end)
     {
-      struct timeval tv_start;
-      struct timeval tv_diff;
-      struct timeval tv_end;
-
       assert (! m_running);
 
       m_running = true;
       m_failed_path_cache.clear ();
-      m_task_handler = boost::thread (&kernel_t::task_handler, this);
-      fhg::util::set_threadname (m_task_handler, "[kernel-tasks]");
 
       const bool daemonize
         (boost::lexical_cast<bool>(get("kernel.daemonize", "0")));
@@ -634,39 +566,9 @@ namespace fhg
 
       while (!m_stop_requested)
       {
-        gettimeofday(&tv_start, 0);
-
-        { /* decrement tick count of pending tasks and move them */
-          lock_type lock_pending (m_mtx_pending_tasks);
-          lock_type lock_task_q (m_mtx_task_queue);
-          for ( task_list_t::iterator it = m_pending_tasks.begin()
-              ; it != m_pending_tasks.end()
-              ;
-              )
-          {
-            if (0 == it->ticks)
-            {
-              m_task_queue.put (*it);
-              it = m_pending_tasks.erase (it);
-            }
-            else
-            {
-              --it->ticks;
-              ++it;
-            }
-          }
-        }
-
-        gettimeofday(&tv_end, 0);
-        timersub (&tv_end, &tv_start, &tv_diff);
-        if (tv_diff.tv_usec < m_tick_time)
-        {
-          usleep (m_tick_time - tv_diff.tv_usec);
-        }
+        //! \todo don't busy-sleep
+        usleep (5 * 1000 * 1000);
       }
-
-      m_task_handler.interrupt();
-      m_task_handler.join();
 
       if (unload_at_end)
       {
@@ -678,11 +580,6 @@ namespace fhg
       m_stopped.notify (0);
 
       return 0;
-    }
-
-    time_t kernel_t::tick_time () const
-    {
-      return m_tick_time;
     }
 
     std::string kernel_t::get( std::string const & key
@@ -708,22 +605,6 @@ namespace fhg
       }
       m_config[key] = val;
       return old;
-    }
-
-    void kernel_t::task_handler ()
-    {
-      while (!m_stop_requested)
-      {
-        task_info_t task = m_task_queue.get();
-        try
-        {
-          task.execute();
-        }
-        catch (std::exception const & ex)
-        {
-          MLOG(WARN, "task " << task.owner << "::" << task.name << " failed: " << ex.what());
-        }
-      }
     }
 
     std::string const & kernel_t::get_name () const
