@@ -9,16 +9,16 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread.hpp>
 
-class kvs_client
+class pinging_kvs_client
 {
 public:
-  kvs_client ( std::string host
-             , std::string port
-             , boost::posix_time::time_duration ping_interval
-             , unsigned int max_ping_failed
-             , boost::function<void()> request_stop
-             , boost::posix_time::time_duration timeout
-             )
+  pinging_kvs_client ( std::string host
+                     , std::string port
+                     , boost::posix_time::time_duration ping_interval
+                     , unsigned int max_ping_failed
+                     , boost::function<void()> request_stop
+                     , boost::posix_time::time_duration timeout
+                     )
     : _ping_interval (ping_interval)
     , _counter_ping_failed (0)
     , _max_ping_failed (max_ping_failed)
@@ -30,10 +30,10 @@ public:
       , timeout
       , 1 // max_connection_attempts
       )
-    , _ping_thread (&kvs_client::check_for_ping, this)
+    , _ping_thread (&pinging_kvs_client::check_for_ping, this)
   {}
 
-  ~kvs_client()
+  ~pinging_kvs_client()
   {
     _ping_thread.interrupt();
     if (_ping_thread.joinable())
@@ -145,7 +145,7 @@ public:
         )
       );
 
-    _kvs_client_impl = new kvs_client
+    _kvs_client_impl = new pinging_kvs_client
       ( host
       , port
       , ping_interval
@@ -208,7 +208,7 @@ public:
 
 private:
   //! \todo don't be pointer!
-  kvs_client* _kvs_client_impl;
+  pinging_kvs_client* _kvs_client_impl;
 };
 
 
