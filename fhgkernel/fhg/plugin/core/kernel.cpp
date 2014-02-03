@@ -490,11 +490,6 @@ namespace fhg
       m_stop_requested = true;
     }
 
-    void kernel_t::reset ()
-    {
-      m_stop_requested = false;
-    }
-
     void kernel_t::wait_until_stopped ()
     {
       int dummy;

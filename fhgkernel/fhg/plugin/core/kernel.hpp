@@ -34,7 +34,6 @@ namespace fhg
       int run_and_unload (bool do_unload);
 
       void stop ();
-      void reset ();
       void wait_until_stopped ();
 
       void add_search_path (std::string const &);
