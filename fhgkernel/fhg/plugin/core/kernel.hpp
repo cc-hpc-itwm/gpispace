@@ -22,7 +22,6 @@ namespace fhg
       typedef std::vector<std::string> search_path_t;
       typedef std::list<std::string> plugin_names_t;
 
-      kernel_t();
       kernel_t ( std::string const& name
                , fhg::core::kernel_t::search_path_t search_path
                );

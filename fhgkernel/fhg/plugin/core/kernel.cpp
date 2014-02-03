@@ -30,12 +30,6 @@ namespace fhg
 {
   namespace core
   {
-    kernel_t::kernel_t()
-      : m_stop_requested (false)
-      , m_running (false)
-    {
-    }
-
     kernel_t::kernel_t ( std::string const& name
                        , fhg::core::kernel_t::search_path_t search_path
                        )
