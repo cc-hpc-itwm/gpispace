@@ -147,8 +147,7 @@ public:
 
   void schedule_reinitialize_gpi ()
   {
-    int ec = reinitialize_gpi_state ();
-    if (ec == -EAGAIN)
+    if (reinitialize_gpi_state() == -EAGAIN)
     {
       MLOG ( WARN
                 , "gpi plugin is not yet available, state initialization deferred!"
