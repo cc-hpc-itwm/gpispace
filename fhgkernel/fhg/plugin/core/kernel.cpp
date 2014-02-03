@@ -493,8 +493,7 @@ namespace fhg
 
     void kernel_t::wait_until_stopped ()
     {
-      int dummy;
-      m_stopped.wait (dummy);
+      m_stopped.wait();
     }
 
     fhg::plugin::Storage* kernel_t::storage ()
@@ -569,7 +568,7 @@ namespace fhg
 
       m_running = false;
 
-      m_stopped.notify (0);
+      m_stopped.notify();
 
       return 0;
     }

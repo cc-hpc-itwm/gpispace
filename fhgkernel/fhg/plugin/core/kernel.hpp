@@ -106,7 +106,7 @@ namespace fhg
       search_path_t m_search_path;
       search_path_t m_failed_path_cache;
 
-      fhg::util::thread::event<int> m_stopped;
+      fhg::util::thread::event<> m_stopped;
     };
   }
 }
