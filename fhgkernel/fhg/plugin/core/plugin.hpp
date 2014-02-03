@@ -22,7 +22,6 @@ namespace fhg
 
       ~plugin_t ();
 
-      static ptr_t create (std::string const & filename);
       static ptr_t create (std::string const & filename, int flags);
 
       std::string const & name () const;
