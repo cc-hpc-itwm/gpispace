@@ -36,7 +36,6 @@ int main(int ac, char **av)
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
     ("gpi_enabled", "load gpi api")
-    ( "keep-going,k", "just log errors, but do not refuse to start")
     ( "add-search-path,L", po::value<fhg::core::kernel_t::search_path_t>(&search_path)
     , "add a path to the search path for plugins"
     )
@@ -76,7 +75,6 @@ int main(int ac, char **av)
   }
 
   const bool daemonize (vm.count ("daemonize"));
-  const bool keep_going (vm.count ("keep-going"));
 
   fhg::plugin::magically_check_license (logger);
 
@@ -118,20 +116,9 @@ int main(int ac, char **av)
 
   BOOST_FOREACH (std::string const & p, mods_to_load)
   {
-    try
-    {
-      int ec = kernel.load_plugin (p);
-      if (ec != 0)
-        throw std::runtime_error (strerror (ec));
-    }
-    catch (std::exception const &ex)
-    {
-      LLOG (ERROR, logger, "could not load `" << p << "' : " << ex.what());
-      if (! keep_going)
-      {
-        throw;
-      }
-    }
+    int ec = kernel.load_plugin (p);
+    if (ec != 0)
+      throw std::runtime_error (strerror (ec));
   }
 
   fhg::util::signal_handler_manager signal_handlers;
