@@ -36,6 +36,14 @@ public:
         )
       );
 
+    fhg::com::kvs::get_or_create_global_kvs
+      ( !host.empty() ? host : throw std::runtime_error ("kvs host empty")
+      , !port.empty() ? port : throw std::runtime_error ("kvs port empty")
+      , true // auto_reconnect
+      , timeout
+      , 1 // max_connection_attempts
+      );
+
     _kvs_client_impl = new fhg::com::kvs::pinging_kvs_client
       ( host
       , port
@@ -44,8 +52,6 @@ public:
       , boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel())
       , timeout
       );
-
-    fhg::com::kvs::get_or_create_global_kvs (host, port, true, timeout, 1);
 
     FHG_PLUGIN_STARTED();
   }
