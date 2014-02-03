@@ -73,24 +73,6 @@ namespace fhg
       }
     }
 
-    void kernel_t::add_search_path (std::string const &path)
-    {
-      m_search_path.push_back (path);
-    }
-
-    void kernel_t::clear_search_path ()
-    {
-      m_search_path.clear ();
-    }
-
-    void kernel_t::get_search_path (search_path_t & search_path)
-    {
-      m_search_path.insert ( search_path.end ()
-                           , m_search_path.begin ()
-                           , m_search_path.end ()
-                           );
-    }
-
     plugin_t::ptr_t kernel_t::lookup_plugin(std::string const &name)
     {
       lock_type plugins_lock (m_mtx_plugins);

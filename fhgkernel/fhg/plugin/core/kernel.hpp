@@ -36,10 +36,6 @@ namespace fhg
       void stop ();
       void wait_until_stopped ();
 
-      void add_search_path (std::string const &);
-      void clear_search_path ();
-      void get_search_path (search_path_t &);
-
       int load_plugin (std::string const & entity);
       int load_plugin_by_name (std::string const & name);
       int load_plugin_from_file (std::string const & file);
