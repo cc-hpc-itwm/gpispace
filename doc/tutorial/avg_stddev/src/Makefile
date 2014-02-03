@@ -3,8 +3,6 @@ ifndef DIR_BUILD
   DIR_BUILD=.
 endif
 
-CXX = g++
-
 CXXFLAGS += -O3
 CXXFLAGS += -Wall
 CXXFLAGS += -Wextra
