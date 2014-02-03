@@ -403,13 +403,7 @@ namespace fhg
 
         MLOG(TRACE, name << " plugin finished starting");
 
-        schedule( "kernel"
-                , "notify plugin load"
-                , boost::bind( &kernel_t::notify_plugin_load
-                             , this
-                             , name
-                             )
-                );
+        notify_plugin_load (name);
       }
     }
 
