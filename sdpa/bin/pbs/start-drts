@@ -307,7 +307,7 @@ cmd="${bin} $cfg"
 export FHGLOG_to_file="${logprefix}.log"
 log "Running $cmd on node $hostname" >/dev/null 2>&1
 if [ x"$daemonize" = x"true" ] ; then
-    $cmd >"${logprefix}.out" 2>"${logprefix}.err" </dev/null &
+    $cmd --daemonize >"${logprefix}.out" 2>"${logprefix}.err"
 else
     exec $cmd
 fi
