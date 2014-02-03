@@ -1,8 +1,0 @@
-include(fhg_plugin_macros)
-
-#set (BUILTIN_STATS_PLUGIN ON)
-
-fhg_add_plugin(stats stats.cpp)
-fhg_add_plugin(hello hello.cpp)
-fhg_add_plugin(world world.cpp)
-fhg_add_plugin(helloworld helloworld.cpp)

@@ -1,24 +1,17 @@
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/magic.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/magic.hpp @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(hdrs
-  ${CMAKE_CURRENT_BINARY_DIR}/magic.hpp
   descriptor.hpp
-  config.hpp
   plugin_base.hpp
   plugin.hpp
   kernel.hpp
   capability.hpp
-  storage.hpp
 )
 
 set (core_srcs
   core/plugin.cpp
   core/kernel.cpp
   core/plugin_kernel_mediator.cpp
-  core/file_storage.cpp
-  core/null_storage.cpp
   core/license.cpp
-  setup_and_run_fhgkernel.cpp
 )
 
 add_library(fhg-plugin ${core_srcs})
@@ -35,7 +28,6 @@ install (TARGETS fhg-plugin-shared
   COMPONENT runtime
 )
 
-add_subdirectory(builtin)
 target_link_libraries (fhg-plugin ${FhgLog_LIBRARY})
 target_link_libraries (fhg-plugin-shared ${FhgLog_LIBRARY})
 

@@ -8,6 +8,7 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/thread/event.hpp>
+#include <fhg/util/thread/set.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/threadname.hpp>
 
@@ -598,8 +599,6 @@ public:
     const boost::optional<std::string> gui_url
       (boost::make_optional (!gui_url_.empty(), gui_url_));
     WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name, gspc::net::server::default_service_demux()));
-    //! \note optional
-    fhg::plugin::Capability* cap (fhg_kernel()->acquire< fhg::plugin::Capability>("gpi"));
     fhg::com::host_t host (fhg_kernel()->get("host", "*"));
     fhg::com::port_t port (fhg_kernel()->get("port", "0"));
     {
@@ -699,29 +698,6 @@ public:
       }
     }
 
-    // TODO: add
-    //
-    //      acquire_all<T>() -> [(name, T*)]
-    //
-    // to get access to all plugins of a particular type
-    if (cap)
-    {
-      MLOG( INFO, "gained capability: " << cap->capability_name()
-          << " of type " << cap->capability_type()
-          );
-
-      boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
-      m_capabilities.insert
-        (std::make_pair ( cap->capability_name()
-                        , std::make_pair (sdpa::Capability ( cap->capability_name ()
-                                                           , cap->capability_type ()
-                                                           )
-                                         , cap
-                                         )
-                        )
-        );
-    }
-
     assert (! m_event_thread);
 
     m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
@@ -765,8 +741,6 @@ public:
             );
       }
     }
-
-    restore_jobs ();
 
     m_execution_thread.reset
       (new boost::thread(&DRTSImpl::job_execution_thread, this));
@@ -841,11 +815,6 @@ public:
     m_wfe = 0;
 
     {
-      boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
-      fhg_kernel()->storage()->save("jobs", m_jobs);
-    }
-
-    {
       while (not m_virtual_capabilities.empty())
       {
         delete m_virtual_capabilities.begin()->second.second;
@@ -904,10 +873,6 @@ public:
         }
       }
     }
-  }
-
-  FHG_ON_PLUGIN_UNLOAD()
-  {
   }
 
   FHG_ON_PLUGIN_PREUNLOAD(plugin)
@@ -1049,8 +1014,6 @@ public:
                    );
         m_jobs.insert (std::make_pair(job->id(), job));
 
-        fhg_kernel()->storage()->save("jobs", m_jobs);
-
         m_pending_jobs.put(job);
       }
     }
@@ -1161,8 +1124,6 @@ public:
 
     DMLOG(TRACE, "removing job " << e->job_id());
     m_jobs.erase (job_it);
-
-    fhg_kernel()->storage()->save("jobs", m_jobs);
   }
 
   virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e)
@@ -1201,8 +1162,6 @@ public:
 
     DMLOG(TRACE, "removing job " << e->job_id());
     m_jobs.erase (job_it);
-
-    fhg_kernel()->storage()->save("jobs", m_jobs);
   }
 
   // not implemented events
@@ -1324,8 +1283,6 @@ private:
         {
           DMLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
           m_jobs.erase(job_it);
-
-          fhg_kernel()->storage()->save("jobs", m_jobs);
         }
       }
     }
@@ -1512,49 +1469,6 @@ private:
     }
   }
 
-  void restore_jobs()
-  {
-    map_of_jobs_t old_jobs;
-    fhg_kernel()->storage()->load("jobs", old_jobs);
-    for ( map_of_jobs_t::iterator it (old_jobs.begin()), end (old_jobs.end())
-        ; it != end
-        ; ++it
-        )
-    {
-      boost::shared_ptr<drts::Job> job (it->second);
-
-      switch (job->state())
-      {
-      case drts::Job::FINISHED:
-        {
-          boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
-          MLOG(INFO, "restoring information of finished job: " << job->id());
-          m_jobs[it->first] = job;
-        }
-        break;
-      case drts::Job::FAILED:
-        {
-          boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
-          MLOG(INFO, "restoring information of failed job: " << job->id());
-          m_jobs[it->first] = job;
-        }
-        break;
-      case drts::Job::PENDING:
-        MLOG(WARN, "ignoring old pending job: " << job->id());
-        break;
-      case drts::Job::RUNNING:
-        MLOG(WARN, "ignoring old running job: " << job->id());
-        break;
-      case drts::Job::CANCELED:
-        MLOG(WARN, "ignoring old canceled job: " << job->id());
-        break;
-      default:
-        MLOG(ERROR, "STRANGE job state: " << job->state());
-        break;
-      }
-    }
-  }
-
   void resend_outstanding_events (std::string const &master)
   {
     MLOG(TRACE, "resending outstanding notifications to " << master);
@@ -1620,6 +1534,17 @@ private:
     }
   }
 
+  void request_registration_soon()
+  {
+    _registration_threads.start
+      (boost::bind (&DRTSImpl::request_registration_after_sleep, this));
+  }
+  void request_registration_after_sleep()
+  {
+    boost::this_thread::sleep (boost::posix_time::milliseconds (2500));
+    start_connect();
+  }
+
   void start_connect ()
   {
     bool at_least_one_disconnected = false;
@@ -1673,12 +1598,7 @@ private:
 
     if (at_least_one_disconnected)
     {
-      fhg_kernel()->schedule ( "connect"
-                             , boost::bind( &DRTSImpl::start_connect
-                                          , this
-                                          )
-                             , 5
-                             );
+      request_registration_soon();
     }
   }
 
@@ -1730,12 +1650,7 @@ private:
 
           master->second = false;
 
-          fhg_kernel()->schedule ( "connect"
-                                 , boost::bind( &DRTSImpl::start_connect
-                                              , this
-                                              )
-                                 , 5
-                                 );
+          request_registration_soon();
         }
 
         start_receiver();
@@ -1815,15 +1730,8 @@ private:
   fhg::thread::queue<boost::shared_ptr<drts::Job> > m_pending_jobs;
 
   gspc::net::server_ptr_t m_server;
+
+  fhg::thread::set _registration_threads;
 };
 
-EXPORT_FHG_PLUGIN( drts
-                 , DRTSImpl
-                 , "DRTS"
-                 , "provides access to the distributed runtime-system"
-                 , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "0.0.1"
-                 , "NA"
-                 , ""
-                 , ""
-                 );
+EXPORT_FHG_PLUGIN (drts, DRTSImpl, "");

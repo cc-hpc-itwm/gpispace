@@ -482,13 +482,4 @@ int fvmGetNodeCount()
   return gpi_compat->gpi_info.nodes;
 }
 
-EXPORT_FHG_PLUGIN( gpi_compat
-                 , GPICompatPluginImpl
-                 , ""
-                 , "Plugin to access the gpi-space (compatibility)"
-                 , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "0.0.1"
-                 , "NA"
-                 , "gpi"
-                 , ""
-                 );
+EXPORT_FHG_PLUGIN (gpi_compat, GPICompatPluginImpl, "gpi");

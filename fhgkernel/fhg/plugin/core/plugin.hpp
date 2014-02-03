@@ -22,8 +22,7 @@ namespace fhg
 
       ~plugin_t ();
 
-      static ptr_t create (std::string const & filename, bool force);
-      static ptr_t create (std::string const & filename, bool force, int flags);
+      static ptr_t create (std::string const & filename, int flags);
 
       std::string const & name () const;
 
@@ -37,8 +36,7 @@ namespace fhg
       void add_dependency (const ptr_t &);
       void del_dependency (const ptr_t &);
 
-      int init ();
-      int start (fhg::plugin::Kernel*);
+      int init (fhg::plugin::Kernel *kernel);
       int stop  ();
 
       template <typename T>
@@ -60,7 +58,6 @@ namespace fhg
       }
 
       void handle_plugin_loaded (std::string const &name);
-      void handle_plugin_unload (std::string const &name);
       void handle_plugin_preunload (std::string const &name);
     private:
       typedef std::list<ptr_t> dependency_list_t;
@@ -88,7 +85,6 @@ namespace fhg
       const fhg_plugin_descriptor_t *m_descriptor;
       int m_flags;
       void *m_handle;
-      fhg::plugin::Kernel *m_kernel;
 
       bool m_started;
       dependency_list_t m_dependencies;

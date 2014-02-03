@@ -22,14 +22,9 @@ namespace fhg
 
       virtual int fhg_plugin_start () {return 0;}
 
-      int fhg_plugin_stop_entry (Kernel *)
-      {
-        return fhg_plugin_stop();
-      }
       virtual int fhg_plugin_stop  () {return 0;}
 
       virtual void fhg_on_plugin_loaded (std::string const&) {}
-      virtual void fhg_on_plugin_unload (std::string const&) {}
       virtual void fhg_on_plugin_preunload (std::string const&) {}
     protected:
       Plugin ()

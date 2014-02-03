@@ -9,14 +9,11 @@
 #include <boost/lexical_cast.hpp>
 
 #include <fhg/plugin/plugin_base.hpp>
-#include <fhg/plugin/storage.hpp>
 
 namespace fhg
 {
   namespace plugin
   {
-    typedef boost::function<void (void)> task_t;
-
     namespace exception
     {
       struct config_error : public std::runtime_error
@@ -59,12 +56,6 @@ namespace fhg
       virtual Plugin * acquire(std::string const & name) = 0;
       virtual void     release(std::string const & name) = 0;
 
-      virtual Storage *storage() = 0;
-
-      virtual size_t tick_time () const = 0;
-      virtual void schedule(std::string const & name, task_t) = 0;
-      virtual void schedule(std::string const & name, task_t, size_t ticks) = 0;
-
       virtual std::string get(std::string const & key, std::string const &dflt) const = 0;
 
       template <typename T>
@@ -86,11 +77,6 @@ namespace fhg
       {
         return get<T>(key, boost::lexical_cast<std::string>(dflt));
       }
-
-      virtual void start_completed(int) = 0;
-
-      virtual int load_plugin (std::string const &path) = 0;
-      virtual int unload_plugin (std::string const &name) = 0;
 
       virtual int kill () = 0;
       virtual int shutdown () = 0;

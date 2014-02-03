@@ -11,7 +11,6 @@
 #include <fhg/assert.hpp>
 
 #include <fhg/plugin/core/exception.hpp>
-#include <fhg/plugin/magic.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/plugin.hpp>
 
@@ -31,7 +30,6 @@ namespace fhg
       , m_descriptor (my_desc)
       , m_flags (my_flags)
       , m_handle (my_handle)
-      , m_kernel (0)
       , m_started (false)
       , m_dependencies()
       , m_refcount(0)
@@ -124,7 +122,7 @@ namespace fhg
       }
     }
 
-    int plugin_t::init ()
+    int plugin_t::init (fhg::plugin::Kernel *kernel)
     {
       char *error;
       fhg_plugin_create create_plugin;
@@ -139,21 +137,9 @@ namespace fhg
 
       m_plugin = create_plugin();
       dlerror();
-      return 0;
-    }
 
-    int plugin_t::start (fhg::plugin::Kernel *kernel)
-    {
-      if (m_plugin)
-      {
-        m_kernel = kernel;
-        m_started = true;
-        return m_plugin->fhg_plugin_start_entry(m_kernel);
-      }
-      else
-      {
-        return -EINVAL;
-      }
+      m_started = true;
+      return m_plugin->fhg_plugin_start_entry(kernel);
     }
 
     int plugin_t::stop ()
@@ -164,7 +150,7 @@ namespace fhg
       }
       else if (m_started)
       {
-        int rc = m_plugin->fhg_plugin_stop_entry(m_kernel);
+        int rc = m_plugin->fhg_plugin_stop();
 
         if (rc == 0)
         {
@@ -192,13 +178,6 @@ namespace fhg
       m_plugin->fhg_on_plugin_loaded (name);
     }
 
-    void plugin_t::handle_plugin_unload (std::string const &name)
-    {
-      assert (m_plugin);
-      assert (m_started);
-      m_plugin->fhg_on_plugin_unload (name);
-    }
-
     void plugin_t::handle_plugin_preunload (std::string const &name)
     {
       assert (m_plugin);
@@ -206,12 +185,7 @@ namespace fhg
       m_plugin->fhg_on_plugin_preunload (name);
     }
 
-    plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force)
-    {
-      return create(filename, force, RTLD_GLOBAL | RTLD_LAZY);
-    }
-
-    plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force, int flags)
+    plugin_t::ptr_t plugin_t::create (std::string const & filename, int flags)
     {
       // dlopen file
       char *error;
@@ -240,20 +214,6 @@ namespace fhg
       {
         dlclose(handle);
         throw std::runtime_error("could not query plugin: no descriptor");
-      }
-
-      if (! force)
-      {
-        const std::string my_magic(FHG_PLUGIN_API_VERSION);
-        const std::string plugin_magic (desc->magic);
-        const std::string plugin_name (desc->name);
-
-        if (my_magic != plugin_magic)
-        {
-          dlclose(handle);
-          throw fhg::core::exception::plugin_version_magic_mismatch
-            (plugin_name, plugin_magic, my_magic);
-        }
       }
 
       return plugin_t::ptr_t( new plugin_t( desc->name

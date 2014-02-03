@@ -275,11 +275,6 @@ else
     cfg="$cfg -s kernel.load.lazy=0"
 fi
 
-stateful=$(fhgcfg -f "${config_file}" -g sdpa.stateful -v false)
-if [ x"$stateful" = x"true" ] ; then
-    cfg="$cfg -S ${state_dir}/state/kernel/$name"
-fi
-
 # config values (drts plugin)
 kvs_host=$(echo "$kvs_url" | cut -d: -f1)
 kvs_port=$(echo "$kvs_url" | cut -d: -f2)
@@ -312,7 +307,7 @@ cmd="${bin} $cfg"
 export FHGLOG_to_file="${logprefix}.log"
 log "Running $cmd on node $hostname" >/dev/null 2>&1
 if [ x"$daemonize" = x"true" ] ; then
-    $cmd >"${logprefix}.out" 2>"${logprefix}.err" </dev/null &
+    $cmd --daemonize >"${logprefix}.out" 2>"${logprefix}.err"
 else
     exec $cmd
 fi
