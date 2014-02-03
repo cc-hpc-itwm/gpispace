@@ -515,20 +515,6 @@ namespace fhg
                         )
         {}
 
-        std::string get (std::string const & k, std::string const &dflt) const
-        {
-          std::map<std::string, std::string>  v (list (k));
-          if (v.size() == 1)
-          {
-            return v.begin()->second;
-          }
-          else
-          {
-            //! \todo Should be throw: obviously bogus data.
-            return dflt;
-          }
-        }
-
         void put (std::string const & k, std::string const &value)
         {
           _kvs_client.put (k, value);

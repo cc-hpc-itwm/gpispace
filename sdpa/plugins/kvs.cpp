@@ -75,7 +75,16 @@ public:
 
   value_type get (key_type const & k, value_type const &dflt) const
   {
-    return _kvs_client_impl->get (k, dflt);
+    std::map<std::string, std::string>  v (_kvs_client_impl->list (k));
+    if (v.size() == 1)
+    {
+      return v.begin()->second;
+    }
+    else
+    {
+      //! \todo Should be throw: obviously bogus data.
+      return dflt;
+    }
   }
 
   void put (key_type const & k, value_type const &value)
