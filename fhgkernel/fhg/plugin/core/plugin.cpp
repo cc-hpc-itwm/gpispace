@@ -191,13 +191,6 @@ namespace fhg
       m_plugin->fhg_on_plugin_loaded (name);
     }
 
-    void plugin_t::handle_plugin_unload (std::string const &name)
-    {
-      assert (m_plugin);
-      assert (m_started);
-      m_plugin->fhg_on_plugin_unload (name);
-    }
-
     void plugin_t::handle_plugin_preunload (std::string const &name)
     {
       assert (m_plugin);

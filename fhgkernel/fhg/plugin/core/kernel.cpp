@@ -242,17 +242,6 @@ namespace fhg
 
       int rc = p->second->stop();
 
-      for ( plugin_map_t::iterator it (m_plugins.begin())
-          ; it != m_plugins.end()
-          ; ++it
-          )
-      {
-        if (it->first != p->first)
-        {
-          it->second->plugin()->handle_plugin_unload (p->first);
-        }
-      }
-
       LOG(TRACE, "plugin '" << p->first << "' unloaded");
 
       m_load_order.remove (p->first);
