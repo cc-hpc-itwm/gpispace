@@ -45,12 +45,10 @@ public:
       );
 
     _kvs_client_impl = new fhg::com::kvs::pinging_kvs_client
-      ( host
-      , port
-      , ping_interval
+      ( ping_interval
       , max_ping_failed
       , boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel())
-      , timeout
+      , fhg::com::kvs::global_kvs()
       );
 
     FHG_PLUGIN_STARTED();

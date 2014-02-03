@@ -494,21 +494,13 @@ namespace fhg
       class pinging_kvs_client
       {
       public:
-        pinging_kvs_client ( std::string host
-                           , std::string port
-                           , boost::posix_time::time_duration ping_interval
+        pinging_kvs_client ( boost::posix_time::time_duration ping_interval
                            , unsigned int max_ping_failed
                            , boost::function<void()> request_stop
-                           , boost::posix_time::time_duration timeout
+                           , kvsc_ptr_t kvs_client
                            )
-          : _kvs_client
-            ( !host.empty() ? host : throw std::runtime_error ("kvs host empty")
-            , !port.empty() ? port : throw std::runtime_error ("kvs port empty")
-            , true // auto_reconnect
-            , timeout
-            , 1 // max_connection_attempts
-            )
-          , _keep_alive ( boost::bind (&client::kvsc::ping, &_kvs_client)
+          : _kvs_client (kvs_client)
+          , _keep_alive ( boost::bind (&client::kvsc::ping, _kvs_client)
                         , request_stop
                         , max_ping_failed
                         , ping_interval
@@ -517,26 +509,26 @@ namespace fhg
 
         void put (std::string const & k, std::string const &value)
         {
-          _kvs_client.put (k, value);
+          _kvs_client->put (k, value);
         }
 
         void del (std::string const & k)
         {
-          _kvs_client.del (k);
+          _kvs_client->del (k);
         }
 
         int inc (std::string const & k, int step)
         {
-          return _kvs_client.inc (k, step);
+          return _kvs_client->inc (k, step);
         }
 
         std::map<std::string, std::string> list (std::string const &prefix) const
         {
-          return _kvs_client.get (prefix);
+          return _kvs_client->get (prefix);
         }
 
       private:
-        fhg::com::kvs::client::kvsc _kvs_client;
+        kvsc_ptr_t _kvs_client;
         keep_alive _keep_alive;
       };
     }
