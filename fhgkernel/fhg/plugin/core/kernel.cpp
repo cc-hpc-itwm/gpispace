@@ -116,7 +116,6 @@ namespace fhg
 
       int rc = 0;
 
-      bool load_force (boost::lexical_cast<bool>(get("kernel.load.force", "0")));
       bool load_lazy (boost::lexical_cast<bool>(get("kernel.load.lazy", "1")));
 
       std::string full_path_to_file = fs::absolute (fs::path (file)).string ();
@@ -145,7 +144,6 @@ namespace fhg
       }
 
       plugin_t::ptr_t p (plugin_t::create( full_path_to_file
-                                         , load_force
                                          , (load_lazy?RTLD_LAZY:RTLD_NOW)
                                          )
                         );

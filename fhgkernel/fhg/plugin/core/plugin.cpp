@@ -205,12 +205,12 @@ namespace fhg
       m_plugin->fhg_on_plugin_preunload (name);
     }
 
-    plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force)
+    plugin_t::ptr_t plugin_t::create (std::string const & filename)
     {
-      return create(filename, force, RTLD_GLOBAL | RTLD_LAZY);
+      return create(filename, RTLD_GLOBAL | RTLD_LAZY);
     }
 
-    plugin_t::ptr_t plugin_t::create (std::string const & filename, bool force, int flags)
+    plugin_t::ptr_t plugin_t::create (std::string const & filename, int flags)
     {
       // dlopen file
       char *error;
