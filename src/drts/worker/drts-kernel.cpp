@@ -20,7 +20,6 @@ int main(int ac, char **av)
   po::options_description desc("options");
 
   std::vector<std::string> config_vars;
-  std::string state_path;
   std::string pidfile;
   std::string kernel_name;
   fhg::core::kernel_t::search_path_t search_path;
@@ -29,7 +28,6 @@ int main(int ac, char **av)
     ("help,h", "this message")
     ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
     ("set,s", po::value<std::vector<std::string> >(&config_vars), "set a parameter to a value key=value")
-    ("state,S", po::value<std::string>(&state_path), "state directory to use")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
     ("gpi_enabled", "load gpi api")
@@ -76,7 +74,7 @@ int main(int ac, char **av)
                                  , vm.count ("keep-going")
                                  , mods_to_load
                                  , config_vars
-                                 , state_path
+                                 , ""
                                  , pidfile
                                  , kernel_name
                                  , search_path

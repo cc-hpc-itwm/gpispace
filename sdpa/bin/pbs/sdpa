@@ -66,7 +66,6 @@ DEFAULT_CLUSTER_HEAD="" # if needed
 #
 # SDPA
 #
-DEFAULT_STATEFUL_EXECUTION="false"
 DEFAULT_SCRATCH_DIR="$HOME/.sdpa/scratch"
 DEFAULT_TMP_DIR="/var/tmp"
 DEFAULT_WORKER_PER_NODE="1"
@@ -273,32 +272,6 @@ function setup_state ()
     get_user_input "SDPA installation directory [$sdpa_home]:" sdpa_home
 
     export SDPA_HOME="$sdpa_home"
-
-    local p_stateful=$(get "sdpa.stateful" "${DEFAULT_STATEFUL_EXECUTION:?}")
-    if [ x"$p_stateful" = x"true" ] ; then
-        y_n_p "Do you want stateful execution? [Y/n] "
-    else
-        y_n_p "Do you want stateful execution? [y/N] "
-    fi
-    local ec=$?
-    if [ $ec -eq 0 ] ; then
-        p_stateful="true"
-    elif [ $ec -eq 1 ] ; then
-        p_stateful="false"
-    fi
-
-    case "$p_stateful" in
-        true)
-            put "sdpa.stateful" "true"
-            ;;
-        false)
-            put "sdpa.stateful" "false"
-            ;;
-        *)
-            log "E: sdpa.stateful must be one of true/false"
-            return 1
-            ;;
-    esac
 
     return 0
 }

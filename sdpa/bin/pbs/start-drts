@@ -275,11 +275,6 @@ else
     cfg="$cfg -s kernel.load.lazy=0"
 fi
 
-stateful=$(fhgcfg -f "${config_file}" -g sdpa.stateful -v false)
-if [ x"$stateful" = x"true" ] ; then
-    cfg="$cfg -S ${state_dir}/state/kernel/$name"
-fi
-
 # config values (drts plugin)
 kvs_host=$(echo "$kvs_url" | cut -d: -f1)
 kvs_port=$(echo "$kvs_url" | cut -d: -f2)
