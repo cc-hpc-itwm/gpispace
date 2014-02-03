@@ -6,6 +6,7 @@
 #include <we/layer.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
+#include <sdpa/types.hpp>
 
 typedef std::list<we::type::requirement_t> requirement_list_t;
 
@@ -29,3 +30,4 @@ private:
 };
 
 #endif //IWORKFLOWENGINE_HPP
+

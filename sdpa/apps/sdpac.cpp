@@ -42,6 +42,7 @@ enum return_codes_t
   , FILE_EXISTS           = 52
   , IO_ERROR              = 53
   , NETWORK_ERROR         = 54
+  , DISCOVER_ID_MISSING   = 55
   , UNKNOWN_ERROR         = 100
   };
 
@@ -313,6 +314,7 @@ int main (int argc, char **argv) {
      "results: \tretrieve the results of a job, arg must specify the job-id\n"
      "delete: \tdelete a finished job, arg must specify the job-id\n"
      "wait: \twait until the job reaches a final state\n"
+     "discover: \tdiscover the states of the known jobs\n"
      )
     ;
   cfg.tool_hidden_opts().add_options()
@@ -571,6 +573,23 @@ int main (int argc, char **argv) {
         return JOB_ID_MISSING;
       }
       api.deleteJob(args.front());
+    }
+    else if (command == "discover")
+    {
+      if (args.empty())
+      {
+          std::cerr << "E: discover-id required" << std::endl;
+          return DISCOVER_ID_MISSING;
+      }
+      else
+        if (args.size()==1)
+        {
+          std::cerr << "E: job-id required (the first argument is considered as the disacovery id)" << std::endl;
+          return JOB_ID_MISSING;
+        }
+
+      sdpa::discovery_info_t discovery_result = api.discoverJobStates(args[0], args[1]);
+      std::cout<<"discovery result: "<<discovery_result<<std::endl;
     }
     else
     {

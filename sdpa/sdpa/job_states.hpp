@@ -19,6 +19,7 @@ namespace sdpa
       , PENDING
       , RUNNING
       , CANCELING
+      , UNKNOWN
       };
 
     inline bool is_running (code c)
@@ -34,6 +35,16 @@ namespace sdpa
     inline bool is_canceled (code c)
     {
       return c == CANCELED;
+    }
+
+    inline bool is_pending (code c)
+    {
+      return c == PENDING;
+    }
+
+    inline bool is_canceling (code c)
+    {
+      return c == CANCELING;
     }
 
     inline std::string show(int code)
@@ -53,7 +64,7 @@ namespace sdpa
       case CANCELING:
         return "SDPA::Canceling";
       default:
-        return "Strange job state";
+        return "SDPA::Unknown";
       }
     }
   };

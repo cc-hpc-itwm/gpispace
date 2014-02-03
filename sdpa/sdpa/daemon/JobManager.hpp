@@ -42,6 +42,8 @@ namespace sdpa
 
       void resubmitResults (GenericDaemon*) const;
 
+      size_t numberOfJobs() const;
+
   protected:
       mutable mutex_type _job_map_and_requirements_mutex;
       job_map_t job_map_;

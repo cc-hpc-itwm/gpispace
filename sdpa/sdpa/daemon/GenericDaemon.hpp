@@ -61,6 +61,29 @@
 
 #include <fhglog/fhglog.hpp>
 
+namespace sdpa {
+  struct job_info_t{
+    job_info_t( const sdpa::agent_id_t& disc_issuer,
+                const sdpa::job_id_t& job_id,
+                const sdpa::status::code& job_status )
+      : _disc_issuer(disc_issuer)
+        , _job_id(job_id)
+        , _job_status(job_status)
+    {}
+
+    const sdpa::agent_id_t disc_issuer() const { return _disc_issuer; }
+    const sdpa::job_id_t job_id() const { return _job_id; }
+    const sdpa::status::code job_status() const { return _job_status; }
+
+  private:
+    sdpa::agent_id_t _disc_issuer;
+    sdpa::job_id_t _job_id;
+    sdpa::status::code _job_status;
+  };
+}
+
+typedef boost::unordered_map<we::layer::id_type, sdpa::job_info_t> map_discover_ids_t;
+
 #define OVERWRITTEN_IN_TEST virtual
 
 namespace sdpa {
@@ -95,11 +118,13 @@ namespace sdpa {
       bool isTop() { return m_arrMasterInfo.empty(); }
 
       // WE interface
-      void submit( const we::layer::id_type & id, const we::type::activity_t&);
+      OVERWRITTEN_IN_TEST void submit( const we::layer::id_type & id, const we::type::activity_t&);
       void cancel(const we::layer::id_type & id);
       virtual void finished(const we::layer::id_type & id, const we::type::activity_t& result);
       virtual void failed( const we::layer::id_type& wfId, int errc, std::string const& reason);
       void canceled(const we::layer::id_type& id);
+      OVERWRITTEN_IN_TEST void discover (we::layer::id_type discover_id, we::layer::id_type job_id);
+      OVERWRITTEN_IN_TEST void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
 
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
@@ -152,7 +177,7 @@ namespace sdpa {
 
       // workflow engine
     public:
-      we::layer* workflowEngine() const { return ptr_workflow_engine_.get(); }
+      we::layer* workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
     protected:
@@ -163,7 +188,7 @@ namespace sdpa {
       // workers
       OVERWRITTEN_IN_TEST void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
-    private:
+    protected:
       // jobs
       std::string gen_id();
 
@@ -215,12 +240,13 @@ namespace sdpa {
 
       sdpa::master_info_list_t m_arrMasterInfo;
       sdpa::subscriber_map_t m_listSubscribers;
+      map_discover_ids_t m_map_discover_ids;
 
     protected:
       JobManager _job_manager;
       SchedulerBase::ptr_t ptr_scheduler_;
       boost::optional<boost::mt19937> _random_extraction_engine;
-      boost::scoped_ptr<we::layer> ptr_workflow_engine_;
+      we::layer* ptr_workflow_engine_;
 
     private:
 

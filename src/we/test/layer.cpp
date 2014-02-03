@@ -9,6 +9,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/value/read.hpp>
+#include <we/type/value/poke.hpp>
 
 #include <fhg/util/now.hpp>
 
@@ -65,6 +66,8 @@ struct daemon
             , boost::bind (&daemon::finished, this, _1, _2)
             , boost::bind (&daemon::failed, this, _1, _2, _3)
             , boost::bind (&daemon::canceled, this, _1)
+            , boost::bind (&daemon::discover, this, _1, _2)
+            , boost::bind (&daemon::discovered, this, _1, _2)
             , boost::bind (&daemon::generate_id, this)
             , _random_engine
             )
@@ -242,6 +245,61 @@ struct daemon
     DEC_IN_PROGRESS (replies);
   }
 
+  DECLARE_EXPECT_CLASS ( discover
+                       , we::layer::id_type discover_id
+        BOOST_PP_COMMA() we::layer::id_type id
+                       , _discover_id (discover_id)
+        BOOST_PP_COMMA() _id (id)
+                       , we::layer::id_type _discover_id
+                       ; we::layer::id_type _id
+                       , _discover_id == discover_id && _id == id
+                       );
+
+  void discover
+    (we::layer::id_type discover_id, we::layer::id_type id)
+  {
+    std::list<expect_discover*>::iterator const e
+      ( boost::find_if ( _to_discover
+                       , boost::bind (&expect_discover::eq, _1, discover_id, id)
+                       )
+      );
+
+    BOOST_REQUIRE (e != _to_discover.end());
+
+    (*e)->happened();
+    _to_discover.erase (e);
+
+    INC_IN_PROGRESS (replies);
+  }
+
+  DECLARE_EXPECT_CLASS ( discovered
+                       , we::layer::id_type discover_id
+        BOOST_PP_COMMA() sdpa::discovery_info_t result
+                       , _discover_id (discover_id)
+        BOOST_PP_COMMA() _result (result)
+                       , we::layer::id_type _discover_id
+                       ; sdpa::discovery_info_t _result
+                       , _discover_id == discover_id && _result == result
+                       );
+
+  void discovered ( we::layer::id_type discover_id
+                  , sdpa::discovery_info_t result
+                  )
+  {
+    std::list<expect_discovered*>::iterator const e
+      ( boost::find_if ( _to_discovered
+                       , boost::bind (&expect_discovered::eq, _1, discover_id, result)
+                       )
+      );
+
+    BOOST_REQUIRE (e != _to_discovered.end());
+
+    (*e)->happened();
+    _to_discovered.erase (e);
+
+    DEC_IN_PROGRESS (replies);
+  }
+
   void do_submit ( we::layer::id_type id
                  , we::type::activity_t act
                  )
@@ -283,6 +341,21 @@ struct daemon
     DEC_IN_PROGRESS (jobs_rts);
 
     layer.canceled (id);
+  }
+
+  void do_discover
+    (we::layer::id_type discover_id, we::layer::id_type id)
+  {
+    INC_IN_PROGRESS (replies);
+
+    layer.discover (discover_id, id);
+  }
+  void do_discovered
+    (we::layer::id_type discover_id, sdpa::discovery_info_t result)
+  {
+    DEC_IN_PROGRESS (replies);
+
+    layer.discovered (discover_id, result);
   }
 
   boost::mutex _generate_id_mutex;
@@ -811,7 +884,8 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (performance_finished_shall_be_called_after_finished_N_childs)
+BOOST_AUTO_TEST_CASE
+  (performance_finished_shall_be_called_after_finished_N_childs)
 {
   const std::size_t num_activities (10);
   const std::size_t num_child_per_activity (250);
@@ -834,9 +908,11 @@ BOOST_AUTO_TEST_CASE (performance_finished_shall_be_called_after_finished_N_chil
     ( boost::bind (&submit_fake, &child_ids, _1, _2)
     , boost::bind (&cancel, _1)
     , boost::bind (&finished_fake, &finished, _1, _2)
-    , boost::bind (&failed, _1, _2, _3)
-    , boost::bind (&canceled, _1)
-    , boost::bind (&generate_id)
+    , &failed
+    , &canceled
+    , &discover
+    , &discovered
+    , &generate_id
     , _random_engine
     );
 
@@ -869,3 +945,118 @@ BOOST_AUTO_TEST_CASE (performance_finished_shall_be_called_after_finished_N_chil
   BOOST_REQUIRE_LT (t, 1.0);
 }
 #endif
+
+
+BOOST_FIXTURE_TEST_CASE
+  (discovered_shall_be_called_after_discover_one_child, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (1);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id;
+  {
+    expect_submit _ (this, &child_id, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  const we::layer::id_type discover_id
+    (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
+  {
+    expect_discover _ (this, discover_id, child_id);
+
+    do_discover (discover_id, id);
+  }
+
+  sdpa::discovery_info_t discover_result_child( child_id
+                                                , sdpa::status::PENDING
+                                                , sdpa::discovery_info_set_t());
+
+  sdpa::discovery_info_set_t child_disc_set;
+  child_disc_set.insert(discover_result_child);
+  sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
+
+  {
+    expect_discovered _ (this, discover_id, discover_result);
+
+    do_discovered (discover_id, discover_result_child);
+  }
+
+  {
+    expect_finished const _ (this, id, activity_output);
+
+    do_finished (child_id, activity_result);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (discovered_shall_be_called_after_discover_two_childs, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_A;
+  we::layer::id_type child_id_B;
+  {
+    expect_submit _A (this, &child_id_A, activity_child);
+    expect_submit _B (this, &child_id_B, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  const we::layer::id_type discover_id
+    (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
+  {
+    expect_discover _A (this, discover_id, child_id_A);
+    expect_discover _B (this, discover_id, child_id_B);
+
+    do_discover (discover_id, id);
+  }
+
+  using pnet::type::value::poke;
+
+  sdpa::discovery_info_t discover_result_child_A( child_id_A
+                                                  , sdpa::status::PENDING
+                                                  , sdpa::discovery_info_set_t());
+
+  sdpa::discovery_info_t discover_result_child_B( child_id_B
+                                                  , sdpa::status::PENDING
+                                                  , sdpa::discovery_info_set_t());
+
+  sdpa::discovery_info_set_t child_disc_set;
+  child_disc_set.insert(discover_result_child_A);
+  child_disc_set.insert(discover_result_child_B);
+  sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
+
+  do_discovered (discover_id, discover_result_child_A);
+
+  {
+    expect_discovered _ (this, discover_id, discover_result);
+
+    //! \note There is a race here where layer may call rts_discovered
+    //! before do_discovered, but this is checked by comparing the
+    //! result: if it would finish discovering before the second child
+    //! was discovered, there would be a child entry missing.
+
+    do_discovered (discover_id, discover_result_child_B);
+  }
+
+  {
+    expect_finished const _ (this, id, activity_output);
+
+    do_finished (child_id_A, activity_result);
+    do_finished (child_id_B, activity_result);
+  }
+}

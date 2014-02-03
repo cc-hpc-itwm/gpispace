@@ -178,11 +178,11 @@ set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_
                                                                         	-p n_workers_A="2UL"
                                                                         	-p n_tasks_B="1L"
                                                                         	-p n_workers_B="3UL"
-                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet")
+                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet")
 
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet"
                    COMMAND ${command}
-                   COMMENT "putting tokens into stalled_workflow net: ${command}"
+                   COMMENT "putting tokens into coallocation_test2 net: ${command}"
                    DEPENDS pnet-coallocation_test-wf-gen
 )
 
@@ -202,6 +202,7 @@ set (tests
   test_SubmitJobFails.cpp
   test_TransformFile.cpp
   test_InvalidNbWorkersReq.cpp
+  test_DiscoverJobStates.cpp
 )
 
 foreach (test ${tests})
@@ -236,5 +237,5 @@ add_custom_target(sdpa-test-workflows ALL
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet"
 )

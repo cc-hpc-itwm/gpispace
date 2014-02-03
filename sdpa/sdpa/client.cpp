@@ -14,6 +14,8 @@
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 
 #include <fhg/util/macros.hpp>
 
@@ -205,6 +207,12 @@ namespace sdpa
     {
       send_and_wait_for_reply<sdpa::events::CancelJobAckEvent>
         (sdpa::events::CancelJobEvent (_name, orchestrator_, jid));
+    }
+
+    sdpa::discovery_info_t Client::discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id)
+    {
+      return send_and_wait_for_reply<sdpa::events::DiscoverJobStatesReplyEvent>
+        (sdpa::events::DiscoverJobStatesEvent (_name, orchestrator_, job_id, discover_id)).discover_result();
     }
 
     sdpa::status::code Client::queryJob(const job_id_t &jid)

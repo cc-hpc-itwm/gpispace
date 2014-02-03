@@ -23,6 +23,8 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
@@ -92,6 +94,8 @@ GenericDaemon::GenericDaemon( const std::string name
                            , boost::bind (&GenericDaemon::finished, this, _1, _2)
                            , boost::bind (&GenericDaemon::failed, this, _1, _2, _3)
                            , boost::bind (&GenericDaemon::canceled, this, _1)
+                           , boost::bind (&GenericDaemon::discover, this, _1, _2)
+                           , boost::bind (&GenericDaemon::discovered, this, _1, _2)
                            , boost::bind (&GenericDaemon::gen_id, this)
                            , *_random_extraction_engine
                            )
@@ -161,7 +165,7 @@ GenericDaemon::~GenericDaemon()
 
   ptr_scheduler_.reset();
 
-  ptr_workflow_engine_.reset();
+  delete ptr_workflow_engine_;
 
   _network_strategy.reset();
 
@@ -240,7 +244,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 {
   const events::SubmitJobEvent& e (*evt);
 
-  DLLOG(TRACE, _logger, "got job submission from " << e.from() << ": job-id := " << e.job_id());
+  DLLOG(TRACE, _logger, "got job submission from " << e.from() << ": job-id := " << e.job_id ().get_value_or ("NONE"));
 
   if(e.is_external())
   {
@@ -280,7 +284,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     return;
   }
 
-  DLLOG (TRACE, _logger, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
+  DLLOG (TRACE, _logger, "Receive new job from "<<e.from() << " with job-id: " << e.job_id ().get_value_or ("NONE"));
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
@@ -1296,5 +1300,25 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
     events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
     sendEventToOther(pErrorEvt);
   }
+}
+
+void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
+{
+  events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( sdpa::daemon::WE
+                                                                                    , name()
+                                                                                    , job_id
+                                                                                    , discover_id ));
+
+  sendEventToSelf(pDiscEvt);
+}
+
+void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
+{
+  sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
+  sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
+                                                                                                      , master_name
+                                                                                                      , discover_id
+                                                                                                      , discover_result)));
+  m_map_discover_ids.erase(discover_id);
 }
 }}

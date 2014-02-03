@@ -11,7 +11,7 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 BOOST_AUTO_TEST_CASE (test_cancel_no_agent)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/stalled_workflow.pnet"));
+    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE (test_cance_orch_and_agent_no_worker)
 BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/stalled_workflow.pnet"));
+    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");

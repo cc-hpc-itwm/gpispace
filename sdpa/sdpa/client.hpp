@@ -4,6 +4,7 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/job_states.hpp>
 #include <sdpa/types.hpp>
+#include <we/layer.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 
@@ -12,6 +13,22 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
+
+#include <fhg/util/first_then.hpp>
+
+inline std::ostream& operator<<(std::ostream& os, const sdpa::discovery_info_t& disc_info)
+{
+  std::string state(disc_info.state() ? sdpa::status::show (disc_info.state().get()):"NONE");
+  os<<"["<<disc_info.job_id()<<", "<<state<<", [";
+  fhg::util::first_then<std::string> const sep ("", ", ");
+  BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_info.children())
+  {
+    os<<sep<<child_info;
+  }
+  os<<"]]";
+
+  return os;
+}
 
 namespace sdpa
 {
@@ -36,6 +53,7 @@ namespace sdpa
       status::code queryJob(const job_id_t &, job_info_t &);
       void deleteJob(const job_id_t &);
       result_t retrieveResults(const job_id_t &);
+      sdpa::discovery_info_t discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id);
 
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);

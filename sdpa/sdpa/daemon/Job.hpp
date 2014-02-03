@@ -97,9 +97,10 @@ namespace sdpa {
         //      Start           Event                                   Next           Action                Guard
         //      +---------------+---------------------------------------+--------------+---------------------+-----
         _row<   Pending,        MSMDispatchJobEvent,                      Running >,
-        _row<   Pending,        events::CancelJobEvent, 		Canceled>,
+        _row<   Pending,        events::CancelJobEvent, 		Canceling>,
         a_row<  Pending,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished >,
         a_row<  Pending,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
+        a_irow< Pending,        MSMRescheduleEvent,                                     &sm::action_reschedule_job >,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished>,
         a_row<  Running,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
@@ -191,6 +192,8 @@ namespace sdpa {
       bool completed() const;
       bool is_running() const;
       bool is_canceled() const;
+      bool is_pending() const;
+      bool is_canceling() const;
 
       // job FSM actions
       virtual void action_job_failed(const events::JobFailedEvent&);

@@ -19,6 +19,9 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 
 #include <sdpa/daemon/Job.hpp>
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+#include <we/type/value/poke.hpp>
 #include <fhg/assert.hpp>
 #include <sstream>
 
@@ -104,47 +107,57 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   {
     Worker::worker_id_t worker_id = pEvt->from();
     we::layer::id_type actId = pEvt->job_id();
+    bool bAllPartResCollected(false);
 
-      // update the status of the reservation
-      scheduler()->workerFinished(worker_id, actId);
+    try {
+        // update the status of the reservation
+        scheduler()->workerFinished(worker_id, actId);
 
-      bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
+        bool bAllPartResCollected = scheduler()->allPartialResultsCollected(actId);
 
-      // if all the partial results were collected, notify the workflow engine
-      // about the status of the job (either finished, or failed
-      // the group is finished when all the partial results are "finished"
-      if(bTaskGroupComputed) {
-          if(scheduler()->groupFinished(actId))
-          {
-            pJob->JobFinished(pEvt);
-            DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
-            workflowEngine()->finished
-              (actId, we::type::activity_t (pEvt->result()));
-          }
-          else
-          {
-            events::JobFailedEvent* pJobFailedEvt(new events::JobFailedEvent( name()
-                                                                             , pEvt->from()
-                                                                             , pEvt->job_id()
-                                                                             , fhg::error::UNEXPECTED_ERROR
-                                                                             , "One of tasks of the group failed with the actual reservation!"));
-            pJob->JobFailed(pJobFailedEvt);
-            delete pJobFailedEvt;
+        // if all the partial results were collected, notify the workflow engine
+        // about the status of the job (either finished, or failed
+        // the group is finished when all the partial results are "finished"
+        if(bAllPartResCollected)
+        {
+            if(pJob->is_canceling())
+            {
+                DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has been canceled");
+                events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
+                pJob->CancelJobAck(&evtCancelAck);
+                workflowEngine()->canceled(actId);
+            }
+            else
+              if(scheduler()->groupFinished(actId))
+              {
+                pJob->JobFinished(pEvt);
+                DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
+                workflowEngine()->finished
+                  (actId, we::type::activity_t (pEvt->result()));
+              }
+              else
+              {
+                events::JobFailedEvent* pJobFailedEvt(new events::JobFailedEvent( name()
+                                                                                 , pEvt->from()
+                                                                                 , pEvt->job_id()
+                                                                                 , fhg::error::UNEXPECTED_ERROR
+                                                                                 , "One of tasks of the group failed with the actual reservation!"));
+                pJob->JobFailed(pJobFailedEvt);
+                delete pJobFailedEvt;
 
-            DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has failed");
-            workflowEngine()->failed( actId,
-                                      sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
-                                      "One of tasks of the group failed with the actual reservation!");
-          }
-      }
+                DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has failed");
+                workflowEngine()->failed( actId,
+                                          sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
+                                          "One of tasks of the group failed with the actual reservation!");
+              }
+        }
 
-      try {
-          DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
-          // if all partial results were collected, release the reservation
-          if(bTaskGroupComputed) {
-             scheduler()->releaseReservation(pJob->id());
-          }
-          scheduler()->deleteWorkerJob( worker_id, pJob->id() );
+        DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
+        // if all partial results were collected, release the reservation
+        if(bAllPartResCollected) {
+           scheduler()->releaseReservation(pJob->id());
+        }
+        scheduler()->deleteWorkerJob( worker_id, pJob->id() );
       }
       catch(WorkerNotFoundException const &)
       {
@@ -158,7 +171,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 
       try {
         //delete it also from job_map_
-        if(bTaskGroupComputed) {
+        if(bAllPartResCollected) {
             DLLOG (TRACE, _logger, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
            jobManager().deleteJob(pEvt->job_id());
         }
@@ -301,25 +314,38 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 
       // update the status of the reservation
 
-      scheduler()->workerFailed(worker_id, actId);
-      bool bTaskGroupComputed(scheduler()->allPartialResultsCollected(actId));
-
-      if(bTaskGroupComputed) {
-          pJob->JobFailed(pEvt);
-          workflowEngine()->failed( actId
-                                    , pEvt->error_code()
-                                    , pEvt->error_message()
-                                  );
-
-          // cancel the other jobs assigned to the workers which are
-          // in the reservation list
-      }
-
+      bool bAllPartResCollected(false);
       try {
-        DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
-        // if all the partial results were collected, release the reservation
-        if(bTaskGroupComputed) {
-           scheduler()->releaseReservation(pJob->id());
+          scheduler()->workerFailed(worker_id, actId);
+          bAllPartResCollected=scheduler()->allPartialResultsCollected(actId);
+
+          if(bAllPartResCollected)
+          {
+              if(pJob->is_canceling())
+              {
+                  DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has been canceled");
+                  events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
+                  pJob->CancelJobAck(&evtCancelAck);
+                  workflowEngine()->canceled(actId);
+              }
+              else
+              {
+                  DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
+                  pJob->JobFailed(pEvt);
+                  workflowEngine()->failed( actId
+                                            , pEvt->error_code()
+                                            , pEvt->error_message()
+                                          );
+              }
+
+              // cancel the other jobs assigned to the workers which are
+              // in the reservation list
+          }
+
+          DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
+          // if all the partial results were collected, release the reservation
+          if(bAllPartResCollected) {
+              scheduler()->releaseReservation(pJob->id());
         }
         scheduler()->deleteWorkerJob( worker_id, pJob->id() );
       }
@@ -336,7 +362,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
       try {
         //delete it also from job_map_
         DLLOG (TRACE, _logger, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
-        if(bTaskGroupComputed) {
+        if(bAllPartResCollected) {
             jobManager().deleteJob(pEvt->job_id());
         }
       }
@@ -437,41 +463,7 @@ namespace
 
 void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
 {
-  if(hasWorkflowEngine())
-    workflowEngine()->canceled(evt.job_id ());
 
-  sdpa::job_id_t jobId = evt.job_id();
-  Job* pJob(jobManager().findJob(jobId));
-
-  if(pJob)
-  {
-    DLLOG (TRACE, _logger, "Canceling the pending job "<<jobId<<" ... ");
-
-    pJob->CancelJob(&evt);
-    ptr_scheduler_->delete_job (jobId);
-
-    if(!isTop())
-    {
-      on_scope_exit _ ( boost::bind ( &Agent::sendEventToOther
-                                    , this
-                                    , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
-                                                                       , evt.from()
-                                                                       , events::ErrorEvent::SDPA_EUNKNOWN
-                                                                       , "Exception in Agent::cancelPendingJob"
-                                                                       )
-                                                      )
-                                    )
-                      );
-
-      jobManager().deleteJob(jobId);
-
-      _.dont();
-    }
-  }
-  else
-  {
-    DLLOG (WARN, _logger, "The job "<< evt.job_id() << "could not be canceled! Exception occurred: couln't find it!");
-  }
 }
 
 template <typename T>
@@ -513,88 +505,70 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
       }
 
      return;
-   }
+  }
 
-  if(pJob->getStatus() == sdpa::status::CANCELED)
+  if (pEvt->is_external())
   {
-      sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
+      if(pJob->getStatus() == sdpa::status::CANCELING)
+      {
+         sendEventToOther( events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
+                                                             , pEvt->from()
+                                                             , events::ErrorEvent::SDPA_EJOBALREADYCANCELED
+                                                             , "A cancelation request for this job was already posted!" )
+                                                  ));
+         return;
+      }
+
+      if(pJob->completed())
+      {
+
+          sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , pEvt->from()
-                                                          , events::ErrorEvent::SDPA_EJOBALREADYCANCELED
-                                                          , "Job already canceled" )
+                                                          , events::ErrorEvent::SDPA_EJOBTERMINATED
+                                                          , "Cannot cancel an already terminated job, its current status is: "
+                                                             + sdpa::status::show(pJob->getStatus()) )
                                                ));
-      return;
+
+          return;
+      }
+
+      // a Cancel message came from the upper level -> forward cancellation request to WE
+      DLLOG (TRACE, _logger, "Cancel the workflow "<<pEvt->job_id()<<". Current status is: "<<sdpa::status::show(pJob->getStatus()));
+      workflowEngine()->cancel(pEvt->job_id());
+      pJob->CancelJob(pEvt);
+      DLLOG (TRACE, _logger, "The current status of the workflow "<<pEvt->job_id()<<" is: "<<sdpa::status::show(pJob->getStatus()));
   }
-
-  if(pJob->completed())
+  else // the workflow engine issued the cancelation order for this job
   {
-    sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
-                                                        , pEvt->from()
-                                                        , events::ErrorEvent::SDPA_EJOBTERMINATED
-                                                        , "Cannot cancel an already terminated job, its current status is: "
-                                                           + sdpa::status::show(pJob->getStatus()) )
-                                             ));
-    return;
-  }
-
-
-  if( isTop() )
-  {
-    // send immediately an acknowledgment to the component that requested the cancellation
-    events::CancelJobAckEvent::Ptr pCancelAckEvt(new events::CancelJobAckEvent(name(), pEvt->from(), pEvt->job_id()));
-    sendEventToOther(pCancelAckEvt);
-    if(!isSubscriber(pEvt->from()))
-      sendEventToOther(pCancelAckEvt);
-
-    notifySubscribers(pCancelAckEvt);
-  }
-
-  if(!pEvt->is_external() || !hasWorkflowEngine())
-  {
-    on_scope_exit _ ( boost::bind ( &Agent::sendEventToOther
-                                  , this
-                                  , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
-                                                                     , pEvt->from()
-                                                                     , events::ErrorEvent::SDPA_EUNKNOWN
-                                                                     , "Exception in Agent::handleCancelJobEvent"
-                                                                     )
-                                                    )
-                                  )
-                    );
-    if (isTop()) _.dont();
-
     boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
+
+    events::CancelJobEvent::Ptr pCancelEvt( new events::CancelJobEvent( name()
+                                                                       , worker_id.get_value_or("")
+                                                                       , pEvt->job_id() ) );
+    // change the job status to "Canceling"
+    pJob->CancelJob(pEvt);
+    DLLOG (TRACE, _logger, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
 
     if(worker_id)
     {
       DLLOG (TRACE, _logger, "Tell the worker "<<*worker_id<<" to cancel the job "<<pEvt->job_id());
-      events::CancelJobEvent::Ptr pCancelEvt( new events::CancelJobEvent( name()
-                                                          , *worker_id
-                                                          , pEvt->job_id() ) );
       sendEventToOther(pCancelEvt);
-
-      // change the job status to "Canceling"
-      pJob->CancelJob(pEvt);
-      DLLOG (TRACE, _logger, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
     }
     else
     {
-      // possible situations:
-      // 1) the job wasn't yet assigned to any worker
-      // 1) is in the pending queue of a certain worker
-      // 1) the job was submitted to an worker but was not yet acknowledged
-      cancelPendingJob(*pEvt);
-    }
+        workflowEngine()->canceled(pEvt->job_id());
 
-    _.dont();
+        DLLOG (TRACE, _logger, "Canceling the pending job "<<pEvt->job_id()<<" ... ");
+
+        // reply with an ack here
+        events::CancelJobAckEvent evtCancelAck(name(), pEvt->from(), pEvt->job_id());
+        pJob->CancelJobAck(&evtCancelAck);
+        ptr_scheduler_->delete_job (pEvt->job_id());
+
+        jobManager().deleteJob(pEvt->job_id());
+    }
   }
-  else // a Cancel message came from the upper level -> forward cancellation request to WE
-  {
-    we::layer::id_type workflowId = pEvt->job_id();
-    DLLOG (TRACE, _logger, "Cancel the workflow "<<workflowId<<". Current status is: "<<sdpa::status::show(pJob->getStatus()));
-    workflowEngine()->cancel(workflowId);
-    pJob->CancelJob(pEvt);
-    DLLOG (TRACE, _logger, "The current status of the workflow "<<workflowId<<" is: "<<sdpa::status::show(pJob->getStatus()));
-  }
+
 }
 
 void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
@@ -690,4 +664,46 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
   }
 }
 
+void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
+{
+  sdpa::job_id_t job_id(pEvt->job_id());
+  Job* pJob = jobManager().findJob(job_id);
+
+   // if the event came from outside, forward it to the workflow engine
+  if(pEvt->is_external())
+  {
+      if(!pJob)
+      {
+         sdpa::discovery_info_t discover_result(pEvt->job_id(), boost::none, sdpa::discovery_info_set_t());
+         sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
+                                                                                                             , pEvt->from()
+                                                                                                             , pEvt->discover_id()
+                                                                                                             , discover_result)));
+
+         return;
+      }
+
+      m_map_discover_ids.insert(std::make_pair( pEvt->discover_id(), job_info_t(pEvt->from(), pEvt->job_id(), pJob->getStatus()) ));
+      workflowEngine()->discover(pEvt->discover_id(), job_id);
+  }
+  else
+  {
+      //! Note: the layer guarantees that the job was already submitted
+      sdpa::discovery_info_t discover_result(pEvt->job_id(), pJob->getStatus(), sdpa::discovery_info_set_t());
+      workflowEngine()->discovered(pEvt->discover_id(), discover_result);
+  }
+}
+
+void Agent::handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
+{
+  sdpa::agent_id_t master_name(m_map_discover_ids.at( pEvt->discover_id()).disc_issuer() );
+  sdpa::discovery_info_t disc_res(m_map_discover_ids.at( pEvt->discover_id()).job_id()
+                                  , m_map_discover_ids.at( pEvt->discover_id()).job_status()
+                                  , pEvt->discover_result().children() );
+  sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
+                                                                                                      , master_name
+                                                                                                      , pEvt->discover_id()
+                                                                                                      , disc_res)));
+  m_map_discover_ids.erase(pEvt->discover_id());
+}
 }} // end namespaces

@@ -14,6 +14,8 @@ namespace we
         , boost::function<void (id_type, type::activity_t)> rts_finished
         , boost::function<void (id_type, int, std::string)> rts_failed
         , boost::function<void (id_type)> rts_canceled
+        , boost::function<void (id_type, id_type)> rts_discover
+        , boost::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
         , boost::function<id_type()> rts_id_generator
         , boost::mt19937& random_extraction_engine
         )
@@ -22,6 +24,8 @@ namespace we
       , _rts_finished (rts_finished)
       , _rts_failed (rts_failed)
       , _rts_canceled (rts_canceled)
+      , _rts_discover (rts_discover)
+      , _rts_discovered (rts_discovered)
       , _rts_id_generator (rts_id_generator)
       , _random_extraction_engine (random_extraction_engine)
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
@@ -233,6 +237,67 @@ namespace we
 
         pos->second();
         _finalize_job_cancellation.erase (pos);
+      }
+    }
+
+    namespace
+    {
+      void discover_traverse
+        ( std::size_t* child_count
+        , layer::id_type discover_id
+        , boost::function<void (layer::id_type, layer::id_type)> rts_discover
+        , layer::id_type child
+        )
+      {
+        ++(*child_count);
+        rts_discover (discover_id, child);
+      }
+    }
+
+    void layer::discover (id_type discover_id, id_type id)
+    {
+      boost::mutex::scoped_lock const _ (_discover_state_mutex);
+      assert (_discover_state.find (discover_id) == _discover_state.end());
+
+      std::pair<std::size_t, sdpa::discovery_info_t > state
+        (0, sdpa::discovery_info_t(id, boost::none, sdpa::discovery_info_set_t()));
+
+      _running_jobs.apply ( id
+                          , boost::bind ( &discover_traverse
+                                        , &state.first
+                                        , discover_id
+                                        , _rts_discover
+                                        , _1
+                                        )
+                          );
+
+      //! \note Not a race: discovered can't be called in parallel
+      if (state.first == std::size_t (0))
+      {
+        _rts_discovered (discover_id, state.second);
+      }
+      else
+      {
+        _discover_state.insert (std::make_pair (discover_id, state));
+      }
+    }
+
+    void layer::discovered
+      (id_type discover_id, sdpa::discovery_info_t result)
+    {
+      boost::mutex::scoped_lock const _ (_discover_state_mutex);
+      assert (_discover_state.find (discover_id) != _discover_state.end());
+
+      std::pair<std::size_t, sdpa::discovery_info_t >& state
+        (_discover_state.find (discover_id)->second);
+
+      state.second.add_child_info (result);
+
+      --state.first;
+
+      if (state.first == std::size_t (0))
+      {
+        _rts_discovered (discover_id, state.second);
       }
     }
 
