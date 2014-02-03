@@ -15,3 +15,14 @@ fhg_add_plugin(sdpactl sdpactl.cpp
   INSTALL
   HEADERS sdpactl.hpp
 )
+
+fhg_add_plugin(sdpac sdpac.cpp
+  LINK_LIBRARIES sdpa
+                 ${FhgCom_LIBRARY}
+                 ${GSPC_LIBRARY_SHARED}
+                 ${Boost_SERIALIZATION_LIBRARY}
+                 ${Boost_THREAD_LIBRARY}
+                 ${Boost_SYSTEM_LIBRARY}
+  INSTALL
+  HEADERS sdpac.hpp
+)
