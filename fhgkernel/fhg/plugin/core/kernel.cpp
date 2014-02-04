@@ -161,7 +161,7 @@ namespace fhg
           ("another plugin with the same name is already loaded: " + std::string (desc->name));
       }
 
-      std::list<plugin::Plugin*> dependencies;
+      std::list<plugin_t::ptr_t> dependencies;
 
       std::list<std::string> depends;
       fhg::util::split( desc->depends
@@ -178,7 +178,7 @@ namespace fhg
             throw std::runtime_error("dependency not available: " + dep);
           }
         }
-        dependencies.push_back (lookup_plugin (dep)->get_plugin());
+        dependencies.push_back (lookup_plugin (dep));
       }
 
       mediator_ptr m (new PluginKernelMediator (desc->name, this));

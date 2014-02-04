@@ -14,6 +14,8 @@
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/plugin.hpp>
 
+#include <boost/foreach.hpp>
+
 namespace fhg
 {
   namespace core
@@ -23,7 +25,7 @@ namespace fhg
                        , const fhg_plugin_descriptor_t *my_desc
                        , void *my_handle
                        , fhg::plugin::Kernel *kernel
-                       , std::list<plugin::Plugin*> deps
+                       , std::list<plugin_t::ptr_t> deps
                        )
       : m_name (my_name)
       , m_file_name(my_filename)
@@ -31,7 +33,7 @@ namespace fhg
       , m_descriptor (my_desc)
       , m_handle (my_handle)
       , m_started (false)
-      , m_dependencies()
+      , m_dependencies (deps)
       , m_refcount(0)
     {
       assert (m_descriptor != 0);
@@ -52,7 +54,12 @@ namespace fhg
 
       m_started = true;
 
-      m_plugin->fhg_plugin_start_entry(kernel, deps);
+      std::list<plugin::Plugin*> deps_raw;
+      BOOST_FOREACH (ptr_t p, deps)
+      {
+        deps_raw.push_back (p->get_plugin());
+      }
+      m_plugin->fhg_plugin_start_entry(kernel, deps_raw);
     }
 
     plugin_t::~plugin_t ()

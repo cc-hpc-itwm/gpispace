@@ -29,7 +29,7 @@ namespace fhg
                , const fhg_plugin_descriptor_t *
                , void * handle
                , fhg::plugin::Kernel *kernel
-               , std::list<plugin::Plugin*> deps
+               , std::list<plugin_t::ptr_t> deps
                );
       ~plugin_t ();
 
