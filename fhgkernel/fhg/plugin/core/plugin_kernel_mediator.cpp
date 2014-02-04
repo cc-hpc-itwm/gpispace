@@ -15,6 +15,7 @@ namespace fhg
                                                , kernel_t *k
                                                )
       : m_plugin(p)
+      , _name (p->name())
       , m_kernel(k)
     {
       assert (m_plugin);
@@ -28,12 +29,12 @@ namespace fhg
 
     std::string PluginKernelMediator::get(std::string const & key, std::string const &dflt) const
     {
-      return m_kernel->get("plugin." + m_plugin->name() + "." + key, dflt);
+      return m_kernel->get("plugin." + _name + "." + key, dflt);
     }
 
     int PluginKernelMediator::shutdown ()
     {
-      DLOG(WARN, "plugin `" << m_plugin->name() << "' requested to stop the kernel!");
+      DLOG(WARN, "plugin `" << _name << "' requested to stop the kernel!");
       m_kernel->stop();
       return 0;
     }
@@ -41,7 +42,7 @@ namespace fhg
     int PluginKernelMediator::kill ()
     {
       LOG (WARN
-          , "plugin `" << m_plugin->name()
+          , "plugin `" << _name
           << "' requested to terminate the kernel!"
           );
       ::kill (SIGKILL, getpid ());
@@ -51,7 +52,7 @@ namespace fhg
     int PluginKernelMediator::terminate ()
     {
       LOG (WARN
-          , "plugin `" << m_plugin->name()
+          , "plugin `" << _name
           << "' requested to terminate the kernel!"
           );
       ::kill (SIGTERM, getpid ());

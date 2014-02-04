@@ -30,6 +30,7 @@ namespace fhg
       std::string const & get_name () const;
     private:
       fhg::core::plugin_t::ptr_t m_plugin;
+      std::string _name;
       fhg::core::kernel_t *m_kernel;
     };
   }
