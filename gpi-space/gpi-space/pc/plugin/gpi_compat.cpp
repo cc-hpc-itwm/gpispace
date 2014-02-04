@@ -50,7 +50,9 @@ public:
           )
         )
       );
-    gpi::GPI* gpi_api (fhg_kernel()->acquire<gpi::GPI>("gpi"));
+    fhg_assert (m_dependencies.size() == 1);
+    gpi::GPI* gpi_api (dynamic_cast<gpi::GPI*>(*m_dependencies.begin()));
+    fhg_assert (gpi_api);
 
     gpi_compat = this;
 
