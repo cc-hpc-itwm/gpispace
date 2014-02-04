@@ -1269,7 +1269,7 @@ private:
           MLOG( WARN, "execution of job failed"
               << " and terminate on failure policy is in place."
               );
-          fhg_kernel()->terminate();
+          ::kill (SIGTERM, getpid());
         }
 
         {
