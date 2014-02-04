@@ -461,11 +461,6 @@ namespace
   };
 }
 
-void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent&)
-{
-
-}
-
 template <typename T>
 void Agent::notifySubscribers(const T& ptrEvt)
 {

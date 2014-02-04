@@ -45,8 +45,6 @@ namespace sdpa {
         virtual void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt);
         virtual void handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt);
 
-        void cancelPendingJob (const sdpa::events::CancelJobEvent& evt);
-
         virtual void finished(const we::layer::id_type & id, const we::type::activity_t&);
         virtual void failed( const we::layer::id_type& workflowId, int error_code, std::string const& reason);
 
