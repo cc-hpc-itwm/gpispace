@@ -1,13 +1,14 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE we_expr_rename
+#include <boost/test/unit_test.hpp>
+
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
 #include <iostream>
 
-#include <cstdlib>
-
-int main (int, char **)
+BOOST_AUTO_TEST_CASE (NO_TEST)
 {
   typedef expr::eval::context context_t;
   typedef expr::parse::parser parser_t;
@@ -26,6 +27,4 @@ int main (int, char **)
   parser.rename ("a", "A");
 
   std::cout << parser << std::endl;
-
-  return EXIT_SUCCESS;
 }
