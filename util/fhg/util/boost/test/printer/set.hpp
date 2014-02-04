@@ -1,23 +1,16 @@
 // mirko.rahn@itwm.fhg.de
 
-#include <fhg/util/boost/test.hpp>
-#include <fhg/util/first_then.hpp>
+#ifndef FHG_UTIL_BOOST_TEST_PRINTER_SET_HPP
+#define FHG_UTIL_BOOST_TEST_PRINTER_SET_HPP
 
-#include <boost/foreach.hpp>
+#include <fhg/util/boost/test.hpp>
+#include <fhg/util/boost/test/printer/container.hpp>
 
 #include <set>
-#include <string>
 
-FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER(<typename T>, std::set<T>, os, l)
+FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER(<typename T>, std::set<T>, os, s)
 {
-  fhg::util::first_then<std::string> const sep ("", ", ");
-
-  os << "set {";
-
-  BOOST_FOREACH (T const& x, l)
-  {
-    os << sep << FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER (x);
-  }
-
-  os << "}";
+  fhg::util::boost::test::printer::container (os, s, "set {", "}");
 }
+
+#endif
