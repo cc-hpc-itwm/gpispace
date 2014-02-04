@@ -9,10 +9,14 @@
 
 #include <fhg/plugin/descriptor.hpp>
 #include <fhg/plugin/kernel.hpp>
-#include <fhg/plugin/plugin_base.hpp>
 
 namespace fhg
 {
+  namespace plugin
+  {
+    class Plugin;
+  }
+
   namespace core
   {
     class plugin_t

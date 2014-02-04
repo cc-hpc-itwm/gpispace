@@ -8,12 +8,12 @@
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <fhg/plugin/plugin_base.hpp>
-
 namespace fhg
 {
   namespace plugin
   {
+    class Plugin;
+
     // this class only represents the interface available for a single plugin it
     // is implemented  by a mediator class  having access to the  plugin and the
     // real kernel,  therefore it's possible  to track dependencies by  calls to
