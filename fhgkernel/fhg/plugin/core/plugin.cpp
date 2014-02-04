@@ -20,6 +20,14 @@ namespace fhg
 {
   namespace core
   {
+    plugin_t::close_on_dtor_dlhandle::close_on_dtor_dlhandle (void* handle)
+      : _ (handle)
+    {}
+    plugin_t::close_on_dtor_dlhandle::~close_on_dtor_dlhandle()
+    {
+      dlclose (_);
+    }
+
     plugin_t::plugin_t ( std::string const & my_name
                        , std::string const & my_filename
                        , const fhg_plugin_descriptor_t *my_desc
@@ -45,11 +53,10 @@ namespace fhg
           (fhg::plugin::Kernel*, std::list<fhg::plugin::Plugin*>);
       } create_plugin;
 
-      create_plugin._ptr = dlsym(m_handle, "fhg_get_plugin_instance");
+      create_plugin._ptr = dlsym(m_handle._, "fhg_get_plugin_instance");
 
       if (char* error = dlerror())
       {
-        dlclose(m_handle);
         throw std::runtime_error("could not get create function: " + std::string(error));
       }
 
@@ -68,8 +75,6 @@ namespace fhg
       m_plugin = NULL;
 
       m_dependencies.clear();
-
-      dlclose (m_handle);
     }
 
     void plugin_t::handle_plugin_loaded (plugin_t::ptr_t other)

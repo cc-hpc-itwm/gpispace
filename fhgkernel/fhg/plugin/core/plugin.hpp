@@ -42,7 +42,13 @@ namespace fhg
       std::string m_file_name;
       fhg::plugin::Plugin *m_plugin;
       const fhg_plugin_descriptor_t *m_descriptor;
-      void *m_handle;
+
+      struct close_on_dtor_dlhandle
+      {
+        close_on_dtor_dlhandle (void*);
+        ~close_on_dtor_dlhandle();
+        void* _;
+      } m_handle;
 
       std::list<ptr_t> m_dependencies;
     };
