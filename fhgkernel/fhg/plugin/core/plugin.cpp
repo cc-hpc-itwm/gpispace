@@ -27,6 +27,26 @@ namespace fhg
     {
       dlclose (_);
     }
+    template<typename T>
+      T* plugin_t::close_on_dtor_dlhandle::sym (std::string name)
+    {
+      dlerror();
+
+      union
+      {
+        void* _ptr;
+        T* _data;
+      } symbol;
+
+      symbol._ptr = dlsym (_, name.c_str());
+
+      if (char* error = dlerror())
+      {
+        throw std::runtime_error ("could not get symbol '" + name + "': " + error);
+      }
+
+      return symbol._data;
+    }
 
     std::list<plugin::Plugin*> plugin_t::to_raw (std::list<plugin_t::ptr_t> deps)
     {
@@ -46,23 +66,9 @@ namespace fhg
       , m_handle (my_handle)
       , m_dependencies (deps)
     {
-      dlerror();
-
-      union
-      {
-        void* _ptr;
-        fhg::plugin::Plugin* (*_fun)
-          (fhg::plugin::Kernel*, std::list<fhg::plugin::Plugin*>);
-      } create_plugin;
-
-      create_plugin._ptr = dlsym(m_handle._, "fhg_get_plugin_instance");
-
-      if (char* error = dlerror())
-      {
-        throw std::runtime_error("could not get create function: " + std::string(error));
-      }
-
-      m_plugin = create_plugin._fun (kernel, to_raw (deps));
+      m_plugin = m_handle.sym
+        <plugin::Plugin* (plugin::Kernel*, std::list<plugin::Plugin*>)>
+          ("fhg_get_plugin_instance") (kernel, to_raw (deps));
     }
 
     plugin_t::~plugin_t ()

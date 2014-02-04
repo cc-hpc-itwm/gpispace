@@ -41,6 +41,8 @@ namespace fhg
         close_on_dtor_dlhandle (void*);
         ~close_on_dtor_dlhandle();
         void* _;
+
+        template<typename T> T* sym (std::string);
       } m_handle;
 
       std::list<ptr_t> m_dependencies;
