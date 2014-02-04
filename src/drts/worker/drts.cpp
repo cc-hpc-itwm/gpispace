@@ -578,9 +578,6 @@ class DRTSImpl : FHG_PLUGIN
 public:
   DRTSImpl (Kernel *k, std::list<Plugin*> deps)
     : Plugin (k, deps)
-  {}
-
-  FHG_PLUGIN_START()
   {
     //! \todo ctor parameters
     const boost::function<void()> request_stop

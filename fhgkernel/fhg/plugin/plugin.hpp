@@ -17,8 +17,6 @@
 
 #define FHG_PLUGIN public fhg::plugin::Plugin
 
-#define FHG_PLUGIN_START() virtual void fhg_plugin_start ()
-
 #define FHG_PLUGIN_STOP() virtual void fhg_plugin_stop ()
 
 #define FHG_ON_PLUGIN_LOADED(p) virtual void fhg_on_plugin_loaded(Plugin* p)
@@ -60,9 +58,6 @@ namespace fhg
       {}
       virtual ~Plugin(){}
 
-      FHG_PLUGIN_START()
-      {
-      }
       FHG_PLUGIN_STOP()
       {
       }

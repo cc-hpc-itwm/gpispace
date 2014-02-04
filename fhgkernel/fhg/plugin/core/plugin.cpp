@@ -62,7 +62,6 @@ namespace fhg
       }
 
       m_plugin = create_plugin._fun (kernel, deps_raw);
-      m_plugin->fhg_plugin_start();
       m_started = true;
     }
 

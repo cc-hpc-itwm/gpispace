@@ -22,14 +22,6 @@ public:
     , Capability ("GPI", "PGAS")
     , api ("")
     , _try_start_loop (NULL)
-  {}
-
-  virtual ~GpiPluginImpl()
-  {
-    api.stop();
-  }
-
-  FHG_PLUGIN_START()
   {
     const std::string socket_path
       ( fhg_kernel()->get ( "socket"
@@ -39,13 +31,13 @@ public:
                           + boost::lexical_cast<std::string>(0) // numa socket
                           )
       );
-   const bool start_synchronous
+    const bool start_synchronous
       (fhg_kernel()->get("startmode", "nowait") == "wait");
-   boost::optional<std::size_t> max_retries_until_defer_startup
-     ( start_synchronous
-     ? boost::optional<std::size_t>()
-     : fhg_kernel()->get<std::size_t> ("retries_to_defer", "1")
-     );
+    boost::optional<std::size_t> max_retries_until_defer_startup
+      ( start_synchronous
+      ? boost::optional<std::size_t>()
+      : fhg_kernel()->get<std::size_t> ("retries_to_defer", "1")
+      );
 
     api.path (socket_path);
 
@@ -82,6 +74,11 @@ public:
         _try_start_loop = new boost::thread (&GpiPluginImpl::restart_loop, this);
       }
     }
+  }
+
+  virtual ~GpiPluginImpl()
+  {
+    api.stop();
   }
 
   FHG_PLUGIN_STOP()
