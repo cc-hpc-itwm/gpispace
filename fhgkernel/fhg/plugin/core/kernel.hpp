@@ -58,7 +58,7 @@ namespace fhg
       typedef boost::condition_variable_any condition_type;
 
       typedef boost::shared_ptr<PluginKernelMediator> mediator_ptr;
-      typedef std::map<std::string, mediator_ptr> plugin_map_t;
+      typedef std::map<std::string, std::pair<mediator_ptr, plugin_t::ptr_t> > plugin_map_t;
       typedef std::map<std::string, std::string> config_t;
 
       int unload_plugin (plugin_map_t::iterator it);

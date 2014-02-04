@@ -57,7 +57,7 @@ namespace fhg
       plugin_map_t::iterator p (m_plugins.find(name));
       if (p != m_plugins.end())
       {
-        return p->second->plugin();
+        return p->second.second;
       }
       else
       {
@@ -202,7 +202,7 @@ namespace fhg
       {
         {
           lock_type plugins_lock (m_mtx_plugins);
-          m_plugins.insert (std::make_pair(p->name(), m));
+          m_plugins.insert (std::make_pair(p->name(), std::make_pair (m, p)));
           m_load_order.push_back (p->name ());
         }
 
@@ -217,7 +217,7 @@ namespace fhg
             )
         {
           if (it->first != p->name())
-            it->second->plugin()->handle_plugin_loaded(p);
+            it->second.second->handle_plugin_loaded(p);
         }
       }
       else
@@ -254,16 +254,16 @@ namespace fhg
       {
         if (it->first != p->first)
         {
-          it->second->plugin()->handle_plugin_preunload(p->second->plugin());
+          it->second.second->handle_plugin_preunload(p->second.second);
         }
       }
 
-      if (p->second->plugin()->is_in_use())
+      if (p->second.second->is_in_use())
       {
         return -EBUSY;
       }
 
-      int rc = p->second->plugin()->stop();
+      int rc = p->second.second->stop();
 
       LOG(TRACE, "plugin '" << p->first << "' unloaded");
 
