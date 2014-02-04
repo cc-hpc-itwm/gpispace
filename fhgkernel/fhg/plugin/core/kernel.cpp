@@ -107,6 +107,7 @@ namespace fhg
     }
 
     int kernel_t::load_plugin_from_file (std::string const &file)
+    try
     {
       lock_type load_plugin_lock (m_mtx_load_plugin);
 
@@ -189,15 +190,7 @@ namespace fhg
                                           )
                         );
 
-      try
-      {
-        p->init (m.get(), dependencies);
-      }
-      catch (std::runtime_error const& ex)
-      {
-        throw std::runtime_error
-          ("plugin " + p->name() + " failed to start: " + ex.what());
-      }
+      p->init (m.get(), dependencies);
 
       {
         lock_type plugins_lock (m_mtx_plugins);
@@ -221,6 +214,12 @@ namespace fhg
 
       return 0;
     }
+    catch (std::runtime_error const& ex)
+    {
+      throw std::runtime_error
+        ("plugin " + file + " failed to start: " + ex.what());
+    }
+
 
     int kernel_t::load_plugin(std::string const & entity)
     {
