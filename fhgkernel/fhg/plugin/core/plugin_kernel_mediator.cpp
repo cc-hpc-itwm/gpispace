@@ -39,26 +39,6 @@ namespace fhg
       return 0;
     }
 
-    int PluginKernelMediator::kill ()
-    {
-      LOG (WARN
-          , "plugin `" << _name
-          << "' requested to terminate the kernel!"
-          );
-      ::kill (SIGKILL, getpid ());
-      return 0;
-    }
-
-    int PluginKernelMediator::terminate ()
-    {
-      LOG (WARN
-          , "plugin `" << _name
-          << "' requested to terminate the kernel!"
-          );
-      ::kill (SIGTERM, getpid ());
-      return 0;
-    }
-
     std::string const & PluginKernelMediator::get_name () const
     {
       return m_kernel->get_name ();

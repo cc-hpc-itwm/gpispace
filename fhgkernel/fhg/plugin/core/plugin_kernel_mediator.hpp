@@ -23,8 +23,6 @@ namespace fhg
 
       std::string get(std::string const & key, std::string const &dflt) const;
 
-      int kill ();
-      int terminate ();
       int shutdown ();
 
       std::string const & get_name () const;

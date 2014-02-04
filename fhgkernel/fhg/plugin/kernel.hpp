@@ -38,9 +38,7 @@ namespace fhg
         return get<T>(key, boost::lexical_cast<std::string>(dflt));
       }
 
-      virtual int kill () = 0;
       virtual int shutdown () = 0;
-      virtual int terminate () = 0;
 
       virtual std::string const & get_name () const = 0;
     };
