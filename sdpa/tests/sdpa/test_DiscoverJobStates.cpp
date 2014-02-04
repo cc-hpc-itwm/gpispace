@@ -74,11 +74,11 @@ namespace sdpa {
         }
       }
 
-      void wait_for_discovery_result(we::layer::id_type& discover_id)
+      we::layer::id_type wait_for_discovery_result()
       {
         boost::unique_lock<boost::mutex> lock_res(_mtx_result);
         _cond_result.wait(lock_res);
-        discover_id = _discover_id;
+        return _discover_id;
       }
 
       bool has_two_pending_children()
@@ -140,10 +140,9 @@ BOOST_AUTO_TEST_CASE(test_discover_activities)
 
   while(!agent.has_two_pending_children())
   {
-      we::layer::id_type sent_disc_id(get_next_disc_id()), exp_disc_id;
+      we::layer::id_type sent_disc_id(get_next_disc_id());
       agent.workflowEngine()->discover (sent_disc_id, id);
-      agent.wait_for_discovery_result(exp_disc_id);
-      BOOST_REQUIRE_EQUAL(exp_disc_id, sent_disc_id);
+      BOOST_REQUIRE_EQUAL(agent.wait_for_discovery_result(), sent_disc_id);
   }
 
   thrd_notify.interrupt();
