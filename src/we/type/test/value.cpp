@@ -361,7 +361,7 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (remove)
+BOOST_AUTO_TEST_CASE (test_remove)
 {
   using pnet::type::value::value_type;
   using pnet::type::value::poke;
