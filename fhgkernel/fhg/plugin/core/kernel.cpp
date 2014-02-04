@@ -106,8 +106,14 @@ namespace fhg
     {
       lock_type load_plugin_lock (m_mtx_load_plugin);
 
-      if (is_plugin_loaded (name))
-        return 0;
+      {
+        lock_type plugins_lock (m_mtx_plugins);
+        if (m_plugins.find(name) != m_plugins.end())
+        {
+          return 0;
+        }
+      }
+
       if (m_stop_requested)
         return ECANCELED;
 
@@ -193,10 +199,13 @@ namespace fhg
       const fhg_plugin_descriptor_t *desc = query_plugin._fun();
       const std::string plugin_name (desc->name);
 
-      if (is_plugin_loaded (plugin_name))
       {
-        throw std::runtime_error
-          ("another plugin with the same name is already loaded: " + plugin_name);
+        lock_type plugins_lock (m_mtx_plugins);
+        if (m_plugins.find (plugin_name) != m_plugins.end())
+        {
+          throw std::runtime_error
+            ("another plugin with the same name is already loaded: " + plugin_name);
+        }
       }
 
       std::list<plugin_t::ptr_t> dependencies;
@@ -269,12 +278,6 @@ namespace fhg
       {
         return load_plugin_by_name (entity);
       }
-    }
-
-    bool kernel_t::is_plugin_loaded (std::string const &name)
-    {
-      lock_type plugins_lock (m_mtx_plugins);
-      return m_plugins.find(name) != m_plugins.end();
     }
 
     void kernel_t::stop ()
