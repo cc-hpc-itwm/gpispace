@@ -44,7 +44,9 @@ namespace sdpa {
       {
         GenericDaemon::submit(activityId, activity);
         if(jobManager().numberOfJobs()<2)
+        {
           _cond_all_submitted.notify_one();
+        }
       }
 
       void wait_all_submitted()
@@ -82,7 +84,9 @@ namespace sdpa {
       bool has_two_pending_children()
       {
         if(_discovery_result.children().size()<2)
+        {
           return false;
+        }
 
         bool b_invariant(true);
         BOOST_FOREACH(const sdpa::discovery_info_t& child_info, _discovery_result.children())
@@ -145,7 +149,9 @@ BOOST_AUTO_TEST_CASE(test_discover_activities)
 
   thrd_notify.interrupt();
   if(thrd_notify.joinable())
+  {
     thrd_notify.join();
+  }
 }
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
