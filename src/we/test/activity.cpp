@@ -11,6 +11,7 @@
 #include <we/type/value.hpp>
 #include <we/type/port.hpp>
 #include <we/type/activity.hpp>
+#include <we/type/value/poke.hpp>
 #include <we/context.hpp>
 
 #include <we/type/module_call.fwd.hpp>
@@ -183,4 +184,38 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
   BOOST_REQUIRE_EQUAL (values_by_port_id.size(), 2);
   BOOST_REQUIRE_EQUAL (values_by_port_id.at (port_id_store_out_net).size(), 2);
   BOOST_REQUIRE_EQUAL (values_by_port_id.at (port_id_pair_net).size(), 4);
+
+  for (long bid (0); bid < 2; ++bid)
+  {
+    bitsetofint::type bs;
+
+    for (long vid (0); vid < 2; ++vid)
+    {
+      pnet::type::value::value_type s;
+      pnet::type::value::poke ("bid", s, bid);
+      pnet::type::value::poke ("vid", s, vid);
+
+      BOOST_REQUIRE
+        ( std::find ( values_by_port_id.at (port_id_pair_net).begin()
+                    , values_by_port_id.at (port_id_pair_net).end()
+                    , s
+                    )
+        != values_by_port_id.at (port_id_pair_net).end()
+        );
+
+      bs.ins (vid);
+    }
+
+    pnet::type::value::value_type p;
+    pnet::type::value::poke ("bid", p, bid);
+    pnet::type::value::poke ("seen", p, bs);
+
+    BOOST_REQUIRE
+      ( std::find ( values_by_port_id.at (port_id_store_out_net).begin()
+                  , values_by_port_id.at (port_id_store_out_net).end()
+                  , p
+                  )
+      != values_by_port_id.at (port_id_store_out_net).end()
+      );
+  }
 }
