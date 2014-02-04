@@ -182,18 +182,14 @@ namespace fhg
         dependencies.push_back (lookup_plugin (dep)->get_plugin());
       }
 
+      mediator_ptr m (new PluginKernelMediator (desc->name, this));
+
       plugin_t::ptr_t p (new plugin_t( desc->name
                                           , full_path_to_file
                                           , desc
                                           , handle
                                           )
                         );
-
-      mediator_ptr m
-        (new PluginKernelMediator( desc->name
-                                 , this
-                                 )
-        );
 
       rc = p->init (m.get(), dependencies);
       if (rc == START_SUCCESSFUL) // started
