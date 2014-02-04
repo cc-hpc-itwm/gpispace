@@ -10,7 +10,7 @@
 #include <fhg/util/thread/queue.hpp>
 
 #include <fhg/plugin/core/plugin.hpp>
-#include <fhg/plugin/core/plugin_kernel_mediator.hpp>
+#include <fhg/plugin/kernel.hpp>
 
 namespace fhg
 {
@@ -27,7 +27,7 @@ namespace fhg
       fhg::util::thread::event<> _stopped;
     };
 
-    class kernel_t
+    class kernel_t : public plugin::Kernel
     {
     public:
       typedef std::vector<std::string> search_path_t;
@@ -38,23 +38,23 @@ namespace fhg
                );
       ~kernel_t ();
 
-      boost::function<void()> stop;
+      boost::function<void()> _stop;
+      virtual void stop() { _stop(); }
 
       int load_plugin (std::string const & entity);
       int load_plugin_by_name (std::string const & name);
       int load_plugin_from_file (std::string const & file);
 
-      std::string get(std::string const & key, std::string const &dflt) const;
+      virtual std::string get(std::string const & key, std::string const &dflt) const;
       std::string put(std::string const & key, std::string const &value);
 
-      std::string const & get_name () const;
+      virtual std::string const & get_name () const;
     private:
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
 
-      typedef boost::shared_ptr<PluginKernelMediator> mediator_ptr;
-      typedef std::map<std::string, std::pair<mediator_ptr, plugin_t::ptr_t> > plugin_map_t;
+      typedef std::map<std::string, plugin_t::ptr_t> plugin_map_t;
       typedef std::map<std::string, std::string> config_t;
 
       mutable mutex_type m_mtx_plugins;

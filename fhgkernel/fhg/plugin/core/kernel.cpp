@@ -50,7 +50,7 @@ namespace fhg
                        , fhg::core::kernel_t::search_path_t search_path
                        , boost::function<void()> request_stop
                        )
-      : stop (request_stop)
+      : _stop (request_stop)
       , m_name (name)
       , m_search_path (search_path)
     {
@@ -66,7 +66,7 @@ namespace fhg
         {
           if (other.first != plugin->first)
           {
-            other.second.second->handle_plugin_preunload (plugin->second.second);
+            other.second->handle_plugin_preunload (plugin->second);
           }
         }
 
@@ -197,21 +197,19 @@ namespace fhg
             }
           }
 
-          dependencies.push_back (m_plugins.find (dep)->second.second);
+          dependencies.push_back (m_plugins.find (dep)->second);
         }
       }
 
-      mediator_ptr m (new PluginKernelMediator (plugin_name, this));
-
       plugin_t::ptr_t p (new plugin_t( handle
-                                     , m.get()
+                                     , this
                                      , dependencies
                                           )
                         );
 
       {
         lock_type plugins_lock (m_mtx_plugins);
-        m_plugins.insert (std::make_pair(plugin_name, std::make_pair (m, p)));
+        m_plugins.insert (std::make_pair(plugin_name, p));
         m_load_order.push_back (plugin_name);
       }
 
@@ -224,7 +222,7 @@ namespace fhg
       {
         if (other.first != plugin_name)
         {
-          other.second.second->handle_plugin_loaded (p);
+          other.second->handle_plugin_loaded (p);
         }
       }
 

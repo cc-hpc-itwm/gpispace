@@ -9,7 +9,6 @@ set(hdrs
 set (core_srcs
   core/plugin.cpp
   core/kernel.cpp
-  core/plugin_kernel_mediator.cpp
   core/license.cpp
 )
 
