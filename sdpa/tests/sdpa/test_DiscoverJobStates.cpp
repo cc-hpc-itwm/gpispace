@@ -160,9 +160,10 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 
   sdpa::client::Client client (orchestrator.name());
 
-  sdpa::discovery_info_t const disc_res(client.discoverJobStates("disc_id_0", "inexistent_job_id"));
-
-  BOOST_REQUIRE_EQUAL(disc_res.state(), boost::none);
+  BOOST_REQUIRE_EQUAL
+    ( client.discoverJobStates ("disc_id_0", "inexistent_job_id").state()
+    , boost::none
+    );
 }
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
