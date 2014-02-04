@@ -84,11 +84,6 @@ namespace fhg
       if (m_handle) dlclose (m_handle);
     }
 
-    std::string const & plugin_t::name () const
-    {
-      return m_name;
-    }
-
     void plugin_t::inc_refcount ()
     {
       lock_type lock(m_refcount_mtx);

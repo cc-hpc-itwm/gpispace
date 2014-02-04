@@ -154,11 +154,12 @@ namespace fhg
       }
 
       const fhg_plugin_descriptor_t *desc = query_plugin._fun();
+      const std::string plugin_name (desc->name);
 
-      if (is_plugin_loaded (desc->name))
+      if (is_plugin_loaded (plugin_name))
       {
         throw std::runtime_error
-          ("another plugin with the same name is already loaded: " + std::string (desc->name));
+          ("another plugin with the same name is already loaded: " + plugin_name);
       }
 
       std::list<plugin_t::ptr_t> dependencies;
@@ -181,9 +182,9 @@ namespace fhg
         dependencies.push_back (lookup_plugin (dep));
       }
 
-      mediator_ptr m (new PluginKernelMediator (desc->name, this));
+      mediator_ptr m (new PluginKernelMediator (plugin_name, this));
 
-      plugin_t::ptr_t p (new plugin_t( desc->name
+      plugin_t::ptr_t p (new plugin_t( plugin_name
                                           , full_path_to_file
                                           , desc
                                           , handle
@@ -194,12 +195,12 @@ namespace fhg
 
       {
         lock_type plugins_lock (m_mtx_plugins);
-        m_plugins.insert (std::make_pair(p->name(), std::make_pair (m, p)));
-        m_load_order.push_back (p->name ());
+        m_plugins.insert (std::make_pair(plugin_name, std::make_pair (m, p)));
+        m_load_order.push_back (plugin_name);
       }
 
       MLOG( TRACE
-          , "loaded plugin '" << p->name() << "'"
+          , "loaded plugin '" << plugin_name << "'"
           << " (from: '" << full_path_to_file << "')"
           );
 
@@ -208,7 +209,7 @@ namespace fhg
           ; ++it
           )
       {
-        if (it->first != p->name())
+        if (it->first != plugin_name)
           it->second.second->handle_plugin_loaded(p);
       }
 

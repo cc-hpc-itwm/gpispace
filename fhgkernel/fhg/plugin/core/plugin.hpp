@@ -33,8 +33,6 @@ namespace fhg
                );
       ~plugin_t ();
 
-      std::string const & name () const;
-
       bool is_in_use() const;
 
       void handle_plugin_loaded (plugin_t::ptr_t);
