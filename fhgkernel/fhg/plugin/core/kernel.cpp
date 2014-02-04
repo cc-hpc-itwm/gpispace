@@ -176,16 +176,8 @@ namespace fhg
           ("another plugin with the same name is already loaded: " + std::string (desc->name));
       }
 
-      plugin_t::ptr_t p (new plugin_t( desc->name
-                                          , full_path_to_file
-                                          , desc
-                                          , 0
-                                          , handle
-                                          )
-                        );
-
       std::list<std::string> depends;
-      fhg::util::split( p->descriptor()->depends
+      fhg::util::split( desc->depends
                       , ","
                       , std::back_inserter (depends)
                       );
@@ -200,6 +192,14 @@ namespace fhg
           }
         }
       }
+
+      plugin_t::ptr_t p (new plugin_t( desc->name
+                                          , full_path_to_file
+                                          , desc
+                                          , 0
+                                          , handle
+                                          )
+                        );
 
       // create mediator
       // todo: write a control plugin that opens a socket or whatever
