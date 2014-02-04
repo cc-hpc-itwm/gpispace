@@ -21,29 +21,12 @@ namespace
 {
   struct exec_context : public we::context
   {
-    virtual void handle_internally (we::type::activity_t&, net_t const&)
-    {
-    }
-
-    virtual void handle_internally (we::type::activity_t&, mod_t const&)
-    {
-    }
-
-    virtual void handle_internally (we::type::activity_t&, expr_t const&)
-    {
-    }
-
-    virtual void handle_externally (we::type::activity_t&, net_t const&)
-    {
-    }
-
-    virtual void handle_externally (we::type::activity_t&, mod_t const&)
-    {
-    }
-
-    virtual void handle_externally (we::type::activity_t&, expr_t const&)
-    {
-    }
+    virtual void handle_internally (we::type::activity_t&, net_t const&) {}
+    virtual void handle_internally (we::type::activity_t&, mod_t const&) {}
+    virtual void handle_internally (we::type::activity_t&, expr_t const&) {}
+    virtual void handle_externally (we::type::activity_t&, net_t const&) {}
+    virtual void handle_externally (we::type::activity_t&, mod_t const&) {}
+    virtual void handle_externally (we::type::activity_t&, expr_t const&) {}
   };
 }
 
