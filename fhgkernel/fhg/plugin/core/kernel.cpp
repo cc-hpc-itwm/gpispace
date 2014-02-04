@@ -292,18 +292,6 @@ namespace fhg
             else
               break;
           }
-          /*
-          for ( plugin_map_t::iterator it (m_plugins.begin())
-              ; it != m_plugins.end()
-              ; ++it
-              )
-          {
-            if (unload_plugin (it) < 0)
-              continue;
-            else
-              break;
-          }
-          */
         }
       }
     }
