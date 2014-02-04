@@ -43,7 +43,7 @@ namespace fhg
       void add_dependency (const ptr_t &);
       void del_dependency (const ptr_t &);
 
-      int init (fhg::plugin::Kernel *kernel);
+      int init (fhg::plugin::Kernel *kernel, std::list<plugin::Plugin*> deps);
       int stop  ();
 
       template <typename T>

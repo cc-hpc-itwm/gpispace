@@ -176,6 +176,8 @@ namespace fhg
           ("another plugin with the same name is already loaded: " + std::string (desc->name));
       }
 
+      std::list<plugin::Plugin*> dependencies;
+
       std::list<std::string> depends;
       fhg::util::split( desc->depends
                       , ","
@@ -191,6 +193,7 @@ namespace fhg
             throw std::runtime_error("dependency not available: " + dep);
           }
         }
+        dependencies.push_back (lookup_plugin (dep)->get_plugin());
       }
 
       plugin_t::ptr_t p (new plugin_t( desc->name
@@ -208,7 +211,7 @@ namespace fhg
                                  )
         );
 
-      rc = p->init (m.get());
+      rc = p->init (m.get(), dependencies);
       if (rc == START_SUCCESSFUL) // started
       {
         {

@@ -5,6 +5,7 @@
 
 #include <string>
 #include <map>
+#include <list>
 
 #include <fhg/assert.hpp>
 #include <fhg/plugin/descriptor.hpp>
@@ -53,9 +54,10 @@ namespace fhg
     public:
       virtual ~Plugin(){}
 
-      int fhg_plugin_start_entry (Kernel *k)
+      int fhg_plugin_start_entry (Kernel *k, std::list<Plugin*> deps)
       {
         m_kernel = k;
+        m_dependencies = deps;
         return fhg_plugin_start();
       }
 
@@ -83,6 +85,7 @@ namespace fhg
       {}
 
       Kernel *fhg_kernel() {return m_kernel;}
+      std::list<Plugin*> m_dependencies;
     private:
       Kernel *m_kernel;
     };

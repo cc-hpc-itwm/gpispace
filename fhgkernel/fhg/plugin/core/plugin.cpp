@@ -120,7 +120,7 @@ namespace fhg
       }
     }
 
-    int plugin_t::init (fhg::plugin::Kernel *kernel)
+    int plugin_t::init (fhg::plugin::Kernel *kernel, std::list<plugin::Plugin*> deps)
     {
       char *error;
       fhg_plugin_create create_plugin;
@@ -137,7 +137,8 @@ namespace fhg
       dlerror();
 
       m_started = true;
-      return m_plugin->fhg_plugin_start_entry(kernel);
+
+      return m_plugin->fhg_plugin_start_entry(kernel, deps);
     }
 
     int plugin_t::stop ()
