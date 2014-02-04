@@ -21,8 +21,7 @@ namespace
     BOOST_FOREACH
       (const sdpa::discovery_info_t& child_info, disc_res.children())
     {
-      if (! child_info.state()
-         || child_info.state().get() != sdpa::status::PENDING)
+      if (!has_state_pending (child_info))
       {
         return false;
       }
@@ -33,37 +32,13 @@ namespace
 
   bool has_two_childs_that_are_pending (sdpa::discovery_info_t const& disc_res)
   {
-    BOOST_FOREACH ( const sdpa::discovery_info_t& child_info
-                  , disc_res.children()
-                  )
-    {
-      if (  !child_info.state()
-         || (  child_info.state()
-            && child_info.state().get() != sdpa::status::PENDING
-            )
-         )
-      {
-        return false;
-      }
-    }
-
-    return disc_res.children().size() == 2;
+    return disc_res.children().size() == 2 && all_childs_are_pending (disc_res);
   }
 
   bool has_children_and_all_children_are_pending
     (sdpa::discovery_info_t const& disc_res)
   {
-     BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
-     {
-       if (  !child_info.state()
-          || child_info.state().get() != sdpa::status::PENDING
-          )
-       {
-         return false;
-       }
-     }
-
-     return !disc_res.children().empty();
+    return !disc_res.children().empty() && all_childs_are_pending (disc_res);
   }
 }
 
