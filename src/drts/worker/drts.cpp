@@ -580,7 +580,7 @@ public:
   {
     //! \todo ctor parameters
     const boost::function<void()> request_stop
-      (boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel));
+      (boost::bind (&fhg::plugin::Kernel::stop, fhg_kernel));
     const std::string name (fhg_kernel->get_name());
     const std::size_t backlog_size
       (fhg_kernel->get<std::size_t> ("backlog", "3"));

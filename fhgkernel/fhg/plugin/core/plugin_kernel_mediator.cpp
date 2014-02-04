@@ -23,11 +23,10 @@ namespace fhg
       return m_kernel->get("plugin." + _name + "." + key, dflt);
     }
 
-    int PluginKernelMediator::shutdown ()
+    void PluginKernelMediator::stop ()
     {
       DLOG(WARN, "plugin `" << _name << "' requested to stop the kernel!");
       m_kernel->stop();
-      return 0;
     }
 
     std::string const & PluginKernelMediator::get_name () const
