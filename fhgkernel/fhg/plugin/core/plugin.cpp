@@ -29,13 +29,11 @@ namespace fhg
     }
 
     plugin_t::plugin_t ( std::string const & my_name
-                       , std::string const & my_filename
                        , void *my_handle
                        , fhg::plugin::Kernel *kernel
                        , std::list<plugin_t::ptr_t> deps
                        )
       : m_name (my_name)
-      , m_file_name(my_filename)
       , m_plugin (0)
       , m_handle (my_handle)
       , m_dependencies (deps)
