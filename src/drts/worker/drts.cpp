@@ -1309,14 +1309,6 @@ private:
     gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
 
     typedef map_of_capabilities_t::const_iterator const_cap_it_t;
-    for ( const_cap_it_t cap_it (m_capabilities.begin())
-        ; cap_it != m_capabilities.end()
-        ; ++cap_it
-        )
-    {
-      rply.add_body (cap_it->first + "\n");
-    }
-
     for ( const_cap_it_t cap_it(m_virtual_capabilities.begin())
         ; cap_it != m_virtual_capabilities.end()
         ; ++cap_it
@@ -1334,14 +1326,6 @@ private:
     boost::mutex::scoped_lock capabilities_lock(m_capabilities_mutex);
 
     typedef map_of_capabilities_t::const_iterator const_cap_it_t;
-    for ( const_cap_it_t cap_it(m_capabilities.begin())
-        ; cap_it != m_capabilities.end()
-        ; ++cap_it
-        )
-    {
-      caps.insert (cap_it->second.first);
-    }
-
     for ( const_cap_it_t cap_it(m_virtual_capabilities.begin())
         ; cap_it != m_virtual_capabilities.end()
         ; ++cap_it
@@ -1649,7 +1633,6 @@ private:
   fhg::util::thread::event<std::string> m_connected_event;
 
   mutable boost::mutex m_capabilities_mutex;
-  map_of_capabilities_t m_capabilities;
   map_of_capabilities_t m_virtual_capabilities;
 
   // jobs + their states
