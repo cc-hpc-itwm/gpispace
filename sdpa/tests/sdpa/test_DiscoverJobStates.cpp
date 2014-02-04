@@ -180,8 +180,8 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
   bool b_invariant(false);
   while(!b_invariant)
   {
-    sdpa::discovery_info_t disc_res;
-    disc_res = (client.discoverJobStates(get_next_disc_id(), job_id));
+    sdpa::discovery_info_t const disc_res
+      (client.discoverJobStates (get_next_disc_id(), job_id));
     b_invariant = (disc_res.state() && disc_res.state().get() == sdpa::status::PENDING);
   }
 }
@@ -203,8 +203,8 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   bool b_invariant(false);
   while(!b_invariant)
   {
-    sdpa::discovery_info_t disc_res;
-    disc_res = (client.discoverJobStates(get_next_disc_id(), job_id));
+    sdpa::discovery_info_t const disc_res
+      (client.discoverJobStates(get_next_disc_id(), job_id));
 
     // invariant: after some time, the leaf jobs are always in pending
     b_invariant = true;
