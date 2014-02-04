@@ -43,7 +43,8 @@ namespace fhg
       union
       {
         void* _ptr;
-        fhg_plugin_create _fun;
+        fhg::plugin::Plugin* (*_fun)
+          (fhg::plugin::Kernel*, std::list<fhg::plugin::Plugin*>);
       } create_plugin;
 
       create_plugin._ptr = dlsym(m_handle, "fhg_get_plugin_instance");

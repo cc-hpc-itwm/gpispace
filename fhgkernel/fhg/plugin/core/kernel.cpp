@@ -142,7 +142,7 @@ namespace fhg
       union
       {
         void* _ptr;
-        fhg_plugin_query _fun;
+        const fhg_plugin_descriptor_t* (*_fun)();
       } query_plugin;
 
       query_plugin._ptr = dlsym(handle, "fhg_query_plugin_descriptor");

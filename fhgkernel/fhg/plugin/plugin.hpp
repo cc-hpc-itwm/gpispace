@@ -85,7 +85,4 @@ namespace fhg
   }
 }
 
-typedef const fhg_plugin_descriptor_t* (*fhg_plugin_query)(void);
-typedef fhg::plugin::Plugin* (*fhg_plugin_create)(fhg::plugin::Kernel*, std::list<fhg::plugin::Plugin*>);
-
 #endif
