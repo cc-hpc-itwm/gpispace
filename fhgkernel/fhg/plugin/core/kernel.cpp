@@ -47,37 +47,21 @@ namespace fhg
         m_stopped.wait();
       }
 
-      while (! m_plugins.empty())
+      BOOST_REVERSE_FOREACH (std::string plugin_to_unload, m_load_order)
       {
-        plugin_names_t::reverse_iterator it = m_load_order.rbegin ();
-        plugin_names_t::reverse_iterator end = m_load_order.rend ();
+        const plugin_map_t::iterator plugin (m_plugins.find (plugin_to_unload));
 
-        for (; it != end ; ++it)
+        BOOST_FOREACH (plugin_map_t::value_type other, m_plugins)
         {
-          std::string plugin_to_unload = *it;
-          plugin_map_t::iterator plugin_it =
-            m_plugins.find (plugin_to_unload);
-          assert (plugin_it != m_plugins.end ());
-
-
-          for ( plugin_map_t::iterator it (m_plugins.begin())
-              ; it != m_plugins.end()
-              ; ++it
-              )
+          if (other.first != plugin->first)
           {
-            if (it->first != plugin_it->first)
-            {
-              it->second.second->handle_plugin_preunload(plugin_it->second.second);
-            }
+            other.second.second->handle_plugin_preunload (plugin->second.second);
           }
-
-          m_load_order.remove (plugin_it->first);
-          m_plugins.erase (plugin_it);
-
-          LOG(TRACE, "plugin '" << plugin_it->first << "' unloaded");
-
-          break;
         }
+
+        m_plugins.erase (plugin);
+
+        LOG (TRACE, "plugin '" << plugin->first << "' unloaded");
       }
     }
 
