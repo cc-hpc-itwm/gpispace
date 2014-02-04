@@ -32,7 +32,6 @@ namespace fhg
       , m_plugin (0)
       , m_descriptor (my_desc)
       , m_handle (my_handle)
-      , m_started (false)
       , m_dependencies (deps)
       , m_refcount(0)
     {
@@ -62,27 +61,27 @@ namespace fhg
       }
 
       m_plugin = create_plugin._fun (kernel, deps_raw);
-      m_started = true;
     }
 
     plugin_t::~plugin_t ()
     {
       assert (! is_in_use());
 
-      if (m_started)
+      if (m_plugin)
       {
         m_plugin->fhg_plugin_stop();
 
-        m_started = false;
         lock_type lock_dep (m_dependencies_mtx);
         while (! m_dependencies.empty())
         {
           ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
           dep->dec_refcount();
         }
+
+        delete m_plugin;
+        m_plugin = NULL;
       }
 
-      if (m_plugin) delete m_plugin;
       if (m_handle) dlclose (m_handle);
     }
 
@@ -166,14 +165,12 @@ namespace fhg
     void plugin_t::handle_plugin_loaded (plugin_t::ptr_t other)
     {
       assert (m_plugin);
-      assert (m_started);
       m_plugin->fhg_on_plugin_loaded (other->get_plugin());
     }
 
     void plugin_t::handle_plugin_preunload (plugin_t::ptr_t other)
     {
       assert (m_plugin);
-      assert (m_started);
       m_plugin->fhg_on_plugin_preunload (other->get_plugin());
     }
   }

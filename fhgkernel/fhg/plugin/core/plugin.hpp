@@ -84,7 +84,6 @@ namespace fhg
       const fhg_plugin_descriptor_t *m_descriptor;
       void *m_handle;
 
-      bool m_started;
       dependency_list_t m_dependencies;
       std::size_t m_refcount;
     };
