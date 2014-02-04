@@ -17,37 +17,29 @@
 #include <we/type/expression.hpp>
 #include <we/type/net.fwd.hpp>
 
-using we::edge::PT;
-using we::edge::PT_READ;
-using we::edge::TP;
-
-typedef we::type::transition_t transition_t;
-typedef we::type::net_type pnet_t;
-typedef we::type::activity_t activity_t;
-
 struct exec_context : public we::context
 {
-  virtual void handle_internally (activity_t&, net_t const&)
+  virtual void handle_internally (we::type::activity_t&, net_t const&)
   {
   }
 
-  virtual void handle_internally (activity_t&, mod_t const&)
+  virtual void handle_internally (we::type::activity_t&, mod_t const&)
   {
   }
 
-  virtual void handle_internally (activity_t&, expr_t const&)
+  virtual void handle_internally (we::type::activity_t&, expr_t const&)
   {
   }
 
-  virtual void handle_externally (activity_t&, net_t const&)
+  virtual void handle_externally (we::type::activity_t&, net_t const&)
   {
   }
 
-  virtual void handle_externally (activity_t&, mod_t const&)
+  virtual void handle_externally (we::type::activity_t&, mod_t const&)
   {
   }
 
-  virtual void handle_externally (activity_t&, expr_t const&)
+  virtual void handle_externally (we::type::activity_t&, expr_t const&)
   {
   }
 };
@@ -56,7 +48,7 @@ struct exec_context : public we::context
 BOOST_AUTO_TEST_CASE (NO_TEST)
 {
   // ************************************ //
-  pnet_t net;
+  we::type::net_type net;
 
   we::place_id_type pid_vid (net.add_place (place::type ("vid",std::string("long"))));
 
@@ -76,7 +68,7 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
 
   we::place_id_type pid_store (net.add_place (place::type("store", sig_store)));
 
-  transition_t trans_inner
+  we::type::transition_t trans_inner
     ( "trans_inner"
     , we::type::expression_t
       ( "${store.seen} := bitset_insert (${store.seen}, ${vid});"
@@ -128,10 +120,10 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
   {
     we::type::property::type empty;
 
-    net.add_connection (PT, tid, pid_store, port_id_store_in, empty);
-    net.add_connection (TP, tid, pid_store, port_id_store_out, empty);
-    net.add_connection (PT_READ, tid, pid_vid, port_id_vid, empty);
-    net.add_connection (TP, tid, pid_pair, port_id_pair, empty);
+    net.add_connection (we::edge::PT, tid, pid_store, port_id_store_in, empty);
+    net.add_connection (we::edge::TP, tid, pid_store, port_id_store_out, empty);
+    net.add_connection (we::edge::PT_READ, tid, pid_vid, port_id_vid, empty);
+    net.add_connection (we::edge::TP, tid, pid_pair, port_id_pair, empty);
   }
 
   net.put_value (pid_vid, 0L);
@@ -157,7 +149,7 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
 
   // ************************************ //
 
-  transition_t tnet ("tnet", net
+  we::type::transition_t tnet ("tnet", net
                     , boost::none
                     , true, we::type::property::type()
                     , we::priority_type()
@@ -171,7 +163,7 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
   tnet.add_port
     (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair, pid_pair));
 
-  activity_t act ( tnet, boost::none );
+  we::type::activity_t act ( tnet, boost::none );
 
   {
     std::string act_encoded (act.to_string());
