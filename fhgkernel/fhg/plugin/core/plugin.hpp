@@ -38,16 +38,13 @@ namespace fhg
       void handle_plugin_loaded (plugin_t::ptr_t);
       void handle_plugin_preunload (plugin_t::ptr_t);
     private:
-      typedef boost::mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-
       void check_dependencies();
 
       void inc_refcount ();
       void dec_refcount ();
 
-      mutable mutex_type m_refcount_mtx;
-      mutable mutex_type m_dependencies_mtx;
+      mutable boost::mutex m_refcount_mtx;
+      mutable boost::mutex m_dependencies_mtx;
 
       std::string m_name;
       std::string m_file_name;

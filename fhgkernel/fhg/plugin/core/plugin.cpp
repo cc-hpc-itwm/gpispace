@@ -71,7 +71,7 @@ namespace fhg
       delete m_plugin;
       m_plugin = NULL;
 
-      lock_type lock_dep (m_dependencies_mtx);
+      boost::mutex::scoped_lock const _ (m_dependencies_mtx);
       while (! m_dependencies.empty())
       {
         ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
@@ -83,20 +83,20 @@ namespace fhg
 
     void plugin_t::inc_refcount ()
     {
-      lock_type lock(m_refcount_mtx);
+      boost::mutex::scoped_lock const _ (m_refcount_mtx);
       ++m_refcount;
     }
 
     void plugin_t::dec_refcount ()
     {
-      lock_type lock(m_refcount_mtx);
+      boost::mutex::scoped_lock const _ (m_refcount_mtx);
       assert (m_refcount > 0);
       --m_refcount;
     }
 
     bool plugin_t::is_in_use () const
     {
-      lock_type lock(m_refcount_mtx);
+      boost::mutex::scoped_lock const _ (m_refcount_mtx);
       return m_refcount > 0;
     }
 
