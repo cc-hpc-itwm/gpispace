@@ -111,10 +111,13 @@ namespace sdpa {
     };
 }}
 
-static std::string get_next_disc_id()
+namespace
 {
-  static int i=0;
-  return (boost::format("discover_%1%") % i++).str();
+  std::string get_next_disc_id()
+  {
+    static int i=0;
+    return (boost::format("discover_%1%") % i++).str();
+  }
 }
 
 BOOST_AUTO_TEST_CASE(test_discover_activities)
