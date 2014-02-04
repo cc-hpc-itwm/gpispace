@@ -185,7 +185,7 @@ namespace fhg
         {
           mediator_ptr other_mediator = it->second;
           if (it->first != p->name())
-            other_mediator->plugin()->handle_plugin_loaded(p->name());
+            other_mediator->plugin()->handle_plugin_loaded(p);
         }
       }
       else
@@ -225,7 +225,7 @@ namespace fhg
         if (it->first != p->first)
         {
           mediator_ptr m = it->second;
-          m->plugin()->handle_plugin_preunload(p->first);
+          m->plugin()->handle_plugin_preunload(p->second->plugin());
         }
       }
 

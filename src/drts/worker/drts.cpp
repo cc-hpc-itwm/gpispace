@@ -837,8 +837,7 @@ public:
 
   FHG_ON_PLUGIN_LOADED(plugin)
   {
-    fhg::plugin::Capability *cap
-      = fhg_kernel()->acquire<fhg::plugin::Capability>(plugin);
+    fhg::plugin::Capability* cap (dynamic_cast<fhg::plugin::Capability*> (plugin));
     if (cap)
     {
       MLOG( INFO
@@ -877,16 +876,20 @@ public:
 
   FHG_ON_PLUGIN_PREUNLOAD(plugin)
   {
-    boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
-    map_of_capabilities_t::iterator cap(m_capabilities.find(plugin));
-    if (cap != m_capabilities.end())
+    fhg::plugin::Capability* cap (dynamic_cast<fhg::plugin::Capability*> (plugin));
+    if (cap)
     {
-      MLOG(INFO, "lost capability: " << plugin);
-      MLOG(WARN, "TODO: make sure none of jobs make use of this capability");
+      boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
+      map_of_capabilities_t::iterator it(m_capabilities.find(cap->capability_name()));
+      if (it != m_capabilities.end())
+      {
+        MLOG(INFO, "lost capability: " << plugin);
+        MLOG(WARN, "TODO: make sure none of jobs make use of this capability");
 
-      notify_capability_lost (cap->second.first);
+        notify_capability_lost (it->second.first);
 
-      m_capabilities.erase(cap);
+        m_capabilities.erase(it);
+      }
     }
   }
 

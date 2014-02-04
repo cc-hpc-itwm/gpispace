@@ -57,8 +57,8 @@ namespace fhg
         return dynamic_cast<const T*>(get_plugin());
       }
 
-      void handle_plugin_loaded (std::string const &name);
-      void handle_plugin_preunload (std::string const &name);
+      void handle_plugin_loaded (plugin_t::ptr_t);
+      void handle_plugin_preunload (plugin_t::ptr_t);
     private:
       typedef std::list<ptr_t> dependency_list_t;
       typedef boost::recursive_mutex mutex_type;

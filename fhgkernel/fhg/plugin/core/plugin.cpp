@@ -171,18 +171,18 @@ namespace fhg
       }
     }
 
-    void plugin_t::handle_plugin_loaded (std::string const &name)
+    void plugin_t::handle_plugin_loaded (plugin_t::ptr_t other)
     {
       assert (m_plugin);
       assert (m_started);
-      m_plugin->fhg_on_plugin_loaded (name);
+      m_plugin->fhg_on_plugin_loaded (other->get_plugin());
     }
 
-    void plugin_t::handle_plugin_preunload (std::string const &name)
+    void plugin_t::handle_plugin_preunload (plugin_t::ptr_t other)
     {
       assert (m_plugin);
       assert (m_started);
-      m_plugin->fhg_on_plugin_preunload (name);
+      m_plugin->fhg_on_plugin_preunload (other->get_plugin());
     }
 
     plugin_t::ptr_t plugin_t::create (std::string const & filename, int flags)

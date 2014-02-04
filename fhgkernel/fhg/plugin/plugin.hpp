@@ -23,8 +23,8 @@ typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
 #define FHG_PLUGIN_STOP() int fhg_plugin_stop ()
 #define FHG_PLUGIN_STOPPED() return 0
 
-#define FHG_ON_PLUGIN_LOADED(p) void fhg_on_plugin_loaded(std::string const &p)
-#define FHG_ON_PLUGIN_PREUNLOAD(p) void fhg_on_plugin_preunload(std::string const &p)
+#define FHG_ON_PLUGIN_LOADED(p) void fhg_on_plugin_loaded(Plugin* p)
+#define FHG_ON_PLUGIN_PREUNLOAD(p) void fhg_on_plugin_preunload(Plugin* p)
 
 #define EXPORT_FHG_PLUGIN(name, cls, depends)                           \
   extern "C"                                                            \
