@@ -42,7 +42,6 @@ add_library (pnet
   we/expr/parse/simplify/expression_list.cpp
   we/expr/parse/simplify/simplify.cpp
   we/expr/parse/simplify/util.cpp
-  we/expr/parse/util/get_names.cpp
   we/expr/token/assoc.cpp
   we/expr/token/prec.cpp
   we/expr/token/prop.cpp
