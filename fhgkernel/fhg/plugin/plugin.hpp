@@ -13,9 +13,6 @@
 
 #define FHG_PLUGIN public fhg::plugin::Plugin
 
-#define FHG_ON_PLUGIN_LOADED(p) virtual void fhg_on_plugin_loaded(Plugin* p)
-#define FHG_ON_PLUGIN_PREUNLOAD(p) virtual void fhg_on_plugin_preunload(Plugin* p)
-
 #define EXPORT_FHG_PLUGIN(name, cls, depends)                           \
   extern "C"                                                            \
   {                                                                     \
@@ -44,15 +41,6 @@ namespace fhg
       typedef fhg::plugin::Kernel Kernel;
 
       virtual ~Plugin(){}
-
-#define EMPTY
-      FHG_ON_PLUGIN_LOADED (EMPTY)
-      {
-      }
-      FHG_ON_PLUGIN_PREUNLOAD (EMPTY)
-      {
-      }
-#undef EMPTY
     };
   }
 }

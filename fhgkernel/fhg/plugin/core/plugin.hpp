@@ -27,9 +27,6 @@ namespace fhg
                , std::list<plugin_t::ptr_t> deps
                );
 
-      void handle_plugin_loaded (plugin_t::ptr_t);
-      void handle_plugin_preunload (plugin_t::ptr_t);
-
     private:
       struct close_on_dtor_dlhandle
       {

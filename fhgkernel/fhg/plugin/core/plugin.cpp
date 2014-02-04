@@ -68,15 +68,5 @@ namespace fhg
                      ("fhg_get_plugin_instance") (kernel, to_raw (deps))
                  )
     {}
-
-    void plugin_t::handle_plugin_loaded (plugin_t::ptr_t other)
-    {
-      m_plugin->fhg_on_plugin_loaded (other->m_plugin.get());
-    }
-
-    void plugin_t::handle_plugin_preunload (plugin_t::ptr_t other)
-    {
-      m_plugin->fhg_on_plugin_preunload (other->m_plugin.get());
-    }
   }
 }

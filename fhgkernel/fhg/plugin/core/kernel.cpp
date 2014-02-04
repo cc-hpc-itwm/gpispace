@@ -62,14 +62,6 @@ namespace fhg
       {
         const plugin_map_t::iterator plugin (m_plugins.find (plugin_to_unload));
 
-        BOOST_FOREACH (plugin_map_t::value_type other, m_plugins)
-        {
-          if (other.first != plugin->first)
-          {
-            other.second->handle_plugin_preunload (plugin->second);
-          }
-        }
-
         m_plugins.erase (plugin);
 
         LOG (TRACE, "plugin '" << plugin->first << "' unloaded");
@@ -217,14 +209,6 @@ namespace fhg
           , "loaded plugin '" << plugin_name << "'"
           << " (from: '" << full_path_to_file << "')"
           );
-
-      BOOST_FOREACH (plugin_map_t::value_type other, m_plugins)
-      {
-        if (other.first != plugin_name)
-        {
-          other.second->handle_plugin_loaded (p);
-        }
-      }
 
       return 0;
     }
