@@ -21,8 +21,6 @@ namespace expr
 
       std::string write_key_vec (const name_set_t::value_type&);
     }
-
-    std::ostream& operator<< (std::ostream&, util::name_set_t::value_type);
   }
 }
 
