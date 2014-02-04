@@ -9,8 +9,6 @@
 #include <boost/test/unit_test.hpp>
 #include <sdpa/types.hpp>
 
-#include <fhg/util/first_then.hpp>
-
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 namespace sdpa {
