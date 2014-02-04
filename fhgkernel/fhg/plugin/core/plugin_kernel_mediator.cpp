@@ -21,11 +21,6 @@ namespace fhg
       assert (m_kernel);
     }
 
-    int PluginKernelMediator::stop ()
-    {
-      return m_plugin->stop();
-    }
-
     fhg::core::plugin_t::ptr_t PluginKernelMediator::plugin()
     {
       return m_plugin;

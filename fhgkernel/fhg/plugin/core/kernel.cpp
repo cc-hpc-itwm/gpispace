@@ -236,7 +236,7 @@ namespace fhg
       }
       else
       {
-        m->stop();
+        p->stop();
 
         m_failed_path_cache.push_back (full_path_to_file);
 
@@ -279,7 +279,7 @@ namespace fhg
         return -EBUSY;
       }
 
-      int rc = p->second->stop();
+      int rc = p->second->plugin()->stop();
 
       LOG(TRACE, "plugin '" << p->first << "' unloaded");
 

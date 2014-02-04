@@ -21,8 +21,6 @@ namespace fhg
 
       fhg::core::plugin_t::ptr_t plugin ();
 
-      int stop ();
-
       std::string get(std::string const & key, std::string const &dflt) const;
 
       int kill ();
