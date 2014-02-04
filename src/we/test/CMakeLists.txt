@@ -31,6 +31,7 @@ fhg_add_test (context.cpp
 )
 
 fhg_add_test (activity.cpp
+  BOOST_UNIT_TEST
   PROJECT we
   LINK_LIBRARIES pnet
 )

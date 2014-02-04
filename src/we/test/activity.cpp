@@ -1,3 +1,6 @@
+#define BOOST_TEST_MODULE we_activity
+#include <boost/test/unit_test.hpp>
+
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -50,7 +53,7 @@ struct exec_context : public we::context
 };
 
 
-int main (int, char **)
+BOOST_AUTO_TEST_CASE (NO_TEST)
 {
   // ************************************ //
   pnet_t net;
@@ -193,10 +196,5 @@ int main (int, char **)
     }
   }
 
-  if ( act.output().empty() )
-  {
-    return EXIT_FAILURE;
-  }
-
-  return EXIT_SUCCESS;
+  BOOST_REQUIRE (not act.output().empty());
 }
