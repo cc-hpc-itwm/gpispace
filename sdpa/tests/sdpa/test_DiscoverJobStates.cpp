@@ -87,17 +87,15 @@ namespace sdpa {
           return false;
         }
 
-        bool b_invariant(true);
         BOOST_FOREACH(const sdpa::discovery_info_t& child_info, _discovery_result.children())
         {
           if(!child_info.state() || child_info.state().get() != sdpa::status::PENDING)
           {
-              b_invariant = false;
-              break;
+            return false;
           }
         }
 
-        return b_invariant;
+        return true;
       }
 
     private:
