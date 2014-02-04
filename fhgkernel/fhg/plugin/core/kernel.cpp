@@ -184,7 +184,22 @@ namespace fhg
                                           )
                         );
 
-      require_dependencies (p);
+      std::list<std::string> depends;
+      fhg::util::split( p->descriptor()->depends
+                      , ","
+                      , std::back_inserter (depends)
+                      );
+
+      BOOST_FOREACH(std::string const &dep, depends)
+      {
+        if (! lookup_plugin(dep))
+        {
+          if (0 != load_plugin_by_name (dep))
+          {
+            throw std::runtime_error("dependency not available: " + dep);
+          }
+        }
+      }
 
       // create mediator
       // todo: write a control plugin that opens a socket or whatever
@@ -278,26 +293,6 @@ namespace fhg
     {
       lock_type plugins_lock (m_mtx_plugins);
       return m_plugins.find(name) != m_plugins.end();
-    }
-
-    void kernel_t::require_dependencies (plugin_t::ptr_t const &plugin)
-    {
-      std::list<std::string> depends;
-      fhg::util::split( plugin->descriptor()->depends
-                      , ","
-                      , std::back_inserter (depends)
-                      );
-
-      BOOST_FOREACH(std::string const &dep, depends)
-      {
-        if (! lookup_plugin(dep))
-        {
-          if (0 != load_plugin_by_name (dep))
-          {
-            throw std::runtime_error("dependency not available: " + dep);
-          }
-        }
-      }
     }
 
     void kernel_t::unload_all ()

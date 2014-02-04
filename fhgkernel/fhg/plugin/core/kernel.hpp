@@ -53,8 +53,6 @@ namespace fhg
 
       std::string const & get_name () const;
     private:
-      void require_dependencies (fhg::core::plugin_t::ptr_t const &);
-
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
