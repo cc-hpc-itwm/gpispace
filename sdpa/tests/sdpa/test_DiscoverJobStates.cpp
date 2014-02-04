@@ -16,7 +16,6 @@ namespace sdpa {
     class TestAgent : public Agent
     {
     public:
-      typedef std::pair<we::layer::id_type, sdpa::discovery_info_t> pair_discovery_result_t;
       TestAgent( const std::string& name
                 , const std::string& url
                 , const sdpa::master_info_list_t arrMasterNames
