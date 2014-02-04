@@ -60,8 +60,8 @@ namespace fhg
         deps_raw.push_back (p->get_plugin());
       }
 
-      m_plugin = create_plugin._fun();
-      m_plugin->fhg_plugin_start_entry(kernel, deps_raw);
+      m_plugin = create_plugin._fun (kernel, deps_raw);
+      m_plugin->fhg_plugin_start();
       m_started = true;
     }
 

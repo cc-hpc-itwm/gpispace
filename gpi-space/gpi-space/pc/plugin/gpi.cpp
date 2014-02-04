@@ -17,8 +17,9 @@ class GpiPluginImpl : FHG_PLUGIN
                     , public fhg::plugin::Capability
 {
 public:
-  GpiPluginImpl()
-    : Capability ("GPI", "PGAS")
+  GpiPluginImpl (Kernel *k, std::list<Plugin*> deps)
+    : Plugin (k, deps)
+    , Capability ("GPI", "PGAS")
     , api ("")
     , _try_start_loop (NULL)
   {}

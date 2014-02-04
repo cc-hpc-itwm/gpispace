@@ -35,9 +35,10 @@
         };                                                              \
       return &fhg_plugin_descriptor_##name;                             \
     }                                                                   \
-    fhg::plugin::Plugin *fhg_get_plugin_instance()                      \
+    fhg::plugin::Plugin *fhg_get_plugin_instance                        \
+      (fhg::plugin::Kernel *k, std::list<fhg::plugin::Plugin*> deps)    \
     {                                                                   \
-      return new cls();                                                 \
+      return new cls (k, deps);                                         \
     }                                                                   \
   }
 
@@ -49,15 +50,15 @@ namespace fhg
 
     class Plugin : boost::noncopyable
     {
-    public:
-      virtual ~Plugin(){}
+    protected:
+      typedef fhg::plugin::Kernel Kernel;
 
-      void fhg_plugin_start_entry (Kernel *k, std::list<Plugin*> deps)
-      {
-        m_kernel = k;
-        m_dependencies = deps;
-        fhg_plugin_start();
-      }
+    public:
+      Plugin (Kernel *k, std::list<Plugin*> deps)
+        : m_kernel (k)
+        , m_dependencies (deps)
+      {}
+      virtual ~Plugin(){}
 
       FHG_PLUGIN_START()
       {
@@ -75,20 +76,16 @@ namespace fhg
       }
 #undef EMPTY
 
-    protected:
-      Plugin ()
-        : m_kernel (0)
-      {}
-
-      Kernel *fhg_kernel() {return m_kernel;}
-      std::list<Plugin*> m_dependencies;
     private:
       Kernel *m_kernel;
+    protected:
+      Kernel *fhg_kernel() {return m_kernel;}
+      std::list<Plugin*> m_dependencies;
     };
   }
 }
 
 typedef const fhg_plugin_descriptor_t* (*fhg_plugin_query)(void);
-typedef fhg::plugin::Plugin*           (*fhg_plugin_create)(void);
+typedef fhg::plugin::Plugin* (*fhg_plugin_create)(fhg::plugin::Kernel*, std::list<fhg::plugin::Plugin*>);
 
 #endif

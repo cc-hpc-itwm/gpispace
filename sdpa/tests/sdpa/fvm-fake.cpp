@@ -9,6 +9,10 @@ using boost::lexical_cast;
 class FvmFakePluginImpl : FHG_PLUGIN
 {
 public:
+  FvmFakePluginImpl (Kernel *k, std::list<Plugin*> deps)
+    : Plugin (k, deps)
+  {}
+
   FHG_PLUGIN_START()
   {
     size_t fvm_size (100*1024*1024);

@@ -576,6 +576,10 @@ class DRTSImpl : FHG_PLUGIN
                   , std::pair<sdpa::Capability, fhg::plugin::Capability*>
                   > map_of_capabilities_t;
 public:
+  DRTSImpl (Kernel *k, std::list<Plugin*> deps)
+    : Plugin (k, deps)
+  {}
+
   FHG_PLUGIN_START()
   {
     //! \todo ctor parameters
