@@ -137,10 +137,14 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
     (we::type::port_t ("vid", we::type::PORT_IN, std::string ("long"), pid_vid));
   tnet.add_port
     (we::type::port_t ("store", we::type::PORT_IN, sig_store, pid_store));
-  tnet.add_port
-    (we::type::port_t ("store", we::type::PORT_OUT, sig_store, pid_store));
-  tnet.add_port
-    (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair, pid_pair));
+  we::port_id_type const port_id_store_out_net
+    (tnet.add_port
+      (we::type::port_t ("store", we::type::PORT_OUT, sig_store, pid_store))
+    );
+  we::port_id_type const port_id_pair_net
+    (tnet.add_port
+      (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair, pid_pair))
+    );
 
   we::type::activity_t act (tnet, boost::none);
 
@@ -159,5 +163,24 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
     }
   }
 
-  BOOST_REQUIRE (not act.output().empty());
+  boost::unordered_map
+    < we::port_id_type
+    , std::list<pnet::type::value::value_type>
+    > values_by_port_id;
+
+  we::type::activity_t::output_t const output (act.output());
+
+  BOOST_FOREACH
+    ( std::pair<                pnet::type::value::value_type
+               BOOST_PP_COMMA() we::port_id_type
+               > const& token_on_port
+    , output
+    )
+  {
+    values_by_port_id[token_on_port.second].push_back (token_on_port.first);
+  }
+
+  BOOST_REQUIRE_EQUAL (values_by_port_id.size(), 2);
+  BOOST_REQUIRE_EQUAL (values_by_port_id.at (port_id_store_out_net).size(), 2);
+  BOOST_REQUIRE_EQUAL (values_by_port_id.at (port_id_pair_net).size(), 4);
 }
