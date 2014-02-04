@@ -230,6 +230,28 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   {} // do nothing, discover again
 }
 
+namespace
+{
+  bool has_two_childs_that_are_pending (sdpa::discovery_info_t const& disc_res)
+  {
+    BOOST_FOREACH ( const sdpa::discovery_info_t& child_info
+                  , disc_res.children()
+                  )
+    {
+      if (  !child_info.state()
+         || (  child_info.state()
+            && child_info.state().get() != sdpa::status::PENDING
+            )
+         )
+      {
+        return false;
+      }
+    }
+
+    return disc_res.children().size() == 2;
+  }
+}
+
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 {
   const std::string workflow
@@ -264,23 +286,10 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   sdpa::client::Client client (orchestrator.name());
   sdpa::job_id_t const job_id = client.submitJob (workflow);
 
-  sdpa::discovery_info_t disc_res;
-
-  // invariant: after some time, all tasks are pending
-  bool b_all_pending(false);
-  do
-  {
-    disc_res = client.discoverJobStates(get_next_disc_id(), job_id);
-    b_all_pending = true;
-    BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
-    {
-      if(!child_info.state() || (child_info.state() && child_info.state().get() != sdpa::status::PENDING) )
-      {
-        b_all_pending = false;
-        break;
-      }
-    }
-  } while(!b_all_pending || disc_res.children().size()!=2);
+  while (!has_two_childs_that_are_pending
+          (client.discoverJobStates (get_next_disc_id(), job_id))
+        )
+  {} // do nothing, discover again
 }
 
 BOOST_AUTO_TEST_CASE (remove_workers)
