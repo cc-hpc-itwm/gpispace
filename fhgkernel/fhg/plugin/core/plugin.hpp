@@ -28,6 +28,8 @@ namespace fhg
                , std::string const & filename
                , const fhg_plugin_descriptor_t *
                , void * handle
+               , fhg::plugin::Kernel *kernel
+               , std::list<plugin::Plugin*> deps
                );
       ~plugin_t ();
 
@@ -43,7 +45,6 @@ namespace fhg
       void add_dependency (const ptr_t &);
       void del_dependency (const ptr_t &);
 
-      void init (fhg::plugin::Kernel *kernel, std::list<plugin::Plugin*> deps);
       int stop  ();
 
       template <typename T>

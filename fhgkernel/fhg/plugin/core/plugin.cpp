@@ -22,6 +22,8 @@ namespace fhg
                        , std::string const & my_filename
                        , const fhg_plugin_descriptor_t *my_desc
                        , void *my_handle
+                       , fhg::plugin::Kernel *kernel
+                       , std::list<plugin::Plugin*> deps
                        )
       : m_name (my_name)
       , m_file_name(my_filename)
@@ -33,6 +35,24 @@ namespace fhg
       , m_refcount(0)
     {
       assert (m_descriptor != 0);
+
+      char *error;
+      fhg_plugin_create create_plugin;
+
+      dlerror();
+      *(void**)(&create_plugin) = dlsym(m_handle, "fhg_get_plugin_instance");
+      if ((error = dlerror()) != NULL)
+      {
+        dlclose(m_handle);
+        throw std::runtime_error("could not get create function: " + std::string(error));
+      }
+
+      m_plugin = create_plugin();
+      dlerror();
+
+      m_started = true;
+
+      m_plugin->fhg_plugin_start_entry(kernel, deps);
     }
 
     plugin_t::~plugin_t ()
@@ -118,27 +138,6 @@ namespace fhg
                             );
         other->dec_refcount();
       }
-    }
-
-    void plugin_t::init (fhg::plugin::Kernel *kernel, std::list<plugin::Plugin*> deps)
-    {
-      char *error;
-      fhg_plugin_create create_plugin;
-
-      dlerror();
-      *(void**)(&create_plugin) = dlsym(m_handle, "fhg_get_plugin_instance");
-      if ((error = dlerror()) != NULL)
-      {
-        dlclose(m_handle);
-        throw std::runtime_error("could not get create function: " + std::string(error));
-      }
-
-      m_plugin = create_plugin();
-      dlerror();
-
-      m_started = true;
-
-      m_plugin->fhg_plugin_start_entry(kernel, deps);
     }
 
     int plugin_t::stop ()

@@ -187,10 +187,10 @@ namespace fhg
                                           , full_path_to_file
                                           , desc
                                           , handle
+                                     , m.get()
+                                     , dependencies
                                           )
                         );
-
-      p->init (m.get(), dependencies);
 
       {
         lock_type plugins_lock (m_mtx_plugins);
