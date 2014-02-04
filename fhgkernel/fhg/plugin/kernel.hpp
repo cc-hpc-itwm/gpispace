@@ -14,26 +14,6 @@ namespace fhg
 {
   namespace plugin
   {
-    namespace exception
-    {
-      struct config_error : public std::runtime_error
-      {
-        config_error (std::string const &k, std::string const &v, std::string const &m)
-          : std::runtime_error ("config_error: key := " + k + " value := `" + v + "' - " + m)
-          , m_key (k)
-          , m_val (v)
-        {}
-
-        ~config_error () throw () {}
-
-        std::string const & key () const { return m_key; }
-        std::string const & value () const { return m_val; }
-      private:
-        std::string m_key;
-        std::string m_val;
-      };
-    }
-
     // this class only represents the interface available for a single plugin it
     // is implemented  by a mediator class  having access to the  plugin and the
     // real kernel,  therefore it's possible  to track dependencies by  calls to
@@ -62,14 +42,7 @@ namespace fhg
       T get(std::string const & key, std::string const &dflt) const
       {
         const std::string value (get(key, dflt));
-        try
-        {
-          return boost::lexical_cast<T>(value);
-        }
-        catch (std::exception const & ex)
-        {
-          throw exception::config_error (key, value, ex.what());
-        }
+        return boost::lexical_cast<T>(value);
       }
 
       template <typename T>
