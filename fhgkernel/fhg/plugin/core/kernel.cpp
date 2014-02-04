@@ -49,8 +49,6 @@ namespace fhg
 
       while (! m_plugins.empty())
       {
-        std::string plugin_name = m_load_order.back ();
-
         plugin_names_t::reverse_iterator it = m_load_order.rbegin ();
         plugin_names_t::reverse_iterator end = m_load_order.rend ();
 
