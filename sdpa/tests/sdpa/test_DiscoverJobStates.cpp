@@ -33,7 +33,7 @@ namespace sdpa {
 
       void discovered (we::layer::id_type disc_id, sdpa::discovery_info_t discover_result)
       {
-        boost::unique_lock<boost::mutex> const lock_res(_mtx_result);
+        boost::unique_lock<boost::mutex> const _ (_mtx_result);
         _discovery_result = discover_result;
         _discover_id = disc_id;
         _cond_result.notify_one();
