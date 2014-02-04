@@ -38,7 +38,7 @@ namespace fhg
       void handle_plugin_loaded (plugin_t::ptr_t);
       void handle_plugin_preunload (plugin_t::ptr_t);
     private:
-      typedef boost::recursive_mutex mutex_type;
+      typedef boost::mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
       void check_dependencies();
