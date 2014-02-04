@@ -19,9 +19,6 @@ namespace fhg
                            , kernel_t *kernel
                            );
 
-      virtual fhg::plugin::Plugin * acquire(std::string const & name);
-      virtual void release(std::string const &name);
-
       fhg::core::plugin_t::ptr_t plugin ();
 
       int stop ();

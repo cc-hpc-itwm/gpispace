@@ -26,37 +26,6 @@ namespace fhg
       return m_plugin->stop();
     }
 
-    fhg::plugin::Plugin * PluginKernelMediator::acquire(std::string const & name)
-    {
-      fhg::core::plugin_t::ptr_t p = m_kernel->lookup_plugin(name);
-      if (p)
-      {
-        if (! p->is_depending_on(m_plugin))
-        {
-          m_plugin->add_dependency(p);
-          return p->get_plugin();
-        }
-        else
-        {
-          throw std::runtime_error
-            ("dependency cycle detected between " + name + " -> " + m_plugin->name());
-        }
-      }
-      else
-      {
-        return 0;
-      }
-    }
-
-    void PluginKernelMediator::release(std::string const &name)
-    {
-      fhg::core::plugin_t::ptr_t p = m_kernel->lookup_plugin(name);
-      if (p)
-      {
-        m_plugin->del_dependency(p);
-      }
-    }
-
     fhg::core::plugin_t::ptr_t PluginKernelMediator::plugin()
     {
       return m_plugin;

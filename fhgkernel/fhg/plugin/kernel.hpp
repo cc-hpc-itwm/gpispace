@@ -23,19 +23,6 @@ namespace fhg
     public:
       virtual ~Kernel() {}
 
-      template <typename Iface>
-      Iface* acquire (std::string const & name)
-      {
-        Iface* iface = dynamic_cast<Iface*>(this->acquire(name));
-        if (0 == iface)
-        {
-          this->release(name);
-        }
-        return iface;
-      }
-      virtual Plugin * acquire(std::string const & name) = 0;
-      virtual void     release(std::string const & name) = 0;
-
       virtual std::string get(std::string const & key, std::string const &dflt) const = 0;
 
       template <typename T>
