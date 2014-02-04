@@ -28,6 +28,16 @@ namespace fhg
       dlclose (_);
     }
 
+    std::list<plugin::Plugin*> plugin_t::to_raw (std::list<plugin_t::ptr_t> deps)
+    {
+      std::list<plugin::Plugin*> deps_raw;
+      BOOST_FOREACH (ptr_t p, deps)
+      {
+        deps_raw.push_back (p->m_plugin);
+      }
+      return deps_raw;
+    }
+
     plugin_t::plugin_t ( void *my_handle
                        , fhg::plugin::Kernel *kernel
                        , std::list<plugin_t::ptr_t> deps
@@ -52,13 +62,7 @@ namespace fhg
         throw std::runtime_error("could not get create function: " + std::string(error));
       }
 
-      std::list<plugin::Plugin*> deps_raw;
-      BOOST_FOREACH (ptr_t p, deps)
-      {
-        deps_raw.push_back (p->m_plugin);
-      }
-
-      m_plugin = create_plugin._fun (kernel, deps_raw);
+      m_plugin = create_plugin._fun (kernel, to_raw (deps));
     }
 
     plugin_t::~plugin_t ()

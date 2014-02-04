@@ -44,6 +44,8 @@ namespace fhg
       } m_handle;
 
       std::list<ptr_t> m_dependencies;
+
+      static std::list<plugin::Plugin*> to_raw (std::list<plugin_t::ptr_t>);
     };
   }
 }
