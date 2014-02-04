@@ -29,10 +29,28 @@ namespace fhg
 {
   namespace core
   {
+    void wait_until_stopped::wait()
+    {
+      _stop_requested.wait();
+      _stopped.notify();
+    }
+
+    void wait_until_stopped::stop()
+    {
+      _stop_requested.notify();
+      _stopped.wait();
+    }
+
+    boost::function<void()> wait_until_stopped::make_request_stop()
+    {
+      return boost::bind (&wait_until_stopped::stop, this);
+    }
+
     kernel_t::kernel_t ( std::string const& name
                        , fhg::core::kernel_t::search_path_t search_path
+                       , boost::function<void()> request_stop
                        )
-      : m_running (false)
+      : stop (request_stop)
       , m_name (name)
       , m_search_path (search_path)
     {
@@ -40,12 +58,6 @@ namespace fhg
 
     kernel_t::~kernel_t ()
     {
-      if (m_running)
-      {
-        stop ();
-        m_stopped.wait();
-      }
-
       BOOST_REVERSE_FOREACH (std::string plugin_to_unload, m_load_order)
       {
         const plugin_map_t::iterator plugin (m_plugins.find (plugin_to_unload));
@@ -236,26 +248,6 @@ namespace fhg
       {
         return load_plugin_by_name (entity);
       }
-    }
-
-    void kernel_t::stop ()
-    {
-      _stop_request.notify();
-    }
-
-    int kernel_t::run()
-    {
-      assert (! m_running);
-
-      m_running = true;
-
-      _stop_request.wait();
-
-      m_running = false;
-
-      m_stopped.notify();
-
-      return 0;
     }
 
     std::string kernel_t::get( std::string const & key

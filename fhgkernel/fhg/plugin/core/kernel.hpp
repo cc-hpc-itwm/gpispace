@@ -16,6 +16,17 @@ namespace fhg
 {
   namespace core
   {
+    class wait_until_stopped
+    {
+    public:
+      void wait();
+      void stop();
+      boost::function<void()> make_request_stop();
+
+      fhg::util::thread::event<> _stop_requested;
+      fhg::util::thread::event<> _stopped;
+    };
+
     class kernel_t
     {
     public:
@@ -24,12 +35,11 @@ namespace fhg
 
       kernel_t ( std::string const& name
                , fhg::core::kernel_t::search_path_t search_path
+               , boost::function<void()> request_stop
                );
       ~kernel_t ();
 
-      int run();
-
-      void stop ();
+      boost::function<void()> stop;
 
       int load_plugin (std::string const & entity);
       int load_plugin_by_name (std::string const & name);
@@ -52,8 +62,6 @@ namespace fhg
       mutable mutex_type m_mtx_load_plugin;
       mutable mutex_type m_mtx_config;
 
-      fhg::util::thread::event<> _stop_request;
-      bool m_running;
       plugin_map_t   m_plugins;
       plugin_names_t m_load_order;
 
@@ -61,8 +69,6 @@ namespace fhg
 
       std::string m_name;
       search_path_t m_search_path;
-
-      fhg::util::thread::event<> m_stopped;
     };
   }
 }

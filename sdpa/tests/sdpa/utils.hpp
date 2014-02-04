@@ -120,10 +120,11 @@ namespace utils
                        , const std::string& strModulesPath
                        , const std::string& kvsHost
                        , const std::string& kvsPort
+                       , boost::function<void()> request_stop
                        )
     {
       boost::shared_ptr<fhg::core::kernel_t> kernel
-        (new fhg::core::kernel_t (drtsName, fhg::core::kernel_t::search_path_t()));
+        (new fhg::core::kernel_t (drtsName, fhg::core::kernel_t::search_path_t(), request_stop));
 
       kernel->put ("plugin.drts.kvs_host", kvsHost);
       kernel->put ("plugin.drts.kvs_port", kvsPort);
@@ -155,10 +156,11 @@ namespace utils
                 , std::string kvs_host
                 , std::string kvs_port
                 )
-      : _kernel ( createDRTSWorker
-                  (name, master.name(), capabilities, modules_path, kvs_host, kvs_port)
+      : _waiter()
+      , _kernel ( createDRTSWorker
+                  (name, master.name(), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop())
                 )
-      , _thread (&fhg::core::kernel_t::run, _kernel)
+      , _thread (&fhg::core::wait_until_stopped::wait, &_waiter)
     {
     }
     drts_worker ( std::string name
@@ -168,22 +170,20 @@ namespace utils
                 , std::string kvs_host
                 , std::string kvs_port
                 )
-      : _kernel ( createDRTSWorker
-                  (name, assemble_string (masters), capabilities, modules_path, kvs_host, kvs_port)
+      : _waiter()
+      , _kernel ( createDRTSWorker
+                  (name, assemble_string (masters), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop())
                 )
-      , _thread (&fhg::core::kernel_t::run, _kernel)
+      , _thread (&fhg::core::wait_until_stopped::wait, &_waiter)
     {
     }
 
     ~drts_worker()
     {
-      _kernel->stop();
-      if (_thread.joinable())
-      {
-        _thread.join();
-      }
+      _waiter.stop();
     }
 
+    fhg::core::wait_until_stopped _waiter;
     boost::shared_ptr<fhg::core::kernel_t> _kernel;
     boost::thread _thread;
   };

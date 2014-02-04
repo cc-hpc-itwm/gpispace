@@ -97,7 +97,10 @@ int main(int ac, char **av)
     }
   }
 
-  fhg::core::kernel_t kernel (kernel_name, search_path);
+  fhg::core::wait_until_stopped waiter;
+  const boost::function<void()> request_stop (waiter.make_request_stop());
+
+  fhg::core::kernel_t kernel (kernel_name, search_path, request_stop);
 
   BOOST_FOREACH (std::string const & p, config_vars)
   {
@@ -125,8 +128,10 @@ int main(int ac, char **av)
 
   signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
 
-  signal_handlers.add (SIGTERM, boost::bind (&fhg::core::kernel_t::stop, &kernel));
-  signal_handlers.add (SIGINT, boost::bind (&fhg::core::kernel_t::stop, &kernel));
+  signal_handlers.add (SIGTERM, boost::bind (request_stop));
+  signal_handlers.add (SIGINT, boost::bind (request_stop));
 
-  return kernel.run();
+  waiter.wait();
+
+  return 0;
 }
