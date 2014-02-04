@@ -38,19 +38,17 @@ namespace fhg
     {
       assert (m_descriptor != 0);
 
-      char *error;
       fhg_plugin_create create_plugin;
 
       dlerror();
       *(void**)(&create_plugin) = dlsym(m_handle, "fhg_get_plugin_instance");
-      if ((error = dlerror()) != NULL)
+      if (char* error = dlerror())
       {
         dlclose(m_handle);
         throw std::runtime_error("could not get create function: " + std::string(error));
       }
 
       m_plugin = create_plugin();
-      dlerror();
 
       m_started = true;
 
