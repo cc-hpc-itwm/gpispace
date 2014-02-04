@@ -47,8 +47,45 @@ namespace fhg
         m_stopped.wait();
       }
 
-      // unload all non-static plugins according to dependency graph
-      unload_all ();
+      while (! m_plugins.empty())
+      {
+        std::string plugin_name = m_load_order.back ();
+
+        plugin_names_t::reverse_iterator it = m_load_order.rbegin ();
+        plugin_names_t::reverse_iterator end = m_load_order.rend ();
+
+        for (; it != end ; ++it)
+        {
+          std::string plugin_to_unload = *it;
+          plugin_map_t::iterator plugin_it =
+            m_plugins.find (plugin_to_unload);
+          assert (plugin_it != m_plugins.end ());
+
+
+          for ( plugin_map_t::iterator it (m_plugins.begin())
+              ; it != m_plugins.end()
+              ; ++it
+              )
+          {
+            if (it->first != plugin_it->first)
+            {
+              it->second.second->handle_plugin_preunload(plugin_it->second.second);
+            }
+          }
+
+          if (plugin_it->second.second->is_in_use())
+          {
+            continue;
+          }
+
+          m_load_order.remove (plugin_it->first);
+          m_plugins.erase (plugin_it);
+
+          LOG(TRACE, "plugin '" << plugin_it->first << "' unloaded");
+
+          break;
+        }
+      }
     }
 
     plugin_t::ptr_t kernel_t::lookup_plugin(std::string const &name)
@@ -238,53 +275,6 @@ namespace fhg
     {
       lock_type plugins_lock (m_mtx_plugins);
       return m_plugins.find(name) != m_plugins.end();
-    }
-
-    void kernel_t::unload_all ()
-    {
-      {
-        lock_type plugins_lock (m_mtx_plugins);
-
-        while (! m_plugins.empty())
-        {
-          std::string plugin_name = m_load_order.back ();
-
-          plugin_names_t::reverse_iterator it = m_load_order.rbegin ();
-          plugin_names_t::reverse_iterator end = m_load_order.rend ();
-
-          for (; it != end ; ++it)
-          {
-            std::string plugin_to_unload = *it;
-            plugin_map_t::iterator plugin_it =
-              m_plugins.find (plugin_to_unload);
-            assert (plugin_it != m_plugins.end ());
-
-
-            for ( plugin_map_t::iterator it (m_plugins.begin())
-                ; it != m_plugins.end()
-                ; ++it
-                )
-            {
-              if (it->first != plugin_it->first)
-              {
-                it->second.second->handle_plugin_preunload(plugin_it->second.second);
-              }
-            }
-
-            if (plugin_it->second.second->is_in_use())
-            {
-              continue;
-            }
-
-            m_load_order.remove (plugin_it->first);
-            m_plugins.erase (plugin_it);
-
-            LOG(TRACE, "plugin '" << plugin_it->first << "' unloaded");
-
-            break;
-          }
-        }
-      }
     }
 
     void kernel_t::stop ()

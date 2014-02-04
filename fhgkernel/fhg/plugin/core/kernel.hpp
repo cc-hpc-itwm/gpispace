@@ -36,8 +36,6 @@ namespace fhg
       int load_plugin_from_file (std::string const & file);
       bool is_plugin_loaded (std::string const &name);
 
-      void unload_all ();
-
       plugin_t::ptr_t lookup_plugin(std::string const & name);
 
       std::string get(std::string const & key, std::string const &dflt) const;
