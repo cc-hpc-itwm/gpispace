@@ -3,7 +3,6 @@ set(hdrs
   descriptor.hpp
   plugin.hpp
   kernel.hpp
-  capability.hpp
 )
 
 set (core_srcs

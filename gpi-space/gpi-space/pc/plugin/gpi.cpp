@@ -4,7 +4,6 @@
 
 #include <fhg/util/read_bool.hpp>
 #include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/capability.hpp>
 #include "gpi.hpp"
 
 #include <gpi-space/pc/client/api.hpp>
@@ -14,12 +13,10 @@ typedef boost::unique_lock<mutex_type> lock_type;
 
 class GpiPluginImpl : FHG_PLUGIN
                     , public gpi::GPI
-                    , public fhg::plugin::Capability
 {
 public:
   GpiPluginImpl (Kernel *fhg_kernel, std::list<Plugin*>)
-    : Capability ("GPI", "PGAS")
-    , api ("")
+    : api ("")
     , _try_start_loop (NULL)
   {
     const std::string socket_path
