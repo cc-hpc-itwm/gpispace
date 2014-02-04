@@ -169,11 +169,6 @@ namespace fhg
       }
 
       const fhg_plugin_descriptor_t *desc = query_plugin._fun();
-      if (desc == 0)
-      {
-        dlclose(handle);
-        throw std::runtime_error("could not query plugin: no descriptor");
-      }
 
       plugin_t::ptr_t p (new plugin_t( desc->name
                                           , full_path_to_file
