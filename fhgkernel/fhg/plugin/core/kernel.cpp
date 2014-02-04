@@ -142,9 +142,43 @@ namespace fhg
         return EINVAL;
       }
 
-      plugin_t::ptr_t p (plugin_t::create( full_path_to_file
-                                         , (load_lazy?RTLD_LAZY:RTLD_NOW)
-                                         )
+
+      // dlopen file
+      char *error;
+      fhg_plugin_query query_plugin;
+      void *handle;
+
+      handle = dlopen(full_path_to_file.c_str(), RTLD_GLOBAL | (load_lazy?RTLD_LAZY:RTLD_NOW));
+      if (!handle)
+      {
+        std::string msg ("dlopen () failed: ");
+        msg += dlerror ();
+        throw std::runtime_error(msg);
+      }
+
+      dlerror();
+
+      *(void**)(&query_plugin) = dlsym(handle, "fhg_query_plugin_descriptor");
+
+      if ((error = dlerror()) != NULL)
+      {
+        dlclose(handle);
+        throw std::runtime_error("could not get query function: " + std::string(error));
+      }
+
+      const fhg_plugin_descriptor_t *desc = query_plugin();
+      if (desc == 0)
+      {
+        dlclose(handle);
+        throw std::runtime_error("could not query plugin: no descriptor");
+      }
+
+      plugin_t::ptr_t p (new plugin_t( desc->name
+                                          , full_path_to_file
+                                          , desc
+                                          , 0
+                                          , handle
+                                          )
                         );
       {
         if (is_plugin_loaded (p->name ()))

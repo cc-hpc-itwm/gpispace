@@ -24,9 +24,13 @@ namespace fhg
     public:
       typedef boost::shared_ptr<plugin_t> ptr_t;
 
+      plugin_t ( std::string const & name
+               , std::string const & filename
+               , const fhg_plugin_descriptor_t *
+               , int flags
+               , void * handle
+               );
       ~plugin_t ();
-
-      static ptr_t create (std::string const & filename, int flags);
 
       std::string const & name () const;
 
@@ -72,13 +76,6 @@ namespace fhg
 
       void inc_refcount ();
       void dec_refcount ();
-
-      plugin_t ( std::string const & name
-               , std::string const & filename
-               , const fhg_plugin_descriptor_t *
-               , int flags
-               , void * handle
-               );
 
       mutable mutex_type m_refcount_mtx;
       mutable mutex_type m_dependencies_mtx;
