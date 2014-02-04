@@ -580,6 +580,8 @@ public:
   try
   {
     //! \todo ctor parameters
+    const boost::function<void()> request_stop
+      (boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel()));
     const std::string name (fhg_kernel()->get_name());
     const std::size_t backlog_size
       (fhg_kernel()->get<std::size_t> ("backlog", "3"));
@@ -628,6 +630,9 @@ public:
         )
       );
 
+
+    _request_stop = request_stop;
+
     fhg::com::kvs::get_or_create_global_kvs
       ( !kvs_host.empty() ? kvs_host : throw std::runtime_error ("kvs host empty")
       , !kvs_port.empty() ? kvs_port : throw std::runtime_error ("kvs port empty")
@@ -638,7 +643,7 @@ public:
 
     _kvs_keep_alive = new fhg::util::keep_alive
       ( boost::bind (&fhg::com::kvs::client::kvsc::ping, fhg::com::kvs::global_kvs())
-      , boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel())
+      , _request_stop
       , kvs_max_ping_failed
       , kvs_ping_interval
       );
@@ -1580,7 +1585,7 @@ private:
               , "still not connected after " << m_reconnect_counter
               << " trials: shutting down"
               );
-          fhg_kernel()->shutdown();
+          _request_stop();
           return;
         }
       }
@@ -1679,6 +1684,8 @@ private:
       MLOG(WARN, "got invalid message from suspicious source");
     }
   }
+
+  boost::function<void()> _request_stop;
 
   //! \todo don't be pointer!
   fhg::util::keep_alive* _kvs_keep_alive;
