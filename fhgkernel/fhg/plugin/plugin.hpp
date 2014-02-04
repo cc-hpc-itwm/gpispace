@@ -1,8 +1,5 @@
-
 #ifndef FHG_PLUGIN_HPP
-#define FHG_PLUGIN_HPP 1
-
-#include <errno.h>
+#define FHG_PLUGIN_HPP
 
 #include <string>
 #include <map>
@@ -10,10 +7,9 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/plugin/descriptor.hpp>
+#include <fhg/plugin/kernel.hpp>
 
 #include <boost/utility.hpp>
-
-#include <fhg/plugin/kernel.hpp>
 
 #define FHG_PLUGIN public fhg::plugin::Plugin
 
@@ -42,8 +38,6 @@ namespace fhg
 {
   namespace plugin
   {
-    class Kernel;
-
     class Plugin : boost::noncopyable
     {
     public:
