@@ -170,6 +170,12 @@ namespace fhg
 
       const fhg_plugin_descriptor_t *desc = query_plugin._fun();
 
+      if (is_plugin_loaded (desc->name))
+      {
+        throw std::runtime_error
+          ("another plugin with the same name is already loaded: " + std::string (desc->name));
+      }
+
       plugin_t::ptr_t p (new plugin_t( desc->name
                                           , full_path_to_file
                                           , desc
@@ -177,13 +183,6 @@ namespace fhg
                                           , handle
                                           )
                         );
-      {
-        if (is_plugin_loaded (p->name ()))
-        {
-          throw std::runtime_error
-            ("another plugin with the same name is already loaded: " + p->name());
-        }
-      }
 
       require_dependencies (p);
 
