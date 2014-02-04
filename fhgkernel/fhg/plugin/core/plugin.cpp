@@ -78,7 +78,7 @@ namespace fhg
         dep->dec_refcount();
       }
 
-      if (m_handle) dlclose (m_handle);
+      dlclose (m_handle);
     }
 
     void plugin_t::inc_refcount ()
