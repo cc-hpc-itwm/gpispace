@@ -28,13 +28,11 @@ namespace fhg
       dlclose (_);
     }
 
-    plugin_t::plugin_t ( std::string const & my_name
-                       , void *my_handle
+    plugin_t::plugin_t ( void *my_handle
                        , fhg::plugin::Kernel *kernel
                        , std::list<plugin_t::ptr_t> deps
                        )
-      : m_name (my_name)
-      , m_plugin (0)
+      : m_plugin (0)
       , m_handle (my_handle)
       , m_dependencies (deps)
     {

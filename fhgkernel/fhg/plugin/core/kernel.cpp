@@ -216,8 +216,7 @@ namespace fhg
 
       mediator_ptr m (new PluginKernelMediator (plugin_name, this));
 
-      plugin_t::ptr_t p (new plugin_t( plugin_name
-                                          , handle
+      plugin_t::ptr_t p (new plugin_t( handle
                                      , m.get()
                                      , dependencies
                                           )

@@ -23,8 +23,7 @@ namespace fhg
     public:
       typedef boost::shared_ptr<plugin_t> ptr_t;
 
-      plugin_t ( std::string const & name
-               , void * handle
+      plugin_t ( void * handle
                , fhg::plugin::Kernel *kernel
                , std::list<plugin_t::ptr_t> deps
                );
@@ -35,7 +34,6 @@ namespace fhg
     private:
       void check_dependencies();
 
-      std::string m_name;
       fhg::plugin::Plugin *m_plugin;
 
       struct close_on_dtor_dlhandle
