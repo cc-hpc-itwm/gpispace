@@ -28,7 +28,6 @@ fhg_add_test (expr_parser.cpp
   BOOST_UNIT_TEST
   PROJECT we
   LINK_LIBRARIES pnet
-                 ${LibReadline_LIBRARY}
 )
 
 fhg_add_test (context.cpp
