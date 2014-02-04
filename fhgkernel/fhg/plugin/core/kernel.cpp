@@ -253,14 +253,12 @@ namespace fhg
         return -EBUSY;
       }
 
-      int rc = p->second.second->stop();
-
-      LOG(TRACE, "plugin '" << p->first << "' unloaded");
-
       m_load_order.remove (p->first);
       m_plugins.erase (p);
 
-      return rc;
+      LOG(TRACE, "plugin '" << p->first << "' unloaded");
+
+      return 0;
     }
 
     bool kernel_t::is_plugin_loaded (std::string const &name)
