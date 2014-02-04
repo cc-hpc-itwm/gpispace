@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 
+#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
@@ -27,7 +28,6 @@ namespace fhg
                , fhg::plugin::Kernel *kernel
                , std::list<plugin_t::ptr_t> deps
                );
-      ~plugin_t ();
 
       void handle_plugin_loaded (plugin_t::ptr_t);
       void handle_plugin_preunload (plugin_t::ptr_t);
@@ -45,7 +45,7 @@ namespace fhg
 
       std::list<ptr_t> m_dependencies;
 
-      fhg::plugin::Plugin *m_plugin;
+      boost::scoped_ptr<fhg::plugin::Plugin> m_plugin;
 
       static std::list<plugin::Plugin*> to_raw (std::list<plugin_t::ptr_t>);
     };

@@ -53,7 +53,7 @@ namespace fhg
       std::list<plugin::Plugin*> deps_raw;
       BOOST_FOREACH (ptr_t p, deps)
       {
-        deps_raw.push_back (p->m_plugin);
+        deps_raw.push_back (p->m_plugin.get());
       }
       return deps_raw;
     }
@@ -70,22 +70,14 @@ namespace fhg
                  )
     {}
 
-    plugin_t::~plugin_t ()
-    {
-      delete m_plugin;
-      m_plugin = NULL;
-
-      m_dependencies.clear();
-    }
-
     void plugin_t::handle_plugin_loaded (plugin_t::ptr_t other)
     {
-      m_plugin->fhg_on_plugin_loaded (other->m_plugin);
+      m_plugin->fhg_on_plugin_loaded (other->m_plugin.get());
     }
 
     void plugin_t::handle_plugin_preunload (plugin_t::ptr_t other)
     {
-      m_plugin->fhg_on_plugin_preunload (other->m_plugin);
+      m_plugin->fhg_on_plugin_preunload (other->m_plugin.get());
     }
   }
 }
