@@ -52,7 +52,6 @@ namespace fhg
       mutable mutex_type m_mtx_load_plugin;
       mutable mutex_type m_mtx_config;
 
-      bool m_stop_requested;
       fhg::util::thread::event<> _stop_request;
       bool m_running;
       plugin_map_t   m_plugins;

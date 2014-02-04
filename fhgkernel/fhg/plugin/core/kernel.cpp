@@ -32,8 +32,7 @@ namespace fhg
     kernel_t::kernel_t ( std::string const& name
                        , fhg::core::kernel_t::search_path_t search_path
                        )
-      : m_stop_requested (false)
-      , m_running (false)
+      : m_running (false)
       , m_name (name)
       , m_search_path (search_path)
     {
@@ -77,9 +76,6 @@ namespace fhg
         }
       }
 
-      if (m_stop_requested)
-        return ECANCELED;
-
       int ec = ENOENT;
 
       BOOST_FOREACH (std::string const &dir, m_search_path)
@@ -116,9 +112,6 @@ namespace fhg
     try
     {
       lock_type load_plugin_lock (m_mtx_load_plugin);
-
-      if (m_stop_requested)
-        return ECANCELED;
 
       bool load_lazy (boost::lexical_cast<bool>(get("kernel.load.lazy", "1")));
 
@@ -247,7 +240,6 @@ namespace fhg
 
     void kernel_t::stop ()
     {
-      m_stop_requested = true;
       _stop_request.notify();
     }
 
