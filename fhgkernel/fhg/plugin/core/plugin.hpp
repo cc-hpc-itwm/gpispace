@@ -33,17 +33,11 @@ namespace fhg
                );
       ~plugin_t ();
 
-      bool is_in_use() const;
-
       void handle_plugin_loaded (plugin_t::ptr_t);
       void handle_plugin_preunload (plugin_t::ptr_t);
     private:
       void check_dependencies();
 
-      void inc_refcount ();
-      void dec_refcount ();
-
-      mutable boost::mutex m_refcount_mtx;
       mutable boost::mutex m_dependencies_mtx;
 
       std::string m_name;
@@ -53,7 +47,6 @@ namespace fhg
       void *m_handle;
 
       std::list<ptr_t> m_dependencies;
-      std::size_t m_refcount;
     };
   }
 }

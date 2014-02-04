@@ -33,7 +33,6 @@ namespace fhg
       , m_descriptor (my_desc)
       , m_handle (my_handle)
       , m_dependencies (deps)
-      , m_refcount(0)
     {
       assert (m_descriptor != 0);
 
@@ -57,7 +56,6 @@ namespace fhg
       std::list<plugin::Plugin*> deps_raw;
       BOOST_FOREACH (ptr_t p, deps)
       {
-        p->inc_refcount();
         deps_raw.push_back (p->m_plugin);
       }
 
@@ -66,8 +64,6 @@ namespace fhg
 
     plugin_t::~plugin_t ()
     {
-      assert (! is_in_use());
-
       delete m_plugin;
       m_plugin = NULL;
 
@@ -75,29 +71,9 @@ namespace fhg
       while (! m_dependencies.empty())
       {
         ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
-        dep->dec_refcount();
       }
 
       dlclose (m_handle);
-    }
-
-    void plugin_t::inc_refcount ()
-    {
-      boost::mutex::scoped_lock const _ (m_refcount_mtx);
-      ++m_refcount;
-    }
-
-    void plugin_t::dec_refcount ()
-    {
-      boost::mutex::scoped_lock const _ (m_refcount_mtx);
-      assert (m_refcount > 0);
-      --m_refcount;
-    }
-
-    bool plugin_t::is_in_use () const
-    {
-      boost::mutex::scoped_lock const _ (m_refcount_mtx);
-      return m_refcount > 0;
     }
 
     void plugin_t::handle_plugin_loaded (plugin_t::ptr_t other)

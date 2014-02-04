@@ -73,11 +73,6 @@ namespace fhg
             }
           }
 
-          if (plugin_it->second.second->is_in_use())
-          {
-            continue;
-          }
-
           m_load_order.remove (plugin_it->first);
           m_plugins.erase (plugin_it);
 
