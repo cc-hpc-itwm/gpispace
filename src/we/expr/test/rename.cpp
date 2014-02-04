@@ -6,25 +6,45 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/eval/context.hpp>
 
-#include <iostream>
-
-BOOST_AUTO_TEST_CASE (NO_TEST)
+BOOST_AUTO_TEST_CASE (other_variable_not_renamed)
 {
-  typedef expr::eval::context context_t;
-  typedef expr::parse::parser parser_t;
-
-  context_t context;
-  std::ostringstream input;
-
-  input << "${a} := ${b};" << std::endl;
-  input << "${a.x} := ${a.y} + ${e} * sin (${a.z});" << std::endl;
-  input << "${c} := ${b};" << std::endl;
-
-  parser_t parser (input.str());
-
-  std::cout << parser << std::endl;
-
+  expr::parse::parser parser ("${_}");
   parser.rename ("a", "A");
 
-  std::cout << parser << std::endl;
+  BOOST_REQUIRE_EQUAL (parser.string(), expr::parse::parser ("${_}").string());
+}
+
+BOOST_AUTO_TEST_CASE (variable_renamed)
+{
+  expr::parse::parser parser ("${a}");
+  parser.rename ("a", "A");
+
+  BOOST_REQUIRE_EQUAL (parser.string(), expr::parse::parser ("${A}").string());
+}
+
+BOOST_AUTO_TEST_CASE (first_field_renamed)
+{
+  expr::parse::parser parser ("${a._}");
+  parser.rename ("a", "A");
+
+  BOOST_REQUIRE_EQUAL
+    (parser.string(), expr::parse::parser ("${A._}").string());
+}
+
+BOOST_AUTO_TEST_CASE (later_field_not_renamed)
+{
+  expr::parse::parser parser ("${_.a}");
+  parser.rename ("a", "A");
+
+  BOOST_REQUIRE_EQUAL
+    (parser.string(), expr::parse::parser ("${_.a}").string());
+}
+
+BOOST_AUTO_TEST_CASE (renamed_at_depth_greater_zero)
+{
+  expr::parse::parser parser ("sin (${a})");
+  parser.rename ("a", "A");
+
+  BOOST_REQUIRE_EQUAL
+    (parser.string(), expr::parse::parser ("sin (${A})").string());
 }
