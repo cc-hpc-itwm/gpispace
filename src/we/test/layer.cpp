@@ -874,6 +874,8 @@ namespace
   void cancel (we::layer::id_type){}
   void failed (we::layer::id_type, int, std::string){}
   void canceled (we::layer::id_type){}
+  void discover (we::layer::id_type, we::layer::id_type){}
+  void discovered (we::layer::id_type, sdpa::discovery_info_t){}
 
   boost::mutex generate_id_mutex;
   we::layer::id_type generate_id()
