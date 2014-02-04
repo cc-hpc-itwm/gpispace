@@ -199,7 +199,8 @@ namespace
     BOOST_FOREACH
       (const sdpa::discovery_info_t& child_info, disc_res.children())
     {
-      if (!child_info.state() || child_info.state() != sdpa::status::PENDING)
+      if (! child_info.state()
+         || child_info.state().get() != sdpa::status::PENDING)
       {
         return false;
       }
