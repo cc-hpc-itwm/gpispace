@@ -1,5 +1,8 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#define BOOST_TEST_MODULE we_expr_parser
+#include <boost/test/unit_test.hpp>
+
 #include <we/exception.hpp>
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
@@ -54,13 +57,9 @@ public:
   }
 };
 
-using std::cin;
-using std::cout;
-using std::endl;
-
-int main (int ac, char **)
+BOOST_AUTO_TEST_CASE (no_test)
 {
-  cout << "measure..." << endl;
+  std::cout << "measure..." << std::endl;
 
   {
     typedef expr::parse::parser parser_t;
@@ -115,35 +114,33 @@ int main (int ac, char **)
 
     std::ostringstream ss;
 
-    ss << "${x} := ${x} + 1L;" << endl;
-    ss << "${y} := double (${x}) / double (4L);" << endl;
-    ss << "${ceil} := ceil(${y});" << endl;
-    ss << "${floor} := floor${y} /* note the omision of parens */;" << endl;
-    ss << "${round_half_up} := floor(${y} + 0.5/*comment, /* NESTED */*/);" << endl;
-    ss << "${round_half_down} := ceil(${y} - 0.5);" << endl;
-    ss << "${round} := round(${y});" << endl;
-    ss << "/* round switches between half_up and half_down */" << endl;
-    ss << "round(2.5); round(2.5); round(2.5); round(2.5);" << endl;
+    ss << "${x} := ${x} + 1L;" << std::endl;
+    ss << "${y} := double (${x}) / double (4L);" << std::endl;
+    ss << "${ceil} := ceil(${y});" << std::endl;
+    ss << "${floor} := floor${y} /* note the omision of parens */;" << std::endl;
+    ss << "${round_half_up} := floor(${y} + 0.5/*comment, /* NESTED */*/);" << std::endl;
+    ss << "${round_half_down} := ceil(${y} - 0.5);" << std::endl;
+    ss << "${round} := round(${y});" << std::endl;
+    ss << "/* round switches between half_up and half_down */" << std::endl;
+    ss << "round(2.5); round(2.5); round(2.5); round(2.5);" << std::endl;
 
     const std::string input (ss.str());
 
-    cout << "INPUT:" << endl << input << endl;
+    std::cout << "INPUT:" << std::endl << input << std::endl;
 
     context_t context;
     context.bind("x", 0L);
     parser_t parser (input);
 
-    cout << "PARSED:" << endl << parser;
-    cout << "EVAL_ALL:" << endl;
+    std::cout << "PARSED:" << std::endl << parser;
+    std::cout << "EVAL_ALL:" << std::endl;
 
     int i = 12;
 
     while (i-->0)
       {
         parser.eval_all (context);
-        cout << context << endl;
+        std::cout << context << std::endl;
       }
   }
-
-  return EXIT_SUCCESS;
 }
