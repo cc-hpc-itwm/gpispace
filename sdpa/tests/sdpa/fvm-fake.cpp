@@ -14,46 +14,28 @@ public:
     size_t fvm_size (100*1024*1024);
     size_t shm_size (50*1024*1024);
 
-    try
-    {
-      fvm_size = lexical_cast<size_t>( fhg_kernel()->get( "fvm_size"
-                                                        , lexical_cast<std::string>(fvm_size)
-                                                        )
-                                     );
-    }
-    catch (std::exception const &ex)
-    {
-      LOG(ERROR, "could not parse plugin.fvm-fake.fvm_size: " << ex.what());
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
+    fvm_size = lexical_cast<size_t>( fhg_kernel()->get( "fvm_size"
+                                                      , lexical_cast<std::string>(fvm_size)
+                                                      )
+                                   );
 
-    try
-    {
-      shm_size = lexical_cast<size_t>( fhg_kernel()->get( "shm_size"
-                                                        , lexical_cast<std::string>(shm_size)
-                                                        )
-                                     );
-    }
-    catch (std::exception const &ex)
-    {
-      LOG(ERROR, "could not parse plugin.fvm-fake.shm_size: " << ex.what());
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
+    shm_size = lexical_cast<size_t>( fhg_kernel()->get( "shm_size"
+                                                      , lexical_cast<std::string>(shm_size)
+                                                      )
+                                   );
 
     int ec = fvmConnect(fvm_pc_config_t("/dummy", "/dummy", shm_size, fvm_size));
 
     if (0 != ec)
     {
-      FHG_PLUGIN_FAILED(-ec);
+      throw std::runtime_error
+        ("fvmConnect failed: " + std::string (strerror (-ec)));
     }
-
-    FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
   {
     fvmLeave();
-    FHG_PLUGIN_STOPPED();
   }
 };
 

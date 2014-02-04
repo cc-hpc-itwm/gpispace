@@ -35,7 +35,6 @@ class GPICompatPluginImpl : FHG_PLUGIN
   typedef boost::unique_lock<mutex_type> lock_type;
 public:
   FHG_PLUGIN_START()
-  try
   {
     const std::string worker_name (fhg_kernel()->get_name());
     const fvmSize_t shm_size
@@ -76,13 +75,6 @@ public:
 
     _reinitialize_thread = new boost::thread
       (&GPICompatPluginImpl::schedule_reinitialize_gpi, this);
-
-    FHG_PLUGIN_STARTED();
-  }
-  catch (std::runtime_error const& ex)
-  {
-    LOG (ERROR, ex.what());
-    FHG_PLUGIN_FAILED (-1);
   }
 
   FHG_PLUGIN_STOP()
@@ -120,8 +112,6 @@ public:
     m_shm_ptr = 0;
     api = 0;
     gpi_compat = 0;
-
-    FHG_PLUGIN_STOPPED();
   }
 
   int reinitialize_gpi_state ()

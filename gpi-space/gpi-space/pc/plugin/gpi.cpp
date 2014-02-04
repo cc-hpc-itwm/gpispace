@@ -81,7 +81,6 @@ public:
         _try_start_loop = new boost::thread (&GpiPluginImpl::restart_loop, this);
       }
     }
-    FHG_PLUGIN_STARTED();
   }
 
   FHG_PLUGIN_STOP()
@@ -97,7 +96,6 @@ public:
       _try_start_loop = NULL;
     }
     api.stop();
-    FHG_PLUGIN_STOPPED();
   }
 
   gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t seg_id

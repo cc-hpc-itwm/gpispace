@@ -113,8 +113,6 @@ namespace fhg
       if (m_stop_requested)
         return ECANCELED;
 
-      int rc = 0;
-
       bool load_lazy (boost::lexical_cast<bool>(get("kernel.load.lazy", "1")));
 
       std::string full_path_to_file = fs::absolute (fs::path (file)).string ();
@@ -191,38 +189,39 @@ namespace fhg
                                           )
                         );
 
-      rc = p->init (m.get(), dependencies);
-      if (rc == START_SUCCESSFUL) // started
+      try
       {
-        {
-          lock_type plugins_lock (m_mtx_plugins);
-          m_plugins.insert (std::make_pair(p->name(), std::make_pair (m, p)));
-          m_load_order.push_back (p->name ());
-        }
-
-        MLOG( TRACE
-            , "loaded plugin '" << p->name() << "'"
-            << " (from: '" << full_path_to_file << "')"
-            );
-
-        for ( plugin_map_t::iterator it (m_plugins.begin())
-            ; it != m_plugins.end()
-            ; ++it
-            )
-        {
-          if (it->first != p->name())
-            it->second.second->handle_plugin_loaded(p);
-        }
+        p->init (m.get(), dependencies);
       }
-      else
+      catch (std::runtime_error const& ex)
       {
         p->stop();
 
         throw std::runtime_error
-          ("plugin " + p->name() + " failed to start: " + std::string(strerror(-rc)));
+          ("plugin " + p->name() + " failed to start: " + ex.what());
       }
 
-      return rc;
+      {
+        lock_type plugins_lock (m_mtx_plugins);
+        m_plugins.insert (std::make_pair(p->name(), std::make_pair (m, p)));
+        m_load_order.push_back (p->name ());
+      }
+
+      MLOG( TRACE
+          , "loaded plugin '" << p->name() << "'"
+          << " (from: '" << full_path_to_file << "')"
+          );
+
+      for ( plugin_map_t::iterator it (m_plugins.begin())
+          ; it != m_plugins.end()
+          ; ++it
+          )
+      {
+        if (it->first != p->name())
+          it->second.second->handle_plugin_loaded(p);
+      }
+
+      return 0;
     }
 
     int kernel_t::load_plugin(std::string const & entity)

@@ -577,7 +577,6 @@ class DRTSImpl : FHG_PLUGIN
                   > map_of_capabilities_t;
 public:
   FHG_PLUGIN_START()
-  try
   {
     //! \todo ctor parameters
     const boost::function<void()> request_stop
@@ -764,13 +763,6 @@ public:
       ("/service/drts/capability/get"
       , boost::bind (&DRTSImpl::service_capability_get, this, _1, _2, _3)
       );
-
-    FHG_PLUGIN_STARTED();
-  }
-  catch (std::exception const &ex)
-  {
-    MLOG (ERROR, ex.what());
-    FHG_PLUGIN_FAILED (-1);
   }
 
 
@@ -833,8 +825,6 @@ public:
 
     delete _kvs_keep_alive;
     _kvs_keep_alive = NULL;
-
-    FHG_PLUGIN_STOPPED();
   }
 
   FHG_ON_PLUGIN_LOADED(plugin)

@@ -1,3 +1,4 @@
+
 #ifndef FHG_PLUGIN_HPP
 #define FHG_PLUGIN_HPP 1
 
@@ -16,12 +17,9 @@
 
 #define FHG_PLUGIN public fhg::plugin::Plugin
 
-#define FHG_PLUGIN_START() virtual int fhg_plugin_start ()
-#define FHG_PLUGIN_STARTED() return 0
-#define FHG_PLUGIN_FAILED(err) fhg_assert(err > 0); return -err
+#define FHG_PLUGIN_START() virtual void fhg_plugin_start ()
 
-#define FHG_PLUGIN_STOP() virtual int fhg_plugin_stop ()
-#define FHG_PLUGIN_STOPPED() return 0
+#define FHG_PLUGIN_STOP() virtual void fhg_plugin_stop ()
 
 #define FHG_ON_PLUGIN_LOADED(p) virtual void fhg_on_plugin_loaded(Plugin* p)
 #define FHG_ON_PLUGIN_PREUNLOAD(p) virtual void fhg_on_plugin_preunload(Plugin* p)
@@ -54,20 +52,18 @@ namespace fhg
     public:
       virtual ~Plugin(){}
 
-      int fhg_plugin_start_entry (Kernel *k, std::list<Plugin*> deps)
+      void fhg_plugin_start_entry (Kernel *k, std::list<Plugin*> deps)
       {
         m_kernel = k;
         m_dependencies = deps;
-        return fhg_plugin_start();
+        fhg_plugin_start();
       }
 
       FHG_PLUGIN_START()
       {
-        FHG_PLUGIN_STARTED();
       }
       FHG_PLUGIN_STOP()
       {
-        FHG_PLUGIN_STOPPED();
       }
 
 #define EMPTY

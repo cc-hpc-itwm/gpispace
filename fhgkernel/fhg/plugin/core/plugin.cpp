@@ -120,7 +120,7 @@ namespace fhg
       }
     }
 
-    int plugin_t::init (fhg::plugin::Kernel *kernel, std::list<plugin::Plugin*> deps)
+    void plugin_t::init (fhg::plugin::Kernel *kernel, std::list<plugin::Plugin*> deps)
     {
       char *error;
       fhg_plugin_create create_plugin;
@@ -138,7 +138,7 @@ namespace fhg
 
       m_started = true;
 
-      return m_plugin->fhg_plugin_start_entry(kernel, deps);
+      m_plugin->fhg_plugin_start_entry(kernel, deps);
     }
 
     int plugin_t::stop ()
@@ -149,25 +149,17 @@ namespace fhg
       }
       else if (m_started)
       {
-        int rc = m_plugin->fhg_plugin_stop();
+        m_plugin->fhg_plugin_stop();
 
-        if (rc == 0)
+        m_started = false;
+        lock_type lock_dep (m_dependencies_mtx);
+        while (! m_dependencies.empty())
         {
-          m_started = false;
-          lock_type lock_dep (m_dependencies_mtx);
-          while (! m_dependencies.empty())
-          {
-            ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
-            dep->dec_refcount();
-          }
+          ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
+          dep->dec_refcount();
         }
-
-        return rc;
       }
-      else
-      {
-        return 0;
-      }
+      return 0;
     }
 
     void plugin_t::handle_plugin_loaded (plugin_t::ptr_t other)
