@@ -140,8 +140,8 @@ namespace utils
 
       kernel->put ("plugin.drts.library_path", strModulesPath);
 
-      kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
       kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
+      kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
 
       return kernel;
     }
