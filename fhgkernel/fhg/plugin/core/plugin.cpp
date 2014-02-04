@@ -10,7 +10,6 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
-#include <fhg/plugin/core/exception.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/plugin.hpp>
 
