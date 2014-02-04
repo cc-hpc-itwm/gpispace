@@ -234,34 +234,6 @@ namespace fhg
       }
     }
 
-    int kernel_t::unload_plugin (kernel_t::plugin_map_t::iterator p)
-    {
-      assert (p != m_plugins.end());
-
-      for ( plugin_map_t::iterator it (m_plugins.begin())
-          ; it != m_plugins.end()
-          ; ++it
-          )
-      {
-        if (it->first != p->first)
-        {
-          it->second.second->handle_plugin_preunload(p->second.second);
-        }
-      }
-
-      if (p->second.second->is_in_use())
-      {
-        return -EBUSY;
-      }
-
-      m_load_order.remove (p->first);
-      m_plugins.erase (p);
-
-      LOG(TRACE, "plugin '" << p->first << "' unloaded");
-
-      return 0;
-    }
-
     bool kernel_t::is_plugin_loaded (std::string const &name)
     {
       lock_type plugins_lock (m_mtx_plugins);
@@ -287,10 +259,29 @@ namespace fhg
               m_plugins.find (plugin_to_unload);
             assert (plugin_it != m_plugins.end ());
 
-            if (unload_plugin (plugin_it) < 0)
+
+            for ( plugin_map_t::iterator it (m_plugins.begin())
+                ; it != m_plugins.end()
+                ; ++it
+                )
+            {
+              if (it->first != plugin_it->first)
+              {
+                it->second.second->handle_plugin_preunload(plugin_it->second.second);
+              }
+            }
+
+            if (plugin_it->second.second->is_in_use())
+            {
               continue;
-            else
-              break;
+            }
+
+            m_load_order.remove (plugin_it->first);
+            m_plugins.erase (plugin_it);
+
+            LOG(TRACE, "plugin '" << plugin_it->first << "' unloaded");
+
+            break;
           }
         }
       }

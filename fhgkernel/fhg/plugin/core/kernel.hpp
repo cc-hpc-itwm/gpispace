@@ -53,8 +53,6 @@ namespace fhg
       typedef std::map<std::string, std::pair<mediator_ptr, plugin_t::ptr_t> > plugin_map_t;
       typedef std::map<std::string, std::string> config_t;
 
-      int unload_plugin (plugin_map_t::iterator it);
-
       mutable mutex_type m_mtx_plugins;
       mutable mutex_type m_mtx_load_plugin;
       mutable mutex_type m_mtx_config;
