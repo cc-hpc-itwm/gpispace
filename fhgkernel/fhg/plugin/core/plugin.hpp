@@ -38,8 +38,6 @@ namespace fhg
     private:
       void check_dependencies();
 
-      mutable boost::mutex m_dependencies_mtx;
-
       std::string m_name;
       std::string m_file_name;
       fhg::plugin::Plugin *m_plugin;

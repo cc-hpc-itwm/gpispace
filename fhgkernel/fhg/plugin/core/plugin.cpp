@@ -67,7 +67,6 @@ namespace fhg
       delete m_plugin;
       m_plugin = NULL;
 
-      boost::mutex::scoped_lock const _ (m_dependencies_mtx);
       while (! m_dependencies.empty())
       {
         ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
