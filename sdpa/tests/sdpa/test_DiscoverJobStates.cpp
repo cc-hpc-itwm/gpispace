@@ -164,6 +164,14 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
     );
 }
 
+namespace
+{
+  bool has_state_pending (sdpa::discovery_info_t const& disc_res)
+  {
+    return disc_res.state() && disc_res.state().get() == sdpa::status::PENDING;
+  }
+}
+
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
   const std::string workflow
@@ -175,13 +183,10 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
   sdpa::client::Client client (orchestrator.name());
   sdpa::job_id_t const job_id = client.submitJob (workflow);
 
-  bool b_invariant(false);
-  while(!b_invariant)
-  {
-    sdpa::discovery_info_t const disc_res
-      (client.discoverJobStates (get_next_disc_id(), job_id));
-    b_invariant = (disc_res.state() && disc_res.state().get() == sdpa::status::PENDING);
-  }
+  while (!has_state_pending
+          (client.discoverJobStates (get_next_disc_id(), job_id))
+        )
+  {}; // do nothing, discover again
 }
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
