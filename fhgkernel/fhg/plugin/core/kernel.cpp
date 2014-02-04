@@ -195,8 +195,6 @@ namespace fhg
       }
       catch (std::runtime_error const& ex)
       {
-        p->stop();
-
         throw std::runtime_error
           ("plugin " + p->name() + " failed to start: " + ex.what());
       }
