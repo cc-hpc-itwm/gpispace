@@ -25,7 +25,6 @@ namespace fhg
 
     void PluginKernelMediator::stop ()
     {
-      DLOG(WARN, "plugin `" << _name << "' requested to stop the kernel!");
       m_kernel->stop();
     }
 
