@@ -34,23 +34,21 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
 {
   we::type::net_type net;
 
-  we::place_id_type pid_vid (net.add_place (place::type ("vid",std::string("long"))));
+  we::place_id_type const pid_vid
+    (net.add_place (place::type ("vid", std::string ("long"))));
 
   pnet::type::signature::structure_type sig_store_fields;
 
-  sig_store_fields.push_back (std::make_pair ( std::string ("bid")
-                                             , std::string ("long")
-                                             )
-                             );
-  sig_store_fields.push_back (std::make_pair ( std::string ("seen")
-                                             , std::string ("bitset")
-                                             )
-                             );
+  sig_store_fields.push_back
+    (std::make_pair (std::string ("bid"), std::string ("long")));
+  sig_store_fields.push_back
+    (std::make_pair (std::string ("seen"), std::string ("bitset")));
 
-  pnet::type::signature::structured_type sig_store
+  pnet::type::signature::structured_type const sig_store
     (std::make_pair (std::string ("store"), sig_store_fields));
 
-  we::place_id_type pid_store (net.add_place (place::type("store", sig_store)));
+  we::place_id_type const pid_store
+    (net.add_place (place::type ("store", sig_store)));
 
   we::type::transition_t trans_inner
     ( "trans_inner"
@@ -68,38 +66,35 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
 
   pnet::type::signature::structure_type sig_pair_fields;
 
-  sig_pair_fields.push_back (std::make_pair ( std::string ("bid")
-                                            , std::string ("long")
-                                            )
-                            );
-  sig_pair_fields.push_back (std::make_pair ( std::string ("vid")
-                                            , std::string ("long")
-                                            )
-                            );
+  sig_pair_fields.push_back
+    (std::make_pair (std::string ("bid"), std::string ("long")));
+  sig_pair_fields.push_back
+    (std::make_pair (std::string ("vid"), std::string ("long")));
 
-  pnet::type::signature::structured_type sig_pair
+  pnet::type::signature::structured_type const sig_pair
     (std::make_pair (std::string ("pair"), sig_pair_fields));
 
-  we::place_id_type pid_pair (net.add_place (place::type("pair", sig_pair)));
+  we::place_id_type const pid_pair
+    (net.add_place (place::type("pair", sig_pair)));
 
   we::port_id_type const port_id_vid
     ( trans_inner.add_port
-      (we::type::port_t ("vid",we::type::PORT_IN,std::string("long")))
+        (we::type::port_t ("vid", we::type::PORT_IN, std::string("long")))
     );
   we::port_id_type const port_id_store_out
     ( trans_inner.add_port
-      (we::type::port_t ("store",we::type::PORT_OUT,sig_store))
+        (we::type::port_t ("store", we::type::PORT_OUT, sig_store))
     );
   we::port_id_type const port_id_store_in
     ( trans_inner.add_port
-      (we::type::port_t ("store",we::type::PORT_IN,sig_store))
+        (we::type::port_t ("store", we::type::PORT_IN, sig_store))
     );
   we::port_id_type const& port_id_pair
     ( trans_inner.add_port
-      (we::type::port_t ("pair",we::type::PORT_OUT,sig_pair))
+        (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair))
     );
 
-  we::transition_id_type tid (net.add_transition (trans_inner));
+  we::transition_id_type const tid (net.add_transition (trans_inner));
 
   {
     we::type::property::type empty;
@@ -131,13 +126,15 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
     net.put_value (pid_store, m);
   }
 
-  we::type::transition_t tnet ("tnet", net
-                    , boost::none
-                    , true, we::type::property::type()
-                    , we::priority_type()
-                    );
+  we::type::transition_t tnet ( "tnet"
+                              , net
+                              , boost::none
+                              , true
+                              , we::type::property::type()
+                              , we::priority_type()
+                              );
   tnet.add_port
-    (we::type::port_t ("vid", we::type::PORT_IN, std::string("long"), pid_vid));
+    (we::type::port_t ("vid", we::type::PORT_IN, std::string ("long"), pid_vid));
   tnet.add_port
     (we::type::port_t ("store", we::type::PORT_IN, sig_store, pid_store));
   tnet.add_port
@@ -145,15 +142,7 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
   tnet.add_port
     (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair, pid_pair));
 
-  we::type::activity_t act ( tnet, boost::none );
-
-  {
-    std::string act_encoded (act.to_string());
-    std::cout << "act (serialized):"
-              << std::endl
-              << act_encoded
-              << std::endl;
-  }
+  we::type::activity_t act (tnet, boost::none);
 
   boost::mt19937 engine;
 
