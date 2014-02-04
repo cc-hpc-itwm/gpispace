@@ -1,19 +1,17 @@
 #ifndef FHG_PLUGIN_CORE_PLUGIN_HPP
-#define FHG_PLUGIN_CORE_PLUGIN_HPP 1
-
-#include <list>
-#include <string>
+#define FHG_PLUGIN_CORE_PLUGIN_HPP
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
 
-#include <fhg/plugin/kernel.hpp>
+#include <list>
+#include <string>
 
 namespace fhg
 {
   namespace plugin
   {
+    class Kernel;
     class Plugin;
   }
 
