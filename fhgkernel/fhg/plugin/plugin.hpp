@@ -15,15 +15,15 @@
 
 #define FHG_PLUGIN public fhg::plugin::Plugin
 
-#define FHG_PLUGIN_START() int fhg_plugin_start ()
+#define FHG_PLUGIN_START() virtual int fhg_plugin_start ()
 #define FHG_PLUGIN_STARTED() return 0
 #define FHG_PLUGIN_FAILED(err) fhg_assert(err > 0); return -err
 
-#define FHG_PLUGIN_STOP() int fhg_plugin_stop ()
+#define FHG_PLUGIN_STOP() virtual int fhg_plugin_stop ()
 #define FHG_PLUGIN_STOPPED() return 0
 
-#define FHG_ON_PLUGIN_LOADED(p) void fhg_on_plugin_loaded(Plugin* p)
-#define FHG_ON_PLUGIN_PREUNLOAD(p) void fhg_on_plugin_preunload(Plugin* p)
+#define FHG_ON_PLUGIN_LOADED(p) virtual void fhg_on_plugin_loaded(Plugin* p)
+#define FHG_ON_PLUGIN_PREUNLOAD(p) virtual void fhg_on_plugin_preunload(Plugin* p)
 
 #define EXPORT_FHG_PLUGIN(name, cls, depends)                           \
   extern "C"                                                            \
