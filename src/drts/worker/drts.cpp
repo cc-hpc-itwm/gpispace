@@ -1268,7 +1268,6 @@ private:
         {
           MLOG( WARN, "execution of job failed"
               << " and terminate on failure policy is in place."
-              << " Good bye cruel world."
               );
           fhg_kernel()->terminate();
         }
