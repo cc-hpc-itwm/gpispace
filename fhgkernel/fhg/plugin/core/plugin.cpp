@@ -57,6 +57,7 @@ namespace fhg
       std::list<plugin::Plugin*> deps_raw;
       BOOST_FOREACH (ptr_t p, deps)
       {
+        p->inc_refcount();
         deps_raw.push_back (p->get_plugin());
       }
 
