@@ -71,9 +71,9 @@ namespace sdpa {
         , _job_status(job_status)
     {}
 
-    const sdpa::agent_id_t disc_issuer() const { return _disc_issuer; }
-    const sdpa::job_id_t job_id() const { return _job_id; }
-    const sdpa::status::code job_status() const { return _job_status; }
+    sdpa::agent_id_t disc_issuer() const { return _disc_issuer; }
+    sdpa::job_id_t job_id() const { return _job_id; }
+    sdpa::status::code job_status() const { return _job_status; }
 
   private:
     sdpa::agent_id_t _disc_issuer;

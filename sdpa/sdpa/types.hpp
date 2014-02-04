@@ -79,7 +79,7 @@ namespace sdpa {
     void add_child_info(const discovery_info_t& child_info) { _children.insert(child_info); }
 
     template<class Archive>
-    void serialize(Archive &ar, const unsigned int file_version)
+    void serialize(Archive &ar, const unsigned int)
     {
       ar & _job_id;
       ar & _state;

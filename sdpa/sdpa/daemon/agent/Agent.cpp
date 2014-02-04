@@ -461,7 +461,7 @@ namespace
   };
 }
 
-void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent& evt)
+void Agent::cancelPendingJob (const sdpa::events::CancelJobEvent&)
 {
 
 }
