@@ -576,46 +576,45 @@ class DRTSImpl : FHG_PLUGIN
                   , std::pair<sdpa::Capability, fhg::plugin::Capability*>
                   > map_of_capabilities_t;
 public:
-  DRTSImpl (Kernel *k, std::list<Plugin*> deps)
-    : Plugin (k, deps)
+  DRTSImpl (Kernel* fhg_kernel, std::list<Plugin*>)
   {
     //! \todo ctor parameters
     const boost::function<void()> request_stop
-      (boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel()));
-    const std::string name (fhg_kernel()->get_name());
+      (boost::bind (&fhg::plugin::Kernel::shutdown, fhg_kernel));
+    const std::string name (fhg_kernel->get_name());
     const std::size_t backlog_size
-      (fhg_kernel()->get<std::size_t> ("backlog", "3"));
+      (fhg_kernel->get<std::size_t> ("backlog", "3"));
     const std::size_t max_reconnect_attempts
-      (fhg_kernel()->get<std::size_t> ("max_reconnect_attempts", "0"));
+      (fhg_kernel->get<std::size_t> ("max_reconnect_attempts", "0"));
     std::list<std::string> master_list;
     std::list<std::string> capability_list;
     const std::size_t target_socket_
-      (fhg_kernel()->get<std::size_t> ("socket", -1));
+      (fhg_kernel->get<std::size_t> ("socket", -1));
     const boost::optional<std::size_t> target_socket
       (boost::make_optional (target_socket_ != std::size_t (-1), target_socket_));
     const std::string search_path
-      (fhg_kernel()->get("library_path", fhg::util::getenv("PC_LIBRARY_PATH")));
-    const std::string gui_url_ (fhg_kernel()->get ("gui_url", ""));
+      (fhg_kernel->get("library_path", fhg::util::getenv("PC_LIBRARY_PATH")));
+    const std::string gui_url_ (fhg_kernel->get ("gui_url", ""));
     const boost::optional<std::string> gui_url
       (boost::make_optional (!gui_url_.empty(), gui_url_));
     WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name, gspc::net::server::default_service_demux()));
-    fhg::com::host_t host (fhg_kernel()->get("host", "*"));
-    fhg::com::port_t port (fhg_kernel()->get("port", "0"));
+    fhg::com::host_t host (fhg_kernel->get("host", "*"));
+    fhg::com::port_t port (fhg_kernel->get("port", "0"));
     {
-      const std::string master_names (fhg_kernel()->get("master", ""));
-      const std::string virtual_capabilities (fhg_kernel()->get("capabilities", ""));
+      const std::string master_names (fhg_kernel->get("master", ""));
+      const std::string virtual_capabilities (fhg_kernel->get("capabilities", ""));
       fhg::util::split (master_names, ",", std::back_inserter(master_list));
       fhg::util::split (virtual_capabilities, ",", std::back_inserter(capability_list));
     }
-    const std::size_t netd_nthreads (fhg_kernel()->get ("netd_nthreads", 4L));
-    const std::string netd_url (fhg_kernel()->get ("netd_url", "tcp://*"));
+    const std::size_t netd_nthreads (fhg_kernel->get ("netd_nthreads", 4L));
+    const std::string netd_url (fhg_kernel->get ("netd_url", "tcp://*"));
 
-    const std::string kvs_host (fhg_kernel()->get ("kvs_host", "localhost"));
-    const std::string kvs_port (fhg_kernel()->get ("kvs_port", "2439"));
-    const unsigned int kvs_max_ping_failed (fhg_kernel ()->get ("kvs_max_ping_failed", 3));
+    const std::string kvs_host (fhg_kernel->get ("kvs_host", "localhost"));
+    const std::string kvs_port (fhg_kernel->get ("kvs_port", "2439"));
+    const unsigned int kvs_max_ping_failed (fhg_kernel->get ("kvs_max_ping_failed", 3));
     const boost::posix_time::time_duration kvs_ping_interval
       ( boost::posix_time::duration_from_string
-        ( fhg_kernel ()->get<std::string>
+        ( fhg_kernel->get<std::string>
           ( "kvs_ping"
           , boost::posix_time::to_simple_string (boost::posix_time::seconds (5))
           )
@@ -623,7 +622,7 @@ public:
       );
     const boost::posix_time::time_duration kvs_timeout
       ( boost::posix_time::duration_from_string
-        ( fhg_kernel ()->get<std::string>
+        ( fhg_kernel->get<std::string>
           ( "kvs_timeout"
           , boost::posix_time::to_simple_string (boost::posix_time::seconds (120))
           )

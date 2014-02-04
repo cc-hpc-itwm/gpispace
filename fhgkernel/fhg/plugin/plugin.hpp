@@ -46,14 +46,9 @@ namespace fhg
 
     class Plugin : boost::noncopyable
     {
-    protected:
+    public:
       typedef fhg::plugin::Kernel Kernel;
 
-    public:
-      Plugin (Kernel *k, std::list<Plugin*> deps)
-        : m_kernel (k)
-        , m_dependencies (deps)
-      {}
       virtual ~Plugin(){}
 
 #define EMPTY
@@ -64,12 +59,6 @@ namespace fhg
       {
       }
 #undef EMPTY
-
-    private:
-      Kernel *m_kernel;
-    protected:
-      Kernel *fhg_kernel() {return m_kernel;}
-      std::list<Plugin*> m_dependencies;
     };
   }
 }

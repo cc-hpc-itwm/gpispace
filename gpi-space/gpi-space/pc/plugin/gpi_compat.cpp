@@ -34,24 +34,23 @@ class GPICompatPluginImpl : FHG_PLUGIN
   typedef boost::mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
 public:
-  GPICompatPluginImpl (Kernel *k, std::list<Plugin*> deps)
-    : Plugin (k, deps)
+  GPICompatPluginImpl (Kernel* fhg_kernel, std::list<Plugin*> dependencies)
   {
-    const std::string worker_name (fhg_kernel()->get_name());
+    const std::string worker_name (fhg_kernel->get_name());
     const fvmSize_t shm_size
       ( boost::lexical_cast<fvmSize_t>
-        (fhg_kernel()->get<std::size_t> ("shm_size", 128U * (1<<20)))
+        (fhg_kernel->get<std::size_t> ("shm_size", 128U * (1<<20)))
       );
     const boost::posix_time::time_duration initialize_retry_interval
       ( boost::posix_time::duration_from_string
-        ( fhg_kernel ()->get<std::string>
+        ( fhg_kernel->get<std::string>
           ( "initialize_retry_interval"
           , boost::posix_time::to_simple_string (boost::posix_time::milliseconds (200))
           )
         )
       );
-    fhg_assert (m_dependencies.size() == 1);
-    gpi::GPI* gpi_api (dynamic_cast<gpi::GPI*>(*m_dependencies.begin()));
+    fhg_assert (dependencies.size() == 1);
+    gpi::GPI* gpi_api (dynamic_cast<gpi::GPI*>(*dependencies.begin()));
     fhg_assert (gpi_api);
 
     gpi_compat = this;
