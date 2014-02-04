@@ -34,8 +34,6 @@ namespace fhg
     private:
       void check_dependencies();
 
-      fhg::plugin::Plugin *m_plugin;
-
       struct close_on_dtor_dlhandle
       {
         close_on_dtor_dlhandle (void*);
@@ -46,6 +44,8 @@ namespace fhg
       } m_handle;
 
       std::list<ptr_t> m_dependencies;
+
+      fhg::plugin::Plugin *m_plugin;
 
       static std::list<plugin::Plugin*> to_raw (std::list<plugin_t::ptr_t>);
     };
