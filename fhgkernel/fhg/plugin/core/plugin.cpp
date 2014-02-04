@@ -116,48 +116,10 @@ namespace fhg
       --m_refcount;
     }
 
-    size_t plugin_t::use_count () const
+    bool plugin_t::is_in_use () const
     {
       lock_type lock(m_refcount_mtx);
-      return m_refcount;
-    }
-
-    bool plugin_t::is_depending_on(const plugin_t::ptr_t &other) const
-    {
-      assert (other != 0);
-
-      return std::find( m_dependencies.begin()
-                      , m_dependencies.end()
-                      , other
-                      ) != m_dependencies.end();
-    }
-
-    void plugin_t::add_dependency(const plugin_t::ptr_t &other)
-    {
-      lock_type lock(m_dependencies_mtx);
-
-      assert (other != 0);
-
-      if (! is_depending_on(other))
-      {
-        m_dependencies.push_back(other);
-        other->inc_refcount();
-      }
-    }
-
-    void plugin_t::del_dependency(const plugin_t::ptr_t &other)
-    {
-      lock_type lock(m_dependencies_mtx);
-
-      if (is_depending_on(other))
-      {
-        m_dependencies.erase(std::find( m_dependencies.begin()
-                                      , m_dependencies.end()
-                                      , other
-                                      )
-                            );
-        other->dec_refcount();
-      }
+      return m_refcount > 0;
     }
 
     void plugin_t::handle_plugin_loaded (plugin_t::ptr_t other)

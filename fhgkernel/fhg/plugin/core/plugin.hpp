@@ -39,29 +39,7 @@ namespace fhg
       fhg::plugin::Plugin * get_plugin();
       const fhg::plugin::Plugin * get_plugin() const;
 
-      bool is_depending_on(const ptr_t &) const;
-      bool is_in_use() const { return use_count() > 0; }
-      size_t use_count() const;
-      void add_dependency (const ptr_t &);
-      void del_dependency (const ptr_t &);
-
-      template <typename T>
-      bool implements()
-      {
-        return this->as<T>() != 0;
-      }
-
-      template <typename T>
-      T* as ()
-      {
-        return dynamic_cast<T*>(get_plugin());
-      }
-
-      template <typename T>
-      const T* as () const
-      {
-        return dynamic_cast<const T*>(get_plugin());
-      }
+      bool is_in_use() const;
 
       void handle_plugin_loaded (plugin_t::ptr_t);
       void handle_plugin_preunload (plugin_t::ptr_t);
