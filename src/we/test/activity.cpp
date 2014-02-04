@@ -32,7 +32,6 @@ namespace
 
 BOOST_AUTO_TEST_CASE (NO_TEST)
 {
-  // ************************************ //
   we::type::net_type net;
 
   we::place_id_type pid_vid (net.add_place (place::type ("vid",std::string("long"))));
@@ -131,8 +130,6 @@ BOOST_AUTO_TEST_CASE (NO_TEST)
 
     net.put_value (pid_store, m);
   }
-
-  // ************************************ //
 
   we::type::transition_t tnet ("tnet", net
                     , boost::none
