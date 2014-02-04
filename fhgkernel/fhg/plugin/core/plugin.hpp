@@ -7,7 +7,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
-#include <fhg/plugin/descriptor.hpp>
 #include <fhg/plugin/kernel.hpp>
 
 namespace fhg
@@ -26,7 +25,6 @@ namespace fhg
 
       plugin_t ( std::string const & name
                , std::string const & filename
-               , const fhg_plugin_descriptor_t *
                , void * handle
                , fhg::plugin::Kernel *kernel
                , std::list<plugin_t::ptr_t> deps
@@ -41,7 +39,6 @@ namespace fhg
       std::string m_name;
       std::string m_file_name;
       fhg::plugin::Plugin *m_plugin;
-      const fhg_plugin_descriptor_t *m_descriptor;
 
       struct close_on_dtor_dlhandle
       {

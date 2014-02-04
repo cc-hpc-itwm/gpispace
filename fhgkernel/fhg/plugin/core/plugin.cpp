@@ -30,7 +30,6 @@ namespace fhg
 
     plugin_t::plugin_t ( std::string const & my_name
                        , std::string const & my_filename
-                       , const fhg_plugin_descriptor_t *my_desc
                        , void *my_handle
                        , fhg::plugin::Kernel *kernel
                        , std::list<plugin_t::ptr_t> deps
@@ -38,12 +37,9 @@ namespace fhg
       : m_name (my_name)
       , m_file_name(my_filename)
       , m_plugin (0)
-      , m_descriptor (my_desc)
       , m_handle (my_handle)
       , m_dependencies (deps)
     {
-      assert (m_descriptor != 0);
-
       dlerror();
 
       union
