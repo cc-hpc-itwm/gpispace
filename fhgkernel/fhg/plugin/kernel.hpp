@@ -1,12 +1,9 @@
 #ifndef FHG_PLUGIN_KERNEL_HPP
-#define FHG_PLUGIN_KERNEL_HPP 1
+#define FHG_PLUGIN_KERNEL_HPP
 
-#include <sstream>
-#include <vector>
-#include <string>
-
-#include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include <string>
 
 namespace fhg
 {
