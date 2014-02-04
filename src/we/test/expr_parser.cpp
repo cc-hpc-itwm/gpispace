@@ -3,144 +3,159 @@
 #define BOOST_TEST_MODULE we_expr_parser
 #include <boost/test/unit_test.hpp>
 
-#include <we/exception.hpp>
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
-#include <we/type/value.hpp>
-#include <we/type/value/show.hpp>
 
-#include <sys/time.h>
+#include <we/type/value/boost/test/printer.hpp>
 
-#include <cstdlib>
-#include <iomanip>
-#include <iostream>
 #include <string>
 
-struct Timer_t
+#ifdef NDEBUG
+#include <fhg/util/now.hpp>
+
+BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
 {
-private:
-  double t;
-  const std::string msg;
-  const unsigned int k;
-  std::ostream & s;
+  double const t (-fhg::util::now());
 
-  double current_time()
+  const long round (1000);
+  const long max (3000);
+  const std::string input ("${a} < ${b}");
+
+  expr::eval::context context;
+
+  context.bind ("b", max);
+
+  expr::parse::parser parser (input);
+
+  for (int r (0); r < round; ++r)
   {
-    struct timeval tv;
+    long i (0);
 
-    gettimeofday (&tv, NULL);
-
-    return (double(tv.tv_sec) + double (tv.tv_usec) * 1E-6);
-  }
-
-public:
-  explicit Timer_t ( const std::string & _msg
-                   , const unsigned int & _k = 1
-                   , std::ostream & _s = std::cout
-                   )
-    : t(-current_time())
-    , msg(_msg)
-    , k(_k)
-    , s(_s)
-  {}
-
-  ~Timer_t ()
-  {
-    t += current_time();
-
-    s << "time " << msg
-      << " [" << k << "]: "
-      << t
-      << " [" << t / double(k) << "]"
-      << " [" << double(k) / t << "]"
-      << std::endl;
-  }
-};
-
-BOOST_AUTO_TEST_CASE (no_test)
-{
-  std::cout << "measure..." << std::endl;
-
-  {
-    typedef expr::parse::parser parser_t;
-    typedef expr::eval::context context_t;
-
+    do
     {
-      const long round (1000);
-      const long max (1000);
-      const std::string input ("${a} < ${b}");
-
-      {
-        Timer_t timer ("parse<string> once, eval often", max * round);
-
-        context_t context;
-
-        context.bind("b", max);
-
-        parser_t parser (input);
-
-        for (int r (0); r < round; ++r)
-          {
-            long i (0);
-
-            do
-              context.bind ("a", i++);
-            while (parser.eval_front_bool (context));
-          }
-      }
-
-      {
-        Timer_t timer ("often parse<string> and eval", max * round);
-
-        context_t context;
-
-        context.bind("b", max);
-
-        for (int r (0); r < round; ++r)
-          {
-            long i (0);
-
-            do
-              context.bind ("a", i++);
-            while (parser_t (input, context).get_front_bool ());
-          }
-      }
+      context.bind ("a", i++);
     }
+    while (parser.eval_front_bool (context));
   }
 
+  BOOST_REQUIRE_LT (t + fhg::util::now(), 1.0);
+}
+
+BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
+{
+  double const t (-fhg::util::now());
+
+  const long round (75);
+  const long max (3000);
+  const std::string input ("${a} < ${b}");
+
+  expr::eval::context context;
+
+  context.bind ("b", max);
+
+  for (int r (0); r < round; ++r)
   {
-    typedef expr::parse::parser parser_t;
-    typedef expr::eval::context context_t;
+    long i (0);
 
-    std::ostringstream ss;
-
-    ss << "${x} := ${x} + 1L;" << std::endl;
-    ss << "${y} := double (${x}) / double (4L);" << std::endl;
-    ss << "${ceil} := ceil(${y});" << std::endl;
-    ss << "${floor} := floor${y} /* note the omision of parens */;" << std::endl;
-    ss << "${round_half_up} := floor(${y} + 0.5/*comment, /* NESTED */*/);" << std::endl;
-    ss << "${round_half_down} := ceil(${y} - 0.5);" << std::endl;
-    ss << "${round} := round(${y});" << std::endl;
-    ss << "/* round switches between half_up and half_down */" << std::endl;
-    ss << "round(2.5); round(2.5); round(2.5); round(2.5);" << std::endl;
-
-    const std::string input (ss.str());
-
-    std::cout << "INPUT:" << std::endl << input << std::endl;
-
-    context_t context;
-    context.bind("x", 0L);
-    parser_t parser (input);
-
-    std::cout << "PARSED:" << std::endl << parser;
-    std::cout << "EVAL_ALL:" << std::endl;
-
-    int i = 12;
-
-    while (i-->0)
-      {
-        parser.eval_all (context);
-        std::cout << context << std::endl;
-      }
+    do
+    {
+      context.bind ("a", i++);
+    }
+    while (expr::parse::parser (input, context).get_front_bool());
   }
+
+  BOOST_REQUIRE_LT (t + fhg::util::now(), 1.0);
+}
+#endif
+
+BOOST_AUTO_TEST_CASE (round_switches_between_half_up_and_half_down)
+{
+  const std::string input ("round (2.5)");
+  expr::eval::context context;
+
+#define CHECK(v)                                                         \
+  BOOST_REQUIRE_EQUAL ( expr::parse::parser (input, context).get_front() \
+                      , pnet::type::value::value_type (v)                \
+                      )
+
+  CHECK (2.0);
+  CHECK (3.0);
+  CHECK (2.0);
+  CHECK (3.0);
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (comment)
+{
+ BOOST_REQUIRE_EQUAL
+   ( expr::parse::parser ("").string()
+   , expr::parse::parser ("/**/").string()
+   );
+ BOOST_REQUIRE_EQUAL
+   ( expr::parse::parser ("").string()
+   , expr::parse::parser ("/* something in between */").string()
+   );
+}
+BOOST_AUTO_TEST_CASE (nested_comment)
+{
+ BOOST_REQUIRE_EQUAL
+   ( expr::parse::parser ("").string()
+   , expr::parse::parser ("/*/**/*/").string()
+   );
+ BOOST_REQUIRE_EQUAL
+   ( expr::parse::parser ("").string()
+   , expr::parse::parser ("/* something at level 1 /**/ */").string()
+   );
+}
+
+BOOST_AUTO_TEST_CASE (parens_can_be_omitted_after_floor)
+{
+  BOOST_REQUIRE_EQUAL
+   ( expr::parse::parser ("floor ${a}").string()
+   , expr::parse::parser ("floor (${a})").string()
+   );
+}
+
+BOOST_AUTO_TEST_CASE (ceiling)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression, context).get_front()          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("ceil (0.0)", 0.0);
+  CHECK ("ceil (0.25)", 1.0);
+  CHECK ("ceil (0.5)", 1.0);
+  CHECK ("ceil (0.75)", 1.0);
+  CHECK ("ceil (1.0)", 1.0);
+  CHECK ("ceil (1.25)", 2.0);
+  CHECK ("ceil (1.5)", 2.0);
+  CHECK ("ceil (1.75)", 2.0);
+  CHECK ("ceil (2.0)", 2.0);
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (_floor)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression, context).get_front()          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("floor (0.0)", 0.0);
+  CHECK ("floor (0.25)", 0.0);
+  CHECK ("floor (0.5)", 0.0);
+  CHECK ("floor (0.75)", 0.0);
+  CHECK ("floor (1.0)", 1.0);
+  CHECK ("floor (1.25)", 1.0);
+  CHECK ("floor (1.5)", 1.0);
+  CHECK ("floor (1.75)", 1.0);
+  CHECK ("floor (2.0)", 2.0);
+#undef CHECK
 }
