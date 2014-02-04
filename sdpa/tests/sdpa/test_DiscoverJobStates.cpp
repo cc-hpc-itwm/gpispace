@@ -292,6 +292,25 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   {} // do nothing, discover again
 }
 
+namespace
+{
+  bool has_children_and_all_children_are_pending
+    (sdpa::discovery_info_t const& disc_res)
+  {
+     BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
+     {
+       if (  !child_info.state()
+          || child_info.state().get() != sdpa::status::PENDING
+          )
+       {
+         return false;
+       }
+     }
+
+     return !disc_res.children().empty();
+  }
+}
+
 BOOST_AUTO_TEST_CASE (remove_workers)
 {
   const std::string workflow
@@ -348,21 +367,8 @@ BOOST_AUTO_TEST_CASE (remove_workers)
   ptr_worker_A_1.reset();
   ptr_worker_B_2.reset();
 
-  sdpa::discovery_info_t disc_res;
-
-  // invariant: after some time, all tasks are pending
-  bool b_all_pending(false);
-  do
-  {
-     disc_res = client.discoverJobStates(get_next_disc_id(), job_id);
-     b_all_pending = true;
-     BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
-     {
-       if(!child_info.state() || child_info.state().get() != sdpa::status::PENDING)
-       {
-         b_all_pending = false;
-         break;
-       }
-     }
-  } while(!b_all_pending || disc_res.children().empty());
+  while (!has_children_and_all_children_are_pending
+          (client.discoverJobStates (get_next_disc_id(), job_id))
+        )
+  {} // do nothing, discover again
 }
