@@ -9,6 +9,64 @@
 #include <boost/test/unit_test.hpp>
 #include <sdpa/types.hpp>
 
+namespace
+{
+  bool has_state_pending (sdpa::discovery_info_t const& disc_res)
+  {
+    return disc_res.state() && disc_res.state().get() == sdpa::status::PENDING;
+  }
+
+  bool all_childs_are_pending (sdpa::discovery_info_t const& disc_res)
+  {
+    BOOST_FOREACH
+      (const sdpa::discovery_info_t& child_info, disc_res.children())
+    {
+      if (! child_info.state()
+         || child_info.state().get() != sdpa::status::PENDING)
+      {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  bool has_two_childs_that_are_pending (sdpa::discovery_info_t const& disc_res)
+  {
+    BOOST_FOREACH ( const sdpa::discovery_info_t& child_info
+                  , disc_res.children()
+                  )
+    {
+      if (  !child_info.state()
+         || (  child_info.state()
+            && child_info.state().get() != sdpa::status::PENDING
+            )
+         )
+      {
+        return false;
+      }
+    }
+
+    return disc_res.children().size() == 2;
+  }
+
+  bool has_children_and_all_children_are_pending
+    (sdpa::discovery_info_t const& disc_res)
+  {
+     BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
+     {
+       if (  !child_info.state()
+          || child_info.state().get() != sdpa::status::PENDING
+          )
+       {
+         return false;
+       }
+     }
+
+     return !disc_res.children().empty();
+  }
+}
+
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 namespace sdpa {
@@ -167,14 +225,6 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
     );
 }
 
-namespace
-{
-  bool has_state_pending (sdpa::discovery_info_t const& disc_res)
-  {
-    return disc_res.state() && disc_res.state().get() == sdpa::status::PENDING;
-  }
-}
-
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
   const std::string workflow
@@ -190,24 +240,6 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
           (client.discoverJobStates (get_next_disc_id(), job_id))
         )
   {}; // do nothing, discover again
-}
-
-namespace
-{
-  bool all_childs_are_pending (sdpa::discovery_info_t const& disc_res)
-  {
-    BOOST_FOREACH
-      (const sdpa::discovery_info_t& child_info, disc_res.children())
-    {
-      if (! child_info.state()
-         || child_info.state().get() != sdpa::status::PENDING)
-      {
-        return false;
-      }
-    }
-
-    return true;
-  }
 }
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
@@ -228,28 +260,6 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
           (client.discoverJobStates (get_next_disc_id(), job_id))
         )
   {} // do nothing, discover again
-}
-
-namespace
-{
-  bool has_two_childs_that_are_pending (sdpa::discovery_info_t const& disc_res)
-  {
-    BOOST_FOREACH ( const sdpa::discovery_info_t& child_info
-                  , disc_res.children()
-                  )
-    {
-      if (  !child_info.state()
-         || (  child_info.state()
-            && child_info.state().get() != sdpa::status::PENDING
-            )
-         )
-      {
-        return false;
-      }
-    }
-
-    return disc_res.children().size() == 2;
-  }
 }
 
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
@@ -290,25 +300,6 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
           (client.discoverJobStates (get_next_disc_id(), job_id))
         )
   {} // do nothing, discover again
-}
-
-namespace
-{
-  bool has_children_and_all_children_are_pending
-    (sdpa::discovery_info_t const& disc_res)
-  {
-     BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
-     {
-       if (  !child_info.state()
-          || child_info.state().get() != sdpa::status::PENDING
-          )
-       {
-         return false;
-       }
-     }
-
-     return !disc_res.children().empty();
-  }
 }
 
 BOOST_AUTO_TEST_CASE (remove_workers)
