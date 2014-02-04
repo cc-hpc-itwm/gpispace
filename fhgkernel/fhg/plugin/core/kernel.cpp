@@ -192,7 +192,7 @@ namespace fhg
       // create mediator
       // todo: write a control plugin that opens a socket or whatever
       mediator_ptr m
-        (new PluginKernelMediator( p
+        (new PluginKernelMediator( desc->name
                                  , this
                                  )
         );

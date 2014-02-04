@@ -15,11 +15,7 @@ namespace fhg
     class PluginKernelMediator : public fhg::plugin::Kernel
     {
     public:
-      PluginKernelMediator ( fhg::core::plugin_t::ptr_t const & plugin
-                           , kernel_t *kernel
-                           );
-
-      fhg::core::plugin_t::ptr_t plugin ();
+      PluginKernelMediator (std::string name, kernel_t *kernel);
 
       std::string get(std::string const & key, std::string const &dflt) const;
 
@@ -27,7 +23,6 @@ namespace fhg
 
       std::string const & get_name () const;
     private:
-      fhg::core::plugin_t::ptr_t m_plugin;
       std::string _name;
       fhg::core::kernel_t *m_kernel;
     };

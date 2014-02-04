@@ -11,20 +11,11 @@ namespace fhg
 {
   namespace core
   {
-    PluginKernelMediator::PluginKernelMediator ( fhg::core::plugin_t::ptr_t const & p
-                                               , kernel_t *k
-                                               )
-      : m_plugin(p)
-      , _name (p->name())
+    PluginKernelMediator::PluginKernelMediator (std::string name, kernel_t *k)
+      : _name (name)
       , m_kernel(k)
     {
-      assert (m_plugin);
       assert (m_kernel);
-    }
-
-    fhg::core::plugin_t::ptr_t PluginKernelMediator::plugin()
-    {
-      return m_plugin;
     }
 
     std::string PluginKernelMediator::get(std::string const & key, std::string const &dflt) const
