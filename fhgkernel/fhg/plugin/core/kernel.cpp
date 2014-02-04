@@ -119,20 +119,6 @@ namespace fhg
 
       std::string full_path_to_file = fs::absolute (fs::path (file)).string ();
 
-      if (m_failed_path_cache.end () != std::find ( m_failed_path_cache.begin ()
-                                                  , m_failed_path_cache.end ()
-                                                  , full_path_to_file
-                                                  )
-         )
-      {
-        DMLOG ( TRACE
-              , "avoiding another attempt to load from '"
-              << full_path_to_file
-              << "'"
-              );
-        return EFAULT;
-      }
-
       if (fs::is_directory (full_path_to_file))
       {
         return EISDIR;
@@ -237,8 +223,6 @@ namespace fhg
       else
       {
         p->stop();
-
-        m_failed_path_cache.push_back (full_path_to_file);
 
         throw std::runtime_error
           ("plugin " + p->name() + " failed to start: " + std::string(strerror(-rc)));
@@ -346,7 +330,6 @@ namespace fhg
       assert (! m_running);
 
       m_running = true;
-      m_failed_path_cache.clear ();
 
       _stop_request.wait();
 
