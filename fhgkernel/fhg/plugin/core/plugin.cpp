@@ -54,16 +54,15 @@ namespace fhg
         throw std::runtime_error("could not get create function: " + std::string(error));
       }
 
-      m_plugin = create_plugin._fun();
-
-      m_started = true;
-
       std::list<plugin::Plugin*> deps_raw;
       BOOST_FOREACH (ptr_t p, deps)
       {
         deps_raw.push_back (p->get_plugin());
       }
+
+      m_plugin = create_plugin._fun();
       m_plugin->fhg_plugin_start_entry(kernel, deps_raw);
+      m_started = true;
     }
 
     plugin_t::~plugin_t ()
