@@ -583,8 +583,6 @@ public:
     const std::string name (fhg_kernel()->get_name());
     const std::size_t backlog_size
       (fhg_kernel()->get<std::size_t> ("backlog", "3"));
-    const bool terminate_on_failure
-      (fhg::util::read_bool (fhg_kernel()->get ("terminate_on_failure", "false")));
     const std::size_t max_reconnect_attempts
       (fhg_kernel()->get<std::size_t> ("max_reconnect_attempts", "0"));
     std::list<std::string> master_list;
@@ -661,7 +659,6 @@ public:
     m_reconnect_counter = 0;
     m_my_name = name;
     m_backlog_size = backlog_size;
-    m_terminate_on_failure = terminate_on_failure;
     m_max_reconnect_attempts = max_reconnect_attempts;
     m_wfe = wfe;
 
@@ -1264,14 +1261,6 @@ private:
 
         send_job_result_to_master (job);
 
-        if (m_terminate_on_failure && job->state() == drts::Job::FAILED)
-        {
-          MLOG( WARN, "execution of job failed"
-              << " and terminate on failure policy is in place."
-              );
-          ::kill (SIGTERM, getpid());
-        }
-
         {
           boost::mutex::scoped_lock lock(m_job_computed_mutex);
           m_job_computed.notify_one();
@@ -1695,7 +1684,6 @@ private:
   fhg::util::keep_alive* _kvs_keep_alive;
 
   bool m_shutting_down;
-  bool m_terminate_on_failure;
 
   WFEImpl *m_wfe;
 
