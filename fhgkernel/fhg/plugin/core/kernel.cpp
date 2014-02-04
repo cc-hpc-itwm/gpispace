@@ -145,7 +145,6 @@ namespace fhg
 
       // dlopen file
       char *error;
-      fhg_plugin_query query_plugin;
       void *handle;
 
       handle = dlopen(full_path_to_file.c_str(), RTLD_GLOBAL | (load_lazy?RTLD_LAZY:RTLD_NOW));
@@ -158,7 +157,13 @@ namespace fhg
 
       dlerror();
 
-      *(void**)(&query_plugin) = dlsym(handle, "fhg_query_plugin_descriptor");
+      union
+      {
+        void* _ptr;
+        fhg_plugin_query _fun;
+      } query_plugin;
+
+      query_plugin._ptr = dlsym(handle, "fhg_query_plugin_descriptor");
 
       if ((error = dlerror()) != NULL)
       {
@@ -166,7 +171,7 @@ namespace fhg
         throw std::runtime_error("could not get query function: " + std::string(error));
       }
 
-      const fhg_plugin_descriptor_t *desc = query_plugin();
+      const fhg_plugin_descriptor_t *desc = query_plugin._fun();
       if (desc == 0)
       {
         dlclose(handle);
