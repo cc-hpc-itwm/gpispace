@@ -33,7 +33,7 @@ namespace sdpa {
 
       void discovered (we::layer::id_type disc_id, sdpa::discovery_info_t discover_result)
       {
-        boost::unique_lock<boost::mutex> lock_res(_mtx_result);
+        boost::unique_lock<boost::mutex> const lock_res(_mtx_result);
         _discovery_result = discover_result;
         _discover_id = disc_id;
         _cond_result.notify_one();
@@ -63,11 +63,11 @@ namespace sdpa {
 
           if(!_jobs_to_discover.empty())
           {
-            std::pair<we::layer::id_type, sdpa::job_id_t> pair = _jobs_to_discover.front();
+            std::pair<we::layer::id_type, sdpa::job_id_t> const pair = _jobs_to_discover.front();
             _jobs_to_discover.pop_front();
 
-            Job* pJob = jobManager().findJob(pair.second);
-            sdpa::discovery_info_t discover_result(pair.second, pJob?boost::optional<sdpa::status::code>(pJob->getStatus()):boost::none, sdpa::discovery_info_set_t());
+            Job* const pJob = jobManager().findJob(pair.second);
+            sdpa::discovery_info_t const discover_result(pair.second, pJob?boost::optional<sdpa::status::code>(pJob->getStatus()):boost::none, sdpa::discovery_info_set_t());
             workflowEngine()->discovered(pair.first, discover_result);
           }
         }
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(test_discover_activities)
 
   while(!agent.has_two_pending_children())
   {
-      we::layer::id_type sent_disc_id(get_next_disc_id());
+      we::layer::id_type const sent_disc_id(get_next_disc_id());
       agent.workflowEngine()->discover (sent_disc_id, id);
       BOOST_REQUIRE_EQUAL(agent.wait_for_discovery_result(), sent_disc_id);
   }
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 
   sdpa::client::Client client (orchestrator.name());
 
-  sdpa::discovery_info_t disc_res(client.discoverJobStates("disc_id_0", "inexistent_job_id"));
+  sdpa::discovery_info_t const disc_res(client.discoverJobStates("disc_id_0", "inexistent_job_id"));
 
   BOOST_REQUIRE_EQUAL(disc_res.state(), boost::none);
 }
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
     ("orchestrator_0", "127.0.0.1");
 
   sdpa::client::Client client (orchestrator.name());
-  sdpa::job_id_t job_id = client.submitJob (workflow);
+  sdpa::job_id_t const job_id = client.submitJob (workflow);
 
   sdpa::discovery_info_t disc_res;
 
@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
      ("agent_0", "127.0.0.1", orchestrator);
 
   sdpa::client::Client client (orchestrator.name());
-  sdpa::job_id_t job_id = client.submitJob (workflow);
+  sdpa::job_id_t const job_id = client.submitJob (workflow);
 
   sdpa::discovery_info_t disc_res;
   bool b_invariant(false);
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   // the task A requires 2 workers, task B requires 3 workers
 
   sdpa::client::Client client (orchestrator.name());
-  sdpa::job_id_t job_id = client.submitJob (workflow);
+  sdpa::job_id_t const job_id = client.submitJob (workflow);
 
   sdpa::discovery_info_t disc_res;
 
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE (remove_workers)
   // the task A requires 2 workers, task B requires 3 workers
 
   sdpa::client::Client client (orchestrator.name());
-  sdpa::job_id_t job_id = client.submitJob (workflow);
+  sdpa::job_id_t const job_id = client.submitJob (workflow);
 
   ptr_worker_A_1.reset();
   ptr_worker_B_2.reset();
