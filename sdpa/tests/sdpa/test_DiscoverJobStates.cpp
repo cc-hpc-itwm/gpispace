@@ -189,6 +189,23 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
   {}; // do nothing, discover again
 }
 
+namespace
+{
+  bool all_childs_are_pending (sdpa::discovery_info_t const& disc_res)
+  {
+    BOOST_FOREACH
+      (const sdpa::discovery_info_t& child_info, disc_res.children())
+    {
+      if (!child_info.state() || child_info.state() != sdpa::status::PENDING)
+      {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}
+
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 {
   const std::string workflow
@@ -203,23 +220,10 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   sdpa::client::Client client (orchestrator.name());
   sdpa::job_id_t const job_id = client.submitJob (workflow);
 
-  bool b_invariant(false);
-  while(!b_invariant)
-  {
-    sdpa::discovery_info_t const disc_res
-      (client.discoverJobStates(get_next_disc_id(), job_id));
-
-    // invariant: after some time, the leaf jobs are always in pending
-    b_invariant = true;
-    BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children())
-    {
-      if(!child_info.state() || child_info.state() != sdpa::status::PENDING)
-      {
-          b_invariant = false;
-          break;
-      }
-    }
-  }
+  while (!all_childs_are_pending
+          (client.discoverJobStates (get_next_disc_id(), job_id))
+        )
+  {} // do nothing, discover again
 }
 
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
