@@ -1,22 +1,10 @@
 #define BOOST_TEST_MODULE we_activity
 #include <boost/test/unit_test.hpp>
 
-#include <sstream>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-
-#include <we/type/net.hpp>
-#include <we/type/transition.hpp>
-#include <we/type/place.hpp>
-#include <we/type/value.hpp>
-#include <we/type/port.hpp>
-#include <we/type/activity.hpp>
-#include <we/type/value/poke.hpp>
 #include <we/context.hpp>
-
-#include <we/type/module_call.fwd.hpp>
-#include <we/type/expression.hpp>
-#include <we/type/net.fwd.hpp>
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
+#include <we/type/value/poke.hpp>
 
 namespace
 {
