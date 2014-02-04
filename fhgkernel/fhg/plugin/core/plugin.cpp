@@ -71,15 +71,15 @@ namespace fhg
       {
         m_plugin->fhg_plugin_stop();
 
+        delete m_plugin;
+        m_plugin = NULL;
+
         lock_type lock_dep (m_dependencies_mtx);
         while (! m_dependencies.empty())
         {
           ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
           dep->dec_refcount();
         }
-
-        delete m_plugin;
-        m_plugin = NULL;
       }
 
       if (m_handle) dlclose (m_handle);
