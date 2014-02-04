@@ -34,7 +34,7 @@ public:
     }
   }
 
-  FHG_PLUGIN_STOP()
+  ~FvmFakePluginImpl()
   {
     fvmLeave();
   }

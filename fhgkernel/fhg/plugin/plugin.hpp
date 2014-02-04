@@ -17,8 +17,6 @@
 
 #define FHG_PLUGIN public fhg::plugin::Plugin
 
-#define FHG_PLUGIN_STOP() virtual void fhg_plugin_stop ()
-
 #define FHG_ON_PLUGIN_LOADED(p) virtual void fhg_on_plugin_loaded(Plugin* p)
 #define FHG_ON_PLUGIN_PREUNLOAD(p) virtual void fhg_on_plugin_preunload(Plugin* p)
 
@@ -57,10 +55,6 @@ namespace fhg
         , m_dependencies (deps)
       {}
       virtual ~Plugin(){}
-
-      FHG_PLUGIN_STOP()
-      {
-      }
 
 #define EMPTY
       FHG_ON_PLUGIN_LOADED (EMPTY)

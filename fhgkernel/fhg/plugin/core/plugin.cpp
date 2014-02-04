@@ -69,8 +69,6 @@ namespace fhg
 
       if (m_plugin)
       {
-        m_plugin->fhg_plugin_stop();
-
         delete m_plugin;
         m_plugin = NULL;
 

@@ -78,7 +78,7 @@ public:
       (&GPICompatPluginImpl::schedule_reinitialize_gpi, this);
   }
 
-  FHG_PLUGIN_STOP()
+  ~GPICompatPluginImpl()
   {
     if (_reinitialize_thread)
     {

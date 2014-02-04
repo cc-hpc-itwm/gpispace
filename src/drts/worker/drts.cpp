@@ -767,7 +767,7 @@ public:
   }
 
 
-  FHG_PLUGIN_STOP()
+  ~DRTSImpl()
   {
     gspc::net::server::default_service_demux().unhandle ("/service/drts/capability/add");
     gspc::net::server::default_service_demux().unhandle ("/service/drts/capability/del");

@@ -78,11 +78,6 @@ public:
 
   virtual ~GpiPluginImpl()
   {
-    api.stop();
-  }
-
-  FHG_PLUGIN_STOP()
-  {
     if (_try_start_loop)
     {
       _try_start_loop->interrupt();
