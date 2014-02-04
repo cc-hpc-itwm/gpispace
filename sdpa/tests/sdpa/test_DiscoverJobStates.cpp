@@ -155,9 +155,6 @@ BOOST_AUTO_TEST_CASE(test_discover_activities)
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
-
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1");
 
