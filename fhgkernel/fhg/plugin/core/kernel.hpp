@@ -31,7 +31,6 @@ namespace fhg
     {
     public:
       typedef std::vector<std::string> search_path_t;
-      typedef std::list<std::string> plugin_names_t;
 
       kernel_t ( std::string const& name
                , fhg::core::kernel_t::search_path_t search_path
@@ -63,7 +62,7 @@ namespace fhg
       mutable mutex_type m_mtx_config;
 
       plugin_map_t   m_plugins;
-      plugin_names_t m_load_order;
+      std::list<std::string> m_load_order;
 
       config_t m_config;
 
