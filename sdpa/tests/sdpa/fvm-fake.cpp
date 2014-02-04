@@ -14,12 +14,12 @@ public:
     size_t fvm_size (100*1024*1024);
     size_t shm_size (50*1024*1024);
 
-    fvm_size = lexical_cast<size_t>( fhg_kernel->get( "fvm_size"
+    fvm_size = lexical_cast<size_t>( fhg_kernel->get( "plugin.fvm_fake.fvm_size"
                                                     , lexical_cast<std::string>(fvm_size)
                                                     )
                                    );
 
-    shm_size = lexical_cast<size_t>( fhg_kernel->get( "shm_size"
+    shm_size = lexical_cast<size_t>( fhg_kernel->get( "plugin.fvm_fake.shm_size"
                                                     , lexical_cast<std::string>(shm_size)
                                                     )
                                    );

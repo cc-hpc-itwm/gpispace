@@ -39,12 +39,12 @@ public:
     const std::string worker_name (fhg_kernel->get_name());
     const fvmSize_t shm_size
       ( boost::lexical_cast<fvmSize_t>
-        (fhg_kernel->get<std::size_t> ("shm_size", 128U * (1<<20)))
+        (fhg_kernel->get<std::size_t> ("plugin.gpi_compat.shm_size", 128U * (1<<20)))
       );
     const boost::posix_time::time_duration initialize_retry_interval
       ( boost::posix_time::duration_from_string
         ( fhg_kernel->get<std::string>
-          ( "initialize_retry_interval"
+          ( "plugin.gpi_compat.initialize_retry_interval"
           , boost::posix_time::to_simple_string (boost::posix_time::milliseconds (200))
           )
         )

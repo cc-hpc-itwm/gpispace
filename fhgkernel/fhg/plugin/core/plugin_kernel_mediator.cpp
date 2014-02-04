@@ -20,7 +20,7 @@ namespace fhg
 
     std::string PluginKernelMediator::get(std::string const & key, std::string const &dflt) const
     {
-      return m_kernel->get("plugin." + _name + "." + key, dflt);
+      return m_kernel->get (key, dflt);
     }
 
     void PluginKernelMediator::stop ()

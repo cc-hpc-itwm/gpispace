@@ -23,7 +23,7 @@ public:
     , _try_start_loop (NULL)
   {
     const std::string socket_path
-      ( fhg_kernel->get ( "socket"
+      ( fhg_kernel->get ( "plugin.gpi.socket"
                         , "/var/tmp/S-gpi-space."
                         + boost::lexical_cast<std::string>(getuid())
                         + "."
@@ -31,11 +31,11 @@ public:
                         )
       );
     const bool start_synchronous
-      (fhg_kernel->get("startmode", "nowait") == "wait");
+      (fhg_kernel->get("plugin.gpi.startmode", "nowait") == "wait");
     boost::optional<std::size_t> max_retries_until_defer_startup
       ( start_synchronous
       ? boost::optional<std::size_t>()
-      : fhg_kernel->get<std::size_t> ("retries_to_defer", "1")
+      : fhg_kernel->get<std::size_t> ("plugin.gpi.retries_to_defer", "1")
       );
 
     api.path (socket_path);
