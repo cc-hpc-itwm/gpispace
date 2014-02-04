@@ -67,10 +67,7 @@ namespace fhg
       delete m_plugin;
       m_plugin = NULL;
 
-      while (! m_dependencies.empty())
-      {
-        ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
-      }
+      m_dependencies.clear();
 
       dlclose (m_handle);
     }
