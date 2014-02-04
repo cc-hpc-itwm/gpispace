@@ -88,20 +88,6 @@ namespace fhg
       }
     }
 
-    plugin_t::ptr_t kernel_t::lookup_plugin(std::string const &name)
-    {
-      lock_type plugins_lock (m_mtx_plugins);
-      plugin_map_t::iterator p (m_plugins.find(name));
-      if (p != m_plugins.end())
-      {
-        return p->second.second;
-      }
-      else
-      {
-        return plugin_t::ptr_t();
-      }
-    }
-
     int kernel_t::load_plugin_by_name (std::string const & name)
     {
       lock_type load_plugin_lock (m_mtx_load_plugin);
@@ -216,16 +202,21 @@ namespace fhg
                       , std::back_inserter (depends)
                       );
 
-      BOOST_FOREACH(std::string const &dep, depends)
       {
-        if (! lookup_plugin(dep))
+        lock_type plugins_lock (m_mtx_plugins);
+
+        BOOST_FOREACH(std::string const &dep, depends)
         {
-          if (0 != load_plugin_by_name (dep))
+          if (m_plugins.find (dep) == m_plugins.end())
           {
-            throw std::runtime_error("dependency not available: " + dep);
+            if (0 != load_plugin_by_name (dep))
+            {
+              throw std::runtime_error("dependency not available: " + dep);
+            }
           }
+
+          dependencies.push_back (m_plugins.find (dep)->second.second);
         }
-        dependencies.push_back (lookup_plugin (dep));
       }
 
       mediator_ptr m (new PluginKernelMediator (plugin_name, this));
