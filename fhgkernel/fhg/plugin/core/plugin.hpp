@@ -3,6 +3,7 @@
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/utility.hpp>
 
 #include <list>
 #include <string>
@@ -17,7 +18,7 @@ namespace fhg
 
   namespace core
   {
-    class plugin_t
+    class plugin_t : boost::noncopyable
     {
     public:
       typedef boost::shared_ptr<plugin_t> ptr_t;
