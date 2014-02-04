@@ -220,13 +220,12 @@ namespace fhg
           << " (from: '" << full_path_to_file << "')"
           );
 
-      for ( plugin_map_t::iterator it (m_plugins.begin())
-          ; it != m_plugins.end()
-          ; ++it
-          )
+      BOOST_FOREACH (plugin_map_t::value_type other, m_plugins)
       {
-        if (it->first != plugin_name)
-          it->second.second->handle_plugin_loaded(p);
+        if (other.first != plugin_name)
+        {
+          other.second.second->handle_plugin_loaded (p);
+        }
       }
 
       return 0;
