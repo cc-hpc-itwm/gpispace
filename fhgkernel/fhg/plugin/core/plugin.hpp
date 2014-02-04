@@ -35,10 +35,6 @@ namespace fhg
 
       std::string const & name () const;
 
-      const fhg_plugin_descriptor_t * descriptor() const;
-      fhg::plugin::Plugin * get_plugin();
-      const fhg::plugin::Plugin * get_plugin() const;
-
       bool is_in_use() const;
 
       void handle_plugin_loaded (plugin_t::ptr_t);

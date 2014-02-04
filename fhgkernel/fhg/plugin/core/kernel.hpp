@@ -40,14 +40,6 @@ namespace fhg
 
       plugin_t::ptr_t lookup_plugin(std::string const & name);
 
-      template <typename Iface>
-      Iface* lookup_plugin_as (std::string const & name)
-      {
-        plugin_t::ptr_t plugin (this->lookup_plugin (name));
-        return
-          dynamic_cast<Iface*>(plugin->get_plugin ());
-      }
-
       std::string get(std::string const & key, std::string const &dflt) const;
       std::string put(std::string const & key, std::string const &value);
 

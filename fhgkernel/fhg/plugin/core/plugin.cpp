@@ -58,7 +58,7 @@ namespace fhg
       BOOST_FOREACH (ptr_t p, deps)
       {
         p->inc_refcount();
-        deps_raw.push_back (p->get_plugin());
+        deps_raw.push_back (p->m_plugin);
       }
 
       m_plugin = create_plugin._fun (kernel, deps_raw);
@@ -89,21 +89,6 @@ namespace fhg
       return m_name;
     }
 
-    const fhg_plugin_descriptor_t *plugin_t::descriptor() const
-    {
-      return m_descriptor;
-    }
-
-    fhg::plugin::Plugin *plugin_t::get_plugin()
-    {
-      return m_plugin;
-    }
-
-    const fhg::plugin::Plugin *plugin_t::get_plugin() const
-    {
-      return m_plugin;
-    }
-
     void plugin_t::inc_refcount ()
     {
       lock_type lock(m_refcount_mtx);
@@ -126,13 +111,13 @@ namespace fhg
     void plugin_t::handle_plugin_loaded (plugin_t::ptr_t other)
     {
       assert (m_plugin);
-      m_plugin->fhg_on_plugin_loaded (other->get_plugin());
+      m_plugin->fhg_on_plugin_loaded (other->m_plugin);
     }
 
     void plugin_t::handle_plugin_preunload (plugin_t::ptr_t other)
     {
       assert (m_plugin);
-      m_plugin->fhg_on_plugin_preunload (other->get_plugin());
+      m_plugin->fhg_on_plugin_preunload (other->m_plugin);
     }
   }
 }
