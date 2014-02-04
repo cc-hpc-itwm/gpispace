@@ -59,12 +59,24 @@ namespace fhg
         return fhg_plugin_start();
       }
 
-      virtual int fhg_plugin_start () {return 0;}
+      FHG_PLUGIN_START()
+      {
+        FHG_PLUGIN_STARTED();
+      }
+      FHG_PLUGIN_STOP()
+      {
+        FHG_PLUGIN_STOPPED();
+      }
 
-      virtual int fhg_plugin_stop  () {return 0;}
+#define EMPTY
+      FHG_ON_PLUGIN_LOADED (EMPTY)
+      {
+      }
+      FHG_ON_PLUGIN_PREUNLOAD (EMPTY)
+      {
+      }
+#undef EMPTY
 
-      virtual void fhg_on_plugin_loaded (Plugin*) {}
-      virtual void fhg_on_plugin_preunload (Plugin*) {}
     protected:
       Plugin ()
         : m_kernel (0)
