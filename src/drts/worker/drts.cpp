@@ -827,64 +827,6 @@ public:
     _kvs_keep_alive = NULL;
   }
 
-  FHG_ON_PLUGIN_LOADED(plugin)
-  {
-    fhg::plugin::Capability* cap (dynamic_cast<fhg::plugin::Capability*> (plugin));
-    if (cap)
-    {
-      MLOG( INFO
-          , "gained capability: " << cap->capability_name()
-          << " of type " << cap->capability_type()
-          );
-
-      boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
-      m_capabilities.insert
-        (std::make_pair ( cap->capability_name()
-                        , std::make_pair (sdpa::Capability ( cap->capability_name ()
-                                                           , cap->capability_type ()
-                                                           )
-                                         , cap
-                                         )
-                        )
-        );
-
-      for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
-          ; master_it != m_masters.end()
-          ; ++master_it
-          )
-      {
-        if (master_it->second)
-        {
-          send_event
-            (new sdpa::events::CapabilitiesGainedEvent( m_my_name
-                                                      , master_it->first
-                                                      , m_capabilities[cap->capability_name ()].first
-                                                      )
-            );
-        }
-      }
-    }
-  }
-
-  FHG_ON_PLUGIN_PREUNLOAD(plugin)
-  {
-    fhg::plugin::Capability* cap (dynamic_cast<fhg::plugin::Capability*> (plugin));
-    if (cap)
-    {
-      boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
-      map_of_capabilities_t::iterator it(m_capabilities.find(cap->capability_name()));
-      if (it != m_capabilities.end())
-      {
-        MLOG(INFO, "lost capability: " << plugin);
-        MLOG(WARN, "TODO: make sure none of jobs make use of this capability");
-
-        notify_capability_lost (it->second.first);
-
-        m_capabilities.erase(it);
-      }
-    }
-  }
-
   // event handler callbacks
   //    implemented events
   virtual void handleWorkerRegistrationAckEvent

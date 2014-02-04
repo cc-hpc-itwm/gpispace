@@ -275,6 +275,18 @@ else
     cfg="$cfg -s kernel.load.lazy=0"
 fi
 
+if [ x"$gpi_enabled" = x"true" ] ; then
+    cfg="$cfg --gpi_enabled"
+
+    fake_gpi_capability="GPI-PGAS"
+
+    if [ -z "$capabilities" ] ; then
+      capabilities="${fake_gpi_capability}"
+    else
+      capabilities="$capabilities,${fake_gpi_capability}"
+    fi
+fi
+
 # config values (drts plugin)
 kvs_host=$(echo "$kvs_url" | cut -d: -f1)
 kvs_port=$(echo "$kvs_url" | cut -d: -f2)
@@ -299,9 +311,6 @@ cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.sta
 # config values (gpi_compat plugin)
 cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
 
-if [ x"$gpi_enabled" = x"true" ] ; then
-    cfg="$cfg --gpi_enabled"
-fi
 cmd="${bin} $cfg"
 
 export FHGLOG_to_file="${logprefix}.log"

@@ -66,13 +66,12 @@ int main(int ac, char **av)
   }
 
   std::vector<std::string> mods_to_load;
-  mods_to_load.push_back ("drts");
-
   if (vm.count ("gpi_enabled"))
   {
     mods_to_load.push_back ("gpi");
     mods_to_load.push_back ("gpi_compat");
   }
+  mods_to_load.push_back ("drts");
 
   const bool daemonize (vm.count ("daemonize"));
 
