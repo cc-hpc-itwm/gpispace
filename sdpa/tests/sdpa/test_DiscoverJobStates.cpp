@@ -34,10 +34,11 @@ namespace sdpa {
         _cond_disc.notify_all();
       }
 
-      void discovered (we::layer::id_type, sdpa::discovery_info_t discover_result)
+      void discovered (we::layer::id_type disc_id, sdpa::discovery_info_t discover_result)
       {
         boost::unique_lock<boost::mutex> lock_res(_mtx_result);
         _discovery_result = discover_result;
+        _discover_id = disc_id;
         _cond_result.notify_one();
       }
 
@@ -73,10 +74,11 @@ namespace sdpa {
         }
       }
 
-      void wait_for_discovery_result()
+      void wait_for_discovery_result(we::layer::id_type& discover_id)
       {
         boost::unique_lock<boost::mutex> lock_res(_mtx_result);
         _cond_result.wait(lock_res);
+        discover_id = _discover_id;
       }
 
       bool has_two_pending_children()
@@ -106,6 +108,7 @@ namespace sdpa {
       boost::condition_variable_any _cond_all_submitted;
       std::deque<std::pair<we::layer::id_type, sdpa::job_id_t> > _jobs_to_discover;
       sdpa::discovery_info_t _discovery_result;
+      we::layer::id_type _discover_id;
     };
 }}
 
@@ -137,8 +140,10 @@ BOOST_AUTO_TEST_CASE(test_discover_activities)
 
   while(!agent.has_two_pending_children())
   {
-      agent.workflowEngine()->discover (get_next_disc_id(), id);
-      agent.wait_for_discovery_result();
+      we::layer::id_type sent_disc_id(get_next_disc_id()), exp_disc_id;
+      agent.workflowEngine()->discover (sent_disc_id, id);
+      agent.wait_for_discovery_result(exp_disc_id);
+      BOOST_REQUIRE_EQUAL(exp_disc_id, sent_disc_id);
   }
 
   thrd_notify.interrupt();
