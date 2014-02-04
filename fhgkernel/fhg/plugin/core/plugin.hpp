@@ -43,8 +43,6 @@ namespace fhg
         template<typename T> T* sym (std::string);
       } m_handle;
 
-      std::list<ptr_t> m_dependencies;
-
       boost::scoped_ptr<fhg::plugin::Plugin> m_plugin;
 
       static std::list<plugin::Plugin*> to_raw (std::list<plugin_t::ptr_t>);

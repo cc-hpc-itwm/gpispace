@@ -63,7 +63,6 @@ namespace fhg
                        , std::list<plugin_t::ptr_t> deps
                        )
       : m_handle (my_handle)
-      , m_dependencies (deps)
       , m_plugin ( m_handle.sym
                    <plugin::Plugin* (plugin::Kernel*, std::list<plugin::Plugin*>)>
                      ("fhg_get_plugin_instance") (kernel, to_raw (deps))
