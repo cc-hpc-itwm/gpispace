@@ -38,7 +38,6 @@ namespace fhg
       void handle_plugin_loaded (plugin_t::ptr_t);
       void handle_plugin_preunload (plugin_t::ptr_t);
     private:
-      typedef std::list<ptr_t> dependency_list_t;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
@@ -56,7 +55,7 @@ namespace fhg
       const fhg_plugin_descriptor_t *m_descriptor;
       void *m_handle;
 
-      dependency_list_t m_dependencies;
+      std::list<ptr_t> m_dependencies;
       std::size_t m_refcount;
     };
   }
