@@ -1,7 +1,6 @@
 #include "job.hpp"
 
 #include <fhg/error_codes.hpp>
-#include <fhg/plugin/capability.hpp>
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/keep_alive.hpp>
@@ -572,9 +571,7 @@ class DRTSImpl : FHG_PLUGIN
   typedef std::map< std::string
                   , boost::shared_ptr<drts::Job>
                   > map_of_jobs_t;
-  typedef std::map< std::string
-                  , std::pair<sdpa::Capability, fhg::plugin::Capability*>
-                  > map_of_capabilities_t;
+  typedef std::map<std::string, sdpa::Capability> map_of_capabilities_t;
 public:
   DRTSImpl (Kernel* fhg_kernel, std::list<Plugin*>)
   {
@@ -685,17 +682,7 @@ public:
               );
 
         m_virtual_capabilities.insert
-          (std::make_pair ( cap
-                          , std::make_pair ( sdpa::Capability ( cap_name
-                                                              , cap_type
-                                                              , m_my_name
-                                                              )
-                                           , new fhg::plugin::Capability( cap_name
-                                                                        , cap_type
-                                                                        )
-                                           )
-                          )
-          );
+          (std::make_pair (cap, sdpa::Capability (cap_name, cap_type, m_my_name)));
       }
     }
 
@@ -807,14 +794,6 @@ public:
 
     delete m_wfe;
     m_wfe = 0;
-
-    {
-      while (not m_virtual_capabilities.empty())
-      {
-        delete m_virtual_capabilities.begin()->second.second;
-        m_virtual_capabilities.erase(m_virtual_capabilities.begin());
-      }
-    }
 
     if (m_server)
     {
@@ -1224,19 +1203,9 @@ private:
     {
       DMLOG(TRACE, "adding virtual capability: " << cap);
       m_virtual_capabilities.insert
-        (std::make_pair ( cap
-                        , std::make_pair ( sdpa::Capability (cap
-                                                            , "virtual"
-                                                            , m_my_name
-                                                            )
-                                         , new fhg::plugin::Capability( cap
-                                                                      , "virtual"
-                                                                      )
-                                         )
-                        )
-        );
+        (std::make_pair (cap, sdpa::Capability (cap, "virtual", m_my_name)));
 
-      notify_capability_gained (m_virtual_capabilities[cap].first);
+      notify_capability_gained (m_virtual_capabilities[cap]);
     }
   }
 
@@ -1248,9 +1217,8 @@ private:
     cap_it_t cap_it = m_virtual_capabilities.find (cap);
     if (cap_it != m_virtual_capabilities.end ())
     {
-      notify_capability_lost (cap_it->second.first);
+      notify_capability_lost (cap_it->second);
 
-      delete cap_it->second.second;
       m_virtual_capabilities.erase (cap);
     }
   }
@@ -1331,7 +1299,7 @@ private:
         ; ++cap_it
         )
     {
-      caps.insert (cap_it->second.first);
+      caps.insert (cap_it->second);
     }
 
     if (! caps.empty())
