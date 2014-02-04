@@ -45,8 +45,6 @@ namespace fhg
       void add_dependency (const ptr_t &);
       void del_dependency (const ptr_t &);
 
-      int stop  ();
-
       template <typename T>
       bool implements()
       {

@@ -58,7 +58,20 @@ namespace fhg
     plugin_t::~plugin_t ()
     {
       assert (! is_in_use());
-      stop ();
+
+      if (m_started)
+      {
+        m_plugin->fhg_plugin_stop();
+
+        m_started = false;
+        lock_type lock_dep (m_dependencies_mtx);
+        while (! m_dependencies.empty())
+        {
+          ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
+          dep->dec_refcount();
+        }
+      }
+
       if (m_plugin) delete m_plugin;
       if (m_handle) dlclose (m_handle);
     }
@@ -138,27 +151,6 @@ namespace fhg
                             );
         other->dec_refcount();
       }
-    }
-
-    int plugin_t::stop ()
-    {
-      if   (is_in_use())
-      {
-        return -EBUSY;
-      }
-      else if (m_started)
-      {
-        m_plugin->fhg_plugin_stop();
-
-        m_started = false;
-        lock_type lock_dep (m_dependencies_mtx);
-        while (! m_dependencies.empty())
-        {
-          ptr_t dep = m_dependencies.front(); m_dependencies.pop_front();
-          dep->dec_refcount();
-        }
-      }
-      return 0;
     }
 
     void plugin_t::handle_plugin_loaded (plugin_t::ptr_t other)
