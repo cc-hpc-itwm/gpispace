@@ -196,7 +196,6 @@ namespace fhg
       plugin_t::ptr_t p (new plugin_t( desc->name
                                           , full_path_to_file
                                           , desc
-                                          , 0
                                           , handle
                                           )
                         );

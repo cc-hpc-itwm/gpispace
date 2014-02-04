@@ -21,14 +21,12 @@ namespace fhg
     plugin_t::plugin_t ( std::string const & my_name
                        , std::string const & my_filename
                        , const fhg_plugin_descriptor_t *my_desc
-                       , int my_flags
                        , void *my_handle
                        )
       : m_name (my_name)
       , m_file_name(my_filename)
       , m_plugin (0)
       , m_descriptor (my_desc)
-      , m_flags (my_flags)
       , m_handle (my_handle)
       , m_started (false)
       , m_dependencies()

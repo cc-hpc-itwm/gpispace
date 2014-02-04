@@ -27,7 +27,6 @@ namespace fhg
       plugin_t ( std::string const & name
                , std::string const & filename
                , const fhg_plugin_descriptor_t *
-               , int flags
                , void * handle
                );
       ~plugin_t ();
@@ -84,7 +83,6 @@ namespace fhg
       std::string m_file_name;
       fhg::plugin::Plugin *m_plugin;
       const fhg_plugin_descriptor_t *m_descriptor;
-      int m_flags;
       void *m_handle;
 
       bool m_started;
