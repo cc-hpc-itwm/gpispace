@@ -117,7 +117,7 @@ namespace fhg
     {
       lock_type load_plugin_lock (m_mtx_load_plugin);
 
-      bool load_lazy (boost::lexical_cast<bool>(get("kernel.load.lazy", "1")));
+      bool load_lazy (get <bool> ("kernel.load.lazy", m_config).get_value_or (true));
 
       std::string full_path_to_file = fs::absolute (fs::path (file)).string ();
 
