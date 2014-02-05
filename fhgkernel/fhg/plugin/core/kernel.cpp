@@ -78,8 +78,6 @@ namespace fhg
         }
       }
 
-      int ec = ENOENT;
-
       BOOST_FOREACH (std::string const &dir, m_search_path)
       {
         fs::path plugin_path (dir);
@@ -91,9 +89,7 @@ namespace fhg
         {
           try
           {
-            ec = load_plugin (plugin_path.string ());
-            if (0 == ec)
-              break;
+            return load_plugin (plugin_path.string ());
           }
           catch (std::exception const &ex)
           {
@@ -102,12 +98,12 @@ namespace fhg
                  << "' could not be loaded from: " << plugin_path
                  << " : " << ex.what ()
                  );
-            ec = EFAULT;
+            return EFAULT;
           }
         }
       }
 
-      return ec;
+      return ENOENT;
     }
 
     int kernel_t::load_plugin_from_file (std::string const &file)
