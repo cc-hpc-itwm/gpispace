@@ -1,4 +1,3 @@
-#include <fhglog/LogMacros.hpp>
 #include <fhg/plugin/plugin.hpp>
 
 #include <fvm-pc/pc.hpp>
