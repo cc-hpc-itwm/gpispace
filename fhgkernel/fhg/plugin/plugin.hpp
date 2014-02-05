@@ -9,6 +9,7 @@
 #include <fhg/plugin/descriptor.hpp>
 #include <fhg/plugin/kernel.hpp>
 
+#include <boost/function.hpp>
 #include <boost/utility.hpp>
 
 #define FHG_PLUGIN public fhg::plugin::Plugin
@@ -25,9 +26,9 @@
       return &fhg_plugin_descriptor_##name;                             \
     }                                                                   \
     fhg::plugin::Plugin *fhg_get_plugin_instance                        \
-      (fhg::plugin::Kernel *k, std::list<fhg::plugin::Plugin*> deps, std::map<std::string, std::string> config_variables) \
+      (boost::function<void()> request_stop, std::list<fhg::plugin::Plugin*> deps, std::map<std::string, std::string> config_variables) \
     {                                                                   \
-      return new cls (k, deps, config_variables);                       \
+      return new cls (request_stop, deps, config_variables);            \
     }                                                                   \
   }
 

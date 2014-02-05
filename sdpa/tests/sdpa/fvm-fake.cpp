@@ -5,7 +5,7 @@
 class FvmFakePluginImpl : FHG_PLUGIN
 {
 public:
-  FvmFakePluginImpl (Kernel*, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
+  FvmFakePluginImpl (boost::function<void()>, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
   {
     const size_t fvm_size (get<size_t> ("plugin.fvm_fake.fvm_size", config_variables).get_value_or (100 << 20));
     const size_t shm_size (get<size_t> ("plugin.fvm_fake.shm_size", config_variables).get_value_or (50 << 20));

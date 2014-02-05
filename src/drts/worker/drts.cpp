@@ -573,11 +573,9 @@ class DRTSImpl : FHG_PLUGIN
                   > map_of_jobs_t;
   typedef std::map<std::string, sdpa::Capability> map_of_capabilities_t;
 public:
-  DRTSImpl (Kernel* fhg_kernel, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
+  DRTSImpl (boost::function<void()> request_stop, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
   {
     //! \todo ctor parameters
-    const boost::function<void()> request_stop
-      (boost::bind (&fhg::plugin::Kernel::stop, fhg_kernel));
     const std::string name (*get<std::string> ("kernel_name", config_variables));
     const std::size_t backlog_size
       (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3));

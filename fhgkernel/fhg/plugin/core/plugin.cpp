@@ -13,6 +13,7 @@
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/plugin.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
 namespace fhg
@@ -64,8 +65,8 @@ namespace fhg
                        )
       : m_handle (my_handle)
       , m_plugin ( m_handle.sym
-                   <plugin::Plugin* (plugin::Kernel*, std::list<plugin::Plugin*>, std::map<std::string, std::string>)>
-                   ("fhg_get_plugin_instance") (kernel, to_raw (deps), config_variables)
+                   <plugin::Plugin* (boost::function<void()> request_stop, std::list<plugin::Plugin*>, std::map<std::string, std::string>)>
+                   ("fhg_get_plugin_instance") (boost::bind (&fhg::plugin::Kernel::stop, kernel), to_raw (deps), config_variables)
                  )
     {}
   }
