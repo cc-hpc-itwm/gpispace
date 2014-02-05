@@ -108,10 +108,10 @@ namespace sdpa
           if (!_jobs_to_discover.empty())
           {
             std::pair<we::layer::id_type, sdpa::job_id_t> const pair
-              = _jobs_to_discover.front();
+              (_jobs_to_discover.front());
             _jobs_to_discover.pop_front();
 
-            Job* const pJob = jobManager().findJob(pair.second);
+            Job* const pJob (jobManager().findJob (pair.second));
 
             sdpa::discovery_info_t const discover_result
               ( pair.second
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 
   const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
   sdpa::client::Client client (orchestrator.name());
-  sdpa::job_id_t const job_id = client.submitJob (workflow);
+  sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   while (!has_state_pending
           (client.discoverJobStates (get_next_disc_id(), job_id))
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
   const utils::agent agent ("agent_0", "127.0.0.1", orchestrator);
   sdpa::client::Client client (orchestrator.name());
-  sdpa::job_id_t const job_id = client.submitJob (workflow);
+  sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   while (!all_childs_are_pending
           (client.discoverJobStates (get_next_disc_id(), job_id))
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   // the task A requires 2 workers, task B requires 3 workers
 
   sdpa::client::Client client (orchestrator.name());
-  sdpa::job_id_t const job_id = client.submitJob (workflow);
+  sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   while (!has_two_childs_that_are_pending
           (client.discoverJobStates (get_next_disc_id(), job_id))
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE (remove_workers)
   // the task A requires 2 workers, task B requires 3 workers
 
   sdpa::client::Client client (orchestrator.name());
-  sdpa::job_id_t const job_id = client.submitJob (workflow);
+  sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   ptr_worker_A_1.reset();
   ptr_worker_B_2.reset();
