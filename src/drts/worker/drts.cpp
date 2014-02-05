@@ -585,15 +585,12 @@ public:
       (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0));
     std::list<std::string> master_list;
     std::list<std::string> capability_list;
-    const std::size_t target_socket_
-      (get<std::size_t> ("plugin.drts.socket", config_variables).get_value_or (-1));
     const boost::optional<std::size_t> target_socket
-      (boost::make_optional (target_socket_ != std::size_t (-1), target_socket_));
+      (get<std::size_t> ("plugin.drts.socket", config_variables));
     const std::string search_path
       (get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH")));
-    const std::string gui_url_ (get<std::string> ("plugin.drts.gui_url", config_variables).get_value_or (""));
     const boost::optional<std::string> gui_url
-      (boost::make_optional (!gui_url_.empty(), gui_url_));
+      (get<std::string> ("plugin.drts.gui_url", config_variables));
     WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name, gspc::net::server::default_service_demux()));
     fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
     fhg::com::port_t port (get<std::string> ("plugin.drts.port", config_variables).get_value_or ("0"));
