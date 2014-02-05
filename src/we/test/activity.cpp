@@ -19,7 +19,7 @@ namespace
   };
 }
 
-BOOST_AUTO_TEST_CASE (NO_TEST)
+BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
 {
   we::type::net_type net;
 
