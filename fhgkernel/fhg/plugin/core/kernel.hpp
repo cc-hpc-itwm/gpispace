@@ -45,8 +45,6 @@ namespace fhg
       int load_plugin_by_name (std::string const & name);
       int load_plugin_from_file (std::string const & file);
 
-      virtual std::string get(std::string const & key, std::string const &dflt) const;
-
     private:
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;

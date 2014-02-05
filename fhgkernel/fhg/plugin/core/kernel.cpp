@@ -231,14 +231,5 @@ namespace fhg
         return load_plugin_by_name (entity);
       }
     }
-
-    std::string kernel_t::get( std::string const & key
-                             , std::string const &dflt
-                             ) const
-    {
-      config_t::const_iterator it (m_config.find(key));
-      if (it == m_config.end()) return dflt;
-      else                      return it->second;
-    }
   }
 }
