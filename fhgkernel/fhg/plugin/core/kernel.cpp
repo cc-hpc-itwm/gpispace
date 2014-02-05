@@ -64,7 +64,7 @@ namespace fhg
 
         m_plugins.erase (plugin);
 
-        LOG (TRACE, "plugin '" << plugin->first << "' unloaded");
+        LOG (TRACE, "plugin '" << plugin_to_unload << "' unloaded");
       }
     }
 
