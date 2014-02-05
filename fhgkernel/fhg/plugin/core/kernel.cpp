@@ -68,11 +68,6 @@ namespace fhg
 
     int kernel_t::load_plugin_by_name (std::string const & name)
     {
-      if (m_plugins.find(name) != m_plugins.end())
-      {
-        return 0;
-      }
-
       BOOST_FOREACH (std::string const &dir, m_search_path)
       {
         fs::path plugin_path (dir);
