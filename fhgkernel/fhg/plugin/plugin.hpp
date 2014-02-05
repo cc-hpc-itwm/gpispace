@@ -39,8 +39,6 @@ namespace fhg
     class Plugin : boost::noncopyable
     {
     public:
-      typedef fhg::plugin::Kernel Kernel;
-
       virtual ~Plugin(){}
     };
   }
