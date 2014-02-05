@@ -47,7 +47,6 @@ namespace fhg
       int load_plugin_from_file (std::string const & file);
 
       virtual std::string get(std::string const & key, std::string const &dflt) const;
-      std::string put(std::string const & key, std::string const &value);
 
       virtual std::string const & get_name () const;
     private:
