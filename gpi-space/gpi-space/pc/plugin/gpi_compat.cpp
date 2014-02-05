@@ -34,19 +34,16 @@ class GPICompatPluginImpl : FHG_PLUGIN
   typedef boost::mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
 public:
-  GPICompatPluginImpl (Kernel* fhg_kernel, std::list<Plugin*> dependencies, std::map<std::string, std::string> config_variables)
+  GPICompatPluginImpl (Kernel*, std::list<Plugin*> dependencies, std::map<std::string, std::string> config_variables)
   {
-    const std::string worker_name (fhg_kernel->get ("kernel_name", ""));
+    const std::string worker_name
+      (*get<std::string> ("kernel_name", config_variables));
     const fvmSize_t shm_size
-      ( boost::lexical_cast<fvmSize_t>
-        (fhg_kernel->get<std::size_t> ("plugin.gpi_compat.shm_size", 128U * (1<<20)))
-      );
+      (get<fvmSize_t> ("plugin.gpi_compat.shm_size", config_variables).get_value_or (128U * (1<<20)));
     const boost::posix_time::time_duration initialize_retry_interval
       ( boost::posix_time::duration_from_string
-        ( fhg_kernel->get<std::string>
-          ( "plugin.gpi_compat.initialize_retry_interval"
-          , boost::posix_time::to_simple_string (boost::posix_time::milliseconds (200))
-          )
+        ( get<std::string> ("plugin.gpi_compat.initialize_retry_interval", config_variables)
+        .get_value_or (boost::posix_time::to_simple_string (boost::posix_time::milliseconds (200)))
         )
       );
     fhg_assert (dependencies.size() == 1);

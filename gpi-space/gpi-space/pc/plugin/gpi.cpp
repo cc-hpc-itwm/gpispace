@@ -15,24 +15,24 @@ class GpiPluginImpl : FHG_PLUGIN
                     , public gpi::GPI
 {
 public:
-  GpiPluginImpl (Kernel *fhg_kernel, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
+  GpiPluginImpl (Kernel*, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
     : api ("")
     , _try_start_loop (NULL)
   {
     const std::string socket_path
-      ( fhg_kernel->get ( "plugin.gpi.socket"
-                        , "/var/tmp/S-gpi-space."
-                        + boost::lexical_cast<std::string>(getuid())
-                        + "."
-                        + boost::lexical_cast<std::string>(0) // numa socket
-                        )
+      ( get<std::string> ("plugin.gpi.socket", config_variables)
+      .get_value_or ( "/var/tmp/S-gpi-space."
+                    + boost::lexical_cast<std::string>(getuid())
+                    + "."
+                    + boost::lexical_cast<std::string>(0) // numa socket
+                    )
       );
     const bool start_synchronous
-      (fhg_kernel->get("plugin.gpi.startmode", "nowait") == "wait");
+      (get<std::string> ("plugin.gpi.startmode", config_variables) == std::string ("wait"));
     boost::optional<std::size_t> max_retries_until_defer_startup
       ( start_synchronous
       ? boost::optional<std::size_t>()
-      : fhg_kernel->get<std::size_t> ("plugin.gpi.retries_to_defer", "1")
+      : get<std::size_t> ("plugin.gpi.retries_to_defer", config_variables).get_value_or (1)
       );
 
     api.path (socket_path);
