@@ -1,6 +1,8 @@
 #include <drts/worker/drts.hpp>
 
 #include <fhg/error_codes.hpp>
+//! \todo remove when redoing ctor
+#include <fhg/plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/threadname.hpp>
@@ -1453,5 +1455,3 @@ void DRTSImpl::dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt)
     MLOG(WARN, "got invalid message from suspicious source");
   }
 }
-
-EXPORT_FHG_PLUGIN (drts, DRTSImpl, "");

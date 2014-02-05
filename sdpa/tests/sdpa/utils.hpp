@@ -9,6 +9,8 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 
+#include <drts/worker/drts.hpp>
+
 #include <fhg/plugin/core/kernel.hpp>
 #include <fhg/plugin/plugin.hpp>
 
@@ -121,9 +123,9 @@ namespace utils
                        , const std::string& kvsHost
                        , const std::string& kvsPort
                        , boost::function<void()> request_stop
+                       , std::map<std::string, std::string>& config_variables
                        )
     {
-      std::map<std::string, std::string> config_variables;
 
       config_variables ["plugin.drts.kvs_host"] = kvsHost;
       config_variables ["plugin.drts.kvs_port"] = kvsPort;
@@ -143,7 +145,6 @@ namespace utils
         (new fhg::core::kernel_t (fhg::core::kernel_t::search_path_t(), request_stop, config_variables));
 
       kernel->load_plugin_from_file (TESTS_FVM_FAKE_PLUGIN_PATH);
-      kernel->load_plugin_from_file (TESTS_DRTS_PLUGIN_PATH);
 
       return kernel;
     }
@@ -159,10 +160,11 @@ namespace utils
                 , std::string kvs_port
                 )
       : _waiter()
+      , _config_variables()
       , _kernel ( createDRTSWorker
-                  (name, master.name(), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop())
+                  (name, master.name(), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop(), _config_variables)
                 )
-      , _thread (&fhg::core::wait_until_stopped::wait, &_waiter)
+      , _thread (&drts_worker::thread, this)
     {
     }
     drts_worker ( std::string name
@@ -173,10 +175,11 @@ namespace utils
                 , std::string kvs_port
                 )
       : _waiter()
+      , _config_variables()
       , _kernel ( createDRTSWorker
-                  (name, assemble_string (masters), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop())
+                  (name, assemble_string (masters), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop(), _config_variables)
                 )
-      , _thread (&fhg::core::wait_until_stopped::wait, &_waiter)
+      , _thread (&drts_worker::thread, this)
     {
     }
 
@@ -185,7 +188,14 @@ namespace utils
       _waiter.stop();
     }
 
+    void thread()
+    {
+      DRTSImpl const plugin (_waiter.make_request_stop(), std::list<Plugin*>(), _config_variables);
+      _waiter.wait();
+    }
+
     fhg::core::wait_until_stopped _waiter;
+    std::map<std::string, std::string> _config_variables;
     boost::shared_ptr<fhg::core::kernel_t> _kernel;
     boost::thread _thread;
   };

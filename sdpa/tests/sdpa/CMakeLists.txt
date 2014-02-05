@@ -3,6 +3,7 @@ include (fhg_plugin_macros)
 add_subdirectory(workflows)
 
 include_directories(${FVM_INCLUDE_DIR})
+include_directories(${HWLOC_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/application/transform_file)
 
 set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
@@ -24,7 +25,6 @@ get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
 
 get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
-get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -210,6 +210,7 @@ foreach (test ${tests})
       PROJECT sdpa
       BOOST_UNIT_TEST # all of them?
       LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
@@ -219,8 +220,7 @@ foreach (test ${tests})
                      fhg-util
                      ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
-      DEPENDS drts-plugin
-              fvm-fake-plugin
+      DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
               pnet-capabilities_no_mandatory-test-wf
               pnet-inotify-test-wf

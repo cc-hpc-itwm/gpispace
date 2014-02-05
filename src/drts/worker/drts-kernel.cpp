@@ -1,5 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#include <drts/worker/drts.hpp>
+
 #include <fhg/plugin/core/kernel.hpp>
 #include <fhg/plugin/core/license.hpp>
 #include <fhg/util/daemonize.hpp>
@@ -71,7 +73,6 @@ int main(int ac, char **av)
     mods_to_load.push_back ("gpi");
     mods_to_load.push_back ("gpi_compat");
   }
-  mods_to_load.push_back ("drts");
 
   std::map<std::string, std::string> config_variables;
   BOOST_FOREACH (const std::string& p, config_vars)
@@ -127,6 +128,8 @@ int main(int ac, char **av)
 
   signal_handlers.add (SIGTERM, boost::bind (request_stop));
   signal_handlers.add (SIGINT, boost::bind (request_stop));
+
+  DRTSImpl const plugin (request_stop, std::list<Plugin*>(), config_variables);
 
   waiter.wait();
 

@@ -5,8 +5,6 @@
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer.hpp>
 
-#include <fhg/plugin/plugin.hpp>
-
 #include <fhg/util/keep_alive.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/thread/queue.hpp>
@@ -39,6 +37,9 @@
 #include <list>
 #include <map>
 #include <string>
+
+//! \todo remove when redoing ctor
+class Plugin;
 
 struct wfe_task_t
 {
@@ -148,8 +149,7 @@ private:
   scoped_service_handler _get_search_path_service;
 };
 
-class DRTSImpl : FHG_PLUGIN
-               , public sdpa::events::EventHandler
+class DRTSImpl : public sdpa::events::EventHandler
 {
   typedef std::map<std::string, bool> map_of_masters_t;
 
