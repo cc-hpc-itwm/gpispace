@@ -6,12 +6,17 @@
 #include <list>
 
 #include <fhg/assert.hpp>
-#include <fhg/plugin/descriptor.hpp>
 
 #include <boost/function.hpp>
 #include <boost/utility.hpp>
 
 #define FHG_PLUGIN public fhg::plugin::Plugin
+
+struct fhg_plugin_descriptor_t
+{
+  const char *name;
+  const char *depends;
+};
 
 #define EXPORT_FHG_PLUGIN(name, cls, depends)                           \
   extern "C"                                                            \
