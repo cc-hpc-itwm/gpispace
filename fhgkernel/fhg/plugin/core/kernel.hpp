@@ -49,16 +49,13 @@ namespace fhg
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
 
-      typedef std::map<std::string, plugin_t::ptr_t> plugin_map_t;
-      typedef std::map<std::string, std::string> config_t;
-
       mutable mutex_type m_mtx_plugins;
       mutable mutex_type m_mtx_load_plugin;
 
-      plugin_map_t   m_plugins;
+      std::map<std::string, plugin_t::ptr_t> m_plugins;
       std::list<std::string> m_load_order;
 
-      config_t m_config;
+      std::map<std::string, std::string> m_config;
 
       search_path_t m_search_path;
     };
