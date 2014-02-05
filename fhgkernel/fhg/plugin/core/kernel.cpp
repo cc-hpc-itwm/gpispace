@@ -103,11 +103,7 @@ namespace fhg
 
       std::string full_path_to_file = fs::absolute (fs::path (file)).string ();
 
-      if (fs::is_directory (full_path_to_file))
-      {
-        return EISDIR;
-      }
-      else if (not fs::is_regular_file (full_path_to_file))
+      if (not fs::is_regular_file (full_path_to_file))
       {
         return EINVAL;
       }
