@@ -8,6 +8,8 @@
 #include <we/type/place.hpp>
 #include <we/type/net.hpp>
 
+#include <sdpa/types.hpp>
+
 #include <boost/foreach.hpp>
 
 namespace we
@@ -126,12 +128,12 @@ namespace we
 namespace sdpa
 {
   bool operator==
-    (const discovery_info_t& lhs, const discovery_info_t& rhs) const
+    (const discovery_info_t& lhs, const discovery_info_t& rhs)
   {
     return lhs.job_id() == rhs.job_id()
       && lhs.children() == rhs.children()
       && static_cast<bool> (lhs.state()) == static_cast<bool> (rhs.state())
-      && (lhs.state && lhs.state().get() == rhs.state().get());
+      && (lhs.state() && lhs.state().get() == rhs.state().get());
   }
 }
 
