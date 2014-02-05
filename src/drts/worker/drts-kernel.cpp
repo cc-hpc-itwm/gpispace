@@ -107,7 +107,8 @@ int main(int ac, char **av)
     key_val_t kv (fhg::util::split_string(p, "="));
     if (kv.first.empty())
     {
-      LLOG (WARN, logger, "invalid config variable: must not be empty");
+      LLOG (ERROR, logger, "invalid config variable: must not be empty");
+      throw std::runtime_error ("invalid config variable: must not be empty");
     }
     else
     {
