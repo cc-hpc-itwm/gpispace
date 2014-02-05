@@ -237,7 +237,6 @@ namespace fhg
                              , std::string const &dflt
                              ) const
     {
-      lock_type lock (m_mtx_config);
       config_t::const_iterator it (m_config.find(key));
       if (it == m_config.end()) return dflt;
       else                      return it->second;

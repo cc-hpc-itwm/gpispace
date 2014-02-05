@@ -59,7 +59,6 @@ namespace fhg
 
       mutable mutex_type m_mtx_plugins;
       mutable mutex_type m_mtx_load_plugin;
-      mutable mutex_type m_mtx_config;
 
       plugin_map_t   m_plugins;
       std::list<std::string> m_load_order;
