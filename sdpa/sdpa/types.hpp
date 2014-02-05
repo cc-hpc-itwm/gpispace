@@ -91,17 +91,6 @@ namespace sdpa {
       return _job_id < other.job_id();
     }
 
-    bool operator==( const discovery_info_t& other ) const
-    {
-      if( (_state && !other.state()) || (!_state && other.state()) )
-        return false;
-
-      if(_state)
-        return  _job_id == other.job_id() && *_state == *other.state() && _children == other.children();
-      else
-        return  _job_id == other.job_id() && _children == other.children();
-    }
-
   private:
     job_id_t _job_id;
     boost::optional<sdpa::status::code> _state;
