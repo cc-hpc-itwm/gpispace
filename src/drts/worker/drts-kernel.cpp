@@ -129,7 +129,7 @@ int main(int ac, char **av)
   signal_handlers.add (SIGTERM, boost::bind (request_stop));
   signal_handlers.add (SIGINT, boost::bind (request_stop));
 
-  DRTSImpl const plugin (request_stop, std::list<Plugin*>(), config_variables);
+  DRTSImpl const plugin (request_stop, config_variables);
 
   waiter.wait();
 

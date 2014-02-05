@@ -468,7 +468,7 @@ void WFEImpl::service_set_search_path ( std::string const &
   user->deliver (rply);
 }
 
-DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
+DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables)
 {
   //! \todo ctor parameters
   const std::string name (*get<std::string> ("kernel_name", config_variables));

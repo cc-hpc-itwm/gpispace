@@ -38,9 +38,6 @@
 #include <map>
 #include <string>
 
-//! \todo remove when redoing ctor
-class Plugin;
-
 struct wfe_task_t
 {
   enum state_t
@@ -158,7 +155,7 @@ class DRTSImpl : public sdpa::events::EventHandler
                   > map_of_jobs_t;
   typedef std::map<std::string, sdpa::Capability> map_of_capabilities_t;
 public:
-  DRTSImpl (boost::function<void()> request_stop, std::list<Plugin*>, std::map<std::string, std::string> config_variables);
+  DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables);
   ~DRTSImpl();
 
   virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e);

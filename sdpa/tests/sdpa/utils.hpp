@@ -190,7 +190,7 @@ namespace utils
 
     void thread()
     {
-      DRTSImpl const plugin (_waiter.make_request_stop(), std::list<Plugin*>(), _config_variables);
+      DRTSImpl const plugin (_waiter.make_request_stop(), _config_variables);
       _waiter.wait();
     }
 
