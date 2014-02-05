@@ -45,4 +45,19 @@ namespace fhg
   }
 }
 
+#include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
+
+//! \note Temporary, while config_variables are passed in as map<>.
+template<typename T> boost::optional<T> get
+  (std::string key, std::map<std::string, std::string> const& vals)
+{
+  const std::map<std::string, std::string>::const_iterator it (vals.find (key));
+  if (it != vals.end())
+  {
+    return boost::lexical_cast<T> (it->second);
+  }
+  return boost::none;
+}
+
 #endif
