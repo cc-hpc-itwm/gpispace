@@ -2,7 +2,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(hdrs
   descriptor.hpp
   plugin.hpp
-  kernel.hpp
 )
 
 set (core_srcs

@@ -7,7 +7,6 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/plugin/descriptor.hpp>
-#include <fhg/plugin/kernel.hpp>
 
 #include <boost/function.hpp>
 #include <boost/utility.hpp>

@@ -10,6 +10,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
+#include <fhg/plugin/core/kernel.hpp>
 #include <fhg/plugin/core/plugin.hpp>
 #include <fhg/plugin/plugin.hpp>
 
@@ -59,14 +60,14 @@ namespace fhg
     }
 
     plugin_t::plugin_t ( void *my_handle
-                       , fhg::plugin::Kernel *kernel
+                       , kernel_t *kernel
                        , std::list<plugin_t::ptr_t> deps
                        , std::map<std::string, std::string> config_variables
                        )
       : m_handle (my_handle)
       , m_plugin ( m_handle.sym
                    <plugin::Plugin* (boost::function<void()> request_stop, std::list<plugin::Plugin*>, std::map<std::string, std::string>)>
-                   ("fhg_get_plugin_instance") (boost::bind (&fhg::plugin::Kernel::stop, kernel), to_raw (deps), config_variables)
+                   ("fhg_get_plugin_instance") (boost::bind (&kernel_t::stop, kernel), to_raw (deps), config_variables)
                  )
     {}
   }

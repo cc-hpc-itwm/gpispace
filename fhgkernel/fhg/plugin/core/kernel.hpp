@@ -10,7 +10,6 @@
 #include <fhg/util/thread/queue.hpp>
 
 #include <fhg/plugin/core/plugin.hpp>
-#include <fhg/plugin/kernel.hpp>
 
 namespace fhg
 {
@@ -27,7 +26,7 @@ namespace fhg
       fhg::util::thread::event<> _stopped;
     };
 
-    class kernel_t : public plugin::Kernel
+    class kernel_t
     {
     public:
       typedef std::vector<std::string> search_path_t;
@@ -39,7 +38,7 @@ namespace fhg
       ~kernel_t ();
 
       boost::function<void()> _stop;
-      virtual void stop() { _stop(); }
+      void stop() { _stop(); }
 
       int load_plugin (std::string const & entity);
       int load_plugin_by_name (std::string const & name);

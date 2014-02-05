@@ -13,19 +13,19 @@ namespace fhg
 {
   namespace plugin
   {
-    class Kernel;
     class Plugin;
   }
 
   namespace core
   {
+    class kernel_t;
     class plugin_t : boost::noncopyable
     {
     public:
       typedef boost::shared_ptr<plugin_t> ptr_t;
 
       plugin_t ( void * handle
-               , fhg::plugin::Kernel *kernel
+               , kernel_t* kernel
                , std::list<plugin_t::ptr_t> deps
                , std::map<std::string, std::string> config_variables
                );
