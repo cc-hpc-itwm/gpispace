@@ -46,7 +46,7 @@ FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER
   , m
   )
 {
-  fhg::util::boost::test::printer::container
+  fhg::util::boost::test::printer::container<std::map<K, V> >
     ( os, m, "map [", "]"
     , fhg::util::boost::test::printer::print_map_element<K, V>()
     );
