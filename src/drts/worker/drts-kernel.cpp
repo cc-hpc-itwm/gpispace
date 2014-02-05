@@ -114,8 +114,7 @@ int main(int ac, char **av)
   fhg::core::wait_until_stopped waiter;
   const boost::function<void()> request_stop (waiter.make_request_stop());
 
-  fhg::core::kernel_t kernel
-    (kernel_name, search_path, request_stop, config_variables);
+  fhg::core::kernel_t kernel (search_path, request_stop, config_variables);
 
   BOOST_FOREACH (std::string const & p, mods_to_load)
   {

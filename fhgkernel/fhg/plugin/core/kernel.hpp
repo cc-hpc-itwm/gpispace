@@ -32,8 +32,7 @@ namespace fhg
     public:
       typedef std::vector<std::string> search_path_t;
 
-      kernel_t ( std::string const& name
-               , fhg::core::kernel_t::search_path_t search_path
+      kernel_t ( fhg::core::kernel_t::search_path_t search_path
                , boost::function<void()> request_stop
                , std::map<std::string, std::string> config_variables
                );
@@ -48,7 +47,6 @@ namespace fhg
 
       virtual std::string get(std::string const & key, std::string const &dflt) const;
 
-      virtual std::string const & get_name () const;
     private:
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
@@ -65,7 +63,6 @@ namespace fhg
 
       config_t m_config;
 
-      std::string m_name;
       search_path_t m_search_path;
     };
   }

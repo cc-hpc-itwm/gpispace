@@ -30,8 +30,6 @@ namespace fhg
       }
 
       virtual void stop() = 0;
-
-      virtual std::string const & get_name () const = 0;
     };
   }
 }
