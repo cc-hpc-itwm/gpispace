@@ -1,6 +1,5 @@
 #!/bin/bash
 name=
-long=false
 short=false
 identity=
 name_prefix="drts-$(hostname -s)"
@@ -16,7 +15,6 @@ usage: $(basename "$0") [options]
                  if empty a list of all currently
                  running drts will be printed, takes
                  precedence over ident
-    -l: print the whole command of the drts
     -s: just print the pids
 EOF
 }
@@ -32,9 +30,6 @@ while getopts ":hi:n:ls" opt; do
             ;;
         n)
             name=$OPTARG
-            ;;
-        l)
-            long=true
             ;;
         s)
             short=true
@@ -86,9 +81,6 @@ if [ -n "$pids" ] ; then
                 echo $p
             else
                 cmd="$(ps -p $p -o cmd=)"
-                if [ $long = false ] ; then
-                    cmd=$(echo $cmd | sed -e 's/.*-s plugin.drts.name=\([^ ]\+\).*/\1/')
-                fi
                 echo "pid $p := $cmd"
             fi
         done
