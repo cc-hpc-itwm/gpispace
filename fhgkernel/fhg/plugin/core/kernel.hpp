@@ -44,11 +44,6 @@ namespace fhg
       int load_plugin_from_file (std::string const & file);
 
     private:
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-
-      mutable mutex_type m_mtx_load_plugin;
-
       std::map<std::string, plugin_t::ptr_t> m_plugins;
       std::list<std::string> m_load_order;
 

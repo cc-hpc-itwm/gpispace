@@ -68,8 +68,6 @@ namespace fhg
 
     int kernel_t::load_plugin_by_name (std::string const & name)
     {
-      lock_type load_plugin_lock (m_mtx_load_plugin);
-
       if (m_plugins.find(name) != m_plugins.end())
       {
         return 0;
@@ -106,8 +104,6 @@ namespace fhg
     int kernel_t::load_plugin_from_file (std::string const &file)
     try
     {
-      lock_type load_plugin_lock (m_mtx_load_plugin);
-
       bool load_lazy (get <bool> ("kernel.load.lazy", m_config).get_value_or (true));
 
       std::string full_path_to_file = fs::absolute (fs::path (file)).string ();
