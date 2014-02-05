@@ -578,51 +578,49 @@ public:
     //! \todo ctor parameters
     const boost::function<void()> request_stop
       (boost::bind (&fhg::plugin::Kernel::stop, fhg_kernel));
-    const std::string name (fhg_kernel->get ("kernel_name", ""));
+    const std::string name (*get<std::string> ("kernel_name", config_variables));
     const std::size_t backlog_size
-      (fhg_kernel->get<std::size_t> ("plugin.drts.backlog", "3"));
+      (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3));
     const std::size_t max_reconnect_attempts
-      (fhg_kernel->get<std::size_t> ("plugin.drts.max_reconnect_attempts", "0"));
+      (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0));
     std::list<std::string> master_list;
     std::list<std::string> capability_list;
     const std::size_t target_socket_
-      (fhg_kernel->get<std::size_t> ("plugin.drts.socket", -1));
+      (get<std::size_t> ("plugin.drts.socket", config_variables).get_value_or (-1));
     const boost::optional<std::size_t> target_socket
       (boost::make_optional (target_socket_ != std::size_t (-1), target_socket_));
     const std::string search_path
-      (fhg_kernel->get("plugin.drts.library_path", fhg::util::getenv("PC_LIBRARY_PATH")));
-    const std::string gui_url_ (fhg_kernel->get ("plugin.drts.gui_url", ""));
+      (get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH")));
+    const std::string gui_url_ (get<std::string> ("plugin.drts.gui_url", config_variables).get_value_or (""));
     const boost::optional<std::string> gui_url
       (boost::make_optional (!gui_url_.empty(), gui_url_));
     WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name, gspc::net::server::default_service_demux()));
-    fhg::com::host_t host (fhg_kernel->get("plugin.drts.host", "*"));
-    fhg::com::port_t port (fhg_kernel->get("plugin.drts.port", "0"));
+    fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
+    fhg::com::port_t port (get<std::string> ("plugin.drts.port", config_variables).get_value_or ("0"));
     {
-      const std::string master_names (fhg_kernel->get("plugin.drts.master", ""));
-      const std::string virtual_capabilities (fhg_kernel->get("plugin.drts.capabilities", ""));
+      const std::string master_names (get<std::string> ("plugin.drts.master", config_variables).get_value_or (""));
+      const std::string virtual_capabilities (get<std::string> ("plugin.drts.capabilities", config_variables).get_value_or (""));
       fhg::util::split (master_names, ",", std::back_inserter(master_list));
       fhg::util::split (virtual_capabilities, ",", std::back_inserter(capability_list));
     }
-    const std::size_t netd_nthreads (fhg_kernel->get ("plugin.drts.netd_nthreads", 4L));
-    const std::string netd_url (fhg_kernel->get ("plugin.drts.netd_url", "tcp://*"));
+    const std::size_t netd_nthreads (get<std::size_t> ("plugin.drts.netd_nthreads", config_variables).get_value_or (4L));
+    const std::string netd_url (get<std::string> ("plugin.drts.netd_url", config_variables).get_value_or ("tcp://*"));
 
-    const std::string kvs_host (fhg_kernel->get ("plugin.drts.kvs_host", "localhost"));
-    const std::string kvs_port (fhg_kernel->get ("plugin.drts.kvs_port", "2439"));
-    const unsigned int kvs_max_ping_failed (fhg_kernel->get ("plugin.drts.kvs_max_ping_failed", 3));
+    const std::string kvs_host (get<std::string> ("plugin.drts.kvs_host", config_variables).get_value_or ("localhost"));
+    const std::string kvs_port (get<std::string> ("plugin.drts.kvs_port", config_variables).get_value_or ("2439"));
+    const unsigned int kvs_max_ping_failed (get<unsigned int> ("plugin.drts.kvs_max_ping_failed", config_variables).get_value_or (3));
     const boost::posix_time::time_duration kvs_ping_interval
       ( boost::posix_time::duration_from_string
-        ( fhg_kernel->get<std::string>
-          ( "plugin.drts.kvs_ping"
-          , boost::posix_time::to_simple_string (boost::posix_time::seconds (5))
-          )
+        ( get<std::string> ("plugin.drts.kvs_ping", config_variables)
+        .get_value_or
+          (boost::posix_time::to_simple_string (boost::posix_time::seconds (5)))
         )
       );
     const boost::posix_time::time_duration kvs_timeout
       ( boost::posix_time::duration_from_string
-        ( fhg_kernel->get<std::string>
-          ( "plugin.drts.kvs_timeout"
-          , boost::posix_time::to_simple_string (boost::posix_time::seconds (120))
-          )
+        ( get<std::string> ("plugin.drts.kvs_timeout", config_variables)
+        .get_value_or
+          (boost::posix_time::to_simple_string (boost::posix_time::seconds (120)))
         )
       );
 
