@@ -22,11 +22,9 @@ namespace fhg
     class plugin_t : boost::noncopyable
     {
     public:
-      typedef boost::shared_ptr<plugin_t> ptr_t;
-
       plugin_t ( void * handle
                , kernel_t* kernel
-               , std::list<plugin_t::ptr_t> deps
+               , std::list<boost::shared_ptr<plugin_t> > deps
                , std::map<std::string, std::string> config_variables
                );
 
@@ -42,7 +40,7 @@ namespace fhg
 
       boost::scoped_ptr<fhg::plugin::Plugin> m_plugin;
 
-      static std::list<plugin::Plugin*> to_raw (std::list<plugin_t::ptr_t>);
+      static std::list<plugin::Plugin*> to_raw (std::list<boost::shared_ptr<plugin_t> >);
     };
   }
 }

@@ -152,7 +152,7 @@ namespace fhg
           ("another plugin with the same name is already loaded: " + plugin_name);
       }
 
-      std::list<plugin_t::ptr_t> dependencies;
+      std::list<boost::shared_ptr<plugin_t> > dependencies;
 
       std::list<std::string> depends;
       fhg::util::split( desc->depends
@@ -173,7 +173,7 @@ namespace fhg
         dependencies.push_back (m_plugins.find (dep)->second);
       }
 
-      plugin_t::ptr_t p (new plugin_t( handle
+      boost::shared_ptr<plugin_t> p (new plugin_t( handle
                                      , this
                                      , dependencies
                                      , m_config

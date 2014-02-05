@@ -44,7 +44,7 @@ namespace fhg
       int load_plugin_from_file (std::string const & file);
 
     private:
-      std::map<std::string, plugin_t::ptr_t> m_plugins;
+      std::map<std::string, boost::shared_ptr<plugin_t> > m_plugins;
       std::list<std::string> m_load_order;
 
       std::map<std::string, std::string> m_config;

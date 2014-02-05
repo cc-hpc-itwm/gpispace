@@ -49,10 +49,10 @@ namespace fhg
       return symbol._data;
     }
 
-    std::list<plugin::Plugin*> plugin_t::to_raw (std::list<plugin_t::ptr_t> deps)
+    std::list<plugin::Plugin*> plugin_t::to_raw (std::list<boost::shared_ptr<plugin_t> > deps)
     {
       std::list<plugin::Plugin*> deps_raw;
-      BOOST_FOREACH (ptr_t p, deps)
+      BOOST_FOREACH (boost::shared_ptr<plugin_t> p, deps)
       {
         deps_raw.push_back (p->m_plugin.get());
       }
@@ -61,7 +61,7 @@ namespace fhg
 
     plugin_t::plugin_t ( void *my_handle
                        , kernel_t *kernel
-                       , std::list<plugin_t::ptr_t> deps
+                       , std::list<boost::shared_ptr<plugin_t> > deps
                        , std::map<std::string, std::string> config_variables
                        )
       : m_handle (my_handle)
