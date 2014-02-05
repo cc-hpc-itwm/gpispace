@@ -46,9 +46,7 @@ namespace fhg
     private:
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
-      typedef boost::condition_variable_any condition_type;
 
-      mutable mutex_type m_mtx_plugins;
       mutable mutex_type m_mtx_load_plugin;
 
       std::map<std::string, plugin_t::ptr_t> m_plugins;

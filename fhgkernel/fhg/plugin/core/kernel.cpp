@@ -70,12 +70,9 @@ namespace fhg
     {
       lock_type load_plugin_lock (m_mtx_load_plugin);
 
+      if (m_plugins.find(name) != m_plugins.end())
       {
-        lock_type plugins_lock (m_mtx_plugins);
-        if (m_plugins.find(name) != m_plugins.end())
-        {
-          return 0;
-        }
+        return 0;
       }
 
       BOOST_FOREACH (std::string const &dir, m_search_path)
@@ -153,13 +150,10 @@ namespace fhg
       const fhg_plugin_descriptor_t *desc = query_plugin._fun();
       const std::string plugin_name (desc->name);
 
+      if (m_plugins.find (plugin_name) != m_plugins.end())
       {
-        lock_type plugins_lock (m_mtx_plugins);
-        if (m_plugins.find (plugin_name) != m_plugins.end())
-        {
-          throw std::runtime_error
-            ("another plugin with the same name is already loaded: " + plugin_name);
-        }
+        throw std::runtime_error
+          ("another plugin with the same name is already loaded: " + plugin_name);
       }
 
       std::list<plugin_t::ptr_t> dependencies;
@@ -170,21 +164,17 @@ namespace fhg
                       , std::back_inserter (depends)
                       );
 
+      BOOST_FOREACH(std::string const &dep, depends)
       {
-        lock_type plugins_lock (m_mtx_plugins);
-
-        BOOST_FOREACH(std::string const &dep, depends)
+        if (m_plugins.find (dep) == m_plugins.end())
         {
-          if (m_plugins.find (dep) == m_plugins.end())
+          if (0 != load_plugin_by_name (dep))
           {
-            if (0 != load_plugin_by_name (dep))
-            {
-              throw std::runtime_error("dependency not available: " + dep);
-            }
+            throw std::runtime_error("dependency not available: " + dep);
           }
-
-          dependencies.push_back (m_plugins.find (dep)->second);
         }
+
+        dependencies.push_back (m_plugins.find (dep)->second);
       }
 
       plugin_t::ptr_t p (new plugin_t( handle
@@ -194,11 +184,8 @@ namespace fhg
                                           )
                         );
 
-      {
-        lock_type plugins_lock (m_mtx_plugins);
-        m_plugins.insert (std::make_pair(plugin_name, p));
-        m_load_order.push_back (plugin_name);
-      }
+      m_plugins.insert (std::make_pair(plugin_name, p));
+      m_load_order.push_back (plugin_name);
 
       MLOG( TRACE
           , "loaded plugin '" << plugin_name << "'"
