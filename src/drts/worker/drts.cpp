@@ -578,7 +578,7 @@ public:
     //! \todo ctor parameters
     const boost::function<void()> request_stop
       (boost::bind (&fhg::plugin::Kernel::stop, fhg_kernel));
-    const std::string name (fhg_kernel->get_name());
+    const std::string name (fhg_kernel->get ("kernel_name", ""));
     const std::size_t backlog_size
       (fhg_kernel->get<std::size_t> ("plugin.drts.backlog", "3"));
     const std::size_t max_reconnect_attempts

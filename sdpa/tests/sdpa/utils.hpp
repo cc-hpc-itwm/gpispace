@@ -130,6 +130,7 @@ namespace utils
 
       //see ~/.sdpa/configs/sdpa.rc
 
+      config_variables["kernel_name"] = drtsName;
       config_variables ["plugin.drts.name"] = drtsName;
       config_variables ["plugin.drts.master"] = masterName;
       config_variables ["plugin.drts.backlog"] = "2";

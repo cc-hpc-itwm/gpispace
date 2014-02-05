@@ -86,6 +86,7 @@ int main(int ac, char **av)
     DLLOG (TRACE, logger, "setting " << kv.first << " to " << kv.second);
     config_variables.insert (kv);
   }
+  config_variables["kernel_name"] = kernel_name;
 
   const bool daemonize (vm.count ("daemonize"));
 

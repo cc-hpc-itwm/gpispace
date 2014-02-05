@@ -36,7 +36,7 @@ class GPICompatPluginImpl : FHG_PLUGIN
 public:
   GPICompatPluginImpl (Kernel* fhg_kernel, std::list<Plugin*> dependencies, std::map<std::string, std::string> config_variables)
   {
-    const std::string worker_name (fhg_kernel->get_name());
+    const std::string worker_name (fhg_kernel->get ("kernel_name", ""));
     const fvmSize_t shm_size
       ( boost::lexical_cast<fvmSize_t>
         (fhg_kernel->get<std::size_t> ("plugin.gpi_compat.shm_size", 128U * (1<<20)))
