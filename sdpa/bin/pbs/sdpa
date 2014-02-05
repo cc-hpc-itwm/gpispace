@@ -4,7 +4,7 @@
 #
 
 # increment this value if anything config related changes!
-CONFIG_VERSION=10
+CONFIG_VERSION=11
 
 function log ()
 {
