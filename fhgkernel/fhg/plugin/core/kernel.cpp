@@ -66,8 +66,14 @@ namespace fhg
       }
     }
 
-    int kernel_t::load_plugin_by_name (std::string const & name)
+    void kernel_t::load_plugin_by_name (std::string const & name)
+    try
     {
+      if (m_search_path.empty())
+      {
+        throw std::runtime_error ("search path is empty");
+      }
+
       BOOST_FOREACH (std::string const &dir, m_search_path)
       {
         fs::path plugin_path (dir);
@@ -77,24 +83,15 @@ namespace fhg
 
         if (fs::is_regular_file (plugin_path))
         {
-          try
-          {
-            load_plugin_from_file (plugin_path.string ());
-            return 0;
-          }
-          catch (std::exception const &ex)
-          {
-            MLOG ( WARN
-                 , "plugin '" << name
-                 << "' could not be loaded from: " << plugin_path
-                 << " : " << ex.what ()
-                 );
-            return EFAULT;
-          }
+          load_plugin_from_file (plugin_path.string ());
+          return;
         }
       }
-
-      return ENOENT;
+    }
+    catch (std::runtime_error const& ex)
+    {
+      throw std::runtime_error
+        ("plugin " + name + " failed to start: " + ex.what());
     }
 
     void kernel_t::load_plugin_from_file (std::string const &file)
@@ -156,10 +153,7 @@ namespace fhg
       {
         if (m_plugins.find (dep) == m_plugins.end())
         {
-          if (0 != load_plugin_by_name (dep))
-          {
-            throw std::runtime_error("dependency not available: " + dep);
-          }
+          load_plugin_by_name (dep);
         }
 
         dependencies.push_back (m_plugins.find (dep)->second);

@@ -40,7 +40,7 @@ namespace fhg
       boost::function<void()> _stop;
       void stop() { _stop(); }
 
-      int load_plugin_by_name (std::string const & name);
+      void load_plugin_by_name (std::string const & name);
       void load_plugin_from_file (std::string const & file);
 
     private:

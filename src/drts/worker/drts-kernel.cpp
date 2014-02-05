@@ -118,9 +118,7 @@ int main(int ac, char **av)
 
   BOOST_FOREACH (std::string const & p, mods_to_load)
   {
-    int ec = kernel.load_plugin_by_name (p);
-    if (ec != 0)
-      throw std::runtime_error (strerror (ec));
+    kernel.load_plugin_by_name (p);
   }
 
   fhg::util::signal_handler_manager signal_handlers;
