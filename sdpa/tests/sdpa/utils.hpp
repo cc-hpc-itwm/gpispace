@@ -142,8 +142,8 @@ namespace utils
       boost::shared_ptr<fhg::core::kernel_t> kernel
         (new fhg::core::kernel_t (fhg::core::kernel_t::search_path_t(), request_stop, config_variables));
 
-      kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
-      kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
+      kernel->load_plugin_from_file (TESTS_FVM_FAKE_PLUGIN_PATH);
+      kernel->load_plugin_from_file (TESTS_DRTS_PLUGIN_PATH);
 
       return kernel;
     }

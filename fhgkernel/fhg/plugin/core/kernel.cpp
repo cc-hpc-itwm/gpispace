@@ -89,7 +89,7 @@ namespace fhg
         {
           try
           {
-            return load_plugin (plugin_path.string ());
+            return load_plugin_from_file (plugin_path.string ());
           }
           catch (std::exception const &ex)
           {
@@ -211,19 +211,6 @@ namespace fhg
     {
       throw std::runtime_error
         ("plugin " + file + " failed to start: " + ex.what());
-    }
-
-
-    int kernel_t::load_plugin(std::string const & entity)
-    {
-      if (fs::exists (entity))
-      {
-        return load_plugin_from_file (entity);
-      }
-      else
-      {
-        return load_plugin_by_name (entity);
-      }
     }
   }
 }
