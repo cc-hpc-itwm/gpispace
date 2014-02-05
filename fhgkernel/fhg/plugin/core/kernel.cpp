@@ -49,8 +49,10 @@ namespace fhg
     kernel_t::kernel_t ( std::string const& name
                        , fhg::core::kernel_t::search_path_t search_path
                        , boost::function<void()> request_stop
+                       , std::map<std::string, std::string> config_variables
                        )
       : _stop (request_stop)
+      , m_config (config_variables)
       , m_name (name)
       , m_search_path (search_path)
     {

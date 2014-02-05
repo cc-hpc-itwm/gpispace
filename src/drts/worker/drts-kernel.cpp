@@ -73,6 +73,20 @@ int main(int ac, char **av)
   }
   mods_to_load.push_back ("drts");
 
+  std::map<std::string, std::string> config_variables;
+  BOOST_FOREACH (const std::string& p, config_vars)
+  {
+    const std::pair<std::string, std::string> kv (fhg::util::split_string (p, "="));
+    if (kv.first.empty())
+    {
+      LLOG (ERROR, logger, "invalid config variable: must not be empty");
+      throw std::runtime_error ("invalid config variable: must not be empty");
+    }
+
+    DLLOG (TRACE, logger, "setting " << kv.first << " to " << kv.second);
+    config_variables.insert (kv);
+  }
+
   const bool daemonize (vm.count ("daemonize"));
 
   fhg::plugin::magically_check_license (logger);
@@ -99,23 +113,8 @@ int main(int ac, char **av)
   fhg::core::wait_until_stopped waiter;
   const boost::function<void()> request_stop (waiter.make_request_stop());
 
-  fhg::core::kernel_t kernel (kernel_name, search_path, request_stop);
-
-  BOOST_FOREACH (std::string const & p, config_vars)
-  {
-    typedef std::pair<std::string,std::string> key_val_t;
-    key_val_t kv (fhg::util::split_string(p, "="));
-    if (kv.first.empty())
-    {
-      LLOG (ERROR, logger, "invalid config variable: must not be empty");
-      throw std::runtime_error ("invalid config variable: must not be empty");
-    }
-    else
-    {
-      DLLOG (TRACE, logger, "setting " << kv.first << " to " << kv.second);
-      kernel.put(kv.first, kv.second);
-    }
-  }
+  fhg::core::kernel_t kernel
+    (kernel_name, search_path, request_stop, config_variables);
 
   BOOST_FOREACH (std::string const & p, mods_to_load)
   {

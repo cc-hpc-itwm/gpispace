@@ -123,22 +123,24 @@ namespace utils
                        , boost::function<void()> request_stop
                        )
     {
-      boost::shared_ptr<fhg::core::kernel_t> kernel
-        (new fhg::core::kernel_t (drtsName, fhg::core::kernel_t::search_path_t(), request_stop));
+      std::map<std::string, std::string> config_variables;
 
-      kernel->put ("plugin.drts.kvs_host", kvsHost);
-      kernel->put ("plugin.drts.kvs_port", kvsPort);
+      config_variables ["plugin.drts.kvs_host"] = kvsHost;
+      config_variables ["plugin.drts.kvs_port"] = kvsPort;
 
       //see ~/.sdpa/configs/sdpa.rc
 
-      kernel->put ("plugin.drts.name", drtsName);
-      kernel->put ("plugin.drts.master", masterName);
-      kernel->put ("plugin.drts.backlog", "2");
+      config_variables ["plugin.drts.name"] = drtsName;
+      config_variables ["plugin.drts.master"] = masterName;
+      config_variables ["plugin.drts.backlog"] = "2";
 
       if(!cpbList.empty())
-        kernel->put ("plugin.drts.capabilities", cpbList);
+        config_variables ["plugin.drts.capabilities"] = cpbList;
 
-      kernel->put ("plugin.drts.library_path", strModulesPath);
+      config_variables ["plugin.drts.library_path"] = strModulesPath;
+
+      boost::shared_ptr<fhg::core::kernel_t> kernel
+        (new fhg::core::kernel_t (drtsName, fhg::core::kernel_t::search_path_t(), request_stop, config_variables));
 
       kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
       kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);

@@ -35,6 +35,7 @@ namespace fhg
       kernel_t ( std::string const& name
                , fhg::core::kernel_t::search_path_t search_path
                , boost::function<void()> request_stop
+               , std::map<std::string, std::string> config_variables
                );
       ~kernel_t ();
 
