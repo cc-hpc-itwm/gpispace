@@ -79,7 +79,8 @@ namespace fhg
         {
           try
           {
-            return load_plugin_from_file (plugin_path.string ());
+            load_plugin_from_file (plugin_path.string ());
+            return 0;
           }
           catch (std::exception const &ex)
           {
@@ -96,7 +97,7 @@ namespace fhg
       return ENOENT;
     }
 
-    int kernel_t::load_plugin_from_file (std::string const &file)
+    void kernel_t::load_plugin_from_file (std::string const &file)
     try
     {
       bool load_lazy (get <bool> ("kernel.load.lazy", m_config).get_value_or (true));
@@ -105,7 +106,7 @@ namespace fhg
 
       if (not fs::is_regular_file (full_path_to_file))
       {
-        return EINVAL;
+        throw std::runtime_error (full_path_to_file + " is not a regular file");
       }
 
 
@@ -178,8 +179,6 @@ namespace fhg
           , "loaded plugin '" << plugin_name << "'"
           << " (from: '" << full_path_to_file << "')"
           );
-
-      return 0;
     }
     catch (std::runtime_error const& ex)
     {
