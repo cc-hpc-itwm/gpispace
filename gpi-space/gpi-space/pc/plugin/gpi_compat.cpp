@@ -34,7 +34,7 @@ class GPICompatPluginImpl : FHG_PLUGIN
   typedef boost::mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
 public:
-  GPICompatPluginImpl (Kernel* fhg_kernel, std::list<Plugin*> dependencies)
+  GPICompatPluginImpl (Kernel* fhg_kernel, std::list<Plugin*> dependencies, std::map<std::string, std::string> config_variables)
   {
     const std::string worker_name (fhg_kernel->get_name());
     const fvmSize_t shm_size

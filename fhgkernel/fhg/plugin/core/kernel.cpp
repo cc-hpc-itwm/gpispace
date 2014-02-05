@@ -198,6 +198,7 @@ namespace fhg
       plugin_t::ptr_t p (new plugin_t( handle
                                      , this
                                      , dependencies
+                                     , m_config
                                           )
                         );
 

@@ -573,7 +573,7 @@ class DRTSImpl : FHG_PLUGIN
                   > map_of_jobs_t;
   typedef std::map<std::string, sdpa::Capability> map_of_capabilities_t;
 public:
-  DRTSImpl (Kernel* fhg_kernel, std::list<Plugin*>)
+  DRTSImpl (Kernel* fhg_kernel, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
   {
     //! \todo ctor parameters
     const boost::function<void()> request_stop

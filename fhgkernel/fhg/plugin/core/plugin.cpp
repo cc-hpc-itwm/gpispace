@@ -60,11 +60,12 @@ namespace fhg
     plugin_t::plugin_t ( void *my_handle
                        , fhg::plugin::Kernel *kernel
                        , std::list<plugin_t::ptr_t> deps
+                       , std::map<std::string, std::string> config_variables
                        )
       : m_handle (my_handle)
       , m_plugin ( m_handle.sym
-                   <plugin::Plugin* (plugin::Kernel*, std::list<plugin::Plugin*>)>
-                     ("fhg_get_plugin_instance") (kernel, to_raw (deps))
+                   <plugin::Plugin* (plugin::Kernel*, std::list<plugin::Plugin*>, std::map<std::string, std::string>)>
+                   ("fhg_get_plugin_instance") (kernel, to_raw (deps), config_variables)
                  )
     {}
   }

@@ -6,6 +6,7 @@
 #include <boost/utility.hpp>
 
 #include <list>
+#include <map>
 #include <string>
 
 namespace fhg
@@ -26,6 +27,7 @@ namespace fhg
       plugin_t ( void * handle
                , fhg::plugin::Kernel *kernel
                , std::list<plugin_t::ptr_t> deps
+               , std::map<std::string, std::string> config_variables
                );
 
     private:

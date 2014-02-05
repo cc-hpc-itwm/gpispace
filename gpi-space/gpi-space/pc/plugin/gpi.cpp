@@ -15,7 +15,7 @@ class GpiPluginImpl : FHG_PLUGIN
                     , public gpi::GPI
 {
 public:
-  GpiPluginImpl (Kernel *fhg_kernel, std::list<Plugin*>)
+  GpiPluginImpl (Kernel *fhg_kernel, std::list<Plugin*>, std::map<std::string, std::string> config_variables)
     : api ("")
     , _try_start_loop (NULL)
   {
