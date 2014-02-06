@@ -772,6 +772,34 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (1);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id;
+  {
+    expect_submit const _ (this, &child_id, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  const int ec (rand());
+  const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
+
+  {
+    expect_failed const _ (this, id, ec, message);
+
+    do_failed (child_id, ec, message);
+  }
+}
+
 BOOST_FIXTURE_TEST_CASE
   (sibling_jobs_shall_be_canceled_on_child_failure, daemon)
 {
