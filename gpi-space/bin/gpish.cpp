@@ -30,14 +30,12 @@
 #include <unistd.h>
 #include <vector>
 
-namespace fs = boost::filesystem;
-
 namespace
 {
 struct my_state_t
 {
-  my_state_t ( fs::path const & dir
-             , fs::path const & file
+  my_state_t ( boost::filesystem::path const & dir
+             , boost::filesystem::path const & file
              , std::size_t com_size
              )
     : socket_dir (dir)
@@ -95,7 +93,7 @@ struct my_state_t
   size_t com_size() const   { return m_com_size; }
   gpi::pc::type::handle_t shm_com_hdl() const { return m_shm_com_hdl; }
 
-  fs::path socket_dir;
+  boost::filesystem::path socket_dir;
   gpi::pc::client::api_t capi;
 private:
   std::size_t                 m_com_size;
@@ -492,7 +490,7 @@ static bool interactive(false);
 
 typedef std::vector<boost::filesystem::path> path_list_t;
 
-static path_list_t collect_sockets (fs::path const & prefix);
+static path_list_t collect_sockets (boost::filesystem::path const & prefix);
 std::ostream & operator << (std::ostream &os, path_list_t const & pl)
 {
   size_t count (0);
@@ -519,8 +517,8 @@ static int interrupt_shell (int)
   return 0;
 }
 
-static void initialize_state ( fs::path const & socket_dir
-                             , fs::path const & socket_path
+static void initialize_state ( boost::filesystem::path const & socket_dir
+                             , boost::filesystem::path const & socket_path
                              , std::size_t com_size
                              );
 static void initialize_shell (int ac, char *av[]);
@@ -571,8 +569,8 @@ int main (int ac, char **av)
 
   po::options_description desc("options");
 
-  fs::path socket_path;
-  typedef std::vector <fs::path> dir_list_t;
+  boost::filesystem::path socket_path;
+  typedef std::vector <boost::filesystem::path> dir_list_t;
   dir_list_t socket_search_dir;
   socket_search_dir.push_back ("/tmp");
   socket_search_dir.push_back ("/var/tmp");
@@ -582,7 +580,7 @@ int main (int ac, char **av)
   desc.add_options ()
     ("help,h", "this message")
 
-    ("socket,s", po::value<fs::path>(&socket_path), "path to the gpi socket")
+    ("socket,s", po::value<boost::filesystem::path>(&socket_path), "path to the gpi socket")
 
     ( "socket-dir,d"
     , po::value<dir_list_t>(&socket_search_dir)
@@ -637,7 +635,7 @@ int main (int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-  fs::path socket_dir;
+  boost::filesystem::path socket_dir;
 
   if (socket_path.empty())
   {
@@ -681,8 +679,8 @@ int main (int ac, char **av)
   gpi::signal::handler().stop();
 }
 
-void initialize_state ( fs::path const & socket_dir
-                      , fs::path const & socket_file
+void initialize_state ( boost::filesystem::path const & socket_dir
+                      , boost::filesystem::path const & socket_file
                       , std::size_t com_size
                       )
 {
@@ -690,7 +688,7 @@ void initialize_state ( fs::path const & socket_dir
   // set up state
   state = new my_state_t (socket_dir, socket_file, com_size);
 
-  if (fs::exists (socket_file))
+  if (boost::filesystem::exists (socket_file))
   {
     try
     {
@@ -714,7 +712,7 @@ void initialize_shell (int, char *av[])
   std::string prompt;
   if (interactive)
     prompt = "gpish> ";
-  fs::path histfile (getenv("HOME"));
+  boost::filesystem::path histfile (getenv("HOME"));
   histfile /= ".gpish_history";
 
   shell_t & sh (shell_t::create (av[0], prompt, histfile.string(), *state));
@@ -828,8 +826,8 @@ int cmd_open (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.size() > 1)
   {
-    fs::path new_socket (av[1]);
-    if ( fs::exists(new_socket)
+    boost::filesystem::path new_socket (av[1]);
+    if ( boost::filesystem::exists(new_socket)
        && (new_socket.string() != sh.state().capi.path())
        )
     {
@@ -953,7 +951,7 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     return -ESRCH;
   }
 
-  fs::path file_path;
+  boost::filesystem::path file_path;
   if (av.size() > 2)
   {
     file_path = av[2];
@@ -1016,8 +1014,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
     return 1;
   }
 
-  const fs::path path (av[1]);
-  if (! fs::exists (path))
+  const boost::filesystem::path path (av[1]);
+  if (! boost::filesystem::exists (path))
   {
     std::cerr << "no such file or directory: " << path << std::endl;
     return -EIO;
@@ -1064,7 +1062,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 
   if (0 == dst.handle)
   {
-    std::size_t file_size = fs::file_size(path);
+    std::size_t file_size = boost::filesystem::file_size(path);
 
     dst.handle =
       sh.state().capi.alloc( target_segment
@@ -1868,7 +1866,7 @@ int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh)
   return ec;
 }
 
-path_list_t collect_sockets (fs::path const & prefix)
+path_list_t collect_sockets (boost::filesystem::path const & prefix)
 {
   namespace fs = boost::filesystem;
 
@@ -1879,17 +1877,17 @@ path_list_t collect_sockets (fs::path const & prefix)
   file_name_prefix += boost::lexical_cast<std::string>(getuid());
 
   path_list_t paths;
-  if (!fs::exists (prefix))
+  if (!boost::filesystem::exists (prefix))
     return paths;
 
-  fs::directory_iterator end_itr;
-  for ( fs::directory_iterator itr (prefix)
+  boost::filesystem::directory_iterator end_itr;
+  for ( boost::filesystem::directory_iterator itr (prefix)
       ; itr != end_itr
       ; ++itr
       )
   {
     if ( (itr->path().string().find(file_name_prefix) == 0)
-       && fs::is_other (itr->status())
+       && boost::filesystem::is_other (itr->status())
        )
     {
       paths.push_back (itr->path());
