@@ -69,13 +69,7 @@ namespace gpi
       std::string m_long_doc;
       callback_t m_callback;
     };
-  }
-}
 
-namespace gpi
-{
-  namespace shell
-  {
     template <typename State>
     class basic_shell_t
     {
@@ -146,13 +140,7 @@ namespace gpi
       command_list_t m_commands;
       bool m_do_exit;
     };
-  }
-}
 
-namespace gpi
-{
-  namespace shell
-  {
     namespace detail
     {
       inline
