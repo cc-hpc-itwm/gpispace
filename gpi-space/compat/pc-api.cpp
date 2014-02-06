@@ -3,16 +3,21 @@
 #define LOG_COMPONENT "fvm-pc-compat"
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/ini-parser.hpp>
+#include <fhg/util/ini-parser-helper.hpp>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
 #include <we/loader/macros.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 
 #include <boost/thread/mutex.hpp>
+
+#include <map>
+#include <string>
 
 typedef boost::mutex mutex_type;
 typedef boost::unique_lock<mutex_type> lock_type;
@@ -311,13 +316,14 @@ WE_MOD_INITIALIZE_START (fvm);
 {
   namespace fs = boost::filesystem;
 
-  gpi_space::parser::config_parser_t cfg_parser;
+  fhg::util::ini::parser::flat_map_parser_t
+    < std::map<std::string, std::string> > cfg_parser;
   fs::path config_file
     (std::string(getenv("HOME")) + "/.sdpa/configs/sdpa.rc");
 
   try
   {
-    gpi_space::parser::parse (config_file.string(), boost::ref(cfg_parser));
+    fhg::util::ini::parse (config_file.string(), boost::ref(cfg_parser));
   }
   catch (std::exception const & ex)
   {
