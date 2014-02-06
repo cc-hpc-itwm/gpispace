@@ -30,14 +30,14 @@
 
     <!-- initialization -->
 
-    <transition name="init_places_a">
+    <transition name="init_places_a" inline="true">
       <use name="dup_long" />
       <connect-in port="in" place="n_A"/>
       <connect-out port="one" place="generate_A"/>
       <connect-out port="two" place="wait_A"/>
     </transition>
 
-    <transition name="init_places_b">
+    <transition name="init_places_b" inline="true">
       <use name="dup_long" />
       <connect-in port="in" place="n_B"/>
       <connect-out port="one" place="generate_B"/>
@@ -85,7 +85,7 @@
 
  
 	<place name="done_A" type="control" />
-    <transition name="wait_until_A_is_complete">
+    <transition name="wait_until_A_is_complete" inline="true">
       <use name="wait_control"/>
       <place-map virtual="wait" real="wait_A" />
       <connect-in  port="trigger" place="finished_task_A" />
@@ -134,7 +134,7 @@
 	</transition>
 
    <place name="done_B" type="control" />
-    <transition name="wait_until_B_is_complete">
+    <transition name="wait_until_B_is_complete" inline="true">
       <use name="wait_control"/>
       <place-map virtual="wait" real="wait_B" />
       <connect-in  port="trigger" place="finished_task_B" />
