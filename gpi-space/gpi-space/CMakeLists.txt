@@ -19,13 +19,3 @@ add_subdirectory(pc)
 install(FILES ${hdrs}
   DESTINATION include/gpi-space
   COMPONENT headers)
-
-install(TARGETS gpi-space-static
-  ARCHIVE
-  DESTINATION lib
-  COMPONENT static-libraries)
-
-install(TARGETS gpi-space-shared
-  LIBRARY
-  DESTINATION lib
-  COMPONENT libraries)
