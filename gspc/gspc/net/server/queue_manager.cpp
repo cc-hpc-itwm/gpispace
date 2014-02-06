@@ -27,6 +27,7 @@ namespace gspc
         , m_subscriptions ()
         , m_user_subscriptions ()
         , m_service_demux (demux)
+        , _auth (gspc::net::auth::default_auth())
       {}
 
       queue_manager_t::~queue_manager_t ()
@@ -210,7 +211,7 @@ namespace gspc
 
         if (m_connections.find (u) == m_connections.end ())
         {
-          if ( auth::default_auth ().is_authorized
+          if ( _auth.is_authorized
                (f.get_header_or ("cookie", std::string ("")))
              )
           {
