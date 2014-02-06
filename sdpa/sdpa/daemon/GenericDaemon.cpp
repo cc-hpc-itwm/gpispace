@@ -564,7 +564,6 @@ try
     , job_requirements_t (activity.transition().requirements(), schedule_data)
     );
 
-  // don't forget to set here the job's preferences
   events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string()) );
   sendEventToSelf(pEvtSubmitJob);
 }
