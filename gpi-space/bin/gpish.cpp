@@ -34,6 +34,14 @@
 
 #include <string>
 
+#include <unistd.h>
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
+#include <boost/algorithm/string.hpp>
+#include <fhg/assert.hpp>
+
 namespace gpi
 {
   namespace shell
@@ -152,15 +160,6 @@ namespace gpi
     };
   }
 }
-
-// readline
-#include <unistd.h>
-#include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-
-#include <boost/algorithm/string.hpp>
-#include <fhg/assert.hpp>
 
 namespace gpi
 {
