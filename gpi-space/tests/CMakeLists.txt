@@ -3,7 +3,6 @@ fhg_add_test (test_handle_generator.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 gpi-space-static
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
@@ -15,7 +14,6 @@ fhg_add_test (test_memory_manager.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 gpi-space-static
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
@@ -27,7 +25,6 @@ fhg_add_test (test_pc_types.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 gpi-space-static
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
@@ -39,7 +36,6 @@ fhg_add_test (test_program_opts.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 gpi-space-static
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -52,7 +48,6 @@ fhg_add_test (test_segment.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 gpi-space-static
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}
@@ -64,7 +59,6 @@ fhg_add_test (test_sfs_area.cpp dummy_topology.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 gpi-space-static
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${Boost_FILESYSTEM_LIBRARY}
@@ -101,7 +95,6 @@ fhg_add_test (test_task.cpp
   BOOST_UNIT_TEST
   LINK_LIBRARIES gpi-space-pc-segment
                  gpi-space-pc-memory
-                 gpi-space-static
                  ${FhgCom_LIBRARY}
                  ${FhgLog_LIBRARY}
                  ${CMAKE_THREAD_LIBS_INIT}

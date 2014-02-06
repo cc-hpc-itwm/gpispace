@@ -14,7 +14,6 @@ set_target_properties(fvm-pc-compat.shared PROPERTIES OUTPUT_NAME fvm-pc-compat)
 target_link_libraries (fvm-pc-compat
   gpi-space-pc-client-static
   gpi-space-pc-segment
-  gpi-space-static
   ${LibReadline_LIBRARY}
   ${FhgLog_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
@@ -23,7 +22,6 @@ target_link_libraries (fvm-pc-compat
 target_link_libraries (fvm-pc-compat.shared
   gpi-space-pc-client-static
   gpi-space-pc-segment
-  gpi-space-static
 
   # todo add shared libs for boost....
 )

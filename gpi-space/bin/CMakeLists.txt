@@ -12,7 +12,6 @@ target_link_libraries (gpi-space
   gpi-space-pc-global
   gpi-space-pc-memory
   gpi-space-pc-segment
-  gpi-space-static
   fhg-revision
   fhg-util
   ${MMGR_LIBRARY}
@@ -37,7 +36,6 @@ add_executable (gpish ${srcs})
 target_link_libraries (gpish
   gpi-space-pc-client-static
   gpi-space-pc-segment
-  gpi-space-static
   ${LibReadline_LIBRARY}
   ${FhgLog_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
