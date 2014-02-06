@@ -6,7 +6,7 @@
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
+#include <gspc/net/server/service_demux.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 
 #include "mock_user.hpp"
@@ -17,7 +17,8 @@ BOOST_AUTO_TEST_CASE (test_initialize_shutdown)
 {
   gspc::net::initializer _net_init;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
   gspc::net::server_ptr_t server =
     gspc::net::serve ("tcp://localhost:*", qmgr);
   BOOST_REQUIRE (server);
@@ -29,7 +30,8 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
 {
   static const size_t NUM = 25;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
   boost::system::error_code ec;
   gspc::net::tests::mock::user subscriber;
 
