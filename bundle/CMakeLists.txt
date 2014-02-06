@@ -26,7 +26,7 @@ bundle_apps(
   gspc-kvs
   gpi-space
   pnete
-  drts-worker
+  drts-kernel
 )
 
 install(CODE "
