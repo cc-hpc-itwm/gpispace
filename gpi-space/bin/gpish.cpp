@@ -106,7 +106,7 @@ namespace gpi
 {
   namespace shell
   {
-    class basic_command_t;
+    class command_t;
 
     class basic_shell_t
     {
@@ -114,7 +114,6 @@ namespace gpi
       typedef std::vector <std::string> argv_t;
 
       typedef boost::function<int (argv_t const &, basic_shell_t &)> command_callback_t;
-      typedef basic_command_t command_t;
       typedef std::vector <command_t> command_list_t;
 
       ~basic_shell_t ();
@@ -176,14 +175,14 @@ namespace gpi
       bool m_do_exit;
     };
 
-    class basic_command_t
+    class command_t
     {
     public:
       typedef basic_shell_t shell_t;
       typedef shell_t::argv_t argv_t;
       typedef shell_t::command_callback_t callback_t;
 
-      basic_command_t ( const std::string & nme
+      command_t ( const std::string & nme
                       , const std::string & short_doc
                       , const std::string & long_doc
                       , callback_t cb
@@ -194,7 +193,7 @@ namespace gpi
         , m_callback (cb)
       {}
 
-      virtual ~basic_command_t () {}
+      virtual ~command_t () {}
 
       int operator () (argv_t const & args, shell_t &shell) const
       {
@@ -338,7 +337,7 @@ namespace gpi
       m_commands.push_back (command_t(name, short_doc, long_doc, callback));
     }
 
-    const basic_shell_t::command_t *
+    const command_t *
     basic_shell_t::find_command ( std::string const & name ) const
     {
       for ( command_list_t::const_iterator cmd (m_commands.begin())
@@ -811,7 +810,7 @@ int cmd_help (shell_t::argv_t const & av, shell_t & sh)
   }
   else
   {
-    const shell_t::command_t *cmd (sh.find_command (av[1]));
+    const gpi::shell::command_t *cmd (sh.find_command (av[1]));
     if (cmd)
     {
       std::cout << cmd->name() << "    " << cmd->long_doc() << std::endl;
