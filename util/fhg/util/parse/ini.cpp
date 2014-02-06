@@ -8,8 +8,6 @@
 
 #include <boost/foreach.hpp>
 
-#include <list>
-
 namespace fhg
 {
   namespace util
@@ -70,9 +68,9 @@ namespace fhg
           }
         }
 
-        std::list<std::pair<std::string, std::string> > ini (position& pos)
+        std::map<std::string, std::string> ini (position& pos)
         {
-          std::list<std::pair<std::string, std::string> > l;
+          std::map<std::string, std::string> m;
 
           require::skip_spaces (pos);
           skip_comment (pos);
@@ -88,41 +86,23 @@ namespace fhg
               require::skip_spaces (pos);
               require::require (pos, '=');
               require::skip_spaces (pos);
-              l.push_back ( std::make_pair ( header + "." + key
-                                           , (!pos.end() && *pos == '"')
-                                           ? require::string (pos)
-                                           : until (pos, &is_end_of_value)
-                                           )
-                          );
+
+              m[header + "." + key] = (!pos.end() && *pos == '"')
+                ? require::string (pos) : until (pos, &is_end_of_value);
+
               require::skip_spaces (pos);
               skip_comment (pos);
             }
           }
 
-          return l;
-        }
-
-        std::list<std::pair<std::string, std::string> >
-        ini_from_string (std::string const& input)
-        {
-          return fhg::util::parse::from_string
-            <std::list<std::pair<std::string, std::string> > > (&ini, input);
+          return m;
         }
       }
 
       std::map<std::string, std::string> ini_map (std::string const& input)
       {
-        std::map<std::string, std::string> m;
-
-        BOOST_FOREACH
-          ( std::pair<std::string BOOST_PP_COMMA() std::string> const& kv
-          , ini_from_string (input)
-          )
-        {
-          m[kv.first] = kv.second;
-        }
-
-        return m;
+        return fhg::util::parse::from_string
+          <std::map<std::string, std::string> > (&ini, input);
       }
     }
   }
