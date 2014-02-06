@@ -38,11 +38,6 @@ namespace gpi
 {
   namespace shell
   {
-    namespace util
-    {
-      inline std::string stripws (const std::string &);
-    }
-
     template <typename Shell>
     class basic_command_t
     {
