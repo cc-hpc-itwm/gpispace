@@ -28,14 +28,14 @@
 
     <!-- initialization -->
 
-    <transition name="init_places_a">
+    <transition name="init_places_a" inline="true">
       <use name="dup_long" />
       <connect-in port="in" place="n_tasks_A"/>
       <connect-out port="one" place="n_tasks_gen_A"/>
       <connect-out port="two" place="wait_A"/>
     </transition>
 
-    <transition name="init_places_b">
+    <transition name="init_places_b" inline="true">
       <use name="dup_long" />
       <connect-in port="in" place="n_tasks_B"/>
       <connect-out port="one" place="n_tasks_gen_B"/>
@@ -48,7 +48,7 @@
     <place name="wait_A" type="long" />
 
     <place name="id_A" type="long" />
-    <transition name="n_tasks_gen_A"  inline="true">
+    <transition name="n_tasks_gen_A" inline="true">
       <include-function href="sequence.xml"/>
       <connect-in  port="amount" place="n_tasks_gen_A" />
       <connect-out port="out"    place="id_A" />
@@ -111,7 +111,7 @@
     </transition>
 
 	<place name="done_A" type="control" />
-    <transition name="wait_until_A_is_complete">
+    <transition name="wait_until_A_is_complete" inline="true">
       <use name="wait_control"/>
       <place-map virtual="wait" real="wait_A" />
       <connect-in  port="trigger" place="finished_task_A" />
@@ -124,7 +124,7 @@
     <place name="wait_B" type="long" />
 
   	<place name="id_B" type="long" />
-    <transition name="n_tasks_gen_B"  inline="true">
+    <transition name="n_tasks_gen_B" inline="true">
       <include-function href="sequence.xml"/>
       <connect-in  port="amount" place="n_tasks_gen_B" />
       <connect-out port="out"    place="id_B" />
@@ -187,7 +187,7 @@
 	</transition>
 
    <place name="done_B" type="control" />
-    <transition name="wait_until_B_is_complete">
+    <transition name="wait_until_B_is_complete" inline="true">
       <use name="wait_control"/>
       <place-map virtual="wait" real="wait_B" />
       <connect-in  port="trigger" place="finished_task_B" />
