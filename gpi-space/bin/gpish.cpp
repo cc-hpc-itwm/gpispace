@@ -108,22 +108,22 @@ namespace gpi
   {
     class command_t;
 
-    class basic_shell_t
+    class shell_t
     {
     public:
       typedef std::vector <std::string> argv_t;
 
-      typedef boost::function<int (argv_t const &, basic_shell_t &)> command_callback_t;
+      typedef boost::function<int (argv_t const &, shell_t &)> command_callback_t;
       typedef std::vector <command_t> command_list_t;
 
-      ~basic_shell_t ();
+      ~shell_t ();
 
-      static basic_shell_t & create ( std::string const & program_name
+      static shell_t & create ( std::string const & program_name
                            , std::string const & prompt
                            , std::string const & histfile
                            , my_state_t & state
                            );
-      static basic_shell_t & get ();
+      static shell_t & get ();
       static void destroy ();
 
       void add_command ( std::string const & name
@@ -150,7 +150,7 @@ namespace gpi
       void stop ();
 
     private:
-      static basic_shell_t* instance;
+      static shell_t* instance;
 
       void initialize_readline ();
       void finalize_readline ();
@@ -161,7 +161,7 @@ namespace gpi
       void write_history();
       void read_history();
 
-      basic_shell_t ( std::string const & program_name
+      shell_t ( std::string const & program_name
                     , std::string const & prompt
                     , std::string const & histfile
                     , my_state_t & state
@@ -178,7 +178,6 @@ namespace gpi
     class command_t
     {
     public:
-      typedef basic_shell_t shell_t;
       typedef shell_t::argv_t argv_t;
       typedef shell_t::command_callback_t callback_t;
 
@@ -241,9 +240,9 @@ namespace gpi
       }
     }
 
-    basic_shell_t* basic_shell_t::instance = NULL;
+    shell_t* shell_t::instance = NULL;
 
-    basic_shell_t & basic_shell_t::create ( std::string const & program_name
+    shell_t & shell_t::create ( std::string const & program_name
                                                 , std::string const & prompt
                                                 , std::string const & histfile
                                                 , my_state_t & state
@@ -251,18 +250,18 @@ namespace gpi
     {
       if (instance == NULL)
       {
-        instance = new basic_shell_t (program_name, prompt, histfile, state);
+        instance = new shell_t (program_name, prompt, histfile, state);
       }
       return *instance;
     }
 
-    basic_shell_t & basic_shell_t::get ()
+    shell_t & shell_t::get ()
     {
       assert (instance != NULL);
       return *instance;
     }
 
-    void basic_shell_t::destroy ()
+    void shell_t::destroy ()
     {
       if (instance)
       {
@@ -271,21 +270,21 @@ namespace gpi
       instance = NULL;
     }
 
-    void basic_shell_t::initialize_readline ()
+    void shell_t::initialize_readline ()
     {
       rl_readline_name = m_program_name.c_str();
       // set completer
-      rl_attempted_completion_function = &basic_shell_t::shell_completion;
+      rl_attempted_completion_function = &shell_t::shell_completion;
       using_history();
       read_history();
     }
 
-    void basic_shell_t::finalize_readline ()
+    void shell_t::finalize_readline ()
     {
       write_history();
     }
 
-    void basic_shell_t::read_history()
+    void shell_t::read_history()
     {
       if (! m_histfile.empty())
       {
@@ -293,7 +292,7 @@ namespace gpi
       }
     }
 
-    void basic_shell_t::write_history()
+    void shell_t::write_history()
     {
       if (! m_histfile.empty())
       {
@@ -301,12 +300,12 @@ namespace gpi
       }
     }
 
-    basic_shell_t::~basic_shell_t ()
+    shell_t::~shell_t ()
     {
       finalize_readline();
     }
 
-    basic_shell_t::basic_shell_t ( std::string const & program_name
+    shell_t::shell_t ( std::string const & program_name
                                     , std::string const & prompt
                                     , std::string const & histfile
                                     , my_state_t & state
@@ -320,16 +319,16 @@ namespace gpi
       initialize_readline ();
     }
 
-    void basic_shell_t::add_command ( std::string const & name
-                                       , basic_shell_t::command_callback_t callback
+    void shell_t::add_command ( std::string const & name
+                                       , shell_t::command_callback_t callback
                                        , std::string const & short_doc
                                        )
     {
       add_command (name, callback, short_doc, short_doc);
     }
 
-    void basic_shell_t::add_command ( std::string const & name
-                                       , basic_shell_t::command_callback_t callback
+    void shell_t::add_command ( std::string const & name
+                                       , shell_t::command_callback_t callback
                                        , std::string const & short_doc
                                        , std::string const & long_doc
                                        )
@@ -338,7 +337,7 @@ namespace gpi
     }
 
     const command_t *
-    basic_shell_t::find_command ( std::string const & name ) const
+    shell_t::find_command ( std::string const & name ) const
     {
       for ( command_list_t::const_iterator cmd (m_commands.begin())
           ; cmd != m_commands.end()
@@ -353,7 +352,7 @@ namespace gpi
       return (command_t*)(NULL);
     }
 
-    int basic_shell_t::run_once ()
+    int shell_t::run_once ()
     {
       std::string line;
       int rc;
@@ -387,17 +386,17 @@ namespace gpi
       return rc;
     }
 
-    void basic_shell_t::reset ()
+    void shell_t::reset ()
     {
       m_do_exit = false;
     }
 
-    void basic_shell_t::stop ()
+    void shell_t::stop ()
     {
       m_do_exit = true;
     }
 
-    int basic_shell_t::run ()
+    int shell_t::run ()
     {
       int rc (0);
       while (!m_do_exit)
@@ -407,14 +406,14 @@ namespace gpi
       return rc;
     }
 
-    int basic_shell_t::execute (std::string const & line)
+    int shell_t::execute (std::string const & line)
     {
       argv_t av;
       detail::split (av, line);
       return execute (av);
     }
 
-    int basic_shell_t::execute (argv_t const & argv)
+    int shell_t::execute (argv_t const & argv)
     {
       int rc(0);
 
@@ -449,7 +448,7 @@ namespace gpi
     /* interface to readline completion      */
     /* does only work with a shell singleton */
 
-    char * basic_shell_t::command_generator (const char *text, int state)
+    char * shell_t::command_generator (const char *text, int state)
     {
       static std::size_t command_index (0), text_length (0);
 
@@ -461,7 +460,7 @@ namespace gpi
       }
 
       // check commands for a match
-      const basic_shell_t::command_list_t & commands (basic_shell_t::get ().commands());
+      const shell_t::command_list_t & commands (shell_t::get ().commands());
       while (command_index < commands.size())
       {
         const char *cmd_name = commands[command_index].name().c_str();
@@ -476,13 +475,13 @@ namespace gpi
       return NULL;
     }
 
-    char **basic_shell_t::shell_completion (const char * text, int start, int)
+    char **shell_t::shell_completion (const char * text, int start, int)
     {
       char **matches (NULL);
 
       if (start == 0)
       {
-        matches = rl_completion_matches (text, &basic_shell_t::command_generator);
+        matches = rl_completion_matches (text, &shell_t::command_generator);
       }
 
       return matches;
@@ -514,7 +513,7 @@ static void print_progress( const std::size_t current
                           , const std::size_t total
                           );
 
-typedef gpi::shell::basic_shell_t shell_t;
+typedef gpi::shell::shell_t shell_t;
 
 static my_state_t *state (NULL);
 
