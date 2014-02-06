@@ -58,6 +58,7 @@ set (srcs
   remove_prefix.cpp
   read_bool.cpp
   now.cpp
+  ini-parser2.cpp
 
   ostream_modifier.cpp
 
