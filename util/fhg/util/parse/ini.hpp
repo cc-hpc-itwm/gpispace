@@ -5,7 +5,6 @@
 
 #include <fhg/util/parse/position.hpp>
 
-#include <list>
 #include <map>
 #include <string>
 
@@ -26,11 +25,6 @@ namespace fhg
       // value -> '"' STRING '"' | STRING_TO_END_OF_LINE
 
       // lines that start with \s*; or \s*# are ignored
-
-      std::list<std::pair<std::string, std::string> > ini (position&);
-
-      std::list<std::pair<std::string, std::string> >
-        ini_from_string (std::string const&);
 
       std::map<std::string, std::string> ini_map (std::string const&);
     }

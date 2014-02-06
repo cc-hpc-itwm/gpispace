@@ -8,6 +8,8 @@
 
 #include <boost/foreach.hpp>
 
+#include <list>
+
 namespace fhg
 {
   namespace util
@@ -67,56 +69,54 @@ namespace fhg
             require::skip_spaces (pos);
           }
         }
-      }
 
-      std::list<std::pair<std::string, std::string> > ini (position& pos)
-      {
-        std::list<std::pair<std::string, std::string> > l;
-
-        require::skip_spaces (pos);
-        skip_comment (pos);
-
-        while (!pos.end())
+        std::list<std::pair<std::string, std::string> > ini (position& pos)
         {
-          std::string const header (require_header (pos));
-          require::skip_spaces (pos);
+          std::list<std::pair<std::string, std::string> > l;
 
-          while (!pos.end() && *pos != '[')
+          require::skip_spaces (pos);
+          skip_comment (pos);
+
+          while (!pos.end())
           {
-            std::string const key (until (pos, &is_end_of_key));
+            std::string const header (require_header (pos));
             require::skip_spaces (pos);
-            require::require (pos, '=');
-            require::skip_spaces (pos);
-            l.push_back ( std::make_pair ( header + "." + key
-                                         , (!pos.end() && *pos == '"')
-                                         ? require::string (pos)
-                                         : until (pos, &is_end_of_value)
-                                         )
-                        );
-            require::skip_spaces (pos);
-            skip_comment (pos);
+
+            while (!pos.end() && *pos != '[')
+            {
+              std::string const key (until (pos, &is_end_of_key));
+              require::skip_spaces (pos);
+              require::require (pos, '=');
+              require::skip_spaces (pos);
+              l.push_back ( std::make_pair ( header + "." + key
+                                           , (!pos.end() && *pos == '"')
+                                           ? require::string (pos)
+                                           : until (pos, &is_end_of_value)
+                                           )
+                          );
+              require::skip_spaces (pos);
+              skip_comment (pos);
+            }
           }
+
+          return l;
         }
 
-        return l;
-      }
-
-      std::list<std::pair<std::string, std::string> >
+        std::list<std::pair<std::string, std::string> >
         ini_from_string (std::string const& input)
-      {
-        return fhg::util::parse::from_string
-          <std::list<std::pair<std::string, std::string> > > (&ini, input);
+        {
+          return fhg::util::parse::from_string
+            <std::list<std::pair<std::string, std::string> > > (&ini, input);
+        }
       }
 
       std::map<std::string, std::string> ini_map (std::string const& input)
       {
         std::map<std::string, std::string> m;
 
-        fhg::util::parse::position_string pos (input);
-
         BOOST_FOREACH
           ( std::pair<std::string BOOST_PP_COMMA() std::string> const& kv
-          , ini (pos)
+          , ini_from_string (input)
           )
         {
           m[kv.first] = kv.second;
