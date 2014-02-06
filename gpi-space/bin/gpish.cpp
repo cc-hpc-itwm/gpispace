@@ -102,10 +102,8 @@ private:
   char                       *m_shm_com_ptr;
 };
 
-namespace gpi
+namespace
 {
-  namespace shell
-  {
     class command_t;
 
     class shell_t
@@ -486,7 +484,6 @@ namespace gpi
 
       return matches;
     }
-  }
 }
 
 namespace po = boost::program_options;
@@ -512,8 +509,6 @@ std::ostream & operator << (std::ostream &os, path_list_t const & pl)
 static void print_progress( const std::size_t current
                           , const std::size_t total
                           );
-
-typedef gpi::shell::shell_t shell_t;
 
 static my_state_t *state (NULL);
 
@@ -809,7 +804,7 @@ int cmd_help (shell_t::argv_t const & av, shell_t & sh)
   }
   else
   {
-    const gpi::shell::command_t *cmd (sh.find_command (av[1]));
+    const command_t *cmd (sh.find_command (av[1]));
     if (cmd)
     {
       std::cout << cmd->name() << "    " << cmd->long_doc() << std::endl;
