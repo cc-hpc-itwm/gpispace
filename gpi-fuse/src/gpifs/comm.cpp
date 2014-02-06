@@ -1,4 +1,4 @@
-#include <fhg/util/ini-parser2.hpp>
+#include <fhg/util/ini-parser.hpp>
 
 #include <errno.h>
 

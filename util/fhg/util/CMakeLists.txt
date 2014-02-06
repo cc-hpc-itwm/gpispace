@@ -21,7 +21,7 @@ set (hdrs
   split.hpp
   starts_with.hpp
 
-  ini-parser2.hpp
+  ini-parser.hpp
 
   getenv.hpp
 
@@ -55,7 +55,7 @@ set (srcs
   remove_prefix.cpp
   read_bool.cpp
   now.cpp
-  ini-parser2.cpp
+  ini-parser.cpp
 
   ostream_modifier.cpp
 

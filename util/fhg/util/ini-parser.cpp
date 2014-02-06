@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fhg.de
 
-#include <fhg/util/ini-parser2.hpp>
+#include <fhg/util/ini-parser.hpp>
 
 #include <fhg/util/parse/ini.hpp>
 #include <fhg/util/parse/from_string.hpp>

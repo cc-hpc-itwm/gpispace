@@ -8,7 +8,7 @@
 #include <boost/regex.hpp>
 #include <map>
 
-#include <fhg/util/ini-parser2.hpp>
+#include <fhg/util/ini-parser.hpp>
 
 #include <fhg/util/split.hpp>
 #include <fhg/util/join.hpp>

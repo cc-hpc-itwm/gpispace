@@ -3,7 +3,7 @@
 #define LOG_COMPONENT "fvm-pc-compat"
 #include <fhglog/LogMacros.hpp>
 
-#include <fhg/util/ini-parser2.hpp>
+#include <fhg/util/ini-parser.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
