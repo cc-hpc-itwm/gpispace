@@ -128,8 +128,6 @@ int main (int argc, char **argv)
     DLLOG (TRACE, logger, startup_message.str());
   }
 
-  try
-  {
     const sdpa::daemon::Agent agent
       (agentName, agentUrl, listMasterInfo, agentRank, appGuiUrl);
 
@@ -163,11 +161,4 @@ int main (int argc, char **argv)
         LLOG (ERROR, logger, "error while waiting for signal: " << result);
       }
     }
-
-    DLLOG (TRACE, logger, "terminating...");
-  }
-  catch ( std::exception& )
-  {
-    LLOG (FATAL, logger, "Could not start the Agent!");
-  }
 }

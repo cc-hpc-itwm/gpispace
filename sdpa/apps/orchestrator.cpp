@@ -96,7 +96,6 @@ int main (int argc, char **argv)
       }
     }
 
-    try {
       const sdpa::daemon::Orchestrator orchestrator (orchName, orchUrl);
 
       DLLOG (TRACE, logger, "waiting for signals...");
@@ -130,11 +129,4 @@ int main (int argc, char **argv)
           LLOG (ERROR, logger, "error while waiting for signal: " << result);
         }
       }
-
-      DLLOG (TRACE, logger, "terminating...");
-    }
-    catch( std::exception& )
-    {
-      LLOG (ERROR, logger, "Could not start the Orchestrator!");
-    }
 }
