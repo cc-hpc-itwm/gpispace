@@ -80,6 +80,8 @@ namespace fhg
             l->addAppender
               (ptr_t (new delegating_fhglog_appender (append, flush)));
 
+            l->setLevel (fhg::log::TRACE);
+
             return l;
           }
 
