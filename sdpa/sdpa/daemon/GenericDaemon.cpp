@@ -552,8 +552,6 @@ try
     , activity.transition().get_schedule_data<unsigned long> (activity.input(), "vmem")
     );
 
-  DLLOG (TRACE, _logger, "workflow engine submitted "<<activityId);
-
   if( schedule_data.num_worker() && schedule_data.num_worker().get() == 0)
   {
     throw std::runtime_error ("invalid number of workers required: 0UL");
