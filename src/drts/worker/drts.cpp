@@ -469,6 +469,8 @@ void WFEImpl::service_set_search_path ( std::string const &
 }
 
 DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables)
+  : _service_demux (gspc::net::server::default_service_demux())
+  , _queue_manager (gspc::net::server::default_queue_manager())
 {
   //! \todo ctor parameters
   const std::string name (*get<std::string> ("kernel_name", config_variables));
@@ -484,7 +486,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     (get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH")));
   const boost::optional<std::string> gui_url
     (get<std::string> ("plugin.drts.gui_url", config_variables));
-  WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name, gspc::net::server::default_service_demux()));
+  WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name, _service_demux));
   fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
   fhg::com::port_t port (get<std::string> ("plugin.drts.port", config_variables).get_value_or ("0"));
   {
@@ -534,11 +536,9 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
   gspc::net::initialize (netd_nthreads);
 
-  gspc::net::server::default_service_demux().handle
-    ("/service/echo", gspc::net::service::echo ());
+  _service_demux.handle ("/service/echo", gspc::net::service::echo ());
 
-  m_server = gspc::net::serve
-    (netd_url, gspc::net::server::default_queue_manager());
+  m_server = gspc::net::serve (netd_url, _queue_manager);
 
   fhg::com::kvs::global_kvs()->put ("gspc.net.url." + name, m_server->url());
 
@@ -624,17 +624,17 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
   start_connect ();
 
-  gspc::net::server::default_service_demux().handle
+  _service_demux.handle
     ("/service/drts/capability/add"
     , boost::bind (&DRTSImpl::service_capability_add, this, _1, _2, _3)
     );
 
-  gspc::net::server::default_service_demux().handle
+  _service_demux.handle
     ("/service/drts/capability/del"
     , boost::bind (&DRTSImpl::service_capability_del, this, _1, _2, _3)
     );
 
-  gspc::net::server::default_service_demux().handle
+  _service_demux.handle
     ("/service/drts/capability/get"
     , boost::bind (&DRTSImpl::service_capability_get, this, _1, _2, _3)
     );
@@ -642,9 +642,9 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
 DRTSImpl::~DRTSImpl()
 {
-  gspc::net::server::default_service_demux().unhandle ("/service/drts/capability/add");
-  gspc::net::server::default_service_demux().unhandle ("/service/drts/capability/del");
-  gspc::net::server::default_service_demux().unhandle ("/service/drts/capability/get");
+  _service_demux.unhandle ("/service/drts/capability/add");
+  _service_demux.unhandle ("/service/drts/capability/del");
+  _service_demux.unhandle ("/service/drts/capability/get");
 
   m_shutting_down = true;
 

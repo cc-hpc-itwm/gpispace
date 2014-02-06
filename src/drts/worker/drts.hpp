@@ -13,6 +13,7 @@
 #include <gspc/drts/context.hpp>
 #include <gspc/net/frame.hpp>
 #include <gspc/net/server.hpp>
+#include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
 #include <gspc/net/user.hpp>
 
@@ -218,6 +219,9 @@ private:
   void send_event (sdpa::events::SDPAEvent::Ptr const & evt);
 
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt);
+
+  gspc::net::server::service_demux_t& _service_demux;
+  gspc::net::server::queue_manager_t& _queue_manager;
 
   boost::function<void()> _request_stop;
 
