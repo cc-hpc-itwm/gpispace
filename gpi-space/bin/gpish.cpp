@@ -111,21 +111,20 @@ namespace gpi
     class basic_shell_t
     {
     public:
-      typedef basic_shell_t self;
       typedef std::vector <std::string> argv_t;
 
-      typedef boost::function<int (argv_t const &, self &)> command_callback_t;
+      typedef boost::function<int (argv_t const &, basic_shell_t &)> command_callback_t;
       typedef basic_command_t command_t;
       typedef std::vector <command_t> command_list_t;
 
       ~basic_shell_t ();
 
-      static self & create ( std::string const & program_name
+      static basic_shell_t & create ( std::string const & program_name
                            , std::string const & prompt
                            , std::string const & histfile
                            , my_state_t & state
                            );
-      static self & get ();
+      static basic_shell_t & get ();
       static void destroy ();
 
       void add_command ( std::string const & name
@@ -152,7 +151,7 @@ namespace gpi
       void stop ();
 
     private:
-      static self* instance;
+      static basic_shell_t* instance;
 
       void initialize_readline ();
       void finalize_readline ();
@@ -277,7 +276,7 @@ namespace gpi
     {
       rl_readline_name = m_program_name.c_str();
       // set completer
-      rl_attempted_completion_function = &self::shell_completion;
+      rl_attempted_completion_function = &basic_shell_t::shell_completion;
       using_history();
       read_history();
     }
@@ -463,7 +462,7 @@ namespace gpi
       }
 
       // check commands for a match
-      const self::command_list_t & commands (self::get ().commands());
+      const basic_shell_t::command_list_t & commands (basic_shell_t::get ().commands());
       while (command_index < commands.size())
       {
         const char *cmd_name = commands[command_index].name().c_str();
@@ -484,7 +483,7 @@ namespace gpi
 
       if (start == 0)
       {
-        matches = rl_completion_matches (text, &self::command_generator);
+        matches = rl_completion_matches (text, &basic_shell_t::command_generator);
       }
 
       return matches;
