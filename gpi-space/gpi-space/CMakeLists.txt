@@ -16,7 +16,6 @@ set_target_properties(gpi-space-shared PROPERTIES OUTPUT_NAME gpi-space)
 
 add_subdirectory(gpi)
 add_subdirectory(pc)
-add_subdirectory(shell)
 
 install(FILES ${hdrs}
   DESTINATION include/gpi-space

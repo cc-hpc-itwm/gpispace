@@ -27,7 +27,450 @@
 #include <gpi-space/pc/type/handle.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 
-#include <gpi-space/shell/shell.hpp>
+#include <string>
+#include <vector>
+
+#include <boost/function.hpp>
+
+#include <string>
+
+namespace gpi
+{
+  namespace shell
+  {
+    namespace util
+    {
+      inline std::string stripws (const std::string &);
+    }
+
+    template <typename Shell>
+    class basic_command_t
+    {
+    public:
+      typedef Shell shell_t;
+      typedef typename shell_t::argv_t argv_t;
+      typedef typename shell_t::command_callback_t callback_t;
+
+      basic_command_t ( const std::string & nme
+                      , const std::string & short_doc
+                      , const std::string & long_doc
+                      , callback_t cb
+                      )
+        : m_name (nme)
+        , m_short_doc (short_doc)
+        , m_long_doc (long_doc)
+        , m_callback (cb)
+      {}
+
+      virtual ~basic_command_t () {}
+
+      int operator () (argv_t const & args, shell_t &shell) const
+      {
+        return m_callback (args, shell);
+      }
+
+      std::string const & name () const { return m_name; }
+      std::string const & short_doc  () const { return m_short_doc; }
+      std::string const & long_doc  () const { return m_long_doc; }
+    private:
+      std::string m_name;
+      std::string m_short_doc;
+      std::string m_long_doc;
+      callback_t m_callback;
+    };
+  }
+}
+
+namespace gpi
+{
+  namespace shell
+  {
+    template <typename State>
+    class basic_shell_t
+    {
+    public:
+      typedef State state_type;
+      typedef basic_shell_t<State> self;
+      typedef std::vector <std::string> argv_t;
+
+      typedef boost::function<int (argv_t const &, self &)> command_callback_t;
+      typedef basic_command_t<self> command_t;
+      typedef std::vector <command_t> command_list_t;
+
+      ~basic_shell_t ();
+
+      static self & create ( std::string const & program_name
+                           , std::string const & prompt
+                           , std::string const & histfile
+                           , state_type & state
+                           );
+      static self & get ();
+      static void destroy ();
+
+      void add_command ( std::string const & name
+                       , command_callback_t callback
+                       , std::string const & short_doc
+                       );
+
+      void add_command ( std::string const & name
+                       , command_callback_t callback
+                       , std::string const & short_doc
+                       , std::string const & long_doc
+                       );
+
+      int execute (std::string const & line);
+      int execute ( argv_t const & argv );
+      const command_t * find_command (std::string const & name) const;
+
+      command_list_t const & commands () const { return m_commands; }
+      state_type & state () { return m_state; }
+
+      int run ();
+      int run_once ();
+      void reset ();
+      void stop ();
+
+    private:
+      static self* instance;
+
+      void initialize_readline ();
+      void finalize_readline ();
+
+      static char **shell_completion (const char *, int, int);
+      static char *command_generator (const char *, int);
+
+      void write_history();
+      void read_history();
+
+      basic_shell_t ( std::string const & program_name
+                    , std::string const & prompt
+                    , std::string const & histfile
+                    , state_type & state
+                    );
+
+      std::string m_program_name;
+      std::string m_prompt;
+      std::string m_histfile;
+      state_type &m_state;
+      command_list_t m_commands;
+      bool m_do_exit;
+    };
+  }
+}
+
+// readline
+#include <unistd.h>
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
+#include <boost/algorithm/string.hpp>
+#include <fhg/assert.hpp>
+
+namespace gpi
+{
+  namespace shell
+  {
+    namespace detail
+    {
+      inline
+      bool readline (const std::string & prompt, std::string & line_read)
+      {
+        char * line;
+        line = ::readline (prompt.c_str());
+        if (!line)
+        {
+          return false;
+        }
+
+        line_read = line;
+        free (line);
+
+        boost::algorithm::trim_left (line_read);
+        if (line_read.size())
+        {
+          add_history (line_read.c_str());
+        }
+
+        return true;
+      }
+
+      template <typename Vec>
+      void split (Vec & v, std::string const & s)
+      {
+        boost::algorithm::split (v, s, boost::algorithm::is_space(), boost::algorithm::token_compress_on);
+      }
+    }
+
+    template <typename S>
+    basic_shell_t<S>* basic_shell_t<S>::instance = NULL;
+
+    template <typename S>
+    basic_shell_t<S> & basic_shell_t<S>::create ( std::string const & program_name
+                                                , std::string const & prompt
+                                                , std::string const & histfile
+                                                , state_type & state
+                                                )
+    {
+      if (instance == NULL)
+      {
+        instance = new basic_shell_t<S> (program_name, prompt, histfile, state);
+      }
+      return *instance;
+    }
+
+    template <typename S>
+    basic_shell_t<S> & basic_shell_t<S>::get ()
+    {
+      assert (instance != NULL);
+      return *instance;
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::destroy ()
+    {
+      if (instance)
+      {
+        delete instance;
+      }
+      instance = NULL;
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::initialize_readline ()
+    {
+      rl_readline_name = m_program_name.c_str();
+      // set completer
+      rl_attempted_completion_function = &self::shell_completion;
+      using_history();
+      read_history();
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::finalize_readline ()
+    {
+      write_history();
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::read_history()
+    {
+      if (! m_histfile.empty())
+      {
+        ::read_history (m_histfile.c_str());
+      }
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::write_history()
+    {
+      if (! m_histfile.empty())
+      {
+        ::write_history (m_histfile.c_str());
+      }
+    }
+
+    template <typename S>
+    basic_shell_t<S>::~basic_shell_t ()
+    {
+      finalize_readline();
+    }
+
+    template <typename S>
+    basic_shell_t<S>::basic_shell_t ( std::string const & program_name
+                                    , std::string const & prompt
+                                    , std::string const & histfile
+                                    , state_type & state
+                                    )
+      : m_program_name (program_name)
+      , m_prompt (prompt)
+      , m_histfile (histfile)
+      , m_state (state)
+      , m_do_exit (false)
+    {
+      initialize_readline ();
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::add_command ( std::string const & name
+                                       , typename basic_shell_t<S>::command_callback_t callback
+                                       , std::string const & short_doc
+                                       )
+    {
+      add_command (name, callback, short_doc, short_doc);
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::add_command ( std::string const & name
+                                       , typename basic_shell_t<S>::command_callback_t callback
+                                       , std::string const & short_doc
+                                       , std::string const & long_doc
+                                       )
+    {
+      m_commands.push_back (command_t(name, short_doc, long_doc, callback));
+    }
+
+    template <typename S>
+    const typename basic_shell_t<S>::command_t *
+    basic_shell_t<S>::find_command ( std::string const & name ) const
+    {
+      for ( typename command_list_t::const_iterator cmd (m_commands.begin())
+          ; cmd != m_commands.end()
+          ; ++cmd
+          )
+      {
+        if (cmd->name() == name)
+        {
+          return &(*cmd);
+        }
+      }
+      return (command_t*)(NULL);
+    }
+
+    template <typename S>
+    int basic_shell_t<S>::run_once ()
+    {
+      std::string line;
+      int rc;
+
+      rc = 0;
+
+      if (detail::readline (m_prompt.c_str(), line))
+      {
+        boost::algorithm::trim (line);
+
+        if (line.empty())
+          return rc;
+
+        argv_t argv;
+        detail::split (argv, line);
+        rc = execute (argv);
+        if (-1 == rc)
+        {
+          rc = m_state.error (std::runtime_error ("command not found: " + argv[0]));
+          if (rc != 0)
+          {
+            stop ();
+          }
+        }
+      }
+      else
+      {
+        stop ();
+      }
+
+      return rc;
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::reset ()
+    {
+      m_do_exit = false;
+    }
+
+    template <typename S>
+    void basic_shell_t<S>::stop ()
+    {
+      m_do_exit = true;
+    }
+
+    template <typename S>
+    int basic_shell_t<S>::run ()
+    {
+      int rc (0);
+      while (!m_do_exit)
+      {
+        rc = run_once ();
+      }
+      return rc;
+    }
+
+    template <typename S>
+    int basic_shell_t<S>::execute (std::string const & line)
+    {
+      argv_t av;
+      detail::split (av, line);
+      return execute (av);
+    }
+
+    template <typename S>
+    int basic_shell_t<S>::execute (argv_t const & argv)
+    {
+      int rc(0);
+
+      if (argv.empty())
+      {
+        std::cerr << "empty command!" << std::endl;
+        return -1;
+      }
+
+      // 2. call command
+      const command_t *cmd (find_command(argv[0]));
+      if (cmd)
+      {
+        try
+        {
+          rc = (*cmd)(argv, *this);
+        }
+        catch (std::exception const & ex)
+        {
+          std::cerr << "failed: " << ex.what() << std::endl;
+          rc = -2;
+        }
+      }
+      else
+      {
+        rc = -1;
+      }
+
+      return rc;
+    }
+
+    /* interface to readline completion      */
+    /* does only work with a shell singleton */
+
+    template <typename S>
+    char * basic_shell_t<S>::command_generator (const char *text, int state)
+    {
+      static std::size_t command_index (0), text_length (0);
+
+      if (!state)
+      {
+        // initialize state variables
+        command_index = 0;
+        text_length = strlen (text);
+      }
+
+      // check commands for a match
+      const typename self::command_list_t & commands (self::get ().commands());
+      while (command_index < commands.size())
+      {
+        const char *cmd_name = commands[command_index].name().c_str();
+        ++command_index;
+        if (strncmp(cmd_name, text, text_length) == 0)
+        {
+          char *match = (char*)malloc(strlen(cmd_name) + 1);
+          strcpy (match, cmd_name);
+          return match;
+        }
+      }
+      return NULL;
+    }
+
+    template <typename S>
+    char **basic_shell_t<S>::shell_completion (const char * text, int start, int)
+    {
+      char **matches (NULL);
+
+      if (start == 0)
+      {
+        matches = rl_completion_matches (text, &self::command_generator);
+      }
+
+      return matches;
+    }
+  }
+}
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
