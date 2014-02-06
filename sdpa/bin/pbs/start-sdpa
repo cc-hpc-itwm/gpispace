@@ -84,7 +84,7 @@ function rexec ()
     local err
     local rc
     local ssh_opts="-q -x -T -n -C -4 -c arcfour,blowfish-cbc -o CheckHostIP=no -o StrictHostKeyChecking=no"
-    local cmd="ssh $ssh_opts $node $@"
+    local cmd="ssh $ssh_opts $node LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $@"
     err=$($cmd </dev/null 2>&1)
     rc=$?
     if [ $rc -ne 0 ] ; then
@@ -315,7 +315,7 @@ info "using nodefile: $nodefile"
 
 info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
 
-dry_run rexec $master /usr/bin/env SDPA_APP_PATH="${app_path}" LD_LIBRARY_PATH="$LD_LIBRARY_PATH" "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
+dry_run rexec $master /usr/bin/env SDPA_APP_PATH="${app_path}" "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
