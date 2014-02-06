@@ -14,25 +14,8 @@ namespace fhg
 {
   namespace util
   {
-    namespace
-    {
-      std::map<std::string, std::string>
-        to_map (std::list<std::pair<std::string, std::string> > const& l)
-      {
-        std::map<std::string, std::string> m;
-
-        BOOST_FOREACH
-          (std::pair<std::string BOOST_PP_COMMA() std::string> const& kv, l)
-        {
-          m[kv.first] = kv.second;
-        }
-
-        return m;
-      }
-    }
-
     ini::ini (boost::filesystem::path const& path)
-      : _key_value (to_map (parse::ini_from_string (read_file (path))))
+      : _key_value (parse::ini_map (read_file (path)))
     {}
 
     boost::optional<std::string const&> ini::get (std::string const& key) const

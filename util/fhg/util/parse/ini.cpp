@@ -6,6 +6,8 @@
 #include <fhg/util/parse/require.hpp>
 #include <fhg/util/parse/until.hpp>
 
+#include <boost/foreach.hpp>
+
 namespace fhg
 {
   namespace util
@@ -104,6 +106,23 @@ namespace fhg
       {
         return fhg::util::parse::from_string
           <std::list<std::pair<std::string, std::string> > > (&ini, input);
+      }
+
+      std::map<std::string, std::string> ini_map (std::string const& input)
+      {
+        std::map<std::string, std::string> m;
+
+        fhg::util::parse::position_string pos (input);
+
+        BOOST_FOREACH
+          ( std::pair<std::string BOOST_PP_COMMA() std::string> const& kv
+          , ini (pos)
+          )
+        {
+          m[kv.first] = kv.second;
+        }
+
+        return m;
       }
     }
   }

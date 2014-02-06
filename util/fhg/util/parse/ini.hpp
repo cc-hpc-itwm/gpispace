@@ -6,6 +6,7 @@
 #include <fhg/util/parse/position.hpp>
 
 #include <list>
+#include <map>
 #include <string>
 
 namespace fhg
@@ -30,6 +31,8 @@ namespace fhg
 
       std::list<std::pair<std::string, std::string> >
         ini_from_string (std::string const&);
+
+      std::map<std::string, std::string> ini_map (std::string const&);
     }
   }
 }
