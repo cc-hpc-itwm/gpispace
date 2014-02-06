@@ -13,7 +13,6 @@
 #include <gspc/net/server/subscription.hpp>
 
 #include <gspc/net/server/service_demux.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
 
 #include <gspc/net/auth/default_auth.hpp>
 
