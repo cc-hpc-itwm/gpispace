@@ -66,30 +66,6 @@ fhg_add_test (test_sfs_area.cpp dummy_topology.cpp
                  fhg-util
 )
 
-fhg_add_test (test_signal_handler.cpp
-  PROJECT gpi-space
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES gpi-space-pc-segment
-                 gpi-space-pc-memory
-                 gpi-space-static
-                 ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY}
-                 ${CMAKE_THREAD_LIBS_INIT}
-                 fhg-util
-)
-
-fhg_add_test (test_signal_handler_standalone.cpp
-  PROJECT gpi-space
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES gpi-space-pc-segment
-                 gpi-space-pc-memory
-                 gpi-space-static
-                 ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY}
-                 ${CMAKE_THREAD_LIBS_INIT}
-                 fhg-util
-)
-
 fhg_add_test (test_task.cpp
   PROJECT gpi-space
   BOOST_UNIT_TEST
