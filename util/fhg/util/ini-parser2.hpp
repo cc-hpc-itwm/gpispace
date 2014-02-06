@@ -20,6 +20,10 @@ namespace fhg
       ini (boost::filesystem::path const&);
 
       boost::optional<std::string const&> get (std::string const&) const;
+      void put (std::string const&, std::string const&);
+      void del (std::string const&);
+      std::map<std::string, std::string> const& assignments() const;
+
     private:
       std::map<std::string, std::string> _key_value;
     };

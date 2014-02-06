@@ -8,8 +8,66 @@
 #include <boost/regex.hpp>
 #include <map>
 
-#include <fhg/util/ini-parser.hpp>
-#include <fhg/util/ini-parser-helper.hpp>
+#include <fhg/util/ini-parser2.hpp>
+
+#include <fhg/util/split.hpp>
+#include <fhg/util/join.hpp>
+
+#include <boost/foreach.hpp>
+
+namespace
+{
+  void write (std::ostream& os, std::map<std::string, std::string> const& m)
+  {
+    boost::optional<std::string> section_label;
+    std::string section_sublabel;
+
+    BOOST_FOREACH
+      (std::pair<std::string BOOST_PP_COMMA() std::string> const& kv, m)
+    {
+      std::list<std::string> path
+        (fhg::util::split< std::string
+                         , std::list<std::string>
+                         > (kv.first, '.')
+        );
+
+      if (path.empty())
+      {
+        throw std::runtime_error ("write: empty key");
+      }
+
+      std::string const key (path.back()); path.pop_back();
+
+      if (path.empty() && !section_label)
+      {
+        throw std::runtime_error ("write: initial section without label");
+      }
+
+      std::string const label (path.front()); path.pop_front();
+      std::string const sublabel (fhg::util::join (path, "."));
+
+      if (label != section_label || sublabel != section_sublabel)
+      {
+        if (section_label)
+        {
+          os << "\n";
+        }
+
+        section_label = label;
+        section_sublabel = sublabel;
+
+        os << "[" << *section_label;
+        if (!section_sublabel.empty())
+        {
+          os << " \"" << section_sublabel << "\"";
+        }
+        os << "]\n";
+      }
+
+      os << "  " << key << " = " << kv.second << "\n";
+    }
+  }
+}
 
 int main (int ac, char *av[])
 {
@@ -62,30 +120,10 @@ int main (int ac, char *av[])
 
   value_was_specified = vm.count ("value") > 0;
 
-  typedef
-    fhg::util::ini::parser::flat_map_parser_t < std::map< std::string
-                                                        , std::string
-                                                        >
-                                              > flat_map_parser_t;
-
   bool modified (false);
   int exit_code (0);
 
-  flat_map_parser_t m;
-  try
-  {
-    if (file_name == "-")
-    {
-      std::cerr << "Reading from stdin..." << std::endl;
-      fhg::util::ini::parse (std::cin, "<STDIN>", boost::ref(m));
-    }
-    else
-    {
-      fhg::util::ini::parse (file_name, boost::ref(m));
-    }
-  }
-  catch (std::exception const &)
-  {}
+  fhg::util::ini m (file_name);
 
   if (vm.count ("add"))
   {
@@ -103,23 +141,23 @@ int main (int ac, char *av[])
   {
     boost::regex ex (key);
     exit_code = 1;
-    for ( flat_map_parser_t::entries_t::const_iterator e (m.entries.begin())
-        ; e != m.entries.end()
-        ; ++e
-        )
+    BOOST_FOREACH
+      ( std::pair<std::string BOOST_PP_COMMA() std::string> const& kv
+      , m.assignments()
+      )
     {
-      if (boost::regex_search (e->first, ex))
+      if (boost::regex_search (kv.first, ex))
       {
-        std::cout << e->first << " = " << e->second << std::endl;
+        std::cout << kv.first << " = " << kv.second << std::endl;
         exit_code = 0;
       }
     }
   }
   else if (vm.count ("get"))
   {
-    if (m.has_key (key) || value_was_specified)
+    if (m.get (key) || value_was_specified)
     {
-      std::cout << m.get (key, val) << std::endl;
+      std::cout << m.get (key).get_value_or (val) << std::endl;
     }
     else
     {
@@ -133,17 +171,17 @@ int main (int ac, char *av[])
   }
   else if (vm.count ("list"))
   {
-    for ( flat_map_parser_t::entries_t::const_iterator e (m.entries.begin())
-        ; e != m.entries.end()
-        ; ++e
-        )
+    BOOST_FOREACH
+      ( std::pair<std::string BOOST_PP_COMMA() std::string> const& kv
+      , m.assignments()
+      )
     {
-      std::cout << e->first << " = " << e->second << std::endl;
+      std::cout << kv.first << " = " << kv.second << std::endl;
     }
   }
   else if (vm.count("print"))
   {
-    m.write (std::cout);
+    write (std::cout, m.assignments());
   }
 
   if (modified)
@@ -152,14 +190,14 @@ int main (int ac, char *av[])
     {
       if (file_name == "-")
       {
-        m.write (std::cout);
+        write (std::cout, m.assignments());
       }
       else
       {
         std::ofstream ofs (file_name.c_str());
         if (ofs)
         {
-          m.write (ofs);
+          write (ofs, m.assignments());
         }
         else
         {

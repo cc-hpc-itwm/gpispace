@@ -47,5 +47,20 @@ namespace fhg
 
       return boost::none;
     }
+
+    void ini::put (std::string const& key, std::string const& value)
+    {
+      _key_value.insert (std::make_pair (key, value));
+    }
+
+    void ini::del (std::string const& key)
+    {
+      _key_value.erase (key);
+    }
+
+    std::map<std::string, std::string> const& ini::assignments() const
+    {
+      return _key_value;
+    }
   }
 }
