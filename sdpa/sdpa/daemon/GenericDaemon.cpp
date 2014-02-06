@@ -552,7 +552,7 @@ try
     , activity.transition().get_schedule_data<unsigned long> (activity.input(), "vmem")
     );
 
-  if( schedule_data.num_worker() && schedule_data.num_worker().get() == 0)
+  if (schedule_data.num_worker() && schedule_data.num_worker().get() == 0UL)
   {
     throw std::runtime_error ("invalid number of workers required: 0UL");
   }
