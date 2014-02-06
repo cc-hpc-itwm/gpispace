@@ -1,5 +1,4 @@
-#include <fhg/util/ini-parser.hpp>
-#include <fhg/util/ini-parser-helper.hpp>
+#include <fhg/util/ini-parser2.hpp>
 
 #include <errno.h>
 
@@ -12,9 +11,6 @@
 
 #include <gpifs/comm.hpp>
 #include <gpifs/log.hpp>
-
-#include <map>
-#include <string>
 
 static gpi::pc::client::api_t & gpi_api ()
 {
@@ -42,15 +38,17 @@ namespace gpifs
       int res (0);
 
       namespace fs = boost::filesystem;
-      fhg::util::ini::parser::flat_map_parser_t
-        < std::map<std::string, std::string> > cfg_parser;
+
+      boost::filesystem::path socket_path;
       {
         fs::path config_file
           (std::string(getenv("HOME")) + "/.sdpa/configs/sdpa.rc");
 
         try
         {
-          fhg::util::ini::parse (config_file.string(), boost::ref(cfg_parser));
+          socket_path
+            = fhg::util::ini (config_file)
+            .get ("gpi.socket_path").get_value_or ("/var/tmp");
         }
         catch (std::exception const & ex)
         {
@@ -59,7 +57,6 @@ namespace gpifs
         }
       }
 
-      fs::path socket_path (cfg_parser.get("gpi.socket_path", "/var/tmp"));
       socket_path /=
         ("S-gpi-space." + boost::lexical_cast<std::string>(getuid()) + ".0");
 
