@@ -2,10 +2,11 @@
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
-#include <gpi-space/signal_handler.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/revision.hpp>
+#include <fhg/util/signal_handler_manager.hpp>
+
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/algorithm/string.hpp>
@@ -510,7 +511,7 @@ static void print_progress( const std::size_t current
 
 static my_state_t *state (NULL);
 
-static int interrupt_shell (int)
+static int interrupt_shell (int, siginfo_t*, void*)
 {
   std::cerr << "stopping gpi api!" << std::endl;
   shell_t::get().state().capi.stop();
@@ -560,8 +561,6 @@ static int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh);
 
 int main (int ac, char **av)
 {
-  gpi::signal::handler().start();
-
   FHGLOG_SETUP();
 
   if (isatty(0))
@@ -668,6 +667,9 @@ int main (int ac, char **av)
   initialize_state (socket_dir, socket_path, com_size);
   initialize_shell (ac, av);
 
+  fhg::util::signal_handler_manager signal_handler_manager;
+  signal_handler_manager.add (SIGINT, &interrupt_shell);
+
   shell_t::get().run();
 
   if (interactive)
@@ -675,8 +677,6 @@ int main (int ac, char **av)
 
   shutdown_shell ();
   shutdown_state ();
-
-  gpi::signal::handler().stop();
 }
 
 void initialize_state ( boost::filesystem::path const & socket_dir
@@ -758,8 +758,6 @@ void initialize_shell (int, char *av[])
 
   sh.add_command ("add", &cmd_memory_add, "add a memory segment");
   sh.add_command ("del", &cmd_memory_del, "delete a memory segment");
-
-  gpi::signal::handler().connect(SIGINT, &interrupt_shell);
 }
 
 void shutdown_shell ()
