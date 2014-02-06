@@ -545,6 +545,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
 void GenericDaemon::submit( const we::layer::id_type& activityId
                           , const we::type::activity_t& activity
                           )
+try
 {
   const we::type::schedule_data schedule_data
     ( activity.transition().get_schedule_data<unsigned long> (activity.input(), "num_worker")
@@ -558,30 +559,18 @@ void GenericDaemon::submit( const we::layer::id_type& activityId
 
   if( schedule_data.num_worker() && schedule_data.num_worker().get() == 0)
   {
-      workflowEngine()->failed (  activityId
-                               , fhg::error::UNEXPECTED_ERROR
-                               , "Invalid number of workers required: "
-                               +boost::lexical_cast<std::string>( schedule_data.num_worker().get()));
-
-
-        return;
-    }
-
-  on_scope_exit _ ( boost::bind ( &we::layer::failed, workflowEngine()
-                              , activityId
-                              , fhg::error::UNEXPECTED_ERROR
-                              , "Exception in GenericDaemon::submit()"
-                              )
-                );
-
+    throw std::runtime_error ("invalid number of workers required: 0UL");
+  }
 
   jobManager().addJobRequirements(job_id, jobReqs);
 
   // don't forget to set here the job's preferences
   events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string()) );
   sendEventToSelf(pEvtSubmitJob);
-
-  _.dont();
+}
+catch (std::exception const& ex)
+{
+  workflowEngine()->failed (activityId, fhg::error::UNEXPECTED_ERROR, ex.what());
 }
 
 /**
