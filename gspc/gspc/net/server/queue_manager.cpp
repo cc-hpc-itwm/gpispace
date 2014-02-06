@@ -14,7 +14,7 @@
 
 #include <gspc/net/server/service_demux.hpp>
 
-#include <gspc/net/auth/default_auth.hpp>
+#include <gspc/net/auth/simple.hpp>
 
 namespace gspc
 {
@@ -22,12 +22,21 @@ namespace gspc
   {
     namespace server
     {
+      namespace
+      {
+        auth_t & GLOBAL_default_auth ()
+        {
+          static auth::simple_auth_t a;
+          return a;
+        }
+      }
+
       queue_manager_t::queue_manager_t (service_demux_t &demux)
         : m_mutex ()
         , m_subscriptions ()
         , m_user_subscriptions ()
         , m_service_demux (demux)
-        , _auth (gspc::net::auth::default_auth())
+        , _auth (GLOBAL_default_auth())
       {}
 
       queue_manager_t::~queue_manager_t ()
