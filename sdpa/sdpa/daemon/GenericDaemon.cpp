@@ -562,8 +562,11 @@ try
     , job_requirements_t (activity.transition().requirements(), schedule_data)
     );
 
-  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string()) );
-  sendEventToSelf(pEvtSubmitJob);
+  sendEventToSelf ( events::SubmitJobEvent::Ptr
+                    ( new events::SubmitJobEvent
+                      (sdpa::daemon::WE, name(), job_id, activity.to_string())
+                    )
+                  );
 }
 catch (std::exception const& ex)
 {
