@@ -10,7 +10,7 @@ target_link_libraries (fake-drts-kernel-plugin
   sdpa
   ${FhgCom_LIBRARY}
   ${GSPC_LIBRARY_SHARED}
-  ${HWLOC_LIBRARY}
+  ${HWLOC_SHARED_LIBRARY}
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_THREAD_LIBRARY}
