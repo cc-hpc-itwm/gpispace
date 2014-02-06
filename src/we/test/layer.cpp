@@ -115,7 +115,7 @@ struct daemon
         BOOST_PP_COMMA() _act (act)
                        , we::layer::id_type* _id
                        ; we::type::activity_t _act
-                       , _act == act
+                       , id != NULL && _act == act
                        );
 
   void submit
