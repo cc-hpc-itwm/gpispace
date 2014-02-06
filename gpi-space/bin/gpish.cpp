@@ -32,6 +32,8 @@
 
 namespace fs = boost::filesystem;
 
+namespace
+{
 struct my_state_t
 {
   my_state_t ( fs::path const & dir
@@ -102,8 +104,6 @@ private:
   char                       *m_shm_com_ptr;
 };
 
-namespace
-{
     class command_t;
 
     class shell_t
