@@ -65,6 +65,7 @@ set (srcs
 
   parse/position.cpp
   parse/error.cpp
+  parse/ini.cpp
   parse/require.cpp
   parse/until.cpp
 
