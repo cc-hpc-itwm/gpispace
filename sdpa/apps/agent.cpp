@@ -16,6 +16,8 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/pidfile_writer.hpp>
+#include <fhg/util/signal_handler_manager.hpp>
+#include <fhg/util/thread/event.hpp>
 
 #include <boost/tokenizer.hpp>
 
@@ -128,37 +130,21 @@ int main (int argc, char **argv)
     DLLOG (TRACE, logger, startup_message.str());
   }
 
-    const sdpa::daemon::Agent agent
-      (agentName, agentUrl, listMasterInfo, agentRank, appGuiUrl);
+  const sdpa::daemon::Agent agent
+    (agentName, agentUrl, listMasterInfo, agentRank, appGuiUrl);
 
-    sigset_t waitset;
-    int sig(0);
-    int result(0);
 
-    sigfillset(&waitset);
-    sigprocmask(SIG_BLOCK, &waitset, NULL);
+  fhg::util::thread::event<> stop_requested;
+  const boost::function<void()> request_stop
+    (boost::bind (&fhg::util::thread::event<>::notify, &stop_requested));
 
-    bool signal_ignored = true;
-    while (signal_ignored)
-    {
-      result = sigwait(&waitset, &sig);
-      if (result == 0)
-      {
-        DLLOG (TRACE, logger, "got signal: " << sig);
-        switch (sig)
-        {
-        case SIGTERM:
-        case SIGINT:
-          signal_ignored = false;
-          break;
-        default:
-          DLLOG (TRACE, logger, "ignoring signal: " << sig);
-          break;
-        }
-      }
-      else
-      {
-        LLOG (ERROR, logger, "error while waiting for signal: " << result);
-      }
-    }
+  fhg::util::signal_handler_manager signal_handlers;
+
+  signal_handlers.add_log_backtrace_and_exit_for_critical_errors (logger);
+
+  signal_handlers.add (SIGTERM, boost::bind (request_stop));
+  signal_handlers.add (SIGINT, boost::bind (request_stop));
+
+
+  stop_requested.wait();
 }
