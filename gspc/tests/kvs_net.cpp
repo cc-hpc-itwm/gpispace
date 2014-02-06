@@ -5,8 +5,8 @@
 #include <gspc/kvs/impl/kvs_impl.hpp>
 #include <gspc/kvs/impl/kvs_net_frontend.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
-#include <gspc/net/server/default_queue_manager.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
+#include <gspc/net/server/queue_manager.hpp>
+#include <gspc/net/server/service_demux.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
@@ -39,10 +39,12 @@ BOOST_FIXTURE_TEST_CASE (net_start_stop, gspc::net::initializer)
 {
   for (size_t i (0); i < 10; ++i)
   {
+    gspc::net::server::service_demux_t service_demux;
+    gspc::net::server::queue_manager_t queue_manager (service_demux);
     gspc::net::server_ptr_t server
-      (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+      (gspc::net::serve ("tcp://localhost:*", queue_manager));
     gspc::kvs::service_t service;
-    gspc::net::server::default_service_demux().handle ( "/service/kvs"
+    service_demux.handle ( "/service/kvs"
                       , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                          , boost::ref (service)
                                                          )
@@ -62,9 +64,11 @@ BOOST_FIXTURE_TEST_CASE (net_get_nokey, gspc::net::initializer)
 {
   gspc::kvs::api_t::value_type val;
 
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
@@ -79,9 +83,11 @@ BOOST_FIXTURE_TEST_CASE (net_api, gspc::net::initializer)
 {
   gspc::kvs::api_t::value_type val;
 
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
@@ -120,9 +126,11 @@ BOOST_FIXTURE_TEST_CASE (net_put_get, gspc::net::initializer)
   gspc::kvs::api_t::value_type out;
   static gspc::kvs::api_t::value_type const in (std::string ("bar"));
 
-  gspc::net::server_ptr_t const server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t const server (gspc::net::serve ("tcp://localhost:*", queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
@@ -149,9 +157,11 @@ BOOST_FIXTURE_TEST_CASE (net_wait, gspc::net::initializer)
 {
   gspc::kvs::api_t::value_type val;
 
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
@@ -182,9 +192,11 @@ BOOST_FIXTURE_TEST_CASE (net_push_pop, gspc::net::initializer)
 {
   gspc::kvs::api_t::value_type val;
 
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
@@ -247,9 +259,11 @@ BOOST_FIXTURE_TEST_CASE (net_many_push_pop, gspc::net::initializer)
   static const size_t NUM (10);
   static const size_t NTHREAD (15);
 
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
