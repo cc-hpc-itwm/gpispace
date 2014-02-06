@@ -542,7 +542,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GS about activity status transitions.
  */
-void GenericDaemon::submit( const we::layer::id_type& activityId
+void GenericDaemon::submit( const we::layer::id_type& job_id
                           , const we::type::activity_t& activity
                           )
 try
@@ -554,8 +554,6 @@ try
   job_requirements_t jobReqs(activity.transition().requirements(), schedule_data);
 
   DLLOG (TRACE, _logger, "workflow engine submitted "<<activityId);
-
-  job_id_t job_id(activityId);
 
   if( schedule_data.num_worker() && schedule_data.num_worker().get() == 0)
   {
@@ -570,7 +568,7 @@ try
 }
 catch (std::exception const& ex)
 {
-  workflowEngine()->failed (activityId, fhg::error::UNEXPECTED_ERROR, ex.what());
+  workflowEngine()->failed (job_id, fhg::error::UNEXPECTED_ERROR, ex.what());
 }
 
 /**
