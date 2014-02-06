@@ -1,46 +1,34 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <signal.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <fstream>
-
-#include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/foreach.hpp>
-#include <boost/timer.hpp>
-
-#include <fhglog/LogMacros.hpp>
-
-#include <fhg/revision.hpp>
-
-#include <gpi-space/signal_handler.hpp>
 #include <gpi-space/pc/client/api.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
+#include <gpi-space/signal_handler.hpp>
 
-#include <string>
-#include <vector>
-
-#include <boost/function.hpp>
-
-#include <string>
-
-#include <unistd.h>
-#include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+#include <fhg/assert.hpp>
+#include <fhg/revision.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/algorithm/string.hpp>
-#include <fhg/assert.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+#include <boost/function.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/program_options.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/timer.hpp>
+
+#include <readline/history.h>
+#include <readline/readline.h>
+
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <signal.h>
+#include <stdio.h>
+#include <string>
+#include <unistd.h>
+#include <vector>
 
 namespace gpi
 {
