@@ -221,7 +221,7 @@ private:
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt);
 
   gspc::net::server::service_demux_t& _service_demux;
-  gspc::net::server::queue_manager_t& _queue_manager;
+  gspc::net::server::queue_manager_t _queue_manager;
 
   boost::function<void()> _request_stop;
 

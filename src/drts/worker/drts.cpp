@@ -10,7 +10,6 @@
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
-#include <gspc/net/server/default_queue_manager.hpp>
 #include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/service/echo.hpp>
 
@@ -470,7 +469,7 @@ void WFEImpl::service_set_search_path ( std::string const &
 
 DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables)
   : _service_demux (gspc::net::server::default_service_demux())
-  , _queue_manager (gspc::net::server::default_queue_manager())
+  , _queue_manager (_service_demux)
 {
   //! \todo ctor parameters
   const std::string name (*get<std::string> ("kernel_name", config_variables));
