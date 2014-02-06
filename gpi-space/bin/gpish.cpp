@@ -106,41 +106,7 @@ namespace gpi
 {
   namespace shell
   {
-    template <typename Shell>
-    class basic_command_t
-    {
-    public:
-      typedef Shell shell_t;
-      typedef typename shell_t::argv_t argv_t;
-      typedef typename shell_t::command_callback_t callback_t;
-
-      basic_command_t ( const std::string & nme
-                      , const std::string & short_doc
-                      , const std::string & long_doc
-                      , callback_t cb
-                      )
-        : m_name (nme)
-        , m_short_doc (short_doc)
-        , m_long_doc (long_doc)
-        , m_callback (cb)
-      {}
-
-      virtual ~basic_command_t () {}
-
-      int operator () (argv_t const & args, shell_t &shell) const
-      {
-        return m_callback (args, shell);
-      }
-
-      std::string const & name () const { return m_name; }
-      std::string const & short_doc  () const { return m_short_doc; }
-      std::string const & long_doc  () const { return m_long_doc; }
-    private:
-      std::string m_name;
-      std::string m_short_doc;
-      std::string m_long_doc;
-      callback_t m_callback;
-    };
+    class basic_command_t;
 
     class basic_shell_t
     {
@@ -149,7 +115,7 @@ namespace gpi
       typedef std::vector <std::string> argv_t;
 
       typedef boost::function<int (argv_t const &, self &)> command_callback_t;
-      typedef basic_command_t<self> command_t;
+      typedef basic_command_t command_t;
       typedef std::vector <command_t> command_list_t;
 
       ~basic_shell_t ();
@@ -209,6 +175,41 @@ namespace gpi
       my_state_t &m_state;
       command_list_t m_commands;
       bool m_do_exit;
+    };
+
+    class basic_command_t
+    {
+    public:
+      typedef basic_shell_t shell_t;
+      typedef shell_t::argv_t argv_t;
+      typedef shell_t::command_callback_t callback_t;
+
+      basic_command_t ( const std::string & nme
+                      , const std::string & short_doc
+                      , const std::string & long_doc
+                      , callback_t cb
+                      )
+        : m_name (nme)
+        , m_short_doc (short_doc)
+        , m_long_doc (long_doc)
+        , m_callback (cb)
+      {}
+
+      virtual ~basic_command_t () {}
+
+      int operator () (argv_t const & args, shell_t &shell) const
+      {
+        return m_callback (args, shell);
+      }
+
+      std::string const & name () const { return m_name; }
+      std::string const & short_doc  () const { return m_short_doc; }
+      std::string const & long_doc  () const { return m_long_doc; }
+    private:
+      std::string m_name;
+      std::string m_short_doc;
+      std::string m_long_doc;
+      callback_t m_callback;
     };
 
     namespace detail
