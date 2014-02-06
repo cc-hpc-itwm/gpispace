@@ -21,10 +21,7 @@ set (hdrs
   split.hpp
   starts_with.hpp
 
-  ini-parser.hpp
-  ini-parser.tcc
-  ini-parser-except.hpp
-  ini-parser-helper.hpp
+  ini-parser2.hpp
 
   getenv.hpp
 

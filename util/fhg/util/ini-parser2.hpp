@@ -1,4 +1,3 @@
-//! \todo remove ini-parser and rename ini-parser2 to ini-parser
 // mirko.rahn@itwm.fhg.de
 
 #ifndef FHG_UTIL_INI_HPP
