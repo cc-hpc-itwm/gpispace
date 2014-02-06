@@ -1,3 +1,6 @@
+#include <fhg/util/ini-parser.hpp>
+#include <fhg/util/ini-parser-helper.hpp>
+
 #include <errno.h>
 
 #include <boost/foreach.hpp>
@@ -5,12 +8,13 @@
 #include <boost/filesystem.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 
 #include <gpifs/comm.hpp>
 #include <gpifs/log.hpp>
 
+#include <map>
+#include <string>
 
 static gpi::pc::client::api_t & gpi_api ()
 {
@@ -38,14 +42,15 @@ namespace gpifs
       int res (0);
 
       namespace fs = boost::filesystem;
-      gpi_space::parser::config_parser_t cfg_parser;
+      fhg::util::ini::parser::flat_map_parser_t
+        < std::map<std::string, std::string> > cfg_parser;
       {
         fs::path config_file
           (std::string(getenv("HOME")) + "/.sdpa/configs/sdpa.rc");
 
         try
         {
-          gpi_space::parser::parse (config_file.string(), boost::ref(cfg_parser));
+          fhg::util::ini::parse (config_file.string(), boost::ref(cfg_parser));
         }
         catch (std::exception const & ex)
         {
