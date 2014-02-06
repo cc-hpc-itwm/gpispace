@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
 {
   double const t (-fhg::util::now());
 
-  const long round (1000);
+  const long round (750);
   const long max (3000);
   const std::string input ("${a} < ${b}");
 
