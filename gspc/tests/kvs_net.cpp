@@ -37,13 +37,10 @@ namespace
 
 BOOST_FIXTURE_TEST_CASE (net_start_stop, gspc::net::initializer)
 {
-  gspc::kvs::api_t::value_type val;
-
-  gspc::net::server_ptr_t server;
-
   for (size_t i (0); i < 10; ++i)
   {
-    server = gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager());
+    gspc::net::server_ptr_t server
+      (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
     gspc::kvs::service_t service;
     gspc::net::server::default_service_demux().handle ( "/service/kvs"
                       , gspc::net::service::strip_prefix ( "/service/kvs/"
@@ -54,6 +51,7 @@ BOOST_FIXTURE_TEST_CASE (net_start_stop, gspc::net::initializer)
     gspc::kvs::kvs_net_frontend_t kvs (server->url());
 
     BOOST_REQUIRE_EQUAL (kvs.put ("foo", std::string ("bar")), 0);
+    gspc::kvs::api_t::value_type val;
     BOOST_REQUIRE_EQUAL (kvs.get ("foo", val), 0);
     BOOST_REQUIRE_EQUAL
       (val, pnet::type::value::value_type (std::string ("bar")));
