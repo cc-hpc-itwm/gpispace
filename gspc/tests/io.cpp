@@ -38,10 +38,10 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
 
   int rc;
 
+  gspc::net::initializer net_initializer;
+
   for (size_t i = 0 ; i < NUM ; ++i)
   {
-    gspc::net::initializer net_initializer;
-
     gspc::net::server_ptr_t server =
       gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
 
