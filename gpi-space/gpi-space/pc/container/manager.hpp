@@ -37,7 +37,6 @@ namespace gpi
         typedef boost::unique_lock<mutex_type> lock_type;
 
         void detach_process (const gpi::pc::type::process_id_t);
-        void detach_memory_from_process (const gpi::pc::type::process_id_t);
 
         connector_t m_connector;
         gpi::pc::type::counter_t m_process_counter;
