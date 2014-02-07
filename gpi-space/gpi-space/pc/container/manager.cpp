@@ -16,6 +16,8 @@
 #include <fhg/util/url.hpp>
 #include <fhg/util/url_io.hpp>
 
+#include <boost/foreach.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -59,15 +61,12 @@ namespace gpi
 
         if (global::topology ().is_master ())
         {
-          typedef std::vector<std::string> url_list_t;
-          url_list_t::iterator it = m_default_memory_urls.begin ();
-          url_list_t::iterator end = m_default_memory_urls.end ();
           gpi::pc::type::id_t id = 1;
-          for ( ; it != end ; ++it)
+          BOOST_FOREACH (std::string const& url, m_default_memory_urls)
           {
             global::memory_manager ().add_memory
               ( 0 // owner
-              , *it
+              , url
               , id
               );
             ++id;
