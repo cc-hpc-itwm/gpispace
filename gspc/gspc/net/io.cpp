@@ -14,7 +14,7 @@ namespace gspc
 {
   namespace net
   {
-    namespace detail
+    namespace
     {
       struct global_io
       {
@@ -95,39 +95,39 @@ namespace gspc
         thread_pool_t                                    m_threads;
       };
 
-      static global_io & get_io_singleton ()
+      global_io & get_io_singleton ()
       {
         static global_io gio;
         return gio;
       }
-    }
 
-    static size_t s_get_thread_count ()
-    {
-      int ncpu = fhg_get_cpucount ();
-      if (ncpu < 0)
-        ncpu = 1;
-      return ncpu;
+      size_t s_get_thread_count ()
+      {
+        int ncpu = fhg_get_cpucount ();
+        if (ncpu < 0)
+          ncpu = 1;
+        return ncpu;
+      }
     }
 
     boost::asio::io_service & io ()
     {
-      return detail::get_io_singleton ().service ();
+      return get_io_singleton ().service ();
     }
 
     initializer::initializer ()
     {
-      detail::get_io_singleton ().start (s_get_thread_count ());
+      get_io_singleton ().start (s_get_thread_count ());
     }
 
     initializer::initializer (const size_t nthread)
     {
-      detail::get_io_singleton ().start (nthread);
+      get_io_singleton ().start (nthread);
     }
 
     initializer::~initializer ()
     {
-      detail::get_io_singleton ().stop ();
+      get_io_singleton ().stop ();
     }
   }
 }
