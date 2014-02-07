@@ -48,9 +48,9 @@ namespace gspc
     {
       boost::filesystem::path full_path = boost::filesystem::absolute (path);
 
-      client::unix_client::endpoint_type ep;
-      ep = resolver<client::unix_client::protocol_type>::resolve
-          (full_path.string ());
+      client::unix_client::endpoint_type ep
+        (resolver<client::unix_client::protocol_type>::resolve (full_path.string ()));
+
 
         client::unix_client *c = new client::unix_client (io, ep);
         s_set_options (c, opts);
@@ -63,8 +63,8 @@ namespace gspc
                                   , option_map_t const &opts
                                   )
     {
-      client::tcp_client::endpoint_type ep;
-      ep = resolver<client::tcp_client::protocol_type>::resolve (location);
+      client::tcp_client::endpoint_type ep
+        (resolver<client::tcp_client::protocol_type>::resolve (location));
 
       client::tcp_client *c = new client::tcp_client (io, ep);
         s_set_options (c, opts);
