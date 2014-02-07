@@ -98,7 +98,7 @@ namespace gpi
 
       void manager_t::detach_process (const gpi::pc::type::process_id_t id)
       {
-        lock_type lock (_mutex_processes);
+        lock_type const _ (_mutex_processes);
 
         if (m_processes.find (id) == m_processes.end())
         {
@@ -124,7 +124,7 @@ namespace gpi
         gpi::pc::type::counter_t const id (m_process_counter.inc());
 
         {
-          lock_type lock (_mutex_processes);
+          lock_type const _ (_mutex_processes);
 
           m_processes[id] = process_ptr_t (new process_t (*this, id, fd));
         }
