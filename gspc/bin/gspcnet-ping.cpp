@@ -114,7 +114,6 @@ public:
 int main (int argc, char *argv[])
 {
   std::string url;
-  gspc::net::client_ptr_t client;
   size_t interval = 1000;
   long deadline = -1;
   size_t count = 0;
@@ -171,7 +170,7 @@ int main (int argc, char *argv[])
 
   reply_frame_handler_t reply_handler;
 
-  client = gspc::net::dial (url);
+  gspc::net::client_ptr_t client (gspc::net::dial (url));
   client->onFrame.connect (boost::bind ( &reply_frame_handler_t::handle_frame
                                        , &reply_handler
                                        , _1
