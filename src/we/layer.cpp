@@ -192,13 +192,36 @@ namespace we
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       assert (parent);
 
-      _running_jobs.terminated (*parent, id);
+      _nets_to_extract_from.remove_and_apply
+        ( *parent
+        , boost::bind ( &layer::failed_delayed, this
+                      , _1, id, error_code, reason
+                      )
+        );
+    }
+    void layer::failed_delayed ( activity_data_type& parent_activity
+                               , id_type id
+                               , int error_code
+                               , std::string reason
+                               )
+    {
+      const boost::function<void()> after
+        ( boost::bind ( &layer::rts_failed_and_forget
+                      , this, parent_activity._id, error_code, reason
+                      )
+        );
 
-      request_cancel ( *parent
-                     , boost::bind ( &layer::rts_failed_and_forget
-                                   , this, *parent, error_code, reason
-                                   )
-                     );
+      if (_running_jobs.terminated (parent_activity._id, id))
+      {
+        after();
+      }
+      else
+      {
+        _finalize_job_cancellation.insert
+          (std::make_pair (parent_activity._id, after));
+        _running_jobs.apply
+          (parent_activity._id, boost::bind (_rts_cancel, _1));
+      }
     }
 
     void layer::request_cancel (id_type id, boost::function<void()> after)
@@ -411,7 +434,7 @@ namespace we
 
     layer::activity_data_type layer::async_remove_queue::get()
     {
-      boost::mutex::scoped_lock lock (_container_mutex);
+      boost::recursive_mutex::scoped_lock lock (_container_mutex);
 
       _condition_non_empty.wait
         ( lock
@@ -424,7 +447,7 @@ namespace we
     void layer::async_remove_queue::put
       (activity_data_type activity_data, bool active)
     {
-      boost::mutex::scoped_lock const container_lock (_container_mutex);
+      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
       bool do_put (true);
 
@@ -451,9 +474,11 @@ namespace we
           }
         }
 
-        if (fun_and_do_put_it == pos->second.end())
+        if ( _to_be_removed.find (activity_data._id) != _to_be_removed.end()
+           && _to_be_removed.find (activity_data._id)->second.empty()
+           )
         {
-          _to_be_removed.erase (pos);
+          _to_be_removed.erase (activity_data._id);
         }
       }
 
@@ -475,7 +500,7 @@ namespace we
     void layer::async_remove_queue::remove_and_apply
       (id_type id, boost::function<void (activity_data_type)> fun)
     {
-      boost::mutex::scoped_lock const container_lock (_container_mutex);
+      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
       list_with_id_lookup::iterator const pos_container (_container.find (id));
       list_with_id_lookup::iterator const pos_container_inactive
@@ -500,7 +525,7 @@ namespace we
     void layer::async_remove_queue::apply
       (id_type id, boost::function<void (activity_data_type&)> fun)
     {
-      boost::mutex::scoped_lock const container_lock (_container_mutex);
+      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
       list_with_id_lookup::iterator const pos_container (_container.find (id));
       list_with_id_lookup::iterator const pos_container_inactive
@@ -527,7 +552,7 @@ namespace we
 
     void layer::async_remove_queue::forget (id_type id)
     {
-      boost::mutex::scoped_lock const container_lock (_container_mutex);
+      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
 
       _to_be_removed.erase (id);
     }
