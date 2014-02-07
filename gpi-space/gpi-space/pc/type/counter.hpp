@@ -21,24 +21,21 @@ namespace gpi
 
         operator gpi::pc::type::size_t () const
         {
-          lock_type lock (m_mutex);
+          boost::mutex::scoped_lock const _ (m_mutex);
           return m_counter;
         }
         inline gpi::pc::type::size_t inc ()
         {
-          lock_type lock (m_mutex);
+          boost::mutex::scoped_lock const _ (m_mutex);
           return ++m_counter;
         }
         inline void reset (gpi::pc::type::size_t val)
         {
-          lock_type lock (m_mutex);
+          boost::mutex::scoped_lock const _ (m_mutex);
           m_counter = val;
         }
       private:
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-
-        mutable mutex_type m_mutex;
+        mutable boost::mutex m_mutex;
         gpi::pc::type::size_t m_counter;
       };
     }
