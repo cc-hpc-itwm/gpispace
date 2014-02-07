@@ -1,7 +1,5 @@
 #include "counter.hpp"
 
-#include <stdexcept>
-
 namespace gpi
 {
   namespace pc
@@ -21,13 +19,7 @@ namespace gpi
       gpi::pc::type::size_t counter_t::inc ()
       {
         lock_type lock (m_mutex);
-        gpi::pc::type::size_t new_count (m_counter + 1);
-        if (! new_count)
-        {
-          throw std::runtime_error ("cannot increment counter: would overflow");
-        }
-        m_counter = new_count;
-        return new_count;
+        return ++m_counter;
       }
 
       void counter_t::reset (const gpi::pc::type::size_t val)
