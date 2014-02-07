@@ -7,8 +7,6 @@ namespace gspc
 {
   namespace kvs
   {
-    api_t *create (std::string const&);
-
     int     initialize (std::string const &url);
     int     shutdown ();
     api_t & get ();

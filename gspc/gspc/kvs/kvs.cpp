@@ -21,6 +21,18 @@ namespace gspc
         delete m_kvs;
       }
 
+      api_t *create (std::string const &url)
+      {
+        if (url.find ("inproc://") == 0)
+        {
+          return new gspc::kvs::kvs_t (url);
+        }
+        else
+        {
+          return new gspc::kvs::kvs_net_frontend_t (url, _net_initializer);
+        }
+      }
+
       int reset (std::string const &url)
       {
         delete m_kvs;
@@ -41,6 +53,7 @@ namespace gspc
         return *m_kvs;
       }
     private:
+      gspc::net::initializer _net_initializer;
       api_t* m_kvs;
     };
 
@@ -48,18 +61,6 @@ namespace gspc
     {
       static global_state_t s;
       return s;
-    }
-
-    api_t *create (std::string const &url)
-    {
-      if (url.find ("inproc://") == 0)
-      {
-        return new gspc::kvs::kvs_t (url);
-      }
-      else
-      {
-        return new gspc::kvs::kvs_net_frontend_t (url, gspc::net::io());
-      }
     }
 
     int initialize (std::string const &url)
