@@ -35,68 +35,6 @@ namespace gpi
         void handle_process_error ( const gpi::pc::type::process_id_t proc_id
                                   , int error
                                   );
-
-        gpi::pc::type::handle_t
-        alloc ( const gpi::pc::type::process_id_t proc_id
-              , const gpi::pc::type::segment_id_t
-              , const gpi::pc::type::size_t
-              , const std::string & name
-              , const gpi::pc::type::flags_t
-              );
-
-        void free ( const gpi::pc::type::process_id_t
-                  , const gpi::pc::type::handle_id_t
-                  );
-        gpi::pc::type::handle::descriptor_t info ( const gpi::pc::type::process_id_t
-                                                 , const gpi::pc::type::handle_id_t
-                                                 ) const;
-
-        void list_allocations ( const gpi::pc::type::process_id_t proc_id
-                              , const gpi::pc::type::segment_id_t
-                              , gpi::pc::type::handle::list_t &
-                              ) const;
-
-        gpi::pc::type::queue_id_t
-        memcpy ( const gpi::pc::type::process_id_t proc_id
-               , gpi::pc::type::memory_location_t const & dst
-               , gpi::pc::type::memory_location_t const & src
-               , const gpi::pc::type::size_t amount
-               , const gpi::pc::type::queue_id_t queue
-               );
-
-        gpi::pc::type::segment_id_t
-        register_segment ( const gpi::pc::type::process_id_t proc_id
-                         , std::string const & name
-                         , const gpi::pc::type::size_t sz
-                         , const gpi::pc::type::flags_t flags
-                         );
-        void unregister_segment ( const gpi::pc::type::process_id_t proc_id
-                                , const gpi::pc::type::segment_id_t
-                                );
-        void attach_process_to_segment ( const gpi::pc::type::process_id_t proc_id
-                                       , const gpi::pc::type::segment_id_t id
-                                       );
-        void detach_process_from_segment ( const gpi::pc::type::process_id_t proc_id
-                                         , const gpi::pc::type::segment_id_t id
-                                         );
-        void list_segments ( const gpi::pc::type::process_id_t
-                           , gpi::pc::type::segment::list_t &
-                           ) const;
-        void collect_info (gpi::pc::type::info::descriptor_t &) const;
-
-        gpi::pc::type::size_t
-        wait_on_queue ( const gpi::pc::type::process_id_t proc_id
-                      , const gpi::pc::type::queue_id_t queue
-                      );
-
-        gpi::pc::type::segment_id_t
-        add_memory ( const gpi::pc::type::process_id_t proc_id
-                   , std::string const & url
-                   );
-        void
-        del_memory ( const gpi::pc::type::process_id_t proc_id
-                   , const gpi::pc::type::segment_id_t
-                   );
       private:
         typedef boost::shared_ptr<process_t> process_ptr_t;
         typedef boost::recursive_mutex mutex_type;

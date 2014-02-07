@@ -1,5 +1,7 @@
 #include "process.hpp"
 
+#include <gpi-space/gpi/api.hpp>
+
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/types.h>
@@ -24,6 +26,11 @@
 #include <gpi-space/pc/container/manager.hpp>
 
 #include <boost/variant/static_visitor.hpp>
+
+#include <gpi-space/pc/memory/factory.hpp>
+
+#include <fhg/util/url.hpp>
+#include <fhg/util/url_io.hpp>
 
 namespace gpi
 {
@@ -551,18 +558,18 @@ namespace gpi
                           , const gpi::pc::type::flags_t flags
                           )
       {
-        return m_mgr.alloc (m_id, seg, size, name, flags);
+        return global::memory_manager().alloc (m_id, seg, size, name, flags);
       }
 
       void process_t::free (const gpi::pc::type::handle_id_t hdl)
       {
-        return m_mgr.free (m_id, hdl);
+        return global::memory_manager().free (hdl);
       }
 
       gpi::pc::type::handle::descriptor_t
       process_t::info (const gpi::pc::type::handle_id_t hdl) const
       {
-        return m_mgr.info (m_id, hdl);
+        return global::memory_manager().info (hdl);
       }
 
       void
@@ -570,7 +577,14 @@ namespace gpi
                                     , gpi::pc::type::handle::list_t & l
                                     ) const
       {
-        m_mgr.list_allocations (m_id, seg, l);
+        if (seg == gpi::pc::type::segment::SEG_INVAL)
+        {
+          global::memory_manager().list_allocations(m_id, l);
+        }
+        else
+        {
+          global::memory_manager().list_allocations (m_id, seg, l);
+        }
       }
 
       gpi::pc::type::queue_id_t
@@ -580,7 +594,9 @@ namespace gpi
                            , const gpi::pc::type::queue_id_t queue
                            )
       {
-        return m_mgr.memcpy (m_id, dst, src, amount, queue);
+        gpi::pc::type::validate (dst.handle);
+        gpi::pc::type::validate (src.handle);
+        return global::memory_manager().memcpy (m_id, dst, src, amount, queue);
       }
 
       gpi::pc::type::size_t process_t::wait (const gpi::pc::type::queue_id_t queue)
@@ -608,7 +624,7 @@ namespace gpi
         //                 if set: reply immediately
         //                   else: somebody else will reply later
         //           messages need unique sequence numbers or message-ids
-        return m_mgr.wait_on_queue (m_id, queue);
+        return global::memory_manager().wait_on_queue (m_id, queue);
       }
 
       gpi::pc::type::segment_id_t
@@ -617,50 +633,67 @@ namespace gpi
                                      , const gpi::pc::type::flags_t flags
                                      )
       {
-        gpi::pc::type::segment_id_t s_id
-          (m_mgr.register_segment (m_id, name, sz, flags));
-        return s_id;
+        using namespace gpi::pc;
+
+        fhg::util::url_t url;
+        url.type ("shm");
+        url.path (name);
+        url.set ("size", boost::lexical_cast<std::string>(sz));
+        if (flags & F_PERSISTENT)
+          url.set ("persistent", "true");
+        if (flags & F_EXCLUSIVE)
+          url.set ("exclusive", "true");
+
+        memory::area_ptr_t area =
+          memory::factory ().create (boost::lexical_cast<std::string>(url));
+        area->set_owner (m_id);
+        return global::memory_manager().register_memory (m_id, area);
       }
 
       void
       process_t::unregister_segment(const gpi::pc::type::segment_id_t seg)
       {
-        m_mgr.unregister_segment (m_id, seg);
+        global::memory_manager().unregister_memory (m_id, seg);
       }
 
       gpi::pc::type::segment_id_t
       process_t::add_memory (std::string const &url)
       {
-        return m_mgr.add_memory (m_id, url);
+        return global::memory_manager ().add_memory (m_id, url);
       }
 
       void
       process_t::del_memory (gpi::pc::type::segment_id_t seg_id)
       {
-        m_mgr.del_memory (m_id, seg_id);
+        global::memory_manager ().del_memory (m_id, seg_id);
       }
 
       void
       process_t::attach_segment(const gpi::pc::type::segment_id_t seg)
       {
-        m_mgr.attach_process_to_segment (m_id, seg);
+        global::memory_manager().attach_process (m_id, seg);
       }
 
       void
       process_t::detach_segment(const gpi::pc::type::segment_id_t seg)
       {
-        m_mgr.detach_process_from_segment (m_id, seg);
+        global::memory_manager().detach_process (m_id, seg);
       }
 
       void
       process_t::list_segments(gpi::pc::type::segment::list_t & l)
       {
-        m_mgr.list_segments (m_id, l);
+        global::memory_manager().list_memory (l);
       }
 
       void process_t::collect_info (gpi::pc::type::info::descriptor_t &d)
       {
-        m_mgr.collect_info (d);
+        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
+
+        d.rank = gpi_api.rank();
+        d.nodes = gpi_api.number_of_nodes();
+        d.queues = gpi_api.number_of_queues();
+        d.queue_depth = gpi_api.queue_depth();
       }
     }
   }
