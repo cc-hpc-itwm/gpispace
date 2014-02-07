@@ -28,7 +28,6 @@ namespace gpi
 
         ~manager_t ();
 
-        // api
         void handle_new_connection (int fd);
         void handle_process_error ( const gpi::pc::type::process_id_t proc_id
                                   , int error
