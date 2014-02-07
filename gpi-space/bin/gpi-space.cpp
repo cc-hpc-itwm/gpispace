@@ -914,18 +914,10 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
 
   try
   {
-    global_container_mgr =
-      new gpi::pc::container::manager_t (cfg->socket);
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
-
-    for ( std::vector<std::string>::iterator url_it = mem_urls.begin ()
-        ; url_it != mem_urls.end ()
-        ; ++url_it
-        )
-    {
-      global_container_mgr->add_default_memory (*url_it);
-    }
+    global_container_mgr =
+      new gpi::pc::container::manager_t (cfg->socket, mem_urls);
     global_container_mgr->start ();
   }
   catch (std::exception const & ex)

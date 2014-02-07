@@ -33,11 +33,11 @@ namespace gpi
         typedef manager_t self;
 
         explicit
-        manager_t (std::string const & path_to_socket);
+        manager_t ( std::string const & path_to_socket
+                  , std::vector<std::string> const& default_memory_urls
+                  );
 
         ~manager_t ();
-
-        void add_default_memory (std::string const &);
 
         void start();
         void stop ();

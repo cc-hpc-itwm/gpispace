@@ -22,11 +22,21 @@ namespace gpi
   {
     namespace container
     {
-      manager_t::manager_t (std::string const & p)
+      manager_t::manager_t ( std::string const & p
+                           , std::vector<std::string> const& default_memory_urls
+                           )
        : m_state (ST_STOPPED)
        , m_connector (*this, p)
        , m_process_counter (0)
-      {}
+       , m_default_memory_urls (default_memory_urls)
+      {
+        if ( m_default_memory_urls.size ()
+           >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
+           )
+        {
+          throw std::runtime_error ("too many predefined memory urls!");
+        }
+      }
 
       manager_t::~manager_t ()
       {
@@ -38,13 +48,6 @@ namespace gpi
         {
           LOG(ERROR, "error within dtor of container manager: " << ex.what());
         }
-      }
-
-      void manager_t::add_default_memory (std::string const &url_s)
-      {
-        if (m_default_memory_urls.size () == gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID)
-          throw std::runtime_error ("too many predefined memory urls!");
-        m_default_memory_urls.push_back (url_s);
       }
 
       void manager_t::start ()
