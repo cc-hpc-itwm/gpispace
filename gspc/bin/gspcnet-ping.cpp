@@ -171,9 +171,7 @@ int main (int argc, char *argv[])
 
   reply_frame_handler_t reply_handler;
 
-  boost::system::error_code ec;
-
-  client = gspc::net::dial (url, ec);
+  client = gspc::net::dial (url);
   client->onFrame.connect (boost::bind ( &reply_frame_handler_t::handle_frame
                                        , &reply_handler
                                        , _1
