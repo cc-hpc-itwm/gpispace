@@ -38,19 +38,6 @@ namespace gspc
       setup_rpc_handler ();
     }
 
-    service_t::service_t (std::string const &url)
-      : m_kvs (gspc::kvs::create (url))
-    {
-      m_on_change_connection =
-        m_kvs->onChange.connect (boost::bind ( &service_t::on_change
-                                             , this
-                                             , _1
-                                             , _2
-                                             )
-                                );
-      setup_rpc_handler ();
-    }
-
     service_t::~service_t ()
     {
       m_on_change_connection.disconnect ();

@@ -24,9 +24,6 @@ namespace gspc
       service_t ();
       ~service_t ();
 
-      explicit
-      service_t (std::string const &url);
-
       void operator () ( std::string const &dst
                        , gspc::net::frame const &rqst
                        , gspc::net::user_ptr user
