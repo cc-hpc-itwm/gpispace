@@ -154,20 +154,10 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
   {
     using namespace boost::system;
 
-    gspc::net::client_ptr_t client;
+    gspc::net::client_ptr_t client
+      (gspc::net::dial (server->url () + "?timeout=1000"));
 
-    boost::system::error_code ec;
-    client = gspc::net::dial (server->url () + "?timeout=1000", ec);
-
-    if (ec)
-    {
-      std::cerr << "could not connect: " << ec.message () << std::endl;
-      break;
-    }
-    else
-    {
-      BOOST_REQUIRE (client);
-    }
+    BOOST_REQUIRE (client);
 
     clients.push_back (client);
     ++clients_created;
