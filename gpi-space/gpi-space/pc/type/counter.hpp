@@ -19,9 +19,9 @@ namespace gpi
 
         operator gpi::pc::type::size_t () const { return value(); }
         inline gpi::pc::type::size_t inc ();
-        inline gpi::pc::type::size_t value () const;
         inline void reset (gpi::pc::type::size_t = 0);
       private:
+        inline gpi::pc::type::size_t value () const;
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
 
