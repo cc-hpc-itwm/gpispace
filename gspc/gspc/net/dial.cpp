@@ -21,26 +21,27 @@ namespace gspc
 {
   namespace net
   {
-    static
-    client_ptr_t s_new_unix_client ( boost::asio::io_service & io
-                                   , std::string const & location
-                                   )
+    namespace
     {
-      client::unix_client::endpoint_type ep
-        (resolver<client::unix_client::protocol_type>::resolve (location));
+      client_ptr_t s_new_unix_client ( boost::asio::io_service & io
+                                     , std::string const & location
+                                     )
+      {
+        client::unix_client::endpoint_type ep
+          (resolver<client::unix_client::protocol_type>::resolve (location));
 
         return client_ptr_t (new client::unix_client (io, ep));
-    }
+      }
 
-    static
-    client_ptr_t s_new_tcp_client ( boost::asio::io_service & io
-                                  , std::string const & location
-                                  )
-    {
-      client::tcp_client::endpoint_type ep
-        (resolver<client::tcp_client::protocol_type>::resolve (location));
+      client_ptr_t s_new_tcp_client ( boost::asio::io_service & io
+                                    , std::string const & location
+                                    )
+      {
+        client::tcp_client::endpoint_type ep
+          (resolver<client::tcp_client::protocol_type>::resolve (location));
 
         return client_ptr_t (new client::tcp_client (io, ep));
+      }
     }
 
     client_ptr_t dial (std::string const &url_s)
