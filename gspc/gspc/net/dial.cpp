@@ -46,10 +46,9 @@ namespace gspc
                                    , option_map_t const &opts
                                    )
     {
-      namespace fs = boost::filesystem;
       using namespace gspc::net::client;
 
-        fs::path full_path = fs::absolute (path);
+      boost::filesystem::path full_path = boost::filesystem::absolute (path);
 
         unix_client::endpoint_type ep;
         ep = resolver<unix_client::protocol_type>::resolve
