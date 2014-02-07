@@ -516,7 +516,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
   _service_demux.handle ("/service/echo", gspc::net::service::echo ());
 
-  m_server = gspc::net::serve (netd_url, _queue_manager);
+  m_server = gspc::net::serve (netd_url, _net_initializer, _queue_manager);
 
   fhg::com::kvs::global_kvs()->put ("gspc.net.url." + name, m_server->url());
 
