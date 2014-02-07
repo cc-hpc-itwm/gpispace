@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
     BOOST_REQUIRE (server);
 
     gspc::net::client_ptr_t client
-      (gspc::net::dial (server->url () + "?connect_timeout=100"));
+      (gspc::net::dial (server->url () + "?connect_timeout=100", net_initializer));
 
     BOOST_REQUIRE (client);
 
