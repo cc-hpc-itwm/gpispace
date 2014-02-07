@@ -58,10 +58,5 @@ int main (int argc, char *argv[])
 
   pause ();
 
-  BOOST_FOREACH (gspc::net::server_ptr_t s, servers)
-  {
-    s->stop ();
-  }
-
   return 0;
 }
