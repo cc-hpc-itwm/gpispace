@@ -39,8 +39,6 @@ namespace gpi
 
         set_state (ST_STARTING);
 
-        try
-        {
           lock_type lock (m_mutex);
           initialize_topology ();
           initialize_memory_manager ();
@@ -57,13 +55,6 @@ namespace gpi
           }
 
           m_connector.start ();
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "manager could not be started: " << ex.what());
-          set_state (ST_STOPPED);
-          throw;
-        }
 
         set_state (ST_STARTED);
       }
