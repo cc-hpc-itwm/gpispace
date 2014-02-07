@@ -167,7 +167,7 @@ int main (int argc, char *argv[])
   if (0 == interval)
     interval = 1;
 
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   reply_frame_handler_t reply_handler;
 
@@ -247,7 +247,6 @@ int main (int argc, char *argv[])
   reply_handler.dump_stats_to (std::cerr);
 
   client->stop ();
-  gspc::net::shutdown ();
 
   return reply_handler.recv > 0 ? 0 : 1;
 }

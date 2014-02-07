@@ -20,7 +20,7 @@ int main (int argc, char *argv[])
     return 1;
   }
 
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
 
@@ -60,8 +60,6 @@ int main (int argc, char *argv[])
   {
     s->stop ();
   }
-
-  gspc::net::shutdown ();
 
   return 0;
 }

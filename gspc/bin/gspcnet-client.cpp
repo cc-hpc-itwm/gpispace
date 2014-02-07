@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
     return 1;
   }
 
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   url = argv [1];
 
@@ -140,6 +140,5 @@ int main (int argc, char *argv[])
     frame = gspc::net::frame ();
   }
 
-  gspc::net::shutdown ();
   return 0;
 }
