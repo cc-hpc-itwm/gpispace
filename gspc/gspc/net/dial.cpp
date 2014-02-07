@@ -42,7 +42,6 @@ namespace gspc
     static
     client_ptr_t s_new_unix_client ( boost::asio::io_service & io
                                    , std::string const & location
-                                   , option_map_t const &opts
                                    )
     {
       client::unix_client::endpoint_type ep
@@ -50,21 +49,18 @@ namespace gspc
 
 
         client::unix_client *c = new client::unix_client (io, ep);
-        s_set_options (c, opts);
         return client_ptr_t (c);
     }
 
     static
     client_ptr_t s_new_tcp_client ( boost::asio::io_service & io
                                   , std::string const & location
-                                  , option_map_t const &opts
                                   )
     {
       client::tcp_client::endpoint_type ep
         (resolver<client::tcp_client::protocol_type>::resolve (location));
 
       client::tcp_client *c = new client::tcp_client (io, ep);
-        s_set_options (c, opts);
         return client_ptr_t (c);
     }
 
@@ -73,10 +69,12 @@ namespace gspc
       const fhg::util::url_t url (url_s);
 
       client_ptr_t client
-        ( url.type () == "unix" ? s_new_unix_client (gspc::net::io (), boost::filesystem::absolute (url.path ()).string(), url.args ())
-        : url.type () == "tcp" ? s_new_tcp_client (gspc::net::io (), url.path (), url.args ())
+        ( url.type () == "unix" ? s_new_unix_client (gspc::net::io (), boost::filesystem::absolute (url.path ()).string())
+        : url.type () == "tcp" ? s_new_tcp_client (gspc::net::io (), url.path ())
         : throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
         );
+
+      s_set_options (client, url.args ());
 
         int rc (client->start ());
         if (0 != rc)
