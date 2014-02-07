@@ -1007,8 +1007,6 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
     do { } while (!stop_requested && pause() == -1 && errno == EINTR);
   }
 
-  global_container_mgr->stop ();
-
   return EXIT_SUCCESS;
 }
 

@@ -70,11 +70,6 @@ namespace gpi
 
       manager_t::~manager_t ()
       {
-          stop();
-      }
-
-      void manager_t::stop ()
-      {
         set_state (ST_STOPPING);
 
         {
