@@ -63,6 +63,9 @@ namespace gspc
                             , std::string const &id
                             ) = 0;
       virtual int unsubscribe (std::string const &id) = 0;
+
+      virtual void set_connect_timeout (size_t ms) = 0;
+      virtual void set_timeout (size_t ms) = 0;
     };
   }
 }
