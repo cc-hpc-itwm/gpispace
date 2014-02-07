@@ -79,8 +79,6 @@ namespace gspc
         : throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
         );
 
-      if (client)
-      {
         int rc (client->start ());
         if (0 != rc)
         {
@@ -105,7 +103,6 @@ namespace gspc
             throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::protocol_error));
           }
         }
-      }
 
       return client;
     }
