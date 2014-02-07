@@ -24,7 +24,8 @@ int main (int argc, char *argv[])
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t qmgr (service_demux);
 
-  service_demux.handle ("/service/echo", gspc::net::service::echo ());
+  const gpsc::net::server::scoped_service_handler echo_service
+    ("/service/echo", gspc::net::service::echo(), service_demux);
 
   std::vector<gspc::net::server_ptr_t> servers;
 
