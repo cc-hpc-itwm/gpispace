@@ -46,7 +46,7 @@ namespace gspc
         ("/service/echo", net::service::echo ());
 
       m_server = net::serve
-        (netd_url, net::server::default_queue_manager());
+        (netd_url, _net_initializer, net::server::default_queue_manager());
 
       LLOG (DEBUG, _logger, "listening on " << m_server->url ());
 
