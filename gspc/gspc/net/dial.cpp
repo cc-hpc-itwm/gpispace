@@ -71,14 +71,12 @@ namespace gspc
 
     client_ptr_t dial (std::string const &url_s)
     {
-      using namespace boost::system;
-
       const fhg::util::url_t url (url_s);
 
       client_ptr_t client
         ( url.type () == "unix" ? s_new_unix_client (gspc::net::io (), boost::filesystem::absolute (url.path ()).string(), url.args ())
         : url.type () == "tcp" ? s_new_tcp_client (gspc::net::io (), url.path (), url.args ())
-        : throw boost::system::system_error (errc::make_error_code (errc::wrong_protocol_type))
+        : throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
         );
 
       if (client)
@@ -90,23 +88,23 @@ namespace gspc
         {
           if (-ECONNREFUSED == rc)
           {
-            throw boost::system::system_error (errc::make_error_code (errc::connection_refused));
+            throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::connection_refused));
           }
           else if (-ETIME == rc)
           {
-            throw boost::system::system_error (errc::make_error_code (errc::stream_timeout));
+            throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::stream_timeout));
           }
           else if (-EPERM == rc)
           {
-            throw boost::system::system_error (errc::make_error_code (errc::permission_denied));
+            throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::permission_denied));
           }
           else if (E_UNAUTHORIZED == rc)
           {
-            throw boost::system::system_error (errc::make_error_code (errc::operation_not_permitted));
+            throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::operation_not_permitted));
           }
           else
           {
-            throw boost::system::system_error (errc::make_error_code (errc::protocol_error));
+            throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::protocol_error));
           }
         }
       }
