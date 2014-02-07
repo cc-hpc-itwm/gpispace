@@ -124,7 +124,7 @@ namespace we
           position_in_container_type _position_in_container;
         };
 
-        mutable boost::mutex _container_mutex;
+        mutable boost::recursive_mutex _container_mutex;
         list_with_id_lookup _container;
         list_with_id_lookup _container_inactive;
 
@@ -140,6 +140,12 @@ namespace we
       boost::mt19937& _random_extraction_engine;
       void extract_from_nets();
       boost::thread _extract_from_nets_thread;
+
+      void failed_delayed ( activity_data_type& parent_activity
+                          , id_type id
+                          , int error_code
+                          , std::string reason
+                          );
 
       void request_cancel (id_type, boost::function<void()> after);
       void cancel_child_jobs (activity_data_type, boost::function<void()> after);
