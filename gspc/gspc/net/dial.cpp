@@ -46,15 +46,13 @@ namespace gspc
                                    , option_map_t const &opts
                                    )
     {
-      using namespace gspc::net::client;
-
       boost::filesystem::path full_path = boost::filesystem::absolute (path);
 
-        unix_client::endpoint_type ep;
-        ep = resolver<unix_client::protocol_type>::resolve
+      client::unix_client::endpoint_type ep;
+      ep = resolver<client::unix_client::protocol_type>::resolve
           (full_path.string ());
 
-        unix_client *c = new unix_client (io, ep);
+        client::unix_client *c = new client::unix_client (io, ep);
         s_set_options (c, opts);
         return client_ptr_t (c);
     }
@@ -65,12 +63,10 @@ namespace gspc
                                   , option_map_t const &opts
                                   )
     {
-      using namespace gspc::net::client;
+      client::tcp_client::endpoint_type ep;
+      ep = resolver<client::tcp_client::protocol_type>::resolve (location);
 
-        tcp_client::endpoint_type ep;
-        ep = resolver<tcp_client::protocol_type>::resolve (location);
-
-        tcp_client *c = new tcp_client (io, ep);
+      client::tcp_client *c = new client::tcp_client (io, ep);
         s_set_options (c, opts);
         return client_ptr_t (c);
     }
