@@ -60,7 +60,7 @@ BOOST_GLOBAL_FIXTURE (SetRLimits);
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_start_stop_loop)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   static const size_t NUM_ITERATIONS = 1000;
 
@@ -74,13 +74,11 @@ BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_start_stop_loop)
     BOOST_REQUIRE (server);
     server->stop ();
   }
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   static const size_t NUM_ITERATIONS = 1000;
 
@@ -101,13 +99,11 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket)
   }
 
   fs::remove ("socket.foo");
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t qmgr (service_demux);
@@ -123,13 +119,11 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 
   client->stop ();
   server->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   using namespace gspc::net::tests;
 
@@ -197,13 +191,11 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
   clients.clear ();
 
   server->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_already_in_use)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t qmgr (service_demux);
@@ -216,24 +208,20 @@ BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_already_in_use)
                     , boost::system::system_error
                     );
   server->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connection_refused)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   BOOST_CHECK_THROW ( gspc::net::dial ("unix://this.socket.does.not.exist")
                     , boost::system::system_error
                     );
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_client_connection_refused)
 {
-  gspc::net::initializer _net_init;
+  gspc::net::initializer net_initializer;
 
   boost::system::error_code ec;
 
@@ -253,7 +241,7 @@ BOOST_AUTO_TEST_CASE (test_serve_client_connection_refused)
 
 BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   static const std::size_t NUM_MSGS_TO_SEND = 1 << 16;
   using namespace gspc::net::tests;
@@ -295,13 +283,11 @@ BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 
   server->stop ();
   client->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   using namespace gspc::net::tests;
 
@@ -328,13 +314,11 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 
   server->stop ();
   client->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   static const std::size_t NUM_MSGS_TO_SEND = 1 << 16;
   using namespace gspc::net::tests;
@@ -376,13 +360,11 @@ BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
 
   client->stop ();
   server->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_request_success)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   static const std::size_t NUM_MSGS_TO_SEND = 10000;
   using namespace gspc::net::tests;
@@ -414,13 +396,11 @@ BOOST_AUTO_TEST_CASE (test_request_success)
 
   client->stop ();
   server->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_request_no_such_service)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   using namespace gspc::net::tests;
 
@@ -450,6 +430,4 @@ BOOST_AUTO_TEST_CASE (test_request_no_such_service)
 
   client->stop ();
   server->stop ();
-
-  gspc::net::shutdown ();
 }
