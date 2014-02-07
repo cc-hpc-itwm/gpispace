@@ -70,22 +70,6 @@ private:
   hwloc_topology_t m_topology;
 };
 
-struct scoped_service_handler : boost::noncopyable
-{
-  scoped_service_handler ( std::string name
-                         , boost::function<void ( std::string const &dst
-                                                , gspc::net::frame const &rqst
-                                                , gspc::net::user_ptr user
-                                                )> function
-                         , gspc::net::server::service_demux_t& service_demux
-                         );
-  ~scoped_service_handler();
-
-private:
-  std::string _name;
-  gspc::net::server::service_demux_t& _service_demux;
-};
-
 class WFEImpl
 {
 public:
@@ -143,9 +127,9 @@ private:
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
 
-  scoped_service_handler _current_job_service;
-  scoped_service_handler _set_search_path_service;
-  scoped_service_handler _get_search_path_service;
+  gspc::net::server::scoped_service_handler _current_job_service;
+  gspc::net::server::scoped_service_handler _set_search_path_service;
+  gspc::net::server::scoped_service_handler _get_search_path_service;
 };
 
 class DRTSImpl : public sdpa::events::EventHandler

@@ -73,24 +73,6 @@ numa_socket_setter::~numa_socket_setter()
   hwloc_topology_destroy (m_topology);
 }
 
-scoped_service_handler::scoped_service_handler
-  ( std::string name
-  , boost::function<void ( std::string const &dst
-                         , gspc::net::frame const &rqst
-                         , gspc::net::user_ptr user
-                         )> function
-  , gspc::net::server::service_demux_t& service_demux
-  )
-    : _name (name)
-    , _service_demux (service_demux)
-{
-  _service_demux.handle (_name, function);
-}
-scoped_service_handler::~scoped_service_handler()
-{
-  _service_demux.unhandle (_name);
-}
-
 namespace
 {
   struct wfe_exec_context : public we::context
