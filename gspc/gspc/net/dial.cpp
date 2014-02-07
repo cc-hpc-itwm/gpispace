@@ -21,8 +21,7 @@ namespace gspc
 {
   namespace net
   {
-    template <typename Client>
-    void s_set_options ( Client *client
+    void s_set_options ( client_t *client
                        , option_map_t const &opts
                        )
     {
