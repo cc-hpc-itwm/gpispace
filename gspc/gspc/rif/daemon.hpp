@@ -6,6 +6,8 @@
 #include <gspc/net/frame.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/server.hpp>
+#include <gspc/net/server/queue_manager.hpp>
+#include <gspc/net/server/service_demux.hpp>
 #include <gspc/net/user.hpp>
 #include <gspc/rif/manager.hpp>
 #include <gspc/rif/supervisor.hpp>
@@ -41,6 +43,8 @@ namespace gspc
       fhg::log::Logger::ptr_t _logger;
 
       gspc::net::initializer _net_initializer;
+      gspc::net::server::service_demux_t _service_demux;
+      gspc::net::server::queue_manager_t _queue_manager;
       gspc::net::server_ptr_t m_server;
       gspc::rif::manager_t m_mgr;
       gspc::rif::supervisor_t m_supervisor;
