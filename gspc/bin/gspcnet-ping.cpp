@@ -170,7 +170,7 @@ int main (int argc, char *argv[])
 
   reply_frame_handler_t reply_handler;
 
-  gspc::net::client_ptr_t client (gspc::net::dial (url));
+  gspc::net::client_ptr_t client (gspc::net::dial (url, net_initializer));
   client->onFrame.connect (boost::bind ( &reply_frame_handler_t::handle_frame
                                        , &reply_handler
                                        , _1
