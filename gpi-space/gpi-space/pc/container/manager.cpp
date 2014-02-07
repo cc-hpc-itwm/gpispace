@@ -39,7 +39,6 @@ namespace gpi
 
         set_state (ST_STARTING);
 
-          lock_type lock (m_mutex);
           initialize_topology ();
           initialize_memory_manager ();
 
