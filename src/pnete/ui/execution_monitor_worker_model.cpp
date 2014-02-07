@@ -77,7 +77,6 @@ namespace fhg
             fhg::log::Logger::ptr_t l
               (fhg::log::Logger::get ("execution_monitor"));
 
-            l->setLevel (fhg::log::TRACE);
             l->addAppender
               (ptr_t (new delegating_fhglog_appender (append, flush)));
 
