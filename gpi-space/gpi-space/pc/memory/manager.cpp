@@ -26,8 +26,6 @@ namespace gpi
     {
       manager_t::manager_t ()
         : m_ident (0)
-          // default counter value for user segments
-        , m_segment_counter (MAX_PREALLOCATED_SEGMENT_ID)
       {
         factory ().register_type ( "gpi"
                                  , &gpi_area_t::create
