@@ -109,10 +109,10 @@ namespace gpi
         void detach_process (const gpi::pc::type::process_id_t);
         void detach_memory_from_process (const gpi::pc::type::process_id_t);
 
-        mutable mutex_type m_mutex;
         connector_t m_connector;
         gpi::pc::type::counter_t m_process_counter;
 
+        mutable mutex_type _mutex_processes;
         process_map_t m_processes;
       };
     }
