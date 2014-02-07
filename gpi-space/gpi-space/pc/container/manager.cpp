@@ -40,14 +40,7 @@ namespace gpi
 
       manager_t::~manager_t ()
       {
-        try
-        {
           stop();
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "error within dtor of container manager: " << ex.what());
-        }
       }
 
       void manager_t::start ()
