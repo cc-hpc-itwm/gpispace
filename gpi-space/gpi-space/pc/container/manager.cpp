@@ -1,7 +1,5 @@
 #include "manager.hpp"
 
-#include <boost/bind.hpp>
-
 #include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/gpi/api.hpp>
