@@ -280,8 +280,6 @@ namespace gspc
         return -EEXIST;
       }
 
-      gspc::net::shutdown ();
-
       int rc = s_daemonize ();
       if (rc < 0)
         return rc;
