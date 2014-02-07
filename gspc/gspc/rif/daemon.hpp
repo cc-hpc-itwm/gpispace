@@ -4,6 +4,7 @@
 #define GSPC_RIF_DAEMON_HPP
 
 #include <gspc/net/frame.hpp>
+#include <gspc/net/io.hpp>
 #include <gspc/net/server.hpp>
 #include <gspc/net/user.hpp>
 #include <gspc/rif/manager.hpp>
@@ -39,6 +40,7 @@ namespace gspc
       boost::function<void()> _request_shutdown;
       fhg::log::Logger::ptr_t _logger;
 
+      gspc::net::initializer _net_initializer;
       gspc::net::server_ptr_t m_server;
       gspc::rif::manager_t m_mgr;
       gspc::rif::supervisor_t m_supervisor;

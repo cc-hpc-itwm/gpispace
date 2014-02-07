@@ -16,7 +16,6 @@
 
 #include <gspc/net/error.hpp>
 #include <gspc/net/frame_builder.hpp>
-#include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
 #include <gspc/net/server/default_queue_manager.hpp>
@@ -38,12 +37,11 @@ namespace gspc
                    )
       : _request_shutdown (request_shutdown)
       , _logger (logger)
+      , _net_initializer (nthreads)
       , m_server()
       , m_mgr ()
       , m_supervisor (m_mgr)
     {
-      net::initialize (nthreads);
-
       net::server::default_service_demux().handle
         ("/service/echo", net::service::echo ());
 
@@ -82,8 +80,6 @@ namespace gspc
       {
         m_server->stop ();
       }
-
-      net::shutdown ();
     }
 
     int daemon::supervise (std::list<std::string> argv)
