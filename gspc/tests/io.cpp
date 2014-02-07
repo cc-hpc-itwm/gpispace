@@ -15,12 +15,12 @@
 
 BOOST_AUTO_TEST_CASE (test_initialize_shutdown)
 {
-  gspc::net::initializer _net_init;
+  gspc::net::initializer net_initializer;
 
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t qmgr (service_demux);
   gspc::net::server_ptr_t server =
-    gspc::net::serve ("tcp://localhost:*", qmgr);
+    gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
   BOOST_REQUIRE (server);
 
   server->stop ();
@@ -40,10 +40,10 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
 
   for (size_t i = 0 ; i < NUM ; ++i)
   {
-    gspc::net::initializer _net_init;
+    gspc::net::initializer net_initializer;
 
     gspc::net::server_ptr_t server =
-      gspc::net::serve ("tcp://localhost:*", qmgr);
+      gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
 
     BOOST_REQUIRE (server);
 
