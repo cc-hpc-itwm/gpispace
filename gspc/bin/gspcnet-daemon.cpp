@@ -32,7 +32,7 @@ int main (int argc, char *argv[])
     try
     {
       gspc::net::server_ptr_t server =
-        gspc::net::serve (argv [i], qmgr);
+        gspc::net::serve (argv [i], net_initializer, qmgr);
 
       std::cout << "listening on: "
                 << server->url ()
