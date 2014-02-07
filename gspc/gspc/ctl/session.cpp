@@ -185,7 +185,7 @@ namespace gspc
         }
       }
 
-      gspc::net::initializer _net_init;
+      gspc::net::initializer net_initializer;
 
       gspc::kvs::service_t service;
       gspc::net::server::service_demux_t service_demux;
@@ -199,7 +199,7 @@ namespace gspc
 
       std::list<gspc::net::server_ptr_t> servers;
       {
-        gspc::net::server_ptr_t s (gspc::net::serve (m_url, queue_manager));
+        gspc::net::server_ptr_t s (gspc::net::serve (m_url, net_initializer, queue_manager));
         servers.push_back (s);
         si.puburl = s->url ();
       }
@@ -214,7 +214,7 @@ namespace gspc
 
       {
         gspc::net::server_ptr_t s
-          (gspc::net::serve ("unix://" + (m_dir / m_name).string (), queue_manager));
+          (gspc::net::serve ("unix://" + (m_dir / m_name).string (), net_initializer, queue_manager));
         servers.push_back (s);
       }
 
