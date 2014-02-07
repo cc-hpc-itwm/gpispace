@@ -52,8 +52,14 @@ namespace gspc
                        , server::queue_manager_t & qmgr
                        )
     {
-      boost::asio::io_service& io_service (gspc::net::io());
+      return serve (url_s, gspc::net::io(), qmgr);
+    }
 
+    server_ptr_t serve ( std::string const &url_s
+                       , boost::asio::io_service& io_service
+                       , server::queue_manager_t & qmgr
+                       )
+    {
       const fhg::util::url_t url (url_s);
 
       server_ptr_t server
