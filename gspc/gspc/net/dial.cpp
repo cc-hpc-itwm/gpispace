@@ -42,14 +42,12 @@ namespace gspc
 
     static
     client_ptr_t s_new_unix_client ( boost::asio::io_service & io
-                                   , std::string const & path
+                                   , std::string const & location
                                    , option_map_t const &opts
                                    )
     {
-      boost::filesystem::path full_path = boost::filesystem::absolute (path);
-
       client::unix_client::endpoint_type ep
-        (resolver<client::unix_client::protocol_type>::resolve (full_path.string ()));
+        (resolver<client::unix_client::protocol_type>::resolve (location));
 
 
         client::unix_client *c = new client::unix_client (io, ep);
@@ -82,7 +80,7 @@ namespace gspc
       if (url.type () == "unix")
       {
         client = s_new_unix_client ( gspc::net::io ()
-                                   , url.path ()
+                                   , boost::filesystem::absolute (url.path ()).string()
                                    , url.args ()
                                    );
       }
