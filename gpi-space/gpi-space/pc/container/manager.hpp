@@ -117,7 +117,6 @@ namespace gpi
         typedef boost::unique_lock<mutex_type> lock_type;
 
         void set_state (const state_t new_state);
-        state_t get_state (void) const;
 
         void detach_process (const gpi::pc::type::process_id_t);
         void detach_memory_from_process (const gpi::pc::type::process_id_t);

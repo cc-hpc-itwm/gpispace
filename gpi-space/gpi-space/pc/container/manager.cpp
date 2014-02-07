@@ -72,12 +72,6 @@ namespace gpi
         set_state (ST_STOPPED);
       }
 
-      manager_t::state_t manager_t::get_state () const
-      {
-        lock_type lcok (m_state_mutex);
-        return m_state;
-      }
-
       void manager_t::set_state (const state_t new_state)
       {
         static bool table [NUM_STATES][NUM_STATES] =
