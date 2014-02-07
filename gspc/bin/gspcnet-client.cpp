@@ -69,7 +69,7 @@ int main (int argc, char *argv[])
 
   try
   {
-    client = gspc::net::dial (url);
+    client = gspc::net::dial (url, net_initializer);
     print_handler.has_error = false;
     client->set_frame_handler (print_handler);
     std::cerr << "Connected! private queue: " << client->get_private_queue () << std::endl;
@@ -102,7 +102,7 @@ int main (int argc, char *argv[])
     {
       try
       {
-        client = gspc::net::dial (url);
+        client = gspc::net::dial (url, net_initializer);
       }
       catch (std::exception const &ex)
       {
