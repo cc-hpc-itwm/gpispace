@@ -268,3 +268,13 @@ BOOST_AUTO_TEST_CASE (multiple_comment_lines)
   BOOST_REQUIRE_EQUAL (m.begin()->first, "1.k");
   BOOST_REQUIRE_EQUAL (m.begin()->second, "v");
 }
+
+BOOST_AUTO_TEST_CASE (the_later_key_is_taken)
+{
+  std::map<std::string, std::string> const m
+    (fhg::util::parse::ini_map ("[1]k=a\nk=b"));
+
+  BOOST_REQUIRE_EQUAL (m.size(), 1);
+  BOOST_REQUIRE_EQUAL (m.begin()->first, "1.k");
+  BOOST_REQUIRE_EQUAL (m.begin()->second, "b");
+}
