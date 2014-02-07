@@ -50,8 +50,6 @@ namespace gspc
                        , server::queue_manager_t & qmgr
                        )
     {
-      gspc::net::initialize ();
-
       const fhg::util::url_t url (url_s);
 
       server_ptr_t server

@@ -122,8 +122,6 @@ namespace gspc
                       , boost::system::error_code & ec
                       )
     {
-      gspc::net::initialize ();
-
       using namespace boost::system;
 
       ec = errc::make_error_code (errc::success);
