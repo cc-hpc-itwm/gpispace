@@ -35,7 +35,6 @@ namespace gpi
         void handle_process_error ( const gpi::pc::type::process_id_t proc_id
                                   , int error
                                   );
-        void handle_connector_error (int error);
 
         gpi::pc::type::handle_t
         alloc ( const gpi::pc::type::process_id_t proc_id

@@ -153,20 +153,6 @@ namespace gpi
             );
       }
 
-      void manager_t::handle_connector_error (int error)
-      {
-        if (error)
-        {
-            LOG( ERROR
-               , "connector had an error: " << strerror (error) << ", restarting it"
-               );
-
-            lock_type lock(m_mutex);
-            m_connector.stop ();
-            m_connector.start ();
-        }
-      }
-
       void manager_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
                                           , int error
                                           )

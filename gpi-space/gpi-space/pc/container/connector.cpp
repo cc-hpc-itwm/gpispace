@@ -193,7 +193,16 @@ namespace gpi
             if (! m_stopping)
             {
               LOG(ERROR, "could not accept: " << strerror(err));
-              m_mgr.handle_connector_error (err);
+
+              if (err)
+              {
+                LOG( ERROR
+                   , "connector had an error: " << strerror (err) << ", restarting it"
+                   );
+
+                stop ();
+                start ();
+              }
             }
             break;
           }
