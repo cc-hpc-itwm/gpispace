@@ -99,7 +99,6 @@ namespace gpi
                    );
       private:
         typedef boost::shared_ptr<process_t> process_ptr_t;
-        typedef std::list<process_ptr_t> process_list_t;
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
 
