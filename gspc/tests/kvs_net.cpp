@@ -35,8 +35,10 @@ namespace
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (net_start_stop, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_start_stop)
 {
+  gspc::net::initializer net_initializer;
+
   for (size_t i (0); i < 10; ++i)
   {
     gspc::net::server::service_demux_t service_demux;
@@ -60,8 +62,10 @@ BOOST_FIXTURE_TEST_CASE (net_start_stop, gspc::net::initializer)
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (net_get_nokey, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_get_nokey)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type val;
 
   gspc::net::server::service_demux_t service_demux;
@@ -79,8 +83,10 @@ BOOST_FIXTURE_TEST_CASE (net_get_nokey, gspc::net::initializer)
   BOOST_REQUIRE_EQUAL (kvs.get ("foo", val), -ENOKEY);
 }
 
-BOOST_FIXTURE_TEST_CASE (net_api, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_api)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type val;
 
   gspc::net::server::service_demux_t service_demux;
@@ -121,8 +127,10 @@ BOOST_FIXTURE_TEST_CASE (net_api, gspc::net::initializer)
 }
 
 #ifdef NDEBUG
-BOOST_FIXTURE_TEST_CASE (net_put_get, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_put_get)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type out;
   static gspc::kvs::api_t::value_type const in (std::string ("bar"));
 
@@ -153,8 +161,10 @@ BOOST_FIXTURE_TEST_CASE (net_put_get, gspc::net::initializer)
 }
 #endif
 
-BOOST_FIXTURE_TEST_CASE (net_wait, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_wait)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type val;
 
   gspc::net::server::service_demux_t service_demux;
@@ -188,8 +198,10 @@ BOOST_FIXTURE_TEST_CASE (net_wait, gspc::net::initializer)
   BOOST_REQUIRE_EQUAL (val, val_to_push);
 }
 
-BOOST_FIXTURE_TEST_CASE (net_push_pop, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_push_pop)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type val;
 
   gspc::net::server::service_demux_t service_demux;
@@ -251,8 +263,10 @@ namespace
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (net_many_push_pop, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_many_push_pop)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type val;
   const std::string queue ("wfh");
 
