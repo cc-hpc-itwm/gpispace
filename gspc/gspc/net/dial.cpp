@@ -8,7 +8,6 @@
 
 #include <fhg/util/url.hpp>
 
-#include <gspc/net/io.hpp>
 #include <gspc/net/constants.hpp>
 #include <gspc/net/option.hpp>
 #include <gspc/net/resolver.hpp>
@@ -42,11 +41,6 @@ namespace gspc
 
         return client_ptr_t (new client::tcp_client (io, ep));
       }
-    }
-
-    client_ptr_t dial (std::string const &url_s)
-    {
-      return dial (url_s, gspc::net::io());
     }
 
     client_ptr_t dial ( std::string const &url_s
