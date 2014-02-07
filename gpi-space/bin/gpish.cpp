@@ -9,6 +9,7 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
@@ -511,7 +512,7 @@ static void print_progress( const std::size_t current
 
 static my_state_t *state (NULL);
 
-static int interrupt_shell (int, siginfo_t*, void*)
+static int interrupt_shell()
 {
   std::cerr << "stopping gpi api!" << std::endl;
   shell_t::get().state().capi.stop();
@@ -668,7 +669,7 @@ int main (int ac, char **av)
   initialize_shell (ac, av);
 
   fhg::util::signal_handler_manager signal_handler_manager;
-  signal_handler_manager.add (SIGINT, &interrupt_shell);
+  signal_handler_manager.add (SIGINT, boost::bind (&interrupt_shell));
 
   shell_t::get().run();
 
