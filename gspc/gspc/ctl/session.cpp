@@ -17,6 +17,7 @@
 #include <gspc/net/server.hpp>
 #include <gspc/net/service/strip_prefix.hpp>
 #include <gspc/kvs/kvs.hpp>
+#include <gspc/kvs/impl/kvs_net_frontend.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 #include <gspc/ctl/system.hpp>
 
@@ -108,16 +109,17 @@ namespace gspc
         int rc;
         gspc::kvs::api_t::value_type val;
 
-        boost::scoped_ptr<gspc::kvs::api_t> api
-          (gspc::kvs::create ("unix://" + p.string ()));
+        gspc::net::initializer net_initializer;
+        gspc::kvs::kvs_net_frontend_t api
+          ("unix://" + p.string(), net_initializer);
 
-        rc = api->get ("gspc.kvs.url", info.puburl);
+        rc = api.get ("gspc.kvs.url", info.puburl);
         if (rc != 0) return rc;
 
-        rc = api->get ("gspc.kvs.pid", info.pid);
+        rc = api.get ("gspc.kvs.pid", info.pid);
         if (rc != 0) return rc;
 
-        rc = api->get ("gspc.kvs.started", info.started);
+        rc = api.get ("gspc.kvs.started", info.started);
         if (rc != 0) return rc;
 
         info.name = p.filename ().string ();
