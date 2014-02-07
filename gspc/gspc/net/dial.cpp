@@ -56,8 +56,8 @@ namespace gspc
       const fhg::util::url_t url (url_s);
 
       client_ptr_t client
-        ( url.type () == "unix" ? new_unix_client (gspc::net::io (), boost::filesystem::absolute (url.path ()).string())
-        : url.type () == "tcp" ? new_tcp_client (gspc::net::io (), url.path ())
+        ( url.type () == "unix" ? new_unix_client (io_service, boost::filesystem::absolute (url.path ()).string())
+        : url.type () == "tcp" ? new_tcp_client (io_service, url.path ())
         : throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
         );
 
