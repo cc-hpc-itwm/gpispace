@@ -73,28 +73,13 @@ namespace gspc
     {
       using namespace boost::system;
 
-      client_ptr_t client;
-
       const fhg::util::url_t url (url_s);
 
-      if (url.type () == "unix")
-      {
-        client = s_new_unix_client ( gspc::net::io ()
-                                   , boost::filesystem::absolute (url.path ()).string()
-                                   , url.args ()
-                                   );
-      }
-      else if (url.type () == "tcp")
-      {
-        client = s_new_tcp_client ( gspc::net::io ()
-                                  , url.path ()
-                                  , url.args ()
-                                  );
-      }
-      else
-      {
-        throw boost::system::system_error (errc::make_error_code (errc::wrong_protocol_type));
-      }
+      client_ptr_t client
+        ( url.type () == "unix" ? s_new_unix_client (gspc::net::io (), boost::filesystem::absolute (url.path ()).string(), url.args ())
+        : url.type () == "tcp" ? s_new_tcp_client (gspc::net::io (), url.path (), url.args ())
+        : throw boost::system::system_error (errc::make_error_code (errc::wrong_protocol_type))
+        );
 
       if (client)
       {
