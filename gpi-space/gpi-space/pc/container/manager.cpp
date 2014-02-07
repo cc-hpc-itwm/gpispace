@@ -25,8 +25,7 @@ namespace gpi
       manager_t::manager_t ( std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            )
-       : m_state (ST_STOPPED)
-       , m_connector (*this, p)
+       : m_connector (*this, p)
        , m_process_counter (0)
        , m_default_memory_urls (default_memory_urls)
       {
@@ -36,8 +35,6 @@ namespace gpi
         {
           throw std::runtime_error ("too many predefined memory urls!");
         }
-
-        set_state (ST_STARTING);
 
           initialize_topology ();
           initialize_memory_manager ();
@@ -52,14 +49,10 @@ namespace gpi
           }
 
           m_connector.start ();
-
-        set_state (ST_STARTED);
       }
 
       manager_t::~manager_t ()
       {
-        set_state (ST_STOPPING);
-
           m_connector.stop ();
           while (! m_processes.empty())
           {
@@ -68,26 +61,6 @@ namespace gpi
 
           global::memory_manager().clear();
           shutdown_topology ();
-
-        set_state (ST_STOPPED);
-      }
-
-      void manager_t::set_state (const state_t new_state)
-      {
-        static bool table [NUM_STATES][NUM_STATES] =
-          {
-       // STOPPED   STARTING   STARTED  STOPPING
-            {1,        1,         0,       1}, // STOPPED
-            {1,        0,         1,       1}, // STARTING
-            {0,        0,         0,       1}, // STARTED
-            {1,        0,         0,       0}, // STOPPING
-          };
-
-        lock_type lcok (m_state_mutex);
-        if (table[m_state][new_state] == 0)
-          throw std::runtime_error ("invalid transition");
-        else
-          m_state = new_state;
       }
 
       void manager_t::initialize_memory_manager ()

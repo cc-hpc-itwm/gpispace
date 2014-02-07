@@ -20,15 +20,6 @@ namespace gpi
 
       class manager_t
       {
-        enum state_t
-          {
-            ST_STOPPED,
-            ST_STARTING,
-            ST_STARTED,
-            ST_STOPPING,
-            NUM_STATES,
-          };
-
       public:
         typedef manager_t self;
 
@@ -116,8 +107,6 @@ namespace gpi
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
 
-        void set_state (const state_t new_state);
-
         void detach_process (const gpi::pc::type::process_id_t);
         void detach_memory_from_process (const gpi::pc::type::process_id_t);
         void initialize_memory_manager ();
@@ -129,8 +118,6 @@ namespace gpi
         /*                                                    */
 
         mutable mutex_type m_mutex;
-        mutable mutex_type m_state_mutex;
-        state_t m_state;
         connector_t m_connector;
         gpi::pc::type::counter_t m_process_counter;
         std::vector<std::string> m_default_memory_urls;
