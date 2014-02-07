@@ -10,8 +10,8 @@
 #include <syslog.h>
 #include <time.h>
 
-#include <gspc/net/server/default_queue_manager.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
+#include <gspc/net/server/queue_manager.hpp>
+#include <gspc/net/server/service_demux.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
@@ -188,7 +188,9 @@ namespace gspc
       gspc::net::initializer _net_init;
 
       gspc::kvs::service_t service;
-      gspc::net::server::default_service_demux().handle
+      gspc::net::server::service_demux_t service_demux;
+      gspc::net::server::queue_manager_t queue_manager (service_demux);
+      service_demux.handle
         ( "/service/kvs"
         , gspc::net::service::strip_prefix ( "/service/kvs/"
                                            , boost::ref (service)
@@ -197,7 +199,7 @@ namespace gspc
 
       std::list<gspc::net::server_ptr_t> servers;
       {
-        gspc::net::server_ptr_t s (gspc::net::serve (m_url, gspc::net::server::default_queue_manager()));
+        gspc::net::server_ptr_t s (gspc::net::serve (m_url, queue_manager));
         servers.push_back (s);
         si.puburl = s->url ();
       }
@@ -212,7 +214,7 @@ namespace gspc
 
       {
         gspc::net::server_ptr_t s
-          (gspc::net::serve ("unix://" + (m_dir / m_name).string (), gspc::net::server::default_queue_manager()));
+          (gspc::net::serve ("unix://" + (m_dir / m_name).string (), queue_manager));
         servers.push_back (s);
       }
 
