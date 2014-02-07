@@ -99,9 +99,6 @@ namespace gpi
                    );
       private:
         typedef boost::shared_ptr<process_t> process_ptr_t;
-        typedef boost::unordered_map< gpi::pc::type::process_id_t
-                                    , process_ptr_t
-                                    > process_map_t;
         typedef std::list<process_ptr_t> process_list_t;
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -113,7 +110,8 @@ namespace gpi
         gpi::pc::type::counter_t m_process_counter;
 
         mutable mutex_type _mutex_processes;
-        process_map_t m_processes;
+        boost::unordered_map<gpi::pc::type::process_id_t, process_ptr_t>
+          m_processes;
       };
     }
   }
