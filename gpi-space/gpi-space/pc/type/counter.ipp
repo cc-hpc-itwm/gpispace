@@ -22,7 +22,7 @@ namespace gpi
       {
         lock_type lock (m_mutex);
         gpi::pc::type::size_t new_count (m_counter + 1);
-        if (! new_count) // TODO: branch hint unlikely
+        if (! new_count)
         {
           throw std::runtime_error ("cannot increment counter: would overflow");
         }
