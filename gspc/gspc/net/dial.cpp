@@ -1,4 +1,4 @@
-#include "dial.hpp"
+#include <gspc/net/dial.hpp>
 
 #include <string>
 
