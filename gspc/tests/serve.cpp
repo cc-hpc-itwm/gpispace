@@ -209,26 +209,6 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connection_refused)
                     );
 }
 
-BOOST_AUTO_TEST_CASE (test_serve_client_connection_refused)
-{
-  gspc::net::initializer net_initializer;
-
-  boost::system::error_code ec;
-
-  gspc::net::client_ptr_t client
-    (gspc::net::dial ("unix://this.socket.does.not.exist", ec));
-  BOOST_REQUIRE (client);
-
-  BOOST_REQUIRE (ec);
-  BOOST_REQUIRE (not client->is_connected ());
-
-  BOOST_REQUIRE_EQUAL (client->stop(), 0);
-
-  BOOST_REQUIRE_LT (client->start(), 0);
-
-  BOOST_REQUIRE_EQUAL (client->stop(), 0);
-}
-
 BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 {
   gspc::net::initializer net_initializer;
