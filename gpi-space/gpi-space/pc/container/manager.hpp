@@ -108,7 +108,6 @@ namespace gpi
 
         void detach_process (const gpi::pc::type::process_id_t);
         void detach_memory_from_process (const gpi::pc::type::process_id_t);
-        void initialize_memory_manager ();
 
         /*                                                    */
         /*           M E M B E R    V A R I A B L E S         */

@@ -53,7 +53,26 @@ namespace gpi
         {
           global::topology().establish();
         }
-          initialize_memory_manager ();
+        global::memory_manager ().start ( gpi_api.rank ()
+                                        , gpi_api.number_of_queues ()
+                                        );
+
+        if (global::topology ().is_master ())
+        {
+          typedef std::vector<std::string> url_list_t;
+          url_list_t::iterator it = m_default_memory_urls.begin ();
+          url_list_t::iterator end = m_default_memory_urls.end ();
+          gpi::pc::type::id_t id = 1;
+          for ( ; it != end ; ++it)
+          {
+            global::memory_manager ().add_memory
+              ( 0 // owner
+              , *it
+              , id
+              );
+            ++id;
+          }
+        }
 
           if (global::topology().is_master ())
           {
@@ -77,31 +96,6 @@ namespace gpi
 
           global::memory_manager().clear();
         global::topology().stop();
-      }
-
-      void manager_t::initialize_memory_manager ()
-      {
-        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-        global::memory_manager ().start ( gpi_api.rank ()
-                                        , gpi_api.number_of_queues ()
-                                        );
-
-        if (global::topology ().is_master ())
-        {
-          typedef std::vector<std::string> url_list_t;
-          url_list_t::iterator it = m_default_memory_urls.begin ();
-          url_list_t::iterator end = m_default_memory_urls.end ();
-          gpi::pc::type::id_t id = 1;
-          for ( ; it != end ; ++it)
-          {
-            global::memory_manager ().add_memory
-              ( 0 // owner
-              , *it
-              , id
-              );
-            ++id;
-          }
-        }
       }
 
       void manager_t::detach_process (const gpi::pc::type::process_id_t id)
