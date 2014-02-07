@@ -29,9 +29,7 @@ namespace gspc
       client::unix_client::endpoint_type ep
         (resolver<client::unix_client::protocol_type>::resolve (location));
 
-
-        client::unix_client *c = new client::unix_client (io, ep);
-        return client_ptr_t (c);
+        return client_ptr_t (new client::unix_client (io, ep));
     }
 
     static
@@ -42,8 +40,7 @@ namespace gspc
       client::tcp_client::endpoint_type ep
         (resolver<client::tcp_client::protocol_type>::resolve (location));
 
-      client::tcp_client *c = new client::tcp_client (io, ep);
-        return client_ptr_t (c);
+        return client_ptr_t (new client::tcp_client (io, ep));
     }
 
     client_ptr_t dial (std::string const &url_s)
