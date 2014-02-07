@@ -113,12 +113,13 @@ namespace gpi
 
       void manager_t::handle_new_connection (int fd)
       {
-        gpi::pc::type::counter_t const id (m_process_counter.inc());
+        //! \note must be lvalue to be used in ptr_map::insert
+        gpi::pc::type::process_id_t id (m_process_counter.inc());
 
         {
           boost::mutex::scoped_lock const _ (_mutex_processes);
 
-          m_processes[id] = process_ptr_t (new process_t (*this, id, fd));
+          m_processes.insert (id, new process_t (*this, id, fd));
         }
 
         CLOG( INFO

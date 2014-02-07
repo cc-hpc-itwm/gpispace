@@ -2,7 +2,7 @@
 #define GPI_SPACE_PC_CONTAINER_MANAGER_HPP 1
 
 #include <boost/thread.hpp>
-#include <boost/unordered_map.hpp>
+#include <boost/ptr_container/ptr_map.hpp>
 
 #include <gpi-space/pc/type/counter.hpp>
 #include <gpi-space/pc/container/process.hpp>
@@ -32,15 +32,13 @@ namespace gpi
                                   , int error
                                   );
       private:
-        typedef boost::shared_ptr<process_t> process_ptr_t;
-
         void detach_process (const gpi::pc::type::process_id_t);
 
         connector_t m_connector;
         gpi::pc::type::counter_t m_process_counter;
 
         mutable boost::mutex _mutex_processes;
-        boost::unordered_map<gpi::pc::type::process_id_t, process_ptr_t>
+        boost::ptr_map<gpi::pc::type::process_id_t, process_t>
           m_processes;
       };
     }
