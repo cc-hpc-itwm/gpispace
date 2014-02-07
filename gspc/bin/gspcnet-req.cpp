@@ -144,7 +144,7 @@ int main (int argc, char *argv[])
 
   try
   {
-    client = gspc::net::dial (url);
+    client = gspc::net::dial (url, net_initializer);
     client->set_frame_handler (reply_handler);
   }
   catch (std::exception const &ex)
