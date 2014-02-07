@@ -39,12 +39,10 @@ namespace gspc
       , _service_demux()
       , _queue_manager (_service_demux)
       , _echo_service ("/service/echo", net::service::echo(), _service_demux)
-      , m_server()
+      , m_server (net::serve (netd_url, _net_initializer, _queue_manager))
       , m_mgr ()
       , m_supervisor (m_mgr)
     {
-      m_server = net::serve (netd_url, _net_initializer, _queue_manager);
-
       LLOG (DEBUG, _logger, "listening on " << m_server->url ());
 
       signal (SIGCHLD, SIG_DFL);
