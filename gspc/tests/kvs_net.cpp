@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE (net_start_stop)
     gspc::net::server::service_demux_t service_demux;
     gspc::net::server::queue_manager_t queue_manager (service_demux);
     gspc::net::server_ptr_t server
-      (gspc::net::serve ("tcp://localhost:*", queue_manager));
+      (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
     gspc::kvs::service_t service;
     service_demux.handle ( "/service/kvs"
                       , gspc::net::service::strip_prefix ( "/service/kvs/"
@@ -70,7 +70,8 @@ BOOST_AUTO_TEST_CASE (net_get_nokey)
 
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t queue_manager (service_demux);
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", queue_manager));
+  gspc::net::server_ptr_t server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
   service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
@@ -92,7 +93,8 @@ BOOST_AUTO_TEST_CASE (net_api)
 
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t queue_manager (service_demux);
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", queue_manager));
+  gspc::net::server_ptr_t server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
   service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
@@ -138,7 +140,8 @@ BOOST_AUTO_TEST_CASE (net_put_get)
 
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t queue_manager (service_demux);
-  gspc::net::server_ptr_t const server (gspc::net::serve ("tcp://localhost:*", queue_manager));
+  gspc::net::server_ptr_t const server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
   service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
@@ -172,7 +175,8 @@ BOOST_AUTO_TEST_CASE (net_wait)
 
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t queue_manager (service_demux);
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", queue_manager));
+  gspc::net::server_ptr_t server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
   service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
@@ -210,7 +214,8 @@ BOOST_AUTO_TEST_CASE (net_push_pop)
 
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t queue_manager (service_demux);
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", queue_manager));
+  gspc::net::server_ptr_t server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
   service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
@@ -280,7 +285,8 @@ BOOST_AUTO_TEST_CASE (net_many_push_pop)
 
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t queue_manager (service_demux);
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", queue_manager));
+  gspc::net::server_ptr_t server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
   service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
