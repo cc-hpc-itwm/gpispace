@@ -21,12 +21,12 @@ int main (int argc, char *argv[])
   }
 
   gspc::net::initializer net_initializer;
-
   gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
+
   service_demux.handle ("/service/echo", gspc::net::service::echo ());
 
   std::vector<gspc::net::server_ptr_t> servers;
-  gspc::net::server::queue_manager_t qmgr (service_demux);
 
   for (int i = 1 ; i < argc ; ++i)
   {
