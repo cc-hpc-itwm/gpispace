@@ -7,6 +7,7 @@
 #include <boost/thread/shared_mutex.hpp>
 
 #include <gspc/kvs/api.hpp>
+#include <gspc/kvs/impl/kvs_impl.hpp>
 #include <gspc/net/service/handler.hpp>
 
 namespace gspc
@@ -92,7 +93,7 @@ namespace gspc
       gspc::net::frame
       encode_error_code (gspc::net::frame const &rqst, int rc);
 
-      api_t *m_kvs;
+      kvs_t m_kvs;
       rpc_table_t m_rpc_table;
 
       mutable boost::shared_mutex m_waiting_mtx;
