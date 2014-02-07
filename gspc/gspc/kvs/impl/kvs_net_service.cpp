@@ -6,7 +6,7 @@
 #include <gspc/net/error.hpp>
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/server/queue_manager.hpp>
-#include <gspc/kvs/kvs.hpp>
+#include <gspc/kvs/impl/kvs_impl.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/num.hpp>
@@ -26,7 +26,7 @@ namespace gspc
   namespace kvs
   {
     service_t::service_t ()
-      : m_kvs (gspc::kvs::create ("inproc://"))
+      : m_kvs (new kvs_t ("inproc://"))
     {
       m_on_change_connection =
         m_kvs->onChange.connect (boost::bind ( &service_t::on_change
