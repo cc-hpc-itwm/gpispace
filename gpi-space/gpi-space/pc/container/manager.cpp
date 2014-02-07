@@ -45,12 +45,10 @@ namespace gpi
 
           if (global::topology().is_master ())
           {
-            MLOG (TRACE, "telling slaves to GO");
             global::topology ().go ();
           }
           else
           {
-            MLOG (TRACE, "waiting for master to say GO");
             global::topology ().wait_for_go ();
           }
 
