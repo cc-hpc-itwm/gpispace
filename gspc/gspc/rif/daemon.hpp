@@ -45,6 +45,7 @@ namespace gspc
       gspc::net::initializer _net_initializer;
       gspc::net::server::service_demux_t _service_demux;
       gspc::net::server::queue_manager_t _queue_manager;
+      gspc::net::server::scoped_service_handler _echo_service;
       gspc::net::server_ptr_t m_server;
       gspc::rif::manager_t m_mgr;
       gspc::rif::supervisor_t m_supervisor;
