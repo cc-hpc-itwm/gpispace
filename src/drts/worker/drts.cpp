@@ -8,7 +8,6 @@
 #include <fhg/util/threadname.hpp>
 
 #include <gspc/net/frame_builder.hpp>
-#include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/service/echo.hpp>
@@ -468,7 +467,8 @@ void WFEImpl::service_set_search_path ( std::string const &
 }
 
 DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables)
-  : _service_demux (gspc::net::server::default_service_demux())
+  : _net_initializer (get<std::size_t> ("plugin.drts.netd_nthreads", config_variables).get_value_or (4L))
+  , _service_demux (gspc::net::server::default_service_demux())
   , _queue_manager (_service_demux)
 {
   //! \todo ctor parameters
@@ -494,7 +494,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     fhg::util::split (master_names, ",", std::back_inserter(master_list));
     fhg::util::split (virtual_capabilities, ",", std::back_inserter(capability_list));
   }
-  const std::size_t netd_nthreads (get<std::size_t> ("plugin.drts.netd_nthreads", config_variables).get_value_or (4L));
   const std::string netd_url (get<std::string> ("plugin.drts.netd_url", config_variables).get_value_or ("tcp://*"));
 
   const std::string kvs_host (get<std::string> ("plugin.drts.kvs_host", config_variables).get_value_or ("localhost"));
@@ -532,8 +531,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     , kvs_max_ping_failed
     , kvs_ping_interval
     );
-
-  gspc::net::initialize (netd_nthreads);
 
   _service_demux.handle ("/service/echo", gspc::net::service::echo ());
 
@@ -685,8 +682,6 @@ DRTSImpl::~DRTSImpl()
   {
     m_server->stop ();
   }
-
-  gspc::net::shutdown ();
 
   delete _kvs_keep_alive;
   _kvs_keep_alive = NULL;

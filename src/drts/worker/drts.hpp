@@ -12,6 +12,7 @@
 
 #include <gspc/drts/context.hpp>
 #include <gspc/net/frame.hpp>
+#include <gspc/net/io.hpp>
 #include <gspc/net/server.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
@@ -220,6 +221,7 @@ private:
 
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt);
 
+  gspc::net::initializer _net_initializer;
   gspc::net::server::service_demux_t& _service_demux;
   gspc::net::server::queue_manager_t _queue_manager;
 
