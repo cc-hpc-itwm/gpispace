@@ -110,7 +110,6 @@ namespace gpi
         void detach_memory_from_process (const gpi::pc::type::process_id_t);
         void initialize_memory_manager ();
         void initialize_topology ();
-        void shutdown_topology ();
 
         /*                                                    */
         /*           M E M B E R    V A R I A B L E S         */

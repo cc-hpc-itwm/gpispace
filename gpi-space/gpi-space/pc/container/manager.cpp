@@ -60,7 +60,7 @@ namespace gpi
           }
 
           global::memory_manager().clear();
-          shutdown_topology ();
+        global::topology().stop();
       }
 
       void manager_t::initialize_memory_manager ()
@@ -107,11 +107,6 @@ namespace gpi
         {
           global::topology().establish();
         }
-      }
-
-      void manager_t::shutdown_topology ()
-      {
-        global::topology().stop();
       }
 
       void manager_t::detach_process (const gpi::pc::type::process_id_t id)
