@@ -110,20 +110,6 @@ namespace gspc
       return ncpu;
     }
 
-    void initialize ()
-    {
-      initialize (s_get_thread_count ());
-    }
-
-    void initialize (const size_t nthread)
-    {
-      detail::get_io_singleton ().start (nthread);
-    }
-    void shutdown ()
-    {
-      detail::get_io_singleton ().stop ();
-    }
-
     boost::asio::io_service & io ()
     {
       return detail::get_io_singleton ().service ();
@@ -131,17 +117,17 @@ namespace gspc
 
     initializer::initializer ()
     {
-      ::gspc::net::initialize ();
+      detail::get_io_singleton ().start (s_get_thread_count ());
     }
 
     initializer::initializer (const size_t nthread)
     {
-      ::gspc::net::initialize (nthread);
+      detail::get_io_singleton ().start (nthread);
     }
 
     initializer::~initializer ()
     {
-      ::gspc::net::shutdown ();
+      detail::get_io_singleton ().stop ();
     }
   }
 }

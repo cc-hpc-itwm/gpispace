@@ -7,10 +7,6 @@ namespace gspc
 {
   namespace net
   {
-    void initialize ();
-    void initialize (const size_t nthread);
-    void shutdown ();
-
     struct initializer
     {
       initializer ();
