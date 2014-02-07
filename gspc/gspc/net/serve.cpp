@@ -8,7 +8,6 @@
 
 #include <fhg/util/url.hpp>
 
-#include <gspc/net/io.hpp>
 #include <gspc/net/option.hpp>
 #include <gspc/net/limits.hpp>
 #include <gspc/net/server.hpp>
@@ -46,13 +45,6 @@ namespace gspc
 
         return server_ptr_t (new server::tcp_server (io_service, ep, qmgr));
       }
-    }
-
-    server_ptr_t serve ( std::string const &url_s
-                       , server::queue_manager_t & qmgr
-                       )
-    {
-      return serve (url_s, gspc::net::io(), qmgr);
     }
 
     server_ptr_t serve ( std::string const &url_s
