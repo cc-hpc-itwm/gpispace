@@ -110,11 +110,6 @@ namespace gspc
       }
     }
 
-    boost::asio::io_service & io ()
-    {
-      return get_io_singleton ().service ();
-    }
-
     initializer::initializer ()
     {
       get_io_singleton ().start (s_get_thread_count ());

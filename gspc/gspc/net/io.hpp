@@ -18,8 +18,6 @@ namespace gspc
 
       operator boost::asio::io_service&();
     };
-
-    boost::asio::io_service & io ();
   }
 }
 
