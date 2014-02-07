@@ -36,7 +36,23 @@ namespace gpi
           throw std::runtime_error ("too many predefined memory urls!");
         }
 
-          initialize_topology ();
+        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
+        global::topology().start( gpi_api.rank()
+                                , global::topology_t::any_addr()
+                                , global::topology_t::any_port() // topology_t::port_t("10821")
+                                , "dummy-cookie"
+                                );
+
+        for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)
+        {
+          if (gpi_api.rank() != n)
+            global::topology().add_child(n);
+        }
+
+        if (gpi_api.is_master ())
+        {
+          global::topology().establish();
+        }
           initialize_memory_manager ();
 
           if (global::topology().is_master ())
@@ -85,27 +101,6 @@ namespace gpi
               );
             ++id;
           }
-        }
-      }
-
-      void manager_t::initialize_topology ()
-      {
-        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-        global::topology().start( gpi_api.rank()
-                                , global::topology_t::any_addr()
-                                , global::topology_t::any_port() // topology_t::port_t("10821")
-                                , "dummy-cookie"
-                                );
-
-        for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)
-        {
-          if (gpi_api.rank() != n)
-            global::topology().add_child(n);
-        }
-
-        if (gpi_api.is_master ())
-        {
-          global::topology().establish();
         }
       }
 
