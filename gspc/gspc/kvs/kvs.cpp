@@ -3,6 +3,8 @@
 #include <gspc/kvs/impl/kvs_impl.hpp>
 #include <gspc/kvs/impl/kvs_net_frontend.hpp>
 
+#include <gspc/net/io.hpp>
+
 namespace gspc
 {
   namespace kvs
@@ -56,7 +58,7 @@ namespace gspc
       }
       else
       {
-        return new gspc::kvs::kvs_net_frontend_t (url);
+        return new gspc::kvs::kvs_net_frontend_t (url, gspc::net::io());
       }
     }
 

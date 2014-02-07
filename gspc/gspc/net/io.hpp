@@ -15,6 +15,8 @@ namespace gspc
       initializer (const size_t nthread);
 
       ~initializer ();
+
+      operator boost::asio::io_service&();
     };
 
     boost::asio::io_service & io ();

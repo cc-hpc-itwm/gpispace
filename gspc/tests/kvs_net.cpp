@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE (net_start_stop)
                                                          )
                       );
 
-    gspc::kvs::kvs_net_frontend_t kvs (server->url());
+    gspc::kvs::kvs_net_frontend_t kvs (server->url(), net_initializer);
 
     BOOST_REQUIRE_EQUAL (kvs.put ("foo", std::string ("bar")), 0);
     gspc::kvs::api_t::value_type val;
@@ -78,7 +78,8 @@ BOOST_AUTO_TEST_CASE (net_get_nokey)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url() + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url() + "?timeout=100", net_initializer);
 
   BOOST_REQUIRE_EQUAL (kvs.get ("foo", val), -ENOKEY);
 }
@@ -99,7 +100,8 @@ BOOST_AUTO_TEST_CASE (net_api)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url() + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url() + "?timeout=100", net_initializer);
 
   BOOST_REQUIRE_EQUAL (kvs.get ("foo", val), -ENOKEY);
   BOOST_REQUIRE_EQUAL (kvs.put ("foo", "bar"), 0);
@@ -144,7 +146,8 @@ BOOST_AUTO_TEST_CASE (net_put_get)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url () + "?timeout=100", net_initializer);
 
   static const size_t NUM (1 << 10);
 
@@ -177,7 +180,8 @@ BOOST_AUTO_TEST_CASE (net_wait)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url() + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url() + "?timeout=100", net_initializer);
 
   BOOST_REQUIRE_EQUAL
     (kvs.wait ("foo", gspc::kvs::api_t::E_EXIST, 500), -ETIME);
@@ -214,7 +218,8 @@ BOOST_AUTO_TEST_CASE (net_push_pop)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url() + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url() + "?timeout=100", net_initializer);
 
   gspc::kvs::api_t::value_type const val_to_push (std::string ("bar"));
   boost::thread pusher (boost::bind ( &push_value
@@ -283,7 +288,8 @@ BOOST_AUTO_TEST_CASE (net_many_push_pop)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url () + "?timeout=100", net_initializer);
 
   boost::thread_group threads;
 

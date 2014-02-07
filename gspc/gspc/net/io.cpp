@@ -129,5 +129,10 @@ namespace gspc
     {
       get_io_singleton ().stop ();
     }
+
+    initializer::operator boost::asio::io_service&()
+    {
+      return get_io_singleton().service();
+    }
   }
 }

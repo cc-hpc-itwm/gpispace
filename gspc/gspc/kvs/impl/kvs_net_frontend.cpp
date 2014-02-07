@@ -23,8 +23,10 @@ namespace gspc
   {
     static std::string KVS_SERVICE = "/service/kvs";
 
-    kvs_net_frontend_t::kvs_net_frontend_t (std::string const &url)
-      : m_client (gspc::net::dial (url))
+    kvs_net_frontend_t::kvs_net_frontend_t ( std::string const &url
+                                           , boost::asio::io_service& io_service
+                                           )
+      : m_client (gspc::net::dial (url, io_service))
     {}
 
     static int s_get_error (gspc::net::frame const &f)

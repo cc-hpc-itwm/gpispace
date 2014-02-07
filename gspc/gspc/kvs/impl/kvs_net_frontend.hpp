@@ -6,6 +6,8 @@
 #include <gspc/kvs/api.hpp>
 #include <gspc/net/client_fwd.hpp>
 
+#include <boost/asio/io_service.hpp>
+
 namespace gspc
 {
   namespace kvs
@@ -13,8 +15,7 @@ namespace gspc
     class kvs_net_frontend_t : public api_t
     {
     public:
-      explicit
-      kvs_net_frontend_t (std::string const &url);
+      kvs_net_frontend_t (std::string const &url, boost::asio::io_service&);
     private:
       int request ( std::string const &rpc
                   , std::string const &rqst
