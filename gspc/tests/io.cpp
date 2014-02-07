@@ -32,7 +32,6 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
 
   gspc::net::server::service_demux_t service_demux;
   gspc::net::server::queue_manager_t qmgr (service_demux);
-  boost::system::error_code ec;
   gspc::net::tests::mock::user subscriber;
 
   qmgr.subscribe (&subscriber, "/test", "mock-1", gspc::net::frame ());
@@ -48,8 +47,8 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
 
     BOOST_REQUIRE (server);
 
-    gspc::net::client_ptr_t client =
-      gspc::net::dial (server->url () + "?connect_timeout=100", ec);
+    gspc::net::client_ptr_t client
+      (gspc::net::dial (server->url () + "?connect_timeout=100"));
 
     BOOST_REQUIRE (client);
 
