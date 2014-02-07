@@ -112,7 +112,6 @@ namespace gpi
         mutable mutex_type m_mutex;
         connector_t m_connector;
         gpi::pc::type::counter_t m_process_counter;
-        std::vector<std::string> m_default_memory_urls;
 
         process_map_t m_processes;
       };

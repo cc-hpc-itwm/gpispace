@@ -29,9 +29,8 @@ namespace gpi
                            )
        : m_connector (*this, p)
        , m_process_counter (0)
-       , m_default_memory_urls (default_memory_urls)
       {
-        if ( m_default_memory_urls.size ()
+        if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
            )
         {
@@ -62,7 +61,7 @@ namespace gpi
         if (global::topology ().is_master ())
         {
           gpi::pc::type::id_t id = 1;
-          BOOST_FOREACH (std::string const& url, m_default_memory_urls)
+          BOOST_FOREACH (std::string const& url, default_memory_urls)
           {
             global::memory_manager ().add_memory
               ( 0 // owner
