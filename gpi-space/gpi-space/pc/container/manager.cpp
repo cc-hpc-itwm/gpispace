@@ -60,7 +60,6 @@ namespace gpi
       {
         set_state (ST_STOPPING);
 
-        {
           lock_type lock (m_mutex);
           m_connector.stop ();
           while (! m_processes.empty())
@@ -70,7 +69,6 @@ namespace gpi
 
           global::memory_manager().clear();
           shutdown_topology ();
-        }
 
         set_state (ST_STOPPED);
       }
