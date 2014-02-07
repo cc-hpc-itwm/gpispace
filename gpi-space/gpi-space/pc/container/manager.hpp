@@ -118,7 +118,6 @@ namespace gpi
 
         void set_state (const state_t new_state);
         state_t get_state (void) const;
-        void require_state (const state_t st) const;
 
         void detach_process (const gpi::pc::type::process_id_t);
         void detach_memory_from_process (const gpi::pc::type::process_id_t);

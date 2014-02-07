@@ -93,14 +93,6 @@ namespace gpi
         return m_state;
       }
 
-      void manager_t::require_state (const state_t s) const
-      {
-        if (get_state () != s)
-        {
-          throw std::runtime_error ("state error: manager is in wrong state");
-        }
-      }
-
       void manager_t::set_state (const state_t new_state)
       {
         static bool table [NUM_STATES][NUM_STATES] =
