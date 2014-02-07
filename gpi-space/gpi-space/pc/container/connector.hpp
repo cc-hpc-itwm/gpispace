@@ -45,8 +45,6 @@ namespace gpi
         int open_socket(std::string const & path);
         int safe_unlink(std::string const & path);
 
-        void handle_new_connection (int fd);
-
         mutex_type m_mutex;
         manager_t & m_mgr;
         std::string m_path;
