@@ -21,24 +21,6 @@ namespace gspc
 {
   namespace net
   {
-    void s_set_options ( client_t *client
-                       , option_map_t const &opts
-                       )
-    {
-      client->set_timeout
-        (get_option ( opts
-                    , "timeout"
-                    , -1
-                    )
-        );
-      client->set_connect_timeout
-        (get_option ( opts
-                    , "connect_timeout"
-                    , gspc::net::constants::CONNECT_TIMEOUT ()
-                    )
-        );
-    }
-
     static
     client_ptr_t s_new_unix_client ( boost::asio::io_service & io
                                    , std::string const & location
@@ -74,7 +56,19 @@ namespace gspc
         : throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
         );
 
-      s_set_options (client, url.args ());
+      client->set_timeout
+        (get_option ( url.args()
+                    , "timeout"
+                    , -1
+                    )
+        );
+      client->set_connect_timeout
+        (get_option ( url.args()
+                    , "connect_timeout"
+                    , gspc::net::constants::CONNECT_TIMEOUT()
+                    )
+        );
+
 
         int rc (client->start ());
         if (0 != rc)
