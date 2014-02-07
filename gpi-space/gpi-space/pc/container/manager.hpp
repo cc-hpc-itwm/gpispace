@@ -21,7 +21,6 @@ namespace gpi
       class manager_t
       {
       public:
-        explicit
         manager_t ( std::string const & path_to_socket
                   , std::vector<std::string> const& default_memory_urls
                   );
