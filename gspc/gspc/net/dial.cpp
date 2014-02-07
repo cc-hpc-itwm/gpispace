@@ -46,6 +46,13 @@ namespace gspc
 
     client_ptr_t dial (std::string const &url_s)
     {
+      return dial (url_s, gspc::net::io());
+    }
+
+    client_ptr_t dial ( std::string const &url_s
+                      , boost::asio::io_service& io_service
+                      )
+    {
       const fhg::util::url_t url (url_s);
 
       client_ptr_t client
