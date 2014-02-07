@@ -81,9 +81,7 @@ namespace gspc
 
       if (client)
       {
-        int rc;
-
-        rc = client->start ();
+        int rc (client->start ());
         if (0 != rc)
         {
           if (-ECONNREFUSED == rc)
