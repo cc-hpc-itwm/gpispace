@@ -17,10 +17,13 @@ namespace gspc
       static void nop() {}
 
     public:
-      context (std::list<std::string> const &worker_list)
-        : m_worker_list (worker_list)
+      context (std::string const &worker_name, std::list<std::string> const &worker_list)
+        : m_worker_name (worker_name)
+        , m_worker_list (worker_list)
         , _module_call_do_cancel (nop)
       {}
+
+      const std::string &worker_name () const { return m_worker_name; }
 
       const std::list<std::string> &worker_list () const { return m_worker_list; }
       std::string worker_to_hostname (std::string const &w) const
@@ -41,6 +44,7 @@ namespace gspc
       }
 
     private:
+      std::string m_worker_name;
       std::list<std::string> m_worker_list;
       boost::function<void()> _module_call_do_cancel;
     };

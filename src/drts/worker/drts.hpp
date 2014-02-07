@@ -56,7 +56,7 @@ struct wfe_task_t
   gspc::drts::context context;
   std::string error_message;
 
-  wfe_task_t (std::string id, std::list<std::string> workers);
+  wfe_task_t (std::string id, std::string worker_name, std::list<std::string> workers);
 };
 
 class numa_socket_setter

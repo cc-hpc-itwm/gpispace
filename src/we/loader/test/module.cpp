@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE (call_not_found)
 {
   we::loader::Module m ("./libempty.so");
 
-  gspc::drts::context context ((std::list<std::string>()));
+  gspc::drts::context context ("noname", (std::list<std::string>()));
   expr::eval::context input;
   expr::eval::context output;
 
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE (call_local)
   we::loader::Module m ("./libempty.so");
   m.add_function ("f", &inc);
 
-  gspc::drts::context context ((std::list<std::string>()));
+  gspc::drts::context context ("noname", (std::list<std::string>()));
   expr::eval::context input;
   expr::eval::context output;
 
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE (call_lib)
 {
   we::loader::Module m ("./libanswer.so");
 
-  gspc::drts::context context ((std::list<std::string>()));
+  gspc::drts::context context ("noname", (std::list<std::string>()));
   expr::eval::context input;
   expr::eval::context output;
 

@@ -21,10 +21,10 @@
 #include <we/type/module_call.hpp>
 #include <we/type/net.hpp>
 
-wfe_task_t::wfe_task_t (std::string id, std::list<std::string> workers)
+wfe_task_t::wfe_task_t (std::string id, std::string worker_name, std::list<std::string> workers)
   : id (id)
   , state (wfe_task_t::PENDING)
-  , context (workers)
+  , context (worker_name, workers)
 {}
 
 numa_socket_setter::numa_socket_setter (size_t target_socket)
@@ -284,7 +284,7 @@ int WFEImpl::execute ( std::string const &job_id
                      , std::list<std::string> const & worker_list
                      )
 {
-  wfe_task_t task (job_id, worker_list);
+  wfe_task_t task (job_id, _worker_name, worker_list);
   task.errc = fhg::error::NO_ERROR;
 
   try
