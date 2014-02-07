@@ -321,6 +321,8 @@ namespace we
       if (state.first == std::size_t (0))
       {
         _rts_discovered (discover_id, state.second);
+
+        _discover_state.erase (discover_id);
       }
     }
 
