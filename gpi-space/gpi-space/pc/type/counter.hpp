@@ -19,7 +19,7 @@ namespace gpi
 
         operator gpi::pc::type::size_t () const { return value(); }
         inline gpi::pc::type::size_t inc ();
-        inline void reset (gpi::pc::type::size_t = 0);
+        inline void reset (gpi::pc::type::size_t);
       private:
         inline gpi::pc::type::size_t value () const;
         typedef boost::recursive_mutex mutex_type;
