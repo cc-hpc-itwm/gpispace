@@ -190,15 +190,6 @@ namespace gpi
       {
         if (error)
         {
-          state_t st (get_state());
-          if (st == ST_STOPPING || st == ST_STOPPED)
-          {
-            LOG( WARN
-               , "ignoring error " << error << " (" << strerror(error) << ") in connector"
-               );
-          }
-          else
-          {
             LOG( ERROR
                , "connector had an error: " << strerror (error) << ", restarting it"
                );
@@ -206,7 +197,6 @@ namespace gpi
             lock_type lock(m_mutex);
             m_connector.stop ();
             m_connector.start ();
-          }
         }
       }
 
@@ -214,22 +204,11 @@ namespace gpi
                                           , int error
                                           )
       {
-        state_t st (get_state());
-        if (st == ST_STOPPING || st == ST_STOPPED)
-        {
-          LOG_IF ( DEBUG
-                 , error != 0
-                 , "ignoring process container error during stop: pc = " << proc_id << " error = " << strerror(error)
-                 );
-        }
-        else
-        {
           LOG_IF ( ERROR
                  , error != 0
                  , "process container " << proc_id << " died: " << strerror (error)
                  );
           detach_process (proc_id);
-        }
       }
 
       gpi::pc::type::segment_id_t manager_t::register_segment ( const gpi::pc::type::process_id_t pc_id
