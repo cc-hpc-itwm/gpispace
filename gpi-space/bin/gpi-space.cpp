@@ -918,7 +918,6 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
       mem_urls.push_back (default_memory_url);
     global_container_mgr =
       new gpi::pc::container::manager_t (cfg->socket, mem_urls);
-    global_container_mgr->start ();
   }
   catch (std::exception const & ex)
   {

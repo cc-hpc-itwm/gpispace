@@ -36,15 +36,7 @@ namespace gpi
         {
           throw std::runtime_error ("too many predefined memory urls!");
         }
-      }
 
-      manager_t::~manager_t ()
-      {
-          stop();
-      }
-
-      void manager_t::start ()
-      {
         set_state (ST_STARTING);
 
         try
@@ -74,6 +66,11 @@ namespace gpi
         }
 
         set_state (ST_STARTED);
+      }
+
+      manager_t::~manager_t ()
+      {
+          stop();
       }
 
       void manager_t::stop ()

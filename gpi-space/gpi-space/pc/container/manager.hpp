@@ -39,7 +39,6 @@ namespace gpi
 
         ~manager_t ();
 
-        void start();
         void stop ();
 
         // api
