@@ -11,7 +11,6 @@ namespace gspc
   namespace net
   {
     client_ptr_t dial (std::string const &url);
-    client_ptr_t dial (std::string const &url, boost::system::error_code & ec);
   }
 }
 
