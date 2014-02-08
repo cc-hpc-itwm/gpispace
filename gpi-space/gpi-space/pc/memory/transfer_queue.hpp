@@ -40,11 +40,6 @@ namespace gpi
         std::size_t wait ();
 
       private:
-        // request to pause the queue
-        //   no new requests will be accepted
-        //   there might still be requests queued,
-        //   use flush to remove them
-        void pause ();
         // unpause the queue
         void resume ();
         bool is_paused () const;

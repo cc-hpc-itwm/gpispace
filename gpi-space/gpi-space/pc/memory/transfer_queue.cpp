@@ -109,13 +109,6 @@ namespace gpi
         m_resume_condition.notify_all();
       }
 
-      void
-      transfer_queue_t::pause ()
-      {
-        lock_type lock (m_mutex);
-        m_paused = true;
-      }
-
       bool
       transfer_queue_t::is_paused () const
       {
