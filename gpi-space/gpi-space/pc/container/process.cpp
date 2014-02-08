@@ -55,14 +55,11 @@ namespace gpi
           {
             try
             {
-              gpi::pc::type::handle_id_t handle
-                ( global::memory_manager().alloc
+              gpi::pc::proto::memory::alloc_reply_t rpl;
+              rpl.handle = global::memory_manager().alloc
                   ( m_proc_id
                   , alloc.segment, alloc.size, alloc.name, alloc.flags
-                  )
-                );
-              gpi::pc::proto::memory::alloc_reply_t rpl;
-              rpl.handle = handle;
+                  );
               return gpi::pc::proto::memory::message_t (rpl);
             }
             catch (std::exception const & ex)
