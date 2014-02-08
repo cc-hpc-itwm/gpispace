@@ -22,7 +22,6 @@ namespace gpi
                            )
        : m_connector
          (boost::bind (&manager_t::handle_new_connection, this, _1), p)
-       , m_process_counter (0)
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
@@ -78,19 +77,29 @@ namespace gpi
           m_connector.start ();
       }
 
-      manager_t::~manager_t ()
+      void connector_t::detach_all()
       {
-          m_connector.stop ();
           while (! m_processes.empty())
           {
             detach_process (m_processes.begin()->first);
           }
+      }
+
+      manager_t::~manager_t ()
+      {
+          m_connector.stop ();
+          m_connector.detach_all();
 
           global::memory_manager().clear();
         global::topology().stop();
       }
 
       void manager_t::detach_process (const gpi::pc::type::process_id_t id)
+      {
+        m_connector.detach_process (id);
+      }
+
+      void connector_t::detach_process (const gpi::pc::type::process_id_t id)
       {
         boost::mutex::scoped_lock const _ (_mutex_processes);
 
@@ -115,6 +124,11 @@ namespace gpi
 
       void manager_t::handle_new_connection (int fd)
       {
+        m_connector.handle_new_connection (fd);
+      }
+
+      void connector_t::handle_new_connection (int fd)
+      {
         //! \note must be lvalue to be used in ptr_map::insert
         gpi::pc::type::process_id_t id (m_process_counter.inc());
 
@@ -124,7 +138,7 @@ namespace gpi
           m_processes.insert
             ( id
             , new process_t
-              ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
+              ( boost::bind (&connector_t::handle_process_error, this, _1, _2)
               , id
               , fd
               )
@@ -138,6 +152,13 @@ namespace gpi
       }
 
       void manager_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
+                                          , int error
+                                          )
+      {
+        m_connector.handle_process_error (proc_id, error);
+      }
+
+      void connector_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
                                           , int error
                                           )
       {

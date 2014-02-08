@@ -35,6 +35,7 @@ namespace gpi
           , m_path (p)
           , m_socket (-1)
           , m_stopping (false)
+          , m_process_counter (0)
         {}
 
         ~connector_t ();
@@ -58,6 +59,19 @@ namespace gpi
         thread_t m_listener;
         int m_socket;
         bool m_stopping;
+
+        gpi::pc::type::counter_t m_process_counter;
+        mutable boost::mutex _mutex_processes;
+        boost::ptr_map<gpi::pc::type::process_id_t, process_t>
+          m_processes;
+
+      public:
+        void handle_new_connection (int fd);
+        void handle_process_error ( const gpi::pc::type::process_id_t proc_id
+                                  , int error
+                                  );
+        void detach_process (const gpi::pc::type::process_id_t);
+        void detach_all();
       };
 
       class process_t;
@@ -79,11 +93,6 @@ namespace gpi
         void detach_process (const gpi::pc::type::process_id_t);
 
         connector_t m_connector;
-        gpi::pc::type::counter_t m_process_counter;
-
-        mutable boost::mutex _mutex_processes;
-        boost::ptr_map<gpi::pc::type::process_id_t, process_t>
-          m_processes;
       };
     }
   }
