@@ -1,7 +1,6 @@
 add_library (gpi-space-pc-container
   manager.cpp
   process.cpp
-  connector.cpp
 )
 
 install (TARGETS gpi-space-pc-container
