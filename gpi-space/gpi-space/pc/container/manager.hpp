@@ -28,6 +28,7 @@ namespace gpi
       public:
         manager_t ( std::string const & p
                     , std::vector<std::string> const& default_memory_urls
+                  , memory::manager_t&
                     );
 
         ~manager_t ();
@@ -60,6 +61,8 @@ namespace gpi
                                   , int error
                                   );
         void detach_process (const gpi::pc::type::process_id_t);
+
+        memory::manager_t& _memory_manager;
       };
     }
   }

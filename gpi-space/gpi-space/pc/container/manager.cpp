@@ -43,7 +43,7 @@ namespace gpi
             detach_process (m_processes.begin()->first);
           }
 
-        global::memory_manager().clear();
+        _memory_manager.clear();
         global::topology().stop();
       }
 
@@ -224,6 +224,7 @@ namespace gpi
                   ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
                   , id
                   , fd
+                  , _memory_manager
                   )
                 );
             }
@@ -244,11 +245,13 @@ namespace gpi
       manager_t::manager_t
         ( std::string const & p
         , std::vector<std::string> const& default_memory_urls
+        , memory::manager_t& memory_manager
         )
           : m_path (p)
           , m_socket (-1)
           , m_stopping (false)
           , m_process_counter (0)
+          , _memory_manager (memory_manager)
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
@@ -274,7 +277,7 @@ namespace gpi
         {
           global::topology().establish();
         }
-        global::memory_manager ().start ( gpi_api.rank ()
+        _memory_manager.start ( gpi_api.rank ()
                                         , gpi_api.number_of_queues ()
                                         );
 
@@ -283,7 +286,7 @@ namespace gpi
           gpi::pc::type::id_t id = 1;
           BOOST_FOREACH (std::string const& url, default_memory_urls)
           {
-            global::memory_manager ().add_memory
+            _memory_manager.add_memory
               ( 0 // owner
               , url
               , id
@@ -319,7 +322,7 @@ namespace gpi
 
         m_processes.erase (id);
 
-        global::memory_manager().garbage_collect (id);
+        _memory_manager.garbage_collect (id);
 
         CLOG( INFO
             , "gpi.container"

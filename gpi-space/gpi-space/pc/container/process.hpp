@@ -6,6 +6,7 @@
 #include <gpi-space/pc/type/memory_location.hpp>
 
 #include <gpi-space/pc/proto/message.hpp>
+#include <gpi-space/pc/memory/manager.hpp>
 
 #include <boost/function.hpp>
 
@@ -23,12 +24,14 @@ namespace gpi
             const& handle_process_error
           , const gpi::pc::type::process_id_t id
           , const int socket
+          , memory::manager_t& memory_manager
           )
           : m_handle_process_error (handle_process_error)
           , m_id (id)
           , m_socket (socket)
           , m_reader
             (boost::bind (&process_t::reader_thread_main, this, m_socket))
+          , _memory_manager (memory_manager)
         {}
         ~process_t()
         {
@@ -60,6 +63,7 @@ namespace gpi
         const gpi::pc::type::process_id_t m_id;
         int const m_socket;
         boost::thread m_reader;
+        memory::manager_t& _memory_manager;
       };
     }
   }

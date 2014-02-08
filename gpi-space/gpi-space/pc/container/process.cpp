@@ -42,8 +42,11 @@ namespace gpi
       {
         struct handle_message_t : public boost::static_visitor<gpi::pc::proto::message_t>
         {
-          handle_message_t (gpi::pc::type::process_id_t const& proc_id)
+          handle_message_t ( gpi::pc::type::process_id_t const& proc_id
+                           , memory::manager_t& memory_manager
+                           )
             : m_proc_id (proc_id)
+            , _memory_manager (memory_manager)
           {}
 
           /**********************************************/
@@ -54,7 +57,7 @@ namespace gpi
             operator () (const gpi::pc::proto::memory::alloc_t & alloc) const
           {
             gpi::pc::proto::memory::alloc_reply_t rpl;
-            rpl.handle = global::memory_manager().alloc
+            rpl.handle = _memory_manager.alloc
               ( m_proc_id
               , alloc.segment, alloc.size, alloc.name, alloc.flags
               );
@@ -64,7 +67,7 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::memory::free_t & free) const
           {
-            global::memory_manager().free (free.handle);
+            _memory_manager.free (free.handle);
             return gpi::pc::proto::error::error_t
               (gpi::pc::proto::error::success, "success");
           }
@@ -75,7 +78,7 @@ namespace gpi
             gpi::pc::type::validate (cpy.dst.handle);
             gpi::pc::type::validate (cpy.src.handle);
             gpi::pc::proto::memory::memcpy_reply_t rpl;
-            rpl.queue = global::memory_manager().memcpy
+            rpl.queue = _memory_manager.memcpy
               (m_proc_id, cpy.dst, cpy.src, cpy.size, cpy.queue);
             return gpi::pc::proto::memory::message_t (rpl);
           }
@@ -107,7 +110,7 @@ namespace gpi
             //                 if set: reply immediately
             //                   else: somebody else will reply later
             //           messages need unique sequence numbers or message-ids
-            rpl.count = global::memory_manager().wait_on_queue
+            rpl.count = _memory_manager.wait_on_queue
               (m_proc_id, w.queue);
             return gpi::pc::proto::memory::message_t (rpl);
           }
@@ -118,11 +121,11 @@ namespace gpi
             gpi::pc::proto::memory::list_reply_t rpl;
             if (list.segment == gpi::pc::type::segment::SEG_INVAL)
             {
-              global::memory_manager().list_allocations(m_proc_id, rpl.list);
+              _memory_manager.list_allocations(m_proc_id, rpl.list);
             }
             else
             {
-              global::memory_manager().list_allocations (m_proc_id, list.segment, rpl.list);
+              _memory_manager.list_allocations (m_proc_id, list.segment, rpl.list);
             }
             return gpi::pc::proto::memory::message_t (rpl);
           }
@@ -131,7 +134,7 @@ namespace gpi
             operator () (const gpi::pc::proto::memory::info_t & info) const
           {
             gpi::pc::proto::memory::info_reply_t rpl;
-            rpl.descriptor = global::memory_manager().info (info.handle);
+            rpl.descriptor = _memory_manager.info (info.handle);
             return gpi::pc::proto::memory::message_t (rpl);
           }
 
@@ -157,7 +160,7 @@ namespace gpi
 
             gpi::pc::proto::segment::register_reply_t rpl;
             rpl.id =
-              global::memory_manager().register_memory (m_proc_id, area);
+              _memory_manager.register_memory (m_proc_id, area);
 
             return gpi::pc::proto::segment::message_t (rpl);
           }
@@ -165,7 +168,7 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment) const
           {
-            global::memory_manager().unregister_memory
+            _memory_manager.unregister_memory
               (m_proc_id, unregister_segment.id);
             return gpi::pc::proto::error::error_t
               (gpi::pc::proto::error::success, "success");
@@ -174,7 +177,7 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::attach_t & attach_segment) const
           {
-            global::memory_manager().attach_process
+            _memory_manager.attach_process
               (m_proc_id, attach_segment.id);
             return gpi::pc::proto::error::error_t
               (gpi::pc::proto::error::success, "success");
@@ -183,7 +186,7 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::detach_t & detach_segment) const
           {
-            global::memory_manager().detach_process
+            _memory_manager.detach_process
               (m_proc_id, detach_segment.id);
             return gpi::pc::proto::error::error_t
               (gpi::pc::proto::error::success, "success");
@@ -194,11 +197,11 @@ namespace gpi
           {
             gpi::pc::proto::segment::list_reply_t rpl;
             if (list.id == gpi::pc::type::segment::SEG_INVAL)
-              global::memory_manager().list_memory (rpl.list);
+              _memory_manager.list_memory (rpl.list);
             else
             {
               LOG(WARN, "list of particular segment not implemented");
-              global::memory_manager().list_memory (rpl.list);
+              _memory_manager.list_memory (rpl.list);
             }
             return gpi::pc::proto::segment::message_t (rpl);
           }
@@ -207,7 +210,7 @@ namespace gpi
             operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
           {
             gpi::pc::type::segment_id_t id =
-              global::memory_manager ().add_memory (m_proc_id, add_mem.url);
+              _memory_manager.add_memory (m_proc_id, add_mem.url);
             gpi::pc::proto::segment::register_reply_t rpl;
             rpl.id = id;
             return gpi::pc::proto::segment::message_t (rpl);
@@ -216,7 +219,7 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
           {
-            global::memory_manager ().del_memory (m_proc_id, del_mem.id);
+            _memory_manager.del_memory (m_proc_id, del_mem.id);
             return
               gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
           }
@@ -275,16 +278,19 @@ namespace gpi
 
         private:
           gpi::pc::type::process_id_t const& m_proc_id;
+          memory::manager_t& _memory_manager;
         };
 
         gpi::pc::proto::message_t handle_message
           ( gpi::pc::type::process_id_t const& id
           , gpi::pc::proto::message_t const& request
+          , gpi::pc::memory::manager_t& memory_manager
           )
         {
           try
           {
-            return boost::apply_visitor (handle_message_t (id), request);
+            return boost::apply_visitor
+              (handle_message_t (id, memory_manager), request);
           }
           catch (std::exception const& ex)
           {
@@ -405,7 +411,7 @@ namespace gpi
               break;
             }
 
-            if (send (fd, handle_message (m_id, request)) <= 0)
+            if (send (fd, handle_message (m_id, request, _memory_manager)) <= 0)
             {
               break;
             }
