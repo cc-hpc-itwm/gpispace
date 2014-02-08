@@ -77,10 +77,6 @@ namespace gpi
         ~manager_t ();
 
       private:
-        void handle_process_error ( const gpi::pc::type::process_id_t proc_id
-                                  , int error
-                                  );
-
         connector_t m_connector;
       };
     }

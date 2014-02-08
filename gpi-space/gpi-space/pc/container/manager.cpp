@@ -357,13 +357,6 @@ namespace gpi
           global::memory_manager().clear();
         global::topology().stop();
       }
-
-      void manager_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
-                                          , int error
-                                          )
-      {
-        m_connector.handle_process_error (proc_id, error);
-      }
     }
   }
 }
