@@ -431,9 +431,7 @@ namespace gpi
                                 , const size_t max_size
                                 )
       {
-        using namespace gpi::pc::proto;
-
-        header_t header;
+        gpi::pc::proto::header_t header;
         int err;
         std::vector<char> buffer;
 
