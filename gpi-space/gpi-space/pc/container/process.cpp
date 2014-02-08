@@ -377,7 +377,12 @@ namespace gpi
           operator () (const gpi::pc::proto::control::info_t &) const
           {
             gpi::pc::proto::control::info_reply_t rpl;
-            m_proc.collect_info (rpl.info);
+            gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
+
+            rpl.info.rank = gpi_api.rank();
+            rpl.info.nodes = gpi_api.number_of_nodes();
+            rpl.info.queues = gpi_api.number_of_queues();
+            rpl.info.queue_depth = gpi_api.queue_depth();
             return gpi::pc::proto::control::message_t (rpl);
           }
 
@@ -594,15 +599,6 @@ namespace gpi
       /***                                                  ***/
       /********************************************************/
 
-      void process_t::collect_info (gpi::pc::type::info::descriptor_t &d)
-      {
-        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-
-        d.rank = gpi_api.rank();
-        d.nodes = gpi_api.number_of_nodes();
-        d.queues = gpi_api.number_of_queues();
-        d.queue_depth = gpi_api.queue_depth();
-      }
     }
   }
 }
