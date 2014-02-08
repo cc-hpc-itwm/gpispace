@@ -32,9 +32,9 @@ namespace gpi
 
         ~manager_t ();
 
+      private:
         void start ();
         void stop ();
-      private:
         typedef boost::shared_ptr<boost::thread> thread_t;
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -56,7 +56,6 @@ namespace gpi
         boost::ptr_map<gpi::pc::type::process_id_t, process_t>
           m_processes;
 
-      public:
         void handle_new_connection (int fd);
         void handle_process_error ( const gpi::pc::type::process_id_t proc_id
                                   , int error
