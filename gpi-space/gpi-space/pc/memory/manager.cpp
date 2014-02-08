@@ -350,14 +350,6 @@ namespace gpi
         add_handle (hdl, seg_id);
         handle_allocated (hdl);
 
-        DLOG( TRACE
-            , "remote memory allocated:"
-            << " segment " << seg_id
-            << " size " << size
-            << " local " << local_size
-            << " handle " << hdl
-            );
-
         return 0;
       }
 
@@ -379,14 +371,6 @@ namespace gpi
 
         handle_allocated (hdl);
 
-        DLOG( TRACE
-            , "memory allocated:"
-            << " process " << proc_id
-            << " segment " << seg_id
-            << " size " << size
-            << " handle " << hdl
-            );
-
         return hdl;
       }
 
@@ -401,11 +385,6 @@ namespace gpi
         del_handle (hdl);
 
         handle_freed (hdl);
-
-        DLOG( TRACE
-            , "remote memory deallocated:"
-            << " handle " << hdl
-            );
       }
 
       void
@@ -419,11 +398,6 @@ namespace gpi
         area->free (hdl);
 
         handle_freed (hdl);
-
-        DLOG( TRACE
-            , "memory deallocated:"
-            << " handle " << hdl
-            );
       }
 
       gpi::pc::type::handle::descriptor_t
@@ -482,12 +456,6 @@ namespace gpi
         {
           t.queue        = queue;
         }
-
-        DLOG ( TRACE
-             , "process " << pid
-             << " requesting transfer "
-             << t
-             );
 
         t.dst_area->check_bounds (dst, amount);
         t.src_area->check_bounds (src, amount);
