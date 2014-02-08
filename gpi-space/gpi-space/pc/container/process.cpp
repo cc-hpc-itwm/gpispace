@@ -79,7 +79,7 @@ namespace gpi
             gpi::pc::type::validate (cpy.src.handle);
             gpi::pc::proto::memory::memcpy_reply_t rpl;
             rpl.queue = _memory_manager.memcpy
-              (m_proc_id, cpy.dst, cpy.src, cpy.size, cpy.queue);
+              (cpy.dst, cpy.src, cpy.size, cpy.queue);
             return gpi::pc::proto::memory::message_t (rpl);
           }
 

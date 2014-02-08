@@ -29,13 +29,11 @@ namespace gpi
       {
       public:
         memory_transfer_t ()
-          : pid (0)
-          , amount (0)
+          : amount (0)
           , queue (0)
         {}
 
         typedef boost::shared_ptr<gpi::pc::memory::area_t> area_ptr;
-        gpi::pc::type::process_id_t pid;
 
         area_ptr dst_area;
         gpi::pc::type::memory_location_t dst_location;

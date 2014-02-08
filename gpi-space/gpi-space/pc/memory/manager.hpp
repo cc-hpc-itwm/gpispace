@@ -108,8 +108,7 @@ namespace gpi
                              ) const;
 
         gpi::pc::type::queue_id_t
-        memcpy ( const gpi::pc::type::process_id_t proc_id
-               , gpi::pc::type::memory_location_t const & dst
+        memcpy ( gpi::pc::type::memory_location_t const & dst
                , gpi::pc::type::memory_location_t const & src
                , const gpi::pc::type::size_t amount
                , const gpi::pc::type::queue_id_t queue

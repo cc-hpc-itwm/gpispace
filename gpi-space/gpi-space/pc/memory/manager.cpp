@@ -432,15 +432,13 @@ namespace gpi
       }
 
       gpi::pc::type::queue_id_t
-      manager_t::memcpy ( const gpi::pc::type::process_id_t pid
-                        , gpi::pc::type::memory_location_t const & dst
+      manager_t::memcpy ( gpi::pc::type::memory_location_t const & dst
                         , gpi::pc::type::memory_location_t const & src
                         , const gpi::pc::type::size_t amount
                         , const gpi::pc::type::queue_id_t queue
                         )
       {
         memory_transfer_t t;
-        t.pid          = pid;
         t.dst_area     = get_area_by_handle(dst.handle);
         t.dst_location = dst;
         t.src_area     = get_area_by_handle(src.handle);
