@@ -25,7 +25,6 @@ namespace gpi
       class task_t : boost::noncopyable
       {
       public:
-        typedef task_state::state state;
         typedef boost::function<void (void)> function_type;
 
         task_t (std::string const nme, function_type fun, const std::size_t eta = 0);
@@ -47,12 +46,12 @@ namespace gpi
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::condition_variable condition_type;
 
-        void set_state (const state);
-        state get_state () const;
+        void set_state (const task_state::state);
+        task_state::state get_state () const;
 
         mutable mutex_type m_mutex;
         condition_type m_state_changed;
-        state m_state;
+        task_state::state m_state;
         const std::string m_name;
         function_type m_func;
         boost::exception_ptr m_error;

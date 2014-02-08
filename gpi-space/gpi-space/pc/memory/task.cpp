@@ -52,14 +52,14 @@ namespace gpi
         }
       }
 
-      void task_t::set_state (const task_t::state s)
+      void task_t::set_state (const task_state::state s)
       {
         lock_type lock (m_mutex);
         m_state = s;
         m_state_changed.notify_all();
       }
 
-      task_t::state task_t::get_state () const
+      task_state::state task_t::get_state () const
       {
         lock_type lock (m_mutex);
         return m_state;
