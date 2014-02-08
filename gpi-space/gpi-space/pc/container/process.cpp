@@ -434,8 +434,7 @@ namespace gpi
         gpi::pc::proto::header_t header;
         std::vector<char> buffer;
 
-        int err;
-        err = checked_read (fd, &header, sizeof(header));
+        int err (checked_read (fd, &header, sizeof(header)));
         if (err <= 0)
         {
           return err;
