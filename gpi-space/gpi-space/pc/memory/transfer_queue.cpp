@@ -14,7 +14,6 @@ namespace gpi
       transfer_queue_t::transfer_queue_t ( const std::size_t id
                                          )
         : m_id (id)
-        , m_paused (false)
         , m_enabled (true)
       {
         m_thread = boost::make_shared<boost::thread>
@@ -76,8 +75,6 @@ namespace gpi
             ("queue permanently disabled due to previous errors");
         }
 
-        wait_until_unpaused ();
-
         BOOST_FOREACH(task_ptr task, tasks)
         {
             m_task_queue.push(task);
@@ -89,30 +86,6 @@ namespace gpi
           lock_type lock (m_mutex);
           m_dispatched.insert (tasks.begin(), tasks.end());
         }
-      }
-
-      void
-      transfer_queue_t::wait_until_unpaused () const
-      {
-        lock_type lock (m_mutex);
-        while (is_paused())
-        {
-          m_resume_condition.wait (lock);
-        }
-      }
-
-      void
-      transfer_queue_t::resume ()
-      {
-        lock_type lock (m_mutex);
-        m_paused = false;
-        m_resume_condition.notify_all();
-      }
-
-      bool
-      transfer_queue_t::is_paused () const
-      {
-        return m_paused;
       }
 
       void

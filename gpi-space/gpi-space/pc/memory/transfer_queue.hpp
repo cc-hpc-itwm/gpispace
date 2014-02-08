@@ -40,10 +40,6 @@ namespace gpi
         std::size_t wait ();
 
       private:
-        // unpause the queue
-        void resume ();
-        bool is_paused () const;
-
         void enable ();
         bool is_disabled () const;
 
@@ -56,12 +52,10 @@ namespace gpi
         typedef boost::shared_ptr<boost::thread> thread_ptr;
 
         void worker ();
-        void wait_until_unpaused () const;
 
         mutable mutex_type m_mutex;
         mutable condition_type m_resume_condition;
         std::size_t m_id;
-        bool m_paused;
         bool m_enabled;
 
         task_queue_t m_task_queue;
