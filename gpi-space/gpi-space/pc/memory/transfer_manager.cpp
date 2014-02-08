@@ -27,7 +27,7 @@ namespace gpi
         for (std::size_t i(0); i < number_of_queues; ++i)
         {
           m_queues.push_back
-            (boost::make_shared<transfer_queue_t>(i));
+            (boost::make_shared<transfer_queue_t>());
         }
 
         for (size_t i = 0; i < number_of_queues; ++i)

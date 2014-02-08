@@ -19,7 +19,7 @@ namespace gpi
       {
       public:
         explicit
-        transfer_queue_t (const std::size_t id);
+        transfer_queue_t();
         ~transfer_queue_t ();
 
         void enqueue (task_ptr const &);
@@ -52,7 +52,6 @@ namespace gpi
 
         mutable mutex_type m_mutex;
         mutable condition_type m_resume_condition;
-        std::size_t m_id;
         bool m_enabled;
 
         task_queue_t m_task_queue;
