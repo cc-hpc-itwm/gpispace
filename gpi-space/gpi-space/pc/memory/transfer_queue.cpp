@@ -89,7 +89,7 @@ namespace gpi
       void
       transfer_queue_t::disable ()
       {
-        lock_type lock (m_mutex);
+        boost::mutex::scoped_lock const _ (m_mutex);
         m_enabled = false;
       }
 
