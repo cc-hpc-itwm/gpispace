@@ -245,24 +245,6 @@ namespace gpi
             return gpi::pc::proto::control::message_t (rpl);
           }
 
-          gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::message_t & m) const
-          {
-            return boost::apply_visitor (*this, m);
-          }
-
-          gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::message_t & m) const
-          {
-            return boost::apply_visitor (*this, m);
-          }
-
-          gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::control::message_t & m) const
-          {
-            return boost::apply_visitor (*this, m);
-          }
-
           /*** Catch all other messages ***/
 
           template <typename T>
