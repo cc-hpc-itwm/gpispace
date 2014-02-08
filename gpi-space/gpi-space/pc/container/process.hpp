@@ -49,12 +49,6 @@ namespace gpi
 
         // protocol implementation
 
-        gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t
-                                         , const gpi::pc::type::size_t
-                                         , const std::string & name
-                                         , const gpi::pc::type::flags_t
-                                         );
-
         gpi::pc::type::segment_id_t register_segment( std::string const & name
                                                     , const gpi::pc::type::size_t sz
                                                     , const gpi::pc::type::flags_t

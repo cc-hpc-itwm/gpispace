@@ -56,11 +56,10 @@ namespace gpi
             try
             {
               gpi::pc::type::handle_id_t handle
-                ( m_proc.alloc ( alloc.segment
-                               , alloc.size
-                               , alloc.name
-                               , alloc.flags
-                               )
+                ( global::memory_manager().alloc
+                  ( m_proc.id()
+                  , alloc.segment, alloc.size, alloc.name, alloc.flags
+                  )
                 );
               gpi::pc::proto::memory::alloc_reply_t rpl;
               rpl.handle = handle;
@@ -550,16 +549,6 @@ namespace gpi
       /***  P R O T O C O L    I M P L E M E N T A T I O N  ***/
       /***                                                  ***/
       /********************************************************/
-
-      gpi::pc::type::handle_id_t
-      process_t::alloc ( const gpi::pc::type::segment_id_t seg
-                          , const gpi::pc::type::size_t size
-                          , const std::string & name
-                          , const gpi::pc::type::flags_t flags
-                          )
-      {
-        return global::memory_manager().alloc (m_id, seg, size, name, flags);
-      }
 
       void
       process_t::list_allocations( const gpi::pc::type::segment_id_t seg
