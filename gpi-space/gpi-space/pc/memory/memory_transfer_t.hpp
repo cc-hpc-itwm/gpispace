@@ -28,19 +28,10 @@ namespace gpi
       class memory_transfer_t
       {
       public:
-        enum status_t
-        {
-          PENDING,
-          RUNNING,
-          FAILED,
-          FINISHED,
-        };
-
         memory_transfer_t ()
           : pid (0)
           , amount (0)
           , queue (0)
-          , status (PENDING)
         {}
 
         typedef boost::shared_ptr<gpi::pc::memory::area_t> area_ptr;
@@ -54,8 +45,6 @@ namespace gpi
 
         gpi::pc::type::size_t amount;
         gpi::pc::type::queue_id_t queue;
-
-        status_t status;
       };
     }
   }
