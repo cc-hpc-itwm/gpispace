@@ -10,7 +10,6 @@ set (hdrs
   shm_area.hpp
   sfs_area.hpp
   memory_transfer_t.hpp
-  thread_pool.hpp
   task.hpp
   task_queue.hpp
   transfer_queue.hpp
@@ -28,7 +27,6 @@ set (srcs
   shm_area.cpp
   sfs_area.cpp
   memory_transfer_t.cpp
-  thread_pool.cpp
   task.cpp
   task_queue.cpp
   transfer_queue.cpp
