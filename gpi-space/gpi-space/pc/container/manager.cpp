@@ -100,10 +100,10 @@ namespace gpi
         }
       }
 
-      int manager_t::close_socket (const int fd)
+      void manager_t::close_socket (const int fd)
       {
         shutdown (fd, SHUT_RDWR);
-        return close (fd);
+        close (fd);
       }
 
       int manager_t::open_socket (std::string const & path)
