@@ -57,7 +57,15 @@ namespace gpi
         {
           m_socket = fd;
           DLOG(DEBUG, "listening on " << m_path << " (fd " << fd << ")");
-          start_thread ();
+          assert (m_socket >= 0);
+
+          m_listener = thread_t
+            (new boost::thread(boost::bind( &connector_t::listener_thread_main
+                                          , this
+                                          , m_socket
+                                          )
+                              )
+            );
         }
       }
 
@@ -73,19 +81,6 @@ namespace gpi
           stop_thread ();
           m_socket = -1;
         }
-      }
-
-      void connector_t::start_thread ()
-      {
-        assert (m_socket >= 0);
-
-        m_listener = thread_t
-          (new boost::thread(boost::bind( &connector_t::listener_thread_main
-                                        , this
-                                        , m_socket
-                                        )
-                            )
-          );
       }
 
       void connector_t::stop_thread ()
