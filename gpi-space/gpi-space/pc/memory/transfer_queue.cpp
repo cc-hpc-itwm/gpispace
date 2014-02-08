@@ -1,7 +1,5 @@
 #include "transfer_queue.hpp"
 
-#include <fhglog/LogMacros.hpp>
-
 #include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>
 
@@ -98,11 +96,6 @@ namespace gpi
           // process container
           if (task->has_failed())
           {
-            LOG( ERROR
-               , "transfer " << task->get_name()
-               << " failed: " << task->get_error_message()
-               );
-
             throw std::runtime_error
               ( "task failed: " + task->get_name ()
               + ": " + task->get_error_message ()
