@@ -40,10 +40,6 @@ namespace gpi
                << task->get_error_message()
                );
           }
-          else if (task->has_finished())
-          {
-            DLOG (TRACE, "transfer done: " << task->get_name());
-          }
           else
           {
             LOG( ERROR
