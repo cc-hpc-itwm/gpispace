@@ -27,7 +27,6 @@ namespace gpi
       class connector_t : boost::noncopyable
       {
       public:
-        explicit
         connector_t ( boost::function<void (int)> const& handle_new_connection
                     , std::string const & p
                     )
