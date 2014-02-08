@@ -51,88 +51,88 @@ namespace gpi
           /**********************************************/
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::alloc_t & alloc) const
+            operator () (const gpi::pc::proto::memory::alloc_t & alloc) const
           {
-              gpi::pc::proto::memory::alloc_reply_t rpl;
-              rpl.handle = global::memory_manager().alloc
-                  ( m_proc_id
-                  , alloc.segment, alloc.size, alloc.name, alloc.flags
-                  );
-              return gpi::pc::proto::memory::message_t (rpl);
+            gpi::pc::proto::memory::alloc_reply_t rpl;
+            rpl.handle = global::memory_manager().alloc
+              ( m_proc_id
+              , alloc.segment, alloc.size, alloc.name, alloc.flags
+              );
+            return gpi::pc::proto::memory::message_t (rpl);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::free_t & free) const
+            operator () (const gpi::pc::proto::memory::free_t & free) const
           {
-              global::memory_manager().free (free.handle);
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::success, "success");
+            global::memory_manager().free (free.handle);
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::success, "success");
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::memcpy_t & cpy) const
+            operator () (const gpi::pc::proto::memory::memcpy_t & cpy) const
           {
-              gpi::pc::type::validate (cpy.dst.handle);
-              gpi::pc::type::validate (cpy.src.handle);
-              gpi::pc::proto::memory::memcpy_reply_t rpl;
-              rpl.queue = global::memory_manager().memcpy
-                (m_proc_id, cpy.dst, cpy.src, cpy.size, cpy.queue);
-              return gpi::pc::proto::memory::message_t (rpl);
+            gpi::pc::type::validate (cpy.dst.handle);
+            gpi::pc::type::validate (cpy.src.handle);
+            gpi::pc::proto::memory::memcpy_reply_t rpl;
+            rpl.queue = global::memory_manager().memcpy
+              (m_proc_id, cpy.dst, cpy.src, cpy.size, cpy.queue);
+            return gpi::pc::proto::memory::message_t (rpl);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::wait_t & w) const
+            operator () (const gpi::pc::proto::memory::wait_t & w) const
           {
-              gpi::pc::proto::memory::wait_reply_t rpl;
-              // this is not that easy to implement
-              //    do we want to put the process container to sleep? - no
-              //    we basically want to delay the answer
-              //    the client should also be able to release the lock so that other threads can still interact with the pc
-              //
-              // TODO:
-              //   client:
-              //     attach a unique sequence number to the wait message
-              //     enqueue the request
-              //     send the message
-              //     unlock communication lock
-              //     wait for the request to "return"
-              //
-              //   server:
-              //     enqueue the "wait" request into some queue that is handled by a seperate thread (each queue one thread)
-              //     "reply" to the enqueued wait request via this process using the same sequence number waking up the client thread
-              //
-              //   implementation:
-              //     processes' message visitor has to be rewritten to be "asynchronous" in some way
-              //        -> idea: visitor's return value is a boost::optional
-              //                 if set: reply immediately
-              //                   else: somebody else will reply later
-              //           messages need unique sequence numbers or message-ids
-              rpl.count = global::memory_manager().wait_on_queue
-                (m_proc_id, w.queue);
-              return gpi::pc::proto::memory::message_t (rpl);
+            gpi::pc::proto::memory::wait_reply_t rpl;
+            // this is not that easy to implement
+            //    do we want to put the process container to sleep? - no
+            //    we basically want to delay the answer
+            //    the client should also be able to release the lock so that other threads can still interact with the pc
+            //
+            // TODO:
+            //   client:
+            //     attach a unique sequence number to the wait message
+            //     enqueue the request
+            //     send the message
+            //     unlock communication lock
+            //     wait for the request to "return"
+            //
+            //   server:
+            //     enqueue the "wait" request into some queue that is handled by a seperate thread (each queue one thread)
+            //     "reply" to the enqueued wait request via this process using the same sequence number waking up the client thread
+            //
+            //   implementation:
+            //     processes' message visitor has to be rewritten to be "asynchronous" in some way
+            //        -> idea: visitor's return value is a boost::optional
+            //                 if set: reply immediately
+            //                   else: somebody else will reply later
+            //           messages need unique sequence numbers or message-ids
+            rpl.count = global::memory_manager().wait_on_queue
+              (m_proc_id, w.queue);
+            return gpi::pc::proto::memory::message_t (rpl);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::list_t & list) const
+            operator () (const gpi::pc::proto::memory::list_t & list) const
           {
-              gpi::pc::proto::memory::list_reply_t rpl;
-              if (list.segment == gpi::pc::type::segment::SEG_INVAL)
-              {
-                global::memory_manager().list_allocations(m_proc_id, rpl.list);
-              }
-              else
-              {
-                global::memory_manager().list_allocations (m_proc_id, list.segment, rpl.list);
-              }
-             return gpi::pc::proto::memory::message_t (rpl);
+            gpi::pc::proto::memory::list_reply_t rpl;
+            if (list.segment == gpi::pc::type::segment::SEG_INVAL)
+            {
+              global::memory_manager().list_allocations(m_proc_id, rpl.list);
+            }
+            else
+            {
+              global::memory_manager().list_allocations (m_proc_id, list.segment, rpl.list);
+            }
+            return gpi::pc::proto::memory::message_t (rpl);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::memory::info_t & info) const
+            operator () (const gpi::pc::proto::memory::info_t & info) const
           {
-              gpi::pc::proto::memory::info_reply_t rpl;
-              rpl.descriptor = global::memory_manager().info (info.handle);
-              return gpi::pc::proto::memory::message_t (rpl);
+            gpi::pc::proto::memory::info_reply_t rpl;
+            rpl.descriptor = global::memory_manager().info (info.handle);
+            return gpi::pc::proto::memory::message_t (rpl);
           }
 
           /**********************************************/
@@ -140,85 +140,85 @@ namespace gpi
           /**********************************************/
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::register_t & register_segment) const
+            operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
-              fhg::util::url_t url;
-              url.type ("shm");
-              url.path (register_segment.name);
-              url.set ("size", boost::lexical_cast<std::string>(register_segment.size));
-              if (register_segment.flags & F_PERSISTENT)
-                url.set ("persistent", "true");
-              if (register_segment.flags & F_EXCLUSIVE)
-                url.set ("exclusive", "true");
+            fhg::util::url_t url;
+            url.type ("shm");
+            url.path (register_segment.name);
+            url.set ("size", boost::lexical_cast<std::string>(register_segment.size));
+            if (register_segment.flags & F_PERSISTENT)
+              url.set ("persistent", "true");
+            if (register_segment.flags & F_EXCLUSIVE)
+              url.set ("exclusive", "true");
 
-              memory::area_ptr_t area =
-                memory::factory ().create (boost::lexical_cast<std::string>(url));
-              area->set_owner (m_proc_id);
+            memory::area_ptr_t area =
+              memory::factory ().create (boost::lexical_cast<std::string>(url));
+            area->set_owner (m_proc_id);
 
-              gpi::pc::proto::segment::register_reply_t rpl;
-              rpl.id =
-                global::memory_manager().register_memory (m_proc_id, area);
+            gpi::pc::proto::segment::register_reply_t rpl;
+            rpl.id =
+              global::memory_manager().register_memory (m_proc_id, area);
 
-              return gpi::pc::proto::segment::message_t (rpl);
+            return gpi::pc::proto::segment::message_t (rpl);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment) const
+            operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment) const
           {
-              global::memory_manager().unregister_memory
-                (m_proc_id, unregister_segment.id);
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::success, "success");
+            global::memory_manager().unregister_memory
+              (m_proc_id, unregister_segment.id);
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::success, "success");
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::attach_t & attach_segment) const
+            operator () (const gpi::pc::proto::segment::attach_t & attach_segment) const
           {
-              global::memory_manager().attach_process
-                (m_proc_id, attach_segment.id);
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::success, "success");
+            global::memory_manager().attach_process
+              (m_proc_id, attach_segment.id);
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::success, "success");
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::detach_t & detach_segment) const
+            operator () (const gpi::pc::proto::segment::detach_t & detach_segment) const
           {
-              global::memory_manager().detach_process
-                (m_proc_id, detach_segment.id);
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::success, "success");
+            global::memory_manager().detach_process
+              (m_proc_id, detach_segment.id);
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::success, "success");
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::list_t & list) const
+            operator () (const gpi::pc::proto::segment::list_t & list) const
           {
-              gpi::pc::proto::segment::list_reply_t rpl;
-              if (list.id == gpi::pc::type::segment::SEG_INVAL)
-                global::memory_manager().list_memory (rpl.list);
-              else
-              {
-                LOG(WARN, "list of particular segment not implemented");
-                global::memory_manager().list_memory (rpl.list);
-              }
-              return gpi::pc::proto::segment::message_t (rpl);
+            gpi::pc::proto::segment::list_reply_t rpl;
+            if (list.id == gpi::pc::type::segment::SEG_INVAL)
+              global::memory_manager().list_memory (rpl.list);
+            else
+            {
+              LOG(WARN, "list of particular segment not implemented");
+              global::memory_manager().list_memory (rpl.list);
+            }
+            return gpi::pc::proto::segment::message_t (rpl);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
+            operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
           {
-              gpi::pc::type::segment_id_t id =
-                global::memory_manager ().add_memory (m_proc_id, add_mem.url);
-              gpi::pc::proto::segment::register_reply_t rpl;
-              rpl.id = id;
-              return gpi::pc::proto::segment::message_t (rpl);
+            gpi::pc::type::segment_id_t id =
+              global::memory_manager ().add_memory (m_proc_id, add_mem.url);
+            gpi::pc::proto::segment::register_reply_t rpl;
+            rpl.id = id;
+            return gpi::pc::proto::segment::message_t (rpl);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
+            operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
           {
-              global::memory_manager ().del_memory (m_proc_id, del_mem.id);
-              return
-                gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
+            global::memory_manager ().del_memory (m_proc_id, del_mem.id);
+            return
+              gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
           }
 
           /**********************************************/
@@ -226,14 +226,14 @@ namespace gpi
           /**********************************************/
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::control::ping_t &) const
+            operator () (const gpi::pc::proto::control::ping_t &) const
           {
             gpi::pc::proto::control::pong_t pong;
             return gpi::pc::proto::control::message_t (pong);
           }
 
           gpi::pc::proto::message_t
-          operator () (const gpi::pc::proto::control::info_t &) const
+            operator () (const gpi::pc::proto::control::info_t &) const
           {
             gpi::pc::proto::control::info_reply_t rpl;
             gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
@@ -248,8 +248,8 @@ namespace gpi
           /*** Catch all other messages ***/
 
           template <typename T>
-          gpi::pc::proto::message_t
-          operator () (T const &) const
+            gpi::pc::proto::message_t
+            operator () (T const &) const
           {
             return gpi::pc::proto::error::error_t
               (gpi::pc::proto::error::bad_request,  "invalid input message");
@@ -283,18 +283,18 @@ namespace gpi
       }
 
       int process_t::receive ( const int fd
-                                , gpi::pc::proto::message_t & msg
-                                , const size_t max_size
-                                )
+                             , gpi::pc::proto::message_t & msg
+                             , const size_t max_size
+                             )
       {
         gpi::pc::proto::header_t header;
 
         {
-        int const err (checked_read (fd, &header, sizeof(header)));
-        if (err <= 0)
-        {
-          return err;
-        }
+          int const err (checked_read (fd, &header, sizeof(header)));
+          if (err <= 0)
+          {
+            return err;
+          }
         }
 
         if (header.version != 0x01)
@@ -331,11 +331,11 @@ namespace gpi
         }
 
         {
-        int const err (checked_read (fd, &buffer[0], header.length));
-        if (err <= 0)
-        {
-          return err;
-        }
+          int const err (checked_read (fd, &buffer[0], header.length));
+          if (err <= 0)
+          {
+            return err;
+          }
         }
 
         try
