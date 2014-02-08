@@ -29,7 +29,7 @@ namespace gpi
       {
         for (;;)
         {
-          m_task_queue.pop()->execute();
+          m_task_queue.get()->execute();
         }
       }
 
@@ -52,7 +52,7 @@ namespace gpi
 
         BOOST_FOREACH(task_ptr const task, tasks)
         {
-            m_task_queue.push(task);
+            m_task_queue.put (task);
         }
 
         // this  needs to  be atomic,  otherwise (enqueue();  wait();)  would be

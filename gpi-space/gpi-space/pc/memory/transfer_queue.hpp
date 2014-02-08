@@ -6,7 +6,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
 
-#include <gpi-space/pc/memory/task_queue.hpp>
+#include <gpi-space/pc/memory/task.hpp>
+
+#include <fhg/util/thread/queue.hpp>
 
 namespace gpi
 {
@@ -46,7 +48,7 @@ namespace gpi
         mutable boost::mutex m_mutex;
         bool m_enabled;
 
-        task_queue_t m_task_queue;
+        fhg::thread::queue<boost::shared_ptr<task_t> >  m_task_queue;
         boost::thread m_thread;
 
         mutable boost::mutex _mutex_dispatched;
