@@ -434,10 +434,12 @@ namespace gpi
         gpi::pc::proto::header_t header;
         std::vector<char> buffer;
 
-        int err (checked_read (fd, &header, sizeof(header)));
+        {
+        int const err (checked_read (fd, &header, sizeof(header)));
         if (err <= 0)
         {
           return err;
+        }
         }
 
         if (header.version != 0x01)
@@ -471,10 +473,12 @@ namespace gpi
           return -ENOMEM;
         }
 
-        err = checked_read (fd, &buffer[0], header.length);
+        {
+        int const err (checked_read (fd, &buffer[0], header.length));
         if (err <= 0)
         {
           return err;
+        }
         }
 
         try
