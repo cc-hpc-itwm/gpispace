@@ -301,7 +301,7 @@ namespace gpi
         {
           LOG(ERROR, "message is larger than maximum allowed size (" << header.length << "), closing connection");
           close_socket (fd);
-          m_mgr.handle_process_error (m_id, EMSGSIZE);
+          m_handle_process_error (m_id, EMSGSIZE);
           return -EMSGSIZE;
         }
 
@@ -314,7 +314,7 @@ namespace gpi
         catch (std::exception const &)
         {
           LOG(ERROR, "cannot accept new message: out of memory");
-          m_mgr.handle_process_error (m_id, ENOMEM);
+          m_handle_process_error (m_id, ENOMEM);
           return -ENOMEM;
         }
 
@@ -335,7 +335,7 @@ namespace gpi
         catch (std::exception const & ex)
         {
           LOG(ERROR, "could not decode message: " << ex.what());
-          m_mgr.handle_process_error (m_id, EINVAL);
+          m_handle_process_error (m_id, EINVAL);
           return -EINVAL;
         }
 
@@ -358,7 +358,7 @@ namespace gpi
         if ( err <= 0 )
         {
           err = errno;
-          m_mgr.handle_process_error (m_id, err);
+          m_handle_process_error (m_id, err);
           return -err;
         }
 
@@ -366,7 +366,7 @@ namespace gpi
         if ( err <= 0 )
         {
           err = errno;
-          m_mgr.handle_process_error (m_id, err);
+          m_handle_process_error (m_id, err);
           return -err;
         }
 
@@ -395,7 +395,7 @@ namespace gpi
           catch (std::exception const & ex)
           {
             LOG(ERROR, "process container " << m_id << " crashed: " << ex.what());
-            m_mgr.handle_process_error (m_id, EINVAL);
+            m_handle_process_error (m_id, EINVAL);
             break;
           }
         }
@@ -412,13 +412,13 @@ namespace gpi
           err = errno;
           LOG(ERROR, "could not read " << len << " bytes from client: " << strerror(err));
           close_socket (fd);
-          m_mgr.handle_process_error (m_id, err);
+          m_handle_process_error (m_id, err);
           return -err;
         }
         else if (err == 0)
         {
           close_socket (fd);
-          m_mgr.handle_process_error (m_id, err);
+          m_handle_process_error (m_id, err);
           return 0;
         }
         else

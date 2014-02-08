@@ -7,23 +7,25 @@
 
 #include <gpi-space/pc/proto/message.hpp>
 
+#include <boost/function.hpp>
+
 namespace gpi
 {
   namespace pc
   {
     namespace container
     {
-      class manager_t;
-
       class process_t : boost::noncopyable
       {
       public:
         explicit
-        process_t ( manager_t & mgr
-                  , const gpi::pc::type::process_id_t id
-                  , const int socket
-                  )
-          : m_mgr (mgr)
+        process_t
+          ( boost::function<void (gpi::pc::type::process_id_t const&, int)>
+            const& handle_process_error
+          , const gpi::pc::type::process_id_t id
+          , const int socket
+          )
+          : m_handle_process_error (handle_process_error)
           , m_id (id)
           , m_socket (socket)
           , m_reader
@@ -54,7 +56,8 @@ namespace gpi
         int close_socket (const int fd);
         int checked_read (const int fd, void *buf, const size_t len);
 
-        manager_t & m_mgr;
+        boost::function <void (gpi::pc::type::process_id_t const&, int)> const&
+          m_handle_process_error;
         const gpi::pc::type::process_id_t m_id;
         int const m_socket;
         boost::thread m_reader;

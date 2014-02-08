@@ -8,6 +8,7 @@
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
 namespace gpi
@@ -119,7 +120,14 @@ namespace gpi
         {
           boost::mutex::scoped_lock const _ (_mutex_processes);
 
-          m_processes.insert (id, new process_t (*this, id, fd));
+          m_processes.insert
+            ( id
+            , new process_t
+              ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
+              , id
+              , fd
+              )
+            );
         }
 
         CLOG( INFO
