@@ -23,14 +23,16 @@ namespace gpi
   {
     namespace container
     {
-      class connector_t : boost::noncopyable
+      class process_t;
+
+      class manager_t : boost::noncopyable
       {
       public:
-        connector_t ( std::string const & p
+        manager_t ( std::string const & p
                     , std::vector<std::string> const& default_memory_urls
                     );
 
-        ~connector_t ();
+        ~manager_t ();
 
         void start ();
         void stop ();
@@ -63,19 +65,6 @@ namespace gpi
                                   );
         void detach_process (const gpi::pc::type::process_id_t);
         void detach_all();
-      };
-
-      class process_t;
-
-      class manager_t
-      {
-      public:
-        manager_t ( std::string const & path_to_socket
-                  , std::vector<std::string> const& default_memory_urls
-                  );
-
-      private:
-        connector_t m_connector;
       };
     }
   }

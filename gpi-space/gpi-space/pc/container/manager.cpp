@@ -26,7 +26,7 @@ namespace gpi
   {
     namespace container
     {
-      connector_t::~connector_t ()
+      manager_t::~manager_t ()
       {
         try
         {
@@ -34,7 +34,7 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          LOG(ERROR, "error within ~connector_t: " << ex.what());
+          LOG(ERROR, "error within ~manager_t: " << ex.what());
         }
 
         detach_all();
@@ -43,7 +43,7 @@ namespace gpi
         global::topology().stop();
       }
 
-      void connector_t::start ()
+      void manager_t::start ()
       {
         lock_type lock (m_mutex);
 
@@ -69,7 +69,7 @@ namespace gpi
           m_socket = fd;
 
           m_listener = thread_t
-            (new boost::thread(boost::bind( &connector_t::listener_thread_main
+            (new boost::thread(boost::bind( &manager_t::listener_thread_main
                                           , this
                                           , m_socket
                                           )
@@ -78,7 +78,7 @@ namespace gpi
         }
       }
 
-      void connector_t::stop ()
+      void manager_t::stop ()
       {
         lock_type lock (m_mutex);
         if (m_socket >= 0)
@@ -97,13 +97,13 @@ namespace gpi
         }
       }
 
-      int connector_t::close_socket (const int fd)
+      int manager_t::close_socket (const int fd)
       {
         shutdown (fd, SHUT_RDWR);
         return close (fd);
       }
 
-      int connector_t::open_socket (std::string const & path)
+      int manager_t::open_socket (std::string const & path)
       {
         int sfd, err;
         struct sockaddr_un my_addr;
@@ -150,7 +150,7 @@ namespace gpi
         return sfd;
       }
 
-      int connector_t::safe_unlink(std::string const & path)
+      int manager_t::safe_unlink(std::string const & path)
       {
         struct stat st;
         int err (0);
@@ -171,7 +171,7 @@ namespace gpi
         return -err;
       }
 
-      void connector_t::listener_thread_main(const int fd)
+      void manager_t::listener_thread_main(const int fd)
       {
         int cfd, err;
         struct sockaddr_un peer_addr;
@@ -216,7 +216,7 @@ namespace gpi
         }
       }
 
-      connector_t::connector_t
+      manager_t::manager_t
         ( std::string const & p
         , std::vector<std::string> const& default_memory_urls
         )
@@ -279,7 +279,7 @@ namespace gpi
           start ();
       }
 
-      void connector_t::detach_all()
+      void manager_t::detach_all()
       {
           while (! m_processes.empty())
           {
@@ -287,7 +287,7 @@ namespace gpi
           }
       }
 
-      void connector_t::detach_process (const gpi::pc::type::process_id_t id)
+      void manager_t::detach_process (const gpi::pc::type::process_id_t id)
       {
         boost::mutex::scoped_lock const _ (_mutex_processes);
 
@@ -310,7 +310,7 @@ namespace gpi
             );
       }
 
-      void connector_t::handle_new_connection (int fd)
+      void manager_t::handle_new_connection (int fd)
       {
         //! \note must be lvalue to be used in ptr_map::insert
         gpi::pc::type::process_id_t id (m_process_counter.inc());
@@ -321,7 +321,7 @@ namespace gpi
           m_processes.insert
             ( id
             , new process_t
-              ( boost::bind (&connector_t::handle_process_error, this, _1, _2)
+              ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
               , id
               , fd
               )
@@ -334,7 +334,7 @@ namespace gpi
             );
       }
 
-      void connector_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
+      void manager_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
                                           , int error
                                           )
       {
@@ -344,15 +344,6 @@ namespace gpi
                  );
           detach_process (proc_id);
       }
-
-      manager_t::manager_t ( std::string const & p
-                           , std::vector<std::string> const& default_memory_urls
-                           )
-       : m_connector
-         ( p
-         , default_memory_urls
-         )
-      {}
     }
   }
 }
