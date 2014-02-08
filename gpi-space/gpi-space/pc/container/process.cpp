@@ -223,10 +223,10 @@ namespace gpi
                 memory::factory ().create (boost::lexical_cast<std::string>(url));
               area->set_owner (m_proc_id);
 
-              gpi::pc::type::segment_id_t id =
-                global::memory_manager().register_memory (m_proc_id, area);
               gpi::pc::proto::segment::register_reply_t rpl;
-              rpl.id = id;
+              rpl.id =
+                global::memory_manager().register_memory (m_proc_id, area);
+
               return gpi::pc::proto::segment::message_t (rpl);
             }
             catch (std::exception const & ex)
