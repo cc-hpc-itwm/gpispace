@@ -37,7 +37,10 @@ namespace gpi
           LOG(ERROR, "error within ~manager_t: " << ex.what());
         }
 
-        detach_all();
+          while (! m_processes.empty())
+          {
+            detach_process (m_processes.begin()->first);
+          }
 
         global::memory_manager().clear();
         global::topology().stop();
@@ -277,14 +280,6 @@ namespace gpi
           }
 
           start ();
-      }
-
-      void manager_t::detach_all()
-      {
-          while (! m_processes.empty())
-          {
-            detach_process (m_processes.begin()->first);
-          }
       }
 
       void manager_t::detach_process (const gpi::pc::type::process_id_t id)

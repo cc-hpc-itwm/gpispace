@@ -62,7 +62,6 @@ namespace gpi
                                   , int error
                                   );
         void detach_process (const gpi::pc::type::process_id_t);
-        void detach_all();
       };
     }
   }
