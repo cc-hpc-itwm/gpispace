@@ -140,8 +140,15 @@ namespace gpi
             try
             {
               gpi::pc::proto::memory::list_reply_t rpl;
-              m_proc.list_allocations (list.segment, rpl.list);
-              return gpi::pc::proto::memory::message_t (rpl);
+              if (list.segment == gpi::pc::type::segment::SEG_INVAL)
+              {
+                global::memory_manager().list_allocations(m_proc.id(), rpl.list);
+              }
+              else
+              {
+                global::memory_manager().list_allocations (m_proc.id(), list.segment, rpl.list);
+              }
+             return gpi::pc::proto::memory::message_t (rpl);
             }
             catch (std::exception const & ex)
             {
@@ -548,21 +555,6 @@ namespace gpi
       /***  P R O T O C O L    I M P L E M E N T A T I O N  ***/
       /***                                                  ***/
       /********************************************************/
-
-      void
-      process_t::list_allocations( const gpi::pc::type::segment_id_t seg
-                                    , gpi::pc::type::handle::list_t & l
-                                    ) const
-      {
-        if (seg == gpi::pc::type::segment::SEG_INVAL)
-        {
-          global::memory_manager().list_allocations(m_id, l);
-        }
-        else
-        {
-          global::memory_manager().list_allocations (m_id, seg, l);
-        }
-      }
 
       gpi::pc::type::size_t process_t::wait (const gpi::pc::type::queue_id_t queue)
       {

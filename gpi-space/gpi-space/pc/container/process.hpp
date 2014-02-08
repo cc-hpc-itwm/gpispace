@@ -59,10 +59,6 @@ namespace gpi
         gpi::pc::type::segment_id_t add_memory (std::string const &url);
         void                        del_memory (gpi::pc::type::segment_id_t);
 
-        void list_allocations( const gpi::pc::type::segment_id_t seg
-                             , gpi::pc::type::handle::list_t & l
-                             ) const;
-
         gpi::pc::type::size_t wait (const gpi::pc::type::queue_id_t);
         void collect_info (gpi::pc::type::info::descriptor_t &);
       private:
