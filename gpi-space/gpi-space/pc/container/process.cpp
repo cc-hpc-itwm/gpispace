@@ -122,7 +122,31 @@ namespace gpi
             try
             {
               gpi::pc::proto::memory::wait_reply_t rpl;
-              rpl.count = m_proc.wait (w.queue);
+              // this is not that easy to implement
+              //    do we want to put the process container to sleep? - no
+              //    we basically want to delay the answer
+              //    the client should also be able to release the lock so that other threads can still interact with the pc
+              //
+              // TODO:
+              //   client:
+              //     attach a unique sequence number to the wait message
+              //     enqueue the request
+              //     send the message
+              //     unlock communication lock
+              //     wait for the request to "return"
+              //
+              //   server:
+              //     enqueue the "wait" request into some queue that is handled by a seperate thread (each queue one thread)
+              //     "reply" to the enqueued wait request via this process using the same sequence number waking up the client thread
+              //
+              //   implementation:
+              //     processes' message visitor has to be rewritten to be "asynchronous" in some way
+              //        -> idea: visitor's return value is a boost::optional
+              //                 if set: reply immediately
+              //                   else: somebody else will reply later
+              //           messages need unique sequence numbers or message-ids
+              rpl.count = global::memory_manager().wait_on_queue
+                (m_proc.id(), w.queue);
               return gpi::pc::proto::memory::message_t (rpl);
             }
             catch (std::exception const & ex)
@@ -555,34 +579,6 @@ namespace gpi
       /***  P R O T O C O L    I M P L E M E N T A T I O N  ***/
       /***                                                  ***/
       /********************************************************/
-
-      gpi::pc::type::size_t process_t::wait (const gpi::pc::type::queue_id_t queue)
-      {
-        // this is not that easy to implement
-        //    do we want to put the process container to sleep? - no
-        //    we basically want to delay the answer
-        //    the client should also be able to release the lock so that other threads can still interact with the pc
-        //
-        // TODO:
-        //   client:
-        //     attach a unique sequence number to the wait message
-        //     enqueue the request
-        //     send the message
-        //     unlock communication lock
-        //     wait for the request to "return"
-        //
-        //   server:
-        //     enqueue the "wait" request into some queue that is handled by a seperate thread (each queue one thread)
-        //     "reply" to the enqueued wait request via this process using the same sequence number waking up the client thread
-        //
-        //   implementation:
-        //     processes' message visitor has to be rewritten to be "asynchronous" in some way
-        //        -> idea: visitor's return value is a boost::optional
-        //                 if set: reply immediately
-        //                   else: somebody else will reply later
-        //           messages need unique sequence numbers or message-ids
-        return global::memory_manager().wait_on_queue (m_id, queue);
-      }
 
       gpi::pc::type::segment_id_t
       process_t::register_segment ( std::string const & name
