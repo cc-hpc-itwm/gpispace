@@ -6,6 +6,8 @@
 #include <gpi-space/pc/memory/handle_buffer.hpp>
 #include <gpi-space/pc/memory/memory_buffer_pool.hpp>
 
+#include <gpi-space/pc/global/itopology.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -19,7 +21,9 @@ namespace gpi
 
         typedef buffer_pool_t<handle_buffer_t> handle_pool_t;
 
-        static area_ptr_t create (std::string const &url);
+        static area_ptr_t create ( std::string const &url
+                                 , gpi::pc::global::itopology_t & topology
+                                 );
 
       protected:
         gpi_area_t ( const gpi::pc::type::process_id_t creator
@@ -27,6 +31,7 @@ namespace gpi
                    , const gpi::pc::type::size_t per_node_size
                    , const gpi::pc::type::flags_t flags
                    , void * dma_ptr
+                   , gpi::pc::global::itopology_t & topology
                    );
 
         void check_bounds ( const gpi::pc::type::handle::descriptor_t &
@@ -92,6 +97,8 @@ namespace gpi
 
         gpi::pc::type::size_t m_num_com_buffers;
         gpi::pc::type::size_t m_com_buffer_size;
+
+        gpi::pc::global::itopology_t & _topology;
       };
     }
   }

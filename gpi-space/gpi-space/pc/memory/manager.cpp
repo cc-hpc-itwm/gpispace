@@ -28,7 +28,10 @@ namespace gpi
         : m_ident (0)
       {
         factory ().register_type ( "gpi"
-                                 , &gpi_area_t::create
+                                 , boost::bind ( gpi_area_t::create
+                                               , _1
+                                               , boost::ref (global::topology ())
+                                               )
                                  );
         factory ().register_type ( "shm"
                                  , &shm_area_t::create

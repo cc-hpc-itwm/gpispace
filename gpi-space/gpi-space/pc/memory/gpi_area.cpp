@@ -24,6 +24,7 @@ namespace gpi
                              , const gpi::pc::type::size_t size
                              , const gpi::pc::type::flags_t flags
                              , void * dma_ptr
+                             , gpi::pc::global::itopology_t & topology
                              )
         : area_t ( gpi_area_t::area_type
                  , creator
@@ -34,6 +35,7 @@ namespace gpi
         , m_ptr (dma_ptr)
         , m_num_com_buffers (8)
         , m_com_buffer_size (4* (1<<20))
+        , _topology (topology)
       {
         // total memory size is required for boundary checks
         m_total_memsize = gpi::api::gpi_api_t::get().number_of_nodes () * size;
@@ -171,7 +173,7 @@ namespace gpi
            && hdl.creator != (gpi::pc::type::process_id_t)(-1)
            )
         {
-          gpi::pc::global::topology().alloc ( descriptor ().id
+          _topology.alloc ( descriptor ().id
                                             , hdl.id
                                             , hdl.offset
                                             , hdl.size
@@ -186,7 +188,7 @@ namespace gpi
       {
         if (gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
         {
-          gpi::pc::global::topology().free(hdl.id);
+          _topology.free(hdl.id);
         }
       }
 
@@ -579,7 +581,10 @@ namespace gpi
         return 0;
       }
 
-      area_ptr_t gpi_area_t::create (std::string const &url_s)
+      area_ptr_t gpi_area_t::create
+        ( std::string const &url_s
+        , gpi::pc::global::itopology_t & topology
+        )
       {
         using namespace fhg::util;
         using namespace gpi::pc;
@@ -598,6 +603,7 @@ namespace gpi
                                            , gpi::pc::F_PERSISTENT
                                            + gpi::pc::F_GLOBAL
                                            , gpi_api.dma_ptr ()
+                                           , topology
                                            );
         area->m_num_com_buffers = numbuf;
         area->m_com_buffer_size = comsize;
