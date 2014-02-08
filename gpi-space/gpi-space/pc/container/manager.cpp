@@ -209,7 +209,26 @@ namespace gpi
 
           try
           {
-            handle_new_connection (cfd);
+            //! \note must be lvalue to be used in ptr_map::insert
+            gpi::pc::type::process_id_t id (m_process_counter.inc());
+
+            {
+              boost::mutex::scoped_lock const _ (_mutex_processes);
+
+              m_processes.insert
+                ( id
+                , new process_t
+                  ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
+                  , id
+                  , fd
+                  )
+                );
+            }
+
+            CLOG( INFO
+                , "gpi.container"
+                , "process container " << id << " attached"
+                );
           }
           catch (std::exception const & ex)
           {
@@ -302,30 +321,6 @@ namespace gpi
         CLOG( INFO
             , "gpi.container"
             , "process container " << id << " detached"
-            );
-      }
-
-      void manager_t::handle_new_connection (int fd)
-      {
-        //! \note must be lvalue to be used in ptr_map::insert
-        gpi::pc::type::process_id_t id (m_process_counter.inc());
-
-        {
-          boost::mutex::scoped_lock const _ (_mutex_processes);
-
-          m_processes.insert
-            ( id
-            , new process_t
-              ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
-              , id
-              , fd
-              )
-            );
-        }
-
-        CLOG( INFO
-            , "gpi.container"
-            , "process container " << id << " attached"
             );
       }
 
