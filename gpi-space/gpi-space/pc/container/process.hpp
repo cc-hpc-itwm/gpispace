@@ -47,8 +47,6 @@ namespace gpi
           return m_id;
         }
 
-        // protocol implementation
-
       private:
         void reader_thread_main (const int fd);
 
