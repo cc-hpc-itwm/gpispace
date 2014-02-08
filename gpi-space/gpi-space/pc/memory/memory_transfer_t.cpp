@@ -14,16 +14,6 @@ namespace gpi
       // , "FINISHED"
       // };
 
-      std::ostream & operator << (std::ostream &os, const memory_transfer_t &mt)
-      {
-        //        os << status_name[mt.status] << " "
-        os << mt.amount << " bytes "
-           << mt.src_location << " --> " << mt.dst_location
-           << " via "
-           << mt.queue
-           ;
-        return os;
-      }
     }
   }
 }

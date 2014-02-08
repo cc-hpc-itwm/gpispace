@@ -57,8 +57,6 @@ namespace gpi
 
         status_t status;
       };
-
-      std::ostream & operator << (std::ostream &, const memory_transfer_t &);
     }
   }
 }
