@@ -20,7 +20,8 @@ namespace gpi
       manager_t::manager_t ( std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            )
-       : m_connector (*this, p)
+       : m_connector
+         (boost::bind (&manager_t::handle_new_connection, this, _1), p)
        , m_process_counter (0)
       {
         if ( default_memory_urls.size ()

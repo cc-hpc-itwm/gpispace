@@ -1,6 +1,7 @@
 #ifndef GPI_SPACE_PC_CONTAINER_MANAGER_HPP
 #define GPI_SPACE_PC_CONTAINER_MANAGER_HPP 1
 
+#include <boost/function.hpp>
 #include <boost/thread.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 
@@ -23,14 +24,14 @@ namespace gpi
   {
     namespace container
     {
-      class manager_t;
-
       class connector_t : boost::noncopyable
       {
       public:
         explicit
-        connector_t (manager_t & mgr, std::string const & p)
-          : m_mgr (mgr)
+        connector_t ( boost::function<void (int)> const& handle_new_connection
+                    , std::string const & p
+                    )
+          : m_handle_new_connection (handle_new_connection)
           , m_path (p)
           , m_socket (-1)
           , m_stopping (false)
@@ -54,7 +55,7 @@ namespace gpi
         int safe_unlink(std::string const & path);
 
         mutex_type m_mutex;
-        manager_t & m_mgr;
+        boost::function<void (int)> const& m_handle_new_connection;
         std::string m_path;
         thread_t m_listener;
         int m_socket;

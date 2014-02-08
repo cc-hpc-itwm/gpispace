@@ -207,7 +207,7 @@ namespace gpi
 
           try
           {
-            m_mgr.handle_new_connection (cfd);
+            m_handle_new_connection (cfd);
           }
           catch (std::exception const & ex)
           {
