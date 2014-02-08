@@ -42,11 +42,6 @@ namespace gpi
           }
         }
 
-        gpi::pc::type::process_id_t const& id() const
-        {
-          return m_id;
-        }
-
       private:
         void reader_thread_main (const int fd);
 
