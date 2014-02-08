@@ -210,7 +210,6 @@ namespace gpi
           {
             try
             {
-              using namespace gpi::pc;
               fhg::util::url_t url;
               url.type ("shm");
               url.path (register_segment.name);
