@@ -77,12 +77,11 @@ namespace gpi
             gpi::pc::type::handle::descriptor_t desc =
               descriptor (com_hdl);
 
-            m_com_handles.add
-              (new handle_buffer_t ( com_hdl
-                                   , desc.local_size
-                                   , (char*)m_ptr + desc.offset
-                                   )
-              );
+            m_com_handles.put (handle_buffer_t ( com_hdl
+                                               , desc.local_size
+                                               , (char*)m_ptr + desc.offset
+                                               )
+                              );
 
             ++num_buffers_allocated;
           }
@@ -362,20 +361,20 @@ namespace gpi
         {
           gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
 
-          handle_buffer_t *buf = handle_pool.acquire ();
+          handle_buffer_t buf (handle_pool.get());
 
           gpi::pc::type::size_t remaining = amount;
           while (remaining)
           {
-            buf->used (0);
+            buf.used (0);
 
             api.wait_dma (queue); // make sure previous iteration is finished
             const gpi::pc::type::size_t to_send =
-              std::min (remaining, buf->size ());
+              std::min (remaining, buf.size ());
 
             const gpi::pc::type::size_t read_bytes =
-              src_area.read_from (src_loc, buf->data (), to_send);
-            buf->used (read_bytes);
+              src_area.read_from (src_loc, buf.data (), to_send);
+            buf.used (read_bytes);
 
             if (0 == read_bytes)
             {
@@ -385,20 +384,20 @@ namespace gpi
               break;
             }
 
-            do_write_dma ( dst_area.descriptor (buf->handle ())
+            do_write_dma ( dst_area.descriptor (buf.handle ())
                          , 0
                          , dst_area.descriptor (dst_loc.handle)
                          , dst_loc.offset
-                         , buf->used ()
+                         , buf.used ()
                          , queue
                          );
 
-            src_loc.offset += buf->used ();
-            dst_loc.offset += buf->used ();
-            remaining      -= buf->used ();
+            src_loc.offset += buf.used ();
+            dst_loc.offset += buf.used ();
+            remaining      -= buf.used ();
           }
 
-          handle_pool.release (buf);
+          handle_pool.put (buf);
         }
 
         static
@@ -413,30 +412,30 @@ namespace gpi
         {
           gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
 
-          handle_buffer_t *buf = handle_pool.acquire ();
+          handle_buffer_t buf (handle_pool.get());
 
           gpi::pc::type::size_t remaining = amount;
           while (remaining)
           {
-            buf->used (0);
+            buf.used (0);
 
             const gpi::pc::type::size_t to_recv =
-              std::min (remaining, buf->size ());
+              std::min (remaining, buf.size ());
 
             do_read_dma ( src_area.descriptor (src_loc.handle)
                         , src_loc.offset
-                        , src_area.descriptor (buf->handle ())
+                        , src_area.descriptor (buf.handle ())
                         , 0
                         , to_recv
                         , queue
                         );
             api.wait_dma (queue);
-            buf->used (to_recv);
+            buf.used (to_recv);
 
             const gpi::pc::type::size_t written_bytes =
-              dst_area.write_to (dst_loc, buf->data (), buf->used ());
+              dst_area.write_to (dst_loc, buf.data (), buf.used ());
 
-            if (written_bytes != buf->used ())
+            if (written_bytes != buf.used ())
             {
               MLOG ( WARN
                    , "could not write to dst area - premature end-of-file?"
@@ -444,12 +443,12 @@ namespace gpi
               break;
             }
 
-            src_loc.offset += buf->used ();
-            dst_loc.offset += buf->used ();
-            remaining      -= buf->used ();
+            src_loc.offset += buf.used ();
+            dst_loc.offset += buf.used ();
+            remaining      -= buf.used ();
           }
 
-          handle_pool.release (buf);
+          handle_pool.put (buf);
         }
       }
 

@@ -18,7 +18,8 @@
 
 #include <gpi-space/pc/memory/task.hpp>
 #include <gpi-space/pc/memory/memory_buffer.hpp>
-#include <gpi-space/pc/memory/memory_buffer_pool.hpp>
+
+#include <fhg/util/thread/queue.hpp>
 
 namespace gpi
 {
@@ -29,7 +30,7 @@ namespace gpi
       class area_t : boost::noncopyable
       {
       public:
-        typedef buffer_pool_t<buffer_t> memory_pool_t;
+        typedef fhg::thread::queue<buffer_t> memory_pool_t;
 
         virtual ~area_t ();
 

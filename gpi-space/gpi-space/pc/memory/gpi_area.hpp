@@ -4,9 +4,10 @@
 #include <gpi-space/pc/type/segment_type.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 #include <gpi-space/pc/memory/handle_buffer.hpp>
-#include <gpi-space/pc/memory/memory_buffer_pool.hpp>
 
 #include <gpi-space/pc/global/itopology.hpp>
+
+#include <fhg/util/thread/queue.hpp>
 
 namespace gpi
 {
@@ -19,7 +20,7 @@ namespace gpi
       public:
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GPI;
 
-        typedef buffer_pool_t<handle_buffer_t> handle_pool_t;
+        typedef fhg::thread::queue<handle_buffer_t> handle_pool_t;
 
         static area_ptr_t create ( std::string const &url
                                  , gpi::pc::global::itopology_t & topology

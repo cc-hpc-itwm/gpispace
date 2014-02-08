@@ -735,44 +735,44 @@ namespace gpi
 
           void operator () ()
           {
-            buffer_t *buffer = m_pool.acquire ();
+            buffer_t buffer (m_pool.get());
 
             size_t remaining = m_amount;
 
             while (remaining)
             {
-              const size_t to_read = std::min (remaining, buffer->size ());
+              const size_t to_read = std::min (remaining, buffer.size ());
 
               const size_t num_read = m_src.read_from ( m_src_loc
-                                                      , buffer->data ()
+                                                      , buffer.data ()
                                                       , to_read
                                                       );
               if (0 == num_read)
               {
                 MLOG ( ERROR
-                     , "could not read " << buffer->size () << " bytes"
+                     , "could not read " << buffer.size () << " bytes"
                      << " from " << m_src_loc
                      << " remaining " << remaining
                      );
-                m_pool.release (buffer);
+                m_pool.put (buffer);
                 throw std::runtime_error ("could not read");
               }
 
-              buffer->used (num_read);
+              buffer.used (num_read);
 
               const size_t num_written = m_dst.write_to ( m_dst_loc
-                                                        , buffer->data ()
-                                                        , buffer->used ()
+                                                        , buffer.data ()
+                                                        , buffer.used ()
                                                         );
 
               assert (num_read == num_written);
 
-              buffer->used (num_read - num_written);
+              buffer.used (num_read - num_written);
 
               remaining -= num_read;
             }
 
-            m_pool.release (buffer);
+            m_pool.put (buffer);
           }
         private:
           area_t & m_src;

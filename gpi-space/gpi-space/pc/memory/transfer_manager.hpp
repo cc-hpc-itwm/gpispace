@@ -8,7 +8,8 @@
 #include <gpi-space/pc/memory/transfer_queue.hpp>
 
 #include <gpi-space/pc/memory/memory_buffer.hpp>
-#include <gpi-space/pc/memory/memory_buffer_pool.hpp>
+
+#include <fhg/util/thread/queue.hpp>
 
 namespace gpi
 {
@@ -140,10 +141,9 @@ namespace gpi
         typedef boost::shared_ptr<transfer_queue_t> queue_ptr;
         typedef std::vector<queue_ptr> transfer_queues_t;
         typedef boost::shared_ptr<task_t> task_ptr;
-        typedef buffer_pool_t<buffer_t> memory_pool_t;
 
         transfer_queues_t m_queues;
-        memory_pool_t m_memory_buffer_pool;
+        fhg::thread::queue<buffer_t> m_memory_buffer_pool;
       };
     }
   }
