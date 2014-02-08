@@ -100,12 +100,11 @@ namespace gpi
           {
             try
             {
+              gpi::pc::type::validate (cpy.dst.handle);
+              gpi::pc::type::validate (cpy.src.handle);
               gpi::pc::proto::memory::memcpy_reply_t rpl;
-              rpl.queue = m_proc.memcpy ( cpy.dst
-                                        , cpy.src
-                                        , cpy.size
-                                        , cpy.queue
-                                        );
+              rpl.queue = global::memory_manager().memcpy
+                (m_proc.id(), cpy.dst, cpy.src, cpy.size, cpy.queue);
               return gpi::pc::proto::memory::message_t (rpl);
             }
             catch (std::exception const & ex)
@@ -563,18 +562,6 @@ namespace gpi
         {
           global::memory_manager().list_allocations (m_id, seg, l);
         }
-      }
-
-      gpi::pc::type::queue_id_t
-      process_t::memcpy ( gpi::pc::type::memory_location_t const & dst
-                           , gpi::pc::type::memory_location_t const & src
-                           , const gpi::pc::type::size_t amount
-                           , const gpi::pc::type::queue_id_t queue
-                           )
-      {
-        gpi::pc::type::validate (dst.handle);
-        gpi::pc::type::validate (src.handle);
-        return global::memory_manager().memcpy (m_id, dst, src, amount, queue);
       }
 
       gpi::pc::type::size_t process_t::wait (const gpi::pc::type::queue_id_t queue)
