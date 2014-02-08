@@ -332,7 +332,7 @@ namespace gpi
             try
             {
               gpi::pc::type::segment_id_t id =
-                m_proc.add_memory (add_mem.url);
+                global::memory_manager ().add_memory (m_proc.id(), add_mem.url);
               gpi::pc::proto::segment::register_reply_t rpl;
               rpl.id = id;
               return gpi::pc::proto::segment::message_t (rpl);
@@ -593,12 +593,6 @@ namespace gpi
       /***  P R O T O C O L    I M P L E M E N T A T I O N  ***/
       /***                                                  ***/
       /********************************************************/
-
-      gpi::pc::type::segment_id_t
-      process_t::add_memory (std::string const &url)
-      {
-        return global::memory_manager ().add_memory (m_id, url);
-      }
 
       void
       process_t::del_memory (gpi::pc::type::segment_id_t seg_id)

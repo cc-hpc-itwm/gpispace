@@ -49,7 +49,6 @@ namespace gpi
 
         // protocol implementation
 
-        gpi::pc::type::segment_id_t add_memory (std::string const &url);
         void                        del_memory (gpi::pc::type::segment_id_t);
 
         void collect_info (gpi::pc::type::info::descriptor_t &);
