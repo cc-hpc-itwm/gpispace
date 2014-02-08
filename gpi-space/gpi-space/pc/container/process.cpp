@@ -65,10 +65,8 @@ namespace gpi
             catch (std::exception const & ex)
             {
               LOG(ERROR, "allocation of " << alloc.size << " bytes in segment " << alloc.segment << " failed: " << ex.what());
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -78,17 +76,13 @@ namespace gpi
             try
             {
               global::memory_manager().free (free.handle);
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::success;
-              error.detail = "success";
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::success, "success");
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -106,10 +100,8 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -148,10 +140,8 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -173,10 +163,8 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -191,10 +179,8 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -228,10 +214,8 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -242,17 +226,13 @@ namespace gpi
             {
               global::memory_manager().unregister_memory
                 (m_proc_id, unregister_segment.id);
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::success;
-              error.detail = "success";
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::success, "success");
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -263,17 +243,13 @@ namespace gpi
             {
               global::memory_manager().attach_process
                 (m_proc_id, attach_segment.id);
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::success;
-              error.detail = "success";
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::success, "success");
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -284,17 +260,13 @@ namespace gpi
             {
               global::memory_manager().detach_process
                 (m_proc_id, detach_segment.id);
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::success;
-              error.detail = "success";
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::success, "success");
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -315,10 +287,8 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -335,10 +305,8 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              gpi::pc::proto::error::error_t error;
-              error.code = gpi::pc::proto::error::bad_request;
-              error.detail = ex.what();
-              return error;
+              return gpi::pc::proto::error::error_t
+                (gpi::pc::proto::error::bad_request, ex.what());
             }
           }
 
@@ -406,10 +374,8 @@ namespace gpi
           gpi::pc::proto::message_t
           operator () (T const &) const
           {
-            gpi::pc::proto::error::error_t error;
-            error.code = gpi::pc::proto::error::bad_request;
-            error.detail = "invalid input message";
-            return error;
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::bad_request,  "invalid input message");
           }
 
         private:
