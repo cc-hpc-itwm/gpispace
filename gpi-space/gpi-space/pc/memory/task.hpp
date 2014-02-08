@@ -40,7 +40,6 @@ namespace gpi
         bool has_finished () const;
         bool USED_IN_TEST_ONLY_is_pending() const;
         bool USED_IN_TEST_ONLY_was_cancelled() const;
-        std::size_t time_estimation () const;
       private:
         typedef boost::mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -55,7 +54,6 @@ namespace gpi
         const std::string m_name;
         function_type m_func;
         boost::exception_ptr m_error;
-        std::size_t m_eta;
       };
 
       typedef boost::shared_ptr<task_t> task_ptr;

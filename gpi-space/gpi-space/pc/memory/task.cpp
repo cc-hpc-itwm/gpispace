@@ -12,7 +12,6 @@ namespace gpi
         : m_state (task_state::pending)
         , m_name (nme)
         , m_func (fun)
-        , m_eta (0)
       {}
 
       void
@@ -114,12 +113,6 @@ namespace gpi
       task_t::get_error_message () const
       {
         return boost::diagnostic_information(get_error());
-      }
-
-      std::size_t
-      task_t::time_estimation () const
-      {
-        return m_eta;
       }
     }
   }
