@@ -38,7 +38,7 @@ namespace gpi
   {
     namespace container
     {
-      namespace visitor
+      namespace
       {
         struct handle_message_t : public boost::static_visitor<gpi::pc::proto::message_t>
         {
@@ -276,10 +276,7 @@ namespace gpi
         private:
           gpi::pc::type::process_id_t const& m_proc_id;
         };
-      }
 
-      namespace
-      {
         gpi::pc::proto::message_t handle_message
           ( gpi::pc::type::process_id_t const& id
           , gpi::pc::proto::message_t const& request
@@ -287,8 +284,7 @@ namespace gpi
         {
           try
           {
-            return boost::apply_visitor
-              (visitor::handle_message_t (id), request);
+            return boost::apply_visitor (handle_message_t (id), request);
           }
           catch (std::exception const& ex)
           {
