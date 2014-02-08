@@ -244,7 +244,8 @@ namespace gpi
           {
             try
             {
-              m_proc.unregister_segment(unregister_segment.id);
+              global::memory_manager().unregister_memory
+                (m_proc.id(), unregister_segment.id);
               gpi::pc::proto::error::error_t error;
               error.code = gpi::pc::proto::error::success;
               error.detail = "success";
@@ -590,12 +591,6 @@ namespace gpi
       /***  P R O T O C O L    I M P L E M E N T A T I O N  ***/
       /***                                                  ***/
       /********************************************************/
-
-      void
-      process_t::unregister_segment(const gpi::pc::type::segment_id_t seg)
-      {
-        global::memory_manager().unregister_memory (m_id, seg);
-      }
 
       gpi::pc::type::segment_id_t
       process_t::add_memory (std::string const &url)
