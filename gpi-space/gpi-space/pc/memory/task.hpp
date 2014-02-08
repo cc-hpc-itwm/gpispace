@@ -42,9 +42,10 @@ namespace gpi
         std::string const & get_name () const;
         boost::exception_ptr get_error () const;
         std::string get_error_message () const;
-        state get_state () const;
         bool has_failed () const;
         bool has_finished () const;
+        bool USED_IN_TEST_ONLY_is_pending() const;
+        bool USED_IN_TEST_ONLY_was_cancelled() const;
         std::size_t time_estimation () const;
       private:
         typedef boost::mutex mutex_type;
@@ -52,6 +53,7 @@ namespace gpi
         typedef boost::condition_variable condition_type;
 
         void set_state (const state);
+        state get_state () const;
 
         mutable mutex_type m_mutex;
         condition_type m_state_changed;

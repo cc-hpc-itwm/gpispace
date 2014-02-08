@@ -35,12 +35,12 @@ BOOST_AUTO_TEST_CASE ( simple_task )
   int executed (0);
   task_t task ("simple_task", boost::bind (task_executed, &executed));
 
-  BOOST_CHECK_EQUAL (task.get_state(), task_state::pending);
+  BOOST_CHECK (task.USED_IN_TEST_ONLY_is_pending());
 
   task.execute ();
   task.wait ();
 
-  BOOST_CHECK_EQUAL (task.get_state(), task_state::finished);
+  BOOST_CHECK (task.has_finished());
   BOOST_CHECK_EQUAL (executed, 1);
 }
 
@@ -50,13 +50,13 @@ BOOST_AUTO_TEST_CASE ( simple_task_cancel )
   int executed (0);
   task_t task ("simple_task", boost::bind (task_executed, &executed));
 
-  BOOST_CHECK_EQUAL (task.get_state(), task_state::pending);
+  BOOST_CHECK (task.USED_IN_TEST_ONLY_is_pending());
 
   task.cancel ();
   task.execute ();
   task.wait ();
 
-  BOOST_CHECK_EQUAL (task.get_state(), task_state::canceled);
+  BOOST_CHECK (task.USED_IN_TEST_ONLY_was_cancelled());
   BOOST_CHECK_EQUAL (executed, 0);
 }
 
@@ -65,12 +65,12 @@ BOOST_AUTO_TEST_CASE ( simple_task_failed )
   using namespace gpi::pc::memory;
   task_t task ("simple_task", task_erroneous);
 
-  BOOST_CHECK_EQUAL (task.get_state(), task_state::pending);
+  BOOST_CHECK (task.USED_IN_TEST_ONLY_is_pending());
 
   task.execute ();
   task.wait ();
 
-  BOOST_CHECK_EQUAL (task.get_state(), task_state::failed);
+  BOOST_CHECK (task.has_failed());
 }
 
 BOOST_AUTO_TEST_CASE ( task_queue )

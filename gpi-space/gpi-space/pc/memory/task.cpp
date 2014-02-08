@@ -91,6 +91,16 @@ namespace gpi
         return task_state::finished == get_state();
       }
 
+      bool task_t::USED_IN_TEST_ONLY_is_pending() const
+      {
+        return task_state::pending == get_state();
+      }
+      bool task_t::USED_IN_TEST_ONLY_was_cancelled() const
+      {
+        return task_state::canceled == get_state();
+      }
+
+
       std::string
       task_t::get_error_message () const
       {
