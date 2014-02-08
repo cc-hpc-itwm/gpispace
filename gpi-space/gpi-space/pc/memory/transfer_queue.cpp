@@ -72,8 +72,6 @@ namespace gpi
       void
       transfer_queue_t::enqueue (const task_list_t & tasks)
       {
-        static const std::size_t delegate_threshold(0);
-
         if (is_disabled ())
         {
           throw std::runtime_error
@@ -84,14 +82,7 @@ namespace gpi
 
         BOOST_FOREACH(task_ptr task, tasks)
         {
-          if (task->time_estimation() > delegate_threshold)
-          {
-            m_blocking_tasks.push (task);
-          }
-          else
-          {
             m_task_queue.push(task);
-          }
         }
 
         // this  needs to  be atomic,  otherwise (enqueue();  wait();)  would be
