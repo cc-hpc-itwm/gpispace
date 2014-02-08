@@ -42,6 +42,11 @@ namespace gpi
           }
         }
 
+        gpi::pc::type::process_id_t const& id() const
+        {
+          return m_id;
+        }
+
         // protocol implementation
 
         gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t
