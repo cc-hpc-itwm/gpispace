@@ -201,7 +201,7 @@ namespace gpi
 
           try
           {
-            m_handle_new_connection (cfd);
+            handle_new_connection (cfd);
           }
           catch (std::exception const & ex)
           {
@@ -212,12 +212,10 @@ namespace gpi
       }
 
       connector_t::connector_t
-        ( boost::function<void (int)> const& handle_new_connection
-        , std::string const & p
+        ( std::string const & p
         , std::vector<std::string> const& default_memory_urls
         )
-          : m_handle_new_connection (handle_new_connection)
-          , m_path (p)
+          : m_path (p)
           , m_socket (-1)
           , m_stopping (false)
           , m_process_counter (0)
@@ -346,8 +344,7 @@ namespace gpi
                            , std::vector<std::string> const& default_memory_urls
                            )
        : m_connector
-         ( boost::bind (&manager_t::handle_new_connection, this, _1)
-         , p
+         ( p
          , default_memory_urls
          )
       {}
@@ -359,11 +356,6 @@ namespace gpi
 
           global::memory_manager().clear();
         global::topology().stop();
-      }
-
-      void manager_t::handle_new_connection (int fd)
-      {
-        m_connector.handle_new_connection (fd);
       }
 
       void manager_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
