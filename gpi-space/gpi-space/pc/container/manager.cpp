@@ -212,19 +212,20 @@ namespace gpi
 
           try
           {
-            //! \note must be lvalue to be used in ptr_map::insert
-            gpi::pc::type::process_id_t id (m_process_counter.inc());
+            gpi::pc::type::process_id_t const id (m_process_counter.inc());
 
             {
               boost::mutex::scoped_lock const _ (_mutex_processes);
 
               m_processes.insert
                 ( id
-                , new process_t
-                  ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
-                  , id
-                  , fd
-                  , _memory_manager
+                , std::auto_ptr<process_t>
+                  ( new process_t
+                    ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
+                    , id
+                    , fd
+                    , _memory_manager
+                    )
                   )
                 );
             }
