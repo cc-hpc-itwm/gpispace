@@ -19,7 +19,7 @@ namespace gpi
     {
       namespace task_state
       {
-        enum state {pending, executing, finished, failed, canceled};
+        enum state {pending, executing, finished, failed};
       }
 
       class task_t : boost::noncopyable
@@ -30,7 +30,6 @@ namespace gpi
         task_t (std::string const nme, function_type fun);
 
         void execute ();
-        void cancel ();
         void wait ();
 
         std::string const & get_name () const;
@@ -38,7 +37,6 @@ namespace gpi
         bool has_failed () const;
         bool USED_IN_TEST_ONLY_has_finished () const;
         bool USED_IN_TEST_ONLY_is_pending() const;
-        bool USED_IN_TEST_ONLY_was_cancelled() const;
       private:
         typedef boost::mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;

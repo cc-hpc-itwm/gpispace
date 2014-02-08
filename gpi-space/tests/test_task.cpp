@@ -43,22 +43,6 @@ BOOST_AUTO_TEST_CASE ( simple_task )
   BOOST_CHECK_EQUAL (executed, 1);
 }
 
-BOOST_AUTO_TEST_CASE ( simple_task_cancel )
-{
-  using namespace gpi::pc::memory;
-  int executed (0);
-  task_t task ("simple_task", boost::bind (task_executed, &executed));
-
-  BOOST_CHECK (task.USED_IN_TEST_ONLY_is_pending());
-
-  task.cancel ();
-  task.execute ();
-  task.wait ();
-
-  BOOST_CHECK (task.USED_IN_TEST_ONLY_was_cancelled());
-  BOOST_CHECK_EQUAL (executed, 0);
-}
-
 BOOST_AUTO_TEST_CASE ( simple_task_failed )
 {
   using namespace gpi::pc::memory;
