@@ -432,7 +432,6 @@ namespace gpi
                                 )
       {
         gpi::pc::proto::header_t header;
-        std::vector<char> buffer;
 
         {
         int const err (checked_read (fd, &header, sizeof(header)));
@@ -461,6 +460,8 @@ namespace gpi
           m_mgr.handle_process_error (m_id, EMSGSIZE);
           return -EMSGSIZE;
         }
+
+        std::vector<char> buffer;
 
         try
         {
