@@ -123,12 +123,13 @@ namespace gpi
         return h;
       }
 
-      topology_t::topology_t()
+      topology_t::topology_t (memory::manager_t& memory_manager)
         : m_shutting_down (false)
         , m_go_received (false)
         , m_waiting_for_go (0)
         , m_established (false)
         , m_rank ((gpi::rank_t)-1)
+        , _memory_manager (memory_manager)
       {}
 
       topology_t::~topology_t()
@@ -659,7 +660,7 @@ namespace gpi
             try
             {
               int res
-                (global::memory_manager().remote_alloc( seg
+                (_memory_manager.remote_alloc( seg
                                                       , hdl
                                                       , offset
                                                       , size
@@ -680,7 +681,7 @@ namespace gpi
             handle_t hdl (boost::lexical_cast<handle_t>(av[1]));
             try
             {
-              global::memory_manager().remote_free(hdl);
+              _memory_manager.remote_free(hdl);
               cast (rank, detail::command_t("+OK"));
             }
             catch (std::exception const & ex)
@@ -704,7 +705,7 @@ namespace gpi
 
             try
             {
-              global::memory_manager().remote_add_memory (seg_id, url_s);
+              _memory_manager.remote_add_memory (seg_id, url_s);
               cast (rank, detail::command_t("+RES") << 0);
             }
             catch (std::exception const & ex)
@@ -723,7 +724,7 @@ namespace gpi
 
             try
             {
-              global::memory_manager().remote_del_memory (seg_id);
+              _memory_manager.remote_del_memory (seg_id);
               cast (rank, detail::command_t("+RES") << 0);
             }
             catch (std::exception const & ex)
