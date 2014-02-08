@@ -53,63 +53,36 @@ namespace gpi
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::memory::alloc_t & alloc) const
           {
-            try
-            {
               gpi::pc::proto::memory::alloc_reply_t rpl;
               rpl.handle = global::memory_manager().alloc
                   ( m_proc_id
                   , alloc.segment, alloc.size, alloc.name, alloc.flags
                   );
               return gpi::pc::proto::memory::message_t (rpl);
-            }
-            catch (std::exception const & ex)
-            {
-              LOG(ERROR, "allocation of " << alloc.size << " bytes in segment " << alloc.segment << " failed: " << ex.what());
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::memory::free_t & free) const
           {
-            try
-            {
               global::memory_manager().free (free.handle);
               return gpi::pc::proto::error::error_t
                 (gpi::pc::proto::error::success, "success");
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::memory::memcpy_t & cpy) const
           {
-            try
-            {
               gpi::pc::type::validate (cpy.dst.handle);
               gpi::pc::type::validate (cpy.src.handle);
               gpi::pc::proto::memory::memcpy_reply_t rpl;
               rpl.queue = global::memory_manager().memcpy
                 (m_proc_id, cpy.dst, cpy.src, cpy.size, cpy.queue);
               return gpi::pc::proto::memory::message_t (rpl);
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::memory::wait_t & w) const
           {
-            try
-            {
               gpi::pc::proto::memory::wait_reply_t rpl;
               // this is not that easy to implement
               //    do we want to put the process container to sleep? - no
@@ -137,19 +110,11 @@ namespace gpi
               rpl.count = global::memory_manager().wait_on_queue
                 (m_proc_id, w.queue);
               return gpi::pc::proto::memory::message_t (rpl);
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::memory::list_t & list) const
           {
-            try
-            {
               gpi::pc::proto::memory::list_reply_t rpl;
               if (list.segment == gpi::pc::type::segment::SEG_INVAL)
               {
@@ -160,28 +125,14 @@ namespace gpi
                 global::memory_manager().list_allocations (m_proc_id, list.segment, rpl.list);
               }
              return gpi::pc::proto::memory::message_t (rpl);
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::memory::info_t & info) const
           {
-            try
-            {
               gpi::pc::proto::memory::info_reply_t rpl;
               rpl.descriptor = global::memory_manager().info (info.handle);
               return gpi::pc::proto::memory::message_t (rpl);
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           /**********************************************/
@@ -191,8 +142,6 @@ namespace gpi
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
-            try
-            {
               fhg::util::url_t url;
               url.type ("shm");
               url.path (register_segment.name);
@@ -211,70 +160,38 @@ namespace gpi
                 global::memory_manager().register_memory (m_proc_id, area);
 
               return gpi::pc::proto::segment::message_t (rpl);
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment) const
           {
-            try
-            {
               global::memory_manager().unregister_memory
                 (m_proc_id, unregister_segment.id);
               return gpi::pc::proto::error::error_t
                 (gpi::pc::proto::error::success, "success");
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::segment::attach_t & attach_segment) const
           {
-            try
-            {
               global::memory_manager().attach_process
                 (m_proc_id, attach_segment.id);
               return gpi::pc::proto::error::error_t
                 (gpi::pc::proto::error::success, "success");
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::segment::detach_t & detach_segment) const
           {
-            try
-            {
               global::memory_manager().detach_process
                 (m_proc_id, detach_segment.id);
               return gpi::pc::proto::error::error_t
                 (gpi::pc::proto::error::success, "success");
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::segment::list_t & list) const
           {
-            try
-            {
               gpi::pc::proto::segment::list_reply_t rpl;
               if (list.id == gpi::pc::type::segment::SEG_INVAL)
                 global::memory_manager().list_memory (rpl.list);
@@ -284,46 +201,24 @@ namespace gpi
                 global::memory_manager().list_memory (rpl.list);
               }
               return gpi::pc::proto::segment::message_t (rpl);
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
           {
-            try
-            {
               gpi::pc::type::segment_id_t id =
                 global::memory_manager ().add_memory (m_proc_id, add_mem.url);
               gpi::pc::proto::segment::register_reply_t rpl;
               rpl.id = id;
               return gpi::pc::proto::segment::message_t (rpl);
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           gpi::pc::proto::message_t
           operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
           {
-            try
-            {
               global::memory_manager ().del_memory (m_proc_id, del_mem.id);
               return
                 gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
-            }
-            catch (std::exception const & ex)
-            {
-              return gpi::pc::proto::error::error_t
-                (gpi::pc::proto::error::bad_request, ex.what());
-            }
           }
 
           /**********************************************/
@@ -381,6 +276,26 @@ namespace gpi
         private:
           gpi::pc::type::process_id_t const& m_proc_id;
         };
+      }
+
+      namespace
+      {
+        gpi::pc::proto::message_t handle_message
+          ( gpi::pc::type::process_id_t const& id
+          , gpi::pc::proto::message_t const& request
+          )
+        {
+          try
+          {
+            return boost::apply_visitor
+              (visitor::handle_message_t (id), request);
+          }
+          catch (std::exception const& ex)
+          {
+            return gpi::pc::proto::error::error_t
+              (gpi::pc::proto::error::bad_request, ex.what());
+          }
+        }
       }
 
       int process_t::close_socket (const int fd)
@@ -506,12 +421,7 @@ namespace gpi
               break;
             }
 
-            if (send ( fd
-                     , boost::apply_visitor ( visitor::handle_message_t (m_id)
-                                            , request
-                                            )
-                     ) <= 0
-               )
+            if (send (fd, handle_message (m_id, request)) <= 0)
             {
               break;
             }
