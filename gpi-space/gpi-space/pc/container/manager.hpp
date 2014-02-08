@@ -60,16 +60,7 @@ namespace gpi
         int m_socket;
         bool m_stopping;
       };
-    }
-  }
-}
 
-namespace gpi
-{
-  namespace pc
-  {
-    namespace container
-    {
       class process_t;
 
       class manager_t
