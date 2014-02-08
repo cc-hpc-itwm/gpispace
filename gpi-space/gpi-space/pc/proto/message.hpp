@@ -26,7 +26,6 @@ namespace gpi
       {
         header_t ()
           : length (0)
-          , version (0x01)
           , flags (0)
           , seq (0)
           , ack (0)
@@ -34,7 +33,6 @@ namespace gpi
         {}
 
         uint32_t     length;
-        uint8_t     version;
         uint8_t       flags;
         uint16_t        seq;
         uint16_t        ack;

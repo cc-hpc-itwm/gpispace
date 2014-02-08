@@ -297,18 +297,6 @@ namespace gpi
           }
         }
 
-        if (header.version != 0x01)
-        {
-          LOG( ERROR
-             , "invalid message received: version missmatch: "
-             << "expected version: 0x" << std::hex << 0x01
-             << " got 0x" << std::hex << (int)header.version
-             );
-          close_socket (fd);
-          m_mgr.handle_process_error (m_id, EINVAL);
-          return -EINVAL;
-        }
-
         if (header.length > max_size)
         {
           LOG(ERROR, "message is larger than maximum allowed size (" << header.length << "), closing connection");
