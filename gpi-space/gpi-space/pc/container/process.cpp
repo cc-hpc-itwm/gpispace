@@ -265,7 +265,8 @@ namespace gpi
           {
             try
             {
-              m_proc.attach_segment (attach_segment.id);
+              global::memory_manager().attach_process
+                (m_proc.id(), attach_segment.id);
               gpi::pc::proto::error::error_t error;
               error.code = gpi::pc::proto::error::success;
               error.detail = "success";
@@ -602,12 +603,6 @@ namespace gpi
       process_t::del_memory (gpi::pc::type::segment_id_t seg_id)
       {
         global::memory_manager ().del_memory (m_id, seg_id);
-      }
-
-      void
-      process_t::attach_segment(const gpi::pc::type::segment_id_t seg)
-      {
-        global::memory_manager().attach_process (m_id, seg);
       }
 
       void
