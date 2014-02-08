@@ -50,7 +50,7 @@ namespace gpi
             ("queue permanently disabled due to previous errors");
         }
 
-        BOOST_FOREACH(task_ptr task, tasks)
+        BOOST_FOREACH(task_ptr const task, tasks)
         {
             m_task_queue.push(task);
         }
@@ -85,7 +85,7 @@ namespace gpi
           m_dispatched.swap (wait_on_tasks);
         }
 
-        std::size_t res (wait_on_tasks.size());
+        std::size_t const res (wait_on_tasks.size());
         while (! wait_on_tasks.empty())
         {
           task_ptr task(*wait_on_tasks.begin());
