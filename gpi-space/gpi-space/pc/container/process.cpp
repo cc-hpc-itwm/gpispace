@@ -500,7 +500,6 @@ namespace gpi
 
       int process_t::send (const int fd, gpi::pc::proto::message_t const & m)
       {
-        int err;
         std::string data;
         gpi::pc::proto::header_t header;
 
@@ -511,6 +510,7 @@ namespace gpi
           data = sstr.str();
         }
         header.length = data.size();
+        int err;
         err = write (fd, &header, sizeof(header));
         if ( err <= 0 )
         {
