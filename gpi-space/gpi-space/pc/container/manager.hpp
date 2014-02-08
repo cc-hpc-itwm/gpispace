@@ -23,8 +23,6 @@ namespace gpi
   {
     namespace container
     {
-      class process_t;
-
       class manager_t : boost::noncopyable
       {
       public:
