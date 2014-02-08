@@ -81,7 +81,7 @@ namespace gpi
           {
             try
             {
-              m_proc.free (free.handle);
+              global::memory_manager().free (free.handle);
               gpi::pc::proto::error::error_t error;
               error.code = gpi::pc::proto::error::success;
               error.detail = "success";
@@ -160,7 +160,7 @@ namespace gpi
             try
             {
               gpi::pc::proto::memory::info_reply_t rpl;
-              rpl.descriptor = m_proc.info (info.handle);
+              rpl.descriptor = global::memory_manager().info (info.handle);
               return gpi::pc::proto::memory::message_t (rpl);
             }
             catch (std::exception const & ex)
@@ -266,11 +266,11 @@ namespace gpi
             {
               gpi::pc::proto::segment::list_reply_t rpl;
               if (list.id == gpi::pc::type::segment::SEG_INVAL)
-                m_proc.list_segments (rpl.list);
+                global::memory_manager().list_memory (rpl.list);
               else
               {
                 LOG(WARN, "list of particular segment not implemented");
-                m_proc.list_segments (rpl.list);
+                global::memory_manager().list_memory (rpl.list);
               }
               return gpi::pc::proto::segment::message_t (rpl);
             }
@@ -561,17 +561,6 @@ namespace gpi
         return global::memory_manager().alloc (m_id, seg, size, name, flags);
       }
 
-      void process_t::free (const gpi::pc::type::handle_id_t hdl)
-      {
-        return global::memory_manager().free (hdl);
-      }
-
-      gpi::pc::type::handle::descriptor_t
-      process_t::info (const gpi::pc::type::handle_id_t hdl) const
-      {
-        return global::memory_manager().info (hdl);
-      }
-
       void
       process_t::list_allocations( const gpi::pc::type::segment_id_t seg
                                     , gpi::pc::type::handle::list_t & l
@@ -678,12 +667,6 @@ namespace gpi
       process_t::detach_segment(const gpi::pc::type::segment_id_t seg)
       {
         global::memory_manager().detach_process (m_id, seg);
-      }
-
-      void
-      process_t::list_segments(gpi::pc::type::segment::list_t & l)
-      {
-        global::memory_manager().list_memory (l);
       }
 
       void process_t::collect_info (gpi::pc::type::info::descriptor_t &d)

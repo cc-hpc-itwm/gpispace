@@ -49,7 +49,6 @@ namespace gpi
                                          , const std::string & name
                                          , const gpi::pc::type::flags_t
                                          );
-        void free (const gpi::pc::type::handle_id_t);
 
         gpi::pc::type::segment_id_t register_segment( std::string const & name
                                                     , const gpi::pc::type::size_t sz
@@ -58,15 +57,12 @@ namespace gpi
         void unregister_segment(const gpi::pc::type::segment_id_t);
         void attach_segment(const gpi::pc::type::segment_id_t id);
         void detach_segment(const gpi::pc::type::segment_id_t id);
-        void list_segments (gpi::pc::type::segment::list_t &);
         gpi::pc::type::segment_id_t add_memory (std::string const &url);
         void                        del_memory (gpi::pc::type::segment_id_t);
 
         void list_allocations( const gpi::pc::type::segment_id_t seg
                              , gpi::pc::type::handle::list_t & l
                              ) const;
-
-        gpi::pc::type::handle::descriptor_t info (const gpi::pc::type::handle_id_t) const;
 
         gpi::pc::type::queue_id_t memcpy ( gpi::pc::type::memory_location_t const & dst
                                          , gpi::pc::type::memory_location_t const & src
