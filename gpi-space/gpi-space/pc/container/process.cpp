@@ -532,14 +532,12 @@ namespace gpi
 
       void process_t::reader_thread_main(const int fd)
       {
-        using namespace gpi::pc::proto;
-
         LOG(TRACE, "process container (" << m_id << ") started");
         for (;;)
         {
           try
           {
-            message_t request;
+            gpi::pc::proto::message_t request;
 
             if (receive (fd, request) <= 0)
             {
