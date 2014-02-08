@@ -17,9 +17,8 @@ namespace gpi
       void
       task_t::execute ()
       {
-        switch (get_state())
-        {
-        case task_state::pending:
+        assert (task_state::pending == get_state());
+
           try
           {
             set_state (task_state::executing);
@@ -31,13 +30,6 @@ namespace gpi
             m_error = boost::current_exception();
             set_state (task_state::failed);
           }
-          break;
-        case task_state::executing:
-          throw std::runtime_error ("task already executing: " + get_name());
-          break;
-        default:
-          throw std::runtime_error ("task already executed: " + get_name());
-        }
       }
 
       void task_t::set_state (const task_state::state s)
