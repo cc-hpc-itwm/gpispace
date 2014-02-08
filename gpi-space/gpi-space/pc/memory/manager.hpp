@@ -149,7 +149,6 @@ namespace gpi
         typedef boost::unordered_map< gpi::pc::type::handle_t
                                     , gpi::pc::type::segment_id_t
                                     > handle_to_segment_t;
-        typedef boost::unordered_set<area_ptr> garbage_areas_t;
 
         manager_t ();
 
@@ -166,7 +165,6 @@ namespace gpi
         mutable mutex_type m_mutex;
         gpi::pc::type::id_t m_ident;
         area_map_t m_areas;
-        garbage_areas_t m_garbage_areas;
         handle_to_segment_t m_handle_to_segment;
         transfer_manager_t m_transfer_mgr;
       };
