@@ -20,19 +20,13 @@ namespace gpi
       connector_t::connector_t
         ( boost::function<void (int)> const& handle_new_connection
         , std::string const & p
+        , std::vector<std::string> const& default_memory_urls
         )
           : m_handle_new_connection (handle_new_connection)
           , m_path (p)
           , m_socket (-1)
           , m_stopping (false)
           , m_process_counter (0)
-      {}
-
-      manager_t::manager_t ( std::string const & p
-                           , std::vector<std::string> const& default_memory_urls
-                           )
-       : m_connector
-         (boost::bind (&manager_t::handle_new_connection, this, _1), p)
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
@@ -85,8 +79,18 @@ namespace gpi
             global::topology ().wait_for_go ();
           }
 
-          m_connector.start ();
+          start ();
       }
+
+      manager_t::manager_t ( std::string const & p
+                           , std::vector<std::string> const& default_memory_urls
+                           )
+       : m_connector
+         ( boost::bind (&manager_t::handle_new_connection, this, _1)
+         , p
+         , default_memory_urls
+         )
+      {}
 
       void connector_t::detach_all()
       {

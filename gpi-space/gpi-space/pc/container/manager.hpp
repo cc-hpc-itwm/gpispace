@@ -29,6 +29,7 @@ namespace gpi
       public:
         connector_t ( boost::function<void (int)> const& handle_new_connection
                     , std::string const & p
+                    , std::vector<std::string> const& default_memory_urls
                     );
 
         ~connector_t ();
