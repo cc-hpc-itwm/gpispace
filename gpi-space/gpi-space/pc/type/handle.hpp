@@ -111,26 +111,6 @@ namespace gpi
       }
 
       inline
-      std::ostream & operator << (std::ostream & os, const handle_t h)
-      {
-        const std::ios_base::fmtflags saved_flags (os.flags());
-        const char saved_fill = os.fill (' ');
-        const std::size_t saved_width = os.width (0);
-
-        os << "0x";
-        os.flags (std::ios::hex);
-        os.width (handle_t::string_length - 2);
-        os.fill ('0');
-        os << h.handle;
-
-        os.flags (saved_flags);
-        os.fill (saved_fill);
-        os.width (saved_width);
-
-        return os;
-      }
-
-      inline
       std::istream & operator>> ( std::istream & is
                                 , handle_t & h
                                 )

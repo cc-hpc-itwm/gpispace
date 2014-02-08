@@ -237,20 +237,6 @@ namespace gpi
 
           return os;
         }
-
-        inline
-        std::ostream & operator<< (std::ostream & os, const list_t & list)
-        {
-          for ( list_t::const_iterator it (list.begin())
-              ; it != list.end()
-              ; ++it
-              )
-          {
-            os << *it << std::endl;
-          }
-
-          return os;
-        }
       }
     }
   }
