@@ -81,12 +81,6 @@ namespace gpi
         return m_name;
       }
 
-      boost::exception_ptr
-      task_t::get_error () const
-      {
-        return m_error;
-      }
-
       bool
       task_t::has_failed () const
       {
@@ -112,7 +106,7 @@ namespace gpi
       std::string
       task_t::get_error_message () const
       {
-        return boost::diagnostic_information(get_error());
+        return boost::diagnostic_information(m_error);
       }
     }
   }

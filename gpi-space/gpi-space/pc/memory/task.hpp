@@ -34,7 +34,6 @@ namespace gpi
         void wait ();
 
         std::string const & get_name () const;
-        boost::exception_ptr get_error () const;
         std::string get_error_message () const;
         bool has_failed () const;
         bool USED_IN_TEST_ONLY_has_finished () const;
