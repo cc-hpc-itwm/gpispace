@@ -93,14 +93,6 @@ namespace gpi
         m_enabled = false;
       }
 
-      void
-      transfer_queue_t::enable ()
-      {
-        lock_type lock (m_mutex);
-        m_enabled = true;
-        m_resume_condition.notify_all();
-      }
-
       bool
       transfer_queue_t::is_disabled () const
       {

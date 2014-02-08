@@ -5,7 +5,6 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/thread/condition_variable.hpp>
 
 #include <gpi-space/pc/memory/task_queue.hpp>
 
@@ -40,18 +39,15 @@ namespace gpi
         std::size_t wait ();
 
       private:
-        void enable ();
         bool is_disabled () const;
 
         typedef boost::mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
-        typedef boost::condition_variable condition_type;
         typedef boost::shared_ptr<boost::thread> thread_ptr;
 
         void worker ();
 
         mutable mutex_type m_mutex;
-        mutable condition_type m_resume_condition;
         bool m_enabled;
 
         task_queue_t m_task_queue;
