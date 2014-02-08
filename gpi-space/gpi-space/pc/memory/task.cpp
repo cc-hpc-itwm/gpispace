@@ -6,6 +6,16 @@ namespace gpi
   {
     namespace memory
     {
+      task_t::task_t ( std::string const nme
+                     , function_type fun
+                     , const std::size_t eta
+                     )
+        : m_state (task_state::pending)
+        , m_name (nme)
+        , m_func (fun)
+        , m_eta (eta)
+      {}
+
       void
       task_t::execute ()
       {
