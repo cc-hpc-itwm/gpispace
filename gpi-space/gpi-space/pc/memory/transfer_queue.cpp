@@ -33,20 +33,6 @@ namespace gpi
         {
           task_ptr task = m_task_queue.pop();
           task->execute ();
-          if (task->has_failed())
-          {
-            LOG( ERROR
-               , "task failed: " << task->get_name() << ": "
-               << task->get_error_message()
-               );
-          }
-          else
-          {
-            LOG( ERROR
-               , "*** STRANGE: task neither finished, nor failed, but did return?"
-               << " task := " << task->get_name()
-               );
-          }
         }
       }
 
