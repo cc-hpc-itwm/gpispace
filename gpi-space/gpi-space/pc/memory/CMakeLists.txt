@@ -25,7 +25,6 @@ set (srcs
   gpi_area.cpp
   shm_area.cpp
   sfs_area.cpp
-  memory_transfer_t.cpp
   task.cpp
   transfer_queue.cpp
   transfer_manager.cpp
