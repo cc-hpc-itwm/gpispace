@@ -84,7 +84,6 @@ namespace gpi
         void handle_process_error ( const gpi::pc::type::process_id_t proc_id
                                   , int error
                                   );
-        void detach_process (const gpi::pc::type::process_id_t);
 
         connector_t m_connector;
       };

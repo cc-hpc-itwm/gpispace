@@ -361,11 +361,6 @@ namespace gpi
         global::topology().stop();
       }
 
-      void manager_t::detach_process (const gpi::pc::type::process_id_t id)
-      {
-        m_connector.detach_process (id);
-      }
-
       void manager_t::handle_new_connection (int fd)
       {
         m_connector.handle_new_connection (fd);
