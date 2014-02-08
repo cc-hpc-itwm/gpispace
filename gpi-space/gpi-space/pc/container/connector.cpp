@@ -1,5 +1,3 @@
-#include "connector.hpp"
-
 #include <gpi-space/pc/container/manager.hpp>
 
 #include <sys/socket.h>
