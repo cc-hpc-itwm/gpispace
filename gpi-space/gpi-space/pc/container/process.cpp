@@ -210,11 +210,22 @@ namespace gpi
           {
             try
             {
+              using namespace gpi::pc;
+              fhg::util::url_t url;
+              url.type ("shm");
+              url.path (register_segment.name);
+              url.set ("size", boost::lexical_cast<std::string>(register_segment.size));
+              if (register_segment.flags & F_PERSISTENT)
+                url.set ("persistent", "true");
+              if (register_segment.flags & F_EXCLUSIVE)
+                url.set ("exclusive", "true");
+
+              memory::area_ptr_t area =
+                memory::factory ().create (boost::lexical_cast<std::string>(url));
+              area->set_owner (m_proc.id());
+
               gpi::pc::type::segment_id_t id =
-                m_proc.register_segment ( register_segment.name
-                                        , register_segment.size
-                                        , register_segment.flags
-                                        );
+                global::memory_manager().register_memory (m_proc.id(), area);
               gpi::pc::proto::segment::register_reply_t rpl;
               rpl.id = id;
               return gpi::pc::proto::segment::message_t (rpl);
@@ -579,29 +590,6 @@ namespace gpi
       /***  P R O T O C O L    I M P L E M E N T A T I O N  ***/
       /***                                                  ***/
       /********************************************************/
-
-      gpi::pc::type::segment_id_t
-      process_t::register_segment ( std::string const & name
-                                     , const gpi::pc::type::size_t sz
-                                     , const gpi::pc::type::flags_t flags
-                                     )
-      {
-        using namespace gpi::pc;
-
-        fhg::util::url_t url;
-        url.type ("shm");
-        url.path (name);
-        url.set ("size", boost::lexical_cast<std::string>(sz));
-        if (flags & F_PERSISTENT)
-          url.set ("persistent", "true");
-        if (flags & F_EXCLUSIVE)
-          url.set ("exclusive", "true");
-
-        memory::area_ptr_t area =
-          memory::factory ().create (boost::lexical_cast<std::string>(url));
-        area->set_owner (m_id);
-        return global::memory_manager().register_memory (m_id, area);
-      }
 
       void
       process_t::unregister_segment(const gpi::pc::type::segment_id_t seg)

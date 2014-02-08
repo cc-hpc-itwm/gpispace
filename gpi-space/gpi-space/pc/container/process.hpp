@@ -49,10 +49,6 @@ namespace gpi
 
         // protocol implementation
 
-        gpi::pc::type::segment_id_t register_segment( std::string const & name
-                                                    , const gpi::pc::type::size_t sz
-                                                    , const gpi::pc::type::flags_t
-                                                    );
         void unregister_segment(const gpi::pc::type::segment_id_t);
         void attach_segment(const gpi::pc::type::segment_id_t id);
         void detach_segment(const gpi::pc::type::segment_id_t id);
