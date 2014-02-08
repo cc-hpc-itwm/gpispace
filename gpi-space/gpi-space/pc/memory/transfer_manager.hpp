@@ -6,7 +6,6 @@
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_transfer_t.hpp>
 #include <gpi-space/pc/memory/transfer_queue.hpp>
-#include <gpi-space/pc/memory/task_queue.hpp>
 
 #include <gpi-space/pc/memory/memory_buffer.hpp>
 #include <gpi-space/pc/memory/memory_buffer_pool.hpp>
