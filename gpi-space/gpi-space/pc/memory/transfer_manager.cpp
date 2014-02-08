@@ -33,19 +33,13 @@ namespace gpi
       }
 
       void
-      transfer_manager_t::start ( const std::size_t number_of_queues
-                                , const std::size_t memcpy_pool_size
-                                )
+      transfer_manager_t::start (const std::size_t number_of_queues)
       {
         for (std::size_t i(0); i < number_of_queues; ++i)
         {
           m_queues.push_back
             (boost::make_shared<transfer_queue_t>(i));
         }
-        m_worker_pool.add
-          ( boost::bind(&transfer_manager_t::worker, this)
-          , std::max(std::size_t(1), memcpy_pool_size)
-          );
 
         for (size_t i = 0; i < number_of_queues; ++i)
         {
@@ -129,34 +123,6 @@ namespace gpi
             m_queues [queue]->disable ();
 
             throw;
-          }
-        }
-      }
-
-      void
-      transfer_manager_t::worker()
-      {
-        for (;;)
-        {
-          task_ptr task (m_worker_queue.pop());
-          task->execute();
-          if (task->has_failed())
-          {
-            LOG( ERROR
-               , "task failed: " << task->get_name() << ": "
-               << task->get_error_message()
-               );
-          }
-          else if (task->has_finished())
-          {
-            DLOG(TRACE, "transfer done: " << task->get_name());
-          }
-          else
-          {
-            LOG( ERROR
-               , "*** STRANGE: task neither finished, nor failed, but did return?"
-               << " task := " << task->get_name()
-               );
           }
         }
       }

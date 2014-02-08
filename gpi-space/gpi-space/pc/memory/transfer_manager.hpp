@@ -5,7 +5,6 @@
 
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_transfer_t.hpp>
-#include <gpi-space/pc/memory/thread_pool.hpp>
 #include <gpi-space/pc/memory/transfer_queue.hpp>
 #include <gpi-space/pc/memory/task_queue.hpp>
 
@@ -132,9 +131,7 @@ namespace gpi
       public:
         static const size_t DEF_BUFFER_SIZE = 4194304;
 
-        void start ( const std::size_t number_of_queues
-                   , const std::size_t memcpy_pool_size = 2
-                   );
+        void start (const std::size_t number_of_queues);
 
         void transfer (memory_transfer_t const &);
         std::size_t wait_on_queue (const std::size_t queue);
@@ -146,11 +143,7 @@ namespace gpi
         typedef boost::shared_ptr<task_t> task_ptr;
         typedef buffer_pool_t<buffer_t> memory_pool_t;
 
-        void worker();
-
         transfer_queues_t m_queues;
-        task_queue_t m_worker_queue;
-        thread_pool_t m_worker_pool;
         memory_pool_t m_memory_buffer_pool;
       };
     }
