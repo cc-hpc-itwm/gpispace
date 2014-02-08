@@ -38,7 +38,6 @@ namespace gpi
 
         void execute ();
         void cancel ();
-        void reset ();
         void wait ();
 
         std::string const & get_name () const;

@@ -42,11 +42,6 @@ namespace gpi
         }
       }
 
-      void task_t::reset ()
-      {
-        set_state (task_state::pending);
-      }
-
       void task_t::set_state (const task_t::state s)
       {
         lock_type lock (m_mutex);
