@@ -36,6 +36,11 @@ namespace gpi
         {
           LOG(ERROR, "error within ~connector_t: " << ex.what());
         }
+
+        detach_all();
+
+        global::memory_manager().clear();
+        global::topology().stop();
       }
 
       void connector_t::start ()
@@ -348,15 +353,6 @@ namespace gpi
          , default_memory_urls
          )
       {}
-
-      manager_t::~manager_t ()
-      {
-          m_connector.stop ();
-          m_connector.detach_all();
-
-          global::memory_manager().clear();
-        global::topology().stop();
-      }
     }
   }
 }

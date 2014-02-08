@@ -74,8 +74,6 @@ namespace gpi
                   , std::vector<std::string> const& default_memory_urls
                   );
 
-        ~manager_t ();
-
       private:
         connector_t m_connector;
       };
