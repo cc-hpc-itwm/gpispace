@@ -1,31 +1,24 @@
-#include "manager.hpp"
-
-#include <fhglog/LogMacros.hpp>
-
 #include <gpi-space/gpi/api.hpp>
+#include <gpi-space/pc/container/manager.hpp>
 #include <gpi-space/pc/container/process.hpp>
 #include <gpi-space/pc/global/topology.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
+
+#include <fhg/assert.hpp>
+#include <fhglog/LogMacros.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
-#include <gpi-space/pc/container/manager.hpp>
-
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-
-#include <fhglog/LogMacros.hpp>
-#include <fhg/assert.hpp>
-
-#include <boost/bind.hpp>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <unistd.h>
 
 namespace gpi
 {
