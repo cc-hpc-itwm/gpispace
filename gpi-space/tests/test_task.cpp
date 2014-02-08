@@ -7,7 +7,6 @@
 #include <fhglog/LogMacros.hpp>
 #include <boost/make_shared.hpp>
 #include <gpi-space/pc/memory/task.hpp>
-#include <gpi-space/pc/memory/task_queue.hpp>
 
 struct SetupLogging
 {
@@ -71,34 +70,4 @@ BOOST_AUTO_TEST_CASE ( simple_task_failed )
   task.wait ();
 
   BOOST_CHECK (task.has_failed());
-}
-
-BOOST_AUTO_TEST_CASE ( task_queue )
-{
-  using namespace gpi::pc::memory;
-  int executed (0);
-  task_queue_t q;
-
-  const int count (10);
-  for (int i = 0; i < count; ++i)
-  {
-    q.push
-      (boost::make_shared<task_t>( "simple_task"
-                                 , boost::bind(task_executed, &executed)
-                                 )
-      );
-  }
-
-  BOOST_CHECK_EQUAL (q.empty(), false);
-  BOOST_CHECK_EQUAL (q.size(),  size_t(count));
-
-  while (!q.empty())
-  {
-    task_queue_t::task_ptr t (q.pop());
-    t->execute();
-  }
-
-  BOOST_CHECK_EQUAL (q.empty(), true);
-  BOOST_CHECK_EQUAL (q.size(),  0u);
-  BOOST_CHECK_EQUAL (executed, count);
 }

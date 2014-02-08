@@ -11,7 +11,6 @@ set (hdrs
   sfs_area.hpp
   memory_transfer_t.hpp
   task.hpp
-  task_queue.hpp
   transfer_queue.hpp
   transfer_manager.hpp
   factory.hpp
@@ -28,7 +27,6 @@ set (srcs
   sfs_area.cpp
   memory_transfer_t.cpp
   task.cpp
-  task_queue.cpp
   transfer_queue.cpp
   transfer_manager.cpp
   factory.cpp
