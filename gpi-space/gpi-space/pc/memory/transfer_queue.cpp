@@ -81,7 +81,7 @@ namespace gpi
         // this  needs to  be atomic,  otherwise (enqueue();  wait();)  would be
         // broken
         {
-          lock_type lock (m_mutex);
+          boost::mutex::scoped_lock const _ (_mutex_dispatched);
           m_dispatched.insert (tasks.begin(), tasks.end());
         }
       }
@@ -104,7 +104,7 @@ namespace gpi
       {
         task_set_t wait_on_tasks;
         {
-          lock_type lock (m_mutex);
+          boost::mutex::scoped_lock const _ (_mutex_dispatched);
           m_dispatched.swap (wait_on_tasks);
         }
 

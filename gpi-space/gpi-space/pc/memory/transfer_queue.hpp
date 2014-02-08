@@ -53,6 +53,7 @@ namespace gpi
         task_queue_t m_task_queue;
         thread_ptr m_thread;
 
+        mutable boost::mutex _mutex_dispatched;
         task_set_t m_dispatched;
         // dispatched list -> contains dispatched tasks
         // finished list   -> contains finished tasks
