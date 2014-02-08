@@ -31,8 +31,7 @@ namespace gpi
       {
         for (;;)
         {
-          task_ptr task = m_task_queue.pop();
-          task->execute ();
+          m_task_queue.pop()->execute();
         }
       }
 
