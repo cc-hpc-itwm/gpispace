@@ -17,6 +17,17 @@ namespace gpi
   {
     namespace container
     {
+      connector_t::connector_t
+        ( boost::function<void (int)> const& handle_new_connection
+        , std::string const & p
+        )
+          : m_handle_new_connection (handle_new_connection)
+          , m_path (p)
+          , m_socket (-1)
+          , m_stopping (false)
+          , m_process_counter (0)
+      {}
+
       manager_t::manager_t ( std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            )
