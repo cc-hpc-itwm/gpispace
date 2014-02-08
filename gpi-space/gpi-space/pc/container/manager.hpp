@@ -73,8 +73,8 @@ namespace gpi
 
         ~manager_t ();
 
-        void handle_new_connection (int fd);
       private:
+        void handle_new_connection (int fd);
         void handle_process_error ( const gpi::pc::type::process_id_t proc_id
                                   , int error
                                   );
