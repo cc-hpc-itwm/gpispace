@@ -57,7 +57,6 @@ namespace gpi
         {
           m_socket = fd;
           DLOG(DEBUG, "listening on " << m_path << " (fd " << fd << ")");
-          assert (m_socket >= 0);
 
           m_listener = thread_t
             (new boost::thread(boost::bind( &connector_t::listener_thread_main
