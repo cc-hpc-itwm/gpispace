@@ -76,18 +76,13 @@ namespace gpi
 
           safe_unlink (m_path);
           close_socket (m_socket);
-          stop_thread ();
+          assert (m_listener);
+          if (boost::this_thread::get_id() != m_listener->get_id())
+          {
+            m_listener->join ();
+            m_listener.reset ();
+          }
           m_socket = -1;
-        }
-      }
-
-      void connector_t::stop_thread ()
-      {
-        assert (m_listener);
-        if (boost::this_thread::get_id() != m_listener->get_id())
-        {
-          m_listener->join ();
-          m_listener.reset ();
         }
       }
 

@@ -47,7 +47,6 @@ namespace gpi
         typedef boost::unique_lock<mutex_type> lock_type;
 
         void listener_thread_main (const int fd);
-        void stop_thread ();
 
         int close_socket (const int fd);
         int open_socket(std::string const & path);
