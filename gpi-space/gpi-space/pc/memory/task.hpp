@@ -27,7 +27,7 @@ namespace gpi
       public:
         typedef boost::function<void (void)> function_type;
 
-        task_t (std::string const nme, function_type fun, const std::size_t eta = 0);
+        task_t (std::string const nme, function_type fun);
 
         void execute ();
         void cancel ();
