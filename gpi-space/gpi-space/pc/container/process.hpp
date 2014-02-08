@@ -18,7 +18,6 @@ namespace gpi
       class process_t : boost::noncopyable
       {
       public:
-        explicit
         process_t
           ( boost::function<void (gpi::pc::type::process_id_t const&, int)>
             const& handle_process_error
