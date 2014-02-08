@@ -38,15 +38,11 @@ namespace gpi
         bool USED_IN_TEST_ONLY_has_finished () const;
         bool USED_IN_TEST_ONLY_is_pending() const;
       private:
-        typedef boost::mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-        typedef boost::condition_variable condition_type;
-
         void set_state (const task_state::state);
         task_state::state get_state () const;
 
-        mutable mutex_type m_mutex;
-        condition_type m_state_changed;
+        mutable boost::mutex _mutex_state;
+        boost::condition_variable m_state_changed;
         task_state::state m_state;
         const std::string m_name;
         function_type m_func;

@@ -34,21 +34,21 @@ namespace gpi
 
       void task_t::set_state (const task_state::state s)
       {
-        lock_type lock (m_mutex);
+        boost::mutex::scoped_lock const _ (_mutex_state);
         m_state = s;
         m_state_changed.notify_all();
       }
 
       task_state::state task_t::get_state () const
       {
-        lock_type lock (m_mutex);
+        boost::mutex::scoped_lock const _ (_mutex_state);
         return m_state;
       }
 
       void
       task_t::wait ()
       {
-        lock_type lock (m_mutex);
+        boost::mutex::scoped_lock lock (_mutex_state);
         while (  task_state::pending   == m_state
               || task_state::executing == m_state
               )
