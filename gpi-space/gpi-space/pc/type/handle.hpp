@@ -90,8 +90,7 @@ namespace gpi
 
       inline std::size_t hash_value (const handle_t& x)
       {
-        boost::hash<handle_id_t> hasher;
-        return hasher (x.handle);
+        return boost::hash<handle_id_t>() (x.handle);
       }
 
       inline
