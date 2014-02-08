@@ -500,11 +500,9 @@ namespace gpi
 
       int process_t::send (const int fd, gpi::pc::proto::message_t const & m)
       {
-        using namespace gpi::pc::proto;
-
         int err;
         std::string data;
-        header_t header;
+        gpi::pc::proto::header_t header;
 
         {
           std::stringstream sstr;
