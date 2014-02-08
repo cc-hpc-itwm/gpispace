@@ -19,7 +19,7 @@ namespace gpi
       {
       public:
         explicit
-        transfer_queue_t (const std::size_t id, task_queue_t *async);
+        transfer_queue_t (const std::size_t id);
         ~transfer_queue_t ();
 
         void enqueue (task_ptr const &);
@@ -67,7 +67,6 @@ namespace gpi
         bool m_paused;
         bool m_enabled;
 
-        task_queue_t & m_blocking_tasks;
         task_queue_t m_task_queue;
         thread_ptr m_thread;
 

@@ -12,12 +12,10 @@ namespace gpi
     namespace memory
     {
       transfer_queue_t::transfer_queue_t ( const std::size_t id
-                                         , task_queue_t *queue_to_pool
                                          )
         : m_id (id)
         , m_paused (false)
         , m_enabled (true)
-        , m_blocking_tasks (*queue_to_pool)
       {
         m_thread = boost::make_shared<boost::thread>
           (boost::bind ( &transfer_queue_t::worker

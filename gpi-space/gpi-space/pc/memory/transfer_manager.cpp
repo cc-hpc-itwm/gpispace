@@ -40,7 +40,7 @@ namespace gpi
         for (std::size_t i(0); i < number_of_queues; ++i)
         {
           m_queues.push_back
-            (boost::make_shared<transfer_queue_t>(i, &m_worker_queue));
+            (boost::make_shared<transfer_queue_t>(i));
         }
         m_worker_pool.add
           ( boost::bind(&transfer_manager_t::worker, this)
