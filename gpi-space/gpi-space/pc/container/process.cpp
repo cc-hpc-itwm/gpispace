@@ -510,8 +510,7 @@ namespace gpi
           data = sstr.str();
         }
         header.length = data.size();
-        int err;
-        err = write (fd, &header, sizeof(header));
+        int err (write (fd, &header, sizeof(header)));
         if ( err <= 0 )
         {
           err = errno;
