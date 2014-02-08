@@ -99,7 +99,7 @@ namespace gpi
         if (hdl.type == 0)
         {
           throw std::invalid_argument
-            ("invalid handle: " + boost::lexical_cast<std::string>(hdl));
+            ("invalid handle: " + boost::lexical_cast<std::string>(hdl.handle));
         }
       }
 
