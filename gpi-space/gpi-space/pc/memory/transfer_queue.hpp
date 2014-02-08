@@ -25,18 +25,7 @@ namespace gpi
         void enqueue (task_ptr const &);
         void enqueue (task_list_t const &);
 
-        // request to pause the queue
-        //   no new requests will be accepted
-        //   there might still be requests queued,
-        //   use flush to remove them
-        void pause ();
-        // unpause the queue
-        void resume ();
-        bool is_paused () const;
-
         void disable ();
-        void enable ();
-        bool is_disabled () const;
 
         // issue a "wait" on the queue
         //
@@ -50,9 +39,22 @@ namespace gpi
         //             else.
         std::size_t wait ();
 
+      private:
+        // request to pause the queue
+        //   no new requests will be accepted
+        //   there might still be requests queued,
+        //   use flush to remove them
+        void pause ();
+        // unpause the queue
+        void resume ();
+        bool is_paused () const;
+
+        void enable ();
+        bool is_disabled () const;
+
         // wait until all queues are empty
         void flush ();
-      private:
+
         typedef boost::mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::condition_variable condition_type;
