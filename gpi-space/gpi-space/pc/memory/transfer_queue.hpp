@@ -41,15 +41,13 @@ namespace gpi
       private:
         bool is_disabled () const;
 
-        typedef boost::shared_ptr<boost::thread> thread_ptr;
-
         void worker ();
 
         mutable boost::mutex m_mutex;
         bool m_enabled;
 
         task_queue_t m_task_queue;
-        thread_ptr m_thread;
+        boost::thread m_thread;
 
         mutable boost::mutex _mutex_dispatched;
         task_set_t m_dispatched;
