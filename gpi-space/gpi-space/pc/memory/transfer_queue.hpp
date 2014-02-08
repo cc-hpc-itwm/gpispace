@@ -43,9 +43,6 @@ namespace gpi
         void enable ();
         bool is_disabled () const;
 
-        // wait until all queues are empty
-        void flush ();
-
         typedef boost::mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::condition_variable condition_type;
