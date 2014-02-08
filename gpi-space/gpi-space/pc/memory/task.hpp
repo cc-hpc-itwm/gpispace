@@ -37,7 +37,7 @@ namespace gpi
         boost::exception_ptr get_error () const;
         std::string get_error_message () const;
         bool has_failed () const;
-        bool has_finished () const;
+        bool USED_IN_TEST_ONLY_has_finished () const;
         bool USED_IN_TEST_ONLY_is_pending() const;
         bool USED_IN_TEST_ONLY_was_cancelled() const;
       private:

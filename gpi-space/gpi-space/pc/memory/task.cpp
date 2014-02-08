@@ -94,7 +94,7 @@ namespace gpi
       }
 
       bool
-      task_t::has_finished () const
+      task_t::USED_IN_TEST_ONLY_has_finished () const
       {
         return task_state::finished == get_state();
       }

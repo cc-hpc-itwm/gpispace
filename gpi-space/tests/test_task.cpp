@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE ( simple_task )
   task.execute ();
   task.wait ();
 
-  BOOST_CHECK (task.has_finished());
+  BOOST_CHECK (task.USED_IN_TEST_ONLY_has_finished());
   BOOST_CHECK_EQUAL (executed, 1);
 }
 
