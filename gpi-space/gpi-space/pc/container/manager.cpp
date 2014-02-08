@@ -82,36 +82,12 @@ namespace gpi
           start ();
       }
 
-      manager_t::manager_t ( std::string const & p
-                           , std::vector<std::string> const& default_memory_urls
-                           )
-       : m_connector
-         ( boost::bind (&manager_t::handle_new_connection, this, _1)
-         , p
-         , default_memory_urls
-         )
-      {}
-
       void connector_t::detach_all()
       {
           while (! m_processes.empty())
           {
             detach_process (m_processes.begin()->first);
           }
-      }
-
-      manager_t::~manager_t ()
-      {
-          m_connector.stop ();
-          m_connector.detach_all();
-
-          global::memory_manager().clear();
-        global::topology().stop();
-      }
-
-      void manager_t::detach_process (const gpi::pc::type::process_id_t id)
-      {
-        m_connector.detach_process (id);
       }
 
       void connector_t::detach_process (const gpi::pc::type::process_id_t id)
@@ -135,11 +111,6 @@ namespace gpi
             , "gpi.container"
             , "process container " << id << " detached"
             );
-      }
-
-      void manager_t::handle_new_connection (int fd)
-      {
-        m_connector.handle_new_connection (fd);
       }
 
       void connector_t::handle_new_connection (int fd)
@@ -166,13 +137,6 @@ namespace gpi
             );
       }
 
-      void manager_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
-                                          , int error
-                                          )
-      {
-        m_connector.handle_process_error (proc_id, error);
-      }
-
       void connector_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
                                           , int error
                                           )
@@ -182,6 +146,42 @@ namespace gpi
                  , "process container " << proc_id << " died: " << strerror (error)
                  );
           detach_process (proc_id);
+      }
+
+      manager_t::manager_t ( std::string const & p
+                           , std::vector<std::string> const& default_memory_urls
+                           )
+       : m_connector
+         ( boost::bind (&manager_t::handle_new_connection, this, _1)
+         , p
+         , default_memory_urls
+         )
+      {}
+
+      manager_t::~manager_t ()
+      {
+          m_connector.stop ();
+          m_connector.detach_all();
+
+          global::memory_manager().clear();
+        global::topology().stop();
+      }
+
+      void manager_t::detach_process (const gpi::pc::type::process_id_t id)
+      {
+        m_connector.detach_process (id);
+      }
+
+      void manager_t::handle_new_connection (int fd)
+      {
+        m_connector.handle_new_connection (fd);
+      }
+
+      void manager_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
+                                          , int error
+                                          )
+      {
+        m_connector.handle_process_error (proc_id, error);
       }
     }
   }
