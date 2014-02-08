@@ -28,8 +28,7 @@ namespace gpi
         typedef task_state::state state;
         typedef boost::function<void (void)> function_type;
 
-        template <typename F>
-        task_t (std::string const nme, F fun, const std::size_t eta = 0)
+        task_t (std::string const nme, function_type fun, const std::size_t eta = 0)
           : m_state (task_state::pending)
           , m_name (nme)
           , m_func (fun)
