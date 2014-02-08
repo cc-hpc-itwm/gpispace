@@ -217,16 +217,7 @@ namespace gpi
           }
         }
       }
-    }
-  }
-}
 
-namespace gpi
-{
-  namespace pc
-  {
-    namespace container
-    {
       connector_t::connector_t
         ( boost::function<void (int)> const& handle_new_connection
         , std::string const & p
