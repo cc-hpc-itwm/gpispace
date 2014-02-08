@@ -351,7 +351,7 @@ namespace gpi
           {
             try
             {
-              m_proc.del_memory (del_mem.id);
+              global::memory_manager ().del_memory (m_proc.id(), del_mem.id);
               return
                 gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
             }
@@ -593,12 +593,6 @@ namespace gpi
       /***  P R O T O C O L    I M P L E M E N T A T I O N  ***/
       /***                                                  ***/
       /********************************************************/
-
-      void
-      process_t::del_memory (gpi::pc::type::segment_id_t seg_id)
-      {
-        global::memory_manager ().del_memory (m_id, seg_id);
-      }
 
       void process_t::collect_info (gpi::pc::type::info::descriptor_t &d)
       {

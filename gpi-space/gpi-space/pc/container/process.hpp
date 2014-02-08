@@ -49,8 +49,6 @@ namespace gpi
 
         // protocol implementation
 
-        void                        del_memory (gpi::pc::type::segment_id_t);
-
         void collect_info (gpi::pc::type::info::descriptor_t &);
       private:
         void reader_thread_main (const int fd);
