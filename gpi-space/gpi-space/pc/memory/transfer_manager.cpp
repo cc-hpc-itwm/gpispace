@@ -17,18 +17,7 @@ namespace gpi
         static
         void do_wait_on_queue (const std::size_t q)
         {
-          DLOG(TRACE, "gpi::wait_dma(" << q << ")");
-
-#ifndef NDEBUG
-          std::size_t s(
-#endif
-                        gpi::api::gpi_api_t::get().wait_dma (q)
-#ifndef NDEBUG
-                       )
-#endif
-            ;
-
-          DLOG(TRACE, "gpi::wait_dma(" << q << ") = " << s);
+                        gpi::api::gpi_api_t::get().wait_dma (q);
         }
       }
 
