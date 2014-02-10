@@ -16,6 +16,14 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <gpi-space/pc/memory/gpi_area.hpp>
+#include <gpi-space/pc/memory/sfs_area.hpp>
+#include <gpi-space/pc/memory/shm_area.hpp>
+
+#include <gpi-space/pc/global/topology.hpp>
+
+#include <fhg/util/url.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -35,14 +43,6 @@ namespace gpi
     }
   }
 }
-
-#include <gpi-space/pc/memory/gpi_area.hpp>
-#include <gpi-space/pc/memory/sfs_area.hpp>
-#include <gpi-space/pc/memory/shm_area.hpp>
-
-#include <gpi-space/pc/global/topology.hpp>
-
-#include <fhg/util/url.hpp>
 
 namespace gpi
 {
