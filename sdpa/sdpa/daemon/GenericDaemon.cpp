@@ -846,8 +846,6 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
      return;
    }
 
-  DLLOG (TRACE, _logger, "The worker \""<<worker_id<<"\" reported its capabilities: "<<pCpbGainEvt->capabilities());
-
   try
   {
     sdpa::capabilities_set_t workerCpbSet;
@@ -899,8 +897,6 @@ void GenericDaemon::handleCapabilitiesLostEvent(const events::CapabilitiesLostEv
   sdpa::worker_id_t worker_id = pCpbLostEvt->from();
   try {
     scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
-
-    DLLOG (TRACE, _logger, "lost capabilities from: " << worker_id << ": "<<pCpbLostEvt->capabilities());
 
     lock_type lock(mtx_master_);
     for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
