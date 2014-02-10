@@ -44,8 +44,6 @@ namespace
 
     std::string owner() const { return owner_; }
 
-    std::string uuid() const { return uuid_; }
-
     template <class Archive>
     void serialize(Archive& ar, const unsigned int)
     {
@@ -58,13 +56,13 @@ namespace
 
     bool operator<(const Capability& b) const
     {
-      return uuid_ < b.uuid();
+      return uuid_ < b.uuid_;
     }
 
     bool operator==(const Capability& b) const
     {
       // ignore depth
-      return uuid_ == b.uuid();
+      return uuid_ == b.uuid_;
     }
 
     private:
