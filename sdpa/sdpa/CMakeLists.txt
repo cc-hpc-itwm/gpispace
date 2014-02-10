@@ -1,4 +1,5 @@
 set (srcs
+  capability.cpp
   client.cpp
   com/NetworkStrategy.cpp
   daemon/GenericDaemon.cpp

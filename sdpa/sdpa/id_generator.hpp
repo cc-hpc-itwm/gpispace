@@ -35,14 +35,6 @@ namespace sdpa {
   class id_generator
   {
   public:
-
-  template <class Tag>
-	static id_generator& instance()
-	{
-	  static id_generator gen (Tag::name());
-	  return gen;
-	}
-
 	std::string next()
 	{
     std::size_t id;

@@ -5,33 +5,16 @@
 #include <set>
 #include <iostream>
 #include <boost/foreach.hpp>
-#include <sdpa/id_generator.hpp>
 
 namespace sdpa
 {
-namespace
-{
-  struct cap_id_tag
-  {
-    static const char *name ()
-    {
-      return "cap";
-    }
-  };
-}
-
   // type, name
   class Capability
   {
   public:
     Capability(){}
     explicit Capability(const std::string& name,
-                        const std::string& owner)
-    : name_(name)
-    , depth_(0)
-    , owner_(owner)
-    , uuid_(sdpa::id_generator::instance<cap_id_tag>().next())
-    {}
+                        const std::string& owner);
 
     std::string name() const { return name_;}
 

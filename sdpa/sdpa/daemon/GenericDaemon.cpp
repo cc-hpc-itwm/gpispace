@@ -33,17 +33,6 @@
 #include <sstream>
 #include <algorithm>
 
-namespace
-{
-  struct agent_id_tag
-  {
-    static const char *name ()
-    {
-      return "agent";
-    }
-  };
-}
-
 namespace sdpa {
   namespace daemon {
 namespace
@@ -71,6 +60,12 @@ namespace
   {
     const std::vector<std::string> vec (require_proper_url (url));
     return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
+  }
+
+  id_generator& GLOBAL_id_generator_agent()
+  {
+    static id_generator g ("agent");
+    return g;
   }
 }
 
@@ -102,7 +97,7 @@ GenericDaemon::GenericDaemon( const std::string name
                          : NULL
                          ),
     m_nRank(rank),
-    m_strAgentUID(id_generator::instance<agent_id_tag>().next()),
+    m_strAgentUID(GLOBAL_id_generator_agent().next()),
     m_guiService ( guiUrl && !guiUrl->empty()
                  ? boost::optional<NotificationService>
                    (NotificationService (*guiUrl))
