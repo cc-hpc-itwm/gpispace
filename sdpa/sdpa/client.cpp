@@ -14,6 +14,8 @@
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 
 #include <fhg/util/macros.hpp>
 
@@ -33,12 +35,10 @@ namespace sdpa
       }
     }
 
-    Client::Client ( std::string orchestrator
-                   , boost::optional<boost::posix_time::time_duration> timeout
-                   )
+    Client::Client (std::string orchestrator)
       : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
       , orchestrator_ (orchestrator)
-      , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"))
+      , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"), fhg::com::kvs::global_kvs())
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
       , _stopping (false)
     {
@@ -188,8 +188,8 @@ namespace sdpa
     sdpa::status::code Client::wait_for_terminal_state_polling
       (job_id_t id, job_info_t& job_info)
     {
-      sdpa::status::code state (queryJob (id));
-      for (; !sdpa::status::is_terminal (state); state = queryJob (id))
+      sdpa::status::code state (queryJob (id, job_info));
+      for (; !sdpa::status::is_terminal (state); state = queryJob (id, job_info))
       {
         static const boost::posix_time::milliseconds sleep_duration (100);
         boost::this_thread::sleep (sleep_duration);
@@ -207,6 +207,12 @@ namespace sdpa
     {
       send_and_wait_for_reply<sdpa::events::CancelJobAckEvent>
         (sdpa::events::CancelJobEvent (_name, orchestrator_, jid));
+    }
+
+    sdpa::discovery_info_t Client::discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id)
+    {
+      return send_and_wait_for_reply<sdpa::events::DiscoverJobStatesReplyEvent>
+        (sdpa::events::DiscoverJobStatesEvent (_name, orchestrator_, job_id, discover_id)).discover_result();
     }
 
     sdpa::status::code Client::queryJob(const job_id_t &jid)

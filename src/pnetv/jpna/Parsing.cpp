@@ -69,9 +69,9 @@ class TransitionVisitor: public boost::static_visitor<void> {
         petriNet_(new PetriNet(name)), petriNets_(petriNets)
     { return; }
 
-    void operator()(const we::type::expression_t & expr) { return; }
+    void operator()(const we::type::expression_t &) { return; }
 
-    void operator()(const we::type::module_call_t & mod_call) { return; }
+    void operator()(const we::type::module_call_t &) { return; }
 
     void operator()(const we::type::net_type &net) {
         typedef we::type::transition_t transition_t;

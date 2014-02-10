@@ -4,14 +4,13 @@
 #include <string>
 
 #include <gspc/net/client_fwd.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/asio/io_service.hpp>
 
 namespace gspc
 {
   namespace net
   {
-    client_ptr_t dial (std::string const &url);
-    client_ptr_t dial (std::string const &url, boost::system::error_code & ec);
+    client_ptr_t dial (std::string const &url, boost::asio::io_service&);
   }
 }
 

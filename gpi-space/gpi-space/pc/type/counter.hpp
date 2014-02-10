@@ -15,24 +15,31 @@ namespace gpi
       struct counter_t : boost::noncopyable
       {
         explicit
-        inline counter_t (const gpi::pc::type::size_t = 0);
+        inline counter_t (const gpi::pc::type::size_t start = 0)
+          : m_counter (start)
+        {}
 
-        operator gpi::pc::type::size_t () const { return value(); }
-        inline gpi::pc::type::size_t inc ();
-        inline gpi::pc::type::size_t value () const;
-        inline void move_to (const gpi::pc::type::size_t);
-        inline void reset (gpi::pc::type::size_t = 0);
+        operator gpi::pc::type::size_t () const
+        {
+          boost::mutex::scoped_lock const _ (m_mutex);
+          return m_counter;
+        }
+        inline gpi::pc::type::size_t inc ()
+        {
+          boost::mutex::scoped_lock const _ (m_mutex);
+          return ++m_counter;
+        }
+        inline void reset (gpi::pc::type::size_t val)
+        {
+          boost::mutex::scoped_lock const _ (m_mutex);
+          m_counter = val;
+        }
       private:
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-
-        mutable mutex_type m_mutex;
+        mutable boost::mutex m_mutex;
         gpi::pc::type::size_t m_counter;
       };
     }
   }
 }
-
-#include "counter.ipp"
 
 #endif

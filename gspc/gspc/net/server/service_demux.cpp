@@ -145,7 +145,7 @@ namespace gspc
         return 0;
       }
 
-      void service_demux_t::do_service_help ( std::string const &dst
+      void service_demux_t::do_service_help ( std::string const &
                                             , frame const &rqst
                                             , user_ptr user
                                             )
@@ -164,6 +164,21 @@ namespace gspc
 
         //! \todo explain why the return value can be ignored
         user->deliver (rply);
+      }
+
+      scoped_service_handler::scoped_service_handler
+          ( std::string name
+          , gspc::net::service::handler_t function
+          , gspc::net::server::service_demux_t& service_demux
+          )
+        : _name (name)
+        , _service_demux (service_demux)
+      {
+        _service_demux.handle (_name, function);
+      }
+      scoped_service_handler::~scoped_service_handler()
+      {
+        _service_demux.unhandle (_name);
       }
     }
   }

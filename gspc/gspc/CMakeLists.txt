@@ -1,3 +1,6 @@
+# json has a lot that are used in debug only
+add_definitions (-Wno-unused-parameter)
+
 set (gspc_src
   net/constants.cpp
   net/io.cpp
@@ -33,7 +36,6 @@ set (gspc_src
 
   net/auth/cookie.cpp
   net/auth/simple.cpp
-  net/auth/default_auth.cpp
 
   kvs/api.cpp
   kvs/kvs.cpp

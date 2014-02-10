@@ -22,14 +22,14 @@ namespace gpi
     }
 
 
-    int dummy_topology::add_memory ( const gpi::pc::type::segment_id_t seg_id
-                                   , const std::string & url
+    int dummy_topology::add_memory ( const gpi::pc::type::segment_id_t
+                                   , const std::string &
                                    )
     {
       return 0;
     }
 
-    int dummy_topology::del_memory (const gpi::pc::type::segment_id_t seg_id)
+    int dummy_topology::del_memory (const gpi::pc::type::segment_id_t)
     {
       return 0;
     }

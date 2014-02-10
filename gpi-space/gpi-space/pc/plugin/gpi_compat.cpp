@@ -8,7 +8,9 @@
 #include <gpi-space/pc/type/flags.hpp>
 
 #include <boost/bind.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -32,57 +34,59 @@ class GPICompatPluginImpl : FHG_PLUGIN
   typedef boost::mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
 public:
-  FHG_PLUGIN_START()
+  GPICompatPluginImpl (boost::function<void()>, std::list<Plugin*> dependencies, std::map<std::string, std::string> config_variables)
   {
+    const std::string worker_name
+      (*get<std::string> ("kernel_name", config_variables));
+    const fvmSize_t shm_size
+      (get<fvmSize_t> ("plugin.gpi_compat.shm_size", config_variables).get_value_or (128U * (1<<20)));
+    const boost::posix_time::time_duration initialize_retry_interval
+      ( boost::posix_time::duration_from_string
+        ( get<std::string> ("plugin.gpi_compat.initialize_retry_interval", config_variables)
+        .get_value_or (boost::posix_time::to_simple_string (boost::posix_time::milliseconds (200)))
+        )
+      );
+    fhg_assert (dependencies.size() == 1);
+    gpi::GPI* gpi_api (dynamic_cast<gpi::GPI*>(*dependencies.begin()));
+    fhg_assert (gpi_api);
+
     gpi_compat = this;
 
     m_gpi_state = ST_DISCONNECTED;
     m_shm_hdl = 0;
     m_shm_ptr = (void*)0;
     m_shm_id = 0;
+    m_shm_size = shm_size;
 
-    try
-    {
-      m_shm_size = boost::lexical_cast<fvmSize_t>
-        (fhg_kernel()->get<std::size_t>("shm_size", 128U * (1<<20)));
-    }
-    catch (std::exception const & ex)
-    {
-      LOG(ERROR, "could not parse plugin.gpi_compat.shm_size: " << ex.what());
-      FHG_PLUGIN_FAILED(EINVAL);
-    }
-
-    try
-    {
-      m_initialize_retry_interval =
-        fhg_kernel()->get<useconds_t>("initialize_retry_interval", "2000000");
-    }
-    catch (std::exception const &ex)
-    {
-      LOG( WARN
-         , "could not parse plugin.gpi_compat.initialize_retry_interval: "
-         << ex.what()
-         );
-      m_initialize_retry_interval = 500;
-    }
+    m_initialize_retry_interval = initialize_retry_interval;
 
     const std::string my_pid(boost::lexical_cast<std::string>(getpid()));
-    const std::string name_prefix (fhg_kernel()->get_name () + "-" + my_pid);
+    const std::string name_prefix (worker_name + "-" + my_pid);
     m_segment_name = name_prefix + "-shm";
     m_segment_handle_name = name_prefix + "-shm";
     m_global_handle_name = name_prefix + "-global";
     m_local_handle_name = name_prefix + "-local";
     m_scratch_handle_name = name_prefix + "-com";
 
-    api = fhg_kernel()->acquire<gpi::GPI>("gpi");
+    api = gpi_api;
 
-    schedule_reinitialize_gpi ();
-
-    FHG_PLUGIN_STARTED();
+    _reinitialize_thread = new boost::thread
+      (&GPICompatPluginImpl::schedule_reinitialize_gpi, this);
   }
 
-  FHG_PLUGIN_STOP()
+  ~GPICompatPluginImpl()
   {
+    if (_reinitialize_thread)
+    {
+      _reinitialize_thread->interrupt();
+      if (_reinitialize_thread->joinable())
+      {
+        _reinitialize_thread->join();
+      }
+      _reinitialize_thread = NULL;
+      delete _reinitialize_thread;
+    }
+
     try
     {
       if (m_shm_hdl)
@@ -105,8 +109,6 @@ public:
     m_shm_ptr = 0;
     api = 0;
     gpi_compat = 0;
-
-    FHG_PLUGIN_STOPPED();
   }
 
   int reinitialize_gpi_state ()
@@ -146,19 +148,13 @@ public:
 
   void schedule_reinitialize_gpi ()
   {
-    int ec = reinitialize_gpi_state ();
-    if (ec == -EAGAIN)
+    while (reinitialize_gpi_state() == -EAGAIN)
     {
       MLOG ( WARN
                 , "gpi plugin is not yet available, state initialization deferred!"
                 );
 
-      fhg_kernel()->schedule( "gpi_compat.setup"
-                            , boost::bind ( &GPICompatPluginImpl::schedule_reinitialize_gpi
-                                          , this
-                                          )
-                            , 2
-                            );
+      boost::this_thread::sleep (boost::posix_time::seconds (1));
     }
   }
 
@@ -178,7 +174,7 @@ public:
         }
         else
         {
-          usleep (m_initialize_retry_interval);
+          boost::this_thread::sleep (m_initialize_retry_interval);
         }
       }
     }
@@ -263,8 +259,10 @@ public:
   gpi::pc::type::handle_t            m_shm_hdl;
   gpi_state_t                        m_gpi_state;
 private:
-  useconds_t                         m_initialize_retry_interval;
+  boost::posix_time::time_duration   m_initialize_retry_interval;
   bool                               m_was_connected;
+
+  boost::thread* _reinitialize_thread;
 };
 
 int fvmConnect()
@@ -473,13 +471,4 @@ int fvmGetNodeCount()
   return gpi_compat->gpi_info.nodes;
 }
 
-EXPORT_FHG_PLUGIN( gpi_compat
-                 , GPICompatPluginImpl
-                 , ""
-                 , "Plugin to access the gpi-space (compatibility)"
-                 , "Alexander Petry <petry@itwm.fhg.de>"
-                 , "0.0.1"
-                 , "NA"
-                 , "gpi"
-                 , ""
-                 );
+EXPORT_FHG_PLUGIN (gpi_compat, GPICompatPluginImpl, "gpi");

@@ -18,11 +18,10 @@ static fhg::com::kvs::server::kvsd *g_kvsd (0);
 
 static const int EX_STILL_RUNNING = 4;
 
-void save_state (int s)
+void save_state (int)
 {
   try
   {
-    DMLOG (TRACE, "saving state due to signal: " << s);
     g_kvsd->save();
   }
   catch (std::exception const & ex)
@@ -30,11 +29,10 @@ void save_state (int s)
     LOG(WARN, "could not persist state: " << ex.what());
   }
 }
-void load_state (int s)
+void load_state (int)
 {
   try
   {
-    DMLOG (TRACE, "loading state due to signal: " << s);
     g_kvsd->load();
   }
   catch (std::exception const & ex)

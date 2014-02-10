@@ -18,15 +18,15 @@
     <place name="size_replicate" type="long"/>
     <place name="n" type="long"/>
 
-    <include-template href="lib/dup.xml" as="dup"/>
-    <specialize name="dup_grid_type" use="dup">
+    <include-template href="lib/dup.xml"/>
+    <specialize name="dup_grid_type">
       <type-map replace="T" with="grid_type"/>
     </specialize>
     <specialize name="dup_long" use="dup">
       <type-map replace="T" with="long"/>
     </specialize>
 
-    <include-template href="lib/replicate.xpnet" as="replicate"/>
+    <include-template href="lib/replicate.xpnet"/>
     <specialize name="replicate_grid_type" use="replicate">
       <type-map replace="T" with="grid_type"/>
     </specialize>

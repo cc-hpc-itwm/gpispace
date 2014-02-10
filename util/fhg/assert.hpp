@@ -1,6 +1,8 @@
 #ifndef FHG_ASSERT_HPP
 #define FHG_ASSERT_HPP
 
+#include <fhg/util/macros.hpp>
+
 /**
    - fhg_assert is a macro that provides a better mechanism than the
    legacy 'assert' and can be switched on/off independently
@@ -50,12 +52,14 @@
 
 #if   FHG_ASSERT_DISABLED == FHG_ASSERT_MODE
 
+#  define IF_FHG_ASSERT(x...)
 #  define fhg_assert(cond, ...)
 
 #elif FHG_ASSERT_ENABLED == FHG_ASSERT_MODE
 #  include <stdlib.h>
 #  include <iostream>
 
+#  define IF_FHG_ASSERT(x...) x
 #  define fhg_assert(cond, ...)                                      \
   do                                                                    \
   {                                                                     \
@@ -71,10 +75,12 @@
 
 #elif FHG_ASSERT_LEGACY == FHG_ASSERT_MODE
 #  include <cassert>
+#  define IF_FHG_ASSERT(x...) IFNDEF_NDEBUG (x)
 #  define fhg_assert(cond, ...) assert(cond)
 
 #elif FHG_ASSERT_EXCEPTION == FHG_ASSERT_MODE
 #  include <fhg/assertion_failed.hpp>
+#  define IF_FHG_ASSERT(x...) x
 #  define fhg_assert(cond, ...)                                      \
   do                                                                    \
   {                                                                     \
@@ -87,6 +93,7 @@
 
 #elif FHG_ASSERT_LOG == FHG_ASSERT_MODE
 #  include <fhglog/LogMacros.hpp>
+#  define IF_FHG_ASSERT(x...) x
 #  define fhg_assert(cond, ...)                                      \
   do                                                                    \
   {                                                                     \
@@ -100,6 +107,7 @@
 
 #elif FHG_ASSERT_LOG_ABORT == FHG_ASSERT_MODE
 #  include <fhglog/LogMacros.hpp>
+#  define IF_FHG_ASSERT(x...) x
 #  define fhg_assert(cond, ...)                                      \
   do                                                                    \
   {                                                                     \

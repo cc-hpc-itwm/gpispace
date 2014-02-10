@@ -24,7 +24,7 @@ namespace sdpa
         return "DeleteJobAckEvent(" + job_id() + ")";
       }
 
-      virtual void handleBy(EventHandler* handler)
+      virtual void handleBy(EventHandler*)
       {
         throw std::runtime_error
           ( "This method should never be called as only the client should handle"

@@ -33,8 +33,10 @@
       <connect-out port="b" place="wait"/>
     </transition>
 
-    <include-template href="sequence_forward_credit.xpnet" as="sfc"/>
-    <specialize name="sequence_forward_credit_long" use="sfc">
+    <include-template href="sequence_forward_credit.xpnet"/>
+    <specialize name="sequence_forward_credit_long"
+                use="sequence_forward_credit"
+    >
       <type-map replace="T" with="long"/>
       <type-map replace="WITH_CREDIT" with="long_with_credit"/>
       <type-get name="long_with_credit"/>

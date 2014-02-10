@@ -1,4 +1,4 @@
-<template>
+<template name="pair_pair">
   <template-parameter type="T"/>
   <template-parameter type="U"/>
   <template-parameter type="V"/>
@@ -9,7 +9,7 @@
     <out name="pair_pair" type="PAIR_PAIR" place="pp"/>
 
     <net>
-      <include-template href="make_pair.xml" as="make_pair"/>
+      <include-template href="make_pair.xml"/>
 
       <place name="tag" type="T"/>
       <place name="first" type="U"/>

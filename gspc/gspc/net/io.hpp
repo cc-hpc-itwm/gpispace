@@ -1,27 +1,31 @@
 #ifndef GSPC_NET_IO_HPP
 #define GSPC_NET_IO_HPP
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/thread.hpp>
+
+#include <memory>
 
 namespace gspc
 {
   namespace net
   {
-    void initialize ();
-    void initialize (const size_t nthread);
-    void shutdown ();
-
     struct initializer
     {
+    public:
+      //! \todo Remove: nthread shall be known by caller!
       initializer ();
-
-      explicit
-      initializer (const size_t nthread);
+      explicit initializer (size_t nthread);
 
       ~initializer ();
-    };
 
-    boost::asio::io_service & io ();
+      operator boost::asio::io_service&();
+
+    private:
+      boost::asio::io_service _io_service;
+      std::auto_ptr<boost::asio::io_service::work> _io_service_work;
+      boost::thread_group _threads;
+    };
   }
 }
 

@@ -26,11 +26,12 @@ namespace gpi
     {
       manager_t::manager_t ()
         : m_ident (0)
-          // default counter value for user segments
-        , m_segment_counter (MAX_PREALLOCATED_SEGMENT_ID)
       {
         factory ().register_type ( "gpi"
-                                 , &gpi_area_t::create
+                                 , boost::bind ( gpi_area_t::create
+                                               , _1
+                                               , boost::ref (global::topology ())
+                                               )
                                  );
         factory ().register_type ( "shm"
                                  , &shm_area_t::create
@@ -349,14 +350,6 @@ namespace gpi
         add_handle (hdl, seg_id);
         handle_allocated (hdl);
 
-        DLOG( TRACE
-            , "remote memory allocated:"
-            << " segment " << seg_id
-            << " size " << size
-            << " local " << local_size
-            << " handle " << hdl
-            );
-
         return 0;
       }
 
@@ -378,14 +371,6 @@ namespace gpi
 
         handle_allocated (hdl);
 
-        DLOG( TRACE
-            , "memory allocated:"
-            << " process " << proc_id
-            << " segment " << seg_id
-            << " size " << size
-            << " handle " << hdl
-            );
-
         return hdl;
       }
 
@@ -400,11 +385,6 @@ namespace gpi
         del_handle (hdl);
 
         handle_freed (hdl);
-
-        DLOG( TRACE
-            , "remote memory deallocated:"
-            << " handle " << hdl
-            );
       }
 
       void
@@ -418,11 +398,6 @@ namespace gpi
         area->free (hdl);
 
         handle_freed (hdl);
-
-        DLOG( TRACE
-            , "memory deallocated:"
-            << " handle " << hdl
-            );
       }
 
       gpi::pc::type::handle::descriptor_t
@@ -457,15 +432,13 @@ namespace gpi
       }
 
       gpi::pc::type::queue_id_t
-      manager_t::memcpy ( const gpi::pc::type::process_id_t pid
-                        , gpi::pc::type::memory_location_t const & dst
+      manager_t::memcpy ( gpi::pc::type::memory_location_t const & dst
                         , gpi::pc::type::memory_location_t const & src
                         , const gpi::pc::type::size_t amount
                         , const gpi::pc::type::queue_id_t queue
                         )
       {
         memory_transfer_t t;
-        t.pid          = pid;
         t.dst_area     = get_area_by_handle(dst.handle);
         t.dst_location = dst;
         t.src_area     = get_area_by_handle(src.handle);
@@ -482,12 +455,6 @@ namespace gpi
           t.queue        = queue;
         }
 
-        DLOG ( TRACE
-             , "process " << pid
-             << " requesting transfer "
-             << t
-             );
-
         t.dst_area->check_bounds (dst, amount);
         t.src_area->check_bounds (src, amount);
 //        check_permissions (permission::memcpy_t (proc_id, dst, src));
@@ -499,11 +466,10 @@ namespace gpi
       }
 
       gpi::pc::type::size_t
-      manager_t::wait_on_queue ( const gpi::pc::type::process_id_t proc_id
+      manager_t::wait_on_queue ( const gpi::pc::type::process_id_t
                                , const gpi::pc::type::queue_id_t queue
                                )
       {
-        DLOG(TRACE, "wait_on_queue(" << queue << ") by process " << proc_id);
         return m_transfer_mgr.wait_on_queue (queue);
       }
 

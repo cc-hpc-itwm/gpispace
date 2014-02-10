@@ -23,6 +23,7 @@
 #include <gpi-space/types.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/type/handle.hpp>
+#include <gpi-space/pc/memory/manager.hpp>
 
 namespace gpi
 {
@@ -144,7 +145,7 @@ namespace gpi
         };
 
         explicit
-        topology_t ();
+        topology_t (memory::manager_t&);
 
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -195,12 +196,14 @@ namespace gpi
         fhg::com::message_t m_incoming_msg;
 
         result_list_t m_current_results;
+
+        memory::manager_t& _memory_manager;
       };
 
       inline
       topology_t & topology()
       {
-        static topology_t t;
+        static topology_t t (memory_manager());
         return t;
       }
     }

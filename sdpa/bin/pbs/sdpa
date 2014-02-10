@@ -4,7 +4,7 @@
 #
 
 # increment this value if anything config related changes!
-CONFIG_VERSION=10
+CONFIG_VERSION=11
 
 function log ()
 {
@@ -13,7 +13,7 @@ function log ()
 
 function debug ()
 {
-    if [ x"$debug_enabled" == x"true" ] ; then
+    if [ x"$debug_enabled" = x"true" ] ; then
         log $@
     fi
 }
@@ -66,7 +66,6 @@ DEFAULT_CLUSTER_HEAD="" # if needed
 #
 # SDPA
 #
-DEFAULT_STATEFUL_EXECUTION="false"
 DEFAULT_SCRATCH_DIR="$HOME/.sdpa/scratch"
 DEFAULT_TMP_DIR="/var/tmp"
 DEFAULT_WORKER_PER_NODE="1"
@@ -75,7 +74,6 @@ DEFAULT_WITH_MEDIATOR="false"
 DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
 DEFAULT_KVS_PORT=2439
-DEFAULT_LOGD_PORT=3456
 DEFAULT_LOG_URL=""
 DEFAULT_GUI_URL=""
 
@@ -275,38 +273,12 @@ function setup_state ()
 
     export SDPA_HOME="$sdpa_home"
 
-    local p_stateful=$(get "sdpa.stateful" "${DEFAULT_STATEFUL_EXECUTION:?}")
-    if [ x"$p_stateful" = x"true" ] ; then
-        y_n_p "Do you want stateful execution? [Y/n] "
-    else
-        y_n_p "Do you want stateful execution? [y/N] "
-    fi
-    local ec=$?
-    if [ $ec -eq 0 ] ; then
-        p_stateful="true"
-    elif [ $ec -eq 1 ] ; then
-        p_stateful="false"
-    fi
-
-    case "$p_stateful" in
-        true)
-            put "sdpa.stateful" "true"
-            ;;
-        false)
-            put "sdpa.stateful" "false"
-            ;;
-        *)
-            log "E: sdpa.stateful must be one of true/false"
-            return 1
-            ;;
-    esac
-
     return 0
 }
 
 function setup_kvs ()
 {
-    put "plugin.kvs.port" $(get "plugin.kvs.port" "${DEFAULT_KVS_PORT:?}")
+    put "plugin.drts.kvs_port" $(get "plugin.drts.kvs_port" "${DEFAULT_KVS_PORT:?}")
 
     log "I: kvs setup"
 
@@ -426,7 +398,6 @@ to. It should be on the same host that you run the GUI on.
 
     put "log.server.url" "$url"
     put "log.server.level" "$lvl"
-    put "plugin.logd.port" "${DEFAULT_LOGD_PORT:?}"
 }
 
 function setup_temp ()
@@ -600,7 +571,7 @@ function to_human_readable_size ()
 
     local new_val="1"
     local tmp=$( echo "$size_value > 1024" | bc )
-    while test "$tmp" == "1" ; do
+    while test "$tmp" = "1" ; do
         new_val="$new_val*1024"
         size_value=$( echo "scale=2; $size_value/1024.0" | bc )
         tmp=$( echo "$size_value > 1024" | bc )
@@ -825,7 +796,7 @@ function generate_environment ()
         return 1
     fi
 
-    kvs_port=$(get "plugin.kvs.port")
+    kvs_port=$(get "plugin.drts.kvs_port")
     if [ -z "$kvs_port" ] ; then
         log "E: could not get kvs port from config!"
         return 1
@@ -1224,7 +1195,7 @@ function start_kvs ()
         log "E: kvs must be started on the master node"
         exit 1
     fi
-    kvs_port=$(get "plugin.kvs.port")
+    kvs_port=$(get "plugin.drts.kvs_port")
     if [ -z "$kvs_port" ] ; then
         log "E: could not get kvs port from config!"
         return 1
@@ -1339,7 +1310,7 @@ function node_loop ()
 function start_nre ()
 {
     local with_mediator=$(get "topology.with-mediator" "true")
-    if [ x"$with_mediator" == x"true" ] ; then
+    if [ x"$with_mediator" = x"true" ] ; then
         log "nres" >&2
         node_loop start_nre_on_node $@
     fi
@@ -1348,7 +1319,7 @@ function start_nre ()
 function stop_nre ()
 {
     with_mediator=$(get "topology.with-mediator" "true")
-    if [ x"$with_mediator" == x"true" ] ; then
+    if [ x"$with_mediator" = x"true" ] ; then
         log "nres" >&2
         node_loop stop_nre_on_node $@
         ec=$?
@@ -1361,7 +1332,7 @@ function status_nre ()
     local ec
 
     with_mediator=$(get "topology.with-mediator" "true")
-    if [ x"$with_mediator" == x"true" ] ; then
+    if [ x"$with_mediator" = x"true" ] ; then
         node_loop status_nre_on_node $@
         ec=$?
     else
@@ -1596,7 +1567,7 @@ function start_drts_on_node ()
     fi
 
     with_mediator=$(get "topology.with-mediator" "true")
-    if [ x"$with_mediator" == x"true" ] ; then
+    if [ x"$with_mediator" = x"true" ] ; then
         master="nre-$node"
     fi
 
@@ -1681,9 +1652,9 @@ function start_gpi ()
     fi
     local log_host=$(echo "$log_url" | cut -d ':' -f 1)
 
-    local kvs_port=$(get "plugin.kvs.port" "2439")
+    local kvs_port=$(get "plugin.drts.kvs_port" "2439")
 
-    if [ x"$gpi_enabled" == x"true" ] ; then
+    if [ x"$gpi_enabled" = x"true" ] ; then
         if ! status_kvs ; then
             start_kvs
         fi
@@ -1765,7 +1736,7 @@ function program_status ()
     local p=$1 ; shift
     local rc=0
     local pid
-    pid=$(pidof "$p")
+    pid=$("${SDPA_SCRIPT_DIR}/pidof" "$p")
 
     if is_proc_alive "$p" "$pid" ; then
         return 0
@@ -1793,7 +1764,7 @@ function status_gpi ()
 {
     local ec=0
     local gpi_enabled=$(get "gpi.enabled" "true")
-    if [ x"$gpi_enabled" == x"true" ] ; then
+    if [ x"$gpi_enabled" = x"true" ] ; then
         program_status "gpi-space"
         ec=$?
     else

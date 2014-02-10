@@ -187,7 +187,6 @@ namespace we
 
       std::list<token_to_be_deleted_type> do_extract
         ( transition_id_type
-        , we::type::transition_t const&
         , boost::function
             <void (port_id_type, pnet::type::value::value_type const&)>
         ) const;

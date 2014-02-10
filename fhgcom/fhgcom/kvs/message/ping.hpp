@@ -22,14 +22,14 @@ namespace fhg
         {
           msg_ping () {}
 
-          bool operator==(const msg_ping & rhs) const
+          bool operator==(const msg_ping&) const
           {
             return true;
           }
         private:
           friend class boost::serialization::access;
           template<typename Archive>
-          void serialize (Archive & ar, const unsigned int /* version */ )
+          void serialize (Archive&, const unsigned int /* version */ )
           {
           }
         };

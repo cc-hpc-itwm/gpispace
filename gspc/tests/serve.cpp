@@ -21,7 +21,6 @@
 #include <gspc/net/service/echo.hpp>
 
 #include <gspc/net/server.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
 
@@ -61,35 +60,35 @@ BOOST_GLOBAL_FIXTURE (SetRLimits);
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_start_stop_loop)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   static const size_t NUM_ITERATIONS = 1000;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
 
   for (size_t i = 0 ; i < NUM_ITERATIONS ; ++i)
   {
     gspc::net::server_ptr_t server =
-      gspc::net::serve ("tcp://localhost:*", qmgr);
+      gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
     BOOST_REQUIRE (server);
     server->stop ();
   }
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   static const size_t NUM_ITERATIONS = 1000;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
 
   for (size_t i = 0 ; i < NUM_ITERATIONS ; ++i)
   {
     gspc::net::server_ptr_t server =
-      gspc::net::serve ("unix://socket.foo", qmgr);
+      gspc::net::serve ("unix://socket.foo", net_initializer, qmgr);
     BOOST_REQUIRE (server);
 
     BOOST_CHECK (fs::exists ("socket.foo"));
@@ -100,34 +99,31 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket)
   }
 
   fs::remove ("socket.foo");
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
 
   gspc::net::server_ptr_t server =
-    gspc::net::serve ("unix://socket.foo", qmgr);
+    gspc::net::serve ("unix://socket.foo", net_initializer, qmgr);
   BOOST_REQUIRE (server);
 
   gspc::net::client_ptr_t client =
-    gspc::net::dial (server->url ());
+    gspc::net::dial (server->url (), net_initializer);
 
   BOOST_REQUIRE (client);
 
   client->stop ();
   server->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   using namespace gspc::net::tests;
 
@@ -140,11 +136,12 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
 
   //  static const size_t NUM_CLIENTS = 256;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
 
   gspc::net::server_ptr_t server =
-    //    gspc::net::serve ("tcp://localhost:*", qmgr);
-    gspc::net::serve ("unix://socket.foo", qmgr);
+    //    gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
+    gspc::net::serve ("unix://socket.foo", net_initializer, qmgr);
   BOOST_REQUIRE (server);
 
   mock::user subscriber;
@@ -157,20 +154,10 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
   {
     using namespace boost::system;
 
-    gspc::net::client_ptr_t client;
+    gspc::net::client_ptr_t client
+      (gspc::net::dial (server->url () + "?timeout=1000", net_initializer));
 
-    boost::system::error_code ec;
-    client = gspc::net::dial (server->url () + "?timeout=1000", ec);
-
-    if (ec)
-    {
-      std::cerr << "could not connect: " << ec.message () << std::endl;
-      break;
-    }
-    else
-    {
-      BOOST_REQUIRE (client);
-    }
+    BOOST_REQUIRE (client);
 
     clients.push_back (client);
     ++clients_created;
@@ -194,75 +181,51 @@ BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connect_many)
   clients.clear ();
 
   server->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_tcp_socket_already_in_use)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
 
   gspc::net::server_ptr_t server =
-    gspc::net::serve ("tcp://localhost:0", qmgr);
+    gspc::net::serve ("tcp://localhost:0", net_initializer, qmgr);
   BOOST_REQUIRE (server);
 
-  BOOST_CHECK_THROW ( gspc::net::serve (server->url (), qmgr)
+  BOOST_CHECK_THROW ( gspc::net::serve (server->url (), net_initializer, qmgr)
                     , boost::system::system_error
                     );
   server->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_unix_socket_connection_refused)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
-  BOOST_CHECK_THROW ( gspc::net::dial ("unix://this.socket.does.not.exist")
+  BOOST_CHECK_THROW ( gspc::net::dial ("unix://this.socket.does.not.exist", net_initializer)
                     , boost::system::system_error
                     );
-
-  gspc::net::shutdown ();
-}
-
-BOOST_AUTO_TEST_CASE (test_serve_client_connection_refused)
-{
-  gspc::net::initializer _net_init;
-
-  boost::system::error_code ec;
-
-  gspc::net::client_ptr_t client
-    (gspc::net::dial ("unix://this.socket.does.not.exist", ec));
-  BOOST_REQUIRE (client);
-
-  BOOST_REQUIRE (ec);
-  BOOST_REQUIRE (not client->is_connected ());
-
-  BOOST_REQUIRE_EQUAL (client->stop(), 0);
-
-  BOOST_REQUIRE_LT (client->start(), 0);
-
-  BOOST_REQUIRE_EQUAL (client->stop(), 0);
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   static const std::size_t NUM_MSGS_TO_SEND = 1 << 16;
   using namespace gspc::net::tests;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
   mock::user subscriber;
   qmgr.subscribe (&subscriber, "/test/send", "mock-1", gspc::net::frame ());
 
   gspc::net::server_ptr_t server =
-    gspc::net::serve ("unix://socket.foo", qmgr);
+    gspc::net::serve ("unix://socket.foo", net_initializer, qmgr);
   BOOST_REQUIRE (server);
 
-  gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
+  gspc::net::client_ptr_t client (gspc::net::dial (server->url (), net_initializer));
   BOOST_REQUIRE (client);
 
   double duration = -fhg::util::now ();
@@ -290,25 +253,24 @@ BOOST_AUTO_TEST_CASE (test_serve_send_unix)
 
   server->stop ();
   client->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   using namespace gspc::net::tests;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
   mock::user subscriber;
   qmgr.subscribe (&subscriber, "/test/send", "mock-1", gspc::net::frame ());
 
   gspc::net::server_ptr_t server =
-    gspc::net::serve ("tcp://localhost:*", qmgr);
+    gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
   BOOST_REQUIRE (server);
 
-  gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
+  gspc::net::client_ptr_t client (gspc::net::dial (server->url (), net_initializer));
   BOOST_REQUIRE (client);
 
   client->disconnect ();
@@ -322,26 +284,25 @@ BOOST_AUTO_TEST_CASE (test_serve_disconnected_client)
 
   server->stop ();
   client->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   static const std::size_t NUM_MSGS_TO_SEND = 1 << 16;
   using namespace gspc::net::tests;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
   mock::user subscriber;
   qmgr.subscribe (&subscriber, "/test/send", "mock-1", gspc::net::frame ());
 
   gspc::net::server_ptr_t server =
-    gspc::net::serve ("tcp://localhost:*", qmgr);
+    gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
   BOOST_REQUIRE (server);
 
-  gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
+  gspc::net::client_ptr_t client (gspc::net::dial (server->url (), net_initializer));
   BOOST_REQUIRE (client);
 
   double duration = -fhg::util::now ();
@@ -369,13 +330,11 @@ BOOST_AUTO_TEST_CASE (test_serve_send_tcp)
 
   client->stop ();
   server->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_request_success)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   static const std::size_t NUM_MSGS_TO_SEND = 10000;
   using namespace gspc::net::tests;
@@ -386,10 +345,10 @@ BOOST_AUTO_TEST_CASE (test_request_success)
   demux.handle ("/service/echo-1", gspc::net::service::echo ());
 
   gspc::net::server_ptr_t server =
-    gspc::net::serve ("tcp://localhost:*", qmgr);
+    gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
   BOOST_REQUIRE (server);
 
-  gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
+  gspc::net::client_ptr_t client (gspc::net::dial (server->url (), net_initializer));
   BOOST_REQUIRE (client);
 
   for (size_t i = 0 ; i < NUM_MSGS_TO_SEND ; ++i)
@@ -407,23 +366,22 @@ BOOST_AUTO_TEST_CASE (test_request_success)
 
   client->stop ();
   server->stop ();
-
-  gspc::net::shutdown ();
 }
 
 BOOST_AUTO_TEST_CASE (test_request_no_such_service)
 {
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   using namespace gspc::net::tests;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
 
   gspc::net::server_ptr_t server =
-    gspc::net::serve ("tcp://localhost:*", qmgr);
+    gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
   BOOST_REQUIRE (server);
 
-  gspc::net::client_ptr_t client (gspc::net::dial (server->url ()));
+  gspc::net::client_ptr_t client (gspc::net::dial (server->url (), net_initializer));
   BOOST_REQUIRE (client);
 
   gspc::net::frame rply;
@@ -442,6 +400,4 @@ BOOST_AUTO_TEST_CASE (test_request_no_such_service)
 
   client->stop ();
   server->stop ();
-
-  gspc::net::shutdown ();
 }

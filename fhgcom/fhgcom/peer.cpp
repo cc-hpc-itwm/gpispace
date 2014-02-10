@@ -16,7 +16,6 @@ using boost::lambda::var;
 //using boost::lambda::_1;
 
 #include "peer.hpp"
-#include "kvs/kvsc.hpp"
 #include <fhg/util/thread/event.hpp>
 
 #include <cstdlib>
@@ -36,6 +35,7 @@ namespace fhg
     peer_t::peer_t ( std::string const & name
                    , host_t const & host
                    , port_t const & port
+                   , kvs::kvsc_ptr_t kvs_client
                    , std::string const & cookie
                    )
       : stopped_(true)
@@ -46,6 +46,7 @@ namespace fhg
       , cookie_(cookie)
       , my_addr_(p2p::address_t(name))
       , started_()
+      , _kvs_client (kvs_client)
       , io_service_()
       , io_service_work_(new boost::asio::io_service::work(io_service_))
       , acceptor_(io_service_)
@@ -173,7 +174,7 @@ namespace fhg
         {
           std::string prefix ("p2p.peer");
           prefix += "." + boost::lexical_cast<std::string>(my_addr_);
-          kvs::del (prefix);
+          _kvs_client->del (prefix);
         }
         catch (std::exception const & ex)
         {
@@ -271,7 +272,7 @@ namespace fhg
         // lookup location information
         std::string prefix ("p2p.peer");
         prefix += "." + boost::lexical_cast<std::string>(addr);
-        kvs::values_type peer_info (kvs::get_tree (prefix));
+        kvs::values_type peer_info (_kvs_client->get (prefix));
 
         if (peer_info.empty())
         {
@@ -450,9 +451,18 @@ namespace fhg
         {
           const std::string key
             ("p2p.peer." + boost::lexical_cast<std::string>(addr)+".name");
-          std::string name = kvs::get<std::string>(key);
-          reverse_lookup_cache_[addr] = name;
-          return name;
+
+          kvs::values_type v (_kvs_client->get (key));
+          if (v.size() == 1)
+          {
+            std::string name = v.begin()->second;
+            reverse_lookup_cache_[addr] = name;
+            return name;
+          }
+          else
+          {
+            throw std::runtime_error("kvs::get: returned 0 or more than 1 element");
+          }
         }
         catch (std::exception const & ex)
         {
@@ -659,7 +669,7 @@ namespace fhg
 
       try
       {
-        kvs::timed_put (values, 2 * 60 * 1000u);
+        _kvs_client->timed_put (values, 2 * 60 * 1000u);
       }
       catch (std::exception const &ex)
       {
@@ -785,7 +795,7 @@ namespace fhg
       delete m;
     }
 
-    void peer_t::handle_user_data   (connection_t::ptr_t c, const message_t *m)
+    void peer_t::handle_user_data   (connection_t::ptr_t, const message_t *m)
     {
       assert (m);
 

@@ -5,9 +5,10 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/thread/condition_variable.hpp>
 
-#include <gpi-space/pc/memory/task_queue.hpp>
+#include <gpi-space/pc/memory/task.hpp>
+
+#include <fhg/util/thread/queue.hpp>
 
 namespace gpi
 {
@@ -19,24 +20,13 @@ namespace gpi
       {
       public:
         explicit
-        transfer_queue_t (const std::size_t id, task_queue_t *async);
+        transfer_queue_t();
         ~transfer_queue_t ();
 
         void enqueue (task_ptr const &);
         void enqueue (task_list_t const &);
 
-        // request to pause the queue
-        //   no new requests will be accepted
-        //   there might still be requests queued,
-        //   use flush to remove them
-        void pause ();
-        // unpause the queue
-        void resume ();
-        bool is_paused () const;
-
         void disable ();
-        void enable ();
-        bool is_disabled () const;
 
         // issue a "wait" on the queue
         //
@@ -50,27 +40,18 @@ namespace gpi
         //             else.
         std::size_t wait ();
 
-        // wait until all queues are empty
-        void flush ();
       private:
-        typedef boost::mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-        typedef boost::condition_variable condition_type;
-        typedef boost::shared_ptr<boost::thread> thread_ptr;
+        bool is_disabled () const;
 
         void worker ();
-        void wait_until_unpaused () const;
 
-        mutable mutex_type m_mutex;
-        mutable condition_type m_resume_condition;
-        std::size_t m_id;
-        bool m_paused;
+        mutable boost::mutex m_mutex;
         bool m_enabled;
 
-        task_queue_t & m_blocking_tasks;
-        task_queue_t m_task_queue;
-        thread_ptr m_thread;
+        fhg::thread::queue<boost::shared_ptr<task_t> >  m_task_queue;
+        boost::thread m_thread;
 
+        mutable boost::mutex _mutex_dispatched;
         task_set_t m_dispatched;
         // dispatched list -> contains dispatched tasks
         // finished list   -> contains finished tasks

@@ -10,7 +10,7 @@
 
 #include <boost/optional.hpp>
 
-int main (int argc, char** argv)
+int main()
 {
   const std::size_t w (20);
 

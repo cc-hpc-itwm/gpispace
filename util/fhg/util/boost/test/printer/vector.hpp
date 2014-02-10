@@ -1,23 +1,16 @@
 // mirko.rahn@itwm.fhg.de
 
-#include <fhg/util/boost/test.hpp>
-#include <fhg/util/first_then.hpp>
+#ifndef FHG_UTIL_BOOST_TEST_PRINTER_VECTOR_HPP
+#define FHG_UTIL_BOOST_TEST_PRINTER_VECTOR_HPP
 
-#include <boost/foreach.hpp>
+#include <fhg/util/boost/test.hpp>
+#include <fhg/util/boost/test/printer/container.hpp>
 
 #include <vector>
-#include <string>
 
-FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER(<typename T>, std::vector<T>, os, l)
+FHG_BOOST_TEST_TEMPLATED_LOG_VALUE_PRINTER(<typename T>, std::vector<T>, os, v)
 {
-  fhg::util::first_then<std::string> const sep ("", ", ");
-
-  os << "vector (";
-
-  BOOST_FOREACH (T const& x, l)
-  {
-    os << sep << FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER (x);
-  }
-
-  os << ")";
+  fhg::util::boost::test::printer::container (os, v, "vector (", ")");
 }
+
+#endif

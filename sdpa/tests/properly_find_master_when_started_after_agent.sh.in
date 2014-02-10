@@ -52,4 +52,4 @@ timeout ${TIMEOUT_UNTIL_A_REREGISTRATION_SHOULD_BE_DONE} \
   sdpac --kvs "${KVS_URL}" wait "${JOB_ID}"                     || die ${EX_ERR_RUN}
 JOB_STATUS=$(sdpac --kvs "${KVS_URL}" status "${JOB_ID}")       || die ${EX_ERR_RUN}
 
-[[ "x${JOB_STATUS}" == "xSDPA::Finished" ]]                     || die ${EX_ERR_RUN}
+[[ "x${JOB_STATUS}" = "xSDPA::Finished" ]]                      || die ${EX_ERR_RUN}

@@ -3,6 +3,7 @@ include (fhg_plugin_macros)
 add_subdirectory(workflows)
 
 include_directories(${FVM_INCLUDE_DIR})
+include_directories(${HWLOC_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/application/transform_file)
 
 set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
@@ -24,7 +25,6 @@ get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
 
 get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
-get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -178,11 +178,11 @@ set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_
                                                                         	-p n_workers_A="2UL"
                                                                         	-p n_tasks_B="1L"
                                                                         	-p n_workers_B="3UL"
-                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet")
+                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet")
 
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet"
                    COMMAND ${command}
-                   COMMENT "putting tokens into stalled_workflow net: ${command}"
+                   COMMENT "putting tokens into coallocation_test2 net: ${command}"
                    DEPENDS pnet-coallocation_test-wf-gen
 )
 
@@ -202,6 +202,7 @@ set (tests
   test_SubmitJobFails.cpp
   test_TransformFile.cpp
   test_InvalidNbWorkersReq.cpp
+  test_DiscoverJobStates.cpp
 )
 
 foreach (test ${tests})
@@ -209,6 +210,7 @@ foreach (test ${tests})
       PROJECT sdpa
       BOOST_UNIT_TEST # all of them?
       LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
@@ -218,8 +220,7 @@ foreach (test ${tests})
                      fhg-util
                      ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
-      DEPENDS drts-plugin
-              fvm-fake-plugin
+      DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
               pnet-capabilities_no_mandatory-test-wf
               pnet-inotify-test-wf
@@ -236,5 +237,5 @@ add_custom_target(sdpa-test-workflows ALL
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet"
 )

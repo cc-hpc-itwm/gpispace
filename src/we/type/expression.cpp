@@ -41,7 +41,7 @@ namespace we
     }
 
     bool expression_t::simplify
-    (const expr::parse::util::name_set_t& needed_bindings)
+    (const expr::parse::simplify::key_set_type& needed_bindings)
     {
       _ast = expr::parse::parser (expr::parse::simplify::simplification_pass
         (_ast, needed_bindings));

@@ -6,12 +6,19 @@ namespace gpi
   {
     namespace memory
     {
+      task_t::task_t ( std::string const name
+                     , function_type fun
+                     )
+        : m_state (task_state::pending)
+        , m_name (name)
+        , m_func (fun)
+      {}
+
       void
       task_t::execute ()
       {
-        switch (get_state())
-        {
-        case task_state::pending:
+        assert (task_state::pending == get_state());
+
           try
           {
             set_state (task_state::executing);
@@ -23,47 +30,25 @@ namespace gpi
             m_error = boost::current_exception();
             set_state (task_state::failed);
           }
-          break;
-        case task_state::canceled:
-          break;
-        case task_state::executing:
-          throw std::runtime_error ("task already executing: " + get_name());
-          break;
-        default:
-          throw std::runtime_error ("task already executed: " + get_name());
-        }
       }
 
-      void task_t::cancel ()
+      void task_t::set_state (const task_state::state s)
       {
-        if (get_state() == task_state::pending)
-        {
-          set_state (task_state::canceled);
-        }
-      }
-
-      void task_t::reset ()
-      {
-        set_state (task_state::pending);
-      }
-
-      void task_t::set_state (const task_t::state s)
-      {
-        lock_type lock (m_mutex);
+        boost::mutex::scoped_lock const _ (_mutex_state);
         m_state = s;
         m_state_changed.notify_all();
       }
 
-      task_t::state task_t::get_state () const
+      task_state::state task_t::get_state () const
       {
-        lock_type lock (m_mutex);
+        boost::mutex::scoped_lock const _ (_mutex_state);
         return m_state;
       }
 
       void
       task_t::wait ()
       {
-        lock_type lock (m_mutex);
+        boost::mutex::scoped_lock lock (_mutex_state);
         while (  task_state::pending   == m_state
               || task_state::executing == m_state
               )
@@ -78,12 +63,6 @@ namespace gpi
         return m_name;
       }
 
-      boost::exception_ptr
-      task_t::get_error () const
-      {
-        return m_error;
-      }
-
       bool
       task_t::has_failed () const
       {
@@ -91,21 +70,21 @@ namespace gpi
       }
 
       bool
-      task_t::has_finished () const
+      task_t::USED_IN_TEST_ONLY_has_finished () const
       {
         return task_state::finished == get_state();
       }
 
+      bool task_t::USED_IN_TEST_ONLY_is_pending() const
+      {
+        return task_state::pending == get_state();
+      }
+
+
       std::string
       task_t::get_error_message () const
       {
-        return boost::diagnostic_information(get_error());
-      }
-
-      std::size_t
-      task_t::time_estimation () const
-      {
-        return m_eta;
+        return boost::diagnostic_information(m_error);
       }
     }
   }

@@ -159,13 +159,6 @@ opts="$opts -u ${bind_addr}"
 opts="$opts -m ${master}"
 opts="$opts -k ${kvs_url}"
 
-stateful=$(fhgcfg -f "${config_file}" -g sdpa.stateful -v false)
-if [ x"$stateful" = x"true" ] ; then
-    if [ ! -d "${state_dir}/agent" ] ; then
-        mkdir -p "${state_dir}/agent"
-    fi
-    opts="$opts -d ${state_dir}/agent"
-fi
 if $daemonize && ! $debug ; then
     opts="$opts --daemonize"
 fi

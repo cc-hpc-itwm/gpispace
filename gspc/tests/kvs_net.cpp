@@ -5,8 +5,8 @@
 #include <gspc/kvs/impl/kvs_impl.hpp>
 #include <gspc/kvs/impl/kvs_net_frontend.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
-#include <gspc/net/server/default_queue_manager.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
+#include <gspc/net/server/queue_manager.hpp>
+#include <gspc/net/server/service_demux.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
@@ -35,61 +35,75 @@ namespace
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (net_start_stop, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_start_stop)
 {
-  gspc::kvs::api_t::value_type val;
-
-  gspc::net::server_ptr_t server;
+  gspc::net::initializer net_initializer;
 
   for (size_t i (0); i < 10; ++i)
   {
-    server = gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager());
+    gspc::net::server::service_demux_t service_demux;
+    gspc::net::server::queue_manager_t queue_manager (service_demux);
+    gspc::net::server_ptr_t server
+      (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
     gspc::kvs::service_t service;
-    gspc::net::server::default_service_demux().handle ( "/service/kvs"
+    service_demux.handle ( "/service/kvs"
                       , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                          , boost::ref (service)
                                                          )
                       );
 
-    gspc::kvs::kvs_net_frontend_t kvs (server->url());
+    gspc::kvs::kvs_net_frontend_t kvs (server->url(), net_initializer);
 
     BOOST_REQUIRE_EQUAL (kvs.put ("foo", std::string ("bar")), 0);
+    gspc::kvs::api_t::value_type val;
     BOOST_REQUIRE_EQUAL (kvs.get ("foo", val), 0);
     BOOST_REQUIRE_EQUAL
       (val, pnet::type::value::value_type (std::string ("bar")));
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (net_get_nokey, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_get_nokey)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type val;
 
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url() + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url() + "?timeout=100", net_initializer);
 
   BOOST_REQUIRE_EQUAL (kvs.get ("foo", val), -ENOKEY);
 }
 
-BOOST_FIXTURE_TEST_CASE (net_api, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_api)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type val;
 
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url() + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url() + "?timeout=100", net_initializer);
 
   BOOST_REQUIRE_EQUAL (kvs.get ("foo", val), -ENOKEY);
   BOOST_REQUIRE_EQUAL (kvs.put ("foo", "bar"), 0);
@@ -117,20 +131,26 @@ BOOST_FIXTURE_TEST_CASE (net_api, gspc::net::initializer)
 }
 
 #ifdef NDEBUG
-BOOST_FIXTURE_TEST_CASE (net_put_get, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_put_get)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type out;
   static gspc::kvs::api_t::value_type const in (std::string ("bar"));
 
-  gspc::net::server_ptr_t const server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t const server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url () + "?timeout=100", net_initializer);
 
   static const size_t NUM (1 << 10);
 
@@ -147,19 +167,25 @@ BOOST_FIXTURE_TEST_CASE (net_put_get, gspc::net::initializer)
 }
 #endif
 
-BOOST_FIXTURE_TEST_CASE (net_wait, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_wait)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type val;
 
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url() + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url() + "?timeout=100", net_initializer);
 
   BOOST_REQUIRE_EQUAL
     (kvs.wait ("foo", gspc::kvs::api_t::E_EXIST, 500), -ETIME);
@@ -180,19 +206,25 @@ BOOST_FIXTURE_TEST_CASE (net_wait, gspc::net::initializer)
   BOOST_REQUIRE_EQUAL (val, val_to_push);
 }
 
-BOOST_FIXTURE_TEST_CASE (net_push_pop, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_push_pop)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type val;
 
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url() + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url() + "?timeout=100", net_initializer);
 
   gspc::kvs::api_t::value_type const val_to_push (std::string ("bar"));
   boost::thread pusher (boost::bind ( &push_value
@@ -241,23 +273,29 @@ namespace
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (net_many_push_pop, gspc::net::initializer)
+BOOST_AUTO_TEST_CASE (net_many_push_pop)
 {
+  gspc::net::initializer net_initializer;
+
   gspc::kvs::api_t::value_type val;
   const std::string queue ("wfh");
 
   static const size_t NUM (10);
   static const size_t NTHREAD (15);
 
-  gspc::net::server_ptr_t server (gspc::net::serve ("tcp://localhost:*", gspc::net::server::default_queue_manager()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t queue_manager (service_demux);
+  gspc::net::server_ptr_t server
+    (gspc::net::serve ("tcp://localhost:*", net_initializer, queue_manager));
   gspc::kvs::service_t service;
-  gspc::net::server::default_service_demux().handle ( "/service/kvs"
+  service_demux.handle ( "/service/kvs"
                     , gspc::net::service::strip_prefix ( "/service/kvs/"
                                                        , boost::ref (service)
                                                        )
                     );
 
-  gspc::kvs::kvs_net_frontend_t kvs (server->url () + "?timeout=100");
+  gspc::kvs::kvs_net_frontend_t kvs
+    (server->url () + "?timeout=100", net_initializer);
 
   boost::thread_group threads;
 

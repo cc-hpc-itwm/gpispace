@@ -158,16 +158,15 @@ namespace process
     static void circular_reader ( int fd
                                 , circular_buffer & circ_buf
                                 , std::size_t & bytes_read
-                                , const std::size_t & block_size
                                 )
     {
-      char * buf (new char[block_size]);
+      char * buf (new char[PIPE_BUF]);
 
       bytes_read = 0;
 
       while (fd != -1)
         {
-          const int r (read (fd, buf, block_size));
+          const int r (read (fd, buf, PIPE_BUF));
 
           if (r < 0)
             {
@@ -192,7 +191,6 @@ namespace process
                        , void * output
                        , const std::size_t & max_size
                        , std::size_t & bytes_read
-                       , const std::size_t & block_size
                        )
     {
       char * buf (static_cast<char *>(output));
@@ -202,7 +200,7 @@ namespace process
       while (fd != -1)
         {
           const std::size_t to_read
-            (std::min (block_size, max_size - bytes_read));
+            (std::min (std::size_t (PIPE_BUF), max_size - bytes_read));
 
           const int r (read (fd, buf, to_read));
 
@@ -228,7 +226,6 @@ namespace process
                                  , void * buf
                                  , const std::size_t max_size
                                  , std::size_t & bytes_read
-                                 , const std::size_t & block_size
                                  )
     {
       barrier.wait ();
@@ -240,7 +237,7 @@ namespace process
           detail::do_error ("open file " + filename + " for reading failed", errno);
         }
 
-      thread::reader (fd, buf, max_size, bytes_read, PIPE_BUF);
+      thread::reader (fd, buf, max_size, bytes_read);
 
       close (fd);
     }
@@ -250,14 +247,14 @@ namespace process
     static void writer ( int fd
                        , const void * input
                        , std::size_t bytes_left
-                       , const std::size_t & block_size
                        )
     {
       char * buf (static_cast<char *> (const_cast<void *> (input)));
 
       while (fd != -1 && bytes_left > 0)
         {
-          const std::size_t to_write (std::min (block_size, bytes_left));
+          const std::size_t to_write
+            (std::min (std::size_t (PIPE_BUF), bytes_left));
 
           const int w (write (fd, buf, to_write));
 
@@ -286,7 +283,6 @@ namespace process
                                  , const std::string & filename
                                  , const void * buf
                                  , std::size_t bytes_left
-                                 , const std::size_t & block_size
                                  )
     {
       barrier.wait ();
@@ -298,7 +294,7 @@ namespace process
           detail::do_error ("open file " + filename + "for writing failed", errno);
         }
 
-      thread::writer (fd, buf, bytes_left, PIPE_BUF);
+      thread::writer (fd, buf, bytes_left);
 
       close (fd);
     }
@@ -400,7 +396,6 @@ namespace process
                                , filename
                                , buf
                                , bytes_left
-                               , PIPE_BUF
                                );
     }
 
@@ -419,7 +414,6 @@ namespace process
                                , buf
                                , max_size
                                , boost::ref (bytes_read)
-                               , PIPE_BUF
                                );
     }
   }
@@ -634,7 +628,6 @@ namespace process
           , in[detail::WR]
           , buf_stdin.buf()
           , buf_stdin.size()
-          , PIPE_BUF
           );
 
         boost::thread thread_buf_stdout
@@ -643,7 +636,6 @@ namespace process
           , buf_stdout.buf()
           , buf_stdout.size()
           , boost::ref (ret.bytes_read_stdout)
-          , PIPE_BUF
           );
 
         boost::thread thread_buf_stderr
@@ -651,7 +643,6 @@ namespace process
           , err[detail::RD]
           , boost::ref (buf_stderr)
           , boost::ref (ret.bytes_read_stderr)
-          , PIPE_BUF
           );
 
         int status (0);

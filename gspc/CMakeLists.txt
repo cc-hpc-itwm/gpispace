@@ -7,7 +7,6 @@ include_directories(${UTIL_INCLUDE_DIR})
 
 add_subdirectory(gspc)
 add_subdirectory(bin)
-add_subdirectory(libexec)
 add_subdirectory(scripts)
 add_subdirectory(doc)
 

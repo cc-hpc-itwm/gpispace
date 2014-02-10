@@ -32,7 +32,7 @@ measured "build-wrapper" ${make[@]} lib                     || die $EX_ERR_RUN
 measured "run" WE_EXEC_WORKER=1 ${make[@]} run              || die $EX_ERR_RUN
 
 grep -q 'finished \[1\]' "${OUT}"                           || die $EX_ERR_RES
-test "$(pnetget -i "${RESULT}" -p done)" == "[]"            || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p done)" = "[]"             || die $EX_ERR_RES
 cat "${OUT}" | grep ^WORK | sort -n > "${CMP}"              || die $EX_ERR_OTHER
 diff "${CMP}" "${CMP_ORIG}"                                 || die $EX_ERR_RES
 

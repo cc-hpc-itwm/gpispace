@@ -90,6 +90,9 @@ install (FILES
 add_executable (generate_parser_action_table expr/parse/table.cpp)
 target_link_libraries (generate_parser_action_table pnet)
 
+add_executable (expression_shell expr/shell.cpp)
+target_link_libraries (expression_shell pnet ${LibReadline_LIBRARY})
+
 add_subdirectory (util)
 
 find_package (LibReadline REQUIRED QUIET)

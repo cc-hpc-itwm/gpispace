@@ -10,13 +10,14 @@
 #include <syslog.h>
 #include <time.h>
 
-#include <gspc/net/server/default_queue_manager.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
+#include <gspc/net/server/queue_manager.hpp>
+#include <gspc/net/server/service_demux.hpp>
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
 #include <gspc/net/service/strip_prefix.hpp>
 #include <gspc/kvs/kvs.hpp>
+#include <gspc/kvs/impl/kvs_net_frontend.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 #include <gspc/ctl/system.hpp>
 
@@ -108,16 +109,17 @@ namespace gspc
         int rc;
         gspc::kvs::api_t::value_type val;
 
-        boost::scoped_ptr<gspc::kvs::api_t> api
-          (gspc::kvs::create ("unix://" + p.string ()));
+        gspc::net::initializer net_initializer;
+        gspc::kvs::kvs_net_frontend_t api
+          ("unix://" + p.string(), net_initializer);
 
-        rc = api->get ("gspc.kvs.url", info.puburl);
+        rc = api.get ("gspc.kvs.url", info.puburl);
         if (rc != 0) return rc;
 
-        rc = api->get ("gspc.kvs.pid", info.pid);
+        rc = api.get ("gspc.kvs.pid", info.pid);
         if (rc != 0) return rc;
 
-        rc = api->get ("gspc.kvs.started", info.started);
+        rc = api.get ("gspc.kvs.started", info.started);
         if (rc != 0) return rc;
 
         info.name = p.filename ().string ();
@@ -185,10 +187,12 @@ namespace gspc
         }
       }
 
-      gspc::net::initializer _net_init;
+      gspc::net::initializer net_initializer;
 
       gspc::kvs::service_t service;
-      gspc::net::server::default_service_demux().handle
+      gspc::net::server::service_demux_t service_demux;
+      gspc::net::server::queue_manager_t queue_manager (service_demux);
+      service_demux.handle
         ( "/service/kvs"
         , gspc::net::service::strip_prefix ( "/service/kvs/"
                                            , boost::ref (service)
@@ -197,7 +201,7 @@ namespace gspc
 
       std::list<gspc::net::server_ptr_t> servers;
       {
-        gspc::net::server_ptr_t s (gspc::net::serve (m_url, gspc::net::server::default_queue_manager()));
+        gspc::net::server_ptr_t s (gspc::net::serve (m_url, net_initializer, queue_manager));
         servers.push_back (s);
         si.puburl = s->url ();
       }
@@ -212,7 +216,7 @@ namespace gspc
 
       {
         gspc::net::server_ptr_t s
-          (gspc::net::serve ("unix://" + (m_dir / m_name).string (), gspc::net::server::default_queue_manager()));
+          (gspc::net::serve ("unix://" + (m_dir / m_name).string (), net_initializer, queue_manager));
         servers.push_back (s);
       }
 
@@ -279,8 +283,6 @@ namespace gspc
       {
         return -EEXIST;
       }
-
-      gspc::net::shutdown ();
 
       int rc = s_daemonize ();
       if (rc < 0)

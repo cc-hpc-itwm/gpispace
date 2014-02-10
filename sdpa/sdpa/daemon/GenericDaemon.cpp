@@ -23,6 +23,8 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
@@ -92,6 +94,8 @@ GenericDaemon::GenericDaemon( const std::string name
                            , boost::bind (&GenericDaemon::finished, this, _1, _2)
                            , boost::bind (&GenericDaemon::failed, this, _1, _2, _3)
                            , boost::bind (&GenericDaemon::canceled, this, _1)
+                           , boost::bind (&GenericDaemon::discover, this, _1, _2)
+                           , boost::bind (&GenericDaemon::discovered, this, _1, _2)
                            , boost::bind (&GenericDaemon::gen_id, this)
                            , *_random_extraction_engine
                            )
@@ -161,7 +165,7 @@ GenericDaemon::~GenericDaemon()
 
   ptr_scheduler_.reset();
 
-  ptr_workflow_engine_.reset();
+  delete ptr_workflow_engine_;
 
   _network_strategy.reset();
 
@@ -240,7 +244,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 {
   const events::SubmitJobEvent& e (*evt);
 
-  DLLOG(TRACE, _logger, "got job submission from " << e.from() << ": job-id := " << e.job_id());
+  DLLOG(TRACE, _logger, "got job submission from " << e.from() << ": job-id := " << e.job_id ().get_value_or ("NONE"));
 
   if(e.is_external())
   {
@@ -280,7 +284,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     return;
   }
 
-  DLLOG (TRACE, _logger, "Receive new job from "<<e.from() << " with job-id: " << e.job_id());
+  DLLOG (TRACE, _logger, "Receive new job from "<<e.from() << " with job-id: " << e.job_id ().get_value_or ("NONE"));
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
@@ -538,46 +542,35 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
  * The SDPA will use the callback handler SdpaGwes in order
  * to notify the GS about activity status transitions.
  */
-void GenericDaemon::submit( const we::layer::id_type& activityId
+void GenericDaemon::submit( const we::layer::id_type& job_id
                           , const we::type::activity_t& activity
                           )
+try
 {
   const we::type::schedule_data schedule_data
     ( activity.transition().get_schedule_data<unsigned long> (activity.input(), "num_worker")
     , activity.transition().get_schedule_data<unsigned long> (activity.input(), "vmem")
     );
-  job_requirements_t jobReqs(activity.transition().requirements(), schedule_data);
 
-  DLLOG (TRACE, _logger, "workflow engine submitted "<<activityId);
-
-  job_id_t job_id(activityId);
-
-  if( schedule_data.num_worker() && schedule_data.num_worker().get() == 0)
+  if (schedule_data.num_worker() && schedule_data.num_worker().get() == 0UL)
   {
-      workflowEngine()->failed (  activityId
-                               , fhg::error::UNEXPECTED_ERROR
-                               , "Invalid number of workers required: "
-                               +boost::lexical_cast<std::string>( schedule_data.num_worker().get()));
+    throw std::runtime_error ("invalid number of workers required: 0UL");
+  }
 
+  jobManager().addJobRequirements
+    ( job_id
+    , job_requirements_t (activity.transition().requirements(), schedule_data)
+    );
 
-        return;
-    }
-
-  on_scope_exit _ ( boost::bind ( &we::layer::failed, workflowEngine()
-                              , activityId
-                              , fhg::error::UNEXPECTED_ERROR
-                              , "Exception in GenericDaemon::submit()"
-                              )
-                );
-
-
-  jobManager().addJobRequirements(job_id, jobReqs);
-
-  // don't forget to set here the job's preferences
-  events::SubmitJobEvent::Ptr pEvtSubmitJob( new events::SubmitJobEvent( sdpa::daemon::WE, name(), job_id, activity.to_string()) );
-  sendEventToSelf(pEvtSubmitJob);
-
-  _.dont();
+  sendEventToSelf ( events::SubmitJobEvent::Ptr
+                    ( new events::SubmitJobEvent
+                      (sdpa::daemon::WE, name(), job_id, activity.to_string())
+                    )
+                  );
+}
+catch (std::exception const& ex)
+{
+  workflowEngine()->failed (job_id, fhg::error::UNEXPECTED_ERROR, ex.what());
 }
 
 /**
@@ -853,8 +846,6 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
      return;
    }
 
-  DLLOG (TRACE, _logger, "The worker \""<<worker_id<<"\" reported its capabilities: "<<pCpbGainEvt->capabilities());
-
   try
   {
     sdpa::capabilities_set_t workerCpbSet;
@@ -906,8 +897,6 @@ void GenericDaemon::handleCapabilitiesLostEvent(const events::CapabilitiesLostEv
   sdpa::worker_id_t worker_id = pCpbLostEvt->from();
   try {
     scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
-
-    DLLOG (TRACE, _logger, "lost capabilities from: " << worker_id << ": "<<pCpbLostEvt->capabilities());
 
     lock_type lock(mtx_master_);
     for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
@@ -1296,5 +1285,25 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
     events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
     sendEventToOther(pErrorEvt);
   }
+}
+
+void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
+{
+  events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( sdpa::daemon::WE
+                                                                                    , name()
+                                                                                    , job_id
+                                                                                    , discover_id ));
+
+  sendEventToSelf(pDiscEvt);
+}
+
+void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
+{
+  sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
+  sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
+                                                                                                      , master_name
+                                                                                                      , discover_id
+                                                                                                      , discover_result)));
+  m_map_discover_ids.erase(discover_id);
 }
 }}

@@ -11,7 +11,6 @@
 
 #include <fhgcom/kvs/store.hpp>
 #include <fhgcom/kvs/message/type.hpp>
-#include <fhgcom/kvs/message/show.hpp>
 
 #include <sstream>
 #include <boost/archive/text_oarchive.hpp>
@@ -32,9 +31,26 @@ namespace fhg
         public:
           typedef std::string key_type;
 
+          //! \todo remove empty-ctor+start() pattern
+          kvsc(){}
+
+          kvsc ( std::string const & server_address
+               , std::string const & server_port
+               , const bool auto_reconnect = true
+               , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
+               , const std::size_t max_connection_attempts = 3
+               )
+          {
+            kvs_.start ( server_address, server_port
+                       , auto_reconnect
+                       , timeout
+                       , max_connection_attempts
+                       );
+          }
+
           virtual ~kvsc()
           {
-            boost::lock_guard<boost::recursive_mutex> lock (mtx_);
+            stop();
           }
 
           void start ( std::string const & server_address
@@ -169,7 +185,7 @@ namespace fhg
             return boost::get<fhg::com::kvs::message::list>(m).entries();
           }
 
-          void clear (std::string const & regexp = "")
+          void clear()
           {
             boost::lock_guard<boost::recursive_mutex> lock (mtx_);
 
@@ -370,7 +386,7 @@ namespace fhg
 
       inline kvsc_ptr_t get_or_create_global_kvs ( std::string const & host = ""
                                                  , std::string const & port = ""
-                                                 , const bool auto_reconnect = true
+                                                 , const bool = true
                                                  , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
                                                  , const std::size_t max_connection_attempts = 3
                                                  )
@@ -391,92 +407,27 @@ namespace fhg
 
       typedef fhg::com::kvs::message::list::map_type values_type;
 
-      inline
-      bool ping ()
-      {
-        return global_kvs ()->ping ();
-      }
-
-      inline
-      void put (values_type const & e)
-      {
-        global_kvs ()->put (e);
-      }
-
-      inline
-      void timed_put (values_type const & e, size_t expiry)
-      {
-        global_kvs ()->timed_put (e, expiry);
-      }
-
-      template <typename Key, typename Val>
-      inline
-      void put (Key k, Val v)
-      {
-        global_kvs ()->put (k, v);
-      }
-
-      template <typename Key, typename Val>
-      inline
-      void timed_put (Key k, Val v, size_t expiry)
-      {
-        global_kvs ()->timed_put (k, v, expiry);
-      }
-
-      template <typename Key>
-      inline
-      void del (Key k)
-      {
-        return global_kvs()->del (k);
-      }
-
-      template <typename Key>
-      inline
-      int inc (Key k, int step)
-      {
-        return global_kvs()->inc (k, step);
-      }
-
-      template <typename Key>
-      inline
-      values_type get_tree (Key k)
-      {
-        return global_kvs()->get(k);
-      }
-
-      template <typename Val, typename Key>
-      inline
-      Val get (Key k)
-      {
-        values_type v (get_tree(k));
-        if (v.size() == 1)
-        {
-          return boost::lexical_cast<Val>(v.begin()->second);
-        }
-        else
-        {
-          throw std::runtime_error("kvs::get: returned 0 or more than 1 element");
-        }
-      }
-
       struct scoped_entry_t : boost::noncopyable
       {
       public:
         template <typename Val>
-        scoped_entry_t ( std::string const & k
+        scoped_entry_t ( kvsc_ptr_t kvs_client
+                       , std::string const & k
                        , Val v
                        )
-        : key(k)
+          : _kvs_client (kvs_client)
+          , key(k)
         {
-          put (key, v);
+          _kvs_client->put (key, v);
         }
 
         ~scoped_entry_t ()
         {
-          del (key);
+          _kvs_client->del (key);
         }
 
       private:
+        kvsc_ptr_t _kvs_client;
         const std::string key;
       };
     }

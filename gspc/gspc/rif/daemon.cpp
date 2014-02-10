@@ -16,11 +16,8 @@
 
 #include <gspc/net/error.hpp>
 #include <gspc/net/frame_builder.hpp>
-#include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
-#include <gspc/net/server/default_queue_manager.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
 #include <gspc/net/service/echo.hpp>
 #include <gspc/net/user.hpp>
 #include <gspc/rif/manager.hpp>
@@ -38,18 +35,14 @@ namespace gspc
                    )
       : _request_shutdown (request_shutdown)
       , _logger (logger)
-      , m_server()
+      , _net_initializer (nthreads)
+      , _service_demux()
+      , _queue_manager (_service_demux)
+      , _echo_service ("/service/echo", net::service::echo(), _service_demux)
+      , m_server (net::serve (netd_url, _net_initializer, _queue_manager))
       , m_mgr ()
       , m_supervisor (m_mgr)
     {
-      net::initialize (nthreads);
-
-      net::server::default_service_demux().handle
-        ("/service/echo", net::service::echo ());
-
-      m_server = net::serve
-        (netd_url, net::server::default_queue_manager());
-
       LLOG (DEBUG, _logger, "listening on " << m_server->url ());
 
       signal (SIGCHLD, SIG_DFL);
@@ -63,7 +56,7 @@ namespace gspc
 
       m_supervisor.start ();
 
-      net::server::default_service_demux().handle
+      _service_demux.handle
         ("/service/rif", boost::bind (&daemon::handle, this, _1, _2, _3));
     }
 
@@ -82,8 +75,6 @@ namespace gspc
       {
         m_server->stop ();
       }
-
-      net::shutdown ();
     }
 
     int daemon::supervise (std::list<std::string> argv)
@@ -250,7 +241,7 @@ namespace gspc
       LLOG (WARN, _logger, "child terminated: " << chld.descriptor.name);
     }
 
-    void daemon::handle ( std::string const &dst
+    void daemon::handle ( std::string const &
                         , net::frame const &rqst
                         , net::user_ptr user
                         )

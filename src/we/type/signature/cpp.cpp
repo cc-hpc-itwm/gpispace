@@ -131,7 +131,7 @@ namespace pnet
             void operator() ( std::ostream& os
                             , fhg::util::indenter& indent
                             , const std::string& name
-                            , const std::string& type
+                            , const std::string&
                             , bool& first
                             ) const
             {
@@ -150,7 +150,7 @@ namespace pnet
             void operator() ( std::ostream& os
                             , fhg::util::indenter& indent
                             , const std::string& name
-                            , const std::string& type
+                            , const std::string&
                             , bool& first
                             ) const
             {
@@ -167,9 +167,9 @@ namespace pnet
           {
           public:
             void operator() ( std::ostream& os
-                            , fhg::util::indenter& indent
+                            , fhg::util::indenter&
                             , const std::string& name
-                            , const std::string& type
+                            , const std::string&
                             , std::list<std::string>& prefix
                             ) const
             {
@@ -197,7 +197,7 @@ namespace pnet
             void operator() ( std::ostream& os
                             , fhg::util::indenter& indent
                             , const std::string& name
-                            , const std::string& type
+                            , const std::string&
                             , bool& first
                             ) const
             {
@@ -652,7 +652,7 @@ namespace pnet
 
               _os << ns::close (_indent);
             }
-            void _field (const std::pair<std::string, std::string>& f) const
+            void _field (const std::pair<std::string, std::string>&) const
             {}
             void _field_struct (const std::pair<std::string, structure_type>& s) const
             {

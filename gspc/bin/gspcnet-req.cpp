@@ -138,13 +138,13 @@ int main (int argc, char *argv[])
 
   show_headers = not vm.count ("no-headers");
 
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   reply_frame_handler_t reply_handler;
 
   try
   {
-    client = gspc::net::dial (url);
+    client = gspc::net::dial (url, net_initializer);
     client->set_frame_handler (reply_handler);
   }
   catch (std::exception const &ex)
@@ -257,7 +257,6 @@ int main (int argc, char *argv[])
   }
 
   client->stop ();
-  gspc::net::shutdown ();
 
   if (rc)
     return EX_UNAVAILABLE;

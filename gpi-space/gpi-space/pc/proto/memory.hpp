@@ -41,14 +41,6 @@ namespace gpi
           }
         };
 
-        inline
-        std::ostream & operator<<(std::ostream & os, const alloc_t & a)
-        {
-          os << "ALLOC of " << a.size << " byte(s) in segment "
-             << a.segment << " (" << a.name << ") with flags " << a.flags;
-          return os;
-        }
-
         struct alloc_reply_t
         {
           gpi::pc::type::handle_id_t handle;

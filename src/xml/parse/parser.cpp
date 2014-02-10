@@ -47,8 +47,10 @@
 #include <we/type/signature.hpp>
 
 #include <istream>
+#include <stdexcept>
 
 #include <boost/bind.hpp>
+#include <boost/format.hpp>
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
@@ -82,16 +84,13 @@ namespace xml
         }
         catch (const rapidxml::parse_error& e)
         {
-          const util::position_type position ( inp.data()
-                                             , e.where<char>()
-                                             , state.file_in_progress()
-                                             );
-
-          std::ostringstream oss;
-
-          oss << "Parse error " << position << ": " << e.what();
-
-          throw rapidxml::parse_error (oss.str().c_str(), e.where<void>());
+          throw std::runtime_error
+            ( ( boost::format ("Parse error: %1%: %2%")
+              % util::position_type
+                (inp.data(), e.where<char>(), state.file_in_progress())
+              % e.what()
+              ).str()
+            );
         }
 
         state.set_in_progress_position (inp.data());
@@ -1324,25 +1323,8 @@ namespace xml
             {
               const std::string file
                 (required ("net_type", child, "href", state));
-              const boost::optional<std::string> as (optional (child, "as"));
 
               id::ref::tmpl tmpl (template_include (file, state));
-
-              if (as)
-              {
-                if (tmpl.get().name() && *tmpl.get().name() != *as)
-                {
-                  state.warn
-                    ( warning::overwrite_template_name_as
-                      ( *tmpl.get().name()
-                      , *as
-                      , state.file_in_progress()
-                      )
-                    );
-                }
-
-                tmpl.get_ref().name (*as);
-              }
 
               if (not tmpl.get().name())
               {

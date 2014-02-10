@@ -43,7 +43,7 @@ measured "boot" sdpa boot -A "${DIR_BUILD}" -M -f "${HOSTFILE}" work:1        \
 
 measured "submit" ${make[@]} submit                         || die $EX_ERR_RUN
 
-test "$(pnetget -i "${OUT}" -p response)" == "\"sdpa.response.$$\""          \
+test "$(pnetget -i "${OUT}" -p response)" = "\"sdpa.response.$$\""           \
                                                             || die $EX_ERR_RES
 
 measured "stop" sdpa stop                                   || die $EX_ERR_STOP

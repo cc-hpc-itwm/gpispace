@@ -6,7 +6,6 @@
 #include <we/type/expression.fwd.hpp>
 
 #include <we/expr/parse/parser.hpp>
-#include <we/expr/parse/util/get_names.hpp>
 #include <we/expr/parse/simplify/simplify.hpp>
 
 #include <boost/serialization/utility.hpp>
@@ -31,7 +30,7 @@ namespace we
       const std::string& expression() const;
       const expr::parse::parser& ast() const;
 
-      bool simplify (const expr::parse::util::name_set_t& needed_bindings);
+      bool simplify (const expr::parse::simplify::key_set_type& needed_bindings);
 
       void rename (const std::string& from, const std::string& to);
 

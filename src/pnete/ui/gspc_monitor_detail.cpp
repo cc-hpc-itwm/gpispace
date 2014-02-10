@@ -604,7 +604,7 @@ namespace fhg
 
       void node_state_widget::action_result
         ( const QString& host
-        , const QString& action
+        , const QString&
         , const monitor_client::action_result_code& result
         , const boost::optional<QString>& message
         , QList<QPair<QString, QString> > additional_data

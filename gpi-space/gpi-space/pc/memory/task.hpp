@@ -19,49 +19,34 @@ namespace gpi
     {
       namespace task_state
       {
-        enum state {pending, executing, finished, failed, canceled};
+        enum state {pending, executing, finished, failed};
       }
 
       class task_t : boost::noncopyable
       {
       public:
-        typedef task_state::state state;
         typedef boost::function<void (void)> function_type;
 
-        template <typename F>
-        task_t (std::string const nme, F fun, const std::size_t eta = 0)
-          : m_state (task_state::pending)
-          , m_name (nme)
-          , m_func (fun)
-          , m_eta (eta)
-        {}
+        task_t (std::string const name, function_type fun);
 
         void execute ();
-        void cancel ();
-        void reset ();
         void wait ();
 
         std::string const & get_name () const;
-        boost::exception_ptr get_error () const;
         std::string get_error_message () const;
-        state get_state () const;
         bool has_failed () const;
-        bool has_finished () const;
-        std::size_t time_estimation () const;
+        bool USED_IN_TEST_ONLY_has_finished () const;
+        bool USED_IN_TEST_ONLY_is_pending() const;
       private:
-        typedef boost::mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
-        typedef boost::condition_variable condition_type;
+        void set_state (const task_state::state);
+        task_state::state get_state () const;
 
-        void set_state (const state);
-
-        mutable mutex_type m_mutex;
-        condition_type m_state_changed;
-        state m_state;
+        mutable boost::mutex _mutex_state;
+        boost::condition_variable m_state_changed;
+        task_state::state m_state;
         const std::string m_name;
         function_type m_func;
         boost::exception_ptr m_error;
-        std::size_t m_eta;
       };
 
       typedef boost::shared_ptr<task_t> task_ptr;

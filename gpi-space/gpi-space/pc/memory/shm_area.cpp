@@ -231,7 +231,7 @@ namespace gpi
         }
       }
 
-      bool shm_area_t::unlink_after_open (const gpi::pc::type::flags_t flgs)
+      bool shm_area_t::unlink_after_open (const gpi::pc::type::flags_t)
       {
         return false;
       }
@@ -264,10 +264,10 @@ namespace gpi
       int
       shm_area_t::get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
                                               , const gpi::pc::type::memory_location_t dst
-                                              , area_t & dst_area
+                                              , area_t &
                                               , gpi::pc::type::size_t amount
-                                              , gpi::pc::type::size_t queue
-                                              , task_list_t & tasks
+                                              , gpi::pc::type::size_t
+                                              , task_list_t &
                                               )
       {
         LOG ( ERROR

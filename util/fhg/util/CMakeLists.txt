@@ -22,9 +22,6 @@ set (hdrs
   starts_with.hpp
 
   ini-parser.hpp
-  ini-parser.tcc
-  ini-parser-except.hpp
-  ini-parser-helper.hpp
 
   getenv.hpp
 
@@ -58,6 +55,8 @@ set (srcs
   remove_prefix.cpp
   read_bool.cpp
   now.cpp
+  ini-parser.cpp
+  lift_error_code_to_exception.cpp
 
   ostream_modifier.cpp
 
@@ -65,7 +64,9 @@ set (srcs
 
   parse/position.cpp
   parse/error.cpp
+  parse/ini.cpp
   parse/require.cpp
+  parse/until.cpp
 
   num.cpp
   num/show.cpp

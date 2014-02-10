@@ -100,7 +100,7 @@ namespace fhg
           }
       }
 
-      void TransitionLibraryModel::rereadAllDirectories(const QString& path)
+      void TransitionLibraryModel::rereadAllDirectories(const QString&)
       {
         //! \todo only re-read the changed directory instead of deleting everything.
         if (_fileSystemWatcher)
@@ -161,7 +161,7 @@ namespace fhg
         return parentItem->childCount();
       }
 
-      int TransitionLibraryModel::columnCount(const QModelIndex& parent) const
+      int TransitionLibraryModel::columnCount(const QModelIndex&) const
       {
         return 2;
       }

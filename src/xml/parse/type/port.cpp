@@ -131,7 +131,7 @@ namespace xml
           { }
 
 
-          void operator() (const id::ref::net& id_net) const
+          void operator() (const id::ref::net&) const
           {
             if (not _port.get().place)
             {

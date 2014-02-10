@@ -17,9 +17,9 @@
 #include <we/type/value/show.hpp>
 
 #include <gspc/net/io.hpp>
-#include <gspc/kvs/kvs.hpp>
+#include <gspc/kvs/impl/kvs_net_frontend.hpp>
 
-static void long_usage (int lvl)
+static void long_usage (int)
 {
   std::cerr
     << "usage: gspc-kvs [options] [--] [commands [args...]]"        << std::endl
@@ -120,7 +120,7 @@ namespace {
   }
 }
 
-int main (int argc, char *argv [], char *envp [])
+int main (int argc, char *argv [], char **)
 {
   int i;
   int help = 0;
@@ -278,7 +278,7 @@ int main (int argc, char *argv [], char *envp [])
 
   try
   {
-    kvs.reset (gspc::kvs::create (url));
+    kvs.reset (new gspc::kvs::kvs_net_frontend_t (url, _net_init));
   }
   catch (std::exception const &ex)
   {

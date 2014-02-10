@@ -3,6 +3,8 @@
 #include <gspc/kvs/impl/kvs_impl.hpp>
 #include <gspc/kvs/impl/kvs_net_frontend.hpp>
 
+#include <gspc/net/io.hpp>
+
 namespace gspc
 {
   namespace kvs
@@ -17,6 +19,18 @@ namespace gspc
       ~global_state_t ()
       {
         delete m_kvs;
+      }
+
+      api_t *create (std::string const &url)
+      {
+        if (url.find ("inproc://") == 0)
+        {
+          return new gspc::kvs::kvs_t (url);
+        }
+        else
+        {
+          return new gspc::kvs::kvs_net_frontend_t (url, _net_initializer);
+        }
       }
 
       int reset (std::string const &url)
@@ -39,6 +53,7 @@ namespace gspc
         return *m_kvs;
       }
     private:
+      gspc::net::initializer _net_initializer;
       api_t* m_kvs;
     };
 
@@ -46,18 +61,6 @@ namespace gspc
     {
       static global_state_t s;
       return s;
-    }
-
-    api_t *create (std::string const &url)
-    {
-      if (url.find ("inproc://") == 0)
-      {
-        return new gspc::kvs::kvs_t (url);
-      }
-      else
-      {
-        return new gspc::kvs::kvs_net_frontend_t (url);
-      }
     }
 
     int initialize (std::string const &url)

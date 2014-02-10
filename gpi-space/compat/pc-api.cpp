@@ -3,13 +3,14 @@
 #define LOG_COMPONENT "fvm-pc-compat"
 #include <fhglog/LogMacros.hpp>
 
+#include <fhg/util/ini-parser.hpp>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
 #include <we/loader/macros.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/config/parser.hpp>
 #include <gpi-space/pc/client/api.hpp>
 
 #include <boost/thread/mutex.hpp>
@@ -311,13 +312,18 @@ WE_MOD_INITIALIZE_START (fvm);
 {
   namespace fs = boost::filesystem;
 
-  gpi_space::parser::config_parser_t cfg_parser;
   fs::path config_file
     (std::string(getenv("HOME")) + "/.sdpa/configs/sdpa.rc");
 
+  boost::filesystem::path socket_path;
   try
   {
-    gpi_space::parser::parse (config_file.string(), boost::ref(cfg_parser));
+    fhg::util::ini const cfg (config_file);
+
+    shm_size = boost::lexical_cast<fvmSize_t>
+      (cfg.get ("api.compat.shm_size").get_value_or ("536870912"));
+
+    socket_path = cfg.get ("gpi.socket_path").get_value_or ("/var/tmp");
   }
   catch (std::exception const & ex)
   {
@@ -328,17 +334,11 @@ WE_MOD_INITIALIZE_START (fvm);
   // parse config files
   //     gpi.rc -> path to socket
   //     pc.rc  -> memory size?
-  shm_size =
-    boost::lexical_cast<fvmSize_t>(cfg_parser.get( "api.compat.shm_size"
-                                                 , "536870912"
-                                                 )
-                                  );
 
   int trials(10);
   while (trials --> 0)
   {
     namespace fs = boost::filesystem;
-    fs::path socket_path (cfg_parser.get("gpi.socket_path", "/var/tmp"));
     socket_path /=
       ("S-gpi-space." + boost::lexical_cast<std::string>(getuid()) + ".0");
 
