@@ -1,28 +1,21 @@
-#include <gpi-space/pc/memory/manager.hpp>
+#include <fhg/assert.hpp>
+#include <fhg/util/read_bool.hpp>
+#include <fhg/util/url.hpp>
+#include <fhg/util/url_io.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
-#include <fhg/assert.hpp>
-#include <fhg/util/url.hpp>
-#include <fhg/util/url_io.hpp>
-#include <fhg/util/read_bool.hpp>
-
 #include <gpi-space/pc/global/topology.hpp>
-
-#include <gpi-space/pc/memory/memory_transfer_t.hpp>
-#include <gpi-space/pc/memory/handle_generator.hpp>
-
-#include <string>
-
-#include <boost/shared_ptr.hpp>
-
 #include <gpi-space/pc/memory/gpi_area.hpp>
+#include <gpi-space/pc/memory/handle_generator.hpp>
+#include <gpi-space/pc/memory/manager.hpp>
+#include <gpi-space/pc/memory/memory_transfer_t.hpp>
 #include <gpi-space/pc/memory/sfs_area.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 
-#include <gpi-space/pc/global/topology.hpp>
+#include <boost/shared_ptr.hpp>
 
-#include <fhg/util/url.hpp>
+#include <string>
 
 namespace gpi
 {
