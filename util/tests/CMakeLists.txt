@@ -30,6 +30,7 @@ fhg_add_test(counter.cpp
 fhg_add_test(url.cpp
   BOOST_UNIT_TEST
   PROJECT util
+  LINK_LIBRARIES fhg-util
 )
 
 fhg_add_test(hex.cpp
