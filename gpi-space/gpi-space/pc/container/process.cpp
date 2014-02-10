@@ -27,7 +27,7 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include <gpi-space/pc/memory/factory.hpp>
+#include <gpi-space/pc/memory/shm_area.hpp>
 
 #include <fhg/util/url.hpp>
 #include <fhg/util/url_io.hpp>
@@ -154,8 +154,7 @@ namespace gpi
             if (register_segment.flags & F_EXCLUSIVE)
               url.set ("exclusive", "true");
 
-            memory::area_ptr_t area =
-              memory::factory ().create (boost::lexical_cast<std::string>(url));
+            memory::area_ptr_t area (memory::shm_area_t::create (boost::lexical_cast<std::string>(url)));
             area->set_owner (m_proc_id);
 
             gpi::pc::proto::segment::register_reply_t rpl;
