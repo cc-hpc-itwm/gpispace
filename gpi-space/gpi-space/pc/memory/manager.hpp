@@ -7,7 +7,6 @@
 #include <boost/unordered_map.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/recursive_mutex.hpp>
-#include <boost/signals2.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
@@ -25,27 +24,6 @@ namespace gpi
         typedef boost::shared_ptr<area_t> area_ptr;
 
         static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
-
-        // signals
-        typedef boost::signals2::signal
-        <void (const gpi::pc::type::segment_id_t)>
-        memory_signal_t;
-        typedef boost::signals2::signal
-        <void (const gpi::pc::type::handle_t)>
-        handle_signal_t;
-        typedef boost::signals2::signal  <void ( const gpi::pc::type::segment_id_t
-                                               , const gpi::pc::type::process_id_t
-                                               )
-                                         > process_signal_t;
-
-        memory_signal_t memory_added;
-        memory_signal_t memory_removed;
-
-        handle_signal_t handle_allocated;
-        handle_signal_t handle_freed;
-
-        process_signal_t process_attached;
-        process_signal_t process_detached;
 
         static manager_t & get()
         {

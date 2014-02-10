@@ -156,8 +156,6 @@ namespace gpi
 
           LOG(TRACE, "memory removed: " << mem_id);
         }
-
-        memory_removed (mem_id);
       }
 
       void manager_t::list_memory (gpi::pc::type::segment::list_t &l) const
@@ -190,7 +188,6 @@ namespace gpi
         if (proc_id)
         {
           area->second->attach_process (proc_id);
-          process_attached(mem_id, proc_id);
         }
       }
 
@@ -211,7 +208,6 @@ namespace gpi
         if (proc_id)
         {
           area->second->detach_process (proc_id);
-          process_detached(mem_id, proc_id);
 
           if (area->second->is_eligible_for_deletion())
           {
@@ -266,8 +262,6 @@ namespace gpi
         area->init ();
 
         LOG(TRACE, "memory registered:" << area->descriptor ());
-
-        memory_added (area->get_id ());
       }
 
       manager_t::area_ptr
@@ -350,7 +344,6 @@ namespace gpi
         area_ptr area (get_area (seg_id));
         area->remote_alloc (hdl, offset, size, local_size, name);
         add_handle (hdl, seg_id);
-        handle_allocated (hdl);
 
         return 0;
       }
@@ -371,8 +364,6 @@ namespace gpi
 
         add_handle (hdl, seg_id);
 
-        handle_allocated (hdl);
-
         return hdl;
       }
 
@@ -385,8 +376,6 @@ namespace gpi
 
         area->remote_free (hdl);
         del_handle (hdl);
-
-        handle_freed (hdl);
       }
 
       void
@@ -398,8 +387,6 @@ namespace gpi
 
         del_handle (hdl);
         area->free (hdl);
-
-        handle_freed (hdl);
       }
 
       gpi::pc::type::handle::descriptor_t
@@ -579,8 +566,6 @@ namespace gpi
             global::topology ().del_memory (seg_id);
           }
         }
-
-        memory_removed (seg_id);
       }
     }
   }
