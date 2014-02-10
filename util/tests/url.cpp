@@ -4,6 +4,10 @@
 #include <fhg/util/url.hpp>
 #include <fhg/util/url_io.hpp>
 
+#include <fhg/util/boost/test/require_exception.hpp>
+
+#include <boost/bind.hpp>
+
 BOOST_AUTO_TEST_CASE (test_url_basics)
 {
   fhg::util::url_t url;
@@ -31,15 +35,26 @@ BOOST_AUTO_TEST_CASE (test_url_ctor)
   BOOST_CHECK_EQUAL (url.get ("bar"), "baz");
 }
 
+namespace
+{
+  fhg::util::url_t ctor (std::string const& u)
+  {
+    return fhg::util::url_t (u);
+  }
+}
+
 BOOST_AUTO_TEST_CASE (test_invalid_type)
 {
-  BOOST_REQUIRE_THROW (fhg::util::url_t ("://foo"), std::invalid_argument);
+  fhg::util::boost::test::require_exception<std::invalid_argument>
+    (boost::bind (&ctor, "://foo"), "no type found in url: ://foo");
 }
 
 BOOST_AUTO_TEST_CASE (test_empty_param)
 {
-  BOOST_REQUIRE_THROW
-    (fhg::util::url_t ("file://bar?=baz"), std::invalid_argument);
+  fhg::util::boost::test::require_exception<std::invalid_argument>
+    ( boost::bind (&ctor, "file://bar?=baz")
+    , "empty parameter in url: file://bar?=baz"
+    );
 }
 
 BOOST_AUTO_TEST_CASE (parse_file_url)
