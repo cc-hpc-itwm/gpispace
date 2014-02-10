@@ -27,12 +27,10 @@ namespace gpi
         header_t ()
           : length (0)
           , flags (0)
-          , ack (0)
         {}
 
         uint32_t     length;
         uint8_t       flags;
-        uint16_t        ack;
       };
 
       typedef boost::variant< error::error_t
