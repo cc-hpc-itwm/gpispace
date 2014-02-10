@@ -1,20 +1,4 @@
-/*
- * =============================================================================
- *
- *       Filename:  id_generator.hpp
- *
- *    Description:  generates message ids
- *
- *        Version:  1.0
- *        Created:  12/13/2009 08:27:48 PM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =============================================================================
- */
+// alexander.petry@itwm.fraunhofer.de
 
 #ifndef SDPA_ID_GENERATOR_HPP
 #define SDPA_ID_GENERATOR_HPP 1
