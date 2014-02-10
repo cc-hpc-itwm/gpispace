@@ -108,7 +108,6 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
       sdpa::capabilities_set_t::iterator itwcpb = capabilities_.find(capability);
       if( itwcpb == capabilities_.end() ) {
           capabilities_.insert (capability);
-          DLLOG (TRACE, _logger, "The worker "<<name()<<" gained the capability:"<<capability);
           bModified = true;
       }
       else
