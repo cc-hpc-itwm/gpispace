@@ -87,18 +87,7 @@ namespace
 
   typedef Capability capability_t;
 
-  /**
-  * compare capabilities
-  */
-  struct Compare
-  {
-    bool operator()(const  capability_t& a, const capability_t& b)
-    {
-      return a<b;
-    }
-  };
-
-  typedef std::set<capability_t /*,Compare*/ > capabilities_set_t;
+  typedef std::set<capability_t> capabilities_set_t;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const sdpa::Capability& cpb)
