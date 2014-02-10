@@ -56,12 +56,6 @@ namespace fhg
         else
           return dflt;
       }
-
-      url_t & del (std::string const &k)
-      {
-        m_args.erase (k);
-        return *this;
-      }
     private:
       static url_t parse (std::string const &input)
       {
