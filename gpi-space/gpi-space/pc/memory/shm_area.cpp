@@ -201,36 +201,6 @@ namespace gpi
         return area_t::GROW_UP;
       }
 
-      void
-      shm_area_t::check_bounds ( const gpi::pc::type::handle::descriptor_t &hdl
-                               , const gpi::pc::type::offset_t start
-                               , const gpi::pc::type::offset_t amount
-                               ) const
-      {
-        if (! (start < hdl.size && (start + amount) <= hdl.size))
-        {
-          CLOG( ERROR
-              , "shm.memory"
-              , "out-of-bounds access:"
-              << " hdl=" << hdl
-              << " size=" << hdl.size
-              << " range=["<<start << ", " << start+amount << "]"
-              );
-          throw std::invalid_argument
-            ( std::string("out-of-bounds:")
-            + " access to shm handle"
-            + " " + boost::lexical_cast<std::string>(hdl.id)
-            +" outside boundaries"
-            + " ["
-            + boost::lexical_cast<std::string>(start)
-            + ","
-            + boost::lexical_cast<std::string>(start+amount)
-            + ")"
-            + " is not within [0, " + boost::lexical_cast<std::string>(hdl.size) + ")"
-            );
-        }
-      }
-
       bool shm_area_t::unlink_after_open (const gpi::pc::type::flags_t)
       {
         return false;

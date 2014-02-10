@@ -146,26 +146,6 @@ namespace gpi
       }
 
       void
-      gpi_area_t::check_bounds ( const gpi::pc::type::handle::descriptor_t &hdl
-                               , const gpi::pc::type::offset_t start
-                               , const gpi::pc::type::size_t   amount
-                               ) const
-      {
-        if (! (start < hdl.size && (start + amount) <= hdl.size))
-        {
-          CLOG( ERROR
-              , "gpi.memory"
-              , "out-of-bounds access:"
-              << " hdl=" << hdl
-              << " size=" << hdl.size
-              << " range=["<<start << ", " << start + amount << "]"
-              );
-          throw std::invalid_argument
-            ("out-of-bounds: access to handle outside boundaries");
-        }
-      }
-
-      void
       gpi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
         if (  gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL)

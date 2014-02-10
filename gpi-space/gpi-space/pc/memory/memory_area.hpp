@@ -168,11 +168,6 @@ namespace gpi
         virtual
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
 
-        virtual void check_bounds ( const gpi::pc::type::handle::descriptor_t &
-                                  , const gpi::pc::type::offset_t start
-                                  , const gpi::pc::type::offset_t end
-                                  ) const = 0;
-
         virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                                     , const gpi::pc::type::offset_t a
                                     , const gpi::pc::type::offset_t b

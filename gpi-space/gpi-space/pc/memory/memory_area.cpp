@@ -232,7 +232,28 @@ namespace gpi
             hdl_it (m_handles.find(loc.handle));
         if (hdl_it == m_handles.end())
           throw std::invalid_argument("check_bounds: no such handle");
-        check_bounds (hdl_it->second, loc.offset, size);
+        if (! (loc.offset < hdl_it->second.size && (loc.offset + size) <= hdl_it->second.size))
+        {
+          CLOG( ERROR
+              , "shm.memory"
+              , "out-of-bounds access:"
+              << " hdl=" << hdl_it->second
+              << " size=" << hdl_it->second.size
+              << " range=["<<loc.offset << ", " << loc.offset+size << "]"
+              );
+          throw std::invalid_argument
+            ( std::string("out-of-bounds:")
+            + " access to shm handle"
+            + " " + boost::lexical_cast<std::string>(hdl_it->second.id)
+            +" outside boundaries"
+            + " ["
+            + boost::lexical_cast<std::string>(loc.offset)
+            + ","
+            + boost::lexical_cast<std::string>(loc.offset+size)
+            + ")"
+            + " is not within [0, " + boost::lexical_cast<std::string>(hdl_it->second.size) + ")"
+            );
+        }
       }
 
       int
