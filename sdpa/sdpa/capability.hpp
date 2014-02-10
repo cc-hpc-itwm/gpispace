@@ -26,14 +26,12 @@ namespace
   public:
     explicit Capability(const std::string& name = "",
                         const std::string& type = "",
-                        const std::string& owner = "",
-                        const std::string& uuid = sdpa::id_generator::instance<cap_id_tag>().next(),
-                        size_t depth= 0)
+                        const std::string& owner = "")
     : name_(name)
     , type_(type)
-    , depth_(depth)
+    , depth_(0)
     , owner_(owner)
-    , uuid_(uuid)
+    , uuid_(sdpa::id_generator::instance<cap_id_tag>().next())
     {}
 
     std::string name() const { return name_;}
