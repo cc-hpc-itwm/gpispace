@@ -146,5 +146,11 @@ namespace sdpa
 
       return !job_map_.empty();
     }
+
+    size_t JobManager::numberOfJobs() const
+    {
+      lock_type _ (_job_map_and_requirements_mutex);
+      return job_map_.size();
+    }
   }
 }

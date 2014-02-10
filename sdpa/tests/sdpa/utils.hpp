@@ -9,6 +9,8 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 
+#include <drts/worker/drts.hpp>
+
 #include <fhg/plugin/core/kernel.hpp>
 #include <fhg/plugin/plugin.hpp>
 
@@ -120,28 +122,29 @@ namespace utils
                        , const std::string& strModulesPath
                        , const std::string& kvsHost
                        , const std::string& kvsPort
+                       , boost::function<void()> request_stop
+                       , std::map<std::string, std::string>& config_variables
                        )
     {
-      boost::shared_ptr<fhg::core::kernel_t> kernel(new fhg::core::kernel_t);
-      kernel->set_name (drtsName);
 
-      kernel->put ("plugin.kvs.host", kvsHost);
-      kernel->put ("plugin.kvs.port", kvsPort);
+      config_variables ["plugin.drts.kvs_host"] = kvsHost;
+      config_variables ["plugin.drts.kvs_port"] = kvsPort;
 
       //see ~/.sdpa/configs/sdpa.rc
 
-      kernel->put ("plugin.drts.name", drtsName);
-      kernel->put ("plugin.drts.master", masterName);
-      kernel->put ("plugin.drts.backlog", "2");
+      config_variables["kernel_name"] = drtsName;
+      config_variables ["plugin.drts.master"] = masterName;
+      config_variables ["plugin.drts.backlog"] = "2";
 
       if(!cpbList.empty())
-        kernel->put ("plugin.drts.capabilities", cpbList);
+        config_variables ["plugin.drts.capabilities"] = cpbList;
 
-      kernel->put ("plugin.drts.library_path", strModulesPath);
+      config_variables ["plugin.drts.library_path"] = strModulesPath;
 
-      kernel->load_plugin (TESTS_KVS_PLUGIN_PATH);
-      kernel->load_plugin (TESTS_DRTS_PLUGIN_PATH);
-      kernel->load_plugin (TESTS_FVM_FAKE_PLUGIN_PATH);
+      boost::shared_ptr<fhg::core::kernel_t> kernel
+        (new fhg::core::kernel_t (fhg::core::kernel_t::search_path_t(), request_stop, config_variables));
+
+      kernel->load_plugin_from_file (TESTS_FVM_FAKE_PLUGIN_PATH);
 
       return kernel;
     }
@@ -156,10 +159,12 @@ namespace utils
                 , std::string kvs_host
                 , std::string kvs_port
                 )
-      : _kernel ( createDRTSWorker
-                  (name, master.name(), capabilities, modules_path, kvs_host, kvs_port)
+      : _waiter()
+      , _config_variables()
+      , _kernel ( createDRTSWorker
+                  (name, master.name(), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop(), _config_variables)
                 )
-      , _thread (&fhg::core::kernel_t::run, _kernel)
+      , _thread (&drts_worker::thread, this)
     {
     }
     drts_worker ( std::string name
@@ -169,23 +174,28 @@ namespace utils
                 , std::string kvs_host
                 , std::string kvs_port
                 )
-      : _kernel ( createDRTSWorker
-                  (name, assemble_string (masters), capabilities, modules_path, kvs_host, kvs_port)
+      : _waiter()
+      , _config_variables()
+      , _kernel ( createDRTSWorker
+                  (name, assemble_string (masters), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop(), _config_variables)
                 )
-      , _thread (&fhg::core::kernel_t::run, _kernel)
+      , _thread (&drts_worker::thread, this)
     {
     }
 
     ~drts_worker()
     {
-      _kernel->stop();
-      if (_thread.joinable())
-      {
-        _thread.join();
-      }
-      _kernel->unload_all();
+      _waiter.stop();
     }
 
+    void thread()
+    {
+      DRTSImpl const plugin (_waiter.make_request_stop(), _config_variables);
+      _waiter.wait();
+    }
+
+    fhg::core::wait_until_stopped _waiter;
+    std::map<std::string, std::string> _config_variables;
     boost::shared_ptr<fhg::core::kernel_t> _kernel;
     boost::thread _thread;
   };
@@ -208,8 +218,8 @@ namespace utils
                                                 , const sdpa::job_id_t& id
                                                 )
     {
-      sdpa::client::job_info_t job_info;
-      return c.wait_for_terminal_state_polling (id, job_info);
+      sdpa::client::job_info_t UNUSED_job_info;
+      return c.wait_for_terminal_state_polling (id, UNUSED_job_info);
     }
 
     sdpa::client::result_t retrieve_job_results
@@ -231,8 +241,8 @@ namespace utils
     sdpa::status::code wait_for_terminal_state
       (sdpa::client::Client& c, const sdpa::job_id_t& id)
     {
-      sdpa::client::job_info_t job_info;
-      return c.wait_for_terminal_state (id, job_info);
+      sdpa::client::job_info_t UNUSED_job_info;
+      return c.wait_for_terminal_state (id, UNUSED_job_info);
     }
 
     sdpa::status::code wait_for_state_polling

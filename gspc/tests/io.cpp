@@ -6,7 +6,7 @@
 #include <gspc/net/io.hpp>
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
+#include <gspc/net/server/service_demux.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 
 #include "mock_user.hpp"
@@ -15,11 +15,12 @@
 
 BOOST_AUTO_TEST_CASE (test_initialize_shutdown)
 {
-  gspc::net::initializer _net_init;
+  gspc::net::initializer net_initializer;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
   gspc::net::server_ptr_t server =
-    gspc::net::serve ("tcp://localhost:*", qmgr);
+    gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
   BOOST_REQUIRE (server);
 
   server->stop ();
@@ -29,25 +30,25 @@ BOOST_AUTO_TEST_CASE (test_many_initialize_shutdown)
 {
   static const size_t NUM = 25;
 
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
-  boost::system::error_code ec;
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
   gspc::net::tests::mock::user subscriber;
 
   qmgr.subscribe (&subscriber, "/test", "mock-1", gspc::net::frame ());
 
   int rc;
 
+  gspc::net::initializer net_initializer;
+
   for (size_t i = 0 ; i < NUM ; ++i)
   {
-    gspc::net::initializer _net_init;
-
     gspc::net::server_ptr_t server =
-      gspc::net::serve ("tcp://localhost:*", qmgr);
+      gspc::net::serve ("tcp://localhost:*", net_initializer, qmgr);
 
     BOOST_REQUIRE (server);
 
-    gspc::net::client_ptr_t client =
-      gspc::net::dial (server->url () + "?connect_timeout=100", ec);
+    gspc::net::client_ptr_t client
+      (gspc::net::dial (server->url () + "?connect_timeout=100", net_initializer));
 
     BOOST_REQUIRE (client);
 

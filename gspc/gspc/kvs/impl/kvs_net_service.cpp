@@ -6,7 +6,6 @@
 #include <gspc/net/error.hpp>
 #include <gspc/net/frame_builder.hpp>
 #include <gspc/net/server/queue_manager.hpp>
-#include <gspc/kvs/kvs.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/num.hpp>
@@ -26,23 +25,10 @@ namespace gspc
   namespace kvs
   {
     service_t::service_t ()
-      : m_kvs (gspc::kvs::create ("inproc://"))
+      : m_kvs ("inproc://")
     {
       m_on_change_connection =
-        m_kvs->onChange.connect (boost::bind ( &service_t::on_change
-                                             , this
-                                             , _1
-                                             , _2
-                                             )
-                                );
-      setup_rpc_handler ();
-    }
-
-    service_t::service_t (std::string const &url)
-      : m_kvs (gspc::kvs::create (url))
-    {
-      m_on_change_connection =
-        m_kvs->onChange.connect (boost::bind ( &service_t::on_change
+        m_kvs.onChange.connect (boost::bind ( &service_t::on_change
                                              , this
                                              , _1
                                              , _2
@@ -54,14 +40,11 @@ namespace gspc
     service_t::~service_t ()
     {
       m_on_change_connection.disconnect ();
-      delete m_kvs;
-      m_kvs = 0;
     }
 
     gspc::kvs::api_t & service_t::api ()
     {
-      assert (m_kvs);
-      return *m_kvs;
+      return m_kvs;
     }
 
     void service_t::setup_rpc_handler ()
@@ -104,7 +87,7 @@ namespace gspc
         }
       }
 
-      return encode_error_code (rqst, m_kvs->put (values_to_put));
+      return encode_error_code (rqst, m_kvs.put (values_to_put));
     }
 
     boost::optional<gspc::net::frame>
@@ -114,7 +97,7 @@ namespace gspc
 
       api_t::value_type val;
 
-      return encode_error_code (rqst, m_kvs->get (key, val))
+      return encode_error_code (rqst, m_kvs.get (key, val))
         << pnet::type::value::show (val) << "\n";
     }
 
@@ -125,7 +108,7 @@ namespace gspc
 
       typedef std::list<std::pair<api_t::key_type, api_t::value_type> > kv_list_t;
       kv_list_t values;
-      int rc = m_kvs->get_regex (regex, values);
+      int rc = m_kvs.get_regex (regex, values);
 
       gspc::net::frame rply = encode_error_code (rqst, rc);
 
@@ -149,14 +132,14 @@ namespace gspc
     service_t::rpc_del (gspc::net::frame const &rqst)
     {
       return
-        encode_error_code (rqst, m_kvs->del (rqst.get_body ()));
+        encode_error_code (rqst, m_kvs.del (rqst.get_body ()));
     }
 
     boost::optional<gspc::net::frame>
     service_t::rpc_del_regex (gspc::net::frame const &rqst)
     {
       return
-        encode_error_code (rqst, m_kvs->del_regex (rqst.get_body ()));
+        encode_error_code (rqst, m_kvs.del_regex (rqst.get_body ()));
     }
 
     boost::optional<gspc::net::frame>
@@ -177,7 +160,7 @@ namespace gspc
       api_t::key_type key =
         fhg::util::parse::require::plain_string (pos, '\n');
 
-      return encode_error_code (rqst, m_kvs->set_ttl (key, ttl));
+      return encode_error_code (rqst, m_kvs.set_ttl (key, ttl));
     }
 
     boost::optional<gspc::net::frame>
@@ -198,7 +181,7 @@ namespace gspc
       const std::string regex =
         fhg::util::parse::require::string (pos);
 
-      return encode_error_code (rqst, m_kvs->set_ttl_regex (regex, ttl));
+      return encode_error_code (rqst, m_kvs.set_ttl_regex (regex, ttl));
     }
 
     boost::optional<gspc::net::frame>
@@ -211,7 +194,7 @@ namespace gspc
       const api_t::value_type val =
         pnet::type::value::read (pos);
 
-      return encode_error_code (rqst, m_kvs->push (key, val));
+      return encode_error_code (rqst, m_kvs.push (key, val));
     }
 
     boost::optional<gspc::net::frame>
@@ -232,7 +215,7 @@ namespace gspc
       api_t::key_type key =
         fhg::util::parse::require::plain_string (pos, '\n');
 
-      int rc = m_kvs->wait (key, events, 0);
+      int rc = m_kvs.wait (key, events, 0);
       if (rc > 0)
       {
         return encode_error_code (rqst, rc);
@@ -256,7 +239,7 @@ namespace gspc
     service_t::rpc_try_pop (gspc::net::frame const &rqst)
     {
       api_t::value_type val;
-      int rc = m_kvs->try_pop (rqst.get_body (), val);
+      int rc = m_kvs.try_pop (rqst.get_body (), val);
       gspc::net::frame rply = encode_error_code (rqst, rc);
       if (0 == rc)
       {
@@ -283,7 +266,7 @@ namespace gspc
       api_t::key_type key =
         fhg::util::parse::require::plain_string (pos, '\n');
 
-      return encode_error_code (rqst, m_kvs->counter_reset (key, val));
+      return encode_error_code (rqst, m_kvs.counter_reset (key, val));
     }
 
     boost::optional<gspc::net::frame>
@@ -306,7 +289,7 @@ namespace gspc
 
       int val;
 
-      return encode_error_code (rqst, m_kvs->counter_change (key, val, delta))
+      return encode_error_code (rqst, m_kvs.counter_change (key, val, delta))
         << val << "\n";
     }
 

@@ -147,8 +147,7 @@ if (ENABLE_PNET_EDITOR)
                           ${Boost_FILESYSTEM_LIBRARY}
                           ${Boost_PROGRAM_OPTIONS_LIBRARY}
                           ${Boost_THREAD_LIBRARY}
-                          ${QT_LIBRARIES}
-                          fhg-plugin)
+                          ${QT_LIBRARIES})
 
   install (TARGETS pnete RUNTIME DESTINATION bin COMPONENT runtime)
 
@@ -183,7 +182,7 @@ if (ENABLE_SDPA_GUI)
                           ${Boost_THREAD_LIBRARY}
                           ${QT_LIBRARIES})
 
-  install (TARGETS sdpa-gui RUNTIME DESTINATION bin COMPONENT runtime)
+  install (TARGETS gspcmonc RUNTIME DESTINATION bin COMPONENT runtime)
 
   add_subdirectory (test)
 endif()

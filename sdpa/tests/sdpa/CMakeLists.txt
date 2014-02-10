@@ -3,12 +3,11 @@ include (fhg_plugin_macros)
 add_subdirectory(workflows)
 
 include_directories(${FVM_INCLUDE_DIR})
+include_directories(${HWLOC_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/application/transform_file)
 
 set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
 set(TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory")
-set(TESTS_EXAMPLE_ATOMIC_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/atomic")
-set(TESTS_N_ATOMIC_TASKS 100)
 set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/inotify")
 set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
 set(TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/coallocation_test")
@@ -26,7 +25,6 @@ get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
 
 get_target_property(TESTS_KVS_PLUGIN_PATH kvs-plugin LOCATION)
-get_target_property(TESTS_DRTS_PLUGIN_PATH drts-plugin LOCATION)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -82,36 +80,6 @@ add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no
                    DEPENDS pnet-capabilities_no_mandatory-test-wf-gen
 )
 add_dependencies(pnet-capabilities_no_mandatory-test-wf pnetput)
-############################################################################################
-pnet_compile(atomic-test-wf ${CMAKE_SOURCE_DIR}/application/example/atomic/atomic.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic-test-wf.in.pnet
-  GENERATE atomic
-  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
-  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
-           -I${CMAKE_BINARY_DIR}/fhglog
-           -I${CMAKE_SOURCE_DIR}/application/example
-           -O3
-  BUILD
-  COMPONENT tests
-)
-
-get_target_property(ATOMIC_PNET_LOCATION pnet-atomic-test-wf LOCATION)
-get_target_property(__PNET_GEN_OUTPUTS pnet-atomic-test-wf GEN_OUTPUTS)
-set(command ${PNETPUT_LOCATION}
-       --if  "${ATOMIC_PNET_LOCATION}"
-       -p n_A=${TESTS_N_ATOMIC_TASKS}L
-       -p n_B=${TESTS_N_ATOMIC_TASKS}L
-       -p shared_file=\\"atomic_test.txt\\"
-       --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
-   )
-
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
-                   COMMAND ${command}
-                   COMMENT "putting tokens into atomic workflow: ${command}"
-                   DEPENDS pnet-atomic-test-wf-gen
-)
-
-add_dependencies(pnet-atomic-test-wf pnetput)
 ################################################################################################
 pnet_compile(inotify-test-wf ${CMAKE_SOURCE_DIR}/application/example/inotify/inotify.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
@@ -183,9 +151,9 @@ pnet_compile(coallocation_test-wf ${CMAKE_SOURCE_DIR}/application/example/coallo
 get_target_property(COALLOCATION_TEST_PNET_LOCATION pnet-coallocation_test-wf LOCATION)
 get_target_property(__PNET_GEN_OUTPUTS pnet-coallocation_test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="20L"
-                                                                        	-p n_workers_A="2L"
+                                                                        	-p n_workers_A="2UL"
                                                                         	-p n_tasks_B="10L"
-                                                                        	-p n_workers_B="3L"
+                                                                        	-p n_workers_B="3UL"
                                 --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test.pnet")
 
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test.pnet"
@@ -195,9 +163,9 @@ add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_te
 )
 
 set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="1L"
-                                                                        	-p n_workers_A="0L"
+                                                                        	-p n_workers_A="0UL"
                                                                         	-p n_tasks_B="1L"
-                                                                        	-p n_workers_B="-1L"
+                                                                        	-p n_workers_B="0UL"
                                 --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_bad_test.pnet")
 
 add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_bad_test.pnet"
@@ -207,21 +175,20 @@ add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_ba
 )
 
 set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="1L"
-                                                                        	-p n_workers_A="2L"
+                                                                        	-p n_workers_A="2UL"
                                                                         	-p n_tasks_B="1L"
-                                                                        	-p n_workers_B="3L"
-                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet")
+                                                                        	-p n_workers_B="3UL"
+                                --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet")
 
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet"
                    COMMAND ${command}
-                   COMMENT "putting tokens into stalled_workflow net: ${command}"
+                   COMMENT "putting tokens into coallocation_test2 net: ${command}"
                    DEPENDS pnet-coallocation_test-wf-gen
 )
 
 add_dependencies(pnet-coallocation_test-wf pnetput)
 ################################################################################################
 set (tests
-  test_Atomic.cpp
   test_Capabilities.cpp
   test_Coallocation.cpp
   test_Inotify.cpp
@@ -235,6 +202,7 @@ set (tests
   test_SubmitJobFails.cpp
   test_TransformFile.cpp
   test_InvalidNbWorkersReq.cpp
+  test_DiscoverJobStates.cpp
 )
 
 foreach (test ${tests})
@@ -242,6 +210,7 @@ foreach (test ${tests})
       PROJECT sdpa
       BOOST_UNIT_TEST # all of them?
       LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
@@ -249,13 +218,11 @@ foreach (test ${tests})
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Atomic, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
-      DEPENDS drts-plugin
-              fvm-fake-plugin
+      DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
               pnet-capabilities_no_mandatory-test-wf
-              pnet-atomic-test-wf
               pnet-inotify-test-wf
               pnet-transform_file-test-wf
               pnet-coallocation_test-wf
@@ -268,8 +235,7 @@ add_custom_target(sdpa-test-workflows ALL
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_bad_test.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/atomic.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/stalled_workflow.pnet"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet"
 )

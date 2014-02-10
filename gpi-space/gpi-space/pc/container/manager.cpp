@@ -1,19 +1,25 @@
-#include "manager.hpp"
+#include <gpi-space/gpi/api.hpp>
+#include <gpi-space/pc/container/manager.hpp>
+#include <gpi-space/pc/container/process.hpp>
+#include <gpi-space/pc/global/topology.hpp>
+#include <gpi-space/pc/memory/manager.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
 
-#include <boost/bind.hpp>
-
+#include <fhg/assert.hpp>
+#include <fhg/util/lift_error_code_to_exception.hpp>
 #include <fhglog/LogMacros.hpp>
 
-#include <gpi-space/gpi/api.hpp>
-#include <gpi-space/pc/global/topology.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
-#include <gpi-space/pc/memory/manager.hpp>
+#include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 
-#include <gpi-space/pc/memory/factory.hpp>
-
-// TODO remove this - currently required for register_memory
-#include <fhg/util/url.hpp>
-#include <fhg/util/url_io.hpp>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <unistd.h>
 
 namespace gpi
 {
@@ -21,144 +27,240 @@ namespace gpi
   {
     namespace container
     {
-      manager_t::manager_t (std::string const & p)
-       : m_state (ST_STOPPED)
-       , m_connector (*this, p)
-       , m_process_counter (0)
-      {}
-
       manager_t::~manager_t ()
       {
         try
         {
-          stop();
+          stop ();
         }
         catch (std::exception const & ex)
         {
-          LOG(ERROR, "error within dtor of container manager: " << ex.what());
-        }
-      }
-
-      void manager_t::add_default_memory (std::string const &url_s)
-      {
-        if (m_default_memory_urls.size () == gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID)
-          throw std::runtime_error ("too many predefined memory urls!");
-        m_default_memory_urls.push_back (url_s);
-      }
-
-      void manager_t::start ()
-      {
-        set_state (ST_STARTING);
-
-        try
-        {
-          lock_type lock (m_mutex);
-          initialize_topology ();
-          initialize_memory_manager ();
-
-          if (global::topology().is_master ())
-          {
-            MLOG (TRACE, "telling slaves to GO");
-            global::topology ().go ();
-          }
-          else
-          {
-            MLOG (TRACE, "waiting for master to say GO");
-            global::topology ().wait_for_go ();
-          }
-
-          m_connector.start ();
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "manager could not be started: " << ex.what());
-          set_state (ST_STOPPED);
-          throw;
+          LOG(ERROR, "error within ~manager_t: " << ex.what());
         }
 
-        set_state (ST_STARTED);
-      }
-
-      void manager_t::stop ()
-      {
-        set_state (ST_STOPPING);
-
-        {
-          lock_type lock (m_mutex);
-          m_connector.stop ();
           while (! m_processes.empty())
           {
             detach_process (m_processes.begin()->first);
           }
 
-          global::memory_manager().clear();
-          shutdown_topology ();
-        }
-
-        garbage_collect();
-
-        set_state (ST_STOPPED);
+        _memory_manager.clear();
+        global::topology().stop();
       }
 
-      manager_t::state_t manager_t::get_state () const
+      void manager_t::start ()
       {
-        lock_type lcok (m_state_mutex);
-        return m_state;
-      }
+        lock_type lock (m_mutex);
 
-      void manager_t::require_state (const state_t s) const
-      {
-        if (get_state () != s)
+        if (m_socket >= 0)
+          return;
+
+        m_stopping = false;
+        int err = safe_unlink (m_path);
+        if (err < 0)
         {
-          throw std::runtime_error ("state error: manager is in wrong state");
+          LOG(ERROR, "could not unlink path " << m_path << ": " <<  strerror(-err));
+          throw std::runtime_error ("could not unlink socket path");
         }
-      }
 
-      void manager_t::set_state (const state_t new_state)
-      {
-        static bool table [NUM_STATES][NUM_STATES] =
-          {
-       // STOPPED   STARTING   STARTED  STOPPING
-            {1,        1,         0,       1}, // STOPPED
-            {1,        0,         1,       1}, // STARTING
-            {0,        0,         0,       1}, // STARTED
-            {1,        0,         0,       0}, // STOPPING
-          };
-
-        lock_type lcok (m_state_mutex);
-        if (table[m_state][new_state] == 0)
-          throw std::runtime_error ("invalid transition");
+        int fd (open_socket (m_path));
+        if (fd < 0)
+        {
+          LOG(ERROR, "could not open socket: " << strerror(-fd));
+          throw std::runtime_error ("could not open socket");
+        }
         else
-          m_state = new_state;
+        {
+          m_socket = fd;
+
+          m_listener = thread_t
+            (new boost::thread(boost::bind( &manager_t::listener_thread_main
+                                          , this
+                                          , m_socket
+                                          )
+                              )
+            );
+        }
       }
 
-      void manager_t::initialize_memory_manager ()
+      void manager_t::stop ()
       {
-        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-        global::memory_manager ().start ( gpi_api.rank ()
-                                        , gpi_api.number_of_queues ()
-                                        );
-
-        if (global::topology ().is_master ())
+        lock_type lock (m_mutex);
+        if (m_socket >= 0)
         {
-          typedef std::vector<std::string> url_list_t;
-          url_list_t::iterator it = m_default_memory_urls.begin ();
-          url_list_t::iterator end = m_default_memory_urls.end ();
-          gpi::pc::type::id_t id = 1;
-          for ( ; it != end ; ++it)
+          m_stopping = true;
+
+          safe_unlink (m_path);
+          close_socket (m_socket);
+          assert (m_listener);
+          if (boost::this_thread::get_id() != m_listener->get_id())
           {
-            global::memory_manager ().add_memory
-              ( 0 // owner
-              , *it
-              , id
-              );
-            ++id;
+            m_listener->join ();
+            m_listener.reset ();
+          }
+          m_socket = -1;
+        }
+      }
+
+      void manager_t::close_socket (const int fd)
+      {
+        fhg::util::lift_error_code_to_exception
+          (shutdown (fd, SHUT_RDWR), "close_socket: shutdown");
+        fhg::util::lift_error_code_to_exception
+          (close (fd), "close_socket: close");
+      }
+
+      int manager_t::open_socket (std::string const & path)
+      {
+        int sfd, err;
+        struct sockaddr_un my_addr;
+        const std::size_t backlog_size (16);
+
+        sfd = socket (AF_UNIX, SOCK_STREAM, 0);
+        if (sfd == -1)
+        {
+          err = errno;
+          LOG(ERROR, "could not create unix socket: " << strerror(err));
+          return -err;
+        }
+        setsockopt (sfd, SOL_SOCKET, SO_PASSCRED, (void*)1, 1);
+
+        memset (&my_addr, 0, sizeof(my_addr));
+        my_addr.sun_family = AF_UNIX;
+        strncpy ( my_addr.sun_path
+                , path.c_str()
+                , sizeof(my_addr.sun_path) - 1
+                );
+
+        if (bind( sfd
+                , (struct sockaddr *)&my_addr
+                , sizeof(struct sockaddr_un)
+                ) == -1
+           )
+        {
+          err = errno;
+          LOG(ERROR, "could not bind to socket at path " << path << ": " << strerror(err));
+          close (sfd);
+          return -err;
+        }
+        chmod (path.c_str(), 0700);
+
+        if (listen(sfd, backlog_size) == -1)
+        {
+          err = errno;
+          LOG(ERROR, "could not listen on socket: " << strerror(err));
+          close (sfd);
+          unlink (path.c_str());
+          return -err;
+        }
+
+        return sfd;
+      }
+
+      int manager_t::safe_unlink(std::string const & path)
+      {
+        struct stat st;
+        int err (0);
+
+        if (stat (path.c_str(), &st) == 0)
+        {
+          if (S_ISSOCK(st.st_mode))
+          {
+            unlink (path.c_str());
+            err = 0;
+          }
+          else
+          {
+            err = EINVAL;
+          }
+        }
+
+        return -err;
+      }
+
+      void manager_t::listener_thread_main(const int fd)
+      {
+        int cfd, err;
+        struct sockaddr_un peer_addr;
+        socklen_t peer_addr_size;
+
+        for (;;)
+        {
+          peer_addr_size = sizeof(struct sockaddr_un);
+          cfd = accept( fd
+                      , (struct sockaddr*)&peer_addr
+                      , &peer_addr_size
+                      );
+          if (cfd == -1)
+          {
+            err = errno;
+            if (! m_stopping)
+            {
+              LOG(ERROR, "could not accept: " << strerror(err));
+
+              if (err)
+              {
+                LOG( ERROR
+                   , "connector had an error: " << strerror (err) << ", restarting it"
+                   );
+
+                stop ();
+                start ();
+              }
+            }
+            break;
+          }
+
+          try
+          {
+            gpi::pc::type::process_id_t const id (m_process_counter.inc());
+
+            {
+              boost::mutex::scoped_lock const _ (_mutex_processes);
+
+              m_processes.insert
+                ( id
+                , std::auto_ptr<process_t>
+                  ( new process_t
+                    ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
+                    , id
+                    , fd
+                    , _memory_manager
+                    )
+                  )
+                );
+            }
+
+            CLOG( INFO
+                , "gpi.container"
+                , "process container " << id << " attached"
+                );
+          }
+          catch (std::exception const & ex)
+          {
+            LOG(ERROR, "could not handle new connection: " << ex.what());
+            close_socket (cfd);
           }
         }
       }
 
-      void manager_t::initialize_topology ()
+      manager_t::manager_t
+        ( std::string const & p
+        , std::vector<std::string> const& default_memory_urls
+        , memory::manager_t& memory_manager
+        )
+          : m_path (p)
+          , m_socket (-1)
+          , m_stopping (false)
+          , m_process_counter (0)
+          , _memory_manager (memory_manager)
       {
+        if ( default_memory_urls.size ()
+           >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
+           )
+        {
+          throw std::runtime_error ("too many predefined memory urls!");
+        }
+
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
         global::topology().start( gpi_api.rank()
                                 , global::topology_t::any_addr()
@@ -176,29 +278,39 @@ namespace gpi
         {
           global::topology().establish();
         }
-      }
+        _memory_manager.start ( gpi_api.rank ()
+                                        , gpi_api.number_of_queues ()
+                                        );
 
-      void manager_t::shutdown_topology ()
-      {
-        global::topology().stop();
-      }
+        if (global::topology ().is_master ())
+        {
+          gpi::pc::type::id_t id = 1;
+          BOOST_FOREACH (std::string const& url, default_memory_urls)
+          {
+            _memory_manager.add_memory
+              ( 0 // owner
+              , url
+              , id
+              );
+            ++id;
+          }
+        }
 
-      void manager_t::attach_process (process_ptr_t proc)
-      {
-        lock_type lock (m_mutex);
+          if (global::topology().is_master ())
+          {
+            global::topology ().go ();
+          }
+          else
+          {
+            global::topology ().wait_for_go ();
+          }
 
-        m_processes[proc->get_id()] = proc;
-        m_processes[proc->get_id()]->start ();
-
-        CLOG( INFO
-            , "gpi.container"
-            , "process container " << proc->get_id() << " attached"
-            );
+          start ();
       }
 
       void manager_t::detach_process (const gpi::pc::type::process_id_t id)
       {
-        lock_type lock (m_mutex);
+        boost::mutex::scoped_lock const _ (_mutex_processes);
 
         if (m_processes.find (id) == m_processes.end())
         {
@@ -209,12 +321,9 @@ namespace gpi
           throw std::runtime_error ("no such process");
         }
 
-        process_ptr_t proc (m_processes.at (id));
-        m_detached_processes.push_back (proc);
         m_processes.erase (id);
-        proc->stop ();
 
-        global::memory_manager().garbage_collect (id);
+        _memory_manager.garbage_collect (id);
 
         CLOG( INFO
             , "gpi.container"
@@ -222,218 +331,15 @@ namespace gpi
             );
       }
 
-      void manager_t::garbage_collect ()
-      {
-        lock_type lock (m_mutex);
-        while (!m_detached_processes.empty())
-        {
-          m_detached_processes.pop_front();
-        }
-      }
-
-      void manager_t::handle_new_connection (int fd)
-      {
-        garbage_collect();
-
-        gpi::pc::type::process_id_t proc_id (m_process_counter.inc());
-
-        process_ptr_t proc (new process_type (*this, proc_id, fd));
-        attach_process (proc);
-      }
-
-      void manager_t::handle_connector_error (int error)
-      {
-        if (error)
-        {
-          state_t st (get_state());
-          if (st == ST_STOPPING || st == ST_STOPPED)
-          {
-            LOG( WARN
-               , "ignoring error " << error << " (" << strerror(error) << ") in connector"
-               );
-          }
-          else
-          {
-            LOG( ERROR
-               , "connector had an error: " << strerror (error) << ", restarting it"
-               );
-
-            lock_type lock(m_mutex);
-            m_connector.stop ();
-            m_connector.start ();
-          }
-        }
-      }
-
       void manager_t::handle_process_error( const gpi::pc::type::process_id_t proc_id
                                           , int error
                                           )
       {
-        state_t st (get_state());
-        if (st == ST_STOPPING || st == ST_STOPPED)
-        {
-          LOG_IF ( DEBUG
-                 , error != 0
-                 , "ignoring process container error during stop: pc = " << proc_id << " error = " << strerror(error)
-                 );
-        }
-        else
-        {
           LOG_IF ( ERROR
                  , error != 0
                  , "process container " << proc_id << " died: " << strerror (error)
                  );
           detach_process (proc_id);
-        }
-      }
-
-      gpi::pc::type::segment_id_t manager_t::register_segment ( const gpi::pc::type::process_id_t pc_id
-                                                              , std::string const & name
-                                                              , const gpi::pc::type::size_t sz
-                                                              , const gpi::pc::type::flags_t flags
-                                                              )
-      {
-        // TODO: refactor here
-
-        using namespace gpi::pc;
-
-        fhg::util::url_t url;
-        url.type ("shm");
-        url.path (name);
-        url.set ("size", boost::lexical_cast<std::string>(sz));
-        if (flags & F_PERSISTENT)
-          url.set ("persistent", "true");
-        if (flags & F_EXCLUSIVE)
-          url.set ("exclusive", "true");
-
-        memory::area_ptr_t area =
-          memory::factory ().create (boost::lexical_cast<std::string>(url));
-        area->set_owner (pc_id);
-        return global::memory_manager().register_memory (pc_id, area);
-      }
-
-      void manager_t::unregister_segment ( const gpi::pc::type::process_id_t proc_id
-                                         , const gpi::pc::type::segment_id_t seg_id
-                                         )
-      {
-        global::memory_manager().unregister_memory (proc_id, seg_id);
-      }
-
-      void manager_t::list_segments ( const gpi::pc::type::process_id_t proc_id
-                                    , gpi::pc::type::segment::list_t &l
-                                    ) const
-      {
-        global::memory_manager().list_memory (l);
-      }
-
-      void manager_t::attach_process_to_segment ( const gpi::pc::type::process_id_t proc_id
-                                                , const gpi::pc::type::segment_id_t seg_id
-                                                )
-      {
-        global::memory_manager().attach_process (proc_id, seg_id);
-      }
-
-      void manager_t::detach_process_from_segment ( const gpi::pc::type::process_id_t proc_id
-                                                  , const gpi::pc::type::segment_id_t seg_id
-                                                  )
-      {
-        global::memory_manager().detach_process (proc_id, seg_id);
-      }
-
-      void
-      manager_t::collect_info (gpi::pc::type::info::descriptor_t &info) const
-      {
-        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-
-        info.rank = gpi_api.rank();
-        info.nodes = gpi_api.number_of_nodes();
-        info.queues = gpi_api.number_of_queues();
-        info.queue_depth = gpi_api.queue_depth();
-      }
-
-      gpi::pc::type::handle_t
-      manager_t::alloc ( const gpi::pc::type::process_id_t proc_id
-                       , const gpi::pc::type::segment_id_t seg_id
-                       , const gpi::pc::type::size_t size
-                       , const std::string & name
-                       , const gpi::pc::type::flags_t flags
-                       )
-      {
-//        check_permissions (permission::alloc_t (proc_id, seg_id));
-        return global::memory_manager().alloc ( proc_id
-                                              , seg_id
-                                              , size
-                                              , name
-                                              , flags
-                                              );
-      }
-
-      void
-      manager_t::free ( const gpi::pc::type::process_id_t proc_id
-                      , const gpi::pc::type::handle_id_t hdl
-                      )
-      {
-//        check_permissions (permission::free_t (proc_id, hdl));
-        global::memory_manager().free (hdl);
-      }
-
-      gpi::pc::type::handle::descriptor_t
-      manager_t::info ( const gpi::pc::type::process_id_t
-                      , const gpi::pc::type::handle_id_t hdl
-                      ) const
-      {
-//        check_permissions (permission::info_t (proc_id, hdl));
-        return global::memory_manager().info (hdl);
-      }
-
-      void
-      manager_t::list_allocations ( const gpi::pc::type::process_id_t proc_id
-                                  , const gpi::pc::type::segment_id_t seg_id
-                                  , gpi::pc::type::handle::list_t & list
-                                  ) const
-      {
-//        check_permissions (permission::list_allocations_t (proc_id, seg_id));
-        if (seg_id == gpi::pc::type::segment::SEG_INVAL)
-          global::memory_manager().list_allocations(proc_id, list);
-        else
-          global::memory_manager().list_allocations (proc_id, seg_id, list);
-      }
-
-      gpi::pc::type::queue_id_t
-      manager_t::memcpy ( const gpi::pc::type::process_id_t proc_id
-                        , gpi::pc::type::memory_location_t const & dst
-                        , gpi::pc::type::memory_location_t const & src
-                        , const gpi::pc::type::size_t amount
-                        , const gpi::pc::type::queue_id_t queue
-                        )
-      {
-        gpi::pc::type::validate (dst.handle);
-        gpi::pc::type::validate (src.handle);
-        return global::memory_manager().memcpy (proc_id, dst, src, amount, queue);
-      }
-
-      gpi::pc::type::size_t
-      manager_t::wait_on_queue ( const gpi::pc::type::process_id_t proc_id
-                               , const gpi::pc::type::queue_id_t queue
-                               )
-      {
-        return global::memory_manager().wait_on_queue (proc_id, queue);
-      }
-
-      gpi::pc::type::segment_id_t
-      manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
-                            , std::string const &url
-                            )
-      {
-        return global::memory_manager ().add_memory (proc_id, url);
-      }
-
-      void
-      manager_t::del_memory ( const gpi::pc::type::process_id_t proc_id
-                            , gpi::pc::type::segment_id_t seg_id
-                            )
-      {
-        global::memory_manager ().del_memory (proc_id, seg_id);
       }
     }
   }

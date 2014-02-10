@@ -869,7 +869,7 @@ static int cleanup_kvs ()
     std::string peer_name = fhg::com::p2p::to_string
       (fhg::com::p2p::address_t ("gpi-"+boost::lexical_cast<std::string>(rnk)));
     std::string kvs_key = "p2p.peer." + peer_name;
-    fhg::com::kvs::del (kvs_key);
+    fhg::com::kvs::global_kvs()->del (kvs_key);
   }
   return 0;
 }
@@ -887,7 +887,8 @@ static int configure_kvs (const config_t *cfg)
     // workaround until we have the above structure
     // put/del some entry to check the connection
     fhg::com::kvs::scoped_entry_t
-      ( "kvs.connection.check"
+      ( fhg::com::kvs::global_kvs()
+      , "kvs.connection.check"
       , "dummy value"
       );
   }
@@ -913,19 +914,11 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
 
   try
   {
-    global_container_mgr =
-      new gpi::pc::container::manager_t (cfg->socket);
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
-
-    for ( std::vector<std::string>::iterator url_it = mem_urls.begin ()
-        ; url_it != mem_urls.end ()
-        ; ++url_it
-        )
-    {
-      global_container_mgr->add_default_memory (*url_it);
-    }
-    global_container_mgr->start ();
+    global_container_mgr =
+      new gpi::pc::container::manager_t
+        (cfg->socket, mem_urls, gpi::pc::global::memory_manager());
   }
   catch (std::exception const & ex)
   {
@@ -1014,8 +1007,6 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
   {
     do { } while (!stop_requested && pause() == -1 && errno == EINTR);
   }
-
-  global_container_mgr->stop ();
 
   return EXIT_SUCCESS;
 }

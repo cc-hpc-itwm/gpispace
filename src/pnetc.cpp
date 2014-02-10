@@ -230,7 +230,7 @@ int main (int argc, char** argv)
     )
     ( "output,o"
     , po::value<std::string>(&output)->default_value(output)
-    , "output file name, - for stdout, second positional parameter"
+    , "output file name, - for stdout, second positional parameter, empty for no output (syntax check + generate only)"
     )
     ;
 
@@ -317,8 +317,11 @@ int main (int argc, char** argv)
       list_dependencies (state, input);
     }
 
-    std::ofstream out (output.c_str());
-    out << xml::parse::xml_to_we (function, state).to_string();
+    if (!output.empty())
+    {
+      std::ofstream out (output.c_str());
+      out << xml::parse::xml_to_we (function, state).to_string();
+    }
   }
   catch (const std::exception& ex)
   {

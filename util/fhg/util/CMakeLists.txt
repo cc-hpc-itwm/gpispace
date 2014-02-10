@@ -22,9 +22,6 @@ set (hdrs
   starts_with.hpp
 
   ini-parser.hpp
-  ini-parser.tcc
-  ini-parser-except.hpp
-  ini-parser-helper.hpp
 
   getenv.hpp
 
@@ -54,9 +51,12 @@ set (srcs
   pidfile_writer.cpp
   program_info.c
   threadname.cpp
+  random_string.cpp
   remove_prefix.cpp
   read_bool.cpp
   now.cpp
+  ini-parser.cpp
+  lift_error_code_to_exception.cpp
 
   ostream_modifier.cpp
 
@@ -64,7 +64,9 @@ set (srcs
 
   parse/position.cpp
   parse/error.cpp
+  parse/ini.cpp
   parse/require.cpp
+  parse/until.cpp
 
   num.cpp
   num/show.cpp
@@ -92,8 +94,17 @@ set_target_properties(fhg-util-shared
              VERSION     1
 )
 
-target_link_libraries (fhg-util ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY})
-target_link_libraries (fhg-util-shared ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY})
+target_link_libraries (fhg-util
+  ${Boost_THREAD_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${Boost_RANDOM_LIBRARY}
+)
+target_link_libraries (fhg-util-shared
+  ${Boost_THREAD_LIBRARY}
+  ${Boost_SYSTEM_LIBRARY}
+  ${Boost_RANDOM_LIBRARY}
+  )
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util

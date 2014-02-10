@@ -32,6 +32,7 @@
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/id_generator.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -171,10 +172,6 @@ namespace
       ("logging.file", po::value<std::string>(),
       "redirect log output to this file")
       ("logging.tostderr", "output to stderr")
-      ;
-    network_opts_.add_options()
-      ("network.timeout", po::value<unsigned int>(),
-      "maximum time to wait for a reply (in milliseconds)")
       ;
     specific_opts_.add_options()
       ( "orchestrator"
@@ -317,6 +314,7 @@ int main (int argc, char **argv) {
      "results: \tretrieve the results of a job, arg must specify the job-id\n"
      "delete: \tdelete a finished job, arg must specify the job-id\n"
      "wait: \twait until the job reaches a final state\n"
+     "discover: \tdiscover the states of the known jobs\n"
      )
     ;
   cfg.tool_hidden_opts().add_options()
@@ -468,12 +466,6 @@ int main (int argc, char **argv) {
     sdpa::client::Client api ( cfg.is_set("orchestrator")
                              ? cfg.get<std::string>("orchestrator")
                              : throw std::runtime_error ("no orchestrator specified!")
-                             , cfg.is_set("network.timeout")
-                             ? boost::optional<boost::posix_time::time_duration>
-                               ( cfg.get<boost::posix_time::milliseconds>
-                                 ("network.timeout")
-                               )
-                             : boost::none
                              );
 
     if (command == "submit")
@@ -581,6 +573,19 @@ int main (int argc, char **argv) {
         return JOB_ID_MISSING;
       }
       api.deleteJob(args.front());
+    }
+    else if (command == "discover")
+    {
+      if (args.empty())
+      {
+          std::cerr << "E: job-id required" << std::endl;
+          return JOB_ID_MISSING;
+      }
+
+      const we::layer::id_type discover_id (sdpa::id_generator ("discover_id").next());
+      const std::string job_id (args.front());
+      sdpa::discovery_info_t discovery_result (api.discoverJobStates(discover_id, job_id));
+      std::cout<<"discovery result: "<<discovery_result<<std::endl;
     }
     else
     {

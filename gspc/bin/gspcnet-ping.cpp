@@ -114,7 +114,6 @@ public:
 int main (int argc, char *argv[])
 {
   std::string url;
-  gspc::net::client_ptr_t client;
   size_t interval = 1000;
   long deadline = -1;
   size_t count = 0;
@@ -167,13 +166,11 @@ int main (int argc, char *argv[])
   if (0 == interval)
     interval = 1;
 
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
 
   reply_frame_handler_t reply_handler;
 
-  boost::system::error_code ec;
-
-  client = gspc::net::dial (url, ec);
+  gspc::net::client_ptr_t client (gspc::net::dial (url, net_initializer));
   client->onFrame.connect (boost::bind ( &reply_frame_handler_t::handle_frame
                                        , &reply_handler
                                        , _1
@@ -247,7 +244,6 @@ int main (int argc, char *argv[])
   reply_handler.dump_stats_to (std::cerr);
 
   client->stop ();
-  gspc::net::shutdown ();
 
   return reply_handler.recv > 0 ? 0 : 1;
 }

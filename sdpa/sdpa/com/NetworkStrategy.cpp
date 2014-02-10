@@ -28,6 +28,7 @@ namespace sdpa
       , m_peer ( new fhg::com::peer_t ( peer_name
                                       , fhg::com::host_t (host)
                                       , fhg::com::port_t (port)
+                                      , fhg::com::kvs::global_kvs()
                                       )
                )
       , m_message()

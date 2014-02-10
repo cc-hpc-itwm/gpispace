@@ -16,7 +16,7 @@ struct F
 
 struct handler_t : gspc::rif::process_handler_t
 {
-  void onStateChange (gspc::rif::proc_t p, gspc::rif::process_state_t s)
+  void onStateChange (gspc::rif::proc_t, gspc::rif::process_state_t s)
   {
     state = s;
   }

@@ -10,7 +10,6 @@
 #include <boost/signals2.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/type/counter.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 #include <gpi-space/pc/memory/transfer_manager.hpp>
 
@@ -109,8 +108,7 @@ namespace gpi
                              ) const;
 
         gpi::pc::type::queue_id_t
-        memcpy ( const gpi::pc::type::process_id_t proc_id
-               , gpi::pc::type::memory_location_t const & dst
+        memcpy ( gpi::pc::type::memory_location_t const & dst
                , gpi::pc::type::memory_location_t const & src
                , const gpi::pc::type::size_t amount
                , const gpi::pc::type::queue_id_t queue
@@ -150,7 +148,6 @@ namespace gpi
         typedef boost::unordered_map< gpi::pc::type::handle_t
                                     , gpi::pc::type::segment_id_t
                                     > handle_to_segment_t;
-        typedef boost::unordered_set<area_ptr> garbage_areas_t;
 
         manager_t ();
 
@@ -166,9 +163,7 @@ namespace gpi
 
         mutable mutex_type m_mutex;
         gpi::pc::type::id_t m_ident;
-        gpi::pc::type::counter_t m_segment_counter;
         area_map_t m_areas;
-        garbage_areas_t m_garbage_areas;
         handle_to_segment_t m_handle_to_segment;
         transfer_manager_t m_transfer_mgr;
       };

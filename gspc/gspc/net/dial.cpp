@@ -1,4 +1,4 @@
-#include "dial.hpp"
+#include <gspc/net/dial.hpp>
 
 #include <string>
 
@@ -8,7 +8,6 @@
 
 #include <fhg/util/url.hpp>
 
-#include <gspc/net/io.hpp>
 #include <gspc/net/constants.hpp>
 #include <gspc/net/option.hpp>
 #include <gspc/net/resolver.hpp>
@@ -21,167 +20,79 @@ namespace gspc
 {
   namespace net
   {
-    template <typename Client>
-    void s_set_options ( Client *client
-                       , option_map_t const &opts
-                       , boost::system::error_code & ec
-                       )
+    namespace
     {
-      client->set_timeout
-        (get_option ( opts
-                    , "timeout"
-                    , -1
-                    , ec
-                    )
-        );
-      client->set_connect_timeout
-        (get_option ( opts
-                    , "connect_timeout"
-                    , gspc::net::constants::CONNECT_TIMEOUT ()
-                    , ec
-                    )
-        );
-    }
-
-    static
-    client_ptr_t s_new_unix_client ( boost::asio::io_service & io
-                                   , std::string const & path
-                                   , option_map_t const &opts
-                                   , boost::system::error_code & ec
+      client_ptr_t new_unix_client ( boost::asio::io_service & io
+                                   , std::string const & location
                                    )
-    {
-      namespace fs = boost::filesystem;
-      using namespace gspc::net::client;
-
-      try
       {
-        fs::path full_path = fs::absolute (path);
+        client::unix_client::endpoint_type ep
+          (resolver<client::unix_client::protocol_type>::resolve (location));
 
-        unix_client::endpoint_type ep;
-        ep = resolver<unix_client::protocol_type>::resolve
-          (full_path.string (), ec);
-        if (ec)
-          return client_ptr_t ();
-
-        unix_client *c = new unix_client (io, ep);
-        s_set_options (c, opts, ec);
-        return client_ptr_t (c);
-      }
-      catch (boost::system::system_error const &se)
-      {
-        ec = se.code ();
+        return client_ptr_t (new client::unix_client (io, ep));
       }
 
-      return client_ptr_t ();
-    }
-
-    static
-    client_ptr_t s_new_tcp_client ( boost::asio::io_service & io
+      client_ptr_t new_tcp_client ( boost::asio::io_service & io
                                   , std::string const & location
-                                  , option_map_t const &opts
-                                  , boost::system::error_code & ec
                                   )
-    {
-      using namespace gspc::net::client;
-
-      try
       {
-        tcp_client::endpoint_type ep;
-        ep = resolver<tcp_client::protocol_type>::resolve ( location
-                                                          , ec
-                                                          );
-        if (ec)
-          return client_ptr_t ();
+        client::tcp_client::endpoint_type ep
+          (resolver<client::tcp_client::protocol_type>::resolve (location));
 
-        tcp_client *c = new tcp_client (io, ep);
-        s_set_options (c, opts, ec);
-        return client_ptr_t (c);
+        return client_ptr_t (new client::tcp_client (io, ep));
       }
-      catch (boost::system::system_error const &se)
-      {
-        ec = se.code ();
-      }
-
-      return client_ptr_t ();
-    }
-
-    client_ptr_t dial (std::string const &url)
-    {
-      boost::system::error_code ec;
-      client_ptr_t client = dial (url, ec);
-
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
-      }
-
-      return client;
     }
 
     client_ptr_t dial ( std::string const &url_s
-                      , boost::system::error_code & ec
+                      , boost::asio::io_service& io_service
                       )
     {
-      gspc::net::initialize ();
-
-      using namespace boost::system;
-
-      ec = errc::make_error_code (errc::success);
-
-      client_ptr_t client;
-
       const fhg::util::url_t url (url_s);
 
-      if (url.type () == "unix")
-      {
-        client = s_new_unix_client ( gspc::net::io ()
-                                   , url.path ()
-                                   , url.args ()
-                                   , ec
-                                   );
-      }
-      else if (url.type () == "tcp")
-      {
-        client = s_new_tcp_client ( gspc::net::io ()
-                                  , url.path ()
-                                  , url.args ()
-                                  , ec
-                                  );
-      }
-      else
-      {
-        ec = errc::make_error_code (errc::wrong_protocol_type);
-      }
+      client_ptr_t client
+        ( url.type () == "unix" ? new_unix_client (io_service, boost::filesystem::absolute (url.path ()).string())
+        : url.type () == "tcp" ? new_tcp_client (io_service, url.path ())
+        : throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::wrong_protocol_type))
+        );
 
-      if (client)
-      {
-        int rc;
+      client->set_timeout
+        (get_option ( url.args()
+                    , "timeout"
+                    , -1
+                    )
+        );
+      client->set_connect_timeout
+        (get_option ( url.args()
+                    , "connect_timeout"
+                    , gspc::net::constants::CONNECT_TIMEOUT()
+                    )
+        );
 
-        rc = client->start ();
+
+        int rc (client->start ());
         if (0 != rc)
         {
           if (-ECONNREFUSED == rc)
           {
-            ec = errc::make_error_code (errc::connection_refused);
+            throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::connection_refused));
           }
           else if (-ETIME == rc)
           {
-            ec = errc::make_error_code (errc::stream_timeout);
+            throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::stream_timeout));
           }
           else if (-EPERM == rc)
           {
-            ec = errc::make_error_code (errc::permission_denied);
+            throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::permission_denied));
           }
           else if (E_UNAUTHORIZED == rc)
           {
-            ec = errc::make_error_code (errc::operation_not_permitted);
+            throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::operation_not_permitted));
           }
           else
           {
-            ec = errc::make_error_code (errc::protocol_error);
+            throw boost::system::system_error (boost::system::errc::make_error_code (boost::system::errc::protocol_error));
           }
         }
-      }
 
       return client;
     }

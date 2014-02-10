@@ -13,4 +13,10 @@
 #define FHG_ATTRIBUTE_NORETURN
 #endif
 
+#ifndef NDEBUG
+#define IFNDEF_NDEBUG(x...) x
+#else
+#define IFNDEF_NDEBUG(x...)
+#endif
+
 #endif

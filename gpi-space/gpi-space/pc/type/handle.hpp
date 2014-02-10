@@ -90,44 +90,17 @@ namespace gpi
 
       inline std::size_t hash_value (const handle_t& x)
       {
-        boost::hash<handle_id_t> hasher;
-        return hasher (x.handle);
-      }
-
-      inline
-      bool is_valid (const handle_t & hdl)
-      {
-        return hdl.type != 0;
+        return boost::hash<handle_id_t>() (x.handle);
       }
 
       inline
       void validate (const handle_t & hdl)
       {
-        if (! is_valid (hdl))
+        if (hdl.type == 0)
         {
           throw std::invalid_argument
-            ("invalid handle: " + boost::lexical_cast<std::string>(hdl));
+            ("invalid handle: " + boost::lexical_cast<std::string>(hdl.handle));
         }
-      }
-
-      inline
-      std::ostream & operator << (std::ostream & os, const handle_t h)
-      {
-        const std::ios_base::fmtflags saved_flags (os.flags());
-        const char saved_fill = os.fill (' ');
-        const std::size_t saved_width = os.width (0);
-
-        os << "0x";
-        os.flags (std::ios::hex);
-        os.width (handle_t::string_length - 2);
-        os.fill ('0');
-        os << h.handle;
-
-        os.flags (saved_flags);
-        os.fill (saved_fill);
-        os.width (saved_width);
-
-        return os;
       }
 
       inline

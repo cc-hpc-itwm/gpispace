@@ -29,7 +29,7 @@ static int resolve ( std::string const &search_path
                    , std::vector<std::string> & argv
                    );
 
-int main (int argc, char *argv [], char *envp [])
+int main (int argc, char *argv [], char **)
 {
   int i;
   int verbose = 0;
@@ -255,7 +255,7 @@ void short_usage ()
   std::cerr << "usage: gspc [options] [--] [command [args...]]" << std::endl;
 }
 
-void long_usage (int lvl)
+void long_usage (int)
 {
   std::cerr
     << "usage: gspc [options] [--] [command [args...]]"             << std::endl

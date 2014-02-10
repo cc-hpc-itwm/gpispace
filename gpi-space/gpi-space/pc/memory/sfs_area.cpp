@@ -519,7 +519,7 @@ namespace gpi
       }
 
       area_t::grow_direction_t
-      sfs_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
+      sfs_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {
         // we do not support multiple arenas in this memory type
         return GROW_UP;
@@ -579,9 +579,9 @@ namespace gpi
       }
 
       bool
-      sfs_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &hdl
-                                , const gpi::pc::type::offset_t begin
-                                , const gpi::pc::type::offset_t end
+      sfs_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &
+                                , const gpi::pc::type::offset_t
+                                , const gpi::pc::type::offset_t
                                 ) const
       {
         return true;
@@ -589,19 +589,19 @@ namespace gpi
 
       gpi::pc::type::size_t
       sfs_area_t::get_local_size ( const gpi::pc::type::size_t size
-                                 , const gpi::pc::type::flags_t flgs
+                                 , const gpi::pc::type::flags_t
                                  ) const
       {
         return size;
       }
 
       int
-      sfs_area_t::get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t src
-                                              , const gpi::pc::type::memory_location_t dst
-                                              , area_t & dst_area
-                                              , gpi::pc::type::size_t amount
-                                              , gpi::pc::type::size_t queue
-                                              , task_list_t & tasks
+      sfs_area_t::get_specific_transfer_tasks ( const gpi::pc::type::memory_location_t
+                                              , const gpi::pc::type::memory_location_t
+                                              , area_t &
+                                              , gpi::pc::type::size_t
+                                              , gpi::pc::type::size_t
+                                              , task_list_t &
                                               )
       {
         // TODO: implement locking  or an fd pool on which we  can wait and some

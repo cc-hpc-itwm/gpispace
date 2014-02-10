@@ -1,5 +1,7 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
+add_definitions (-Wno-unused-parameter)
+
 find_package (Qt4 4.7.1 COMPONENTS QtCore QtGui QtNetwork REQUIRED QUIET)
 
 include (${QT_USE_FILE})

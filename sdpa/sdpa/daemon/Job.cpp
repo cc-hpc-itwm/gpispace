@@ -73,9 +73,19 @@ namespace sdpa {
       return status::is_running (getStatus());
     }
 
+    bool Job::is_pending() const
+    {
+      return status::is_pending (getStatus());
+    }
+
     bool Job::is_canceled() const
     {
       return status::is_canceled (getStatus());
+    }
+
+    bool Job::is_canceling() const
+    {
+      return status::is_canceling (getStatus());
     }
 
     bool Job::isMasterJob() const

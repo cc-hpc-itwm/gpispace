@@ -42,8 +42,8 @@ namespace sdpa {
         virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent* pEvt);
         virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* )
           { throw std::runtime_error("Not implemented.The agent should not call handleDeleteJobEvent!"); }
-
-        void cancelPendingJob (const sdpa::events::CancelJobEvent& evt);
+        virtual void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt);
+        virtual void handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt);
 
         virtual void finished(const we::layer::id_type & id, const we::type::activity_t&);
         virtual void failed( const we::layer::id_type& workflowId, int error_code, std::string const& reason);

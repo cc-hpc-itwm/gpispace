@@ -261,7 +261,7 @@ void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const
   findWorker (worker_id)->removeCapabilities (TCpbSet);
 }
 
-void WorkerManager::getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& agentCpbSet)
+void WorkerManager::getCapabilities(const std::string&, sdpa::capabilities_set_t& agentCpbSet)
 {
   lock_type lock(mtx_);
 

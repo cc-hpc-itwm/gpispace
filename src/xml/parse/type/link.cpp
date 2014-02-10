@@ -33,34 +33,15 @@ namespace xml
             switch (*inp)
             {
             case '$':
-              {
-                ++inp;
-                fhg::util::parse::require::require (inp, '{');
-                bool read_key (false);
-                std::string key;
-
-                while (!read_key && !inp.end())
-                {
-                  switch (*inp)
-                  {
-                  case '}':
-                    ++inp;
-                    read_key = true;
-                    p += by_key (key);
-                    break;
-                  default: key += *inp; ++inp; break;
-                  }
-                }
-
-                if (!read_key)
-                {
-                  throw fhg::util::parse::error::expected ("}", inp);
-                }
-              }
+              ++inp;
+              fhg::util::parse::require::require (inp, '{');
+              p += by_key (fhg::util::parse::require::plain_string (inp, '}'));
               break;
             default: p += *inp; ++inp; break;
             }
           }
+
+          p += "/";
         }
 
         return p + _href;

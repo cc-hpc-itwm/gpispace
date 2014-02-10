@@ -1,8 +1,0 @@
-Basic architecture of the gpi-space application
-===============================================
-
-  Threads within each node:
-
-	  - connection manager thread, accepts new pc-connections
-	  - pc connection handler pool
-	  -

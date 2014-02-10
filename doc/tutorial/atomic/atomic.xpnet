@@ -1,0 +1,40 @@
+<defun name="atomic">
+  <in name="number_of_updates" type="unsigned long"
+      place="number_of_updates"/>
+  <in name="initial_value" type="long" place="value"/>
+  <out name="final_value" type="long" place="value"/>
+  <net>
+    <place name="number_of_updates" type="unsigned long"/>
+    <place name="value" type="long"/>
+    <transition name="update_A">
+      <defun>
+        <inout name="value" type="long"/>
+        <inout name="number_of_updates" type="unsigned long"/>
+        <expression>
+          ${value} := ${value} + 1L;
+          ${number_of_updates} := ${number_of_updates} - 1UL
+        </expression>
+        <condition>
+          ${number_of_updates} :gt: 0UL
+        </condition>
+      </defun>
+      <connect-inout port="value" place="value"/>
+      <connect-inout port="number_of_updates" place="number_of_updates"/>
+    </transition>
+    <transition name="update_B">
+      <defun>
+        <inout name="value" type="long"/>
+        <inout name="number_of_updates" type="unsigned long"/>
+        <expression>
+          ${value} := ${value} + 1L;
+          ${number_of_updates} := ${number_of_updates} - 1UL
+        </expression>
+        <condition>
+          ${number_of_updates} :gt: 0UL
+        </condition>
+      </defun>
+      <connect-inout port="value" place="value"/>
+      <connect-inout port="number_of_updates" place="number_of_updates"/>
+    </transition>
+  </net>
+</defun>

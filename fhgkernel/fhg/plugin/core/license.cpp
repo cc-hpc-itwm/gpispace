@@ -185,12 +185,12 @@ namespace fhg
 {
   namespace plugin
   {
-    int check_license (std::string const &license)
+    int check_license (std::string const &)
     {
       return LICENSE_VALID;
     }
 
-    int check_license_file (std::string const &path)
+    int check_license_file (std::string const &)
     {
       return LICENSE_VALID;
     }

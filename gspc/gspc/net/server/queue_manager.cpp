@@ -13,9 +13,8 @@
 #include <gspc/net/server/subscription.hpp>
 
 #include <gspc/net/server/service_demux.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
 
-#include <gspc/net/auth/default_auth.hpp>
+#include <gspc/net/auth/simple.hpp>
 
 namespace gspc
 {
@@ -23,11 +22,21 @@ namespace gspc
   {
     namespace server
     {
+      namespace
+      {
+        auth_t & GLOBAL_default_auth ()
+        {
+          static auth::simple_auth_t a;
+          return a;
+        }
+      }
+
       queue_manager_t::queue_manager_t (service_demux_t &demux)
         : m_mutex ()
         , m_subscriptions ()
         , m_user_subscriptions ()
         , m_service_demux (demux)
+        , _auth (GLOBAL_default_auth())
       {}
 
       queue_manager_t::~queue_manager_t ()
@@ -211,7 +220,7 @@ namespace gspc
 
         if (m_connections.find (u) == m_connections.end ())
         {
-          if ( auth::default_auth ().is_authorized
+          if ( _auth.is_authorized
                (f.get_header_or ("cookie", std::string ("")))
              )
           {
@@ -423,7 +432,7 @@ namespace gspc
         return 0;
       }
 
-      int queue_manager_t::ack (user_ptr u, frame const &)
+      int queue_manager_t::ack (user_ptr, frame const &)
       {
         return -ENOTSUP;
       }

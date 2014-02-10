@@ -16,7 +16,7 @@ namespace fhg
 
       QWidget* ComboBoxItemDelegate::createEditor
       ( QWidget *parent
-      , const QStyleOptionViewItem &option
+      , const QStyleOptionViewItem &
       , const QModelIndex &index
       ) const
       {

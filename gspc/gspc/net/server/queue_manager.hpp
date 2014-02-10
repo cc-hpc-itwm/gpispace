@@ -13,6 +13,7 @@
 
 #include <fhg/util/thread/atomic.hpp>
 
+#include <gspc/net/auth.hpp>
 #include <gspc/net/frame_fwd.hpp>
 #include <gspc/net/user.hpp>
 #include <gspc/net/frame_handler.hpp>
@@ -107,6 +108,7 @@ namespace gspc
 
         // used to handle services
         service_demux_t & m_service_demux;
+        auth_t& _auth;
       };
     }
   }

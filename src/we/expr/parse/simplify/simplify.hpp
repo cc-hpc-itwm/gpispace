@@ -4,7 +4,10 @@
 #define WE_EXPR_PARSE_SIMPLIFY_SIMPLIFY_HPP
 
 #include <we/expr/parse/parser.hpp>
-#include <we/expr/parse/util/get_names.hpp>
+
+#include <boost/unordered_set.hpp>
+
+#include <list>
 
 namespace expr
 {
@@ -12,7 +15,7 @@ namespace expr
   {
     namespace simplify
     {
-      typedef ::expr::parse::util::name_set_t key_set_type;
+      typedef boost::unordered_set<std::list<std::string> > key_set_type;
 
       //! \todo also return the modified flag
       parser simplification_pass

@@ -54,17 +54,17 @@ public:
     _expected_serveJob_calls.erase (_expected_serveJob_calls.find (jobId));
   }
 
-  void submitWorkflow(const we::layer::id_type& id)
+  void submitWorkflow(const we::layer::id_type&)
   {
     throw std::runtime_error ("trying to submit workflow in test casse which never should");
   }
 
-  void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
+  void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr&)
   {
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
-  void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& pEvt)
+  void sendEventToOther(const sdpa::events::SDPAEvent::Ptr&)
   {
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
@@ -107,9 +107,9 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
   sdpa::worker_id_t workerId("test_worker");
   sdpa::capabilities_set_t workerCpbSet;
 
-  workerCpbSet.insert(sdpa::capability_t("A","",workerId));
-  workerCpbSet.insert(sdpa::capability_t("B","",workerId));
-  workerCpbSet.insert(sdpa::capability_t("C","",workerId));
+  workerCpbSet.insert(sdpa::capability_t("A",workerId));
+  workerCpbSet.insert(sdpa::capability_t("B",workerId));
+  workerCpbSet.insert(sdpa::capability_t("C",workerId));
 
   _scheduler.addWorker(workerId, 1, workerCpbSet);
 
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   BOOST_REQUIRE_EQUAL (_scheduler.getAssignedWorker (jobId1), boost::none);
 
-  sdpa::capability_t cpb1("C", "virtual", worker_A);
+  sdpa::capability_t cpb1("C", worker_A);
   cpbSetA.insert(cpb1);
   _scheduler.addCapabilities(worker_A, cpbSetA);
 
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
       sdpa::worker_id_t workerId(osstr.str());
       osstr.str("");
       arrWorkerIds.push_back(workerId);
-      std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
+      std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
       sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
       _scheduler.addWorker(workerId, 1, cpbSet);
   }
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       sdpa::worker_id_t workerId(osstr.str());
       osstr.str("");
       arrWorkerIds.push_back(workerId);
-      std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
+      std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
       sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
       _scheduler.addWorker(workerId, 1, cpbSet);
   }
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
    sdpa::worker_id_t workerId(osstr.str());
    osstr.str("");
    arrWorkerIds.push_back(workerId);
-   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
+   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
    _scheduler.addWorker(workerId, 1, sdpa::capabilities_set_t(arrCpbs.begin(), arrCpbs.end()));
 
   _orchestrator.expect_serveJob_call ("job_9", make_list ("worker_9"));
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
     if( k<nWorkers-1 )
     {
-        std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
+        std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
         sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
         _scheduler.addWorker(workerId, 1, cpbSet);
     }
@@ -398,7 +398,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   osstr.str("");
   osstr<<"worker_"<<nWorkers-1;
   sdpa::worker_id_t lastWorkerId(osstr.str());
-  std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
+  std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", lastWorkerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addCapabilities(lastWorkerId, cpbSet);
 
@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     sdpa::worker_id_t workerId(osstr.str());
     osstr.str("");
     arrWorkerIds.push_back(workerId);
-    std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", workerId));
+    std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
     sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
     _scheduler.addWorker(workerId, 1, cpbSet);
   }
@@ -483,7 +483,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   _scheduler.deleteWorker(lastWorkerId);
 
-  std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", "virtual", lastWorkerId));
+  std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", lastWorkerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addWorker(lastWorkerId, 1, cpbSet);
 

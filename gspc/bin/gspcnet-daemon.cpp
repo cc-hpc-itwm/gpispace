@@ -20,19 +20,21 @@ int main (int argc, char *argv[])
     return 1;
   }
 
-  gspc::net::initialize ();
+  gspc::net::initializer net_initializer;
+  gspc::net::server::service_demux_t service_demux;
+  gspc::net::server::queue_manager_t qmgr (service_demux);
 
-  gspc::net::server::default_service_demux().handle ("/service/echo", gspc::net::service::echo ());
+  const gspc::net::server::scoped_service_handler echo_service
+    ("/service/echo", gspc::net::service::echo(), service_demux);
 
   std::vector<gspc::net::server_ptr_t> servers;
-  gspc::net::server::queue_manager_t qmgr ((gspc::net::server::default_service_demux()));
 
   for (int i = 1 ; i < argc ; ++i)
   {
     try
     {
       gspc::net::server_ptr_t server =
-        gspc::net::serve (argv [i], qmgr);
+        gspc::net::serve (argv [i], net_initializer, qmgr);
 
       std::cout << "listening on: "
                 << server->url ()
@@ -55,13 +57,6 @@ int main (int argc, char *argv[])
   }
 
   pause ();
-
-  BOOST_FOREACH (gspc::net::server_ptr_t s, servers)
-  {
-    s->stop ();
-  }
-
-  gspc::net::shutdown ();
 
   return 0;
 }

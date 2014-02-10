@@ -6,6 +6,7 @@
 #include <we/layer.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
+#include <sdpa/types.hpp>
 
 typedef std::list<we::type::requirement_t> requirement_list_t;
 
@@ -19,7 +20,7 @@ public:
 
   void add(const we::type::requirement_t& req) {m_requirementList.push_back(req); }
 
-  long numWorkers() const { return m_scheduleData.num_worker()?m_scheduleData.num_worker().get():1; }
+  unsigned long numWorkers() const { return m_scheduleData.num_worker()?m_scheduleData.num_worker().get():1; }
   const requirement_list_t& getReqList() const { return m_requirementList; }
   bool empty() const { return m_requirementList.empty(); }
 
@@ -29,3 +30,4 @@ private:
 };
 
 #endif //IWORKFLOWENGINE_HPP
+

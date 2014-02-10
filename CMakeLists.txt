@@ -131,7 +131,7 @@ endif()
 
 find_package (Boost 1.47 REQUIRED QUIET COMPONENTS
   thread system filesystem serialization program_options
-  regex signals date_time test_exec_monitor unit_test_framework)
+  regex signals date_time test_exec_monitor unit_test_framework random)
 
 if (Boost_MAJOR_VERSION EQUAL 1)
   if (Boost_MINOR_VERSION EQUAL 48)
@@ -161,6 +161,7 @@ add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
 
+find_package(HWLOC REQUIRED QUIET)
 
 # RPATH configuration
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
@@ -232,5 +233,3 @@ add_subdirectory (playground/ap/licensing)
 add_subdirectory (playground/bl)
 add_subdirectory (doc)
 add_subdirectory (share)
-
-add_subdirectory (BROKEN/application/cc)

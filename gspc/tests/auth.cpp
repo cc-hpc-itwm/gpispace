@@ -2,7 +2,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include <gspc/net/auth/simple.hpp>
-#include <gspc/net/auth/default_auth.hpp>
 
 struct F
 {
@@ -52,24 +51,6 @@ BOOST_AUTO_TEST_CASE (test_simple_default)
   {
     BOOST_REQUIRE (simple.is_authorized (simple.get_cookie ()));
     BOOST_REQUIRE (not simple.is_authorized (simple.get_cookie () + "foo"));
-  }
-}
-
-BOOST_AUTO_TEST_CASE (test_default_auth)
-{
-  gspc::net::auth_t const & auth = gspc::net::auth::default_auth ();
-
-  if (auth.get_cookie () == "")
-  {
-    // no environment variable set and user didn't have .gspc.cookie file
-    BOOST_REQUIRE (auth.is_authorized (""));
-    BOOST_REQUIRE (auth.is_authorized ("foo bar"));
-    BOOST_REQUIRE (auth.is_authorized (m_cookie));
-  }
-  else
-  {
-    BOOST_REQUIRE (auth.is_authorized (auth.get_cookie ()));
-    BOOST_REQUIRE (not auth.is_authorized (auth.get_cookie () + "foo"));
   }
 }
 

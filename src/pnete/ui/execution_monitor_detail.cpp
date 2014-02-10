@@ -452,7 +452,7 @@ namespace fhg
 
         paint_description prepare_gantt_row ( QModelIndex index
                                             , QRect rect
-                                            , QPen pen
+                                            , QPen
                                             )
         {
           const util::qt::mvc::section_index section_index

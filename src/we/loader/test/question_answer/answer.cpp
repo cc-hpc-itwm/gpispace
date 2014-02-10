@@ -10,7 +10,7 @@ long get_answer ()
 }
 
 static void answer ( gspc::drts::context*
-                   , const expr::eval::context& input
+                   , const expr::eval::context&
                    , expr::eval::context& output
                    )
 {

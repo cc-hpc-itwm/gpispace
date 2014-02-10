@@ -42,7 +42,6 @@ add_library (pnet
   we/expr/parse/simplify/expression_list.cpp
   we/expr/parse/simplify/simplify.cpp
   we/expr/parse/simplify/util.cpp
-  we/expr/parse/util/get_names.cpp
   we/expr/token/assoc.cpp
   we/expr/token/prec.cpp
   we/expr/token/prop.cpp
@@ -131,9 +130,14 @@ add_library (pnet
   xml/parse/warning.cpp
 )
 
-target_link_libraries (pnet fhg-util ${Boost_SERIALIZATION_LIBRARY})
+target_link_libraries (pnet
+  fhg-util
+  ${Boost_SERIALIZATION_LIBRARY}
+  ${CMAKE_DL_LIBS}
+)
 
 add_subdirectory (xml/tests)
+add_subdirectory (xml/parse/type/test)
 
 include (fhg_executable_macros)
 

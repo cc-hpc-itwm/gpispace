@@ -49,7 +49,7 @@ namespace gpi
       m_binary_path = path;
     }
 
-    void fake_gpi_api_t::start (int ac, char *av[], const gpi::timeout_t timeout)
+    void fake_gpi_api_t::start (int, char **, const gpi::timeout_t)
     {
       assert (! m_startup_done);
       if (m_dma)
@@ -164,7 +164,7 @@ namespace gpi
       return (open_passive_requests() >= queue_depth());
     }
 
-    const char * fake_gpi_api_t::hostname (const gpi::rank_t r) const
+    const char * fake_gpi_api_t::hostname (const gpi::rank_t) const
     {
       return "localhost";
     }
@@ -174,7 +174,7 @@ namespace gpi
       return m_rank;
     }
 
-    gpi::error_vector_t fake_gpi_api_t::get_error_vector (const gpi::queue_desc_t q) const
+    gpi::error_vector_t fake_gpi_api_t::get_error_vector (const gpi::queue_desc_t) const
     {
       gpi::error_vector_t v (number_of_nodes());
       for (std::size_t i (0); i < number_of_nodes(); ++i)
@@ -207,7 +207,7 @@ namespace gpi
       return ping (hostname (r));
     }
 
-    bool fake_gpi_api_t::ping (const char * host) const
+    bool fake_gpi_api_t::ping (const char *) const
     {
       return true;
     }

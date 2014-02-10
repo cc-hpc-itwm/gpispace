@@ -27,7 +27,7 @@ namespace
             , const std::list<std::string>& _needed_bindings
             )
   {
-    expr::parse::util::name_set_t needed_bindings;
+    expr::parse::simplify::key_set_type needed_bindings;
 
     BOOST_FOREACH (const std::string& name, _needed_bindings)
     {

@@ -38,7 +38,7 @@ measured "submit" ${make_src} submit                        || die $EX_ERR_RUN
 
 expected="Struct [in := 196347269L, total := 250000000L]"
 
-test "$(pnetget -i "${OUT}" -p ratio)" == "${expected}"     || die $EX_ERR_RES
+test "$(pnetget -i "${OUT}" -p ratio)" = "${expected}"      || die $EX_ERR_RES
 
 measured "stop" sdpa stop                                   || die $EX_ERR_STOP
 

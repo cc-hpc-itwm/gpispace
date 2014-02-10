@@ -48,8 +48,8 @@ measured "run" WE_EXEC_WORKER=10 ${make[@]} run             || die $EX_ERR_RUN
 
 grep 'finished \[1\]' "${OUT}"                              || die $EX_ERR_RES
 
-test "$(pnetget -i "${RESULT}" -p avg)" == "0.000193708"    || die $EX_ERR_RES
-test "$(pnetget -i "${RESULT}" -p stddev)" == "0.999908"    || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p avg)" = "0.000193708"     || die $EX_ERR_RES
+test "$(pnetget -i "${RESULT}" -p stddev)" = "0.999908"     || die $EX_ERR_RES
 
 rm -f "${CMP}"                                           || die $EX_ERR_CLEANUP
 rm -f "${RESULT}"                                        || die $EX_ERR_CLEANUP

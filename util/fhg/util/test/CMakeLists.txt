@@ -36,7 +36,19 @@ fhg_add_test (temporary_file.cpp
   LINK_LIBRARIES fhg-util
 )
 
+fhg_add_test (random_string.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhg_util
+  LINK_LIBRARIES fhg-util
+)
+
 fhg_add_test (read_file.cpp
+  BOOST_UNIT_TEST
+  PROJECT fhg_util
+  LINK_LIBRARIES fhg-util
+)
+
+fhg_add_test (ini_parse.cpp
   BOOST_UNIT_TEST
   PROJECT fhg_util
   LINK_LIBRARIES fhg-util

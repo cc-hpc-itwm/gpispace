@@ -48,6 +48,19 @@ namespace gspc
         mutable boost::shared_mutex m_mutex;
         handler_map_t               m_handler_map;
       };
+
+      struct scoped_service_handler : boost::noncopyable
+      {
+        scoped_service_handler ( std::string name
+                               , gspc::net::service::handler_t
+                               , gspc::net::server::service_demux_t&
+                               );
+        ~scoped_service_handler();
+
+      private:
+        std::string _name;
+        gspc::net::server::service_demux_t& _service_demux;
+      };
     }
   }
 }

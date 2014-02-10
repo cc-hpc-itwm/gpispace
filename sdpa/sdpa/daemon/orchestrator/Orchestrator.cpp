@@ -20,6 +20,10 @@
 #include <fhg/assert.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/job_states.hpp>
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+#include <we/type/value/poke.hpp>
+
 
 namespace sdpa {
   namespace daemon {
@@ -435,6 +439,62 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
       events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id()) );
       sendEventToOther(pErrorEvt);
   }
+}
+
+void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
+{
+  Job* pJob;
+
+  pJob = jobManager().findJob(pEvt->job_id());
+
+  if(!pJob)
+  {
+      sdpa::discovery_info_t discover_result(pEvt->job_id(), boost::none, sdpa::discovery_info_set_t());
+
+      sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
+                                                                                                         , pEvt->from()
+                                                                                                         , pEvt->discover_id()
+                                                                                                         , discover_result)));
+
+      return;
+  }
+
+  boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
+
+  if(worker_id)
+  {
+      m_map_discover_ids.insert( std::make_pair( pEvt->discover_id(), job_info_t(pEvt->from(), pEvt->job_id(), pJob->getStatus()) ));
+      events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( name()
+                                                                                       , *worker_id
+                                                                                       , pEvt->job_id()
+                                                                                       , pEvt->discover_id()) );
+      sendEventToOther(pDiscEvt);
+  }
+  else
+  {
+      sdpa::discovery_info_t discover_result(pEvt->job_id(),pJob->getStatus(), sdpa::discovery_info_set_t());
+      events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
+                                                                                                   , pEvt->from()
+                                                                                                   , pEvt->discover_id()
+                                                                                                   , discover_result ));
+
+      sendEventToOther(pDiscReplyEvt);
+  }
+}
+
+void Orchestrator::handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
+{
+  sdpa::agent_id_t issuer(m_map_discover_ids.at( pEvt->discover_id()).disc_issuer() );
+  sdpa::discovery_info_t disc_res( m_map_discover_ids.at( pEvt->discover_id()).job_id()
+                                   , m_map_discover_ids.at( pEvt->discover_id()).job_status()
+                                   , pEvt->discover_result().children());
+
+  events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
+                                                                                                 , issuer
+                                                                                                 , pEvt->discover_id()
+                                                                                                 , disc_res ));
+   sendEventToOther(pDiscReplyEvt);
+   m_map_discover_ids.erase(pEvt->discover_id());
 }
 
 }} // end namespaces

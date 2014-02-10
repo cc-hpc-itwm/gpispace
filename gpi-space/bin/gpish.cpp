@@ -1,59 +1,43 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <signal.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+#include <gpi-space/pc/client/api.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
+#include <gpi-space/pc/type/flags.hpp>
+#include <gpi-space/pc/type/handle.hpp>
 
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <fstream>
-
-#include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/foreach.hpp>
-#include <boost/timer.hpp>
+#include <fhg/assert.hpp>
+#include <fhg/revision.hpp>
+#include <fhg/util/signal_handler_manager.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
-#include <fhg/revision.hpp>
+#include <boost/bind.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
+#include <boost/function.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/program_options.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/timer.hpp>
 
-#include <gpi-space/signal_handler.hpp>
-#include <gpi-space/pc/client/api.hpp>
-#include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/pc/type/handle.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
+#include <readline/history.h>
+#include <readline/readline.h>
 
-#include <gpi-space/shell/shell.hpp>
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <signal.h>
+#include <stdio.h>
+#include <string>
+#include <unistd.h>
+#include <vector>
 
-namespace po = boost::program_options;
-namespace fs = boost::filesystem;
-
-static bool interactive(false);
-
-typedef std::vector<boost::filesystem::path> path_list_t;
-
-static path_list_t collect_sockets (fs::path const & prefix);
-std::ostream & operator << (std::ostream &os, path_list_t const & pl)
+namespace
 {
-  size_t count (0);
-  for ( path_list_t::const_iterator p (pl.begin())
-      ; p != pl.end()
-      ; ++p
-      )
-  {
-    os << "[" << count++ << "] " << *p << std::endl;
-  }
-  return os;
-}
-
 struct my_state_t
 {
-  my_state_t ( fs::path const & dir
-             , fs::path const & file
+  my_state_t ( boost::filesystem::path const & dir
+             , boost::filesystem::path const & file
              , std::size_t com_size
              )
     : socket_dir (dir)
@@ -111,7 +95,7 @@ struct my_state_t
   size_t com_size() const   { return m_com_size; }
   gpi::pc::type::handle_t shm_com_hdl() const { return m_shm_com_hdl; }
 
-  fs::path socket_dir;
+  boost::filesystem::path socket_dir;
   gpi::pc::client::api_t capi;
 private:
   std::size_t                 m_com_size;
@@ -120,25 +104,423 @@ private:
   char                       *m_shm_com_ptr;
 };
 
-static void print_progress( FILE *fp
-                          , const std::size_t current
-                          , const std::size_t total
-                          , const std::size_t width = 73
-                          );
+    class command_t;
 
-typedef gpi::shell::basic_shell_t<my_state_t> shell_t;
+    class shell_t
+    {
+    public:
+      typedef std::vector <std::string> argv_t;
+
+      typedef boost::function<int (argv_t const &, shell_t &)> command_callback_t;
+      typedef std::vector <command_t> command_list_t;
+
+      ~shell_t ();
+
+      static shell_t & create ( std::string const & program_name
+                           , std::string const & prompt
+                           , std::string const & histfile
+                           , my_state_t & state
+                           );
+      static shell_t & get ();
+      static void destroy ();
+
+      void add_command ( std::string const & name
+                       , command_callback_t callback
+                       , std::string const & short_doc
+                       );
+
+      void add_command ( std::string const & name
+                       , command_callback_t callback
+                       , std::string const & short_doc
+                       , std::string const & long_doc
+                       );
+
+      int execute (std::string const & line);
+      int execute ( argv_t const & argv );
+      const command_t * find_command (std::string const & name) const;
+
+      command_list_t const & commands () const { return m_commands; }
+      my_state_t & state () { return m_state; }
+
+      int run ();
+      int run_once ();
+      void reset ();
+      void stop ();
+
+    private:
+      static shell_t* instance;
+
+      void initialize_readline ();
+      void finalize_readline ();
+
+      static char **shell_completion (const char *, int, int);
+      static char *command_generator (const char *, int);
+
+      void write_history();
+      void read_history();
+
+      shell_t ( std::string const & program_name
+                    , std::string const & prompt
+                    , std::string const & histfile
+                    , my_state_t & state
+                    );
+
+      std::string m_program_name;
+      std::string m_prompt;
+      std::string m_histfile;
+      my_state_t &m_state;
+      command_list_t m_commands;
+      bool m_do_exit;
+    };
+
+    class command_t
+    {
+    public:
+      typedef shell_t::argv_t argv_t;
+      typedef shell_t::command_callback_t callback_t;
+
+      command_t ( const std::string & nme
+                      , const std::string & short_doc
+                      , const std::string & long_doc
+                      , callback_t cb
+                      )
+        : m_name (nme)
+        , m_short_doc (short_doc)
+        , m_long_doc (long_doc)
+        , m_callback (cb)
+      {}
+
+      virtual ~command_t () {}
+
+      int operator () (argv_t const & args, shell_t &shell) const
+      {
+        return m_callback (args, shell);
+      }
+
+      std::string const & name () const { return m_name; }
+      std::string const & short_doc  () const { return m_short_doc; }
+      std::string const & long_doc  () const { return m_long_doc; }
+    private:
+      std::string m_name;
+      std::string m_short_doc;
+      std::string m_long_doc;
+      callback_t m_callback;
+    };
+
+    namespace detail
+    {
+      inline
+      bool readline (const std::string & prompt, std::string & line_read)
+      {
+        char * line;
+        line = ::readline (prompt.c_str());
+        if (!line)
+        {
+          return false;
+        }
+
+        line_read = line;
+        free (line);
+
+        boost::algorithm::trim_left (line_read);
+        if (line_read.size())
+        {
+          add_history (line_read.c_str());
+        }
+
+        return true;
+      }
+
+      template <typename Vec>
+      void split (Vec & v, std::string const & s)
+      {
+        boost::algorithm::split (v, s, boost::algorithm::is_space(), boost::algorithm::token_compress_on);
+      }
+    }
+
+    shell_t* shell_t::instance = NULL;
+
+    shell_t & shell_t::create ( std::string const & program_name
+                                                , std::string const & prompt
+                                                , std::string const & histfile
+                                                , my_state_t & state
+                                                )
+    {
+      if (instance == NULL)
+      {
+        instance = new shell_t (program_name, prompt, histfile, state);
+      }
+      return *instance;
+    }
+
+    shell_t & shell_t::get ()
+    {
+      assert (instance != NULL);
+      return *instance;
+    }
+
+    void shell_t::destroy ()
+    {
+      if (instance)
+      {
+        delete instance;
+      }
+      instance = NULL;
+    }
+
+    void shell_t::initialize_readline ()
+    {
+      rl_readline_name = m_program_name.c_str();
+      // set completer
+      rl_attempted_completion_function = &shell_t::shell_completion;
+      using_history();
+      read_history();
+    }
+
+    void shell_t::finalize_readline ()
+    {
+      write_history();
+    }
+
+    void shell_t::read_history()
+    {
+      if (! m_histfile.empty())
+      {
+        ::read_history (m_histfile.c_str());
+      }
+    }
+
+    void shell_t::write_history()
+    {
+      if (! m_histfile.empty())
+      {
+        ::write_history (m_histfile.c_str());
+      }
+    }
+
+    shell_t::~shell_t ()
+    {
+      finalize_readline();
+    }
+
+    shell_t::shell_t ( std::string const & program_name
+                                    , std::string const & prompt
+                                    , std::string const & histfile
+                                    , my_state_t & state
+                                    )
+      : m_program_name (program_name)
+      , m_prompt (prompt)
+      , m_histfile (histfile)
+      , m_state (state)
+      , m_do_exit (false)
+    {
+      initialize_readline ();
+    }
+
+    void shell_t::add_command ( std::string const & name
+                                       , shell_t::command_callback_t callback
+                                       , std::string const & short_doc
+                                       )
+    {
+      add_command (name, callback, short_doc, short_doc);
+    }
+
+    void shell_t::add_command ( std::string const & name
+                                       , shell_t::command_callback_t callback
+                                       , std::string const & short_doc
+                                       , std::string const & long_doc
+                                       )
+    {
+      m_commands.push_back (command_t(name, short_doc, long_doc, callback));
+    }
+
+    const command_t *
+    shell_t::find_command ( std::string const & name ) const
+    {
+      for ( command_list_t::const_iterator cmd (m_commands.begin())
+          ; cmd != m_commands.end()
+          ; ++cmd
+          )
+      {
+        if (cmd->name() == name)
+        {
+          return &(*cmd);
+        }
+      }
+      return (command_t*)(NULL);
+    }
+
+    int shell_t::run_once ()
+    {
+      std::string line;
+      int rc;
+
+      rc = 0;
+
+      if (detail::readline (m_prompt.c_str(), line))
+      {
+        boost::algorithm::trim (line);
+
+        if (line.empty())
+          return rc;
+
+        argv_t argv;
+        detail::split (argv, line);
+        rc = execute (argv);
+        if (-1 == rc)
+        {
+          rc = m_state.error (std::runtime_error ("command not found: " + argv[0]));
+          if (rc != 0)
+          {
+            stop ();
+          }
+        }
+      }
+      else
+      {
+        stop ();
+      }
+
+      return rc;
+    }
+
+    void shell_t::reset ()
+    {
+      m_do_exit = false;
+    }
+
+    void shell_t::stop ()
+    {
+      m_do_exit = true;
+    }
+
+    int shell_t::run ()
+    {
+      int rc (0);
+      while (!m_do_exit)
+      {
+        rc = run_once ();
+      }
+      return rc;
+    }
+
+    int shell_t::execute (std::string const & line)
+    {
+      argv_t av;
+      detail::split (av, line);
+      return execute (av);
+    }
+
+    int shell_t::execute (argv_t const & argv)
+    {
+      int rc(0);
+
+      if (argv.empty())
+      {
+        std::cerr << "empty command!" << std::endl;
+        return -1;
+      }
+
+      // 2. call command
+      const command_t *cmd (find_command(argv[0]));
+      if (cmd)
+      {
+        try
+        {
+          rc = (*cmd)(argv, *this);
+        }
+        catch (std::exception const & ex)
+        {
+          std::cerr << "failed: " << ex.what() << std::endl;
+          rc = -2;
+        }
+      }
+      else
+      {
+        rc = -1;
+      }
+
+      return rc;
+    }
+
+    /* interface to readline completion      */
+    /* does only work with a shell singleton */
+
+    char * shell_t::command_generator (const char *text, int state)
+    {
+      static std::size_t command_index (0), text_length (0);
+
+      if (!state)
+      {
+        // initialize state variables
+        command_index = 0;
+        text_length = strlen (text);
+      }
+
+      // check commands for a match
+      const shell_t::command_list_t & commands (shell_t::get ().commands());
+      while (command_index < commands.size())
+      {
+        const char *cmd_name = commands[command_index].name().c_str();
+        ++command_index;
+        if (strncmp(cmd_name, text, text_length) == 0)
+        {
+          char *match = (char*)malloc(strlen(cmd_name) + 1);
+          strcpy (match, cmd_name);
+          return match;
+        }
+      }
+      return NULL;
+    }
+
+    char **shell_t::shell_completion (const char * text, int start, int)
+    {
+      char **matches (NULL);
+
+      if (start == 0)
+      {
+        matches = rl_completion_matches (text, &shell_t::command_generator);
+      }
+
+      return matches;
+    }
+}
+
+namespace po = boost::program_options;
+
+static bool interactive(false);
+
+typedef std::vector<boost::filesystem::path> path_list_t;
+
+static path_list_t collect_sockets (boost::filesystem::path const & prefix);
+std::ostream & operator << (std::ostream &os, path_list_t const & pl)
+{
+  size_t count (0);
+  for ( path_list_t::const_iterator p (pl.begin())
+      ; p != pl.end()
+      ; ++p
+      )
+  {
+    os << "[" << count++ << "] " << *p << std::endl;
+  }
+  return os;
+}
+
+static void print_progress( const std::size_t current
+                          , const std::size_t total
+                          );
 
 static my_state_t *state (NULL);
 
-static int interrupt_shell (int)
+static int interrupt_shell()
 {
   std::cerr << "stopping gpi api!" << std::endl;
   shell_t::get().state().capi.stop();
   return 0;
 }
 
-static void initialize_state ( fs::path const & socket_dir
-                             , fs::path const & socket_path
+static void initialize_state ( boost::filesystem::path const & socket_dir
+                             , boost::filesystem::path const & socket_path
                              , std::size_t com_size
                              );
 static void initialize_shell (int ac, char *av[]);
@@ -180,8 +562,6 @@ static int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh);
 
 int main (int ac, char **av)
 {
-  gpi::signal::handler().start();
-
   FHGLOG_SETUP();
 
   if (isatty(0))
@@ -189,8 +569,8 @@ int main (int ac, char **av)
 
   po::options_description desc("options");
 
-  fs::path socket_path;
-  typedef std::vector <fs::path> dir_list_t;
+  boost::filesystem::path socket_path;
+  typedef std::vector <boost::filesystem::path> dir_list_t;
   dir_list_t socket_search_dir;
   socket_search_dir.push_back ("/tmp");
   socket_search_dir.push_back ("/var/tmp");
@@ -200,7 +580,7 @@ int main (int ac, char **av)
   desc.add_options ()
     ("help,h", "this message")
 
-    ("socket,s", po::value<fs::path>(&socket_path), "path to the gpi socket")
+    ("socket,s", po::value<boost::filesystem::path>(&socket_path), "path to the gpi socket")
 
     ( "socket-dir,d"
     , po::value<dir_list_t>(&socket_search_dir)
@@ -255,7 +635,7 @@ int main (int ac, char **av)
     return EXIT_SUCCESS;
   }
 
-  fs::path socket_dir;
+  boost::filesystem::path socket_dir;
 
   if (socket_path.empty())
   {
@@ -288,6 +668,9 @@ int main (int ac, char **av)
   initialize_state (socket_dir, socket_path, com_size);
   initialize_shell (ac, av);
 
+  fhg::util::signal_handler_manager signal_handler_manager;
+  signal_handler_manager.add (SIGINT, boost::bind (&interrupt_shell));
+
   shell_t::get().run();
 
   if (interactive)
@@ -295,12 +678,10 @@ int main (int ac, char **av)
 
   shutdown_shell ();
   shutdown_state ();
-
-  gpi::signal::handler().stop();
 }
 
-void initialize_state ( fs::path const & socket_dir
-                      , fs::path const & socket_file
+void initialize_state ( boost::filesystem::path const & socket_dir
+                      , boost::filesystem::path const & socket_file
                       , std::size_t com_size
                       )
 {
@@ -308,7 +689,7 @@ void initialize_state ( fs::path const & socket_dir
   // set up state
   state = new my_state_t (socket_dir, socket_file, com_size);
 
-  if (fs::exists (socket_file))
+  if (boost::filesystem::exists (socket_file))
   {
     try
     {
@@ -327,12 +708,12 @@ void shutdown_state ()
   state->capi.stop();
 }
 
-void initialize_shell (int ac, char *av[])
+void initialize_shell (int, char *av[])
 {
   std::string prompt;
   if (interactive)
     prompt = "gpish> ";
-  fs::path histfile (getenv("HOME"));
+  boost::filesystem::path histfile (getenv("HOME"));
   histfile /= ".gpish_history";
 
   shell_t & sh (shell_t::create (av[0], prompt, histfile.string(), *state));
@@ -378,8 +759,6 @@ void initialize_shell (int ac, char *av[])
 
   sh.add_command ("add", &cmd_memory_add, "add a memory segment");
   sh.add_command ("del", &cmd_memory_del, "delete a memory segment");
-
-  gpi::signal::handler().connect(SIGINT, &interrupt_shell);
 }
 
 void shutdown_shell ()
@@ -422,7 +801,7 @@ int cmd_help (shell_t::argv_t const & av, shell_t & sh)
   }
   else
   {
-    const shell_t::command_t *cmd (sh.find_command (av[1]));
+    const command_t *cmd (sh.find_command (av[1]));
     if (cmd)
     {
       std::cout << cmd->name() << "    " << cmd->long_doc() << std::endl;
@@ -436,7 +815,7 @@ int cmd_help (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-int cmd_exit (shell_t::argv_t const & av, shell_t & sh)
+int cmd_exit (shell_t::argv_t const &, shell_t & sh)
 {
   sh.stop ();
   return 0;
@@ -446,8 +825,8 @@ int cmd_open (shell_t::argv_t const & av, shell_t & sh)
 {
   if (av.size() > 1)
   {
-    fs::path new_socket (av[1]);
-    if ( fs::exists(new_socket)
+    boost::filesystem::path new_socket (av[1]);
+    if ( boost::filesystem::exists(new_socket)
        && (new_socket.string() != sh.state().capi.path())
        )
     {
@@ -476,13 +855,13 @@ int cmd_open (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-int cmd_close (shell_t::argv_t const & av, shell_t & sh)
+int cmd_close (shell_t::argv_t const &, shell_t & sh)
 {
   sh.state().capi.stop();
   return 0;
 }
 
-int cmd_ping (shell_t::argv_t const & av, shell_t & sh)
+int cmd_ping (shell_t::argv_t const &, shell_t & sh)
 {
   if (sh.state().capi.ping ())
   {
@@ -496,19 +875,19 @@ int cmd_ping (shell_t::argv_t const & av, shell_t & sh)
   }
 }
 
-int cmd_info (shell_t::argv_t const & av, shell_t & sh)
+int cmd_info (shell_t::argv_t const &, shell_t & sh)
 {
   std::cout << sh.state().capi.collect_info () << std::endl;
   return 0;
 }
 
-int cmd_gc (shell_t::argv_t const & av, shell_t & sh)
+int cmd_gc (shell_t::argv_t const &, shell_t & sh)
 {
   sh.state().capi.garbage_collect ();
   return 0;
 }
 
-int cmd_unset (shell_t::argv_t const & av, shell_t & sh)
+int cmd_unset (shell_t::argv_t const & av, shell_t &)
 {
   if (av.size() < 2)
   {
@@ -525,7 +904,7 @@ int cmd_unset (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-int cmd_set (shell_t::argv_t const & av, shell_t & sh)
+int cmd_set (shell_t::argv_t const & av, shell_t &)
 {
   if (av.size() < 2)
   {
@@ -571,7 +950,7 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     return -ESRCH;
   }
 
-  fs::path file_path;
+  boost::filesystem::path file_path;
   if (av.size() > 2)
   {
     file_path = av[2];
@@ -599,7 +978,7 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
 
   while (src.offset < d.size)
   {
-    print_progress(stderr, src.offset, d.size);
+    print_progress(src.offset, d.size);
 
     std::size_t to_write = std::min( sh.state().com_size()
                                    , d.size - src.offset
@@ -613,7 +992,7 @@ int cmd_save (shell_t::argv_t const & av, shell_t & sh)
     src.offset += to_write;
   }
 
-  print_progress(stderr, src.offset, d.size);
+  print_progress(src.offset, d.size);
   fprintf(stderr, "\n");
 
   time_type timer_end = boost::posix_time::microsec_clock::local_time();
@@ -634,8 +1013,8 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
     return 1;
   }
 
-  const fs::path path (av[1]);
-  if (! fs::exists (path))
+  const boost::filesystem::path path (av[1]);
+  if (! boost::filesystem::exists (path))
   {
     std::cerr << "no such file or directory: " << path << std::endl;
     return -EIO;
@@ -682,7 +1061,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
 
   if (0 == dst.handle)
   {
-    std::size_t file_size = fs::file_size(path);
+    std::size_t file_size = boost::filesystem::file_size(path);
 
     dst.handle =
       sh.state().capi.alloc( target_segment
@@ -712,7 +1091,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
   {
     while (ifs.good() && (read_count < total_to_read))
     {
-      print_progress (stderr, read_count, total_to_read);
+      print_progress (read_count, total_to_read);
 
       std::size_t to_read = std::min( sh.state().com_size()
                                     , total_to_read - read_count
@@ -728,7 +1107,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
       dst.offset += read_bytes;
     }
 
-    print_progress (stderr, read_count, total_to_read);
+    print_progress (read_count, total_to_read);
     fprintf(stderr, "\n");
 
     if (read_count < total_to_read)
@@ -749,7 +1128,7 @@ int cmd_load (shell_t::argv_t const & av, shell_t & sh)
   return 0;
 }
 
-int cmd_status (shell_t::argv_t const & av, shell_t & sh)
+int cmd_status (shell_t::argv_t const &, shell_t & sh)
 {
   std::cout << "connected: " << std::boolalpha << sh.state().capi.ping () << std::endl;
 
@@ -1486,7 +1865,7 @@ int cmd_memory_del (shell_t::argv_t const & av, shell_t & sh)
   return ec;
 }
 
-path_list_t collect_sockets (fs::path const & prefix)
+path_list_t collect_sockets (boost::filesystem::path const & prefix)
 {
   namespace fs = boost::filesystem;
 
@@ -1497,17 +1876,17 @@ path_list_t collect_sockets (fs::path const & prefix)
   file_name_prefix += boost::lexical_cast<std::string>(getuid());
 
   path_list_t paths;
-  if (!fs::exists (prefix))
+  if (!boost::filesystem::exists (prefix))
     return paths;
 
-  fs::directory_iterator end_itr;
-  for ( fs::directory_iterator itr (prefix)
+  boost::filesystem::directory_iterator end_itr;
+  for ( boost::filesystem::directory_iterator itr (prefix)
       ; itr != end_itr
       ; ++itr
       )
   {
     if ( (itr->path().string().find(file_name_prefix) == 0)
-       && fs::is_other (itr->status())
+       && boost::filesystem::is_other (itr->status())
        )
     {
       paths.push_back (itr->path());
@@ -1516,12 +1895,12 @@ path_list_t collect_sockets (fs::path const & prefix)
   return paths;
 }
 
-static void print_progress( FILE *fp
-                          , const std::size_t current
+static void print_progress( const std::size_t current
                           , const std::size_t total
-                          , const std::size_t bar_length
                           )
 {
+  static std::size_t const bar_length (73);
+
   double percent_done = (double)(current) / (double)(total);
 
   fprintf(stderr, "%3.0f%% [", percent_done*100);

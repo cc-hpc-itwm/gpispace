@@ -26,19 +26,9 @@ namespace gpi
       {
         header_t ()
           : length (0)
-          , version (0x01)
-          , flags (0)
-          , seq (0)
-          , ack (0)
-          , checksum (0)
         {}
 
         uint32_t     length;
-        uint8_t     version;
-        uint8_t       flags;
-        uint16_t        seq;
-        uint16_t        ack;
-        uint32_t   checksum;
       };
 
       typedef boost::variant< error::error_t
@@ -46,12 +36,6 @@ namespace gpi
         , gpi::pc::proto::memory::message_t
         , gpi::pc::proto::segment::message_t
         > message_t;
-
-      struct complete_message_t
-      {
-        header_t header;
-        message_t  payload;
-      };
     }
   }
 }

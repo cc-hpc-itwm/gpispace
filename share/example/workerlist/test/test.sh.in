@@ -45,7 +45,7 @@ measured "submit" ${make[@]} submit                         || die $EX_ERR_RUN
 
 expected="List (\"worker-$(hostname)-1\")"
 
-test "$(pnetget -i "${OUT}" -p workers)" == "${expected}"   || die $EX_ERR_RES
+test "$(pnetget -i "${OUT}" -p workers)" = "${expected}"    || die $EX_ERR_RES
 
 measured "stop" sdpa stop                                   || die $EX_ERR_STOP
 

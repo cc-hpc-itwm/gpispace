@@ -1,17 +1,17 @@
 <defun name="coallocation_test">
   <in name="n_tasks_A" type="long" place="n_tasks_A" />
-  <in name="n_workers_A" type="long" place="n_workers_A" />
+  <in name="n_workers_A" type="unsigned long" place="n_workers_A" />
   <in name="n_tasks_B" type="long" place="n_tasks_B" />
-  <in name="n_workers_B" type="long" place="n_workers_B" />
+  <in name="n_workers_B" type="unsigned long" place="n_workers_B" />
   <out name="done" type="control" place="done" />
 
   <net>
     <!-- input/output places -->
     <place name="n_tasks_A" type="long" />
-    <place name="n_workers_A" type="long" />
+    <place name="n_workers_A" type="unsigned long" />
 
     <place name="n_tasks_B" type="long" />
-    <place name="n_workers_B" type="long" />
+    <place name="n_workers_B" type="unsigned long" />
 
     <place name="done" type="control" />
 
@@ -59,7 +59,7 @@
     <defun>
 	<require key="A" />
 	<in name="id" type="long" />
-	<in name="nw" type="long" />
+	<in name="nw" type="unsigned long" />
 	<out name="done" type="control" />
 	<properties name="fhg">
  		<properties name="drts">
@@ -135,7 +135,7 @@
     <defun>
 		<require key="B" />
 		<in name="id" type="long" />
-		<in name="nw" type="long" />
+		<in name="nw" type="unsigned long" />
 		<out name="done" type="control" />
 		<properties name="fhg">
  			<properties name="drts">
@@ -202,8 +202,8 @@
 	<in name="done_A" type="control" />
 	<in name="done_B" type="control" />
 
-	<in name="n_workers_A" type="long" />
-	<in name="n_workers_B" type="long" />
+	<in name="n_workers_A" type="unsigned long" />
+	<in name="n_workers_B" type="unsigned long" />
 
 	<out name="done" type="control" />
 	<expression>
