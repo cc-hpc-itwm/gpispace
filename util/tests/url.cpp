@@ -4,9 +4,6 @@
 #include <fhg/util/url.hpp>
 #include <fhg/util/url_io.hpp>
 
-#include <sstream>
-#include <iostream>
-
 BOOST_AUTO_TEST_CASE (test_url_basics)
 {
   fhg::util::url_t url;
