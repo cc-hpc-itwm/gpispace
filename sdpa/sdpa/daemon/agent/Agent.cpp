@@ -684,7 +684,12 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
   else
   {
       //! Note: the layer guarantees that the job was already submitted
-      sdpa::discovery_info_t discover_result(pEvt->job_id(), pJob->getStatus(), sdpa::discovery_info_set_t());
+      // However, the job might not be yet created at the time of the discovery request,
+      // (the submit call generates a submit job event only and some race condition occurs somewhere
+      // provoking a segfault).
+      sdpa::discovery_info_t discover_result (pEvt->job_id(),
+                                             pJob?boost::optional<sdpa::status::code>(pJob->getStatus()):boost::none,
+                                             sdpa::discovery_info_set_t());
       workflowEngine()->discovered(pEvt->discover_id(), discover_result);
   }
 }
