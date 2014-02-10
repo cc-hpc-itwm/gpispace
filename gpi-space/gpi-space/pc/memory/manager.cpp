@@ -9,6 +9,7 @@
 #include <gpi-space/pc/memory/gpi_area.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
+#include <gpi-space/pc/memory/memory_area.hpp>
 #include <gpi-space/pc/memory/memory_transfer_t.hpp>
 #include <gpi-space/pc/memory/sfs_area.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
@@ -23,9 +24,6 @@ namespace gpi
   {
     namespace memory
     {
-      class area_t;
-      typedef boost::shared_ptr<area_t> area_ptr_t;
-
       namespace
       {
       area_ptr_t
