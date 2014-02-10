@@ -25,7 +25,7 @@ namespace gpi
 
         ~shm_area_t ();
       protected:
-        grow_direction_t grow_direction (const gpi::pc::type::flags_t) const;
+        Arena_t grow_direction (const gpi::pc::type::flags_t) const;
         int get_type_id () const;
 
         void alloc_hook (const gpi::pc::type::handle::descriptor_t &){}

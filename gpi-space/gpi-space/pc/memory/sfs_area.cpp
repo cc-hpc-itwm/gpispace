@@ -518,11 +518,11 @@ namespace gpi
         return true;
       }
 
-      area_t::grow_direction_t
+      Arena_t
       sfs_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {
         // we do not support multiple arenas in this memory type
-        return GROW_UP;
+        return ARENA_UP;
       }
 
       void *

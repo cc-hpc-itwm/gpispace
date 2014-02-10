@@ -117,11 +117,11 @@ namespace gpi
         }
       }
 
-      area_t::grow_direction_t
+      Arena_t
       gpi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
       {
         return gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL)
-          ? GROW_UP : GROW_DOWN;
+          ? ARENA_UP : ARENA_DOWN;
       }
 
       void *

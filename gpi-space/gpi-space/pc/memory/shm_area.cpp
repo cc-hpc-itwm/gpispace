@@ -195,10 +195,10 @@ namespace gpi
           : 0;
       }
 
-      area_t::grow_direction_t
+      Arena_t
       shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {
-        return area_t::GROW_UP;
+        return ARENA_UP;
       }
 
       bool shm_area_t::unlink_after_open (const gpi::pc::type::flags_t)

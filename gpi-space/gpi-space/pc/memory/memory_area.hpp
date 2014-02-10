@@ -34,12 +34,6 @@ namespace gpi
 
         virtual ~area_t ();
 
-        enum grow_direction_t
-        {
-          GROW_UP
-        , GROW_DOWN
-        };
-
         /* public interface the basic implementation is the same
            for all kinds of segments.
 
@@ -163,7 +157,7 @@ namespace gpi
 
         /* hook functions that need to be overridded by specific segments */
         virtual
-        grow_direction_t grow_direction (const gpi::pc::type::flags_t) const = 0;
+        Arena_t grow_direction (const gpi::pc::type::flags_t) const = 0;
 
         virtual
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;

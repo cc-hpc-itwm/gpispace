@@ -20,20 +20,6 @@ namespace gpi
   {
     namespace memory
     {
-      static Arena_t translate_grow_direction (int dir)
-      {
-        switch (dir)
-        {
-        case area_t::GROW_UP:
-          return ARENA_UP;
-          break;
-        case area_t::GROW_DOWN:
-          return ARENA_DOWN;
-        default:
-          throw std::runtime_error ("invalid grow direction");
-        }
-      }
-
       /***************************************************/
       /*                   area_t                        */
       /***************************************************/
@@ -284,7 +270,7 @@ namespace gpi
               );
           dtmmgr_free ( &m_mmgr
                       , hdl.id
-                      , translate_grow_direction (grow_direction (hdl.flags))
+                      , grow_direction (hdl.flags)
                       );
           throw std::runtime_error("offset mismatch");
         }
@@ -354,7 +340,7 @@ namespace gpi
           throw std::runtime_error ("out of memory");
         }
 
-        Arena_t arena = translate_grow_direction (grow_direction(hdl.flags));
+        Arena_t arena = grow_direction(hdl.flags);
 
         AllocReturn_t alloc_return
             (dtmmgr_alloc (&m_mmgr, hdl.id, arena, hdl.local_size));
@@ -474,7 +460,7 @@ namespace gpi
           throw std::runtime_error ("handle still in use");
         }
 
-        Arena_t arena (translate_grow_direction(grow_direction(desc.flags)));
+        Arena_t arena (grow_direction(desc.flags));
         HandleReturn_t handle_return (dtmmgr_free ( &m_mmgr
                                                   , hdl
                                                   , arena
@@ -537,7 +523,7 @@ namespace gpi
              );
         }
 
-        Arena_t arena (translate_grow_direction(grow_direction(desc.flags)));
+        Arena_t arena (grow_direction(desc.flags));
         HandleReturn_t handle_return (dtmmgr_free ( &m_mmgr
                                                   , hdl
                                                   , arena
