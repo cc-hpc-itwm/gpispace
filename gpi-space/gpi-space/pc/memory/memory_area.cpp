@@ -625,10 +625,7 @@ namespace gpi
         if (gpi::flag::is_set
            (descriptor ().flags, gpi::pc::F_EXCLUSIVE))
         {
-          if (proc == descriptor ().creator)
-            return true;
-          else
-            return false;
+          return (proc == descriptor ().creator);
         }
         return true;
       }
