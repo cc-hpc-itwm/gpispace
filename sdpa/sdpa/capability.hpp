@@ -37,24 +37,16 @@ namespace
     {}
 
     std::string name() const { return name_;}
-    void setName(const std::string& name) { name_ = name;}
 
     std::string type() const { return type_;}
-    void setType(const std::string& type) { type_ = type;}
 
     size_t depth() const { return depth_;}
     void setDepth(size_t depth) { depth_ = depth;}
     void incDepth() { depth_++; }
 
     std::string owner() const { return owner_; }
-    void setOwner(const std::string& owner) { owner_ = owner; }
 
     std::string uuid() const { return uuid_; }
-    void setUuid(const std::string& uuid) { uuid_ = uuid; }
-    void assignUuid()
-    {
-      uuid_ = sdpa::id_generator::instance<cap_id_tag>().next();
-    }
 
     template <class Archive>
     void serialize(Archive& ar, const unsigned int)
