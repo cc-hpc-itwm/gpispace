@@ -120,14 +120,8 @@ namespace gpi
       area_t::grow_direction_t
       gpi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
       {
-        if (gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL))
-        {
-          return GROW_UP;
-        }
-        else
-        {
-          return GROW_DOWN;
-        }
+        return gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL)
+          ? GROW_UP : GROW_DOWN;
       }
 
       void *
