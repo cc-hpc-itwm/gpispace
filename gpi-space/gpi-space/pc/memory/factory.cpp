@@ -19,12 +19,6 @@ namespace gpi
         m_factory_functions [typ] = fun;
       }
 
-      void
-      factory_t::unregister_type (std::string const &typ)
-      {
-        m_factory_functions.erase (typ);
-      }
-
       area_ptr_t
       factory_t::create (std::string const &url_s)
       {

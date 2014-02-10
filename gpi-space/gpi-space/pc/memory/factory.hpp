@@ -24,7 +24,6 @@ namespace gpi
         void register_type ( std::string const &type
                            , factory_function_t fun
                            );
-        void unregister_type (std::string const &type);
 
         area_ptr_t create (std::string const & url);
       private:
