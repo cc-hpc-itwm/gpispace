@@ -33,16 +33,8 @@ namespace gpi
       class area_t;
       typedef boost::shared_ptr<area_t> area_ptr_t;
 
-      class factory_t
-      {
-      public:
-        area_ptr_t create (std::string const & url);
-      };
-
-      factory_t & factory ();
-
       area_ptr_t
-      factory_t::create (std::string const &url_s)
+      create_area (std::string const &url_s)
       {
         fhg::util::url_t url (url_s);
 
@@ -53,12 +45,6 @@ namespace gpi
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
           );
-      }
-
-      factory_t & factory ()
-      {
-        static factory_t instance;
-        return instance;
       }
 
       manager_t::manager_t ()
@@ -500,7 +486,7 @@ namespace gpi
                                    , std::string const & url
                                    )
       {
-        area_ptr_t area = factory ().create (url);
+        area_ptr_t area (create_area (url));
         area->set_owner (0);
         area->set_id (seg_id);
         add_area (area);
@@ -513,7 +499,7 @@ namespace gpi
                             , const gpi::pc::type::segment_id_t seg_id
                             )
       {
-        area_ptr_t area = factory ().create (url_s);
+        area_ptr_t area (create_area (url_s));
         area->set_owner (proc_id);
         if (seg_id > 0)
           area->set_id (seg_id);
