@@ -5,6 +5,8 @@
 #include <iostream>
 #include <algorithm>
 
+#include <boost/foreach.hpp>
+
 using namespace sdpa;
 using namespace sdpa::daemon;
 
@@ -101,17 +103,18 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
   lock_type const _ (mtx_);
 
   bool bModified = false;
-  for(sdpa::capabilities_set_t::iterator it = recvCpbSet.begin(); it != recvCpbSet.end(); ++it) {
-      sdpa::capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
+  BOOST_FOREACH (sdpa::Capability const& capability, recvCpbSet)
+  {
+      sdpa::capabilities_set_t::iterator itwcpb = capabilities_.find(capability);
       if( itwcpb == capabilities_.end() ) {
-          capabilities_.insert(*it);
-          DLLOG (TRACE, _logger, "The worker "<<name()<<" gained the capability:"<<*it);
+          capabilities_.insert (capability);
+          DLLOG (TRACE, _logger, "The worker "<<name()<<" gained the capability:"<<capability);
           bModified = true;
       }
       else
-	if( itwcpb->depth()>it->depth() ) {
-      LLOG (INFO, _logger, "Worker " << name() << ": updated the depth of the capability:\n   "<<*it<<" from "<<itwcpb->depth()<<" to "<<it->depth() );
-	    const_cast<sdpa::capability_t&>(*itwcpb).setDepth(it->depth());
+	if( itwcpb->depth()>capability.depth() ) {
+      LLOG (INFO, _logger, "Worker " << name() << ": updated the depth of the capability:\n   "<<capability<<" from "<<itwcpb->depth()<<" to "<<capability.depth() );
+	    const_cast<sdpa::capability_t&>(*itwcpb).setDepth(capability.depth());
 	    bModified = true;
 	}
   }
