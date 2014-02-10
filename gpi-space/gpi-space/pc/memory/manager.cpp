@@ -1,4 +1,4 @@
-#include "manager.hpp"
+#include <gpi-space/pc/memory/manager.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
@@ -9,8 +9,8 @@
 
 #include <gpi-space/pc/global/topology.hpp>
 
-#include "memory_transfer_t.hpp"
-#include "handle_generator.hpp"
+#include <gpi-space/pc/memory/memory_transfer_t.hpp>
+#include <gpi-space/pc/memory/handle_generator.hpp>
 
 #include <string>
 
