@@ -40,16 +40,7 @@ namespace gpi
       };
 
       factory_t & factory ();
-    }
-  }
-}
 
-namespace gpi
-{
-  namespace pc
-  {
-    namespace memory
-    {
       area_ptr_t
       factory_t::create (std::string const &url_s)
       {
@@ -69,16 +60,7 @@ namespace gpi
         static factory_t instance;
         return instance;
       }
-    }
-  }
-}
 
-namespace gpi
-{
-  namespace pc
-  {
-    namespace memory
-    {
       manager_t::manager_t ()
         : m_ident (0)
       {
