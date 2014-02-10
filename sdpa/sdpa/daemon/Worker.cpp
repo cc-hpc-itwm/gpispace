@@ -112,7 +112,6 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
       }
       else
 	if( itwcpb->depth()>capability.depth() ) {
-      LLOG (INFO, _logger, "Worker " << name() << ": updated the depth of the capability:\n   "<<capability<<" from "<<itwcpb->depth()<<" to "<<capability.depth() );
 	    const_cast<sdpa::capability_t&>(*itwcpb).setDepth(capability.depth());
 	    bModified = true;
 	}
