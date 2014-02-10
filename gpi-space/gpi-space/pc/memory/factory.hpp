@@ -1,11 +1,9 @@
 #ifndef GPI_SPACE_PC_MEMORY_FACTORY_HPP
 #define GPI_SPACE_PC_MEMORY_FACTORY_HPP
 
-#include <map>
 #include <string>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/function.hpp>
 
 namespace gpi
 {
@@ -15,16 +13,11 @@ namespace gpi
     {
       class area_t;
       typedef boost::shared_ptr<area_t> area_ptr_t;
-      typedef boost::function<area_ptr_t (std::string const &)> factory_function_t;
 
       class factory_t
       {
-        typedef std::map<std::string, factory_function_t> function_map_t;
       public:
-        factory_t();
         area_ptr_t create (std::string const & url);
-      private:
-        function_map_t m_factory_functions;
       };
 
       factory_t & factory ();
