@@ -622,12 +622,8 @@ namespace gpi
       bool
       area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t proc) const
       {
-        if (gpi::flag::is_set
-           (descriptor ().flags, gpi::pc::F_EXCLUSIVE))
-        {
-          return (proc == descriptor ().creator);
-        }
-        return true;
+        return (!gpi::flag::is_set (descriptor ().flags, gpi::pc::F_EXCLUSIVE))
+            || (proc == descriptor ().creator);
       }
 
       gpi::pc::type::size_t
