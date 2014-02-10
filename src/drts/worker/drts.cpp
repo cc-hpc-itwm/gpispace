@@ -537,10 +537,10 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
       std::pair<std::string, std::string> const capability_and_type
         = fhg::util::split_string (cap, "-");
 
-      const std::string & cap_name = capability_and_type.first;
-
       m_virtual_capabilities.insert
-        (std::make_pair (cap, sdpa::Capability (cap_name, m_my_name)));
+        ( std::make_pair
+         (cap, sdpa::Capability (capability_and_type.first, m_my_name))
+        );
     }
   }
 
