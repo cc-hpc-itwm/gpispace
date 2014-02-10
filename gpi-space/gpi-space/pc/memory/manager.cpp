@@ -14,10 +14,6 @@
 
 #include "factory.hpp"
 
-#include "gpi_area.hpp"
-#include "sfs_area.hpp"
-#include "shm_area.hpp"
-
 namespace gpi
 {
   namespace pc
@@ -27,21 +23,6 @@ namespace gpi
       manager_t::manager_t ()
         : m_ident (0)
       {
-        factory ().register_type ( "gpi"
-                                 , boost::bind ( gpi_area_t::create
-                                               , _1
-                                               , boost::ref (global::topology ())
-                                               )
-                                 );
-        factory ().register_type ( "shm"
-                                 , &shm_area_t::create
-                                 );
-        factory ().register_type ( "sfs"
-                                 , boost::bind ( sfs_area_t::create
-                                               , _1
-                                               , boost::ref (global::topology ())
-                                               )
-                                 );
       }
 
       manager_t::~manager_t ()

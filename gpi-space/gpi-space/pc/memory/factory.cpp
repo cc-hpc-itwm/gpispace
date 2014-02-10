@@ -1,5 +1,11 @@
 #include "factory.hpp"
 
+#include <gpi-space/pc/memory/gpi_area.hpp>
+#include <gpi-space/pc/memory/sfs_area.hpp>
+#include <gpi-space/pc/memory/shm_area.hpp>
+
+#include <gpi-space/pc/global/topology.hpp>
+
 #include <fhglog/fhglog.hpp>
 
 #include <fhg/util/url.hpp>
@@ -11,6 +17,25 @@ namespace gpi
   {
     namespace memory
     {
+      factory_t::factory_t()
+      {
+        register_type ( "gpi"
+                      , boost::bind ( gpi_area_t::create
+                                    , _1
+                                    , boost::ref (global::topology ())
+                                    )
+                      );
+        register_type ( "shm"
+                      , &shm_area_t::create
+                      );
+        register_type ( "sfs"
+                      , boost::bind ( sfs_area_t::create
+                                    , _1
+                                    , boost::ref (global::topology ())
+                                    )
+                      );
+      }
+
       void
       factory_t::register_type ( std::string const &typ
                                , factory_function_t fun
