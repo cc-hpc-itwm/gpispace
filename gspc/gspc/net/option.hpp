@@ -2,17 +2,18 @@
 #define GSPC_NET_OPTION_HPP
 
 #include <string>
-#include <fhg/util/url.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 
+#include <map>
+
 namespace gspc
 {
   namespace net
   {
-    typedef fhg::util::url_t::arg_map_t option_map_t;
+    typedef std::map<std::string, std::string> option_map_t;
 
     template <typename T>
     T get_option ( option_map_t const &opts
