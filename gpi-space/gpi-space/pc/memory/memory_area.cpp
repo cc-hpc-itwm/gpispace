@@ -5,6 +5,7 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
+#include <boost/format.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -242,16 +243,15 @@ namespace gpi
               << " range=["<<loc.offset << ", " << loc.offset+size << "]"
               );
           throw std::invalid_argument
-            ( std::string("out-of-bounds:")
-            + " access to shm handle"
-            + " " + boost::lexical_cast<std::string>(hdl_it->second.id)
-            +" outside boundaries"
-            + " ["
-            + boost::lexical_cast<std::string>(loc.offset)
-            + ","
-            + boost::lexical_cast<std::string>(loc.offset+size)
-            + ")"
-            + " is not within [0, " + boost::lexical_cast<std::string>(hdl_it->second.size) + ")"
+            ( ( boost::format ("out-of-bounds: access to %1%-handle %2%:"
+                              " range [%3%,%4%) is not withing [0,%5%)"
+                              )
+              % hdl_it->second.id
+              % hdl_it->second.name
+              % loc.offset
+              % (loc.offset + size)
+              % hdl_it->second.size
+              ).str()
             );
         }
       }
