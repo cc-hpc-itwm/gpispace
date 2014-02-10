@@ -36,8 +36,6 @@ namespace
 
     std::string name() const { return name_;}
 
-    std::string type() const { return type_;}
-
     size_t depth() const { return depth_;}
     void setDepth(size_t depth) { depth_ = depth;}
     void incDepth() { depth_++; }
