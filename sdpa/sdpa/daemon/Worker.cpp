@@ -95,9 +95,10 @@ const sdpa::capabilities_set_t& Worker::capabilities() const
 
 bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 {
-  lock_type lock(mtx_);
   if(recvCpbSet.empty())
     return false;
+
+  lock_type lock(mtx_);
 
   bool bModified = false;
   for(sdpa::capabilities_set_t::iterator it = recvCpbSet.begin(); it != recvCpbSet.end(); ++it) {
