@@ -27,13 +27,11 @@ namespace gpi
         header_t ()
           : length (0)
           , flags (0)
-          , seq (0)
           , ack (0)
         {}
 
         uint32_t     length;
         uint8_t       flags;
-        uint16_t        seq;
         uint16_t        ack;
       };
 
