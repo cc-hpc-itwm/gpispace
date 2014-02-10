@@ -9,9 +9,7 @@
 
 BOOST_AUTO_TEST_CASE (test_url_basics)
 {
-  using namespace fhg::util;
-
-  url_t url;
+  fhg::util::url_t url;
 
   url
     .type ("http")
@@ -28,9 +26,7 @@ BOOST_AUTO_TEST_CASE (test_url_basics)
 
 BOOST_AUTO_TEST_CASE (test_url_ctor)
 {
-  using namespace fhg::util;
-
-  url_t url ("http://localhost:8080?foo=bar&bar=baz");
+  fhg::util::url_t url ("http://localhost:8080?foo=bar&bar=baz");
 
   BOOST_CHECK_EQUAL (url.type (), "http");
   BOOST_CHECK_EQUAL (url.path (), "localhost:8080");
@@ -40,30 +36,25 @@ BOOST_AUTO_TEST_CASE (test_url_ctor)
 
 BOOST_AUTO_TEST_CASE (test_invalid_type)
 {
-  using namespace fhg::util;
-
-  BOOST_REQUIRE_THROW (url_t ("://foo"), std::invalid_argument);
+  BOOST_REQUIRE_THROW (fhg::util::url_t ("://foo"), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE (test_empty_param)
 {
-  using namespace fhg::util;
-
-  BOOST_REQUIRE_THROW (url_t ("file://bar?=baz"), std::invalid_argument);
+  BOOST_REQUIRE_THROW
+    (fhg::util::url_t ("file://bar?=baz"), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE (parse_file_url)
 {
-  using namespace fhg::util;
-
   {
-    url_t url ("file:///foo/bar/baz");
+    fhg::util::url_t url ("file:///foo/bar/baz");
     BOOST_REQUIRE_EQUAL (url.type (), "file");
     BOOST_REQUIRE_EQUAL (url.path (), "/foo/bar/baz");
   }
 
   {
-    url_t url ("file://foo/bar/baz");
+    fhg::util::url_t url ("file://foo/bar/baz");
     BOOST_REQUIRE_EQUAL (url.type (), "file");
     BOOST_REQUIRE_EQUAL (url.path (), "foo/bar/baz");
   }
@@ -71,19 +62,17 @@ BOOST_AUTO_TEST_CASE (parse_file_url)
 
 BOOST_AUTO_TEST_CASE (url_io)
 {
-  using namespace fhg::util;
-
   const std::string url_string ("file:///foo/bar/baz?a=b&c=d&d=e");
 
   {
     std::stringstream sstr;
 
-    url_t url_o (url_string);
+    fhg::util::url_t url_o (url_string);
     sstr << url_o;
 
     BOOST_REQUIRE_EQUAL (sstr.str (), url_string);
 
-    url_t url_i;
+    fhg::util::url_t url_i;
     sstr >> url_i;
 
     BOOST_CHECK_EQUAL (url_i.type ()  , url_o.type ());
