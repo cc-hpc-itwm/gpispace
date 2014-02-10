@@ -24,10 +24,6 @@ namespace gpi
         factory_t();
         area_ptr_t create (std::string const & url);
       private:
-        void register_type ( std::string const &type
-                           , factory_function_t fun
-                           );
-
         function_map_t m_factory_functions;
       };
 

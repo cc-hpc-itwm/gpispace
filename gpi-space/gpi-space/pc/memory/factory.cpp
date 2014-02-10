@@ -19,29 +19,27 @@ namespace gpi
     {
       factory_t::factory_t()
       {
-        register_type ( "gpi"
-                      , boost::bind ( gpi_area_t::create
-                                    , _1
-                                    , boost::ref (global::topology ())
-                                    )
-                      );
-        register_type ( "shm"
-                      , &shm_area_t::create
-                      );
-        register_type ( "sfs"
-                      , boost::bind ( sfs_area_t::create
-                                    , _1
-                                    , boost::ref (global::topology ())
-                                    )
-                      );
-      }
-
-      void
-      factory_t::register_type ( std::string const &typ
-                               , factory_function_t fun
-                               )
-      {
-        m_factory_functions [typ] = fun;
+        m_factory_functions.insert
+          (std::make_pair ( "gpi"
+                          , boost::bind ( gpi_area_t::create
+                                        , _1
+                                        , boost::ref (global::topology ())
+                                        )
+                          )
+          );
+        m_factory_functions.insert
+          (std::make_pair ( "shm"
+                          , &shm_area_t::create
+                          )
+          );
+        m_factory_functions.insert
+          (std::make_pair ( "sfs"
+                          , boost::bind ( sfs_area_t::create
+                                        , _1
+                                        , boost::ref (global::topology ())
+                                        )
+                          )
+          );
       }
 
       area_ptr_t
