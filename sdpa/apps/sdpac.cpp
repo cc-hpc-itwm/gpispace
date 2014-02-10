@@ -293,17 +293,6 @@ namespace
   }
 }
 
-namespace
-{
-  struct discover_id_tag
-  {
-    static const char *name ()
-    {
-      return "discover";
-    }
-  };
-}
-
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
 
@@ -593,7 +582,7 @@ int main (int argc, char **argv) {
           return JOB_ID_MISSING;
       }
 
-      const we::layer::id_type discover_id (sdpa::id_generator::instance<discover_id_tag>().next());
+      const we::layer::id_type discover_id (sdpa::id_generator ("discover_id").next());
       const std::string job_id (args.front());
       sdpa::discovery_info_t discovery_result (api.discoverJobStates(discover_id, job_id));
       std::cout<<"discovery result: "<<discovery_result<<std::endl;
