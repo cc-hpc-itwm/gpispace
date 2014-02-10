@@ -96,13 +96,4 @@ inline std::ostream& operator<<(std::ostream& os, const sdpa::Capability& cpb)
   return os;
 }
 
-inline std::ostream& operator<<(std::ostream& os, const sdpa::capabilities_set_t& cpbSet)
-{
-  for(sdpa::capabilities_set_t::iterator it = cpbSet.begin(); it!= cpbSet.end(); it++) {
-      os<<*it<<std::endl;
-  }
-
-  return os;
-}
-
 #endif
