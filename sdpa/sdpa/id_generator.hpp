@@ -19,12 +19,8 @@ namespace sdpa {
   public:
 	std::string next()
 	{
-    std::size_t id;
-    {
       boost::mutex::scoped_lock const _ (_counter_mutex);
-      id = _counter++;
-    }
-    return _prefix + boost::lexical_cast<std::string> (id);
+    return _prefix + boost::lexical_cast<std::string> (_counter++);
   }
 
     id_generator (std::string const& name)
