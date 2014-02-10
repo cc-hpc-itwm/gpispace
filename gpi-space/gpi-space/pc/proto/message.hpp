@@ -29,14 +29,12 @@ namespace gpi
           , flags (0)
           , seq (0)
           , ack (0)
-          , checksum (0)
         {}
 
         uint32_t     length;
         uint8_t       flags;
         uint16_t        seq;
         uint16_t        ack;
-        uint32_t   checksum;
       };
 
       typedef boost::variant< error::error_t
