@@ -32,6 +32,7 @@
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/id_generator.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -42,7 +43,6 @@ enum return_codes_t
   , FILE_EXISTS           = 52
   , IO_ERROR              = 53
   , NETWORK_ERROR         = 54
-  , DISCOVER_ID_MISSING   = 55
   , UNKNOWN_ERROR         = 100
   };
 
@@ -578,17 +578,13 @@ int main (int argc, char **argv) {
     {
       if (args.empty())
       {
-          std::cerr << "E: discover-id required" << std::endl;
-          return DISCOVER_ID_MISSING;
-      }
-      else
-        if (args.size()==1)
-        {
-          std::cerr << "E: job-id required (the first argument is considered as the disacovery id)" << std::endl;
+          std::cerr << "E: job-id required" << std::endl;
           return JOB_ID_MISSING;
-        }
+      }
 
-      sdpa::discovery_info_t discovery_result = api.discoverJobStates(args[0], args[1]);
+      const we::layer::id_type discover_id (sdpa::id_generator ("discover_id").next());
+      const std::string job_id (args.front());
+      sdpa::discovery_info_t discovery_result (api.discoverJobStates(discover_id, job_id));
       std::cout<<"discovery result: "<<discovery_result<<std::endl;
     }
     else
