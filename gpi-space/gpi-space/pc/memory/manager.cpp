@@ -33,6 +33,8 @@ namespace gpi
       class area_t;
       typedef boost::shared_ptr<area_t> area_ptr_t;
 
+      namespace
+      {
       area_ptr_t
       create_area (std::string const &url_s)
       {
@@ -45,6 +47,7 @@ namespace gpi
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
           );
+      }
       }
 
       manager_t::manager_t ()
