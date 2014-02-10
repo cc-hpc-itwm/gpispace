@@ -4,6 +4,8 @@
 #include <boost/test/unit_test.hpp>
 #include <we/test/operator_equal.hpp>
 
+#include <fhg/util/random_string.hpp>
+
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::capabilities_set_t);
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::worker_id_list_t);
 
@@ -59,8 +61,8 @@ BOOST_AUTO_TEST_CASE (CancelJob)
 BOOST_AUTO_TEST_CASE (CapabilitiesGained)
 {
   sdpa::capabilities_set_t set;
-  set.insert (sdpa::Capability ("foo"));
-  set.insert (sdpa::Capability ("bar"));
+  set.insert (sdpa::Capability ("foo", fhg::util::random_string()));
+  set.insert (sdpa::Capability ("bar", fhg::util::random_string()));
 
   CapabilitiesGainedEvent e ("from", "to", set);
   CapabilitiesGainedEvent* r (encode_decode_mgmt_event (e));
@@ -71,8 +73,8 @@ BOOST_AUTO_TEST_CASE (CapabilitiesGained)
 BOOST_AUTO_TEST_CASE (CapabilitiesLost)
 {
   sdpa::capabilities_set_t set;
-  set.insert (sdpa::Capability ("foo"));
-  set.insert (sdpa::Capability ("bar"));
+  set.insert (sdpa::Capability ("foo", fhg::util::random_string()));
+  set.insert (sdpa::Capability ("bar", fhg::util::random_string()));
 
   CapabilitiesLostEvent e ("from", "to", set);
   CapabilitiesLostEvent* r (encode_decode_mgmt_event (e));
@@ -215,8 +217,8 @@ BOOST_AUTO_TEST_CASE (WorkerRegistrationAck)
 BOOST_AUTO_TEST_CASE (WorkerRegistration)
 {
   sdpa::capabilities_set_t caps;
-  caps.insert (sdpa::Capability ("foo"));
-  caps.insert (sdpa::Capability ("bar"));
+  caps.insert (sdpa::Capability ("foo", fhg::util::random_string()));
+  caps.insert (sdpa::Capability ("bar", fhg::util::random_string()));
 
   WorkerRegistrationEvent e ("foo", "bar", 10, caps, 50, "fooagent");
   WorkerRegistrationEvent* r (encode_decode_mgmt_event (e));
@@ -254,4 +256,3 @@ BOOST_AUTO_TEST_CASE (DiscoverJobStatesReply)
   BOOST_REQUIRE_EQUAL (r->discover_id(), e.discover_id());
   BOOST_REQUIRE(r->discover_result() == e.discover_result());
 }
-

@@ -24,8 +24,9 @@ namespace
   class Capability
   {
   public:
-    explicit Capability(const std::string& name = "",
-                        const std::string& owner = "")
+    Capability(){}
+    explicit Capability(const std::string& name,
+                        const std::string& owner)
     : name_(name)
     , depth_(0)
     , owner_(owner)
