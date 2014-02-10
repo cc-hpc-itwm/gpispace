@@ -90,10 +90,4 @@ namespace
   typedef std::set<capability_t> capabilities_set_t;
 }
 
-inline std::ostream& operator<<(std::ostream& os, const sdpa::Capability& cpb)
-{
-  os<<"("<<cpb.name()<<", "<<cpb.type()<<", "<<cpb.depth()<<", "<<cpb.owner()<<", "<<cpb.uuid()<<")";
-  return os;
-}
-
 #endif
