@@ -36,12 +36,6 @@ namespace gpi
         , gpi::pc::proto::memory::message_t
         , gpi::pc::proto::segment::message_t
         > message_t;
-
-      struct complete_message_t
-      {
-        header_t header;
-        message_t  payload;
-      };
     }
   }
 }
