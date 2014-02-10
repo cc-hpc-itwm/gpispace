@@ -38,6 +38,7 @@ namespace sdpa {
                 )
     {}
 
+  private:
     mutable boost::mutex _counter_mutex;
     std::size_t _counter;
     std::string _prefix;
