@@ -20,10 +20,8 @@
 #define SDPA_ID_GENERATOR_HPP 1
 
 #include <fhg/util/hostname.hpp>
-#include <fhg/util/counter.hpp>
 #include <sys/types.h> // pid_t
 #include <unistd.h> // getpid
-#include <string.h> // memset
 #include <time.h>   // time
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
