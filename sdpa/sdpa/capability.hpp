@@ -25,10 +25,8 @@ namespace
   {
   public:
     explicit Capability(const std::string& name = "",
-                        const std::string& type = "",
                         const std::string& owner = "")
     : name_(name)
-    , type_(type)
     , depth_(0)
     , owner_(owner)
     , uuid_(sdpa::id_generator::instance<cap_id_tag>().next())
@@ -46,7 +44,6 @@ namespace
     void serialize(Archive& ar, const unsigned int)
     {
       ar & name_;
-      ar & type_;
       ar & depth_;
       ar & owner_;
       ar & uuid_;
@@ -65,7 +62,6 @@ namespace
 
     private:
     std::string name_;
-    std::string type_;
     mutable size_t depth_;
     std::string owner_;
     std::string uuid_;

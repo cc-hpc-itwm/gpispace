@@ -42,7 +42,7 @@ Agent::Agent ( const std::string& name
     std::ostringstream oss;
     oss<<"rank"<<rank;
 
-    sdpa::capability_t properCpb(oss.str(), "rank", name);
+    sdpa::capability_t properCpb(oss.str(), name);
     addCapability(properCpb);
   }
 

@@ -534,21 +534,17 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   {
     if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
     {
-      std::pair<std::string, std::string> capability_and_type
+      std::pair<std::string, std::string> const capability_and_type
         = fhg::util::split_string (cap, "-");
-      if (capability_and_type.second.empty ())
-        capability_and_type.second = "virtual";
 
       const std::string & cap_name = capability_and_type.first;
-      const std::string & cap_type = capability_and_type.second;
 
       DMLOG ( TRACE
             , "adding capability: " << cap_name
-            << " of type: " << cap_type
             );
 
       m_virtual_capabilities.insert
-        (std::make_pair (cap, sdpa::Capability (cap_name, cap_type, m_my_name)));
+        (std::make_pair (cap, sdpa::Capability (cap_name, m_my_name)));
     }
   }
 
@@ -1066,7 +1062,7 @@ void DRTSImpl::add_virtual_capability (std::string const &cap)
   {
     DMLOG(TRACE, "adding virtual capability: " << cap);
     m_virtual_capabilities.insert
-      (std::make_pair (cap, sdpa::Capability (cap, "virtual", m_my_name)));
+      (std::make_pair (cap, sdpa::Capability (cap, m_my_name)));
 
     notify_capability_gained (m_virtual_capabilities[cap]);
   }
