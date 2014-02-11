@@ -208,7 +208,11 @@ namespace gspc
 
         for (int fd = 3 ; fd < 1024 ; ++fd)
         {
-          ::close (fd);
+          const int rc (::close (fd));
+          if (rc && rc != -EBADF)
+          {
+            return rc;
+          }
         }
 
         fhg::syscall::chdir ("/");
