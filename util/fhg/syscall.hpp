@@ -1,6 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <sys/resource.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -8,6 +9,7 @@ namespace fhg
 {
   namespace syscall
   {
+    void bind (int sockfd, const struct sockaddr* addr, socklen_t addrlen);
     void chdir (const char* path);
     void chmod (const char* path, mode_t mode);
     void close (int fd);

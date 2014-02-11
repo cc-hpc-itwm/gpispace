@@ -6,7 +6,6 @@
 
 #include <fcntl.h>
 #include <signal.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 
@@ -36,6 +35,11 @@ namespace fhg
             (boost::system::error_code (errno, boost::system::system_category()));
         }
       }
+    }
+
+    void bind (int sockfd, const struct sockaddr* addr, socklen_t addrlen)
+    {
+      return negative_one_fails_with_errno<void> (::bind (sockfd, addr, addrlen));
     }
 
     void chdir (const char* path)
