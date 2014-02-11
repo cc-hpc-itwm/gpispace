@@ -16,8 +16,6 @@ fhg_add_plugin (fvm-fake fvm-fake.cpp LINK_LIBRARIES fvm-pc-fake.shared)
 
 get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 
-set(TESTS_WORKFLOWS_PATH "${CMAKE_CURRENT_BINARY_DIR}/workflows")
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
