@@ -426,18 +426,12 @@ namespace gspc
 
     buffer_t & process_t::buffer (int fd)
     {
-      if (fd < 0 || (size_t)fd >= m_buffers.size ())
-        throw std::out_of_range
-          ((boost::format ("process_t::buffer(): fd out of range: %1%") % fd).str ());
-      return *m_buffers [fd];
+      return *m_buffers.at (fd);
     }
 
     buffer_t const & process_t::buffer (int fd) const
     {
-      if (fd < 0 || (size_t)fd >= m_buffers.size ())
-        throw std::out_of_range
-          ((boost::format ("process_t::buffer(): fd out of range: %1%") % fd).str ());
-      return *m_buffers [fd];
+      return *m_buffers.at (fd);
     }
   }
 }
