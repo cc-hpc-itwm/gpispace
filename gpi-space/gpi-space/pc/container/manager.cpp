@@ -138,7 +138,7 @@ namespace gpi
         {
           err = errno;
           LOG(ERROR, "could not bind to socket at path " << path << ": " << strerror(err));
-          close (sfd);
+          fhg::syscall::close (sfd);
           return -err;
         }
         fhg::syscall::chmod (path.c_str(), 0700);
@@ -147,7 +147,7 @@ namespace gpi
         {
           err = errno;
           LOG(ERROR, "could not listen on socket: " << strerror(err));
-          close (sfd);
+          fhg::syscall::close (sfd);
           fhg::syscall::unlink (path.c_str());
           return -err;
         }
