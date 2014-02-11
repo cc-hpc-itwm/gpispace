@@ -34,6 +34,11 @@ namespace fhg
       }
     }
 
+    void close (int fd)
+    {
+      return negative_one_fails_with_errno<void> (::close (fd));
+    }
+
     void shutdown (int sockfd, int how)
     {
       return negative_one_fails_with_errno<void> (::shutdown (sockfd, how));
