@@ -17,11 +17,6 @@ namespace gspc
     class service_t
     {
     public:
-      static const std::string &NAME ()
-      {
-        static std::string name ("kvs"); return name;
-      }
-
       service_t ();
       ~service_t ();
 
