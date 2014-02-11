@@ -6,7 +6,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <algorithm>    // std::sort
 #include <iostream>
 
 #include <fhg/util/now.hpp>
