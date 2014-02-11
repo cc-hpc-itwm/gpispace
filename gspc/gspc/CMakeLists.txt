@@ -38,7 +38,6 @@ set (gspc_src
   net/auth/simple.cpp
 
   kvs/api.cpp
-  kvs/impl.cpp
   kvs/net_frontend.cpp
   kvs/net_service.cpp
 
