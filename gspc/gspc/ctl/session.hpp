@@ -7,11 +7,6 @@
 
 namespace gspc
 {
-  namespace kvs
-  {
-    class service_t;
-  }
-
   namespace ctl
   {
     typedef std::list<session_info_t> session_info_list_t;
