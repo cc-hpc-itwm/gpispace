@@ -211,7 +211,7 @@ namespace gspc
           ::close (fd);
         }
 
-        chdir ("/");
+        fhg::syscall::chdir ("/");
 
         if (execve ( m_filename.string ().c_str ()
                    , detail::argv_to_array (m_argv)
