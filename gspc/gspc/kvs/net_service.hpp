@@ -7,7 +7,7 @@
 #include <boost/thread/shared_mutex.hpp>
 
 #include <gspc/kvs/api.hpp>
-#include <gspc/kvs/impl/kvs_impl.hpp>
+#include <gspc/kvs/impl.hpp>
 #include <gspc/net/service/handler.hpp>
 
 namespace gspc

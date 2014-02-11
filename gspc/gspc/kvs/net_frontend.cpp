@@ -1,4 +1,4 @@
-#include "kvs_net_frontend.hpp"
+#include <gspc/kvs/net_frontend.hpp>
 
 #include <boost/thread/locks.hpp>
 #include <boost/format.hpp>

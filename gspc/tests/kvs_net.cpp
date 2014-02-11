@@ -2,9 +2,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <gspc/kvs/api.hpp>
-#include <gspc/kvs/impl/kvs_impl.hpp>
-#include <gspc/kvs/impl/kvs_net_frontend.hpp>
-#include <gspc/kvs/impl/kvs_net_service.hpp>
+#include <gspc/kvs/impl.hpp>
+#include <gspc/kvs/net_frontend.hpp>
+#include <gspc/kvs/net_service.hpp>
 #include <gspc/net/server/queue_manager.hpp>
 #include <gspc/net/server/service_demux.hpp>
 #include <gspc/net/io.hpp>

@@ -16,7 +16,7 @@
 #include <we/type/value/show.hpp>
 
 #include <gspc/kvs/api.hpp>
-#include <gspc/kvs/impl/kvs_impl.hpp>
+#include <gspc/kvs/impl.hpp>
 
 BOOST_AUTO_TEST_CASE (test_impl_invalid_key)
 {

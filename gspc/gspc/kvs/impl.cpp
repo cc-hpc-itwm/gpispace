@@ -1,4 +1,4 @@
-#include "kvs_impl.hpp"
+#include <gspc/kvs/impl.hpp>
 
 #include <algorithm>
 #include <boost/regex.hpp>

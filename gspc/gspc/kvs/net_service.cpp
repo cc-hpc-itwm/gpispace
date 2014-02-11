@@ -1,4 +1,4 @@
-#include "kvs_net_service.hpp"
+#include <gspc/kvs/net_service.hpp>
 
 #include <iostream>
 #include <string>
