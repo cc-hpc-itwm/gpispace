@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 namespace fhg
 {
@@ -92,6 +93,12 @@ namespace fhg
     void shutdown (int sockfd, int how)
     {
       return negative_one_fails_with_errno<void> (::shutdown (sockfd, how));
+    }
+
+    pid_t wait (pid_t pid, int* status, int options, struct rusage* rusage)
+    {
+      return negative_one_fails_with_errno<pid_t>
+        (::wait4 (pid, status, options, rusage));
     }
   }
 }

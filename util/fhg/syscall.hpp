@@ -1,7 +1,8 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <unistd.h>
+#include <sys/resource.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 namespace fhg
 {
@@ -19,5 +20,6 @@ namespace fhg
     int open (const char* pathname, int flags, mode_t mode);
     pid_t setsid();
     void shutdown (int sockfd, int how);
+    pid_t wait (pid_t pid, int* status, int options, struct rusage* rusage);
   }
 }
