@@ -2,6 +2,8 @@
 
 #include <fhg/util/daemonize.hpp>
 
+#include <fhg/syscall.hpp>
+
 #include <stdexcept>
 
 #include <errno.h>
@@ -51,18 +53,9 @@ namespace fhg
         return child_child;
       }
 
-      if (close (0) < 0)
-      {
-        throw std::runtime_error ("could not close stdin: " + std::string (strerror (errno)));
-      }
-      if (close (1) < 0)
-      {
-        throw std::runtime_error ("could not close stdout: " + std::string (strerror (errno)));
-      }
-      if (close (2) < 0)
-      {
-        throw std::runtime_error ("could not close stderr: " + std::string (strerror (errno)));
-      }
+      fhg::syscall::close (0); // stdin
+      fhg::syscall::close (1); // stdout
+      fhg::syscall::close (2); // stderr
 
       if (open ("/dev/null", O_RDONLY) != 0)
       {
