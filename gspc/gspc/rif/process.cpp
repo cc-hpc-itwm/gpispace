@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <boost/format.hpp>
 
+#include <fhg/syscall.hpp>
 #include <fhg/util/split.hpp>
 
 #include "util.hpp"
@@ -170,6 +171,7 @@ namespace gspc
     }
 
     int process_t::fork_and_exec ()
+    try
     {
       if (m_pid != -1)
         return -EINVAL;
@@ -200,9 +202,9 @@ namespace gspc
         this->stdout ().close_rd ();
         this->stderr ().close_rd ();
 
-        dup2 (this->stdin ().rd () , STDIN_FILENO);
-        dup2 (this->stdout ().wr (), STDOUT_FILENO);
-        dup2 (this->stderr ().wr (), STDERR_FILENO);
+        fhg::syscall::dup (this->stdin ().rd () , STDIN_FILENO);
+        fhg::syscall::dup (this->stdout ().wr (), STDOUT_FILENO);
+        fhg::syscall::dup (this->stderr ().wr (), STDERR_FILENO);
 
         for (int fd = 3 ; fd < 1024 ; ++fd)
         {
@@ -251,6 +253,10 @@ namespace gspc
       }
 
       return 0;
+    }
+    catch (boost::system::system_error const& se)
+    {
+      return -se.code().value();
     }
 
     pid_t process_t::pid () const
