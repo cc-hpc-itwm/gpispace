@@ -21,6 +21,7 @@ namespace fhg
     int open (const char* pathname, int flags, mode_t mode);
     pid_t setsid();
     void shutdown (int sockfd, int how);
+    int socket (int domain, int type, int protocol);
     void unlink (const char* pathname);
     pid_t wait (pid_t pid, int* status, int options, struct rusage* rusage);
   }
