@@ -1284,6 +1284,11 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
 
 void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
 {
+  if(!jobManager().findJob(job_id))
+  {
+      throw std::runtime_error(std::string("The layer requested the discovery of an inexistent job with the id ")+job_id);
+  }
+
   events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( sdpa::daemon::WE
                                                                                     , name()
                                                                                     , job_id
