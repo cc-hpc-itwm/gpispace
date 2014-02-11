@@ -19,7 +19,6 @@ OPTION (ENABLE_SDPA_GUI "Build the monitor gui" YES)
 OPTION (ENABLE_GPI_FUSE "Build the gpi fuse module" OFF)
 OPTION (ENABLE_PNET_EDITOR "Build the pnet editor" YES)
 OPTION (INSTALL_AS_BUNDLE "Install as a bundle" NO)
-OPTION (DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
@@ -86,10 +85,6 @@ set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$EN
 include (fhg_test_macros)
 
 include (CompilerFlags)
-
-if (NOT DEBUG_FHGLOG)
-  add_definitions("-DNDEBUG_FHGLOG")
-endif()
 
 if (NOT FHG_ASSERT_MODE)
   if (${CMAKE_BUILD_TYPE} MATCHES "Release")
