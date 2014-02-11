@@ -360,15 +360,11 @@ namespace gspc
     }
 
     int process_t::waitpid_and_notify (int flags)
+    try
     {
       int s;
-      pid_t err = ::wait4 (m_pid, &s, flags, &m_rusage);
-      if (err < 0)
-      {
-        return -errno;
-      }
 
-      if (err == m_pid)
+      if (fhg::syscall::wait (m_pid, &s, flags, &m_rusage) == m_pid)
       {
         this->notify (s);
         return 0;
@@ -377,6 +373,10 @@ namespace gspc
       {
         return -EBUSY;
       }
+    }
+    catch (boost::system::system_error const& se)
+    {
+      return -se.code().value();
     }
 
     boost::filesystem::path const & process_t::filename () const
