@@ -144,8 +144,6 @@ namespace gspc
 
     int process_t::kill (int sig)
     {
-      int rc;
-
       if (m_status)
         return 0;
 
@@ -154,11 +152,16 @@ namespace gspc
         return -ECHILD;
       }
 
-      rc = ::kill (m_pid, sig);
-      if (rc < 0)
-        return -errno;
-      else
-        return 0;
+      try
+      {
+        fhg::syscall::kill (m_pid, sig);
+      }
+      catch (boost::system::system_error const& se)
+      {
+        return -se.code().value();
+      }
+
+      return 0;
     }
 
     void process_t::set_state (process_state_t s)
