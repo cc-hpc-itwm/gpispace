@@ -132,16 +132,16 @@ namespace gpi
                 , sizeof(my_addr.sun_path) - 1
                 );
 
-        if (bind( sfd
-                , (struct sockaddr *)&my_addr
-                , sizeof(struct sockaddr_un)
-                ) == -1
-           )
+        try
         {
-          err = errno;
-          LOG(ERROR, "could not bind to socket at path " << path << ": " << strerror(err));
+          fhg::syscall::bind
+            (sfd, (struct sockaddr *)&my_addr, sizeof (struct sockaddr_un));
+        }
+        catch (boost::system::system_error const& se)
+        {
+          LOG(ERROR, "could not bind to socket at path " << path << ": " << se.what());
           fhg::syscall::close (sfd);
-          return -err;
+          return -se.code().value();
         }
         fhg::syscall::chmod (path.c_str(), 0700);
 
