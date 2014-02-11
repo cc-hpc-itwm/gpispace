@@ -13,10 +13,7 @@
 
 BOOST_AUTO_TEST_CASE (test_url_basics)
 {
-  fhg::util::url_t url;
-
-  url.type ("http");
-  url.path ("localhost:8080");
+  fhg::util::url_t url ("http", "localhost:8080");
   url.set ("foo", "bar");
   url.set ("bar", "baz");
 
@@ -476,8 +473,7 @@ BOOST_AUTO_TEST_CASE (url_io)
 
     BOOST_REQUIRE_EQUAL (sstr.str (), url_string);
 
-    fhg::util::url_t url_i;
-    sstr >> url_i;
+    fhg::util::url_t url_i (sstr.str());
 
     BOOST_CHECK_EQUAL (url_i.type ()  , url_o.type ());
     BOOST_CHECK_EQUAL (url_i.path ()  , url_o.path ());
@@ -485,9 +481,9 @@ BOOST_AUTO_TEST_CASE (url_io)
     BOOST_CHECK_EQUAL (url_i.get ("c"), url_o.get ("c"));
     BOOST_CHECK_EQUAL (url_i.get ("d"), url_o.get ("d"));
 
-    sstr.str ();
+    std::stringstream sstr2;
 
-    sstr << url_i;
-    BOOST_REQUIRE_EQUAL (sstr.str (), url_string);
+    sstr2 << url_i;
+    BOOST_REQUIRE_EQUAL (sstr2.str (), url_string);
   }
 }

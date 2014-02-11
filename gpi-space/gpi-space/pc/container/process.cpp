@@ -145,9 +145,7 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
-            fhg::util::url_t url;
-            url.type ("shm");
-            url.path (register_segment.name);
+            fhg::util::url_t url ("shm", register_segment.name);
             url.set ("size", boost::lexical_cast<std::string>(register_segment.size));
             if (register_segment.flags & F_PERSISTENT)
               url.set ("persistent", "true");

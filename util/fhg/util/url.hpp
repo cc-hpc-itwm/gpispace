@@ -13,7 +13,9 @@ namespace fhg
     public:
       typedef std::map<std::string, std::string> arg_map_t;
 
-      url_t ()
+      url_t (std::string const& type, std::string const& path)
+        : m_type (type)
+        , m_path (path)
       {}
 
       // url -> protocoll { '://' { host_path } { '?' { parameter_list }}}
@@ -36,16 +38,6 @@ namespace fhg
       std::string const & type () const { return m_type; }
       std::string const & path () const { return m_path; }
       arg_map_t const &   args () const { return m_args; }
-
-      void type (std::string const &s)
-      {
-        m_type = s;
-      }
-
-      void path (std::string const &s)
-      {
-        m_path = s;
-      }
 
       void set (std::string const &k, std::string const &v)
       {

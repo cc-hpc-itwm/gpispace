@@ -493,9 +493,7 @@ namespace gpi
           {
             using namespace fhg::util;
             url_t old_url (url_s);
-            url_t new_url;
-            new_url.type (old_url.type ());
-            new_url.path (old_url.path ());
+            url_t new_url (old_url.type(), old_url.path());
             new_url.set ("persistent", "true");
             global::topology ().add_memory
               (area->get_id (), boost::lexical_cast<std::string>(new_url));
