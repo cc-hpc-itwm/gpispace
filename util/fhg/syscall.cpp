@@ -5,6 +5,7 @@
 #include <boost/system/system_error.hpp>
 
 #include <fcntl.h>
+#include <signal.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 
@@ -67,6 +68,11 @@ namespace fhg
     pid_t fork()
     {
       return negative_one_fails_with_errno<pid_t> (::fork());
+    }
+
+    void kill (pid_t pid, int sig)
+    {
+      return negative_one_fails_with_errno<void> (::kill (pid, sig));
     }
 
     int open (const char* pathname, int flags)
