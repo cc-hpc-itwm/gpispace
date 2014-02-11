@@ -27,10 +27,7 @@ namespace fhg
         exit (EXIT_SUCCESS);
       }
 
-      if (setsid() < 0)
-      {
-        throw std::runtime_error ("could not setsid: " + std::string (strerror (errno)));
-      }
+      fhg::syscall::setsid();
       if (chdir ("/") < 0)
       {
         throw std::runtime_error ("could not chdir: " + std::string (strerror (errno)));
