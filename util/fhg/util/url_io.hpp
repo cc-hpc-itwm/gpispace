@@ -5,6 +5,9 @@
 #include <ostream>
 
 #include <fhg/util/url.hpp>
+#include <fhg/util/first_then.hpp>
+
+#include <boost/foreach.hpp>
 
 namespace fhg
 {
@@ -13,29 +16,17 @@ namespace fhg
     inline std::ostream & operator<< (std::ostream & os, const url_t &url)
     {
       os << url.type () << "://" << url.path ();
-      if (not url.args ().empty ())
+
+      fhg::util::first_then<std::string> const sep ("?", "&");
+
+      BOOST_FOREACH
+        ( std::pair<std::string BOOST_PP_COMMA() std::string> const& kv
+        , url.args()
+        )
       {
-        bool first = true;
-
-        url_t::arg_map_t::const_iterator it = url.args ().begin ();
-        url_t::arg_map_t::const_iterator end = url.args ().end ();
-
-        while (it != end)
-        {
-          if (first)
-          {
-            os << "?";
-            first = false;
-          }
-          else
-          {
-            os << "&";
-          }
-
-          os << it->first << "=" << it->second;
-          ++it;
-        }
+        os << sep << kv.first << '=' << kv.second;
       }
+
       return os;
     }
   }
