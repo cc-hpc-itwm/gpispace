@@ -1,6 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
 #include <unistd.h>
+#include <sys/types.h>
 
 namespace fhg
 {
@@ -9,6 +10,8 @@ namespace fhg
     void chdir (const char* path);
     void close (int fd);
     pid_t fork();
+    int open (const char* pathname, int flags);
+    int open (const char* pathname, int flags, mode_t mode);
     pid_t setsid();
     void shutdown (int sockfd, int how);
   }
