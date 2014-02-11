@@ -565,9 +565,9 @@ namespace gpi
         url_t url (url_s);
 
         type::size_t comsize =
-          boost::lexical_cast<type::size_t>(url.get ("buffer_size", "4194304"));
+          boost::lexical_cast<type::size_t>(url.get ("buffer_size").get_value_or ("4194304"));
         type::size_t numbuf =
-          boost::lexical_cast<type::size_t>(url.get ("buffers", "8"));
+          boost::lexical_cast<type::size_t>(url.get ("buffers").get_value_or ("8"));
 
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
         gpi_area_t * area = new gpi_area_t ( GPI_PC_INVAL

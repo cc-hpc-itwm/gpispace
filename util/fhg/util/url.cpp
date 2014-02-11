@@ -136,5 +136,18 @@ namespace fhg
         }
       }
     }
+
+    boost::optional<std::string const&>
+    url_t::get (std::string const& key) const
+    {
+      arg_map_t::const_iterator const value (m_args.find (key));
+
+      if (value != m_args.end ())
+      {
+        return value->second;
+      }
+
+      return boost::none;
+    }
   }
 }

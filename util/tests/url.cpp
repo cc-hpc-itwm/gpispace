@@ -19,8 +19,8 @@ BOOST_AUTO_TEST_CASE (test_url_basics)
 
   BOOST_CHECK_EQUAL (url.type (), "http");
   BOOST_CHECK_EQUAL (url.path (), "localhost:8080");
-  BOOST_CHECK_EQUAL (url.get ("foo"), "bar");
-  BOOST_CHECK_EQUAL (url.get ("bar"), "baz");
+  BOOST_CHECK_EQUAL (url.get ("foo").get_value_or (""), "bar");
+  BOOST_CHECK_EQUAL (url.get ("bar").get_value_or (""), "baz");
 }
 
 BOOST_AUTO_TEST_CASE (test_url_ctor)
@@ -29,8 +29,8 @@ BOOST_AUTO_TEST_CASE (test_url_ctor)
 
   BOOST_CHECK_EQUAL (url.type (), "http");
   BOOST_CHECK_EQUAL (url.path (), "localhost:8080");
-  BOOST_CHECK_EQUAL (url.get ("foo"), "bar");
-  BOOST_CHECK_EQUAL (url.get ("bar"), "baz");
+  BOOST_CHECK_EQUAL (url.get ("foo").get_value_or (""), "bar");
+  BOOST_CHECK_EQUAL (url.get ("bar").get_value_or (""), "baz");
 }
 
 namespace

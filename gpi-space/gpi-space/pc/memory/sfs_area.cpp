@@ -633,29 +633,29 @@ namespace gpi
         url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
 
-        if (not read_bool (url.get ("create", "false")))
+        if (not read_bool (url.get ("create").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_NOCREATE);
         }
-        if (    read_bool (url.get ("unlink", "false")))
+        if (    read_bool (url.get ("unlink").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_FORCE_UNLINK);
         }
-        if (not read_bool (url.get ("mmap", "false")))
+        if (not read_bool (url.get ("mmap").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_NOMMAP);
         }
-        if (    read_bool (url.get ("exclusive", "false")))
+        if (    read_bool (url.get ("exclusive").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_EXCLUSIVE);
         }
-        if (    read_bool (url.get ("persistent", "false")))
+        if (    read_bool (url.get ("persistent").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_PERSISTENT);
         }
 
         gpi::pc::type::size_t size =
-          boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size", "0"));
+          boost::lexical_cast<gpi::pc::type::size_t>(url.get ("size").get_value_or ("0"));
 
         area_ptr_t area (new sfs_area_t ( GPI_PC_INVAL
                                         , url.path ()

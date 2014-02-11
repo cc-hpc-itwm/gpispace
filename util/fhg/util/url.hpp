@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+#include <boost/optional.hpp>
+
 namespace fhg
 {
   namespace util
@@ -44,14 +46,7 @@ namespace fhg
         m_args [k] = v;
       }
 
-      std::string get (std::string const &k, std::string const &dflt="") const
-      {
-        arg_map_t::const_iterator it = m_args.find (k);
-        if (it != m_args.end ())
-          return it->second;
-        else
-          return dflt;
-      }
+      boost::optional<std::string const&> get (std::string const&) const;
     private:
       std::string m_type;
       std::string m_path;
