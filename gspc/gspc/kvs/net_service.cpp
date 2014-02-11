@@ -566,12 +566,7 @@ namespace gspc
         }
       }
     }
-  }
-}
-namespace gspc
-{
-  namespace kvs
-  {
+
     service_t::service_t ()
       : m_kvs ("inproc://")
     {

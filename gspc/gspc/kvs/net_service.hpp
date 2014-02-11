@@ -118,13 +118,7 @@ namespace gspc
       mutable mutex_type  m_waiting_mutex;
       mutable std::list<waiting_t *> m_waiting;
     };
-  }
-}
 
-namespace gspc
-{
-  namespace kvs
-  {
     class service_t
     {
     public:
