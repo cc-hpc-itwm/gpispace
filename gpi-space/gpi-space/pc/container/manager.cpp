@@ -114,12 +114,14 @@ namespace gpi
         struct sockaddr_un my_addr;
         const std::size_t backlog_size (16);
 
-        sfd = socket (AF_UNIX, SOCK_STREAM, 0);
-        if (sfd == -1)
+        try
         {
-          err = errno;
-          LOG(ERROR, "could not create unix socket: " << strerror(err));
-          return -err;
+          sfd = fhg::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
+        }
+        catch (boost::system::system_error const& se)
+        {
+          LOG(ERROR, "could not create unix socket: " << se.what());
+          return -se.code().value();
         }
         setsockopt (sfd, SOL_SOCKET, SO_PASSCRED, (void*)1, 1);
 
