@@ -37,22 +37,19 @@ namespace fhg
       std::string const & path () const { return m_path; }
       arg_map_t const &   args () const { return m_args; }
 
-      url_t & type (std::string const &s)
+      void type (std::string const &s)
       {
         m_type = s;
-        return *this;
       }
 
-      url_t & path (std::string const &s)
+      void path (std::string const &s)
       {
         m_path = s;
-        return *this;
       }
 
-      url_t & set (std::string const &k, std::string const &v)
+      void set (std::string const &k, std::string const &v)
       {
         m_args [k] = v;
-        return *this;
       }
 
       std::string get (std::string const &k, std::string const &dflt="") const

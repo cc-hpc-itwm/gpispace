@@ -15,12 +15,10 @@ BOOST_AUTO_TEST_CASE (test_url_basics)
 {
   fhg::util::url_t url;
 
-  url
-    .type ("http")
-    .path ("localhost:8080")
-    .set ("foo", "bar")
-    .set ("bar", "baz")
-    ;
+  url.type ("http");
+  url.path ("localhost:8080");
+  url.set ("foo", "bar");
+  url.set ("bar", "baz");
 
   BOOST_CHECK_EQUAL (url.type (), "http");
   BOOST_CHECK_EQUAL (url.path (), "localhost:8080");
