@@ -7,6 +7,7 @@
 
 #include <fhg/assert.hpp>
 #include <fhg/util/lift_error_code_to_exception.hpp>
+#include <fhg/syscall.hpp>
 #include <fhglog/LogMacros.hpp>
 
 #include <boost/bind.hpp>
@@ -103,8 +104,7 @@ namespace gpi
 
       void manager_t::close_socket (const int fd)
       {
-        fhg::util::lift_error_code_to_exception
-          (shutdown (fd, SHUT_RDWR), "close_socket: shutdown");
+        fhg::syscall::shutdown (fd, SHUT_RDWR);
         fhg::util::lift_error_code_to_exception
           (close (fd), "close_socket: close");
       }
