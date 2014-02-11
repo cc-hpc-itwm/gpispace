@@ -12,13 +12,7 @@ set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/inotify")
 set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
 set(TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/coallocation_test")
 
-get_target_property(TESTS_FVM_PC_MODULE fvm-pc.shared LOCATION)
-get_target_property(TESTS_FVM_PC_FAKE_MODULE fvm-pc-fake.shared LOCATION)
-
-fhg_add_plugin (fvm-fake fvm-fake.cpp
-  LINK_LIBRARIES ${TESTS_FVM_PC_FAKE_MODULE}
-  DEPENDS fvm-pc-fake.shared
-  )
+fhg_add_plugin (fvm-fake fvm-fake.cpp LINK_LIBRARIES fvm-pc-fake.shared)
 
 get_target_property(TESTS_FVM_FAKE_PLUGIN_PATH fvm-fake-plugin LOCATION)
 
