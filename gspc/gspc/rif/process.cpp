@@ -184,16 +184,19 @@ namespace gspc
         m_pipes [i].open (0, false);
       }
 
-      pid_t new_pid = fork ();
+      pid_t new_pid;
 
-      if (new_pid < 0)
+      try
       {
-        int err = errno;
+        new_pid = fhg::syscall::fork();
+      }
+      catch (boost::system::system_error const& se)
+      {
         for (size_t i = 0 ; i < m_pipes.size () ; ++i)
           m_pipes [i].close ();
 
         set_state (PROCESS_FAILED);
-        return -err;
+        return -se.code().value();
       }
 
       if (0 == new_pid)
