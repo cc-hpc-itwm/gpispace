@@ -95,6 +95,11 @@ namespace fhg
       return negative_one_fails_with_errno<void> (::shutdown (sockfd, how));
     }
 
+    void unlink (const char* pathname)
+    {
+      return negative_one_fails_with_errno<void> (::unlink (pathname));
+    }
+
     pid_t wait (pid_t pid, int* status, int options, struct rusage* rusage)
     {
       return negative_one_fails_with_errno<pid_t>
