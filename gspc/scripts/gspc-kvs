@@ -15,8 +15,6 @@ Options:
    --host[=<host>]       specify or get the host of the KVS
    --port[=<port>]       specify or get the port of the KVS
 
-   --expiry <msec>       specify the expiry time in 1/1000 sec
-
 Actions:
 
    --start               start the kvs if it does not run yet
@@ -30,12 +28,11 @@ EOF
 
 kvs_host="$GSPC_KVS_HOST"
 kvs_port="$GSPC_KVS_PORT"
-key_expiry=0
 action=
 
 if [ $# -eq 0 ] ; then usage ; exit 1 ; fi
 
-TEMP=`getopt -o h --long help,host::,port::,expiry:,status,start,stop,get,get-regex,put,del -n 'gspc' -- "$@"`
+TEMP=`getopt -o h --long help,host::,port::,status,start,stop,get,get-regex,put,del -n 'gspc' -- "$@"`
 
 if [ $? != 0 ] ; then echo >&2 "try '-h' or '--help'. Terminating..." ; exit 1 ; fi
 
@@ -62,7 +59,6 @@ while true ; do
             shift
             shift
             ;;
-        --expiry) key_expiry="$2" ; shift ; shift ;;
 
         --status) action="status" ; shift ;;
         --start)  action="start" ; shift ;;
@@ -224,7 +220,7 @@ case "$action" in
         fi
         ec=0
         while [ $# -ge 2 ] ; do
-            kvsc --put "$1" --value "$2" --expiry "${key_expiry}"
+            kvsc --put "$1" --value "$2"
             if [ $? -ne 0 ] ; then
                 ec=1
             fi

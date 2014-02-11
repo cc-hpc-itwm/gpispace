@@ -72,19 +72,6 @@ namespace gspc
       return this->do_del_regex (regex);
     }
 
-    int api_t::set_ttl (key_type const &key, int ttl)
-    {
-      if (not is_key_valid (key))
-        return -EKEYREJECTED;
-
-      return this->do_set_ttl (key, ttl);
-    }
-
-    int api_t::set_ttl_regex (std::string const &regex, int ttl)
-    {
-      return this->do_set_ttl_regex (regex, ttl);
-    }
-
     int api_t::push (key_type const &key, const char *val)
     {
       return this->push (key, std::string (val));

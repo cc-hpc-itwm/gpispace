@@ -33,9 +33,6 @@ namespace gspc
       int do_del (key_type const &key);
       int do_del_regex (std::string const &regex);
 
-      int do_set_ttl (key_type const &key, int ttl);
-      int do_set_ttl_regex (std::string const &regex, int ttl);
-
       int do_push (key_type const &key, value_type const &val);
       int do_try_pop (key_type const &, value_type &val);
 

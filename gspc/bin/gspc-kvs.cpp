@@ -58,9 +58,6 @@ static void long_usage (int)
     << ""                                                           << std::endl
     << "   --inc key              atomically increment a value"     << std::endl
     << "   --dec key              atomically decrement a value"     << std::endl
-    << ""                                                           << std::endl
-    << "   --set-ttl key ttl      set the ttl of a given key"       << std::endl
-    << "   --set-ttl-regex regex ttl set the ttl of matching keys"  << std::endl
     ;
 }
 
@@ -423,50 +420,6 @@ int main (int argc, char *argv [], char **)
       std::string regex (argv [i++]);
 
       rc = log_error ("del-regex", kvs->del_regex (regex));
-    }
-    else if (arg == "--set-ttl")
-    {
-      if (i == argc)
-      {
-        std::cerr << "kvs: missing argument to --set-ttl" << std::endl;
-        return EX_USAGE;
-      }
-      gspc::kvs::api_t::key_type key = argv [i++];
-
-      int ttl;
-      try
-      {
-        ttl = fhg::util::read_int(argv [i++]);
-      }
-      catch (std::exception const &ex)
-      {
-        std::cerr << "kvs: invalid ttl" << std::endl;
-        return EX_USAGE;
-      }
-
-      rc = log_error ("set-ttl", kvs->set_ttl (key, ttl));
-    }
-    else if (arg == "--set-ttl-regex")
-    {
-      if (i == argc)
-      {
-        std::cerr << "kvs: missing argument to --set-ttl-regex" << std::endl;
-        return EX_USAGE;
-      }
-      std::string regex (argv [i++]);
-
-      int ttl;
-      try
-      {
-        ttl = fhg::util::read_int(argv [i++]);
-      }
-      catch (std::exception const &ex)
-      {
-        std::cerr << "kvs: invalid ttl" << std::endl;
-        return EX_USAGE;
-      }
-
-      rc = log_error ("set-ttl-regex", kvs->set_ttl_regex (regex, ttl));
     }
     else if (arg == "--push")
     {

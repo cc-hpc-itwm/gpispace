@@ -218,38 +218,6 @@ namespace gspc
       return read_int_with_following_newline (rply);
     }
 
-    int kvs_net_frontend_t::do_set_ttl (key_type const &key, int ttl)
-    {
-      std::string rply;
-      int rc;
-
-      std::ostringstream sstr;
-      sstr << ttl << " " << key << std::endl;
-
-      rc = request ("set_ttl", sstr.str (), rply);
-
-      if (rc != 0)
-        return rc;
-
-      return read_int_with_following_newline (rply);
-    }
-
-    int kvs_net_frontend_t::do_set_ttl_regex (std::string const &regex, int ttl)
-    {
-      std::string rply;
-      int rc;
-
-      std::ostringstream sstr;
-      sstr << ttl << ' ' << '"' << regex << '"' << std::endl;
-
-      rc = request ("set_ttl_regex", sstr.str (), rply);
-
-      if (rc != 0)
-        return rc;
-
-      return read_int_with_following_newline (rply);
-    }
-
     int kvs_net_frontend_t::do_push (key_type const &key, value_type const &val)
     {
       std::ostringstream sstr;

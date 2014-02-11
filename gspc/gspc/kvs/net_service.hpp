@@ -34,9 +34,6 @@ namespace gspc
       int do_del (key_type const &key);
       int do_del_regex (std::string const &regex);
 
-      int do_set_ttl (key_type const &key, int ttl);
-      int do_set_ttl_regex (std::string const &regex, int ttl);
-
       int do_push (key_type const &key, value_type const &val);
       int do_try_pop (key_type const &, value_type &val);
 
@@ -56,12 +53,9 @@ namespace gspc
         explicit
         entry_t (value_type const &value)
           : value (value)
-          , expiry (-1)
         {}
 
         int  is_popable () const;
-        bool is_expired () const;
-        void expires_in (int ttl);
 
         void set_value (value_type const &);
         value_type & get_value ();
@@ -74,7 +68,6 @@ namespace gspc
 
         mutable boost::recursive_mutex mutex;
         value_type value;
-        int        expiry;
       };
 
       class waiting_t
@@ -106,14 +99,10 @@ namespace gspc
       typedef boost::shared_ptr<entry_t> entry_ptr_t;
       typedef std::map<key_type, entry_ptr_t> value_map_t;
 
-      void purge_expired_keys () const;
       void notify (key_type const &, int events) const;
 
       mutable mutex_type  m_mutex;
       value_map_t         m_values;
-
-      mutable mutex_type  m_expired_entries_mutex;
-      mutable std::list<key_type> m_expired_entries;
 
       mutable mutex_type  m_waiting_mutex;
       mutable std::list<waiting_t *> m_waiting;
@@ -162,12 +151,6 @@ namespace gspc
 
       boost::optional<gspc::net::frame>
       rpc_del_regex (gspc::net::frame const &);
-
-      boost::optional<gspc::net::frame>
-      rpc_set_ttl (gspc::net::frame const &);
-
-      boost::optional<gspc::net::frame>
-      rpc_set_ttl_regex (gspc::net::frame const &);
 
       boost::optional<gspc::net::frame>
       rpc_push (gspc::net::frame const &);
