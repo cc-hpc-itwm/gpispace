@@ -3,7 +3,6 @@
 
 #include <string>
 #include <ostream>
-#include <istream>
 
 #include <fhg/util/url.hpp>
 
@@ -38,14 +37,6 @@ namespace fhg
         }
       }
       return os;
-    }
-
-    inline std::istream & operator>> (std::istream &is, url_t & url)
-    {
-      std::string s;
-      is >> s;
-      url = url_t (s);
-      return is;
     }
   }
 }
