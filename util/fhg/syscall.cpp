@@ -95,6 +95,12 @@ namespace fhg
       return negative_one_fails_with_errno<pid_t> (::setsid());
     }
 
+    void setsockopt (int sockfd, int level, int optname, const void* optval, socklen_t optlen)
+    {
+      return negative_one_fails_with_errno<void>
+        (::setsockopt (sockfd, level, optname, optval, optlen));
+    }
+
     void shutdown (int sockfd, int how)
     {
       return negative_one_fails_with_errno<void> (::shutdown (sockfd, how));
