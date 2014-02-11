@@ -279,6 +279,14 @@ namespace we
 
     void layer::discover (id_type discover_id, id_type id)
     {
+      _nets_to_extract_from.apply
+        (id, boost::bind (&layer::discover_delayed, this, _1, discover_id));
+    }
+    void layer::discover_delayed
+      (activity_data_type& activity_data, id_type discover_id)
+    {
+      const id_type id (activity_data._id);
+
       boost::mutex::scoped_lock const _ (_discover_state_mutex);
       assert (_discover_state.find (discover_id) == _discover_state.end());
 
