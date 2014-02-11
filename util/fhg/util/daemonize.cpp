@@ -28,10 +28,7 @@ namespace fhg
       }
 
       fhg::syscall::setsid();
-      if (chdir ("/") < 0)
-      {
-        throw std::runtime_error ("could not chdir: " + std::string (strerror (errno)));
-      }
+      fhg::syscall::chdir ("/");
 
       umask (0);
 
