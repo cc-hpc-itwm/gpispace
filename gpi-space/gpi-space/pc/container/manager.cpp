@@ -110,7 +110,7 @@ namespace gpi
 
       int manager_t::open_socket (std::string const & path)
       {
-        int sfd, err;
+        int sfd;
         struct sockaddr_un my_addr;
         const std::size_t backlog_size (16);
 
@@ -145,13 +145,16 @@ namespace gpi
         }
         fhg::syscall::chmod (path.c_str(), 0700);
 
-        if (listen(sfd, backlog_size) == -1)
+        try
         {
-          err = errno;
-          LOG(ERROR, "could not listen on socket: " << strerror(err));
+          fhg::syscall::listen (sfd, backlog_size);
+        }
+        catch (boost::system::system_error const& se)
+        {
+          LOG(ERROR, "could not listen on socket: " << se.what());
           fhg::syscall::close (sfd);
           fhg::syscall::unlink (path.c_str());
-          return -err;
+          return -se.code().value();
         }
 
         return sfd;
