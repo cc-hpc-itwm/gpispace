@@ -1,22 +1,16 @@
 #ifndef GSPC_KVS_SERVICE_HPP
 #define GSPC_KVS_SERVICE_HPP
 
-#include <map>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/thread/shared_mutex.hpp>
-
 #include <gspc/kvs/api.hpp>
+
 #include <gspc/net/service/handler.hpp>
-
-#include <map>
-
-#include <gspc/kvs/api.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
+
+#include <map>
 
 namespace gspc
 {

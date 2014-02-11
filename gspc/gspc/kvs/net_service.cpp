@@ -1,31 +1,28 @@
 #include <gspc/kvs/net_service.hpp>
 
-#include <iostream>
-#include <string>
-
 #include <gspc/net/error.hpp>
 #include <gspc/net/frame_builder.hpp>
+#include <gspc/net/server/default_queue_manager.hpp>
 #include <gspc/net/server/queue_manager.hpp>
+
+#include <we/type/value/read.hpp>
+#include <we/type/value/show.hpp>
 
 #include <fhg/assert.hpp>
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
 #include <fhg/util/parse/require.hpp>
 
-#include <we/type/value/read.hpp>
-#include <we/type/value/show.hpp>
-
-#include <boost/signals2.hpp>
-#include <boost/optional.hpp>
-
-#include <gspc/net/server/default_queue_manager.hpp>
-
-#include <algorithm>
-#include <boost/regex.hpp>
 #include <boost/foreach.hpp>
+#include <boost/optional.hpp>
+#include <boost/regex.hpp>
+#include <boost/signals2.hpp>
 #include <boost/thread/locks.hpp>
 
 #include <iomanip>
+#include <iostream>
+#include <string>
+#include <algorithm>
 
 typedef boost::shared_lock<boost::shared_mutex> shared_lock;
 typedef boost::unique_lock<boost::shared_mutex> unique_lock;
