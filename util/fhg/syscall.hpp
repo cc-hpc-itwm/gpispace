@@ -19,6 +19,7 @@ namespace fhg
     void execve (const char* filename, char* const argv[], char* const envp[]);
     pid_t fork();
     void kill (pid_t pid, int sig);
+    void listen (int sockfd, int backlog);
     int open (const char* pathname, int flags);
     int open (const char* pathname, int flags, mode_t mode);
     pid_t setsid();

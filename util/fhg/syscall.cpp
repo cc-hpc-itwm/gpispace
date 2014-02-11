@@ -85,6 +85,11 @@ namespace fhg
       return negative_one_fails_with_errno<void> (::kill (pid, sig));
     }
 
+    void listen (int sockfd, int backlog)
+    {
+      return negative_one_fails_with_errno<void> (::listen (sockfd, backlog));
+    }
+
     int open (const char* pathname, int flags)
     {
       return negative_one_fails_with_errno<int> (::open (pathname, flags));
