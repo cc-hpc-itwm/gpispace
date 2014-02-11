@@ -226,18 +226,19 @@ namespace gspc
 
         fhg::syscall::chdir ("/");
 
-        if (execve ( m_filename.string ().c_str ()
-                   , detail::argv_to_array (m_argv)
-                   , detail::env_to_array (m_env)
-                   ) < 0
-           )
+        try
         {
-          int ec;
-
-          switch (errno)
+          fhg::syscall::execve ( m_filename.string ().c_str ()
+                               , detail::argv_to_array (m_argv)
+                               , detail::env_to_array (m_env)
+                               );
+        }
+        catch (boost::system::system_error const& se)
+        {
+          switch (se.code().value())
           {
           case ENOENT:
-            ec = 127;
+            _exit (127);
             break;
           case ENOEXEC:
           case EPERM:
@@ -248,11 +249,9 @@ namespace gspc
           case EIO:
           case EISDIR:
           default:
-            ec = 126;
+            _exit (126);
             break;
           }
-
-          _exit (ec);
         }
       }
       else
