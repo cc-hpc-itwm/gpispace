@@ -34,6 +34,11 @@ namespace fhg
       }
     }
 
+    void chdir (const char* path)
+    {
+      return negative_one_fails_with_errno<void> (::chdir (path));
+    }
+
     void close (int fd)
     {
       return negative_one_fails_with_errno<void> (::close (fd));

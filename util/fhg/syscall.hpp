@@ -6,6 +6,7 @@ namespace fhg
 {
   namespace syscall
   {
+    void chdir (const char* path);
     void close (int fd);
     pid_t fork();
     pid_t setsid();
