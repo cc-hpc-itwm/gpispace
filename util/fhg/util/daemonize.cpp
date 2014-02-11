@@ -42,17 +42,17 @@ namespace fhg
       fhg::syscall::close (1); // stdout
       fhg::syscall::close (2); // stderr
 
-      if (open ("/dev/null", O_RDONLY) != 0)
+      if (fhg::syscall::open ("/dev/null", O_RDONLY) != 0)
       {
-        throw std::runtime_error ("could not set stdin to /dev/null: " + std::string (strerror (errno)));
+        throw std::runtime_error ("could not set stdin to /dev/null: open did not return fd 0");
       }
-      if (open ("/dev/null", O_WRONLY) != 1)
+      if (fhg::syscall::open ("/dev/null", O_WRONLY) != 1)
       {
-        throw std::runtime_error ("could not set stdout to /dev/null: " + std::string (strerror (errno)));
+        throw std::runtime_error ("could not set stdout to /dev/null: open did not return fd 1");
       }
-      if (open ("/dev/null", O_WRONLY) != 2)
+      if (fhg::syscall::open ("/dev/null", O_WRONLY) != 2)
       {
-        throw std::runtime_error ("could not set stderr to /dev/null: " + std::string (strerror (errno)));
+        throw std::runtime_error ("could not set stderr to /dev/null: open did not return fd 2");
       }
 
       return boost::none;
