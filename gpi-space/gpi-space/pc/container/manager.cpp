@@ -105,8 +105,7 @@ namespace gpi
       void manager_t::close_socket (const int fd)
       {
         fhg::syscall::shutdown (fd, SHUT_RDWR);
-        fhg::util::lift_error_code_to_exception
-          (close (fd), "close_socket: close");
+        fhg::syscall::close (fd);
       }
 
       int manager_t::open_socket (std::string const & path)
