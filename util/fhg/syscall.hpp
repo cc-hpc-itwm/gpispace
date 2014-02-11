@@ -2,6 +2,7 @@
 
 #include <sys/resource.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -26,6 +27,7 @@ namespace fhg
     void setsockopt (int sockfd, int level, int optname, const void* optval, socklen_t optlen);
     void shutdown (int sockfd, int how);
     int socket (int domain, int type, int protocol);
+    void stat (const char* path, struct stat* buf);
     void unlink (const char* pathname);
     pid_t wait (pid_t pid, int* status, int options, struct rusage* rusage);
   }

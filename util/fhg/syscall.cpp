@@ -120,6 +120,11 @@ namespace fhg
       return negative_one_fails_with_errno<int> (::socket (domain, type, protocol));
     }
 
+    void stat (const char* path, struct stat* buf)
+    {
+      return negative_one_fails_with_errno<void> (::stat (path, buf));
+    }
+
     void unlink (const char* pathname)
     {
       return negative_one_fails_with_errno<void> (::unlink (pathname));
