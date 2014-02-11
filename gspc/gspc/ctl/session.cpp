@@ -16,7 +16,6 @@
 #include <gspc/net/serve.hpp>
 #include <gspc/net/server.hpp>
 #include <gspc/net/service/strip_prefix.hpp>
-#include <gspc/kvs/kvs.hpp>
 #include <gspc/kvs/impl/kvs_net_frontend.hpp>
 #include <gspc/kvs/impl/kvs_net_service.hpp>
 #include <gspc/ctl/system.hpp>
