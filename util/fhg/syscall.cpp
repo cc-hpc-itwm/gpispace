@@ -59,6 +59,11 @@ namespace fhg
       return negative_one_fails_with_errno<int> (::dup3 (oldfd, newfd, flags));
     }
 
+    void execve (const char* filename, char* const argv[], char* const envp[])
+    {
+      return negative_one_fails_with_errno<void> (::execve (filename, argv, envp));
+    }
+
     pid_t fork()
     {
       return negative_one_fails_with_errno<pid_t> (::fork());
