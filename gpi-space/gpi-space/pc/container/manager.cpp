@@ -148,7 +148,7 @@ namespace gpi
           err = errno;
           LOG(ERROR, "could not listen on socket: " << strerror(err));
           close (sfd);
-          unlink (path.c_str());
+          fhg::syscall::unlink (path.c_str());
           return -err;
         }
 
@@ -164,7 +164,7 @@ namespace gpi
         {
           if (S_ISSOCK(st.st_mode))
           {
-            unlink (path.c_str());
+            fhg::syscall::unlink (path.c_str());
             err = 0;
           }
           else
