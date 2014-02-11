@@ -123,7 +123,7 @@ namespace gpi
           LOG(ERROR, "could not create unix socket: " << se.what());
           return -se.code().value();
         }
-        setsockopt (sfd, SOL_SOCKET, SO_PASSCRED, (void*)1, 1);
+        fhg::syscall::setsockopt (sfd, SOL_SOCKET, SO_PASSCRED, (void*)1, 1);
 
         memset (&my_addr, 0, sizeof(my_addr));
         my_addr.sun_family = AF_UNIX;
