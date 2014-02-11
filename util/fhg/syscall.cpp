@@ -46,6 +46,19 @@ namespace fhg
       return negative_one_fails_with_errno<void> (::close (fd));
     }
 
+    int dup (int oldfd)
+    {
+      return negative_one_fails_with_errno<int> (::dup (oldfd));
+    }
+    int dup (int oldfd, int newfd)
+    {
+      return negative_one_fails_with_errno<int> (::dup2 (oldfd, newfd));
+    }
+    int dup (int oldfd, int newfd, int flags)
+    {
+      return negative_one_fails_with_errno<int> (::dup3 (oldfd, newfd, flags));
+    }
+
     pid_t fork()
     {
       return negative_one_fails_with_errno<pid_t> (::fork());
