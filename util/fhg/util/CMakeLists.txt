@@ -45,6 +45,8 @@ set (hdrs
 )
 
 set (srcs
+  ../syscall.cpp
+
   backtracing_exception.cpp
   daemonize.cpp
   signal_handler_manager.cpp
