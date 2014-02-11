@@ -22,12 +22,7 @@ namespace fhg
       // -> child -> returns child_child
       //  -> child_child -> returns none
 
-      const pid_t child (fork());
-      if (child < 0)
-      {
-        throw std::runtime_error ("could not fork: " + std::string (strerror (errno)));
-      }
-      else if (child)
+      if (fhg::syscall::fork())
       {
         exit (EXIT_SUCCESS);
       }
@@ -43,12 +38,8 @@ namespace fhg
 
       umask (0);
 
-      const pid_t child_child (fork());
-      if (child_child < 0)
-      {
-        throw std::runtime_error ("could not fork (2): " + std::string (strerror (errno)));
-      }
-      else if (child_child)
+      const pid_t child_child (fhg::syscall::fork());
+      if (child_child)
       {
         return child_child;
       }
