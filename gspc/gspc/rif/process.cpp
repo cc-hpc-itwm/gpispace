@@ -208,10 +208,16 @@ namespace gspc
 
         for (int fd = 3 ; fd < 1024 ; ++fd)
         {
-          const int rc (::close (fd));
-          if (rc && rc != -EBADF)
+          try
           {
-            return rc;
+            fhg::syscall::close (fd);
+          }
+          catch (boost::system::system_error const& se)
+          {
+            if (se.code() != boost::system::errc::bad_file_descriptor)
+            {
+              throw;
+            }
           }
         }
 
