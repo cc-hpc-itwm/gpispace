@@ -44,6 +44,11 @@ namespace fhg
       return negative_one_fails_with_errno<pid_t> (::fork());
     }
 
+    pid_t setsid()
+    {
+      return negative_one_fails_with_errno<pid_t> (::setsid());
+    }
+
     void shutdown (int sockfd, int how)
     {
       return negative_one_fails_with_errno<void> (::shutdown (sockfd, how));
