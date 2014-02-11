@@ -70,12 +70,6 @@ if (NOT PROJECT_REVISION)
 endif (NOT PROJECT_REVISION)
 set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
 
-math (EXPR GSPC_VERSION "${V_MAJOR}*10000 + ${V_MINOR} * 100")
-
-if (V_PATCH)
-  math(EXPR GSPC_VERSION "${GSPC_VERSION} + ${V_PATCH}")
-endif()
-
 get_version_info (PROJECT_VERSION)
 if (NOT PROJECT_VERSION)
   message (FATAL_ERROR "could not discover version info, please define -DPROJECT_VERSION by hand!")
