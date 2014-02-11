@@ -90,8 +90,6 @@ namespace fhg
     {
       parse::position_string pos (input);
 
-      url_t url;
-
       m_type = parse::require::identifier (pos);
 
       if (!pos.end())
