@@ -163,22 +163,25 @@ namespace gpi
       int manager_t::safe_unlink(std::string const & path)
       {
         struct stat st;
-        int err (0);
 
-        if (stat (path.c_str(), &st) == 0)
+        try
         {
-          if (S_ISSOCK(st.st_mode))
-          {
-            fhg::syscall::unlink (path.c_str());
-            err = 0;
-          }
-          else
-          {
-            err = EINVAL;
-          }
+          fhg::syscall::stat (path.c_str(), &st);
+        }
+        catch (boost::system::system_error const&)
+        {
+          return 0;
         }
 
-        return -err;
+        if (S_ISSOCK(st.st_mode))
+        {
+          fhg::syscall::unlink (path.c_str());
+          return 0;
+        }
+        else
+        {
+          return -EINVAL;
+        }
       }
 
       void manager_t::listener_thread_main(const int fd)
