@@ -9,6 +9,7 @@ namespace fhg
   namespace syscall
   {
     void chdir (const char* path);
+    void chmod (const char* path, mode_t mode);
     void close (int fd);
     int dup (int oldfd);
     int dup (int olfd, int newfd);

@@ -43,6 +43,11 @@ namespace fhg
       return negative_one_fails_with_errno<void> (::chdir (path));
     }
 
+    void chmod (const char* path, mode_t mode)
+    {
+      return negative_one_fails_with_errno<void> (::chmod (path, mode));
+    }
+
     void close (int fd)
     {
       return negative_one_fails_with_errno<void> (::close (fd));
