@@ -101,16 +101,6 @@ private:
                            , gspc::net::user_ptr user
                            );
 
-  void service_get_search_path ( std::string const &
-                               , gspc::net::frame const &rqst
-                               , gspc::net::user_ptr user
-                               );
-
-  void service_set_search_path ( std::string const &
-                               , gspc::net::frame const &rqst
-                               , gspc::net::user_ptr user
-                               );
-
   boost::optional<numa_socket_setter> _numa_socket_setter;
 
   std::string _worker_name;
@@ -127,8 +117,6 @@ private:
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
 
   gspc::net::server::scoped_service_handler _current_job_service;
-  gspc::net::server::scoped_service_handler _set_search_path_service;
-  gspc::net::server::scoped_service_handler _get_search_path_service;
 };
 
 class DRTSImpl : public sdpa::events::EventHandler

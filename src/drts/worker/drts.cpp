@@ -194,16 +194,6 @@ WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
     , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
     , service_demux
     )
-  , _set_search_path_service
-    ( "/service/drts/search-path/set"
-    , boost::bind (&WFEImpl::service_set_search_path, this, _1, _2, _3)
-    , service_demux
-    )
-  , _get_search_path_service
-    ( "/service/drts/search-path/get"
-    , boost::bind (&WFEImpl::service_get_search_path, this, _1, _2, _3)
-    , service_demux
-    )
 {
   {
     // initalize loader with paths
@@ -412,41 +402,6 @@ void WFEImpl::service_current_job ( std::string const &
   user->deliver (rply);
 }
 
-void WFEImpl::service_get_search_path ( std::string const &
-                                      , gspc::net::frame const &rqst
-                                      , gspc::net::user_ptr user
-                                      )
-{
-  gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
-
-  {
-    //! \todo is that lock needed really? what does it lock?
-    boost::mutex::scoped_lock lock (m_mutex);
-
-    rply.set_body (m_loader.search_path());
-  }
-
-  user->deliver (rply);
-}
-
-void WFEImpl::service_set_search_path ( std::string const &
-                                      , gspc::net::frame const &rqst
-                                      , gspc::net::user_ptr user
-                                      )
-{
-  gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
-
-  {
-    std::string search_path (rqst.get_body ());
-
-    search_path_appender appender(m_loader);
-    boost::mutex::scoped_lock lock (m_mutex);
-    m_loader.clear_search_path ();
-    fhg::util::split(search_path, ":", appender);
-  }
-
-  user->deliver (rply);
-}
 
 DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables)
   : _net_initializer (get<std::size_t> ("plugin.drts.netd_nthreads", config_variables).get_value_or (4L))
