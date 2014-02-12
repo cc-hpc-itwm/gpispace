@@ -39,12 +39,11 @@ struct KVSSetup
     m_thrd.join ();
   }
 
-  fhg::com::kvs::kvsc_ptr_t _kvs;
-
   fhg::com::io_service_pool m_pool;
   fhg::com::kvs::server::kvsd m_kvsd;
   fhg::com::tcp_server m_serv;
   boost::thread m_thrd;
+  fhg::com::kvs::kvsc_ptr_t _kvs;
 };
 
 BOOST_FIXTURE_TEST_CASE (check_setup, KVSSetup)
