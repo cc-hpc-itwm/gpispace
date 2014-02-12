@@ -157,7 +157,7 @@ namespace gpi
 
         if (m_ptr)
         {
-          munmap (m_ptr, size());
+          fhg::syscall::munmap (m_ptr, size());
           m_ptr = 0;
         }
       }
