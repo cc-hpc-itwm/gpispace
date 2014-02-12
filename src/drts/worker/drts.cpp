@@ -317,6 +317,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
           , m_my_name
           )
   , m_max_reconnect_attempts (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0))
+  , m_reconnect_counter (0)
   , m_backlog_size (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
 {
   //! \todo ctor parameters
@@ -377,8 +378,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
   fhg::com::kvs::global_kvs()->put ("gspc.net.url." + m_my_name, m_server->url());
 
-
-  m_reconnect_counter = 0;
 
   // parse virtual capabilities
   BOOST_FOREACH (std::string const & cap, capability_list)
