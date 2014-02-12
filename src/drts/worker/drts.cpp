@@ -291,7 +291,6 @@ int WFEImpl::execute ( std::string const &job_id
   if (task.state != wfe_task_t::PENDING)
   {
     task_errc = fhg::error::EXECUTION_CANCELED;
-    task.error_message = "canceled";
   }
   else
   {
@@ -304,13 +303,11 @@ int WFEImpl::execute ( std::string const &job_id
       if (task.state == wfe_task_t::CANCELED)
       {
         task_errc = fhg::error::EXECUTION_CANCELED;
-        task.error_message = "canceled";
       }
       else
       {
         task.state = wfe_task_t::FINISHED;
         task_errc = fhg::error::NO_ERROR;
-        task.error_message = "success";
       }
     }
     catch (std::exception const & ex)
@@ -335,7 +332,6 @@ int WFEImpl::execute ( std::string const &job_id
   {
     MLOG(TRACE, "task finished: " << task.id);
     task.state = wfe_task_t::FINISHED;
-    error_message = task.error_message;
 
     emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
   }
@@ -343,7 +339,6 @@ int WFEImpl::execute ( std::string const &job_id
   {
     DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
     task.state = wfe_task_t::CANCELED;
-    error_message = task.error_message;
 
     emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELED);
   }
