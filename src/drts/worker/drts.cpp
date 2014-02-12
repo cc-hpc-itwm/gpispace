@@ -292,7 +292,8 @@ int WFEImpl::execute ( std::string const &job_id
 
       task.activity.execute (&ctxt);
 
-      if (task.state != wfe_task_t::CANCELED)
+      //! \note failing or canceling overwrites
+      if (task.state == wfe_task_t::PENDING)
       {
         task.state = wfe_task_t::FINISHED;
       }
