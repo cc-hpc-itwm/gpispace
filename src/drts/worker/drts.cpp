@@ -912,8 +912,6 @@ void DRTSImpl::job_execution_thread ()
                                 , job->worker_list ()
                                 );
         job->set_result (result.to_string());
-        job->set_result_code (ec);
-        job->set_message (error_message);
 
         const boost::posix_time::ptime completed
           (boost::posix_time::microsec_clock::universal_time());
@@ -936,6 +934,8 @@ void DRTSImpl::job_execution_thread ()
         else
         {
           job->set_state (drts::Job::FAILED);
+          job->set_result_code (ec);
+          job->set_message (error_message);
         }
       }
       catch (std::exception const & ex)
