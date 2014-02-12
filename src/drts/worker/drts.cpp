@@ -154,7 +154,6 @@ WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
                         )
   , _worker_name (worker_name)
   , m_task_map()
-  , m_tasks()
   , m_loader ( fhg::util::split<std::string, std::list<boost::filesystem::path> >
                (search_path, ':')
              )

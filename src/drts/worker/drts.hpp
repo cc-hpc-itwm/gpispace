@@ -99,7 +99,6 @@ private:
 
   mutable boost::mutex m_mutex;
   std::map<std::string, wfe_task_t *> m_task_map;
-  fhg::thread::queue<wfe_task_t*> m_tasks;
 
   we::loader::loader m_loader;
 
