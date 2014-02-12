@@ -309,6 +309,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   , _service_demux (gspc::net::server::default_service_demux())
   , _queue_manager (_service_demux)
   , _request_stop (request_stop)
+  , m_shutting_down (false)
   , m_my_name (*get<std::string> ("kernel_name", config_variables))
   , m_wfe ( get<std::size_t> ("plugin.drts.socket", config_variables)
           , get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH"))
@@ -376,8 +377,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
   fhg::com::kvs::global_kvs()->put ("gspc.net.url." + m_my_name, m_server->url());
 
-
-  m_shutting_down = false;
 
   m_reconnect_counter = 0;
 
