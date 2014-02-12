@@ -52,7 +52,6 @@ struct wfe_task_t
 
   std::string id;
   state_t state;
-  int        errc;
   we::type::activity_t activity;
   gspc::drts::context context;
   std::string error_message;

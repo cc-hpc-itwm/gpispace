@@ -266,7 +266,7 @@ int WFEImpl::execute ( std::string const &job_id
                      )
 {
   wfe_task_t task (job_id, _worker_name, worker_list);
-  task.errc = fhg::error::NO_ERROR;
+  fhg::error::code_t task_errc = fhg::error::NO_ERROR;
 
   try
   {
@@ -297,7 +297,7 @@ int WFEImpl::execute ( std::string const &job_id
 
   if (task.state != wfe_task_t::PENDING)
   {
-    task.errc = fhg::error::EXECUTION_CANCELED;
+    task_errc = fhg::error::EXECUTION_CANCELED;
     task.error_message = "canceled";
   }
   else
@@ -310,13 +310,13 @@ int WFEImpl::execute ( std::string const &job_id
 
       if (task.state == wfe_task_t::CANCELED)
       {
-        task.errc = fhg::error::EXECUTION_CANCELED;
+        task_errc = fhg::error::EXECUTION_CANCELED;
         task.error_message = "canceled";
       }
       else
       {
         task.state = wfe_task_t::FINISHED;
-        task.errc = fhg::error::NO_ERROR;
+        task_errc = fhg::error::NO_ERROR;
         task.error_message = "success";
       }
     }
@@ -324,13 +324,13 @@ int WFEImpl::execute ( std::string const &job_id
     {
       task.state = wfe_task_t::FAILED;
       // TODO: more detailed error codes
-      task.errc = fhg::error::MODULE_CALL_FAILED;
+      task_errc = fhg::error::MODULE_CALL_FAILED;
       task.error_message = ex.what();
     }
     catch (...)
     {
       task.state = wfe_task_t::FAILED;
-      task.errc = fhg::error::UNEXPECTED_ERROR;
+      task_errc = fhg::error::UNEXPECTED_ERROR;
       task.error_message =
         "UNKNOWN REASON, exception not derived from std::exception";
     }
@@ -343,7 +343,7 @@ int WFEImpl::execute ( std::string const &job_id
 
   result = task.activity;
 
-  if (fhg::error::NO_ERROR == task.errc)
+  if (fhg::error::NO_ERROR == task_errc)
   {
     MLOG(TRACE, "task finished: " << task.id);
     task.state = wfe_task_t::FINISHED;
@@ -351,7 +351,7 @@ int WFEImpl::execute ( std::string const &job_id
 
     emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
   }
-  else if (fhg::error::EXECUTION_CANCELED == task.errc)
+  else if (fhg::error::EXECUTION_CANCELED == task_errc)
   {
     DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
     task.state = wfe_task_t::CANCELED;
@@ -373,7 +373,7 @@ int WFEImpl::execute ( std::string const &job_id
     m_task_map.erase (job_id);
   }
 
-  return task.errc;
+  return task_errc;
 }
 
 int WFEImpl::cancel (std::string const &job_id)
