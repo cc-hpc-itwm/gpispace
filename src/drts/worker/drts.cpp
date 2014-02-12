@@ -861,10 +861,6 @@ void DRTSImpl::event_thread ()
       DMLOG(TRACE, "event handler interrupted...");
       throw;
     }
-    catch (std::exception const & ex)
-    {
-      MLOG(WARN, "event could not be handled: " << ex.what());
-    }
   }
 }
 
