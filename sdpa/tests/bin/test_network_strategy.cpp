@@ -115,6 +115,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                  , "peer-1"
                                  , fhg::com::host_t ("localhost")
                                  , fhg::com::port_t ("0")
+                                 , fhg::com::kvs::global_kvs()
                                  );
 
   net.perform (boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent( "peer-1"

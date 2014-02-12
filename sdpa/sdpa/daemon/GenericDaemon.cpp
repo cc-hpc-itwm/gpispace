@@ -113,6 +113,7 @@ GenericDaemon::GenericDaemon( const std::string name
                                      , name /*name for peer*/
                                      , host_from_url (url)
                                      , port_from_url (url)
+                                     , fhg::com::kvs::global_kvs()
                                      )
     )
 {

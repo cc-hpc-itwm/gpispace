@@ -22,13 +22,14 @@ namespace sdpa
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
+                                     , fhg::com::kvs::kvsc_ptr_t kvs_client
                                      )
       : _logger (fhg::log::Logger::get ("NetworkStrategy " + peer_name))
       , _event_handler (event_handler)
       , m_peer ( new fhg::com::peer_t ( peer_name
                                       , fhg::com::host_t (host)
                                       , fhg::com::port_t (port)
-                                      , fhg::com::kvs::global_kvs()
+                                      , kvs_client
                                       )
                )
       , m_message()
