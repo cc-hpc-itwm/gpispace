@@ -318,16 +318,16 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   , m_backlog_size (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
 {
   //! \todo ctor parameters
-  std::list<std::string> master_list;
-  std::list<std::string> capability_list;
+  const std::list<std::string> master_list
+    ( fhg::util::split<std::string, std::list<std::string> >
+      (get<std::string> ("plugin.drts.master", config_variables).get_value_or (""), ',')
+    );
+  const std::list<std::string> capability_list
+    ( fhg::util::split<std::string, std::list<std::string> >
+      (get<std::string> ("plugin.drts.capabilities", config_variables).get_value_or (""), ',')
+    );
   fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
   fhg::com::port_t port (get<std::string> ("plugin.drts.port", config_variables).get_value_or ("0"));
-  {
-    const std::string master_names (get<std::string> ("plugin.drts.master", config_variables).get_value_or (""));
-    const std::string virtual_capabilities (get<std::string> ("plugin.drts.capabilities", config_variables).get_value_or (""));
-    fhg::util::split (master_names, ",", std::back_inserter(master_list));
-    fhg::util::split (virtual_capabilities, ",", std::back_inserter(capability_list));
-  }
   const std::string netd_url (get<std::string> ("plugin.drts.netd_url", config_variables).get_value_or ("tcp://*"));
 
   const std::string kvs_host (get<std::string> ("plugin.drts.kvs_host", config_variables).get_value_or ("localhost"));
