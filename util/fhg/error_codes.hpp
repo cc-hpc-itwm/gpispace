@@ -13,25 +13,6 @@ namespace fhg
 
       , UNKNOWN_ERROR        = 666
       };
-
-    inline
-    const char *show(const int code)
-    {
-      switch (code)
-      {
-      case NO_ERROR:
-        return "no failure";
-
-      case EXECUTION_CANCELED:
-        return "execution canceled";
-
-      case UNKNOWN_ERROR:
-        return "unknown error";
-
-      default:
-        return "unassigned error (error code not yet assigned)";
-      }
-    }
   }
 }
 
