@@ -32,5 +32,6 @@ namespace fhg
     void stat (const char* path, struct stat* buf);
     void unlink (const char* pathname);
     pid_t wait (pid_t pid, int* status, int options, struct rusage* rusage);
+    ssize_t write (int fd, const void* buf, size_t count);
   }
 }

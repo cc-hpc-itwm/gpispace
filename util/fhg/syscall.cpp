@@ -145,5 +145,10 @@ namespace fhg
       return negative_one_fails_with_errno<pid_t>
         (::wait4 (pid, status, options, rusage));
     }
+
+    ssize_t write (int fd, const void* buf, size_t count)
+    {
+      return negative_one_fails_with_errno<ssize_t> (::write (fd, buf, count));
+    }
   }
 }
