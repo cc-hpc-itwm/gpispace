@@ -58,9 +58,7 @@ struct KVSSetup
   boost::thread *m_thrd;
 };
 
-BOOST_GLOBAL_FIXTURE (KVSSetup);
-
-BOOST_AUTO_TEST_CASE ( check_setup )
+BOOST_FIXTURE_TEST_CASE (check_setup, KVSSetup)
 {
   // make sure that the kvs is reachable...
   using namespace fhg::com;
@@ -74,7 +72,7 @@ BOOST_AUTO_TEST_CASE ( check_setup )
   kvs::global_kvs()->del ("fhg.com.test.PeerTest");
 }
 
-BOOST_AUTO_TEST_CASE ( output_test )
+BOOST_FIXTURE_TEST_CASE (output_test, KVSSetup)
 {
   using namespace fhg::com;
 
@@ -89,7 +87,7 @@ BOOST_AUTO_TEST_CASE ( output_test )
   BOOST_CHECK_EQUAL (sstr.str(), "peer@[localhost]:1235");
 }
 
-BOOST_AUTO_TEST_CASE ( parse_peer_info_full )
+BOOST_AUTO_TEST_CASE (parse_peer_info_full)
 {
   using namespace fhg::com;
 
@@ -101,7 +99,7 @@ BOOST_AUTO_TEST_CASE ( parse_peer_info_full )
   BOOST_CHECK_EQUAL (pi.port(), "1234");
 }
 
-BOOST_AUTO_TEST_CASE ( parse_peer_info_wo_name )
+BOOST_AUTO_TEST_CASE (parse_peer_info_wo_name)
 {
   using namespace fhg::com;
 
@@ -113,7 +111,7 @@ BOOST_AUTO_TEST_CASE ( parse_peer_info_wo_name )
   BOOST_CHECK_EQUAL (pi.port(), "1234");
 }
 
-BOOST_AUTO_TEST_CASE ( parse_peer_info_wo_port )
+BOOST_AUTO_TEST_CASE (parse_peer_info_wo_port)
 {
   using namespace fhg::com;
 
@@ -124,7 +122,7 @@ BOOST_AUTO_TEST_CASE ( parse_peer_info_wo_port )
                       );
 }
 
-BOOST_AUTO_TEST_CASE ( parse_peer_info_wi_name )
+BOOST_AUTO_TEST_CASE (parse_peer_info_wi_name)
 {
   using namespace fhg::com;
 
@@ -136,7 +134,7 @@ BOOST_AUTO_TEST_CASE ( parse_peer_info_wi_name )
   BOOST_CHECK_EQUAL (pi.port(), "1234");
 }
 
-BOOST_AUTO_TEST_CASE ( peer_run_single )
+BOOST_FIXTURE_TEST_CASE (peer_run_single, KVSSetup)
 {
   using namespace fhg::com;
   peer_t peer_1 ("peer-1", host_t("localhost"), port_t("1235"), fhg::com::kvs::global_kvs());
@@ -148,7 +146,7 @@ BOOST_AUTO_TEST_CASE ( peer_run_single )
   thrd_1.join ();
 }
 
-BOOST_AUTO_TEST_CASE ( peer_run_two )
+BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
 {
   using namespace fhg::com;
 
@@ -185,7 +183,7 @@ BOOST_AUTO_TEST_CASE ( peer_run_two )
   thrd_2.join ();
 }
 
-BOOST_AUTO_TEST_CASE ( resolve_peer_names )
+BOOST_FIXTURE_TEST_CASE (resolve_peer_names, KVSSetup)
 {
   using namespace fhg::com;
 
@@ -221,7 +219,7 @@ BOOST_AUTO_TEST_CASE ( resolve_peer_names )
   thrd_2.join ();
 }
 
-BOOST_AUTO_TEST_CASE ( resolve_peer_addresses )
+BOOST_FIXTURE_TEST_CASE (resolve_peer_addresses, KVSSetup)
 {
   using namespace fhg::com;
 
@@ -263,7 +261,7 @@ BOOST_AUTO_TEST_CASE ( resolve_peer_addresses )
   thrd_2.join ();
 }
 
-BOOST_AUTO_TEST_CASE ( peer_loopback )
+BOOST_FIXTURE_TEST_CASE (peer_loopback, KVSSetup)
 {
   using namespace fhg::com;
 
@@ -288,7 +286,7 @@ BOOST_AUTO_TEST_CASE ( peer_loopback )
   thrd_1.join ();
 }
 
-BOOST_AUTO_TEST_CASE ( send_to_nonexisting_peer )
+BOOST_FIXTURE_TEST_CASE (send_to_nonexisting_peer, KVSSetup)
 {
   using namespace fhg::com;
 
@@ -305,7 +303,7 @@ BOOST_AUTO_TEST_CASE ( send_to_nonexisting_peer )
   thrd_1.join ();
 }
 
-BOOST_AUTO_TEST_CASE ( send_large_data )
+BOOST_FIXTURE_TEST_CASE (send_large_data, KVSSetup)
 {
   using namespace fhg::com;
 
@@ -335,7 +333,7 @@ BOOST_AUTO_TEST_CASE ( send_large_data )
   thrd_1.join ();
 }
 
-BOOST_AUTO_TEST_CASE ( peers_with_fixed_ports )
+BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports, KVSSetup)
 {
   using namespace fhg::com;
 
@@ -364,7 +362,7 @@ BOOST_AUTO_TEST_CASE ( peers_with_fixed_ports )
   thrd_2.join ();
 }
 
-BOOST_AUTO_TEST_CASE ( peers_with_fixed_ports_reuse )
+BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports_reuse, KVSSetup)
 {
   using namespace fhg::com;
 
@@ -412,7 +410,7 @@ static void s_send_loop ( fhg::com::peer_t *peer
   }
 }
 
-BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
+BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
 {
   using namespace fhg::com;
 
