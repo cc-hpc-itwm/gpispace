@@ -15,19 +15,19 @@ namespace fhg
   {
     namespace
     {
-      template<typename T>
-        T negative_one_fails_with_errno (int rc)
+      template<typename T, typename R>
+        T negative_one_fails_with_errno (R rc)
       {
-        if (rc == -1)
+        if (rc == R (-1))
         {
           throw boost::system::system_error
             (boost::system::error_code (errno, boost::system::system_category()));
         }
-        return T (rc);
+        return rc;
       }
 
       template<>
-        void negative_one_fails_with_errno<void> (int rc)
+        void negative_one_fails_with_errno<void, int> (int rc)
       {
         if (rc == -1)
         {
@@ -102,6 +102,11 @@ namespace fhg
     int open (const char* pathname, int flags, mode_t mode)
     {
       return negative_one_fails_with_errno<int> (::open (pathname, flags, mode));
+    }
+
+    ssize_t read (int fd, void* buf, size_t count)
+    {
+      return negative_one_fails_with_errno<ssize_t> (::read (fd, buf, count));
     }
 
     pid_t setsid()
