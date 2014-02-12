@@ -348,6 +348,11 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   : _net_initializer (get<std::size_t> ("plugin.drts.netd_nthreads", config_variables).get_value_or (4L))
   , _service_demux (gspc::net::server::default_service_demux())
   , _queue_manager (_service_demux)
+  , m_wfe ( get<std::size_t> ("plugin.drts.socket", config_variables)
+          , get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH"))
+          , get<std::string> ("plugin.drts.gui_url", config_variables)
+          , *get<std::string> ("kernel_name", config_variables)
+          )
 {
   //! \todo ctor parameters
   const std::string name (*get<std::string> ("kernel_name", config_variables));
@@ -357,13 +362,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0));
   std::list<std::string> master_list;
   std::list<std::string> capability_list;
-  const boost::optional<std::size_t> target_socket
-    (get<std::size_t> ("plugin.drts.socket", config_variables));
-  const std::string search_path
-    (get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH")));
-  const boost::optional<std::string> gui_url
-    (get<std::string> ("plugin.drts.gui_url", config_variables));
-  WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name));
   fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
   fhg::com::port_t port (get<std::string> ("plugin.drts.port", config_variables).get_value_or ("0"));
   {
@@ -423,7 +421,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   m_my_name = name;
   m_backlog_size = backlog_size;
   m_max_reconnect_attempts = max_reconnect_attempts;
-  m_wfe = wfe;
 
   // parse virtual capabilities
   BOOST_FOREACH (std::string const & cap, capability_list)
@@ -544,9 +541,6 @@ DRTSImpl::~DRTSImpl()
 
   m_peer_thread.reset();
   m_peer.reset();
-
-  delete m_wfe;
-  m_wfe = 0;
 
   if (m_server)
   {
@@ -737,7 +731,7 @@ void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
     else if (job_it->second->state() == drts::Job::RUNNING)
     {
       MLOG (TRACE, "trying to cancel running job " << e->job_id());
-      m_wfe->cancel (e->job_id());
+      m_wfe.cancel (e->job_id());
     }
     else if (job_it->second->state() == drts::Job::FAILED)
     {
@@ -868,7 +862,7 @@ void DRTSImpl::job_execution_thread ()
 
         we::type::activity_t result;
         std::string error_message;
-        int ec = m_wfe->execute ( job->id()
+        int ec = m_wfe.execute ( job->id()
                                 , job->description()
                                 , result
                                 , error_message

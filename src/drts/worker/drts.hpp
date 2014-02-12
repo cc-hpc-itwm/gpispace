@@ -190,7 +190,7 @@ private:
 
   bool m_shutting_down;
 
-  WFEImpl *m_wfe;
+  WFEImpl m_wfe;
 
   boost::shared_ptr<boost::thread>    m_peer_thread;
   boost::shared_ptr<fhg::com::peer_t> m_peer;
