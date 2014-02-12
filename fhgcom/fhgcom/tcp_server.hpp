@@ -27,14 +27,15 @@ namespace fhg
                  );
 
       void start (void);
-      void start ( const std::string & host
-                 , const std::string & service
-                 , const bool reuse_addr = true
-                 );
       void stop ();
 
       unsigned short port () const;
     private:
+      void start ( const std::string & host
+                 , const std::string & service
+                 , const bool reuse_addr = true
+                 );
+
       bool try_start ( boost::asio::ip::tcp::endpoint ep
                      , boost::system::error_code & ec
                      , bool reuse_addr = true
