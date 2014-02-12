@@ -28,7 +28,6 @@
 #include <fhg/util/read_bool.hpp>
 
 #include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/id_generator.hpp>
