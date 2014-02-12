@@ -42,6 +42,18 @@ namespace
   {
     return !disc_res.children().empty() && all_childs_are_pending (disc_res);
   }
+
+  sdpa::events::ErrorEvent::Ptr create_disconnect_event (const sdpa::worker_id_t& worker_id,
+                                                         const sdpa::worker_id_t& agent_id)
+  {
+    sdpa::events::ErrorEvent::Ptr pErrEvt(
+          new  sdpa::events::ErrorEvent( worker_id
+                                        , agent_id
+                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                        , std::string("worker ")+worker_id+" went down!" ));
+    return pErrEvt;
+  }
+
 }
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
@@ -156,7 +168,7 @@ namespace sdpa
       unsigned int _n_submitted_activities;
     };
   }
-}
+ }
 
 namespace
 {
@@ -289,61 +301,73 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   {} // do nothing, discover again
 }
 
-BOOST_AUTO_TEST_CASE (remove_workers)
+BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
 {
   const std::string workflow
     (utils::require_and_read_file ("coallocation_test.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+
+  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
+  sdpa::daemon::Agent agent ( "agent_0",
+                              "127.0.0.1",  kvs_host(), kvs_port(),
+                              sdpa::master_info_list_t (1, sdpa::MasterInfo ("orchestrator_0")),
+                              boost::none);
 
   const utils::drts_worker worker_A_0
-    ( "drts_A_0", agent
-    , "A"
-    , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-
-  boost::scoped_ptr<utils::drts_worker> ptr_worker_A_1
-    ( new utils::drts_worker
-      ( "drts_A_1", agent
+    ( "drts_A_0"
+      , "agent_0"
       , "A"
       , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
       , kvs_host(), kvs_port()
-      )
     );
 
   const utils::drts_worker worker_B_0
-    ( "drts_B_0", agent
-    , "B"
-    , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
+     ( "drts_B_0"
+       , "agent_0"
+       , "B"
+       , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
+       , kvs_host(), kvs_port()
+     );
+
+  const utils::drts_worker worker_A_1
+      ( "drts_A_1"
+        , "agent_0"
+        , "A"
+        , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
+        , kvs_host(), kvs_port()
+      );
+
   const utils::drts_worker worker_B_1
-    ( "drts_B_1", agent
-    , "B"
-    , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
-    , kvs_host(), kvs_port()
+    ( "drts_B_1"
+       , "agent_0"
+       , "B"
+       , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
+       , kvs_host(), kvs_port()
     );
 
-  boost::scoped_ptr<utils::drts_worker> ptr_worker_B_2
-    ( new utils::drts_worker
-      ( "drts_B_2", agent
-      , "B"
-      , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
-      , kvs_host(), kvs_port()
-      )
-    );
+  const utils::drts_worker worker_B_2
+      ( "drts_B_2"
+        , "agent_0"
+        , "B"
+        , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
+        , kvs_host(), kvs_port()
+      );
 
   // the task A requires 2 workers, task B requires 3 workers
+  // initially, there are sufficient resources and the workflow computation should finish
+  BOOST_REQUIRE_EQUAL
+      ( utils::client::submit_job_and_wait_for_termination_as_subscriber
+        (workflow, orchestrator)
+      , sdpa::status::FINISHED
+      );
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  ptr_worker_A_1.reset();
-  ptr_worker_B_2.reset();
+  agent.handleErrorEvent(create_disconnect_event("drts_A_0", "agent_0").get());
+  agent.handleErrorEvent(create_disconnect_event("drts_B_0", "agent_0").get());
 
   while (!has_children_and_all_children_are_pending
           (client.discoverJobStates (get_next_disc_id(), job_id))
