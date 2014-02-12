@@ -21,16 +21,13 @@ static const std::string &kvs_port () { static std::string s("0"); return s; }
 struct KVSSetup
 {
   KVSSetup ()
-    : m_pool (new fhg::com::io_service_pool(1))
-    , m_kvsd (new fhg::com::kvs::server::kvsd)
-    , m_serv ( new fhg::com::tcp_server
-               (*m_pool, *m_kvsd, kvs_host (), kvs_port (), true)
-             )
-    , m_thrd
-      (new boost::thread (boost::bind (&fhg::com::io_service_pool::run, m_pool)))
+    : m_pool (1)
+    , m_kvsd()
+    , m_serv (m_pool, m_kvsd, kvs_host(), kvs_port(), true)
+    , m_thrd (&fhg::com::io_service_pool::run, &m_pool)
     , _kvs ( new fhg::com::kvs::client::kvsc
              ( kvs_host()
-             , boost::lexical_cast<std::string>(m_serv->port())
+             , boost::lexical_cast<std::string> (m_serv.port())
              , true // auto_reconnect
              , boost::posix_time::seconds (10)
              , 3
@@ -40,21 +37,17 @@ struct KVSSetup
 
   ~KVSSetup ()
   {
-    m_serv->stop ();
-    m_pool->stop ();
-    m_thrd->join ();
-    delete m_thrd;
-    delete m_serv;
-    delete m_kvsd;
-    delete m_pool;
+    m_serv.stop ();
+    m_pool.stop ();
+    m_thrd.join ();
   }
 
   fhg::com::kvs::kvsc_ptr_t _kvs;
 
-  fhg::com::io_service_pool *m_pool;
-  fhg::com::kvs::server::kvsd *m_kvsd;
-  fhg::com::tcp_server *m_serv;
-  boost::thread *m_thrd;
+  fhg::com::io_service_pool m_pool;
+  fhg::com::kvs::server::kvsd m_kvsd;
+  fhg::com::tcp_server m_serv;
+  boost::thread m_thrd;
 };
 
 BOOST_FIXTURE_TEST_CASE (check_setup, KVSSetup)
