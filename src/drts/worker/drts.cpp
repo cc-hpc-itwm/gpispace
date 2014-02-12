@@ -314,10 +314,9 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
           , get<std::string> ("plugin.drts.gui_url", config_variables)
           , m_my_name
           )
+  , m_backlog_size (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
 {
   //! \todo ctor parameters
-  const std::size_t backlog_size
-    (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3));
   const std::size_t max_reconnect_attempts
     (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0));
   std::list<std::string> master_list;
@@ -378,7 +377,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   m_shutting_down = false;
 
   m_reconnect_counter = 0;
-  m_backlog_size = backlog_size;
   m_max_reconnect_attempts = max_reconnect_attempts;
 
   // parse virtual capabilities
