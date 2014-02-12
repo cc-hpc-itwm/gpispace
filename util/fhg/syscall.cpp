@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 
@@ -118,6 +119,11 @@ namespace fhg
     {
       return negative_one_fails_with_errno<void>
         (::setsockopt (sockfd, level, optname, optval, optlen));
+    }
+
+    int shm_open (const char* name, int oflag, mode_t mode)
+    {
+      return negative_one_fails_with_errno<int> (::shm_open (name, oflag, mode));
     }
 
     void shutdown (int sockfd, int how)
