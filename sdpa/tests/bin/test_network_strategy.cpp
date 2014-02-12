@@ -15,55 +15,35 @@
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
-static const std::string &kvs_host () { static std::string s("localhost"); return s; }
-static const std::string &kvs_port () { static std::string s("1234"); return s; }
-
-struct F
+struct KVSSetup
 {
-  F ()
-    : m_pool (0)
-    , m_kvsd (0)
-    , m_serv (0)
-    , m_thrd (0)
+  KVSSetup ()
+    : m_pool (1)
+    , m_kvsd()
+    , m_serv (m_pool, m_kvsd, "localhost", "0", true)
+    , m_thrd (&fhg::com::io_service_pool::run, &m_pool)
+    , _kvs ( new fhg::com::kvs::client::kvsc
+             ( "localhost"
+             , boost::lexical_cast<std::string> (m_serv.port())
+             , true // auto_reconnect
+             , boost::posix_time::seconds (3)
+             , 3
+             )
+           )
+  {}
+
+  ~KVSSetup ()
   {
-    FHGLOG_SETUP();
-
-    m_pool = new fhg::com::io_service_pool(1);
-    m_kvsd = new fhg::com::kvs::server::kvsd;
-    m_serv = new fhg::com::tcp_server ( *m_pool
-                                      , *m_kvsd
-                                      , kvs_host ()
-                                      , kvs_port ()
-                                      , true
-                                      );
-    m_thrd = new boost::thread (boost::bind ( &fhg::com::io_service_pool::run
-                                            , m_pool
-                                            )
-                               );
-
-    fhg::com::kvs::get_or_create_global_kvs ( kvs_host()
-                                            , kvs_port()
-                                            , true
-                                            , boost::posix_time::seconds(3)
-                                            , 1
-                                            );
+    m_serv.stop ();
+    m_pool.stop ();
+    m_thrd.join ();
   }
 
-  ~F ()
-  {
-    m_serv->stop ();
-    m_pool->stop ();
-    m_thrd->join ();
-    delete m_thrd;
-    delete m_serv;
-    delete m_kvsd;
-    delete m_pool;
-  }
-
-  fhg::com::io_service_pool *m_pool;
-  fhg::com::kvs::server::kvsd *m_kvsd;
-  fhg::com::tcp_server *m_serv;
-  boost::thread *m_thrd;
+  fhg::com::io_service_pool m_pool;
+  fhg::com::kvs::server::kvsd m_kvsd;
+  fhg::com::tcp_server m_serv;
+  boost::thread m_thrd;
+  fhg::com::kvs::kvsc_ptr_t _kvs;
 };
 
 namespace
@@ -105,9 +85,7 @@ namespace
   };
 }
 
-BOOST_FIXTURE_TEST_SUITE( s, F )
-
-BOOST_AUTO_TEST_CASE ( perform_test )
+BOOST_FIXTURE_TEST_CASE (perform_test, KVSSetup)
 {
   wait_for_n_events_strategy counter (1);
 
@@ -115,7 +93,7 @@ BOOST_AUTO_TEST_CASE ( perform_test )
                                  , "peer-1"
                                  , fhg::com::host_t ("localhost")
                                  , fhg::com::port_t ("0")
-                                 , fhg::com::kvs::global_kvs()
+                                 , _kvs
                                  );
 
   net.perform (boost::shared_ptr<sdpa::events::SDPAEvent>(new sdpa::events::ErrorEvent( "peer-1"
@@ -128,5 +106,3 @@ BOOST_AUTO_TEST_CASE ( perform_test )
 
   counter.wait();
 }
-
-BOOST_AUTO_TEST_SUITE_END()
