@@ -274,8 +274,6 @@ int WFEImpl::execute ( std::string const &job_id
     task.state = wfe_task_t::FAILED;
     error_message = std::string ("Invalid job description: ") + ex.what();
 
-    emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
-
     return fhg::error::UNKNOWN_ERROR;
   }
 
