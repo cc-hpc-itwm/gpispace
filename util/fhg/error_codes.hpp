@@ -11,8 +11,6 @@ namespace fhg
 
       , INVALID_JOB_DESCRIPTION = 1
 
-      , MODULE_CALL_FAILED      = 10
-
       , EXECUTION_CANCELED     = 30
 
       , UNKNOWN_ERROR        = 666
@@ -28,9 +26,6 @@ namespace fhg
 
       case INVALID_JOB_DESCRIPTION:
         return "invalid job description";
-
-      case MODULE_CALL_FAILED:
-        return "module call failed";
 
       case EXECUTION_CANCELED:
         return "execution canceled";
