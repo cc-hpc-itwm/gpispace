@@ -247,21 +247,6 @@ void WFEImpl::emit_task (const wfe_task_t& task)
   }
 }
 
-namespace fhg
-{
-  namespace error
-  {
-    enum code_t
-      {
-        NO_ERROR                = 0
-
-      , EXECUTION_CANCELED     = 30
-
-      , UNKNOWN_ERROR        = 666
-      };
-  }
-}
-
 int WFEImpl::execute ( std::string const &job_id
                      , std::string const &job_description
                      , we::type::activity_t & result
@@ -281,7 +266,7 @@ int WFEImpl::execute ( std::string const &job_id
     task.state = wfe_task_t::FAILED;
     error_message = std::string ("Invalid job description: ") + ex.what();
 
-    return fhg::error::UNKNOWN_ERROR;
+    return drts::Job::FAILED;
   }
 
   {
@@ -340,9 +325,9 @@ int WFEImpl::execute ( std::string const &job_id
 
   emit_task (task);
 
-  return task.state == wfe_task_t::FINISHED ? fhg::error::NO_ERROR
-    : task.state == wfe_task_t::CANCELED ? fhg::error::EXECUTION_CANCELED
-    : task.state == wfe_task_t::FAILED ? fhg::error::UNKNOWN_ERROR
+  return task.state == wfe_task_t::FINISHED ? drts::Job::FINISHED
+    : task.state == wfe_task_t::CANCELED ? drts::Job::CANCELED
+    : task.state == wfe_task_t::FAILED ? drts::Job::FAILED
     : throw std::runtime_error ("bad task state");
 }
 
@@ -919,17 +904,10 @@ void DRTSImpl::job_execution_thread ()
             << " total-time := " << (completed - started)
             );
 
-        if (fhg::error::NO_ERROR == ec)
+        job->set_state (drts::Job::state_t (ec));
+
+        if (ec == drts::Job::FAILED)
         {
-          job->set_state (drts::Job::FINISHED);
-        }
-        else if (fhg::error::EXECUTION_CANCELED == ec)
-        {
-          job->set_state (drts::Job::CANCELED);
-        }
-        else
-        {
-          job->set_state (drts::Job::FAILED);
           job->set_message (error_message);
         }
       }
