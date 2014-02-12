@@ -29,8 +29,6 @@ struct KVSSetup
     , m_thrd
       (new boost::thread (boost::bind (&fhg::com::io_service_pool::run, m_pool)))
   {
-    m_serv->start();
-
     _kvs = fhg::com::kvs::kvsc_ptr_t
       ( new fhg::com::kvs::client::kvsc
         ( kvs_host()

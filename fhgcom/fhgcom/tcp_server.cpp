@@ -17,6 +17,7 @@ tcp_server::tcp_server ( io_service_pool & pool
   , reuse_addr_(reuse_addr)
   , acceptor_(pool.get_io_service())
 {
+  start();
 }
 
 void tcp_server::stop ()

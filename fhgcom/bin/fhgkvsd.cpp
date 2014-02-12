@@ -199,7 +199,6 @@ int main(int ac, char *av[])
                                 , reuse_address
                                 );
 
-    server.start ();
     pool.set_nthreads (4);
     pool.run ();
   }

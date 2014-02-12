@@ -26,11 +26,11 @@ namespace fhg
                  , const bool reuse_addr = true
                  );
 
-      void start (void);
       void stop ();
 
       unsigned short port () const;
     private:
+      void start (void);
       bool try_start ( boost::asio::ip::tcp::endpoint ep
                      , boost::system::error_code & ec
                      );

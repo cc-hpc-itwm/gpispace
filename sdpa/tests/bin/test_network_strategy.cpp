@@ -41,8 +41,6 @@ struct F
                                             )
                                );
 
-    m_serv->start();
-
     fhg::com::kvs::get_or_create_global_kvs ( kvs_host()
                                             , kvs_port()
                                             , true

@@ -56,8 +56,6 @@ int main(int ac, char *av[])
                               , reuse_address
                               );
 
-  server.start ();
-
   pool.run();
   return 0;
 }

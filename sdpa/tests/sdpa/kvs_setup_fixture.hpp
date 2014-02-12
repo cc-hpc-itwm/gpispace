@@ -25,8 +25,6 @@ struct KVSSetup
 	  setenv("FHGLOG_level", "TRACE", true);
 	  FHGLOG_SETUP();
 
-	  m_serv.start();
-
 	  current_kvs_port = boost::lexical_cast<std::string>(m_serv.port());
 
 	  fhg::com::kvs::global::get_kvs_info().init( kvs_host()
