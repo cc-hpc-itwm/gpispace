@@ -288,18 +288,21 @@ int WFEImpl::execute ( std::string const &job_id
       if (task.state == wfe_task_t::PENDING)
       {
         task.state = wfe_task_t::FINISHED;
+        result = task.activity;
       }
     }
     catch (std::exception const & ex)
     {
       task.state = wfe_task_t::FAILED;
       task.error_message = std::string ("Module call failed: ") + ex.what();
+      error_message = task.error_message;
     }
     catch (...)
     {
       task.state = wfe_task_t::FAILED;
       task.error_message =
         "UNKNOWN REASON, exception not derived from std::exception";
+      error_message = task.error_message;
     }
   }
 
@@ -311,7 +314,6 @@ int WFEImpl::execute ( std::string const &job_id
   if (wfe_task_t::FINISHED == task.state)
   {
     MLOG(TRACE, "task finished: " << task.id);
-    result = task.activity;
   }
   else if (wfe_task_t::CANCELED == task.state)
   {
@@ -320,7 +322,6 @@ int WFEImpl::execute ( std::string const &job_id
   else // if (wfe_task_t::FAILED == task.state)
   {
     MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
-    error_message = task.error_message;
   }
 
   emit_task (task);
