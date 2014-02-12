@@ -15,18 +15,15 @@
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
-static const std::string &kvs_host () { static std::string s("localhost"); return s; }
-static const std::string &kvs_port () { static std::string s("0"); return s; }
-
 struct KVSSetup
 {
   KVSSetup ()
     : m_pool (1)
     , m_kvsd()
-    , m_serv (m_pool, m_kvsd, kvs_host(), kvs_port(), true)
+    , m_serv (m_pool, m_kvsd, "localhost", "0", true)
     , m_thrd (&fhg::com::io_service_pool::run, &m_pool)
     , _kvs ( new fhg::com::kvs::client::kvsc
-             ( kvs_host()
+             ( "localhost"
              , boost::lexical_cast<std::string> (m_serv.port())
              , true // auto_reconnect
              , boost::posix_time::seconds (10)
