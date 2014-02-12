@@ -300,7 +300,6 @@ int WFEImpl::execute ( std::string const &job_id
     catch (std::exception const & ex)
     {
       task.state = wfe_task_t::FAILED;
-      // TODO: more detailed error codes
       task.error_message = std::string ("Module call failed: ") + ex.what();
     }
     catch (...)
