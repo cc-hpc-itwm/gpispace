@@ -104,7 +104,7 @@ namespace sdpa
           {
             sdpa::events::JobFailedEvent::Ptr pEvtJobFailed
               ( new sdpa::events::JobFailedEvent
-                (pComm->name(), job->owner(), job->id(), fhg::error::UNKNOWN_ERROR, "unknown error: error event resent")
+                (pComm->name(), job->owner(), job->id(), "unknown error: error event resent")
               );
             pComm->sendEventToOther(pEvtJobFailed);
           }

@@ -12,7 +12,7 @@ namespace we
         ( boost::function<void (id_type, type::activity_t)> rts_submit
         , boost::function<void (id_type)> rts_cancel
         , boost::function<void (id_type, type::activity_t)> rts_finished
-        , boost::function<void (id_type, int, std::string)> rts_failed
+        , boost::function<void (id_type, std::string)> rts_failed
         , boost::function<void (id_type)> rts_canceled
         , boost::function<void (id_type, id_type)> rts_discover
         , boost::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
@@ -187,27 +187,22 @@ namespace we
         (id, boost::bind (&layer::rts_canceled_and_forget, this, id));
     }
 
-    void layer::failed (id_type id, int error_code, std::string reason)
+    void layer::failed (id_type id, std::string reason)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       assert (parent);
 
       _nets_to_extract_from.remove_and_apply
-        ( *parent
-        , boost::bind ( &layer::failed_delayed, this
-                      , _1, id, error_code, reason
-                      )
-        );
+        (*parent, boost::bind (&layer::failed_delayed, this, _1, id, reason));
     }
     void layer::failed_delayed ( activity_data_type& parent_activity
                                , id_type id
-                               , int error_code
                                , std::string reason
                                )
     {
       const boost::function<void()> after
         ( boost::bind ( &layer::rts_failed_and_forget
-                      , this, parent_activity._id, error_code, reason
+                      , this, parent_activity._id, reason
                       )
         );
 
@@ -385,9 +380,9 @@ namespace we
       _rts_finished (id, activity);
       _nets_to_extract_from.forget (id);
     }
-    void layer::rts_failed_and_forget (id_type id, int ec, std::string message)
+    void layer::rts_failed_and_forget (id_type id, std::string message)
     {
-      _rts_failed (id, ec, message);
+      _rts_failed (id, message);
       _nets_to_extract_from.forget (id);
     }
     void layer::rts_canceled_and_forget (id_type id)

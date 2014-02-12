@@ -13,7 +13,6 @@ namespace sdpa {
         , desc_(desc)
         , _is_master_job (is_master_job)
         , result_()
-        , m_error_code(0)
         , m_error_message()
         , m_owner(owner)
     {
@@ -33,12 +32,6 @@ namespace sdpa {
     const job_result_t& Job::result() const
     {
       return result_;
-    }
-
-    int Job::error_code() const
-    {
-      lock_type lock(mtx_);
-      return m_error_code;
     }
 
     std::string Job::error_message () const
@@ -102,7 +95,6 @@ namespace sdpa {
     void Job::action_job_failed(const events::JobFailedEvent& evt )
     {
       lock_type lock(mtx_);
-      m_error_code = evt.error_code();
       m_error_message = evt.error_message();
     }
 

@@ -140,14 +140,12 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
                 events::JobFailedEvent* pJobFailedEvt(new events::JobFailedEvent( name()
                                                                                  , pEvt->from()
                                                                                  , pEvt->job_id()
-                                                                                 , fhg::error::UNKNOWN_ERROR
                                                                                  , "One of tasks of the group failed with the actual reservation!"));
                 pJob->JobFailed(pJobFailedEvt);
                 delete pJobFailedEvt;
 
                 DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has failed");
                 workflowEngine()->failed( actId,
-                                          sdpa::events::ErrorEvent::SDPA_EUNKNOWN,
                                           "One of tasks of the group failed with the actual reservation!");
               }
         }
@@ -263,7 +261,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
   if( !pEvt->is_external() )
   {
     failed( pEvt->job_id()
-            , pEvt->error_code()
             , pEvt->error_message());
 
     return;
@@ -292,7 +289,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
         (new events::JobFailedEvent ( name()
                             , pJob->owner()
                             , pEvt->job_id()
-                            , pEvt->error_code()
                             , pEvt->error_message()
                             ));
 
@@ -333,7 +329,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
                   DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
                   pJob->JobFailed(pEvt);
                   workflowEngine()->failed( actId
-                                            , pEvt->error_code()
                                             , pEvt->error_message()
                                           );
               }
@@ -375,7 +370,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 }
 
 void Agent::failed( const we::layer::id_type& wfid
-                  , int error_code
                   , std::string const & reason
                   )
 {
@@ -395,7 +389,6 @@ void Agent::failed( const we::layer::id_type& wfid
     (new events::JobFailedEvent ( name()
                         , pJob->owner()
                         , id
-                        , error_code
                         , reason
                         )
     );
@@ -428,7 +421,6 @@ void Agent::failed( const we::layer::id_type& wfid
         ( new events::JobFailedEvent ( name()
                              , pair_subscr_joblist.first
                              , pEvtJobFailed->job_id()
-                             , error_code
                              , reason
                              )
         );

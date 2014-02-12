@@ -425,7 +425,6 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
                                          , pEvt->from()
                                          , pJob->id()
                                          , pJob->getStatus()
-                                         , pJob->error_code()
                                          , pJob->error_message()
                                          )
       );

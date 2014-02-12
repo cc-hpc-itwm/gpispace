@@ -167,7 +167,6 @@ namespace sdpa
         {
           throw std::runtime_error ("got status change for different job");
         }
-        job_info.error_code = evt->error_code();
         job_info.error_message = evt->error_message();
         return sdpa::status::FAILED;
       }
@@ -228,7 +227,6 @@ namespace sdpa
         (sdpa::events::QueryJobStatusEvent (_name, orchestrator_, jid))
         );
 
-      info.error_code = reply.error_code();
       info.error_message = reply.error_message();
 
       return reply.status();

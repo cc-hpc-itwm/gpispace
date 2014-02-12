@@ -4,7 +4,6 @@
 #include <we/layer.hpp>
 #include <we/type/activity.hpp>
 
-#include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
 #include <fhg/util/thread/queue.hpp>
 
@@ -69,7 +68,7 @@ namespace
       {
         std::cerr << "handle-ext(" << act.transition().name() << ") failed: " << ex.what() << std::endl;
 
-        _layer->failed (_id, fhg::error::UNKNOWN_ERROR, std::string ("Module call failed: ") + ex.what());
+        _layer->failed (_id, std::string ("Module call failed: ") + ex.what());
       }
     }
     virtual void handle_externally (we::type::activity_t&, expr_t const&)
@@ -129,7 +128,7 @@ namespace
         , mgmt_layer_ ( boost::bind (&sdpa_daemon::submit, this, _1, _2)
                       , boost::bind (&sdpa_daemon::cancel, this, _1)
                       , boost::bind (&sdpa_daemon::finished, this, _1, _2)
-                      , boost::bind (&sdpa_daemon::failed, this, _1, _2, _3)
+                      , boost::bind (&sdpa_daemon::failed, this, _1, _2)
                       , boost::bind (&sdpa_daemon::canceled, this, _1)
                       , &discover
                       , &discovered
@@ -300,23 +299,19 @@ namespace
       }
     }
 
-    void failed ( const we::layer::id_type& id
-                , const int error_code
-                , const std::string& reason
-                )
+    void failed (const we::layer::id_type& id, const std::string& reason)
     {
       boost::optional<we::layer::id_type> const mapped
         (get_and_delete_mapping (id));
 
       if (mapped)
       {
-        mgmt_layer_.failed (*mapped, error_code, reason);
+        mgmt_layer_.failed (*mapped, reason);
       }
       else if (id == _job_id)
       {
         std::cout << "failed [" << id << "] = ";
-        std::cout << " error-code := " << error_code
-                  << " reason := " << reason
+        std::cout << " reason := " << reason
                   << std::endl;
         set_job_status (sdpa::status::FAILED);
       }

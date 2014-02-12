@@ -84,11 +84,6 @@ namespace drts
       return *this;
     }
 
-    int result_code () const {
-      lock_type lck(m_mutex);
-      return m_state == FAILED ? fhg::error::UNKNOWN_ERROR : 0;
-    }
-
     std::string const & message() const {
       lock_type lck(m_mutex); return m_message;
     }

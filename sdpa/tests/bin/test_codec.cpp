@@ -112,10 +112,9 @@ BOOST_AUTO_TEST_CASE (JobFailedAck)
 
 BOOST_AUTO_TEST_CASE (JobFailed)
 {
-  JobFailedEvent e ("foo", "bar", "job-id-1", rand(), "testing");
+  JobFailedEvent e ("foo", "bar", "job-id-1", "testing");
   JobFailedEvent* r (encode_decode_job_event (e));
 
-  BOOST_REQUIRE_EQUAL (r->error_code(), e.error_code());
   BOOST_REQUIRE_EQUAL (r->error_message(), e.error_message());
 }
 
@@ -143,11 +142,10 @@ BOOST_AUTO_TEST_CASE (JobResultsReply)
 
 BOOST_AUTO_TEST_CASE (JobStatusReply)
 {
-  JobStatusReplyEvent e ("foo", "bar", "job-id-1", sdpa::status::RUNNING, rand(), "testing");
+  JobStatusReplyEvent e ("foo", "bar", "job-id-1", sdpa::status::RUNNING, "testing");
   JobStatusReplyEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->status(), e.status());
-  BOOST_REQUIRE_EQUAL (r->error_code(), e.error_code());
   BOOST_REQUIRE_EQUAL (r->error_message(), e.error_message());
 }
 

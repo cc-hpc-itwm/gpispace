@@ -46,7 +46,7 @@ namespace sdpa {
         virtual void handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt);
 
         virtual void finished(const we::layer::id_type & id, const we::type::activity_t&);
-        virtual void failed( const we::layer::id_type& workflowId, int error_code, std::string const& reason);
+        virtual void failed( const we::layer::id_type& workflowId, std::string const& reason);
 
         template <typename T>
         void notifySubscribers(const T& ptrEvt);

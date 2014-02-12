@@ -179,7 +179,6 @@ namespace sdpa {
       const job_desc_t& description() const;
       const job_result_t& result() const;
 
-      int error_code() const;
       std::string error_message () const;
 
       bool isMasterJob() const;
@@ -219,7 +218,6 @@ namespace sdpa {
 
       bool _is_master_job;
       job_result_t result_;
-      int m_error_code;
       std::string m_error_message;
 
       worker_id_t m_owner;

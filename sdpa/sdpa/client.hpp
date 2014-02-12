@@ -37,7 +37,6 @@ namespace sdpa
     typedef sdpa::job_result_t result_t;
     struct job_info_t
     {
-      int error_code;
       std::string error_message;
     };
 

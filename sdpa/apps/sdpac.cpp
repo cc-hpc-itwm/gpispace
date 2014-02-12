@@ -24,7 +24,6 @@
 
 #include <fhgcom/kvs/kvsc.hpp>
 
-#include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
 #include <fhg/util/read_bool.hpp>
 
@@ -85,11 +84,6 @@ namespace
     if (sdpa::status::FAILED == status)
     {
       std::cerr << "failed: "
-                << "error-code"
-                << " := "
-                << fhg::error::show(job_info.error_code)
-                << " (" << job_info.error_code << ")"
-                << std::endl
                 << "error-message := " << job_info.error_message
                 << std::endl
         ;
@@ -524,12 +518,7 @@ int main (int argc, char **argv) {
       std::cout << sdpa::status::show(status) << std::endl;
       if (status == sdpa::status::FAILED)
       {
-        std::cerr << "error-code"
-                  << " := "
-                  << fhg::error::show(job_info.error_code)
-                  << " (" << job_info.error_code << ")"
-                  << std::endl
-                  << "error-message := " << job_info.error_message
+        std::cerr << "error-message := " << job_info.error_message
                   << std::endl
           ;
       }

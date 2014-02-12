@@ -87,7 +87,7 @@ GenericDaemon::GenericDaemon( const std::string name
                            ( boost::bind (&GenericDaemon::submit, this, _1, _2)
                            , boost::bind (&GenericDaemon::cancel, this, _1)
                            , boost::bind (&GenericDaemon::finished, this, _1, _2)
-                           , boost::bind (&GenericDaemon::failed, this, _1, _2, _3)
+                           , boost::bind (&GenericDaemon::failed, this, _1, _2)
                            , boost::bind (&GenericDaemon::canceled, this, _1)
                            , boost::bind (&GenericDaemon::discover, this, _1, _2)
                            , boost::bind (&GenericDaemon::discovered, this, _1, _2)
@@ -297,7 +297,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     }
     else
     {
-        workflowEngine()->failed (job_id, fhg::error::UNKNOWN_ERROR, ex.what());
+        workflowEngine()->failed (job_id, ex.what());
     }
     return;
   }
@@ -562,7 +562,7 @@ try
 }
 catch (std::exception const& ex)
 {
-  workflowEngine()->failed (job_id, fhg::error::UNKNOWN_ERROR, ex.what());
+  workflowEngine()->failed (job_id, ex.what());
 }
 
 /**
@@ -616,15 +616,12 @@ void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::typ
  * from running to failed).
  */
 void GenericDaemon::failed( const we::layer::id_type& workflowId
-                          , int error_code
                           , std::string const & reason
                           )
 {
   LLOG( WARN
       , _logger
       , "job failed: " << workflowId
-      << " error := " << fhg::error::show(error_code)
-      << " (" << error_code << ")"
       << " message := " << reason
       );
 
@@ -634,7 +631,6 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
     (new events::JobFailedEvent ( sdpa::daemon::WE
                         , name()
                         , job_id
-                        , error_code
                         , reason
                         )
     );
@@ -679,7 +675,6 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
               (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
                                  , jobId
-                                 , fhg::error::UNKNOWN_ERROR
                                  , "the job has an empty workflow attached!"
                                  )
               );
@@ -713,7 +708,6 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
       (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
                                  , jobId
-                                 , fhg::error::UNKNOWN_ERROR
                                  , "no workflow engine attached!"
                                  )
       );
@@ -727,7 +721,6 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
       (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
                                  , jobId
-                                 , fhg::error::UNKNOWN_ERROR
                                  , "job could not be found"
                                  )
       );
@@ -742,7 +735,6 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
        (new events::JobFailedEvent( sdpa::daemon::WE
                                   , name()
                                   , jobId
-                                  , fhg::error::UNKNOWN_ERROR
                                   , ex.what()
                                   )
      );
@@ -1065,7 +1057,6 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
             (new events::JobFailedEvent( name()
                                        , subscriber
                                        , pJob->id()
-                                       , fhg::error::UNKNOWN_ERROR
                                        , "TODO: take the error message from the job pointer somehow"
                                        )
             );

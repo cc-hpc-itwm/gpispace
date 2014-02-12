@@ -918,7 +918,6 @@ void DRTSImpl::job_execution_thread ()
 
         MLOG( TRACE
             , "job returned."
-            << " error-code := " << job->result_code()
             << " error-message := " << job->message()
             << " total-time := " << (completed - started)
             );
@@ -1165,7 +1164,6 @@ void DRTSImpl::send_job_result_to_master (boost::shared_ptr<drts::Job> const & j
         (new sdpa::events::JobFailedEvent ( m_my_name
                                           , job->owner()
                                           , job->id()
-                                          , job->result_code()
                                           , job->message()
                                           )
         );
