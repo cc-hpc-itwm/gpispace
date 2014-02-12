@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE (JobFailedAck)
 
 BOOST_AUTO_TEST_CASE (JobFailed)
 {
-  JobFailedEvent e ("foo", "bar", "job-id-1", fhg::error::UNASSIGNED_ERROR, "testing");
+  JobFailedEvent e ("foo", "bar", "job-id-1", rand(), "testing");
   JobFailedEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->error_code(), e.error_code());
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE (JobResultsReply)
 
 BOOST_AUTO_TEST_CASE (JobStatusReply)
 {
-  JobStatusReplyEvent e ("foo", "bar", "job-id-1", sdpa::status::RUNNING, fhg::error::UNASSIGNED_ERROR, "testing");
+  JobStatusReplyEvent e ("foo", "bar", "job-id-1", sdpa::status::RUNNING, rand(), "testing");
   JobStatusReplyEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->status(), e.status());
