@@ -16,7 +16,6 @@ namespace fhg
       , EXECUTION_CANCELED     = 30
 
       , UNEXPECTED_ERROR        = 666
-      , UNASSIGNED_ERROR        = 667
       };
 
     inline
@@ -38,6 +37,7 @@ namespace fhg
 
       case UNEXPECTED_ERROR:
         return "unexpected error";
+
       default:
         return "unassigned error (error code not yet assigned)";
       }
