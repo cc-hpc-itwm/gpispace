@@ -364,6 +364,10 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
       );
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
+  // be sure that the drts worker to disconnect are registered
+  while(!agent.hasWorker("drts_A_0"));
+  while(!agent.hasWorker("drts_B_0"));
+
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   agent.handleErrorEvent(create_disconnect_event("drts_A_0", "agent_0").get());
