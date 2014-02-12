@@ -308,6 +308,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   : _net_initializer (get<std::size_t> ("plugin.drts.netd_nthreads", config_variables).get_value_or (4L))
   , _service_demux (gspc::net::server::default_service_demux())
   , _queue_manager (_service_demux)
+  , _request_stop (request_stop)
   , m_my_name (*get<std::string> ("kernel_name", config_variables))
   , m_wfe ( get<std::size_t> ("plugin.drts.socket", config_variables)
           , get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH"))
@@ -353,8 +354,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     throw std::runtime_error ("no masters specified");
   }
 
-
-  _request_stop = request_stop;
 
   fhg::com::kvs::get_or_create_global_kvs
     ( !kvs_host.empty() ? kvs_host : throw std::runtime_error ("kvs host empty")
