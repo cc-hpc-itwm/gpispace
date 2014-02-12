@@ -314,11 +314,10 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
           , get<std::string> ("plugin.drts.gui_url", config_variables)
           , m_my_name
           )
+  , m_max_reconnect_attempts (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0))
   , m_backlog_size (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3))
 {
   //! \todo ctor parameters
-  const std::size_t max_reconnect_attempts
-    (get<std::size_t> ("plugin.drts.max_reconnect_attempts", config_variables).get_value_or (0));
   std::list<std::string> master_list;
   std::list<std::string> capability_list;
   fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
@@ -377,7 +376,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   m_shutting_down = false;
 
   m_reconnect_counter = 0;
-  m_max_reconnect_attempts = max_reconnect_attempts;
 
   // parse virtual capabilities
   BOOST_FOREACH (std::string const & cap, capability_list)
