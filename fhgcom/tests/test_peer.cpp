@@ -31,11 +31,13 @@ struct KVSSetup
   {
     m_serv->start();
 
-    fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-                                              , boost::lexical_cast<std::string>(m_serv->port())
-                                              , boost::posix_time::seconds(10)
-                                              , 3
-                                              );
+    _kvs = fhg::com::kvs::get_or_create_global_kvs
+      ( kvs_host()
+      , boost::lexical_cast<std::string>(m_serv->port())
+      , true
+      , boost::posix_time::seconds(10)
+      , 3
+      );
   }
 
   ~KVSSetup ()
@@ -52,6 +54,8 @@ struct KVSSetup
     *fhg::com::kvs::global::get_kvs_info_ptr () = 0;
   }
 
+  fhg::com::kvs::kvsc_ptr_t _kvs;
+
   fhg::com::io_service_pool *m_pool;
   fhg::com::kvs::server::kvsd *m_kvsd;
   fhg::com::tcp_server *m_serv;
@@ -63,20 +67,20 @@ BOOST_FIXTURE_TEST_CASE (check_setup, KVSSetup)
   // make sure that the kvs is reachable...
   using namespace fhg::com;
 
-  kvs::global_kvs()->put ("fhg.com.test.PeerTest", 42);
+  _kvs->put ("fhg.com.test.PeerTest", 42);
 
-  const kvs::values_type v (kvs::global_kvs()->get ("fhg.com.test.PeerTest"));
+  const kvs::values_type v (_kvs->get ("fhg.com.test.PeerTest"));
   BOOST_REQUIRE_EQUAL (v.size(), 1);
   BOOST_REQUIRE_EQUAL (v.begin()->first, "fhg.com.test.PeerTest");
   BOOST_REQUIRE_EQUAL (v.begin()->second, "42");
-  kvs::global_kvs()->del ("fhg.com.test.PeerTest");
+  _kvs->del ("fhg.com.test.PeerTest");
 }
 
 BOOST_FIXTURE_TEST_CASE (output_test, KVSSetup)
 {
   using namespace fhg::com;
 
-  peer_t peer_o ("peer", host_t("localhost"), port_t("1235"), fhg::com::kvs::global_kvs());
+  peer_t peer_o ("peer", host_t("localhost"), port_t("1235"), _kvs);
 
   BOOST_CHECK_EQUAL (peer_o.name(), "peer");
   BOOST_CHECK_EQUAL (peer_o.host(), "localhost");
@@ -137,7 +141,7 @@ BOOST_AUTO_TEST_CASE (parse_peer_info_wi_name)
 BOOST_FIXTURE_TEST_CASE (peer_run_single, KVSSetup)
 {
   using namespace fhg::com;
-  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("1235"), fhg::com::kvs::global_kvs());
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("1235"), _kvs);
   boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
 
   peer_1.start();
@@ -150,10 +154,10 @@ BOOST_FIXTURE_TEST_CASE (peer_run_two, KVSSetup)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), fhg::com::kvs::global_kvs());
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), _kvs);
   boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
 
-  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("0"), fhg::com::kvs::global_kvs());
+  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("0"), _kvs);
   boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
 
   peer_1.start();
@@ -187,10 +191,10 @@ BOOST_FIXTURE_TEST_CASE (resolve_peer_names, KVSSetup)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), fhg::com::kvs::global_kvs());
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), _kvs);
   boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
 
-  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("0"), fhg::com::kvs::global_kvs());
+  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("0"), _kvs);
   boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
 
   peer_1.start();
@@ -223,10 +227,10 @@ BOOST_FIXTURE_TEST_CASE (resolve_peer_addresses, KVSSetup)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), fhg::com::kvs::global_kvs());
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), _kvs);
   boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
 
-  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("0"), fhg::com::kvs::global_kvs());
+  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("0"), _kvs);
   boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
 
   peer_1.start();
@@ -265,7 +269,7 @@ BOOST_FIXTURE_TEST_CASE (peer_loopback, KVSSetup)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), fhg::com::kvs::global_kvs());
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), _kvs);
   boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
 
   peer_1.start();
@@ -290,7 +294,7 @@ BOOST_FIXTURE_TEST_CASE (send_to_nonexisting_peer, KVSSetup)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), fhg::com::kvs::global_kvs());
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), _kvs);
   boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
 
   peer_1.start();
@@ -307,7 +311,7 @@ BOOST_FIXTURE_TEST_CASE (send_large_data, KVSSetup)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), fhg::com::kvs::global_kvs());
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("0"), _kvs);
   boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
 
   peer_1.start();
@@ -337,10 +341,10 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports, KVSSetup)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("15482"), fhg::com::kvs::global_kvs());
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("15482"), _kvs);
   boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
 
-  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("15483"), fhg::com::kvs::global_kvs());
+  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("15483"), _kvs);
   boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
 
   peer_1.start();
@@ -366,10 +370,10 @@ BOOST_FIXTURE_TEST_CASE (peers_with_fixed_ports_reuse, KVSSetup)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("15482"), fhg::com::kvs::global_kvs());
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("15482"), _kvs);
   boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
 
-  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("15483"), fhg::com::kvs::global_kvs());
+  peer_t peer_2 ("peer-2", host_t("localhost"), port_t("15483"), _kvs);
   boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
 
   peer_1.start();
@@ -414,7 +418,7 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("15482"), fhg::com::kvs::global_kvs());
+  peer_t peer_1 ("peer-1", host_t("localhost"), port_t("15482"), _kvs);
   boost::thread thrd_1 (boost::bind (&peer_t::run, &peer_1));
   peer_1.start();
 
@@ -429,7 +433,7 @@ BOOST_FIXTURE_TEST_CASE (two_peers_one_restarts_repeatedly, KVSSetup)
 
   for (std::size_t i (0); i < 1000; ++i)
   {
-    peer_t peer_2 ("peer-2", host_t("localhost"), port_t("15483"), fhg::com::kvs::global_kvs());
+    peer_t peer_2 ("peer-2", host_t("localhost"), port_t("15483"), _kvs);
     boost::thread thrd_2 (boost::bind (&peer_t::run, &peer_2));
 
     try
