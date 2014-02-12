@@ -70,12 +70,6 @@ struct KVSSetup
 
 BOOST_GLOBAL_FIXTURE (KVSSetup);
 
-struct F
-{
-};
-
-BOOST_FIXTURE_TEST_SUITE( s, F )
-
 BOOST_AUTO_TEST_CASE ( check_setup )
 {
   // make sure that the kvs is reachable...
@@ -483,5 +477,3 @@ BOOST_AUTO_TEST_CASE ( two_peers_one_restarts_repeatedly )
   peer_1.stop();
   thrd_1.join ();
 }
-
-BOOST_AUTO_TEST_SUITE_END()
