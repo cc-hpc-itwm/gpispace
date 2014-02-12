@@ -284,11 +284,8 @@ int WFEImpl::execute ( std::string const &job_id
 
   emit_task (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
 
-  fhg::error::code_t task_errc = fhg::error::NO_ERROR;
-
   if (task.state != wfe_task_t::PENDING)
   {
-    task_errc = fhg::error::EXECUTION_CANCELED;
   }
   else
   {
@@ -300,25 +297,21 @@ int WFEImpl::execute ( std::string const &job_id
 
       if (task.state == wfe_task_t::CANCELED)
       {
-        task_errc = fhg::error::EXECUTION_CANCELED;
       }
       else
       {
         task.state = wfe_task_t::FINISHED;
-        task_errc = fhg::error::NO_ERROR;
       }
     }
     catch (std::exception const & ex)
     {
       task.state = wfe_task_t::FAILED;
       // TODO: more detailed error codes
-      task_errc = fhg::error::UNKNOWN_ERROR;
       task.error_message = std::string ("Module call failed: ") + ex.what();
     }
     catch (...)
     {
       task.state = wfe_task_t::FAILED;
-      task_errc = fhg::error::UNKNOWN_ERROR;
       task.error_message =
         "UNKNOWN REASON, exception not derived from std::exception";
     }
@@ -329,7 +322,7 @@ int WFEImpl::execute ( std::string const &job_id
     m_task_map.erase (job_id);
   }
 
-  if (fhg::error::NO_ERROR == task_errc)
+  if (wfe_task_t::FINISHED == task.state)
   {
     MLOG(TRACE, "task finished: " << task.id);
     task.state = wfe_task_t::FINISHED;
@@ -337,14 +330,14 @@ int WFEImpl::execute ( std::string const &job_id
 
     emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
   }
-  else if (fhg::error::EXECUTION_CANCELED == task_errc)
+  else if (wfe_task_t::CANCELED == task.state)
   {
     DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
     task.state = wfe_task_t::CANCELED;
 
     emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELED);
   }
-  else
+  else // if (wfe_task_t::FAILED == task.state)
   {
     MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
     task.state = wfe_task_t::FAILED;
@@ -353,7 +346,10 @@ int WFEImpl::execute ( std::string const &job_id
     emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
   }
 
-  return task_errc;
+  return task.state == wfe_task_t::FINISHED ? fhg::error::NO_ERROR
+    : task.state == wfe_task_t::CANCELED ? fhg::error::EXECUTION_CANCELED
+    : task.state == wfe_task_t::FAILED ? fhg::error::UNKNOWN_ERROR
+    : throw std::runtime_error ("bad task state");
 }
 
 int WFEImpl::cancel (std::string const &job_id)
