@@ -227,15 +227,22 @@ WFEImpl::~WFEImpl()
   }
 }
 
-void WFEImpl::emit_task ( const wfe_task_t& task
-                        , sdpa::daemon::NotificationEvent::state_t state
-                        )
+void WFEImpl::emit_task (const wfe_task_t& task)
 {
   if (_notification_service)
   {
+    using sdpa::daemon::NotificationEvent;
     _notification_service->notify
-      ( sdpa::daemon::NotificationEvent
-        (_worker_name, task.id, state, task.activity)
+      ( NotificationEvent
+        ( _worker_name
+        , task.id
+        , task.state == wfe_task_t::PENDING ? NotificationEvent::STATE_STARTED
+        : task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED
+        : task.state == wfe_task_t::CANCELED ? NotificationEvent::STATE_CANCELED
+        : task.state == wfe_task_t::FAILED ? NotificationEvent::STATE_FAILED
+        : throw std::runtime_error ("bad enum value: task.state")
+        , task.activity
+        )
       );
   }
 }
@@ -282,7 +289,7 @@ int WFEImpl::execute ( std::string const &job_id
     m_task_map.insert(std::make_pair(job_id, &task));
   }
 
-  emit_task (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
+  emit_task (task);
 
   if (task.state == wfe_task_t::PENDING)
   {
@@ -321,20 +328,20 @@ int WFEImpl::execute ( std::string const &job_id
     MLOG(TRACE, "task finished: " << task.id);
     result = task.activity;
 
-    emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
+    emit_task (task);
   }
   else if (wfe_task_t::CANCELED == task.state)
   {
     DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
 
-    emit_task (task, sdpa::daemon::NotificationEvent::STATE_CANCELED);
+    emit_task (task);
   }
   else // if (wfe_task_t::FAILED == task.state)
   {
     MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
     error_message = task.error_message;
 
-    emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
+    emit_task (task);
   }
 
   return task.state == wfe_task_t::FINISHED ? fhg::error::NO_ERROR

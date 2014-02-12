@@ -80,9 +80,7 @@ public:
   ~WFEImpl();
 
 private:
-  void emit_task ( const wfe_task_t& task
-                 , sdpa::daemon::NotificationEvent::state_t state
-                 );
+  void emit_task (const wfe_task_t& task);
 
 public:
   int execute ( std::string const &job_id
