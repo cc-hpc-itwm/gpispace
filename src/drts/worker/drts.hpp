@@ -97,7 +97,7 @@ private:
 
   std::string _worker_name;
 
-  mutable boost::mutex m_mutex;
+  mutable boost::mutex _task_map_mutex;
   std::map<std::string, wfe_task_t *> m_task_map;
 
   we::loader::loader m_loader;
