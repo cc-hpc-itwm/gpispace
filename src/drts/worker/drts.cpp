@@ -851,8 +851,7 @@ void DRTSImpl::event_thread ()
 {
   for (;;)
   {
-      sdpa::events::SDPAEvent::Ptr evt(m_event_queue.get());
-      evt->handleBy(this);
+    m_event_queue.get()->handleBy (this);
   }
 }
 
