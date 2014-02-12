@@ -11,6 +11,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
+#include <fhg/syscall.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>
 
@@ -81,7 +82,7 @@ namespace gpi
              << " could not be truncated to size: " << size()
              << ": " << strerror(err)
              );
-          ::close (fd);
+          fhg::syscall::close (fd);
           throw std::runtime_error
             ("shared memory segment could not be truncated");
         }
@@ -97,11 +98,11 @@ namespace gpi
         {
           err = errno;
           LOG(ERROR, "shared memory segment: " << name() << " could not be attached: " << strerror(err));
-          ::close (fd);
+          fhg::syscall::close (fd);
           throw std::runtime_error ("shared memory segment could not be attached");
         }
 
-        ::close (fd);
+        fhg::syscall::close (fd);
 
         DLOG(DEBUG, "shared memory segment " << name() << " created: " << m_ptr);
       }
@@ -132,11 +133,11 @@ namespace gpi
         {
           err = errno;
           LOG(ERROR, "shared memory segment: " << name() << " could not be attached: " << strerror(err));
-          ::close (fd);
+          fhg::syscall::close (fd);
           throw std::runtime_error ("shared memory segment could not be attached");
         }
 
-        ::close (fd);
+        fhg::syscall::close (fd);
 
         DLOG(DEBUG, "shared memory segment " << name() << " opened: " << m_ptr);
       }
