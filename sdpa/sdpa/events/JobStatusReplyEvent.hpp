@@ -20,8 +20,8 @@ namespace sdpa
                           , const address_t& a_to
                           , const sdpa::job_id_t& a_job_id
                           , const sdpa::status::code& a_status
-                          , int const error_code = fhg::error::UNASSIGNED_ERROR
-                          , std::string const& error_message = std::string()
+                          , int const error_code
+                          , std::string const& error_message
                           )
         : sdpa::events::JobEvent (a_from, a_to, a_job_id)
         , status_ (a_status)

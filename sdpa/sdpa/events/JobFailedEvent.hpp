@@ -16,8 +16,8 @@ namespace sdpa
       JobFailedEvent ( const address_t& a_from
                      , const address_t& a_to
                      , const sdpa::job_id_t& a_job_id
-                     , int error_code = fhg::error::UNASSIGNED_ERROR
-                     , std::string error_message = std::string()
+                     , int error_code
+                     , std::string error_message
                      )
         : sdpa::events::JobEvent (a_from, a_to, a_job_id)
         , m_error_code (error_code)
