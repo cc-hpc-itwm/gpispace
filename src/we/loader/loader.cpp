@@ -12,6 +12,12 @@ namespace we
 {
   namespace loader
   {
+    loader::loader()
+    {}
+    loader::loader (std::list<boost::filesystem::path> search_path)
+      : _search_path (search_path)
+    {}
+
     loader::~loader()
     {
       while (not _module_stack.empty())
