@@ -934,7 +934,6 @@ void DRTSImpl::job_execution_thread ()
         else
         {
           job->set_state (drts::Job::FAILED);
-          job->set_result_code (fhg::error::UNKNOWN_ERROR);
           job->set_message (error_message);
         }
       }
@@ -946,7 +945,6 @@ void DRTSImpl::job_execution_thread ()
         job->set_state (drts::Job::FAILED);
 
         job->set_result (job->description());
-        job->set_result_code (fhg::error::UNKNOWN_ERROR);
         job->set_message (ex.what());
       }
 
