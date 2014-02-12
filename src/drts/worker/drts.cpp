@@ -326,6 +326,11 @@ int WFEImpl::execute ( std::string const &job_id
     }
   }
 
+  {
+    boost::mutex::scoped_lock task_map_lock(m_mutex);
+    m_task_map.erase (job_id);
+  }
+
   if (fhg::error::NO_ERROR == task_errc)
   {
     MLOG(TRACE, "task finished: " << task.id);
@@ -348,11 +353,6 @@ int WFEImpl::execute ( std::string const &job_id
     error_message = task.error_message;
 
     emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
-  }
-
-  {
-    boost::mutex::scoped_lock task_map_lock(m_mutex);
-    m_task_map.erase (job_id);
   }
 
   return task_errc;
