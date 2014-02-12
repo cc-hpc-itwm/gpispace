@@ -30,7 +30,6 @@ install (FILES revision.hpp
                assert.hpp
                assert_helper.hpp
                assertion_failed.hpp
-               error_codes.hpp
   DESTINATION include/fhg
   COMPONENT headers
   )

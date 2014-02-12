@@ -1,6 +1,5 @@
 #include <drts/worker/drts.hpp>
 
-#include <fhg/error_codes.hpp>
 //! \todo remove when redoing ctor
 #include <fhg/plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
@@ -238,6 +237,21 @@ void WFEImpl::emit_task ( const wfe_task_t& task
       ( sdpa::daemon::NotificationEvent
         (_worker_name, task.id, state, task.activity)
       );
+  }
+}
+
+namespace fhg
+{
+  namespace error
+  {
+    enum code_t
+      {
+        NO_ERROR                = 0
+
+      , EXECUTION_CANCELED     = 30
+
+      , UNKNOWN_ERROR        = 666
+      };
   }
 }
 
