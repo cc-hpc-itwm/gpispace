@@ -446,29 +446,10 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   fhg::util::set_threadname (*m_execution_thread, "[drts-execute]");
 
   start_connect ();
-
-  _service_demux.handle
-    ("/service/drts/capability/add"
-    , boost::bind (&DRTSImpl::service_capability_add, this, _1, _2, _3)
-    );
-
-  _service_demux.handle
-    ("/service/drts/capability/del"
-    , boost::bind (&DRTSImpl::service_capability_del, this, _1, _2, _3)
-    );
-
-  _service_demux.handle
-    ("/service/drts/capability/get"
-    , boost::bind (&DRTSImpl::service_capability_get, this, _1, _2, _3)
-    );
 }
 
 DRTSImpl::~DRTSImpl()
 {
-  _service_demux.unhandle ("/service/drts/capability/add");
-  _service_demux.unhandle ("/service/drts/capability/del");
-  _service_demux.unhandle ("/service/drts/capability/get");
-
   m_shutting_down = true;
 
   if (m_execution_thread)
@@ -877,98 +858,6 @@ void DRTSImpl::job_execution_thread ()
   }
 }
 
-void DRTSImpl::add_virtual_capability (std::string const &cap)
-{
-  boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
-
-  if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
-  {
-    m_virtual_capabilities.insert
-      (std::make_pair (cap, sdpa::Capability (cap, m_my_name)));
-
-    notify_capability_gained (m_virtual_capabilities[cap]);
-  }
-}
-
-void DRTSImpl::del_virtual_capability (std::string const &cap)
-{
-  boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
-
-  typedef map_of_capabilities_t::iterator cap_it_t;
-  cap_it_t cap_it = m_virtual_capabilities.find (cap);
-  if (cap_it != m_virtual_capabilities.end ())
-  {
-    notify_capability_lost (cap_it->second);
-
-    m_virtual_capabilities.erase (cap);
-  }
-}
-
-void DRTSImpl::service_capability_add ( std::string const &
-                                      , gspc::net::frame const &rqst
-                                      , gspc::net::user_ptr user
-                                      )
-{
-  gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
-
-  std::string virtual_capabilities (rqst.get_body ());
-  std::list<std::string> capability_list;
-  fhg::util::split( virtual_capabilities
-                  , ","
-                  , std::back_inserter(capability_list)
-                  );
-
-  BOOST_FOREACH (std::string const & cap, capability_list)
-  {
-    add_virtual_capability (cap);
-  }
-
-    user->deliver (rply);
-}
-
-void DRTSImpl::service_capability_del ( std::string const &
-                                      , gspc::net::frame const &rqst
-                                      , gspc::net::user_ptr user
-                                      )
-{
-  gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
-
-  std::string virtual_capabilities (rqst.get_body ());
-  std::list<std::string> capability_list;
-  fhg::util::split( virtual_capabilities
-                  , ","
-                  , std::back_inserter(capability_list)
-                  );
-
-  BOOST_FOREACH (std::string const & cap, capability_list)
-  {
-    del_virtual_capability (cap);
-  }
-
-  user->deliver (rply);
-}
-
-void DRTSImpl::service_capability_get ( std::string const &
-                                      , gspc::net::frame const &rqst
-                                      , gspc::net::user_ptr user
-                                      )
-{
-  boost::mutex::scoped_lock cap_lock(m_capabilities_mutex);
-
-  gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
-
-  typedef map_of_capabilities_t::const_iterator const_cap_it_t;
-  for ( const_cap_it_t cap_it(m_virtual_capabilities.begin())
-      ; cap_it != m_virtual_capabilities.end()
-      ; ++cap_it
-      )
-  {
-    rply.add_body (cap_it->first + "\n");
-  }
-
-  user->deliver (rply);
-}
-
 void DRTSImpl::notify_capabilities_to_master (std::string const &master)
 {
   sdpa::capabilities_set_t caps;
@@ -990,43 +879,6 @@ void DRTSImpl::notify_capabilities_to_master (std::string const &master)
                                                         , caps
                                                         )
               );
-  }
-}
-
-void DRTSImpl::notify_capability_gained (sdpa::Capability const &cap)
-{
-  for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
-      ; master_it != m_masters.end()
-      ; ++master_it
-      )
-  {
-    if (not master_it->second)
-      continue;
-
-    send_event
-      (new sdpa::events::CapabilitiesGainedEvent( m_my_name
-                                                , master_it->first
-                                                , cap
-                                                ));
-  }
-}
-
-void DRTSImpl::notify_capability_lost (sdpa::Capability const &cap)
-{
-  for ( map_of_masters_t::const_iterator master_it(m_masters.begin())
-      ; master_it != m_masters.end()
-      ; ++master_it
-      )
-  {
-    if (not master_it->second)
-      continue;
-
-    send_event
-      (new sdpa::events::CapabilitiesLostEvent( m_my_name
-                                              , master_it->first
-                                              , cap
-                                              )
-      );
   }
 }
 

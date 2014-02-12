@@ -141,25 +141,7 @@ private:
   void event_thread ();
   void job_execution_thread ();
 
-  void add_virtual_capability (std::string const &cap);
-  void del_virtual_capability (std::string const &cap);
-
-  void service_capability_add ( std::string const &
-                              , gspc::net::frame const &rqst
-                              , gspc::net::user_ptr user
-                              );
-  void service_capability_del ( std::string const &
-                              , gspc::net::frame const &rqst
-                              , gspc::net::user_ptr user
-                              );
-  void service_capability_get ( std::string const &
-                              , gspc::net::frame const &rqst
-                              , gspc::net::user_ptr user
-                              );
-
   void notify_capabilities_to_master (std::string const &master);
-  void notify_capability_gained (sdpa::Capability const &cap);
-  void notify_capability_lost (sdpa::Capability const &cap);
 
   void resend_outstanding_events (std::string const &master);
 
