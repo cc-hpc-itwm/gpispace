@@ -28,17 +28,15 @@ struct KVSSetup
              )
     , m_thrd
       (new boost::thread (boost::bind (&fhg::com::io_service_pool::run, m_pool)))
-  {
-    _kvs = fhg::com::kvs::kvsc_ptr_t
-      ( new fhg::com::kvs::client::kvsc
-        ( kvs_host()
-        , boost::lexical_cast<std::string>(m_serv->port())
-        , true // auto_reconnect
-        , boost::posix_time::seconds (10)
-        , 3
-        )
-      );
-  }
+    , _kvs ( new fhg::com::kvs::client::kvsc
+             ( kvs_host()
+             , boost::lexical_cast<std::string>(m_serv->port())
+             , true // auto_reconnect
+             , boost::posix_time::seconds (10)
+             , 3
+             )
+           )
+  {}
 
   ~KVSSetup ()
   {
