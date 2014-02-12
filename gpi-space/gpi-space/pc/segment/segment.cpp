@@ -165,7 +165,7 @@ namespace gpi
       void segment_t::unlink ()
       {
         assert (! is_special ());
-        shm_unlink(name().c_str());
+        fhg::syscall::shm_unlink(name().c_str());
       }
 
       void *segment_t::ptr ()
