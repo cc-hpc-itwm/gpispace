@@ -75,14 +75,16 @@ namespace gpi
           throw std::runtime_error ("shared memory segment could not be created");
         }
 
-        err = ftruncate (fd, size());
-        if (err < 0)
+        try
         {
-          err = errno;
+          fhg::syscall::ftruncate (fd, size());
+        }
+        catch (boost::system::system_error const& se)
+        {
           LOG( ERROR
              , "shared memory segment: " << name()
              << " could not be truncated to size: " << size()
-             << ": " << strerror(err)
+             << ": " << se.what()
              );
           fhg::syscall::close (fd);
           throw std::runtime_error
