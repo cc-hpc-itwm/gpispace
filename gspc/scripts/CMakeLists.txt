@@ -31,7 +31,6 @@ set (scripts
   gspc-ctrl
   gspc-ctrl-unload-modules
   gspc-ctrl-current-job
-  gspc-ctrl-logcat
 )
 
 set (files
