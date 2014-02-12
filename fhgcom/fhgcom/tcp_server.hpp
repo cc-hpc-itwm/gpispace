@@ -33,12 +33,10 @@ namespace fhg
     private:
       void start ( const std::string & host
                  , const std::string & service
-                 , const bool reuse_addr = true
                  );
 
       bool try_start ( boost::asio::ip::tcp::endpoint ep
                      , boost::system::error_code & ec
-                     , bool reuse_addr = true
                      );
       void accept ();
       void handle_accept ( session_ptr session

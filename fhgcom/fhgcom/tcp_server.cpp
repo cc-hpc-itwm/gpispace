@@ -31,12 +31,11 @@ unsigned short tcp_server::port () const
 
 void tcp_server::start ()
 {
-  start (host_, service_, reuse_addr_);
+  start (host_, service_);
 }
 
 void tcp_server::start ( const std::string & host
                        , const std::string & service
-                       , const bool reuse_addr
                        )
 {
   acceptor_.close ();
@@ -50,7 +49,7 @@ void tcp_server::start ( const std::string & host
 
   while (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
   {
-    if   (try_start(*endpoint_iterator, ec, reuse_addr)) break;
+    if   (try_start(*endpoint_iterator, ec)) break;
     else ++endpoint_iterator;
   }
 
@@ -60,7 +59,6 @@ void tcp_server::start ( const std::string & host
 
 bool tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
                            , boost::system::error_code & ec
-                           , bool reuse_addr
                            )
 {
   DLOG(TRACE, "trying to bind to " << endpoint);
@@ -69,7 +67,7 @@ bool tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
 
   if (ec) return false;
 
-  if (reuse_addr)
+  if (reuse_addr_)
   {
     acceptor_.set_option (tcp::acceptor::reuse_address(true), ec);
     if (ec) return false;
