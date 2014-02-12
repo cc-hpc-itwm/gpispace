@@ -117,6 +117,11 @@ namespace fhg
         (::mmap (addr, length, prot, flags, fd, offset));
     }
 
+    void munmap (void* addr, size_t length)
+    {
+      return negative_one_fails_with_errno<void> (::munmap (addr, length));
+    }
+
     int open (const char* pathname, int flags)
     {
       return negative_one_fails_with_errno<int> (::open (pathname, flags));
