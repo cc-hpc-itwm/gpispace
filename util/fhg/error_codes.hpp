@@ -9,8 +9,6 @@ namespace fhg
       {
         NO_ERROR                = 0
 
-      , INVALID_JOB_DESCRIPTION = 1
-
       , EXECUTION_CANCELED     = 30
 
       , UNKNOWN_ERROR        = 666
@@ -23,9 +21,6 @@ namespace fhg
       {
       case NO_ERROR:
         return "no failure";
-
-      case INVALID_JOB_DESCRIPTION:
-        return "invalid job description";
 
       case EXECUTION_CANCELED:
         return "execution canceled";
