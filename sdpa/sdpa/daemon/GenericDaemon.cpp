@@ -1083,7 +1083,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
             (new events::JobFailedEvent( name()
                                        , subscriber
                                        , pJob->id()
-                                       , fhg::error::UNASSIGNED_ERROR
+                                       , fhg::error::UNEXPECTED_ERROR
                                        , "TODO: take the error message from the job pointer somehow"
                                        )
             );
