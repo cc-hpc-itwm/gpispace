@@ -851,16 +851,8 @@ void DRTSImpl::event_thread ()
 {
   for (;;)
   {
-    try
-    {
       sdpa::events::SDPAEvent::Ptr evt(m_event_queue.get());
       evt->handleBy(this);
-    }
-    catch (boost::thread_interrupted const & irq)
-    {
-      DMLOG(TRACE, "event handler interrupted...");
-      throw;
-    }
   }
 }
 
