@@ -141,32 +141,6 @@ namespace
     we::loader::loader& loader;
     wfe_task_t& task;
   };
-
-  struct search_path_appender
-  {
-    explicit search_path_appender(we::loader::loader& ld)
-      : loader (ld)
-    {}
-
-    search_path_appender& operator = (std::string const& p)
-    {
-      if (not p.empty ())
-        loader.append_search_path (p);
-      return *this;
-    }
-
-    search_path_appender& operator* ()
-    {
-      return *this;
-    }
-
-    search_path_appender& operator++(int)
-    {
-      return *this;
-    }
-
-    we::loader::loader & loader;
-  };
 }
 
 WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
@@ -181,29 +155,15 @@ WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
   , _worker_name (worker_name)
   , m_task_map()
   , m_tasks()
-  , m_loader()
+  , m_loader ( fhg::util::split<std::string, std::list<boost::filesystem::path> >
+               (search_path, ':')
+             )
   , _notification_service ( gui_url
                           ? sdpa::daemon::NotificationService (*gui_url)
                           : boost::optional<sdpa::daemon::NotificationService>()
                           )
 {
   {
-    // initalize loader with paths
-    search_path_appender appender(m_loader);
-    fhg::util::split(search_path, ":", appender);
-
-    if (search_path.empty())
-    {
-      MLOG(WARN, "loader has an empty search path, try setting environment variable PC_LIBRARY_PATH or variable plugin.drts.library_path");
-    }
-    else
-    {
-      DMLOG ( DEBUG
-            , "initialized loader with search path: " << search_path
-            );
-    }
-
-
     // TODO: figure out, why this doesn't work as it is supposed to
     // adjust ld_library_path
     std::string ld_library_path (fhg::util::getenv("LD_LIBRARY_PATH", ""));
