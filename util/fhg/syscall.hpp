@@ -23,6 +23,7 @@ namespace fhg
     void ftruncate (int fd, off_t length);
     void kill (pid_t pid, int sig);
     void listen (int sockfd, int backlog);
+    void* mmap (void* addr, size_t length, int prot, int flags, int fd, off_t offset);
     int open (const char* pathname, int flags);
     int open (const char* pathname, int flags, mode_t mode);
     ssize_t read (int fd, void* buf, size_t count);

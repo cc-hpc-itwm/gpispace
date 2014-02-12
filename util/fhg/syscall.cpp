@@ -36,6 +36,16 @@ namespace fhg
             (boost::system::error_code (errno, boost::system::system_category()));
         }
       }
+
+      void* MAP_FAILED_fails_with_errno (void* rc)
+      {
+        if (rc == MAP_FAILED)
+        {
+          throw boost::system::system_error
+            (boost::system::error_code (errno, boost::system::system_category()));
+        }
+        return rc;
+      }
     }
 
     int accept (int sockfd, struct sockaddr* addr, socklen_t* addrlen)
@@ -99,6 +109,12 @@ namespace fhg
     void listen (int sockfd, int backlog)
     {
       return negative_one_fails_with_errno<void> (::listen (sockfd, backlog));
+    }
+
+    void* mmap (void* addr, size_t length, int prot, int flags, int fd, off_t offset)
+    {
+      return MAP_FAILED_fails_with_errno
+        (::mmap (addr, length, prot, flags, fd, offset));
     }
 
     int open (const char* pathname, int flags)
