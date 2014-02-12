@@ -31,19 +31,12 @@ unsigned short tcp_server::port () const
 
 void tcp_server::start ()
 {
-  start (host_, service_);
-}
-
-void tcp_server::start ( const std::string & host
-                       , const std::string & service
-                       )
-{
   acceptor_.close ();
 
   boost::system::error_code ec;
 
   boost::asio::ip::tcp::resolver resolver (service_pool_.get_io_service());
-  boost::asio::ip::tcp::resolver::query query(host, service);
+  boost::asio::ip::tcp::resolver::query query(host_, service_);
   boost::asio::ip::tcp::resolver::iterator
     endpoint_iterator(resolver.resolve (query));
 

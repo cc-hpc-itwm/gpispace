@@ -31,10 +31,6 @@ namespace fhg
 
       unsigned short port () const;
     private:
-      void start ( const std::string & host
-                 , const std::string & service
-                 );
-
       bool try_start ( boost::asio::ip::tcp::endpoint ep
                      , boost::system::error_code & ec
                      );
