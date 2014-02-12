@@ -62,7 +62,6 @@ namespace gpi
       {
         assert (! is_special ());
 
-        int err (0);
         int fd (-1);
 
         try
@@ -91,17 +90,19 @@ namespace gpi
             ("shared memory segment could not be truncated");
         }
 
-        m_ptr = mmap ( NULL
-                     , size()
-                     , PROT_READ | PROT_WRITE
-                     , MAP_SHARED
-                     , fd
-                     , 0
-                     );
-        if (m_ptr == (void*)-1)
+        try
         {
-          err = errno;
-          LOG(ERROR, "shared memory segment: " << name() << " could not be attached: " << strerror(err));
+          m_ptr = fhg::syscall::mmap ( NULL
+                                     , size()
+                                     , PROT_READ | PROT_WRITE
+                                     , MAP_SHARED
+                                     , fd
+                                     , 0
+                                     );
+        }
+        catch (boost::system::system_error const& se)
+        {
+          LOG(ERROR, "shared memory segment: " << name() << " could not be attached: " << se.what());
           fhg::syscall::close (fd);
           throw std::runtime_error ("shared memory segment could not be attached");
         }
@@ -115,7 +116,6 @@ namespace gpi
       {
         assert (! is_special ());
 
-        int err (0);
         int fd (-1);
 
         try
@@ -128,17 +128,19 @@ namespace gpi
           throw std::runtime_error ("shared memory segment could not be opened");
         }
 
-        m_ptr = mmap ( NULL
-                     , size()
-                     , PROT_READ | PROT_WRITE
-                     , MAP_SHARED
-                     , fd
-                     , 0
-                     );
-        if (m_ptr == (void*)-1)
+        try
         {
-          err = errno;
-          LOG(ERROR, "shared memory segment: " << name() << " could not be attached: " << strerror(err));
+          m_ptr = fhg::syscall::mmap ( NULL
+                                     , size()
+                                     , PROT_READ | PROT_WRITE
+                                     , MAP_SHARED
+                                     , fd
+                                     , 0
+                                     );
+        }
+        catch (boost::system::system_error const& se)
+        {
+          LOG(ERROR, "shared memory segment: " << name() << " could not be attached: " << se.what());
           fhg::syscall::close (fd);
           throw std::runtime_error ("shared memory segment could not be attached");
         }
