@@ -297,7 +297,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     }
     else
     {
-        workflowEngine()->failed (job_id, fhg::error::UNEXPECTED_ERROR, ex.what());
+        workflowEngine()->failed (job_id, fhg::error::UNKNOWN_ERROR, ex.what());
     }
     return;
   }
@@ -562,7 +562,7 @@ try
 }
 catch (std::exception const& ex)
 {
-  workflowEngine()->failed (job_id, fhg::error::UNEXPECTED_ERROR, ex.what());
+  workflowEngine()->failed (job_id, fhg::error::UNKNOWN_ERROR, ex.what());
 }
 
 /**
@@ -679,7 +679,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
               (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
                                  , jobId
-                                 , fhg::error::UNEXPECTED_ERROR
+                                 , fhg::error::UNKNOWN_ERROR
                                  , "the job has an empty workflow attached!"
                                  )
               );
@@ -713,7 +713,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
       (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
                                  , jobId
-                                 , fhg::error::UNEXPECTED_ERROR
+                                 , fhg::error::UNKNOWN_ERROR
                                  , "no workflow engine attached!"
                                  )
       );
@@ -727,7 +727,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
       (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
                                  , jobId
-                                 , fhg::error::UNEXPECTED_ERROR
+                                 , fhg::error::UNKNOWN_ERROR
                                  , "job could not be found"
                                  )
       );
@@ -742,7 +742,7 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
        (new events::JobFailedEvent( sdpa::daemon::WE
                                   , name()
                                   , jobId
-                                  , fhg::error::UNEXPECTED_ERROR
+                                  , fhg::error::UNKNOWN_ERROR
                                   , ex.what()
                                   )
      );
@@ -1065,7 +1065,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
             (new events::JobFailedEvent( name()
                                        , subscriber
                                        , pJob->id()
-                                       , fhg::error::UNEXPECTED_ERROR
+                                       , fhg::error::UNKNOWN_ERROR
                                        , "TODO: take the error message from the job pointer somehow"
                                        )
             );

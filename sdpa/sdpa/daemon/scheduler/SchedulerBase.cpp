@@ -134,7 +134,7 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
             (new sdpa::events::JobFailedEvent(  m_agent_name
                                   , m_agent_name
                                   , jobId
-                                  , fhg::error::UNEXPECTED_ERROR
+                                  , fhg::error::UNKNOWN_ERROR
                                   , ex.what()
                                    ));
 
@@ -146,7 +146,7 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
     sdpa::events::JobFailedEvent::Ptr pEvtJobFailed(new sdpa::events::JobFailedEvent(m_agent_name
                                                          , m_agent_name
                                                          , jobId
-                                                         , fhg::error::UNEXPECTED_ERROR
+                                                         , fhg::error::UNKNOWN_ERROR
                                                          , "job could not be found"
                                                          ));
 

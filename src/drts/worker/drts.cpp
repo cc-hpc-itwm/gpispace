@@ -308,7 +308,7 @@ int WFEImpl::execute ( std::string const &job_id
     catch (...)
     {
       task.state = wfe_task_t::FAILED;
-      task_errc = fhg::error::UNEXPECTED_ERROR;
+      task_errc = fhg::error::UNKNOWN_ERROR;
       task.error_message =
         "UNKNOWN REASON, exception not derived from std::exception";
     }
@@ -946,7 +946,7 @@ void DRTSImpl::job_execution_thread ()
         job->set_state (drts::Job::FAILED);
 
         job->set_result (job->description());
-        job->set_result_code (fhg::error::UNEXPECTED_ERROR);
+        job->set_result_code (fhg::error::UNKNOWN_ERROR);
         job->set_message (ex.what());
       }
 

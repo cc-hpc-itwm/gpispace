@@ -140,7 +140,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
                 events::JobFailedEvent* pJobFailedEvt(new events::JobFailedEvent( name()
                                                                                  , pEvt->from()
                                                                                  , pEvt->job_id()
-                                                                                 , fhg::error::UNEXPECTED_ERROR
+                                                                                 , fhg::error::UNKNOWN_ERROR
                                                                                  , "One of tasks of the group failed with the actual reservation!"));
                 pJob->JobFailed(pJobFailedEvt);
                 delete pJobFailedEvt;
