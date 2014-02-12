@@ -69,7 +69,7 @@ namespace
       {
         std::cerr << "handle-ext(" << act.transition().name() << ") failed: " << ex.what() << std::endl;
 
-        _layer->failed (_id, fhg::error::MODULE_CALL_FAILED, ex.what());
+        _layer->failed (_id, fhg::error::UNKNOWN_ERROR, std::string ("Module call failed: ") + ex.what());
       }
     }
     virtual void handle_externally (we::type::activity_t&, expr_t const&)
