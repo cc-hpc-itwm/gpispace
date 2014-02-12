@@ -153,7 +153,7 @@ WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
                         : boost::optional<numa_socket_setter>()
                         )
   , _worker_name (worker_name)
-  , m_task_map()
+  , _currently_executed_tasks()
   , m_loader ( fhg::util::split<std::string, std::list<boost::filesystem::path> >
                (search_path, ':')
              )
@@ -174,14 +174,14 @@ WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
 WFEImpl::~WFEImpl()
 {
   {
-    boost::mutex::scoped_lock const _ (_task_map_mutex);
-    while (! m_task_map.empty ())
+    boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+    while (! _currently_executed_tasks.empty ())
     {
-      wfe_task_t *task = m_task_map.begin ()->second;
+      wfe_task_t *task = _currently_executed_tasks.begin ()->second;
       task->state = wfe_task_t::CANCELED;
       task->error_message = "plugin shutdown";
 
-      m_task_map.erase (task->id);
+      _currently_executed_tasks.erase (task->id);
     }
   }
 }
@@ -229,8 +229,8 @@ int WFEImpl::execute ( std::string const &job_id
   }
 
   {
-    boost::mutex::scoped_lock const _ (_task_map_mutex);
-    m_task_map.insert(std::make_pair(job_id, &task));
+    boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+    _currently_executed_tasks.insert(std::make_pair(job_id, &task));
   }
 
   emit_task (task);
@@ -266,8 +266,8 @@ int WFEImpl::execute ( std::string const &job_id
   }
 
   {
-    boost::mutex::scoped_lock const _ (_task_map_mutex);
-    m_task_map.erase (job_id);
+    boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+    _currently_executed_tasks.erase (job_id);
   }
 
   if (wfe_task_t::FINISHED == task.state)
@@ -293,9 +293,10 @@ int WFEImpl::execute ( std::string const &job_id
 
 void WFEImpl::cancel (std::string const &job_id)
 {
-  boost::mutex::scoped_lock const _ (_task_map_mutex);
-  std::map<std::string, wfe_task_t *>::iterator task_it (m_task_map.find(job_id));
-  if (task_it != m_task_map.end())
+  boost::mutex::scoped_lock const _ (_currently_executed_tasks_mutex);
+  std::map<std::string, wfe_task_t *>::iterator task_it
+    (_currently_executed_tasks.find(job_id));
+  if (task_it != _currently_executed_tasks.end())
   {
     task_it->second->state = wfe_task_t::CANCELED;
     task_it->second->context.module_call_do_cancel();
