@@ -426,7 +426,7 @@ namespace gpi
 
       int process_t::checked_read (const int fd, void * buf, const size_t len)
       {
-        int err (read (fd, buf, len));
+        ssize_t err (read (fd, buf, len));
 
         if (err < 0)
         {
