@@ -31,12 +31,14 @@ struct KVSSetup
   {
     m_serv->start();
 
-    _kvs = fhg::com::kvs::get_or_create_global_kvs
-      ( kvs_host()
-      , boost::lexical_cast<std::string>(m_serv->port())
-      , true
-      , boost::posix_time::seconds(10)
-      , 3
+    _kvs = fhg::com::kvs::kvsc_ptr_t
+      ( new fhg::com::kvs::client::kvsc
+        ( kvs_host()
+        , boost::lexical_cast<std::string>(m_serv->port())
+        , true // auto_reconnect
+        , boost::posix_time::seconds (10)
+        , 3
+        )
       );
   }
 
@@ -49,9 +51,6 @@ struct KVSSetup
     delete m_serv;
     delete m_kvsd;
     delete m_pool;
-
-    delete *fhg::com::kvs::global::get_kvs_info_ptr ();
-    *fhg::com::kvs::global::get_kvs_info_ptr () = 0;
   }
 
   fhg::com::kvs::kvsc_ptr_t _kvs;
