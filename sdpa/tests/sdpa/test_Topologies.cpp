@@ -171,16 +171,17 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
   const utils::agent agent_0
-    ("agent_0", "127.0.0.1:7700", kvs_host(), kvs_port(), orchestrator);
+
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
   const utils::agent agent_1
-    ("agent_1", "127.0.0.1:7701", kvs_host(), kvs_port(), orchestrator);
+    ("agent_1", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   utils::agents_t agents;
   agents.push_back (boost::cref (agent_0));
   agents.push_back (boost::cref (agent_1));
 
   const utils::agent agent_2
-    ("agent_2", "127.0.0.1:7702", kvs_host(), kvs_port(), agents);
+    ("agent_2", "127.0.0.1", kvs_host(), kvs_port(), agents);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent_2
