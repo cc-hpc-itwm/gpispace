@@ -259,11 +259,11 @@ int WFEImpl::execute ( std::string const &job_id
   {
     MLOG(ERROR, "could not parse activity: " << ex.what());
     task.state = wfe_task_t::FAILED;
-    error_message = ex.what();
+    error_message = std::string ("Invalid job description: ") + ex.what();
 
     emit_task (task, sdpa::daemon::NotificationEvent::STATE_FAILED);
 
-    return fhg::error::INVALID_JOB_DESCRIPTION;
+    return fhg::error::UNKNOWN_ERROR;
   }
 
   {
