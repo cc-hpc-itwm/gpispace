@@ -326,12 +326,11 @@ int WFEImpl::execute ( std::string const &job_id
     }
   }
 
-  result = task.activity;
-
   if (fhg::error::NO_ERROR == task_errc)
   {
     MLOG(TRACE, "task finished: " << task.id);
     task.state = wfe_task_t::FINISHED;
+    result = task.activity;
 
     emit_task (task, sdpa::daemon::NotificationEvent::STATE_FINISHED);
   }
