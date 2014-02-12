@@ -37,6 +37,11 @@ namespace fhg
       }
     }
 
+    int accept (int sockfd, struct sockaddr* addr, socklen_t* addrlen)
+    {
+      return negative_one_fails_with_errno<int> (::accept (sockfd, addr, addrlen));
+    }
+
     void bind (int sockfd, const struct sockaddr* addr, socklen_t addrlen)
     {
       return negative_one_fails_with_errno<void> (::bind (sockfd, addr, addrlen));

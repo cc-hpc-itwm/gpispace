@@ -10,6 +10,7 @@ namespace fhg
 {
   namespace syscall
   {
+    int accept (int sockfd, struct sockaddr* addr, socklen_t* addrlen);
     void bind (int sockfd, const struct sockaddr* addr, socklen_t addrlen);
     void chdir (const char* path);
     void chmod (const char* path, mode_t mode);
