@@ -65,11 +65,13 @@ namespace gpi
         int err (0);
         int fd (-1);
 
-        fd = shm_open (name().c_str(), O_RDWR | O_CREAT | O_EXCL, mode);
-        if (fd < 0)
+        try
         {
-          err = errno;
-          LOG(ERROR, "shared memory segment: " << name() << " could not be created: " << strerror(err));
+          fd = fhg::syscall::shm_open (name().c_str(), O_RDWR | O_CREAT | O_EXCL, mode);
+        }
+        catch (boost::system::system_error const& se)
+        {
+          LOG(ERROR, "shared memory segment: " << name() << " could not be created: " << se.what());
           throw std::runtime_error ("shared memory segment could not be created");
         }
 
@@ -114,11 +116,13 @@ namespace gpi
         int err (0);
         int fd (-1);
 
-        fd = shm_open (name().c_str(), O_RDWR, 0);
-        if (fd < 0)
+        try
         {
-          err = errno;
-          LOG(ERROR, "shared memory segment: " << name() << " could not be opened: " << strerror(err));
+          fd = fhg::syscall::shm_open (name().c_str(), O_RDWR, 0);
+        }
+        catch (boost::system::system_error const& se)
+        {
+          LOG(ERROR, "shared memory segment: " << name() << " could not be opened: " << se.what());
           throw std::runtime_error ("shared memory segment could not be opened");
         }
 
