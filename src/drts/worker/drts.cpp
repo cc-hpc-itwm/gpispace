@@ -394,8 +394,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     }
   }
 
-  assert (! m_event_thread);
-
   m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
   fhg::util::set_threadname (*m_event_thread, "[drts-events]");
 
