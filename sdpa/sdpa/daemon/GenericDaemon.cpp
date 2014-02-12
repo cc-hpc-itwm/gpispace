@@ -153,7 +153,6 @@ GenericDaemon::~GenericDaemon()
   delete ptr_workflow_engine_;
 
   _network_strategy.reset();
-
 }
 
 const std::string& GenericDaemon::name() const
