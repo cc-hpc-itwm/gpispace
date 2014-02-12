@@ -51,10 +51,7 @@ namespace sdpa
     SAVE_CONSTRUCT_DATA_DEF (JobFailedEvent, e)
     {
       SAVE_JOBEVENT_CONSTRUCT_DATA (e);
-      // \note Required, as Archive<< (int) takes an lvalue or const
-      // rvalue and return value is not const, thus fails. (?!)
-      const int weird_temporary (e->error_code());
-      SAVE_TO_ARCHIVE (weird_temporary);
+      SAVE_TO_ARCHIVE_WITH_TEMPORARY (int, e->error_code())
       SAVE_TO_ARCHIVE (e->error_message());
     }
 
