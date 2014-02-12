@@ -332,22 +332,15 @@ int WFEImpl::execute ( std::string const &job_id
     : throw std::runtime_error ("bad task state");
 }
 
-int WFEImpl::cancel (std::string const &job_id)
+void WFEImpl::cancel (std::string const &job_id)
 {
   boost::mutex::scoped_lock job_map_lock(m_mutex);
   std::map<std::string, wfe_task_t *>::iterator task_it (m_task_map.find(job_id));
-  if (task_it == m_task_map.end())
-  {
-    MLOG(WARN, "could not find task " << job_id);
-    return -ESRCH;
-  }
-  else
+  if (task_it != m_task_map.end())
   {
     task_it->second->state = wfe_task_t::CANCELED;
     task_it->second->context.module_call_do_cancel();
   }
-
-  return 0;
 }
 
 

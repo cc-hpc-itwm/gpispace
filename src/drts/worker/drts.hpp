@@ -90,7 +90,7 @@ public:
               , std::list<std::string> const & worker_list
               );
 
-  int cancel (std::string const &job_id);
+  void cancel (std::string const &job_id);
 
 private:
   boost::optional<numa_socket_setter> _numa_socket_setter;
