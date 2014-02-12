@@ -31,6 +31,7 @@ namespace fhg
     pid_t setsid();
     void setsockopt (int sockfd, int level, int optname, const void* optval, socklen_t optlen);
     int shm_open (const char* name, int oflag, mode_t mode);
+    void shm_unlink (const char* name);
     void shutdown (int sockfd, int how);
     int socket (int domain, int type, int protocol);
     void stat (const char* path, struct stat* buf);

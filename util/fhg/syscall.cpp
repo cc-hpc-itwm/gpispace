@@ -152,6 +152,11 @@ namespace fhg
       return negative_one_fails_with_errno<int> (::shm_open (name, oflag, mode));
     }
 
+    void shm_unlink (const char* name)
+    {
+      return negative_one_fails_with_errno<void> (::shm_unlink (name));
+    }
+
     void shutdown (int sockfd, int how)
     {
       return negative_one_fails_with_errno<void> (::shutdown (sockfd, how));
