@@ -1,8 +1,6 @@
 #ifndef DRTS_PLUGIN_JOB_HPP
 #define DRTS_PLUGIN_JOB_HPP 1
 
-#include <fhg/error_codes.hpp>
-
 #include <list>
 #include <string>
 #include <boost/thread.hpp>
