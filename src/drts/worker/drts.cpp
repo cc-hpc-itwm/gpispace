@@ -348,6 +348,11 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
       )
     );
 
+  if (master_list.empty())
+  {
+    throw std::runtime_error ("no masters specified");
+  }
+
 
   _request_stop = request_stop;
 
@@ -404,11 +409,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   m_peer->start();
 
   start_receiver();
-
-  if (master_list.empty())
-  {
-    throw std::runtime_error ("no masters specified");
-  }
 
   BOOST_FOREACH (std::string const & master, master_list)
   {
