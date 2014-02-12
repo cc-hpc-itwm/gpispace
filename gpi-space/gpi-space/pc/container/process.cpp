@@ -426,11 +426,11 @@ namespace gpi
 
       int process_t::checked_read (const int fd, void * buf, const size_t len)
       {
-        ssize_t err (read (fd, buf, len));
+        const ssize_t err (read (fd, buf, len));
 
         if (err < 0)
         {
-          err = errno;
+          int err = errno;
           LOG(ERROR, "could not read " << len << " bytes from client: " << strerror(err));
           close_socket (fd);
           m_handle_process_error (m_id, err);
