@@ -174,7 +174,7 @@ WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
 WFEImpl::~WFEImpl()
 {
   {
-    boost::mutex::scoped_lock task_map_lock (m_mutex);
+    boost::mutex::scoped_lock const _ (m_mutex);
     while (! m_task_map.empty ())
     {
       wfe_task_t *task = m_task_map.begin ()->second;
@@ -229,7 +229,7 @@ int WFEImpl::execute ( std::string const &job_id
   }
 
   {
-    boost::mutex::scoped_lock task_map_lock(m_mutex);
+    boost::mutex::scoped_lock const _ (m_mutex);
     m_task_map.insert(std::make_pair(job_id, &task));
   }
 
@@ -266,7 +266,7 @@ int WFEImpl::execute ( std::string const &job_id
   }
 
   {
-    boost::mutex::scoped_lock task_map_lock(m_mutex);
+    boost::mutex::scoped_lock const _ (m_mutex);
     m_task_map.erase (job_id);
   }
 
@@ -293,7 +293,7 @@ int WFEImpl::execute ( std::string const &job_id
 
 void WFEImpl::cancel (std::string const &job_id)
 {
-  boost::mutex::scoped_lock job_map_lock(m_mutex);
+  boost::mutex::scoped_lock const _ (m_mutex);
   std::map<std::string, wfe_task_t *>::iterator task_it (m_task_map.find(job_id));
   if (task_it != m_task_map.end())
   {
