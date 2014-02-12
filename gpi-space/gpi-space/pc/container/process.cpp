@@ -299,9 +299,14 @@ namespace gpi
       }
 
       int process_t::close_socket (const int fd)
+      try
       {
-        shutdown (fd, SHUT_RDWR);
-        return close (fd);
+        fhg::syscall::shutdown (fd, SHUT_RDWR);
+        fhg::syscall::close (fd);
+      }
+      catch (boost::system::system_error const& se)
+      {
+        return -se.code().value();
       }
 
       int process_t::receive ( const int fd
