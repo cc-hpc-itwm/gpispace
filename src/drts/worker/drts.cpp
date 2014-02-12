@@ -308,14 +308,14 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   : _net_initializer (get<std::size_t> ("plugin.drts.netd_nthreads", config_variables).get_value_or (4L))
   , _service_demux (gspc::net::server::default_service_demux())
   , _queue_manager (_service_demux)
+  , m_my_name (*get<std::string> ("kernel_name", config_variables))
   , m_wfe ( get<std::size_t> ("plugin.drts.socket", config_variables)
           , get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH"))
           , get<std::string> ("plugin.drts.gui_url", config_variables)
-          , *get<std::string> ("kernel_name", config_variables)
+          , m_my_name
           )
 {
   //! \todo ctor parameters
-  const std::string name (*get<std::string> ("kernel_name", config_variables));
   const std::size_t backlog_size
     (get<std::size_t> ("plugin.drts.backlog", config_variables).get_value_or (3));
   const std::size_t max_reconnect_attempts
@@ -372,13 +372,12 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
   m_server = gspc::net::serve (netd_url, _net_initializer, _queue_manager);
 
-  fhg::com::kvs::global_kvs()->put ("gspc.net.url." + name, m_server->url());
+  fhg::com::kvs::global_kvs()->put ("gspc.net.url." + m_my_name, m_server->url());
 
 
   m_shutting_down = false;
 
   m_reconnect_counter = 0;
-  m_my_name = name;
   m_backlog_size = backlog_size;
   m_max_reconnect_attempts = max_reconnect_attempts;
 

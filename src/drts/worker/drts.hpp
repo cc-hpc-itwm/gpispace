@@ -171,12 +171,13 @@ private:
 
   bool m_shutting_down;
 
+  std::string m_my_name;
+
   WFEImpl m_wfe;
 
   boost::shared_ptr<boost::thread>    m_peer_thread;
   boost::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
-  std::string m_my_name;
   //! \todo Two sets for connected and unconnected masters?
   map_of_masters_t m_masters;
   std::size_t m_max_reconnect_attempts;
