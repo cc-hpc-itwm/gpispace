@@ -186,28 +186,30 @@ namespace gpi
 
       void manager_t::listener_thread_main(const int fd)
       {
-        int cfd, err;
+        int cfd;
         struct sockaddr_un peer_addr;
         socklen_t peer_addr_size;
 
         for (;;)
         {
           peer_addr_size = sizeof(struct sockaddr_un);
-          cfd = accept( fd
-                      , (struct sockaddr*)&peer_addr
-                      , &peer_addr_size
-                      );
-          if (cfd == -1)
+          try
           {
-            err = errno;
+            cfd = fhg::syscall::accept ( fd
+                                       , (struct sockaddr*)&peer_addr
+                                       , &peer_addr_size
+                                       );
+          }
+          catch (boost::system::system_error const& se)
+          {
             if (! m_stopping)
             {
-              LOG(ERROR, "could not accept: " << strerror(err));
+              LOG(ERROR, "could not accept: " << se.what());
 
-              if (err)
+              if (se.code().value())
               {
                 LOG( ERROR
-                   , "connector had an error: " << strerror (err) << ", restarting it"
+                   , "connector had an error: " << se.what() << ", restarting it"
                    );
 
                 stop ();
