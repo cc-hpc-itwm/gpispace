@@ -263,7 +263,6 @@ int WFEImpl::execute ( std::string const &job_id
                      )
 {
   wfe_task_t task (job_id, _worker_name, worker_list);
-  fhg::error::code_t task_errc = fhg::error::NO_ERROR;
 
   try
   {
@@ -286,6 +285,8 @@ int WFEImpl::execute ( std::string const &job_id
   }
 
   emit_task (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
+
+  fhg::error::code_t task_errc = fhg::error::NO_ERROR;
 
   if (task.state != wfe_task_t::PENDING)
   {
