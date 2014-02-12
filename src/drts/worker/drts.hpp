@@ -76,7 +76,6 @@ public:
           , std::string search_path
           , boost::optional<std::string> gui_url
           , std::string worker_name
-          , gspc::net::server::service_demux_t& service_demux
           );
   ~WFEImpl();
 
@@ -96,11 +95,6 @@ public:
   int cancel (std::string const &job_id);
 
 private:
-  void service_current_job ( std::string const &
-                           , gspc::net::frame const &rqst
-                           , gspc::net::user_ptr user
-                           );
-
   boost::optional<numa_socket_setter> _numa_socket_setter;
 
   std::string _worker_name;
@@ -109,14 +103,9 @@ private:
   std::map<std::string, wfe_task_t *> m_task_map;
   fhg::thread::queue<wfe_task_t*> m_tasks;
 
-  mutable boost::mutex m_current_task_mutex;
-  wfe_task_t *m_current_task;
-
   we::loader::loader m_loader;
 
   boost::optional<sdpa::daemon::NotificationService> _notification_service;
-
-  gspc::net::server::scoped_service_handler _current_job_service;
 };
 
 class DRTSImpl : public sdpa::events::EventHandler

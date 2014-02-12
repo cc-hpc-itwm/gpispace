@@ -174,7 +174,6 @@ WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
                  , std::string search_path
                  , boost::optional<std::string> gui_url
                  , std::string worker_name
-                 , gspc::net::server::service_demux_t& service_demux
                  )
   : _numa_socket_setter ( target_socket
                         ? numa_socket_setter (*target_socket)
@@ -183,17 +182,11 @@ WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
   , _worker_name (worker_name)
   , m_task_map()
   , m_tasks()
-  , m_current_task (NULL)
   , m_loader()
   , _notification_service ( gui_url
                           ? sdpa::daemon::NotificationService (*gui_url)
                           : boost::optional<sdpa::daemon::NotificationService>()
                           )
-  , _current_job_service
-    ( "/service/drts/current-job"
-    , boost::bind (&WFEImpl::service_current_job, this, _1, _2, _3)
-    , service_demux
-    )
 {
   {
     // initalize loader with paths
@@ -278,11 +271,6 @@ int WFEImpl::execute ( std::string const &job_id
     m_task_map.insert(std::make_pair(job_id, &task));
   }
 
-  {
-    boost::mutex::scoped_lock lock (m_current_task_mutex);
-    m_current_task = &task;
-  }
-
   emit_task (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
 
   if (task.state != wfe_task_t::PENDING)
@@ -324,11 +312,6 @@ int WFEImpl::execute ( std::string const &job_id
       task.error_message =
         "UNKNOWN REASON, exception not derived from std::exception";
     }
-  }
-
-  {
-    boost::mutex::scoped_lock lock (m_current_task_mutex);
-    m_current_task = 0;
   }
 
   result = task.activity;
@@ -384,24 +367,6 @@ int WFEImpl::cancel (std::string const &job_id)
   return 0;
 }
 
-void WFEImpl::service_current_job ( std::string const &
-                                  , gspc::net::frame const &rqst
-                                  , gspc::net::user_ptr user
-                                  )
-{
-  gspc::net::frame rply = gspc::net::make::reply_frame (rqst);
-
-  {
-    boost::mutex::scoped_lock lock (m_current_task_mutex);
-    if (m_current_task)
-    {
-      rply.set_body (m_current_task->activity.transition().name());
-    }
-  }
-
-  user->deliver (rply);
-}
-
 
 DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables)
   : _net_initializer (get<std::size_t> ("plugin.drts.netd_nthreads", config_variables).get_value_or (4L))
@@ -422,7 +387,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     (get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH")));
   const boost::optional<std::string> gui_url
     (get<std::string> ("plugin.drts.gui_url", config_variables));
-  WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name, _service_demux));
+  WFEImpl* wfe (new WFEImpl (target_socket, search_path, gui_url, name));
   fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
   fhg::com::port_t port (get<std::string> ("plugin.drts.port", config_variables).get_value_or ("0"));
   {
