@@ -288,13 +288,10 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     bool b_master_job(e.is_external() && hasWorkflowEngine());
     jobManager().addJob(job_id, e.description(), b_master_job, e.from());
   }
-  catch(std::bad_alloc const &ex)
+  catch (std::runtime_error const &ex)
   {
     if( e.is_external() )
     {
-        DLLOG (WARN, _logger, "Couldn't allocate memory for a new job!");
-        // couldn't allocate memory for a new job; the job is either too large or there are probably too many jobs submitted,
-        // either by the user or by the wfe, one may try to submit later, after some of the exiting jobs have terminated and some space is freed
         events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBNOTADDED, ex.what()) );
         sendEventToOther(pErrorEvt);
     }
