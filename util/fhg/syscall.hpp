@@ -20,6 +20,7 @@ namespace fhg
     int dup (int olfd, int newfd, int flags);
     void execve (const char* filename, char* const argv[], char* const envp[]);
     pid_t fork();
+    void ftruncate (int fd, off_t length);
     void kill (pid_t pid, int sig);
     void listen (int sockfd, int backlog);
     int open (const char* pathname, int flags);

@@ -86,6 +86,11 @@ namespace fhg
       return negative_one_fails_with_errno<pid_t> (::fork());
     }
 
+    void ftruncate (int fd, off_t length)
+    {
+      return negative_one_fails_with_errno<void> (::ftruncate (fd, length));
+    }
+
     void kill (pid_t pid, int sig)
     {
       return negative_one_fails_with_errno<void> (::kill (pid, sig));
