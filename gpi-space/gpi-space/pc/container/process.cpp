@@ -376,20 +376,34 @@ namespace gpi
           data = sstr.str();
         }
         header.length = data.size();
-        int err (write (fd, &header, sizeof(header)));
-        if ( err <= 0 )
+        try
         {
-          err = errno;
-          m_handle_process_error (m_id, err);
-          return -err;
+          if (fhg::syscall::write (fd, &header, sizeof(header)) == 0)
+          {
+            const int err (errno);
+            m_handle_process_error (m_id, err);
+            return -err;
+          }
+        }
+        catch (boost::system::system_error const& se)
+        {
+          m_handle_process_error (m_id, se.code().value());
+          return -se.code().value();
         }
 
-        err = write (fd, data.c_str(), header.length);
-        if ( err <= 0 )
+        try
         {
-          err = errno;
-          m_handle_process_error (m_id, err);
-          return -err;
+          if (fhg::syscall::write (fd, data.c_str(), header.length) == 0)
+          {
+            const int err (errno);
+            m_handle_process_error (m_id, err);
+            return -err;
+          }
+        }
+        catch (boost::system::system_error const& se)
+        {
+          m_handle_process_error (m_id, se.code().value());
+          return -se.code().value();
         }
 
         return 1;
