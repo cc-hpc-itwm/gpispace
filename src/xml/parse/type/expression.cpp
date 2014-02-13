@@ -5,7 +5,6 @@
 #include <xml/parse/id/mapper.hpp>
 
 #include <fhg/util/join.hpp>
-#include <fhg/util/split.hpp> // fhg::util::lines
 #include <fhg/util/xml.hpp>
 
 #include <stdexcept>
@@ -18,6 +17,39 @@ namespace xml
     {
       namespace
       {
+        template<typename List>
+        void lines (const std::string& s, const char sep, List& v)
+        {
+          std::string::const_iterator pos (s.begin());
+          std::string::const_iterator item_begin (s.begin());
+          std::string::const_iterator item_end (s.begin());
+          const std::string::const_iterator& end (s.end());
+
+          while (pos != end)
+          {
+            if (*pos == sep)
+            {
+              v.push_back (std::string (item_begin, item_end));
+              ++pos;
+              while (pos != end && (*pos == sep || isspace (*pos)))
+              {
+                ++pos;
+              }
+              item_begin = item_end = pos;
+            }
+            else
+            {
+              ++item_end;
+              ++pos;
+            }
+          }
+
+          if (item_begin != item_end)
+          {
+            v.push_back (std::string (item_begin, item_end));
+          }
+        }
+
         expressions_type split (const expressions_type& exps)
         {
           expressions_type list;
@@ -27,7 +59,7 @@ namespace xml
               ; ++exp
               )
           {
-            fhg::util::lines (*exp, ';', list);
+            lines (*exp, ';', list);
           }
 
           return list;
@@ -50,7 +82,7 @@ namespace xml
       void expression_type::set (const std::string& exps)
       {
         _expressions.clear();
-        fhg::util::lines (exps, ';', _expressions);
+        lines (exps, ';', _expressions);
       }
 
       std::string expression_type::expression (const std::string& sep) const
