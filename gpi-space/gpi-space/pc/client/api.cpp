@@ -23,10 +23,10 @@
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 
-static int close_socket (const int fd)
+static void close_socket (const int fd)
 {
   fhg::syscall::shutdown (fd, SHUT_RDWR);
-  return close (fd);
+  close (fd);
 }
 
 static int open_socket (std::string const & path)
