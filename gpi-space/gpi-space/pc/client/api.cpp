@@ -157,13 +157,13 @@ namespace gpi
         }
 
         // receive
-        std::vector<char> buffer;
         if (this->read  (&header, sizeof (header)) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not receive data");
         }
 
+        std::vector<char> buffer;
         buffer.resize (header.length);
         if (this->read (&buffer[0], header.length) <= 0)
         {
