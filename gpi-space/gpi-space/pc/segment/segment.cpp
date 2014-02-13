@@ -101,8 +101,6 @@ namespace gpi
         }
 
         fhg::syscall::close (fd);
-
-        DLOG(DEBUG, "shared memory segment " << name() << " created: " << m_ptr);
       }
 
       void segment_t::open ()
@@ -139,8 +137,6 @@ namespace gpi
         }
 
         fhg::syscall::close (fd);
-
-        DLOG(DEBUG, "shared memory segment " << name() << " opened: " << m_ptr);
       }
 
       void segment_t::close ()
