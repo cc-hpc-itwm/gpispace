@@ -72,6 +72,7 @@ namespace sdpa
 
       void handle_recv (boost::system::error_code const & ec);
 
+      fhg::com::kvs::kvsc_ptr_t _kvs_client;
       fhg::com::peer_t m_peer;
       fhg::com::message_t m_message;
       boost::thread _peer_thread;
