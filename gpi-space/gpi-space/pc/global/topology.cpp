@@ -133,14 +133,7 @@ namespace gpi
 
       topology_t::~topology_t()
       {
-        try
-        {
-          stop ();
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not stop topology: " << ex.what());
-        }
+        stop ();
       }
 
       bool topology_t::is_master () const
