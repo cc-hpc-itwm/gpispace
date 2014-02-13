@@ -20,7 +20,7 @@ typedef boost::unique_lock<mutex_type> lock_type;
 
 static gpi::pc::client::api_t & gpi_api ()
 {
-  static gpi::pc::client::api_t a;
+  static gpi::pc::client::api_t a ("");
   return a;
 }
 
