@@ -555,8 +555,8 @@ namespace process
 
     reader_barrier.wait ();
 
-    std::list<std::string> cmdline;
-    fhg::util::split (command, ' ', std::back_inserter (cmdline));
+    std::list<std::string> const cmdline
+      (fhg::util::split<std::string, std::string> (command, ' '));
 
     char ** av = new char*[cmdline.size()+1];
     av[cmdline.size()] = (char*)(NULL);
