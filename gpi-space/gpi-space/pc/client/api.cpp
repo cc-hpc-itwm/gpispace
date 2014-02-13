@@ -742,10 +742,6 @@ namespace gpi
           throw
             std::runtime_error (boost::get<proto::error::error_t>(rply).detail);
         }
-        catch (std::exception const & ex)
-        {
-          throw;
-        }
       }
 
       void api_t::del_memory (gpi::pc::type::segment_id_t id)
