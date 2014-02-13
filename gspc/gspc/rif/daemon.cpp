@@ -202,9 +202,7 @@ namespace gspc
               throw std::runtime_error ("supervise: --setenv needs an argument");
             }
 
-            const std::pair<std::string, std::string> env_kvp =
-              fhg::util::split_string (argv.front (), '=');
-            child.env.insert (env_kvp);
+            child.env.insert (fhg::util::split_string (argv.front (), '='));
           }
         }
         else
