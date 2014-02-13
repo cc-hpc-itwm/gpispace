@@ -4,7 +4,7 @@
 
 #include <gpi-space/pc/segment/segment.hpp>
 
-BOOST_AUTO_TEST_CASE (segment_create_test)
+BOOST_AUTO_TEST_CASE (sequence_of_create_close_unlink_does_not_throw)
 {
   gpi::pc::segment::segment_t seg
     ("seg-test-" + boost::lexical_cast<std::string>(getpid()), 1024);
