@@ -74,14 +74,12 @@ int main (int argc, char **argv)
 
     if( vec.size() != 2 )
     {
-      LLOG (ERROR, logger, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
-      return -1;
+      throw std::runtime_error
+        ("Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
     }
-    else
-    {
-      DLLOG (TRACE, logger, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
-      fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(120), 1);
-    }
+
+    DLLOG (TRACE, logger, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
+    fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(120), 1);
   }
 
   if( arrMasterNames.empty() )
