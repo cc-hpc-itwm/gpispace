@@ -118,12 +118,6 @@ namespace gpi
         return fhg::syscall::read (m_socket, buf, sz);
       }
 
-      int api_t::connection_lost (int)
-      {
-        stop();
-        return 0;
-      }
-
       void api_t::path (std::string const & p)
       {
         m_path = p;
