@@ -46,14 +46,13 @@ int main (int argc, char **argv)
     //("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
     ("master,m", po::value<std::vector<std::string> >(&arrMasterNames)->multitoken(), "Agent's master list")
     ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
-    ("kvs_url,k",  po::value<std::string>(), "The kvs daemon's url")
+    ("kvs_url,k",  po::value<std::string>()->required(), "The kvs daemon's url")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
     ("daemonize", "daemonize after all checks were successful")
     ;
 
   po::variables_map vm;
   po::store( po::command_line_parser( argc, argv ).options(desc).run(), vm );
-  po::notify(vm);
 
   fhg::log::Logger::ptr_t logger (fhg::log::Logger::get (agentName));
 
@@ -64,12 +63,8 @@ int main (int argc, char **argv)
     return 0;
   }
 
-  if( !vm.count("kvs_url") )
-  {
-    LLOG (ERROR, logger, "The url of the kvs daemon was not specified!");
-    return -1;
-  }
-  else
+  po::notify(vm);
+
   {
     boost::char_separator<char> sep(":");
     boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
