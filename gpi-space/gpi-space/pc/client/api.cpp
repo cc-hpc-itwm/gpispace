@@ -52,7 +52,6 @@ namespace gpi
       api_t::api_t (std::string const & path)
         : m_path (path)
         , m_socket (-1)
-        , m_connected (false)
       {}
 
       api_t::~api_t ()
@@ -64,7 +63,7 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        if (m_connected)
+        if (m_socket != -1)
         {
           if (ping ())
             return;
@@ -73,7 +72,6 @@ namespace gpi
         }
 
         m_socket = open_socket (m_path);
-          m_connected = true;
 
           try
           {
@@ -90,11 +88,10 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        if (m_connected)
+        if (m_socket != -1)
         {
           close_socket (m_socket);
           m_socket = -1;
-          m_connected = false;
 
           // move all segments to trash
           while (! m_segments.empty())
@@ -108,7 +105,7 @@ namespace gpi
       bool api_t::is_connected () const
       {
         lock_type lock (m_mutex);
-        return m_connected;
+        return m_socket != -1;
       }
 
       ssize_t api_t::write (const void * buf, size_t sz)

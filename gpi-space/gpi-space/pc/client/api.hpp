@@ -106,7 +106,6 @@ namespace gpi
         mutable mutex_type m_mutex;
         std::string m_path;
         int m_socket;
-        bool m_connected;
         segment_map_t m_segments;
         segment_set_t m_garbage_segments;
         gpi::pc::type::info::descriptor_t m_info;
