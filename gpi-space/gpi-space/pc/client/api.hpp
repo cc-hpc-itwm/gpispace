@@ -100,7 +100,6 @@ namespace gpi
         gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
         ssize_t write (const void * buf, size_t sz);
         ssize_t read (void * buf, size_t sz);
-        gpi::pc::type::info::descriptor_t _collect_info ();
 
         mutable mutex_type m_mutex;
         std::string m_path;

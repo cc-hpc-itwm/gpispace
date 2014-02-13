@@ -75,7 +75,12 @@ namespace gpi
 
           try
           {
-            m_info = _collect_info ();
+            gpi::pc::proto::control::info_t msg;
+            gpi::pc::proto::message_t rply
+              (communicate (gpi::pc::proto::control::message_t (msg)));
+            gpi::pc::proto::control::message_t ctrl_msg
+              (boost::get<gpi::pc::proto::control::message_t>(rply));
+            m_info = boost::get<gpi::pc::proto::control::info_reply_t>(ctrl_msg).info;
           }
           catch (...)
           {
@@ -762,16 +767,6 @@ namespace gpi
       gpi::pc::type::info::descriptor_t api_t::collect_info () const
       {
         return m_info;
-      }
-
-      gpi::pc::type::info::descriptor_t api_t::_collect_info ()
-      {
-        gpi::pc::proto::control::info_t msg;
-          gpi::pc::proto::message_t rply
-            (communicate (gpi::pc::proto::control::message_t (msg)));
-          gpi::pc::proto::control::message_t ctrl_msg
-            (boost::get<gpi::pc::proto::control::message_t>(rply));
-          return boost::get<gpi::pc::proto::control::info_reply_t>(ctrl_msg).info;
       }
     }
   }
