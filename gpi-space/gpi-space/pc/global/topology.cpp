@@ -133,7 +133,21 @@ namespace gpi
 
       topology_t::~topology_t()
       {
-        stop ();
+        {
+          lock_type lock(m_mutex);
+          m_shutting_down = true;
+        }
+
+        if (m_peer)
+        {
+          m_peer->stop();
+        }
+        if (m_peer_thread->joinable())
+        {
+          m_peer_thread->join();
+        }
+        m_peer.reset();
+        m_peer_thread.reset();
       }
 
       bool topology_t::is_master () const
@@ -428,23 +442,6 @@ namespace gpi
         }
 
         return rc;
-      }
-
-      void topology_t::stop ()
-      {
-        {
-          lock_type lock(m_mutex);
-          if (! m_peer_thread || m_shutting_down)
-          {
-            return;
-          }
-          m_shutting_down = true;
-        }
-
-        m_peer->stop();
-        m_peer_thread->join();
-        m_peer.reset();
-        m_peer_thread.reset();
       }
 
       void topology_t::establish ()

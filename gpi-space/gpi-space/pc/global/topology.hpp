@@ -72,7 +72,7 @@ namespace gpi
         void del_child(const gpi::rank_t rank);
 
         //! \note that This is effectively the ctor, thus the
-        //! memory_manager passed in has to live until stop()/dtor,
+        //! memory_manager passed in has to live until dtor,
         //! even though it is not visible as class state!
         void start( const gpi::rank_t rank
                   , const fhg::com::host_t & host
@@ -80,7 +80,6 @@ namespace gpi
                   , std::string const & cookie
                   , memory::manager_t& memory_manager
                   );
-        void stop ();
 
         void establish ();
 
