@@ -271,6 +271,7 @@ namespace sdpa {
       boost::thread _event_handler_thread;
       void handle_events();
 
+      fhg::com::kvs::kvsc_ptr_t _kvs_client;
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
     };
   }

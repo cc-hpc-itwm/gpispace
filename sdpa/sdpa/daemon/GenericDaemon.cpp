@@ -101,16 +101,16 @@ GenericDaemon::GenericDaemon( const std::string name
   , _registration_timeout (boost::posix_time::seconds (1))
   , _event_queue()
   , _event_handler_thread (&GenericDaemon::handle_events, this)
+  , _kvs_client
+    ( new fhg::com::kvs::client::kvsc
+      (kvs_host, kvs_port, true, boost::posix_time::seconds(120), 1)
+    )
   , _network_strategy
     ( new sdpa::com::NetworkStrategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
                                      , name /*name for peer*/
                                      , host_from_url (url)
                                      , port_from_url (url)
-                                     , fhg::com::kvs::get_or_create_global_kvs
-                                       ( kvs_host, kvs_port
-                                       , boost::posix_time::seconds(120)
-                                       , 1
-                                       )
+                                     , _kvs_client
                                      )
     )
 {
