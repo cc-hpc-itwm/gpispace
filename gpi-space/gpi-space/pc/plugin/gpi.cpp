@@ -84,7 +84,6 @@ public:
       delete _try_start_loop;
       _try_start_loop = NULL;
     }
-    api.stop();
   }
 
   gpi::pc::type::handle_id_t alloc ( const gpi::pc::type::segment_id_t seg_id
