@@ -17,8 +17,10 @@ namespace xml
     {
       namespace
       {
-        void lines (const std::string& s, const char sep, expressions_type& v)
+        void lines (const std::string& s, expressions_type& v)
         {
+          char const sep (';');
+
           std::string::const_iterator pos (s.begin());
           std::string::const_iterator item_begin (s.begin());
           std::string::const_iterator item_end (s.begin());
@@ -58,7 +60,7 @@ namespace xml
               ; ++exp
               )
           {
-            lines (*exp, ';', list);
+            lines (*exp, list);
           }
 
           return list;
@@ -81,7 +83,7 @@ namespace xml
       void expression_type::set (const std::string& exps)
       {
         _expressions.clear();
-        lines (exps, ';', _expressions);
+        lines (exps, _expressions);
       }
 
       std::string expression_type::expression (const std::string& sep) const
