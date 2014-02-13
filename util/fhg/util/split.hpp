@@ -64,13 +64,6 @@ namespace fhg
       }
     }
 
-    inline
-    std::pair<std::string, std::string>
-    split (std::string const &val, char sep)
-    {
-      return split_string (val, sep);
-    }
-
     template <typename OutputIterator>
     inline void split ( const std::string & s
                       , char sep
