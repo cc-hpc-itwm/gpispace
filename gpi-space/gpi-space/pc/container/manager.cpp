@@ -45,7 +45,6 @@ namespace gpi
           }
 
         _memory_manager.clear();
-        _topology.stop();
       }
 
       void manager_t::start ()
