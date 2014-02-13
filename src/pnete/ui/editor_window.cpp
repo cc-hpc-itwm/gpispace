@@ -952,6 +952,8 @@ namespace fhg
         //! \todo Add search path into config (temporarily)!
         // loader.append_search_path (temporary_path / "pnetc" / "op");
 
+        //! \todo Actually initialize kvs
+        fhg::com::kvs::get_or_create_global_kvs();
         //! \todo Configurable name of orchestrator, non-static
         static sdpa::client::Client client ("orchestrator");
 
