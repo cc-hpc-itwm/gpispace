@@ -137,7 +137,6 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        using namespace gpi::pc::proto;
         int err;
 
         // serialize
@@ -156,7 +155,7 @@ namespace gpi
         }
 
         // send
-        header_t header;
+        proto::header_t header;
         ::memset (&header, 0, sizeof(header));
         header.length = data.size();
 
@@ -191,7 +190,7 @@ namespace gpi
           throw std::runtime_error ("could not receive data");
         }
 
-        message_t rply;
+        proto::message_t rply;
         // deserialize
         try
         {
