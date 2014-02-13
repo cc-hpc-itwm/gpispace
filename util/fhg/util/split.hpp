@@ -49,11 +49,11 @@ namespace fhg
     inline std::pair<std::string, std::string> split_string(const std::string &val
                                                            , char sep)
     {
-      std::string::size_type const split_pos_s (val.find (sep));
+      std::string::size_type const pos (val.find (sep));
 
       return std::make_pair
-        ( val.substr (0, split_pos_s)
-        , split_pos_s != std::string::npos ? val.substr (split_pos_s + 1) : ""
+        ( val.substr (0, pos)
+        , pos != std::string::npos ? val.substr (pos + 1) : ""
         );
     }
   }
