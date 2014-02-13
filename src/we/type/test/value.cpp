@@ -47,17 +47,14 @@ namespace
                                  )
   {
     using pnet::type::value::value_type;
-    using pnet::type::value::show;
-    using pnet::type::value::read;
-    using fhg::util::parse::position_string;
 
     {
       std::ostringstream oss;
-      oss << show (value_type (x));
+      oss << pnet::type::value::show (value_type (x));
       BOOST_CHECK_EQUAL (expected_show, oss.str());
       const std::string inp (oss.str());
-      position_string pos (inp);
-      BOOST_CHECK_EQUAL (value_type (x), read (pos));
+      fhg::util::parse::position_string pos (inp);
+      BOOST_CHECK_EQUAL (value_type (x), pnet::type::value::read (pos));
       BOOST_CHECK (pos.end());
     }
   }
