@@ -26,7 +26,7 @@
 static void close_socket (const int fd)
 {
   fhg::syscall::shutdown (fd, SHUT_RDWR);
-  close (fd);
+  fhg::syscall::close (fd);
 }
 
 static int open_socket (std::string const & path)
