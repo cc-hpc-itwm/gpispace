@@ -349,11 +349,14 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   }
 
 
-  _kvs_client = fhg::com::kvs::get_or_create_global_kvs
-    ( !kvs_host.empty() ? kvs_host : throw std::runtime_error ("kvs host empty")
-    , !kvs_port.empty() ? kvs_port : throw std::runtime_error ("kvs port empty")
-    , kvs_timeout
-    , 1 // max_connection_attempts
+  _kvs_client = fhg::com::kvs::kvsc_ptr_t
+    (new fhg::com::kvs::client::kvsc
+      ( !kvs_host.empty() ? kvs_host : throw std::runtime_error ("kvs host empty")
+      , !kvs_port.empty() ? kvs_port : throw std::runtime_error ("kvs port empty")
+      , true // auto_reconnect
+      , kvs_timeout
+      , 1 // max_connection_attempts
+      )
     );
 
   _service_demux.handle ("/service/echo", gspc::net::service::echo ());
