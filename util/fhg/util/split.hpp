@@ -9,17 +9,19 @@
 
 #include <boost/function.hpp>
 
+#include <list>
+
 namespace fhg
 {
   namespace util
   {
-    template<typename T, typename VEC>
-    inline VEC
+    template<typename T, typename U>
+      inline std::list<U>
     split ( const T & x
           , const typename std::iterator_traits<typename T::const_iterator>::value_type & s
           )
     {
-      VEC path;
+      std::list<U> path;
       T key;
 
       for (typename T::const_iterator pos (x.begin()); pos != x.end(); ++pos)

@@ -26,10 +26,7 @@ namespace
       (std::pair<std::string BOOST_PP_COMMA() std::string> const& kv, m)
     {
       std::list<std::string> path
-        (fhg::util::split< std::string
-                         , std::list<std::string>
-                         > (kv.first, '.')
-        );
+        (fhg::util::split<std::string, std::string> (kv.first, '.'));
 
       if (path.empty())
       {

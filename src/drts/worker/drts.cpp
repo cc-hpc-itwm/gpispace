@@ -154,7 +154,7 @@ WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
                         )
   , _worker_name (worker_name)
   , _currently_executed_tasks()
-  , m_loader ( fhg::util::split<std::string, std::list<boost::filesystem::path> >
+  , m_loader ( fhg::util::split<std::string, boost::filesystem::path>
                (search_path, ':')
              )
   , _notification_service ( gui_url
@@ -322,11 +322,11 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 {
   //! \todo ctor parameters
   const std::list<std::string> master_list
-    ( fhg::util::split<std::string, std::list<std::string> >
+    ( fhg::util::split<std::string, std::string>
       (get<std::string> ("plugin.drts.master", config_variables).get_value_or (""), ',')
     );
   const std::list<std::string> capability_list
-    ( fhg::util::split<std::string, std::list<std::string> >
+    ( fhg::util::split<std::string, std::string>
       (get<std::string> ("plugin.drts.capabilities", config_variables).get_value_or (""), ',')
     );
   fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
