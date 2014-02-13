@@ -10,9 +10,9 @@
 
 namespace
 {
-  std::vector<std::string> split_at_dot (std::string path)
+  std::list<std::string> split_at_dot (std::string path)
   {
-    std::vector<std::string> result;
+    std::list<std::string> result;
     fhg::util::split (path, '.', std::back_inserter (result));
     return result;
   }
@@ -20,9 +20,9 @@ namespace
 
 BOOST_AUTO_TEST_CASE (empty_string_results_in_empty_set)
 {
-  const std::vector<std::string> path (split_at_dot (std::string()));
+  const std::list<std::string> path (split_at_dot (std::string()));
 
-  const std::vector<std::string> expected;
+  const std::list<std::string> expected;
 
   BOOST_REQUIRE_EQUAL_COLLECTIONS
     (path.begin(), path.end(), expected.begin(), expected.end());
@@ -30,9 +30,9 @@ BOOST_AUTO_TEST_CASE (empty_string_results_in_empty_set)
 
 BOOST_AUTO_TEST_CASE (trailing_empty_element_is_ignored)
 {
-  const std::vector<std::string> path (split_at_dot ("foo."));
+  const std::list<std::string> path (split_at_dot ("foo."));
 
-  std::vector<std::string> expected;
+  std::list<std::string> expected;
   expected.push_back("foo");
 
   BOOST_REQUIRE_EQUAL_COLLECTIONS
@@ -41,9 +41,9 @@ BOOST_AUTO_TEST_CASE (trailing_empty_element_is_ignored)
 
 BOOST_AUTO_TEST_CASE (non_trailing_empty_element_is_preserved)
 {
-  const std::vector<std::string> path (split_at_dot ("."));
+  const std::list<std::string> path (split_at_dot ("."));
 
-  std::vector<std::string> expected;
+  std::list<std::string> expected;
   expected.push_back(std::string());
 
   BOOST_REQUIRE_EQUAL_COLLECTIONS
@@ -52,9 +52,9 @@ BOOST_AUTO_TEST_CASE (non_trailing_empty_element_is_preserved)
 
 BOOST_AUTO_TEST_CASE (non_empty_elements_are_preserved)
 {
-  const std::vector<std::string> path (split_at_dot ("fhg.log.logger.1"));
+  const std::list<std::string> path (split_at_dot ("fhg.log.logger.1"));
 
-  std::vector<std::string> expected;
+  std::list<std::string> expected;
   expected.push_back("fhg");
   expected.push_back("log");
   expected.push_back("logger");
