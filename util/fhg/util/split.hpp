@@ -37,7 +37,10 @@ namespace fhg
         }
       }
 
-      path.push_back (key);
+      if (!key.empty())
+      {
+        path.push_back (key);
+      }
 
       return path;
     }
