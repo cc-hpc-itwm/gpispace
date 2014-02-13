@@ -23,13 +23,15 @@
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 
-static void close_socket (const int fd)
+namespace
+{
+void close_socket (const int fd)
 {
   fhg::syscall::shutdown (fd, SHUT_RDWR);
   fhg::syscall::close (fd);
 }
 
-static int open_socket (std::string const & path)
+int open_socket (std::string const & path)
 {
   int sfd, err;
   struct sockaddr_un addr;
@@ -53,6 +55,7 @@ static int open_socket (std::string const & path)
   }
 
   return sfd;
+}
 }
 
 namespace gpi
