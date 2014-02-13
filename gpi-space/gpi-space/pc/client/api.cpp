@@ -718,10 +718,7 @@ namespace gpi
       void api_t::garbage_collect ()
       {
         lock_type lock (m_mutex);
-        while (! m_garbage_segments.empty())
-        {
-          m_garbage_segments.erase (m_garbage_segments.begin());
-        }
+        m_garbage_segments.clear();
       }
 
       gpi::pc::type::segment_id_t api_t::add_memory (const std::string & url)
