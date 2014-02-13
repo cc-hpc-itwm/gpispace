@@ -234,6 +234,7 @@ namespace gpi
                     , id
                     , fd
                     , _memory_manager
+                    , global::topology()
                     )
                   )
                 );

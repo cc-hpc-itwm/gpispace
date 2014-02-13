@@ -286,12 +286,13 @@ namespace gpi
           ( gpi::pc::type::process_id_t const& id
           , gpi::pc::proto::message_t const& request
           , gpi::pc::memory::manager_t& memory_manager
+          , global::topology_t& topology
           )
         {
           try
           {
             return boost::apply_visitor
-              (handle_message_t (id, memory_manager, global::topology()), request);
+              (handle_message_t (id, memory_manager, topology), request);
           }
           catch (std::exception const& ex)
           {
@@ -431,7 +432,7 @@ namespace gpi
               break;
             }
 
-            if (send (fd, handle_message (m_id, request, _memory_manager)) <= 0)
+            if (send (fd, handle_message (m_id, request, _memory_manager, _topology)) <= 0)
             {
               break;
             }
