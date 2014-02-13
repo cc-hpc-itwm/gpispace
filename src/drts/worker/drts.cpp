@@ -309,6 +309,19 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   , _service_demux (gspc::net::server::default_service_demux())
   , _queue_manager (_service_demux)
   , _request_stop (request_stop)
+  , _kvs_client
+    (new fhg::com::kvs::client::kvsc
+      ( get<std::string> ("plugin.drts.kvs_host", config_variables).get_value_or ("localhost")
+      , get<std::string> ("plugin.drts.kvs_port", config_variables).get_value_or ("2439")
+      , true // auto_reconnect
+      , boost::posix_time::duration_from_string
+        ( get<std::string> ("plugin.drts.kvs_timeout", config_variables)
+        .get_value_or
+          (boost::posix_time::to_simple_string (boost::posix_time::seconds (120)))
+        )
+      , 1 // max_connection_attempts
+      )
+    )
   , m_shutting_down (false)
   , m_my_name (*get<std::string> ("kernel_name", config_variables))
   , m_wfe ( get<std::size_t> ("plugin.drts.socket", config_variables)
@@ -333,31 +346,10 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   fhg::com::port_t port (get<std::string> ("plugin.drts.port", config_variables).get_value_or ("0"));
   const std::string netd_url (get<std::string> ("plugin.drts.netd_url", config_variables).get_value_or ("tcp://*"));
 
-  const std::string kvs_host (get<std::string> ("plugin.drts.kvs_host", config_variables).get_value_or ("localhost"));
-  const std::string kvs_port (get<std::string> ("plugin.drts.kvs_port", config_variables).get_value_or ("2439"));
-  const boost::posix_time::time_duration kvs_timeout
-    ( boost::posix_time::duration_from_string
-      ( get<std::string> ("plugin.drts.kvs_timeout", config_variables)
-      .get_value_or
-        (boost::posix_time::to_simple_string (boost::posix_time::seconds (120)))
-      )
-    );
-
   if (master_list.empty())
   {
     throw std::runtime_error ("no masters specified");
   }
-
-
-  _kvs_client = fhg::com::kvs::kvsc_ptr_t
-    (new fhg::com::kvs::client::kvsc
-      ( !kvs_host.empty() ? kvs_host : throw std::runtime_error ("kvs host empty")
-      , !kvs_port.empty() ? kvs_port : throw std::runtime_error ("kvs port empty")
-      , true // auto_reconnect
-      , kvs_timeout
-      , 1 // max_connection_attempts
-      )
-    );
 
   _service_demux.handle ("/service/echo", gspc::net::service::echo ());
 
