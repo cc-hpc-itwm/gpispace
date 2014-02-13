@@ -75,9 +75,8 @@ namespace gpi
 
           try
           {
-            gpi::pc::proto::control::info_t msg;
             gpi::pc::proto::message_t rply
-              (communicate (gpi::pc::proto::control::message_t (msg)));
+              (communicate (gpi::pc::proto::control::message_t (gpi::pc::proto::control::info_t())));
             gpi::pc::proto::control::message_t ctrl_msg
               (boost::get<gpi::pc::proto::control::message_t>(rply));
             m_info = boost::get<gpi::pc::proto::control::info_reply_t>(ctrl_msg).info;
