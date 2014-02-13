@@ -14,6 +14,8 @@
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 
+#include <fhg/syscall.hpp>
+
 namespace gpi
 {
   namespace pc
@@ -97,8 +99,8 @@ namespace gpi
 
         int connection_lost (int);
         gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
-        int write (const void * buf, size_t sz);
-        int read (void * buf, size_t sz);
+        ssize_t write (const void * buf, size_t sz);
+        ssize_t read (void * buf, size_t sz);
         gpi::pc::type::info::descriptor_t _collect_info ();
 
         mutable mutex_type m_mutex;

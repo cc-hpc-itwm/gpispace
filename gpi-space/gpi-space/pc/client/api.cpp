@@ -130,14 +130,14 @@ namespace gpi
         return m_connected;
       }
 
-      int api_t::write (const void * buf, size_t sz)
+      ssize_t api_t::write (const void * buf, size_t sz)
       {
-        return ::write (m_socket, buf, sz);
+        return fhg::syscall::write (m_socket, buf, sz);
       }
 
-      int api_t::read (void * buf, size_t sz)
+      ssize_t api_t::read (void * buf, size_t sz)
       {
-        return ::read (m_socket, buf, sz);
+        return fhg::syscall::read (m_socket, buf, sz);
       }
 
       int api_t::connection_lost (int)
