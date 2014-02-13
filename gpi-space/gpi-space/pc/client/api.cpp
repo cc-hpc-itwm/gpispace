@@ -739,10 +739,8 @@ namespace gpi
         }
         catch (boost::bad_get const &)
         {
-          proto::error::error_t result
-            (boost::get<proto::error::error_t>(rply));
           throw
-            std::runtime_error (result.detail);
+            std::runtime_error (boost::get<proto::error::error_t>(rply).detail);
         }
         catch (std::exception const & ex)
         {
