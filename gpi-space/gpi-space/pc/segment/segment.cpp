@@ -23,14 +23,7 @@ namespace gpi
     {
       segment_t::~segment_t()
       {
-        try
-        {
           close ();
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(WARN, "could not stop shared segment: " << name());
-        }
       }
 
       segment_t::segment_t ( std::string const & nme
