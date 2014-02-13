@@ -255,6 +255,7 @@ namespace gpi
       manager_t::manager_t ( std::string const & p
                            , std::vector<std::string> const& default_memory_urls
                            , api::gpi_api_t& gpi_api
+                           , fhg::com::kvs::kvsc_ptr_t kvs_client
                            )
         : m_path (p)
         , m_socket (-1)
@@ -266,6 +267,7 @@ namespace gpi
                     , global::topology_t::any_port() // topology_t::port_t("10821")
                     , "dummy-cookie"
                     , _memory_manager
+                    , kvs_client
                     )
       {
         for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)

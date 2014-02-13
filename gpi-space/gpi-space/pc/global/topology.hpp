@@ -70,6 +70,7 @@ namespace gpi
                    , const fhg::com::port_t & port
                    , std::string const & cookie
                    , memory::manager_t& memory_manager
+                   , fhg::com::kvs::kvsc_ptr_t kvs_client
                    );
         ~topology_t ();
 

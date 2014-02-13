@@ -916,8 +916,8 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
   {
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
-    global_container_mgr =
-      new gpi::pc::container::manager_t (cfg->socket, mem_urls, gpi_api);
+    global_container_mgr = new gpi::pc::container::manager_t
+      (cfg->socket, mem_urls, gpi_api, fhg::com::kvs::global_kvs());
   }
   catch (std::exception const & ex)
   {

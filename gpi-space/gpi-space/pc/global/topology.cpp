@@ -128,13 +128,14 @@ namespace gpi
                              , const fhg::com::port_t & port
                              , std::string const & cookie
                              , memory::manager_t& memory_manager
+                             , fhg::com::kvs::kvsc_ptr_t kvs_client
                              )
         : m_shutting_down (false)
         , m_go_received (false)
         , m_waiting_for_go (0)
         , m_established (false)
         , m_rank (rank)
-        , _kvs_client (fhg::com::kvs::global_kvs())
+        , _kvs_client (kvs_client)
       {
         lock_type lock(m_mutex);
         m_peer.reset
