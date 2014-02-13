@@ -214,8 +214,6 @@ namespace gpi
                    , const type::flags_t flags
                    )
       {
-        using namespace gpi::pc;
-
         proto::memory::alloc_t alloc_msg;
         alloc_msg.segment = seg;
         alloc_msg.size = sz;
@@ -246,7 +244,6 @@ namespace gpi
 
       void api_t::free (const gpi::pc::type::handle_id_t hdl)
       {
-        using namespace gpi::pc;
         proto::memory::free_t rqst;
         rqst.handle = hdl;
 
@@ -268,7 +265,6 @@ namespace gpi
       gpi::pc::type::handle::descriptor_t
       api_t::info(const gpi::pc::type::handle_t h)
       {
-        using namespace gpi::pc;
         proto::memory::info_t rqst;
         rqst.handle = h;
 
@@ -325,7 +321,6 @@ namespace gpi
                     , const gpi::pc::type::queue_id_t queue
                     )
       {
-        using namespace gpi::pc;
         proto::memory::memcpy_t rqst;
         rqst.dst = dst;
         rqst.src = src;
@@ -369,7 +364,6 @@ namespace gpi
       gpi::pc::type::size_t
       api_t::wait (const gpi::pc::type::queue_id_t queue)
       {
-        using namespace gpi::pc;
         proto::memory::wait_t rqst;
         rqst.queue = queue;
 
@@ -424,7 +418,6 @@ namespace gpi
 
         // communication part
         {
-          using namespace gpi::pc;
           proto::segment::register_t rqst;
           rqst.name = name;
           rqst.size = sz;
@@ -488,7 +481,6 @@ namespace gpi
       gpi::pc::type::segment::list_t
       api_t::list_segments ()
       {
-        using namespace gpi::pc;
         proto::segment::list_t rqst;
 
         proto::message_t rply (communicate(proto::segment::message_t (rqst)));
@@ -562,7 +554,6 @@ namespace gpi
 
         // communicate
         {
-          using namespace gpi::pc;
           proto::segment::attach_t rqst;
           rqst.id = id;
 
@@ -585,7 +576,6 @@ namespace gpi
       void
       api_t::detach_segment (const gpi::pc::type::segment_id_t id)
       {
-        using namespace gpi::pc;
         proto::segment::detach_t rqst;
         rqst.id = id;
 
@@ -612,7 +602,6 @@ namespace gpi
       void
       api_t::unregister_segment (const gpi::pc::type::segment_id_t id)
       {
-        using namespace gpi::pc;
         proto::segment::unregister_t rqst;
         rqst.id = id;
 
@@ -642,7 +631,6 @@ namespace gpi
       gpi::pc::type::handle::list_t
       api_t::list_allocations (const gpi::pc::type::segment_id_t seg)
       {
-        using namespace gpi::pc;
         proto::memory::list_t rqst;
         rqst.segment = seg;
 
