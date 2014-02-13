@@ -69,14 +69,7 @@ namespace gpi
 
       api_t::~api_t ()
       {
-        try
-        {
           stop ();
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not stop pc client api: " << ex.what());
-        }
       }
 
       void api_t::start ()
