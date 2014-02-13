@@ -179,12 +179,12 @@ private:
       typedef shell_t::argv_t argv_t;
       typedef shell_t::command_callback_t callback_t;
 
-      command_t ( const std::string & nme
+      command_t ( const std::string & name
                       , const std::string & short_doc
                       , const std::string & long_doc
                       , callback_t cb
                       )
-        : m_name (nme)
+        : m_name (name)
         , m_short_doc (short_doc)
         , m_long_doc (long_doc)
         , m_callback (cb)
