@@ -727,9 +727,6 @@ namespace gpi
               );
             m_request_finished.notify_one();
           }
-          else if (av[0] == "+OK")
-          {
-          }
           else if (av[0] == "+ERR")
           {
             std::vector<std::string> msg_vec ( av.begin ()+2

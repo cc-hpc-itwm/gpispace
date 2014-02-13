@@ -123,9 +123,6 @@ GenericDaemon::GenericDaemon( const std::string name
   //                - remove them in destructor
 
   // application gui service
-  if (guiUrl && !guiUrl->empty())
-  {
-  }
 }
 
 GenericDaemon::~GenericDaemon()

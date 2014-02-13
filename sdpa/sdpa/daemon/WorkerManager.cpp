@@ -116,13 +116,6 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
   pWorker->addCapabilities(cpbSet);
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
-
-  if (pWorker->capacity())
-  {
-  }
-  else
-  {
-  }
 }
 
 

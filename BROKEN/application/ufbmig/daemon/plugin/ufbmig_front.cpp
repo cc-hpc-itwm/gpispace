@@ -706,9 +706,6 @@ private:
       MLOG(ERROR, "meta data not available: " << strerror(-fd));
       return fd;
     }
-    else
-    {
-    }
 
     uint64_t sz;
     int ec;
