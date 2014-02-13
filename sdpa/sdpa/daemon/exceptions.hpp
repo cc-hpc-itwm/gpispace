@@ -63,14 +63,9 @@ namespace daemon {
 
 	class WorkerAlreadyExistException : public WorkerException {
 		public:
-		WorkerAlreadyExistException( const sdpa::worker_id_t& worker_id, const sdpa::worker_id_t& agent_uuid )
-			: WorkerException("A worker with either the same name or the same uuid has already registerd!", worker_id),
-			  agent_uuid_(agent_uuid) {}
+		WorkerAlreadyExistException( const sdpa::worker_id_t& worker_id )
+			: WorkerException("A worker with either the same name or the same uuid has already registerd!", worker_id) {}
 		virtual ~WorkerAlreadyExistException() throw() {}
-
-		const sdpa::worker_id_t& agent_uuid() { return agent_uuid_; }
-		private:
-		sdpa::worker_id_t agent_uuid_;
 	};
 
 	class JobNotAddedException : public JobException {

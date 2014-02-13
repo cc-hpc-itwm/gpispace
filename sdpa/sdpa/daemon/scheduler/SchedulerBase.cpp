@@ -39,11 +39,10 @@ SchedulerBase::~SchedulerBase()
 void SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
                                 const boost::optional<unsigned int>& capacity,
                                 const capabilities_set_t& cpbset,
-                                const unsigned int& agent_rank,
-                                const sdpa::worker_id_t& agent_uuid )
+                                const unsigned int& agent_rank )
 {
   lock_type lock(mtx_);
-  _worker_manager.addWorker(workerId, capacity, cpbset, agent_rank, agent_uuid);
+  _worker_manager.addWorker(workerId, capacity, cpbset, agent_rank);
   cond_workers_registered.notify_all();
   cond_feed_workers.notify_one();
 }

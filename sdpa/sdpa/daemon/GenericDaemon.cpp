@@ -91,7 +91,6 @@ GenericDaemon::GenericDaemon( const std::string name
                          : NULL
                          ),
     m_nRank(rank),
-    m_strAgentUID (name),
     m_guiService ( guiUrl && !guiUrl->empty()
                  ? boost::optional<NotificationService>
                    (NotificationService (*guiUrl))
@@ -755,7 +754,7 @@ void GenericDaemon::registerWorker(const events::WorkerRegistrationEvent& evtReg
     }
   }
 
-  scheduler()->addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank(), evtRegWorker.agent_uuid() );
+  scheduler()->addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank());
 
   // send back an acknowledgment
   DLLOG (TRACE, _logger, "Send back to the worker " << worker_id << " a registration acknowledgment!" );
@@ -907,7 +906,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 
     //std::cout<<cpbSet;
 
-    events::WorkerRegistrationEvent::Ptr pEvtWorkerReg(new events::WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet,  rank(), agent_uuid()));
+    events::WorkerRegistrationEvent::Ptr pEvtWorkerReg(new events::WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet,  rank()));
     sendEventToOther(pEvtWorkerReg);
   }
 }

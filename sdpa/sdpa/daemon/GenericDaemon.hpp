@@ -110,7 +110,6 @@ namespace sdpa {
 
       const unsigned int& rank() const { return m_nRank; }
       unsigned int& rank() { return m_nRank; }
-      const sdpa::worker_id_t& agent_uuid() { return m_strAgentUID; }
 
       void removeMasters(const agent_id_list_t& );
       size_t numberOfMasterAgents() { return m_arrMasterInfo.size(); }
@@ -251,7 +250,6 @@ namespace sdpa {
     private:
 
       unsigned int m_nRank;
-      sdpa::worker_id_t m_strAgentUID;
 
       mutex_type mtx_subscriber_;
     protected:

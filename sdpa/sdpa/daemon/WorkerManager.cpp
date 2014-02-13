@@ -97,8 +97,7 @@ const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(co
 void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
                                 boost::optional<unsigned int> capacity,
                                 const capabilities_set_t& cpbSet,
-                                const unsigned int& agent_rank,
-                                const sdpa::worker_id_t& agent_uuid )
+                                const unsigned int& agent_rank )
 {
   lock_type lock(mtx_);
 
@@ -110,11 +109,11 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
     {
       //LLOG (ERROR, _logger, "An worker with the id "<<workerId<<" already exist into the worker map!");
       bFound = true;
-      throw WorkerAlreadyExistException(workerId, agent_uuid);
+      throw WorkerAlreadyExistException(workerId);
     }
   }
 
-  Worker::ptr_t pWorker( new Worker( workerId, capacity, agent_rank, agent_uuid ) );
+  Worker::ptr_t pWorker( new Worker( workerId, capacity, agent_rank ) );
   pWorker->addCapabilities(cpbSet);
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));

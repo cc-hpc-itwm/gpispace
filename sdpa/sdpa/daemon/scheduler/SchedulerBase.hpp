@@ -68,8 +68,7 @@ namespace sdpa {
       void addWorker( const Worker::worker_id_t& workerId,
                       const boost::optional<unsigned int>& capacity = boost::none,
                       const capabilities_set_t& cpbset = capabilities_set_t(),
-                      const unsigned int& agent_rank = 0,
-                      const sdpa::worker_id_t& agent_uuid = "");
+                      const unsigned int& agent_rank = 0);
 
       void deleteWorker( const Worker::worker_id_t& workerId);
 
