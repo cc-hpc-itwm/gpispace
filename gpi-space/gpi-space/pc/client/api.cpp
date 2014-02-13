@@ -732,10 +732,8 @@ namespace gpi
         try
         {
           rply = communicate (gpi::pc::proto::segment::message_t (msg));
-          gpi::pc::proto::segment::message_t result
-            (boost::get<gpi::pc::proto::segment::message_t>(rply));
-          return
-            boost::get<gpi::pc::proto::segment::register_reply_t>(result).id;
+          return boost::get<gpi::pc::proto::segment::register_reply_t>
+            (boost::get<gpi::pc::proto::segment::message_t>(rply)).id;
         }
         catch (boost::bad_get const &)
         {
