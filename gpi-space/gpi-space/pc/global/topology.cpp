@@ -452,7 +452,6 @@ namespace gpi
           else
           {
             m_established = true;
-            DMLOG(TRACE, "topology established");
           }
         }
         catch (std::exception const & ex)
@@ -600,8 +599,6 @@ namespace gpi
                                       , memory::manager_t& memory_manager
                                       )
       {
-        DLOG(TRACE, "got message from gpi-" << rank << ": " << msg);
-
         // TODO: push message to message handler
 
         if (rank != m_rank && msg == "CONNECT")
@@ -732,7 +729,6 @@ namespace gpi
           }
           else if (av[0] == "+OK")
           {
-            DLOG(TRACE, "command succeeded");
           }
           else if (av[0] == "+ERR")
           {
@@ -772,8 +768,6 @@ namespace gpi
       {
         if (m_established || m_waiting_for_go)
         {
-          MLOG (DEBUG, "error on connection to " << rank << ": " << ec);
-          MLOG (DEBUG, "node-failover is not available yet, I have to commit Seppuku...");
           m_shutting_down = true;
           if (m_waiting_for_go)
           {

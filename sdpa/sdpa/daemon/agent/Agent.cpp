@@ -64,8 +64,6 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  DLLOG (TRACE, _logger, "Called handleJobFinished for the job " << pEvt->job_id());
-
   // send a JobFinishedAckEvent back to the worker/slave
   events::JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt(new events::JobFinishedAckEvent( name()
                                                                           , pEvt->from()
@@ -78,7 +76,6 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   Job* pJob = jobManager().findJob(pEvt->job_id());
   if(!pJob)
   {
-      DLLOG(WARN, _logger, "got finished message for old/unknown Job "<< pEvt->job_id());
       return;
   }
 
@@ -114,7 +111,6 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
         {
             if(pJob->is_canceling())
             {
-                DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has been canceled");
                 events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
                 pJob->CancelJobAck(&evtCancelAck);
                 workflowEngine()->canceled(actId);
@@ -123,7 +119,6 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
               if(scheduler()->groupFinished(actId))
               {
                 pJob->JobFinished(pEvt);
-                DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
                 workflowEngine()->finished
                   (actId, we::type::activity_t (pEvt->result()));
               }
@@ -136,13 +131,11 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
                 pJob->JobFailed(pJobFailedEvt);
                 delete pJobFailedEvt;
 
-                DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has failed");
                 workflowEngine()->failed( actId,
                                           "One of tasks of the group failed with the actual reservation!");
               }
         }
 
-        DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
         // if all partial results were collected, release the reservation
         if(bAllPartResCollected) {
            scheduler()->releaseReservation(pJob->id());
@@ -151,24 +144,20 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
       }
       catch(WorkerNotFoundException const &)
       {
-        DLLOG (TRACE, _logger, "Worker "<<worker_id<<" not found!");
         throw;
       }
       catch(const JobNotDeletedException&)
       {
-        DLLOG (ERROR, _logger, "Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
       }
 
       try {
         //delete it also from job_map_
         if(bAllPartResCollected) {
-            DLLOG (TRACE, _logger, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
            jobManager().deleteJob(pEvt->job_id());
         }
       }
       catch(JobNotDeletedException const &)
       {
-          DLLOG(ERROR, _logger, "The JobManager could not delete the job "<<pEvt->job_id());
           throw;
       }
   }
@@ -178,10 +167,6 @@ void Agent::finished(const we::layer::id_type& wfid, const we::type::activity_t 
 {
   //put the job into the state Finished
   job_id_t id(wfid);
-  DLLOG ( TRACE
-        , _logger
-        , "The workflow engine has notified the agent "<<name()<<" that the job "<<id<<" finished!"
-        );
 
   Job* pJob = jobManager().findJob(id);
   if(!pJob)
@@ -202,7 +187,6 @@ void Agent::finished(const we::layer::id_type& wfid, const we::type::activity_t 
 
   if(!isSubscriber(pJob->owner()))
   {
-    DLLOG (TRACE, _logger, "Post a JobFinished event to the master "<<pJob->owner());
     sendEventToOther(pEvtJobFinished);
   }
 
@@ -245,8 +229,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  DLLOG (TRACE, _logger, "handleJobFailed(" << pEvt->job_id() << ")");
-
   // if the event comes from the workflow engine (e.g. submission failed,
   // see the scheduler
 
@@ -269,7 +251,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
   Job* pJob = jobManager().findJob(pEvt->job_id());
   if(!pJob)
   {
-    DLLOG(WARN, _logger, "got failed message for old/unknown Job "<< pEvt->job_id());
     return;
   }
 
@@ -311,14 +292,12 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
           {
               if(pJob->is_canceling())
               {
-                  DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has been canceled");
                   events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
                   pJob->CancelJobAck(&evtCancelAck);
                   workflowEngine()->canceled(actId);
               }
               else
               {
-                  DLLOG (TRACE, _logger, "Inform WE that the activity "<<actId<<" has finished");
                   pJob->JobFailed(pEvt);
                   workflowEngine()->failed( actId
                                             , pEvt->error_message()
@@ -329,7 +308,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
               // in the reservation list
           }
 
-          DLLOG (TRACE, _logger, "Remove the job "<<actId<<" from the worker "<<worker_id);
           // if all the partial results were collected, release the reservation
           if(bAllPartResCollected) {
               scheduler()->releaseReservation(pJob->id());
@@ -338,24 +316,20 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
       }
       catch(WorkerNotFoundException const &)
       {
-        DLLOG (TRACE, _logger, "Worker "<<worker_id<<" not found!");
         throw;
       }
       catch(const JobNotDeletedException&)
       {
-        DLLOG (ERROR, _logger, "Could not delete the job "<<pJob->id()<<" from the worker "<<worker_id<<"'s queues ...");
       }
 
       try {
         //delete it also from job_map_
-        DLLOG (TRACE, _logger, "Remove the job "<<pEvt->job_id()<<" from the JobManager");
         if(bAllPartResCollected) {
             jobManager().deleteJob(pEvt->job_id());
         }
       }
       catch(JobNotDeletedException const &ex)
       {
-        DLLOG (ERROR, _logger, "The JobManager could not delete the job "<<pEvt->job_id());
         throw ex;
       }
   }
@@ -366,8 +340,6 @@ void Agent::failed( const we::layer::id_type& wfid
                   )
 {
   job_id_t id(wfid);
-  DLLOG ( TRACE, _logger, "The workflow engine has notified the agent "<<name()<<" that the job "<<id<<" failed!"
-        );
   //put the job into the state Failed
 
   Job* pJob = jobManager().findJob(id);
@@ -460,7 +432,6 @@ void Agent::notifySubscribers(const T& ptrEvt)
       ptrEvt->to() = pair_subscr_joblist.first;
       sendEventToOther(ptrEvt);
 
-      DLLOG (TRACE, _logger, "Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
       break;
     }
   }
@@ -475,7 +446,6 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   {
       if (pEvt->is_external())
       {
-        DLLOG (TRACE, _logger, "Job "<<pEvt->job_id()<<" not found!");
         sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , pEvt->from()
                                                           , events::ErrorEvent::SDPA_EJOBNOTFOUND
@@ -512,10 +482,8 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
       }
 
       // a Cancel message came from the upper level -> forward cancellation request to WE
-      DLLOG (TRACE, _logger, "Cancel the workflow "<<pEvt->job_id()<<". Current status is: "<<sdpa::status::show(pJob->getStatus()));
       workflowEngine()->cancel(pEvt->job_id());
       pJob->CancelJob(pEvt);
-      DLLOG (TRACE, _logger, "The current status of the workflow "<<pEvt->job_id()<<" is: "<<sdpa::status::show(pJob->getStatus()));
   }
   else // the workflow engine issued the cancelation order for this job
   {
@@ -526,18 +494,14 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
                                                                        , pEvt->job_id() ) );
     // change the job status to "Canceling"
     pJob->CancelJob(pEvt);
-    DLLOG (TRACE, _logger, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
 
     if(worker_id)
     {
-      DLLOG (TRACE, _logger, "Tell the worker "<<*worker_id<<" to cancel the job "<<pEvt->job_id());
       sendEventToOther(pCancelEvt);
     }
     else
     {
         workflowEngine()->canceled(pEvt->job_id());
-
-        DLLOG (TRACE, _logger, "Canceling the pending job "<<pEvt->job_id()<<" ... ");
 
         // reply with an ack here
         events::CancelJobAckEvent evtCancelAck(name(), pEvt->from(), pEvt->job_id());
@@ -552,8 +516,6 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 
 void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 {
-  DLLOG (TRACE, _logger, "handleCancelJobAck(" << pEvt->job_id() << ")");
-
   Job* pJob(jobManager().findJob(pEvt->job_id()));
   {
     on_scope_exit _ ( boost::bind ( &we::layer::canceled
@@ -566,7 +528,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     {
         // update the job status to "Canceled"
         pJob->CancelJobAck(pEvt);
-        DLLOG (TRACE, _logger, "The job state is: "<<status::show(pJob->getStatus()));
     }
 
     _.dont();
@@ -618,7 +579,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     {
       // the job was not assigned to any worker yet -> this means that might
       // still be in the scheduler's queue
-      DLLOG (TRACE, _logger, "Worker "<<worker_id<<" not found!");
     }
     catch(const JobNotDeletedException& jnde)
     {

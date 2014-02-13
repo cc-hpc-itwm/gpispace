@@ -84,7 +84,6 @@ int main(int ac, char **av)
       throw std::runtime_error ("invalid config variable: must not be empty");
     }
 
-    DLLOG (TRACE, logger, "setting " << kv.first << " to " << kv.second);
     config_variables.insert (kv);
   }
   config_variables["kernel_name"] = kernel_name;

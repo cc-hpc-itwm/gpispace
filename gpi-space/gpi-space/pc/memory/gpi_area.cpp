@@ -41,17 +41,6 @@ namespace gpi
         m_total_memsize = gpi::api::gpi_api_t::get().number_of_nodes () * size;
         m_min_local_offset = gpi::api::gpi_api_t::get().rank() * size;
         m_max_local_offset = m_min_local_offset + size - 1;
-
-        CLOG( DEBUG
-            , "gpi.memory"
-            , "GPI memory created:"
-            <<" per-node: " << size
-            <<" total: " << m_total_memsize
-            <<" range:"
-            <<" ["
-            << m_min_local_offset << "," << m_max_local_offset
-            << "]"
-            );
       }
 
       void gpi_area_t::init ()
@@ -105,11 +94,6 @@ namespace gpi
         }
         else
         {
-          MLOG ( DEBUG
-               , "added " << num_buffers_allocated << "/" << m_num_com_buffers
-               << " communication buffers, " << m_com_buffer_size << " bytes each"
-               );
-
           MLOG_IF ( WARN, descriptor ().avail == 0
                   ,  "communication buffers consumed all your precious memory,"
                   << " this might not be what you wanted!"
@@ -171,11 +155,6 @@ namespace gpi
                                 , const gpi::pc::type::offset_t end
                                 ) const
       {
-        DLOG ( TRACE
-             , "checking range: " << "hdl=[" << hdl << "]"
-             << " range = [" << begin << ", " << end << ")"
-             );
-
         gpi::pc::type::id_t     my_rank = gpi::api::gpi_api_t::get ().rank ();
 
         if (not gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
@@ -222,14 +201,6 @@ namespace gpi
                              , const gpi::pc::type::queue_id_t queue
                              )
         {
-          DLOG( TRACE, "read_dma:"
-              << " loc-offset = " << local_offset
-              << " rem-offset = " << remote_offset
-              << " #bytes = " << amount
-              << " from = " << from_node
-              << " via = " << queue
-              );
-
           gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
 
           api.read_dma (local_offset, remote_offset, amount, from_node, queue);
@@ -292,14 +263,6 @@ namespace gpi
                               , const gpi::pc::type::queue_id_t queue
                               )
         {
-          DLOG( TRACE, "write_dma:"
-              << " loc-offset = " << local_offset
-              << " rem-offset = " << remote_offset
-              << " #bytes = " << amount
-              << " to = " << to_node
-              << " via = " << queue
-              );
-
           gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
 
           api.write_dma (local_offset, remote_offset, amount, to_node, queue);

@@ -118,8 +118,6 @@ int main (int argc, char **argv)
       startup_message << master << ", ";
       listMasterInfo.push_back (sdpa::MasterInfo (master));
     }
-
-    DLLOG (TRACE, logger, startup_message.str());
   }
 
   const sdpa::daemon::Agent agent

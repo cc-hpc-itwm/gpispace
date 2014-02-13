@@ -119,11 +119,9 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 
   if (pWorker->capacity())
   {
-    DLLOG (TRACE, _logger, "Created new worker: name = "<<pWorker->name()<<" with capacity = "<<*pWorker->capacity());
   }
   else
   {
-    DLLOG (TRACE, _logger, "Created new worker: name = "<<pWorker->name()<<" with unlimited capacity");
   }
 }
 
@@ -131,7 +129,6 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
-  DLLOG (TRACE, _logger, "Dispatch the job " << jobId );
   common_queue_.push(jobId);
 }
 
@@ -157,7 +154,6 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
     Worker::ptr_t ptrWorker = findWorker(worker_id);
     // delete job from worker's queues
 
-    DLLOG (TRACE, _logger, "Deleting the job " << job_id << " from the "<<worker_id<<"'s queues!");
     ptrWorker->deleteJob(job_id);
   }
   catch(JobNotDeletedException const &) {
@@ -177,7 +173,6 @@ void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId )
     throw WorkerNotFoundException(workerId);
 
   worker_map_.erase (w);
-  DLLOG (TRACE, _logger, "worker " << workerId << " removed");
 }
 
 bool WorkerManager::has_job(const sdpa::job_id_t& job_id)

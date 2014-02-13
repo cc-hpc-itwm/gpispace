@@ -93,7 +93,6 @@ namespace gpi
           try
           {
             this->free ( d.id );
-            LOG(DEBUG, "cleaned up possibly leaked handle: " << d);
           }
           catch (std::exception const & ex)
           {
@@ -126,7 +125,6 @@ namespace gpi
         {
           gpi::pc::type::handle_t hdl (garbage_handles.top ());
           garbage_handles.pop ();
-          LOG(DEBUG, "garbage collecting handle " << hdl << " allocated by process " << pid);
           this->free (hdl);
         }
       }
@@ -345,15 +343,6 @@ namespace gpi
         AllocReturn_t alloc_return
             (dtmmgr_alloc (&m_mmgr, hdl.id, arena, hdl.local_size));
 
-        DLOG( TRACE
-            , "ALLOC:"
-            << " handle = " << hdl.id
-            << " arena = " << arena
-            << " size = " << hdl.size
-            << " local = " << hdl.local_size
-            << " return = " << alloc_return
-            );
-
         switch (alloc_return)
         {
         case ALLOC_SUCCESS:
@@ -469,7 +458,6 @@ namespace gpi
         switch (handle_return)
         {
         case RET_SUCCESS:
-          DLOG(TRACE, "handle free'd: " << desc);
           m_handles.erase (hdl);
           update_descriptor_from_mmgr ();
           try
@@ -532,7 +520,6 @@ namespace gpi
         switch (handle_return)
         {
         case RET_SUCCESS:
-          DLOG(TRACE, "handle free'd: " << desc);
           m_handles.erase (hdl);
           update_descriptor_from_mmgr ();
           break;

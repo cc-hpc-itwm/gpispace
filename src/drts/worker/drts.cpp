@@ -276,7 +276,6 @@ int WFEImpl::execute ( std::string const &job_id
   }
   else if (wfe_task_t::CANCELED == task.state)
   {
-    DMLOG (TRACE, "task canceled: " << task.id << ": " << task.error_message);
   }
   else // if (wfe_task_t::FAILED == task.state)
   {
@@ -388,8 +387,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   {
     if (m_masters.find (master) == m_masters.end ())
     {
-      DMLOG(TRACE, "adding master \"" << master << "\"");
-
       if (master.empty())
       {
         throw std::runtime_error ("empty master specified!");
@@ -468,7 +465,6 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
   {
     if (!master_it->second)
     {
-      DMLOG(TRACE, "successfully connected to " << master_it->first);
       master_it->second = true;
 
       notify_capabilities_to_master (master_it->first);
@@ -571,10 +567,6 @@ void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
     }
     else
     {
-    	DLOG( INFO, "Worker "<<m_my_name<<": received from "
-    			             <<e->from()<<" the job " << job->id()
-    	   			  	     <<", assigned to "<<e->worker_list() );
-
       send_event (new sdpa::events::SubmitJobAckEvent( m_my_name
                                                      , job->owner()
                                                      , job->id()
@@ -600,7 +592,6 @@ void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
 
   if (job_it == m_jobs.end())
   {
-    DMLOG (WARN, "could not cancel job: " << e->job_id() << ": not found");
     send_event(new sdpa::events::ErrorEvent
                 ( m_my_name
                 , e->from()
@@ -610,7 +601,6 @@ void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
   }
   else if (job_it->second->owner() != e->from())
   {
-    DMLOG (ERROR, "could not cancel job: " << e->job_id() << ": not owner");
     send_event (new sdpa::events::ErrorEvent
                  ( m_my_name
                  , e->from()
@@ -690,7 +680,6 @@ void DRTSImpl::handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
     return;
   }
 
-  DMLOG(TRACE, "removing job " << e->job_id());
   m_jobs.erase (job_it);
 }
 
@@ -728,7 +717,6 @@ void DRTSImpl::handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent
     return;
   }
 
-  DMLOG(TRACE, "removing job " << e->job_id());
   m_jobs.erase (job_it);
 }
 
@@ -817,7 +805,6 @@ void DRTSImpl::job_execution_thread ()
       map_of_jobs_t::iterator job_it (m_jobs.find(job->id()));
       if (job_it != m_jobs.end())
       {
-        DMLOG(TRACE, "ignoring and erasing non-pending job " << job->id());
         m_jobs.erase(job_it);
       }
     }
@@ -1022,10 +1009,6 @@ void DRTSImpl::handle_recv (boost::system::error_code const & ec)
       map_of_masters_t::iterator master(m_masters.find(other_name));
       if (master != m_masters.end() && master->second)
       {
-        DMLOG ( INFO
-              , "connection to " << other_name << " lost: " << ec.message()
-              );
-
         master->second = false;
 
         request_registration_soon();
@@ -1058,7 +1041,6 @@ void DRTSImpl::dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt)
 {
   if (evt)
   {
-    DMLOG(TRACE, "received event: " << evt->str());
     m_event_queue.put(evt);
   }
   else

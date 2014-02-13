@@ -10,8 +10,6 @@ void fun (char c, expr::eval::context const& input, expr::eval::context& output)
 {
   long const& id (boost::get<const long&> (input.value ("id")));
 
-  MLOG (DEBUG, c << " : " << id);
-
   ++call_cnt[c - 'A'];
 
   output.bind ("done", we::type::literal::control());

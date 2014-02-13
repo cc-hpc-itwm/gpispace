@@ -288,7 +288,6 @@ namespace gpi
           );
       }
 
-      LOG(DEBUG, "clearing file caches...");
       int node_count = generateHostlistGPI();
       for (int i = 0 ; i < node_count ; ++i)
       {
@@ -296,7 +295,6 @@ namespace gpi
         int error_code = clearFileCacheGPI(hostname);
         if (0 == error_code)
         {
-          LOG(DEBUG, hostname << " - ok");
         }
         else if (-42 == error_code)
         {
@@ -326,8 +324,6 @@ namespace gpi
 
     int real_gpi_api_t::check (const char *host) const
     {
-      LOG(DEBUG, "checking GPI on host := " << host << " port := " << port());
-
       if (!ping (host))
       {
         LOG(ERROR, "failed to ping GPI daemon on host := " << host);
@@ -498,15 +494,6 @@ namespace gpi
           wait_dma (queue);
         }
 
-        DLOG( TRACE
-            , "real_api: readDMA:"
-            << " remote: " << r_off
-            << " local: " << l_off
-            << " amount: " << to_transfer
-            << " node: " << from_node
-            << " queue: " << queue
-            );
-
         int rc
           (readDmaGPI ( l_off
                       , r_off
@@ -558,15 +545,6 @@ namespace gpi
         {
           wait_dma (queue);
         }
-
-        DLOG( TRACE
-            , "real_api: writeDMA:"
-            << " remote: " << r_off
-            << " local: " << l_off
-            << " amount: " << to_transfer
-            << " node: " << to_node
-            << " queue: " << queue
-            );
 
         int rc
           (writeDmaGPI ( l_off

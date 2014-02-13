@@ -262,7 +262,6 @@ namespace fhg
             {
               try
               {
-                LOG(DEBUG, "loading contents from file storage: " << file);
                 load ();
               }
               catch (std::exception const & ex)
@@ -435,8 +434,6 @@ namespace fhg
               lock_t lock(mutex_);
               std::map<key_type, entry_type> tmp_map_ (store_.begin(), store_.end());
               ar << boost::serialization::make_nvp("kvsd", tmp_map_);
-
-              MLOG (DEBUG, "saved " << store_.size() << " entries");
             }
             else
             {
@@ -518,10 +515,6 @@ namespace fhg
             }
             catch (std::exception const & ex)
             {
-              DMLOG ( WARN
-                    , "closing connection: could not handle incoming data: "
-                    << ex.what()
-                    );
               client->close ();
             }
           }

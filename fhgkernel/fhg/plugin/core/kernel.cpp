@@ -79,8 +79,6 @@ namespace fhg
         fs::path plugin_path (dir);
         plugin_path /= name + ".so";
 
-        DMLOG (TRACE, "trying: " << plugin_path);
-
         if (fs::is_regular_file (plugin_path))
         {
           load_plugin_from_file (plugin_path.string ());

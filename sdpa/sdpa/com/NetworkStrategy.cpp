@@ -56,8 +56,6 @@ namespace sdpa
 
       // convert event to fhg::com::message_t
 
-      DLLOG(TRACE, _logger, "sending event: " << sdpa_event->str());
-
       fhg::com::message_t msg;
       msg.header.dst = m_peer->resolve_name (sdpa_event->to());
       msg.header.src = m_peer->address();
@@ -88,16 +86,6 @@ namespace sdpa
     {
       if (ec)
       {
-        DLLOG ( WARN
-              , _logger
-              , "send failed:"
-              << " ec := " << ec
-              << " msg := " << ec.message ()
-              << " event := " << sdpa_event->str()
-              << " to := " << sdpa_event->to ()
-              << " from := " << sdpa_event->from ()
-              );
-
         //sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
         sdpa::events::ErrorEvent::Ptr ptrErrEvt
           (new sdpa::events::ErrorEvent( sdpa_event->to()
@@ -120,7 +108,6 @@ namespace sdpa
         {
           sdpa::events::SDPAEvent::Ptr evt
             (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
-          DLLOG(TRACE, _logger, "received event: " << evt->str());
           _event_handler (evt);
         }
         catch (std::exception const & ex)

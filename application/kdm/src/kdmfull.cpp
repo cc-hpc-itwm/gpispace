@@ -65,8 +65,6 @@ static fvmAllocHandle_t alloc ( const long & size
                               , long & memsizeGPI
                               )
 {
-  DMLOG (TRACE, "alloc: " << descr << ": " << size << " bytes");
-
   const fvmAllocHandle_t h (fvmGlobalAlloc (size, ("kdm." + descr).c_str ()));
 
   if (h == 0)
@@ -75,8 +73,6 @@ static fvmAllocHandle_t alloc ( const long & size
     }
 
   memsizeGPI -= size;
-
-  DMLOG (TRACE, "alloc: still free " << memsizeGPI << " bytes");
 
   return h;
 }

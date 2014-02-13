@@ -68,7 +68,6 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
       ptrEvt->to() = pair_subscr_joblist.first;
       sendEventToOther (ptrEvt);
 
-      LLOG (DEBUG, _logger, "Send an event of type "<<ptrEvt->str()<<" to the subscriber "<<pair_subscr_joblist.first<<" (related to the job "<<jobId<<")");
       break;
     }
   }
@@ -90,7 +89,6 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
       events::JobFinishedAckEvent::Ptr ptrAckEvt(new  events::JobFinishedAckEvent(name(), pEvt->from(), pEvt->job_id()));
 
       // send ack to the slave
-      DLLOG (TRACE, _logger, "Send JobFinishedAckEvent for the job " << pEvt->job_id() << " to the slave  "<<pEvt->from() );
       sendEventToOther(ptrAckEvt);
   }
 
@@ -98,13 +96,10 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
-    DLLOG (TRACE, _logger, "The current state of the job "<<pEvt->job_id()<<" is: "<<sdpa::status::show(pJob->getStatus())<<". Change its status to \"SDPA::Finished\"!");
       pJob->JobFinished(pEvt);
-      DLLOG (TRACE, _logger, "The current state of the job "<<pEvt->job_id()<<" is: "<<sdpa::status::show(pJob->getStatus()));
   }
   else
   {
-    DLLOG(TRACE, _logger, "got finished message for old Job "<< pEvt->job_id());
       return;
   }
 
@@ -115,29 +110,20 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
     we::layer::id_type act_id = pEvt->job_id();
 
     try {
-      DLLOG (TRACE, _logger, "Notify the subscribers that the job "<<act_id<<" finished");
       events::JobFinishedEvent::Ptr ptrEvtJobFinished(new  events::JobFinishedEvent(*pEvt));
       notifySubscribers(ptrEvtJobFinished);
 
       try {
-        DLLOG (TRACE, _logger, "Remove job "<<act_id<<" from the worker "<<worker_id);
           scheduler()->deleteWorkerJob ( worker_id, act_id );
       }
       catch(WorkerNotFoundException const &)
       {
-        DLLOG(TRACE, _logger, "Worker "<<worker_id<<" not found!");
       }
       catch(const JobNotDeletedException& ex)
       {
-        DLLOG(TRACE, _logger, "Could not delete the job " << act_id
-                                                     << " from worker "
-                                                     << worker_id
-                                                     << "queues: "
-                                                     << ex.what() );
       }
 
     }catch(...) {
-      DLLOG(ERROR, _logger, "Unexpected exception occurred!");
     }
   }
   else
@@ -175,11 +161,9 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
   if(pJob)
   {
       pJob->JobFailed(pEvt);
-      DLLOG(TRACE, _logger,"The job state is: "<<sdpa::status::show(pJob->getStatus()));
   }
   else
   {
-    DLLOG(TRACE, _logger, "got failed message for old Job "<< pEvt->job_id());
       return;
   }
 
@@ -191,24 +175,19 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
 
       try {
         events::JobFailedEvent::Ptr ptrEvtJobFailed(new  events::JobFailedEvent(*pEvt));
-        DLLOG(TRACE, _logger,"Notify the subscribers that the job "<<actId<<" has failed");
         notifySubscribers(ptrEvtJobFailed);
 
         try {
-          DLLOG(TRACE, _logger,"Remove the job "<<actId<<" from the worker "<<worker_id<<"'s queues");
             scheduler()->deleteWorkerJob(worker_id, pJob->id());
         }
         catch(const WorkerNotFoundException&)
         {
-          DLLOG(TRACE, _logger,"Worker "<<worker_id<<" not found!");
         }
         catch(const JobNotDeletedException&)
         {
-          DLLOG(TRACE, _logger,"Could not delete the job "<<pJob->id()<<" from the "<<worker_id<<"'s queues ...");
         }
       }
       catch(...) {
-        DLLOG(ERROR, _logger, "Unexpected exception occurred!");
       }
   }
   else
@@ -269,17 +248,14 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
       boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
       if(worker_id)
       {
-        DLLOG (TRACE, _logger, "Tell the worker "<<*worker_id<<" to cancel the job "<<pEvt->job_id());
          events::CancelJobEvent::Ptr pCancelEvt( new  events::CancelJobEvent( name()
                                                            , *worker_id
                                                            , pEvt->job_id() ) );
          sendEventToOther(pCancelEvt);
 
-         DLLOG (TRACE, _logger, "The status of the job "<<pEvt->job_id()<<" is: "<<pJob->getStatus());
       }
       else
       {
-        DLLOG (WARN, _logger, "No cancel message is to be forwarded as no worker was sent the job "<<pEvt->job_id());
           // the job was not yet assigned to any worker
 
           pJob->CancelJobAck(pCancelAckEvt.get());
@@ -290,7 +266,6 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
   }
   else
   {
-    DLLOG (TRACE, _logger, "Job "<<pEvt->job_id()<<" not found!");
       sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                          , pEvt->from()
                                                          ,  events::ErrorEvent::SDPA_EJOBNOTFOUND
@@ -301,14 +276,12 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
 
 void Orchestrator::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 {
-  DLLOG (TRACE, _logger, "handleCancelJobAck(" << pEvt->job_id() << ")");
 
   Job* pJob(jobManager().findJob(pEvt->job_id()));
   if(pJob)
   {
     // update the job status to "Canceled"
     pJob->CancelJobAck(pEvt);
-    DLLOG (TRACE, _logger, "The job state is: "<<sdpa::status::show(pJob->getStatus()));
 
     events::CancelJobAckEvent::Ptr ptrCancelAckEvt(new events::CancelJobAckEvent(*pEvt));
     notifySubscribers(ptrCancelAckEvt);
@@ -316,14 +289,12 @@ void Orchestrator::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt
     return;
   }
 
-  DLLOG (WARN, _logger, "could not find job: " << pEvt->job_id());
 }
 
 void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
 {
   const  events::DeleteJobEvent& e (*evt);
 
-  DLLOG (TRACE, _logger, e.from() << " requesting to delete job " << e.job_id() );
 
   on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToOther, this
                                 ,  events::ErrorEvent::Ptr ( new  events::ErrorEvent ( name()
@@ -342,7 +313,6 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
       // the job must be in a non-terminal state
       if(!pJob->completed())
       {
-        DLLOG (TRACE, _logger, "Cannot delete a job in a non-terminal state. Send back an error message to "<<evt->from()<<" from "<<name());
          events::ErrorEvent::Ptr pErrorEvt(
               new events::ErrorEvent( evt->to(),
                                             evt->from(),
@@ -361,7 +331,6 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
       }
       catch(JobNotDeletedException const & ex)
       {
-        DLLOG (WARN, _logger, "Job " << e.job_id() << " could not be deleted!");
           sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                               , e.from()
                                                               , events::ErrorEvent::SDPA_EJOBNOTDELETED
@@ -372,7 +341,6 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
   }
   else
   {
-    DLLOG (WARN, _logger, "Job " << e.job_id() << " could not be found!");
       sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                           , e.from()
                                                           ,  events::ErrorEvent::SDPA_EJOBNOTFOUND

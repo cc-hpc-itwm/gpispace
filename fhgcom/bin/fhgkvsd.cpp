@@ -44,7 +44,6 @@ void clear_state (int s)
 {
   try
   {
-    LOG(DEBUG, "clearing state due to signal: " << s);
     g_kvsd->clear("");
   }
   catch (std::exception const & ex)

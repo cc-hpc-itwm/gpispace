@@ -148,12 +148,6 @@ namespace sdpa {
       template <class FSM, class Event>
       void no_transition(Event const& e, FSM&, int state)
       {
-        DLLOG (ERROR, _logger, "No transition from state "
-                                         + sdpa::status::show(state_code(state))
-                                         + " on event "
-                                         + typeid(e).name()
-                                         );
-
         throw std::runtime_error ( "no transition from state "
                                  + status::show(state_code(state))
                                  + " on event "

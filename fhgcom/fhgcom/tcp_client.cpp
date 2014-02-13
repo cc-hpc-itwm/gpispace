@@ -120,8 +120,6 @@ namespace fhg
           // ec indicates completion.
           ec = boost::asio::error::would_block;
 
-          DLOG(TRACE, "trying to connect to " << iter->endpoint());
-
           // Start the asynchronous operation itself. The boost::lambda function
           // object is used as a callback and will update the ec variable when the
           // operation completes. The blocking_udp_client.cpp example shows how you
@@ -283,10 +281,6 @@ namespace fhg
 
       if (ec)
       {
-        DMLOG_IF( WARN
-                , ec.value() != boost::asio::error::eof
-                , "recv failed: " << ec << ": " << ec.message();
-                );
         throw boost::system::system_error ( ec.value()
                                           , boost::asio::error::get_misc_category()
                                           );
@@ -297,7 +291,6 @@ namespace fhg
         std::istringstream is (std::string (header, header_length));
         if (! (is >> std::hex >> data_size))
         {
-          DMLOG (ERROR, "could not parse header: " << std::string(header, header_length));
           throw std::runtime_error ("could not parse header!");
         }
       }
@@ -316,10 +309,6 @@ namespace fhg
 
       if (ec)
       {
-        DMLOG_IF( WARN
-                , ec.value() != boost::asio::error::eof
-                , "recv failed: " << ec << ": " << ec.message();
-                );
         throw boost::system::system_error ( ec.value()
                                           , boost::asio::error::get_system_category()
                                           );

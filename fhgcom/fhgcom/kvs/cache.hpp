@@ -101,7 +101,6 @@ namespace fhg
                 }
               }
 
-              DLOG(TRACE, "removing cached entry (too old): " << to_remove->first);
               store_.erase (to_remove);
 
               return 1;

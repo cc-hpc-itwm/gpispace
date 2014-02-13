@@ -178,10 +178,6 @@ namespace fhg
         }
         catch (std::exception const & ex)
         {
-          DLOG ( WARN
-               , "could not delete my information from the kvs: "
-               << ex.what()
-               );
         }
       }
 
@@ -841,11 +837,6 @@ namespace fhg
 
         // deactivate asynchronous sender
         cd.send_in_progress = false;
-
-        DLOG_IF( WARN
-               , ec && (ec.value() != boost::asio::error::eof)
-               , "error on connection to " << cd.name << " - closing it: cat=" << ec.category().name() << " val=" << ec.value() << " txt=" << ec.message()
-               );
 
         while (! cd.o_queue.empty())
         {

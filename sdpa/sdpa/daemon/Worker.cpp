@@ -49,7 +49,6 @@ void Worker::update()
 void Worker::submit(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
-  DLLOG (TRACE, _logger, "appending job(" << jobId << ") to the submitted queue");
   setLastTimeServed(fhg::util::now());
   submitted_.push(jobId);
 }
@@ -61,7 +60,6 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
   {
       acknowledged_.push(job_id);
       submitted_.erase(job_id);
-      DLLOG (TRACE, _logger, "acknowledged job(" << job_id << ")");
       return true;
   }
   catch (const sdpa::daemon::NotFoundItem& ex)
@@ -124,8 +122,6 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
       if( itwcpb != capabilities_.end() ) {
           capabilities_.erase(itwcpb);
 
-          //LLOG (TRACE, _logger, "worker " << name() << " lost capability: "
-          //<< *it << " (" << std::count(capabilities_.begin(), capabilities_.end(), *it) << ")");
       }
   }
 }

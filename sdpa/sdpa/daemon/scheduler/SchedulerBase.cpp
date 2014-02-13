@@ -72,7 +72,6 @@ void SchedulerBase::reschedule( const Worker::worker_id_t & worker_id, sdpa::job
   lock_type lock(mtx_);
   while( !workerJobList.empty() ) {
       sdpa::job_id_t jobId = workerJobList.front();
-      DLLOG (TRACE, _logger, "Re-scheduling the job "<<jobId<<" ... ");
       rescheduleWorkerJob(worker_id, jobId);
       workerJobList.pop_front();
   }
@@ -107,10 +106,8 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
 
 void SchedulerBase::delete_job (sdpa::job_id_t const & job)
 {
-  LLOG (DEBUG, _logger, "removing job " << job << " from the scheduler's queue ....");
   if (pending_jobs_queue_.erase(job))
   {
-    LLOG (DEBUG, _logger, "removed job from the central queue...");
   }
   else
     _worker_manager.deleteJob(job);
@@ -248,7 +245,6 @@ void SchedulerBase::run()
 void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
-  DLLOG (TRACE, _logger, "Acknowledge the job "<<job_id);
   try {
     Worker::ptr_t ptrWorker = findWorker(worker_id);
 

@@ -43,8 +43,6 @@ namespace gspc
       , m_mgr ()
       , m_supervisor (m_mgr)
     {
-      LLOG (DEBUG, _logger, "listening on " << m_server->url ());
-
       signal (SIGCHLD, SIG_DFL);
 
       m_supervisor.onChildFailed.connect

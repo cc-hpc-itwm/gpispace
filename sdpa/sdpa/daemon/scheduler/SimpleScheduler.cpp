@@ -36,7 +36,6 @@ void SimpleScheduler::assignJobsToWorkers()
 
     if( !matchingWorkerId.empty() )
     { // matching found
-      DLLOG (TRACE, _logger, "Serve the job "<<jobId<<" to the worker "<<matchingWorkerId);
 
         try {
            Worker::ptr_t pWorker(findWorker(matchingWorkerId));
@@ -44,7 +43,6 @@ void SimpleScheduler::assignJobsToWorkers()
            ptr_comm_handler_->serveJob(sdpa::worker_id_list_t (1, matchingWorkerId), jobId);
         }
         catch(const WorkerNotFoundException&) {
-          DLLOG (TRACE, _logger, "The worker " << matchingWorkerId << " is not registered! Sending a notification ...");
            sdpa::events::ErrorEvent::Ptr pErrorEvt(
                new sdpa::events::ErrorEvent(m_agent_name,
                                              matchingWorkerId,

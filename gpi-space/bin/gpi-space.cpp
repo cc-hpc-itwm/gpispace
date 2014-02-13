@@ -790,8 +790,6 @@ int main (int ac, char *av[])
 
 static void signal_handler (int sig)
 {
-  LOG(DEBUG, "got signal " << sig);
-
   switch (sig)
   {
   case SIGALRM:
@@ -802,7 +800,6 @@ static void signal_handler (int sig)
     }
     else
     {
-      LOG(DEBUG, "ignoring signal: " << sig);
     }
     break;
   case SIGTERM:
@@ -811,7 +808,6 @@ static void signal_handler (int sig)
     stop_requested = true;
     break;
   default:
-    LOG(DEBUG, "ignoring signal: " << sig);
     break;
   }
 }

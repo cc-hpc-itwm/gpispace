@@ -219,7 +219,6 @@ namespace gpi
 
     int fake_gpi_api_t::check (const char * host) const
     {
-      LOG(DEBUG, "checking GPI on host := " << host);
       if (ping(host)) return 0;
       else            return 1;
     }
@@ -235,7 +234,6 @@ namespace gpi
           );
       }
 
-      LOG(DEBUG, "running GPI check...");
       int ec = 0;
       for (rank_t nd (0); nd < number_of_nodes(); ++nd)
       {

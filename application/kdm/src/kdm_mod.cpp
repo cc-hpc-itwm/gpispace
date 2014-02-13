@@ -153,9 +153,6 @@ static void initialize (gspc::drts::context *, const expr::eval::context & input
     LOG (INFO, "SubVolMemSize = " << Job.SubVolMemSize);
   }
 
-  LOG (DEBUG, "sizeofBunchBuffer =  " << sizeofBunchBuffer(Job));
-  LOG (DEBUG, "sizeofJob =  " << sizeof(Job));
-
   //WORK HERE: add sizeof scratch space here
   Job.ReqVMMemSize = Job.globTTbufsizelocal + 2 * sizeofJob();
 
@@ -171,9 +168,6 @@ static void initialize (gspc::drts::context *, const expr::eval::context & input
 
   Job.shift_for_TT = sizeofJob() + sizeofBunchBuffer(Job) + Job.SubVolMemSize;
   Job.shift_for_Vol = sizeofJob() + sizeofBunchBuffer(Job);
-
-  LOG (DEBUG, "shift_for_TT = " << Job.shift_for_TT);
-  LOG (DEBUG, "shift_for_Vol = " << Job.shift_for_Vol);
 
   const fvmAllocHandle_t handle_Job (fvmGlobalAlloc (sizeofJob()));
   if (handle_Job == 0)
@@ -194,8 +188,6 @@ static void initialize (gspc::drts::context *, const expr::eval::context & input
 
   LOG(INFO, "Job.globTTbufsizelocal = " << Job.globTTbufsizelocal);
 
-  LOG (DEBUG, "handle_TT " << handle_TT);
-
   output.bind ("config.handle_Job", static_cast<long>(handle_Job));
   output.bind ("config.scratch_Job", static_cast<long>(scratch_Job));
   output.bind ("config.handle_TT", static_cast<long>(handle_TT));
@@ -212,9 +204,6 @@ static void initialize (gspc::drts::context *, const expr::eval::context & input
   output.bind ("config.filter.trap", static_cast<double>(Job.trap));
   output.bind ("config.filter.tpow", static_cast<double>(Job.tpow));
 
-  LOG (DEBUG, "initialize: config = "
-           << pnet::type::value::show (output.value ("config"))
-      );
 }
 
 // ************************************************************************* //
@@ -560,8 +549,6 @@ static void init_volume (gspc::drts::context *, const expr::eval::context & inpu
 static void debug (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& volume (input.value ("volume"));
-
-  LOG (INFO, "DEBUG: volume " << pnet::type::value::show (volume));
 
   output.bind ("volume", volume);
 }

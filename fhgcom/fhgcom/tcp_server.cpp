@@ -55,7 +55,6 @@ bool tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
                            , boost::system::error_code & ec
                            )
 {
-  DLOG(TRACE, "trying to bind to " << endpoint);
   acceptor_.close ();
   acceptor_.open (endpoint.protocol(), ec);
 
@@ -73,7 +72,6 @@ bool tcp_server::try_start ( boost::asio::ip::tcp::endpoint endpoint
     acceptor_.listen (tcp::acceptor::max_connections, ec);
     if (! ec)
     {
-      DMLOG (TRACE, "successfully bound to: " << acceptor_.local_endpoint());
       accept ();
     }
   }
