@@ -41,12 +41,14 @@ int open_socket (std::string const & path)
   addr.sun_family = AF_UNIX;
   strncpy (addr.sun_path, path.c_str(), sizeof(addr.sun_path) - 1);
 
-  int err = connect (sfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
-  if (err < 0)
+  try
   {
-    err = -errno;
+    fhg::syscall::connect (sfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
+  }
+  catch (boost::system::system_error const& se)
+  {
     close_socket (sfd);
-    return err;
+    throw;
   }
 
   return sfd;
