@@ -218,6 +218,7 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
