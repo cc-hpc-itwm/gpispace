@@ -164,15 +164,10 @@ namespace gpi
 
         proto::message_t rply;
         // deserialize
-        try
         {
           std::stringstream sstr (std::string(buffer.begin(), buffer.end()));
           boost::archive::text_iarchive ia (sstr);
           ia & rply;
-        }
-        catch (std::exception const & ex)
-        {
-          throw std::runtime_error ("protocol missmatch: could not deserialize message");
         }
 
         return rply;
@@ -359,8 +354,6 @@ namespace gpi
                              )
       {
         segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
-        try
-        {
           if (flags & gpi::pc::F_NOCREATE)
           {
             seg->open();
@@ -373,11 +366,6 @@ namespace gpi
             }
             seg->create ();
           }
-        }
-        catch (std::exception const & ex)
-        {
-          throw;
-        }
 
         // communication part
         {
@@ -500,14 +488,7 @@ namespace gpi
 
         // open segment
         segment_ptr seg (new gpi::pc::segment::segment_t(desc->name, desc->local_size, id));
-        try
-        {
           seg->open();
-        }
-        catch (std::exception const & ex)
-        {
-          throw;
-        }
 
         // communicate
         {
