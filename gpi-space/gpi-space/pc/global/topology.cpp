@@ -123,13 +123,59 @@ namespace gpi
         return h;
       }
 
-      topology_t::topology_t()
+      topology_t::topology_t ( const gpi::rank_t rank
+                             , const fhg::com::host_t & host
+                             , const fhg::com::port_t & port
+                             , std::string const & cookie
+                             , memory::manager_t& memory_manager
+                             )
         : m_shutting_down (false)
         , m_go_received (false)
         , m_waiting_for_go (0)
         , m_established (false)
-        , m_rank ((gpi::rank_t)-1)
-      {}
+        , m_rank (rank)
+      {
+        lock_type lock(m_mutex);
+        m_peer.reset
+          (new fhg::com::peer_t( detail::rank_to_name (m_rank)
+                               , host
+                               , port
+                               , fhg::com::kvs::global_kvs()
+                               , cookie
+                               )
+          );
+        m_peer->set_kvs_error_handler (detail::kvs_error_handler);
+
+        m_peer_thread.reset
+          (new boost::thread(boost::bind( &fhg::com::peer_t::run
+                                        , m_peer
+                                        )
+                            )
+          );
+
+        try
+        {
+          m_peer->start ();
+        }
+        catch (std::exception const & ex)
+        {
+          LOG(ERROR, "could not start peer: " << ex.what());
+          m_peer_thread->interrupt();
+          m_peer_thread->join();
+          m_peer.reset();
+          m_peer_thread.reset();
+          throw;
+        }
+
+        // start the message handler
+        m_peer->async_recv ( &m_incoming_msg
+                           , boost::bind( &topology_t::message_received
+                                        , this
+                                        , _1
+                                        , boost::ref (memory_manager)
+                                        )
+                           );
+      }
 
       topology_t::~topology_t()
       {
@@ -214,70 +260,6 @@ namespace gpi
         //    send disconnect to child
         //    remove connection
         m_children.erase (rank);
-      }
-
-      void topology_t::start( const gpi::rank_t rank
-                            , const fhg::com::host_t & host
-                            , const fhg::com::port_t & port
-                            , std::string const & cookie
-                            , memory::manager_t& memory_manager
-                            )
-      {
-        lock_type lock(m_mutex);
-        if (m_peer_thread)
-        {
-          LOG(WARN, "topology still running, please stop it first!");
-          return;
-        }
-
-        if (m_established)
-        {
-          LOG(WARN, "topology seems to be established already!");
-        }
-
-        m_shutting_down = false;
-        m_rank = rank;
-        m_established = false;
-
-        m_peer.reset
-          (new fhg::com::peer_t( detail::rank_to_name (m_rank)
-                               , host
-                               , port
-                               , fhg::com::kvs::global_kvs()
-                               , cookie
-                               )
-          );
-        m_peer->set_kvs_error_handler (detail::kvs_error_handler);
-
-        m_peer_thread.reset
-          (new boost::thread(boost::bind( &fhg::com::peer_t::run
-                                        , m_peer
-                                        )
-                            )
-          );
-
-        try
-        {
-          m_peer->start ();
-        }
-        catch (std::exception const & ex)
-        {
-          LOG(ERROR, "could not start peer: " << ex.what());
-          m_peer_thread->interrupt();
-          m_peer_thread->join();
-          m_peer.reset();
-          m_peer_thread.reset();
-          throw;
-        }
-
-        // start the message handler
-        m_peer->async_recv ( &m_incoming_msg
-                           , boost::bind( &topology_t::message_received
-                                        , this
-                                        , _1
-                                        , boost::ref (memory_manager)
-                                        )
-                           );
       }
 
       int topology_t::free (const gpi::pc::type::handle_t hdl)

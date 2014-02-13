@@ -261,15 +261,13 @@ namespace gpi
         , m_stopping (false)
         , m_process_counter (0)
         , _memory_manager()
-        , _topology()
+        , _topology ( gpi_api.rank()
+                    , global::topology_t::any_addr()
+                    , global::topology_t::any_port() // topology_t::port_t("10821")
+                    , "dummy-cookie"
+                    , _memory_manager
+                    )
       {
-        _topology.start( gpi_api.rank()
-                                , global::topology_t::any_addr()
-                                , global::topology_t::any_port() // topology_t::port_t("10821")
-                                , "dummy-cookie"
-                                , _memory_manager
-                                );
-
         for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)
         {
           if (gpi_api.rank() != n)
