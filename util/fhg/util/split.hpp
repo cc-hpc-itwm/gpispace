@@ -52,14 +52,11 @@ namespace fhg
       std::string::size_type const split_pos_s (val.find (sep));
 
       const std::string first (val.substr(0, split_pos_s));
-      if (split_pos_s != std::string::npos)
-      {
-        return std::make_pair (first, val.substr (split_pos_s + 1));
-      }
-      else
-      {
-        return std::make_pair (first, "");
-      }
+
+      return std::make_pair
+        ( first
+        , split_pos_s != std::string::npos ? val.substr (split_pos_s + 1) : ""
+        );
     }
   }
 }
