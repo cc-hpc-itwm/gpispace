@@ -40,7 +40,7 @@ void load_state (int)
     LOG(WARN, "could not load state: " << ex.what());
   }
 }
-void clear_state (int s)
+void clear_state (int)
 {
   try
   {
