@@ -73,20 +73,12 @@ namespace gpi
 
         m_socket = open_socket (m_path);
 
-          try
-          {
             m_info = boost::get<proto::control::info_reply_t>
               ( boost::get<proto::control::message_t>
                ( communicate
                  (proto::control::message_t (proto::control::info_t()))
                )
               ).info;
-          }
-          catch (...)
-          {
-            stop();
-            throw;
-          }
       }
 
       void api_t::stop ()
