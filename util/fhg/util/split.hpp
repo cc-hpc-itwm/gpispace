@@ -51,10 +51,8 @@ namespace fhg
     {
       std::string::size_type const split_pos_s (val.find (sep));
 
-      const std::string first (val.substr(0, split_pos_s));
-
       return std::make_pair
-        ( first
+        ( val.substr (0, split_pos_s)
         , split_pos_s != std::string::npos ? val.substr (split_pos_s + 1) : ""
         );
     }
