@@ -1,18 +1,13 @@
-#include <stdio.h> // snprintf
-
 #define BOOST_TEST_MODULE GpiSpaceSegmentTest
 #include <boost/test/unit_test.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/segment/segment.hpp>
 
-BOOST_AUTO_TEST_CASE ( segment_create_test )
+BOOST_AUTO_TEST_CASE (segment_create_test)
 {
-  using namespace gpi::pc::segment;
-  std::string name ("seg-test-");
-  name += boost::lexical_cast<std::string>(getpid());
-  segment_t seg (name, 1024);
+  gpi::pc::segment::segment_t seg
+    ("seg-test-" + boost::lexical_cast<std::string>(getpid()), 1024);
   try
   {
     seg.create ();
