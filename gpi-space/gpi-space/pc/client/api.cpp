@@ -148,7 +148,6 @@ namespace gpi
         }
         catch (std::exception const &ex)
         {
-          MLOG(ERROR, "could not serialize request: " << ex.what());
           throw;
         }
 
