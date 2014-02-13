@@ -78,8 +78,11 @@ int main (int argc, char **argv)
         ("Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
     }
 
-    DLLOG (TRACE, logger, "The kvs daemon is assumed to run at "<<vec[0]<<":"<<vec[1]);
-    fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(120), 1);
+    const std::string kvs_host (vec[0]);
+    const std::string kvs_port (vec[1]);
+
+    DLLOG (TRACE, logger, "The kvs daemon is assumed to run at "<<kvs_host<<":"<kvs_port);
+    fhg::com::kvs::global::get_kvs_info().init( kvs_host, kvs_port, boost::posix_time::seconds(120), 1);
   }
 
   if( arrMasterNames.empty() )
