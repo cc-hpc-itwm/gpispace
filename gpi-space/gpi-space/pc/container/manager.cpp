@@ -255,13 +255,12 @@ namespace gpi
       manager_t::manager_t
         ( std::string const & p
         , std::vector<std::string> const& default_memory_urls
-        , memory::manager_t& memory_manager
         )
           : m_path (p)
           , m_socket (-1)
           , m_stopping (false)
           , m_process_counter (0)
-          , _memory_manager (memory_manager)
+          , _memory_manager()
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
@@ -275,7 +274,7 @@ namespace gpi
                                 , global::topology_t::any_addr()
                                 , global::topology_t::any_port() // topology_t::port_t("10821")
                                 , "dummy-cookie"
-                                , memory_manager
+                                , _memory_manager
                                 );
 
         for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)

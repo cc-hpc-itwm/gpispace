@@ -18,14 +18,6 @@ namespace gpi
   {
     namespace memory
     {
-      class manager_t;
-    }
-    namespace global
-    {
-      gpi::pc::memory::manager_t& memory_manager();
-    }
-    namespace memory
-    {
       class manager_t : boost::noncopyable
       {
       public:
@@ -33,8 +25,7 @@ namespace gpi
 
         static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
 
-        friend gpi::pc::memory::manager_t& ::gpi::pc::global::memory_manager();
-
+        manager_t ();
         ~manager_t ();
 
         void
@@ -131,8 +122,6 @@ namespace gpi
                                     , gpi::pc::type::segment_id_t
                                     > handle_to_segment_t;
 
-        manager_t ();
-
         area_ptr get_area (const gpi::pc::type::segment_id_t);
         area_ptr get_area (const gpi::pc::type::segment_id_t) const;
         area_ptr get_area_by_handle (const gpi::pc::type::handle_t);
@@ -149,22 +138,6 @@ namespace gpi
         handle_to_segment_t m_handle_to_segment;
         transfer_manager_t m_transfer_mgr;
       };
-    }
-  }
-}
-
-namespace gpi
-{
-  namespace pc
-  {
-    namespace global
-    {
-      inline
-      gpi::pc::memory::manager_t & memory_manager()
-      {
-        static memory::manager_t m;
-        return m;
-      }
     }
   }
 }
