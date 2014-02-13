@@ -137,8 +137,6 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        int err;
-
         // serialize
         std::string data;
         try
@@ -159,15 +157,13 @@ namespace gpi
         ::memset (&header, 0, sizeof(header));
         header.length = data.size();
 
-        err = this->write (&header, sizeof(header));
-        if (err <= 0)
+        if (this->write (&header, sizeof(header)) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not send data");
         }
 
-        err = this->write (data.c_str(), data.size());
-        if (err <= 0)
+        if (this->write (data.c_str(), data.size()) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not send data");
@@ -175,16 +171,14 @@ namespace gpi
 
         // receive
         std::vector<char> buffer;
-        err = this->read  (&header, sizeof (header));
-        if (err <= 0)
+        if (this->read  (&header, sizeof (header)) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not receive data");
         }
 
         buffer.resize (header.length);
-        err = this->read (&buffer[0], header.length);
-        if (err <= 0)
+        if (this->read (&buffer[0], header.length) <= 0)
         {
           stop ();
           throw std::runtime_error ("could not receive data");
