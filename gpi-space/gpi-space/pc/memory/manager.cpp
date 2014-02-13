@@ -27,13 +27,13 @@ namespace gpi
       namespace
       {
       area_ptr_t
-      create_area (std::string const &url_s)
+      create_area (std::string const &url_s, global::topology_t& topology)
       {
         fhg::util::url_t url (url_s);
 
         return
-          ( url.type() == "gpi" ? gpi_area_t::create (url_s, boost::ref (global::topology()))
-          : url.type() == "sfs" ? sfs_area_t::create (url_s, boost::ref (global::topology()))
+          ( url.type() == "gpi" ? gpi_area_t::create (url_s, boost::ref (topology))
+          : url.type() == "sfs" ? sfs_area_t::create (url_s, boost::ref (topology))
           : url.type() == "shm" ? shm_area_t::create (url_s)
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
@@ -467,7 +467,7 @@ namespace gpi
                                    , std::string const & url
                                    )
       {
-        area_ptr_t area (create_area (url));
+        area_ptr_t area (create_area (url, global::topology()));
         area->set_owner (0);
         area->set_id (seg_id);
         add_area (area);
@@ -480,7 +480,7 @@ namespace gpi
                             , const gpi::pc::type::segment_id_t seg_id
                             )
       {
-        area_ptr_t area (create_area (url_s));
+        area_ptr_t area (create_area (url_s, global::topology()));
         area->set_owner (proc_id);
         if (seg_id > 0)
           area->set_id (seg_id);
