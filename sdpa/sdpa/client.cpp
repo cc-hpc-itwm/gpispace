@@ -35,10 +35,19 @@ namespace sdpa
       }
     }
 
-    Client::Client (std::string orchestrator)
+    Client::Client ( std::string orchestrator
+                   , std::string kvs_host, std::string kvs_port
+                   )
       : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
       , orchestrator_ (orchestrator)
-      , _kvs_client (fhg::com::kvs::global_kvs())
+      , _kvs_client
+        ( new fhg::com::kvs::client::kvsc ( kvs_host
+                                          , kvs_port
+                                          , true
+                                          , boost::posix_time::seconds(120)
+                                          , 1
+                                          )
+        )
       , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"), _kvs_client)
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
       , _stopping (false)

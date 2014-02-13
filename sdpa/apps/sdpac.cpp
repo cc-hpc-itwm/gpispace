@@ -427,12 +427,6 @@ int main (int argc, char **argv) {
     const std::string kvs_host (vec[0]);
     const std::string kvs_port (vec[1]);
 
-    fhg::com::kvs::global::get_kvs_info().init( kvs_host
-                                              , kvs_port
-                                              , boost::posix_time::seconds(120)
-                                              , 1
-                                              );
-
     if (! cfg.is_set("command"))
     {
         std::cerr << "E: a command is required!" << std::endl;
@@ -455,6 +449,7 @@ int main (int argc, char **argv) {
     sdpa::client::Client api ( cfg.is_set("orchestrator")
                              ? cfg.get<std::string>("orchestrator")
                              : throw std::runtime_error ("no orchestrator specified!")
+                             , kvs_host, kvs_port
                              );
 
     if (command == "submit")

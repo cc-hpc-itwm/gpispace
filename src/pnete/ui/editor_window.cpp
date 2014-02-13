@@ -952,10 +952,9 @@ namespace fhg
         //! \todo Add search path into config (temporarily)!
         // loader.append_search_path (temporary_path / "pnetc" / "op");
 
-        //! \todo Actually initialize kvs
-        fhg::com::kvs::get_or_create_global_kvs();
+        //! \todo Use real kvs host+port
         //! \todo Configurable name of orchestrator, non-static
-        static sdpa::client::Client client ("orchestrator");
+        static sdpa::client::Client client ("orchestrator", "localhost", "2439");
 
         const std::string job_id
           (client.submitJob (activity_and_fun.first.to_string()));

@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 {
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
   BOOST_REQUIRE_EQUAL
     ( client.discoverJobStates ("disc_id_0", "inexistent_job_id").state()
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   while (!has_state_pending
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   while (!all_childs_are_pending
@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 
   // the task A requires 2 workers, task B requires 3 workers
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   while (!has_two_childs_that_are_pending
@@ -336,7 +336,7 @@ BOOST_AUTO_TEST_CASE (remove_workers)
 
   // the task A requires 2 workers, task B requires 3 workers
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   ptr_worker_A_1.reset();

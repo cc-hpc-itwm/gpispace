@@ -43,7 +43,9 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      Client (std::string orchestrator);
+      Client ( std::string orchestrator
+             , std::string kvs_host, std::string kvs_port
+             );
       ~Client();
 
       job_id_t submitJob(const job_desc_t &);

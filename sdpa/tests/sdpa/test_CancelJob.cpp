@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
     , kvs_host(), kvs_port()
     );
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t job_id(client.submitJob (workflow));
   client.cancelJob(job_id);
   sdpa::client::job_info_t UNUSED_job_info;
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_with_timeout)
     , kvs_host(), kvs_port()
     );
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t job_id(client.submitJob (workflow));
 
   // wait some time before canceling the job
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_with_polling_client)
     , kvs_host(), kvs_port()
     );
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t job_id(client.submitJob (workflow));
 
   client.cancelJob(job_id);
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE (test_cancel_terminated_job)
     , kvs_host(), kvs_port()
     );
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t job_id(client.submitJob (workflow));
 
   sdpa::client::job_info_t UNUSED_job_info;
