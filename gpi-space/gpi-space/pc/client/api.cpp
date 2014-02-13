@@ -753,7 +753,13 @@ namespace gpi
       void api_t::del_memory (gpi::pc::type::segment_id_t id)
       {
         proto::error::error_t const result
-          (boost::get<proto::error::error_t>(communicate (gpi::pc::proto::segment::message_t (proto::segment::del_memory_t (id)))));
+          ( boost::get<proto::error::error_t>
+            ( communicate
+              ( gpi::pc::proto::segment::message_t
+                (proto::segment::del_memory_t (id))
+              )
+            )
+          );
 
         if (result.code != proto::error::success)
         {
