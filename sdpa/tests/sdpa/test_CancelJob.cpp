@@ -16,8 +16,6 @@ BOOST_AUTO_TEST_CASE (test_cancel_no_agent)
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
-  sdpa::client::Client client (orchestrator.name());
-
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_cancel_and_wait_for_termination
       (workflow, orchestrator)
