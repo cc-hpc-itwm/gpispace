@@ -386,7 +386,6 @@ namespace fhg
 
       inline kvsc_ptr_t get_or_create_global_kvs ( std::string const & host = ""
                                                  , std::string const & port = ""
-                                                 , const bool = true
                                                  , const boost::posix_time::time_duration timeout = boost::posix_time::seconds (120)
                                                  , const std::size_t max_connection_attempts = 3
                                                  )

@@ -360,7 +360,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   fhg::com::kvs::get_or_create_global_kvs
     ( !kvs_host.empty() ? kvs_host : throw std::runtime_error ("kvs host empty")
     , !kvs_port.empty() ? kvs_port : throw std::runtime_error ("kvs port empty")
-    , true // auto_reconnect
     , kvs_timeout
     , 1 // max_connection_attempts
     );
