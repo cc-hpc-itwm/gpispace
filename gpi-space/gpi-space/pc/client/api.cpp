@@ -727,9 +727,10 @@ namespace gpi
 
       gpi::pc::type::segment_id_t api_t::add_memory (const std::string & url)
       {
-        gpi::pc::proto::segment::add_memory_t msg (url);
         gpi::pc::proto::message_t const rply;
-          (communicate (gpi::pc::proto::segment::message_t (msg)));
+          (communicate (gpi::pc::proto::segment::message_t
+                        (gpi::pc::proto::segment::add_memory_t (url)))
+          );
         try
         {
           return boost::get<gpi::pc::proto::segment::register_reply_t>
