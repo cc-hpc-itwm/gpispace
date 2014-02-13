@@ -187,5 +187,11 @@ namespace fhg
     {
       return negative_one_fails_with_errno<ssize_t> (::write (fd, buf, count));
     }
+
+    int connect (int sock, const struct sockaddr *address, socklen_t addr_len)
+    {
+      return negative_one_fails_with_errno<int>
+        (::connect (sock, address, addr_len));
+    }
   }
 }
