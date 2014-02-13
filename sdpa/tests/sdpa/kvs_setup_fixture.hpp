@@ -4,7 +4,6 @@
 #include <fhglog/fhglog.hpp>
 
 #include <fhgcom/kvs/kvsd.hpp>
-#include <fhgcom/kvs/kvsc.hpp>
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
 
@@ -26,13 +25,6 @@ struct KVSSetup
 	  FHGLOG_SETUP();
 
 	  current_kvs_port = boost::lexical_cast<std::string>(m_serv.port());
-
-	  fhg::com::kvs::global::get_kvs_info().init( kvs_host()
-                                              	  , kvs_port()
-                                              	  , boost::posix_time::seconds(10)
-                                              	  , 3
-                                              	  );
-
   }
 
   ~KVSSetup ()
