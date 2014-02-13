@@ -33,11 +33,7 @@ void close_socket (const int fd)
 
 int open_socket (std::string const & path)
 {
-  int const sfd = socket (AF_UNIX, SOCK_STREAM, 0);
-  if (sfd < 0)
-  {
-    return -errno;
-  }
+  int const sfd = fhg::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
 
   struct sockaddr_un addr;
 
