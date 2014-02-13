@@ -1,10 +1,3 @@
-fhg_add_test (test_connection.cpp
-  PROJECT fhgcom
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES fhgcom
-                 ${FhgLog_LIBRARY}
-)
-
 fhg_add_test (test_message.cpp
   PROJECT fhgcom
   BOOST_UNIT_TEST
