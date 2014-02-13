@@ -555,7 +555,7 @@ namespace process
 
     reader_barrier.wait ();
 
-    std::vector<std::string> cmdline;
+    std::list<std::string> cmdline;
     fhg::util::split (command, ' ', std::back_inserter (cmdline));
 
     char ** av = new char*[cmdline.size()+1];
@@ -563,7 +563,7 @@ namespace process
 
     {
       std::size_t idx (0);
-      for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+      for ( std::list<std::string>::const_iterator it (cmdline.begin())
           ; it != cmdline.end()
           ; ++it, ++idx
           )
@@ -677,7 +677,7 @@ namespace process
     {
       std::size_t idx (0);
 
-      for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+      for ( std::list<std::string>::const_iterator it (cmdline.begin())
           ; it != cmdline.end()
           ; ++it, ++idx
           )
