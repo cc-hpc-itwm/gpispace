@@ -99,17 +99,13 @@ namespace sdpa {
 
       GenericDaemon( const std::string name
                    , const std::string url
-                   , const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t(),
-                    unsigned int rank = 0
+                   , const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t()
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false
                    );
       virtual ~GenericDaemon();
 
       const std::string& name() const;
-
-      const unsigned int& rank() const { return m_nRank; }
-      unsigned int& rank() { return m_nRank; }
 
       void removeMasters(const agent_id_list_t& );
       size_t numberOfMasterAgents() { return m_arrMasterInfo.size(); }
@@ -248,8 +244,6 @@ namespace sdpa {
       we::layer* ptr_workflow_engine_;
 
     private:
-
-      unsigned int m_nRank;
 
       mutex_type mtx_subscriber_;
     protected:

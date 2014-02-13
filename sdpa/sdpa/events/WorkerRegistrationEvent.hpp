@@ -20,12 +20,10 @@ namespace sdpa
         , const address_t& a_to
         , const boost::optional<unsigned int>& capacity = boost::none
         , const capabilities_set_t& cpbset = capabilities_set_t()
-        , const unsigned int& agent_rank = 0
         )
           : MgmtEvent (a_from, a_to)
           , capacity_ (capacity)
           , cpbset_ (cpbset)
-          , rank_ (agent_rank)
       {}
 
       std::string str() const
@@ -36,10 +34,6 @@ namespace sdpa
       const boost::optional<unsigned int>& capacity() const
       {
         return capacity_;
-      }
-      const unsigned int& rank() const
-      {
-        return rank_;
       }
       const capabilities_set_t& capabilities() const
       {
@@ -54,7 +48,6 @@ namespace sdpa
     private:
       boost::optional<unsigned int> capacity_;
       capabilities_set_t cpbset_;
-      unsigned int rank_;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
@@ -62,7 +55,6 @@ namespace sdpa
       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->capacity());
       SAVE_TO_ARCHIVE (e->capabilities());
-      SAVE_TO_ARCHIVE (e->rank());
     }
 
     LOAD_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
@@ -70,9 +62,8 @@ namespace sdpa
       LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
       LOAD_FROM_ARCHIVE (boost::optional<unsigned int>, capacity);
       LOAD_FROM_ARCHIVE (capabilities_set_t, cpbset);
-      LOAD_FROM_ARCHIVE (unsigned int, agent_rank);
 
-      ::new (e) WorkerRegistrationEvent (from, to, capacity, cpbset, agent_rank);
+      ::new (e) WorkerRegistrationEvent (from, to, capacity, cpbset);
     }
   }
 }

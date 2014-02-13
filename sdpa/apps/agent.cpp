@@ -34,7 +34,6 @@ int main (int argc, char **argv)
   std::string arrMasterUrls;
   std::string appGuiUrl;
   std::string kvsUrl;
-  unsigned int agentRank;
   std::string pidfile;
 
   FHGLOG_SETUP();
@@ -46,7 +45,6 @@ int main (int argc, char **argv)
     ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
     //("orch_name,m",  po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
     ("master,m", po::value<std::vector<std::string> >(&arrMasterNames)->multitoken(), "Agent's master list")
-    ("rank,r", po::value<unsigned int>(&agentRank)->default_value(0), "Agent's rank")
     ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
     ("kvs_url,k",  po::value<std::string>(), "The kvs daemon's url")
     ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
@@ -131,7 +129,7 @@ int main (int argc, char **argv)
   }
 
   const sdpa::daemon::Agent agent
-    (agentName, agentUrl, listMasterInfo, agentRank, appGuiUrl);
+    (agentName, agentUrl, listMasterInfo, appGuiUrl);
 
 
   fhg::util::thread::event<> stop_requested;

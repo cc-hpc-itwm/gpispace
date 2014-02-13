@@ -218,11 +218,10 @@ BOOST_AUTO_TEST_CASE (WorkerRegistration)
   caps.insert (sdpa::Capability ("foo", fhg::util::random_string()));
   caps.insert (sdpa::Capability ("bar", fhg::util::random_string()));
 
-  WorkerRegistrationEvent e ("foo", "bar", 10, caps, 50);
+  WorkerRegistrationEvent e ("foo", "bar", 10, caps);
   WorkerRegistrationEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->capacity(), e.capacity());
-  BOOST_REQUIRE_EQUAL (r->rank(), e.rank());
   BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
 }
 

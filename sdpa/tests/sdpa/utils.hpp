@@ -62,31 +62,28 @@ namespace utils
     agent ( const std::string& name
           , const std::string& url
           , const agents_t& masters
-          , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
-      : _ (name, url, assemble_master_info_list (masters), rank, gui_url)
+      : _ (name, url, assemble_master_info_list (masters), gui_url)
     {}
     agent ( const std::string& name
           , const std::string& url
           , const orchestrator& orchestrator
-          , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
       : _ ( name, url
           , sdpa::master_info_list_t (1, sdpa::MasterInfo (orchestrator.name()))
-          , rank, gui_url
+          , gui_url
           )
     {}
     agent ( const std::string& name
           , const std::string& url
           , const agent& master
-          , const unsigned int rank = 0
           , const boost::optional<std::string>& gui_url = boost::none
           )
       : _ ( name, url
           , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
-          , rank, gui_url
+          , gui_url
           )
     {}
     sdpa::daemon::Agent _;

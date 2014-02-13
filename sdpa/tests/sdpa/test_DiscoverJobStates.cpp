@@ -56,9 +56,8 @@ namespace sdpa
       TestAgent ( const std::string& name
                 , const std::string& url
                 , const sdpa::master_info_list_t arrMasterNames
-                , int rank
                 )
-        : Agent (name, url, arrMasterNames, rank, boost::none)
+        : Agent (name, url, arrMasterNames, boost::none)
       {}
 
       std::string gen_id()
@@ -173,7 +172,7 @@ BOOST_AUTO_TEST_CASE (test_discover_activities)
   const we::type::activity_t activity (workflow);
 
   sdpa::master_info_list_t listMasterInfo;
-  sdpa::daemon::TestAgent agent ("agent_0", "127.0.0.1", listMasterInfo, 0);
+  sdpa::daemon::TestAgent agent ("agent_0", "127.0.0.1", listMasterInfo);
 
   we::layer::id_type const id ("test_job");
 

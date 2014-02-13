@@ -66,7 +66,6 @@ namespace
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , const master_info_list_t arrMasterInfo
-                            , unsigned int rank
                             , const boost::optional<std::string>& guiUrl
                             , bool create_wfe
                             )
@@ -90,7 +89,6 @@ GenericDaemon::GenericDaemon( const std::string name
                            )
                          : NULL
                          ),
-    m_nRank(rank),
     m_guiService ( guiUrl && !guiUrl->empty()
                  ? boost::optional<NotificationService>
                    (NotificationService (*guiUrl))
@@ -754,7 +752,7 @@ void GenericDaemon::registerWorker(const events::WorkerRegistrationEvent& evtReg
     }
   }
 
-  scheduler()->addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet, evtRegWorker.rank());
+  scheduler()->addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet);
 
   // send back an acknowledgment
   DLLOG (TRACE, _logger, "Send back to the worker " << worker_id << " a registration acknowledgment!" );
@@ -906,7 +904,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 
     //std::cout<<cpbSet;
 
-    events::WorkerRegistrationEvent::Ptr pEvtWorkerReg(new events::WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet,  rank()));
+    events::WorkerRegistrationEvent::Ptr pEvtWorkerReg(new events::WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet));
     sendEventToOther(pEvtWorkerReg);
   }
 }

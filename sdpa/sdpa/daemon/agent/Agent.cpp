@@ -32,20 +32,10 @@ namespace sdpa {
 Agent::Agent ( const std::string& name
              , const std::string& url
              , const sdpa::master_info_list_t arrMasterNames
-             , int rank
              , const boost::optional<std::string>& guiUrl
              )
-  : GenericDaemon (name, url, arrMasterNames, rank, guiUrl, true)
+  : GenericDaemon (name, url, arrMasterNames, guiUrl, true)
 {
-  if(rank>=0)
-  {
-    std::ostringstream oss;
-    oss<<"rank"<<rank;
-
-    sdpa::capability_t properCpb(oss.str(), name);
-    addCapability(properCpb);
-  }
-
   ptr_scheduler_ = SchedulerBase::ptr_t (new CoallocationScheduler (this));
   ptr_scheduler_->start_threads(); //! \note: can't do in ctor: vtable not set up yet
 

@@ -39,9 +39,8 @@ public:
   TestAgent( const std::string& name
              , const std::string& url
              , const sdpa::master_info_list_t& arrMasterNames
-             , const unsigned int rank = 0
              , const boost::optional<std::string>& appGuiUrl = boost::none)
-    : sdpa::daemon::Agent(name, url, arrMasterNames, rank, appGuiUrl)
+    : sdpa::daemon::Agent(name, url, arrMasterNames, appGuiUrl)
   {
   }
 

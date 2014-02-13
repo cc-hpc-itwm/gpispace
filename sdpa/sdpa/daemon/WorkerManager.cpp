@@ -96,8 +96,7 @@ const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(co
 
 void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
                                 boost::optional<unsigned int> capacity,
-                                const capabilities_set_t& cpbSet,
-                                const unsigned int& agent_rank )
+                                const capabilities_set_t& cpbSet )
 {
   lock_type lock(mtx_);
 
@@ -113,18 +112,18 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
     }
   }
 
-  Worker::ptr_t pWorker( new Worker( workerId, capacity, agent_rank ) );
+  Worker::ptr_t pWorker( new Worker( workerId, capacity ) );
   pWorker->addCapabilities(cpbSet);
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
   if (pWorker->capacity())
   {
-    DLLOG (TRACE, _logger, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and capacity = "<<*pWorker->capacity());
+    DLLOG (TRACE, _logger, "Created new worker: name = "<<pWorker->name()<<" with capacity = "<<*pWorker->capacity());
   }
   else
   {
-    DLLOG (TRACE, _logger, "Created new worker: name = "<<pWorker->name()<<" with rank = "<<pWorker->rank()<<" and unlimited capacity");
+    DLLOG (TRACE, _logger, "Created new worker: name = "<<pWorker->name()<<" with unlimited capacity");
   }
 }
 

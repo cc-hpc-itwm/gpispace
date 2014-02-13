@@ -30,7 +30,6 @@ namespace sdpa {
         Agent ( const std::string& name
               , const std::string& url
               , const sdpa::master_info_list_t arrMasterNames
-              , int rank
               , const boost::optional<std::string>& guiUrl
               );
 

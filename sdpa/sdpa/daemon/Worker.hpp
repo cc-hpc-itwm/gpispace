@@ -47,7 +47,6 @@ namespace sdpa { namespace daemon {
       */
     explicit Worker( 	const worker_id_t& name = worker_id_t(""),
     					const boost::optional<unsigned int>& cap = boost::none,
-    					const unsigned int& rank = 0,
     					const location_t &location = "" );
 
     /**
@@ -88,7 +87,6 @@ namespace sdpa { namespace daemon {
          Return the rank of the worker.
      */
     boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
-    unsigned int rank() const { lock_type lock(mtx_); return rank_; }
 
     // capabilities
     const sdpa::capabilities_set_t& capabilities() const;
@@ -153,7 +151,6 @@ namespace sdpa { namespace daemon {
     worker_id_t name_; //! name of the worker
     boost::optional<unsigned int> capacity_;
     sdpa::capabilities_set_t capabilities_;
-    unsigned int rank_;
     location_t location_; //! location where to reach the worker
     double tstamp_; //! time of last message received
     double last_time_served_; //! time of last message received
