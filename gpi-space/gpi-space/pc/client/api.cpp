@@ -148,13 +148,9 @@ namespace gpi
         ::memset (&header, 0, sizeof(header));
         header.length = data.size();
 
-        if (this->write (&header, sizeof(header)) <= 0)
-        {
-          stop ();
-          throw std::runtime_error ("could not send data");
-        }
-
-        if (this->write (data.c_str(), data.size()) <= 0)
+        if ( (this->write (&header, sizeof(header)) <= 0)
+           || (this->write (data.c_str(), data.size()) <= 0)
+           )
         {
           stop ();
           throw std::runtime_error ("could not send data");
