@@ -328,30 +328,7 @@ void GenericDaemon::handleWorkerRegistrationEvent (const events::WorkerRegistrat
   }
   catch(WorkerAlreadyExistException& ex)
   {
-    if( evtRegWorker.agent_uuid() != ex.agent_uuid() )
-    {
-      // TODO: maybe just disallow registration, it is an error, if we have two workers with the same name still active...
-
-      DLLOG (TRACE, _logger, "The worker manager already contains an worker with the same id (="<<ex.worker_id()<<") but with a different agent_uuid!" );
-
-      try {
-    	  const Worker::ptr_t pWorker = findWorker(worker_id);
-
-    	  // mark the worker as disconnected
-    	  pWorker->set_disconnected();
-    	  scheduler()->deleteWorker(worker_id);
-      }
-      catch (const WorkerNotFoundException& ex)
-      {
-        DLLOG (WARN, _logger, "New worker find the worker "<<worker_id);
-      }
-
-      DLLOG (TRACE, _logger, "Add worker"<<worker_id );
-      registerWorker(evtRegWorker);
-    }
-    else
-    {
-      DLLOG (TRACE, _logger, "A worker with the same id (" << worker_id << ") and uuid ("<<evtRegWorker.agent_uuid()<<" is already registered!");
+      DLLOG (TRACE, _logger, "A worker with the same id (" << worker_id << ") is already registered!");
 
       // just answer back with an acknowledgment
       DLLOG (TRACE, _logger, "Send registration ack to the agent " << worker_id );
@@ -359,7 +336,6 @@ void GenericDaemon::handleWorkerRegistrationEvent (const events::WorkerRegistrat
         (new events::WorkerRegistrationAckEvent ( name(), evtRegWorker.from()));
 
       sendEventToOther(pWorkerRegAckEvt);
-    }
   }
 }
 
