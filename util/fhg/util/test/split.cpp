@@ -12,9 +12,7 @@ namespace
 {
   std::list<std::string> split_at_dot (std::string path)
   {
-    std::list<std::string> result;
-    fhg::util::split (path, '.', std::back_inserter (result));
-    return result;
+    return fhg::util::split<std::string, std::string> (path, '.');
   }
 }
 
