@@ -1,20 +1,20 @@
 #ifndef GPI_SPACE_PC_CLIENT_API_HPP
 #define GPI_SPACE_PC_CLIENT_API_HPP 1
 
+#include <fhg/syscall.hpp>
+
+#include <gpi-space/pc/proto/message.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
+#include <gpi-space/pc/type/flags.hpp>
+#include <gpi-space/pc/type/typedefs.hpp>
+
+#include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+
 #include <map>
 #include <set>
 #include <string>
-
-#include <boost/noncopyable.hpp>
-#include <boost/thread.hpp>
-#include <boost/shared_ptr.hpp>
-
-#include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/pc/proto/message.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
-
-#include <fhg/syscall.hpp>
 
 namespace gpi
 {

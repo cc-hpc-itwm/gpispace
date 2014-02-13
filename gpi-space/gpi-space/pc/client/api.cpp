@@ -1,27 +1,15 @@
 #include <gpi-space/pc/client/api.hpp>
 
-#include <sys/un.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-
-#include <fstream>
-
-#include <boost/bind.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-
-#include <fhglog/LogMacros.hpp>
-#include <fhg/assert.hpp>
-
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/type/flags.hpp>
+
+#include <fhglog/LogMacros.hpp>
+
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/bind.hpp>
+
+#include <sys/un.h>
 
 namespace
 {
