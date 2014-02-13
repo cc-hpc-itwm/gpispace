@@ -145,7 +145,7 @@ namespace fhg
 
       std::list<std::string> depends;
       fhg::util::split( desc->depends
-                      , ","
+                      , ','
                       , std::back_inserter (depends)
                       );
 

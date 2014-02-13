@@ -385,7 +385,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
     {
       std::pair<std::string, std::string> const capability_and_type
-        = fhg::util::split_string (cap, "-");
+        = fhg::util::split_string (cap, '-');
 
       m_virtual_capabilities.insert
         ( std::make_pair

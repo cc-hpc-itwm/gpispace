@@ -458,7 +458,7 @@ namespace gspc
 
       while (not head_tail.second.empty ())
       {
-        head_tail = fhg::util::split_string (head_tail.second, ":");
+        head_tail = fhg::util::split_string (head_tail.second, ':');
         if (not head_tail.first.empty ())
           sp.push_back (head_tail.first);
       }

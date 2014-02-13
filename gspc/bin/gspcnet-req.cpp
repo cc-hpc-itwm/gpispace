@@ -185,7 +185,7 @@ int main (int argc, char *argv[])
 
   BOOST_FOREACH (std::string const &kv, header)
   {
-    const std::pair<std::string, std::string> kvp = fhg::util::split (kv, ":");
+    const std::pair<std::string, std::string> kvp = fhg::util::split (kv, ':');
     rqst.set_header (kvp.first, kvp.second);
   }
 

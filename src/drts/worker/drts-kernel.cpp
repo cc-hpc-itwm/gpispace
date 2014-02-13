@@ -77,7 +77,7 @@ int main(int ac, char **av)
   std::map<std::string, std::string> config_variables;
   BOOST_FOREACH (const std::string& p, config_vars)
   {
-    const std::pair<std::string, std::string> kv (fhg::util::split_string (p, "="));
+    const std::pair<std::string, std::string> kv (fhg::util::split_string (p, '='));
     if (kv.first.empty())
     {
       LLOG (ERROR, logger, "invalid config variable: must not be empty");

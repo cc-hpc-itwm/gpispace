@@ -120,7 +120,7 @@ namespace gspc
       while (*env_entry)
       {
         std::pair<std::string, std::string> kv =
-          fhg::util::split (*env_entry, "=");
+          fhg::util::split (*env_entry, '=');
 
         m_env [kv.first] = kv.second;
 

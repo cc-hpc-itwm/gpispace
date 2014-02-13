@@ -13,7 +13,7 @@ namespace
   std::vector<std::string> split_at_dot (std::string path)
   {
     std::vector<std::string> result;
-    fhg::util::split (path, ".", std::back_inserter (result));
+    fhg::util::split (path, '.', std::back_inserter (result));
     return result;
   }
 }

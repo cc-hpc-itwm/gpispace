@@ -203,7 +203,7 @@ namespace gspc
             }
 
             const std::pair<std::string, std::string> env_kvp =
-              fhg::util::split_string (argv.front (), "=");
+              fhg::util::split_string (argv.front (), '=');
             child.env.insert (env_kvp);
           }
         }
