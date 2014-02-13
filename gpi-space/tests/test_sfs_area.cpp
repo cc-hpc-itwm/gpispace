@@ -61,7 +61,6 @@ BOOST_FIXTURE_TEST_SUITE( suite, F )
 BOOST_AUTO_TEST_CASE (create_sfs_segment)
 {
   using namespace gpi::pc::memory;
-  using namespace gpi::pc::segment;
   using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
@@ -108,8 +107,6 @@ BOOST_AUTO_TEST_CASE (create_sfs_segment)
 BOOST_AUTO_TEST_CASE (old_segment_version)
 {
   using namespace gpi::pc::memory;
-  using namespace gpi::pc::segment;
-  using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
 
@@ -149,8 +146,6 @@ BOOST_AUTO_TEST_CASE (old_segment_version)
 BOOST_AUTO_TEST_CASE (too_new_segment_version)
 {
   using namespace gpi::pc::memory;
-  using namespace gpi::pc::segment;
-  using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
 
@@ -183,8 +178,6 @@ BOOST_AUTO_TEST_CASE (too_new_segment_version)
 BOOST_AUTO_TEST_CASE (garbage_segment_version)
 {
   using namespace gpi::pc::memory;
-  using namespace gpi::pc::segment;
-  using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
 
@@ -217,7 +210,6 @@ BOOST_AUTO_TEST_CASE (garbage_segment_version)
 BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
 {
   using namespace gpi::pc::memory;
-  using namespace gpi::pc::segment;
   using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
@@ -275,8 +267,6 @@ BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
 BOOST_AUTO_TEST_CASE (create_big_sfs_segment)
 {
   using namespace gpi::pc::memory;
-  using namespace gpi::pc::segment;
-  using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
 
@@ -305,8 +295,6 @@ BOOST_AUTO_TEST_CASE (create_big_sfs_segment)
 BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_mmap)
 {
   using namespace gpi::pc::memory;
-  using namespace gpi::pc::segment;
-  using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
 
@@ -335,8 +323,6 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_mmap)
 BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_no_mmap)
 {
   using namespace gpi::pc::memory;
-  using namespace gpi::pc::segment;
-  using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
 
@@ -364,7 +350,6 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_no_mmap)
 BOOST_AUTO_TEST_CASE (test_read)
 {
   using namespace gpi::pc::memory;
-  using namespace gpi::pc::segment;
   using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
@@ -414,8 +399,6 @@ BOOST_AUTO_TEST_CASE (test_read)
 BOOST_AUTO_TEST_CASE (test_already_open)
 {
   using namespace gpi::pc::memory;
-  using namespace gpi::pc::segment;
-  using namespace gpi::pc::type;
 
   gpi::tests::dummy_topology topology;
 
