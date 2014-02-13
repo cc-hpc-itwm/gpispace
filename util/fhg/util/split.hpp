@@ -63,19 +63,6 @@ namespace fhg
         return std::make_pair(first, "");
       }
     }
-
-    template <typename OutputIterator>
-    inline void split ( const std::string & s
-                      , char sep
-                      , OutputIterator out
-                      )
-    {
-      if (s.empty())
-        return;
-      std::pair<std::string, std::string> h_t (split_string(s, sep));
-      *out++ = h_t.first;
-      split (h_t.second, sep, out);
-    }
   }
 }
 
