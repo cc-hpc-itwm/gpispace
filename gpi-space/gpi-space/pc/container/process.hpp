@@ -29,9 +29,9 @@ namespace gpi
           : m_handle_process_error (handle_process_error)
           , m_id (id)
           , m_socket (socket)
+          , _memory_manager (memory_manager)
           , m_reader
             (boost::bind (&process_t::reader_thread_main, this, m_socket))
-          , _memory_manager (memory_manager)
         {}
         ~process_t()
         {
@@ -62,8 +62,8 @@ namespace gpi
           m_handle_process_error;
         const gpi::pc::type::process_id_t m_id;
         int const m_socket;
-        boost::thread m_reader;
         memory::manager_t& _memory_manager;
+        boost::thread m_reader;
       };
     }
   }
