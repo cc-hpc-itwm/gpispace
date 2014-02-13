@@ -110,8 +110,8 @@ namespace sdpa
 
       void wait_all_submitted()
       {
-        boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
-        _cond_all_submitted.wait (_mtx_all_submitted);
+        boost::unique_lock<boost::mutex> lock(_mtx_all_submitted);
+        _cond_all_submitted.wait (lock);
       }
 
       void notify_discovered()
