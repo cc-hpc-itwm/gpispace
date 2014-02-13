@@ -140,6 +140,21 @@ GenericDaemon::~GenericDaemon()
     }
   }
 
+  BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+  {
+    if (!masterInfo.name().empty() && masterInfo.is_registered())
+    {
+      sendEventToOther
+        ( events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
+                                           , masterInfo.name()
+                                           , events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+                                           , "node shutdown"
+                                           )
+                          )
+        );
+    }
+  }
+
   _registration_threads.stop_all();
 
   _event_handler_thread.interrupt();
@@ -153,6 +168,8 @@ GenericDaemon::~GenericDaemon()
   delete ptr_workflow_engine_;
 
   _network_strategy.reset();
+
+	DLLOG (TRACE, _logger, "Succesfully shut down  "<<name()<<" ...");
 }
 
 const std::string& GenericDaemon::name() const
