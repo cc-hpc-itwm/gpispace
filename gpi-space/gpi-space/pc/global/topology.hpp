@@ -187,8 +187,8 @@ namespace gpi
         size_t m_waiting_for_go;
         bool m_established;
         gpi::rank_t m_rank;
-        thread_ptr m_peer_thread;
         peer_ptr   m_peer;
+        thread_ptr m_peer_thread;
         child_map_t m_children;
         fhg::com::message_t m_incoming_msg;
 
