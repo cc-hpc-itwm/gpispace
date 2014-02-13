@@ -385,8 +385,7 @@ int main (int argc, char **argv) {
   {
     int lvl(cfg.get<int>("verbose"));
     if (lvl > 0) fhg::log::Logger::get()->setLevel(fhg::log::INFO);
-    if (lvl > 1) fhg::log::Logger::get()->setLevel(fhg::log::DEBUG);
-    if (lvl > 2) fhg::log::Logger::get()->setLevel(fhg::log::TRACE);
+    if (lvl > 1) fhg::log::Logger::get()->setLevel(fhg::log::TRACE);
   }
 
   try

@@ -12,7 +12,6 @@ namespace fhg
       //    0 - normal
       //    5 - blink
       m_color_table[TRACE] = color_escape_code(FG_WHITE, BG_DEFAULT, 0);
-      m_color_table[DEBUG] = color_escape_code(FG_WHITE, BG_DEFAULT, 0);
       m_color_table[INFO]  = color_escape_code(FG_CYAN);
       m_color_table[WARN]  = color_escape_code(FG_YELLOW);
       m_color_table[ERROR] = color_escape_code(FG_RED);

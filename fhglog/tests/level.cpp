@@ -16,11 +16,10 @@ BOOST_AUTO_TEST_CASE (from_int)
   BOOST_REQUIRE_EQUAL (fhg::log::_l, fhg::log::from_int (_i))
 
   OKAY (TRACE, 0);
-  OKAY (DEBUG, 1);
-  OKAY (INFO, 2);
-  OKAY (WARN, 3);
-  OKAY (ERROR, 4);
-  OKAY (FATAL, 5);
+  OKAY (INFO, 1);
+  OKAY (WARN, 2);
+  OKAY (ERROR, 3);
+  OKAY (FATAL, 4);
 
 #undef OKAY
 
@@ -34,7 +33,6 @@ BOOST_AUTO_TEST_CASE (from_string)
   BOOST_REQUIRE_EQUAL (fhg::log::_l, fhg::log::from_string (_s))
 
   OKAY (TRACE, "TRACE");
-  OKAY (DEBUG, "DEBUG");
   OKAY (INFO, "INFO");
   OKAY (WARN, "WARN");
   OKAY (ERROR, "ERROR");
@@ -49,9 +47,9 @@ BOOST_AUTO_TEST_CASE (from_string)
       "     ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
-    ( boost::bind (&fhg::log::from_string, "DEBUGmore")
+    ( boost::bind (&fhg::log::from_string, "TRACEmore")
     , "PARSE ERROR [5]: additional input\n"
-      "DEBUG more\n"
+      "TRACE more\n"
       "     ^\n"
     );
   fhg::util::boost::test::require_exception<std::runtime_error>
@@ -109,7 +107,6 @@ BOOST_AUTO_TEST_CASE (string)
                       )
 
   OKAY (TRACE, "TRACE");
-  OKAY (DEBUG, "DEBUG");
   OKAY (INFO, "INFO");
   OKAY (WARN, "WARN");
   OKAY (ERROR, "ERROR");
@@ -134,7 +131,6 @@ BOOST_AUTO_TEST_CASE (from_string_string_id)
     )
 
   OKAY (TRACE);
-  OKAY (DEBUG);
   OKAY (INFO);
   OKAY (WARN);
   OKAY (ERROR);
@@ -152,7 +148,6 @@ BOOST_AUTO_TEST_CASE (string_from_string_id)
     )
 
   OKAY ("TRACE");
-  OKAY ("DEBUG");
   OKAY ("INFO");
   OKAY ("WARN");
   OKAY ("ERROR");

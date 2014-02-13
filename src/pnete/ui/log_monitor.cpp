@@ -72,7 +72,6 @@ namespace
     switch (lvl)
     {
     case fhg::log::TRACE: return QColor (205, 183, 158);
-    case fhg::log::DEBUG: return QColor (139, 125, 107);
     case fhg::log::INFO: return QColor (25, 25, 25);
     case fhg::log::WARN: return QColor (255, 140, 0);
     case fhg::log::ERROR: return QColor (255, 0, 0);
