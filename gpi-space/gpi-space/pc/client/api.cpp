@@ -138,11 +138,10 @@ namespace gpi
         lock_type lock (m_mutex);
 
         // serialize
-        std::string data;
           std::stringstream sstr;
           boost::archive::binary_oarchive oa (sstr);
           oa & rqst;
-          data = sstr.str();
+          std::string const data (sstr.str());
 
         // send
         proto::header_t header;
