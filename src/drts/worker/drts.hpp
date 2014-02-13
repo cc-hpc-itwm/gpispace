@@ -5,7 +5,6 @@
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer.hpp>
 
-#include <fhg/util/keep_alive.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/set.hpp>
@@ -165,9 +164,6 @@ private:
   gspc::net::server::queue_manager_t _queue_manager;
 
   boost::function<void()> _request_stop;
-
-  //! \todo don't be pointer!
-  fhg::util::keep_alive* _kvs_keep_alive;
 
   bool m_shutting_down;
 

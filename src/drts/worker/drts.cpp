@@ -335,14 +335,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
   const std::string kvs_host (get<std::string> ("plugin.drts.kvs_host", config_variables).get_value_or ("localhost"));
   const std::string kvs_port (get<std::string> ("plugin.drts.kvs_port", config_variables).get_value_or ("2439"));
-  const unsigned int kvs_max_ping_failed (get<unsigned int> ("plugin.drts.kvs_max_ping_failed", config_variables).get_value_or (3));
-  const boost::posix_time::time_duration kvs_ping_interval
-    ( boost::posix_time::duration_from_string
-      ( get<std::string> ("plugin.drts.kvs_ping", config_variables)
-      .get_value_or
-        (boost::posix_time::to_simple_string (boost::posix_time::seconds (5)))
-      )
-    );
   const boost::posix_time::time_duration kvs_timeout
     ( boost::posix_time::duration_from_string
       ( get<std::string> ("plugin.drts.kvs_timeout", config_variables)
@@ -362,13 +354,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     , !kvs_port.empty() ? kvs_port : throw std::runtime_error ("kvs port empty")
     , kvs_timeout
     , 1 // max_connection_attempts
-    );
-
-  _kvs_keep_alive = new fhg::util::keep_alive
-    ( boost::bind (&fhg::com::kvs::client::kvsc::ping, fhg::com::kvs::global_kvs())
-    , _request_stop
-    , kvs_max_ping_failed
-    , kvs_ping_interval
     );
 
   _service_demux.handle ("/service/echo", gspc::net::service::echo ());
@@ -476,9 +461,6 @@ DRTSImpl::~DRTSImpl()
   {
     m_server->stop ();
   }
-
-  delete _kvs_keep_alive;
-  _kvs_keep_alive = NULL;
 }
 
   // event handler callbacks
