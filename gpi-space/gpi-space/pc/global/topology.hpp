@@ -65,8 +65,7 @@ namespace gpi
         static port_t const & any_port ();
         static host_t const & any_addr ();
 
-        friend topology_t & topology();
-
+        topology_t();
         ~topology_t ();
 
         void add_child(const gpi::rank_t rank);
@@ -148,8 +147,6 @@ namespace gpi
           std::size_t error_counter;
         };
 
-        topology_t();
-
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
         typedef boost::condition_variable_any condition_type;
@@ -203,13 +200,6 @@ namespace gpi
 
         result_list_t m_current_results;
       };
-
-      inline
-      topology_t & topology()
-      {
-        static topology_t t;
-        return t;
-      }
     }
   }
 }

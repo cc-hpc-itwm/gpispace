@@ -45,7 +45,7 @@ namespace gpi
           }
 
         _memory_manager.clear();
-        global::topology().stop();
+        _topology.stop();
       }
 
       void manager_t::start ()
@@ -234,7 +234,7 @@ namespace gpi
                     , id
                     , fd
                     , _memory_manager
-                    , global::topology()
+                    , _topology
                     )
                   )
                 );
@@ -262,6 +262,7 @@ namespace gpi
           , m_stopping (false)
           , m_process_counter (0)
           , _memory_manager()
+          , _topology()
       {
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
@@ -271,7 +272,7 @@ namespace gpi
         }
 
         gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-        global::topology().start( gpi_api.rank()
+        _topology.start( gpi_api.rank()
                                 , global::topology_t::any_addr()
                                 , global::topology_t::any_port() // topology_t::port_t("10821")
                                 , "dummy-cookie"
@@ -281,18 +282,18 @@ namespace gpi
         for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)
         {
           if (gpi_api.rank() != n)
-            global::topology().add_child(n);
+            _topology.add_child(n);
         }
 
         if (gpi_api.is_master ())
         {
-          global::topology().establish();
+          _topology.establish();
         }
         _memory_manager.start ( gpi_api.rank ()
                                         , gpi_api.number_of_queues ()
                                         );
 
-        if (global::topology ().is_master ())
+        if (_topology.is_master ())
         {
           gpi::pc::type::id_t id = 1;
           BOOST_FOREACH (std::string const& url, default_memory_urls)
@@ -301,19 +302,19 @@ namespace gpi
               ( 0 // owner
               , url
               , id
-              , global::topology()
+              , _topology
               );
             ++id;
           }
         }
 
-          if (global::topology().is_master ())
+          if (_topology.is_master ())
           {
-            global::topology ().go ();
+            _topology.go ();
           }
           else
           {
-            global::topology ().wait_for_go ();
+            _topology.wait_for_go ();
           }
 
           start ();
