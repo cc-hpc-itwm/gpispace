@@ -33,20 +33,19 @@ void close_socket (const int fd)
 
 int open_socket (std::string const & path)
 {
-  int sfd, err;
-  struct sockaddr_un addr;
-
-  sfd = socket (AF_UNIX, SOCK_STREAM, 0);
+  int const sfd = socket (AF_UNIX, SOCK_STREAM, 0);
   if (sfd < 0)
   {
     return -errno;
   }
 
+  struct sockaddr_un addr;
+
   memset (&addr, 0, sizeof(addr));
   addr.sun_family = AF_UNIX;
   strncpy (addr.sun_path, path.c_str(), sizeof(addr.sun_path) - 1);
 
-  err = connect (sfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
+  int err = connect (sfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
   if (err < 0)
   {
     err = -errno;
