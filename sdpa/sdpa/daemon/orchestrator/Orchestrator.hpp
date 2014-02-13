@@ -26,8 +26,8 @@ namespace sdpa {
     class Orchestrator : public GenericDaemon
     {
       public:
-      Orchestrator (const std::string &name, const std::string& url)
-      : GenericDaemon ( name, url, sdpa::master_info_list_t() /*, NULL*/)
+      Orchestrator (const std::string &name, const std::string& url, std::string kvs_host, std::string kvs_port)
+      : GenericDaemon ( name, url, kvs_host, kvs_port, sdpa::master_info_list_t() /*, NULL*/)
       {
         ptr_scheduler_ = SchedulerBase::ptr_t (new SimpleScheduler (this));
         ptr_scheduler_->start_threads(); //! \note: can't do in ctor: vtable not set up yet

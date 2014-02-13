@@ -74,8 +74,6 @@ int main (int argc, char **argv)
   const std::string kvs_host (vec[0]);
   const std::string kvs_port (vec[1]);
 
-  fhg::com::kvs::get_or_create_global_kvs ( kvs_host, kvs_port, boost::posix_time::seconds(120), 1);
-
     if (not pidfile.empty())
     {
       fhg::util::pidfile_writer const pidfile_writer (pidfile);
@@ -95,7 +93,8 @@ int main (int argc, char **argv)
       }
     }
 
-  const sdpa::daemon::Orchestrator orchestrator (orchName, orchUrl);
+  const sdpa::daemon::Orchestrator orchestrator
+    (orchName, orchUrl, kvs_host, kvs_port);
 
 
   fhg::util::thread::event<> stop_requested;

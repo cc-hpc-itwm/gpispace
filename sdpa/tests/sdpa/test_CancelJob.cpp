@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE (test_cancel_no_agent)
     (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
   sdpa::client::Client client (orchestrator.name());
 
@@ -31,9 +31,9 @@ BOOST_AUTO_TEST_CASE (test_cance_orch_and_agent_no_worker)
     (utils::require_and_read_file ("workflows/transform_file.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_cancel_and_wait_for_termination
@@ -48,9 +48,9 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
     (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent
@@ -82,9 +82,9 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_with_timeout)
     (utils::require_and_read_file ("workflows/capabilities.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent
@@ -121,9 +121,9 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_with_polling_client)
     (utils::require_and_read_file ("workflows/capabilities.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent
@@ -154,9 +154,9 @@ BOOST_AUTO_TEST_CASE (test_cancel_terminated_job)
   const std::string workflow
     (utils::require_and_read_file ("workflows/capabilities.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
+  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent

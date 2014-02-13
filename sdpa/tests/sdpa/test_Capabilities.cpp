@@ -13,9 +13,10 @@ BOOST_AUTO_TEST_CASE (Test1)
   const std::string workflow
     (utils::require_and_read_file ("workflows/capabilities.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent
@@ -47,9 +48,10 @@ BOOST_AUTO_TEST_CASE (testCapabilities_NoMandatoryReq)
   const std::string workflow
     (utils::require_and_read_file ("workflows/capabilities_no_mandatory.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent

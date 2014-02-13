@@ -83,8 +83,6 @@ int main (int argc, char **argv)
   const std::string kvs_host (vec[0]);
   const std::string kvs_port (vec[1]);
 
-  fhg::com::kvs::get_or_create_global_kvs ( kvs_host, kvs_port, boost::posix_time::seconds(120), 1);
-
   if( arrMasterNames.empty() )
     arrMasterNames.push_back("orchestrator"); // default master name
 
@@ -125,7 +123,7 @@ int main (int argc, char **argv)
   }
 
   const sdpa::daemon::Agent agent
-    (agentName, agentUrl, listMasterInfo, appGuiUrl);
+    (agentName, agentUrl, kvs_host, kvs_port, listMasterInfo, appGuiUrl);
 
 
   fhg::util::thread::event<> stop_requested;

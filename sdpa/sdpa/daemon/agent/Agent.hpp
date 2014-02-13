@@ -29,6 +29,8 @@ namespace sdpa {
       public:
         Agent ( const std::string& name
               , const std::string& url
+              , std::string kvs_host
+              , std::string kvs_port
               , const sdpa::master_info_list_t arrMasterNames
               , const boost::optional<std::string>& guiUrl
               );

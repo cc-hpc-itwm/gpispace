@@ -31,10 +31,12 @@ namespace sdpa {
 
 Agent::Agent ( const std::string& name
              , const std::string& url
+             , std::string kvs_host
+             , std::string kvs_port
              , const sdpa::master_info_list_t arrMasterNames
              , const boost::optional<std::string>& guiUrl
              )
-  : GenericDaemon (name, url, arrMasterNames, guiUrl, true)
+  : GenericDaemon (name, url, kvs_host, kvs_port, arrMasterNames, guiUrl, true)
 {
   ptr_scheduler_ = SchedulerBase::ptr_t (new CoallocationScheduler (this));
   ptr_scheduler_->start_threads(); //! \note: can't do in ctor: vtable not set up yet

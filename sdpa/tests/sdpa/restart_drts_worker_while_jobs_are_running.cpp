@@ -15,9 +15,9 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_polling_clie
     (utils::require_and_read_file ("workflows/transform_file.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   boost::scoped_ptr<utils::drts_worker> worker_0
     ( new utils::drts_worker ( "drts_0", agent
@@ -57,9 +57,9 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_subscribing_
     (utils::require_and_read_file ("workflows/transform_file.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   boost::scoped_ptr<utils::drts_worker> worker_0
     ( new utils::drts_worker ( "drts_0", agent
@@ -100,9 +100,9 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_coallocated_job_is_running_with_
     (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_one_cap_0
     ( "drts_one_cap_0", agent

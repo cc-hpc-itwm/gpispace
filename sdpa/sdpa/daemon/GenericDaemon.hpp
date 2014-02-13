@@ -99,6 +99,8 @@ namespace sdpa {
 
       GenericDaemon( const std::string name
                    , const std::string url
+                   , std::string kvs_host
+                   , std::string kvs_port
                    , const sdpa::master_info_list_t m_arrMasterInfo =  sdpa::master_info_list_t()
                    , const boost::optional<std::string>& guiUrl = boost::none
                    , bool create_wfe = false

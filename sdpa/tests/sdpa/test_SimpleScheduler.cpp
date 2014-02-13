@@ -36,8 +36,8 @@ class TestOrchestrator : public sdpa::daemon::Orchestrator
 {
 public:
   typedef boost::shared_ptr<TestOrchestrator > ptr_t;
-  TestOrchestrator( const std::string& name, const std::string& url)
-    : sdpa::daemon::Orchestrator(name, url)
+  TestOrchestrator( const std::string& name, const std::string& url, std::string kvs_host, std::string kvs_port)
+    : sdpa::daemon::Orchestrator(name, url, kvs_host, kvs_port)
   {
   }
 
@@ -80,7 +80,7 @@ public:
 struct allocate_test_orchestrator_and_scheduler
 {
     allocate_test_orchestrator_and_scheduler()
-      : _orchestrator ("orchestrator", "127.0.0.1")
+      : _orchestrator ("orchestrator", "127.0.0.1", kvs_host(), kvs_port())
       , _scheduler (&_orchestrator)
     {}
 

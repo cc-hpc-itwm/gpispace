@@ -55,9 +55,10 @@ namespace sdpa
     public:
       TestAgent ( const std::string& name
                 , const std::string& url
+                , std::string kvs_host, std::string kvs_port
                 , const sdpa::master_info_list_t arrMasterNames
                 )
-        : Agent (name, url, arrMasterNames, boost::none)
+        : Agent (name, url, kvs_host, kvs_port, arrMasterNames, boost::none)
       {}
 
       std::string gen_id()
@@ -172,7 +173,8 @@ BOOST_AUTO_TEST_CASE (test_discover_activities)
   const we::type::activity_t activity (workflow);
 
   sdpa::master_info_list_t listMasterInfo;
-  sdpa::daemon::TestAgent agent ("agent_0", "127.0.0.1", listMasterInfo);
+  sdpa::daemon::TestAgent agent
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), listMasterInfo);
 
   we::layer::id_type const id ("test_job");
 
@@ -200,7 +202,8 @@ BOOST_AUTO_TEST_CASE (test_discover_activities)
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 {
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   sdpa::client::Client client (orchestrator.name());
 
   BOOST_REQUIRE_EQUAL
@@ -214,7 +217,8 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
   const std::string workflow
     (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   sdpa::client::Client client (orchestrator.name());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
@@ -229,8 +233,10 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   const std::string workflow
     (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
-  const utils::agent agent ("agent_0", "127.0.0.1", orchestrator);
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  const utils::agent agent
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
   sdpa::client::Client client (orchestrator.name());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
@@ -245,8 +251,10 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   const std::string workflow
     (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
-  const utils::agent agent ("agent_0", "127.0.0.1", orchestrator);
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  const utils::agent agent
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_A_0
     ( "drts_A_0", agent
@@ -283,8 +291,10 @@ BOOST_AUTO_TEST_CASE (remove_workers)
   const std::string workflow
     (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
-  const utils::agent agent ("agent_0", "127.0.0.1", orchestrator);
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  const utils::agent agent
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_A_0
     ( "drts_A_0", agent

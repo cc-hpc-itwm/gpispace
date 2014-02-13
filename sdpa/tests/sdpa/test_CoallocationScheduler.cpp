@@ -38,9 +38,10 @@ public:
   typedef boost::shared_ptr<TestAgent > ptr_t;
   TestAgent( const std::string& name
              , const std::string& url
+           , std::string kvs_host, std::string kvs_port
              , const sdpa::master_info_list_t& arrMasterNames
              , const boost::optional<std::string>& appGuiUrl = boost::none)
-    : sdpa::daemon::Agent(name, url, arrMasterNames, appGuiUrl)
+    : sdpa::daemon::Agent(name, url, kvs_host, kvs_port, arrMasterNames, appGuiUrl)
   {
   }
 
@@ -83,7 +84,7 @@ public:
 struct allocate_test_agent_and_scheduler
 {
     allocate_test_agent_and_scheduler()
-      : _agent ("agent", "127.0.0.1", sdpa::master_info_list_t())
+      : _agent ("agent", "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t())
       , _scheduler (&_agent)
     {}
 
