@@ -74,45 +74,6 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
   BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE (test_call_cancel_with_timeout)
-{
-  const std::string workflow
-    (utils::require_and_read_file ("capabilities.pnet"));
-
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
-
-  const utils::drts_worker worker_0
-    ( "drts_0", agent
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-  const utils::drts_worker worker_1
-    ( "drts_1", agent
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t job_id(client.submitJob (workflow));
-
-  // wait some time before canceling the job
-  static const boost::posix_time::milliseconds timeout(100);
-  boost::this_thread::sleep(timeout);
-
-  client.cancelJob(job_id);
-  sdpa::client::job_info_t UNUSED_job_info;
-  BOOST_REQUIRE_EQUAL
-    ( client.wait_for_terminal_state (job_id, UNUSED_job_info)
-        , sdpa::status::CANCELED );
-
-  BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
-}
-
 BOOST_AUTO_TEST_CASE (test_call_cancel_with_polling_client)
 {
   const std::string workflow
