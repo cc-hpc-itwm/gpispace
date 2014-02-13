@@ -409,33 +409,29 @@ int main (int argc, char **argv) {
 
     fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("sdpac"));
 
-    try
+    std::vector< std::string > vec;
+
     {
-      // initialize the KVS
+      boost::char_separator<char> sep(":");
+      boost::tokenizer<boost::char_separator<char> > tok(kvs_url, sep);
 
-      LLOG (INFO, logger, "initializing KVS at " << kvs_url);
+      vec.assign(tok.begin(),tok.end());
 
-      std::pair<std::string, std::string> const parts
-        (fhg::util::split_string (kvs_url, ':'));
-      if (parts.second.empty())
+      if( vec.size() != 2 )
       {
-        LLOG (ERROR, logger, "invalid kvs url: expected host:port, got: " << kvs_url);
-        return EXIT_FAILURE;
-      }
-      else
-      {
-        fhg::com::kvs::global::get_kvs_info().init( parts.first
-                                                  , parts.second
-                                                  , boost::posix_time::seconds(120)
-                                                  , 1
-                                                  );
+        throw std::runtime_error
+          ("Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
       }
     }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: could not connect to KVS: " << ex.what() << std::endl;
-      return EXIT_FAILURE;
-    }
+
+    const std::string kvs_host (vec[0]);
+    const std::string kvs_port (vec[1]);
+
+    fhg::com::kvs::global::get_kvs_info().init( kvs_host
+                                              , kvs_port
+                                              , boost::posix_time::seconds(120)
+                                              , 1
+                                              );
 
     if (! cfg.is_set("command"))
     {
