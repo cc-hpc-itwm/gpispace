@@ -164,6 +164,10 @@ static void distribute_config_or_die(const config_t *c);
 static void receive_config_or_die(config_t *c);
 
 static void signal_handler (int sig);
+namespace
+{
+  fhg::com::kvs::kvsc_ptr_t kvs_client;
+}
 static int configure_logging (const config_t *cfg);
 static int configure_kvs (const config_t *cfg);
 static int cleanup_kvs ();
@@ -694,6 +698,7 @@ int main (int ac, char *av[])
       gpi_api.clear_caches();
     }
 
+    //! \note Does not destroy kvs client!
     cleanup_kvs ();
 
     if (0 != strlen (pidfile))
@@ -869,7 +874,7 @@ static int cleanup_kvs ()
     std::string peer_name = fhg::com::p2p::to_string
       (fhg::com::p2p::address_t ("gpi-"+boost::lexical_cast<std::string>(rnk)));
     std::string kvs_key = "p2p.peer." + peer_name;
-    fhg::com::kvs::global_kvs()->del (kvs_key);
+    kvs_client->del (kvs_key);
   }
   return 0;
 }
@@ -878,16 +883,19 @@ static int configure_kvs (const config_t *cfg)
 {
   try
   {
-    fhg::com::kvs::global::get_kvs_info().init( cfg->kvs_host
-                                              , boost::lexical_cast<std::string>(cfg->kvs_port)
-                                              , boost::posix_time::seconds(1)
-                                              , cfg->kvs_retry_count
-                                              );
+    kvs_client = fhg::com::kvs::kvsc_ptr_t
+      ( new fhg::com::kvs::client::kvsc ( cfg->kvs_host
+                                        , boost::lexical_cast<std::string>(cfg->kvs_port)
+                                        , true
+                                        , boost::posix_time::seconds(1)
+                                        , cfg->kvs_retry_count
+                                        )
+      );
 
     // workaround until we have the above structure
     // put/del some entry to check the connection
     fhg::com::kvs::scoped_entry_t
-      ( fhg::com::kvs::global_kvs()
+      ( kvs_client
       , "kvs.connection.check"
       , "dummy value"
       );
@@ -917,7 +925,7 @@ static int main_loop (const config_t *cfg, const gpi::rank_t rank)
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
     global_container_mgr = new gpi::pc::container::manager_t
-      (cfg->socket, mem_urls, gpi_api, fhg::com::kvs::global_kvs());
+      (cfg->socket, mem_urls, gpi_api, kvs_client);
   }
   catch (std::exception const & ex)
   {
