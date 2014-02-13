@@ -65,11 +65,12 @@ int main (int argc, char **argv)
 
   po::notify(vm);
 
+  std::vector< std::string > vec;
+
   {
     boost::char_separator<char> sep(":");
     boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
 
-    std::vector< std::string > vec;
     vec.assign(tok.begin(),tok.end());
 
     if( vec.size() != 2 )
@@ -77,12 +78,12 @@ int main (int argc, char **argv)
       throw std::runtime_error
         ("Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
     }
-
-    const std::string kvs_host (vec[0]);
-    const std::string kvs_port (vec[1]);
-
-    fhg::com::kvs::global::get_kvs_info().init( kvs_host, kvs_port, boost::posix_time::seconds(120), 1);
   }
+
+  const std::string kvs_host (vec[0]);
+  const std::string kvs_port (vec[1]);
+
+  fhg::com::kvs::global::get_kvs_info().init( kvs_host, kvs_port, boost::posix_time::seconds(120), 1);
 
   if( arrMasterNames.empty() )
     arrMasterNames.push_back("orchestrator"); // default master name
