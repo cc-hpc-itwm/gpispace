@@ -187,6 +187,7 @@ namespace gpi
         size_t m_waiting_for_go;
         bool m_established;
         gpi::rank_t m_rank;
+        fhg::com::kvs::kvsc_ptr_t _kvs_client;
         peer_ptr   m_peer;
         thread_ptr m_peer_thread;
         child_map_t m_children;

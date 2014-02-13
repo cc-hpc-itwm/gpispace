@@ -134,13 +134,14 @@ namespace gpi
         , m_waiting_for_go (0)
         , m_established (false)
         , m_rank (rank)
+        , _kvs_client (fhg::com::kvs::global_kvs())
       {
         lock_type lock(m_mutex);
         m_peer.reset
           (new fhg::com::peer_t( detail::rank_to_name (m_rank)
                                , host
                                , port
-                               , fhg::com::kvs::global_kvs()
+                               , _kvs_client
                                , cookie
                                )
           );
@@ -787,7 +788,7 @@ namespace gpi
             std::string peer_name = fhg::com::p2p::to_string
               (fhg::com::p2p::address_t (detail::rank_to_name (rnks[i])));
             std::string kvs_key = "p2p.peer." + peer_name;
-            fhg::com::kvs::global_kvs()->del (kvs_key);
+            _kvs_client->del (kvs_key);
           }
 
           kill(getpid(), SIGTERM);
