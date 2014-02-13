@@ -349,7 +349,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   }
 
 
-  fhg::com::kvs::get_or_create_global_kvs
+  _kvs_client = fhg::com::kvs::get_or_create_global_kvs
     ( !kvs_host.empty() ? kvs_host : throw std::runtime_error ("kvs host empty")
     , !kvs_port.empty() ? kvs_port : throw std::runtime_error ("kvs port empty")
     , kvs_timeout
@@ -360,7 +360,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
   m_server = gspc::net::serve (netd_url, _net_initializer, _queue_manager);
 
-  fhg::com::kvs::global_kvs()->put ("gspc.net.url." + m_my_name, m_server->url());
+  _kvs_client->put ("gspc.net.url." + m_my_name, m_server->url());
 
 
   // parse virtual capabilities
@@ -382,7 +382,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   fhg::util::set_threadname (*m_event_thread, "[drts-events]");
 
   // initialize peer
-  m_peer.reset (new fhg::com::peer_t (m_my_name, host, port, fhg::com::kvs::global_kvs()));
+  m_peer.reset (new fhg::com::peer_t (m_my_name, host, port, _kvs_client));
   m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
   fhg::util::set_threadname (*m_peer_thread, "[drts-peer]");
   m_peer->start();

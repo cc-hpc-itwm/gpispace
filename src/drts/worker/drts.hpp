@@ -165,6 +165,8 @@ private:
 
   boost::function<void()> _request_stop;
 
+  fhg::com::kvs::kvsc_ptr_t _kvs_client;
+
   bool m_shutting_down;
 
   std::string m_my_name;
