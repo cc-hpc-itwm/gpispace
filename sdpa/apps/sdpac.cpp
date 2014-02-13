@@ -415,17 +415,17 @@ int main (int argc, char **argv) {
 
       LLOG (INFO, logger, "initializing KVS at " << kvs_url);
 
-      std::vector<std::string> parts;
-      fhg::util::split(kvs_url, ':', std::back_inserter(parts));
-      if (parts.size() != 2)
+      std::pair<std::string, std::string> const parts
+        (fhg::util::split_string (kvs_url, ':'));
+      if (parts.second.empty())
       {
         LLOG (ERROR, logger, "invalid kvs url: expected host:port, got: " << kvs_url);
         return EXIT_FAILURE;
       }
       else
       {
-        fhg::com::kvs::global::get_kvs_info().init( parts[0]
-                                                  , parts[1]
+        fhg::com::kvs::global::get_kvs_info().init( parts.first
+                                                  , parts.second
                                                   , boost::posix_time::seconds(120)
                                                   , 1
                                                   );
