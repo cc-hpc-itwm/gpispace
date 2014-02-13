@@ -139,17 +139,10 @@ namespace gpi
 
         // serialize
         std::string data;
-        try
-        {
           std::stringstream sstr;
           boost::archive::binary_oarchive oa (sstr);
           oa & rqst;
           data = sstr.str();
-        }
-        catch (std::exception const &ex)
-        {
-          throw;
-        }
 
         // send
         proto::header_t header;
