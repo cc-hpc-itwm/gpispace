@@ -263,13 +263,6 @@ namespace gpi
         , _memory_manager()
         , _topology()
       {
-        if ( default_memory_urls.size ()
-           >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
-           )
-        {
-          throw std::runtime_error ("too many predefined memory urls!");
-        }
-
         _topology.start( gpi_api.rank()
                                 , global::topology_t::any_addr()
                                 , global::topology_t::any_port() // topology_t::port_t("10821")
@@ -290,6 +283,13 @@ namespace gpi
         _memory_manager.start ( gpi_api.rank ()
                                         , gpi_api.number_of_queues ()
                                         );
+
+        if ( default_memory_urls.size ()
+           >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
+           )
+        {
+          throw std::runtime_error ("too many predefined memory urls!");
+        }
 
         if (_topology.is_master ())
         {
