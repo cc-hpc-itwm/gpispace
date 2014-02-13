@@ -208,7 +208,7 @@ namespace gpi
             operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
           {
             gpi::pc::type::segment_id_t id =
-              _memory_manager.add_memory (m_proc_id, add_mem.url);
+              _memory_manager.add_memory (m_proc_id, add_mem.url, 0, global::topology());
             gpi::pc::proto::segment::register_reply_t rpl;
             rpl.id = id;
             return gpi::pc::proto::segment::message_t (rpl);
@@ -217,7 +217,7 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
           {
-            _memory_manager.del_memory (m_proc_id, del_mem.id);
+            _memory_manager.del_memory (m_proc_id, del_mem.id, global::topology());
             return
               gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
           }

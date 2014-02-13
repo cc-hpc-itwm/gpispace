@@ -16,6 +16,10 @@ namespace gpi
 {
   namespace pc
   {
+    namespace global
+    {
+      class topology_t;
+    }
     namespace memory
     {
       class manager_t : boost::noncopyable
@@ -95,20 +99,25 @@ namespace gpi
         int
         remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
                           , std::string const & url
+                          , global::topology_t& topology
                           );
 
         gpi::pc::type::segment_id_t
         add_memory ( const gpi::pc::type::process_id_t proc_id
                    , const std::string & url
-                   , const gpi::pc::type::segment_id_t seg_id = 0
+                   , const gpi::pc::type::segment_id_t seg_id
+                   , global::topology_t& topology
                    );
 
         int
-        remote_del_memory (const gpi::pc::type::segment_id_t seg_id);
+        remote_del_memory ( const gpi::pc::type::segment_id_t seg_id
+                          , global::topology_t& topology
+                          );
 
         void
         del_memory ( const gpi::pc::type::process_id_t proc_id
                    , const gpi::pc::type::segment_id_t seg_id
+                   , global::topology_t& topology
                    );
 
         void add_area (area_ptr const &area);

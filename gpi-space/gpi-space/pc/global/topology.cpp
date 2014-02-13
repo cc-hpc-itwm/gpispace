@@ -711,7 +711,7 @@ namespace gpi
 
             try
             {
-              memory_manager.remote_add_memory (seg_id, url_s);
+              memory_manager.remote_add_memory (seg_id, url_s, *this);
               cast (rank, detail::command_t("+RES") << 0);
             }
             catch (std::exception const & ex)
@@ -730,7 +730,7 @@ namespace gpi
 
             try
             {
-              memory_manager.remote_del_memory (seg_id);
+              memory_manager.remote_del_memory (seg_id, *this);
               cast (rank, detail::command_t("+RES") << 0);
             }
             catch (std::exception const & ex)

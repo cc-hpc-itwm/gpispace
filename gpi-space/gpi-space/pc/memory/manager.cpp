@@ -465,9 +465,10 @@ namespace gpi
       int
       manager_t::remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
                                    , std::string const & url
+                                   , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (url, global::topology()));
+        area_ptr_t area (create_area (url, topology));
         area->set_owner (0);
         area->set_id (seg_id);
         add_area (area);
@@ -478,9 +479,10 @@ namespace gpi
       manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
                             , const std::string & url_s
                             , const gpi::pc::type::segment_id_t seg_id
+                            , global::topology_t& topology
                             )
       {
-        area_ptr_t area (create_area (url_s, global::topology()));
+        area_ptr_t area (create_area (url_s, topology));
         area->set_owner (proc_id);
         if (seg_id > 0)
           area->set_id (seg_id);
@@ -495,14 +497,14 @@ namespace gpi
             url_t old_url (url_s);
             url_t new_url (old_url.type(), old_url.path());
             new_url.set ("persistent", "true");
-            global::topology ().add_memory
+            topology.add_memory
               (area->get_id (), boost::lexical_cast<std::string>(new_url));
           }
           catch (std::exception const & up)
           {
             try
             {
-              del_memory (proc_id, area->get_id ());
+              del_memory (proc_id, area->get_id (), topology);
             }
             catch (...)
             {
@@ -517,15 +519,18 @@ namespace gpi
       }
 
       int
-      manager_t::remote_del_memory (const gpi::pc::type::segment_id_t seg_id)
+      manager_t::remote_del_memory ( const gpi::pc::type::segment_id_t seg_id
+                                   , global::topology_t& topology
+                                   )
       {
-        del_memory (0, seg_id);
+        del_memory (0, seg_id, topology);
         return 0;
       }
 
       void
       manager_t::del_memory ( const gpi::pc::type::process_id_t proc_id
                             , const gpi::pc::type::segment_id_t seg_id
+                            , global::topology_t& topology
                             )
       {
         if (0 == seg_id)
@@ -561,7 +566,7 @@ namespace gpi
 
           if (proc_id > 0 && area->flags () & F_GLOBAL)
           {
-            global::topology ().del_memory (seg_id);
+            topology.del_memory (seg_id);
           }
         }
       }
