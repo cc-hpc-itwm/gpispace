@@ -405,7 +405,6 @@ namespace gpi
           {
             proto::error::error_t result (boost::get<proto::error::error_t>(rply));
             DLOG(ERROR, "could not register segment: " << result.code << ": " << result.detail);
-            //          throw wrap (result);
             throw std::runtime_error ("memory segment registration failed: " + result.detail);
           }
           catch (std::exception const & ex)
@@ -466,7 +465,6 @@ namespace gpi
           proto::error::error_t result
             (boost::get<proto::error::error_t>(rply));
           DLOG(ERROR, "could not get segment list: " << result.code << ": " << result.detail);
-          //          throw wrap (result);
           throw std::runtime_error ("segment listing failed: " + result.detail);
         }
         catch (std::exception const & ex)
