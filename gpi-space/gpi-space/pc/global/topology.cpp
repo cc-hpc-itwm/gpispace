@@ -577,7 +577,7 @@ namespace gpi
           {
             const std::string name(m_peer->resolve(addr, "*unknown*"));
 
-            handle_error (detail::name_to_rank(name), ec);
+            handle_error (detail::name_to_rank(name));
 
             m_peer->async_recv ( &m_incoming_msg
                                , boost::bind( &topology_t::message_received
@@ -760,7 +760,6 @@ namespace gpi
       }
 
       void topology_t::handle_error ( const gpi::rank_t rank
-                                    , boost::system::error_code const &ec
                                     )
       {
         if (m_established || m_waiting_for_go)

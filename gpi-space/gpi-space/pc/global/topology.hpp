@@ -163,7 +163,6 @@ namespace gpi
                             , memory::manager_t&
                             );
         void handle_error ( const gpi::rank_t rank
-                          , boost::system::error_code const &
                           );
 
         /**
