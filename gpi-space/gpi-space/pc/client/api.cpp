@@ -85,12 +85,6 @@ namespace gpi
         }
 
         m_socket = open_socket (m_path);
-        if (m_socket < 0)
-        {
-          throw std::runtime_error (strerror(errno));
-        }
-        else
-        {
           m_connected = true;
 
           try
@@ -102,7 +96,6 @@ namespace gpi
             stop();
             throw;
           }
-        }
       }
 
       void api_t::stop ()
