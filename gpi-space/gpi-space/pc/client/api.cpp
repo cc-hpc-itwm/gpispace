@@ -720,7 +720,6 @@ namespace gpi
         lock_type lock (m_mutex);
         while (! m_garbage_segments.empty())
         {
-          DLOG(INFO, "garbage collecting segment: " << **m_garbage_segments.begin());
           m_garbage_segments.erase (m_garbage_segments.begin());
         }
       }
