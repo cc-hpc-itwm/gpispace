@@ -275,6 +275,7 @@ namespace gpi
                                 , global::topology_t::any_addr()
                                 , global::topology_t::any_port() // topology_t::port_t("10821")
                                 , "dummy-cookie"
+                                , memory_manager
                                 );
 
         for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)

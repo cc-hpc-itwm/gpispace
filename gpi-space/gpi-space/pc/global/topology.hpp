@@ -72,10 +72,14 @@ namespace gpi
         void add_child(const gpi::rank_t rank);
         void del_child(const gpi::rank_t rank);
 
+        //! \note that This is effectively the ctor, thus the
+        //! memory_manager passed in has to live until stop()/dtor,
+        //! even though it is not visible as class state!
         void start( const gpi::rank_t rank
                   , const fhg::com::host_t & host
                   , const fhg::com::port_t & port
                   , std::string const & cookie
+                  , memory::manager_t& memory_manager
                   );
         void stop ();
 
@@ -144,8 +148,7 @@ namespace gpi
           std::size_t error_counter;
         };
 
-        explicit
-        topology_t (memory::manager_t&);
+        topology_t();
 
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -155,7 +158,9 @@ namespace gpi
         typedef std::map<gpi::rank_t, child_t> child_map_t;
         typedef std::list<rank_result_t> result_list_t;
 
-        void message_received (boost::system::error_code const &);
+        void message_received ( boost::system::error_code const &
+                              , memory::manager_t&
+                              );
         void message_sent ( child_t & child
                           , std::string const & data
                           , boost::system::error_code const &
@@ -163,6 +168,7 @@ namespace gpi
 
         void handle_message ( const gpi::rank_t rank
                             , const std::string &
+                            , memory::manager_t&
                             );
         void handle_error ( const gpi::rank_t rank
                           , boost::system::error_code const &
@@ -196,14 +202,12 @@ namespace gpi
         fhg::com::message_t m_incoming_msg;
 
         result_list_t m_current_results;
-
-        memory::manager_t& _memory_manager;
       };
 
       inline
       topology_t & topology()
       {
-        static topology_t t (memory_manager());
+        static topology_t t;
         return t;
       }
     }

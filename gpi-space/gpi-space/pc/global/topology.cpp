@@ -123,13 +123,12 @@ namespace gpi
         return h;
       }
 
-      topology_t::topology_t (memory::manager_t& memory_manager)
+      topology_t::topology_t()
         : m_shutting_down (false)
         , m_go_received (false)
         , m_waiting_for_go (0)
         , m_established (false)
         , m_rank ((gpi::rank_t)-1)
-        , _memory_manager (memory_manager)
       {}
 
       topology_t::~topology_t()
@@ -214,6 +213,7 @@ namespace gpi
                             , const fhg::com::host_t & host
                             , const fhg::com::port_t & port
                             , std::string const & cookie
+                            , memory::manager_t& memory_manager
                             )
       {
         lock_type lock(m_mutex);
@@ -268,6 +268,7 @@ namespace gpi
                            , boost::bind( &topology_t::message_received
                                         , this
                                         , _1
+                                        , boost::ref (memory_manager)
                                         )
                            );
       }
@@ -573,7 +574,8 @@ namespace gpi
         2. fold ([(Node, Result)], (MyRank, MyResult)) -> Result
        */
 
-      void topology_t::message_received(boost::system::error_code const &ec)
+      void topology_t::message_received
+        (boost::system::error_code const &ec, memory::manager_t& memory_manager)
       {
         if (! ec)
         {
@@ -584,12 +586,14 @@ namespace gpi
                         , std::string( m_incoming_msg.buf()
                                      , m_incoming_msg.header.length
                                      )
+                        , memory_manager
                         );
 
           m_peer->async_recv ( &m_incoming_msg
                              , boost::bind( &topology_t::message_received
                                           , this
                                           , _1
+                                          , boost::ref (memory_manager)
                                           )
                              );
         }
@@ -606,6 +610,7 @@ namespace gpi
                                , boost::bind( &topology_t::message_received
                                             , this
                                             , _1
+                                            , boost::ref (memory_manager)
                                             )
                                );
           }
@@ -618,6 +623,7 @@ namespace gpi
 
       void topology_t::handle_message ( const gpi::rank_t rank
                                       , std::string const &msg
+                                      , memory::manager_t& memory_manager
                                       )
       {
         DLOG(TRACE, "got message from gpi-" << rank << ": " << msg);
@@ -660,7 +666,7 @@ namespace gpi
             try
             {
               int res
-                (_memory_manager.remote_alloc( seg
+                (memory_manager.remote_alloc( seg
                                                       , hdl
                                                       , offset
                                                       , size
@@ -681,7 +687,7 @@ namespace gpi
             handle_t hdl (boost::lexical_cast<handle_t>(av[1]));
             try
             {
-              _memory_manager.remote_free(hdl);
+              memory_manager.remote_free(hdl);
               cast (rank, detail::command_t("+OK"));
             }
             catch (std::exception const & ex)
@@ -705,7 +711,7 @@ namespace gpi
 
             try
             {
-              _memory_manager.remote_add_memory (seg_id, url_s);
+              memory_manager.remote_add_memory (seg_id, url_s);
               cast (rank, detail::command_t("+RES") << 0);
             }
             catch (std::exception const & ex)
@@ -724,7 +730,7 @@ namespace gpi
 
             try
             {
-              _memory_manager.remote_del_memory (seg_id);
+              memory_manager.remote_del_memory (seg_id);
               cast (rank, detail::command_t("+RES") << 0);
             }
             catch (std::exception const & ex)
