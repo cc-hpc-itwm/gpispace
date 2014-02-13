@@ -254,6 +254,7 @@ namespace gpi
 
       manager_t::manager_t ( std::string const & p
                            , std::vector<std::string> const& default_memory_urls
+                           , api::gpi_api_t& gpi_api
                            )
         : m_path (p)
         , m_socket (-1)
@@ -269,7 +270,6 @@ namespace gpi
           throw std::runtime_error ("too many predefined memory urls!");
         }
 
-        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
         _topology.start( gpi_api.rank()
                                 , global::topology_t::any_addr()
                                 , global::topology_t::any_port() // topology_t::port_t("10821")

@@ -28,6 +28,7 @@ namespace gpi
       public:
         manager_t ( std::string const & p
                     , std::vector<std::string> const& default_memory_urls
+                  , api::gpi_api_t& gpi_api
                     );
 
         ~manager_t ();
