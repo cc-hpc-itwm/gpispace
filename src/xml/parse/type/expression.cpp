@@ -17,8 +17,7 @@ namespace xml
     {
       namespace
       {
-        template<typename List>
-        void lines (const std::string& s, const char sep, List& v)
+        void lines (const std::string& s, const char sep, expressions_type& v)
         {
           std::string::const_iterator pos (s.begin());
           std::string::const_iterator item_begin (s.begin());
