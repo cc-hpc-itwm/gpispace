@@ -681,10 +681,11 @@ namespace gpi
         if (!is_connected())
           return false;
 
-        gpi::pc::proto::control::ping_t p;
         try
         {
-          communicate (gpi::pc::proto::control::message_t (p));
+          communicate ( gpi::pc::proto::control::message_t
+                        (gpi::pc::proto::control::ping_t())
+                      );
           return true;
         }
         catch (std::exception const & ex)
