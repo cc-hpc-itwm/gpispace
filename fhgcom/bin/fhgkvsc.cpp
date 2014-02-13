@@ -91,22 +91,12 @@ int main(int ac, char *av[])
     return EX_OK;
   }
 
-  fhg::com::kvs::client::kvsc client;
-
-  try
-  {
-    client.start ( server_address
-                 , server_port
-                 , true
-                 , boost::posix_time::milliseconds(timeout)
-                 , 1
-                 );
-  }
-  catch (std::exception const & ex)
-  {
-    std::cerr << "E: " << ex.what() << std::endl;
-    return EX_CONN;
-  }
+  fhg::com::kvs::client::kvsc client ( server_address
+                                     , server_port
+                                     , true
+                                     , boost::posix_time::milliseconds(timeout)
+                                     , 1
+                                     );
 
   if (vm.count ("load"))
   {
@@ -290,6 +280,5 @@ int main(int ac, char *av[])
     return count > 0 ? EX_OK : EX_ERR;
   }
 
-  client.stop();
   return EX_OK;
 }
