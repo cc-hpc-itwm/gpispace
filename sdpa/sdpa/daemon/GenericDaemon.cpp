@@ -61,12 +61,6 @@ namespace
     const std::vector<std::string> vec (require_proper_url (url));
     return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
   }
-
-  id_generator& GLOBAL_id_generator_agent()
-  {
-    static id_generator g ("agent");
-    return g;
-  }
 }
 
 GenericDaemon::GenericDaemon( const std::string name
@@ -97,7 +91,7 @@ GenericDaemon::GenericDaemon( const std::string name
                          : NULL
                          ),
     m_nRank(rank),
-    m_strAgentUID(GLOBAL_id_generator_agent().next()),
+    m_strAgentUID (name),
     m_guiService ( guiUrl && !guiUrl->empty()
                  ? boost::optional<NotificationService>
                    (NotificationService (*guiUrl))
