@@ -20,17 +20,6 @@ fhg_add_test (test_memory_manager.cpp
                  fhg-util
 )
 
-fhg_add_test (test_pc_types.cpp
-  PROJECT gpi-space
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES gpi-space-pc-segment
-                 gpi-space-pc-memory
-                 ${FhgCom_LIBRARY}
-                 ${FhgLog_LIBRARY}
-                 ${CMAKE_THREAD_LIBS_INIT}
-                 fhg-util
-)
-
 fhg_add_test (test_segment.cpp
   PROJECT gpi-space
   BOOST_UNIT_TEST
