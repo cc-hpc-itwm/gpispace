@@ -37,14 +37,13 @@ int main (int argc, char **argv)
        ("help,h", "Display this message")
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-       ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
+       ("kvs_url,k",  po::value<string>()->required(), "The kvs daemon's url")
        ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
        ("daemonize", "daemonize after all checks were successful")
        ;
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
-    po::notify(vm);
 
     fhg::log::Logger::ptr_t logger (fhg::log::Logger::get (orchName));
 
@@ -55,12 +54,8 @@ int main (int argc, char **argv)
       return 0;
     }
 
-    if( !vm.count("kvs_url") )
-    {
-      LLOG (ERROR, logger, "The url of the kvs daemon was not specified!");
-      return -1;
-    }
-    else
+    po::notify(vm);
+
     {
       boost::char_separator<char> sep(":");
       boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
