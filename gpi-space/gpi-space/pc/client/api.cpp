@@ -197,13 +197,11 @@ namespace gpi
         {
           proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
           proto::memory::alloc_reply_t alloc_rpl (boost::get<proto::memory::alloc_reply_t>(mem_msg));
-          DLOG(INFO, "allocation successful: " << gpi::pc::type::handle_t(alloc_rpl.handle));
           return alloc_rpl.handle;
         }
         catch (boost::bad_get const & ex)
         {
           proto::error::error_t error (boost::get<proto::error::error_t>(reply));
-          DLOG(WARN, "request failed: " << error.code << ": " << error.detail);
           throw std::runtime_error (error.detail);
         }
         catch (std::exception const & ex)
@@ -222,7 +220,6 @@ namespace gpi
         proto::error::error_t result (boost::get<proto::error::error_t>(rpl));
         if (result.code != proto::error::success)
         {
-          DLOG(WARN, "could not free handle: " << result.code << ": " << result.detail);
           throw std::runtime_error ("handle could not be free'd: " + result.detail);
         }
       }
@@ -250,7 +247,6 @@ namespace gpi
         catch (boost::bad_get const & ex)
         {
           proto::error::error_t error (boost::get<proto::error::error_t>(reply));
-          DLOG(WARN, "request failed: " << error.code << ": " << error.detail);
           throw std::runtime_error (error.detail);
         }
         catch (std::exception const & ex)
@@ -304,13 +300,11 @@ namespace gpi
         {
           proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
           proto::memory::memcpy_reply_t memcpy_rpl (boost::get<proto::memory::memcpy_reply_t>(mem_msg));
-          DLOG(INFO, "memcpy in progress using queue " << memcpy_rpl.queue);
           return memcpy_rpl.queue;
         }
         catch (boost::bad_get const & ex)
         {
           proto::error::error_t error (boost::get<proto::error::error_t>(reply));
-          DLOG(WARN, "request failed: " << error.code << ": " << error.detail);
           throw std::runtime_error (error.detail);
         }
         catch (std::exception const & ex)
@@ -344,13 +338,11 @@ namespace gpi
         {
           proto::memory::message_t mem_msg (boost::get<proto::memory::message_t>(reply));
           proto::memory::wait_reply_t w_rpl (boost::get<proto::memory::wait_reply_t>(mem_msg));
-          DLOG(INFO, "wait on queue " << queue << " returned " << w_rpl.count);
           return w_rpl.count;
         }
         catch (boost::bad_get const & ex)
         {
           proto::error::error_t error (boost::get<proto::error::error_t>(reply));
-          DLOG(WARN, "request failed: " << error.code << ": " << error.detail);
           throw std::runtime_error (error.detail);
         }
         catch (std::exception const & ex)
@@ -404,7 +396,6 @@ namespace gpi
           catch (boost::bad_get const &)
           {
             proto::error::error_t result (boost::get<proto::error::error_t>(rply));
-            DLOG(ERROR, "could not register segment: " << result.code << ": " << result.detail);
             throw std::runtime_error ("memory segment registration failed: " + result.detail);
           }
           catch (std::exception const & ex)
@@ -464,7 +455,6 @@ namespace gpi
         {
           proto::error::error_t result
             (boost::get<proto::error::error_t>(rply));
-          DLOG(ERROR, "could not get segment list: " << result.code << ": " << result.detail);
           throw std::runtime_error ("segment listing failed: " + result.detail);
         }
         catch (std::exception const & ex)
@@ -505,7 +495,6 @@ namespace gpi
 
         if (!desc)
         {
-          DLOG(ERROR, "segment descriptor not found: " << id);
           throw std::runtime_error ("no such segment");
         }
 
@@ -517,7 +506,6 @@ namespace gpi
         }
         catch (std::exception const & ex)
         {
-          DLOG(ERROR, "could not open segment " << desc->name << ": " << ex.what());
           throw;
         }
 
@@ -531,7 +519,6 @@ namespace gpi
             (boost::get<proto::error::error_t>(rply));
           if (result.code != proto::error::success)
           {
-            DLOG(ERROR, "could not attach to segment: " << result.code << ": " << result.detail);
             throw std::runtime_error ("could not attach to segment: " + result.detail);
           }
           else
