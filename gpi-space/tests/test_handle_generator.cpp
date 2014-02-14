@@ -11,7 +11,6 @@ struct SetupLogging
   SetupLogging()
   {
     FHGLOG_SETUP();
-    BOOST_TEST_MESSAGE ("setup logging");
   }
 };
 
@@ -21,13 +20,11 @@ struct F
 {
   F()
   {
-    BOOST_TEST_MESSAGE ("fixture setup");
     gpi::pc::memory::handle_generator_t::create (42);
   }
 
   ~F ()
   {
-    BOOST_TEST_MESSAGE ("fixture teardown");
     gpi::pc::memory::handle_generator_t::destroy ();
   }
 };
