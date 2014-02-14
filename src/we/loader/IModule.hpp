@@ -6,7 +6,7 @@
 #include <we/expr/eval/context.hpp>
 #include <we/loader/api-guard.hpp>
 
-#include <gspc/drts/context_fwd.hpp>
+#include <drts/worker/context_fwd.hpp>
 
 #include <list>
 #include <string>

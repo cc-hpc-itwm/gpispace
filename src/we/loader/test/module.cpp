@@ -10,7 +10,7 @@
 #include <we/loader/exceptions.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <gspc/drts/context.hpp>
+#include <drts/worker/context.hpp>
 
 #include <fhg/util/boost/test/require_exception.hpp>
 

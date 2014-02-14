@@ -2152,7 +2152,7 @@ namespace xml
 
               if (mod.pass_context ())
               {
-                stream << cpp_util::include ("gspc/drts/context_fwd.hpp");
+                stream << cpp_util::include ("drts/worker/context_fwd.hpp");
               }
               BOOST_FOREACH (const std::string& tname, types)
               {
@@ -2200,7 +2200,7 @@ namespace xml
 
               if (mod.pass_context ())
               {
-                stream << cpp_util::include ("gspc/drts/context.hpp");
+                stream << cpp_util::include ("drts/worker/context.hpp");
               }
 
               BOOST_FOREACH (const std::string& inc, mod.cincludes())

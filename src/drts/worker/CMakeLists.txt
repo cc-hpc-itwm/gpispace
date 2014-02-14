@@ -31,3 +31,9 @@ install (TARGETS drts-kernel
   RUNTIME
   DESTINATION bin
   COMPONENT runtime)
+
+install (FILES context_fwd.hpp context.hpp
+
+  DESTINATION include/drts/worker
+  COMPONENT sdk
+)

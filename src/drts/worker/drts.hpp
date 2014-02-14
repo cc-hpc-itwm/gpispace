@@ -1,5 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#include <drts/worker/context.hpp>
 #include <drts/worker/job.hpp>
 
 #include <fhgcom/message.hpp>
@@ -8,8 +9,6 @@
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/set.hpp>
-
-#include <gspc/drts/context.hpp>
 
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/NotificationEvent.hpp>
