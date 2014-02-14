@@ -16,6 +16,7 @@
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 
+#include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/pc/memory/task.hpp>
 #include <gpi-space/pc/memory/memory_buffer.hpp>
 
@@ -149,6 +150,7 @@ namespace gpi
                , const std::string & name
                , const gpi::pc::type::size_t size
                , const gpi::pc::type::flags_t flags
+               , handle_generator_t&
                );
 
         void reinit ();
@@ -230,6 +232,8 @@ namespace gpi
         DTmmgr_t m_mmgr;
         handle_descriptor_map_t m_handles;
         process_ids_t m_attached_processes;
+
+        handle_generator_t& _handle_generator;
       };
 
       typedef boost::shared_ptr<area_t> area_ptr_t;

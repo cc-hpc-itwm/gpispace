@@ -49,6 +49,7 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
                                    , "memory_area_alloc_free_test"
                                    , 2048
                                    , gpi::pc::F_NOCREATE
+                                   , gpi::pc::memory::handle_generator_t::get()
                                    );
   area.set_id (2);
 

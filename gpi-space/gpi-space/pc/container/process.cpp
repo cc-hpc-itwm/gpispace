@@ -155,7 +155,7 @@ namespace gpi
             if (register_segment.flags & F_EXCLUSIVE)
               url.set ("exclusive", "true");
 
-            memory::area_ptr_t area (memory::shm_area_t::create (boost::lexical_cast<std::string>(url)));
+            memory::area_ptr_t area (memory::shm_area_t::create (boost::lexical_cast<std::string>(url), memory::handle_generator_t::get()));
             area->set_owner (m_proc_id);
 
             gpi::pc::proto::segment::register_reply_t rpl;

@@ -25,12 +25,14 @@ namespace gpi
                              , const gpi::pc::type::flags_t flags
                              , void * dma_ptr
                              , gpi::pc::global::itopology_t & topology
+                             , handle_generator_t& handle_generator
                              )
         : area_t ( gpi_area_t::area_type
                  , creator
                  , name
                  , size
                  , flags
+                 , handle_generator
                  )
         , m_ptr (dma_ptr)
         , m_num_com_buffers (8)
@@ -520,6 +522,7 @@ namespace gpi
       area_ptr_t gpi_area_t::create
         ( std::string const &url_s
         , gpi::pc::global::itopology_t & topology
+        , handle_generator_t& handle_generator
         )
       {
         using namespace fhg::util;
@@ -540,6 +543,7 @@ namespace gpi
                                            + gpi::pc::F_GLOBAL
                                            , gpi_api.dma_ptr ()
                                            , topology
+                                           , handle_generator
                                            );
         area->m_num_com_buffers = numbuf;
         area->m_com_buffer_size = comsize;

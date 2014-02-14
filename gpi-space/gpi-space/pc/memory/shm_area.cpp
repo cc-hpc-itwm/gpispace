@@ -117,12 +117,14 @@ namespace gpi
                              , const std::string & name
                              , const gpi::pc::type::size_t user_size
                              , const gpi::pc::type::flags_t flags
+                             , handle_generator_t& handle_generator
                              )
         : area_t ( shm_area_t::area_type
                  , creator
                  , name
                  , user_size
                  , flags
+                 , handle_generator
                  )
         , m_ptr (NULL)
       {
@@ -251,7 +253,8 @@ namespace gpi
           ("get_specific_transfer_tasks not implemented on shm_area");
       }
 
-      area_ptr_t shm_area_t::create (std::string const &url_s)
+      area_ptr_t shm_area_t::create
+        (std::string const &url_s, handle_generator_t& handle_generator)
       {
         using namespace fhg::util;
         using namespace gpi::pc;
@@ -287,6 +290,7 @@ namespace gpi
                                         , url.path ()
                                         , size
                                         , flags
+                                        , handle_generator
                                         )
                         );
         return area;

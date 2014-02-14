@@ -24,6 +24,7 @@ namespace gpi
 
         static area_ptr_t create ( std::string const &url
                                  , gpi::pc::global::itopology_t & topology
+                                 , handle_generator_t&
                                  );
 
         // cleanup a file segment
@@ -34,6 +35,7 @@ namespace gpi
                    , const gpi::pc::type::size_t size        // total
                    , const gpi::pc::type::flags_t flags
                    , gpi::pc::global::itopology_t & topology
+                   , handle_generator_t&
                    );
 
         ~sfs_area_t ();

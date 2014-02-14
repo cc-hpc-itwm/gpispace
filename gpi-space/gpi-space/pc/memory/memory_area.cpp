@@ -12,8 +12,6 @@
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
 
-#include <gpi-space/pc/memory/handle_generator.hpp>
-
 namespace gpi
 {
   namespace pc
@@ -29,6 +27,7 @@ namespace gpi
                      , const std::string & name
                      , const gpi::pc::type::size_t size
                      , const gpi::pc::type::flags_t flags
+                     , handle_generator_t& handle_generator
                      )
         : m_descriptor ( GPI_PC_INVAL
                        , type
@@ -38,6 +37,7 @@ namespace gpi
                        , flags
                        )
         , m_mmgr (NULL)
+        , _handle_generator (handle_generator)
       {
         reinit ();
       }
@@ -298,7 +298,7 @@ namespace gpi
         hdl.name = name;
         hdl.creator = proc_id;
         hdl.flags = flags;
-        hdl.id = handle_generator_t::get ().next (m_descriptor.type);
+        hdl.id = _handle_generator.next (m_descriptor.type);
 
         internal_alloc (hdl);
 

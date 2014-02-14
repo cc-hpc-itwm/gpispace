@@ -73,6 +73,7 @@ BOOST_AUTO_TEST_CASE (create_sfs_segment)
                   , size
                   , gpi::pc::F_PERSISTENT
                   , topology
+                  , gpi::pc::memory::handle_generator_t::get()
                   );
   area.set_id (2);
 
@@ -118,6 +119,7 @@ BOOST_AUTO_TEST_CASE (old_segment_version)
                     , size
                     , gpi::pc::F_PERSISTENT
                     , topology
+                    , gpi::pc::memory::handle_generator_t::get()
                     );
     area.set_id (2);
   }
@@ -134,6 +136,7 @@ BOOST_AUTO_TEST_CASE (old_segment_version)
                     , size
                     , gpi::pc::F_PERSISTENT
                     , topology
+                    , gpi::pc::memory::handle_generator_t::get()
                     );
     area.set_id (2);
   }
@@ -157,6 +160,7 @@ BOOST_AUTO_TEST_CASE (too_new_segment_version)
                     , size
                     , gpi::pc::F_PERSISTENT
                     , topology
+                    , gpi::pc::memory::handle_generator_t::get()
                     );
   }
 
@@ -170,6 +174,7 @@ BOOST_AUTO_TEST_CASE (too_new_segment_version)
                                    , size
                                    , gpi::pc::F_PERSISTENT
                                    , topology
+                                   , gpi::pc::memory::handle_generator_t::get()
                                    )
                       , std::exception
                       );
@@ -189,6 +194,7 @@ BOOST_AUTO_TEST_CASE (garbage_segment_version)
                     , size
                     , gpi::pc::F_PERSISTENT
                     , topology
+                    , gpi::pc::memory::handle_generator_t::get()
                     );
   }
 
@@ -202,6 +208,7 @@ BOOST_AUTO_TEST_CASE (garbage_segment_version)
                                    , size
                                    , gpi::pc::F_PERSISTENT
                                    , topology
+                                   , gpi::pc::memory::handle_generator_t::get()
                                    )
                       , std::exception
                       );
@@ -223,6 +230,7 @@ BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
                     , size
                     , gpi::pc::F_PERSISTENT
                     , topology
+                    , gpi::pc::memory::handle_generator_t::get()
                     );
     area.set_id (2);
 
@@ -245,6 +253,7 @@ BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
                     , size
                     , gpi::pc::F_PERSISTENT
                     , topology
+                    , gpi::pc::memory::handle_generator_t::get()
                     );
     area.set_id (2);
 
@@ -279,6 +288,7 @@ BOOST_AUTO_TEST_CASE (create_big_sfs_segment)
                     , size
                     , gpi::pc::F_NONE
                     , topology
+                    , gpi::pc::memory::handle_generator_t::get()
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
   }
@@ -307,6 +317,7 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_mmap)
                     , size
                     , gpi::pc::F_NONE
                     , topology
+                    , gpi::pc::memory::handle_generator_t::get()
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
   }
@@ -335,6 +346,7 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_no_mmap)
                     , size
                     , gpi::pc::F_NOMMAP
                     , topology
+                    , gpi::pc::memory::handle_generator_t::get()
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
   }
@@ -365,6 +377,7 @@ BOOST_AUTO_TEST_CASE (test_read)
                     , gpi::pc::F_PERSISTENT
                     + gpi::pc::F_NOMMAP
                     , topology
+                    , gpi::pc::memory::handle_generator_t::get()
                     );
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
     area.set_id (2);
@@ -410,6 +423,7 @@ BOOST_AUTO_TEST_CASE (test_already_open)
                   , gpi::pc::F_PERSISTENT
                   + gpi::pc::F_NOMMAP
                   , topology
+                  , gpi::pc::memory::handle_generator_t::get()
                   );
   BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
   area.set_id (2);
@@ -420,6 +434,7 @@ BOOST_AUTO_TEST_CASE (test_already_open)
                                    , gpi::pc::F_PERSISTENT
                                    + gpi::pc::F_NOMMAP
                                    , topology
+                                   , gpi::pc::memory::handle_generator_t::get()
                                    )
                       , std::exception
                       );

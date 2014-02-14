@@ -24,6 +24,7 @@ namespace gpi
 
         static area_ptr_t create ( std::string const &url
                                  , gpi::pc::global::itopology_t & topology
+                                 , handle_generator_t&
                                  );
 
       protected:
@@ -33,6 +34,7 @@ namespace gpi
                    , const gpi::pc::type::flags_t flags
                    , void * dma_ptr
                    , gpi::pc::global::itopology_t & topology
+                   , handle_generator_t&
                    );
 
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;

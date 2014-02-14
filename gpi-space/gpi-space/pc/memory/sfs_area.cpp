@@ -63,12 +63,14 @@ namespace gpi
                              , const gpi::pc::type::size_t size        // total
                              , const gpi::pc::type::flags_t flags
                              , gpi::pc::global::itopology_t & topology
+                             , handle_generator_t& handle_generator
                              )
         : area_t ( sfs_area_t::area_type
                  , creator
                  , path.string ()
                  , size
                  , flags
+                 , handle_generator
                  )
         , m_ptr (0)
         , m_fd (-1)
@@ -625,6 +627,7 @@ namespace gpi
 
       area_ptr_t sfs_area_t::create ( std::string const &url_s
                                     , gpi::pc::global::itopology_t & topology
+                                    , handle_generator_t& handle_generator
                                     )
       {
         using namespace fhg::util;
@@ -662,6 +665,7 @@ namespace gpi
                                         , size
                                         , flags | F_GLOBAL
                                         , topology
+                                        , handle_generator
                                         )
                         );
         return area;
