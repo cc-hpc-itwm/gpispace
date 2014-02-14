@@ -123,19 +123,15 @@ then
     exit 1
 fi
 
-if [ ! -x "${dir}/bin/gspc" ]
-then
-    echo >&2 "make: '${dir}' does not contain a valid GPISpace version"
-    exit 1
-fi
-if [ -z "$version" ]
-then
-    version=$("${dir}/bin/gspc" --dumpversion)
-fi
-
 if [ ! -e "${dir}/etc/sdpa" ]
 then
     echo >&2 "make: '${dir}' does not contain a valid SDPA directory"
+    exit 1
+fi
+
+if [ -z "${version}" ]
+then
+    echo >&2 "make: missing version"
     exit 1
 fi
 
