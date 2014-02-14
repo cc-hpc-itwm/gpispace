@@ -16,10 +16,10 @@ namespace sdpa
 {
   namespace daemon
   {
-    class TestAgentAllActSubmitted : public Agent
+    class TestAgentWaitAllSubmitted : public Agent
     {
     public:
-      TestAgentAllActSubmitted (const std::string& name)
+      TestAgentWaitAllSubmitted (const std::string& name)
         : Agent (name, "127.0.0.1", sdpa::master_info_list_t(), 0, boost::none)
           , _n_recv_tasks(0)
       {}
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE (agent_requests_workflow_cancelation_after_all_act_submitte
     (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
 
   const we::type::activity_t activity (workflow);
-  sdpa::daemon::TestAgentAllActSubmitted agent ("agent_0");
+  sdpa::daemon::TestAgentWaitAllSubmitted agent ("agent_0");
 
   sdpa::job_id_t job_id(fhg::util::random_string());
   agent.workflowEngine()->submit (job_id, activity);
