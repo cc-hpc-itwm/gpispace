@@ -11,28 +11,15 @@
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 
-struct SetupLogging
-{
-  SetupLogging()
-  {
-    FHGLOG_SETUP();
-    BOOST_TEST_MESSAGE ("setup logging");
-  }
-};
-
-BOOST_GLOBAL_FIXTURE( SetupLogging );
-
 struct F
 {
   F()
   {
-    BOOST_TEST_MESSAGE ("fixture setup");
     gpi::pc::memory::handle_generator_t::create (42);
   }
 
   ~F ()
   {
-    BOOST_TEST_MESSAGE ("fixture teardown");
     gpi::pc::memory::handle_generator_t::destroy ();
   }
 };
