@@ -45,9 +45,8 @@ namespace gpi
                            , gpi::pc::type::size_t num_queues
                            )
         : m_ident (ident)
+        , m_transfer_mgr (num_queues)
       {
-        m_transfer_mgr.start (num_queues);
-
         handle_generator_t::create (m_ident);
 
         handle_generator_t::get ().initialize_counter

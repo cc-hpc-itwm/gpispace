@@ -21,8 +21,7 @@ namespace gpi
         }
       }
 
-      void
-      transfer_manager_t::start (const std::size_t number_of_queues)
+      transfer_manager_t::transfer_manager_t (const std::size_t number_of_queues)
       {
         for (std::size_t i(0); i < number_of_queues; ++i)
         {
