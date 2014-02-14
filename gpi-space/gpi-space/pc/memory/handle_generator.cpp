@@ -41,34 +41,12 @@ namespace gpi
         }
       }
 
-      boost::shared_ptr<handle_generator_t> handle_generator_t::instance;
-
       handle_generator_t::handle_generator_t(const gpi::pc::type::size_t identifier)
         : m_node_identifier (identifier)
       {
         for (size_t i = 0; i < (1<< gpi::pc::type::handle_t::typec_bits); ++i)
         {
           m_counter.push_back(counter_ptr(new gpi::pc::type::counter_t()));
-        }
-      }
-
-      void handle_generator_t::create (const gpi::pc::type::size_t identifier)
-      {
-        assert (! instance);
-        instance.reset (new handle_generator_t (identifier));
-      }
-
-      handle_generator_t & handle_generator_t::get ()
-      {
-        assert (instance);
-        return *instance;
-      }
-
-      void handle_generator_t::destroy ()
-      {
-        if (instance)
-        {
-          instance.reset ();
         }
       }
 

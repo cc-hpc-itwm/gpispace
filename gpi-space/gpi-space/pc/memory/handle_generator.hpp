@@ -23,9 +23,6 @@ namespace gpi
 
             usually the rank can be used
          */
-        static void create (const gpi::pc::type::size_t node_identifier);
-        static handle_generator_t & get ();
-        static void destroy ();
 
         explicit
         handle_generator_t (const gpi::pc::type::size_t identifier);
