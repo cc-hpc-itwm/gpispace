@@ -50,15 +50,6 @@ set (gspc_src
   rif/manager.cpp
   rif/null_process_handler.cpp
   rif/supervisor.cpp
-
-  ctl/exit_code.cpp
-  ctl/eval.cpp
-  ctl/config.cpp
-  ctl/config_cmd.cpp
-  ctl/system.cpp
-  ctl/session.cpp
-
-  ctl/log_cmd.cpp
 )
 
 add_library (libgspc        STATIC ${gspc_src})

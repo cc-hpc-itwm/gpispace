@@ -49,19 +49,6 @@ install (TARGETS gspcnetd gspcnetc gspcnet-ping gspcnet-req
   COMPONENT runtime
 )
 
-add_executable (gspc gspc.cpp)
-target_link_libraries (gspc
-  libgspc
-  ${UTIL_LIBRARIES}
-  ${FhgLog_LIBRARY}
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_REGEX_LIBRARY}
-  ${Boost_THREAD_LIBRARY}
-  ${Boost_SIGNALS_LIBRARY}
-  ${Boost_SERIALIZATION_LIBRARY} # fhglog
-  ${Boost_SYSTEM_LIBRARY}
-)
-
 # TODO: activate when full replacement for 'gspc' script is working
 #install (TARGETS gspc
 #  DESTINATION bin
@@ -82,27 +69,6 @@ target_link_libraries (gspc-kvs
   ${Boost_SERIALIZATION_LIBRARY} # fhglog
   ${Boost_SYSTEM_LIBRARY}
   ${CMAKE_DL_LIBS}
-)
-
-add_executable (gspcd gspcd.cpp)
-target_link_libraries (gspcd
-  libgspc
-  fhg-util
-  pnet
-  ${UTIL_LIBRARIES}
-  ${FhgLog_LIBRARY}
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_REGEX_LIBRARY}
-  ${Boost_THREAD_LIBRARY}
-  ${Boost_SIGNALS_LIBRARY}
-  ${Boost_SERIALIZATION_LIBRARY} # fhglog
-  ${Boost_SYSTEM_LIBRARY}
-  ${CMAKE_DL_LIBS}
-)
-
-install (TARGETS gspcd gspc-kvs
-  DESTINATION bin
-  COMPONENT runtime
 )
 
 include_directories (${FhgKernel_INCLUDE_DIR})
