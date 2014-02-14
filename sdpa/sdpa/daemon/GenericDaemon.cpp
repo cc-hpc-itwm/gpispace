@@ -168,8 +168,6 @@ GenericDaemon::~GenericDaemon()
   delete ptr_workflow_engine_;
 
   _network_strategy.reset();
-
-	DLLOG (TRACE, _logger, "Succesfully shut down  "<<name()<<" ...");
 }
 
 const std::string& GenericDaemon::name() const
