@@ -11,6 +11,10 @@
 
 namespace gpi
 {
+  namespace api
+  {
+    class gpi_api_t;
+  }
   namespace pc
   {
     namespace memory
@@ -25,6 +29,7 @@ namespace gpi
         static area_ptr_t create ( std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
+                                 , api::gpi_api_t& gpi_api
                                  );
 
       protected:
@@ -35,6 +40,7 @@ namespace gpi
                    , void * dma_ptr
                    , gpi::pc::global::itopology_t & topology
                    , handle_generator_t&
+                   , api::gpi_api_t&
                    );
 
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
@@ -95,6 +101,8 @@ namespace gpi
         gpi::pc::type::size_t m_com_buffer_size;
 
         gpi::pc::global::itopology_t & _topology;
+
+        api::gpi_api_t& _gpi_api;
       };
     }
   }

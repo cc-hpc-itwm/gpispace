@@ -35,7 +35,7 @@ namespace gpi
         fhg::util::url_t url (url_s);
 
         return
-          ( url.type() == "gpi" ? gpi_area_t::create (url_s, topology, handle_generator)
+          ( url.type() == "gpi" ? gpi_area_t::create (url_s, topology, handle_generator, api::gpi_api_t::get())
           : url.type() == "sfs" ? sfs_area_t::create (url_s, topology, handle_generator)
           : url.type() == "shm" ? shm_area_t::create (url_s, handle_generator)
           : throw std::runtime_error

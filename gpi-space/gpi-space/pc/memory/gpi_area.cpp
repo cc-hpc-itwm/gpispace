@@ -26,6 +26,7 @@ namespace gpi
                              , void * dma_ptr
                              , gpi::pc::global::itopology_t & topology
                              , handle_generator_t& handle_generator
+                             , api::gpi_api_t& gpi_api
                              )
         : area_t ( gpi_area_t::area_type
                  , creator
@@ -38,10 +39,11 @@ namespace gpi
         , m_num_com_buffers (8)
         , m_com_buffer_size (4* (1<<20))
         , _topology (topology)
+        , _gpi_api (gpi_api)
       {
         // total memory size is required for boundary checks
-        m_total_memsize = gpi::api::gpi_api_t::get().number_of_nodes () * size;
-        m_min_local_offset = gpi::api::gpi_api_t::get().rank() * size;
+        m_total_memsize = _gpi_api.number_of_nodes () * size;
+        m_min_local_offset = _gpi_api.rank() * size;
         m_max_local_offset = m_min_local_offset + size - 1;
       }
 
@@ -99,7 +101,7 @@ namespace gpi
                                 , const gpi::pc::type::offset_t end
                                 ) const
       {
-        gpi::pc::type::id_t     my_rank = gpi::api::gpi_api_t::get ().rank ();
+        gpi::pc::type::id_t     my_rank = _gpi_api.rank ();
 
         if (not gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
           my_rank = 0;
@@ -124,8 +126,7 @@ namespace gpi
         if (gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL))
         {
           // static distribution scheme with overhead
-          const size_t num_nodes =
-            gpi::api::gpi_api_t::get ().number_of_nodes ();
+          const size_t num_nodes = _gpi_api.number_of_nodes ();
           size_t overhead = (0 != (size % num_nodes)) ? 1 : 0;
           return (size / num_nodes + overhead);
         }
@@ -175,6 +176,7 @@ namespace gpi
                          , const gpi::pc::type::size_t dst_offset
                          , const gpi::pc::type::size_t amount
                          , const gpi::pc::type::size_t queue
+                         , api::gpi_api_t& gpi_api
                          )
         {
           do_rdma( dst_hdl.offset + dst_offset
@@ -182,7 +184,7 @@ namespace gpi
                  , src_hdl.local_size
                  , amount
                  , queue
-                 , boost::bind ( &api::gpi_api_t::read_dma, &api::gpi_api_t::get()
+                 , boost::bind ( &api::gpi_api_t::read_dma, &gpi_api
                                , _1, _2, _3, _4, _5
                                )
                  );
@@ -195,6 +197,7 @@ namespace gpi
                           , const gpi::pc::type::size_t dst_offset
                           , const gpi::pc::type::size_t amount
                           , const gpi::pc::type::size_t queue
+                          , api::gpi_api_t& gpi_api
                           )
         {
           do_rdma( src_hdl.offset + src_offset
@@ -202,7 +205,7 @@ namespace gpi
                  , dst_hdl.local_size
                  , amount
                  , queue
-                 , boost::bind ( &api::gpi_api_t::write_dma, &api::gpi_api_t::get()
+                 , boost::bind ( &api::gpi_api_t::write_dma, &gpi_api
                                , _1, _2, _3, _4, _5
                                )
                  );
@@ -216,10 +219,9 @@ namespace gpi
                      , gpi::pc::type::size_t amount
                      , const gpi::pc::type::size_t queue
                      , gpi_area_t::handle_pool_t & handle_pool
+                     , api::gpi_api_t& gpi_api
                      )
         {
-          gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
-
           handle_buffer_t buf (handle_pool.get());
 
           gpi::pc::type::size_t remaining = amount;
@@ -227,7 +229,7 @@ namespace gpi
           {
             buf.used (0);
 
-            api.wait_dma (queue); // make sure previous iteration is finished
+            gpi_api.wait_dma (queue); // make sure previous iteration is finished
             const gpi::pc::type::size_t to_send =
               std::min (remaining, buf.size ());
 
@@ -249,6 +251,7 @@ namespace gpi
                          , dst_loc.offset
                          , buf.used ()
                          , queue
+                         , gpi_api
                          );
 
             src_loc.offset += buf.used ();
@@ -267,10 +270,9 @@ namespace gpi
                      , gpi::pc::type::size_t amount
                      , const gpi::pc::type::size_t queue
                      , gpi_area_t::handle_pool_t & handle_pool
+                     , api::gpi_api_t& gpi_api
                      )
         {
-          gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
-
           handle_buffer_t buf (handle_pool.get());
 
           gpi::pc::type::size_t remaining = amount;
@@ -287,8 +289,9 @@ namespace gpi
                         , 0
                         , to_recv
                         , queue
+                        , gpi_api
                         );
-            api.wait_dma (queue);
+            gpi_api.wait_dma (queue);
             buf.used (to_recv);
 
             const gpi::pc::type::size_t written_bytes =
@@ -341,6 +344,7 @@ namespace gpi
                           , dst.offset
                           , amount
                           , queue
+                          , boost::ref (_gpi_api)
                           )
             ));
         }
@@ -363,6 +367,7 @@ namespace gpi
                           , dst.offset
                           , amount
                           , queue
+                          , boost::ref (_gpi_api)
                           )
             ));
         }
@@ -403,6 +408,7 @@ namespace gpi
                         , amount
                         , queue
                         , boost::ref (m_com_handles)
+                        , boost::ref (_gpi_api)
                         )
           ));
         return 0;
@@ -434,6 +440,7 @@ namespace gpi
                         , amount
                         , queue
                         , boost::ref (m_com_handles)
+                        , boost::ref (_gpi_api)
                         )
           ));
         return 0;
@@ -443,6 +450,7 @@ namespace gpi
         ( std::string const &url_s
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
+        , api::gpi_api_t& gpi_api
         )
       {
         using namespace fhg::util;
@@ -455,7 +463,6 @@ namespace gpi
         type::size_t numbuf =
           boost::lexical_cast<type::size_t>(url.get ("buffers").get_value_or ("8"));
 
-        gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
         gpi_area_t * area = new gpi_area_t ( GPI_PC_INVAL
                                            , "GPI"
                                            , gpi_api.memory_size ()
@@ -464,6 +471,7 @@ namespace gpi
                                            , gpi_api.dma_ptr ()
                                            , topology
                                            , handle_generator
+                                           , gpi_api
                                            );
         area->m_num_com_buffers = numbuf;
         area->m_com_buffer_size = comsize;
