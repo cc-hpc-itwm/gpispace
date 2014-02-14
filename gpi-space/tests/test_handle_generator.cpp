@@ -6,16 +6,6 @@
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 
-struct SetupLogging
-{
-  SetupLogging()
-  {
-    FHGLOG_SETUP();
-  }
-};
-
-BOOST_GLOBAL_FIXTURE( SetupLogging );
-
 struct F
 {
   F()
