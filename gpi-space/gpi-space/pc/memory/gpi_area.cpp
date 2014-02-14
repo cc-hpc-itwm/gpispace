@@ -21,9 +21,7 @@ namespace gpi
     {
       gpi_area_t::gpi_area_t ( const gpi::pc::type::process_id_t creator
                              , const std::string & name
-                             , const gpi::pc::type::size_t size
                              , const gpi::pc::type::flags_t flags
-                             , void * dma_ptr
                              , gpi::pc::global::itopology_t & topology
                              , handle_generator_t& handle_generator
                              , api::gpi_api_t& gpi_api
@@ -31,20 +29,20 @@ namespace gpi
         : area_t ( gpi_area_t::area_type
                  , creator
                  , name
-                 , size
+                 , gpi_api.memory_size()
                  , flags
                  , handle_generator
                  )
-        , m_ptr (dma_ptr)
+        , m_ptr (gpi_api.dma_ptr())
         , m_num_com_buffers (8)
         , m_com_buffer_size (4* (1<<20))
         , _topology (topology)
         , _gpi_api (gpi_api)
       {
         // total memory size is required for boundary checks
-        m_total_memsize = _gpi_api.number_of_nodes () * size;
-        m_min_local_offset = _gpi_api.rank() * size;
-        m_max_local_offset = m_min_local_offset + size - 1;
+        m_total_memsize = _gpi_api.number_of_nodes () * gpi_api.memory_size();
+        m_min_local_offset = _gpi_api.rank() * gpi_api.memory_size();
+        m_max_local_offset = m_min_local_offset + gpi_api.memory_size() - 1;
       }
 
       Arena_t
@@ -465,10 +463,8 @@ namespace gpi
 
         gpi_area_t * area = new gpi_area_t ( GPI_PC_INVAL
                                            , "GPI"
-                                           , gpi_api.memory_size ()
                                            , gpi::pc::F_PERSISTENT
                                            + gpi::pc::F_GLOBAL
-                                           , gpi_api.dma_ptr ()
                                            , topology
                                            , handle_generator
                                            , gpi_api

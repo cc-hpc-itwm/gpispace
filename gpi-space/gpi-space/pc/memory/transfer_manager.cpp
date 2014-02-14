@@ -12,10 +12,10 @@ namespace gpi
   {
     namespace memory
     {
-      transfer_manager_t::transfer_manager_t
-        (const std::size_t number_of_queues, api::gpi_api_t& gpi_api)
+      transfer_manager_t::transfer_manager_t (api::gpi_api_t& gpi_api)
         : _gpi_api (gpi_api)
       {
+        const std::size_t number_of_queues (gpi_api.number_of_queues());
         for (std::size_t i(0); i < number_of_queues; ++i)
         {
           m_queues.push_back

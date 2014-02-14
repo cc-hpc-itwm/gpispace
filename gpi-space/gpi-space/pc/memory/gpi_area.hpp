@@ -35,9 +35,7 @@ namespace gpi
       protected:
         gpi_area_t ( const gpi::pc::type::process_id_t creator
                    , const std::string & name
-                   , const gpi::pc::type::size_t per_node_size
                    , const gpi::pc::type::flags_t flags
-                   , void * dma_ptr
                    , gpi::pc::global::itopology_t & topology
                    , handle_generator_t&
                    , api::gpi_api_t&

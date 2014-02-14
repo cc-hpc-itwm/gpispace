@@ -45,14 +45,10 @@ namespace gpi
       }
       }
 
-      manager_t::manager_t ( gpi::pc::type::id_t ident
-                           , gpi::pc::type::size_t num_queues
-                           , api::gpi_api_t& gpi_api
-                           )
-        : m_ident (ident)
-        , _gpi_api (gpi_api)
-        , m_transfer_mgr (num_queues, gpi_api)
-        , _handle_generator (m_ident)
+      manager_t::manager_t (api::gpi_api_t& gpi_api)
+        : _gpi_api (gpi_api)
+        , m_transfer_mgr (gpi_api)
+        , _handle_generator (gpi_api.rank())
       {
         _handle_generator.initialize_counter
           (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
