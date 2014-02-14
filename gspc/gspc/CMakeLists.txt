@@ -36,11 +36,6 @@ set (gspc_src
 
   net/auth/cookie.cpp
   net/auth/simple.cpp
-
-  kvs/api.cpp
-  kvs/net_frontend.cpp
-  kvs/net_service.cpp
-
 )
 
 add_library (libgspc        STATIC ${gspc_src})

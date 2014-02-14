@@ -95,35 +95,3 @@ fhg_add_test(io.cpp
                  ${CMAKE_THREAD_LIBS_INIT}
   DESCRIPTION "GSPCNet - test the global io"
 )
-
-#### KVS related tests
-
-fhg_add_test(kvs_impl.cpp
-  BOOST_UNIT_TEST
-  PROJECT gspc
-  LINK_LIBRARIES libgspc
-                 fhg-util
-                 we-dev
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SIGNALS_LIBRARY}
-                 ${Boost_DATE_TIME_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-                 ${CMAKE_DL_LIBS}
-  DESCRIPTION "GSPCKvs - KVS implementation tests"
-)
-
-fhg_add_test(kvs_net.cpp
-  BOOST_UNIT_TEST
-  PROJECT gspc
-  LINK_LIBRARIES libgspc
-                 fhg-util
-                 we-dev
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SIGNALS_LIBRARY}
-                 ${Boost_DATE_TIME_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-                 ${CMAKE_DL_LIBS}
-  DESCRIPTION "GSPCKvs - KVS network tests"
-)
