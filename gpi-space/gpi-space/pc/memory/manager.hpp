@@ -29,11 +29,10 @@ namespace gpi
 
         static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
 
-        manager_t ();
+        manager_t ( gpi::pc::type::id_t ident
+                  , gpi::pc::type::size_t num_queues
+                  );
         ~manager_t ();
-
-        void
-        start (gpi::pc::type::id_t ident, gpi::pc::type::size_t num_queues);
 
         void clear ();
 

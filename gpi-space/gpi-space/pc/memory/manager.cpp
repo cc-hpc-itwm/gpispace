@@ -41,9 +41,17 @@ namespace gpi
       }
       }
 
-      manager_t::manager_t ()
-        : m_ident (0)
+      manager_t::manager_t ( gpi::pc::type::id_t ident
+                           , gpi::pc::type::size_t num_queues
+                           )
+        : m_ident (ident)
       {
+        m_transfer_mgr.start (num_queues);
+
+        handle_generator_t::create (m_ident);
+
+        handle_generator_t::get ().initialize_counter
+          (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
       }
 
       manager_t::~manager_t ()
@@ -60,20 +68,6 @@ namespace gpi
               );
         }
         handle_generator_t::destroy ();
-      }
-
-      void
-      manager_t::start ( gpi::pc::type::id_t ident
-                       , gpi::pc::type::size_t num_queues
-                       )
-      {
-        m_ident = ident;
-        m_transfer_mgr.start (num_queues);
-
-        handle_generator_t::create (m_ident);
-
-        handle_generator_t::get ().initialize_counter
-          (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
       }
 
       void

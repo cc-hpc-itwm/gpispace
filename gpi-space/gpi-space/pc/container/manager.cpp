@@ -261,7 +261,7 @@ namespace gpi
         , m_socket (-1)
         , m_stopping (false)
         , m_process_counter (0)
-        , _memory_manager()
+        , _memory_manager (gpi_api.rank(), gpi_api.number_of_queues())
         , _topology ( gpi_api.rank()
                     , global::topology_t::any_addr()
                     , global::topology_t::any_port() // topology_t::port_t("10821")
@@ -280,9 +280,6 @@ namespace gpi
         {
           _topology.establish();
         }
-        _memory_manager.start ( gpi_api.rank ()
-                                        , gpi_api.number_of_queues ()
-                                        );
 
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
