@@ -234,6 +234,7 @@ namespace gpi
                     , fd
                     , _memory_manager
                     , _topology
+                    , _gpi_api
                     )
                   )
                 );
@@ -261,6 +262,7 @@ namespace gpi
         , m_socket (-1)
         , m_stopping (false)
         , m_process_counter (0)
+        , _gpi_api (gpi_api)
         , _memory_manager (gpi_api)
         , _topology ( gpi_api.rank()
                     , global::topology_t::any_addr()

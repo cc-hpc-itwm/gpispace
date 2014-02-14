@@ -63,6 +63,7 @@ namespace gpi
                                   );
         void detach_process (const gpi::pc::type::process_id_t);
 
+        gpi::api::gpi_api_t& _gpi_api;
         memory::manager_t _memory_manager;
         global::topology_t _topology;
       };

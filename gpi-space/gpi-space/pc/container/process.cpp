@@ -46,10 +46,12 @@ namespace gpi
           handle_message_t ( gpi::pc::type::process_id_t const& proc_id
                            , memory::manager_t& memory_manager
                            , global::topology_t& topology
+                           , gpi::api::gpi_api_t& gpi_api
                            )
             : m_proc_id (proc_id)
             , _memory_manager (memory_manager)
             , _topology (topology)
+            , _gpi_api (gpi_api)
           {}
 
           /**********************************************/
@@ -239,12 +241,10 @@ namespace gpi
             operator () (const gpi::pc::proto::control::info_t &) const
           {
             gpi::pc::proto::control::info_reply_t rpl;
-            gpi::api::gpi_api_t & gpi_api (gpi::api::gpi_api_t::get());
-
-            rpl.info.rank = gpi_api.rank();
-            rpl.info.nodes = gpi_api.number_of_nodes();
-            rpl.info.queues = gpi_api.number_of_queues();
-            rpl.info.queue_depth = gpi_api.queue_depth();
+            rpl.info.rank = _gpi_api.rank();
+            rpl.info.nodes = _gpi_api.number_of_nodes();
+            rpl.info.queues = _gpi_api.number_of_queues();
+            rpl.info.queue_depth = _gpi_api.queue_depth();
             return gpi::pc::proto::control::message_t (rpl);
           }
 
@@ -280,6 +280,7 @@ namespace gpi
           gpi::pc::type::process_id_t const& m_proc_id;
           memory::manager_t& _memory_manager;
           global::topology_t& _topology;
+          gpi::api::gpi_api_t& _gpi_api;
         };
 
         gpi::pc::proto::message_t handle_message
@@ -287,12 +288,13 @@ namespace gpi
           , gpi::pc::proto::message_t const& request
           , gpi::pc::memory::manager_t& memory_manager
           , global::topology_t& topology
+          , gpi::api::gpi_api_t& gpi_api
           )
         {
           try
           {
             return boost::apply_visitor
-              (handle_message_t (id, memory_manager, topology), request);
+              (handle_message_t (id, memory_manager, topology, gpi_api), request);
           }
           catch (std::exception const& ex)
           {
@@ -432,7 +434,7 @@ namespace gpi
               break;
             }
 
-            if (send (fd, handle_message (m_id, request, _memory_manager, _topology)) <= 0)
+            if (send (fd, handle_message (m_id, request, _memory_manager, _topology, _gpi_api)) <= 0)
             {
               break;
             }

@@ -26,12 +26,14 @@ namespace gpi
           , const int socket
           , memory::manager_t& memory_manager
           , global::topology_t& topology
+          , gpi::api::gpi_api_t& gpi_api
           )
           : m_handle_process_error (handle_process_error)
           , m_id (id)
           , m_socket (socket)
           , _memory_manager (memory_manager)
           , _topology (topology)
+          , _gpi_api (gpi_api)
           , m_reader
             (boost::bind (&process_t::reader_thread_main, this, m_socket))
         {}
@@ -66,6 +68,7 @@ namespace gpi
         int const m_socket;
         memory::manager_t& _memory_manager;
         global::topology_t& _topology;
+        gpi::api::gpi_api_t& _gpi_api;
         boost::thread m_reader;
       };
     }
