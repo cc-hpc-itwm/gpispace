@@ -31,6 +31,7 @@ namespace gpi
 
         manager_t ( gpi::pc::type::id_t ident
                   , gpi::pc::type::size_t num_queues
+                  , api::gpi_api_t& gpi_api
                   );
         ~manager_t ();
 
@@ -146,6 +147,7 @@ namespace gpi
         gpi::pc::type::id_t m_ident;
         area_map_t m_areas;
         handle_to_segment_t m_handle_to_segment;
+        api::gpi_api_t& _gpi_api;
         transfer_manager_t m_transfer_mgr;
         handle_generator_t _handle_generator;
       };
