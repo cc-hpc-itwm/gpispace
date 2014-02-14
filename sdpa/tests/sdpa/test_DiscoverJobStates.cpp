@@ -309,7 +309,6 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
   sdpa::daemon::Agent agent ( "agent_0",
                               "127.0.0.1",  kvs_host(), kvs_port(),
                               sdpa::master_info_list_t (1, sdpa::MasterInfo ("orchestrator_0")),
