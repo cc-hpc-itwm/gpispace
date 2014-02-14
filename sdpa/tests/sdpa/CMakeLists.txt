@@ -312,17 +312,6 @@ fhg_add_test (test_TransformFile.cpp
           workflow_transform_file
   )
 
-fhg_add_test (test_InvalidNbWorkersReq.cpp
-  PROJECT sdpa
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
-                 fhg-plugin
-                 ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_coallocation_bad_test
-)
-
 fhg_add_test (test_DiscoverJobStates.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
