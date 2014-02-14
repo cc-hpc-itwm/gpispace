@@ -11,23 +11,10 @@
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 
-struct F
-{
-  F()
-  {
-    gpi::pc::memory::handle_generator_t::create (42);
-  }
-
-  ~F ()
-  {
-    gpi::pc::memory::handle_generator_t::destroy ();
-  }
-};
-
-BOOST_FIXTURE_TEST_SUITE( suite, F )
-
 BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
 {
+  gpi::pc::memory::handle_generator_t handle_generator (42);
+
   gpi::pc::segment::segment_t segm ( "memory_area_alloc_free_test"
                                    , 2048
                                    );
@@ -36,7 +23,7 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
                                    , "memory_area_alloc_free_test"
                                    , 2048
                                    , gpi::pc::F_NOCREATE
-                                   , gpi::pc::memory::handle_generator_t::get()
+                                   , handle_generator
                                    );
   area.set_id (2);
 
@@ -67,5 +54,3 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   BOOST_CHECK_EQUAL (2048u, area.descriptor().local_size);
   BOOST_CHECK_EQUAL (2048u, area.descriptor().avail);
 }
-
-BOOST_AUTO_TEST_SUITE_END()
