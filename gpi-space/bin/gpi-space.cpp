@@ -798,6 +798,9 @@ static void signal_handler (int sig)
       LOG(ERROR, "startup failed");
       exit (1);
     }
+    else
+    {
+    }
     break;
   case SIGTERM:
     close(0);

@@ -274,6 +274,9 @@ int WFEImpl::execute ( std::string const &job_id
   {
     MLOG(TRACE, "task finished: " << task.id);
   }
+  else if (wfe_task_t::CANCELED == task.state)
+  {
+  }
   else // if (wfe_task_t::FAILED == task.state)
   {
     MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
