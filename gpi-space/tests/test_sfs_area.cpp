@@ -17,9 +17,7 @@
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include "dummy_topology.hpp"
 
-namespace fs = boost::filesystem;
-
-static fs::path path_to_shared_file;
+static boost::filesystem::path path_to_shared_file;
 
 struct setup_and_cleanup_shared_file
 {
