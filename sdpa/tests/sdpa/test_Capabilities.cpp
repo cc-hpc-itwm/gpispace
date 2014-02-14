@@ -31,7 +31,7 @@ namespace sdpa
     {
     public:
       TestAgent (const std::string& name)
-        : Agent (name, "127.0.0.1", sdpa::master_info_list_t(), 0, boost::none)
+        : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(), boost::none)
           , _n_recv_tasks_A(0), _n_recv_tasks_B(0)
       {}
 
