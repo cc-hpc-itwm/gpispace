@@ -36,6 +36,8 @@ namespace gpi
 
         void clear ();
 
+        handle_generator_t& handle_generator();
+
         gpi::pc::type::segment_id_t
         register_memory( const gpi::pc::type::process_id_t creator
                        , area_ptr const &area
@@ -145,6 +147,7 @@ namespace gpi
         area_map_t m_areas;
         handle_to_segment_t m_handle_to_segment;
         transfer_manager_t m_transfer_mgr;
+        handle_generator_t _handle_generator;
       };
     }
   }

@@ -48,10 +48,9 @@ namespace gpi
                            )
         : m_ident (ident)
         , m_transfer_mgr (num_queues)
+        , _handle_generator (m_ident)
       {
-        handle_generator_t::create (m_ident);
-
-        handle_generator_t::get ().initialize_counter
+        _handle_generator.initialize_counter
           (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
       }
 
@@ -68,7 +67,6 @@ namespace gpi
               , "could not clear memory manager: " << ex.what()
               );
         }
-        handle_generator_t::destroy ();
       }
 
       void
@@ -84,6 +82,11 @@ namespace gpi
         {
           unregister_memory (m_areas.begin()->first);
         }
+      }
+
+      handle_generator_t& manager_t::handle_generator()
+      {
+        return _handle_generator;
       }
 
       gpi::pc::type::segment_id_t
@@ -241,8 +244,8 @@ namespace gpi
 
         if (area->get_id () == (gpi::pc::type::id_t (-1)))
         {
-          area->set_id (handle_generator_t::get ().next
-                       (gpi::pc::type::segment::SEG_INVAL));
+          area->set_id
+            (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
         }
         else
         {
@@ -463,7 +466,7 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (url, topology, handle_generator_t::get()));
+        area_ptr_t area (create_area (url, topology, _handle_generator));
         area->set_owner (0);
         area->set_id (seg_id);
         add_area (area);
@@ -477,7 +480,7 @@ namespace gpi
                             , global::topology_t& topology
                             )
       {
-        area_ptr_t area (create_area (url_s, topology, handle_generator_t::get()));
+        area_ptr_t area (create_area (url_s, topology, _handle_generator));
         area->set_owner (proc_id);
         if (seg_id > 0)
           area->set_id (seg_id);

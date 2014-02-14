@@ -27,6 +27,9 @@ namespace gpi
         static handle_generator_t & get ();
         static void destroy ();
 
+        explicit
+        handle_generator_t (const gpi::pc::type::size_t identifier);
+
         /*
           generate a new handle for the given segment
 
@@ -49,9 +52,6 @@ namespace gpi
                                 );
       private:
         typedef boost::shared_ptr<gpi::pc::type::counter_t> counter_ptr;
-
-        explicit
-        handle_generator_t (const gpi::pc::type::size_t identifier);
 
         static boost::shared_ptr<handle_generator_t> instance;
         gpi::pc::type::size_t m_node_identifier;
