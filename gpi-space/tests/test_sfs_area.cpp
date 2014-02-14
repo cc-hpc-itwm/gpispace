@@ -42,13 +42,11 @@ struct F
   {
     path_to_shared_file =
       "sfs_area." + boost::lexical_cast<std::string> (getpid ());
-    BOOST_TEST_MESSAGE ("fixture setup");
   }
 
   ~F ()
   {
     gpi::pc::memory::sfs_area_t::cleanup (path_to_shared_file);
-    BOOST_TEST_MESSAGE ("fixture teardown");
   }
 };
 
