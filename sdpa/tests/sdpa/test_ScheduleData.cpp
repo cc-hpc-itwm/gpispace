@@ -18,17 +18,13 @@ namespace sdpa
     public:
       TestAgent ( const std::string& name
                 , const std::string& url
-                , const sdpa::master_info_list_t arrMasterNames
-                , int rank
                 )
-        : Agent (name, url, arrMasterNames, rank, boost::none)
+        : Agent (name, url,  kvs_host(), kvs_port(), sdpa::master_info_list_t(), boost::none)
           , _n_submitted_activities(0)
       {}
 
-      void submit( const we::layer::id_type & act_id, const we::type::activity_t& activity)
+      void submit( const we::layer::id_type&, const we::type::activity_t& activity)
       {
-        DMLOG(INFO, "The layer submitted the activity "<<act_id);
-
         boost::optional<unsigned long>
           num_workers( activity.transition().get_schedule_data<unsigned long> (activity.input(), "num_worker")) ;
 
@@ -74,8 +70,7 @@ BOOST_AUTO_TEST_CASE (num_workers_required_is_0)
 
   const we::type::activity_t activity (workflow);
 
-  sdpa::master_info_list_t listMasterInfo;
-  sdpa::daemon::TestAgent agent ("agent_0", "127.0.0.1", listMasterInfo, 0);
+  sdpa::daemon::TestAgent agent ("agent_0", "127.0.0.1");
 
   agent.workflowEngine()->submit ("test_job", activity);
   agent.wait_all_submitted();
@@ -94,7 +89,7 @@ BOOST_AUTO_TEST_CASE (valid_num_workers_required)
   const we::type::activity_t activity (workflow);
 
   sdpa::master_info_list_t listMasterInfo;
-  sdpa::daemon::TestAgent agent ("agent_0", "127.0.0.1", listMasterInfo, 0);
+  sdpa::daemon::TestAgent agent ("agent_0", "127.0.0.1");
 
   agent.workflowEngine()->submit ("test_job", activity);
   agent.wait_all_submitted();
