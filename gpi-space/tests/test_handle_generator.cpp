@@ -6,23 +6,10 @@
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/pc/type/segment_descriptor.hpp>
 
-struct F
-{
-  F()
-  {
-    gpi::pc::memory::handle_generator_t::create (42);
-  }
-
-  ~F ()
-  {
-    gpi::pc::memory::handle_generator_t::destroy ();
-  }
-};
-
-BOOST_FIXTURE_TEST_SUITE( suite, F )
-
 BOOST_AUTO_TEST_CASE ( test_generate )
 {
+  gpi::pc::memory::handle_generator_t::create (42);
+
   using namespace gpi::pc::memory;
 
   gpi::pc::type::handle_t globl
@@ -40,10 +27,14 @@ BOOST_AUTO_TEST_CASE ( test_generate )
 
   gpi::pc::type::handle_id_t id = local;
   BOOST_CHECK_EQUAL (local, id);
+
+  gpi::pc::memory::handle_generator_t::destroy ();
 }
 
 BOOST_AUTO_TEST_CASE ( test_generate_interleaved )
 {
+  gpi::pc::memory::handle_generator_t::create (42);
+
   using namespace gpi::pc::memory;
 
   for (size_t i (0); i < 100; ++i)
@@ -59,6 +50,6 @@ BOOST_AUTO_TEST_CASE ( test_generate_interleaved )
     BOOST_CHECK_EQUAL (s.type, gpi::pc::type::segment::SEG_SHM);
     BOOST_CHECK_EQUAL (s.shm.cntr, i+1);
   }
-}
 
-BOOST_AUTO_TEST_SUITE_END()
+  gpi::pc::memory::handle_generator_t::destroy ();
+}
