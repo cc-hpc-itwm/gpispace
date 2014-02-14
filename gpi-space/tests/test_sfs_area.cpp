@@ -21,21 +21,21 @@ namespace fs = boost::filesystem;
 
 static fs::path path_to_shared_file;
 
-struct F
+struct setup_and_cleanup_shared_file
 {
-  F ()
+  setup_and_cleanup_shared_file ()
   {
     path_to_shared_file =
       "sfs_area." + boost::lexical_cast<std::string> (getpid ());
   }
 
-  ~F ()
+  ~setup_and_cleanup_shared_file ()
   {
     gpi::pc::memory::sfs_area_t::cleanup (path_to_shared_file);
   }
 };
 
-BOOST_FIXTURE_TEST_SUITE( suite, F )
+BOOST_FIXTURE_TEST_SUITE( suite, setup_and_cleanup_shared_file )
 
 BOOST_AUTO_TEST_CASE (create_sfs_segment)
 {
