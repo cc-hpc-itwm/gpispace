@@ -195,19 +195,6 @@ namespace gpi
 
       namespace helper
       {
-        static
-        void do_read_dma_gpi ( const gpi::pc::type::offset_t local_offset
-                             , const gpi::pc::type::offset_t remote_offset
-                             , const gpi::pc::type::size_t amount
-                             , const gpi::pc::type::rank_t from_node
-                             , const gpi::pc::type::queue_id_t queue
-                             )
-        {
-          gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
-
-          api.read_dma (local_offset, remote_offset, amount, from_node, queue);
-        }
-
         template <typename DMAFun>
         static
         void do_rdma( gpi::pc::type::size_t local_offset
@@ -253,21 +240,10 @@ namespace gpi
                  , src_hdl.local_size
                  , amount
                  , queue
-                 , &do_read_dma_gpi
+                 , boost::bind ( &api::gpi_api_t::read_dma, &api::gpi_api_t::get()
+                               , _1, _2, _3, _4, _5
+                               )
                  );
-        }
-
-        static
-        void do_write_dma_gpi ( const gpi::pc::type::offset_t local_offset
-                              , const gpi::pc::type::offset_t remote_offset
-                              , const gpi::pc::type::size_t amount
-                              , const gpi::pc::type::rank_t to_node
-                              , const gpi::pc::type::queue_id_t queue
-                              )
-        {
-          gpi::api::gpi_api_t & api = gpi::api::gpi_api_t::get();
-
-          api.write_dma (local_offset, remote_offset, amount, to_node, queue);
         }
 
         static
@@ -284,7 +260,9 @@ namespace gpi
                  , dst_hdl.local_size
                  , amount
                  , queue
-                 , &do_write_dma_gpi
+                 , boost::bind ( &api::gpi_api_t::write_dma, &api::gpi_api_t::get()
+                               , _1, _2, _3, _4, _5
+                               )
                  );
         }
 
