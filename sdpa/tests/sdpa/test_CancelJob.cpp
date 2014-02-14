@@ -122,19 +122,9 @@ namespace sdpa
       void handleCancelJobEvent(const events::CancelJobEvent* pEvt )
       {
         Job* pJob = jobManager().findJob(pEvt->job_id());
-        BOOST_REQUIRE(pJob!=NULL);
-        if(!pJob)
-        {
-            if (pEvt->is_external())
-            {
-                DLLOG (TRACE, _logger, "Job "<<pEvt->job_id()<<" not found!");
-            }
-        }
-        else
-        {
-          DLLOG (TRACE, _logger, "Inform the layer that the activity "<<pEvt->job_id()<<" was successfully canceled!");
-          workflowEngine()->canceled(pEvt->job_id());
-        }
+        BOOST_REQUIRE(pJob);
+        DLLOG (TRACE, _logger, "Inform the layer that the activity "<<pEvt->job_id()<<" was successfully canceled!");
+        workflowEngine()->canceled(pEvt->job_id());
       }
 
       void canceled(const we::layer::id_type& id)
