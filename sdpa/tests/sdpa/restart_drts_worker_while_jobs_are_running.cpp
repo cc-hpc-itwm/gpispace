@@ -60,7 +60,9 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_polling_clie
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
   sdpa::daemon::Agent agent ( "agent_0"
-                              , "127.0.0.1",  kvs_host(), kvs_port(),
+                              , "127.0.0.1"
+                              ,  kvs_host()
+                              , kvs_port()
                               , sdpa::master_info_list_t (1, sdpa::MasterInfo ("orchestrator_0"))
                               , boost::none);
 
@@ -72,7 +74,7 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_polling_clie
 
   while(!agent.hasWorker("drts_0"));
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   agent.handleErrorEvent(create_disconnect_event("drts_0", "agent_0").get());
@@ -120,7 +122,7 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_subscribing_
 
   while(!agent.hasWorker("drts_0"));
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   agent.handleErrorEvent(create_disconnect_event("drts_0", "agent_0").get());
@@ -192,7 +194,7 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_coallocated_job_is_running_with_
 
   while(!agent.hasWorker("drts_both_caps_to_be_restarted"));
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   agent.handleErrorEvent(create_disconnect_event("drts_both_caps_to_be_restarted", "agent_0").get());
