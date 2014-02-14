@@ -34,16 +34,14 @@ namespace gpi
                  , handle_generator
                  )
         , m_ptr (gpi_api.dma_ptr())
+        , m_total_memsize (gpi_api.number_of_nodes () * gpi_api.memory_size())
+        , m_min_local_offset (gpi_api.rank() * gpi_api.memory_size())
+        , m_max_local_offset (m_min_local_offset + gpi_api.memory_size() - 1)
         , m_num_com_buffers (8)
         , m_com_buffer_size (4* (1<<20))
         , _topology (topology)
         , _gpi_api (gpi_api)
-      {
-        // total memory size is required for boundary checks
-        m_total_memsize = _gpi_api.number_of_nodes () * gpi_api.memory_size();
-        m_min_local_offset = _gpi_api.rank() * gpi_api.memory_size();
-        m_max_local_offset = m_min_local_offset + gpi_api.memory_size() - 1;
-      }
+      {}
 
       Arena_t
       gpi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
