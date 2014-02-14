@@ -97,11 +97,9 @@ namespace test_agent_requests_cancelation_after_activity_finshed
                        , const we::type::activity_t& activity
                        )
      {
-       DLLOG (TRACE, _logger, "The layer submitted the job "<<activity_id);
        sdpa::daemon::GenericDaemon::submit(activity_id, activity);
        if(_n_recv_tasks==0)
        {
-          DLLOG (TRACE, _logger, "Inform the layer that the activity "<<activity_id<<" finished!");
           workflowEngine()->finished(activity_id, activity);
        }
 
@@ -117,13 +115,11 @@ namespace test_agent_requests_cancelation_after_activity_finshed
      {
        sdpa::daemon::Job* pJob = jobManager().findJob(pEvt->job_id());
        BOOST_REQUIRE(pJob);
-       DLLOG (TRACE, _logger, "Inform the layer that the activity "<<pEvt->job_id()<<" was successfully canceled!");
        workflowEngine()->canceled(pEvt->job_id());
      }
 
      void canceled(const we::layer::id_type& id)
      {
-       DLLOG (TRACE, _logger, "The layer successfully canceled the job "<<id);
        _cond_wf_canceled.notify_one();
      }
 
@@ -223,12 +219,12 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice_orch_agent)
     (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_2", "127.0.0.1");
+    ("orchestrator_2", "127.0.0.1", kvs_host(), kvs_port());
 
   utils::agent agent
-      ("agent_2", "127.0.0.1", orchestrator);
+      ("agent_2", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(),  kvs_host(), kvs_port());
   sdpa::job_id_t job_id(client.submitJob (workflow));
 
   // wait until the agent gets the job, otherwise we're the previous case
@@ -257,7 +253,7 @@ namespace test_test_cancel_terminated_job
        : sdpa::daemon::Agent ( name,
                                "127.0.0.1",  kvs_host(), kvs_port(),
                                sdpa::master_info_list_t(1,
-                               sdpa::MasterInfo(master_name)), 0, boost::none)
+                               sdpa::MasterInfo(master_name)), boost::none)
        , _notifier(boost::thread (&TestAgent::notify_failed, this))
      {
      }
@@ -287,7 +283,6 @@ namespace test_test_cancel_terminated_job
          boost::unique_lock<boost::mutex> lock (_mtx);
          _cond.wait(lock);
          BOOST_FOREACH(const sdpa::job_id_t& job_id, _job_list) {
-           DLLOG(TRACE, _logger, "Notify the layer that the activity "<<job_id<<" failed!");
            workflowEngine()->failed(job_id, "");
          }
        }
@@ -304,6 +299,7 @@ namespace test_test_cancel_terminated_job
   {
     const std::string workflow
       (utils::require_and_read_file ("workflows/capabilities.pnet"));
+
     const utils::orchestrator orchestrator ("orchestrator_3", "127.0.0.1",  kvs_host(), kvs_port());
     TestAgent agent("agent_3", "orchestrator_3");
 
