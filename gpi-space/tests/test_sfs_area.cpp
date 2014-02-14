@@ -17,8 +17,6 @@
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include "dummy_topology.hpp"
 
-static boost::filesystem::path path_to_shared_file;
-
 struct setup_and_cleanup_shared_file
 {
   setup_and_cleanup_shared_file ()
@@ -31,6 +29,8 @@ struct setup_and_cleanup_shared_file
   {
     gpi::pc::memory::sfs_area_t::cleanup (path_to_shared_file);
   }
+
+  boost::filesystem::path path_to_shared_file;
 };
 
 BOOST_FIXTURE_TEST_CASE (create_sfs_segment, setup_and_cleanup_shared_file)
