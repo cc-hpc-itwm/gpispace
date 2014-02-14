@@ -8,8 +8,6 @@
 #include <cstring>
 #include <fstream>
 
-#include <fhglog/fhglog.hpp>
-
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
@@ -27,8 +25,6 @@ struct Setup
 {
   Setup ()
   {
-    FHGLOG_SETUP ();
-
     gpi::pc::memory::handle_generator_t::create (42);
   }
 
