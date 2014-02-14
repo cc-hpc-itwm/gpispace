@@ -36,29 +36,6 @@ set (gspc_src
 
   net/auth/cookie.cpp
   net/auth/simple.cpp
-
-  kvs/api.cpp
-  kvs/net_frontend.cpp
-  kvs/net_service.cpp
-
-  rif/daemon.cpp
-  rif/util.cpp
-  rif/pipe.cpp
-  rif/buffer.cpp
-  rif/proc_info.cpp
-  rif/process.cpp
-  rif/manager.cpp
-  rif/null_process_handler.cpp
-  rif/supervisor.cpp
-
-  ctl/exit_code.cpp
-  ctl/eval.cpp
-  ctl/config.cpp
-  ctl/config_cmd.cpp
-  ctl/system.cpp
-  ctl/session.cpp
-
-  ctl/log_cmd.cpp
 )
 
 add_library (libgspc        STATIC ${gspc_src})

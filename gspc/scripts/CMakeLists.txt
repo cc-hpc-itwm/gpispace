@@ -5,31 +5,9 @@ set (prgs
 )
 
 set (scripts
-  gspc-rexec
-  gspc-config
-  gspc-list-commands
-  gspc-check-port
-  gspc-shell
-  gspc-help
-  gspc-template
-  gspc-topology
-  gspc-topology-status
-  gspc-topology-list
-  gspc-topology-start
   gspc-log
-  gspc-init
-  gspc-kvs
-  gspc-version
-
   gspc-net
 
-  gspc-rif
-  gspc-rif-bootstrap
-  gspc-rif-shutdown
-  gspc-rif-raw
-
-  gspc-ctrl
-  gspc-ctrl-unload-modules
 )
 
 set (files
