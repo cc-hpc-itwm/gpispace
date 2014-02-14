@@ -413,7 +413,7 @@ int fvmGetNodeCount()
   return 1;
 }
 
-static void selftest (gspc::drts::context *, const expr::eval::context &, expr::eval::context & out)
+static void selftest (drts::worker::context *, const expr::eval::context &, expr::eval::context & out)
 {
   std::cerr << "running self test" << std::endl;
   out.bind ("result", pnet::type::value::value_type (0L));

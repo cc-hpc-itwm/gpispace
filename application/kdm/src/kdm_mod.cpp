@@ -50,7 +50,7 @@ static unsigned long sizeofJob (void)
 
 // ************************************************************************* //
 
-static void initialize (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
+static void initialize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const std::string& filename
     (boost::get<const std::string&> (input.value ("config_file")));
@@ -495,14 +495,14 @@ static void kdm_process ( const pnet::type::value::value_type & config
 // ************************************************************************* //
 // wrapper functions
 
-static void loadTT (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
+static void loadTT (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   kdm_loadTT (input.value ("config"), boost::get<long> (input.value ("id")));
 
   output.bind ("done", we::type::literal::control());
 }
 
-static void load (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
+static void load (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
@@ -511,7 +511,7 @@ static void load (gspc::drts::context *, const expr::eval::context & input, expr
   output.bind ("bunch", bunch);
 }
 
-static void process (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
+static void process (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& bunch (input.value ("bunch"));
 
@@ -520,7 +520,7 @@ static void process (gspc::drts::context *, const expr::eval::context & input, e
   output.bind ("bunch", bunch);
 }
 
-static void write (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
+static void write (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& config (input.value ("config"));
   const pnet::type::value::value_type& volume (input.value ("volume"));
@@ -530,14 +530,14 @@ static void write (gspc::drts::context *, const expr::eval::context & input, exp
   output.bind ("volume", volume);
 }
 
-static void finalize (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
+static void finalize (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   kdm_finalize (input.value ("config"));
 
   output.bind ("trigger", we::type::literal::control());
 }
 
-static void init_volume (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
+static void init_volume (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& volume (input.value ("volume"));
 
@@ -546,7 +546,7 @@ static void init_volume (gspc::drts::context *, const expr::eval::context & inpu
   output.bind ("volume", volume);
 }
 
-static void debug (gspc::drts::context *, const expr::eval::context & input, expr::eval::context & output)
+static void debug (drts::worker::context *, const expr::eval::context & input, expr::eval::context & output)
 {
   const pnet::type::value::value_type& volume (input.value ("volume"));
 

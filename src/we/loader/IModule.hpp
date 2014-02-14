@@ -15,7 +15,7 @@ namespace we
 {
   namespace loader
   {
-    typedef void (*WrapperFunction)( gspc::drts::context *
+    typedef void (*WrapperFunction)( drts::worker::context *
                                    , const expr::eval::context&
                                    , expr::eval::context&
                                    );

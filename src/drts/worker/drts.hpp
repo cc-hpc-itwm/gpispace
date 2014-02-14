@@ -45,7 +45,7 @@ struct wfe_task_t
   std::string id;
   state_t state;
   we::type::activity_t activity;
-  gspc::drts::context context;
+  drts::worker::context context;
   std::string error_message;
 
   wfe_task_t (std::string id, std::string worker_name, std::list<std::string> workers);

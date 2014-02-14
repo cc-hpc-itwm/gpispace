@@ -1813,7 +1813,7 @@ namespace xml
 
           if (mod.pass_context ())
           {
-            s << sep << "gspc::drts::context *_pnetc_context";
+            s << sep << "drts::worker::context *_pnetc_context";
           }
 
           BOOST_FOREACH (const port_with_type& port, ports_const)
@@ -1868,7 +1868,7 @@ namespace xml
           s << ns::open (indent, mod.name());
 
           s << indent << "static void " << mod.function();
-          s << deeper (indent) << "( gspc::drts::context *_pnetc_context";
+          s << deeper (indent) << "( drts::worker::context *_pnetc_context";
           s << deeper (indent) << ", const expr::eval::context& _pnetc_input";
           s << deeper (indent) << ", expr::eval::context& _pnetc_output";
           s << deeper (indent) << ")";

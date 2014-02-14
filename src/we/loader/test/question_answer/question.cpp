@@ -2,7 +2,7 @@
 
 #include "answer.hpp"
 
-static void question ( gspc::drts::context*
+static void question ( drts::worker::context*
                      , const expr::eval::context&
                      , expr::eval::context& output
                      )

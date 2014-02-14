@@ -39,7 +39,7 @@ namespace
 
 // ************************************************************************* //
 
-static void init ( gspc::drts::context * state
+static void init ( drts::worker::context * state
                  , const expr::eval::context & input
                  , expr::eval::context & output
                  )
@@ -260,7 +260,7 @@ static void init ( gspc::drts::context * state
 
 // ************************************************************************* //
 
-static void finalize ( gspc::drts::context * state
+static void finalize ( drts::worker::context * state
                      , const expr::eval::context & input
                      , expr::eval::context & output
                      )
@@ -280,7 +280,7 @@ static void finalize ( gspc::drts::context * state
 
 // ************************************************************************* //
 
-static void load ( gspc::drts::context * state
+static void load ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -327,7 +327,7 @@ static void load ( gspc::drts::context * state
 
 // ************************************************************************* //
 
-static void write ( gspc::drts::context * state
+static void write ( drts::worker::context * state
                   , const expr::eval::context & input
                   , expr::eval::context & output
                   )

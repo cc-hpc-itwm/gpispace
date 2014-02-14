@@ -7,9 +7,9 @@
 
 #include <boost/function.hpp>
 
-namespace gspc
+namespace drts
 {
-  namespace drts
+  namespace worker
   {
     class context
     {

@@ -27,7 +27,7 @@ namespace we
       const std::string &path() const;
 
       void call ( const std::string& f
-                , gspc::drts::context *context
+                , drts::worker::context *context
                 , const expr::eval::context& in
                 , expr::eval::context& out
                 );
