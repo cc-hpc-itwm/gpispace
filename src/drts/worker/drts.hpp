@@ -10,12 +10,6 @@
 #include <fhg/util/thread/set.hpp>
 
 #include <gspc/drts/context.hpp>
-#include <gspc/net/frame.hpp>
-#include <gspc/net/io.hpp>
-#include <gspc/net/server.hpp>
-#include <gspc/net/server/queue_manager.hpp>
-#include <gspc/net/server/service_demux.hpp>
-#include <gspc/net/user.hpp>
 
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/NotificationEvent.hpp>
@@ -159,10 +153,6 @@ private:
 
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt);
 
-  gspc::net::initializer _net_initializer;
-  gspc::net::server::service_demux_t& _service_demux;
-  gspc::net::server::queue_manager_t _queue_manager;
-
   boost::function<void()> _request_stop;
 
   fhg::com::kvs::kvsc_ptr_t _kvs_client;
@@ -202,8 +192,6 @@ private:
   map_of_jobs_t m_jobs;
 
   fhg::thread::queue<boost::shared_ptr<drts::Job> > m_pending_jobs;
-
-  gspc::net::server_ptr_t m_server;
 
   fhg::thread::set _registration_threads;
 };
