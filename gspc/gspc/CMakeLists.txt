@@ -41,15 +41,6 @@ set (gspc_src
   kvs/net_frontend.cpp
   kvs/net_service.cpp
 
-  rif/daemon.cpp
-  rif/util.cpp
-  rif/pipe.cpp
-  rif/buffer.cpp
-  rif/proc_info.cpp
-  rif/process.cpp
-  rif/manager.cpp
-  rif/null_process_handler.cpp
-  rif/supervisor.cpp
 )
 
 add_library (libgspc        STATIC ${gspc_src})

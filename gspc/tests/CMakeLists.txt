@@ -96,51 +96,6 @@ fhg_add_test(io.cpp
   DESCRIPTION "GSPCNet - test the global io"
 )
 
-fhg_add_test(parse_command_line.cpp
-  BOOST_UNIT_TEST
-  PROJECT gspc
-  LINK_LIBRARIES libgspc ${Boost_FILESYSTEM_LIBRARY}
-  DESCRIPTION "GSPCRif - command line parser tests"
-)
-
-fhg_add_test(process.cpp
-  BOOST_UNIT_TEST
-  PROJECT gspc
-  LINK_LIBRARIES libgspc
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SIGNALS_LIBRARY}
-                 ${Boost_DATE_TIME_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  DESCRIPTION "GSPCRif - process tests"
-)
-
-fhg_add_test(manager.cpp
-  BOOST_UNIT_TEST
-  PROJECT gspc
-  LINK_LIBRARIES libgspc
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SIGNALS_LIBRARY}
-                 ${Boost_DATE_TIME_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  DESCRIPTION "GSPCRif - process manager tests"
-)
-
-fhg_add_test(supervisor.cpp
-  BOOST_UNIT_TEST
-  PROJECT gspc
-  LINK_LIBRARIES libgspc
-                 fhg-util
-                 ${Boost_FILESYSTEM_LIBRARY}
-                 ${Boost_THREAD_LIBRARY}
-                 ${Boost_SIGNALS_LIBRARY}
-                 ${Boost_SIGNALS_LIBRARY}
-                 ${Boost_DATE_TIME_LIBRARY}
-                 ${Boost_SYSTEM_LIBRARY}
-  DESCRIPTION "GSPCRif - process supervisor tests"
-)
-
 #### KVS related tests
 
 fhg_add_test(kvs_impl.cpp
