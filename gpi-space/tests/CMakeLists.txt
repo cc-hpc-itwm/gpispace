@@ -9,7 +9,7 @@ fhg_add_test (test_handle_generator.cpp
                  fhg-util
 )
 
-fhg_add_test (test_memory_manager.cpp
+fhg_add_test (test_memory_area.cpp
   PROJECT gpi-space
   BOOST_UNIT_TEST
   LINK_LIBRARIES gpi-space-pc-segment
