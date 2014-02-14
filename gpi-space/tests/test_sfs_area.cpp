@@ -35,9 +35,7 @@ struct setup_and_cleanup_shared_file
   }
 };
 
-BOOST_FIXTURE_TEST_SUITE( suite, setup_and_cleanup_shared_file )
-
-BOOST_AUTO_TEST_CASE (create_sfs_segment)
+BOOST_FIXTURE_TEST_CASE (create_sfs_segment, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
 
@@ -86,7 +84,7 @@ BOOST_AUTO_TEST_CASE (create_sfs_segment)
   BOOST_CHECK_EQUAL (0, eq);
 }
 
-BOOST_AUTO_TEST_CASE (old_segment_version)
+BOOST_FIXTURE_TEST_CASE (old_segment_version, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
 
@@ -129,7 +127,7 @@ BOOST_AUTO_TEST_CASE (old_segment_version)
   }
 }
 
-BOOST_AUTO_TEST_CASE (too_new_segment_version)
+BOOST_FIXTURE_TEST_CASE (too_new_segment_version, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
 
@@ -165,7 +163,7 @@ BOOST_AUTO_TEST_CASE (too_new_segment_version)
                       );
 }
 
-BOOST_AUTO_TEST_CASE (garbage_segment_version)
+BOOST_FIXTURE_TEST_CASE (garbage_segment_version, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
 
@@ -201,7 +199,7 @@ BOOST_AUTO_TEST_CASE (garbage_segment_version)
                       );
 }
 
-BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
+BOOST_FIXTURE_TEST_CASE (reopen_sfs_segment, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
 
@@ -262,7 +260,7 @@ BOOST_AUTO_TEST_CASE (reopen_sfs_segment)
   }
 }
 
-BOOST_AUTO_TEST_CASE (create_big_sfs_segment)
+BOOST_FIXTURE_TEST_CASE (create_big_sfs_segment, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
 
@@ -293,7 +291,7 @@ BOOST_AUTO_TEST_CASE (create_big_sfs_segment)
   }
 }
 
-BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_mmap)
+BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_mmap, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
 
@@ -324,7 +322,7 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_mmap)
   }
 }
 
-BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_no_mmap)
+BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_no_mmap, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
 
@@ -354,7 +352,7 @@ BOOST_AUTO_TEST_CASE (create_huge_sfs_segment_no_mmap)
   }
 }
 
-BOOST_AUTO_TEST_CASE (test_read)
+BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
 
@@ -406,7 +404,7 @@ BOOST_AUTO_TEST_CASE (test_read)
   }
 }
 
-BOOST_AUTO_TEST_CASE (test_already_open)
+BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
 
@@ -438,5 +436,3 @@ BOOST_AUTO_TEST_CASE (test_already_open)
                       , std::exception
                       );
 }
-
-BOOST_AUTO_TEST_SUITE_END()
