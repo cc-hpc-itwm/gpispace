@@ -12,7 +12,9 @@ namespace gpi
   {
     namespace memory
     {
-      transfer_manager_t::transfer_manager_t (const std::size_t number_of_queues)
+      transfer_manager_t::transfer_manager_t
+        (const std::size_t number_of_queues, api::gpi_api_t& gpi_api)
+        : _gpi_api (gpi_api)
       {
         for (std::size_t i(0); i < number_of_queues; ++i)
         {
@@ -69,7 +71,7 @@ namespace gpi
           {
             task_ptr wtask (boost::make_shared<task_t>
                            ("wait_on_queue", boost::bind( &api::gpi_api_t::wait_dma
-                                                        , &gpi::api::gpi_api_t::get()
+                                                        , &_gpi_api
                                                         , queue
                                                         )
                            )

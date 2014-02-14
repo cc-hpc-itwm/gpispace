@@ -5,6 +5,7 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <gpi-space/gpi/api.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 #include <gpi-space/pc/memory/gpi_area.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
@@ -47,7 +48,7 @@ namespace gpi
                            , gpi::pc::type::size_t num_queues
                            )
         : m_ident (ident)
-        , m_transfer_mgr (num_queues)
+        , m_transfer_mgr (num_queues, api::gpi_api_t::get())
         , _handle_generator (m_ident)
       {
         _handle_generator.initialize_counter

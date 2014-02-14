@@ -13,6 +13,10 @@
 
 namespace gpi
 {
+  namespace api
+  {
+    class gpi_api_t;
+  }
   namespace pc
   {
     namespace memory
@@ -131,7 +135,7 @@ namespace gpi
       public:
         static const size_t DEF_BUFFER_SIZE = 4194304;
 
-        transfer_manager_t (const std::size_t number_of_queues);
+        transfer_manager_t (const std::size_t number_of_queues, api::gpi_api_t&);
 
         void transfer (memory_transfer_t const &);
         std::size_t wait_on_queue (const std::size_t queue);
@@ -141,6 +145,8 @@ namespace gpi
         typedef boost::shared_ptr<transfer_queue_t> queue_ptr;
         typedef std::vector<queue_ptr> transfer_queues_t;
         typedef boost::shared_ptr<task_t> task_ptr;
+
+        api::gpi_api_t& _gpi_api;
 
         transfer_queues_t m_queues;
         fhg::thread::queue<buffer_t> m_memory_buffer_pool;
