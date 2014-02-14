@@ -5,11 +5,13 @@ configure_file(in.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/in.txt COPYONLY)
 include_directories (${FVM_INCLUDE_DIR})
 include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
-set (TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
-set (TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory")
-set (TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/inotify")
-set (TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
-set (TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/coallocation_test")
+set(DIR_SRC_TEST_WORKFLOWS "${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows")
+
+set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
+set(TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory")
+set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/inotify")
+set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
+set(TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/coallocation_test")
 
 fhg_add_plugin (fvm-fake fvm-fake.cpp LINK_LIBRARIES fvm-pc-fake.shared)
 
@@ -28,10 +30,8 @@ include (pnet_macros)
 get_target_property (PNETPUT_LOCATION pnetput LOCATION)
 
 ###########################################################################################
-
-pnet_compile (capabilities-test-wf
-  ${CMAKE_SOURCE_DIR}/application/example/capabilities/capabilities.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capabilities-test-wf.in.pnet
+pnet_compile(capabilities-test-wf ${DIR_SRC_TEST_WORKFLOWS}/capabilities.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
   GENERATE capabilities
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -56,10 +56,8 @@ add_custom_target (workflow_capabilities
 )
 
 ###########################################################################################
-
-pnet_compile (capabilities_no_mandatory-test-wf
-  ${CMAKE_SOURCE_DIR}/application/example/capabilities_no_mandatory/capabilities_no_mandatory.xml
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory-test-wf.in.pnet
+pnet_compile(capabilities_no_mandatory-test-wf ${DIR_SRC_TEST_WORKFLOWS}/capabilities_no_mandatory.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory-test-wf.in.pnet
   GENERATE capabilities_no_mandatory
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -84,10 +82,8 @@ add_custom_target (workflow_capabilities_no_mandatory
 )
 
 ################################################################################################
-
-pnet_compile (inotify-test-wf
-  ${CMAKE_SOURCE_DIR}/application/example/inotify/inotify.xml
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/inotify-test-wf.in.pnet
+pnet_compile(inotify-test-wf ${DIR_SRC_TEST_WORKFLOWS}/inotify.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
   GENERATE inotify
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -110,10 +106,9 @@ add_custom_target (workflow_inotify
 )
 
 ################################################################################################
-
-pnet_compile (transform_file-test-wf
-  ${CMAKE_SOURCE_DIR}/application/transform_file/xml/transform_file.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/transform_file-test-wf.in.pnet
+#transform
+pnet_compile(transform_file-test-wf ${DIR_SRC_TEST_WORKFLOWS}/transform_file/transform_file.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file-test-wf.in.pnet
   GENERATE transform_file
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -140,10 +135,9 @@ add_custom_target (workflow_transform_file
 )
 
 ################################################################################################
-
-pnet_compile (coallocation_test-wf
-  ${CMAKE_SOURCE_DIR}/application/example/coallocation_test/coallocation_test.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
+#coallocation_test
+pnet_compile(coallocation_test-wf ${DIR_SRC_TEST_WORKFLOWS}/coallocation_test.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
   GENERATE coallocation_test
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
