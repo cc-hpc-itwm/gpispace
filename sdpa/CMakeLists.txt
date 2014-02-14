@@ -10,8 +10,6 @@ include_directories (${FhgKernel_INCLUDE_DIR})
 find_package(ZLIB REQUIRED QUIET)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 
-include_directories(${GSPC_INCLUDE_DIR})
-
 include_directories (${FhgLog_INCLUDE_DIR})
 
 include_directories (${FhgCom_INCLUDE_DIR})

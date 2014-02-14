@@ -14,7 +14,6 @@ set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" 
 set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
-OPTION (WITH_MANPAGES "Build manpages" YES)
 OPTION (ENABLE_SDPA_GUI "Build the monitor gui" YES)
 OPTION (ENABLE_GPI_FUSE "Build the gpi fuse module" OFF)
 OPTION (ENABLE_PNET_EDITOR "Build the pnet editor" YES)
@@ -181,9 +180,6 @@ set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc ${CMAKE_BINARY_DIR}/fvm-pc)
 
 set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/gpi-space ${CMAKE_BINARY_DIR}/gpi-space)
 set (GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
-
-set (GSPC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/gspc ${CMAKE_BINARY_DIR}/gspc)
-set (GSPC_LIBRARY_SHARED libgspc.shared)
 
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 set (PNETC_EXAMPLES_DIR "share/sdpa/xml/examples")
