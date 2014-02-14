@@ -21,25 +21,11 @@ namespace fs = boost::filesystem;
 
 static fs::path path_to_shared_file;
 
-struct Setup
-{
-  Setup ()
-  {
-    gpi::pc::memory::handle_generator_t::create (42);
-  }
-
-  ~Setup ()
-  {
-    gpi::pc::memory::handle_generator_t::destroy ();
-  }
-};
-
-BOOST_GLOBAL_FIXTURE (Setup);
-
 struct F
 {
   F ()
   {
+    gpi::pc::memory::handle_generator_t::create (42);
     path_to_shared_file =
       "sfs_area." + boost::lexical_cast<std::string> (getpid ());
   }
@@ -47,6 +33,7 @@ struct F
   ~F ()
   {
     gpi::pc::memory::sfs_area_t::cleanup (path_to_shared_file);
+    gpi::pc::memory::handle_generator_t::destroy ();
   }
 };
 
