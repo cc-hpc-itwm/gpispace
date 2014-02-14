@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE (test_cancel_without_and_with_agent)
     );
 }
 
-BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
+BOOST_AUTO_TEST_CASE (test_call_cancel_twice_orch)
 {
   const std::string workflow
     (utils::require_and_read_file ("coallocation_test2.pnet"));
@@ -216,9 +216,35 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
 
   sdpa::job_id_t job_id(client.submitJob (workflow));
   client.cancelJob(job_id);
-  sdpa::client::job_info_t UNUSED_job_info;
+
   BOOST_REQUIRE_EQUAL
-    ( client.wait_for_terminal_state (job_id, UNUSED_job_info)
+  ( utils::client::wait_for_terminal_state (client, job_id)
+    , sdpa::status::CANCELED );
+
+  BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
+}
+
+BOOST_AUTO_TEST_CASE (test_call_cancel_twice_orch_agent)
+{
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+
+  const utils::orchestrator orchestrator
+    ("orchestrator_2", "127.0.0.1");
+
+  utils::agent agent
+      ("agent_2", "127.0.0.1", orchestrator);
+
+  sdpa::client::Client client (orchestrator.name());
+  sdpa::job_id_t job_id(client.submitJob (workflow));
+
+  // wait until the agent gets the job, otherwise we're the previous case
+  while(!agent._.hasJobs());
+
+  client.cancelJob(job_id);
+
+  BOOST_REQUIRE_EQUAL
+  ( utils::client::wait_for_terminal_state (client, job_id)
     , sdpa::status::CANCELED );
 
   BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
