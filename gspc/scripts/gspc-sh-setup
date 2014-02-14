@@ -11,16 +11,6 @@
 #                                                                              #
 ################################################################################
 
-GSPC_COLOR_BLACK='\e[0;30m'
-GSPC_COLOR_RED='\e[0;31m'
-GSPC_COLOR_GREEN='\e[0;32m'
-GSPC_COLOR_YELLOW='\e[0;33m'
-GSPC_COLOR_BLUE='\e[0;34m'
-GSPC_COLOR_PURPLE='\e[0;35m'
-GSPC_COLOR_CYAN='\e[0;36m'
-GSPC_COLOR_WHITE='\e[0;37m'
-GSPC_COLOR_OFF='\e[0m'
-
 GSPC_EX_OK=0           # everything alright
 GSPC_EX_USAGE=64       # command line usage error
 GSPC_EX_DATAERR=65     # data format error
@@ -61,50 +51,6 @@ function gspc_is_verbose_enabled ()
     return 1
 }
 
-function gspc_isatty()
-{
-    local fd="$1" ; shift
-    if readlink -f "/proc/$$/fd/$fd" | grep -q pts ; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-function gspc_is_color_enabled ()
-{
-    local which="${1:?}" ; shift
-    local fd="${1:?}" ; shift
-    local mode=
-
-    # see gspc-config why this guard has been placed here
-    if [ -n "$GSPC_LOG_FROM_CONFIG" ] ; then
-        mode=auto
-    else
-        mode=$("${GSPC_EXEC_PATH}/gspc-config" --get color."${which}")
-    fi
-
-    case "$mode" in
-        on)
-            return 0
-            ;;
-        off)
-            return 1
-            ;;
-        ''|auto)
-            if gspc_isatty $fd ; then
-                return 0
-            else
-                return 1
-            fi
-            ;;
-        *)
-            echo >&2 "gspc: invalid config color mode: '$mode'"
-            return 0
-            ;;
-    esac
-}
-
 function gspc_log_impl ()
 {
     local level="${1:?}"; shift
@@ -112,21 +58,8 @@ function gspc_log_impl ()
 
     level_id=${level:0:1}
     level_id=$(echo ${level_id} | tr '[:lower:]' '[:upper:]')
-    s_color=""
-    e_color=""
 
-    if gspc_is_color_enabled log 2 ; then
-        color_trace=""
-        color_debug=""
-        color_info="$GSPC_COLOR_CYAN"
-        color_warn="$GSPC_COLOR_YELLOW"
-        color_error="$GSPC_COLOR_RED"
-        e_color="$GSPC_COLOR_OFF"
-    fi
-
-    s_color=$(eval echo "\$color_$level")
-
-    echo -e >&2 "${s_color}[${level_id}] ($component): $@${e_color}"
+    echo -e >&2 "[${level_id}] ($component): $@"
 }
 
 function gspc_log_trace ()
@@ -178,16 +111,6 @@ function gspc_abspath ()
     esac
 }
 
-function gspc_call_editor ()
-{
-    local editor=()
-    editor=($("${GSPC_EXEC_PATH}/gspc-config" --get core.editor))
-    if [ $? -ne 0 -o -z "${editor}" ] ; then
-        editor=("${EDITOR:=/usr/bin/vi}")
-    fi
-    "${editor[@]}" "$@"
-}
-
 function gspc_prepend_path ()
 {
     local var="$1"; shift
@@ -199,46 +122,6 @@ function gspc_prepend_path ()
         val="$v:$val"
     done
     eval "$var=$val"
-}
-
-function gspc_require_gspc_dir ()
-{
-    if [ -z "$GSPC_DIR" ]
-    then
-        gspc_log_error core "GSPC_DIR is not set"
-        exit ${GSPC_EX_UNAVAILABLE}
-    fi
-
-    if [ ! -d "$GSPC_DIR" ]
-    then
-        gspc_log_error core "GSPC_DIR ('$GSPC_DIR') is not accessible"
-        exit ${GSPC_EX_UNAVAILABLE}
-    fi
-
-    if [ ! -e "$GSPC_DIR"/.gspc_dir ]
-    then
-        gspc_log_error core "GSPC_DIR ('$GSPC_DIR') not initialized"
-        exit ${GSPC_EX_UNAVAILABLE}
-    fi
-
-    return 0
-}
-
-function gspc_atomic ()
-{
-    local prev_int=
-    local prev_term=
-
-    prev_int=$(trap -p INT)
-    prev_term=$(trap -p TERM)
-
-    trap '' INT TERM
-    "$@"
-    ec=$?
-
-    $prev_int
-    $prev_term
-    return $ec
 }
 
 function gspc_resolve_command ()
