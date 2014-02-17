@@ -801,10 +801,6 @@ int main (int ac, char *av[])
           case 'q':
             done = true;
             break;
-          case 'l':
-            std::cerr << "list of attached processes:" << std::endl;
-            std::cerr << "    implement me" << std::endl;
-            break;
           case 's':
             {
               std::string gpish_cmd ("gpish");
