@@ -575,7 +575,7 @@ int main (int ac, char *av[])
            );
 
   // initialize gpi api
-  if (requested_api == API_auto || requested_api == API_real)
+  if (requested_api == API_auto)
   {
     gpi_api_t * gpi_api = &(gpi_api_t::create (gpi_api_t::REAL_API, is_master));
     if (is_master)
@@ -585,21 +585,28 @@ int main (int ac, char *av[])
       {
         fprintf (stderr, "%s: could not build hostlist: %d\n", program_name, num_nodes);
 
-        if (requested_api == API_real)
-        {
-          exit (GPI_HOST_LIST);
-        }
-        else
-        {
-          fprintf (stderr, "%s: fallback to fake API\n", program_name);
+        fprintf (stderr, "%s: fallback to fake API\n", program_name);
 
-          gpi_api_t::destroy();
-          gpi_api_t::create (gpi_api_t::FAKE_API, is_master);
-        }
+        gpi_api_t::destroy();
+        gpi_api_t::create (gpi_api_t::FAKE_API, is_master);
       }
     }
   }
-  else
+  else if (requested_api == API_real)
+  {
+    gpi_api_t * gpi_api = &(gpi_api_t::create (gpi_api_t::REAL_API, is_master));
+    if (is_master)
+    {
+      int num_nodes = gpi_api->build_hostlist();
+      if (num_nodes <= 0)
+      {
+        fprintf (stderr, "%s: could not build hostlist: %d\n", program_name, num_nodes);
+
+        exit (GPI_HOST_LIST);
+      }
+    }
+  }
+  else if (requested_api == API_fake)
   {
     gpi_api_t::create (gpi_api_t::FAKE_API, is_master);
   }
