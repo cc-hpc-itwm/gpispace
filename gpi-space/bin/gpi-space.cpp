@@ -779,45 +779,7 @@ int main (int ac, char *av[])
 
     LOG(INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
-    if (0 == gpi_api.rank() && isatty(0) && isatty(1))
-    {
-        static const std::string prompt
-          ("Please type \"q\" followed by return to quit: ");
-
-        bool done = false;
-        while (std::cin.good() && !done)
-        {
-          std::cout << prompt;
-
-          std::string line;
-          std::getline (std::cin, line);
-          if (line.empty())
-            continue;
-
-          char c = line[0];
-          switch (c)
-          {
-          case 'q':
-            done = true;
-            break;
-          case 'h':
-          case '?':
-            std::cerr << "list of supported commands:"             << std::endl;
-            std::cerr                                              << std::endl;
-            std::cerr << "    h|? - print this help"               << std::endl;
-            std::cerr << "      q - quit"                          << std::endl;
-
-            break;
-          default:
-            std::cerr << "command not understood, please use \"h\"" << std::endl;
-            break;
-          }
-        }
-    }
-    else
-    {
-      do { } while (!stop_requested && pause() == -1 && errno == EINTR);
-    }
+    do { } while (!stop_requested && pause() == -1 && errno == EINTR);
 
     ec = EXIT_SUCCESS;
     LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated with exitcode: " << ec);
@@ -846,7 +808,6 @@ static void signal_handler (int sig)
     }
     break;
   case SIGTERM:
-    close(0);
   case SIGINT:
     stop_requested = true;
     break;
