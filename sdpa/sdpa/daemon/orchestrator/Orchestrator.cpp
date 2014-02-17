@@ -449,19 +449,21 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   }
 }
 
-void Orchestrator::handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *pEvt)
+void Orchestrator::handleDiscoverJobStatesReplyEvent
+  (const sdpa::events::DiscoverJobStatesReplyEvent* e)
 {
-  sdpa::agent_id_t issuer(m_map_discover_ids.at( pEvt->discover_id()).disc_issuer() );
-  sdpa::discovery_info_t disc_res( m_map_discover_ids.at( pEvt->discover_id()).job_id()
-                                   , m_map_discover_ids.at( pEvt->discover_id()).job_status()
-                                   , pEvt->discover_result().children());
+  const sdpa::job_info_t& job_info (m_map_discover_ids.at (e->discover_id()));
+  const sdpa::discovery_info_t discovery_info
+    (job_info.job_id(), job_info.job_status(), e->discover_result().children());
 
-  events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
-                                                                                                 , issuer
-                                                                                                 , pEvt->discover_id()
-                                                                                                 , disc_res ));
-   sendEventToOther(pDiscReplyEvt);
-   m_map_discover_ids.erase(pEvt->discover_id());
+  sendEventToOther
+    ( events::DiscoverJobStatesReplyEvent::Ptr
+      ( new events::DiscoverJobStatesReplyEvent
+        (name(), job_info.disc_issuer(), e->discover_id(), discovery_info)
+      )
+    );
+
+  m_map_discover_ids.erase (e->discover_id());
 }
 
 }} // end namespaces
