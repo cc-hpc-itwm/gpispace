@@ -84,8 +84,7 @@ int main (int ac, char *av[])
   bool gpi_clear_caches = true;
   char pidfile[MAX_PATH_LEN];
   snprintf (pidfile, sizeof(pidfile), "%s", "");
-  char api_name[MAX_PATH_LEN];
-  snprintf (api_name, sizeof(api_name), "%s", "auto");
+  enum { API_auto, API_real, API_fake } requested_api;
   char socket_path[MAX_PATH_LEN];
   snprintf (socket_path, sizeof(socket_path), "/var/tmp");
   char logfile[MAX_PATH_LEN];
@@ -152,7 +151,7 @@ int main (int ac, char *av[])
       fprintf(stderr, "\n");
       fprintf(stderr, "GPI options\n");
       fprintf(stderr, "    --gpi-mem|-s BYTES (%llu)\n", gpi_mem);
-      fprintf(stderr, "    --gpi-api STRING (%s)\n", api_name);
+      fprintf(stderr, "    --gpi-api STRING (%s)\n", "auto");
       fprintf(stderr, "      choose the GPI API to use\n");
       fprintf(stderr, "        fake - use the fake api\n");
       fprintf(stderr, "        real - use the real api\n");
@@ -423,13 +422,11 @@ int main (int ac, char *av[])
       ++i;
       if (i < ac)
       {
-        if ((strlen(av[i] + 1) > sizeof(api_name)))
-        {
-          fprintf(stderr, "%s: api name is too long!\n", program_name);
-          fprintf(stderr, "    at most %lu characters are supported\n", sizeof(api_name));
-          exit(EX_INVAL);
-        }
-        strncpy(api_name, av[i], sizeof(api_name));
+        requested_api = strcmp (av[i], "auto") == 0 ? API_auto
+          : strcmp (av[i], "real") == 0 ? API_real
+          : strcmp (av[i], "fake") == 0 ? API_fake
+          : throw std::runtime_error
+          ("invalid argument to --gpi-api: must be 'auto', 'real' or 'fake'");
         ++i;
       }
       else
@@ -578,7 +575,7 @@ int main (int ac, char *av[])
            );
 
   // initialize gpi api
-  if (strcmp(api_name, "auto") == 0 || strcmp(api_name, "real") == 0)
+  if (requested_api == API_auto || requested_api == API_real)
   {
     gpi_api_t * gpi_api = &(gpi_api_t::create (gpi_api_t::REAL_API, is_master));
     if (is_master)
@@ -588,7 +585,7 @@ int main (int ac, char *av[])
       {
         fprintf (stderr, "%s: could not build hostlist: %d\n", program_name, num_nodes);
 
-        if (strcmp(api_name, "real") == 0)
+        if (requested_api == API_real)
         {
           exit (GPI_HOST_LIST);
         }
