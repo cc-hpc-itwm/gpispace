@@ -773,10 +773,9 @@ int main (int ac, char *av[])
 
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
-    gpi::pc::container::manager_t *global_container_mgr
-      ( new gpi::pc::container::manager_t
-        (config.socket, mem_urls, gpi_api, kvs_client)
-      );
+
+    const gpi::pc::container::manager_t container_manager
+      (config.socket, mem_urls, gpi_api, kvs_client);
 
     LOG(INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
