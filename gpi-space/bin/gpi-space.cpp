@@ -801,29 +801,11 @@ int main (int ac, char *av[])
           case 'q':
             done = true;
             break;
-          case 's':
-            {
-              std::string gpish_cmd ("gpish");
-              gpish_cmd += " -s ";
-              gpish_cmd += config.socket;
-
-              int rc = system (gpish_cmd.c_str ());
-              if (rc == -1)
-              {
-                std::cerr << "shell failed: " << strerror (errno) << std::endl;
-              }
-              else if (rc > 0)
-              {
-                std::cerr << "shell failed: " << WEXITSTATUS (rc) << std::endl;
-              }
-            }
-            break;
           case 'h':
           case '?':
             std::cerr << "list of supported commands:"             << std::endl;
             std::cerr                                              << std::endl;
             std::cerr << "    h|? - print this help"               << std::endl;
-            std::cerr << "      s - spawn a gpish"                 << std::endl;
             std::cerr << "      q - quit"                          << std::endl;
 
             break;
