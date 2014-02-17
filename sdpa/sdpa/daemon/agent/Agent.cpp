@@ -393,30 +393,6 @@ void Agent::failed( const we::layer::id_type& wfid
   }
 }
 
-namespace
-{
-  struct on_scope_exit
-  {
-    on_scope_exit (boost::function<void()> what)
-      : _what (what)
-      , _dont (false)
-    {}
-    ~on_scope_exit()
-    {
-      if (!_dont)
-      {
-        _what();
-      }
-    }
-    void dont()
-    {
-      _dont = true;
-    }
-    boost::function<void()> _what;
-    bool _dont;
-  };
-}
-
 void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 {
   Job* pJob;
@@ -426,11 +402,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   {
       if (pEvt->is_external())
       {
-        sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
-                                                          , pEvt->from()
-                                                          , events::ErrorEvent::SDPA_EUNKNOWN
-                                                          , "No such job found" )
-                                                         ));
+        throw std::runtime_error ("No such job found");
       }
 
      return;
@@ -440,25 +412,16 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   {
       if(pJob->getStatus() == sdpa::status::CANCELING)
       {
-         sendEventToOther( events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
-                                                             , pEvt->from()
-                                                             , events::ErrorEvent::SDPA_EUNKNOWN
-                                                             , "A cancelation request for this job was already posted!" )
-                                                  ));
-         return;
+        throw std::runtime_error
+          ("A cancelation request for this job was already posted!");
       }
 
       if(pJob->completed())
       {
-
-          sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
-                                                          , pEvt->from()
-                                                          , events::ErrorEvent::SDPA_EUNKNOWN
-                                                          , "Cannot cancel an already terminated job, its current status is: "
-                                                             + sdpa::status::show(pJob->getStatus()) )
-                                               ));
-
-          return;
+        throw std::runtime_error
+          ( "Cannot cancel an already terminated job, its current status is: "
+          + sdpa::status::show(pJob->getStatus())
+          );
       }
 
       // a Cancel message came from the upper level -> forward cancellation request to WE
@@ -492,6 +455,30 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
     }
   }
 
+}
+
+namespace
+{
+  struct on_scope_exit
+  {
+    on_scope_exit (boost::function<void()> what)
+      : _what (what)
+      , _dont (false)
+    {}
+    ~on_scope_exit()
+    {
+      if (!_dont)
+      {
+        _what();
+      }
+    }
+    void dont()
+    {
+      _dont = true;
+    }
+    boost::function<void()> _what;
+    bool _dont;
+  };
 }
 
 void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)

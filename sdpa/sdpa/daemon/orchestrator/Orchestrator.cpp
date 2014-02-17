@@ -27,31 +27,6 @@
 
 namespace sdpa {
   namespace daemon {
-
-  namespace
-  {
-    struct on_scope_exit
-    {
-      on_scope_exit (boost::function<void()> what)
-        : _what (what)
-        , _dont (false)
-      {}
-      ~on_scope_exit()
-      {
-        if (!_dont)
-        {
-          _what();
-        }
-      }
-      void dont()
-      {
-        _dont = true;
-      }
-      boost::function<void()> _what;
-      bool _dont;
-    };
-  }
-
 template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
 {
@@ -207,23 +182,16 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
   {
       if(pJob->getStatus() == sdpa::status::CANCELING)
       {
-          sendEventToOther( events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
-                                                              , pEvt->from()
-                                                              , events::ErrorEvent::SDPA_EUNKNOWN
-                                                              , "A cancelation request for this job was already posted!" )
-                                                   ));
-          return;
+        throw std::runtime_error
+          ("A cancelation request for this job was already posted!");
       }
 
       if(pJob->completed())
       {
-         sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
-                                                             , pEvt->from()
-                                                             ,  events::ErrorEvent::SDPA_EUNKNOWN
-                                                             , "Cannot cancel an already terminated job, its current status is: "
-                                                           + sdpa::status::show (pJob->getStatus()) )
-                                                  ));
-         return;
+        throw std::runtime_error
+          ( "Cannot cancel an already terminated job, its current status is: "
+          + sdpa::status::show (pJob->getStatus())
+          );
       }
 
         // send immediately an acknowledgment to the component that requested the cancellation
@@ -231,17 +199,6 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
 
       if(!isSubscriber(pEvt->from ()))
         sendEventToOther(pCancelAckEvt);
-
-      on_scope_exit _ ( boost::bind ( &Orchestrator::sendEventToOther
-                                     , this
-                                     , events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
-                                                                        , pEvt->from()
-                                                                        , events::ErrorEvent::SDPA_EUNKNOWN
-                                                                        , "Exception in Agent::handleCancelJobEvent"
-                                                                        )
-                                                       )
-                                     )
-                       );
 
       pJob->CancelJob(pEvt);
 
@@ -261,16 +218,10 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
           pJob->CancelJobAck(pCancelAckEvt.get());
           ptr_scheduler_->delete_job (pEvt->job_id());
       }
-
-      _.dont();
   }
   else
   {
-      sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
-                                                         , pEvt->from()
-                                                         ,  events::ErrorEvent::SDPA_EUNKNOWN
-                                                         , "No such job found" )
-                                                        ));
+    throw std::runtime_error ("No such job found" );
   }
 }
 
@@ -296,60 +247,25 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
   const  events::DeleteJobEvent& e (*evt);
 
 
-  on_scope_exit _ ( boost::bind ( &GenericDaemon::sendEventToOther, this
-                                ,  events::ErrorEvent::Ptr ( new  events::ErrorEvent ( name()
-                                                                   , e.from()
-                                                                   ,  events::ErrorEvent::SDPA_EUNKNOWN
-                                                                   , "unknown"
-                                                                   )
-                                                  )
-                               )
-                  );
-
-
   Job* pJob = jobManager().findJob(e.job_id());
   if(pJob)
   {
       // the job must be in a non-terminal state
       if(!pJob->completed())
       {
-         events::ErrorEvent::Ptr pErrorEvt(
-              new events::ErrorEvent( evt->to(),
-                                            evt->from(),
-                                            events::ErrorEvent::SDPA_EUNKNOWN,
-                                            "Cannot delete a job which is in a non-terminal state. Please, cancel it first!")
-                                            );
-          sendEventToOther(pErrorEvt);
-          return;
+        throw std::runtime_error
+          ("Cannot delete a job which is in a non-terminal state. Please, cancel it first!");
       }
 
-      try{
           jobManager().deleteJob(e.job_id());
           sendEventToOther( events::DeleteJobAckEvent::Ptr( new events::DeleteJobAckEvent(e.to(),
                                                                                   e.from(),
                                                                                   e.job_id())) );
-      }
-      catch(JobNotDeletedException const & ex)
-      {
-          sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
-                                                              , e.from()
-                                                              , events::ErrorEvent::SDPA_EUNKNOWN
-                                                              , ex.what()
-                                                            )
-                                            ));
-      }
   }
   else
   {
-      sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
-                                                          , e.from()
-                                                          ,  events::ErrorEvent::SDPA_EUNKNOWN
-                                                          , "no such job"
-                                                         )
-                                        ));
+    throw std::runtime_error ("no such job");
   }
-
-  _.dont();
 }
 
 void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt )
@@ -363,21 +279,17 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
       }
       else
       {
-          events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name()
-                                                                    , pEvt->from()
-                                                                    , events::ErrorEvent::SDPA_EUNKNOWN
-                                                                    , "Not allowed to request results for a non-terminated job, its current status is : "
-                                                                    +  sdpa::status::show(pJob->getStatus()) )
-                                            );
-          sendEventToOther(pErrorEvt);
+        throw std::runtime_error
+          ( "Not allowed to request results for a non-terminated job, its current status is : "
+          +  sdpa::status::show(pJob->getStatus())
+          );
       }
   }
   else
   {
     LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
 
-    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EUNKNOWN, "Inexistent job: "+pEvt->job_id()) );
-    sendEventToOther(pErrorEvt);
+    throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
   }
 }
 
@@ -403,8 +315,7 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
   {
     LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
 
-      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EUNKNOWN, "Inexistent job: "+pEvt->job_id()) );
-      sendEventToOther(pErrorEvt);
+    throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
   }
 }
 

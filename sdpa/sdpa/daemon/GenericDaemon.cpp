@@ -166,32 +166,6 @@ const std::string& GenericDaemon::name() const
   return _name;
 }
 
-
-namespace
-{
-  struct on_scope_exit
-  {
-    on_scope_exit (boost::function<void()> what)
-      : _what (what)
-      , _dont (false)
-    {}
-    ~on_scope_exit()
-    {
-      if (!_dont)
-      {
-        _what();
-      }
-    }
-    void dont()
-    {
-      _dont = true;
-    }
-    boost::function<void()> _what;
-    bool _dont;
-  };
-}
-
-
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
@@ -277,8 +251,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   {
     if( e.is_external() )
     {
-        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EUNKNOWN, ex.what()) );
-        sendEventToOther(pErrorEvt);
+      throw;
     }
     else
     {
@@ -1073,8 +1046,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEv
                         << ex2.what()
                         );
 
-        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, ex2.what()) );
-        sendEventToOther(pErrorEvt);
+        throw;
       }
   }
   else
@@ -1085,8 +1057,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEv
                         << " not found!"
                         );
 
-    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, "Could not acknowledge job") );
-    sendEventToOther(pErrorEvt);
+    throw std::runtime_error ("Could not acknowledge job");
   }
 }
 
@@ -1107,8 +1078,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
     {
       LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
 
-      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, ex1.what()) );
-      sendEventToOther(pErrorEvt);
+      throw;
     }
     catch(std::exception const &ex2)
     {
@@ -1117,17 +1087,14 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
                       << ": "
                       << ex2.what()
                      );
-
-      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
-      sendEventToOther(pErrorEvt);
+      throw;
     }
   }
   else
   {
     LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
 
-     events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, "Couldn't find the job!") );
-     sendEventToOther(pErrorEvt);
+    throw std::runtime_error ("Couldn't find the job!");
   }
 }
 
@@ -1147,8 +1114,7 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
     {
       LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
 
-      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, ex1.what()) );
-      sendEventToOther(pErrorEvt);
+      throw;
     }
     catch(std::exception const &ex2)
     {
@@ -1158,16 +1124,14 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
                       << ex2.what()
                      );
 
-      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, ex2.what()));
-      sendEventToOther(pErrorEvt);
+      throw;
     }
   }
   else
   {
     LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
 
-    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, "Couldn't find the job!") );
-    sendEventToOther(pErrorEvt);
+    throw std::runtime_error ("Couldn't find the job!");
   }
 }
 
