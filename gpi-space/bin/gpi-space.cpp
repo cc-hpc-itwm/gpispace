@@ -44,28 +44,31 @@ static const int CONFIG_MAGIC = 0xdeadbeef;
 struct config_t
 {
   config_t()
+    : magic (0)
+    // socket
+    // kvs_host
+    , kvs_port (2439)
+    , kvs_retry_count (2)
+    // log_host
+    , log_port (2438)
+    , log_level ('I')
   {
-    memset(c, 0, sizeof(config_t));
+    memset (socket, 0, sizeof(socket));
 
-    if (gethostname (this->kvs_host, MAX_HOST_LEN) != 0)
+    if (gethostname (kvs_host, MAX_HOST_LEN) != 0)
     {
-      snprintf ( this->kvs_host
+      snprintf ( kvs_host
                , sizeof(this->kvs_host)
                , "localhost"
                );
     }
-    this->kvs_port = 2439;
-    this->kvs_retry_count = 2;
-
-    if (gethostname (this->log_host, MAX_HOST_LEN) != 0)
+    if (gethostname (log_host, MAX_HOST_LEN) != 0)
     {
-      snprintf ( this->log_host
+      snprintf ( log_host
                , MAX_HOST_LEN
                , "localhost"
                );
     }
-    this->log_port = 2438;
-    this->log_level = 'I';
   }
 
   int  magic;
