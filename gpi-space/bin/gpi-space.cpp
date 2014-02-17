@@ -962,10 +962,9 @@ static void distribute_config_or_die(const config_t *c, gpi_api_t& gpi_api)
 
 static void receive_config_or_die(config_t *c, gpi_api_t& gpi_api)
 {
-  gpi::rank_t source = 0;
-
   try
   {
+    gpi::rank_t source (-1);
     gpi_api.recv_passive( 0, sizeof(config_t), source );
     if (0 != source)
     {
