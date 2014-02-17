@@ -178,6 +178,17 @@ namespace gpi
                                         , boost::ref (memory_manager)
                                         )
                            );
+
+        for (std::size_t n(0); n < _gpi_api.number_of_nodes(); ++n)
+        {
+          if (_gpi_api.rank() != n)
+            add_child(n);
+        }
+
+        if (_gpi_api.is_master ())
+        {
+          establish();
+        }
       }
 
       topology_t::~topology_t()

@@ -272,17 +272,6 @@ namespace gpi
                     , gpi_api
                     )
       {
-        for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)
-        {
-          if (gpi_api.rank() != n)
-            _topology.add_child(n);
-        }
-
-        if (gpi_api.is_master ())
-        {
-          _topology.establish();
-        }
-
         if ( default_memory_urls.size ()
            >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
            )
