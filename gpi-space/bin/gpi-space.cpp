@@ -32,7 +32,6 @@
 #include <gpi-space/pc/container/manager.hpp>
 
 static const char * program_name = "gpi-space";
-static const float  PROGRAM_VERSION = 1.1;
 static const int CONFIG_MAGIC = 0xdeadbeef;
 
 #define MAX_PATH_LEN 4096
