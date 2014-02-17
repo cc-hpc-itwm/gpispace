@@ -160,8 +160,8 @@ static const int GPI_IB_FAILED = 30;
 static const int GPI_IB_NO_LINK = 31;
 
 static void initialize_config(config_t *c);
-static void distribute_config_or_die(const config_t *c);
-static void receive_config_or_die(config_t *c);
+static void distribute_config_or_die(const config_t *c, gpi_api_t & gpi_api);
+static void receive_config_or_die(config_t *c, gpi_api_t& gpi_api);
 
 static void signal_handler (int sig);
 namespace
@@ -757,11 +757,11 @@ int main (int ac, char *av[])
   if (gpi_api.is_master())
   {
     config.magic = CONFIG_MAGIC;
-    distribute_config_or_die (&config);
+    distribute_config_or_die (&config, gpi_api);
   }
   else
   {
-    receive_config_or_die (&config);
+    receive_config_or_die (&config, gpi_api);
     if (CONFIG_MAGIC != config.magic)
     {
       exit(GPI_MAGIC_MISMATCH);
@@ -1030,10 +1030,8 @@ static void initialize_config (config_t * c)
   c->log_level = 'I';
 }
 
-static void distribute_config_or_die(const config_t *c)
+static void distribute_config_or_die(const config_t *c, gpi_api_t& gpi_api)
 {
-  gpi_api_t & gpi_api = gpi_api_t::get();
-
   memcpy(gpi_api.dma_ptr(), c, sizeof(config_t));
   const size_t max_enqueued_requests (gpi_api.queue_depth());
   for (size_t rank (1); rank < gpi_api.number_of_nodes(); ++rank)
@@ -1084,9 +1082,8 @@ static void distribute_config_or_die(const config_t *c)
   memset(gpi_api.dma_ptr(), 0, sizeof(config_t));
 }
 
-static void receive_config_or_die(config_t *c)
+static void receive_config_or_die(config_t *c, gpi_api_t& gpi_api)
 {
-  gpi_api_t & gpi_api = gpi_api_t::get();
   gpi::rank_t source = 0;
 
   try
