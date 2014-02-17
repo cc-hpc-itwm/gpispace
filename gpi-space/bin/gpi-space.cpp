@@ -63,7 +63,6 @@ static int gpi_net = -1;
 static int gpi_np = -1;
 static int gpi_numa_socket = 0;
 static unsigned int gpi_timeout = 120;
-static int verbose = 0;
 
 static std::string default_memory_url;
 static std::vector<std::string> mem_urls;
@@ -123,9 +122,6 @@ int main (int ac, char *av[])
       fprintf(stderr, "      print this help information\n");
       fprintf(stderr, "    --version|-V\n");
       fprintf(stderr, "      print version information\n");
-      fprintf(stderr, "\n");
-      fprintf(stderr, "    --verbose|-v\n");
-      fprintf(stderr, "      be verbose\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "    --pidfile PATH (%s)\n", pidfile);
       fprintf(stderr, "      write master's PID to this file\n");
@@ -205,11 +201,6 @@ int main (int ac, char *av[])
         fprintf(stderr, "%s: missing argument to --pidfile\n", program_name);
         exit(EX_USAGE);
       }
-    }
-    else if (strcmp(av[i], "--verbose") == 0 || strcmp(av[i], "-v") == 0)
-    {
-      ++i;
-      ++verbose;
     }
     else if (strcmp(av[i], "--daemonize") == 0)
     {
@@ -968,13 +959,6 @@ static void distribute_config_or_die(const config_t *c, gpi_api_t& gpi_api)
   const size_t max_enqueued_requests (gpi_api.queue_depth());
   for (size_t rank (1); rank < gpi_api.number_of_nodes(); ++rank)
   {
-    if (verbose)
-      fprintf( stderr
-             , "%s: distributing config structure to rank %lu\n"
-             , program_name
-             , rank
-             );
-
     if (gpi_api.open_passive_requests () >= max_enqueued_requests)
     {
       try
