@@ -35,7 +35,7 @@ struct setup_and_cleanup_shared_file
 
 BOOST_FIXTURE_TEST_CASE (create_sfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
   using namespace gpi::pc::memory;
   using namespace gpi::pc::type;
@@ -84,7 +84,7 @@ BOOST_FIXTURE_TEST_CASE (create_sfs_segment, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (old_segment_version, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
   using namespace gpi::pc::memory;
 
@@ -127,7 +127,7 @@ BOOST_FIXTURE_TEST_CASE (old_segment_version, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (too_new_segment_version, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
   using namespace gpi::pc::memory;
 
@@ -163,7 +163,7 @@ BOOST_FIXTURE_TEST_CASE (too_new_segment_version, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (garbage_segment_version, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
   using namespace gpi::pc::memory;
 
@@ -199,7 +199,7 @@ BOOST_FIXTURE_TEST_CASE (garbage_segment_version, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (reopen_sfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
   using namespace gpi::pc::memory;
   using namespace gpi::pc::type;
@@ -260,7 +260,7 @@ BOOST_FIXTURE_TEST_CASE (reopen_sfs_segment, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (create_big_sfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
   using namespace gpi::pc::memory;
 
@@ -291,7 +291,7 @@ BOOST_FIXTURE_TEST_CASE (create_big_sfs_segment, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_mmap, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
   using namespace gpi::pc::memory;
 
@@ -322,7 +322,7 @@ BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_mmap, setup_and_cleanup_shared_
 
 BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_no_mmap, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
   using namespace gpi::pc::memory;
 
@@ -352,7 +352,7 @@ BOOST_FIXTURE_TEST_CASE (create_huge_sfs_segment_no_mmap, setup_and_cleanup_shar
 
 BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
   using namespace gpi::pc::memory;
   using namespace gpi::pc::type;
@@ -404,7 +404,7 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % 1 << HANDLE_IDENT_BITS);
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
   using namespace gpi::pc::memory;
 
