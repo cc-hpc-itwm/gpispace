@@ -39,14 +39,7 @@ namespace gpi
 
     real_gpi_api_t::~real_gpi_api_t ()
     {
-      try
-      {
-        shutdown ();
-      }
-      catch (std::exception const & ex)
-      {
-        LOG(WARN, "could not stop real_gpi_api_t on rank " << rank());
-      }
+      shutdown ();
     }
 
     void real_gpi_api_t::set_memory_size (const gpi::size_t sz)

@@ -28,14 +28,7 @@ namespace gpi
 
     fake_gpi_api_t::~fake_gpi_api_t ()
     {
-      try
-      {
-        shutdown ();
-      }
-      catch (std::exception const & ex)
-      {
-        LOG(WARN, "could not stop fake_gpi_api_t on rank " << rank());
-      }
+      shutdown ();
     }
 
     void fake_gpi_api_t::set_memory_size (const gpi::size_t sz)
