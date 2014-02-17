@@ -19,8 +19,8 @@ namespace gpi
 {
   namespace api
   {
-    real_gpi_api_t::real_gpi_api_t ()
-      : m_is_master (true)
+    real_gpi_api_t::real_gpi_api_t (bool is_master)
+      : m_is_master (is_master)
       , m_binary_path ("")
       , m_startup_done (false)
       , m_rank (std::numeric_limits<rank_t>::max())
@@ -422,11 +422,6 @@ namespace gpi
       }
 
       return 0;
-    }
-
-    void real_gpi_api_t::set_is_master(const bool b)
-    {
-      m_is_master = b;
     }
 
     bool real_gpi_api_t::is_master (void) const

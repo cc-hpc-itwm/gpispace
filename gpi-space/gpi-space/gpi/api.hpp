@@ -50,7 +50,7 @@ namespace gpi
       static const char * REAL_API;
       static const char * FAKE_API;
 
-      static gpi_api_t & create (std::string const & impl);
+      static gpi_api_t & create (std::string const & impl, bool is_master);
       static gpi_api_t & get ();
       static void destroy ();
 
@@ -100,7 +100,6 @@ namespace gpi
       virtual int check (const char * hostname) const = 0;
       virtual int check () const = 0;
 
-      virtual void set_is_master(const bool b) = 0;
       virtual bool is_master (void) const = 0;
       virtual bool is_slave (void) const = 0;
 

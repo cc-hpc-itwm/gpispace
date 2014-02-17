@@ -63,7 +63,6 @@ namespace gpi
       int check (const gpi::rank_t) const;
       int check () const;
 
-      void set_is_master(const bool b);
       bool is_master (void) const;
       bool is_slave (void) const;
 
@@ -114,7 +113,7 @@ namespace gpi
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
-      fake_gpi_api_t ();
+      fake_gpi_api_t (bool is_master);
 
       mutable mutex_type m_mutex;
       bool m_is_master;

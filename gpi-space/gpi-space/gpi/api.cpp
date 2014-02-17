@@ -16,18 +16,18 @@ namespace gpi
     const char * gpi_api_t::REAL_API = "gpi.api.real";
     const char * gpi_api_t::FAKE_API = "gpi.api.fake";
 
-    gpi_api_t & gpi_api_t::create (std::string const & impl)
+    gpi_api_t & gpi_api_t::create (std::string const & impl, bool is_master)
     {
       if (!instance)
       {
         if (impl == FAKE_API)
         {
-          instance.reset (new fake_gpi_api_t);
+          instance.reset (new fake_gpi_api_t (is_master));
         }
 #ifdef ENABLE_REAL_GPI
         else if (impl == REAL_API)
         {
-          instance.reset (new real_gpi_api_t);
+          instance.reset (new real_gpi_api_t (is_master));
         }
 #endif
         else

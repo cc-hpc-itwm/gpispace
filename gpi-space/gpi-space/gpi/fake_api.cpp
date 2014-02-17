@@ -14,8 +14,8 @@ namespace gpi
 {
   namespace api
   {
-    fake_gpi_api_t::fake_gpi_api_t ()
-      : m_is_master (true)
+    fake_gpi_api_t::fake_gpi_api_t (bool is_master)
+      : m_is_master (is_master)
       , m_binary_path("")
       , m_startup_done (false)
       , m_rank (0)
@@ -248,11 +248,6 @@ namespace gpi
         LOG(INFO, "GPI check successful.");
       }
       return ec;
-    }
-
-    void fake_gpi_api_t::set_is_master(const bool b)
-    {
-      m_is_master = b;
     }
 
     bool fake_gpi_api_t::is_master (void) const

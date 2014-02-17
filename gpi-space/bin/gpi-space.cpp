@@ -580,11 +580,9 @@ int main (int ac, char *av[])
   // initialize gpi api
   if (strcmp(api_name, "auto") == 0 || strcmp(api_name, "real") == 0)
   {
-    gpi_api_t * gpi_api = &(gpi_api_t::create (gpi_api_t::REAL_API));
+    gpi_api_t * gpi_api = &(gpi_api_t::create (gpi_api_t::REAL_API, is_master));
     if (is_master)
     {
-      gpi_api->set_is_master (true);
-
       int num_nodes = gpi_api->build_hostlist();
       if (num_nodes <= 0)
       {
@@ -599,18 +597,17 @@ int main (int ac, char *av[])
           fprintf (stderr, "%s: fallback to fake API\n", program_name);
 
           gpi_api_t::destroy();
-          gpi_api_t::create (gpi_api_t::FAKE_API);
+          gpi_api_t::create (gpi_api_t::FAKE_API, is_master);
         }
       }
     }
   }
   else
   {
-    gpi_api_t::create (gpi_api_t::FAKE_API);
+    gpi_api_t::create (gpi_api_t::FAKE_API, is_master);
   }
 
   gpi_api_t & gpi_api = gpi_api_t::get();
-  gpi_api.set_is_master (is_master);
 
   gpi_api.set_binary_path (av[0]);
   gpi_api.set_memory_size (gpi_mem);
