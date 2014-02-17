@@ -417,26 +417,6 @@ namespace
   };
 }
 
-template <typename T>
-void Agent::notifySubscribers(const T& ptrEvt)
-{
-  sdpa::job_id_t jobId = ptrEvt->job_id();
-
-  BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
-  {
-    sdpa::job_id_list_t listSubscrJobs = pair_subscr_joblist.second;
-
-    for( sdpa::job_id_list_t::iterator it = listSubscrJobs.begin(); it != listSubscrJobs.end(); it++ )
-    if( *it == jobId )
-    {
-      ptrEvt->to() = pair_subscr_joblist.first;
-      sendEventToOther(ptrEvt);
-
-      break;
-    }
-  }
-}
-
 void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 {
   Job* pJob;
