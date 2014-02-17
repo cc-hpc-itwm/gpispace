@@ -50,7 +50,6 @@ namespace gpi
       private:
         typedef boost::shared_ptr<gpi::pc::type::counter_t> counter_ptr;
 
-        static boost::shared_ptr<handle_generator_t> instance;
         gpi::pc::type::size_t m_node_identifier;
         std::vector<counter_ptr> m_counter;
       };
