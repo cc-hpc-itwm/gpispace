@@ -822,7 +822,23 @@ void GenericDaemon::handle_events()
 {
   while (true)
   {
-    _event_queue.get()->handleBy (this);
+    const events::SDPAEvent::Ptr event (_event_queue.get());
+    try
+    {
+      event->handleBy (this);
+    }
+    catch (std::exception const& ex)
+    {
+      sendEventToOther
+        ( events::ErrorEvent::Ptr
+          ( new events::ErrorEvent ( event->to() //! \todo expects name() == to. true?
+                                   , event->from()
+                                   , events::ErrorEvent::SDPA_EUNKNOWN
+                                   , ex.what()
+                                   )
+          )
+        );
+    }
   }
 }
 
