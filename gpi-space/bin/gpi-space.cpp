@@ -77,6 +77,39 @@ namespace
 static int configure_logging (const config_t *cfg, const char* logfile);
 static int configure_kvs (const config_t *cfg);
 
+namespace
+{
+  enum requested_api_t { API_auto, API_real, API_fake };
+  //! \todo directly return movable std::unique_ptr
+  gpi_api_t* create_gpi_api (requested_api_t requested_api, bool is_master)
+  {
+#ifdef ENABLE_REAL_GPI
+    if (requested_api == API_auto)
+    {
+      try
+      {
+        return new gpi::api::real_gpi_api_t (is_master);
+      }
+      catch (gpi::exception::gpi_error const& ex)
+      {
+        fprintf (stderr, "%s: %s\n", program_name, ex.what());
+        fprintf (stderr, "%s: fallback to fake API\n", program_name);
+
+        return new gpi::api::fake_gpi_api_t (is_master);
+      }
+    }
+    else if (requested_api == API_real)
+    {
+      return new gpi::api::real_gpi_api_t (is_master);
+    }
+    else // if (requested_api == API_fake)
+#endif
+    {
+      return new gpi::api::fake_gpi_api_t (is_master);
+    }
+  }
+}
+
 int main (int ac, char *av[])
 {
   int i = 0;
@@ -86,7 +119,7 @@ int main (int ac, char *av[])
   bool gpi_clear_caches = true;
   char pidfile[MAX_PATH_LEN];
   snprintf (pidfile, sizeof(pidfile), "%s", "");
-  enum { API_auto, API_real, API_fake } requested_api;
+  requested_api_t requested_api;
   char socket_path[MAX_PATH_LEN];
   snprintf (socket_path, sizeof(socket_path), "/var/tmp");
   char logfile[MAX_PATH_LEN];
@@ -585,34 +618,9 @@ int main (int ac, char *av[])
            );
 
   // initialize gpi api
-  boost::shared_ptr<gpi_api_t> instance;
-
-#ifdef ENABLE_REAL_GPI
-  if (requested_api == API_auto)
-  {
-    try
-    {
-      instance.reset (new gpi::api::real_gpi_api_t (is_master));
-    }
-    catch (gpi::exception::gpi_error const& ex)
-    {
-      fprintf (stderr, "%s: %s\n", program_name, ex.what());
-      fprintf (stderr, "%s: fallback to fake API\n", program_name);
-
-      instance.reset (new gpi::api::fake_gpi_api_t (is_master));
-    }
-  }
-  else if (requested_api == API_real)
-  {
-    instance.reset (new gpi::api::real_gpi_api_t (is_master));
-  }
-  else if (requested_api == API_fake)
-#endif
-  {
-    instance.reset (new gpi::api::fake_gpi_api_t (is_master));
-  }
-
-  gpi_api_t & gpi_api = *instance;
+  boost::scoped_ptr<gpi_api_t> gpi_api_
+    (create_gpi_api (requested_api, is_master));
+  gpi_api_t& gpi_api (*gpi_api_);
 
   gpi_api.set_binary_path (av[0]);
   gpi_api.set_memory_size (gpi_mem);
