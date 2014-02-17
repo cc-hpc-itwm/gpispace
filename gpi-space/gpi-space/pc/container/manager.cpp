@@ -270,6 +270,7 @@ namespace gpi
                     , "dummy-cookie"
                     , _memory_manager
                     , kvs_client
+                    , gpi_api
                     )
       {
         for (std::size_t n(0); n < gpi_api.number_of_nodes(); ++n)

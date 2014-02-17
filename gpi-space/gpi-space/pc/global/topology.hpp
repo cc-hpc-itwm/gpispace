@@ -71,6 +71,7 @@ namespace gpi
                    , std::string const & cookie
                    , memory::manager_t& memory_manager
                    , fhg::com::kvs::kvsc_ptr_t kvs_client
+                   , api::gpi_api_t&
                    );
         ~topology_t ();
 
@@ -194,6 +195,8 @@ namespace gpi
         fhg::com::message_t m_incoming_msg;
 
         result_list_t m_current_results;
+
+        api::gpi_api_t& _gpi_api;
       };
     }
   }

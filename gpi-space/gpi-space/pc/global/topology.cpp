@@ -129,6 +129,7 @@ namespace gpi
                              , std::string const & cookie
                              , memory::manager_t& memory_manager
                              , fhg::com::kvs::kvsc_ptr_t kvs_client
+                             , api::gpi_api_t& gpi_api
                              )
         : m_shutting_down (false)
         , m_go_received (false)
@@ -136,6 +137,7 @@ namespace gpi
         , m_established (false)
         , m_rank (rank)
         , _kvs_client (kvs_client)
+        , _gpi_api (gpi_api)
       {
         lock_type lock(m_mutex);
         m_peer.reset
@@ -327,8 +329,7 @@ namespace gpi
         lock_type alloc_lock(m_global_alloc_mutex);
 
         // acquire cluster wide access to the gpi resource
-        boost::unique_lock<gpi::api::gpi_api_t>
-          gpi_lock(gpi::api::gpi_api_t::get());
+        boost::unique_lock<gpi::api::gpi_api_t> gpi_lock (_gpi_api);
 
         try
         {
