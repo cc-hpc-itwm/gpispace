@@ -209,7 +209,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
       {
           sendEventToOther( events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                               , pEvt->from()
-                                                              , events::ErrorEvent::SDPA_EJOBALREADYCANCELED
+                                                              , events::ErrorEvent::SDPA_EUNKNOWN
                                                               , "A cancelation request for this job was already posted!" )
                                                    ));
           return;
