@@ -615,7 +615,7 @@ int main (int ac, char *av[])
           fprintf (stderr, "%s: fallback to fake API\n", program_name);
 
           gpi_api_t::destroy();
-          gpi_api = &(gpi_api_t::create (gpi_api_t::FAKE_API));
+          gpi_api_t::create (gpi_api_t::FAKE_API);
         }
       }
     }
