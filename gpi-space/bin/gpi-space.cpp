@@ -23,6 +23,7 @@
 #include <fhgcom/kvs/kvsc.hpp>
 
 #include <fhg/util/daemonize.hpp>
+#include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/pidfile_writer.hpp>
 #include <fhg/revision.hpp>
 
@@ -81,7 +82,6 @@ struct config_t
   char log_level;
 } __attribute__((packed));
 
-static bool gpi_startup_done = false;
 static bool stop_requested = false;
 
 typedef gpi::api::gpi_api_t gpi_api_t;
@@ -133,6 +133,12 @@ namespace
     {
       return new gpi::api::fake_gpi_api_t (is_master);
     }
+  }
+
+  void startup_failed()
+  {
+    LOG (ERROR, "startup failed");
+    exit (1);
   }
 }
 
@@ -747,13 +753,13 @@ int main (int ac, char *av[])
 
   signal(SIGTERM, signal_handler);
   signal(SIGINT, signal_handler);
-  signal(SIGALRM, signal_handler);
 
   try
   {
-    gpi_startup_done = false;
+    fhg::util::signal_handler_manager signal_handler;
+    signal_handler.add (SIGALRM, boost::bind (&startup_failed));
+
     gpi_api.start (ac, av, gpi_timeout);
-    gpi_startup_done = true;
   }
   catch (std::exception const & ex)
   {
@@ -826,16 +832,6 @@ static void signal_handler (int sig)
 {
   switch (sig)
   {
-  case SIGALRM:
-    if (not gpi_startup_done)
-    {
-      LOG(ERROR, "startup failed");
-      exit (1);
-    }
-    else
-    {
-    }
-    break;
   case SIGTERM:
   case SIGINT:
     stop_requested = true;
