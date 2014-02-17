@@ -3,197 +3,197 @@
 #include "kvs_setup_fixture.hpp"
 #include "tests_config.hpp"
 #include <utils.hpp>
+#include <cstdlib>
+#include <ctime>
 
 #include <boost/test/unit_test.hpp>
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-namespace test_agent_requests_workflow_cancelation_after_all_act_submitted
-{
-  class TestAgent : public sdpa::daemon::Agent
-   {
-    public:
-      TestAgent (const std::string& name, unsigned int n_total_expected_activities)
-        : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(), boost::none)
-        , _n_recv_tasks(0)
-        , _n_total_expected_activities(n_total_expected_activities)
-      {}
+class TestAgent : public sdpa::daemon::Agent
+ {
+  public:
+    TestAgent (const std::string& name
+               , unsigned int n_finished_activities_before_cancel
+               , unsigned int n_wait_activities_before_cancel)
+      : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(), boost::none)
+      , _n_received_activities(0)
+      , _n_finished_activities_before_cancel(n_finished_activities_before_cancel)
+      , _n_wait_activities_before_cancel(n_wait_activities_before_cancel)
+    {}
 
-      void submit ( const we::layer::id_type& activity_id
-                  , const we::type::activity_t& activity
-                  )
-      {
-        sdpa::daemon::GenericDaemon::submit(activity_id, activity);
-
-        boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
-        if (++_n_recv_tasks == _n_total_expected_activities )
-        {
-          _cond_all_submitted.notify_one();
-        }
-      }
-
-      void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt )
-      {
-        workflowEngine()->canceled(pEvt->job_id());
-      }
-
-      void canceled(const we::layer::id_type&)
-      {
-        _cond_wf_canceled.notify_one();
-      }
-
-      void wait_all_submitted()
-      {
-        boost::unique_lock<boost::mutex> lock (_mtx_all_submitted);
-        _cond_all_submitted.wait (lock);
-      }
-
-      void wait_wf_canceled()
-      {
-        boost::unique_lock<boost::mutex> lock (_mtx_wf_canceled);
-        _cond_wf_canceled.wait (lock);
-      }
-
-    private:
-
-      boost::mutex _mtx_all_submitted;
-      boost::mutex _mtx_wf_canceled;
-      boost::condition_variable_any _cond_all_submitted;
-      boost::condition_variable_any _cond_wf_canceled;
-      unsigned int _n_recv_tasks;
-      unsigned int _n_total_expected_activities;
-   };
-
-  BOOST_AUTO_TEST_CASE (agent_requests_workflow_cancelation_after_all_act_submitted)
-  {
-    const std::string workflow
-        (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
-
-    const we::type::activity_t activity (workflow);
-    // the workflow requires 2 activities
-    TestAgent agent ("agent_0", 2);
-
-    sdpa::job_id_t job_id(fhg::util::random_string());
-    agent.workflowEngine()->submit (job_id, activity);
-    agent.wait_all_submitted();
-
-    agent.workflowEngine()->cancel (job_id);
-
-    agent.wait_wf_canceled();
-  }
-}
-
-namespace test_agent_requests_cancelation_after_activity_finshed
-{
-  class TestAgent : public sdpa::daemon::Agent
+    void submit ( const we::layer::id_type& activity_id
+                , const we::type::activity_t& activity
+                )
     {
-    public:
-      TestAgent (const std::string& name)
-         : sdpa::daemon::Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(), boost::none)
-         , _n_recv_tasks(0)
-     {}
+      sdpa::daemon::GenericDaemon::submit(activity_id, activity);
 
-     void submit ( const we::layer::id_type& activity_id
-                       , const we::type::activity_t& activity
-                       )
-     {
-       sdpa::daemon::GenericDaemon::submit(activity_id, activity);
-       if(_n_recv_tasks==0)
-       {
+      _n_received_activities++;
+
+      if(_n_received_activities <= _n_finished_activities_before_cancel)
+      {
           workflowEngine()->finished(activity_id, activity);
-       }
+      }
 
-       _n_recv_tasks++;
-       boost::unique_lock<boost::mutex> const _ (_mtx_trigger_cancelation);
-       if(_n_recv_tasks==5) // trigger cancelation after the 5th job submitted
-       {
-         _cond_trigger_cancelation.notify_one();
-       }
-     }
+      if (_n_received_activities == _n_wait_activities_before_cancel )
+      {
+        _cond_start_cancel.notify_one();
+      }
+    }
 
-     void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt )
-     {
-       sdpa::daemon::Job* pJob = jobManager().findJob(pEvt->job_id());
-       BOOST_REQUIRE(pJob);
-       workflowEngine()->canceled(pEvt->job_id());
-     }
+    void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt )
+    {
+      sdpa::daemon::Job* pJob = jobManager().findJob(pEvt->job_id());
+      BOOST_REQUIRE(pJob);
+      workflowEngine()->canceled(pEvt->job_id());
+    }
 
-     void canceled(const we::layer::id_type& id)
-     {
-       _cond_wf_canceled.notify_one();
-     }
+    void canceled(const we::layer::id_type&)
+    {
+      _cond_workflow_canceled.notify_one();
+    }
 
-     void wait_wf_canceled()
-     {
-       boost::unique_lock<boost::mutex> lock(_mtx_wf_canceled);
-       _cond_wf_canceled.wait (lock);
-     }
+    void start_workflow_cancelation(const sdpa::job_id_t& job_id)
+    {
+      boost::unique_lock<boost::mutex> lock(_mtx_start_cancel);
+      _cond_start_cancel.wait(lock);
+      workflowEngine()->cancel (job_id);
+    }
 
-     void start_cancelation(const sdpa::job_id_t& job_id)
-     {
-       boost::unique_lock<boost::mutex> lock(_mtx_trigger_cancelation);
-       _cond_trigger_cancelation.wait(lock);
-       workflowEngine()->cancel (job_id);
-     }
+    void wait_workflow_canceled()
+    {
+      boost::unique_lock<boost::mutex> lock (_mtx_workflow_canceled);
+      _cond_workflow_canceled.wait (lock);
+    }
 
-     std::string gen_id() { return GenericDaemon::gen_id(); }
+  private:
 
-    private:
+    boost::mutex _mtx_start_cancel;
+    boost::mutex _mtx_workflow_canceled;
+    boost::condition_variable_any _cond_start_cancel;
+    boost::condition_variable_any _cond_workflow_canceled;
+    unsigned int _n_received_activities;
+    unsigned int _n_finished_activities_before_cancel;
+    unsigned int _n_wait_activities_before_cancel;
+ };
 
-     boost::mutex _mtx_all_submitted;
-     boost::mutex _mtx_wf_canceled;
-     boost::mutex _mtx_trigger_cancelation;
-     boost::condition_variable_any _cond_all_submitted;
-     boost::condition_variable_any _cond_wf_canceled;
-     boost::condition_variable_any _cond_trigger_cancelation;
-     unsigned int _n_recv_tasks;
-    };
-
-  BOOST_AUTO_TEST_CASE (agent_requests_cancelation_after_activity_finshed)
-  {
-    const std::string workflow
+BOOST_AUTO_TEST_CASE (cancel_workflow_after_first_activity_received)
+{
+  // Note: this workflow produces 30 activities
+  const std::string workflow
       (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
 
-    const we::type::activity_t activity (workflow);
-    TestAgent agent ("agent_0");
+  const we::type::activity_t activity (workflow);
+  TestAgent agent ("agent_0", 0, 1);
 
-    sdpa::job_id_t job_id(agent.gen_id());
-    agent.workflowEngine()->submit (job_id, activity);
+  sdpa::job_id_t job_id(fhg::util::random_string());
+  agent.workflowEngine()->submit (job_id, activity);
 
-    agent.start_cancelation(job_id);
+  agent.start_workflow_cancelation(job_id);
 
-    agent.wait_wf_canceled();
-  }
+  agent.wait_workflow_canceled();
 }
 
-BOOST_AUTO_TEST_CASE (test_cancel_without_and_with_agent)
+BOOST_AUTO_TEST_CASE (cancel_workflow_after_first_activity_finished)
 {
   const std::string workflow
-    (utils::require_and_read_file ("coallocation_test2.pnet"));
+      (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+
+  const we::type::activity_t activity (workflow);
+  TestAgent agent ("agent_0", 1, 5);
+
+  sdpa::job_id_t job_id(fhg::util::random_string());
+  agent.workflowEngine()->submit (job_id, activity);
+
+  agent.start_workflow_cancelation(job_id);
+
+  agent.wait_workflow_canceled();
+}
+
+BOOST_AUTO_TEST_CASE (cancel_workflow_after_all_activities_submitted_and_finished)
+{
+  const std::string workflow
+      (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+
+  const we::type::activity_t activity (workflow);
+  TestAgent agent ("agent_0", 30, 30);
+
+  sdpa::job_id_t job_id(fhg::util::random_string());
+  agent.workflowEngine()->submit (job_id, activity);
+
+  agent.start_workflow_cancelation(job_id);
+
+  agent.wait_workflow_canceled();
+}
+
+BOOST_AUTO_TEST_CASE (cancel_workflow_after_random_number_of_activities_submitted_or_finished)
+{
+  // Note: this workflow produces 30 activities
+  const std::string workflow
+      (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+
+  srand (time(NULL));
+
+  // generate a number between 1 and 30
+  unsigned int n_act_submitted = rand() % 30 + 1;
+  unsigned int n_act_finished  = rand() % n_act_submitted + 1;
+
+  const we::type::activity_t activity (workflow);
+  TestAgent agent ("agent_0", n_act_finished, n_act_submitted);
+
+  sdpa::job_id_t job_id(fhg::util::random_string());
+  agent.workflowEngine()->submit (job_id, activity);
+
+  agent.start_workflow_cancelation(job_id);
+
+  agent.wait_workflow_canceled();
+}
+
+BOOST_AUTO_TEST_CASE (cancel_no_agent)
+{
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/transform_file.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
-  BOOST_REQUIRE_EQUAL
-    ( utils::client::submit_job_and_cancel_and_wait_for_termination
-      (workflow, orchestrator)
-    , sdpa::status::CANCELED
-    );
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  sdpa::job_id_t job_id(client.submitJob (workflow));
+  client.cancelJob(job_id);
 
   BOOST_REQUIRE_EQUAL
-    ( utils::client::submit_job_and_cancel_and_wait_for_termination
-      (workflow, orchestrator)
-    , sdpa::status::CANCELED
-    );
+  ( utils::client::wait_for_terminal_state (client, job_id)
+    , sdpa::status::CANCELED );
 }
 
-BOOST_AUTO_TEST_CASE (test_call_cancel_twice_orch)
+BOOST_AUTO_TEST_CASE (cancel_with_agent)
 {
   const std::string workflow
-    (utils::require_and_read_file ("coallocation_test2.pnet"));
+    (utils::require_and_read_file ("workflows/transform_file.pnet"));
+
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+
+  utils::agent agent
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
+
+  sdpa::job_id_t job_id(client.submitJob (workflow));
+  while(!agent._.hasJobs());
+
+  client.cancelJob(job_id);
+
+  BOOST_REQUIRE_EQUAL
+  ( utils::client::wait_for_terminal_state (client, job_id)
+    , sdpa::status::CANCELED );
+}
+
+BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
+{
+  const std::string workflow
+    (utils::require_and_read_file ("workflows/transform_file.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -213,10 +213,10 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice_orch)
   BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE (test_call_cancel_twice_orch_agent)
+BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("workflows/transform_file.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_2", "127.0.0.1", kvs_host(), kvs_port());
@@ -227,9 +227,6 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice_orch_agent)
   sdpa::client::Client client (orchestrator.name(),  kvs_host(), kvs_port());
   sdpa::job_id_t job_id(client.submitJob (workflow));
 
-  // wait until the agent gets the job, otherwise we're the previous case
-  while(!agent._.hasJobs());
-
   client.cancelJob(job_id);
 
   BOOST_REQUIRE_EQUAL
@@ -237,79 +234,4 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice_orch_agent)
     , sdpa::status::CANCELED );
 
   BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
-}
-
-
-namespace test_test_cancel_terminated_job
-{
-  class TestAgent : public sdpa::daemon::Agent
-   {
-   public:
-
-     typedef boost::unordered_map< we::layer::id_type,
-                                   we::type::activity_t > job_map_t ;
-
-     TestAgent (const std::string& name, const std::string& master_name)
-       : sdpa::daemon::Agent ( name,
-                               "127.0.0.1",  kvs_host(), kvs_port(),
-                               sdpa::master_info_list_t(1,
-                               sdpa::MasterInfo(master_name)), boost::none)
-       , _notifier(boost::thread (&TestAgent::notify_failed, this))
-     {
-     }
-
-     ~TestAgent()
-     {
-       _notifier.interrupt();
-       if (_notifier.joinable())
-       {
-           _notifier.join();
-       }
-     }
-
-     void submit ( const we::layer::id_type& activity_id
-                 , const we::type::activity_t&
-                 )
-     {
-       boost::unique_lock<boost::mutex> lock (_mtx);
-       _job_list.push_back(activity_id);
-       _cond.notify_one();
-     }
-
-     void notify_failed()
-     {
-       while(true)
-       {
-         boost::unique_lock<boost::mutex> lock (_mtx);
-         _cond.wait(lock);
-         BOOST_FOREACH(const sdpa::job_id_t& job_id, _job_list) {
-           workflowEngine()->failed(job_id, "");
-         }
-       }
-     }
-
-   private:
-     boost::mutex _mtx;
-     boost::condition_variable_any _cond;
-     boost::thread _notifier;
-     sdpa::job_id_list_t _job_list;
-   };
-
-  BOOST_AUTO_TEST_CASE (test_cancel_terminated_job)
-  {
-    const std::string workflow
-      (utils::require_and_read_file ("workflows/capabilities.pnet"));
-
-    const utils::orchestrator orchestrator ("orchestrator_3", "127.0.0.1",  kvs_host(), kvs_port());
-    TestAgent agent("agent_3", "orchestrator_3");
-
-    sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-    sdpa::job_id_t job_id(client.submitJob (workflow));
-
-    BOOST_REQUIRE_EQUAL
-      ( utils::client::wait_for_terminal_state (client, job_id)
-          , sdpa::status::FAILED );
-
-    BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
-  }
 }
