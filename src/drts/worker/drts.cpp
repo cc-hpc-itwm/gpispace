@@ -595,7 +595,7 @@ void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
     send_event(new sdpa::events::ErrorEvent
                 ( m_my_name
                 , e->from()
-                , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
+                , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                 , "could not find job " + std::string(e->job_id())
                 ));
   }
@@ -661,7 +661,7 @@ void DRTSImpl::handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
     send_event (new sdpa::events::ErrorEvent
                  ( m_my_name
                  , e->from()
-                 , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
+                 , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                  , "could not find job " + std::string(e->job_id())
                  ));
     return;
@@ -697,7 +697,7 @@ void DRTSImpl::handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent
     send_event (new sdpa::events::ErrorEvent
                  ( m_my_name
                  , e->from()
-                 , sdpa::events::ErrorEvent::SDPA_EJOBNOTFOUND
+                 , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                  , "could not find job " + std::string(e->job_id())
                  ));
     return;

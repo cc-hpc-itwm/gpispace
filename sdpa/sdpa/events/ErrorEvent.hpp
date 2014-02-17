@@ -16,7 +16,6 @@ namespace sdpa
 
       enum error_code_t
         {
-          SDPA_EJOBNOTFOUND,
           SDPA_EJOBEXISTS,
           SDPA_EJOBREJECTED,
           SDPA_EJOBNOTDELETED, // relevant only to the client

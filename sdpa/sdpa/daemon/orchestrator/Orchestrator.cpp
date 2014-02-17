@@ -268,7 +268,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
   {
       sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                          , pEvt->from()
-                                                         ,  events::ErrorEvent::SDPA_EJOBNOTFOUND
+                                                         ,  events::ErrorEvent::SDPA_EUNKNOWN
                                                          , "No such job found" )
                                                         ));
   }
@@ -343,7 +343,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
   {
       sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                           , e.from()
-                                                          ,  events::ErrorEvent::SDPA_EJOBNOTFOUND
+                                                          ,  events::ErrorEvent::SDPA_EUNKNOWN
                                                           , "no such job"
                                                          )
                                         ));
@@ -376,7 +376,7 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
   {
     LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
 
-    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id()) );
+    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EUNKNOWN, "Inexistent job: "+pEvt->job_id()) );
     sendEventToOther(pErrorEvt);
   }
 }
@@ -403,7 +403,7 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
   {
     LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
 
-      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EJOBNOTFOUND, "Inexistent job: "+pEvt->job_id()) );
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), pEvt->from(), events::ErrorEvent::SDPA_EUNKNOWN, "Inexistent job: "+pEvt->job_id()) );
       sendEventToOther(pErrorEvt);
   }
 }

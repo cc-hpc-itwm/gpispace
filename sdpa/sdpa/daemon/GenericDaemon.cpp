@@ -920,7 +920,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
         oss<<jobId<<". The job does not exist!";
         events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name(),
                                                                   subscriber,
-                                                                  events::ErrorEvent::SDPA_EJOBNOTFOUND,
+                                                                  events::ErrorEvent::SDPA_EUNKNOWN,
                                                                   oss.str()));
         sendEventToOther(pErrorEvt);
         return;
@@ -1002,7 +1002,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
 
       sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , subscriber
-                                                          , events::ErrorEvent::SDPA_EJOBNOTFOUND
+                                                          , events::ErrorEvent::SDPA_EUNKNOWN
                                                           , strErr
                                                           )
       ));
@@ -1069,7 +1069,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEv
                         << " not found!"
                         );
 
-    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTFOUND, "Could not acknowledge job") );
+    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, "Could not acknowledge job") );
     sendEventToOther(pErrorEvt);
   }
 }
@@ -1110,7 +1110,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
   {
     LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
 
-     events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
+     events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, "Couldn't find the job!") );
      sendEventToOther(pErrorEvt);
   }
 }
@@ -1150,7 +1150,7 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
   {
     LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
 
-    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTFOUND, "Couldn't find the job!") );
+    events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, "Couldn't find the job!") );
     sendEventToOther(pErrorEvt);
   }
 }

@@ -428,7 +428,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
       {
         sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , pEvt->from()
-                                                          , events::ErrorEvent::SDPA_EJOBNOTFOUND
+                                                          , events::ErrorEvent::SDPA_EUNKNOWN
                                                           , "No such job found" )
                                                          ));
       }
