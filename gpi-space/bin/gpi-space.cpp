@@ -52,7 +52,6 @@ struct config_t
   unsigned short log_port;
   char log_level;
 } __attribute__((packed));
-static config_t config;
 
 static bool gpi_startup_done = false;
 static bool stop_requested = false;
@@ -136,6 +135,7 @@ int main (int ac, char *av[])
 
   std::vector<std::string> mem_urls;
 
+  config_t config;
   initialize_config (&config);
 
   // parse command line
