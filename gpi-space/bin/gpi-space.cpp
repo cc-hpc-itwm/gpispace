@@ -65,7 +65,7 @@ static int gpi_numa_socket = 0;
 static unsigned int gpi_timeout = 120;
 static int verbose = 0;
 
-static char default_memory_url [MAX_PATH_LEN];
+static std::string default_memory_url;
 static std::vector<std::string> mem_urls;
 
 typedef gpi::api::gpi_api_t gpi_api_t;
@@ -96,7 +96,7 @@ static void long_usage()
   fprintf(stderr, "    --socket PATH (%s)\n", socket_path);
   fprintf(stderr, "      create sockets in this base path\n");
   fprintf(stderr, "\n");
-  fprintf(stderr, "    --mem-url URL (%s)\n", default_memory_url);
+  fprintf(stderr, "    --mem-url URL (%s)\n", default_memory_url.c_str());
   fprintf(stderr, "      url of the default memory segment (1)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "      examples are:\n");
@@ -182,10 +182,7 @@ int main (int ac, char *av[])
   snprintf (api_name, sizeof(api_name), "%s", "auto");
   snprintf (socket_path, sizeof(socket_path), "/var/tmp");
   memset (logfile, 0, sizeof(logfile));
-  snprintf ( default_memory_url
-           , sizeof (default_memory_url)
-           , "gpi://?buffer_size=4194304&buffers=8"
-           );
+  default_memory_url = "gpi://?buffer_size=4194304&buffers=8";
 
   initialize_config (&config);
 
