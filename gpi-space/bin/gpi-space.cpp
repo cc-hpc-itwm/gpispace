@@ -52,20 +52,6 @@ static config_t config;
 
 static bool gpi_startup_done = false;
 static bool stop_requested = false;
-static char pidfile[MAX_PATH_LEN];
-static char api_name[MAX_PATH_LEN];
-static char socket_path[MAX_PATH_LEN];
-static char logfile[MAX_PATH_LEN];
-static unsigned long long gpi_mem = (1<<26);
-static unsigned short gpi_port = 0;
-static unsigned int gpi_mtu = 0;
-static int gpi_net = -1;
-static int gpi_np = -1;
-static int gpi_numa_socket = 0;
-static unsigned int gpi_timeout = 120;
-
-static std::string default_memory_url;
-static std::vector<std::string> mem_urls;
 
 typedef gpi::api::gpi_api_t gpi_api_t;
 
@@ -86,7 +72,7 @@ namespace
 {
   fhg::com::kvs::kvsc_ptr_t kvs_client;
 }
-static int configure_logging (const config_t *cfg);
+static int configure_logging (const config_t *cfg, const char* logfile);
 static int configure_kvs (const config_t *cfg);
 
 int main (int ac, char *av[])
@@ -96,11 +82,25 @@ int main (int ac, char *av[])
   bool is_master = true;
   bool gpi_perform_checks = true;
   bool gpi_clear_caches = true;
+  char pidfile[MAX_PATH_LEN];
   snprintf (pidfile, sizeof(pidfile), "%s", "");
+  char api_name[MAX_PATH_LEN];
   snprintf (api_name, sizeof(api_name), "%s", "auto");
+  char socket_path[MAX_PATH_LEN];
   snprintf (socket_path, sizeof(socket_path), "/var/tmp");
+  char logfile[MAX_PATH_LEN];
   memset (logfile, 0, sizeof(logfile));
-  default_memory_url = "gpi://?buffer_size=4194304&buffers=8";
+  std::string default_memory_url ("gpi://?buffer_size=4194304&buffers=8");
+
+  unsigned long long gpi_mem = (1<<26);
+  unsigned short gpi_port = 0;
+  unsigned int gpi_mtu = 0;
+  int gpi_net = -1;
+  int gpi_np = -1;
+  int gpi_numa_socket = 0;
+  unsigned int gpi_timeout = 120;
+
+  std::vector<std::string> mem_urls;
 
   initialize_config (&config);
 
@@ -738,7 +738,7 @@ int main (int ac, char *av[])
     }
   }
 
-  if (0 != configure_logging (&config))
+  if (0 != configure_logging (&config, logfile))
   {
     LOG(WARN, "could not setup logging");
   }
@@ -853,7 +853,7 @@ static void signal_handler (int sig)
   }
 }
 
-static int configure_logging (const config_t *cfg)
+static int configure_logging (const config_t *cfg, const char* logfile)
 {
   char server_url[MAX_HOST_LEN + 32];
 
