@@ -123,8 +123,7 @@ namespace gpi
         return h;
       }
 
-      topology_t::topology_t ( const gpi::rank_t rank
-                             , const fhg::com::host_t & host
+      topology_t::topology_t ( const fhg::com::host_t & host
                              , const fhg::com::port_t & port
                              , std::string const & cookie
                              , memory::manager_t& memory_manager
@@ -135,7 +134,7 @@ namespace gpi
         , m_go_received (false)
         , m_waiting_for_go (0)
         , m_established (false)
-        , m_rank (rank)
+        , m_rank (gpi_api.rank())
         , _kvs_client (kvs_client)
         , _gpi_api (gpi_api)
       {

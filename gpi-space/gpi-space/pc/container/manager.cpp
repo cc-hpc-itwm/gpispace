@@ -264,8 +264,7 @@ namespace gpi
         , m_process_counter (0)
         , _gpi_api (gpi_api)
         , _memory_manager (gpi_api)
-        , _topology ( gpi_api.rank()
-                    , global::topology_t::any_addr()
+        , _topology ( global::topology_t::any_addr()
                     , global::topology_t::any_port() // topology_t::port_t("10821")
                     , "dummy-cookie"
                     , _memory_manager

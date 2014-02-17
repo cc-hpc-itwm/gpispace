@@ -65,8 +65,7 @@ namespace gpi
         static port_t const & any_port ();
         static host_t const & any_addr ();
 
-        topology_t ( const gpi::rank_t rank
-                   , const fhg::com::host_t & host
+        topology_t ( const fhg::com::host_t & host
                    , const fhg::com::port_t & port
                    , std::string const & cookie
                    , memory::manager_t& memory_manager
