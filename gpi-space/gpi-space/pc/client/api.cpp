@@ -36,7 +36,7 @@ int open_socket (std::string const & path)
   catch (boost::system::system_error const& se)
   {
     close_socket (sfd);
-    throw;
+    return -se.code().value();
   }
 
   return sfd;
