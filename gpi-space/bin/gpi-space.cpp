@@ -143,20 +143,10 @@ static void long_usage()
 // exit codes
 static const int EX_USAGE = 2;
 static const int EX_INVAL = 3;
-static const int EX_STILL_RUNNING = 4;
 
-static const int GPI_TIMEOUT = 10;
-static const int GPI_DAEMON_FAILED = 11;
-static const int GPI_PORT_INUSE = 12;
-static const int GPI_NET_TYPE = 13;
 static const int GPI_HOST_LIST = 14;
 
-static const int GPI_SHLIB_FAILED = 20;
-static const int GPI_SHLIB_MISSING = 21;
 static const int GPI_MAGIC_MISMATCH = 23;
-
-static const int GPI_IB_FAILED = 30;
-static const int GPI_IB_NO_LINK = 31;
 
 static void initialize_config(config_t *c);
 static void distribute_config_or_die(const config_t *c, gpi_api_t & gpi_api);
