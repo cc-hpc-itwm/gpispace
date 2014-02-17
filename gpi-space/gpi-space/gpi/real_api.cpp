@@ -26,7 +26,16 @@ namespace gpi
       , m_rank (std::numeric_limits<rank_t>::max())
       , m_mem_size (0)
       , m_dma (0)
-    { }
+    {
+      if (m_is_master)
+      {
+        if (generateHostlistGPI() == -1)
+        {
+          throw gpi::exception::gpi_error
+            (gpi::error::internal_error(), "generateHostlist() failed");
+        }
+      }
+    }
 
     real_gpi_api_t::~real_gpi_api_t ()
     {
@@ -43,11 +52,6 @@ namespace gpi
     void real_gpi_api_t::set_memory_size (const gpi::size_t sz)
     {
       m_mem_size = sz;
-    }
-
-    int real_gpi_api_t::build_hostlist ()
-    {
-      return generateHostlistGPI();
     }
 
     // wrapped C function calls

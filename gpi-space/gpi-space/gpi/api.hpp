@@ -59,7 +59,6 @@ namespace gpi
       // wrapped C function calls
       virtual void set_binary_path (const char *) = 0;
       virtual void clear_caches () = 0;
-      virtual int build_hostlist () = 0;
       virtual void start (int ac, char *av[], const gpi::timeout_t timeout) = 0;
       virtual void stop () = 0;
       virtual void kill () = 0;
