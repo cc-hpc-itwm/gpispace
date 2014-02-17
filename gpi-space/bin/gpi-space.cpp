@@ -43,6 +43,31 @@ static const int CONFIG_MAGIC = 0xdeadbeef;
 
 struct config_t
 {
+  config_t()
+  {
+    memset(c, 0, sizeof(config_t));
+
+    if (gethostname (this->kvs_host, MAX_HOST_LEN) != 0)
+    {
+      snprintf ( this->kvs_host
+               , sizeof(this->kvs_host)
+               , "localhost"
+               );
+    }
+    this->kvs_port = 2439;
+    this->kvs_retry_count = 2;
+
+    if (gethostname (this->log_host, MAX_HOST_LEN) != 0)
+    {
+      snprintf ( this->log_host
+               , MAX_HOST_LEN
+               , "localhost"
+               );
+    }
+    this->log_port = 2438;
+    this->log_level = 'I';
+  }
+
   int  magic;
   char socket[MAX_PATH_LEN];
   char kvs_host[MAX_HOST_LEN];
@@ -64,7 +89,6 @@ static const int EX_INVAL = 3;
 
 static const int GPI_MAGIC_MISMATCH = 23;
 
-static void initialize_config(config_t *c);
 static void distribute_config_or_die(const config_t *c, gpi_api_t & gpi_api);
 static void receive_config_or_die(config_t *c, gpi_api_t& gpi_api);
 
@@ -136,7 +160,6 @@ int main (int ac, char *av[])
   std::vector<std::string> mem_urls;
 
   config_t config;
-  initialize_config (&config);
 
   // parse command line
   i = 1;
@@ -887,31 +910,6 @@ static void configure_kvs (const config_t *cfg)
     , "kvs.connection.check"
     , "dummy value"
     );
-}
-
-static void initialize_config (config_t * c)
-{
-  memset(c, 0, sizeof(config_t));
-
-  if (gethostname (c->kvs_host, MAX_HOST_LEN) != 0)
-  {
-    snprintf ( c->kvs_host
-             , sizeof(c->kvs_host)
-             , "localhost"
-             );
-  }
-  c->kvs_port = 2439;
-  c->kvs_retry_count = 2;
-
-  if (gethostname (c->log_host, MAX_HOST_LEN) != 0)
-  {
-    snprintf ( c->log_host
-             , MAX_HOST_LEN
-             , "localhost"
-             );
-  }
-  c->log_port = 2438;
-  c->log_level = 'I';
 }
 
 static void distribute_config_or_die(const config_t *c, gpi_api_t& gpi_api)
