@@ -170,7 +170,6 @@ namespace
 }
 static int configure_logging (const config_t *cfg);
 static int configure_kvs (const config_t *cfg);
-static int cleanup_kvs ();
 static int main_loop (const config_t *cfg, const gpi::rank_t rank);
 
 int main (int ac, char *av[])
@@ -698,8 +697,15 @@ int main (int ac, char *av[])
       gpi_api.clear_caches();
     }
 
-    //! \note Does not destroy kvs client!
-    cleanup_kvs ();
+    // quick hack to delete old kvs entries
+    // TODO: find a better place
+    for (std::size_t rnk = 0 ; rnk < gpi_api.number_of_nodes (); ++rnk)
+    {
+      std::string peer_name = fhg::com::p2p::to_string
+        (fhg::com::p2p::address_t ("gpi-"+boost::lexical_cast<std::string>(rnk)));
+      std::string kvs_key = "p2p.peer." + peer_name;
+      kvs_client->del (kvs_key);
+    }
 
     if (0 != strlen (pidfile))
     {
@@ -857,21 +863,6 @@ static int configure_logging (const config_t *cfg)
 
   FHGLOG_SETUP();
 
-  return 0;
-}
-
-static int cleanup_kvs ()
-{
-  // quick hack to delete old kvs entries
-  // TODO: find a better place
-  gpi_api_t & gpi_api (gpi_api_t::get());
-  for (std::size_t rnk = 0 ; rnk < gpi_api.number_of_nodes (); ++rnk)
-  {
-    std::string peer_name = fhg::com::p2p::to_string
-      (fhg::com::p2p::address_t ("gpi-"+boost::lexical_cast<std::string>(rnk)));
-    std::string kvs_key = "p2p.peer." + peer_name;
-    kvs_client->del (kvs_key);
-  }
   return 0;
 }
 
