@@ -321,19 +321,14 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
 
 void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
 {
-  Job* pJob;
-
-  pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = jobManager().findJob(pEvt->job_id());
 
   if(!pJob)
   {
-      sdpa::discovery_info_t discover_result(pEvt->job_id(), boost::none, sdpa::discovery_info_set_t());
-
       sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                          , pEvt->from()
                                                                                                          , pEvt->discover_id()
-                                                                                                         , discover_result)));
-
+                                                                                                         , sdpa::discovery_info_t (pEvt->job_id(), boost::none, sdpa::discovery_info_set_t()))));
       return;
   }
 
@@ -350,11 +345,10 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   }
   else
   {
-      sdpa::discovery_info_t discover_result(pEvt->job_id(),pJob->getStatus(), sdpa::discovery_info_set_t());
       events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                    , pEvt->from()
                                                                                                    , pEvt->discover_id()
-                                                                                                   , discover_result ));
+                                                                                                   , sdpa::discovery_info_t (pEvt->job_id(),pJob->getStatus(), sdpa::discovery_info_set_t()) ));
 
       sendEventToOther(pDiscReplyEvt);
   }

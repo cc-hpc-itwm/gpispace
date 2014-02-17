@@ -572,31 +572,28 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 
 void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
 {
-  sdpa::job_id_t job_id(pEvt->job_id());
-  Job* pJob = jobManager().findJob(job_id);
+  Job* pJob = jobManager().findJob(pEvt->job_id());
 
    // if the event came from outside, forward it to the workflow engine
   if(pEvt->is_external())
   {
       if(!pJob)
       {
-         sdpa::discovery_info_t discover_result(pEvt->job_id(), boost::none, sdpa::discovery_info_set_t());
          sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                              , pEvt->from()
                                                                                                              , pEvt->discover_id()
-                                                                                                             , discover_result)));
+                                                                                                             , sdpa::discovery_info_t (pEvt->job_id(), boost::none, sdpa::discovery_info_set_t()))));
 
          return;
       }
 
       m_map_discover_ids.insert(std::make_pair( pEvt->discover_id(), job_info_t(pEvt->from(), pEvt->job_id(), pJob->getStatus()) ));
-      workflowEngine()->discover(pEvt->discover_id(), job_id);
+      workflowEngine()->discover(pEvt->discover_id(), pEvt->job_id());
   }
   else
   {
       //! Note: the layer guarantees that the job was already submitted
-      sdpa::discovery_info_t discover_result(pEvt->job_id(), pJob->getStatus(), sdpa::discovery_info_set_t());
-      workflowEngine()->discovered(pEvt->discover_id(), discover_result);
+      workflowEngine()->discovered(pEvt->discover_id(), sdpa::discovery_info_t (pEvt->job_id(), pJob->getStatus(), sdpa::discovery_info_set_t()));
   }
 }
 
