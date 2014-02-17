@@ -68,7 +68,6 @@ static std::string default_memory_url;
 static std::vector<std::string> mem_urls;
 
 typedef gpi::api::gpi_api_t gpi_api_t;
-gpi::pc::container::manager_t *global_container_mgr(NULL);
 
 // exit codes
 static const int EX_USAGE = 2;
@@ -764,8 +763,10 @@ int main (int ac, char *av[])
 
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
-    global_container_mgr = new gpi::pc::container::manager_t
-      (config.socket, mem_urls, gpi_api, kvs_client);
+    gpi::pc::container::manager_t *global_container_mgr
+      ( new gpi::pc::container::manager_t
+        (config.socket, mem_urls, gpi_api, kvs_client)
+      );
 
     LOG(INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
