@@ -90,7 +90,6 @@ namespace
 }
 static int configure_logging (const config_t *cfg);
 static int configure_kvs (const config_t *cfg);
-static int main_loop (const config_t *cfg, const gpi::rank_t rank);
 
 int main (int ac, char *av[])
 {
@@ -763,7 +762,99 @@ int main (int ac, char *av[])
 
   try
   {
-    ec = main_loop(&config, gpi_api.rank());
+    stop_requested = false;
+
+    LOG( TRACE
+       ,  "rank=" << gpi_api.rank()
+       << " dma=" << gpi_api.dma_ptr()
+       << " #nodes=" << gpi_api.number_of_nodes()
+       << " mem_size=" << gpi_api.memory_size()
+       );
+
+    if (mem_urls.empty ())
+      mem_urls.push_back (default_memory_url);
+    global_container_mgr = new gpi::pc::container::manager_t
+      (config.socket, mem_urls, gpi_api, kvs_client);
+
+    LOG(INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
+
+    if (0 == gpi_api.rank())
+    {
+      if (isatty(0) && isatty(1))
+      {
+        static const std::string prompt
+          ("Please type \"q\" followed by return to quit: ");
+
+        bool done = false;
+        while (std::cin.good() && !done)
+        {
+          std::cout << prompt;
+
+          std::string line;
+          std::getline (std::cin, line);
+          if (line.empty())
+            continue;
+
+          char c = line[0];
+          switch (c)
+          {
+          case 'q':
+            done = true;
+            break;
+          case 'l':
+            std::cerr << "list of attached processes:" << std::endl;
+            std::cerr << "    implement me" << std::endl;
+            break;
+          case 's':
+            {
+              std::string gpish_cmd ("gpish");
+              gpish_cmd += " -s ";
+              gpish_cmd += config.socket;
+
+              int rc = system (gpish_cmd.c_str ());
+              if (rc == -1)
+              {
+                std::cerr << "shell failed: " << strerror (errno) << std::endl;
+              }
+              else if (rc > 0)
+              {
+                std::cerr << "shell failed: " << WEXITSTATUS (rc) << std::endl;
+              }
+            }
+            break;
+          case 'h':
+          case '?':
+            std::cerr << "list of supported commands:"             << std::endl;
+            std::cerr                                              << std::endl;
+            std::cerr << "    h|? - print this help"               << std::endl;
+            std::cerr << "      s - spawn a gpish"                 << std::endl;
+            std::cerr << "      q - quit"                          << std::endl;
+
+            /*
+              std::cerr << "      p - list all attached processes"   << std::endl;
+              std::cerr << "d [num] - detach process #num or first"  << std::endl;
+              std::cerr << "      s - print statistics"              << std::endl;
+              std::cerr << "      a - list allocations"              << std::endl;
+              std::cerr << "f [num] - remove an allocation (or all)" << std::endl;
+            */
+            break;
+          default:
+            std::cerr << "command not understood, please use \"h\"" << std::endl;
+            break;
+          }
+        }
+      }
+      else
+      {
+        do { } while (!stop_requested && pause() == -1 && errno == EINTR);
+      }
+    }
+    else
+    {
+      do { } while (!stop_requested && pause() == -1 && errno == EINTR);
+    }
+
+    ec = EXIT_SUCCESS;
     LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated with exitcode: " << ec);
   }
   catch (std::exception const & ex)
@@ -873,117 +964,6 @@ static int configure_kvs (const config_t *cfg)
     return -ESRCH;
   }
   return 0;
-}
-
-static int main_loop (const config_t *cfg, const gpi::rank_t rank)
-{
-  stop_requested = false;
-
-  gpi_api_t & gpi_api (gpi_api_t::get());
-
-  LOG( TRACE
-     ,  "rank=" << gpi_api.rank()
-     << " dma=" << gpi_api.dma_ptr()
-     << " #nodes=" << gpi_api.number_of_nodes()
-     << " mem_size=" << gpi_api.memory_size()
-     );
-
-  try
-  {
-    if (mem_urls.empty ())
-      mem_urls.push_back (default_memory_url);
-    global_container_mgr = new gpi::pc::container::manager_t
-      (cfg->socket, mem_urls, gpi_api, kvs_client);
-  }
-  catch (std::exception const & ex)
-  {
-    LOG( ERROR
-       , "could not start container manager on"
-       << " rank = " << rank
-       << " socket = " << cfg->socket
-       );
-    return EX_INVAL;
-  }
-
-  LOG(INFO, "started GPI interface on rank " << rank << " at " << cfg->socket);
-
-  if (0 == rank)
-  {
-    if (isatty(0) && isatty(1))
-    {
-      static const std::string prompt
-        ("Please type \"q\" followed by return to quit: ");
-
-      bool done = false;
-      while (std::cin.good() && !done)
-      {
-        std::cout << prompt;
-
-        std::string line;
-        std::getline (std::cin, line);
-        if (line.empty())
-          continue;
-
-        char c = line[0];
-        switch (c)
-        {
-        case 'q':
-          done = true;
-          break;
-        case 'l':
-          std::cerr << "list of attached processes:" << std::endl;
-          std::cerr << "    implement me" << std::endl;
-          break;
-        case 's':
-          {
-            std::string gpish_cmd ("gpish");
-            gpish_cmd += " -s ";
-            gpish_cmd += cfg->socket;
-
-            int rc = system (gpish_cmd.c_str ());
-            if (rc == -1)
-            {
-              std::cerr << "shell failed: " << strerror (errno) << std::endl;
-            }
-            else if (rc > 0)
-            {
-              std::cerr << "shell failed: " << WEXITSTATUS (rc) << std::endl;
-            }
-          }
-          break;
-        case 'h':
-        case '?':
-          std::cerr << "list of supported commands:"             << std::endl;
-          std::cerr                                              << std::endl;
-          std::cerr << "    h|? - print this help"               << std::endl;
-          std::cerr << "      s - spawn a gpish"                 << std::endl;
-          std::cerr << "      q - quit"                          << std::endl;
-
-          /*
-          std::cerr << "      p - list all attached processes"   << std::endl;
-          std::cerr << "d [num] - detach process #num or first"  << std::endl;
-          std::cerr << "      s - print statistics"              << std::endl;
-          std::cerr << "      a - list allocations"              << std::endl;
-          std::cerr << "f [num] - remove an allocation (or all)" << std::endl;
-          */
-          break;
-        default:
-          std::cerr << "command not understood, please use \"h\"" << std::endl;
-          break;
-        }
-      }
-    }
-    else
-    {
-      do { } while (!stop_requested && pause() == -1 && errno == EINTR);
-    }
-  }
-  else
-  {
-    do { } while (!stop_requested && pause() == -1 && errno == EINTR);
-  }
-
-  return EXIT_SUCCESS;
 }
 
 static void initialize_config (config_t * c)
