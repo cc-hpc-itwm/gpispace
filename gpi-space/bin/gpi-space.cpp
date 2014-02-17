@@ -75,7 +75,7 @@ namespace
   fhg::com::kvs::kvsc_ptr_t kvs_client;
 }
 static int configure_logging (const config_t *cfg, const char* logfile);
-static int configure_kvs (const config_t *cfg);
+static void configure_kvs (const config_t *cfg);
 
 namespace
 {
@@ -651,10 +651,14 @@ int main (int ac, char *av[])
     LOG(INFO, "GPISpace revision: " << fhg::project_revision());
     LOG(INFO, "GPIApi version: " << gpi_api.version());
 
-    if (0 != configure_kvs (&config))
+    try
+    {
+      configure_kvs (&config);
+    }
+    catch (std::runtime_error const& ex)
     {
       LOG( ERROR
-         , "could not configure KVS at: [" << config.kvs_host << "]:" << config.kvs_port
+         , "could not configure KVS at " << config.kvs_host << ":" << config.kvs_port << ": " << ex.what()
          );
       exit(EXIT_FAILURE);
     }
@@ -753,10 +757,13 @@ int main (int ac, char *av[])
     LOG(WARN, "could not setup logging");
   }
 
-  int ec = configure_kvs (&config);
-  if (ec != 0)
+  try
   {
-    LOG(ERROR, "could not connect to KVS: " << strerror(ec));
+    configure_kvs (&config);
+  }
+  catch (std::runtime_error const& ex)
+  {
+    LOG(ERROR, "could not connect to KVS: " << ex.what());
     exit(EXIT_FAILURE);
   }
 
@@ -862,32 +869,24 @@ static int configure_logging (const config_t *cfg, const char* logfile)
   return 0;
 }
 
-static int configure_kvs (const config_t *cfg)
+static void configure_kvs (const config_t *cfg)
 {
-  try
-  {
-    kvs_client = fhg::com::kvs::kvsc_ptr_t
-      ( new fhg::com::kvs::client::kvsc ( cfg->kvs_host
-                                        , boost::lexical_cast<std::string>(cfg->kvs_port)
-                                        , true
-                                        , boost::posix_time::seconds(1)
-                                        , cfg->kvs_retry_count
-                                        )
-      );
+  kvs_client = fhg::com::kvs::kvsc_ptr_t
+    ( new fhg::com::kvs::client::kvsc ( cfg->kvs_host
+                                      , boost::lexical_cast<std::string>(cfg->kvs_port)
+                                      , true
+                                      , boost::posix_time::seconds(1)
+                                      , cfg->kvs_retry_count
+                                      )
+    );
 
-    // workaround until we have the above structure
-    // put/del some entry to check the connection
-    fhg::com::kvs::scoped_entry_t
-      ( kvs_client
-      , "kvs.connection.check"
-      , "dummy value"
-      );
-  }
-  catch (std::exception const &ex)
-  {
-    return -ESRCH;
-  }
-  return 0;
+  // workaround until we have the above structure
+  // put/del some entry to check the connection
+  fhg::com::kvs::scoped_entry_t
+    ( kvs_client
+    , "kvs.connection.check"
+    , "dummy value"
+    );
 }
 
 static void initialize_config (config_t * c)
