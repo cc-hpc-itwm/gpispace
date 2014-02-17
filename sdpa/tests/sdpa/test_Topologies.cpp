@@ -8,6 +8,26 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
+class Worker : public sdpa::daemon::Agent
+ {
+  public:
+    Worker (const std::string& name, const std::string& master_name)
+      : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(1, sdpa::MasterInfo(master_name)), boost::none)
+    {}
+
+    Worker (const std::string& name,const utils::agents_t& masters)
+          : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), utils::assemble_master_info_list (masters), boost::none)
+        {}
+
+    void submit ( const we::layer::id_type& activity_id
+                , const we::type::activity_t& activity
+                )
+    {
+      sdpa::daemon::GenericDaemon::submit(activity_id, activity);
+      workflowEngine()->finished(activity_id, activity);
+    }
+ };
+
 BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
 {
   // O
@@ -24,12 +44,7 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  const utils::drts_worker worker_0
-    ( "drts_0", agent
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
+  const Worker worker( "worker_0", "agent_0");
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)
@@ -62,12 +77,7 @@ BOOST_AUTO_TEST_CASE (chained_agents)
   const utils::agent agent_1
     ("agent_1", "127.0.0.1", kvs_host(), kvs_port(), agent_0);
 
-  const utils::drts_worker worker_0
-    ( "drts_0", agent_1
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
+  const Worker worker( "worker_0", "agent_1");
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)
@@ -97,18 +107,8 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   const utils::agent agent_2
     ("agent_2", "127.0.0.1", kvs_host(), kvs_port(), agent_0);
 
-  const utils::drts_worker worker_0
-    ( "drts_0", agent_1
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-  const utils::drts_worker worker_1
-    ( "drts_1", agent_2
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
+  const Worker worker_0( "worker_0", "agent_1");
+  const Worker worker_1( "worker_0", "agent_2");
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)
@@ -141,12 +141,7 @@ BOOST_AUTO_TEST_CASE (one_worker_with_multiple_master_agents)
   agents.push_back (boost::cref (agent_0));
   agents.push_back (boost::cref (agent_1));
 
-  const utils::drts_worker worker_0
-    ( "drts_0", agents
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
+  const Worker worker ("worker_0", agents);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)
@@ -183,12 +178,7 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   const utils::agent agent_2
     ("agent_2", "127.0.0.1", kvs_host(), kvs_port(), agents);
 
-  const utils::drts_worker worker_0
-    ( "drts_0", agent_2
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
+  const Worker worker("worker_0", "agent_2");
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)
