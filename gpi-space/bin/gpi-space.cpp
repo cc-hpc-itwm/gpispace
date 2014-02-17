@@ -24,6 +24,7 @@
 
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
+#include <fhg/util/thread/event.hpp>
 #include <fhg/util/pidfile_writer.hpp>
 #include <fhg/revision.hpp>
 
@@ -82,8 +83,6 @@ struct config_t
   char log_level;
 } __attribute__((packed));
 
-static bool stop_requested = false;
-
 typedef gpi::api::gpi_api_t gpi_api_t;
 
 // exit codes
@@ -95,7 +94,6 @@ static const int GPI_MAGIC_MISMATCH = 23;
 static void distribute_config_or_die(const config_t *c, gpi_api_t & gpi_api);
 static void receive_config_or_die(config_t *c, gpi_api_t& gpi_api);
 
-static void signal_handler (int sig);
 namespace
 {
   fhg::com::kvs::kvsc_ptr_t kvs_client;
@@ -751,9 +749,6 @@ int main (int ac, char *av[])
     }
   }
 
-  signal(SIGTERM, signal_handler);
-  signal(SIGINT, signal_handler);
-
   try
   {
     fhg::util::signal_handler_manager signal_handler;
@@ -799,8 +794,6 @@ int main (int ac, char *av[])
 
   try
   {
-    stop_requested = false;
-
     LOG( TRACE
        ,  "rank=" << gpi_api.rank()
        << " dma=" << gpi_api.dma_ptr()
@@ -816,7 +809,15 @@ int main (int ac, char *av[])
 
     LOG(INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
-    do { } while (!stop_requested && pause() == -1 && errno == EINTR);
+    fhg::util::thread::event<> stop_requested;
+    const boost::function<void()> request_stop
+      (boost::bind (&fhg::util::thread::event<>::notify, &stop_requested));
+
+    fhg::util::signal_handler_manager signal_handler;
+    signal_handler.add (SIGTERM, boost::bind (request_stop));
+    signal_handler.add (SIGINT, boost::bind (request_stop));
+
+    stop_requested.wait();
 
     LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated");
     return EXIT_SUCCESS;
@@ -825,19 +826,6 @@ int main (int ac, char *av[])
   {
     LOG(ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
     return EXIT_FAILURE;
-  }
-}
-
-static void signal_handler (int sig)
-{
-  switch (sig)
-  {
-  case SIGTERM:
-  case SIGINT:
-    stop_requested = true;
-    break;
-  default:
-    break;
   }
 }
 
