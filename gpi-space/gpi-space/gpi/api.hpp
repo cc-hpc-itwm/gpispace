@@ -47,13 +47,6 @@ namespace gpi
     class gpi_api_t : boost::noncopyable
     {
     public:
-      static const char * REAL_API;
-      static const char * FAKE_API;
-
-      static gpi_api_t & create (std::string const & impl, bool is_master);
-      static gpi_api_t & get ();
-      static void destroy ();
-
       virtual ~gpi_api_t() { }
 
       // wrapped C function calls
@@ -142,9 +135,6 @@ namespace gpi
                         , rank_t & from_node
                         ) = 0;
       virtual size_t wait_passive ( void ) = 0;
-
-    private:
-      static boost::shared_ptr<gpi_api_t> instance;
     };
   }
 }

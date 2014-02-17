@@ -17,6 +17,7 @@ namespace gpi
     class fake_gpi_api_t : public gpi_api_t
     {
     public:
+      fake_gpi_api_t (bool is_master);
       ~fake_gpi_api_t();
 
       // wrapped C function calls
@@ -107,12 +108,8 @@ namespace gpi
       size_t wait_passive ( void );
 
     private:
-      friend class gpi_api_t;
-
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
-
-      fake_gpi_api_t (bool is_master);
 
       mutable mutex_type m_mutex;
       bool m_is_master;

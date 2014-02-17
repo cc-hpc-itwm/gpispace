@@ -15,6 +15,7 @@ namespace gpi
     class real_gpi_api_t : public gpi_api_t
     {
     public:
+      real_gpi_api_t (bool is_master);
       ~real_gpi_api_t();
 
       // wrapped C function calls
@@ -106,12 +107,9 @@ namespace gpi
       size_t wait_passive ( void );
 
     private:
-      friend class gpi_api_t;
-
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
-      real_gpi_api_t (bool is_master);
       int startup_timedout_cb (const gpi::timeout_t timeout, int);
 
       mutable mutex_type m_mutex;

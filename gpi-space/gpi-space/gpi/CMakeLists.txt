@@ -9,7 +9,6 @@ set (hdrs
 
 set (srcs
   system.cpp
-  api.cpp
   fake_api.cpp
 )
 

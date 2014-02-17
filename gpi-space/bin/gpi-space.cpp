@@ -27,6 +27,10 @@
 #include <fhg/revision.hpp>
 
 #include <gpi-space/gpi/api.hpp>
+#include <gpi-space/gpi/fake_api.hpp>
+#ifdef ENABLE_REAL_GPI
+#include <gpi-space/gpi/real_api.hpp>
+#endif
 
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/container/manager.hpp>
@@ -152,7 +156,9 @@ int main (int ac, char *av[])
       fprintf(stderr, "    --gpi-api STRING (%s)\n", "auto");
       fprintf(stderr, "      choose the GPI API to use\n");
       fprintf(stderr, "        fake - use the fake api\n");
+#ifdef ENABLE_REAL_GPI
       fprintf(stderr, "        real - use the real api\n");
+#endif
       fprintf(stderr, "        auto - choose the best api\n");
       fprintf(stderr, "\n");
       fprintf(stderr, "GPI options (expert)\n");
@@ -421,10 +427,16 @@ int main (int ac, char *av[])
       if (i < ac)
       {
         requested_api = strcmp (av[i], "auto") == 0 ? API_auto
+#ifdef ENABLE_REAL_GPI
           : strcmp (av[i], "real") == 0 ? API_real
+#endif
           : strcmp (av[i], "fake") == 0 ? API_fake
           : throw std::runtime_error
-          ("invalid argument to --gpi-api: must be 'auto', 'real' or 'fake'");
+#ifdef ENABLE_REAL_GPI
+            ("invalid argument to --gpi-api: must be 'auto', 'real' or 'fake'");
+#else
+            ("invalid argument to --gpi-api: must be 'auto' or 'fake'");
+#endif
         ++i;
       }
       else
@@ -573,31 +585,34 @@ int main (int ac, char *av[])
            );
 
   // initialize gpi api
+  boost::shared_ptr<gpi_api_t> instance;
+
+#ifdef ENABLE_REAL_GPI
   if (requested_api == API_auto)
   {
     try
     {
-      gpi_api_t::create (gpi_api_t::REAL_API, is_master);
+      instance.reset (new gpi::api::real_gpi_api_t (is_master));
     }
     catch (gpi::exception::gpi_error const& ex)
     {
       fprintf (stderr, "%s: %s\n", program_name, ex.what());
       fprintf (stderr, "%s: fallback to fake API\n", program_name);
 
-      gpi_api_t::destroy();
-      gpi_api_t::create (gpi_api_t::FAKE_API, is_master);
+      instance.reset (new gpi::api::fake_gpi_api_t (is_master));
     }
   }
   else if (requested_api == API_real)
   {
-    gpi_api_t::create (gpi_api_t::REAL_API, is_master);
+    instance.reset (new gpi::api::real_gpi_api_t (is_master));
   }
   else if (requested_api == API_fake)
+#endif
   {
-    gpi_api_t::create (gpi_api_t::FAKE_API, is_master);
+    instance.reset (new gpi::api::fake_gpi_api_t (is_master));
   }
 
-  gpi_api_t & gpi_api = gpi_api_t::get();
+  gpi_api_t & gpi_api = *instance;
 
   gpi_api.set_binary_path (av[0]);
   gpi_api.set_memory_size (gpi_mem);
