@@ -453,7 +453,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 
           sendEventToOther( events::ErrorEvent::Ptr( new events::ErrorEvent( name()
                                                           , pEvt->from()
-                                                          , events::ErrorEvent::SDPA_EJOBTERMINATED
+                                                          , events::ErrorEvent::SDPA_EUNKNOWN
                                                           , "Cannot cancel an already terminated job, its current status is: "
                                                              + sdpa::status::show(pJob->getStatus()) )
                                                ));

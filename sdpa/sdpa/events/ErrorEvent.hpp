@@ -18,7 +18,6 @@ namespace sdpa
         {
           SDPA_EJOBEXISTS,
           SDPA_EJOBREJECTED,
-          SDPA_EJOBTERMINATED, // relevant only to the client
           SDPA_EWORKERNOTREG,
           SDPA_ENODE_SHUTDOWN,
           SDPA_EUNKNOWN,

@@ -219,7 +219,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
       {
          sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                              , pEvt->from()
-                                                             ,  events::ErrorEvent::SDPA_EJOBTERMINATED
+                                                             ,  events::ErrorEvent::SDPA_EUNKNOWN
                                                              , "Cannot cancel an already terminated job, its current status is: "
                                                            + sdpa::status::show (pJob->getStatus()) )
                                                   ));
@@ -365,7 +365,7 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
       {
           events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name()
                                                                     , pEvt->from()
-                                                                    , events::ErrorEvent::SDPA_EJOBTERMINATED
+                                                                    , events::ErrorEvent::SDPA_EUNKNOWN
                                                                     , "Not allowed to request results for a non-terminated job, its current status is : "
                                                                     +  sdpa::status::show(pJob->getStatus()) )
                                             );
