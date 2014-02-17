@@ -781,16 +781,14 @@ int main (int ac, char *av[])
 
     do { } while (!stop_requested && pause() == -1 && errno == EINTR);
 
-    ec = EXIT_SUCCESS;
-    LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated with exitcode: " << ec);
+    LOG(INFO, "gpi process (rank " << gpi_api.rank() << ") terminated");
+    return EXIT_SUCCESS;
   }
   catch (std::exception const & ex)
   {
-    ec = EXIT_FAILURE;
     LOG(ERROR, "gpi process (rank " << gpi_api.rank() << ") failed: " << ex.what());
+    return EXIT_FAILURE;
   }
-
-  return ec;
 }
 
 static void signal_handler (int sig)
