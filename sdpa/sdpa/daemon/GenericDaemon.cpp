@@ -1091,7 +1091,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
     {
       LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
 
-      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, ex1.what()) );
       sendEventToOther(pErrorEvt);
     }
     catch(std::exception const &ex2)
@@ -1131,7 +1131,7 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
     {
       LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
 
-      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EJOBNOTDELETED, ex1.what()) );
+      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EUNKNOWN, ex1.what()) );
       sendEventToOther(pErrorEvt);
     }
     catch(std::exception const &ex2)

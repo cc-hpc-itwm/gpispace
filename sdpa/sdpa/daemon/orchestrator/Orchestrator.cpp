@@ -316,7 +316,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
          events::ErrorEvent::Ptr pErrorEvt(
               new events::ErrorEvent( evt->to(),
                                             evt->from(),
-                                            events::ErrorEvent::SDPA_EJOBNOTDELETED,
+                                            events::ErrorEvent::SDPA_EUNKNOWN,
                                             "Cannot delete a job which is in a non-terminal state. Please, cancel it first!")
                                             );
           sendEventToOther(pErrorEvt);
@@ -333,7 +333,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
       {
           sendEventToOther(  events::ErrorEvent::Ptr( new  events::ErrorEvent( name()
                                                               , e.from()
-                                                              , events::ErrorEvent::SDPA_EJOBNOTDELETED
+                                                              , events::ErrorEvent::SDPA_EUNKNOWN
                                                               , ex.what()
                                                             )
                                             ));
