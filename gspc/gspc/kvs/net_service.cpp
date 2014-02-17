@@ -36,32 +36,19 @@ namespace gspc
 
     int kvs_t::do_get (key_type const &key, value_type &val) const
     {
-      purge_expired_keys ();
-
       shared_lock lock (m_mutex);
 
       value_map_t::const_iterator it = m_values.find (key);
       if (it == m_values.end ())
         return -ENOKEY;
 
-      if (it->second->is_expired ())
-      {
-        unique_lock expired_lock (m_expired_entries_mutex);
-        m_expired_entries.push_back (it->first);
-        return -EKEYEXPIRED;
-      }
-      else
-      {
-        val = it->second->get_value ();
-      }
+      val = it->second->get_value ();
 
       return 0;
     }
 
     int kvs_t::do_put (std::list<std::pair<key_type, value_type> > const &values)
     {
-      purge_expired_keys ();
-
       typedef std::pair<key_type, value_type> kv_pair_t;
       {
         unique_lock lock (m_mutex);
@@ -96,8 +83,6 @@ namespace gspc
                          , std::list<std::pair<key_type, value_type> > &values
                          ) const
     {
-      purge_expired_keys ();
-
       shared_lock lock (m_mutex);
 
       value_map_t::const_iterator it = m_values.begin ();
@@ -109,16 +94,8 @@ namespace gspc
       {
         if (boost::regex_match (it->first, regex))
         {
-          if (it->second->is_expired ())
-          {
-            unique_lock expired_lock (m_expired_entries_mutex);
-            m_expired_entries.push_back (it->first);
-          }
-          else
-          {
             values.push_back
               (std::make_pair (it->first, it->second->get_value ()));
-          }
         }
 
         ++it;
@@ -129,8 +106,6 @@ namespace gspc
 
     int kvs_t::do_del (key_type const &key)
     {
-      purge_expired_keys ();
-
       {
         unique_lock lock (m_mutex);
 
@@ -148,8 +123,6 @@ namespace gspc
 
     int kvs_t::do_del_regex (std::string const &r)
     {
-      purge_expired_keys ();
-
       std::list<key_type> deleted;
 
       {
@@ -205,22 +178,6 @@ namespace gspc
       {
         return -EINVAL;
       }
-    }
-
-    bool kvs_t::entry_t::is_expired () const
-    {
-      return
-        (expiry == EXPIRES_NEVER) ? false
-        : (expiry > time (NULL)) ? false
-        : true;
-    }
-
-    void kvs_t::entry_t::expires_in (int ttl)
-    {
-      if (ttl != EXPIRES_NEVER)
-        expiry = time (NULL) + ttl;
-      else
-        expiry = EXPIRES_NEVER;
     }
 
     void kvs_t::entry_t::set_value (kvs_t::value_type const &val)
@@ -282,49 +239,8 @@ namespace gspc
       }
     }
 
-    int kvs_t::do_set_ttl (key_type const &key, int ttl)
-    {
-      purge_expired_keys ();
-
-      unique_lock lock (m_mutex);
-
-      value_map_t::iterator it = m_values.find (key);
-      if (it == m_values.end ())
-        return -ENOKEY;
-
-      it->second->expires_in (ttl);
-
-      return 0;
-    }
-
-    int kvs_t::do_set_ttl_regex (std::string const &r, int ttl)
-    {
-      purge_expired_keys ();
-
-      unique_lock lock (m_mutex);
-
-      value_map_t::iterator it = m_values.begin ();
-      const value_map_t::iterator end = m_values.end ();
-
-      const boost::regex regex (r);
-
-      while (it != end)
-      {
-        if (boost::regex_match (it->first, regex))
-        {
-          it->second->expires_in (ttl);
-        }
-
-        ++it;
-      }
-
-      return 0;
-    }
-
     int kvs_t::do_push (key_type const &key, value_type const &val)
     {
-      purge_expired_keys ();
-
       {
         unique_lock lock (m_mutex);
 
@@ -352,8 +268,6 @@ namespace gspc
 
     int kvs_t::do_try_pop (key_type const &key, value_type &val)
     {
-      purge_expired_keys ();
-
       {
         unique_lock lock (m_mutex);
 
@@ -375,8 +289,6 @@ namespace gspc
 
     int kvs_t::do_counter_reset (key_type const &key, int val)
     {
-      purge_expired_keys ();
-
       {
         unique_lock lock (m_mutex);
 
@@ -402,8 +314,6 @@ namespace gspc
 
     int kvs_t::do_counter_change (key_type const &key, int &val, int delta)
     {
-      purge_expired_keys ();
-
       {
         unique_lock lock (m_mutex);
 
@@ -483,8 +393,6 @@ namespace gspc
                        , int timeout_in_ms
                        ) const
     {
-      purge_expired_keys ();
-
       shared_lock glock (m_mutex);
 
       if (mask & (E_POPABLE | E_EXIST | E_DEL))
@@ -551,22 +459,6 @@ namespace gspc
       }
     }
 
-    void kvs_t::purge_expired_keys () const
-    {
-      if (not m_expired_entries.empty ())
-      {
-        unique_lock lock (m_expired_entries_mutex);
-        while (not m_expired_entries.empty ())
-        {
-          key_type key = m_expired_entries.front ();
-          m_expired_entries.pop_front ();
-
-          unique_lock values_lock (m_mutex);
-          const_cast<kvs_t&>(*this).m_values.erase (key);
-        }
-      }
-    }
-
     service_t::service_t ()
       : m_kvs ("inproc://")
     {
@@ -597,8 +489,6 @@ namespace gspc
       m_rpc_table ["get_regex"]  = boost::bind (&service_t::rpc_get_regex, this, _1);
       m_rpc_table ["del"]  = boost::bind (&service_t::rpc_del, this, _1);
       m_rpc_table ["del_regex"]  = boost::bind (&service_t::rpc_del_regex, this, _1);
-      m_rpc_table ["set_ttl"]  = boost::bind (&service_t::rpc_set_ttl, this, _1);
-      m_rpc_table ["set_ttl_regex"]  = boost::bind (&service_t::rpc_set_ttl_regex, this, _1);
       m_rpc_table ["push"]  = boost::bind (&service_t::rpc_push, this, _1);
       m_rpc_table ["wait"]  = boost::bind (&service_t::rpc_wait, this, _1);
       m_rpc_table ["try_pop"]  = boost::bind (&service_t::rpc_try_pop, this, _1);
@@ -683,48 +573,6 @@ namespace gspc
     {
       return
         encode_error_code (rqst, m_kvs.del_regex (rqst.get_body ()));
-    }
-
-    boost::optional<gspc::net::frame>
-    service_t::rpc_set_ttl (gspc::net::frame const &rqst)
-    {
-      fhg::util::parse::position_string pos (rqst.get_body ());
-
-      if (pos.end ())
-        return gspc::net::make::error_frame
-          ( rqst
-          , gspc::net::E_SERVICE_FAILED
-          , "empty body"
-          );
-
-      int ttl = fhg::util::read_int (pos);
-      fhg::util::parse::require::require (pos, ' ');
-
-      api_t::key_type key =
-        fhg::util::parse::require::plain_string (pos, '\n');
-
-      return encode_error_code (rqst, m_kvs.set_ttl (key, ttl));
-    }
-
-    boost::optional<gspc::net::frame>
-    service_t::rpc_set_ttl_regex (gspc::net::frame const &rqst)
-    {
-      fhg::util::parse::position_string pos (rqst.get_body ());
-
-      if (pos.end ())
-        return gspc::net::make::error_frame
-          ( rqst
-          , gspc::net::E_SERVICE_FAILED
-          , "empty body"
-          );
-
-      const int ttl = fhg::util::read_int (pos);
-      fhg::util::parse::require::require (pos, ' ');
-
-      const std::string regex =
-        fhg::util::parse::require::string (pos);
-
-      return encode_error_code (rqst, m_kvs.set_ttl_regex (regex, ttl));
     }
 
     boost::optional<gspc::net::frame>

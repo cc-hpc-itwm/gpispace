@@ -287,21 +287,6 @@ BOOST_AUTO_TEST_CASE (test_impl_del_regex)
   BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
 }
 
-BOOST_AUTO_TEST_CASE (test_impl_expiry)
-{
-  int rc;
-  gspc::kvs::kvs_t kvs;
-  gspc::kvs::api_t::value_type val;
-
-  kvs.put ("foo.1", "bar");
-  kvs.set_ttl ("foo.1", 1);
-
-  sleep (1);
-
-  rc = kvs.get ("foo.1", val);
-  BOOST_REQUIRE_EQUAL (rc, -EKEYEXPIRED);
-}
-
 static void s_wfh_client_thread ( const size_t rank
                                 , gspc::kvs::api_t *kvs
                                 , const size_t nmsg

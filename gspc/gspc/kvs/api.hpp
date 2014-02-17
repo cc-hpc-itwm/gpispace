@@ -15,8 +15,6 @@ namespace gspc
     class api_t
     {
     public:
-      static const int EXPIRES_NEVER = -1;
-
       // event flags the wait_for_change() call can return
       enum event_t
         {
@@ -69,9 +67,6 @@ namespace gspc
       int del (key_type const &key);
       int del_regex (std::string const &regex);
 
-      int set_ttl (key_type const &key, int ttl);
-      int set_ttl_regex (std::string const &regex, int ttl);
-
       int push (key_type const &key, const char *val);
       int push (key_type const &key, value_type const &val);
       int pop (key_type const &, value_type &val);
@@ -97,9 +92,6 @@ namespace gspc
 
       virtual int do_del (key_type const &key) = 0;
       virtual int do_del_regex (std::string const &regex) = 0;
-
-      virtual int do_set_ttl (key_type const &key, int ttl) = 0;
-      virtual int do_set_ttl_regex (std::string const &regex, int ttl) = 0;
 
       virtual int do_push (key_type const &key, value_type const &val) = 0;
       virtual int do_try_pop (key_type const &, value_type &val) = 0;

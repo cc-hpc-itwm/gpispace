@@ -108,8 +108,6 @@ BOOST_AUTO_TEST_CASE (net_api)
   BOOST_REQUIRE_EQUAL (kvs.put ("foo", "bar"), 0);
   BOOST_REQUIRE_EQUAL (kvs.get ("foo", val), 0);
   BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "bar");
-  BOOST_REQUIRE_EQUAL (kvs.set_ttl ("foo", 60), 0);
-  BOOST_REQUIRE_EQUAL (kvs.set_ttl_regex ("foo", 60), 0);
   BOOST_REQUIRE_EQUAL (kvs.push ("bar", "foo"), 0);
   BOOST_REQUIRE_EQUAL (kvs.pop ("bar", val), 0);
   BOOST_REQUIRE_EQUAL (boost::get<std::string>(val), "foo");
