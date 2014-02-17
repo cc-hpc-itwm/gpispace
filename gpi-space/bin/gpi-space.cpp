@@ -748,8 +748,6 @@ int main (int ac, char *av[])
   signal(SIGTERM, signal_handler);
   signal(SIGINT, signal_handler);
   signal(SIGALRM, signal_handler);
-  signal(SIGHUP, signal_handler);
-  signal(SIGCHLD, signal_handler);
 
   try
   {
