@@ -779,10 +779,8 @@ int main (int ac, char *av[])
 
     LOG(INFO, "started GPI interface on rank " << gpi_api.rank() << " at " << config.socket);
 
-    if (0 == gpi_api.rank())
+    if (0 == gpi_api.rank() && isatty(0) && isatty(1))
     {
-      if (isatty(0) && isatty(1))
-      {
         static const std::string prompt
           ("Please type \"q\" followed by return to quit: ");
 
@@ -815,11 +813,6 @@ int main (int ac, char *av[])
             break;
           }
         }
-      }
-      else
-      {
-        do { } while (!stop_requested && pause() == -1 && errno == EINTR);
-      }
     }
     else
     {
