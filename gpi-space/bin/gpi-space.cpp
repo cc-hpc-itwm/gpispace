@@ -826,13 +826,6 @@ int main (int ac, char *av[])
             std::cerr << "      s - spawn a gpish"                 << std::endl;
             std::cerr << "      q - quit"                          << std::endl;
 
-            /*
-              std::cerr << "      p - list all attached processes"   << std::endl;
-              std::cerr << "d [num] - detach process #num or first"  << std::endl;
-              std::cerr << "      s - print statistics"              << std::endl;
-              std::cerr << "      a - list allocations"              << std::endl;
-              std::cerr << "f [num] - remove an allocation (or all)" << std::endl;
-            */
             break;
           default:
             std::cerr << "command not understood, please use \"h\"" << std::endl;
