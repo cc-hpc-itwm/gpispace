@@ -755,24 +755,6 @@ int main (int ac, char *av[])
     LOG(WARN, "could not setup logging");
   }
 
-  fhg::com::kvs::kvsc_ptr_t kvs_client;
-  try
-  {
-    kvs_client = fhg::com::kvs::kvsc_ptr_t
-      ( new fhg::com::kvs::client::kvsc ( config.kvs_host
-                                      , boost::lexical_cast<std::string>(config.kvs_port)
-                                      , true
-                                      , boost::posix_time::seconds(1)
-                                      , config.kvs_retry_count
-                                      )
-    );
-  }
-  catch (std::runtime_error const& ex)
-  {
-    LOG(ERROR, "could not connect to KVS: " << ex.what());
-    exit(EXIT_FAILURE);
-  }
-
   try
   {
     LOG( TRACE
@@ -784,6 +766,24 @@ int main (int ac, char *av[])
 
     if (mem_urls.empty ())
       mem_urls.push_back (default_memory_url);
+
+    fhg::com::kvs::kvsc_ptr_t kvs_client;
+    try
+    {
+      kvs_client = fhg::com::kvs::kvsc_ptr_t
+        ( new fhg::com::kvs::client::kvsc ( config.kvs_host
+                                          , boost::lexical_cast<std::string>(config.kvs_port)
+                                          , true
+                                          , boost::posix_time::seconds(1)
+                                          , config.kvs_retry_count
+                                          )
+        );
+    }
+    catch (std::runtime_error const& ex)
+    {
+      LOG(ERROR, "could not connect to KVS: " << ex.what());
+      exit(EXIT_FAILURE);
+    }
 
     const gpi::pc::container::manager_t container_manager
       (config.socket, mem_urls, gpi_api, kvs_client);
