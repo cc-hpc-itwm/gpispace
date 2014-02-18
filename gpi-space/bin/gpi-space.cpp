@@ -711,16 +711,6 @@ int main (int ac, char *av[])
       gpi_api.clear_caches();
     }
 
-    // quick hack to delete old kvs entries
-    // TODO: find a better place
-    for (std::size_t rnk = 0 ; rnk < gpi_api.number_of_nodes (); ++rnk)
-    {
-      std::string peer_name = fhg::com::p2p::to_string
-        (fhg::com::p2p::address_t ("gpi-"+boost::lexical_cast<std::string>(rnk)));
-      std::string kvs_key = "p2p.peer." + peer_name;
-      kvs_client->del (kvs_key);
-    }
-
     if (0 != strlen (pidfile))
     {
       try
