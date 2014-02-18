@@ -94,12 +94,7 @@ static const int GPI_MAGIC_MISMATCH = 23;
 static void distribute_config_or_die(const config_t *c, gpi_api_t & gpi_api);
 static void receive_config_or_die(config_t *c, gpi_api_t& gpi_api);
 
-namespace
-{
-  fhg::com::kvs::kvsc_ptr_t kvs_client;
-}
 static int configure_logging (const config_t *cfg, const char* logfile);
-static void configure_kvs (const config_t *cfg);
 
 namespace
 {
@@ -760,9 +755,17 @@ int main (int ac, char *av[])
     LOG(WARN, "could not setup logging");
   }
 
+  fhg::com::kvs::kvsc_ptr_t kvs_client;
   try
   {
-    configure_kvs (&config);
+    kvs_client = fhg::com::kvs::kvsc_ptr_t
+      ( new fhg::com::kvs::client::kvsc ( config.kvs_host
+                                      , boost::lexical_cast<std::string>(config.kvs_port)
+                                      , true
+                                      , boost::posix_time::seconds(1)
+                                      , config.kvs_retry_count
+                                      )
+    );
   }
   catch (std::runtime_error const& ex)
   {
@@ -853,18 +856,6 @@ static int configure_logging (const config_t *cfg, const char* logfile)
   FHGLOG_SETUP();
 
   return 0;
-}
-
-static void configure_kvs (const config_t *cfg)
-{
-  kvs_client = fhg::com::kvs::kvsc_ptr_t
-    ( new fhg::com::kvs::client::kvsc ( cfg->kvs_host
-                                      , boost::lexical_cast<std::string>(cfg->kvs_port)
-                                      , true
-                                      , boost::posix_time::seconds(1)
-                                      , cfg->kvs_retry_count
-                                      )
-    );
 }
 
 static void distribute_config_or_die(const config_t *c, gpi_api_t& gpi_api)
