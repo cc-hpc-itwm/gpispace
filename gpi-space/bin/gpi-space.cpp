@@ -877,14 +877,6 @@ static void configure_kvs (const config_t *cfg)
                                       , cfg->kvs_retry_count
                                       )
     );
-
-  // workaround until we have the above structure
-  // put/del some entry to check the connection
-  fhg::com::kvs::scoped_entry_t
-    ( kvs_client
-    , "kvs.connection.check"
-    , "dummy value"
-    );
 }
 
 static void distribute_config_or_die(const config_t *c, gpi_api_t& gpi_api)
