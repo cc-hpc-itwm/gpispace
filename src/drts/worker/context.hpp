@@ -1,15 +1,15 @@
 #ifndef GSPC_DRTS_CONTEXT_HPP
 #define GSPC_DRTS_CONTEXT_HPP
 
-#include <gspc/drts/context_fwd.hpp>
+#include <drts/worker/context_fwd.hpp>
 #include <list>
 #include <string>
 
 #include <boost/function.hpp>
 
-namespace gspc
+namespace drts
 {
-  namespace drts
+  namespace worker
   {
     class context
     {

@@ -1,6 +1,5 @@
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
-include_directories (${CMAKE_SOURCE_DIR}/gspc)
 include_directories (${CMAKE_SOURCE_DIR}/src)
 
 include_directories (${UTIL_INCLUDE_DIR})
@@ -9,8 +8,6 @@ include_directories (${FhgKernel_INCLUDE_DIR})
 
 find_package(ZLIB REQUIRED QUIET)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
-
-include_directories(${GSPC_INCLUDE_DIR})
 
 include_directories (${FhgLog_INCLUDE_DIR})
 

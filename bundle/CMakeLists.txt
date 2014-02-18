@@ -22,8 +22,6 @@ bundle_apps(
   sdpac
   sdpa-gui
   gpish
-  gspcd
-  gspc-kvs
   gpi-space
   pnete
   drts-kernel

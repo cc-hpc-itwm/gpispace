@@ -1,6 +1,5 @@
 include_directories(${FVM_INCLUDE_DIR})
 
-include_directories ("${CMAKE_SOURCE_DIR}/gspc")
 include_directories ("${CMAKE_SOURCE_DIR}/src")
 
 set (srcs

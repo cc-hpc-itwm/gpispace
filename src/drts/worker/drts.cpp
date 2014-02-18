@@ -6,11 +6,6 @@
 #include <fhg/util/split.hpp>
 #include <fhg/util/threadname.hpp>
 
-#include <gspc/net/frame_builder.hpp>
-#include <gspc/net/serve.hpp>
-#include <gspc/net/server/default_service_demux.hpp>
-#include <gspc/net/service/echo.hpp>
-
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
 
@@ -304,10 +299,7 @@ void WFEImpl::cancel (std::string const &job_id)
 
 
 DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables)
-  : _net_initializer (get<std::size_t> ("plugin.drts.netd_nthreads", config_variables).get_value_or (4L))
-  , _service_demux (gspc::net::server::default_service_demux())
-  , _queue_manager (_service_demux)
-  , _request_stop (request_stop)
+  : _request_stop (request_stop)
   , _kvs_client
     (new fhg::com::kvs::client::kvsc
       ( get<std::string> ("plugin.drts.kvs_host", config_variables).get_value_or ("localhost")
@@ -343,19 +335,11 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     );
   fhg::com::host_t host (get<std::string> ("plugin.drts.host", config_variables).get_value_or ("*"));
   fhg::com::port_t port (get<std::string> ("plugin.drts.port", config_variables).get_value_or ("0"));
-  const std::string netd_url (get<std::string> ("plugin.drts.netd_url", config_variables).get_value_or ("tcp://*"));
 
   if (master_list.empty())
   {
     throw std::runtime_error ("no masters specified");
   }
-
-  _service_demux.handle ("/service/echo", gspc::net::service::echo ());
-
-  m_server = gspc::net::serve (netd_url, _net_initializer, _queue_manager);
-
-  _kvs_client->put ("gspc.net.url." + m_my_name, m_server->url());
-
 
   // parse virtual capabilities
   BOOST_FOREACH (std::string const & cap, capability_list)
@@ -448,11 +432,6 @@ DRTSImpl::~DRTSImpl()
 
   m_peer_thread.reset();
   m_peer.reset();
-
-  if (m_server)
-  {
-    m_server->stop ();
-  }
 }
 
   // event handler callbacks

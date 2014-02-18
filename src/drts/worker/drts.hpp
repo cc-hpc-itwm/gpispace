@@ -1,5 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#include <drts/worker/context.hpp>
 #include <drts/worker/job.hpp>
 
 #include <fhgcom/message.hpp>
@@ -8,14 +9,6 @@
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/set.hpp>
-
-#include <gspc/drts/context.hpp>
-#include <gspc/net/frame.hpp>
-#include <gspc/net/io.hpp>
-#include <gspc/net/server.hpp>
-#include <gspc/net/server/queue_manager.hpp>
-#include <gspc/net/server/service_demux.hpp>
-#include <gspc/net/user.hpp>
 
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/NotificationEvent.hpp>
@@ -52,7 +45,7 @@ struct wfe_task_t
   std::string id;
   state_t state;
   we::type::activity_t activity;
-  gspc::drts::context context;
+  drts::worker::context context;
   std::string error_message;
 
   wfe_task_t (std::string id, std::string worker_name, std::list<std::string> workers);
@@ -159,10 +152,6 @@ private:
 
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt);
 
-  gspc::net::initializer _net_initializer;
-  gspc::net::server::service_demux_t& _service_demux;
-  gspc::net::server::queue_manager_t _queue_manager;
-
   boost::function<void()> _request_stop;
 
   fhg::com::kvs::kvsc_ptr_t _kvs_client;
@@ -202,8 +191,6 @@ private:
   map_of_jobs_t m_jobs;
 
   fhg::thread::queue<boost::shared_ptr<drts::Job> > m_pending_jobs;
-
-  gspc::net::server_ptr_t m_server;
 
   fhg::thread::set _registration_threads;
 };

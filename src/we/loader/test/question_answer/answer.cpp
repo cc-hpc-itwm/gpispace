@@ -9,7 +9,7 @@ long get_answer ()
   return ++ans;
 }
 
-static void answer ( gspc::drts::context*
+static void answer ( drts::worker::context*
                    , const expr::eval::context&
                    , expr::eval::context& output
                    )

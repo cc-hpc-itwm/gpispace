@@ -15,7 +15,7 @@ void fun (char c, expr::eval::context const& input, expr::eval::context& output)
   output.bind ("done", we::type::literal::control());
 }
 
-void A ( gspc::drts::context*
+void A ( drts::worker::context*
        , expr::eval::context const& input
        , expr::eval::context& output
        )
@@ -23,7 +23,7 @@ void A ( gspc::drts::context*
   fun ('A', input, output);
 }
 
-void B ( gspc::drts::context*
+void B ( drts::worker::context*
        , expr::eval::context const& input
        , expr::eval::context& output
        )
@@ -31,7 +31,7 @@ void B ( gspc::drts::context*
   fun ('B', input, output);
 }
 
-void C ( gspc::drts::context*
+void C ( drts::worker::context*
        , expr::eval::context const& input
        , expr::eval::context& output
        )
@@ -39,7 +39,7 @@ void C ( gspc::drts::context*
   fun ('C', input, output);
 }
 
-void D ( gspc::drts::context*
+void D ( drts::worker::context*
        , expr::eval::context const& input
        , expr::eval::context& output
        )
@@ -47,7 +47,7 @@ void D ( gspc::drts::context*
   fun ('D', input, output);
 }
 
-void finalize ( gspc::drts::context*
+void finalize ( drts::worker::context*
               , expr::eval::context const&
               , expr::eval::context& output
               )

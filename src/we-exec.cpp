@@ -60,7 +60,7 @@ namespace
     {
       try
       {
-        //!\todo pass a real gspc::drts::context
+        //!\todo pass a real drts::worker::context
         we::loader::module_call (*_loader, 0, act, mod);
         _layer->finished (_id, act);
       }
