@@ -71,6 +71,8 @@ namespace gpi
                            , task_list_t & tasks
                            );
       private:
+        void init ();
+
         bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t begin
                             , const gpi::pc::type::size_t   range_size
