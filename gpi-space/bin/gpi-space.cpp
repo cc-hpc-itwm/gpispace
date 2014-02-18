@@ -681,18 +681,6 @@ int main (int ac, char *av[])
     LOG(INFO, "GPISpace revision: " << fhg::project_revision());
     LOG(INFO, "GPIApi version: " << gpi_api.version());
 
-    try
-    {
-      configure_kvs (&config);
-    }
-    catch (std::runtime_error const& ex)
-    {
-      LOG( ERROR
-         , "could not configure KVS at " << config.kvs_host << ":" << config.kvs_port << ": " << ex.what()
-         );
-      exit(EXIT_FAILURE);
-    }
-
     if (gpi_perform_checks)
     {
       try
