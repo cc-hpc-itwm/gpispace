@@ -144,7 +144,7 @@ int main (int ac, char *av[])
   bool gpi_clear_caches = true;
   char pidfile[MAX_PATH_LEN];
   snprintf (pidfile, sizeof(pidfile), "%s", "");
-  requested_api_t requested_api;
+  requested_api_t requested_api = API_auto;
   char socket_path[MAX_PATH_LEN];
   snprintf (socket_path, sizeof(socket_path), "/var/tmp");
   char logfile[MAX_PATH_LEN];
