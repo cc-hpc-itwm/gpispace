@@ -95,6 +95,7 @@ namespace sdpa {
       //! the ctor, thus there is a race if the ctor of derived
       //! classes or the thread run first.
       void start_threads();
+      void stop_threads();
 
     private:
       void feedWorkers();

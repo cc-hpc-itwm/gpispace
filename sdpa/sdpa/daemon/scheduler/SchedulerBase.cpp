@@ -22,7 +22,7 @@ void SchedulerBase::start_threads()
   m_thread_feed = boost::thread (&SchedulerBase::feedWorkers, this);
 }
 
-SchedulerBase::~SchedulerBase()
+void SchedulerBase::stop_threads()
 {
   m_thread_run.interrupt();
   m_thread_feed.interrupt();
@@ -34,6 +34,9 @@ SchedulerBase::~SchedulerBase()
     m_thread_feed.join();
 }
 
+SchedulerBase::~SchedulerBase()
+{
+}
 
 void SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
                                 const boost::optional<unsigned int>& capacity,
