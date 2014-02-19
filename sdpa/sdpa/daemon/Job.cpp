@@ -40,11 +40,6 @@ namespace sdpa {
       return m_error_message;
     }
 
-    void Job::set_owner(const worker_id_t& owner)
-    {
-      m_owner = owner;
-    }
-
     worker_id_t Job::owner() const
     {
       return m_owner;

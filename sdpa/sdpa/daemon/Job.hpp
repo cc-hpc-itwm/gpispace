@@ -177,7 +177,6 @@ namespace sdpa {
 
       bool isMasterJob() const;
 
-      void set_owner(const worker_id_t& owner);
       worker_id_t owner() const;
 
       status::code getStatus() const;
