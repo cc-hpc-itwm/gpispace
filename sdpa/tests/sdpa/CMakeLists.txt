@@ -186,7 +186,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -208,7 +207,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -230,7 +228,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -252,7 +249,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -274,7 +270,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -296,7 +291,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -318,7 +312,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -340,7 +333,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -362,7 +354,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -384,7 +375,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -406,7 +396,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -428,7 +417,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -450,7 +438,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
@@ -472,7 +459,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-plugin
                      fhg-revision
                      ${FhgLog_LIBRARY}
-                     we-dev
                      pnet
                      we-dev
                      fhg-util
