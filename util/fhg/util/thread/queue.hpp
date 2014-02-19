@@ -90,7 +90,6 @@ namespace fhg
     {
     public:
       typedef boost::ptr_list<T> container_type;
-      typedef typename container_type::size_type size_type;
 
       typename container_type::auto_type get()
       {
@@ -108,47 +107,6 @@ namespace fhg
         m_get_cond.notify_one();
       }
 
-      size_type size() const
-      {
-        boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        return m_container.size();
-      }
-
-      bool empty() const
-      {
-        boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        return m_container.empty();
-      }
-
-      template <typename Pred>
-        size_t remove_if (Pred pred)
-      {
-        boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        size_t cnt (0);
-        for ( typename container_type::iterator it (m_container.begin())
-            ; it != m_container.end()
-            ;
-            )
-        {
-          if (pred (*it))
-          {
-            it = m_container.erase (it);
-            ++cnt;
-          }
-          else
-          {
-            ++it;
-          }
-        }
-
-        return cnt;
-      }
-
-      void clear()
-      {
-        boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        m_container.clear();
-      }
     private:
       mutable boost::recursive_mutex m_mtx;
       boost::condition_variable_any m_get_cond;
