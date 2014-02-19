@@ -19,8 +19,8 @@ class Worker : public sdpa::daemon::Agent
         sdpa::capability_t  cpb(cpb_name, name);
         addCapability(cpb);
         sdpa::events::CapabilitiesGainedEvent::Ptr
-            ptrCpbGainEvtA( new sdpa::events::CapabilitiesGainedEvent(name, master_name, cpb) );
-        sendEventToOther(ptrCpbGainEvtA);
+            ptrCpbGainEvt( new sdpa::events::CapabilitiesGainedEvent(name, master_name, cpb) );
+        sendEventToOther(ptrCpbGainEvt);
     }
 
     void submit ( const we::layer::id_type& activity_id
@@ -41,11 +41,11 @@ BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  Worker worker_0( "worker_0", agent._.name(), "A");
-  Worker worker_1( "worker_1", agent._.name(), "A");
-  Worker worker_2( "worker_2", agent._.name(), "B");
-  Worker worker_3( "worker_3", agent._.name(), "B");
-  Worker worker_4( "worker_4", agent._.name(), "B");
+  const Worker worker_0( "worker_0", agent._.name(), "A");
+  const Worker worker_1( "worker_1", agent._.name(), "A");
+  const Worker worker_2( "worker_2", agent._.name(), "B");
+  const Worker worker_3( "worker_3", agent._.name(), "B");
+  const Worker worker_4( "worker_4", agent._.name(), "B");
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
