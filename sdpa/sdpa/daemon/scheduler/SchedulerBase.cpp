@@ -57,11 +57,9 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
   }
   catch (const WorkerNotFoundException& ex)
   {
-    LLOG (WARN, _logger, "Cannot find the worker "<<worker_id);
   }
   catch(JobNotDeletedException const & ex)
   {
-    LLOG (WARN, _logger, "The job " << job_id << " could not be deleted: " << ex.what());
   }
 
   rescheduleJob(job_id);
@@ -91,7 +89,6 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
 
     if( !workerJobList.empty() )
     {
-      LLOG (WARN, _logger,  "The worker " << worker_id << " has still has assigned jobs!");
     }
 
     // delete the worker from the worker map
@@ -99,7 +96,6 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
   }
   catch (const WorkerNotFoundException& ex)
   {
-    LLOG (ERROR, _logger, "Cannot delete the worker "<<worker_id<<". Worker not found!");
       throw ex;
   }
 }
@@ -236,7 +232,6 @@ void SchedulerBase::run()
     }
     catch ( const std::exception &ex )
     {
-      LLOG (ERROR, _logger, "exception in scheduler thread: " << ex.what());
         throw;
     }
   }
@@ -254,7 +249,6 @@ void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
   }
   catch(JobNotFoundException const& ex1)
   {
-    LLOG (ERROR, _logger, "Could not find the job "<<job_id<<"!");
     throw ex1;
   }
   catch(WorkerNotFoundException const &ex2)
@@ -277,12 +271,10 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
   }
   catch(JobNotDeletedException const& ex1)
   {
-    LLOG (WARN, _logger, "The job "<<jobId<<" couldn't be found!");
     throw ex1;
   }
   catch(WorkerNotFoundException const &ex2 )
   {
-    LLOG (WARN, _logger, "The worker "<<worker_id<<" couldn't be found!");
     throw ex2;
   }
 }
@@ -330,7 +322,6 @@ void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sd
   }
   catch(WorkerNotFoundException const &ex2 )
   {
-    LLOG (ERROR, _logger, "The worker "<<worker_id<<" could not be found!");
       cpbset = sdpa::capabilities_set_t();
   }
 }

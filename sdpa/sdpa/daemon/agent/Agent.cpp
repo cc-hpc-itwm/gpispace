@@ -517,7 +517,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
       }
       catch(const JobNotDeletedException&)
       {
-        LLOG (WARN, _logger,  "the JobManager could not delete the job: "<< pEvt->job_id());
       }
     }
   }
@@ -549,11 +548,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     }
     catch(const JobNotDeletedException& jnde)
     {
-      LLOG (ERROR, _logger, "could not delete the job " << pEvt->job_id()
-                                              << " from the worker "
-                                              << worker_id
-                                              << " : " << jnde.what()
-                                              );
     }
 
     // delete the job completely from the job manager
@@ -565,7 +559,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     }
     catch(const JobNotDeletedException&)
     {
-      LLOG (WARN, _logger, "the JobManager could not delete the job: "<< pEvt->job_id());
     }
   }
 }

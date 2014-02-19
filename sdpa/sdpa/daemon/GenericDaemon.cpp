@@ -596,8 +596,6 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
   }
   catch(const JobNotFoundException& ex)
   {
-    LLOG (ERROR, _logger, "Couldn't find the job "<<ex.job_id());
-
     events::JobFailedEvent::Ptr pEvtJobFailed
       (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
@@ -1011,12 +1009,6 @@ void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEv
       }
       catch(std::exception const &ex2)
       {
-        LLOG (ERROR, _logger,  "Unexpected exception during "
-                        << " handleSubmitJobAckEvent("<< pEvent->job_id() << ")"
-                        << ": "
-                        << ex2.what()
-                        );
-
         throw;
       }
   }
@@ -1047,24 +1039,15 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
     }
     catch(JobNotDeletedException const & ex1)
     {
-      LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
-
       throw;
     }
     catch(std::exception const &ex2)
     {
-      LLOG (ERROR, _logger,  "Unexpected exception during "
-                      << " handleJobFinishedAckEvent("<< pEvt->job_id() << ")"
-                      << ": "
-                      << ex2.what()
-                     );
       throw;
     }
   }
   else
   {
-    LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
-
     throw std::runtime_error ("Couldn't find the job!");
   }
 }
@@ -1083,25 +1066,15 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
     }
     catch(JobNotDeletedException const & ex1)
     {
-      LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be deleted: " << ex1.what());
-
       throw;
     }
     catch(std::exception const &ex2)
     {
-      LLOG (ERROR, _logger,  "Unexpected exception during "
-                      << " handleJobFinishedAckEvent("<< pEvt->job_id() << ")"
-                      << ": "
-                      << ex2.what()
-                     );
-
       throw;
     }
   }
   else
   {
-    LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
-
     throw std::runtime_error ("Couldn't find the job!");
   }
 }

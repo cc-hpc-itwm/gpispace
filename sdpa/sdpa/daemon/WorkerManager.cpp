@@ -35,7 +35,6 @@ using namespace std;
 using namespace sdpa::daemon;
 
 WorkerManager::WorkerManager()
-  : _logger (fhg::log::Logger::get ("sdpa::daemon::WorkerManager"))
 {}
 
 Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
@@ -106,7 +105,6 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
     //if( it->second->name() ==  workerId )
     if( it->first == workerId )
     {
-      //LLOG (ERROR, _logger, "An worker with the id "<<workerId<<" already exist into the worker map!");
       bFound = true;
       throw WorkerAlreadyExistException(workerId);
     }
@@ -157,10 +155,8 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
     ptrWorker->deleteJob(job_id);
   }
   catch(JobNotDeletedException const &) {
-    LLOG (ERROR, _logger, "Could not delete the job "<<job_id<<"!");
   }
   catch(WorkerNotFoundException const &) {
-    LLOG (ERROR, _logger, "Worker "<<worker_id<<" not found!");
   }
 }
 

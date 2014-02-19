@@ -117,8 +117,6 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  //LLOG (INFO, _logger,  "handle JobFailed event (job " << pEvt->job_id() << ") received from "<<pEvt->from());
-
   if (pEvt->is_external())
   {
       // send a JobFinishedAckEvent back to the worker/slave
@@ -286,8 +284,6 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
   }
   else
   {
-    LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
-
     throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
   }
 }
@@ -312,8 +308,6 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
   }
   else
   {
-    LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
-
     throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
   }
 }
