@@ -187,7 +187,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               workflow_capabilities
               workflow_capabilities_no_mandatory
@@ -201,7 +200,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               workflow_coallocation_test
      )
@@ -214,7 +212,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               workflow_inotify
      )
@@ -227,7 +224,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               workflow_coallocation_test2
               workflow_transform_file
@@ -242,7 +238,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
      )
 
@@ -254,7 +249,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
      )
 
@@ -266,7 +260,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
      )
 
@@ -278,7 +271,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               workflow_coallocation_test
               workflow_transform_file
@@ -292,7 +284,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               workflow_transform_file
      )
@@ -305,7 +296,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               workflow_transform_file
      )
@@ -318,7 +308,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
      )
 
@@ -330,7 +319,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               workflow_transform_file
      )
@@ -343,7 +331,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               workflow_coallocation_bad_test
      )
@@ -356,7 +343,6 @@ add_custom_target(workflow_coallocation_test2
                      fhg-plugin
                      ${FhgLog_LIBRARY}
                      pnet
-                     ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               workflow_coallocation_test
               workflow_coallocation_test2
