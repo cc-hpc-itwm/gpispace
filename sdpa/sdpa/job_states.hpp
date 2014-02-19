@@ -27,11 +27,6 @@ namespace sdpa
       return c == FINISHED || c == FAILED || c == CANCELED;
     }
 
-    inline bool is_canceled (code c)
-    {
-      return c == CANCELED;
-    }
-
     inline bool is_canceling (code c)
     {
       return c == CANCELING;

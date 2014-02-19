@@ -182,7 +182,6 @@ namespace sdpa {
       status::code getStatus() const;
 
       bool completed() const;
-      bool is_canceled() const;
       bool is_canceling() const;
 
       // job FSM actions

@@ -56,11 +56,6 @@ namespace sdpa {
       return status::is_terminal (getStatus());
     }
 
-    bool Job::is_canceled() const
-    {
-      return status::is_canceled (getStatus());
-    }
-
     bool Job::is_canceling() const
     {
       return status::is_canceling (getStatus());
