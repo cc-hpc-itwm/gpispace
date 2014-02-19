@@ -42,7 +42,7 @@ namespace fhg
     signal_handler_manager::~signal_handler_manager()
     {
       boost::mutex::scoped_lock const _ (GLOBAL_manager_mutex);
-      assert (GLOBAL_manager);
+      assert (GLOBAL_manager == this);
       GLOBAL_manager = NULL;
 
       BOOST_FOREACH (int sig_num, _handlers | boost::adaptors::map_keys)
