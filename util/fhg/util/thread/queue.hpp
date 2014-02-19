@@ -21,7 +21,7 @@ namespace fhg
 
       T get()
       {
-        boost::unique_lock<boost::recursive_mutex> lock(m_mtx);
+        boost::unique_lock<boost::recursive_mutex> lock (m_mtx);
         m_get_cond.wait
           (lock, not boost::bind (&container_type::empty, &m_container));
 
@@ -32,7 +32,7 @@ namespace fhg
       void put (T const & t)
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        m_container.push_back(t);
+        m_container.push_back (t);
         m_get_cond.notify_one();
       }
 
@@ -60,7 +60,7 @@ namespace fhg
         {
           if (pred (*it))
           {
-            it = m_container.erase(it);
+            it = m_container.erase (it);
             ++cnt;
           }
           else
