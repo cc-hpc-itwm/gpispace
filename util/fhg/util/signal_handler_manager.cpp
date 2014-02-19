@@ -2,6 +2,7 @@
 
 #include <fhg/util/signal_handler_manager.hpp>
 
+#include <fhg/syscall.hpp>
 #include <fhg/util/backtracing_exception.hpp>
 
 #include <fhglog/LogMacros.hpp>
@@ -47,7 +48,7 @@ namespace fhg
 
       BOOST_FOREACH (int sig_num, _handlers | boost::adaptors::map_keys)
       {
-        signal (sig_num, SIG_DFL);
+        fhg::syscall::signal (sig_num, SIG_DFL);
       }
     }
 
