@@ -36,8 +36,3 @@ endif()
 
 target_link_libraries(fhg-plugin ${UTIL_LIBRARIES} ${CMAKE_DL_LIBS})
 target_link_libraries(fhg-plugin-shared ${UTIL_LIBRARIES} ${CMAKE_DL_LIBS})
-
-install (FILES ${hdrs}
-  DESTINATION include/fhg/plugin
-  COMPONENT headers
-)
