@@ -113,20 +113,11 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
   Job* pJob = ptr_comm_handler_->findJob(jobId);
-  if(pJob)
+  if(!pJob)
   {
-    schedule (pJob);
+    throw std::runtime_error ("tried scheduling non-existent job");
   }
-  else
-  {
-    sdpa::events::JobFailedEvent::Ptr pEvtJobFailed(new sdpa::events::JobFailedEvent(m_agent_name
-                                                         , m_agent_name
-                                                         , jobId
-                                                         , "job could not be found"
-                                                         ));
-
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
+  schedule (pJob);
 }
 void SchedulerBase::schedule (Job* pJob)
 {
