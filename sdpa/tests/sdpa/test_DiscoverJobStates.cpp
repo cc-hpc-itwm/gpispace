@@ -168,7 +168,7 @@ namespace
 BOOST_AUTO_TEST_CASE (test_discover_activities)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation_test2.pnet"));
 
   const we::type::activity_t activity (workflow);
 
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+    (utils::require_and_read_file ("coallocation_test.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+    (utils::require_and_read_file ("coallocation_test.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation_test2.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 BOOST_AUTO_TEST_CASE (remove_workers)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+    (utils::require_and_read_file ("coallocation_test.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());

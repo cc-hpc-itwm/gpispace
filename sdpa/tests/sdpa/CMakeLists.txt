@@ -1,6 +1,6 @@
 include (fhg_plugin_macros)
 
-add_subdirectory (workflows)
+configure_file(in.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/in.txt COPYONLY)
 
 include_directories (${FVM_INCLUDE_DIR})
 include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
@@ -31,7 +31,7 @@ get_target_property (PNETPUT_LOCATION pnetput LOCATION)
 
 pnet_compile (capabilities-test-wf
   ${CMAKE_SOURCE_DIR}/application/example/capabilities/capabilities.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capabilities-test-wf.in.pnet
   GENERATE capabilities
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -44,12 +44,12 @@ pnet_compile (capabilities-test-wf
 
 add_custom_target (workflow_capabilities
   COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
+          --if ${CMAKE_CURRENT_BINARY_DIR}/capabilities-test-wf.in.pnet
           -p n_A=20L
           -p time_A=5000L
           -p n_B=10L
           -p time_B=5000L
-          --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
+          --of "${CMAKE_CURRENT_BINARY_DIR}/capabilities.pnet"
   COMMENT "putting tokens into capabilities workflow"
   DEPENDS pnet-capabilities-test-wf
           pnetput
@@ -59,7 +59,7 @@ add_custom_target (workflow_capabilities
 
 pnet_compile (capabilities_no_mandatory-test-wf
   ${CMAKE_SOURCE_DIR}/application/example/capabilities_no_mandatory/capabilities_no_mandatory.xml
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory-test-wf.in.pnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory-test-wf.in.pnet
   GENERATE capabilities_no_mandatory
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -72,12 +72,12 @@ pnet_compile (capabilities_no_mandatory-test-wf
 
 add_custom_target (workflow_capabilities_no_mandatory
   COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory-test-wf.in.pnet
+          --if ${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory-test-wf.in.pnet
           -p n_A=10L
           -p time_A=5000L
           -p n_B=10L
           -p time_B=5000L
-          --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
+          --of "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory.pnet"
   COMMENT "putting tokens into capabilities_no_mandatory workflow"
   DEPENDS pnet-capabilities_no_mandatory-test-wf
           pnetput
@@ -87,7 +87,7 @@ add_custom_target (workflow_capabilities_no_mandatory
 
 pnet_compile (inotify-test-wf
   ${CMAKE_SOURCE_DIR}/application/example/inotify/inotify.xml
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/inotify-test-wf.in.pnet
   GENERATE inotify
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -100,10 +100,10 @@ pnet_compile (inotify-test-wf
 
 add_custom_target (workflow_inotify
   COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
+          --if ${CMAKE_CURRENT_BINARY_DIR}/inotify-test-wf.in.pnet
           -p N=5L
           -p watched_file=\\"inotify_test.txt\\"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet"
+          --of "${CMAKE_CURRENT_BINARY_DIR}/inotify.pnet"
   COMMENT "putting tokens into inotify workflow"
   DEPENDS pnet-inotify-test-wf
           pnetput
@@ -113,7 +113,7 @@ add_custom_target (workflow_inotify
 
 pnet_compile (transform_file-test-wf
   ${CMAKE_SOURCE_DIR}/application/transform_file/xml/transform_file.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file-test-wf.in.pnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/transform_file-test-wf.in.pnet
   GENERATE transform_file
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -127,13 +127,13 @@ pnet_compile (transform_file-test-wf
 
 add_custom_target (workflow_transform_file
   COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file-test-wf.in.pnet
+          --if ${CMAKE_CURRENT_BINARY_DIR}/transform_file-test-wf.in.pnet
           -p input_file=\\"in.txt\\"
           -p output_file=\\"\\"
           -p input_n_read_slots="3L"
           -p input_n_write_slots="3L"
           -p chunk_size="512L"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file.pnet"
+          --of "${CMAKE_CURRENT_BINARY_DIR}/transform_file.pnet"
   COMMENT "putting tokens into transform_file workflow"
   DEPENDS pnet-transform_file-test-wf
           pnetput
@@ -143,7 +143,7 @@ add_custom_target (workflow_transform_file
 
 pnet_compile (coallocation_test-wf
   ${CMAKE_SOURCE_DIR}/application/example/coallocation_test/coallocation_test.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
   GENERATE coallocation_test
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -157,12 +157,12 @@ pnet_compile (coallocation_test-wf
 
 add_custom_target (workflow_coallocation_test
   COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
+          --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
           -p n_tasks_A="20L"
           -p n_workers_A="2UL"
           -p n_tasks_B="10L"
           -p n_workers_B="3UL"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test.pnet"
+          --of "${CMAKE_CURRENT_BINARY_DIR}/coallocation_test.pnet"
   COMMENT "putting tokens into coallocation_test workflow"
   DEPENDS pnet-coallocation_test-wf
           pnetput
@@ -170,12 +170,12 @@ add_custom_target (workflow_coallocation_test
 
 add_custom_target (workflow_coallocation_bad_test
   COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
+          --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
           -p n_tasks_A="1L"
           -p n_workers_A="0UL"
           -p n_tasks_B="1L"
           -p n_workers_B="0UL"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_bad_test.pnet"
+          --of "${CMAKE_CURRENT_BINARY_DIR}/coallocation_bad_test.pnet"
   COMMENT "putting tokens into coallocation_bad_test workflow"
   DEPENDS pnet-coallocation_test-wf
           pnetput
@@ -183,12 +183,12 @@ add_custom_target (workflow_coallocation_bad_test
 
 add_custom_target (workflow_coallocation_test2
   COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
+          --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
           -p n_tasks_A="1L"
           -p n_workers_A="2UL"
           -p n_tasks_B="1L"
           -p n_workers_B="3UL"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet"
+          --of "${CMAKE_CURRENT_BINARY_DIR}/coallocation_test2.pnet"
   COMMENT "putting tokens into coallocation_test2 workflow"
   DEPENDS pnet-coallocation_test-wf
           pnetput

@@ -11,7 +11,7 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 BOOST_AUTO_TEST_CASE (test_cancel_no_agent)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation_test2.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE (test_cancel_no_agent)
 BOOST_AUTO_TEST_CASE (test_cance_orch_and_agent_no_worker)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/transform_file.pnet"));
+    (utils::require_and_read_file ("transform_file.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE (test_cance_orch_and_agent_no_worker)
 BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation_test2.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_twice)
 BOOST_AUTO_TEST_CASE (test_call_cancel_with_timeout)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/capabilities.pnet"));
+    (utils::require_and_read_file ("capabilities.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_with_timeout)
 BOOST_AUTO_TEST_CASE (test_call_cancel_with_polling_client)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/capabilities.pnet"));
+    (utils::require_and_read_file ("capabilities.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE (test_call_cancel_with_polling_client)
 BOOST_AUTO_TEST_CASE (test_cancel_terminated_job)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/capabilities.pnet"));
+    (utils::require_and_read_file ("capabilities.pnet"));
 
   const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
