@@ -594,19 +594,6 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 
     workflowEngine()->submit (jobId, act);
   }
-  catch(const NoWorkflowEngine& ex)
-  {
-    LLOG (ERROR, _logger, "No workflow engine is available!");
-
-    events::JobFailedEvent::Ptr pEvtJobFailed
-      (new events::JobFailedEvent( sdpa::daemon::WE
-                                 , name()
-                                 , jobId
-                                 , "no workflow engine attached!"
-                                 )
-      );
-    sendEventToSelf(pEvtJobFailed);
-  }
   catch(const JobNotFoundException& ex)
   {
     LLOG (ERROR, _logger, "Couldn't find the job "<<ex.job_id());
