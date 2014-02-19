@@ -43,8 +43,6 @@ pnet_compile (capabilities-test-wf
   COMPONENT tests
 )
 
-get_target_property (__PNET_GEN_OUTPUTS pnet-capabilities-test-wf GEN_OUTPUTS)
-
 add_custom_target (workflow_capabilities
   COMMAND ${PNETPUT_LOCATION}
           --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
@@ -72,8 +70,6 @@ pnet_compile (capabilities_no_mandatory-test-wf
   BUILD
   COMPONENT tests
 )
-
-get_target_property (__PNET_GEN_OUTPUTS pnet-capabilities_no_mandatory-test-wf GEN_OUTPUTS)
 
 add_custom_target (workflow_capabilities_no_mandatory
   COMMAND ${PNETPUT_LOCATION}
@@ -103,8 +99,6 @@ pnet_compile (inotify-test-wf
   COMPONENT tests
 )
 
-get_target_property (__PNET_GEN_OUTPUTS pnet-inotify-test-wf GEN_OUTPUTS)
-
 add_custom_target (workflow_inotify
   COMMAND ${PNETPUT_LOCATION}
           --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
@@ -131,8 +125,6 @@ pnet_compile (transform_file-test-wf
   BUILD
   COMPONENT tests
 )
-
-get_target_property (__PNET_GEN_OUTPUTS pnet-transform_file-test-wf GEN_OUTPUTS)
 
 add_custom_target (workflow_transform_file
   COMMAND ${PNETPUT_LOCATION}
@@ -163,8 +155,6 @@ pnet_compile (coallocation_test-wf
   BUILD
   COMPONENT tests
 )
-
-get_target_property (__PNET_GEN_OUTPUTS pnet-coallocation_test-wf GEN_OUTPUTS)
 
 add_custom_target (workflow_coallocation_test
   COMMAND ${PNETPUT_LOCATION}
