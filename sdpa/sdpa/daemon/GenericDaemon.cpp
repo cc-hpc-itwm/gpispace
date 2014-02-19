@@ -145,8 +145,6 @@ GenericDaemon::~GenericDaemon()
 
 void GenericDaemon::stop_all()
 {
-  LLOG(INFO, _logger, "Stop all threads  ...");
-
   _network_strategy->stop_forwarding();
 
   _event_queue.clear();
