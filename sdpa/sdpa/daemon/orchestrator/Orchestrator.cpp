@@ -250,7 +250,6 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
   Job* pJob = jobManager().findJob(e.job_id());
   if(pJob)
   {
-      // the job must be in a non-terminal state
       if(!sdpa::status::is_terminal (pJob->getStatus()))
       {
         throw std::runtime_error
