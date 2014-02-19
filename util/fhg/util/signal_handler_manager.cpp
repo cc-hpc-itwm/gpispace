@@ -64,10 +64,7 @@ namespace fhg
         sigact.sa_sigaction = signal_handler;
         sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
-        if (sigaction (sig_num, &sigact, NULL) < 0)
-        {
-          throw std::runtime_error ("unable to set up signal handler for " + std::string (strsignal (sig_num)));
-        }
+        fhg::syscall::sigaction (sig_num, &sigact, NULL);
       }
 
       _handlers[sig_num].push_back (fun);
