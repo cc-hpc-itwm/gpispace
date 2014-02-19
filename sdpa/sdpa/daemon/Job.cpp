@@ -51,11 +51,6 @@ namespace sdpa {
       return state_code (*current_state());
     }
 
-    bool Job::completed() const
-    {
-      return status::is_terminal (getStatus());
-    }
-
     bool Job::isMasterJob() const
     {
       return _is_master_job;

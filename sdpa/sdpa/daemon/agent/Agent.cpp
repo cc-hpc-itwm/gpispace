@@ -416,7 +416,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
           ("A cancelation request for this job was already posted!");
       }
 
-      if(pJob->completed())
+      if(sdpa::status::is_terminal (pJob->getStatus()))
       {
         throw std::runtime_error
           ( "Cannot cancel an already terminated job, its current status is: "

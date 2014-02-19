@@ -186,7 +186,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
           ("A cancelation request for this job was already posted!");
       }
 
-      if(pJob->completed())
+      if(sdpa::status::is_terminal (pJob->getStatus()))
       {
         throw std::runtime_error
           ( "Cannot cancel an already terminated job, its current status is: "
@@ -251,7 +251,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
   if(pJob)
   {
       // the job must be in a non-terminal state
-      if(!pJob->completed())
+      if(!sdpa::status::is_terminal (pJob->getStatus()))
       {
         throw std::runtime_error
           ("Cannot delete a job which is in a non-terminal state. Please, cancel it first!");
@@ -273,7 +273,7 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
   Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
-      if(pJob->completed())
+      if(sdpa::status::is_terminal (pJob->getStatus()))
       {
           pJob->RetrieveJobResults(pEvt, this);
       }

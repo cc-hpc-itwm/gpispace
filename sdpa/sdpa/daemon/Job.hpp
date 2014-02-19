@@ -181,8 +181,6 @@ namespace sdpa {
 
       status::code getStatus() const;
 
-      bool completed() const;
-
       // job FSM actions
       virtual void action_job_failed(const events::JobFailedEvent&);
       virtual void action_job_finished(const events::JobFinishedEvent&);
