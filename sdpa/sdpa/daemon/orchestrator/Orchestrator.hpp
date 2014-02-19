@@ -42,6 +42,8 @@ namespace sdpa {
         }
       }
 
+      ~Orchestrator() { stop_all(); }
+
       virtual void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
       virtual void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
 

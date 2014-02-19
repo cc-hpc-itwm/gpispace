@@ -35,6 +35,8 @@ namespace sdpa {
               , const boost::optional<std::string>& guiUrl
               );
 
+        ~Agent() { stop_all(); }
+
       protected:
         virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent* );
         virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent* );
