@@ -189,7 +189,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -210,7 +209,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -231,7 +229,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -252,7 +249,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -273,7 +269,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -294,7 +289,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -315,7 +309,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -336,7 +329,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -357,7 +349,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -378,7 +369,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -399,7 +389,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -420,7 +409,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -441,7 +429,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
@@ -462,7 +449,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      pnet
                      we-dev
                      fhg-util
-                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
               pnet-capabilities-test-wf
