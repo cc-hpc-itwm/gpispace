@@ -632,7 +632,13 @@ int main (int ac, char *av[])
     }
   }
 
-  FHGLOG_SETUP ();
+  if (is_master)
+  {
+    if (0 != configure_logging (&config, logfile))
+    {
+      LOG(WARN, "could not setup logging");
+    }
+  }
 
   snprintf ( config.socket
            , sizeof(config.socket)
@@ -750,9 +756,12 @@ int main (int ac, char *av[])
     }
   }
 
-  if (0 != configure_logging (&config, logfile))
+  if (!is_master)
   {
-    LOG(WARN, "could not setup logging");
+    if (0 != configure_logging (&config, logfile))
+    {
+      LOG(WARN, "could not setup logging");
+    }
   }
 
   try
