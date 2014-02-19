@@ -232,7 +232,7 @@ namespace
     {
       boost::unique_lock<boost::mutex> _ (_mutex_job_status);
 
-      while (sdpa::status::is_running (_job_status))
+      while (_job_status == sdpa::status::RUNNING)
       {
         _condition_job_status_changed.wait (_);
       }

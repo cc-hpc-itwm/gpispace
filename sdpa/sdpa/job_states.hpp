@@ -22,11 +22,6 @@ namespace sdpa
       , UNKNOWN
       };
 
-    inline bool is_running (code c)
-    {
-      return c == RUNNING;
-    }
-
     inline bool is_terminal (code c)
     {
       return c == FINISHED || c == FAILED || c == CANCELED;
