@@ -43,12 +43,11 @@ pnet_compile (capabilities-test-wf
   COMPONENT tests
 )
 
-get_target_property (CAPABILITY_PNET_LOCATION pnet-capabilities-test-wf LOCATION)
 get_target_property (__PNET_GEN_OUTPUTS pnet-capabilities-test-wf GEN_OUTPUTS)
 
 add_custom_target (workflow_capabilities
   COMMAND ${PNETPUT_LOCATION}
-          --if  "${CAPABILITY_PNET_LOCATION}"
+          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
           -p n_A=20L
           -p time_A=5000L
           -p n_B=10L
@@ -74,12 +73,11 @@ pnet_compile (capabilities_no_mandatory-test-wf
   COMPONENT tests
 )
 
-get_target_property (CAPABILITY_NO_MANDATORY_PNET_LOCATION pnet-capabilities_no_mandatory-test-wf LOCATION)
 get_target_property (__PNET_GEN_OUTPUTS pnet-capabilities_no_mandatory-test-wf GEN_OUTPUTS)
 
 add_custom_target (workflow_capabilities_no_mandatory
   COMMAND ${PNETPUT_LOCATION}
-          --if  "${CAPABILITY_NO_MANDATORY_PNET_LOCATION}"
+          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory-test-wf.in.pnet
           -p n_A=10L
           -p time_A=5000L
           -p n_B=10L
@@ -105,12 +103,11 @@ pnet_compile (inotify-test-wf
   COMPONENT tests
 )
 
-get_target_property (INOTIFY_PNET_LOCATION pnet-inotify-test-wf LOCATION)
 get_target_property (__PNET_GEN_OUTPUTS pnet-inotify-test-wf GEN_OUTPUTS)
 
 add_custom_target (workflow_inotify
   COMMAND ${PNETPUT_LOCATION}
-          --if  "${INOTIFY_PNET_LOCATION}"
+          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
           -p N=5L
           -p watched_file=\\"inotify_test.txt\\"
           --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet"
@@ -135,12 +132,11 @@ pnet_compile (transform_file-test-wf
   COMPONENT tests
 )
 
-get_target_property (TRANSFORM_FILE_PNET_LOCATION pnet-transform_file-test-wf LOCATION)
 get_target_property (__PNET_GEN_OUTPUTS pnet-transform_file-test-wf GEN_OUTPUTS)
 
 add_custom_target (workflow_transform_file
   COMMAND ${PNETPUT_LOCATION}
-          --if "${TRANSFORM_FILE_PNET_LOCATION}"
+          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file-test-wf.in.pnet
           -p input_file=\\"in.txt\\"
           -p output_file=\\"\\"
           -p input_n_read_slots="3L"
@@ -168,12 +164,11 @@ pnet_compile (coallocation_test-wf
   COMPONENT tests
 )
 
-get_target_property (COALLOCATION_TEST_PNET_LOCATION pnet-coallocation_test-wf LOCATION)
 get_target_property (__PNET_GEN_OUTPUTS pnet-coallocation_test-wf GEN_OUTPUTS)
 
 add_custom_target (workflow_coallocation_test
   COMMAND ${PNETPUT_LOCATION}
-          --if "${COALLOCATION_TEST_PNET_LOCATION}"
+          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
           -p n_tasks_A="20L"
           -p n_workers_A="2UL"
           -p n_tasks_B="10L"
@@ -186,7 +181,7 @@ add_custom_target (workflow_coallocation_test
 
 add_custom_target (workflow_coallocation_bad_test
   COMMAND ${PNETPUT_LOCATION}
-          --if "${COALLOCATION_TEST_PNET_LOCATION}"
+          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
           -p n_tasks_A="1L"
           -p n_workers_A="0UL"
           -p n_tasks_B="1L"
@@ -199,7 +194,7 @@ add_custom_target (workflow_coallocation_bad_test
 
 add_custom_target (workflow_coallocation_test2
   COMMAND ${PNETPUT_LOCATION}
-          --if "${COALLOCATION_TEST_PNET_LOCATION}"
+          --if ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
           -p n_tasks_A="1L"
           -p n_workers_A="2UL"
           -p n_tasks_B="1L"
