@@ -4,6 +4,7 @@
 #include <boost/utility.hpp>
 
 #include <unistd.h> // size_t
+#include <vector>
 
 namespace gpi
 {
@@ -17,15 +18,12 @@ namespace gpi
         explicit
         buffer_t (size_t sz);
 
-        ~buffer_t ();
-
-        inline char *data ()        { return m_data; }
-        inline size_t size () const { return m_size; }
+        inline char *data ()        { return &m_data[0]; }
+        inline size_t size () const { return m_data.size(); }
         inline size_t used () const { return m_used; }
         inline void used (size_t u) { m_used = u; }
       private:
-        char  *m_data;
-        size_t m_size;
+        std::vector<char> m_data;
         size_t m_used;
       };
     }
