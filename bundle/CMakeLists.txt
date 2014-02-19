@@ -19,13 +19,35 @@ macro (BUNDLE_APPS)
 endmacro()
 
 bundle_apps(
-  sdpac
-  sdpa-gui
-  gpish
-  gpi-space
-  pnete
+  agent
   drts-kernel
+  fhgcfg
+  fhgkvsc
+  fhgkvsd
+  fhglog-dump
+  fhglogc
+  fhglogd
+  gpi-space
+  gpish
+  orchestrator
+  pnet2dot
+  pnetc
+  pnetget
+  pnetput
+  pnetv
+  sdpac
+  we-exec
 )
+
+if (ENABLE_SDPA_GUI)
+   bundle_apps (sdpa-gui gspcmonc)
+endif ()
+if (ENABLE_GPI_FUSE)
+   bundle_apps (gpifs)
+endif ()
+if (ENABLE_PNET_EDITOR)
+   bundle_apps (pnete)
+endif ()
 
 install(CODE "
   file(GLOB_RECURSE PLUGINS
