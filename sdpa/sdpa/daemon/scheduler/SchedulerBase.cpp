@@ -116,8 +116,8 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
   if(pJob)
   {
     _worker_manager.dispatchJob(jobId);
+    cond_feed_workers.notify_one();
     try {
-        cond_feed_workers.notify_one();
     }
     catch (std::exception const & ex)
     {
