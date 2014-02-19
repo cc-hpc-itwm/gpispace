@@ -32,11 +32,6 @@ namespace sdpa
       return c == CANCELED;
     }
 
-    inline bool is_pending (code c)
-    {
-      return c == PENDING;
-    }
-
     inline bool is_canceling (code c)
     {
       return c == CANCELING;
