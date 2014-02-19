@@ -577,38 +577,22 @@ void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
 
     // Should set the workflow_id here, or send it together with the workflow description
     pJob->Dispatch();
-    if(pJob->description().empty() )
+
+    const we::type::activity_t act (pJob->description());
+    if (m_guiService)
     {
-        LLOG (ERROR, _logger, "Empty Workflow!");
-        // declare job as failed
-        events::JobFailedEvent::Ptr pEvtJobFailed
-              (new events::JobFailedEvent( sdpa::daemon::WE
-                                 , name()
-                                 , jobId
-                                 , "the job has an empty workflow attached!"
-                                 )
-              );
+      std::list<std::string> workers; workers.push_back (name());
+      const sdpa::daemon::NotificationEvent evt
+        ( workers
+        , jobId
+        , NotificationEvent::STATE_STARTED
+        , act
+        );
 
-        sendEventToSelf(pEvtJobFailed);
+      m_guiService->notify (evt);
     }
-    else
-    {
-      const we::type::activity_t act (pJob->description());
-      if (m_guiService)
-      {
-       std::list<std::string> workers; workers.push_back (name());
-       const sdpa::daemon::NotificationEvent evt
-       ( workers
-          , jobId
-          , NotificationEvent::STATE_STARTED
-          , act
-       );
 
-       m_guiService->notify (evt);
-      }
-
-      workflowEngine()->submit (jobId, act);
-    }
+    workflowEngine()->submit (jobId, act);
   }
   catch(const NoWorkflowEngine& ex)
   {
