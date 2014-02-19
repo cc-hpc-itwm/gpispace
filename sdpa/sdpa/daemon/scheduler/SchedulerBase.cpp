@@ -117,19 +117,6 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
   {
     _worker_manager.dispatchJob(jobId);
     cond_feed_workers.notify_one();
-    try {
-    }
-    catch (std::exception const & ex)
-    {
-      sdpa::events::JobFailedEvent::Ptr pEvtJobFailed
-            (new sdpa::events::JobFailedEvent(  m_agent_name
-                                  , m_agent_name
-                                  , jobId
-                                  , ex.what()
-                                   ));
-
-      ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-    }
   }
   else
   {
