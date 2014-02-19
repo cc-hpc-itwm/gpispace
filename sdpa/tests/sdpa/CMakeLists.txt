@@ -178,27 +178,9 @@ add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_te
 
 add_dependencies(pnet-coallocation_test-wf pnetput)
 ################################################################################################
-set (tests
-  test_Capabilities.cpp
-  test_Coallocation.cpp
-  test_Inotify.cpp
-  test_CancelJob.cpp
-  test_SynchronizedQueue.cpp
-  test_CoallocationScheduler.cpp
-  test_SimpleScheduler.cpp
-  restart_drts_worker_while_jobs_are_running.cpp
-  test_Topologies.cpp
-  test_Subscriber.cpp
-  test_SubmitJobFails.cpp
-  test_TransformFile.cpp
-  test_InvalidNbWorkersReq.cpp
-  test_DiscoverJobStates.cpp
-)
-
-foreach (test ${tests})
-    fhg_add_test (${test}
+    fhg_add_test (test_Capabilities.cpp
       PROJECT sdpa
-      BOOST_UNIT_TEST # all of them?
+      BOOST_UNIT_TEST
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
@@ -217,7 +199,292 @@ foreach (test ${tests})
               pnet-transform_file-test-wf
               pnet-coallocation_test-wf
      )
-endforeach()
+
+    fhg_add_test (test_Coallocation.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_Inotify.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_CancelJob.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_SynchronizedQueue.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_CoallocationScheduler.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_SimpleScheduler.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (restart_drts_worker_while_jobs_are_running.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_Topologies.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_Subscriber.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_SubmitJobFails.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_TransformFile.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_InvalidNbWorkersReq.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
+
+    fhg_add_test (test_DiscoverJobStates.cpp
+      PROJECT sdpa
+      BOOST_UNIT_TEST
+      LINK_LIBRARIES sdpa
+                     fake-drts-kernel-plugin
+                     fhg-plugin
+                     fhg-revision
+                     ${FhgLog_LIBRARY}
+                     we-dev
+                     pnet
+                     we-dev
+                     fhg-util
+                     ${Boost_FILESYSTEM_LIBRARY} # for CancelJob, Inotify, Coallocation, Capabilities, CoallocationScheduler, Subscriber, SubmitJobFails, rt_drts_worker_while_jobs_are_running, SimpleScheduler, Topologies only
+                     ${CMAKE_DL_LIBS}
+      DEPENDS fvm-fake-plugin
+              pnet-capabilities-test-wf
+              pnet-capabilities_no_mandatory-test-wf
+              pnet-inotify-test-wf
+              pnet-transform_file-test-wf
+              pnet-coallocation_test-wf
+     )
 
 add_custom_target(sdpa-test-workflows ALL
   DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
