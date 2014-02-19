@@ -3,7 +3,7 @@ include (fhg_plugin_macros)
 add_subdirectory (workflows)
 
 include_directories (${FVM_INCLUDE_DIR})
-include_directories (${HWLOC_INCLUDE_DIR})
+include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
 set (TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
 set (TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory")
