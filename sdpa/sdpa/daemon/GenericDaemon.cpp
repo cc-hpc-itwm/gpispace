@@ -140,22 +140,16 @@ GenericDaemon::~GenericDaemon()
     }
   }
 
-  BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-  {
-    if (!masterInfo.name().empty() && masterInfo.is_registered())
-    {
-      sendEventToOther
-        ( events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
-                                           , masterInfo.name()
-                                           , events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                           , "node shutdown"
-                                           )
-                          )
-        );
-    }
-  }
+  delete ptr_workflow_engine_;
+}
 
-  _registration_threads.stop_all();
+void GenericDaemon::stop_all()
+{
+  LLOG(INFO, _logger, "Stop all threads  ...");
+
+  _network_strategy->stop_forwarding();
+
+  _event_queue.clear();
 
   _event_handler_thread.interrupt();
   if (_event_handler_thread.joinable())
@@ -163,11 +157,9 @@ GenericDaemon::~GenericDaemon()
     _event_handler_thread.join();
   }
 
-  ptr_scheduler_.reset();
+  ptr_scheduler_->stop_threads();
 
-  delete ptr_workflow_engine_;
-
-  _network_strategy.reset();
+  _registration_threads.stop_all();
 }
 
 const std::string& GenericDaemon::name() const

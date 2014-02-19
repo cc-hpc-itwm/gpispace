@@ -127,6 +127,9 @@ namespace sdpa {
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
       SchedulerBase::ptr_t scheduler() const {return ptr_scheduler_;}
+
+      void stop_all();
+
     protected:
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
