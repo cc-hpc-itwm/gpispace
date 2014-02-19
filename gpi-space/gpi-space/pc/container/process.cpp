@@ -309,6 +309,7 @@ namespace gpi
       {
         fhg::syscall::shutdown (fd, SHUT_RDWR);
         fhg::syscall::close (fd);
+        return 0;
       }
       catch (boost::system::system_error const& se)
       {
