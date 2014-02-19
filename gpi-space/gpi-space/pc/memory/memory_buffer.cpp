@@ -8,7 +8,7 @@ namespace gpi
   {
     namespace memory
     {
-      buffer_t::buffer_t (size_t sz)
+      buffer_t::buffer_t (std::vector<char>::size_type sz)
         : m_data (sz)
         , m_used (0)
       {

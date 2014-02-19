@@ -3,7 +3,6 @@
 
 #include <boost/utility.hpp>
 
-#include <unistd.h> // size_t
 #include <vector>
 
 namespace gpi
@@ -15,16 +14,15 @@ namespace gpi
       class buffer_t : boost::noncopyable
       {
       public:
-        explicit
-        buffer_t (size_t sz);
+        explicit buffer_t (std::vector<char>::size_type sz);
 
         inline char *data ()        { return &m_data[0]; }
-        inline size_t size () const { return m_data.size(); }
-        inline size_t used () const { return m_used; }
-        inline void used (size_t u) { m_used = u; }
+        inline std::vector<char>::size_type size () const { return m_data.size(); }
+        inline std::vector<char>::size_type used () const { return m_used; }
+        inline void used (std::vector<char>::size_type u) { m_used = u; }
       private:
         std::vector<char> m_data;
-        size_t m_used;
+        std::vector<char>::size_type m_used;
       };
     }
   }
