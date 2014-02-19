@@ -1,6 +1,8 @@
 #ifndef GPI_SPACE_PC_MEMORY_BUFFER_HPP
 #define GPI_SPACE_PC_MEMORY_BUFFER_HPP
 
+#include <boost/utility.hpp>
+
 #include <unistd.h> // size_t
 
 namespace gpi
@@ -9,7 +11,7 @@ namespace gpi
   {
     namespace memory
     {
-      class buffer_t
+      class buffer_t : boost::noncopyable
       {
       public:
         explicit
