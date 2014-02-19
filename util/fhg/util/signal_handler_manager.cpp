@@ -60,6 +60,7 @@ namespace fhg
       if (_handlers.find (sig_num) == _handlers.end())
       {
         struct sigaction sigact;
+        memset (&sigact, 0, sizeof (sigact));
         sigact.sa_sigaction = signal_handler;
         sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
