@@ -183,7 +183,6 @@ namespace sdpa {
       status::code getStatus() const;
 
       bool completed() const;
-      bool is_running() const;
       bool is_canceled() const;
       bool is_pending() const;
       bool is_canceling() const;

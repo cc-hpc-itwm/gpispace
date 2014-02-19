@@ -61,11 +61,6 @@ namespace sdpa {
       return status::is_terminal (getStatus());
     }
 
-    bool Job::is_running() const
-    {
-      return status::is_running (getStatus());
-    }
-
     bool Job::is_pending() const
     {
       return status::is_pending (getStatus());
