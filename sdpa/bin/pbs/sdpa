@@ -962,7 +962,7 @@ function initialize ()
 function log()
 {
   echo "\$@" >&2
-  test -x "\$SDPA_HOME/bin/fhglogc" && "\$SDPA_HOME/bin/fhglogc" -t "\$0" -p 2 -m "\$*"
+  test -x "\$SDPA_HOME/bin/fhglogc" && "\$SDPA_HOME/bin/fhglogc" -t "\$0" -m "\$*"
 }
 EOF
     echo test -e "$state_dir/sdpa.post.env" \&\& source "$state_dir/sdpa.post.env" >> "$tmp_file"
