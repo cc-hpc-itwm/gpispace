@@ -165,7 +165,7 @@ namespace sdpa {
         (const sdpa::events::DiscoverJobStatesReplyEvent*);
 
       // event communication
-      OVERWRITTEN_IN_TEST void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
+      void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
       OVERWRITTEN_IN_TEST void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
 
       // registration
