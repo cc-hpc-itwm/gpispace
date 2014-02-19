@@ -172,6 +172,12 @@ namespace fhg
       return negative_one_fails_with_errno<void> (::shutdown (sockfd, how));
     }
 
+    void sigaction (int signum, const struct sigaction* act, struct sigaction* oldact)
+    {
+      return negative_one_fails_with_errno<void>
+        (::sigaction (signum, act, oldact));
+    }
+
     sighandler_t signal (int signum, sighandler_t handler)
     {
       return SIG_ERR_fails_with_errno (::signal (signum, handler));
