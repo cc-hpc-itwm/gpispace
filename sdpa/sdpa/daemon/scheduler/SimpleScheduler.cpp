@@ -70,7 +70,7 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
     if( !sdpa::status::is_terminal (pJob->getStatus()))
     {
       pJob->Reschedule(); // put the job back into the pending state
-      schedule (job_id);
+      schedule (pJob);
     }
   }
   else

@@ -115,8 +115,7 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
   Job* pJob = ptr_comm_handler_->findJob(jobId);
   if(pJob)
   {
-    _worker_manager.dispatchJob(jobId);
-    cond_feed_workers.notify_one();
+    schedule (pJob);
   }
   else
   {
@@ -128,6 +127,11 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 
     ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
   }
+}
+void SchedulerBase::schedule (Job* pJob)
+{
+  _worker_manager.dispatchJob(pJob->id());
+  cond_feed_workers.notify_one();
 }
 
 void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
