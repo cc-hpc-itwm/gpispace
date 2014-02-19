@@ -184,7 +184,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -204,7 +203,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -224,7 +222,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -244,7 +241,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -264,7 +260,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -284,7 +279,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -304,7 +298,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -324,7 +317,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -344,7 +336,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -364,7 +355,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -384,7 +374,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -404,7 +393,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -424,7 +412,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
@@ -444,7 +431,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
       LINK_LIBRARIES sdpa
                      fake-drts-kernel-plugin
                      fhg-plugin
-                     fhg-revision
                      ${FhgLog_LIBRARY}
                      pnet
                      we-dev
