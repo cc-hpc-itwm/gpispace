@@ -149,7 +149,7 @@ namespace gpi
         api::gpi_api_t& _gpi_api;
 
         transfer_queues_t m_queues;
-        fhg::thread::queue<buffer_t> m_memory_buffer_pool;
+        fhg::thread::ptr_queue<buffer_t> m_memory_buffer_pool;
       };
     }
   }
