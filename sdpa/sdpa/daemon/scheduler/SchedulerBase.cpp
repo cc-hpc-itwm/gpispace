@@ -115,8 +115,8 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
   Job* pJob = ptr_comm_handler_->findJob(jobId);
   if(pJob)
   {
+    _worker_manager.dispatchJob(jobId);
     try {
-        _worker_manager.dispatchJob(jobId);
         cond_feed_workers.notify_one();
     }
     catch (std::exception const & ex)
