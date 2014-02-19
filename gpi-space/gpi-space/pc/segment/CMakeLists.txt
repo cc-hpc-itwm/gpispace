@@ -14,13 +14,3 @@ set_target_properties(gpi-space-pc-segment-shared PROPERTIES OUTPUT_NAME gpi-spa
 
 target_link_libraries (gpi-space-pc-segment ${LIBRT_SHARED_LIBRARY})
 target_link_libraries (gpi-space-pc-segment-shared ${LIBRT_SHARED_LIBRARY})
-
-install(TARGETS gpi-space-pc-segment
-  ARCHIVE
-  DESTINATION lib
-  COMPONENT static-libraries)
-
-install(TARGETS gpi-space-pc-segment-shared
-  LIBRARY
-  DESTINATION lib
-  COMPONENT libraries)

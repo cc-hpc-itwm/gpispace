@@ -31,7 +31,3 @@ target_link_libraries (gpi-space-pc-memory
   gpi-space-pc-segment
   ${MMGR_LIBRARY}
   )
-
-install(TARGETS gpi-space-pc-memory
-  DESTINATION lib
-  COMPONENT libraries)
