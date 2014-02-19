@@ -28,12 +28,6 @@ include_directories (${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library (gpi-fuse src/gpifs/comm.cpp)
 
-install (TARGETS gpi-fuse
-  ARCHIVE
-  DESTINATION lib
-  COMPONENT static-libraries
-)
-
 add_executable (gpifs src/gpifs/gpifs.cpp)
 
 target_link_libraries (gpifs gpi-fuse)
