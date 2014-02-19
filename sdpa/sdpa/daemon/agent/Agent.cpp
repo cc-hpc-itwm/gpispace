@@ -109,7 +109,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
         // the group is finished when all the partial results are "finished"
         if(bAllPartResCollected)
         {
-            if(pJob->is_canceling())
+            if(pJob->getStatus() == sdpa::status::CANCELING)
             {
                 events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
                 pJob->CancelJobAck(&evtCancelAck);
@@ -290,7 +290,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 
           if(bAllPartResCollected)
           {
-              if(pJob->is_canceling())
+              if(pJob->getStatus() == sdpa::status::CANCELING)
               {
                   events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
                   pJob->CancelJobAck(&evtCancelAck);
