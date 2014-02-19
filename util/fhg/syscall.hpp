@@ -1,5 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#include <signal.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -33,6 +34,7 @@ namespace fhg
     int shm_open (const char* name, int oflag, mode_t mode);
     void shm_unlink (const char* name);
     void shutdown (int sockfd, int how);
+    sighandler_t signal (int signum, sighandler_t handler);
     int socket (int domain, int type, int protocol);
     void stat (const char* path, struct stat* buf);
     void unlink (const char* pathname);
