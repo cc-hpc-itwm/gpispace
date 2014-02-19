@@ -41,12 +41,12 @@ get_target_property(CAPABILITY_PNET_LOCATION pnet-capabilities-test-wf LOCATION)
 get_target_property(__PNET_GEN_OUTPUTS pnet-capabilities-test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_PNET_LOCATION}" -p n_A=20L -p time_A=5000L -p n_B=10L -p time_B=5000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet")
 
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
-                   COMMAND ${command}
-                   COMMENT "putting tokens into capabilities workflow: ${command}"
-                   DEPENDS pnet-capabilities-test-wf-gen
+add_custom_target(workflow_capabilities
+  COMMAND ${command}
+  COMMENT "putting tokens into capabilities workflow: ${command}"
+  DEPENDS pnet-capabilities-test-wf
+          pnetput
 )
-add_dependencies(pnet-capabilities-test-wf pnetput)
 ###########################################################################################
 pnet_compile(capabilities_no_mandatory-test-wf ${CMAKE_SOURCE_DIR}/application/example/capabilities_no_mandatory/capabilities_no_mandatory.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory-test-wf.in.pnet
@@ -64,12 +64,12 @@ get_target_property(CAPABILITY_NO_MANDATORY_PNET_LOCATION pnet-capabilities_no_m
 get_target_property(__PNET_GEN_OUTPUTS pnet-capabilities_no_mandatory-test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION} --if  "${CAPABILITY_NO_MANDATORY_PNET_LOCATION}" -p n_A=10L -p time_A=5000L -p n_B=10L -p time_B=5000L --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet")
 
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
-                   COMMAND ${command}
-                   COMMENT "putting tokens into capabilities_no_mandatory workflow: ${command}"
-                   DEPENDS pnet-capabilities_no_mandatory-test-wf-gen
+add_custom_target(workflow_capabilities_no_mandatory
+  COMMAND ${command}
+  COMMENT "putting tokens into capabilities_no_mandatory workflow: ${command}"
+  DEPENDS pnet-capabilities_no_mandatory-test-wf
+          pnetput
 )
-add_dependencies(pnet-capabilities_no_mandatory-test-wf pnetput)
 ################################################################################################
 pnet_compile(inotify-test-wf ${CMAKE_SOURCE_DIR}/application/example/inotify/inotify.xml
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
@@ -87,12 +87,12 @@ get_target_property(INOTIFY_PNET_LOCATION pnet-inotify-test-wf LOCATION)
 get_target_property(__PNET_GEN_OUTPUTS pnet-inotify-test-wf GEN_OUTPUTS)
 set(command ${PNETPUT_LOCATION} --if  "${INOTIFY_PNET_LOCATION}" -p N=5L -p watched_file=\\"inotify_test.txt\\" --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet")
 
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet"
-                   COMMAND ${command}
-                   COMMENT "putting tokens into inotify workflow: ${command}"
-                   DEPENDS pnet-inotify-test-wf-gen
+add_custom_target(workflow_inotify
+  COMMAND ${command}
+  COMMENT "putting tokens into inotify workflow: ${command}"
+  DEPENDS pnet-inotify-test-wf
+          pnetput
 )
-add_dependencies(pnet-inotify-test-wf pnetput)
 ################################################################################################
 #transform
 pnet_compile(transform_file-test-wf ${CMAKE_SOURCE_DIR}/application/transform_file/xml/transform_file.xpnet
@@ -117,12 +117,12 @@ set(command ${PNETPUT_LOCATION} --if "${TRANSFORM_FILE_PNET_LOCATION}" -p input_
                                                                         -p chunk_size="512L"
                                 --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file.pnet")
 
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file.pnet"
-                   COMMAND ${command}
-                   COMMENT "putting tokens into transform_file workflow: ${command}"
-                   DEPENDS pnet-transform_file-test-wf-gen
+add_custom_target(workflow_transform_file
+  COMMAND ${command}
+  COMMENT "putting tokens into transform_file workflow: ${command}"
+  DEPENDS pnet-transform_file-test-wf
+          pnetput
 )
-add_dependencies(pnet-transform_file-test-wf pnetput)
 ################################################################################################
 #coallocation_test
 pnet_compile(coallocation_test-wf ${CMAKE_SOURCE_DIR}/application/example/coallocation_test/coallocation_test.xpnet
@@ -146,10 +146,11 @@ set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_
                                                                         	-p n_workers_B="3UL"
                                 --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test.pnet")
 
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test.pnet"
-                   COMMAND ${command}
-                   COMMENT "putting tokens into coallocation_test workflow: ${command}"
-                   DEPENDS pnet-coallocation_test-wf-gen
+add_custom_target(workflow_coallocation_test
+  COMMAND ${command}
+  COMMENT "putting tokens into coallocation_test workflow: ${command}"
+  DEPENDS pnet-coallocation_test-wf
+          pnetput
 )
 
 set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="1L"
@@ -158,10 +159,11 @@ set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_
                                                                         	-p n_workers_B="0UL"
                                 --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_bad_test.pnet")
 
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_bad_test.pnet"
-                   COMMAND ${command}
-                   COMMENT "putting tokens into coallocation_bad_test workflow: ${command}"
-                   DEPENDS pnet-coallocation_test-wf-gen
+add_custom_target(workflow_coallocation_bad_test
+  COMMAND ${command}
+  COMMENT "putting tokens into coallocation_bad_test workflow: ${command}"
+  DEPENDS pnet-coallocation_test-wf
+          pnetput
 )
 
 set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_tasks_A="1L"
@@ -170,13 +172,12 @@ set(command ${PNETPUT_LOCATION} --if "${COALLOCATION_TEST_PNET_LOCATION}" 	-p n_
                                                                         	-p n_workers_B="3UL"
                                 --of "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet")
 
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet"
-                   COMMAND ${command}
-                   COMMENT "putting tokens into coallocation_test2 net: ${command}"
-                   DEPENDS pnet-coallocation_test-wf-gen
+add_custom_target(workflow_coallocation_test2
+  COMMAND ${command}
+  COMMENT "putting tokens into coallocation_test2 net: ${command}"
+  DEPENDS pnet-coallocation_test-wf
+          pnetput
 )
-
-add_dependencies(pnet-coallocation_test-wf pnetput)
 ################################################################################################
     fhg_add_test (test_Capabilities.cpp
       PROJECT sdpa
@@ -190,11 +191,8 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
+              workflow_capabilities
+              workflow_capabilities_no_mandatory
      )
 
     fhg_add_test (test_Coallocation.cpp
@@ -209,11 +207,7 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
+              workflow_coallocation_test
      )
 
     fhg_add_test (test_Inotify.cpp
@@ -228,11 +222,7 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
+              workflow_inotify
      )
 
     fhg_add_test (test_CancelJob.cpp
@@ -247,11 +237,9 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
+              workflow_coallocation_test2
+              workflow_transform_file
+              workflow_capabilities
      )
 
     fhg_add_test (test_SynchronizedQueue.cpp
@@ -266,11 +254,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
      )
 
     fhg_add_test (test_CoallocationScheduler.cpp
@@ -285,11 +268,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
      )
 
     fhg_add_test (test_SimpleScheduler.cpp
@@ -304,11 +282,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
      )
 
     fhg_add_test (restart_drts_worker_while_jobs_are_running.cpp
@@ -323,11 +296,8 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
+              workflow_coallocation_test
+              workflow_transform_file
      )
 
     fhg_add_test (test_Topologies.cpp
@@ -342,11 +312,7 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
+              workflow_transform_file
      )
 
     fhg_add_test (test_Subscriber.cpp
@@ -361,11 +327,7 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
+              workflow_transform_file
      )
 
     fhg_add_test (test_SubmitJobFails.cpp
@@ -380,11 +342,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
      )
 
     fhg_add_test (test_TransformFile.cpp
@@ -399,11 +356,7 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
+              workflow_transform_file
      )
 
     fhg_add_test (test_InvalidNbWorkersReq.cpp
@@ -418,11 +371,7 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
+              workflow_coallocation_bad_test
      )
 
     fhg_add_test (test_DiscoverJobStates.cpp
@@ -437,20 +386,6 @@ add_dependencies(pnet-coallocation_test-wf pnetput)
                      fhg-util
                      ${CMAKE_DL_LIBS}
       DEPENDS fvm-fake-plugin
-              pnet-capabilities-test-wf
-              pnet-capabilities_no_mandatory-test-wf
-              pnet-inotify-test-wf
-              pnet-transform_file-test-wf
-              pnet-coallocation_test-wf
+              workflow_coallocation_test
+              workflow_coallocation_test2
      )
-
-add_custom_target(sdpa-test-workflows ALL
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_bad_test.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities.pnet"
-  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test2.pnet"
-)
