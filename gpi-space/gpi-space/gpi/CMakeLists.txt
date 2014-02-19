@@ -21,10 +21,6 @@ if(ENABLE_REAL_GPI)
   target_link_libraries (gpi-space-gpiapi ${GPI_LIBRARIES})
 endif(ENABLE_REAL_GPI)
 
-install(FILES ${hdrs}
-  DESTINATION include/gpi-space/gpi
-  COMPONENT headers)
-
 install(TARGETS gpi-space-gpiapi
   ARCHIVE
   DESTINATION lib

@@ -35,7 +35,3 @@ target_link_libraries (gpi-space-pc-memory
 install(TARGETS gpi-space-pc-memory
   DESTINATION lib
   COMPONENT libraries)
-
-install(FILES ${hdrs}
-  DESTINATION include/gpi-space/pc/memory
-  COMPONENT headers)

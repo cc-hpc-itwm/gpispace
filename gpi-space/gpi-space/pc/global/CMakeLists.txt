@@ -15,7 +15,3 @@ target_link_libraries(gpi-space-pc-global
 install(TARGETS gpi-space-pc-global
   DESTINATION lib
   COMPONENT libraries)
-
-install(FILES ${hdrs}
-  DESTINATION include/gpi-space/pc/global
-  COMPONENT headers)

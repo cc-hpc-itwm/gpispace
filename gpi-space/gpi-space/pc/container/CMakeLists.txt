@@ -7,10 +7,3 @@ install (TARGETS gpi-space-pc-container
   DESTINATION lib
   COMPONENT libraries
 )
-
-install (FILES
-  process.hpp
-  manager.hpp
-  DESTINATION include/gpi-space/pc/container
-  COMPONENT headers
-)

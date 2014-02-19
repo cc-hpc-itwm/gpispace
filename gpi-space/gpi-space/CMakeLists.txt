@@ -5,7 +5,3 @@ set (hdrs
 
 add_subdirectory(gpi)
 add_subdirectory(pc)
-
-install(FILES ${hdrs}
-  DESTINATION include/gpi-space
-  COMPONENT headers)

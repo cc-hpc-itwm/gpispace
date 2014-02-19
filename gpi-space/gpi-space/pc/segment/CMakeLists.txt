@@ -24,7 +24,3 @@ install(TARGETS gpi-space-pc-segment-shared
   LIBRARY
   DESTINATION lib
   COMPONENT libraries)
-
-install(FILES ${hdrs}
-  DESTINATION include/gpi-space/pc/segment
-  COMPONENT headers)
