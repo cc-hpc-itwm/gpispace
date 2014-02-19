@@ -68,11 +68,6 @@ namespace sdpa {
       m_error_message = evt.error_message();
     }
 
-    void Job::action_reschedule_job(const MSMRescheduleEvent& evt)
-    {
-      evt.ptrScheduler()->schedule(id());
-    }
-
     void Job::action_retrieve_job_results(const MSMRetrieveJobResultsEvent& e)
     {
       const events::JobResultsReplyEvent::Ptr pResReply(
@@ -114,10 +109,10 @@ namespace sdpa {
       process_event(MSMRetrieveJobResultsEvent(pEvt, pAgent));
     }
 
-    void Job::Reschedule(SchedulerBase*  pSched)
+    void Job::Reschedule()
     {
       lock_type lock(mtx_);
-      process_event(MSMRescheduleEvent (pSched));
+      process_event(MSMRescheduleEvent());
     }
 
     void Job::Dispatch()

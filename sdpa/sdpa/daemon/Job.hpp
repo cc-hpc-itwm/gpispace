@@ -48,15 +48,7 @@ namespace sdpa {
       struct Canceling : public boost::msm::front::state<>{};
       struct Canceled : public boost::msm::front::state<>{};
 
-      struct MSMRescheduleEvent
-      {
-        MSMRescheduleEvent(SchedulerBase* pSched)
-        : m_pScheduler(pSched)
-        {}
-        SchedulerBase* ptrScheduler() const { return m_pScheduler; }
-      private:
-        SchedulerBase* m_pScheduler;
-      };
+      struct MSMRescheduleEvent {};
 
       struct MSMDispatchJobEvent
       {
@@ -87,7 +79,6 @@ namespace sdpa {
 
       virtual void action_job_failed(const events::JobFailedEvent&) = 0;
       virtual void action_job_finished(const events::JobFinishedEvent&) = 0;
-      virtual void action_reschedule_job(const MSMRescheduleEvent&) = 0;
       virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&) = 0;
 
       typedef JobFSM_ sm; // makes transition table cleaner
@@ -100,12 +91,12 @@ namespace sdpa {
         _row<   Pending,        events::CancelJobEvent, 		Canceling>,
         a_row<  Pending,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished >,
         a_row<  Pending,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
-        a_irow< Pending,        MSMRescheduleEvent,                                     &sm::action_reschedule_job >,
+        _irow<  Pending,        MSMRescheduleEvent>,
         //      +---------------+-------------------------------------------+------------------+---------------------+-----
         a_row<  Running,        events::JobFinishedEvent,               Finished,       &sm::action_job_finished>,
         a_row<  Running,        events::JobFailedEvent,                 Failed,         &sm::action_job_failed >,
         _row<   Running,        events::CancelJobEvent,                 Canceling>,
-        a_row<  Running,        MSMRescheduleEvent,                 	Pending,        &sm::action_reschedule_job >,
+        _row<   Running,        MSMRescheduleEvent,                 	Pending>,
         _irow<  Running,        MSMDispatchJobEvent>,
         //      +---------------+---------------------------------------+-------------------+---------------------+-----
         a_irow< Finished,   	MSMRetrieveJobResultsEvent,                             &sm::action_retrieve_job_results>,
@@ -184,7 +175,6 @@ namespace sdpa {
       // job FSM actions
       virtual void action_job_failed(const events::JobFailedEvent&);
       virtual void action_job_finished(const events::JobFinishedEvent&);
-      virtual void action_reschedule_job(const MSMRescheduleEvent&);
       virtual void action_retrieve_job_results(const MSMRetrieveJobResultsEvent&);
 
       //transitions
@@ -194,7 +184,7 @@ namespace sdpa {
       void JobFinished(const events::JobFinishedEvent*);
 
       void RetrieveJobResults(const events::RetrieveJobResultsEvent* pEvt, GenericDaemon*);
-      void Reschedule(SchedulerBase*);
+      void Reschedule();
 
       void Dispatch();
 

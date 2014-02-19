@@ -107,7 +107,8 @@ void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
   {
     if(!sdpa::status::is_terminal (pJob->getStatus())) {
       releaseReservation(job_id);
-      pJob->Reschedule(this); // put the job back into the pending state
+      pJob->Reschedule(); // put the job back into the pending state
+      schedule (job_id);
     }
   }
   else //(JobNotFoundException const &ex)
