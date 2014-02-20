@@ -338,14 +338,11 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
   _scheduler.assignJobsToWorkers();
 
-  // the last worker gains now the missing capability
-  //and will eventually receive one job ...
 
   _scheduler.addCapabilities ("worker_9", capabilities ("worker_9", "C"));
 
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
-  // assign jobs to workers
   _scheduler.assignJobsToWorkers();
 }
 
