@@ -56,17 +56,14 @@ void Worker::submit(const sdpa::job_id_t& jobId)
 bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
   lock_type lock(mtx_);
-  try
-  {
       acknowledged_.push(job_id);
-      submitted_.erase(job_id);
-      return true;
-  }
-  catch (const sdpa::daemon::NotFoundItem& ex)
+      const bool was_found (submitted_.erase(job_id) > 0);
+
+  if (!was_found)
   {
     LLOG (WARN, _logger, "The job " << job_id << " could not be acknowledged. It was not found into the worker's submitted queue!");
-      return false;
   }
+  return was_found;
 }
 
 void Worker::deleteJob(const sdpa::job_id_t &job_id)

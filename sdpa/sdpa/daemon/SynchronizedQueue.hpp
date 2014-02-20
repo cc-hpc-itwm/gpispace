@@ -31,12 +31,6 @@ namespace sdpa { namespace daemon {
       QueueEmpty() : std::runtime_error("queue is empty") {}
   };
 
-  class NotFoundItem : public std::runtime_error
-   {
-     public:
-   NotFoundItem(const std::string& str) : std::runtime_error(std::string("The item ")+str+" was not found!") {}
-   };
-
   /*
    * Implementation of a synchronized queue on top of a container.
    *
