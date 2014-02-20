@@ -181,16 +181,16 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _orchestrator.TEST_add_dummy_job ("job_8", require ("C"));
   _orchestrator.TEST_add_dummy_job ("job_9", require ("C"));
 
-  _scheduler.schedule("job_0");
-  _scheduler.schedule("job_1");
-  _scheduler.schedule("job_2");
-  _scheduler.schedule("job_3");
-  _scheduler.schedule("job_4");
-  _scheduler.schedule("job_5");
-  _scheduler.schedule("job_6");
-  _scheduler.schedule("job_7");
-  _scheduler.schedule("job_8");
-  _scheduler.schedule("job_9");
+  _scheduler.schedule ("job_0");
+  _scheduler.schedule ("job_1");
+  _scheduler.schedule ("job_2");
+  _scheduler.schedule ("job_3");
+  _scheduler.schedule ("job_4");
+  _scheduler.schedule ("job_5");
+  _scheduler.schedule ("job_6");
+  _scheduler.schedule ("job_7");
+  _scheduler.schedule ("job_8");
+  _scheduler.schedule ("job_9");
 
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_9"));
@@ -230,16 +230,16 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   _orchestrator.TEST_add_dummy_job ("job_8", require ("C"));
   _orchestrator.TEST_add_dummy_job ("job_9", require ("C"));
 
-  _scheduler.schedule("job_0");
-  _scheduler.schedule("job_1");
-  _scheduler.schedule("job_2");
-  _scheduler.schedule("job_3");
-  _scheduler.schedule("job_4");
-  _scheduler.schedule("job_5");
-  _scheduler.schedule("job_6");
-  _scheduler.schedule("job_7");
-  _scheduler.schedule("job_8");
-  _scheduler.schedule("job_9");
+  _scheduler.schedule ("job_0");
+  _scheduler.schedule ("job_1");
+  _scheduler.schedule ("job_2");
+  _scheduler.schedule ("job_3");
+  _scheduler.schedule ("job_4");
+  _scheduler.schedule ("job_5");
+  _scheduler.schedule ("job_6");
+  _scheduler.schedule ("job_7");
+  _scheduler.schedule ("job_8");
+  _scheduler.schedule ("job_9");
 
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_8"));
@@ -286,16 +286,16 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _orchestrator.TEST_add_dummy_job ("job_8", require ("C"));
   _orchestrator.TEST_add_dummy_job ("job_9", require ("C"));
 
-  _scheduler.schedule("job_0");
-  _scheduler.schedule("job_1");
-  _scheduler.schedule("job_2");
-  _scheduler.schedule("job_3");
-  _scheduler.schedule("job_4");
-  _scheduler.schedule("job_5");
-  _scheduler.schedule("job_6");
-  _scheduler.schedule("job_7");
-  _scheduler.schedule("job_8");
-  _scheduler.schedule("job_9");
+  _scheduler.schedule ("job_0");
+  _scheduler.schedule ("job_1");
+  _scheduler.schedule ("job_2");
+  _scheduler.schedule ("job_3");
+  _scheduler.schedule ("job_4");
+  _scheduler.schedule ("job_5");
+  _scheduler.schedule ("job_6");
+  _scheduler.schedule ("job_7");
+  _scheduler.schedule ("job_8");
+  _scheduler.schedule ("job_9");
 
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_8"));
@@ -342,16 +342,16 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _orchestrator.TEST_add_dummy_job ("job_8", require ("C"));
   _orchestrator.TEST_add_dummy_job ("job_9", require ("C"));
 
-  _scheduler.schedule("job_0");
-  _scheduler.schedule("job_1");
-  _scheduler.schedule("job_2");
-  _scheduler.schedule("job_3");
-  _scheduler.schedule("job_4");
-  _scheduler.schedule("job_5");
-  _scheduler.schedule("job_6");
-  _scheduler.schedule("job_7");
-  _scheduler.schedule("job_8");
-  _scheduler.schedule("job_9");
+  _scheduler.schedule ("job_0");
+  _scheduler.schedule ("job_1");
+  _scheduler.schedule ("job_2");
+  _scheduler.schedule ("job_3");
+  _scheduler.schedule ("job_4");
+  _scheduler.schedule ("job_5");
+  _scheduler.schedule ("job_6");
+  _scheduler.schedule ("job_7");
+  _scheduler.schedule ("job_8");
+  _scheduler.schedule ("job_9");
 
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_9"));
