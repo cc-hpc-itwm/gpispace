@@ -710,7 +710,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
       if( !isTop() )
       {
         const sdpa::capabilities_set_t newWorkerCpbSet
-          (getWorkerCapabilities(worker_id));
+          (scheduler()->getWorkerCapabilities(worker_id));
 
         if( !newWorkerCpbSet.empty() )
         {
