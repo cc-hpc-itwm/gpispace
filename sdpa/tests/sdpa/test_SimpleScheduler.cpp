@@ -68,7 +68,7 @@ struct allocate_test_orchestrator_and_scheduler
 
 namespace
 {
-  sdpa::worker_id_list_t make_list (sdpa::worker_id_t w1)
+  sdpa::worker_id_list_t worker_list (sdpa::worker_id_t w1)
   {
     sdpa::worker_id_list_t list;
     list.push_back (w1);
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   BOOST_REQUIRE_EQUAL (cpbset, cpbSetA);
 
-  _orchestrator.expect_serveJob_call (jobId1, make_list (worker_A));
+  _orchestrator.expect_serveJob_call (jobId1, worker_list (worker_A));
 
   _scheduler.assignJobsToWorkers();
 }
@@ -168,16 +168,16 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
     _scheduler.schedule(jobId);
   }
 
-  _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_9"));
-  _orchestrator.expect_serveJob_call ("job_1", make_list ("worker_8"));
-  _orchestrator.expect_serveJob_call ("job_2", make_list ("worker_7"));
-  _orchestrator.expect_serveJob_call ("job_3", make_list ("worker_5"));
-  _orchestrator.expect_serveJob_call ("job_4", make_list ("worker_4"));
-  _orchestrator.expect_serveJob_call ("job_5", make_list ("worker_6"));
-  _orchestrator.expect_serveJob_call ("job_6", make_list ("worker_3"));
-  _orchestrator.expect_serveJob_call ("job_7", make_list ("worker_2"));
-  _orchestrator.expect_serveJob_call ("job_8", make_list ("worker_1"));
-  _orchestrator.expect_serveJob_call ("job_9", make_list ("worker_0"));
+  _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_9"));
+  _orchestrator.expect_serveJob_call ("job_1", worker_list ("worker_8"));
+  _orchestrator.expect_serveJob_call ("job_2", worker_list ("worker_7"));
+  _orchestrator.expect_serveJob_call ("job_3", worker_list ("worker_5"));
+  _orchestrator.expect_serveJob_call ("job_4", worker_list ("worker_4"));
+  _orchestrator.expect_serveJob_call ("job_5", worker_list ("worker_6"));
+  _orchestrator.expect_serveJob_call ("job_6", worker_list ("worker_3"));
+  _orchestrator.expect_serveJob_call ("job_7", worker_list ("worker_2"));
+  _orchestrator.expect_serveJob_call ("job_8", worker_list ("worker_1"));
+  _orchestrator.expect_serveJob_call ("job_9", worker_list ("worker_0"));
 
   _scheduler.assignJobsToWorkers();
 }
@@ -215,15 +215,15 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       _scheduler.schedule(jobId);
   }
 
-  _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_8"));
-  _orchestrator.expect_serveJob_call ("job_1", make_list ("worker_7"));
-  _orchestrator.expect_serveJob_call ("job_2", make_list ("worker_5"));
-  _orchestrator.expect_serveJob_call ("job_3", make_list ("worker_4"));
-  _orchestrator.expect_serveJob_call ("job_4", make_list ("worker_6"));
-  _orchestrator.expect_serveJob_call ("job_5", make_list ("worker_3"));
-  _orchestrator.expect_serveJob_call ("job_6", make_list ("worker_2"));
-  _orchestrator.expect_serveJob_call ("job_7", make_list ("worker_1"));
-  _orchestrator.expect_serveJob_call ("job_8", make_list ("worker_0"));
+  _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_8"));
+  _orchestrator.expect_serveJob_call ("job_1", worker_list ("worker_7"));
+  _orchestrator.expect_serveJob_call ("job_2", worker_list ("worker_5"));
+  _orchestrator.expect_serveJob_call ("job_3", worker_list ("worker_4"));
+  _orchestrator.expect_serveJob_call ("job_4", worker_list ("worker_6"));
+  _orchestrator.expect_serveJob_call ("job_5", worker_list ("worker_3"));
+  _orchestrator.expect_serveJob_call ("job_6", worker_list ("worker_2"));
+  _orchestrator.expect_serveJob_call ("job_7", worker_list ("worker_1"));
+  _orchestrator.expect_serveJob_call ("job_8", worker_list ("worker_0"));
 
   _scheduler.assignJobsToWorkers();
 
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
    std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
    _scheduler.addWorker(workerId, 1, sdpa::capabilities_set_t(arrCpbs.begin(), arrCpbs.end()));
 
-  _orchestrator.expect_serveJob_call ("job_9", make_list ("worker_9"));
+  _orchestrator.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
    _scheduler.assignJobsToWorkers();
 }
@@ -272,15 +272,15 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
     _orchestrator.TEST_add_dummy_job (jobId, job_reqs);
   }
 
-  _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_8"));
-  _orchestrator.expect_serveJob_call ("job_1", make_list ("worker_7"));
-  _orchestrator.expect_serveJob_call ("job_2", make_list ("worker_5"));
-  _orchestrator.expect_serveJob_call ("job_3", make_list ("worker_4"));
-  _orchestrator.expect_serveJob_call ("job_4", make_list ("worker_6"));
-  _orchestrator.expect_serveJob_call ("job_5", make_list ("worker_3"));
-  _orchestrator.expect_serveJob_call ("job_6", make_list ("worker_2"));
-  _orchestrator.expect_serveJob_call ("job_7", make_list ("worker_1"));
-  _orchestrator.expect_serveJob_call ("job_8", make_list ("worker_0"));
+  _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_8"));
+  _orchestrator.expect_serveJob_call ("job_1", worker_list ("worker_7"));
+  _orchestrator.expect_serveJob_call ("job_2", worker_list ("worker_5"));
+  _orchestrator.expect_serveJob_call ("job_3", worker_list ("worker_4"));
+  _orchestrator.expect_serveJob_call ("job_4", worker_list ("worker_6"));
+  _orchestrator.expect_serveJob_call ("job_5", worker_list ("worker_3"));
+  _orchestrator.expect_serveJob_call ("job_6", worker_list ("worker_2"));
+  _orchestrator.expect_serveJob_call ("job_7", worker_list ("worker_1"));
+  _orchestrator.expect_serveJob_call ("job_8", worker_list ("worker_0"));
 
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, listJobIds)
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addCapabilities(lastWorkerId, cpbSet);
 
-  _orchestrator.expect_serveJob_call ("job_9", make_list ("worker_9"));
+  _orchestrator.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
 }
@@ -331,16 +331,16 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     _orchestrator.TEST_add_dummy_job (jobId, job_reqs);
   }
 
-  _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_9"));
-  _orchestrator.expect_serveJob_call ("job_1", make_list ("worker_8"));
-  _orchestrator.expect_serveJob_call ("job_2", make_list ("worker_7"));
-  _orchestrator.expect_serveJob_call ("job_3", make_list ("worker_5"));
-  _orchestrator.expect_serveJob_call ("job_4", make_list ("worker_4"));
-  _orchestrator.expect_serveJob_call ("job_5", make_list ("worker_6"));
-  _orchestrator.expect_serveJob_call ("job_6", make_list ("worker_3"));
-  _orchestrator.expect_serveJob_call ("job_7", make_list ("worker_2"));
-  _orchestrator.expect_serveJob_call ("job_8", make_list ("worker_1"));
-  _orchestrator.expect_serveJob_call ("job_9", make_list ("worker_0"));
+  _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_9"));
+  _orchestrator.expect_serveJob_call ("job_1", worker_list ("worker_8"));
+  _orchestrator.expect_serveJob_call ("job_2", worker_list ("worker_7"));
+  _orchestrator.expect_serveJob_call ("job_3", worker_list ("worker_5"));
+  _orchestrator.expect_serveJob_call ("job_4", worker_list ("worker_4"));
+  _orchestrator.expect_serveJob_call ("job_5", worker_list ("worker_6"));
+  _orchestrator.expect_serveJob_call ("job_6", worker_list ("worker_3"));
+  _orchestrator.expect_serveJob_call ("job_7", worker_list ("worker_2"));
+  _orchestrator.expect_serveJob_call ("job_8", worker_list ("worker_1"));
+  _orchestrator.expect_serveJob_call ("job_9", worker_list ("worker_0"));
 
   // schedule all jobs now
   BOOST_FOREACH(const sdpa::job_id_t& jobId, listJobIds)
@@ -359,7 +359,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addWorker(lastWorkerId, 1, cpbSet);
 
-  _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_9"));
+  _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
 }
