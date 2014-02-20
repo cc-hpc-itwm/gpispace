@@ -80,7 +80,7 @@ namespace sdpa {
       bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
       void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
       void getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset);
-      void getWorkerCapabilities(const sdpa::worker_id_t&, sdpa::capabilities_set_t& cpbset);
+      sdpa::capabilities_set_t getWorkerCapabilities(const sdpa::worker_id_t&);
 
       void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id );
 

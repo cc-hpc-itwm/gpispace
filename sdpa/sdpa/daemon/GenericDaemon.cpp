@@ -709,8 +709,8 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
     {
       if( !isTop() )
       {
-        sdpa::capabilities_set_t newWorkerCpbSet;
-        getWorkerCapabilities(worker_id, newWorkerCpbSet);
+        const sdpa::capabilities_set_t newWorkerCpbSet
+          (getWorkerCapabilities(worker_id));
 
         if( !newWorkerCpbSet.empty() )
         {

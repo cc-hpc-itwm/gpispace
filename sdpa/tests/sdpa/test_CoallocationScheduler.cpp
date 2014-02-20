@@ -118,8 +118,8 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
   _scheduler.addWorker(workerId, 1, workerCpbSet);
 
   // check what are the agent's capabilites now
-  sdpa::capabilities_set_t acquiredCpbs;
-  _scheduler.getWorkerCapabilities(workerId, acquiredCpbs);
+  const sdpa::capabilities_set_t acquiredCpbs
+    (_scheduler.getWorkerCapabilities(workerId));
 
   BOOST_REQUIRE_EQUAL (workerCpbSet, acquiredCpbs);
 
@@ -155,8 +155,8 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   cpbSetA.insert(cpb1);
   _scheduler.addCapabilities(worker_A, cpbSetA);
 
-  sdpa::capabilities_set_t cpbset;
-  _scheduler.getWorkerCapabilities(worker_A, cpbset);
+  const sdpa::capabilities_set_t cpbset
+    (_scheduler.getWorkerCapabilities(worker_A));
   BOOST_REQUIRE_EQUAL (cpbset, cpbSetA);
 
   _agent.expect_serveJob_call (jobId1, make_list (worker_A));

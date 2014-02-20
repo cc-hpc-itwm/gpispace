@@ -221,9 +221,10 @@ namespace sdpa {
       {
         return scheduler()->findWorker(worker_id);
       }
-      void getWorkerCapabilities(const Worker::worker_id_t& worker_id, sdpa::capabilities_set_t& wCpbset)
+      sdpa::capabilities_set_t getWorkerCapabilities
+        (const Worker::worker_id_t& worker_id)
       {
-        scheduler()->getWorkerCapabilities(worker_id, wCpbset);
+        return scheduler()->getWorkerCapabilities(worker_id);
       }
 
     protected:

@@ -295,16 +295,17 @@ void SchedulerBase::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
   _worker_manager.getCapabilities(m_agent_name, cpbset);
 }
 
-void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sdpa::capabilities_set_t& cpbset)
+sdpa::capabilities_set_t SchedulerBase::getWorkerCapabilities
+  (const sdpa::worker_id_t& worker_id)
 {
   lock_type lock(mtx_);
   try {
       Worker::ptr_t ptrWorker = findWorker(worker_id);
-      cpbset = ptrWorker->capabilities();
+      return ptrWorker->capabilities();
   }
   catch(WorkerNotFoundException const &ex2 )
   {
-      cpbset = sdpa::capabilities_set_t();
+      return sdpa::capabilities_set_t();
   }
 }
 
