@@ -13,9 +13,6 @@ namespace sdpa {
 
       virtual void assignJobsToWorkers();
       virtual void rescheduleJob(const sdpa::job_id_t& job_id );
-
-      //! \note Testing only!
-      boost::optional<sdpa::worker_id_t> getAssignedWorker(const sdpa::job_id_t& jid);
     };
   }
 }

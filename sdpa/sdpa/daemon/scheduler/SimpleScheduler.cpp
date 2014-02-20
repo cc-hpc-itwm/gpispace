@@ -83,10 +83,4 @@ void SimpleScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
     LLOG (WARN, _logger, "Cannot re-schedule the job " << job_id << ". The job could not be found!");
   }
 }
-
-boost::optional<sdpa::worker_id_t> SimpleScheduler::getAssignedWorker(const sdpa::job_id_t& jid)
-{
-  return _worker_manager.getAssignedWorker(jid);
-}
-
 }}
