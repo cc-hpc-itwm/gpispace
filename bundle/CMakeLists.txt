@@ -46,7 +46,6 @@ install(CODE "
   execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
                           -d
-                          -f
                           -L \"\${CMAKE_INSTALL_PREFIX}/lib\"
                           -x libibverbs.*
                           -x libxcb.*
