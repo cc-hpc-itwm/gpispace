@@ -74,6 +74,41 @@ namespace
     list.push_back (w1);
     return list;
   }
+
+  sdpa::capabilities_set_t capabilities ( sdpa::worker_id_t worker
+                                        , std::string name_1
+                                        )
+  {
+    sdpa::capabilities_set_t set;
+    set.insert (sdpa::capability_t (name_1, worker));
+    return set;
+  }
+  sdpa::capabilities_set_t capabilities ( sdpa::worker_id_t worker
+                                        , std::string name_1
+                                        , std::string name_2
+                                        , std::string name_3
+                                        )
+  {
+    sdpa::capabilities_set_t set;
+    set.insert (sdpa::capability_t (name_1, worker));
+    set.insert (sdpa::capability_t (name_2, worker));
+    set.insert (sdpa::capability_t (name_3, worker));
+    return set;
+  }
+
+  job_requirements_t require (std::string name_1)
+  {
+    requirement_list_t reqs;
+    reqs.push_back (we::type::requirement_t (name_1, true));
+    return job_requirements_t (reqs, we::type::schedule_data());
+  }
+  job_requirements_t require (std::string name_1, std::string name_2)
+  {
+    requirement_list_t reqs;
+    reqs.push_back (we::type::requirement_t (name_1, true));
+    reqs.push_back (we::type::requirement_t (name_2, true));
+    return job_requirements_t (reqs, we::type::schedule_data());
+  }
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_orchestrator_and_scheduler)
@@ -82,54 +117,37 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 {
-  sdpa::worker_id_t workerId("test_worker");
-  sdpa::capabilities_set_t workerCpbSet;
-
-  workerCpbSet.insert(sdpa::capability_t("A",workerId));
-  workerCpbSet.insert(sdpa::capability_t("B",workerId));
-  workerCpbSet.insert(sdpa::capability_t("C",workerId));
+  const sdpa::worker_id_t workerId ("test_worker");
+  const sdpa::capabilities_set_t workerCpbSet
+    (capabilities (workerId, "A", "B", "C"));
 
   _scheduler.addWorker(workerId, 1, workerCpbSet);
 
-  // check what are the agent's capabilites now
-  const sdpa::capabilities_set_t acquiredCpbs
-    (_scheduler.getWorkerCapabilities(workerId));
-  BOOST_REQUIRE_EQUAL (workerCpbSet, acquiredCpbs);
+  BOOST_REQUIRE_EQUAL (workerCpbSet, _scheduler.getWorkerCapabilities(workerId));
 
-  // Now, create a job that requires the capabilities A and B
-  requirement_list_t reqList;
-  reqList.push_back(we::type::requirement_t("A", true));
-  reqList.push_back(we::type::requirement_t("B", true));
-  job_requirements_t jobReqs(reqList, we::type::schedule_data());
-
-  // check if there is any matching worker
-  sdpa::worker_id_list_t avail (1, workerId);
-  BOOST_REQUIRE_EQUAL (workerId, _scheduler.findSuitableWorker (jobReqs, avail));
+  BOOST_REQUIRE_EQUAL ( workerId
+                      , _scheduler.findSuitableWorker
+                        (require ("A", "B"), worker_list (workerId))
+                      );
 }
 
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
-  sdpa::worker_id_t worker_A("worker_A");
+  const sdpa::worker_id_t worker_A ("worker_A");
 
-  sdpa::capabilities_set_t cpbSetA;
-  _scheduler.addWorker(worker_A, 1, cpbSetA);
+  _scheduler.addWorker(worker_A, 1, sdpa::capabilities_set_t());
 
   const sdpa::job_id_t jobId1("Job1");
-  job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-  _orchestrator.TEST_add_dummy_job (jobId1, jobReqs1);
+  _orchestrator.TEST_add_dummy_job (jobId1, require ("C"));
 
   _scheduler.schedule(jobId1);
 
   _scheduler.assignJobsToWorkers();
 
-  sdpa::capability_t cpb1("C", worker_A);
-  cpbSetA.insert(cpb1);
-  _scheduler.addCapabilities(worker_A, cpbSetA);
+  const sdpa::capabilities_set_t cpbSetA (capabilities (worker_A, "C"));
+  _scheduler.addCapabilities (worker_A, cpbSetA);
 
-  const sdpa::capabilities_set_t cpbset
-    (_scheduler.getWorkerCapabilities(worker_A));
-
-  BOOST_REQUIRE_EQUAL (cpbset, cpbSetA);
+  BOOST_REQUIRE_EQUAL (cpbSetA, _scheduler.getWorkerCapabilities(worker_A));
 
   _orchestrator.expect_serveJob_call (jobId1, worker_list (worker_A));
 
@@ -148,8 +166,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
       arrWorkerIds.push_back(workerId);
-      std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
-      sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
+      sdpa::capabilities_set_t cpbSet;
+      cpbSet.insert (sdpa::capability_t("C", workerId));
       _scheduler.addWorker(workerId, 1, cpbSet);
   }
 
