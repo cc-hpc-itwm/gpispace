@@ -36,7 +36,6 @@ set (hdrs
   remove_prefix.hpp
 
   now.hpp
-  get_home_dir.hpp
   hex.hpp
   read_file.hpp
 )
@@ -77,7 +76,6 @@ set (srcs
   cpp/struct.cpp
 
   xml.cpp
-  get_home_dir.cpp
   hex.cpp
   read_file.cpp
 
