@@ -383,24 +383,22 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
 BOOST_AUTO_TEST_CASE(testCoallocSched)
 {
-  const std::string WORKER_CPBS[] = {"A", "B", "C"};
+  _scheduler.addWorker ("0", 1, capabilities ("0", "A"));
+  _scheduler.addWorker ("1", 1, capabilities ("1", "B"));
+  _scheduler.addWorker ("2", 1, capabilities ("2", "C"));
+  _scheduler.addWorker ("3", 1, capabilities ("3", "A"));
+  _scheduler.addWorker ("4", 1, capabilities ("4", "B"));
+  _scheduler.addWorker ("5", 1, capabilities ("5", "C"));
+  _scheduler.addWorker ("6", 1, capabilities ("6", "A"));
+  _scheduler.addWorker ("7", 1, capabilities ("7", "B"));
+  _scheduler.addWorker ("8", 1, capabilities ("8", "C"));
+  _scheduler.addWorker ("9", 1, capabilities ("9", "A"));
+  _scheduler.addWorker ("10", 1, capabilities ("10", "B"));
+  _scheduler.addWorker ("11", 1, capabilities ("11", "C"));
 
-  _scheduler.addWorker ("0", 1, capabilities ("0", WORKER_CPBS[0]));
-  _scheduler.addWorker ("1", 1, capabilities ("1", WORKER_CPBS[1]));
-  _scheduler.addWorker ("2", 1, capabilities ("2", WORKER_CPBS[2]));
-  _scheduler.addWorker ("3", 1, capabilities ("3", WORKER_CPBS[0]));
-  _scheduler.addWorker ("4", 1, capabilities ("4", WORKER_CPBS[1]));
-  _scheduler.addWorker ("5", 1, capabilities ("5", WORKER_CPBS[2]));
-  _scheduler.addWorker ("6", 1, capabilities ("6", WORKER_CPBS[0]));
-  _scheduler.addWorker ("7", 1, capabilities ("7", WORKER_CPBS[1]));
-  _scheduler.addWorker ("8", 1, capabilities ("8", WORKER_CPBS[2]));
-  _scheduler.addWorker ("9", 1, capabilities ("9", WORKER_CPBS[0]));
-  _scheduler.addWorker ("10", 1, capabilities ("10", WORKER_CPBS[1]));
-  _scheduler.addWorker ("11", 1, capabilities ("11", WORKER_CPBS[2]));
-
-  _agent.TEST_add_dummy_job ("job_0", require (WORKER_CPBS[0], 4));
-  _agent.TEST_add_dummy_job ("job_1", require (WORKER_CPBS[1], 4));
-  _agent.TEST_add_dummy_job ("job_2", require (WORKER_CPBS[2], 4));
+  _agent.TEST_add_dummy_job ("job_0", require ("A", 4));
+  _agent.TEST_add_dummy_job ("job_1", require ("B", 4));
+  _agent.TEST_add_dummy_job ("job_2", require ("C", 4));
 
   _scheduler.schedule("job_0");
   _scheduler.schedule("job_1");
@@ -414,7 +412,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.assignJobsToWorkers();
 
 
-  _agent.TEST_add_dummy_job ("job_3", require (WORKER_CPBS[0], 2));
+  _agent.TEST_add_dummy_job ("job_3", require ("A", 2));
 
   _scheduler.schedule("job_3");
 
