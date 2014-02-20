@@ -121,11 +121,6 @@ GenericDaemon::GenericDaemon( const std::string name
   //             (fhg::com::)kvs::put ("sdpa.daemon.<name>.id", m_strAgentUID)
   //             kvs::put ("sdpa.daemon.<name>.pid", getpid())
   //                - remove them in destructor
-
-  // application gui service
-  if (guiUrl && !guiUrl->empty())
-  {
-  }
 }
 
 GenericDaemon::~GenericDaemon()
@@ -185,9 +180,6 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
 
         sendEventToOther(pSubmitEvt);
       }
-  }
-  else
-  {
   }
 }
 
@@ -423,9 +415,6 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
         catch(WorkerNotFoundException const &)
         {
         }
-      }
-      else
-      {
       }
 
       break;

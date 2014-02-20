@@ -85,21 +85,16 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
     sdpa::job_id_list_t workerJobList(_worker_manager.getJobListAndCleanQueues(pWorker));
     reschedule(worker_id, workerJobList);
 
-    if( !workerJobList.empty() )
-    {
-    }
-
     // delete the worker from the worker map
     _worker_manager.deleteWorker(worker_id);
 }
 
 void SchedulerBase::delete_job (sdpa::job_id_t const & job)
 {
-  if (pending_jobs_queue_.erase(job))
+  if (!pending_jobs_queue_.erase(job))
   {
-  }
-  else
     _worker_manager.deleteJob(job);
+  }
 }
 
 void SchedulerBase::schedule(const sdpa::job_id_t& jobId)

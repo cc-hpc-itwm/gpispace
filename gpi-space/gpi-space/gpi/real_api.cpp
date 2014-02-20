@@ -290,14 +290,11 @@ namespace gpi
       {
         const char * hostname = getHostnameGPI(i);
         int error_code = clearFileCacheGPI(hostname);
-        if (0 == error_code)
-        {
-        }
-        else if (-42 == error_code)
+        if (-42 == error_code)
         {
           LOG(WARN, "clear cache on " << hostname << " timed out");
         }
-        else
+        else if (error_code)
         {
           LOG(WARN, "clear cache on " << hostname << " failed: " << error_code);
         }
