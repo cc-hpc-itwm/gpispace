@@ -55,7 +55,6 @@ BOOST_AUTO_TEST_CASE (encode_with_time_constraint)
   BOOST_REQUIRE_EQUAL (count, max * int (first_encoded_char));
   BOOST_REQUIRE_LT (t, 1.0);
 }
-#endif
 
 BOOST_AUTO_TEST_CASE (decode_with_time_constraint)
 {
@@ -77,9 +76,6 @@ BOOST_AUTO_TEST_CASE (decode_with_time_constraint)
   t += fhg::util::now();
 
   BOOST_REQUIRE_EQUAL (count, pid_t (max * id));
-#ifndef NDEBUG
-  BOOST_REQUIRE_LT (t, 5.0);
-#else
   BOOST_REQUIRE_LT (t, 1.0);
-#endif
 }
+#endif
