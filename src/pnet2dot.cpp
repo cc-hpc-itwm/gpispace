@@ -122,6 +122,7 @@ namespace
     case '<': return "\\<";
     case '"': return "\\\"";
     case '|': return "\\|";
+    case '\n': return "\\n";
     default: return std::string (1, c);
     }
   }
