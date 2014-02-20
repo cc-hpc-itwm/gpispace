@@ -100,6 +100,15 @@ namespace
     list.push_back (w4);
     return list;
   }
+
+  sdpa::capabilities_set_t capabilities ( sdpa::worker_id_t worker
+                                        , std::string name_1
+                                        )
+  {
+    sdpa::capabilities_set_t set;
+    set.insert (sdpa::capability_t (name_1, worker));
+    return set;
+  }
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_agent_and_scheduler)
@@ -118,9 +127,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
       arrWorkerIds.push_back(workerId);
-      std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
-      sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-      _scheduler.addWorker(workerId, 1, cpbSet);
+      _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
   }
 
   // submit a bunch of jobs now
@@ -198,9 +205,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
       arrWorkerIds.push_back(workerId);
-      std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
-      sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-      _scheduler.addWorker(workerId, 1, cpbSet);
+      _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
   }
 
   // submit a bunch of jobs now
@@ -241,9 +246,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   const sdpa::worker_id_t workerId
     ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
   arrWorkerIds.push_back(workerId);
-  std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
-  sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-  _scheduler.addWorker(workerId, 1, cpbSet);
+  _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
 
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
@@ -273,9 +276,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
     if( k<nWorkers-1 )
     {
-        std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
-        sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-        _scheduler.addWorker(workerId, 1, cpbSet);
+        _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
     }
     else
       _scheduler.addWorker(workerId, 1);
@@ -321,9 +322,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
   const sdpa::worker_id_t lastWorkerId
     ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
-  std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", lastWorkerId));
-  sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-  _scheduler.addCapabilities(lastWorkerId, cpbSet);
+  _scheduler.addCapabilities(lastWorkerId, capabilities (lastWorkerId, "C"));
 
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
@@ -344,11 +343,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   for( int k=0; k<NWORKERS; k++ )
   {
     const sdpa::worker_id_t workerId (boost::lexical_cast<sdpa::worker_id_t> (k));
-    std::string cpbName(WORKER_CPBS[k%3]);
-    sdpa::capability_t cpb(cpbName, workerId);
-    sdpa::capabilities_set_t cpbSet;
-    cpbSet.insert(cpb);
-    _scheduler.addWorker(workerId, 1, cpbSet);
+    _scheduler.addWorker(workerId, 1, capabilities (workerId, WORKER_CPBS[k%3]));
   }
 
   // create a number of jobs
@@ -437,9 +432,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
     arrWorkerIds.push_back(workerId);
-    std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
-    sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-    _scheduler.addWorker(workerId, 1, cpbSet);
+    _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
   }
 
   // submit a bunch of jobs now
@@ -493,9 +486,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   sdpa::worker_id_list_t listW = _scheduler.getListAllocatedWorkers(jobId);
   BOOST_CHECK(listW.empty());
 
-  std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", lastWorkerId));
-  sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-  _scheduler.addWorker(lastWorkerId, 1, cpbSet);
+  _scheduler.addWorker(lastWorkerId, 1, capabilities (lastWorkerId, "C"));
 
   _scheduler.assignJobsToWorkers();
   _scheduler.checkAllocations();
