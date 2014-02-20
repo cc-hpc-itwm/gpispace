@@ -2,7 +2,7 @@
 
 prefix=/usr/local
 exclusion="^$"
-whitelist=()
+inclusion=""
 verbose=false
 dry=false
 force=false
@@ -60,12 +60,10 @@ function locate_file ()
 function is_in_whitelist ()
 {
     local name="$1"
-    for ((p=0 ; p < ${#whitelist[@]}; ++p)) ; do
-        if echo "$name" | grep -q "${whitelist[$p]}"
+        if echo "$name" | grep -q "${inclusion}"
         then
             return 0
         fi
-    done
     return 1
 }
 
@@ -87,7 +85,7 @@ function is_filtered ()
         return 0
     fi
 
-    if [ ${#whitelist[@]} -gt 0 ]
+    if [ -n "${inclusion}" ]
     then
         if is_in_whitelist "$name"
         then
@@ -205,7 +203,12 @@ while getopts ":hvnkfp:x:w:o:dL:" opt ; do
             shiftcount=$(( shiftcount + 2 ))
             ;;
         w)
-            whitelist=( ${whitelist[@]} $OPTARG )
+            if [ -z "${inclusion}" ]
+            then
+                inclusion="$OPTARG"
+            else
+                inclusion="$inclusion\|$OPTARG"
+            fi
             shiftcount=$(( shiftcount + 2 ))
             ;;
         o)
