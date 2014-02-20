@@ -1,7 +1,7 @@
 #!/bin/bash
 
 prefix=/usr/local
-exclude=()
+exclusion="^$"
 whitelist=()
 verbose=false
 dry=false
@@ -72,11 +72,9 @@ function is_in_whitelist ()
 function is_in_blacklist ()
 {
     local name="$1"
-    for ((p=0 ; p < ${#exclude[@]}; ++p)) ; do
-        if echo "$name" | grep -q "${exclude[$p]}" ; then
+        if echo "$name" | grep -q "${exclusion}" ; then
             return 0
         fi
-    done
     return 1
 }
 
@@ -203,7 +201,7 @@ while getopts ":hvnkfp:x:w:o:dL:" opt ; do
             shiftcount=$(( shiftcount + 2 ))
             ;;
         x)
-            exclude=( ${exclude[@]} $OPTARG )
+            exclusion="$exclusion\|$OPTARG"
             shiftcount=$(( shiftcount + 2 ))
             ;;
         w)
