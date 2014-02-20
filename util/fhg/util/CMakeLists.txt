@@ -54,7 +54,6 @@ set (srcs
   read_bool.cpp
   now.cpp
   ini-parser.cpp
-  lift_error_code_to_exception.cpp
 
   ostream_modifier.cpp
 
