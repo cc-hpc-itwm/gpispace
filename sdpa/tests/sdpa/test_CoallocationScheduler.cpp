@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _agent.expect_serveJob_call ("job_13", worker_list ("worker_5"));
   _agent.expect_serveJob_call ("job_14", worker_list ("worker_4"));
 
-  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
+  _scheduler.assignJobsToWorkers();
 
   sdpa::worker_id_list_t workerList;
   _scheduler.getListNotAllocatedWorkers(workerList);
@@ -216,7 +216,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   }
 
   _scheduler.assignJobsToWorkers();
-  _scheduler.checkAllocations();
 
   workerList.clear();
   _scheduler.getListNotAllocatedWorkers(workerList);
@@ -279,7 +278,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   _agent.expect_serveJob_call ("job_7", worker_list ("worker_1"));
   _agent.expect_serveJob_call ("job_8", worker_list ("worker_0"));
 
-  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
+  _scheduler.assignJobsToWorkers();
 
   // all the workers should have assigned jobs
   sdpa::worker_id_list_t workerList;
@@ -291,7 +290,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
-  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
+  _scheduler.assignJobsToWorkers();
   workerList.clear();
   _scheduler.getListNotAllocatedWorkers(workerList);
   // check if there are any workers that are not yet reserved
@@ -358,7 +357,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _agent.expect_serveJob_call ("job_7", worker_list ("worker_1"));
   _agent.expect_serveJob_call ("job_8", worker_list ("worker_0"));
 
-  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
+  _scheduler.assignJobsToWorkers();
 
   // all the workers should have assigned jobs
   sdpa::worker_id_list_t workerList;
@@ -375,7 +374,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
   // assign jobs to workers
-  _scheduler.assignJobsToWorkers(); _scheduler.checkAllocations();
+  _scheduler.assignJobsToWorkers();
   workerList.clear();
   _scheduler.getListNotAllocatedWorkers(workerList);
   // all workers should be assigned a job, including the last one
@@ -513,7 +512,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_0"));
 
   _scheduler.assignJobsToWorkers();
-  _scheduler.checkAllocations();
 
   // all the workers should have assigned jobs
   sdpa::worker_id_list_t workerList;
@@ -541,7 +539,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
-  _scheduler.checkAllocations();
 
   BOOST_REQUIRE_EQUAL (jobId, _scheduler.getAssignedJob (lastWorkerId));
 }

@@ -21,7 +21,6 @@ namespace sdpa {
       void releaseReservation(const sdpa::job_id_t& jobId);
       void getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerList);
       sdpa::job_id_t getAssignedJob(const sdpa::worker_id_t& wid);
-      void checkAllocations();
 
       sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t& jobId);
 

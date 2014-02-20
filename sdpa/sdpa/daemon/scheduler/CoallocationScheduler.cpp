@@ -197,39 +197,6 @@ sdpa::job_id_t CoallocationScheduler::getAssignedJob(const sdpa::worker_id_t& wi
   return job_id_t("");
 }
 
-void CoallocationScheduler::checkAllocations()
-{
-  lock_type lock(mtx_alloc_table_);
-  typedef std::map<worker_id_t,int> worker_cnt_map_t;
-  worker_cnt_map_t worker_cnt_map;
-  worker_id_list_t worker_list;
-  getWorkerList(worker_list);
-
-  BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
-  {
-    worker_cnt_map.insert(worker_cnt_map_t::value_type(worker_id, 0));
-  }
-
-  BOOST_FOREACH(const allocation_table_t::value_type& pairJLW, allocation_table_)
-  {
-    worker_id_list_t workerList(pairJLW.second->getWorkerList());
-    BOOST_FOREACH(const sdpa::worker_id_t& wid, workerList)
-    {
-      worker_cnt_map[wid]++;
-      if(worker_cnt_map[wid]>1)
-        {
-          throw;
-        }
-    }
-  }
-
-  std::ostringstream oss;
-  BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
-  {
-    oss<<worker_id<<":"<<worker_cnt_map[worker_id]<<" ";
-  }
-}
-
 sdpa::worker_id_list_t CoallocationScheduler::getListAllocatedWorkers(const sdpa::job_id_t& jobId)
 {
   lock_type lock_table(mtx_alloc_table_);
