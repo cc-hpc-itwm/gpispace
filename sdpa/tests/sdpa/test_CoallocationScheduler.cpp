@@ -130,8 +130,10 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
   job_requirements_t jobReqs(reqList, we::type::schedule_data());
 
   // check if there is any matching worker
-  sdpa::worker_id_list_t avail (1, workerId);
-  BOOST_REQUIRE_EQUAL (workerId, _scheduler.findSuitableWorker (jobReqs, avail));
+  BOOST_REQUIRE_EQUAL ( workerId
+                      , _scheduler.findSuitableWorker
+                        (jobReqs, sdpa::worker_id_list_t (1, workerId))
+                      );
 }
 
 BOOST_AUTO_TEST_CASE(testGainCap)
