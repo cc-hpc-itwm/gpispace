@@ -60,7 +60,6 @@ namespace sdpa { namespace daemon {
 
     size_t numberOfWorkers() { return worker_map_.size(); }
     sdpa::job_id_list_t getJobListAndCleanQueues(const  Worker::ptr_t& pWorker);
-    void getWorkerList(sdpa::worker_id_list_t& workerList);
     void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
     void getListWorkersNotReserved(sdpa::worker_id_list_t& workerList);
 

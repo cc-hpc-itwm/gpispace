@@ -221,12 +221,6 @@ bool SchedulerBase::has_job(const sdpa::job_id_t& job_id)
   return pending_jobs_queue_.has_item(job_id)|| _worker_manager.has_job(job_id);
 }
 
-void SchedulerBase::getWorkerList(sdpa::worker_id_list_t& workerList)
-{
-  workerList.clear();
-  _worker_manager.getWorkerList(workerList);
-}
-
 bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
   lock_type lock(mtx_);

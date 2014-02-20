@@ -72,7 +72,6 @@ namespace sdpa {
 
       void deleteWorker( const Worker::worker_id_t& workerId);
 
-      void getWorkerList(sdpa::worker_id_list_t&);
       void getListNotFullWorkers(sdpa::worker_id_list_t& workerList);
 
       size_t numberOfWorkers() { return _worker_manager.numberOfWorkers(); }

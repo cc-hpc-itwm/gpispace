@@ -161,13 +161,6 @@ bool WorkerManager::has_job(const sdpa::job_id_t& job_id)
                        );
 }
 
-void WorkerManager::getWorkerList(sdpa::worker_id_list_t& workerList)
-{
-  lock_type lock(mtx_);
-  for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-    workerList.push_back(iter->second->name());
-}
-
 class CComparator
 {
 public:
