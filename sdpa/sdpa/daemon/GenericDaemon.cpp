@@ -414,6 +414,9 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
     }
     default:
     {
+      LLOG ( ERROR, _logger
+           , "Unhandled error (" << error.error_code() << ") :" << error.reason()
+           );
     }
   }
 }
