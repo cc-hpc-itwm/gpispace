@@ -290,7 +290,7 @@ namespace detail
 log_monitor::log_monitor (unsigned short port, QWidget* parent)
   : QWidget (parent)
   , _drop_filtered (false)
-  , _filter_level (2)
+  , _filter_level (1)
   , _log_table (new QTableView (this))
   , _log_model (new detail::log_table_model)
   , _log_filter (new detail::log_filter_proxy (this))
@@ -330,11 +330,10 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   QComboBox* filter_level_combobox (new QComboBox (this));
   filter_level_combobox->setToolTip (tr ("Filter events according to level"));
 
-  filter_level_dial->setMaximum (5);
+  filter_level_dial->setMaximum (4);
   filter_level_combobox->insertItems ( 0
                                        , QStringList()
                                        << tr ("Trace")
-                                       << tr ("Debug")
                                        << tr ("Info")
                                        << tr ("Warn")
                                        << tr ("Error")

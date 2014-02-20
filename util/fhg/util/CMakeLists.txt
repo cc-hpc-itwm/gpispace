@@ -31,13 +31,11 @@ set (hdrs
   backtracing_exception.hpp
   backtracing_exception.fwd.hpp
 
-  url.hpp
   threadname.hpp
 
   remove_prefix.hpp
 
   now.hpp
-  get_home_dir.hpp
   hex.hpp
   read_file.hpp
 )
@@ -56,7 +54,6 @@ set (srcs
   read_bool.cpp
   now.cpp
   ini-parser.cpp
-  lift_error_code_to_exception.cpp
 
   ostream_modifier.cpp
 
@@ -78,12 +75,10 @@ set (srcs
   cpp/struct.cpp
 
   xml.cpp
-  get_home_dir.cpp
   hex.cpp
   read_file.cpp
 
   hostname.cpp
-  url.cpp
 )
 
 add_library (fhg-util ${srcs})

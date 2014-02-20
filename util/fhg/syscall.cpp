@@ -46,6 +46,16 @@ namespace fhg
         }
         return rc;
       }
+
+      sighandler_t SIG_ERR_fails_with_errno (sighandler_t rc)
+      {
+        if (rc == SIG_ERR)
+        {
+          throw boost::system::system_error
+            (boost::system::error_code (errno, boost::system::system_category()));
+        }
+        return rc;
+      }
     }
 
     int accept (int sockfd, struct sockaddr* addr, socklen_t* addrlen)
@@ -160,6 +170,17 @@ namespace fhg
     void shutdown (int sockfd, int how)
     {
       return negative_one_fails_with_errno<void> (::shutdown (sockfd, how));
+    }
+
+    void sigaction (int signum, const struct sigaction* act, struct sigaction* oldact)
+    {
+      return negative_one_fails_with_errno<void>
+        (::sigaction (signum, act, oldact));
+    }
+
+    sighandler_t signal (int signum, sighandler_t handler)
+    {
+      return SIG_ERR_fails_with_errno (::signal (signum, handler));
     }
 
     int socket (int domain, int type, int protocol)

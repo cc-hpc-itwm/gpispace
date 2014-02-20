@@ -31,7 +31,7 @@ namespace gpi
       class area_t : boost::noncopyable
       {
       public:
-        typedef fhg::thread::queue<buffer_t> memory_pool_t;
+        typedef fhg::thread::ptr_queue<buffer_t> memory_pool_t;
 
         virtual ~area_t ();
 

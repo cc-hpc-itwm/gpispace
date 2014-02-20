@@ -1,7 +1,7 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/read_bool.hpp>
-#include <fhg/util/url.hpp>
-#include <fhg/util/url_io.hpp>
+#include <gpi-space/pc/url.hpp>
+#include <gpi-space/pc/url_io.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
@@ -33,7 +33,7 @@ namespace gpi
                                , api::gpi_api_t& gpi_api
                                )
       {
-        fhg::util::url_t url (url_s);
+        url_t url (url_s);
 
         return
           ( url.type() == "gpi" ? gpi_area_t::create (url_s, topology, handle_generator, gpi_api)
@@ -491,7 +491,6 @@ namespace gpi
         {
           try
           {
-            using namespace fhg::util;
             url_t old_url (url_s);
             url_t new_url (old_url.type(), old_url.path());
             new_url.set ("persistent", "true");

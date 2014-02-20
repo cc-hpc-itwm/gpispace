@@ -10,8 +10,6 @@ BOOST_AUTO_TEST_CASE ( test_generate )
 {
   gpi::pc::memory::handle_generator_t handle_generator (42);
 
-  using namespace gpi::pc::memory;
-
   gpi::pc::type::handle_t globl
       (handle_generator.next (gpi::pc::type::segment::SEG_GPI));
   BOOST_CHECK_EQUAL (globl.type, gpi::pc::type::segment::SEG_GPI);
@@ -32,8 +30,6 @@ BOOST_AUTO_TEST_CASE ( test_generate )
 BOOST_AUTO_TEST_CASE ( test_generate_interleaved )
 {
   gpi::pc::memory::handle_generator_t handle_generator (42);
-
-  using namespace gpi::pc::memory;
 
   for (size_t i (0); i < 100; ++i)
   {

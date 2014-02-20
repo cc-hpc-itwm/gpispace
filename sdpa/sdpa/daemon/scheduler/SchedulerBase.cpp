@@ -57,11 +57,9 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
   }
   catch (const WorkerNotFoundException& ex)
   {
-    LLOG (WARN, _logger, "Cannot find the worker "<<worker_id);
   }
   catch(JobNotDeletedException const & ex)
   {
-    LLOG (WARN, _logger, "The job " << job_id << " could not be deleted: " << ex.what());
   }
 
   rescheduleJob(job_id);
@@ -91,7 +89,6 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
 
     if( !workerJobList.empty() )
     {
-      LLOG (WARN, _logger,  "The worker " << worker_id << " has still has assigned jobs!");
     }
 
     // delete the worker from the worker map
@@ -99,7 +96,6 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
   }
   catch (const WorkerNotFoundException& ex)
   {
-    LLOG (ERROR, _logger, "Cannot delete the worker "<<worker_id<<". Worker not found!");
       throw ex;
   }
 }
@@ -117,34 +113,16 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
   Job* pJob = ptr_comm_handler_->findJob(jobId);
-  if(pJob)
+  if(!pJob)
   {
-    try {
-        _worker_manager.dispatchJob(jobId);
-        cond_feed_workers.notify_one();
-    }
-    catch (std::exception const & ex)
-    {
-      sdpa::events::JobFailedEvent::Ptr pEvtJobFailed
-            (new sdpa::events::JobFailedEvent(  m_agent_name
-                                  , m_agent_name
-                                  , jobId
-                                  , ex.what()
-                                   ));
-
-      ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-    }
+    throw std::runtime_error ("tried scheduling non-existent job");
   }
-  else
-  {
-    sdpa::events::JobFailedEvent::Ptr pEvtJobFailed(new sdpa::events::JobFailedEvent(m_agent_name
-                                                         , m_agent_name
-                                                         , jobId
-                                                         , "job could not be found"
-                                                         ));
-
-    ptr_comm_handler_->sendEventToSelf(pEvtJobFailed);
-  }
+  schedule (pJob);
+}
+void SchedulerBase::schedule (Job* pJob)
+{
+  _worker_manager.dispatchJob(pJob->id());
+  cond_feed_workers.notify_one();
 }
 
 void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
@@ -236,7 +214,6 @@ void SchedulerBase::run()
     }
     catch ( const std::exception &ex )
     {
-      LLOG (ERROR, _logger, "exception in scheduler thread: " << ex.what());
         throw;
     }
   }
@@ -254,7 +231,6 @@ void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
   }
   catch(JobNotFoundException const& ex1)
   {
-    LLOG (ERROR, _logger, "Could not find the job "<<job_id<<"!");
     throw ex1;
   }
   catch(WorkerNotFoundException const &ex2)
@@ -277,12 +253,10 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
   }
   catch(JobNotDeletedException const& ex1)
   {
-    LLOG (WARN, _logger, "The job "<<jobId<<" couldn't be found!");
     throw ex1;
   }
   catch(WorkerNotFoundException const &ex2 )
   {
-    LLOG (WARN, _logger, "The worker "<<worker_id<<" couldn't be found!");
     throw ex2;
   }
 }
@@ -330,7 +304,6 @@ void SchedulerBase::getWorkerCapabilities(const sdpa::worker_id_t& worker_id, sd
   }
   catch(WorkerNotFoundException const &ex2 )
   {
-    LLOG (ERROR, _logger, "The worker "<<worker_id<<" could not be found!");
       cpbset = sdpa::capabilities_set_t();
   }
 }

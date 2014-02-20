@@ -22,29 +22,9 @@ namespace sdpa
       , UNKNOWN
       };
 
-    inline bool is_running (code c)
-    {
-      return c == RUNNING;
-    }
-
     inline bool is_terminal (code c)
     {
       return c == FINISHED || c == FAILED || c == CANCELED;
-    }
-
-    inline bool is_canceled (code c)
-    {
-      return c == CANCELED;
-    }
-
-    inline bool is_pending (code c)
-    {
-      return c == PENDING;
-    }
-
-    inline bool is_canceling (code c)
-    {
-      return c == CANCELING;
     }
 
     inline std::string show(int code)

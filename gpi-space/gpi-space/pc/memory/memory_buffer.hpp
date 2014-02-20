@@ -1,7 +1,9 @@
 #ifndef GPI_SPACE_PC_MEMORY_BUFFER_HPP
 #define GPI_SPACE_PC_MEMORY_BUFFER_HPP
 
-#include <unistd.h> // size_t
+#include <boost/utility.hpp>
+
+#include <vector>
 
 namespace gpi
 {
@@ -9,22 +11,19 @@ namespace gpi
   {
     namespace memory
     {
-      class buffer_t
+      class buffer_t : boost::noncopyable
       {
       public:
-        explicit
-        buffer_t (size_t sz);
+        explicit buffer_t (std::vector<char>::size_type sz);
 
-        ~buffer_t ();
+        inline char *data () { return &m_data[0]; }
+        inline std::vector<char>::size_type size () const { return m_data.size(); }
+        inline std::vector<char>::size_type used () const { return m_used; }
+        inline void used (std::vector<char>::size_type u) { m_used = u; }
 
-        inline char *data ()        { return m_data; }
-        inline size_t size () const { return m_size; }
-        inline size_t used () const { return m_used; }
-        inline void used (size_t u) { m_used = u; }
       private:
-        char  *m_data;
-        size_t m_size;
-        size_t m_used;
+        std::vector<char> m_data;
+        std::vector<char>::size_type m_used;
       };
     }
   }

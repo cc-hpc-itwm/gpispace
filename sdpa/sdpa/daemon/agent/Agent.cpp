@@ -109,7 +109,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
         // the group is finished when all the partial results are "finished"
         if(bAllPartResCollected)
         {
-            if(pJob->is_canceling())
+            if(pJob->getStatus() == sdpa::status::CANCELING)
             {
                 events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
                 pJob->CancelJobAck(&evtCancelAck);
@@ -290,7 +290,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 
           if(bAllPartResCollected)
           {
-              if(pJob->is_canceling())
+              if(pJob->getStatus() == sdpa::status::CANCELING)
               {
                   events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
                   pJob->CancelJobAck(&evtCancelAck);
@@ -416,7 +416,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
           ("A cancelation request for this job was already posted!");
       }
 
-      if(pJob->completed())
+      if(sdpa::status::is_terminal (pJob->getStatus()))
       {
         throw std::runtime_error
           ( "Cannot cancel an already terminated job, its current status is: "
@@ -517,7 +517,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
       }
       catch(const JobNotDeletedException&)
       {
-        LLOG (WARN, _logger,  "the JobManager could not delete the job: "<< pEvt->job_id());
       }
     }
   }
@@ -549,11 +548,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     }
     catch(const JobNotDeletedException& jnde)
     {
-      LLOG (ERROR, _logger, "could not delete the job " << pEvt->job_id()
-                                              << " from the worker "
-                                              << worker_id
-                                              << " : " << jnde.what()
-                                              );
     }
 
     // delete the job completely from the job manager
@@ -565,7 +559,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     }
     catch(const JobNotDeletedException&)
     {
-      LLOG (WARN, _logger, "the JobManager could not delete the job: "<< pEvt->job_id());
     }
   }
 }

@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
+
 project (sdpa_main)
 
 set(V_MAJOR 13)
@@ -14,9 +16,6 @@ set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" 
 set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
-OPTION (ENABLE_SDPA_GUI "Build the monitor gui" YES)
-OPTION (ENABLE_GPI_FUSE "Build the gpi fuse module" OFF)
-OPTION (ENABLE_PNET_EDITOR "Build the pnet editor" YES)
 OPTION (INSTALL_AS_BUNDLE "Install as a bundle" NO)
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
@@ -24,7 +23,6 @@ set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use a
 option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 option (ENABLE_BACKTRACE_ON_PARSE_ERROR "Show a backtrace on (pnet) parser errors" OFF)
 
-function (get_revision_info REV_INFO)
   execute_process (
     COMMAND git rev-parse HEAD
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -34,11 +32,14 @@ function (get_revision_info REV_INFO)
     )
   if (${_res_git} EQUAL 0)
     string (STRIP "${_out_git}" _out_git)
-    set (${REV_INFO} ${_out_git} PARENT_SCOPE)
+    set (PROJECT_REVISION ${_out_git})
   endif()
-endfunction()
 
-function (get_version_info VSN_INFO)
+if (NOT PROJECT_REVISION)
+  message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
+endif (NOT PROJECT_REVISION)
+set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
+
   execute_process (
     COMMAND git describe
     COMMAND sed -e "s/^v//"
@@ -49,7 +50,7 @@ function (get_version_info VSN_INFO)
   )
   if (${_res} EQUAL 0)
     string (STRIP "${_out}" _out)
-    set (${VSN_INFO} ${_out} PARENT_SCOPE)
+    set (PROJECT_VERSION ${_out})
   else()
     set(__new_vsn "${V_MAJOR}.${V_MINOR}")
     if (NOT ${V_PATCH} STREQUAL "")
@@ -58,23 +59,14 @@ function (get_version_info VSN_INFO)
     if (NOT ${V_EXTRA} STREQUAL "")
       set(__new_vsn "${__new_vsn}-${V_EXTRA}")
     endif()
-    set (${VSN_INFO} ${__new_vsn} PARENT_SCOPE)
+    set (PROJECT_VERSION ${__new_vsn})
   endif ()
-endfunction()
 
-get_revision_info (PROJECT_REVISION)
-if (NOT PROJECT_REVISION)
-  message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
-endif (NOT PROJECT_REVISION)
-set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
-
-get_version_info (PROJECT_VERSION)
 if (NOT PROJECT_VERSION)
   message (FATAL_ERROR "could not discover version info, please define -DPROJECT_VERSION by hand!")
 endif()
 set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
 
-cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
@@ -190,9 +182,6 @@ add_subdirectory (util)
 add_subdirectory (fhgkernel)
 add_subdirectory (fhgcom)
   add_subdirectory (gpi-space)
-if (ENABLE_GPI_FUSE)
-  add_subdirectory (gpi-fuse)
-endif (ENABLE_GPI_FUSE)
 add_subdirectory (application)
 add_subdirectory (src)
 add_subdirectory (sdpa)

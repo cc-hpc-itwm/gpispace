@@ -160,7 +160,7 @@ WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
   {
     // TODO: figure out, why this doesn't work as it is supposed to
     // adjust ld_library_path
-    std::string ld_library_path (fhg::util::getenv("LD_LIBRARY_PATH", ""));
+    std::string ld_library_path (fhg::util::getenv("LD_LIBRARY_PATH").get_value_or (""));
     ld_library_path = search_path + ":" + ld_library_path;
     setenv("LD_LIBRARY_PATH", ld_library_path.c_str(), true);
   }
@@ -316,7 +316,7 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   , m_shutting_down (false)
   , m_my_name (*get<std::string> ("kernel_name", config_variables))
   , m_wfe ( get<std::size_t> ("plugin.drts.socket", config_variables)
-          , get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH"))
+          , get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH").get_value_or (""))
           , get<std::string> ("plugin.drts.gui_url", config_variables)
           , m_my_name
           )

@@ -1,8 +1,8 @@
 #define BOOST_TEST_MODULE URLTest
 #include <boost/test/unit_test.hpp>
 
-#include <fhg/util/url.hpp>
-#include <fhg/util/url_io.hpp>
+#include <gpi-space/pc/url.hpp>
+#include <gpi-space/pc/url_io.hpp>
 
 #include <fhg/util/parse/error.hpp>
 
@@ -13,7 +13,7 @@
 
 BOOST_AUTO_TEST_CASE (test_url_basics)
 {
-  fhg::util::url_t url ("http", "localhost:8080");
+  gpi::pc::url_t url ("http", "localhost:8080");
   url.set ("foo", "bar");
   url.set ("bar", "baz");
 
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE (test_url_basics)
 
 BOOST_AUTO_TEST_CASE (test_url_ctor)
 {
-  fhg::util::url_t url ("http://localhost:8080?foo=bar&bar=baz");
+  gpi::pc::url_t url ("http://localhost:8080?foo=bar&bar=baz");
 
   BOOST_CHECK_EQUAL (url.type (), "http");
   BOOST_CHECK_EQUAL (url.path (), "localhost:8080");
@@ -35,9 +35,9 @@ BOOST_AUTO_TEST_CASE (test_url_ctor)
 
 namespace
 {
-  fhg::util::url_t ctor (std::string const& u)
+  gpi::pc::url_t ctor (std::string const& u)
   {
-    return fhg::util::url_t (u);
+    return gpi::pc::url_t (u);
   }
 }
 
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE (ampersand_not_allowed_in_longer_path)
 
 BOOST_AUTO_TEST_CASE (simple_type)
 {
-  fhg::util::url_t const url ("protocoll://");
+  gpi::pc::url_t const url ("protocoll://");
 
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE (url.path().empty());
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE (type_with_colon_slash)
 
 BOOST_AUTO_TEST_CASE (no_colon_required)
 {
-  fhg::util::url_t const url ("just_the_protocoll");
+  gpi::pc::url_t const url ("just_the_protocoll");
 
   BOOST_REQUIRE_EQUAL (url.type(), "just_the_protocoll");
   BOOST_REQUIRE (url.path().empty());
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE (no_colon_required)
 
 BOOST_AUTO_TEST_CASE (no_path_required)
 {
-  fhg::util::url_t const url ("just_the_protocoll://");
+  gpi::pc::url_t const url ("just_the_protocoll://");
 
   BOOST_REQUIRE_EQUAL (url.type(), "just_the_protocoll");
   BOOST_REQUIRE (url.path().empty());
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE (empty_parameter_list)
 
 BOOST_AUTO_TEST_CASE (parameter_list_single)
 {
-  fhg::util::url_t const url ("protocoll://p/ath?k=v");
+  gpi::pc::url_t const url ("protocoll://p/ath?k=v");
 
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "p/ath");
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE (value_contains_colon_and_slashes)
 
 BOOST_AUTO_TEST_CASE (parameter_list_many)
 {
-  fhg::util::url_t const url ("protocoll://p/ath?k1=a&k2=b");
+  gpi::pc::url_t const url ("protocoll://p/ath?k1=a&k2=b");
 
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "p/ath");
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE (many_empty_value)
 
 BOOST_AUTO_TEST_CASE (port_number)
 {
-  fhg::util::url_t const url ("protocoll://host:123");
+  gpi::pc::url_t const url ("protocoll://host:123");
   BOOST_REQUIRE_EQUAL (url.type (), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path (), "host:123");
 }
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE (port_to_large)
 
 BOOST_AUTO_TEST_CASE (port_star)
 {
-  fhg::util::url_t const url ("protocoll://host:*");
+  gpi::pc::url_t const url ("protocoll://host:*");
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "host:*");
   BOOST_REQUIRE (url.args().empty());
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE (port_star)
 
 BOOST_AUTO_TEST_CASE (port_star_param_list)
 {
-  fhg::util::url_t const url ("protocoll://host:*?k_ey=5");
+  gpi::pc::url_t const url ("protocoll://host:*?k_ey=5");
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "host:*");
   BOOST_REQUIRE_EQUAL (url.args().size(), 1);
@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_CASE (port_star_param_list)
 
 BOOST_AUTO_TEST_CASE (host_name_with_dot)
 {
-  fhg::util::url_t const url ("protocoll://host.domain");
+  gpi::pc::url_t const url ("protocoll://host.domain");
 
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "host.domain");
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE (host_name_with_dot)
 
 BOOST_AUTO_TEST_CASE (host_name_with_dots)
 {
-  fhg::util::url_t const url ("protocoll://host.domain.that.is.somewhere");
+  gpi::pc::url_t const url ("protocoll://host.domain.that.is.somewhere");
 
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "host.domain.that.is.somewhere");
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE (host_name_with_dots)
 
 BOOST_AUTO_TEST_CASE (host_name_with_dot_sequence)
 {
-  fhg::util::url_t const url ("protocoll://host..domain..:*");
+  gpi::pc::url_t const url ("protocoll://host..domain..:*");
 
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "host..domain..:*");
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE (host_name_with_dot_sequence)
 
 BOOST_AUTO_TEST_CASE (host_ip)
 {
-  fhg::util::url_t const url ("protocoll://127.0.0.1");
+  gpi::pc::url_t const url ("protocoll://127.0.0.1");
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "127.0.0.1");
   BOOST_REQUIRE (url.args().empty());
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE (host_ip)
 
 BOOST_AUTO_TEST_CASE (host_ip_port_num)
 {
-  fhg::util::url_t const url ("protocoll://127.0.0.1:1");
+  gpi::pc::url_t const url ("protocoll://127.0.0.1:1");
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "127.0.0.1:1");
   BOOST_REQUIRE (url.args().empty());
@@ -353,7 +353,7 @@ BOOST_AUTO_TEST_CASE (host_ip_port_num)
 
 BOOST_AUTO_TEST_CASE (host_ip_port_star)
 {
-  fhg::util::url_t const url ("protocoll://127.0.0.1:*");
+  gpi::pc::url_t const url ("protocoll://127.0.0.1:*");
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "127.0.0.1:*");
   BOOST_REQUIRE (url.args().empty());
@@ -408,7 +408,7 @@ BOOST_AUTO_TEST_CASE (host_ip_missing_third_dot)
 
 BOOST_AUTO_TEST_CASE (host_star)
 {
-  fhg::util::url_t const url ("protocoll://*");
+  gpi::pc::url_t const url ("protocoll://*");
 
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "*");
@@ -417,7 +417,7 @@ BOOST_AUTO_TEST_CASE (host_star)
 
 BOOST_AUTO_TEST_CASE (host_star_port_start)
 {
-  fhg::util::url_t const url ("protocoll://*:*");
+  gpi::pc::url_t const url ("protocoll://*:*");
 
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "*:*");
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE (host_star_port_start)
 
 BOOST_AUTO_TEST_CASE (host_star_port_start_parameter)
 {
-  fhg::util::url_t const url ("protocoll://*:*?k=v");
+  gpi::pc::url_t const url ("protocoll://*:*?k=v");
 
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE_EQUAL (url.path(), "*:*");
@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_CASE (host_star_port_start_parameter)
 
 BOOST_AUTO_TEST_CASE (no_host_but_parameter)
 {
-  fhg::util::url_t const url ("protocoll://?k=v");
+  gpi::pc::url_t const url ("protocoll://?k=v");
 
   BOOST_REQUIRE_EQUAL (url.type(), "protocoll");
   BOOST_REQUIRE (url.path().empty());
@@ -449,13 +449,13 @@ BOOST_AUTO_TEST_CASE (no_host_but_parameter)
 BOOST_AUTO_TEST_CASE (parse_file_url)
 {
   {
-    fhg::util::url_t url ("file:///foo/bar/baz");
+    gpi::pc::url_t url ("file:///foo/bar/baz");
     BOOST_REQUIRE_EQUAL (url.type (), "file");
     BOOST_REQUIRE_EQUAL (url.path (), "/foo/bar/baz");
   }
 
   {
-    fhg::util::url_t url ("file://foo/bar/baz");
+    gpi::pc::url_t url ("file://foo/bar/baz");
     BOOST_REQUIRE_EQUAL (url.type (), "file");
     BOOST_REQUIRE_EQUAL (url.path (), "foo/bar/baz");
   }
@@ -468,12 +468,12 @@ BOOST_AUTO_TEST_CASE (url_io)
   {
     std::stringstream sstr;
 
-    fhg::util::url_t url_o (url_string);
+    gpi::pc::url_t url_o (url_string);
     sstr << url_o;
 
     BOOST_REQUIRE_EQUAL (sstr.str (), url_string);
 
-    fhg::util::url_t url_i (sstr.str());
+    gpi::pc::url_t url_i (sstr.str());
 
     BOOST_CHECK_EQUAL (url_i.type ()  , url_o.type ());
     BOOST_CHECK_EQUAL (url_i.path ()  , url_o.path ());

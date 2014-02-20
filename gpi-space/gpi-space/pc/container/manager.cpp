@@ -6,7 +6,6 @@
 #include <gpi-space/pc/segment/segment.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/util/lift_error_code_to_exception.hpp>
 #include <fhg/syscall.hpp>
 #include <fhglog/LogMacros.hpp>
 
@@ -122,7 +121,10 @@ namespace gpi
           LOG(ERROR, "could not create unix socket: " << se.what());
           return -se.code().value();
         }
-        fhg::syscall::setsockopt (sfd, SOL_SOCKET, SO_PASSCRED, (void*)1, 1);
+        {
+          const int on (1);
+          fhg::syscall::setsockopt (sfd, SOL_SOCKET, SO_PASSCRED, &on, sizeof (on));
+        }
 
         memset (&my_addr, 0, sizeof(my_addr));
         my_addr.sun_family = AF_UNIX;

@@ -7,7 +7,7 @@
 #include <fcntl.h>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/util/url.hpp>
+#include <gpi-space/pc/url.hpp>
 #include <fhg/util/read_bool.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -256,29 +256,26 @@ namespace gpi
       area_ptr_t shm_area_t::create
         (std::string const &url_s, handle_generator_t& handle_generator)
       {
-        using namespace fhg::util;
-        using namespace gpi::pc;
-
         url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
 
-        if (not read_bool (url.get ("create").get_value_or ("false")))
+        if (not fhg::util::read_bool (url.get ("create").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_NOCREATE);
         }
-        if (    read_bool (url.get ("unlink").get_value_or ("false")))
+        if (    fhg::util::read_bool (url.get ("unlink").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_FORCE_UNLINK);
         }
-        if (not read_bool (url.get ("mmap").get_value_or ("false")))
+        if (not fhg::util::read_bool (url.get ("mmap").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_NOMMAP);
         }
-        if (    read_bool (url.get ("exclusive").get_value_or ("false")))
+        if (    fhg::util::read_bool (url.get ("exclusive").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_EXCLUSIVE);
         }
-        if (    read_bool (url.get ("persistent").get_value_or ("false")))
+        if (    fhg::util::read_bool (url.get ("persistent").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_PERSISTENT);
         }

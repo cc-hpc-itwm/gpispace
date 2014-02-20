@@ -40,11 +40,6 @@ namespace sdpa {
       return m_error_message;
     }
 
-    void Job::set_owner(const worker_id_t& owner)
-    {
-      m_owner = owner;
-    }
-
     worker_id_t Job::owner() const
     {
       return m_owner;
@@ -54,31 +49,6 @@ namespace sdpa {
     {
       lock_type lock(mtx_);
       return state_code (*current_state());
-    }
-
-    bool Job::completed() const
-    {
-      return status::is_terminal (getStatus());
-    }
-
-    bool Job::is_running() const
-    {
-      return status::is_running (getStatus());
-    }
-
-    bool Job::is_pending() const
-    {
-      return status::is_pending (getStatus());
-    }
-
-    bool Job::is_canceled() const
-    {
-      return status::is_canceled (getStatus());
-    }
-
-    bool Job::is_canceling() const
-    {
-      return status::is_canceling (getStatus());
     }
 
     bool Job::isMasterJob() const
@@ -96,11 +66,6 @@ namespace sdpa {
     {
       lock_type lock(mtx_);
       m_error_message = evt.error_message();
-    }
-
-    void Job::action_reschedule_job(const MSMRescheduleEvent& evt)
-    {
-      evt.ptrScheduler()->schedule(id());
     }
 
     void Job::action_retrieve_job_results(const MSMRetrieveJobResultsEvent& e)
@@ -144,10 +109,10 @@ namespace sdpa {
       process_event(MSMRetrieveJobResultsEvent(pEvt, pAgent));
     }
 
-    void Job::Reschedule(SchedulerBase*  pSched)
+    void Job::Reschedule()
     {
       lock_type lock(mtx_);
-      process_event(MSMRescheduleEvent (pSched));
+      process_event(MSMRescheduleEvent());
     }
 
     void Job::Dispatch()

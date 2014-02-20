@@ -117,8 +117,6 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  //LLOG (INFO, _logger,  "handle JobFailed event (job " << pEvt->job_id() << ") received from "<<pEvt->from());
-
   if (pEvt->is_external())
   {
       // send a JobFinishedAckEvent back to the worker/slave
@@ -186,7 +184,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
           ("A cancelation request for this job was already posted!");
       }
 
-      if(pJob->completed())
+      if(sdpa::status::is_terminal (pJob->getStatus()))
       {
         throw std::runtime_error
           ( "Cannot cancel an already terminated job, its current status is: "
@@ -250,8 +248,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
   Job* pJob = jobManager().findJob(e.job_id());
   if(pJob)
   {
-      // the job must be in a non-terminal state
-      if(!pJob->completed())
+      if(!sdpa::status::is_terminal (pJob->getStatus()))
       {
         throw std::runtime_error
           ("Cannot delete a job which is in a non-terminal state. Please, cancel it first!");
@@ -273,7 +270,7 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
   Job* pJob = jobManager().findJob(pEvt->job_id());
   if(pJob)
   {
-      if(pJob->completed())
+      if(sdpa::status::is_terminal (pJob->getStatus()))
       {
           pJob->RetrieveJobResults(pEvt, this);
       }
@@ -287,8 +284,6 @@ void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResult
   }
   else
   {
-    LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
-
     throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
   }
 }
@@ -313,8 +308,6 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
   }
   else
   {
-    LLOG (ERROR, _logger, "job " << pEvt->job_id() << " could not be found!");
-
     throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
   }
 }

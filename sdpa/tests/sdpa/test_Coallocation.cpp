@@ -11,7 +11,7 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+    (utils::require_and_read_file ("coallocation_test.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());

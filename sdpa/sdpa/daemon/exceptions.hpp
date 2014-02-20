@@ -8,14 +8,6 @@
 namespace sdpa {
 namespace daemon {
 
-	class NoWorkflowEngine : public std::runtime_error {
-	public:
-		NoWorkflowEngine()
-			: std::runtime_error("No workflow engine!") {}
-
-		virtual ~NoWorkflowEngine() throw() {}
-	};
-
 	class JobException : public std::runtime_error {
 	public:
 		JobException(const std::string &reason, const sdpa::job_id_t& job_id)

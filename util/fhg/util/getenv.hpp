@@ -1,26 +1,27 @@
 #ifndef FHG_UTIL_GETENV_HPP
 #define FHG_UTIL_GETENV_HPP 1
 
-#include <stdlib.h>
+#include <boost/optional.hpp>
+
+#include <cstdlib>
 #include <string>
 
 namespace fhg
 {
-namespace util
-{
-  std::string getenv(std::string const & s, std::string const & def = "")
+  namespace util
   {
-    char *val = ::getenv(s.c_str());
-    if (val)
+    boost::optional<const char*> getenv (const char* env_var)
     {
-      return val;
-    }
-    else
-    {
-      return def;
+      const char *val (std::getenv (env_var));
+
+      if (val)
+      {
+        return val;
+      }
+
+      return boost::none;
     }
   }
-}
 }
 
 #endif

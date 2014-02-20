@@ -104,16 +104,9 @@ namespace sdpa
       if (! ec)
       {
         // convert m_message to event
-        try
-        {
-          sdpa::events::SDPAEvent::Ptr evt
-            (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
-          _event_handler (evt);
-        }
-        catch (std::exception const & ex)
-        {
-          LLOG(WARN, _logger, "could not handle incoming message: " << ex.what());
-        }
+        sdpa::events::SDPAEvent::Ptr evt
+          (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
+        _event_handler (evt);
 
         m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
       }

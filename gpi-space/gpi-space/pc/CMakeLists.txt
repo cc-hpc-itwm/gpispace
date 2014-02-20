@@ -7,3 +7,7 @@ add_subdirectory (container)
 add_subdirectory (global)
 
 add_subdirectory (plugin)
+add_subdirectory (test)
+
+add_library (gpi-space_url url.cpp)
+target_link_libraries (gpi-space_url fhg-util)

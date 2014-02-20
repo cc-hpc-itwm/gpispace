@@ -1,5 +1,7 @@
 #include "hex.hpp"
 
+#include <boost/foreach.hpp>
+
 #include <cctype>
 #include <iomanip>
 #include <stdexcept>
@@ -13,30 +15,31 @@ namespace fhg
     {
       std::ostringstream sstr;
 
-      std::string::const_iterator c = s.begin ();
-      const std::string::const_iterator end = s.end ();
-      for ( ; c != end ; ++c)
+      BOOST_FOREACH (char const c, s)
       {
         sstr << std::setw (2)
              << std::setfill ('0')
              << std::hex
-             << (int)(*c & 0xff)
+             << (int)(c & 0xff)
           ;
       }
 
       return sstr.str ();
     }
 
-    static char from_hex (char c)
+    namespace
     {
-      switch (tolower (c))
+      char from_hex (char c)
       {
-      case '0'...'9':
-        return 0 +  (c - '0');
-      case 'a'...'f':
-        return 10 + (c - 'a');
-      default:
-        throw std::invalid_argument ("from_hex: not a hexadecimal character");
+        switch (tolower (c))
+        {
+        case '0'...'9':
+          return 0 +  (c - '0');
+        case 'a'...'f':
+          return 10 + (c - 'a');
+        default:
+          throw std::invalid_argument ("from_hex: not a hexadecimal character");
+        }
       }
     }
 
@@ -51,8 +54,7 @@ namespace fhg
       const std::string::const_iterator end = s.end ();
       for ( ; c != end ; c += 2)
       {
-        char byte = (from_hex (*c) << 4) | from_hex (*(c+1));
-        retval += byte;
+        retval += (from_hex (*c) << 4) | from_hex (*(c+1));
       }
 
       return retval;

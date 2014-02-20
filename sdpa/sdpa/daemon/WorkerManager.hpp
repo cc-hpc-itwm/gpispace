@@ -76,8 +76,6 @@ namespace sdpa { namespace daemon {
 protected:
     worker_map_t  worker_map_;
 
-    fhg::log::Logger::ptr_t _logger;
-
     JobQueue common_queue_;
 
     mutable mutex_type mtx_;
