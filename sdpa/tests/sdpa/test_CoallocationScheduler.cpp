@@ -449,7 +449,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _scheduler.rescheduleWorkerJob("worker_9", "job_0");
 
   _scheduler.schedule("job_0");
-  BOOST_CHECK (_scheduler.schedulingAllowed());
 
   _scheduler.deleteWorker("worker_9");
   sdpa::worker_id_list_t listW = _scheduler.getListAllocatedWorkers("job_0");
