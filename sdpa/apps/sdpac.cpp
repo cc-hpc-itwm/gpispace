@@ -289,7 +289,7 @@ namespace
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
 
-  std::string kvs_url (fhg::util::getenv("KVS_URL", "localhost:2439"));
+  std::string kvs_url (fhg::util::getenv("KVS_URL").get_value_or ("localhost:2439"));
 
   NewConfig cfg;
   cfg.tool_opts().add_options()
