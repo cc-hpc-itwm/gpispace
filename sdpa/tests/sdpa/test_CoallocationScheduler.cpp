@@ -136,11 +136,9 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   const int nJobs = 15;
 
   // create a give number of workers with different capabilities:
-  std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-      arrWorkerIds.push_back(workerId);
       _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
   }
 
@@ -213,11 +211,9 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   const int nJobs = 15;
 
   // create a give number of workers with different capabilities:
-  std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers-1;k++)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-      arrWorkerIds.push_back(workerId);
       _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
   }
 
@@ -257,7 +253,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   // add new worker now (worker_9)...
   const sdpa::worker_id_t workerId
     ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
-  arrWorkerIds.push_back(workerId);
   _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
 
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
@@ -280,11 +275,9 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   const int nJobs = 15;
 
   // create a give number of workers with different capabilities:
-  std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-    arrWorkerIds.push_back(workerId);
 
     if( k<nWorkers-1 )
     {
@@ -434,11 +427,9 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   const int nJobs = 10;
 
   // create a give number of workers with different capabilities:
-  std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-    arrWorkerIds.push_back(workerId);
     _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
   }
 
