@@ -1,7 +1,7 @@
 #!/bin/bash
 
 prefix=/usr/local
-exclusion="^$"
+exclusion=""
 inclusion=""
 verbose=false
 dry=false
@@ -47,9 +47,12 @@ function is_filtered ()
 {
     local name=$(basename "$1")
 
-    if echo "$name" | grep -q "${exclusion}"
+    if [ -n "${exclusion}" ]
     then
-        return 0
+        if echo "$name" | grep -q "${exclusion}"
+        then
+            return 0
+        fi
     fi
 
     if [ -n "${inclusion}" ]
@@ -166,7 +169,12 @@ while getopts ":hvnkfp:x:w:o:dL:" opt ; do
             shiftcount=$(( shiftcount + 2 ))
             ;;
         x)
-            exclusion="$exclusion\|$OPTARG"
+            if [ -z "${exclusion}" ]
+            then
+                exclusion="$OPTARG"
+            else
+                exclusion="$exclusion\|$OPTARG"
+            fi
             shiftcount=$(( shiftcount + 2 ))
             ;;
         w)
