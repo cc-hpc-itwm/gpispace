@@ -52,7 +52,7 @@ namespace sdpa { namespace daemon {
 
     bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
     void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
-    void getCapabilities(const std::string& agentName, sdpa::capabilities_set_t& cpbset);
+    void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
     void dispatchJob(const sdpa::job_id_t& jobId);
     void deleteJob(const sdpa::job_id_t& jobId);

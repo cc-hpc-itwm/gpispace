@@ -250,7 +250,7 @@ void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const
 
 void SchedulerBase::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
 {
-  _worker_manager.getCapabilities(m_agent_name, cpbset);
+  _worker_manager.getCapabilities(cpbset);
 }
 
 sdpa::capabilities_set_t SchedulerBase::getWorkerCapabilities
