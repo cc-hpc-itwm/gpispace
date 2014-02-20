@@ -115,6 +115,7 @@ BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_orchestrator_and_schedul
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
+//! \note Actually a test for SchedulerBase
 BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
 {
   const sdpa::worker_id_t workerId ("test_worker");
@@ -131,6 +132,7 @@ BOOST_AUTO_TEST_CASE(testCapabilitiesMatching)
                       );
 }
 
+//! \note Actually a test for SchedulerBase
 BOOST_AUTO_TEST_CASE(testGainCap)
 {
   const sdpa::worker_id_t worker_A ("worker_A");
