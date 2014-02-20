@@ -122,16 +122,16 @@ function bundle_dependencies ()
             debug $(printf "%$((indent + 2))s" "") "already copied: ${pth}"
         else
         if [[ ! "$pth" = "$tgt" ]] ; then
+            if [ -z "${copied}" ]
+            then
+                copied="^$pth$"
+            else
+                copied="$copied\|^$pth$"
+            fi
             if test "$pth" -nt "$tgt" || $force ; then
                 echo "-- Installing: Bundle: $tgt"
                 debug $(printf "%$((indent + 2))s" "") cp "$pth" "$tgt"
                 dry_run cp "$pth" "$tgt"
-                if [ -z "${copied}" ]
-                then
-                    copied="^$pth$"
-                else
-                    copied="$copied\|^$pth$"
-                fi
                 bundle_dependencies "$pth" "$dst" $(( lvl + 1 ))
             else
                 echo "-- Up-to-date: Bundle: $tgt"
