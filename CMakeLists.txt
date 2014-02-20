@@ -21,7 +21,6 @@ set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use a
 option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 option (ENABLE_BACKTRACE_ON_PARSE_ERROR "Show a backtrace on (pnet) parser errors" OFF)
 
-function (get_revision_info REV_INFO)
   execute_process (
     COMMAND git rev-parse HEAD
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -31,17 +30,14 @@ function (get_revision_info REV_INFO)
     )
   if (${_res_git} EQUAL 0)
     string (STRIP "${_out_git}" _out_git)
-    set (${REV_INFO} ${_out_git} PARENT_SCOPE)
+    set (PROJECT_REVISION ${_out_git})
   endif()
-endfunction()
 
-get_revision_info (PROJECT_REVISION)
 if (NOT PROJECT_REVISION)
   message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
 endif (NOT PROJECT_REVISION)
 set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
 
-function (get_version_info VERSION_INFO)
   execute_process (
     COMMAND git describe
     COMMAND sed -e "s/^v//"
@@ -52,7 +48,7 @@ function (get_version_info VERSION_INFO)
   )
   if (${_res} EQUAL 0)
     string (STRIP "${_out}" _out)
-    set (${VERSION_INFO} ${_out} PARENT_SCOPE)
+    set (PROJECT_VERSION ${_out})
   else()
     set(__new_vsn "${V_MAJOR}.${V_MINOR}")
     if (NOT ${V_PATCH} STREQUAL "")
@@ -61,11 +57,9 @@ function (get_version_info VERSION_INFO)
     if (NOT ${V_EXTRA} STREQUAL "")
       set(__new_vsn "${__new_vsn}-${V_EXTRA}")
     endif()
-    set (${VERSION_INFO} ${__new_vsn} PARENT_SCOPE)
+    set (PROJECT_VERSION ${__new_vsn})
   endif ()
-endfunction()
 
-get_version_info (PROJECT_VERSION)
 if (NOT PROJECT_VERSION)
   message (FATAL_ERROR "could not discover version info, please define -DPROJECT_VERSION by hand!")
 endif()
