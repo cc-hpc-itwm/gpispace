@@ -27,7 +27,9 @@ namespace fhg
       return sstr.str ();
     }
 
-    static char from_hex (char c)
+    namespace
+    {
+    char from_hex (char c)
     {
       switch (tolower (c))
       {
@@ -38,6 +40,7 @@ namespace fhg
       default:
         throw std::invalid_argument ("from_hex: not a hexadecimal character");
       }
+    }
     }
 
     std::string from_hex (std::string const &s)
