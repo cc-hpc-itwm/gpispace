@@ -10,7 +10,7 @@ keep_going=false
 dst=lib # folder within prefix where libs shall be copied to
 delete=false
 library_path="$LD_LIBRARY_PATH"
-copied=()
+copied=""
 
 function usage ()
 {
@@ -72,10 +72,10 @@ function is_copied_already()
 {
     local name="${1}"; shift;
 
-    for c in ${copied[@]}
-    do
-        test "${c}" = "${name}" && return 0
-    done
+    if [ -n "${copied}" ]
+    then
+        if echo "$name" | grep -q "${copied}"; then return 0; fi
+    fi
 
     return 1
 }
@@ -125,7 +125,12 @@ function bundle_dependencies ()
             if test "$pth" -nt "$tgt" || $force ; then
                 debug $(printf "%$((indent + 2))s" "") cp "$pth" "$tgt"
                 dry_run cp "$pth" "$tgt"
-                copied+=("$pth")
+                if [ -z "${copied}" ]
+                then
+                    copied="^$pth$"
+                else
+                    copied="$copied\|^$pth$"
+                fi
                 bundle_dependencies "$pth" "$dst" $(( lvl + 1 ))
             fi
         fi
