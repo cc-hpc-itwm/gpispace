@@ -302,6 +302,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
     // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
     // 'reason' should not be reused for important information
     case events::ErrorEvent::SDPA_EJOBREJECTED:
+    case events::ErrorEvent::SDPA_EPERM:
     {
       sdpa::job_id_t jobId(*error.job_id());
       sdpa::worker_id_t worker_id(error.from());
@@ -418,14 +419,6 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       }
 
       break;
-    }
-    case events::ErrorEvent::SDPA_EPERM:
-    {
-    	sdpa::job_id_t jobId(*error.job_id());
-    	sdpa::worker_id_t worker_id(error.from());
-
-    	scheduler()->rescheduleWorkerJob(worker_id, jobId);
-    	break;
     }
     default:
     {
