@@ -466,21 +466,11 @@ void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
 
   if (master == m_masters.end())
   {
-    MLOG(ERROR, "got SubmitJob from unknown source: " << e->from());
-    return;
+    throw std::runtime_error ("got SubmitJob from unknown source");
   }
   else if (! master->second)
   {
-    MLOG(WARN, "got SubmitJob from not yet connected master: " << e->from());
-    send_event
-      (new sdpa::events::ErrorEvent( m_my_name
-                                   , e->from()
-                                   , sdpa::events::ErrorEvent::SDPA_EPERM
-                                   , "you are not yet connected"
-                                   , *e->job_id()
-                                   )
-      );
-    return;
+    throw std::runtime_error ("got SubmitJob from not yet connected master");
   }
 
   boost::shared_ptr<drts::Job> job (new drts::Job( drts::Job::ID(*e->job_id())

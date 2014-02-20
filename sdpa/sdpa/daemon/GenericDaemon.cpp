@@ -206,15 +206,8 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
     if( itMaster != m_arrMasterInfo.end() && !itMaster->is_registered() )
     {
-      //send job rejected error event back to the master
-      events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent( name(),
-                                                e.from(),
-                                                events::ErrorEvent::SDPA_EPERM,
-                                                "Waiting for registration confirmation. No job submission is allowed!",
-                                                e.job_id()) );
-      sendEventToOther(pErrorEvt);
-
-      return;
+      throw std::runtime_error
+        ("job submission from master not yet registered or unknown");
     }
   }
 
