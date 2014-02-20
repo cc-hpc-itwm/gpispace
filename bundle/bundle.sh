@@ -43,37 +43,18 @@ function dry_run ()
     $dry && echo $@ || $@ || $keep_going || exit 1
 }
 
-function is_in_whitelist ()
-{
-    local name="$1"
-        if echo "$name" | grep -q "${inclusion}"
-        then
-            return 0
-        fi
-    return 1
-}
-
-function is_in_blacklist ()
-{
-    local name="$1"
-        if echo "$name" | grep -q "${exclusion}" ; then
-            return 0
-        fi
-    return 1
-}
-
 function is_filtered ()
 {
     local name=$(basename "$1")
 
-    if is_in_blacklist "$name"
+    if echo "$name" | grep -q "${exclusion}"
     then
         return 0
     fi
 
     if [ -n "${inclusion}" ]
     then
-        if is_in_whitelist "$name"
+        if echo "$name" | grep -q "${inclusion}"
         then
             return 1
         else
