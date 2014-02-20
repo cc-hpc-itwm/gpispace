@@ -481,28 +481,25 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   // check if there are any workers that are not yet reserved
   BOOST_CHECK(workerList.empty());
 
-  sdpa::worker_id_t lastWorkerId("worker_9");
-  sdpa::job_id_t jobId = _scheduler.getAssignedJob(lastWorkerId);
-
-  BOOST_REQUIRE_EQUAL (jobId, "job_0");
+  BOOST_REQUIRE_EQUAL (_scheduler.getAssignedJob("worker_9"), "job_0");
 
   // and now simply delete the last worker !
-  _scheduler.rescheduleWorkerJob(lastWorkerId, jobId);
+  _scheduler.rescheduleWorkerJob("worker_9", "job_0");
 
-  _scheduler.schedule(jobId);
+  _scheduler.schedule("job_0");
   BOOST_CHECK (_scheduler.schedulingAllowed());
 
-  _scheduler.deleteWorker(lastWorkerId);
-  sdpa::worker_id_list_t listW = _scheduler.getListAllocatedWorkers(jobId);
+  _scheduler.deleteWorker("worker_9");
+  sdpa::worker_id_list_t listW = _scheduler.getListAllocatedWorkers("job_0");
   BOOST_CHECK(listW.empty());
 
-  _scheduler.addWorker(lastWorkerId, 1, capabilities (lastWorkerId, "C"));
+  _scheduler.addWorker("worker_9", 1, capabilities ("worker_9", "C"));
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
 
-  BOOST_REQUIRE_EQUAL (jobId, _scheduler.getAssignedJob (lastWorkerId));
+  BOOST_REQUIRE_EQUAL ("job_0", _scheduler.getAssignedJob ("worker_9"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
