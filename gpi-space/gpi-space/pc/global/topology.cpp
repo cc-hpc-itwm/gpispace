@@ -633,12 +633,11 @@ namespace gpi
           }
           else if (av[0] == "ALLOC")
           {
-            using namespace gpi::pc::type;
-            segment_id_t seg (boost::lexical_cast<segment_id_t>(av[1]));
-            handle_t hdl (boost::lexical_cast<handle_t>(av[2]));
-            offset_t offset (boost::lexical_cast<offset_t>(av[3]));
-            size_t   size (boost::lexical_cast<size_t>(av[4]));
-            size_t local_size (boost::lexical_cast<size_t>(av[5]));
+            type::segment_id_t seg (boost::lexical_cast<type::segment_id_t>(av[1]));
+            type::handle_t hdl (boost::lexical_cast<type::handle_t>(av[2]));
+            type::offset_t offset (boost::lexical_cast<type::offset_t>(av[3]));
+            type::size_t   size (boost::lexical_cast<type::size_t>(av[4]));
+            type::size_t local_size (boost::lexical_cast<type::size_t>(av[5]));
             std::string name
               (boost::algorithm::trim_copy_if( av[6]
                                              , boost::is_any_of("\"")
@@ -665,8 +664,7 @@ namespace gpi
           }
           else if (av[0] == "FREE")
           {
-            using namespace gpi::pc::type;
-            handle_t hdl (boost::lexical_cast<handle_t>(av[1]));
+            type::handle_t hdl (boost::lexical_cast<type::handle_t>(av[1]));
             try
             {
               memory_manager.remote_free(hdl);
@@ -683,8 +681,7 @@ namespace gpi
           }
           else if (av [0] == "ADDMEM")
           {
-            using namespace gpi::pc::type;
-            segment_id_t seg_id = boost::lexical_cast<segment_id_t> (av[1]);
+            type::segment_id_t seg_id = boost::lexical_cast<type::segment_id_t> (av[1]);
             std::string url_s
               (boost::algorithm::trim_copy_if( av [2]
                                              , boost::is_any_of("\"")
@@ -707,8 +704,7 @@ namespace gpi
           }
           else if (av [0] == "DELMEM")
           {
-            using namespace gpi::pc::type;
-            segment_id_t seg_id = boost::lexical_cast<segment_id_t> (av[1]);
+            type::segment_id_t seg_id = boost::lexical_cast<type::segment_id_t> (av[1]);
 
             try
             {
