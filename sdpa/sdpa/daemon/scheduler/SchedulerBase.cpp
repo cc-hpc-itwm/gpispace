@@ -172,10 +172,7 @@ void SchedulerBase::feedWorkers()
     lock_type lock (mtx_);
     cond_feed_workers.wait (lock);
 
-    if (ptr_comm_handler_->hasJobs())
-    {
-        assignJobsToWorkers();
-    }
+    assignJobsToWorkers();
   }
 }
 
