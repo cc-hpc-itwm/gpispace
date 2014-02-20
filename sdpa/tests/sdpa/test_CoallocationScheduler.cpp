@@ -443,7 +443,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   _scheduler.assignJobsToWorkers();
 
-  BOOST_REQUIRE_EQUAL (_scheduler.getAssignedJob("worker_9"), "job_0");
 
   _scheduler.deleteWorker("worker_9");
   _scheduler.addWorker("worker_9", 1, capabilities ("worker_9", "C"));
@@ -451,8 +450,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
-
-  BOOST_REQUIRE_EQUAL ("job_0", _scheduler.getAssignedJob ("worker_9"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
