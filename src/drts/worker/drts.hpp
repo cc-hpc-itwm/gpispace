@@ -110,23 +110,10 @@ public:
   ~DRTSImpl();
 
   virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent *e);
-  virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent *e);
-  virtual void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*);
-  virtual void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*);
-  virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent *);
-  virtual void handleErrorEvent(const sdpa::events::ErrorEvent *);
-  virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent *);
-  virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent *);
   virtual void handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e);
   virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *e);
   virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e);
   virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e);
-  virtual void handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent *);
-  virtual void handleJobFailedEvent(const sdpa::events::JobFailedEvent *);
-  virtual void handleJobFinishedEvent(const sdpa::events::JobFinishedEvent *);
-  virtual void handleJobResultsReplyEvent(const sdpa::events::JobResultsReplyEvent *);
-  virtual void handleJobStatusReplyEvent(const sdpa::events::JobStatusReplyEvent *);
-  virtual void handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent *);
 
 private:
   // threads

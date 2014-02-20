@@ -458,42 +458,6 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
     }
   }
 }
-void DRTSImpl::handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent *e)
-{
-  MLOG(WARN, "worker tried to register: " << e->from());
-
-  send_event
-    (new sdpa::events::ErrorEvent( m_my_name
-                                 , e->from()
-                                 , sdpa::events::ErrorEvent::SDPA_EPERM
-                                 , "you are not allowed to connect"
-                                 )
-    );
-}
-
-void DRTSImpl::handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent*)
-{
-}
-
-void DRTSImpl::handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent*)
-{
-}
-
-void DRTSImpl::handleDeleteJobEvent(const sdpa::events::DeleteJobEvent *)
-{
-}
-
-void DRTSImpl::handleErrorEvent(const sdpa::events::ErrorEvent *)
-{
-}
-
-void DRTSImpl::handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent *)
-{
-}
-
-void DRTSImpl::handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent *)
-{
-}
 
 void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
 {
@@ -698,14 +662,6 @@ void DRTSImpl::handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent
 
   m_jobs.erase (job_it);
 }
-
-  // not implemented events
-void DRTSImpl::handleCancelJobAckEvent(const sdpa::events::CancelJobAckEvent *){}
-void DRTSImpl::handleJobFailedEvent(const sdpa::events::JobFailedEvent *) {}
-void DRTSImpl::handleJobFinishedEvent(const sdpa::events::JobFinishedEvent *) {}
-void DRTSImpl::handleJobResultsReplyEvent(const sdpa::events::JobResultsReplyEvent *) {}
-void DRTSImpl::handleJobStatusReplyEvent(const sdpa::events::JobStatusReplyEvent *) {}
-void DRTSImpl::handleSubmitJobAckEvent(const sdpa::events::SubmitJobAckEvent *) {}
 
   // threads
 void DRTSImpl::event_thread ()
