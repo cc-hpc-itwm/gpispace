@@ -1,4 +1,6 @@
 #bernd.loerwald@itwm.fraunhofer.de
 
-add_subdirectory (graphviz)
+if (ENABLE_PNET_EDITOR)
+   add_subdirectory (graphviz)
+endif ()
 add_subdirectory (qt)
