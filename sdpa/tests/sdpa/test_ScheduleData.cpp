@@ -9,52 +9,52 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-    class TestAgent : public sdpa::daemon::Agent
+class TestAgent : public sdpa::daemon::Agent
+{
+public:
+  TestAgent ( const std::string& name
+            , const std::string& url
+            )
+    : Agent (name, url,  kvs_host(), kvs_port(), sdpa::master_info_list_t(), boost::none)
+      , _n_submitted_activities(0)
+  {}
+
+  void submit( const we::layer::id_type&, const we::type::activity_t& activity)
+  {
+    boost::optional<unsigned long>
+      num_workers( activity.transition().get_schedule_data<unsigned long> (activity.input(), "num_worker")) ;
+
+    if(!num_workers )
     {
-    public:
-      TestAgent ( const std::string& name
-                , const std::string& url
-                )
-        : Agent (name, url,  kvs_host(), kvs_port(), sdpa::master_info_list_t(), boost::none)
-          , _n_submitted_activities(0)
-      {}
+      throw std::runtime_error("The number of workers is not set");
+    }
 
-      void submit( const we::layer::id_type&, const we::type::activity_t& activity)
-      {
-        boost::optional<unsigned long>
-          num_workers( activity.transition().get_schedule_data<unsigned long> (activity.input(), "num_worker")) ;
+    _set_num_workers_req.insert (num_workers.get());
 
-        if(!num_workers )
-        {
-          throw std::runtime_error("The number of workers is not set");
-        }
+    boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
+    _n_submitted_activities++;
+    _cond_all_submitted.notify_one();
+  }
 
-        _set_num_workers_req.insert (num_workers.get());
+  void wait_all_submitted()
+  {
+    boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
+    while (_n_submitted_activities < 2)
+      _cond_all_submitted.wait (_mtx_all_submitted);
+  }
 
-        boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
-        _n_submitted_activities++;
-        _cond_all_submitted.notify_one();
-      }
+  std::set<unsigned long> set_num_workers_req()
+  {
+    return _set_num_workers_req;
+  }
 
-      void wait_all_submitted()
-      {
-        boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
-        while (_n_submitted_activities < 2)
-          _cond_all_submitted.wait (_mtx_all_submitted);
-      }
+private:
 
-      std::set<unsigned long> set_num_workers_req()
-      {
-        return _set_num_workers_req;
-      }
-
-    private:
-
-      boost::mutex _mtx_all_submitted;
-      boost::condition_variable_any _cond_all_submitted;
-      unsigned long _n_submitted_activities;
-      std::set<unsigned long> _set_num_workers_req;
-    };
+  boost::mutex _mtx_all_submitted;
+  boost::condition_variable_any _cond_all_submitted;
+  unsigned long _n_submitted_activities;
+  std::set<unsigned long> _set_num_workers_req;
+};
 
 BOOST_AUTO_TEST_CASE (num_workers_required_is_0)
 {
