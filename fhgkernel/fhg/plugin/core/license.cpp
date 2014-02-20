@@ -131,9 +131,7 @@ namespace fhg
       }
 
       std::vector<std::string> files;
-      files.push_back ("/etc/gspc/gspc.lic");
       files.push_back (gspc_home + "/etc/gspc/gspc.lic");
-      files.push_back (fhg::util::get_home_dir () + "/.gspc.lic");
       files.push_back (curdir + "/gspc.lic");
 
       int rc = -1;
