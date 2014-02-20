@@ -414,14 +414,13 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.assignJobsToWorkers();
 
 
-  // try now to schedule a job requiring 2 resources of type "A"
   _agent.TEST_add_dummy_job ("job_3", require (WORKER_CPBS[0], 2));
 
   _scheduler.schedule("job_3");
 
   _scheduler.assignJobsToWorkers();
 
-  // Now report that "job_0" has finished and try to assign again resources to the job 4
+
   _scheduler.releaseReservation("job_0");
 
   _agent.expect_serveJob_call ("job_3", worker_list ("6", "3"));
