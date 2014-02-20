@@ -29,18 +29,18 @@ namespace fhg
 
     namespace
     {
-    char from_hex (char c)
-    {
-      switch (tolower (c))
+      char from_hex (char c)
       {
-      case '0'...'9':
-        return 0 +  (c - '0');
-      case 'a'...'f':
-        return 10 + (c - 'a');
-      default:
-        throw std::invalid_argument ("from_hex: not a hexadecimal character");
+        switch (tolower (c))
+        {
+        case '0'...'9':
+          return 0 +  (c - '0');
+        case 'a'...'f':
+          return 10 + (c - 'a');
+        default:
+          throw std::invalid_argument ("from_hex: not a hexadecimal character");
+        }
       }
-    }
     }
 
     std::string from_hex (std::string const &s)
