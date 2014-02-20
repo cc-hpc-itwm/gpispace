@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   {
     const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
       listJobIds.push_back(jobId);
-      _orchestrator.TEST_add_dummy_job (jobId, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
+      _orchestrator.TEST_add_dummy_job (jobId, require ("C"));
   }
 
   // schedule all jobs now
@@ -222,8 +222,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   {
     const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
       listJobIds.push_back(jobId);
-      job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-      _orchestrator.TEST_add_dummy_job (jobId, job_reqs);
+      _orchestrator.TEST_add_dummy_job (jobId, require ("C"));
   }
 
   // schedule all jobs now
@@ -272,8 +271,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   {
     const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
     listJobIds.push_back(jobId);
-    job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-    _orchestrator.TEST_add_dummy_job (jobId, job_reqs);
+    _orchestrator.TEST_add_dummy_job (jobId, require ("C"));
   }
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_8"));
@@ -325,8 +323,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   {
     const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
     listJobIds.push_back(jobId);
-    job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-    _orchestrator.TEST_add_dummy_job (jobId, job_reqs);
+    _orchestrator.TEST_add_dummy_job (jobId, require ("C"));
   }
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_9"));
