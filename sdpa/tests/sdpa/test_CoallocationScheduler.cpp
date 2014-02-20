@@ -420,25 +420,13 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.schedule("job_3");
 
   _scheduler.assignJobsToWorkers();
-  sdpa::worker_id_list_t listFreeWorkers(_scheduler.getListAllocatedWorkers("job_3"));
-  BOOST_CHECK(listFreeWorkers.empty());
 
   // Now report that "job_0" has finished and try to assign again resources to the job 4
   _scheduler.releaseReservation("job_0");
 
-  //listFreeWorkers.clear();
   _agent.expect_serveJob_call ("job_3", worker_list ("6", "3"));
 
   _scheduler.assignJobsToWorkers();
-
-  listFreeWorkers = _scheduler.getListAllocatedWorkers("job_3");
-  BOOST_CHECK(!listFreeWorkers.empty());
-
-  int w0 = boost::lexical_cast<int>(listFreeWorkers.front());
-  BOOST_CHECK(w0==0 || w0 == 3  || w0 == 6|| w0 == 9);
-
-  int w1 = boost::lexical_cast<int>(*(boost::next(listFreeWorkers.begin())));
-  BOOST_CHECK(w1==0 || w1 == 3  || w1 == 6|| w1 == 9);
 }
 
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
