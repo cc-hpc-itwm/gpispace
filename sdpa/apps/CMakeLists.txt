@@ -20,7 +20,9 @@ install(TARGETS orchestrator
 #
 
 add_executable(agent agent.cpp)
-target_link_libraries(agent ${daemon_libs})
+target_link_libraries(agent ${daemon_libs}
+  ${Boost_SYSTEM_LIBRARY}
+)
 install(TARGETS agent
   RUNTIME
   DESTINATION bin
