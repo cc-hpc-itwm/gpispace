@@ -80,13 +80,6 @@ function is_copied_already()
     return 1
 }
 
-function normalize()
-{
-    local name="$1"; shift
-
-    readlink -f "${name}"
-}
-
 function bundle_dependencies ()
 {
     local file="$1" ; shift
@@ -121,8 +114,8 @@ function bundle_dependencies ()
             debug $(printf "%${indent}s" "") "$file <- $pth"
         fi
 
-        pth=$(normalize "${pth}")
-        tgt=$(normalize "$dst/$dep")
+        pth=$(readlink -f "${pth}")
+        tgt=$(readlink -f "$dst/$dep")
 
         if is_copied_already "$pth"
         then
