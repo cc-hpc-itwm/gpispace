@@ -8,7 +8,6 @@ include_directories (${FhgCom_INCLUDE_DIR})
 
 include_directories (${UTIL_INCLUDE_DIR})
 
-if (ENABLE_PNET_EDITOR OR ENABLE_SDPA_GUI)
   find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
 
   include_directories ( ${CMAKE_SOURCE_DIR}/sdpa
@@ -21,7 +20,6 @@ if (ENABLE_PNET_EDITOR OR ENABLE_SDPA_GUI)
 
   add_subdirectory (pnete)
   add_subdirectory (util)
-endif()
 
 add_library (pnet
   we/exception.cpp

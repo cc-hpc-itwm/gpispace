@@ -14,8 +14,6 @@ set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" 
 set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
-OPTION (ENABLE_SDPA_GUI "Build the monitor gui" YES)
-OPTION (ENABLE_PNET_EDITOR "Build the pnet editor" YES)
 OPTION (INSTALL_AS_BUNDLE "Install as a bundle" NO)
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
