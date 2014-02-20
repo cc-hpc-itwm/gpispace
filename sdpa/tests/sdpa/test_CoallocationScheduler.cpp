@@ -185,29 +185,38 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _agent.expect_serveJob_call ("job_7", worker_list ("worker_2"));
   _agent.expect_serveJob_call ("job_8", worker_list ("worker_1"));
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_0"));
+
+  _scheduler.assignJobsToWorkers();
+
+
+  _scheduler.deleteWorkerJob ("worker_9", "job_0");
+  _scheduler.deleteWorkerJob ("worker_8", "job_1");
+  _scheduler.deleteWorkerJob ("worker_7", "job_2");
+  _scheduler.deleteWorkerJob ("worker_5", "job_3");
+  _scheduler.deleteWorkerJob ("worker_4", "job_4");
+  _scheduler.deleteWorkerJob ("worker_6", "job_5");
+  _scheduler.deleteWorkerJob ("worker_3", "job_6");
+  _scheduler.deleteWorkerJob ("worker_2", "job_7");
+  _scheduler.deleteWorkerJob ("worker_1", "job_8");
+  _scheduler.deleteWorkerJob ("worker_0", "job_9");
+
+  _scheduler.releaseReservation ("job_0");
+  _scheduler.releaseReservation ("job_1");
+  _scheduler.releaseReservation ("job_2");
+  _scheduler.releaseReservation ("job_3");
+  _scheduler.releaseReservation ("job_4");
+  _scheduler.releaseReservation ("job_5");
+  _scheduler.releaseReservation ("job_6");
+  _scheduler.releaseReservation ("job_7");
+  _scheduler.releaseReservation ("job_8");
+  _scheduler.releaseReservation ("job_9");
+
+
   _agent.expect_serveJob_call ("job_10", worker_list ("worker_9"));
   _agent.expect_serveJob_call ("job_11", worker_list ("worker_8"));
   _agent.expect_serveJob_call ("job_12", worker_list ("worker_7"));
   _agent.expect_serveJob_call ("job_13", worker_list ("worker_5"));
   _agent.expect_serveJob_call ("job_14", worker_list ("worker_4"));
-
-  _scheduler.assignJobsToWorkers();
-
-  for(int i=0;i<15;i++)
-  {
-    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
-
-      sdpa::worker_id_list_t listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId);
-
-      BOOST_CHECK_LE (listJobAssignedWorkers.size(), 1);
-      if(!listJobAssignedWorkers.empty())
-      {
-          // delete the job
-          _scheduler.deleteWorkerJob(listJobAssignedWorkers.front(), jobId);
-      }
-
-      _scheduler.releaseReservation(jobId);
-  }
 
   _scheduler.assignJobsToWorkers();
 }
