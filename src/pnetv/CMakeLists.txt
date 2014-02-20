@@ -15,7 +15,6 @@ target_link_libraries(pnetv ${Boost_PROGRAM_OPTIONS_LIBRARY})
 install (TARGETS pnetv
 	RUNTIME
 	DESTINATION bin
-	COMPONENT runtime
 )
 
 add_subdirectory(jpn)

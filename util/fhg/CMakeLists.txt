@@ -31,5 +31,4 @@ install (FILES
   util/parse/error.hpp
   util/parse/require.hpp
   DESTINATION include/fhg/util/parse
-  COMPONENT sdk
 )

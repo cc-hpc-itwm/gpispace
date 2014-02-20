@@ -13,7 +13,7 @@ target_link_libraries(orchestrator ${daemon_libs})
 install(TARGETS orchestrator
   RUNTIME
   DESTINATION bin
-  COMPONENT runtime)
+)
 
 #
 # Agent
@@ -24,7 +24,7 @@ target_link_libraries(agent ${daemon_libs})
 install(TARGETS agent
   RUNTIME
   DESTINATION bin
-  COMPONENT runtime)
+)
 
 
 set ( client_libs
@@ -43,4 +43,4 @@ target_link_libraries(sdpac ${client_libs})
 install(TARGETS sdpac
   RUNTIME
   DESTINATION bin
-  COMPONENT runtime)
+)

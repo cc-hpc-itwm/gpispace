@@ -10,5 +10,4 @@ pnet_compile(coallocation_test coallocation_test.xml
            -I${CMAKE_SOURCE_DIR}/application/example
            -O3
   BUILD
-  COMPONENT applications
 )

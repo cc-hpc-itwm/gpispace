@@ -10,7 +10,6 @@ set (xmls
 
 install (FILES ${xmls}
   DESTINATION ${PNETC_LIB_DIR}/cache
-  COMPONENT examples
   )
 
 add_subdirectory (demo)

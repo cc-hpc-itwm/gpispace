@@ -102,14 +102,12 @@ target_link_libraries (fhg-util-shared
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util
-  COMPONENT runtime-headers)
+)
 install (TARGETS fhg-util
   ARCHIVE DESTINATION lib
-  COMPONENT runtime
 )
 install (TARGETS fhg-util-shared
   LIBRARY DESTINATION lib
-  COMPONENT runtime
 )
 
 add_subdirectory (boost)

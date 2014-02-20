@@ -20,7 +20,6 @@ set_target_properties (mmgr.shared
 install (TARGETS mmgr.shared
   LIBRARY
   DESTINATION lib
-  COMPONENT runtime
 )
 
 add_subdirectory (tests)

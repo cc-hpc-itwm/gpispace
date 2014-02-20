@@ -8,10 +8,8 @@ pnet_compile(selftest selftest.xml
            -O3
   BUILD
   INSTALL ${SDPA_APPS_DIR}/selftest
-  COMPONENT applications
 )
 
 install(FILES selftest.xml
   DESTINATION ${SDPA_APPS_DIR}/selftest
-  COMPONENT applications
 )

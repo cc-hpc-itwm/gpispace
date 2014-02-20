@@ -5,5 +5,4 @@ set (files
 
 install (FILES ${files}
   DESTINATION ${PNETC_EXAMPLES_DIR}/cache/demo
-  COMPONENT examples
 )

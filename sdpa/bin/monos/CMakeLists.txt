@@ -5,5 +5,4 @@ set (files
 
 install (PROGRAMS ${files}
   DESTINATION bin
-  COMPONENT applications
   )

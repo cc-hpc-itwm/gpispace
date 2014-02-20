@@ -20,8 +20,8 @@ set (scripts
 
 install(PROGRAMS ${prgs}
   DESTINATION bin
-  COMPONENT runtime)
+)
 
 install(PROGRAMS ${scripts}
   DESTINATION libexec/sdpa/scripts
-  COMPONENT runtime)
+)

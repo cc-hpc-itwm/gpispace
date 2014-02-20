@@ -14,5 +14,4 @@ pnet_compile( mapreduce mapreduce.xpnet
            -O3
   LDFLAGS "-L${BOOST_ROOT}/lib"
   BUILD
-  COMPONENT applications
 )

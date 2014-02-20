@@ -190,10 +190,9 @@ target_link_libraries(standalone_test pthread)
 
 install(FILES src/do_load.hpp src/determine_size.hpp src/do_write.hpp
   DESTINATION include/seis
-  COMPONENT sdk
   )
 
 install(TARGETS determine_size do_load do_write
   LIBRARY
   DESTINATION libexec/sdpa
-  COMPONENT modules)
+)

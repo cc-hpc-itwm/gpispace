@@ -20,7 +20,6 @@ set_target_properties(fhg-plugin-shared
 install (TARGETS fhg-plugin-shared
   LIBRARY
   DESTINATION lib
-  COMPONENT runtime
 )
 
 target_link_libraries (fhg-plugin ${FhgLog_LIBRARY})

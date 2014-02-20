@@ -146,7 +146,7 @@ set (monitor_ui_tomoc
                           ${Boost_THREAD_LIBRARY}
                           ${QT_LIBRARIES})
 
-  install (TARGETS pnete RUNTIME DESTINATION bin COMPONENT runtime)
+  install (TARGETS pnete RUNTIME DESTINATION bin)
 
   add_subdirectory (ui/graph/style/test)
 
@@ -167,7 +167,7 @@ set (monitor_ui_tomoc
                           ${Boost_THREAD_LIBRARY}
                           ${QT_LIBRARIES})
 
-  install (TARGETS sdpa-gui RUNTIME DESTINATION bin COMPONENT runtime)
+  install (TARGETS sdpa-gui RUNTIME DESTINATION bin)
 
   target_link_libraries ( gspcmonc
                           pnet
@@ -177,6 +177,6 @@ set (monitor_ui_tomoc
                           ${Boost_THREAD_LIBRARY}
                           ${QT_LIBRARIES})
 
-  install (TARGETS gspcmonc RUNTIME DESTINATION bin COMPONENT runtime)
+  install (TARGETS gspcmonc RUNTIME DESTINATION bin)
 
   add_subdirectory (test)

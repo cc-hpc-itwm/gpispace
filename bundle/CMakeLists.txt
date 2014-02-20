@@ -2,7 +2,7 @@
 
 install (PROGRAMS bundle.sh
   DESTINATION libexec/sdpa/scripts
-  COMPONENT runtime)
+)
 
 if (INSTALL_AS_BUNDLE)
 
@@ -83,6 +83,6 @@ install(CODE "
   if (NOT \${__res} EQUAL 0)
      message(FATAL_ERROR \"Could not bundle dependencies: \${__err}\")
   endif()
-  " COMPONENT dependencies)
+  " )
 
 endif()

@@ -9,4 +9,4 @@ set_target_properties(fvm-pc-fake.shared PROPERTIES OUTPUT_NAME fvm-pc)
 install(TARGETS fvm-pc-fake.shared
   LIBRARY
   DESTINATION libexec/sdpa/fake
-  COMPONENT modules)
+)
