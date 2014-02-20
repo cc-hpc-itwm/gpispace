@@ -413,27 +413,21 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
   _scheduler.assignJobsToWorkers();
 
-  int k=-1;
-  sdpa::worker_id_list_t listJobAssignedWorkers = _scheduler.getListAllocatedWorkers("job_0");
-  BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
+  BOOST_FOREACH(sdpa::worker_id_t& wid, _scheduler.getListAllocatedWorkers("job_0"))
   {
-    k = boost::lexical_cast<int>(wid);
+    const int k = boost::lexical_cast<int>(wid);
     BOOST_CHECK( k==0 || k==3 || k==6 || k==9);
   }
 
-  listJobAssignedWorkers.clear();
-  listJobAssignedWorkers = _scheduler.getListAllocatedWorkers("job_1");
-  BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
+  BOOST_FOREACH(sdpa::worker_id_t& wid, _scheduler.getListAllocatedWorkers("job_1"))
   {
-    k = boost::lexical_cast<int>(wid);
+    const int k = boost::lexical_cast<int>(wid);
     BOOST_CHECK( k==1 || k==4 || k==7 || k==10);
   }
 
-  listJobAssignedWorkers.clear();
-  listJobAssignedWorkers = _scheduler.getListAllocatedWorkers("job_2");
-  BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
+  BOOST_FOREACH(sdpa::worker_id_t& wid, _scheduler.getListAllocatedWorkers("job_2"))
   {
-    k = boost::lexical_cast<int>(wid);
+    const int k = boost::lexical_cast<int>(wid);
     BOOST_CHECK( k==2 || k==5 || k==8 || k==11);
   }
 
