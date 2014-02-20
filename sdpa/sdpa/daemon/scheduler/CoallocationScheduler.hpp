@@ -19,7 +19,6 @@ namespace sdpa {
 
       void reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap);
       void releaseReservation(const sdpa::job_id_t& jobId);
-      sdpa::job_id_t getAssignedJob(const sdpa::worker_id_t& wid);
 
       sdpa::worker_id_list_t getListAllocatedWorkers(const sdpa::job_id_t& jobId);
 
