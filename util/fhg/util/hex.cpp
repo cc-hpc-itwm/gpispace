@@ -51,8 +51,7 @@ namespace fhg
       const std::string::const_iterator end = s.end ();
       for ( ; c != end ; c += 2)
       {
-        char byte = (from_hex (*c) << 4) | from_hex (*(c+1));
-        retval += byte;
+        retval += (from_hex (*c) << 4) | from_hex (*(c+1));
       }
 
       return retval;
