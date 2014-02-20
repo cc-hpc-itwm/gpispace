@@ -259,19 +259,6 @@ fhg_add_test (test_SimpleScheduler.cpp
                  ${FhgLog_LIBRARY}
 )
 
-#restart_drts_worker_while_jobs_are_running.cpp
-fhg_add_test (restart_drts_worker_while_jobs_are_running.cpp
-  PROJECT sdpa
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
-                 fhg-plugin
-                 ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_coallocation_test
-          workflow_transform_file
-)
-
 #test_Topologies
 fhg_add_test (test_Topologies.cpp
   PROJECT sdpa
