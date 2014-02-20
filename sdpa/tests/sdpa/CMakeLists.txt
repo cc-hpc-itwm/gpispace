@@ -358,3 +358,14 @@ fhg_add_test (test_WorkflowEngineDiscover.cpp
                  ${FhgLog_LIBRARY}
   DEPENDS workflow_coallocation_test
 )
+
+#test_RestartWorkers.cpp
+fhg_add_test (test_RestartWorkers.cpp
+  PROJECT sdpa
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES sdpa
+                 fhg-plugin
+                 ${FhgLog_LIBRARY}
+  DEPENDS workflow_transform_file
+          workflow_coallocation_test2
+)
