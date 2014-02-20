@@ -123,6 +123,7 @@ function bundle_dependencies ()
         else
         if [[ ! "$pth" = "$tgt" ]] ; then
             if test "$pth" -nt "$tgt" || $force ; then
+                echo "-- Installing: Bundle: $tgt"
                 debug $(printf "%$((indent + 2))s" "") cp "$pth" "$tgt"
                 dry_run cp "$pth" "$tgt"
                 if [ -z "${copied}" ]
@@ -132,6 +133,8 @@ function bundle_dependencies ()
                     copied="$copied\|^$pth$"
                 fi
                 bundle_dependencies "$pth" "$dst" $(( lvl + 1 ))
+            else
+                echo "-- Up-to-date: Bundle: $tgt"
             fi
         fi
         fi
