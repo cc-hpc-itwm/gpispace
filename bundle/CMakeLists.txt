@@ -10,11 +10,9 @@ set (APPS)
 
 macro (BUNDLE_APPS)
   foreach (app ${ARGN})
-    if (TARGET ${app})
       get_target_property (_loc ${app} LOCATION)
       list(APPEND APPS "${_loc}")
       unset (_loc)
-    endif()
   endforeach()
 endmacro()
 
