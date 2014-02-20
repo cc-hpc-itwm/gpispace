@@ -40,6 +40,12 @@ void CoallocationScheduler::assignJobsToWorkers()
 
     if( !matchingWorkerId.empty() ) // matching found
     {
+      listAvailWorkers.erase ( std::find ( listAvailWorkers.begin()
+                                         , listAvailWorkers.end()
+                                         , matchingWorkerId
+                                         )
+                             );
+
         lock_type lock(mtx_alloc_table_);
         reserveWorker(jobId, matchingWorkerId, nReqWorkers);
 

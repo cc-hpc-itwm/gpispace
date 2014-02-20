@@ -36,6 +36,11 @@ void SimpleScheduler::assignJobsToWorkers()
 
     if( !matchingWorkerId.empty() )
     { // matching found
+      listAvailWorkers.erase ( std::find ( listAvailWorkers.begin()
+                                         , listAvailWorkers.end()
+                                         , matchingWorkerId
+                                         )
+                             );
 
         try {
            Worker::ptr_t pWorker(findWorker(matchingWorkerId));
