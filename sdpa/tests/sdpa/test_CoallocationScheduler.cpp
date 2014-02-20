@@ -419,8 +419,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
   _scheduler.schedule("job_3");
 
-  _agent.expect_serveJob_call ("job_3", worker_list ("6", "3"));
-
   _scheduler.assignJobsToWorkers();
   sdpa::worker_id_list_t listFreeWorkers(_scheduler.getListAllocatedWorkers("job_3"));
   BOOST_CHECK(listFreeWorkers.empty());
@@ -429,6 +427,8 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.releaseReservation("job_0");
 
   //listFreeWorkers.clear();
+  _agent.expect_serveJob_call ("job_3", worker_list ("6", "3"));
+
   _scheduler.assignJobsToWorkers();
 
   listFreeWorkers = _scheduler.getListAllocatedWorkers("job_3");
