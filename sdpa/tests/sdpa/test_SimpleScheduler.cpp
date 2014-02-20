@@ -159,8 +159,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
-  const int nJobs = 10;
-
   _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
   _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
@@ -172,21 +170,28 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
   _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
+  _orchestrator.TEST_add_dummy_job ("job_0", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_1", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_2", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_3", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_4", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_5", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_6", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_7", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_8", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_9", require ("C"));
 
-  // submit a bunch of jobs now
-  std::list<sdpa::job_id_t> listJobIds;
-  for(int i=0;i<nJobs;i++)
-  {
-    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
-      listJobIds.push_back(jobId);
-      _orchestrator.TEST_add_dummy_job (jobId, require ("C"));
-  }
+  _scheduler.schedule("job_0");
+  _scheduler.schedule("job_1");
+  _scheduler.schedule("job_2");
+  _scheduler.schedule("job_3");
+  _scheduler.schedule("job_4");
+  _scheduler.schedule("job_5");
+  _scheduler.schedule("job_6");
+  _scheduler.schedule("job_7");
+  _scheduler.schedule("job_8");
+  _scheduler.schedule("job_9");
 
-  // schedule all jobs now
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, listJobIds)
-  {
-    _scheduler.schedule(jobId);
-  }
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_9"));
   _orchestrator.expect_serveJob_call ("job_1", worker_list ("worker_8"));
@@ -204,8 +209,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
-  const int nJobs = 10;
-
   _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
   _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
@@ -216,20 +219,28 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   _scheduler.addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
   _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
 
-  // submit a bunch of jobs now
-  std::list<sdpa::job_id_t> listJobIds;
-  for(int i=0;i<nJobs;i++)
-  {
-    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
-      listJobIds.push_back(jobId);
-      _orchestrator.TEST_add_dummy_job (jobId, require ("C"));
-  }
+  _orchestrator.TEST_add_dummy_job ("job_0", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_1", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_2", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_3", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_4", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_5", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_6", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_7", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_8", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_9", require ("C"));
 
-  // schedule all jobs now
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, listJobIds)
-  {
-      _scheduler.schedule(jobId);
-  }
+  _scheduler.schedule("job_0");
+  _scheduler.schedule("job_1");
+  _scheduler.schedule("job_2");
+  _scheduler.schedule("job_3");
+  _scheduler.schedule("job_4");
+  _scheduler.schedule("job_5");
+  _scheduler.schedule("job_6");
+  _scheduler.schedule("job_7");
+  _scheduler.schedule("job_8");
+  _scheduler.schedule("job_9");
+
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_8"));
   _orchestrator.expect_serveJob_call ("job_1", worker_list ("worker_7"));
@@ -243,17 +254,16 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
   _scheduler.assignJobsToWorkers();
 
+
   _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
   _orchestrator.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
-   _scheduler.assignJobsToWorkers();
+  _scheduler.assignJobsToWorkers();
 }
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
-  const int nJobs = 10;
-
   _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
   _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
@@ -265,14 +275,28 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
   _scheduler.addWorker ("worker_9", 1);
 
-  // submit a bunch of jobs now
-  std::list<sdpa::job_id_t> listJobIds;
-  for(int i=0;i<nJobs;i++)
-  {
-    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
-    listJobIds.push_back(jobId);
-    _orchestrator.TEST_add_dummy_job (jobId, require ("C"));
-  }
+  _orchestrator.TEST_add_dummy_job ("job_0", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_1", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_2", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_3", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_4", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_5", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_6", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_7", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_8", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_9", require ("C"));
+
+  _scheduler.schedule("job_0");
+  _scheduler.schedule("job_1");
+  _scheduler.schedule("job_2");
+  _scheduler.schedule("job_3");
+  _scheduler.schedule("job_4");
+  _scheduler.schedule("job_5");
+  _scheduler.schedule("job_6");
+  _scheduler.schedule("job_7");
+  _scheduler.schedule("job_8");
+  _scheduler.schedule("job_9");
+
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_8"));
   _orchestrator.expect_serveJob_call ("job_1", worker_list ("worker_7"));
@@ -284,16 +308,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _orchestrator.expect_serveJob_call ("job_7", worker_list ("worker_1"));
   _orchestrator.expect_serveJob_call ("job_8", worker_list ("worker_0"));
 
-  // schedule all jobs now
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, listJobIds)
-  {
-    _scheduler.schedule(jobId);
-  }
-
   _scheduler.assignJobsToWorkers();
 
-  // the last worker gains now the missing capability
-  //and will eventually receive one job ...
 
   _scheduler.addCapabilities ("worker_9", capabilities ("worker_9", "C"));
 
@@ -304,8 +320,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {
-  const int nJobs = 10;
-
   _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
   _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
@@ -317,14 +331,28 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
   _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
-  // submit a bunch of jobs now
-  std::vector<sdpa::job_id_t> listJobIds;
-  for(int i=0;i<nJobs;i++)
-  {
-    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
-    listJobIds.push_back(jobId);
-    _orchestrator.TEST_add_dummy_job (jobId, require ("C"));
-  }
+  _orchestrator.TEST_add_dummy_job ("job_0", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_1", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_2", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_3", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_4", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_5", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_6", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_7", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_8", require ("C"));
+  _orchestrator.TEST_add_dummy_job ("job_9", require ("C"));
+
+  _scheduler.schedule("job_0");
+  _scheduler.schedule("job_1");
+  _scheduler.schedule("job_2");
+  _scheduler.schedule("job_3");
+  _scheduler.schedule("job_4");
+  _scheduler.schedule("job_5");
+  _scheduler.schedule("job_6");
+  _scheduler.schedule("job_7");
+  _scheduler.schedule("job_8");
+  _scheduler.schedule("job_9");
+
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_9"));
   _orchestrator.expect_serveJob_call ("job_1", worker_list ("worker_8"));
@@ -337,13 +365,8 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _orchestrator.expect_serveJob_call ("job_8", worker_list ("worker_1"));
   _orchestrator.expect_serveJob_call ("job_9", worker_list ("worker_0"));
 
-  // schedule all jobs now
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, listJobIds)
-  {
-    _scheduler.schedule(jobId);
-  }
-
   _scheduler.assignJobsToWorkers();
+
 
   _scheduler.deleteWorker ("worker_9");
   _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
