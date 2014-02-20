@@ -166,9 +166,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   for(int k=0;k<nWorkers;k++)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-      sdpa::capabilities_set_t cpbSet;
-      cpbSet.insert (sdpa::capability_t("C", workerId));
-      _scheduler.addWorker(workerId, 1, cpbSet);
+    _scheduler.addWorker (workerId, 1, capabilities (workerId, "C"));
   }
 
   // submit a bunch of jobs now
@@ -210,9 +208,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   for(int k=0;k<nWorkers-1;k++)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-      std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
-      sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-      _scheduler.addWorker(workerId, 1, cpbSet);
+    _scheduler.addWorker (workerId, 1, capabilities (workerId, "C"));
   }
 
   // submit a bunch of jobs now
@@ -246,8 +242,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
    // add new worker now (worker_9)...
    const sdpa::worker_id_t workerId
      ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
-   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
-   _scheduler.addWorker(workerId, 1, sdpa::capabilities_set_t(arrCpbs.begin(), arrCpbs.end()));
+   _scheduler.addWorker (workerId, 1, capabilities (workerId, "C"));
 
   _orchestrator.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
@@ -267,9 +262,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
     if( k<nWorkers-1 )
     {
-        std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
-        sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-        _scheduler.addWorker(workerId, 1, cpbSet);
+      _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
     }
     else
       _scheduler.addWorker(workerId, 1); // the last worker has no capability, yet
@@ -308,9 +301,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
   const sdpa::worker_id_t lastWorkerId
     ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
-  std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", lastWorkerId));
-  sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-  _scheduler.addCapabilities(lastWorkerId, cpbSet);
+  _scheduler.addCapabilities(lastWorkerId, capabilities (lastWorkerId, "C"));
 
   _orchestrator.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
@@ -327,9 +318,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   for(int k=0;k<nWorkers;k++)
   {
     const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-    std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
-    sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-    _scheduler.addWorker(workerId, 1, cpbSet);
+    _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
   }
 
   // submit a bunch of jobs now
@@ -366,9 +355,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   _scheduler.deleteWorker(lastWorkerId);
 
-  std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", lastWorkerId));
-  sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
-  _scheduler.addWorker(lastWorkerId, 1, cpbSet);
+  _scheduler.addWorker(lastWorkerId, 1, capabilities (lastWorkerId, "C"));
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_9"));
 
