@@ -19,7 +19,8 @@ void CoallocationScheduler::assignJobsToWorkers()
 
   // replace this with the list of workers not reserved
   //getListNotFullWorkers(listAvailWorkers);
-  sdpa::worker_id_list_t listAvailWorkers (getListNotAllocatedWorkers());
+  sdpa::worker_id_list_t listAvailWorkers;
+  _worker_manager.getListWorkersNotReserved(listAvailWorkers);
 
   // check if there are jobs that can already be scheduled on
   // these workers
@@ -172,13 +173,6 @@ void CoallocationScheduler::releaseReservation(const sdpa::job_id_t& jobId)
   catch(JobNotFoundException const& ex2)
   {
   }
-}
-
-sdpa::worker_id_list_t CoallocationScheduler::getListNotAllocatedWorkers()
-{
-  sdpa::worker_id_list_t workerList;
-  _worker_manager.getListWorkersNotReserved(workerList);
-  return workerList;
 }
 
 sdpa::job_id_t CoallocationScheduler::getAssignedJob(const sdpa::worker_id_t& wid)
