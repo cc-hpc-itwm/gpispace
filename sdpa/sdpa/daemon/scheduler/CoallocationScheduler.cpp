@@ -13,14 +13,13 @@ CoallocationScheduler::CoallocationScheduler(GenericDaemon* pCommHandler)
 void CoallocationScheduler::assignJobsToWorkers()
 {
   lock_type lock(mtx_);
-  sdpa::worker_id_list_t listAvailWorkers;
 
   if(!schedulingAllowed())
     return;
 
   // replace this with the list of workers not reserved
   //getListNotFullWorkers(listAvailWorkers);
-  getListNotAllocatedWorkers(listAvailWorkers);
+  sdpa::worker_id_list_t listAvailWorkers (getListNotAllocatedWorkers());
 
   // check if there are jobs that can already be scheduled on
   // these workers
@@ -175,10 +174,11 @@ void CoallocationScheduler::releaseReservation(const sdpa::job_id_t& jobId)
   }
 }
 
-void CoallocationScheduler::getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerList)
+sdpa::worker_id_list_t CoallocationScheduler::getListNotAllocatedWorkers()
 {
-  workerList.clear();
+  sdpa::worker_id_list_t workerList;
   _worker_manager.getListWorkersNotReserved(workerList);
+  return workerList;
 }
 
 sdpa::job_id_t CoallocationScheduler::getAssignedJob(const sdpa::worker_id_t& wid)
