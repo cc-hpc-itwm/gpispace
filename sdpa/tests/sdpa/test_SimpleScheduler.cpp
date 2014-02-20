@@ -259,8 +259,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
    workerList.remove(*assgnWid);
    listJobIds.pop_front();
 
-   // check if there are any jobs non-asssigned left
-   BOOST_REQUIRE(listJobIds.empty());
    // check if all the workers were served
    BOOST_REQUIRE(workerList.empty());
 }
