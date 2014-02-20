@@ -445,13 +445,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   BOOST_REQUIRE_EQUAL (_scheduler.getAssignedJob("worker_9"), "job_0");
 
-  // and now simply delete the last worker !
-  _scheduler.rescheduleWorkerJob("worker_9", "job_0");
-
-  _scheduler.schedule("job_0");
-
   _scheduler.deleteWorker("worker_9");
-
   _scheduler.addWorker("worker_9", 1, capabilities ("worker_9", "C"));
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
