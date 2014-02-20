@@ -35,6 +35,12 @@ function (get_revision_info REV_INFO)
   endif()
 endfunction()
 
+get_revision_info (PROJECT_REVISION)
+if (NOT PROJECT_REVISION)
+  message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
+endif (NOT PROJECT_REVISION)
+set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
+
 function (get_version_info VERSION_INFO)
   execute_process (
     COMMAND git describe
@@ -58,12 +64,6 @@ function (get_version_info VERSION_INFO)
     set (${VERSION_INFO} ${__new_vsn} PARENT_SCOPE)
   endif ()
 endfunction()
-
-get_revision_info (PROJECT_REVISION)
-if (NOT PROJECT_REVISION)
-  message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
-endif (NOT PROJECT_REVISION)
-set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
 
 get_version_info (PROJECT_VERSION)
 if (NOT PROJECT_VERSION)
