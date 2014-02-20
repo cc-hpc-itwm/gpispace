@@ -507,8 +507,6 @@ namespace gpi
         , api::gpi_api_t& gpi_api
         )
       {
-        using namespace gpi::pc;
-
         url_t url (url_s);
 
         type::size_t comsize =

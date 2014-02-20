@@ -630,8 +630,6 @@ namespace gpi
                                     , handle_generator_t& handle_generator
                                     )
       {
-        using namespace gpi::pc;
-
         url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
 
