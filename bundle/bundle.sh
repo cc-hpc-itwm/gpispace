@@ -43,20 +43,6 @@ function dry_run ()
     $dry && echo $@ || $@ || $keep_going || exit 1
 }
 
-function locate_file ()
-{
-  local file="$1" ; shift
-  OLDIFS="$IFS"
-  export IFS=":"
-  for dir in $LD_LIBRARY_PATH ; do
-    if [ -e "$dir/$file" ] ; then
-       echo "$dir/$file"
-       break
-    fi
-  done
-  IFS="$OLDIFS"
-}
-
 function is_in_whitelist ()
 {
     local name="$1"
