@@ -48,12 +48,7 @@ void SimpleScheduler::assignJobsToWorkers()
            ptr_comm_handler_->serveJob(sdpa::worker_id_list_t (1, matchingWorkerId), jobId);
         }
         catch(const WorkerNotFoundException&) {
-           sdpa::events::ErrorEvent::Ptr pErrorEvt(
-               new sdpa::events::ErrorEvent(m_agent_name,
-                                             matchingWorkerId,
-                                             sdpa::events::ErrorEvent::SDPA_EWORKERNOTREG,
-                                             "not registered") );
-           ptr_comm_handler_->sendEventToOther(pErrorEvt);
+          schedule_first (jobId);
         }
     }
     else { // put it back into the common queue
