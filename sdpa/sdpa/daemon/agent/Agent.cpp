@@ -437,48 +437,23 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 
 }
 
-namespace
-{
-  struct on_scope_exit
-  {
-    on_scope_exit (boost::function<void()> what)
-      : _what (what)
-      , _dont (false)
-    {}
-    ~on_scope_exit()
-    {
-      if (!_dont)
-      {
-        _what();
-      }
-    }
-    void dont()
-    {
-      _dont = true;
-    }
-    boost::function<void()> _what;
-    bool _dont;
-  };
-}
-
 void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 {
   Job* pJob(jobManager().findJob(pEvt->job_id()));
-  {
-    on_scope_exit _ ( boost::bind ( &we::layer::canceled
-                                  , workflowEngine()
-                                  , pEvt->job_id()
-                                  )
-                    );
 
     if(pJob)
     {
+      try
+      {
         // update the job status to "Canceled"
         pJob->CancelJobAck(pEvt);
+      }
+      catch (std::exception const&)
+      {
+        workflowEngine()->canceled (pEvt->job_id());
+        throw;
+      }
     }
-
-    _.dont();
-  }
 
   // the acknowledgment comes from WE or from a slave and there is no WE
   if( !pEvt->is_external() || !hasWorkflowEngine() )
