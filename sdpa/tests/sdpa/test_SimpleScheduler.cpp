@@ -139,8 +139,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
   _scheduler.assignJobsToWorkers();
 
-  BOOST_REQUIRE_EQUAL (_scheduler.getAssignedWorker (jobId1), boost::none);
-
   sdpa::capability_t cpb1("C", worker_A);
   cpbSetA.insert(cpb1);
   _scheduler.addCapabilities(worker_A, cpbSetA);
@@ -153,8 +151,6 @@ BOOST_AUTO_TEST_CASE(testGainCap)
   _orchestrator.expect_serveJob_call (jobId1, make_list (worker_A));
 
   _scheduler.assignJobsToWorkers();
-
-  BOOST_REQUIRE_EQUAL (_scheduler.getAssignedWorker (jobId1), worker_A);
 }
 
 
