@@ -209,6 +209,12 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
       _orchestrator.TEST_add_dummy_job (jobId, job_reqs);
   }
 
+  // schedule all jobs now
+  BOOST_FOREACH(const sdpa::job_id_t& jobId, listJobIds)
+  {
+      _scheduler.schedule(jobId);
+  }
+
   _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_8"));
   _orchestrator.expect_serveJob_call ("job_1", make_list ("worker_7"));
   _orchestrator.expect_serveJob_call ("job_2", make_list ("worker_5"));
@@ -219,27 +225,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   _orchestrator.expect_serveJob_call ("job_7", make_list ("worker_1"));
   _orchestrator.expect_serveJob_call ("job_8", make_list ("worker_0"));
 
-  // schedule all jobs now
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, listJobIds)
-  {
-      _scheduler.schedule(jobId);
-  }
-
   _scheduler.assignJobsToWorkers();
-
-   // check here if all workers have distinct jobs assigned
-   sdpa::worker_id_list_t workerList;
-   _scheduler.getWorkerList(workerList);
-
-   while(listJobIds.size()!=1)
-   {
-      sdpa::job_id_t jobId = listJobIds.front();
-      // check if the job was assigned to any worker
-      boost::optional<sdpa::worker_id_t> assgnWid(_scheduler.getAssignedWorker(jobId));
-      BOOST_REQUIRE(assgnWid);
-      workerList.remove(*assgnWid);
-      listJobIds.pop_front();
-   }
 
    // add new worker now (worker_9)...
    const sdpa::worker_id_t workerId
@@ -251,16 +237,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   _orchestrator.expect_serveJob_call ("job_9", make_list ("worker_9"));
 
    _scheduler.assignJobsToWorkers();
-
-   sdpa::job_id_t jobId = listJobIds.front();
-   // check if the job was assigned to any worker
-   boost::optional<sdpa::worker_id_t> assgnWid = _scheduler.getAssignedWorker(jobId);
-   BOOST_REQUIRE(assgnWid);
-   workerList.remove(*assgnWid);
-   listJobIds.pop_front();
-
-   // check if all the workers were served
-   BOOST_REQUIRE(workerList.empty());
 }
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
@@ -314,22 +290,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
   _scheduler.assignJobsToWorkers();
 
-  // check here if all workers have distinct jobs assigned
-  sdpa::worker_id_list_t workerList;
-  _scheduler.getWorkerList(workerList);
-
-  while(listJobIds.size()!=1)
-  {
-      sdpa::job_id_t jobId = listJobIds.front();
-      // check if the job was assigned to any worker
-      boost::optional<sdpa::worker_id_t> assgnWid(_scheduler.getAssignedWorker(jobId));
-      if(assgnWid)
-      {
-        workerList.remove(*assgnWid);
-        listJobIds.pop_front();
-      }
-  }
-
   // the last worker gains now the missing capability
   //and will eventually receive one job ...
 
@@ -344,18 +304,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _orchestrator.expect_serveJob_call ("job_9", make_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
-
-  sdpa::job_id_t jobId = listJobIds.front();
-  // check if the job was assigned to any worker
-  boost::optional<sdpa::worker_id_t> assgnWid = _scheduler.getAssignedWorker(jobId);
-  BOOST_REQUIRE_EQUAL (*assgnWid, lastWorkerId);
-  workerList.remove(*assgnWid);
-  listJobIds.pop_front();
-
-  // check if there are any jobs non-asssigned left
-  BOOST_REQUIRE(listJobIds.empty());
-  // check if all the workers were served
-  BOOST_REQUIRE(workerList.empty());
 }
 
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
