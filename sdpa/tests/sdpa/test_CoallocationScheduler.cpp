@@ -413,23 +413,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
   _scheduler.assignJobsToWorkers();
 
-  BOOST_FOREACH(sdpa::worker_id_t& wid, _scheduler.getListAllocatedWorkers("job_0"))
-  {
-    const int k = boost::lexical_cast<int>(wid);
-    BOOST_CHECK( k==0 || k==3 || k==6 || k==9);
-  }
-
-  BOOST_FOREACH(sdpa::worker_id_t& wid, _scheduler.getListAllocatedWorkers("job_1"))
-  {
-    const int k = boost::lexical_cast<int>(wid);
-    BOOST_CHECK( k==1 || k==4 || k==7 || k==10);
-  }
-
-  BOOST_FOREACH(sdpa::worker_id_t& wid, _scheduler.getListAllocatedWorkers("job_2"))
-  {
-    const int k = boost::lexical_cast<int>(wid);
-    BOOST_CHECK( k==2 || k==5 || k==8 || k==11);
-  }
 
   // try now to schedule a job requiring 2 resources of type "A"
   _agent.TEST_add_dummy_job ("job_3", require (WORKER_CPBS[0], 2));
