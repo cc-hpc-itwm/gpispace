@@ -222,7 +222,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
     listJobIds.pop_front();
   }
 
-  BOOST_REQUIRE(listJobIds.empty());
   BOOST_REQUIRE(workerList.empty());
 }
 
