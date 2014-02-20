@@ -299,8 +299,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addCapabilities(lastWorkerId, cpbSet);
 
-  BOOST_REQUIRE_EQUAL (_scheduler.findWorker(lastWorkerId)->nbAllocatedJobs(), 0);
-
   _orchestrator.expect_serveJob_call ("job_9", make_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
@@ -352,11 +350,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   _scheduler.assignJobsToWorkers();
 
-  BOOST_FOREACH(const sdpa::worker_id_t& wid, arrWorkerIds)
-  {
-    BOOST_REQUIRE_EQUAL (_scheduler.findWorker(wid)->nbAllocatedJobs(), 1);
-  }
-
   const sdpa::worker_id_t lastWorkerId
     ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
 
@@ -366,16 +359,9 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addWorker(lastWorkerId, 1, cpbSet);
 
-  BOOST_REQUIRE_EQUAL (_scheduler.findWorker(lastWorkerId)->nbAllocatedJobs(), 0);
-
   _orchestrator.expect_serveJob_call ("job_0", make_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
-
-  BOOST_FOREACH(const sdpa::worker_id_t& wid, arrWorkerIds)
-  {
-    BOOST_REQUIRE_EQUAL (_scheduler.findWorker(wid)->nbAllocatedJobs(), 1);
-  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
