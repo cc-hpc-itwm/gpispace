@@ -4,8 +4,6 @@ install (PROGRAMS bundle.sh
   DESTINATION libexec/sdpa/scripts
 )
 
-if (INSTALL_AS_BUNDLE)
-
 set (APPS)
 
 macro (BUNDLE_APPS)
@@ -74,5 +72,3 @@ install(CODE "
      message(FATAL_ERROR \"Could not bundle dependencies: \${__err}\")
   endif()
   " )
-
-endif()
