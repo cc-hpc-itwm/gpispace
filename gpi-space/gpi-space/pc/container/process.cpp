@@ -30,8 +30,8 @@
 
 #include <gpi-space/pc/memory/shm_area.hpp>
 
-#include <fhg/util/url.hpp>
-#include <fhg/util/url_io.hpp>
+#include <gpi-space/pc/url.hpp>
+#include <gpi-space/pc/url_io.hpp>
 
 namespace gpi
 {
@@ -150,7 +150,7 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
-            fhg::util::url_t url ("shm", register_segment.name);
+            url_t url ("shm", register_segment.name);
             url.set ("size", boost::lexical_cast<std::string>(register_segment.size));
             if (register_segment.flags & F_PERSISTENT)
               url.set ("persistent", "true");

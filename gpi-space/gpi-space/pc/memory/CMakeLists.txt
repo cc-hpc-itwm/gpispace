@@ -30,6 +30,7 @@ ADD_LIBRARY(gpi-space-pc-memory ${hdrs} ${srcs})
 target_link_libraries (gpi-space-pc-memory
   gpi-space-pc-segment
   ${MMGR_LIBRARY}
+  gpi-space_url
   )
 
 install(TARGETS gpi-space-pc-memory

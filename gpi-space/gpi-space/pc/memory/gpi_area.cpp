@@ -7,7 +7,7 @@
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/global/topology.hpp>
 
-#include <fhg/util/url.hpp>
+#include <gpi-space/pc/url.hpp>
 #include <fhg/util/read_bool.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -507,7 +507,6 @@ namespace gpi
         , api::gpi_api_t& gpi_api
         )
       {
-        using namespace fhg::util;
         using namespace gpi::pc;
 
         url_t url (url_s);

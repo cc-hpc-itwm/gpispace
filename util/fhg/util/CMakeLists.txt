@@ -31,7 +31,6 @@ set (hdrs
   backtracing_exception.hpp
   backtracing_exception.fwd.hpp
 
-  url.hpp
   threadname.hpp
 
   remove_prefix.hpp
@@ -83,7 +82,6 @@ set (srcs
   read_file.cpp
 
   hostname.cpp
-  url.cpp
 )
 
 add_library (fhg-util ${srcs})

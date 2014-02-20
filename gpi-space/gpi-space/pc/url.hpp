@@ -6,9 +6,9 @@
 
 #include <boost/optional.hpp>
 
-namespace fhg
+namespace gpi
 {
-  namespace util
+  namespace pc
   {
     class url_t
     {

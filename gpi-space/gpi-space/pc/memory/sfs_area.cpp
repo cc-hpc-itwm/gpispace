@@ -9,7 +9,7 @@
 #include <cstring> // strerror
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/util/url.hpp>
+#include <gpi-space/pc/url.hpp>
 #include <fhg/util/hostname.hpp>
 #include <fhg/util/read_bool.hpp>
 
@@ -630,7 +630,6 @@ namespace gpi
                                     , handle_generator_t& handle_generator
                                     )
       {
-        using namespace fhg::util;
         using namespace gpi::pc;
 
         url_t url (url_s);

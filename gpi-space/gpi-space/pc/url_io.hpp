@@ -4,14 +4,14 @@
 #include <string>
 #include <ostream>
 
-#include <fhg/util/url.hpp>
+#include <gpi-space/pc/url.hpp>
 #include <fhg/util/first_then.hpp>
 
 #include <boost/foreach.hpp>
 
-namespace fhg
+namespace gpi
 {
-  namespace util
+  namespace pc
   {
     inline std::ostream & operator<< (std::ostream & os, const url_t &url)
     {
