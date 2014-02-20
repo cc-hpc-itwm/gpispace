@@ -1,5 +1,7 @@
 #include "hex.hpp"
 
+#include <boost/foreach.hpp>
+
 #include <cctype>
 #include <iomanip>
 #include <stdexcept>
@@ -13,14 +15,12 @@ namespace fhg
     {
       std::ostringstream sstr;
 
-      std::string::const_iterator c = s.begin ();
-      const std::string::const_iterator end = s.end ();
-      for ( ; c != end ; ++c)
+      BOOST_FOREACH (char const c, s)
       {
         sstr << std::setw (2)
              << std::setfill ('0')
              << std::hex
-             << (int)(*c & 0xff)
+             << (int)(c & 0xff)
           ;
       }
 
