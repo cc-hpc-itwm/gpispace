@@ -269,15 +269,12 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
   _scheduler.assignJobsToWorkers();
 
+
   _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
-
-  // check if to worker_9 was assigned any job
-  sdpa::job_id_t jobId = _scheduler.getAssignedJob ("worker_9");
-  BOOST_CHECK(!jobId.empty());
 }
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
