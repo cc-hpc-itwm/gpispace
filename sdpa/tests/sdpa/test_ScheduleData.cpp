@@ -9,11 +9,7 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-namespace sdpa
-{
-  namespace daemon
-  {
-    class TestAgent : public Agent
+    class TestAgent : public sdpa::daemon::Agent
     {
     public:
       TestAgent ( const std::string& name
@@ -59,8 +55,6 @@ namespace sdpa
       unsigned long _n_submitted_activities;
       std::set<unsigned long> _set_num_workers_req;
     };
-  }
-}
 
 BOOST_AUTO_TEST_CASE (num_workers_required_is_0)
 {
@@ -70,7 +64,7 @@ BOOST_AUTO_TEST_CASE (num_workers_required_is_0)
 
   const we::type::activity_t activity (workflow);
 
-  sdpa::daemon::TestAgent agent ("agent_0", "127.0.0.1");
+  TestAgent agent ("agent_0", "127.0.0.1");
 
   agent.workflowEngine()->submit ("test_job", activity);
   agent.wait_all_submitted();
@@ -89,7 +83,7 @@ BOOST_AUTO_TEST_CASE (valid_num_workers_required)
   const we::type::activity_t activity (workflow);
 
   sdpa::master_info_list_t listMasterInfo;
-  sdpa::daemon::TestAgent agent ("agent_0", "127.0.0.1");
+  TestAgent agent ("agent_0", "127.0.0.1");
 
   agent.workflowEngine()->submit ("test_job", activity);
   agent.wait_all_submitted();
