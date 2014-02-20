@@ -6,7 +6,6 @@
 #include <gpi-space/pc/segment/segment.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/util/lift_error_code_to_exception.hpp>
 #include <fhg/syscall.hpp>
 #include <fhglog/LogMacros.hpp>
 
