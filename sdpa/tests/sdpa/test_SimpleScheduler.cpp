@@ -160,7 +160,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   const int nWorkers = 10;
   const int nJobs = 10;
 
-  // create a give number of workers with different capabilities:
   std::ostringstream osstr;
   std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
