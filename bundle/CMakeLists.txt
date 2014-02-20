@@ -37,17 +37,10 @@ bundle_apps(
   pnetv
   sdpac
   we-exec
+  sdpa-gui
+  gspcmonc
+  pnete
 )
-
-if (ENABLE_SDPA_GUI)
-   bundle_apps (sdpa-gui gspcmonc)
-endif ()
-if (ENABLE_GPI_FUSE)
-   bundle_apps (gpifs)
-endif ()
-if (ENABLE_PNET_EDITOR)
-   bundle_apps (pnete)
-endif ()
 
 install(CODE "
   file(GLOB_RECURSE PLUGINS
