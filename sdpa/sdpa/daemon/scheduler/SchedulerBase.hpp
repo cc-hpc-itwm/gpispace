@@ -112,8 +112,6 @@ namespace sdpa {
       condition_type cond_feed_workers;
       condition_type cond_workers_registered;
 
-      sdpa::agent_id_t m_agent_name;
-
       boost::thread m_thread_run;
       boost::thread m_thread_feed;
     };

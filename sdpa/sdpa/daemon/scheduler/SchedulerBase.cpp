@@ -14,7 +14,6 @@ SchedulerBase::SchedulerBase(GenericDaemon* pCommHandler)
                       )
   , _logger (fhg::log::Logger::get (ptr_comm_handler_->name()))
   , _worker_manager()
-  , m_agent_name (ptr_comm_handler_->name())
 {}
 
 void SchedulerBase::start_threads()
