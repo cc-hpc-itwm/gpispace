@@ -193,13 +193,10 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   const int nJobs = 15;
 
   // create a give number of workers with different capabilities:
-  std::ostringstream osstr;
   std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
   {
-      osstr<<"worker_"<<k;
-      sdpa::worker_id_t workerId(osstr.str());
-      osstr.str("");
+    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
       arrWorkerIds.push_back(workerId);
       std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
       sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
@@ -210,10 +207,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   std::vector<sdpa::job_id_t> arrJobIds;
   for(int i=0;i<nJobs;i++)
   {
-      osstr<<"job_"<<i;
-      sdpa::job_id_t jobId(osstr.str());
+    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
       arrJobIds.push_back(jobId);
-      osstr.str("");
       job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
       _agent.TEST_add_dummy_job (jobId, job_reqs);
   }
@@ -278,13 +273,10 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   const int nJobs = 15;
 
   // create a give number of workers with different capabilities:
-  std::ostringstream osstr;
   std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers-1;k++)
   {
-      osstr<<"worker_"<<k;
-      sdpa::worker_id_t workerId(osstr.str());
-      osstr.str("");
+    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
       arrWorkerIds.push_back(workerId);
       std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
       sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
@@ -295,10 +287,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   std::vector<sdpa::job_id_t> arrJobIds;
   for(int i=0;i<nJobs;i++)
   {
-      osstr<<"job_"<<i;
-      sdpa::job_id_t jobId(osstr.str());
+    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
       arrJobIds.push_back(jobId);
-      osstr.str("");
       job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
       _agent.TEST_add_dummy_job (jobId, job_reqs);
   }
@@ -328,9 +318,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   BOOST_CHECK(workerList.empty());
 
   // add new worker now (worker_9)...
-  osstr<<"worker_"<<nWorkers-1;
-  sdpa::worker_id_t workerId(osstr.str());
-  osstr.str("");
+  const sdpa::worker_id_t workerId
+    ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
   arrWorkerIds.push_back(workerId);
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
@@ -356,13 +345,10 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   const int nJobs = 15;
 
   // create a give number of workers with different capabilities:
-  std::ostringstream osstr;
   std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
   {
-    osstr<<"worker_"<<k;
-    sdpa::worker_id_t workerId(osstr.str());
-    osstr.str("");
+    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
     arrWorkerIds.push_back(workerId);
 
     if( k<nWorkers-1 )
@@ -379,10 +365,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   std::vector<sdpa::job_id_t> arrJobIds;
   for(int i=0;i<nJobs;i++)
   {
-    osstr<<"job_"<<i;
-    sdpa::job_id_t jobId(osstr.str());
+    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
     arrJobIds.push_back(jobId);
-    osstr.str("");
     job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
     _agent.TEST_add_dummy_job (jobId, job_reqs);
   }
@@ -415,9 +399,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   // the last worker gains now the missing capability
   //and will eventually receive one job ...
 
-  osstr.str("");
-  osstr<<"worker_"<<nWorkers-1;
-  sdpa::worker_id_t lastWorkerId(osstr.str());
+  const sdpa::worker_id_t lastWorkerId
+    ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", lastWorkerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addCapabilities(lastWorkerId, cpbSet);
@@ -437,15 +420,10 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   const int NWORKERS = 12;
   const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
-  std::ostringstream oss;
-
   // add a couple of workers
   for( int k=0; k<NWORKERS; k++ )
   {
-    oss.str("");
-    oss<<k;
-
-    sdpa::worker_id_t workerId(oss.str());
+    const sdpa::worker_id_t workerId (boost::lexical_cast<sdpa::worker_id_t> (k));
     std::string cpbName(WORKER_CPBS[k%3]);
     sdpa::capability_t cpb(cpbName, workerId);
     sdpa::capabilities_set_t cpbSet;
@@ -475,7 +453,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
   _scheduler.assignJobsToWorkers();
 
-  std::ostringstream ossrw;int k=-1;
+  int k=-1;
   sdpa::worker_id_list_t listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId0);
   BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
   {
@@ -534,13 +512,10 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   const int nJobs = 10;
 
   // create a give number of workers with different capabilities:
-  std::ostringstream osstr;
   std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
   {
-    osstr<<"worker_"<<k;
-    sdpa::worker_id_t workerId(osstr.str());
-    osstr.str("");
+    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
     arrWorkerIds.push_back(workerId);
     std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
     sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
@@ -551,10 +526,8 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   std::vector<sdpa::job_id_t> arrJobIds;
   for(int i=0;i<nJobs;i++)
   {
-    osstr<<"job_"<<i;
-    sdpa::job_id_t jobId(osstr.str());
+    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
     arrJobIds.push_back(jobId);
-    osstr.str("");
     _agent.TEST_add_dummy_job (jobId,  job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 

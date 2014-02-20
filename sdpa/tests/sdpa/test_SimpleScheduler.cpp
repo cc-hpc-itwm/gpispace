@@ -160,13 +160,10 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   const int nWorkers = 10;
   const int nJobs = 10;
 
-  std::ostringstream osstr;
   std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
   {
-      osstr<<"worker_"<<k;
-      sdpa::worker_id_t workerId(osstr.str());
-      osstr.str("");
+    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
       arrWorkerIds.push_back(workerId);
       std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
       sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
@@ -177,10 +174,8 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   std::list<sdpa::job_id_t> listJobIds;
   for(int i=0;i<nJobs;i++)
   {
-      osstr<<"job_"<<i;
-      sdpa::job_id_t jobId(osstr.str());
+    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
       listJobIds.push_back(jobId);
-      osstr.str("");
       _orchestrator.TEST_add_dummy_job (jobId, job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
   }
 
@@ -211,13 +206,10 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   const int nJobs = 10;
 
   // create a give number of workers with different capabilities:
-  std::ostringstream osstr;
   std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers-1;k++)
   {
-      osstr<<"worker_"<<k;
-      sdpa::worker_id_t workerId(osstr.str());
-      osstr.str("");
+    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
       arrWorkerIds.push_back(workerId);
       std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
       sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
@@ -228,10 +220,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   std::list<sdpa::job_id_t> listJobIds;
   for(int i=0;i<nJobs;i++)
   {
-      osstr<<"job_"<<i;
-      sdpa::job_id_t jobId(osstr.str());
+    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
       listJobIds.push_back(jobId);
-      osstr.str("");
       job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
       _orchestrator.TEST_add_dummy_job (jobId, job_reqs);
   }
@@ -269,9 +259,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
    }
 
    // add new worker now (worker_9)...
-   osstr<<"worker_"<<nWorkers-1;
-   sdpa::worker_id_t workerId(osstr.str());
-   osstr.str("");
+   const sdpa::worker_id_t workerId
+     ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
    arrWorkerIds.push_back(workerId);
    std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
    _scheduler.addWorker(workerId, 1, sdpa::capabilities_set_t(arrCpbs.begin(), arrCpbs.end()));
@@ -300,13 +289,10 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   const int nJobs = 10;
 
   // create a give number of workers with different capabilities:
-  std::ostringstream osstr;
   std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
   {
-    osstr<<"worker_"<<k;
-    sdpa::worker_id_t workerId(osstr.str());
-    osstr.str("");
+    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
     arrWorkerIds.push_back(workerId);
 
     if( k<nWorkers-1 )
@@ -323,10 +309,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   std::list<sdpa::job_id_t> listJobIds;
   for(int i=0;i<nJobs;i++)
   {
-    osstr<<"job_"<<i;
-    sdpa::job_id_t jobId(osstr.str());
+    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
     listJobIds.push_back(jobId);
-    osstr.str("");
     job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
     _orchestrator.TEST_add_dummy_job (jobId, job_reqs);
   }
@@ -368,9 +352,8 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   // the last worker gains now the missing capability
   //and will eventually receive one job ...
 
-  osstr.str("");
-  osstr<<"worker_"<<nWorkers-1;
-  sdpa::worker_id_t lastWorkerId(osstr.str());
+  const sdpa::worker_id_t lastWorkerId
+    ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
   std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", lastWorkerId));
   sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
   _scheduler.addCapabilities(lastWorkerId, cpbSet);
@@ -401,13 +384,10 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   const int nJobs = 10;
 
   // create a give number of workers with different capabilities:
-  std::ostringstream osstr;
   std::vector<sdpa::worker_id_t> arrWorkerIds;
   for(int k=0;k<nWorkers;k++)
   {
-    osstr<<"worker_"<<k;
-    sdpa::worker_id_t workerId(osstr.str());
-    osstr.str("");
+    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
     arrWorkerIds.push_back(workerId);
     std::vector<sdpa::capability_t> arrCpbs(1, sdpa::capability_t("C", workerId));
     sdpa::capabilities_set_t cpbSet(arrCpbs.begin(), arrCpbs.end());
@@ -418,10 +398,8 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   std::vector<sdpa::job_id_t> listJobIds;
   for(int i=0;i<nJobs;i++)
   {
-    osstr<<"job_"<<i;
-    sdpa::job_id_t jobId(osstr.str());
+    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
     listJobIds.push_back(jobId);
-    osstr.str("");
     job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
     _orchestrator.TEST_add_dummy_job (jobId, job_reqs);
   }
@@ -450,9 +428,8 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
     BOOST_REQUIRE_EQUAL (_scheduler.findWorker(wid)->nbAllocatedJobs(), 1);
   }
 
-  osstr.str("");
-  osstr<<"worker_"<<nWorkers-1;
-  sdpa::worker_id_t lastWorkerId(osstr.str());
+  const sdpa::worker_id_t lastWorkerId
+    ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
 
   _scheduler.deleteWorker(lastWorkerId);
 
