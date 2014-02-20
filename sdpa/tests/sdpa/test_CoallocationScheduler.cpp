@@ -121,7 +121,7 @@ namespace
   {
     requirement_list_t reqs;
     reqs.push_back (we::type::requirement_t (name_1, true));
-    return job_requirements_t (reqs, we::type::schedule_data (workers, boost::none));
+    return job_requirements_t (reqs, we::type::schedule_data (workers));
   }
 }
 
