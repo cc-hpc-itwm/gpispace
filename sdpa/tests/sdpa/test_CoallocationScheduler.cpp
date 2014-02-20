@@ -193,8 +193,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 
   _scheduler.assignJobsToWorkers();
 
-  BOOST_REQUIRE (_scheduler.getListNotAllocatedWorkers().empty());
-
   for(int i=0;i<15;i++)
   {
     const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
@@ -212,8 +210,6 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   }
 
   _scheduler.assignJobsToWorkers();
-
-  BOOST_REQUIRE_EQUAL (_scheduler.getListNotAllocatedWorkers().size(), 5);
 }
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
@@ -273,15 +269,11 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
   _scheduler.assignJobsToWorkers();
 
-  BOOST_REQUIRE (_scheduler.getListNotAllocatedWorkers().empty());
-
   _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
-
-  BOOST_REQUIRE (_scheduler.getListNotAllocatedWorkers().empty());
 
   // check if to worker_9 was assigned any job
   sdpa::job_id_t jobId = _scheduler.getAssignedJob ("worker_9");
@@ -346,8 +338,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
   _scheduler.assignJobsToWorkers();
 
-  BOOST_REQUIRE_EQUAL (_scheduler.getListNotAllocatedWorkers().size(), 1);
-
   // the last worker gains now the missing capability
   //and will eventually receive one job ...
 
@@ -357,8 +347,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
   // assign jobs to workers
   _scheduler.assignJobsToWorkers();
-
-  BOOST_REQUIRE (_scheduler.getListNotAllocatedWorkers().empty());
 }
 
 BOOST_AUTO_TEST_CASE(testCoallocSched)
@@ -454,8 +442,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_0"));
 
   _scheduler.assignJobsToWorkers();
-
-  BOOST_REQUIRE (_scheduler.getListNotAllocatedWorkers().empty());
 
   BOOST_REQUIRE_EQUAL (_scheduler.getAssignedJob("worker_9"), "job_0");
 
