@@ -131,8 +131,6 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
-  const int nJobs = 15;
-
   _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
   _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
@@ -144,20 +142,38 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
   _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
-  // submit a bunch of jobs now
-  std::vector<sdpa::job_id_t> arrJobIds;
-  for(int i=0;i<nJobs;i++)
-  {
-    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
-      arrJobIds.push_back(jobId);
-      _agent.TEST_add_dummy_job (jobId, require ("C"));
-  }
+  _agent.TEST_add_dummy_job ("job_0", require ("C"));
+  _agent.TEST_add_dummy_job ("job_1", require ("C"));
+  _agent.TEST_add_dummy_job ("job_2", require ("C"));
+  _agent.TEST_add_dummy_job ("job_3", require ("C"));
+  _agent.TEST_add_dummy_job ("job_4", require ("C"));
+  _agent.TEST_add_dummy_job ("job_5", require ("C"));
+  _agent.TEST_add_dummy_job ("job_6", require ("C"));
+  _agent.TEST_add_dummy_job ("job_7", require ("C"));
+  _agent.TEST_add_dummy_job ("job_8", require ("C"));
+  _agent.TEST_add_dummy_job ("job_9", require ("C"));
+  _agent.TEST_add_dummy_job ("job_10", require ("C"));
+  _agent.TEST_add_dummy_job ("job_11", require ("C"));
+  _agent.TEST_add_dummy_job ("job_12", require ("C"));
+  _agent.TEST_add_dummy_job ("job_13", require ("C"));
+  _agent.TEST_add_dummy_job ("job_14", require ("C"));
 
-  // schedule all jobs now
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
-  {
-      _scheduler.schedule(jobId);
-  }
+  _scheduler.schedule ("job_0");
+  _scheduler.schedule ("job_1");
+  _scheduler.schedule ("job_2");
+  _scheduler.schedule ("job_3");
+  _scheduler.schedule ("job_4");
+  _scheduler.schedule ("job_5");
+  _scheduler.schedule ("job_6");
+  _scheduler.schedule ("job_7");
+  _scheduler.schedule ("job_8");
+  _scheduler.schedule ("job_9");
+  _scheduler.schedule ("job_10");
+  _scheduler.schedule ("job_11");
+  _scheduler.schedule ("job_12");
+  _scheduler.schedule ("job_13");
+  _scheduler.schedule ("job_14");
+
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
   _agent.expect_serveJob_call ("job_1", worker_list ("worker_8"));
@@ -183,8 +199,10 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   // check if there are any workers that are not yet reserved
   BOOST_CHECK(workerList.empty());
 
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
+  for(int i=0;i<15;i++)
   {
+    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
+
       sdpa::worker_id_list_t listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId);
 
       BOOST_CHECK_LE (listJobAssignedWorkers.size(), 1);
@@ -203,13 +221,11 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   workerList.clear();
   _scheduler.getListNotAllocatedWorkers(workerList);
 
-  BOOST_CHECK_EQUAL(workerList.size(), nJobs - 10);
+  BOOST_CHECK_EQUAL(workerList.size(), 5);
 }
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
-  const int nJobs = 15;
-
   _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
   _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
@@ -220,20 +236,38 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   _scheduler.addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
   _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
 
-  // submit a bunch of jobs now
-  std::vector<sdpa::job_id_t> arrJobIds;
-  for(int i=0;i<nJobs;i++)
-  {
-    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
-      arrJobIds.push_back(jobId);
-      _agent.TEST_add_dummy_job (jobId, require ("C"));
-  }
+  _agent.TEST_add_dummy_job ("job_0", require ("C"));
+  _agent.TEST_add_dummy_job ("job_1", require ("C"));
+  _agent.TEST_add_dummy_job ("job_2", require ("C"));
+  _agent.TEST_add_dummy_job ("job_3", require ("C"));
+  _agent.TEST_add_dummy_job ("job_4", require ("C"));
+  _agent.TEST_add_dummy_job ("job_5", require ("C"));
+  _agent.TEST_add_dummy_job ("job_6", require ("C"));
+  _agent.TEST_add_dummy_job ("job_7", require ("C"));
+  _agent.TEST_add_dummy_job ("job_8", require ("C"));
+  _agent.TEST_add_dummy_job ("job_9", require ("C"));
+  _agent.TEST_add_dummy_job ("job_10", require ("C"));
+  _agent.TEST_add_dummy_job ("job_11", require ("C"));
+  _agent.TEST_add_dummy_job ("job_12", require ("C"));
+  _agent.TEST_add_dummy_job ("job_13", require ("C"));
+  _agent.TEST_add_dummy_job ("job_14", require ("C"));
 
-  // schedule all jobs now
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
-  {
-      _scheduler.schedule(jobId);
-  }
+  _scheduler.schedule ("job_0");
+  _scheduler.schedule ("job_1");
+  _scheduler.schedule ("job_2");
+  _scheduler.schedule ("job_3");
+  _scheduler.schedule ("job_4");
+  _scheduler.schedule ("job_5");
+  _scheduler.schedule ("job_6");
+  _scheduler.schedule ("job_7");
+  _scheduler.schedule ("job_8");
+  _scheduler.schedule ("job_9");
+  _scheduler.schedule ("job_10");
+  _scheduler.schedule ("job_11");
+  _scheduler.schedule ("job_12");
+  _scheduler.schedule ("job_13");
+  _scheduler.schedule ("job_14");
+
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_8"));
   _agent.expect_serveJob_call ("job_1", worker_list ("worker_7"));
@@ -270,8 +304,6 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
-  const int nJobs = 15;
-
   _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
   _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
@@ -283,20 +315,38 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
   _scheduler.addWorker ("worker_9", 1);
 
-  // submit a bunch of jobs now
-  std::vector<sdpa::job_id_t> arrJobIds;
-  for(int i=0;i<nJobs;i++)
-  {
-    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
-    arrJobIds.push_back(jobId);
-    _agent.TEST_add_dummy_job (jobId, require ("C"));
-  }
+  _agent.TEST_add_dummy_job ("job_0", require ("C"));
+  _agent.TEST_add_dummy_job ("job_1", require ("C"));
+  _agent.TEST_add_dummy_job ("job_2", require ("C"));
+  _agent.TEST_add_dummy_job ("job_3", require ("C"));
+  _agent.TEST_add_dummy_job ("job_4", require ("C"));
+  _agent.TEST_add_dummy_job ("job_5", require ("C"));
+  _agent.TEST_add_dummy_job ("job_6", require ("C"));
+  _agent.TEST_add_dummy_job ("job_7", require ("C"));
+  _agent.TEST_add_dummy_job ("job_8", require ("C"));
+  _agent.TEST_add_dummy_job ("job_9", require ("C"));
+  _agent.TEST_add_dummy_job ("job_10", require ("C"));
+  _agent.TEST_add_dummy_job ("job_11", require ("C"));
+  _agent.TEST_add_dummy_job ("job_12", require ("C"));
+  _agent.TEST_add_dummy_job ("job_13", require ("C"));
+  _agent.TEST_add_dummy_job ("job_14", require ("C"));
 
-  // schedule all jobs now
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
-  {
-    _scheduler.schedule(jobId);
-  }
+  _scheduler.schedule ("job_0");
+  _scheduler.schedule ("job_1");
+  _scheduler.schedule ("job_2");
+  _scheduler.schedule ("job_3");
+  _scheduler.schedule ("job_4");
+  _scheduler.schedule ("job_5");
+  _scheduler.schedule ("job_6");
+  _scheduler.schedule ("job_7");
+  _scheduler.schedule ("job_8");
+  _scheduler.schedule ("job_9");
+  _scheduler.schedule ("job_10");
+  _scheduler.schedule ("job_11");
+  _scheduler.schedule ("job_12");
+  _scheduler.schedule ("job_13");
+  _scheduler.schedule ("job_14");
+
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_8"));
   _agent.expect_serveJob_call ("job_1", worker_list ("worker_7"));
@@ -357,6 +407,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.schedule("job_1");
   _scheduler.schedule("job_2");
 
+
   _agent.expect_serveJob_call ("job_0", worker_list ("6", "3", "9", "0"));
   _agent.expect_serveJob_call ("job_1", worker_list ("10", "7", "4", "1"));
   _agent.expect_serveJob_call ("job_2", worker_list ("8", "11", "2", "5"));
@@ -416,8 +467,6 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {
-  const int nJobs = 10;
-
   _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
   _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
@@ -429,20 +478,28 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
   _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
-  // submit a bunch of jobs now
-  std::vector<sdpa::job_id_t> arrJobIds;
-  for(int i=0;i<nJobs;i++)
-  {
-    const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
-    arrJobIds.push_back(jobId);
-    _agent.TEST_add_dummy_job (jobId, require ("C"));
-  }
+  _agent.TEST_add_dummy_job ("job_0", require ("C"));
+  _agent.TEST_add_dummy_job ("job_1", require ("C"));
+  _agent.TEST_add_dummy_job ("job_2", require ("C"));
+  _agent.TEST_add_dummy_job ("job_3", require ("C"));
+  _agent.TEST_add_dummy_job ("job_4", require ("C"));
+  _agent.TEST_add_dummy_job ("job_5", require ("C"));
+  _agent.TEST_add_dummy_job ("job_6", require ("C"));
+  _agent.TEST_add_dummy_job ("job_7", require ("C"));
+  _agent.TEST_add_dummy_job ("job_8", require ("C"));
+  _agent.TEST_add_dummy_job ("job_9", require ("C"));
 
-  // schedule all jobs now
-  BOOST_FOREACH(const sdpa::job_id_t& jobId, arrJobIds)
-  {
-    _scheduler.schedule(jobId);
-  }
+  _scheduler.schedule ("job_0");
+  _scheduler.schedule ("job_1");
+  _scheduler.schedule ("job_2");
+  _scheduler.schedule ("job_3");
+  _scheduler.schedule ("job_4");
+  _scheduler.schedule ("job_5");
+  _scheduler.schedule ("job_6");
+  _scheduler.schedule ("job_7");
+  _scheduler.schedule ("job_8");
+  _scheduler.schedule ("job_9");
+
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
   _agent.expect_serveJob_call ("job_1", worker_list ("worker_8"));
