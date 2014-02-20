@@ -35,7 +35,7 @@ function (get_revision_info REV_INFO)
   endif()
 endfunction()
 
-function (get_version_info VSN_INFO)
+function (get_version_info VERSION_INFO)
   execute_process (
     COMMAND git describe
     COMMAND sed -e "s/^v//"
@@ -46,7 +46,7 @@ function (get_version_info VSN_INFO)
   )
   if (${_res} EQUAL 0)
     string (STRIP "${_out}" _out)
-    set (${VSN_INFO} ${_out} PARENT_SCOPE)
+    set (${VERSION_INFO} ${_out} PARENT_SCOPE)
   else()
     set(__new_vsn "${V_MAJOR}.${V_MINOR}")
     if (NOT ${V_PATCH} STREQUAL "")
@@ -55,7 +55,7 @@ function (get_version_info VSN_INFO)
     if (NOT ${V_EXTRA} STREQUAL "")
       set(__new_vsn "${__new_vsn}-${V_EXTRA}")
     endif()
-    set (${VSN_INFO} ${__new_vsn} PARENT_SCOPE)
+    set (${VERSION_INFO} ${__new_vsn} PARENT_SCOPE)
   endif ()
 endfunction()
 
