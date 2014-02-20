@@ -349,28 +349,22 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.addWorker ("10", 1, capabilities ("10", WORKER_CPBS[1]));
   _scheduler.addWorker ("11", 1, capabilities ("11", WORKER_CPBS[2]));
 
-  // create a number of jobs
-  const sdpa::job_id_t jobId0("Job0");
-  _agent.TEST_add_dummy_job (jobId0, require (WORKER_CPBS[0], 4));
+  _agent.TEST_add_dummy_job ("job_0", require (WORKER_CPBS[0], 4));
+  _agent.TEST_add_dummy_job ("job_1", require (WORKER_CPBS[1], 4));
+  _agent.TEST_add_dummy_job ("job_2", require (WORKER_CPBS[2], 4));
 
-  const sdpa::job_id_t jobId1("Job1");
-  _agent.TEST_add_dummy_job (jobId1, require (WORKER_CPBS[1], 4));
+  _scheduler.schedule("job_0");
+  _scheduler.schedule("job_1");
+  _scheduler.schedule("job_2");
 
-  const sdpa::job_id_t jobId2("Job2");
-  _agent.TEST_add_dummy_job (jobId2, require (WORKER_CPBS[2], 4));
-
-  _scheduler.schedule(jobId0);
-  _scheduler.schedule(jobId1);
-  _scheduler.schedule(jobId2);
-
-  _agent.expect_serveJob_call (jobId0, worker_list ("6", "3", "9", "0"));
-  _agent.expect_serveJob_call (jobId1, worker_list ("10", "7", "4", "1"));
-  _agent.expect_serveJob_call (jobId2, worker_list ("8", "11", "2", "5"));
+  _agent.expect_serveJob_call ("job_0", worker_list ("6", "3", "9", "0"));
+  _agent.expect_serveJob_call ("job_1", worker_list ("10", "7", "4", "1"));
+  _agent.expect_serveJob_call ("job_2", worker_list ("8", "11", "2", "5"));
 
   _scheduler.assignJobsToWorkers();
 
   int k=-1;
-  sdpa::worker_id_list_t listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId0);
+  sdpa::worker_id_list_t listJobAssignedWorkers = _scheduler.getListAllocatedWorkers("job_0");
   BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
   {
     k = boost::lexical_cast<int>(wid);
@@ -378,7 +372,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   }
 
   listJobAssignedWorkers.clear();
-  listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId1);
+  listJobAssignedWorkers = _scheduler.getListAllocatedWorkers("job_1");
   BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
   {
     k = boost::lexical_cast<int>(wid);
@@ -386,7 +380,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   }
 
   listJobAssignedWorkers.clear();
-  listJobAssignedWorkers = _scheduler.getListAllocatedWorkers(jobId2);
+  listJobAssignedWorkers = _scheduler.getListAllocatedWorkers("job_2");
   BOOST_FOREACH(sdpa::worker_id_t& wid, listJobAssignedWorkers)
   {
     k = boost::lexical_cast<int>(wid);
@@ -394,24 +388,23 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   }
 
   // try now to schedule a job requiring 2 resources of type "A"
-  const sdpa::job_id_t jobId4("Job4");
-  _agent.TEST_add_dummy_job (jobId4, require (WORKER_CPBS[0], 2));
+  _agent.TEST_add_dummy_job ("job_3", require (WORKER_CPBS[0], 2));
 
-  _scheduler.schedule(jobId4);
+  _scheduler.schedule("job_3");
 
-  _agent.expect_serveJob_call (jobId4, worker_list ("6", "3"));
+  _agent.expect_serveJob_call ("job_3", worker_list ("6", "3"));
 
   _scheduler.assignJobsToWorkers();
-  sdpa::worker_id_list_t listFreeWorkers(_scheduler.getListAllocatedWorkers(jobId4));
+  sdpa::worker_id_list_t listFreeWorkers(_scheduler.getListAllocatedWorkers("job_3"));
   BOOST_CHECK(listFreeWorkers.empty());
 
-  // Now report that jobId0 has finished and try to assign again resources to the job 4
-  _scheduler.releaseReservation(jobId0);
+  // Now report that "job_0" has finished and try to assign again resources to the job 4
+  _scheduler.releaseReservation("job_0");
 
   //listFreeWorkers.clear();
   _scheduler.assignJobsToWorkers();
 
-  listFreeWorkers = _scheduler.getListAllocatedWorkers(jobId4);
+  listFreeWorkers = _scheduler.getListAllocatedWorkers("job_3");
   BOOST_CHECK(!listFreeWorkers.empty());
 
   int w0 = boost::lexical_cast<int>(listFreeWorkers.front());
