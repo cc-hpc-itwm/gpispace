@@ -159,15 +159,19 @@ BOOST_AUTO_TEST_CASE(testGainCap)
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
-  // number of workers
-  const int nWorkers = 10;
   const int nJobs = 10;
 
-  for(int k=0;k<nWorkers;k++)
-  {
-    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-    _scheduler.addWorker (workerId, 1, capabilities (workerId, "C"));
-  }
+  _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
+  _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
+  _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
+  _scheduler.addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
+  _scheduler.addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
+  _scheduler.addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
+  _scheduler.addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
+  _scheduler.addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
+  _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
+  _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
+
 
   // submit a bunch of jobs now
   std::list<sdpa::job_id_t> listJobIds;
@@ -200,16 +204,17 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
-  // number of workers
-  const int nWorkers = 10;
   const int nJobs = 10;
 
-  // create a give number of workers with different capabilities:
-  for(int k=0;k<nWorkers-1;k++)
-  {
-    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-    _scheduler.addWorker (workerId, 1, capabilities (workerId, "C"));
-  }
+  _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
+  _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
+  _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
+  _scheduler.addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
+  _scheduler.addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
+  _scheduler.addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
+  _scheduler.addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
+  _scheduler.addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
+  _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
 
   // submit a bunch of jobs now
   std::list<sdpa::job_id_t> listJobIds;
@@ -239,10 +244,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
   _scheduler.assignJobsToWorkers();
 
-   // add new worker now (worker_9)...
-   const sdpa::worker_id_t workerId
-     ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
-   _scheduler.addWorker (workerId, 1, capabilities (workerId, "C"));
+  _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
   _orchestrator.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
@@ -251,22 +253,18 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
-  // number of workers
-  const int nWorkers = 10;
   const int nJobs = 10;
 
-  // create a give number of workers with different capabilities:
-  for(int k=0;k<nWorkers;k++)
-  {
-    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-
-    if( k<nWorkers-1 )
-    {
-      _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
-    }
-    else
-      _scheduler.addWorker(workerId, 1); // the last worker has no capability, yet
-  }
+  _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
+  _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
+  _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
+  _scheduler.addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
+  _scheduler.addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
+  _scheduler.addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
+  _scheduler.addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
+  _scheduler.addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
+  _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
+  _scheduler.addWorker ("worker_9", 1);
 
   // submit a bunch of jobs now
   std::list<sdpa::job_id_t> listJobIds;
@@ -299,9 +297,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   // the last worker gains now the missing capability
   //and will eventually receive one job ...
 
-  const sdpa::worker_id_t lastWorkerId
-    ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
-  _scheduler.addCapabilities(lastWorkerId, capabilities (lastWorkerId, "C"));
+  _scheduler.addCapabilities ("worker_9", capabilities ("worker_9", "C"));
 
   _orchestrator.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
@@ -310,16 +306,18 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {
-  // number of workers
-  const int nWorkers = 10;
   const int nJobs = 10;
 
-  // create a give number of workers with different capabilities:
-  for(int k=0;k<nWorkers;k++)
-  {
-    const sdpa::worker_id_t workerId ((boost::format ("worker_%1%") % k).str());
-    _scheduler.addWorker(workerId, 1, capabilities (workerId, "C"));
-  }
+  _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
+  _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
+  _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
+  _scheduler.addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
+  _scheduler.addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
+  _scheduler.addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
+  _scheduler.addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
+  _scheduler.addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
+  _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
+  _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
   // submit a bunch of jobs now
   std::vector<sdpa::job_id_t> listJobIds;
@@ -350,12 +348,8 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   _scheduler.assignJobsToWorkers();
 
-  const sdpa::worker_id_t lastWorkerId
-    ((boost::format ("worker_%1%") % (nWorkers - 1)).str());
-
-  _scheduler.deleteWorker(lastWorkerId);
-
-  _scheduler.addWorker(lastWorkerId, 1, capabilities (lastWorkerId, "C"));
+  _scheduler.deleteWorker ("worker_9");
+  _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
   _orchestrator.expect_serveJob_call ("job_0", worker_list ("worker_9"));
 
