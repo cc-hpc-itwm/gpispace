@@ -1005,10 +1005,6 @@ void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEv
         events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), worker_id, events::ErrorEvent::SDPA_EWORKERNOTREG, "not registered") );
         sendEventToOther(pErrorEvt);
       }
-      catch(std::exception const &ex2)
-      {
-        throw;
-      }
   }
   else
   {
@@ -1031,18 +1027,8 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
   Worker::worker_id_t worker_id = pEvt->from();
   if(jobManager().findJob(pEvt->job_id()))
   {
-    try {
       // delete it from the map when you receive a JobFinishedAckEvent!
       jobManager().deleteJob(pEvt->job_id());
-    }
-    catch(JobNotDeletedException const & ex1)
-    {
-      throw;
-    }
-    catch(std::exception const &ex2)
-    {
-      throw;
-    }
   }
   else
   {
@@ -1058,18 +1044,8 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
 
   if(jobManager().findJob(pEvt->job_id()))
   {
-    try {
         // delete it from the map when you receive a JobFailedAckEvent!
         jobManager().deleteJob(pEvt->job_id());
-    }
-    catch(JobNotDeletedException const & ex1)
-    {
-      throw;
-    }
-    catch(std::exception const &ex2)
-    {
-      throw;
-    }
   }
   else
   {

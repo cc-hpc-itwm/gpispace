@@ -142,24 +142,14 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
         }
         scheduler()->deleteWorkerJob( worker_id, pJob->id() );
       }
-      catch(WorkerNotFoundException const &)
-      {
-        throw;
-      }
       catch(const JobNotDeletedException&)
       {
       }
 
-      try {
         //delete it also from job_map_
         if(bAllPartResCollected) {
            jobManager().deleteJob(pEvt->job_id());
         }
-      }
-      catch(JobNotDeletedException const &)
-      {
-          throw;
-      }
   }
 }
 
@@ -314,24 +304,14 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
         }
         scheduler()->deleteWorkerJob( worker_id, pJob->id() );
       }
-      catch(WorkerNotFoundException const &)
-      {
-        throw;
-      }
       catch(const JobNotDeletedException&)
       {
       }
 
-      try {
         //delete it also from job_map_
         if(bAllPartResCollected) {
             jobManager().deleteJob(pEvt->job_id());
         }
-      }
-      catch(JobNotDeletedException const &ex)
-      {
-        throw ex;
-      }
   }
 }
 

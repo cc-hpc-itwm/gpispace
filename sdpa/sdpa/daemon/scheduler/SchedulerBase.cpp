@@ -78,8 +78,6 @@ void SchedulerBase::reschedule( const Worker::worker_id_t & worker_id, sdpa::job
 void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
 {
   lock_type lock(mtx_);
-  try {
-
     // mark the worker dirty -> don't take it in consideration for re-scheduling
     const Worker::ptr_t pWorker = findWorker(worker_id);
     pWorker->set_disconnected(true);
@@ -93,11 +91,6 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
 
     // delete the worker from the worker map
     _worker_manager.deleteWorker(worker_id);
-  }
-  catch (const WorkerNotFoundException& ex)
-  {
-      throw ex;
-  }
 }
 
 void SchedulerBase::delete_job (sdpa::job_id_t const & job)
@@ -196,8 +189,6 @@ void SchedulerBase::run()
 {
   for (;;)
   {
-    try
-    {
       sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait();
 
       if( numberOfWorkers()>0 ) {
@@ -208,37 +199,21 @@ void SchedulerBase::run()
           lock_type lock(mtx_);
           cond_workers_registered.wait(lock);
       }
-    }
-    catch ( const std::exception &ex )
-    {
-        throw;
-    }
   }
 }
 
 void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
-  try {
     Worker::ptr_t ptrWorker = findWorker(worker_id);
 
     //put the job into the Running state: do this in acknowledge!
     if( !ptrWorker->acknowledge(job_id) )
       throw JobNotFoundException(job_id);
-  }
-  catch(JobNotFoundException const& ex1)
-  {
-    throw ex1;
-  }
-  catch(WorkerNotFoundException const &ex2)
-  {
-    throw ex2;
-  }
 }
 
 void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &jobId )
 {
-  try {
     lock_type lock(mtx_);
 
     ///jobs_to_be_scheduled.erase( job_id );
@@ -247,15 +222,6 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
     // free all the workers in this list, i.e. mark them as not reserved
     _worker_manager.deleteWorkerJob(worker_id, jobId);
     cond_feed_workers.notify_one();
-  }
-  catch(JobNotDeletedException const& ex1)
-  {
-    throw ex1;
-  }
-  catch(WorkerNotFoundException const &ex2 )
-  {
-    throw ex2;
-  }
 }
 
 bool SchedulerBase::has_job(const sdpa::job_id_t& job_id)
