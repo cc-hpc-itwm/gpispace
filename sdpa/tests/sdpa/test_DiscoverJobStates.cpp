@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE (discover_after_losing_capabilities)
 BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation_test2.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
 BOOST_AUTO_TEST_CASE (discover_after_restarting_workers)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation_test2.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());

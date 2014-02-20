@@ -30,8 +30,10 @@ include (pnet_macros)
 get_target_property (PNETPUT_LOCATION pnetput LOCATION)
 
 ###########################################################################################
-pnet_compile(capabilities-test-wf ${DIR_SRC_TEST_WORKFLOWS}/capabilities.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities-test-wf.in.pnet
+
+pnet_compile (capabilities-test-wf
+  ${CMAKE_SOURCE_DIR}/application/example/capabilities/capabilities.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capabilities-test-wf.in.pnet
   GENERATE capabilities
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -56,8 +58,10 @@ add_custom_target (workflow_capabilities
 )
 
 ###########################################################################################
-pnet_compile(capabilities_no_mandatory-test-wf ${DIR_SRC_TEST_WORKFLOWS}/capabilities_no_mandatory.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/capabilities_no_mandatory-test-wf.in.pnet
+
+pnet_compile (capabilities_no_mandatory-test-wf
+  ${CMAKE_SOURCE_DIR}/application/example/capabilities_no_mandatory/capabilities_no_mandatory.xml
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory-test-wf.in.pnet
   GENERATE capabilities_no_mandatory
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -82,8 +86,10 @@ add_custom_target (workflow_capabilities_no_mandatory
 )
 
 ################################################################################################
-pnet_compile(inotify-test-wf ${DIR_SRC_TEST_WORKFLOWS}/inotify.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/inotify-test-wf.in.pnet
+
+pnet_compile (inotify-test-wf
+  ${CMAKE_SOURCE_DIR}/application/example/inotify/inotify.xml
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/inotify-test-wf.in.pnet
   GENERATE inotify
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -106,9 +112,10 @@ add_custom_target (workflow_inotify
 )
 
 ################################################################################################
-#transform
-pnet_compile(transform_file-test-wf ${DIR_SRC_TEST_WORKFLOWS}/transform_file/transform_file.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/transform_file-test-wf.in.pnet
+
+pnet_compile (transform_file-test-wf
+  ${CMAKE_SOURCE_DIR}/application/transform_file/xml/transform_file.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/transform_file-test-wf.in.pnet
   GENERATE transform_file
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -135,9 +142,10 @@ add_custom_target (workflow_transform_file
 )
 
 ################################################################################################
-#coallocation_test
-pnet_compile(coallocation_test-wf ${DIR_SRC_TEST_WORKFLOWS}/coallocation_test.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/workflows/coallocation_test-wf.in.pnet
+
+pnet_compile (coallocation_test-wf
+  ${CMAKE_SOURCE_DIR}/application/example/coallocation_test/coallocation_test.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
   GENERATE coallocation_test
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
@@ -190,29 +198,28 @@ add_custom_target (workflow_coallocation_test2
 
 ################################################################################################
 
+#test_Capabilities
 fhg_add_test (test_Capabilities.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_capabilities
+  DEPENDS workflow_capabilities
           workflow_capabilities_no_mandatory
 )
 
+#test_Coallocation
 fhg_add_test (test_Coallocation.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_coallocation_test
+  DEPENDS workflow_coallocation_test
 )
 
+#test_Inotify
 fhg_add_test (test_Inotify.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -224,25 +231,19 @@ fhg_add_test (test_Inotify.cpp
           workflow_inotify
 )
 
+#test_CancelJob
 fhg_add_test (test_CancelJob.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_coallocation_test2
+  DEPENDS workflow_coallocation_test2
           workflow_transform_file
           workflow_capabilities
 )
 
-fhg_add_test (test_SynchronizedQueue.cpp
-  PROJECT sdpa
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-)
-
+#test_CoallocationScheduler
 fhg_add_test (test_CoallocationScheduler.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -250,6 +251,7 @@ fhg_add_test (test_CoallocationScheduler.cpp
                  ${FhgLog_LIBRARY}
 )
 
+#test_SimpleScheduler
 fhg_add_test (test_SimpleScheduler.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -257,6 +259,7 @@ fhg_add_test (test_SimpleScheduler.cpp
                  ${FhgLog_LIBRARY}
 )
 
+#restart_drts_worker_while_jobs_are_running.cpp
 fhg_add_test (restart_drts_worker_while_jobs_are_running.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -269,57 +272,102 @@ fhg_add_test (restart_drts_worker_while_jobs_are_running.cpp
           workflow_transform_file
 )
 
+#test_Topologies
 fhg_add_test (test_Topologies.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_transform_file
+  DEPENDS workflow_transform_file
 )
 
+#test_Subscriber
 fhg_add_test (test_Subscriber.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_transform_file
+  DEPENDS workflow_transform_file
 )
 
+#test_SubmitJobFails
 fhg_add_test (test_SubmitJobFails.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
 )
 
+#test_TransformFile
 fhg_add_test (test_TransformFile.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_transform_file
+  DEPENDS workflow_transform_file
   )
 
+#test_DiscoverJobStates
 fhg_add_test (test_DiscoverJobStates.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_coallocation_test
+  DEPENDS workflow_coallocation_test
           workflow_coallocation_test2
+)
+
+#test_FailOnBadRequirements.cpp
+fhg_add_test (test_FailOnBadRequirements.cpp
+  PROJECT sdpa
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES sdpa
+                 fhg-plugin
+                 ${FhgLog_LIBRARY}
+  DEPENDS workflow_coallocation_bad_test
+)
+
+#test_Requirements.cpp
+fhg_add_test (test_Requirements.cpp
+  PROJECT sdpa
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES sdpa
+                 fhg-plugin
+                 ${FhgLog_LIBRARY}
+  DEPENDS workflow_capabilities
+)
+#test_ScheduleData.cpp
+fhg_add_test (test_ScheduleData.cpp
+  PROJECT sdpa
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES sdpa
+                 fhg-plugin
+                 ${FhgLog_LIBRARY}
+  DEPENDS workflow_coallocation_bad_test
+          workflow_coallocation_test2
+)
+
+#test_WorkflowEngineCancel.cpp
+fhg_add_test (test_WorkflowEngineCancel.cpp
+  PROJECT sdpa
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES sdpa
+                 fhg-plugin
+                 ${FhgLog_LIBRARY}
+  DEPENDS workflow_coallocation_test
+)
+
+#test_WorkflowEngineDiscover.cpp
+fhg_add_test (test_WorkflowEngineDiscover.cpp
+  PROJECT sdpa
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES sdpa
+                 fhg-plugin
+                 ${FhgLog_LIBRARY}
+  DEPENDS workflow_coallocation_test
 )

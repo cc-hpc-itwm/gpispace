@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE (agent_cancels_workflow_after_first_activity_received)
 {
   // Note: this workflow produces 30 activities
   const std::string workflow
-      (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+      (utils::require_and_read_file ("coallocation_test.pnet"));
 
   const we::type::activity_t activity (workflow);
   TestAgent agent ("agent_0", 0, 1);
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE (agent_cancels_workflow_after_first_activity_finished)
 {
   // Note: this workflow produces 30 activities
   const std::string workflow
-      (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+      (utils::require_and_read_file ("coallocation_test.pnet"));
 
   const we::type::activity_t activity (workflow);
   TestAgent agent ("agent_0", 1, 5);
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE (agent_cancels_workflow_after_all_activities_submitted_and_
 {
   // Note: this workflow produces 30 activities
   const std::string workflow
-      (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+      (utils::require_and_read_file ("coallocation_test.pnet"));
 
   const we::type::activity_t activity (workflow);
   TestAgent agent ("agent_0", 30, 30);
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE (agent_cancels_workflow_after_random_number_of_activities_s
 {
   // Note: this workflow produces 30 activities
   const std::string workflow
-      (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+      (utils::require_and_read_file ("coallocation_test.pnet"));
 
   srand (time(NULL));
 

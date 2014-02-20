@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE (fail_on_invalid_num_workers_required)
   // this workflow produces two activities, each requiring 0 workers
   // the job should fail due to invalid number of workers required
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_bad_test.pnet"));
+    (utils::require_and_read_file ("coallocation_bad_test.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());

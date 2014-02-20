@@ -167,7 +167,7 @@ private:
 BOOST_AUTO_TEST_CASE (test_discover_activities)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation_test2.pnet"));
 
   const we::type::activity_t activity (workflow);
 

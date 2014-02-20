@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE (check_requirements)
 {
   // this workflow has 20 tasks of type A and 10 tasks of type B
   const std::string workflow
-    (utils::require_and_read_file ("workflows/capabilities.pnet"));
+    (utils::require_and_read_file ("capabilities.pnet"));
 
   const we::type::activity_t activity (workflow);
   TestAgent agent ("agent_0");

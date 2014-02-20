@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE (num_workers_required_is_0)
 {
   // this workflow produces two activities, each requiring 0 workers
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_bad_test.pnet"));
+    (utils::require_and_read_file ("coallocation_bad_test.pnet"));
 
   const we::type::activity_t activity (workflow);
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE (valid_num_workers_required)
 {
   // this workflow produces two activities, each requiring 0 workers
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation_test2.pnet"));
 
   const we::type::activity_t activity (workflow);
 

@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 BOOST_AUTO_TEST_CASE (lose_capabilities)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/capabilities.pnet"));
+    (utils::require_and_read_file ("capabilities.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
