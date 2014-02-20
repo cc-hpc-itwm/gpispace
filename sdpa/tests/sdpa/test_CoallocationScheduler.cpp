@@ -109,6 +109,20 @@ namespace
     set.insert (sdpa::capability_t (name_1, worker));
     return set;
   }
+
+  job_requirements_t require (std::string name_1)
+  {
+    requirement_list_t reqs;
+    reqs.push_back (we::type::requirement_t (name_1, true));
+    return job_requirements_t (reqs, we::type::schedule_data());
+  }
+
+  job_requirements_t require (std::string name_1, unsigned long workers)
+  {
+    requirement_list_t reqs;
+    reqs.push_back (we::type::requirement_t (name_1, true));
+    return job_requirements_t (reqs, we::type::schedule_data (workers, boost::none));
+  }
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_agent_and_scheduler)
@@ -136,8 +150,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   {
     const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
       arrJobIds.push_back(jobId);
-      job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-      _agent.TEST_add_dummy_job (jobId, job_reqs);
+      _agent.TEST_add_dummy_job (jobId, require ("C"));
   }
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
@@ -214,8 +227,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   {
     const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
       arrJobIds.push_back(jobId);
-      job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-      _agent.TEST_add_dummy_job (jobId, job_reqs);
+      _agent.TEST_add_dummy_job (jobId, require ("C"));
   }
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_8"));
@@ -288,8 +300,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   {
     const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
     arrJobIds.push_back(jobId);
-    job_requirements_t job_reqs(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100));
-    _agent.TEST_add_dummy_job (jobId, job_reqs);
+    _agent.TEST_add_dummy_job (jobId, require ("C"));
   }
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_8"));
@@ -348,16 +359,13 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
   // create a number of jobs
   const sdpa::job_id_t jobId0("Job0");
-  job_requirements_t jobReqs0(requirement_list_t(1, we::type::requirement_t(WORKER_CPBS[0], true)), we::type::schedule_data(4, 100));
-  _agent.TEST_add_dummy_job (jobId0, jobReqs0);
+  _agent.TEST_add_dummy_job (jobId0, require (WORKER_CPBS[0], 4));
 
   const sdpa::job_id_t jobId1("Job1");
-  job_requirements_t jobReqs1(requirement_list_t(1, we::type::requirement_t(WORKER_CPBS[1], true)), we::type::schedule_data(4, 100));
-  _agent.TEST_add_dummy_job (jobId1, jobReqs1);
+  _agent.TEST_add_dummy_job (jobId1, require (WORKER_CPBS[1], 4));
 
   const sdpa::job_id_t jobId2("Job2");
-  job_requirements_t jobReqs2(requirement_list_t(1, we::type::requirement_t(WORKER_CPBS[2], true)), we::type::schedule_data(4, 100));
-  _agent.TEST_add_dummy_job (jobId2, jobReqs2);
+  _agent.TEST_add_dummy_job (jobId2, require (WORKER_CPBS[2], 4));
 
   _agent.expect_serveJob_call (jobId0, worker_list ("6", "3", "9", "0"));
   _agent.expect_serveJob_call (jobId1, worker_list ("10", "7", "4", "1"));
@@ -394,8 +402,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
   // try now to schedule a job requiring 2 resources of type "A"
   const sdpa::job_id_t jobId4("Job4");
-  job_requirements_t jobReqs4(requirement_list_t(1, we::type::requirement_t(WORKER_CPBS[0], true)), we::type::schedule_data(2, 100));
-  _agent.TEST_add_dummy_job (jobId4, jobReqs4);
+  _agent.TEST_add_dummy_job (jobId4, require (WORKER_CPBS[0], 2));
 
   _agent.expect_serveJob_call (jobId4, worker_list ("6", "3"));
   _scheduler.schedule(jobId4);
@@ -441,7 +448,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   {
     const sdpa::job_id_t jobId ((boost::format ("job_%1%") % i).str());
     arrJobIds.push_back(jobId);
-    _agent.TEST_add_dummy_job (jobId,  job_requirements_t(requirement_list_t(1, we::type::requirement_t("C", true)), we::type::schedule_data(1, 100)));
+    _agent.TEST_add_dummy_job (jobId, require ("C"));
   }
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
