@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  test_CoallocationScheduler.cpp
- *
- *    Description:  test the scheduler thread
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #define BOOST_TEST_MODULE TestScheduler
 #include <boost/test/unit_test.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
