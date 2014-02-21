@@ -230,7 +230,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   try {
     // One should parse the workflow in order to be able to create a valid job
     bool b_master_job(e.is_external() && hasWorkflowEngine());
-    jobManager().addJob(job_id, e.description(), b_master_job, e.from());
+    _job_manager.addJob(job_id, e.description(), b_master_job, e.from());
   }
   catch (std::runtime_error const &ex)
   {
@@ -442,7 +442,7 @@ try
     throw std::runtime_error ("invalid number of workers required: 0UL");
   }
 
-  jobManager().addJobRequirements
+  _job_manager.addJobRequirements
     ( job_id
     , job_requirements_t (activity.transition().requirements(), schedule_data)
     );
@@ -611,7 +611,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
     }
 
   if(!isTop())
-    jobManager().resubmitResults(this);
+    _job_manager.resubmitResults(this);
 }
 
 void GenericDaemon::registerWorker(const events::WorkerRegistrationEvent& evtRegWorker)

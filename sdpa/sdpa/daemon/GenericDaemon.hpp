@@ -193,23 +193,23 @@ namespace sdpa {
       std::string gen_id();
 
     public:
-      // forwarding to jobManager() only:
+      // forwarding to _job_manager only:
       void TEST_add_dummy_job
         (const sdpa::job_id_t& job_id, const job_requirements_t& req_list)
       {
-        return jobManager().addJob (job_id, job_id, false, "", req_list);
+        return _job_manager.addJob (job_id, job_id, false, "", req_list);
       }
       Job* findJob(const sdpa::job_id_t& job_id ) const
       {
-        return jobManager().findJob(job_id);
+        return _job_manager.findJob(job_id);
       }
       void deleteJob(const sdpa::job_id_t& jobId)
       {
-        jobManager().deleteJob(jobId);
+        _job_manager.deleteJob(jobId);
       }
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const
       {
-        return jobManager().getJobRequirements(jobId);
+        return _job_manager.getJobRequirements(jobId);
       }
 
       // forwaring to scheduler() only:
@@ -217,10 +217,6 @@ namespace sdpa {
       {
         return scheduler()->findWorker(worker_id);
       }
-
-    protected:
-      const JobManager& jobManager() const { return _job_manager; }
-      JobManager& jobManager() { return _job_manager; }
 
       // data members
     protected:
