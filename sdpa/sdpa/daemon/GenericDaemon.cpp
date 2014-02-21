@@ -275,8 +275,6 @@ void GenericDaemon::handleWorkerRegistrationEvent (const events::WorkerRegistrat
   worker_id_t worker_id (evtRegWorker.from());
 
   // check if the worker evtRegWorker.from() has already registered!
-  try
-  {
     // delete inherited capabilities that are owned by the current agent
     sdpa::capabilities_set_t workerCpbSet;
 
@@ -292,13 +290,24 @@ void GenericDaemon::handleWorkerRegistrationEvent (const events::WorkerRegistrat
       }
     }
 
+  bool was_new_worker;
+  try
+  {
     scheduler()->addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet);
+    was_new_worker = true;
+  }
+  catch(WorkerAlreadyExistException& ex)
+  {
+    was_new_worker = false;
+  }
 
     // send back an acknowledgment
     events::WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new events::WorkerRegistrationAckEvent(name(), worker_id));
 
     sendEventToOther(pWorkerRegAckEvt);
 
+  if (was_new_worker)
+  {
     if( !workerCpbSet.empty() && !isTop() )
     {
       lock_type lock(mtx_master_);
@@ -310,14 +319,6 @@ void GenericDaemon::handleWorkerRegistrationEvent (const events::WorkerRegistrat
           sendEventToOther(shpCpbGainEvt);
         }
     }
-  }
-  catch(WorkerAlreadyExistException& ex)
-  {
-      // just answer back with an acknowledgment
-      events::WorkerRegistrationAckEvent::Ptr const pWorkerRegAckEvt
-        (new events::WorkerRegistrationAckEvent ( name(), evtRegWorker.from()));
-
-      sendEventToOther(pWorkerRegAckEvt);
   }
 }
 
