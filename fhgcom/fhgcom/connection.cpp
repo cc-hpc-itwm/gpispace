@@ -4,7 +4,7 @@
 
 #include <boost/system/error_code.hpp>
 
-#include "connection.hpp"
+#include <fhgcom/connection.hpp>
 
 #include <fhgcom/util/to_hex.hpp>
 #include <fhgcom/message_io.hpp>

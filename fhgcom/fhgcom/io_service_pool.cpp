@@ -1,4 +1,4 @@
-#include "io_service_pool.hpp"
+#include <fhgcom/io_service_pool.hpp>
 
 #include <stdexcept>
 #include <boost/thread.hpp>

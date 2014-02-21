@@ -1,4 +1,4 @@
-#include "tcp_server.hpp"
+#include <fhgcom/tcp_server.hpp>
 #include <boost/bind.hpp>
 
 using namespace fhg::com;

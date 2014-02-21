@@ -1,5 +1,5 @@
-#include "ns_uuid.hpp"
-#include "header.hpp"
+#include <fhgcom/ns_uuid.hpp>
+#include <fhgcom/header.hpp>
 
 #include <cstring>
 

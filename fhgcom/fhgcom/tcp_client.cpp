@@ -5,7 +5,7 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include "tcp_client.hpp"
+#include <fhgcom/tcp_client.hpp>
 
 using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;

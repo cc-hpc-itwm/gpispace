@@ -15,7 +15,7 @@ using boost::lambda::bind;
 using boost::lambda::var;
 //using boost::lambda::_1;
 
-#include "peer.hpp"
+#include <fhgcom/peer.hpp>
 #include <fhg/util/thread/event.hpp>
 
 #include <cstdlib>
