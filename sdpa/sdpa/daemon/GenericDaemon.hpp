@@ -199,10 +199,6 @@ namespace sdpa {
       {
         return jobManager().addJob (job_id, job_id, false, "", req_list);
       }
-      bool hasJobs()
-      {
-        return jobManager().hasJobs();
-      }
       Job* findJob(const sdpa::job_id_t& job_id ) const
       {
         return jobManager().findJob(job_id);

@@ -139,12 +139,5 @@ namespace sdpa
         }
       }
     }
-
-    bool JobManager::hasJobs() const
-    {
-      lock_type _ (_job_map_and_requirements_mutex);
-
-      return !job_map_.empty();
-    }
   }
 }

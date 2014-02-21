@@ -38,8 +38,6 @@ namespace sdpa
       void addJobRequirements (const sdpa::job_id_t&, const job_requirements_t&);
       const job_requirements_t getJobRequirements (const sdpa::job_id_t&) const;
 
-      bool hasJobs() const;
-
       void resubmitResults (GenericDaemon*) const;
 
   protected:
