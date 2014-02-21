@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE append
 #include <boost/test/unit_test.hpp>
 
-#include <tests/utils.hpp>
+#include <fhglog/appender/test/utils.hpp>
 
 #include <fhglog/fhglog.hpp>
 #include <fhglog/appender/stream.hpp>
