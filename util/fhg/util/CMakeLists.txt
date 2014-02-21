@@ -57,8 +57,6 @@ set (srcs
 
   ostream_modifier.cpp
 
-  thread/pool.cpp
-
   parse/position.cpp
   parse/error.cpp
   parse/ini.cpp

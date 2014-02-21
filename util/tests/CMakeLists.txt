@@ -32,9 +32,3 @@ fhg_add_test(hex.cpp
   PROJECT util
   LINK_LIBRARIES fhg-util
 )
-
-fhg_add_test(pool.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES fhg-util
-)
