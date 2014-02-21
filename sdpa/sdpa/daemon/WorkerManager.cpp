@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <sdpa/types.hpp>
 #include <boost/foreach.hpp>
-#include "boost/bind.hpp"
+#include <boost/bind.hpp>
 
 #include <algorithm>
 #include <limits>
