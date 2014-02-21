@@ -4,7 +4,7 @@
 
 #include <xml/parse/error.hpp>
 
-#include <rewrite/validprefix.hpp>
+#include <xml/parse/rewrite/validprefix.hpp>
 
 namespace xml
 {
