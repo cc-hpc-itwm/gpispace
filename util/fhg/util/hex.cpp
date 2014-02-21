@@ -1,4 +1,4 @@
-#include "hex.hpp"
+#include <fhg/util/hex.hpp>
 
 #include <boost/foreach.hpp>
 
