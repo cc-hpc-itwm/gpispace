@@ -111,5 +111,4 @@ install (TARGETS fhg-util-shared
 )
 
 add_subdirectory (boost)
-add_subdirectory(thread)
   add_subdirectory(test)
