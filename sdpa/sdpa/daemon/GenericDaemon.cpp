@@ -269,18 +269,16 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 }
 
 void GenericDaemon::handleWorkerRegistrationEvent
-  (const events::WorkerRegistrationEvent* evt)
+  (const events::WorkerRegistrationEvent* event)
 {
-  const events::WorkerRegistrationEvent& evtRegWorker (*evt);
+  const worker_id_t worker_id (event->from());
 
-  worker_id_t worker_id (evtRegWorker.from());
-
-  // check if the worker evtRegWorker.from() has already registered!
+  // check if the worker event->from() has already registered!
   // delete inherited capabilities that are owned by the current agent
   sdpa::capabilities_set_t workerCpbSet;
 
   // take the difference
-  BOOST_FOREACH (const sdpa::capability_t& cpb, evtRegWorker.capabilities())
+  BOOST_FOREACH (const sdpa::capability_t& cpb, event->capabilities())
   {
     // own capabilities have always the depth 0 and are not inherited
     // by the descendants
@@ -295,7 +293,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
   bool was_new_worker;
   try
   {
-    scheduler()->addWorker (worker_id, evtRegWorker.capacity(), workerCpbSet);
+    scheduler()->addWorker (worker_id, event->capacity(), workerCpbSet);
     was_new_worker = true;
   }
   catch (WorkerAlreadyExistException& ex)
@@ -303,10 +301,10 @@ void GenericDaemon::handleWorkerRegistrationEvent
     was_new_worker = false;
   }
 
-  // send back an acknowledgment
-  events::WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt
-    (new events::WorkerRegistrationAckEvent (name(), worker_id));
-  sendEventToOther (pWorkerRegAckEvt);
+  sendEventToOther
+    ( events::WorkerRegistrationAckEvent::Ptr
+      (new events::WorkerRegistrationAckEvent (name(), worker_id))
+    );
 
   if (was_new_worker && !workerCpbSet.empty() && !isTop())
   {
@@ -319,9 +317,10 @@ void GenericDaemon::handleWorkerRegistrationEvent
     {
       if (it->is_registered() && it->name() != worker_id)
       {
-        events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt
-          (new events::CapabilitiesGainedEvent (name(), it->name(), workerCpbSet));
-        sendEventToOther (shpCpbGainEvt);
+        sendEventToOther
+          ( events::CapabilitiesGainedEvent::Ptr
+            (new events::CapabilitiesGainedEvent (name(), it->name(), workerCpbSet))
+          );
       }
     }
   }
