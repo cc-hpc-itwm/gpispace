@@ -16,10 +16,6 @@ namespace sdpa
     {
     public:
       ~JobManager();
-      typedef boost::unordered_map<sdpa::job_id_t, job_requirements_t>
-        requirements_map_t;
-      typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
-        job_map_t;
 
       Job* findJob (const sdpa::job_id_t&) const;
 
@@ -38,6 +34,11 @@ namespace sdpa
       void resubmitResults (GenericDaemon*) const;
 
   protected:
+      typedef boost::unordered_map<sdpa::job_id_t, job_requirements_t>
+        requirements_map_t;
+      typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
+        job_map_t;
+
       mutable boost::mutex _job_map_and_requirements_mutex;
       job_map_t job_map_;
       requirements_map_t job_requirements_;
