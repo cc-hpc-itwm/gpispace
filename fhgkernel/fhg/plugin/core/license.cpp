@@ -1,4 +1,4 @@
-#include "license.hpp"
+#include <fhg/plugin/core/license.hpp>
 
 #ifdef FHG_ENABLE_LICENSE_CHECK
 
