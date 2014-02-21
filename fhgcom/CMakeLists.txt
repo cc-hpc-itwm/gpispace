@@ -1,7 +1,6 @@
 set (FHG_COM_NS_UUID "c9fe00cb-d9f7-432e-9235-66b7929b6e2a" CACHE STRING "The unique namespace uuid for this installation")
 
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (${FhgCom_INCLUDE_DIR})
 
 find_package (ZLIB REQUIRED QUIET)
 include_directories (SYSTEM ${ZLIB_INCLUDE_DIRS})
