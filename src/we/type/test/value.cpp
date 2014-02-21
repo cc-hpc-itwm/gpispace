@@ -1172,7 +1172,7 @@ BOOST_AUTO_TEST_CASE (positions)
   LITERAL (0.0f);
   LITERAL (0.0);
   LITERAL ('c');
-  LITERAL ("");
+  LITERAL (std::string (""));
   LITERAL (bitsetofint::type());
   LITERAL (bytearray::type());
   LITERAL (std::list<value_type>());
@@ -1194,9 +1194,9 @@ BOOST_AUTO_TEST_CASE (positions)
 
   BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
 
-  pnet::type::value::poke ("c.1", value, "foo");
+  pnet::type::value::poke ("c.1", value, std::string ("foo"));
   positions.push_back (std::make_pair (split ("c.1"), "foo"));
-  pnet::type::value::poke ("c.2", value, "bar");
+  pnet::type::value::poke ("c.2", value, std::string ("bar"));
   positions.push_back (std::make_pair (split ("c.2"), "bar"));
 
   BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
