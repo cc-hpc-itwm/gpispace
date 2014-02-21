@@ -310,16 +310,17 @@ void GenericDaemon::handleWorkerRegistrationEvent
   {
     lock_type lock (mtx_master_);
     // send to the masters my new set of capabilities
-    for ( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin()
-        ; it != m_arrMasterInfo.end()
-        ; it++
-        )
+    BOOST_FOREACH (MasterInfo const& master, m_arrMasterInfo)
     {
-      if (it->is_registered() && it->name() != worker_id)
+      if (master.is_registered() && master.name() != worker_id)
       {
         sendEventToOther
           ( events::CapabilitiesGainedEvent::Ptr
-            (new events::CapabilitiesGainedEvent (name(), it->name(), workerCpbSet))
+            ( new events::CapabilitiesGainedEvent ( name()
+                                                  , master.name()
+                                                  , workerCpbSet
+                                                  )
+            )
           );
       }
     }
