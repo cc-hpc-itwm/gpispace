@@ -277,7 +277,39 @@ void GenericDaemon::handleWorkerRegistrationEvent (const events::WorkerRegistrat
   // check if the worker evtRegWorker.from() has already registered!
   try
   {
-    registerWorker(evtRegWorker);
+    // delete inherited capabilities that are owned by the current agent
+    sdpa::capabilities_set_t workerCpbSet;
+
+    // take the difference
+    BOOST_FOREACH( const sdpa::capability_t& cpb, evtRegWorker.capabilities() )
+    {
+      // own capabilities have always the depth 0 and are not inherited by the descendants
+      if( !isOwnCapability(cpb) )
+      {
+        sdpa::capability_t cpbMod(cpb);
+        cpbMod.incDepth();
+        workerCpbSet.insert(cpbMod);
+      }
+    }
+
+    scheduler()->addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet);
+
+    // send back an acknowledgment
+    events::WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new events::WorkerRegistrationAckEvent(name(), worker_id));
+
+    sendEventToOther(pWorkerRegAckEvt);
+
+    if( !workerCpbSet.empty() && !isTop() )
+    {
+      lock_type lock(mtx_master_);
+      // send to the masters my new set of capabilities
+      for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
+        if (it->is_registered() && it->name() != worker_id  )
+        {
+          events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new events::CapabilitiesGainedEvent(name(), it->name(), workerCpbSet));
+          sendEventToOther(shpCpbGainEvt);
+        }
+    }
   }
   catch(WorkerAlreadyExistException& ex)
   {
@@ -682,45 +714,6 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
         throw std::runtime_error("The job "+job->id()+" has an invalid/unknown state");
       }
     }
-  }
-}
-
-void GenericDaemon::registerWorker(const events::WorkerRegistrationEvent& evtRegWorker)
-{
-  worker_id_t worker_id (evtRegWorker.from());
-
-  // delete inherited capabilities that are owned by the current agent
-  sdpa::capabilities_set_t workerCpbSet;
-
-  // take the difference
-  BOOST_FOREACH( const sdpa::capability_t& cpb, evtRegWorker.capabilities() )
-  {
-    // own capabilities have always the depth 0 and are not inherited by the descendants
-    if( !isOwnCapability(cpb) )
-    {
-      sdpa::capability_t cpbMod(cpb);
-      cpbMod.incDepth();
-      workerCpbSet.insert(cpbMod);
-    }
-  }
-
-  scheduler()->addWorker( worker_id, evtRegWorker.capacity(), workerCpbSet);
-
-  // send back an acknowledgment
-  events::WorkerRegistrationAckEvent::Ptr pWorkerRegAckEvt(new events::WorkerRegistrationAckEvent(name(), worker_id));
-
-  sendEventToOther(pWorkerRegAckEvt);
-
-  if( !workerCpbSet.empty() && !isTop() )
-  {
-    lock_type lock(mtx_master_);
-    // send to the masters my new set of capabilities
-    for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
-      if (it->is_registered() && it->name() != worker_id  )
-      {
-        events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new events::CapabilitiesGainedEvent(name(), it->name(), workerCpbSet));
-        sendEventToOther(shpCpbGainEvt);
-      }
   }
 }
 

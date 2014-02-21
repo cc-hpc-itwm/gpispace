@@ -171,9 +171,6 @@ namespace sdpa {
       void requestRegistration(const MasterInfo& masterInfo);
       void request_registration_soon (const MasterInfo& info);
 
-    protected:
-      void registerWorker(const sdpa::events::WorkerRegistrationEvent& evtRegWorker);
-
       // workflow engine
     public:
       we::layer* workflowEngine() const { return ptr_workflow_engine_; }
