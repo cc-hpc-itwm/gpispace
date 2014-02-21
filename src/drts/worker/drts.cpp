@@ -484,7 +484,7 @@ void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
   {
     boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
 
-    if (m_backlog_size && m_pending_jobs.size() >= m_backlog_size)
+    if (m_backlog_size && m_pending_jobs.INDICATES_A_RACE_size() >= m_backlog_size)
     {
       MLOG( WARN
           , "cannot accept new job (" << job->id() << "), backlog is full."

@@ -137,7 +137,7 @@ namespace sdpa
     template<typename Expected, typename Sent>
       Expected Client::send_and_wait_for_reply (Sent event)
     {
-      m_incoming_events.clear();
+      m_incoming_events.INDICATES_A_RACE_clear();
 
       fhg::com::message_t msg (message_for_event (&event));
 

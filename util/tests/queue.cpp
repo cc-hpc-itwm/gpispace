@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_by_multiple_threads)
   }
 }
 
-BOOST_AUTO_TEST_CASE (thread_queue_clear)
+BOOST_AUTO_TEST_CASE (thread_queue_INDICATES_A_RACE_clear)
 {
   static const int NUM_ITEMS_TO_PUT = 10000;
 
@@ -98,11 +98,11 @@ BOOST_AUTO_TEST_CASE (thread_queue_clear)
 
   fill_items (items, NUM_ITEMS_TO_PUT);
 
-  BOOST_REQUIRE_EQUAL ( items.size ()
+  BOOST_REQUIRE_EQUAL ( items.INDICATES_A_RACE_size ()
                       , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT)
                       );
 
-  items.clear ();
+  items.INDICATES_A_RACE_clear ();
 
-  BOOST_REQUIRE_EQUAL (items.size (), 0u);
+  BOOST_REQUIRE_EQUAL (items.INDICATES_A_RACE_size (), 0u);
 }
