@@ -5,7 +5,7 @@ configure_file(in.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/in.txt COPYONLY)
 include_directories (${FVM_INCLUDE_DIR})
 include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
-set(DIR_SRC_TEST_WORKFLOWS "${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows")
+set(TEST_WORKFLOWS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows")
 
 set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities")
 set(TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory")
@@ -32,7 +32,7 @@ get_target_property (PNETPUT_LOCATION pnetput LOCATION)
 ###########################################################################################
 
 pnet_compile (capabilities-test-wf
-  ${CMAKE_SOURCE_DIR}/application/example/capabilities/capabilities.xpnet
+  ${TEST_WORKFLOWS_SOURCE_DIR}/capabilities.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capabilities-test-wf.in.pnet
   GENERATE capabilities
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
@@ -60,7 +60,7 @@ add_custom_target (workflow_capabilities
 ###########################################################################################
 
 pnet_compile (capabilities_no_mandatory-test-wf
-  ${CMAKE_SOURCE_DIR}/application/example/capabilities_no_mandatory/capabilities_no_mandatory.xml
+  ${TEST_WORKFLOWS_SOURCE_DIR}/capabilities_no_mandatory.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory-test-wf.in.pnet
   GENERATE capabilities_no_mandatory
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
@@ -88,7 +88,7 @@ add_custom_target (workflow_capabilities_no_mandatory
 ################################################################################################
 
 pnet_compile (inotify-test-wf
-  ${CMAKE_SOURCE_DIR}/application/example/inotify/inotify.xml
+  ${TEST_WORKFLOWS_SOURCE_DIR}/inotify.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/inotify-test-wf.in.pnet
   GENERATE inotify
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
@@ -114,7 +114,7 @@ add_custom_target (workflow_inotify
 ################################################################################################
 
 pnet_compile (transform_file-test-wf
-  ${CMAKE_SOURCE_DIR}/application/transform_file/xml/transform_file.xpnet
+  ${TEST_WORKFLOWS_SOURCE_DIR}/transform_file/transform_file.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/transform_file-test-wf.in.pnet
   GENERATE transform_file
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
@@ -144,7 +144,7 @@ add_custom_target (workflow_transform_file
 ################################################################################################
 
 pnet_compile (coallocation_test-wf
-  ${CMAKE_SOURCE_DIR}/application/example/coallocation_test/coallocation_test.xpnet
+  ${TEST_WORKFLOWS_SOURCE_DIR}/coallocation_test.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
   GENERATE coallocation_test
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
