@@ -230,8 +230,10 @@ namespace sdpa {
       sdpa::subscriber_map_t m_listSubscribers;
       map_discover_ids_t m_map_discover_ids;
 
-    protected:
+    private:
       JobManager _job_manager;
+
+    protected:
       SchedulerBase::ptr_t ptr_scheduler_;
       boost::optional<boost::mt19937> _random_extraction_engine;
       we::layer* ptr_workflow_engine_;
