@@ -18,7 +18,6 @@ namespace fhg
     void close (int fd);
     int dup (int oldfd);
     int dup (int olfd, int newfd);
-    int dup (int olfd, int newfd, int flags);
     void execve (const char* filename, char* const argv[], char* const envp[]);
     pid_t fork();
     void ftruncate (int fd, off_t length);

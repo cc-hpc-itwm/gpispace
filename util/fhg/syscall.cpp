@@ -91,10 +91,6 @@ namespace fhg
     {
       return negative_one_fails_with_errno<int> (::dup2 (oldfd, newfd));
     }
-    int dup (int oldfd, int newfd, int flags)
-    {
-      return negative_one_fails_with_errno<int> (::dup3 (oldfd, newfd, flags));
-    }
 
     void execve (const char* filename, char* const argv[], char* const envp[])
     {
