@@ -16,7 +16,7 @@ namespace sdpa
     {
     public:
       ~JobManager();
-      typedef boost::recursive_mutex mutex_type;
+      typedef boost::mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::unordered_map<sdpa::job_id_t, job_requirements_t>
         requirements_map_t;
