@@ -22,7 +22,6 @@
 
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/scheduler/SchedulerBase.hpp>
-#include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
@@ -192,24 +191,61 @@ namespace sdpa {
       // jobs
       std::string gen_id();
 
+    private:
+      void addJob ( const sdpa::job_id_t& job_id
+                  , const job_desc_t desc
+                  , bool is_master_job
+                  , const worker_id_t& owner
+                  , const job_requirements_t& job_req_list
+                  )
+      {
+        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+
+        Job* pJob = new Job( job_id, desc, is_master_job, owner );
+
+        job_map_.insert(std::make_pair (job_id, pJob));
+
+        if (!job_req_list.empty())
+          job_requirements_.insert(std::make_pair(job_id, job_req_list));
+      }
+
     public:
-      // forwarding to _job_manager only:
       void TEST_add_dummy_job
         (const sdpa::job_id_t& job_id, const job_requirements_t& req_list)
       {
-        return _job_manager.addJob (job_id, job_id, false, "", req_list);
+        return addJob (job_id, job_id, false, "", req_list);
       }
       Job* findJob(const sdpa::job_id_t& job_id ) const
       {
-        return _job_manager.findJob(job_id);
+        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+
+        const job_map_t::const_iterator it (job_map_.find( job_id ));
+        return it != job_map_.end() ? it->second : NULL;
       }
-      void deleteJob(const sdpa::job_id_t& jobId)
+      void deleteJob(const sdpa::job_id_t& job_id)
       {
-        _job_manager.deleteJob(jobId);
+        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+
+        job_requirements_.erase (job_id);
+
+        const job_map_t::const_iterator it (job_map_.find( job_id ));
+        if (it != job_map_.end())
+        {
+          delete it->second;
+          job_map_.erase (it);
+        }
+        else
+        {
+          throw JobNotDeletedException(job_id);
+        }
       }
+      //! \todo Why doesn't every job have an entry here?
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const
       {
-        return _job_manager.getJobRequirements(jobId);
+        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+
+        const requirements_map_t::const_iterator it (job_requirements_.find (jobId));
+        return it != job_requirements_.end() ? it->second : job_requirements_t();
       }
 
       // forwaring to scheduler() only:
@@ -231,7 +267,14 @@ namespace sdpa {
       map_discover_ids_t m_map_discover_ids;
 
     private:
-      JobManager _job_manager;
+      typedef boost::unordered_map<sdpa::job_id_t, job_requirements_t>
+        requirements_map_t;
+      typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
+        job_map_t;
+
+      mutable boost::mutex _job_map_and_requirements_mutex;
+      job_map_t job_map_;
+      requirements_map_t job_requirements_;
 
     protected:
       SchedulerBase::ptr_t ptr_scheduler_;

@@ -30,6 +30,8 @@
 
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
+#include <boost/range/adaptor/filtered.hpp>
+
 #include <sstream>
 #include <algorithm>
 
@@ -74,7 +76,6 @@ GenericDaemon::GenericDaemon( const std::string name
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
   , m_arrMasterInfo(arrMasterInfo),
-    _job_manager(),
     ptr_scheduler_()
   , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
   , ptr_workflow_engine_ ( create_wfe
@@ -154,6 +155,11 @@ GenericDaemon::~GenericDaemon()
 
   _network_strategy.reset();
 
+  BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
+  {
+    delete pJob;
+  }
+  job_map_.clear();
 }
 
 const std::string& GenericDaemon::name() const
@@ -230,7 +236,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   try {
     // One should parse the workflow in order to be able to create a valid job
     bool b_master_job(e.is_external() && hasWorkflowEngine());
-    _job_manager.addJob(job_id, e.description(), b_master_job, e.from());
+    addJob(job_id, e.description(), b_master_job, e.from(), job_requirements_t());
   }
   catch (std::runtime_error const &ex)
   {
@@ -442,10 +448,16 @@ try
     throw std::runtime_error ("invalid number of workers required: 0UL");
   }
 
-  _job_manager.addJobRequirements
-    ( job_id
-    , job_requirements_t (activity.transition().requirements(), schedule_data)
-    );
+  {
+    boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+
+    job_requirements_.insert
+      ( std::make_pair ( job_id
+                       , job_requirements_t
+                         (activity.transition().requirements(), schedule_data)
+                       )
+      );
+  }
 
   sendEventToSelf ( events::SubmitJobEvent::Ptr
                     ( new events::SubmitJobEvent
@@ -611,7 +623,66 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
     }
 
   if(!isTop())
-    _job_manager.resubmitResults(this);
+  {
+    boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+
+    BOOST_FOREACH ( Job* job
+                  , job_map_
+                  | boost::adaptors::map_values
+                  | boost::adaptors::filtered (boost::mem_fn (&Job::isMasterJob))
+                  )
+    {
+      switch (job->getStatus())
+      {
+      case sdpa::status::FINISHED:
+        {
+          sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished
+            ( new sdpa::events::JobFinishedEvent
+              (name(), job->owner(), job->id(), job->result())
+            );
+          sendEventToOther(pEvtJobFinished);
+        }
+        break;
+
+      case sdpa::status::FAILED:
+        {
+          sdpa::events::JobFailedEvent::Ptr pEvtJobFailed
+            ( new sdpa::events::JobFailedEvent
+              (name(), job->owner(), job->id(), "unknown error: error event resent")
+            );
+          sendEventToOther(pEvtJobFailed);
+        }
+        break;
+
+      case sdpa::status::CANCELED:
+        {
+          sdpa::events::CancelJobAckEvent::Ptr pEvtJobCanceled
+            ( new sdpa::events::CancelJobAckEvent
+              (name(), job->owner(), job->id())
+            );
+          sendEventToOther(pEvtJobCanceled);
+        }
+        break;
+
+      case sdpa::status::PENDING:
+        {
+          sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt
+            ( new sdpa::events::SubmitJobAckEvent
+              (name(), job->owner(), job->id())
+            );
+          sendEventToOther(pSubmitJobAckEvt);
+        }
+        break;
+
+      case sdpa::status::RUNNING:
+      case sdpa::status::CANCELING:
+        // don't send anything to the master if the job is not completed or in a pending state
+        break;
+      default:
+        throw std::runtime_error("The job "+job->id()+" has an invalid/unknown state");
+      }
+    }
+  }
 }
 
 void GenericDaemon::registerWorker(const events::WorkerRegistrationEvent& evtRegWorker)
@@ -952,8 +1023,7 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
 /**
  * Event SubmitJobAckEvent
  * Precondition: an acknowledgment event was received from a master
- * Action: - look for the job into the JobManager
- *         - if the job was found, put the job into the state Running
+ * Action: - if the job was found, put the job into the state Running
  *         - move the job from the submitted queue of the worker worker_id, into its
  *           acknowledged queue
  *         - in the case when the worker was not found, trigger an exception and send back

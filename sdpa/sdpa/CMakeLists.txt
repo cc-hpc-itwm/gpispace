@@ -4,7 +4,6 @@ set (srcs
   com/NetworkStrategy.cpp
   daemon/GenericDaemon.cpp
   daemon/Job.cpp
-  daemon/JobManager.cpp
   daemon/scheduler/SchedulerBase.cpp
   daemon/scheduler/CoallocationScheduler.cpp
   daemon/scheduler/SimpleScheduler.cpp
