@@ -16,7 +16,6 @@ set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" 
 set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
-OPTION (INSTALL_AS_BUNDLE "Install as a bundle" NO)
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
@@ -66,8 +65,6 @@ if (NOT PROJECT_VERSION)
   message (FATAL_ERROR "could not discover version info, please define -DPROJECT_VERSION by hand!")
 endif()
 set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
-
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
@@ -192,15 +189,6 @@ add_subdirectory(bundle)
 add_subdirectory (test)
 
 INCLUDE (InstallRequiredSystemLibraries)
-#set (CPACK_GENERATOR "RPM;STGZ;TGZ;TBZ2")
-set (CPACK_GENERATOR "TBZ2")
-set (CPACK_SOURCE_GENERATOR "TBZ2")
-set (CPACK_PACKAGE_VENDOR "${PROJECT_VENDOR}")
-set (CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set (CPACK_PACKAGE_VERSION_MAJOR "${V_MAJOR}")
-set (CPACK_PACKAGE_VERSION_MINOR "${V_MINOR}")
-set (CPACK_PACKAGE_VERSION_PATCH "${V_PATCH}")
-INCLUDE (CPack)
 
 add_subdirectory (playground/ap/licensing)
 add_subdirectory (playground/bl)

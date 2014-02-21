@@ -37,7 +37,7 @@ set (remote_srcs
   )
 install(FILES ${remote_hdrs}
   DESTINATION include/fhglog/remote
-  COMPONENT runtime-headers)
+)
 
 ADD_LIBRARY (fhglog
   ${hdrs}
@@ -65,17 +65,17 @@ target_link_libraries (fhglog-shared fhg-util ${Boost_FILESYSTEM_LIBRARY})
 
 install(FILES ${hdrs}
   DESTINATION include/fhglog
-  COMPONENT runtime-headers)
+)
 install(FILES ${header_appender}
   DESTINATION include/fhglog/appender
-  COMPONENT runtime-headers)
+)
 install(TARGETS fhglog
   ARCHIVE
   DESTINATION lib
-  COMPONENT runtime-libraries)
+)
 install(TARGETS fhglog-shared
   LIBRARY
   DESTINATION lib
-  COMPONENT runtime-libraries)
+)
 
 add_subdirectory (appender/test)

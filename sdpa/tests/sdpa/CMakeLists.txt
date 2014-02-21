@@ -39,7 +39,6 @@ pnet_compile (capabilities-test-wf
            -I${CMAKE_SOURCE_DIR}/application/example
            -O3
   BUILD
-  COMPONENT tests
 )
 
 add_custom_target (workflow_capabilities
@@ -67,7 +66,6 @@ pnet_compile (capabilities_no_mandatory-test-wf
            -I${CMAKE_SOURCE_DIR}/application/example
            -O3
   BUILD
-  COMPONENT tests
 )
 
 add_custom_target (workflow_capabilities_no_mandatory
@@ -95,7 +93,6 @@ pnet_compile (inotify-test-wf
            -I${CMAKE_SOURCE_DIR}/application/example
            -O3
   BUILD
-  COMPONENT tests
 )
 
 add_custom_target (workflow_inotify
@@ -122,7 +119,6 @@ pnet_compile (transform_file-test-wf
            -I${CMAKE_SOURCE_DIR}/application/transform_file
            -O3
   BUILD
-  COMPONENT tests
 )
 
 add_custom_target (workflow_transform_file
@@ -152,7 +148,6 @@ pnet_compile (coallocation_test-wf
            -I${CMAKE_SOURCE_DIR}/application/example/coallocation_test
            -O3
   BUILD
-  COMPONENT tests
 )
 
 add_custom_target (workflow_coallocation_test

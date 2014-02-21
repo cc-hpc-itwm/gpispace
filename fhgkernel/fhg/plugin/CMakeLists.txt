@@ -20,7 +20,6 @@ set_target_properties(fhg-plugin-shared
 install (TARGETS fhg-plugin-shared
   LIBRARY
   DESTINATION lib
-  COMPONENT runtime
 )
 
 target_link_libraries (fhg-plugin ${FhgLog_LIBRARY})
@@ -36,8 +35,3 @@ endif()
 
 target_link_libraries(fhg-plugin ${UTIL_LIBRARIES} ${CMAKE_DL_LIBS})
 target_link_libraries(fhg-plugin-shared ${UTIL_LIBRARIES} ${CMAKE_DL_LIBS})
-
-install (FILES ${hdrs}
-  DESTINATION include/fhg/plugin
-  COMPONENT headers
-)

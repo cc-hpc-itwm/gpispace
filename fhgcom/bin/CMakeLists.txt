@@ -16,14 +16,14 @@ target_link_libraries(fhgaddr fhgcom ${FhgLog_LIBRARY})
 install(TARGETS fhgkvsd
   RUNTIME
   DESTINATION bin
-  COMPONENT runtime)
+)
 
 install(TARGETS fhgkvsc
   RUNTIME
   DESTINATION bin
-  COMPONENT runtime)
+)
 
 install(TARGETS fhgaddr
   RUNTIME
   DESTINATION bin
-  COMPONENT runtime)
+)

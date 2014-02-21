@@ -32,11 +32,3 @@ target_link_libraries (gpi-space-pc-memory
   ${MMGR_LIBRARY}
   gpi-space_url
   )
-
-install(TARGETS gpi-space-pc-memory
-  DESTINATION lib
-  COMPONENT libraries)
-
-install(FILES ${hdrs}
-  DESTINATION include/gpi-space/pc/memory
-  COMPONENT headers)

@@ -13,7 +13,3 @@ set (hdrs
 
 set (srcs
   )
-
-install(FILES ${hdrs}
-  DESTINATION include/gpi-space/pc/type
-  COMPONENT headers)

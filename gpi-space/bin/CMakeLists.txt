@@ -58,4 +58,4 @@ set_target_properties(gpish
 install (TARGETS gpi-space gpish
   RUNTIME
   DESTINATION bin
-  COMPONENT runtime)
+)
