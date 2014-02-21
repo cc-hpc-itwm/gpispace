@@ -68,7 +68,7 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   }
 
   //put the job into the state Finished or Cancelled
-  Job* pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = findJob(pEvt->job_id());
   if(pJob)
   {
       pJob->JobFinished(pEvt);
@@ -130,7 +130,7 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
   }
 
   //put the job into the state Failed or Cancelled
-  Job* pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = findJob(pEvt->job_id());
   if(pJob)
   {
       pJob->JobFailed(pEvt);
@@ -175,7 +175,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
 {
   Job* pJob;
 
-  pJob = jobManager().findJob(pEvt->job_id());
+  pJob = findJob(pEvt->job_id());
   if(pJob)
   {
       if(pJob->getStatus() == sdpa::status::CANCELING)
@@ -226,7 +226,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
 void Orchestrator::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 {
 
-  Job* pJob(jobManager().findJob(pEvt->job_id()));
+  Job* pJob(findJob(pEvt->job_id()));
   if(pJob)
   {
     // update the job status to "Canceled"
@@ -245,7 +245,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
   const  events::DeleteJobEvent& e (*evt);
 
 
-  Job* pJob = jobManager().findJob(e.job_id());
+  Job* pJob = findJob(e.job_id());
   if(pJob)
   {
       if(!sdpa::status::is_terminal (pJob->getStatus()))
@@ -254,7 +254,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
           ("Cannot delete a job which is in a non-terminal state. Please, cancel it first!");
       }
 
-          jobManager().deleteJob(e.job_id());
+          deleteJob(e.job_id());
           sendEventToOther( events::DeleteJobAckEvent::Ptr( new events::DeleteJobAckEvent(e.to(),
                                                                                   e.from(),
                                                                                   e.job_id())) );
@@ -267,7 +267,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
 
 void Orchestrator::handleRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt )
 {
-  Job* pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = findJob(pEvt->job_id());
   if(pJob)
   {
       if(sdpa::status::is_terminal (pJob->getStatus()))
@@ -292,7 +292,7 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
 {
   sdpa::job_id_t jobId = pEvt->job_id();
 
-  Job* pJob (jobManager().findJob(jobId));
+  Job* pJob (findJob(jobId));
   if(pJob)
   {
       events::JobStatusReplyEvent::Ptr const pStatReply
@@ -314,7 +314,7 @@ void Orchestrator::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* 
 
 void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
 {
-  Job* pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = findJob(pEvt->job_id());
 
   if(!pJob)
   {

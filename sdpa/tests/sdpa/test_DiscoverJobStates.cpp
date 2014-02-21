@@ -115,7 +115,7 @@ namespace sdpa
               (_jobs_to_discover.front());
             _jobs_to_discover.pop_front();
 
-            Job* const pJob (jobManager().findJob (pair.second));
+            Job* const pJob (findJob (pair.second));
 
             sdpa::discovery_info_t const discover_result
               ( pair.second

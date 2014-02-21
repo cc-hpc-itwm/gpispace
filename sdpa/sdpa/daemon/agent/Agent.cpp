@@ -73,7 +73,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   sendEventToOther(pEvtJobFinishedAckEvt);
 
   // put the job into the state Finished
-  Job* pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = findJob(pEvt->job_id());
   if(!pJob)
   {
       return;
@@ -148,7 +148,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 
         //delete it also from job_map_
         if(bAllPartResCollected) {
-           jobManager().deleteJob(pEvt->job_id());
+           deleteJob(pEvt->job_id());
         }
   }
 }
@@ -158,7 +158,7 @@ void Agent::finished(const we::layer::id_type& wfid, const we::type::activity_t 
   //put the job into the state Finished
   job_id_t id(wfid);
 
-  Job* pJob = jobManager().findJob(id);
+  Job* pJob = findJob(id);
   if(!pJob)
   {
     throw std::runtime_error ("got finished message for old/unknown Job " + id);
@@ -238,7 +238,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
   sendEventToOther(pEvtJobFailedAckEvt);
 
   //put the job into the state Failed
-  Job* pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = findJob(pEvt->job_id());
   if(!pJob)
   {
     return;
@@ -310,7 +310,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 
         //delete it also from job_map_
         if(bAllPartResCollected) {
-            jobManager().deleteJob(pEvt->job_id());
+            deleteJob(pEvt->job_id());
         }
   }
 }
@@ -322,7 +322,7 @@ void Agent::failed( const we::layer::id_type& wfid
   job_id_t id(wfid);
   //put the job into the state Failed
 
-  Job* pJob = jobManager().findJob(id);
+  Job* pJob = findJob(id);
   if(!pJob)
   {
     throw std::runtime_error ("got failed message for old/unknown Job " + id);
@@ -377,7 +377,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 {
   Job* pJob;
 
-  pJob = jobManager().findJob(pEvt->job_id());
+  pJob = findJob(pEvt->job_id());
   if(!pJob)
   {
       if (pEvt->is_external())
@@ -431,7 +431,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
         pJob->CancelJobAck(&evtCancelAck);
         ptr_scheduler_->delete_job (pEvt->job_id());
 
-        jobManager().deleteJob(pEvt->job_id());
+        deleteJob(pEvt->job_id());
     }
   }
 
@@ -439,7 +439,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 
 void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 {
-  Job* pJob(jobManager().findJob(pEvt->job_id()));
+  Job* pJob(findJob(pEvt->job_id()));
 
     if(pJob)
     {
@@ -468,7 +468,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 
       try
       {
-        jobManager().deleteJob(pEvt->job_id());
+        deleteJob(pEvt->job_id());
       }
       catch(const JobNotDeletedException&)
       {
@@ -509,7 +509,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     try
     {
         if(bTaskGroupComputed) {
-          jobManager().deleteJob(pEvt->job_id());
+          deleteJob(pEvt->job_id());
         }
     }
     catch(const JobNotDeletedException&)
@@ -520,7 +520,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 
 void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
 {
-  Job* pJob = jobManager().findJob(pEvt->job_id());
+  Job* pJob = findJob(pEvt->job_id());
 
    // if the event came from outside, forward it to the workflow engine
   if(pEvt->is_external())

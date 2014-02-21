@@ -164,7 +164,7 @@ const std::string& GenericDaemon::name() const
 void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
-  Job* ptrJob = jobManager().findJob(jobId);
+  Job* ptrJob = findJob(jobId);
   if(ptrJob)
   {
       // create a SubmitJobEvent for the job job_id serialize and attach description
@@ -212,7 +212,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   }
 
   // First, check if the job 'job_id' wasn't already submitted!
-  if(e.job_id() && jobManager().findJob(*e.job_id()))
+  if(e.job_id() && findJob(*e.job_id()))
   {
     // The job already exists -> generate an error message that the job already exists
 
@@ -398,7 +398,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       // Only now should be the job state machine make a transition to RUNNING
       // this means that the job was not rejected, no error occurred etc ....
       // find the job ptrJob and call
-      Job* ptrJob = jobManager().findJob(*error.job_id());
+      Job* ptrJob = findJob(*error.job_id());
       if(ptrJob)
       {
         try {
@@ -847,7 +847,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   {
     // if the list contains at least one invalid job,
     // send back an error message
-    if(!jobManager().findJob(jobId))
+    if(!findJob(jobId))
     {
         std::ostringstream oss("Could not subscribe for the job");
         oss<<jobId<<". The job does not exist!";
@@ -968,7 +968,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEv
   // Only, now should be state of the job updated to RUNNING
   // since it was not rejected, no error occurred etc ....
   //find the job ptrJob and call
-  Job* ptrJob = jobManager().findJob(pEvent->job_id());
+  Job* ptrJob = findJob(pEvent->job_id());
   if(ptrJob)
   {
       try
@@ -1002,10 +1002,10 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
   // therefore, I can delete the job from the job map
   std::ostringstream os;
   Worker::worker_id_t worker_id = pEvt->from();
-  if(jobManager().findJob(pEvt->job_id()))
+  if(findJob(pEvt->job_id()))
   {
       // delete it from the map when you receive a JobFinishedAckEvent!
-      jobManager().deleteJob(pEvt->job_id());
+      deleteJob(pEvt->job_id());
   }
   else
   {
@@ -1019,10 +1019,10 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
   std::ostringstream os;
   Worker::worker_id_t worker_id = pEvt->from();
 
-  if(jobManager().findJob(pEvt->job_id()))
+  if(findJob(pEvt->job_id()))
   {
         // delete it from the map when you receive a JobFailedAckEvent!
-        jobManager().deleteJob(pEvt->job_id());
+        deleteJob(pEvt->job_id());
   }
   else
   {
