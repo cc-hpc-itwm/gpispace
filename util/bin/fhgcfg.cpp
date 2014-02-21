@@ -130,6 +130,7 @@ int main (int ac, char *av[])
     }
     else
     {
+      m.del (key);
       m.put (key, val);
       modified = true;
     }
