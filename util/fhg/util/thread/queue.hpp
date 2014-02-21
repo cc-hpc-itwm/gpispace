@@ -43,12 +43,6 @@ namespace fhg
         return m_container.size();
       }
 
-      bool empty() const
-      {
-        boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
-        return m_container.empty();
-      }
-
       void clear()
       {
         boost::unique_lock<boost::recursive_mutex> const _ (m_mtx);
