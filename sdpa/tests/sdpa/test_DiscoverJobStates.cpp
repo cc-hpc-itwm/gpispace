@@ -59,6 +59,7 @@ namespace sdpa
                 , const sdpa::master_info_list_t arrMasterNames
                 )
         : Agent (name, url, kvs_host, kvs_port, arrMasterNames, boost::none)
+        , _number_of_jobs_submitted (0)
       {}
 
       std::string gen_id()
@@ -87,8 +88,9 @@ namespace sdpa
                   )
       {
         GenericDaemon::submit (activityId, activity);
+        ++_number_of_jobs_submitted;
 
-        if (jobManager().numberOfJobs() < 2)
+        if (_number_of_jobs_submitted < 2)
         {
           _cond_all_submitted.notify_one();
         }
@@ -151,6 +153,8 @@ namespace sdpa
       std::deque<std::pair<we::layer::id_type, sdpa::job_id_t> > _jobs_to_discover;
       sdpa::discovery_info_t _discovery_result;
       we::layer::id_type _discover_id;
+
+      int _number_of_jobs_submitted;
     };
   }
 }
