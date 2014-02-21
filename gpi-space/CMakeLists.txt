@@ -79,5 +79,3 @@ add_subdirectory (bin)
 if (ENABLE_COMPATIBILITY_API)
   add_subdirectory (compat)
 endif()
-
-  add_subdirectory (tests)

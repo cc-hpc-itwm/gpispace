@@ -15,7 +15,7 @@
 #include <gpi-space/pc/segment/segment.hpp>
 #include <gpi-space/pc/memory/sfs_area.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
-#include <tests/dummy_topology.hpp>
+#include <gpi-space/tests/dummy_topology.hpp>
 
 struct setup_and_cleanup_shared_file
 {
