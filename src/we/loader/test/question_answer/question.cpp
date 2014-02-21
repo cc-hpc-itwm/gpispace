@@ -1,6 +1,6 @@
 #include <we/loader/macros.hpp>
 
-#include "answer.hpp"
+#include <we/loader/test/question_answer/answer.hpp>
 
 static void question ( drts::worker::context*
                      , const expr::eval::context&

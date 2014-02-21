@@ -1,4 +1,4 @@
-#include "loader.hpp"
+#include <we/loader/loader.hpp>
 
 #include <we/loader/exceptions.hpp>
 
