@@ -1,6 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#include "file.hpp"
+#include <fhglog/appender/file.hpp>
 
 namespace fhg
 {

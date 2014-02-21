@@ -1,4 +1,4 @@
-#include "color_map.hpp"
+#include <fhglog/color_map.hpp>
 
 #include <sstream>
 
