@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
     const std::list<value_type>& g
       (boost::get<const std::list<value_type>&> (*peek ("l", m)));
 
-    BOOST_CHECK_EQUAL (g.size(), 1);
+    BOOST_CHECK_EQUAL (g.size(), 1U);
     BOOST_CHECK_EQUAL (*g.begin(), value_type (19));
   }
 }
