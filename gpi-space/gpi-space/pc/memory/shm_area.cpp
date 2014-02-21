@@ -1,4 +1,4 @@
-#include "shm_area.hpp"
+#include <gpi-space/pc/memory/shm_area.hpp>
 
 #include <sys/mman.h>
 #include <sys/stat.h>

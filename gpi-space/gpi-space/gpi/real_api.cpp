@@ -1,4 +1,4 @@
-#include "real_api.hpp"
+#include <gpi-space/gpi/real_api.hpp>
 
 #include <csignal> // sigwait
 #include <cstring> // strerror
@@ -13,7 +13,7 @@
 #include <fhg/assert.hpp>
 
 #include <gpi-space/exception.hpp>
-#include "system.hpp"
+#include <gpi-space/gpi/system.hpp>
 
 namespace gpi
 {

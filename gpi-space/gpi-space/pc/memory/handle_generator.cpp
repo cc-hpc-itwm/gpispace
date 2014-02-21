@@ -1,4 +1,4 @@
-#include "handle_generator.hpp"
+#include <gpi-space/pc/memory/handle_generator.hpp>
 #include <fhg/assert.hpp>
 
 #include <gpi-space/pc/type/segment_descriptor.hpp>

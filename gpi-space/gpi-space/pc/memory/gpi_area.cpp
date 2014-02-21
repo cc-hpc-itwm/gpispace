@@ -1,4 +1,4 @@
-#include "gpi_area.hpp"
+#include <gpi-space/pc/memory/gpi_area.hpp>
 
 #include <utility>
 

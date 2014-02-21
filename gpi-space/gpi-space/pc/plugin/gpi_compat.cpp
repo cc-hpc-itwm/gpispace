@@ -4,7 +4,7 @@
 
 #include <unistd.h> // usleep
 #include <fvm-pc/pc.hpp>
-#include "gpi.hpp"
+#include <gpi-space/pc/plugin/gpi.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 
 #include <boost/bind.hpp>

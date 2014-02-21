@@ -1,4 +1,4 @@
-#include "segment.hpp"
+#include <gpi-space/pc/segment/segment.hpp>
 
 // needs linking with -lrt
 #include <sys/mman.h>

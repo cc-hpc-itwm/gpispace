@@ -1,4 +1,4 @@
-#include "topology.hpp"
+#include <gpi-space/pc/global/topology.hpp>
 
 #include <unistd.h>
 #include <stdio.h>

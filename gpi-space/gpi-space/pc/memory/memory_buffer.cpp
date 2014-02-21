@@ -1,4 +1,4 @@
-#include "memory_buffer.hpp"
+#include <gpi-space/pc/memory/memory_buffer.hpp>
 
 #include <fhg/assert.hpp>
 

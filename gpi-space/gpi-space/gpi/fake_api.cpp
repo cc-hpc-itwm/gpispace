@@ -1,4 +1,4 @@
-#include "fake_api.hpp"
+#include <gpi-space/gpi/fake_api.hpp>
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
@@ -8,7 +8,7 @@
 
 #include <gpi-space/exception.hpp>
 
-#include "system.hpp"
+#include <gpi-space/gpi/system.hpp>
 
 namespace gpi
 {

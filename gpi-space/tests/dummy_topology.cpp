@@ -1,4 +1,4 @@
-#include "dummy_topology.hpp"
+#include <tests/dummy_topology.hpp>
 
 namespace gpi
 {

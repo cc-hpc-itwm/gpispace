@@ -4,7 +4,7 @@
 
 #include <fhg/util/read_bool.hpp>
 #include <fhg/plugin/plugin.hpp>
-#include "gpi.hpp"
+#include <gpi-space/pc/plugin/gpi.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
 

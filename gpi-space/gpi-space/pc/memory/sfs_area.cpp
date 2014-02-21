@@ -1,4 +1,4 @@
-#include "sfs_area.hpp"
+#include <gpi-space/pc/memory/sfs_area.hpp>
 
 #include <cerrno>
 #include <sys/mman.h> // mmap

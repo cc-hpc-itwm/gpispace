@@ -1,4 +1,4 @@
-#include "system.hpp"
+#include <gpi-space/gpi/system.hpp>
 
 #include <unistd.h> // getpagesize, sysconf
 

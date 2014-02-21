@@ -1,4 +1,4 @@
-#include "transfer_queue.hpp"
+#include <gpi-space/pc/memory/transfer_queue.hpp>
 
 #include <boost/foreach.hpp>
 #include <boost/make_shared.hpp>

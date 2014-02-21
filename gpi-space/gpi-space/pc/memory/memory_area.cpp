@@ -1,4 +1,4 @@
-#include "memory_area.hpp"
+#include <gpi-space/pc/memory/memory_area.hpp>
 
 #include <stack>
 

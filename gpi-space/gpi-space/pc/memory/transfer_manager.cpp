@@ -1,4 +1,4 @@
-#include "transfer_manager.hpp"
+#include <gpi-space/pc/memory/transfer_manager.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
