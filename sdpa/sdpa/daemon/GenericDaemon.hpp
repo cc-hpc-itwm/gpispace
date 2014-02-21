@@ -230,11 +230,6 @@ namespace sdpa {
         return scheduler()->hasWorker(worker_id);
       }
 
-      void getWorkerCapabilities(const Worker::worker_id_t& worker_id, sdpa::capabilities_set_t& wCpbset)
-      {
-        scheduler()->getWorkerCapabilities(worker_id, wCpbset);
-      }
-
     protected:
       const JobManager& jobManager() const { return _job_manager; }
       JobManager& jobManager() { return _job_manager; }
