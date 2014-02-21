@@ -16,8 +16,6 @@ namespace sdpa
     {
     public:
       ~JobManager();
-      typedef boost::mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::unordered_map<sdpa::job_id_t, job_requirements_t>
         requirements_map_t;
       typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
@@ -41,7 +39,7 @@ namespace sdpa
       void resubmitResults (GenericDaemon*) const;
 
   protected:
-      mutable mutex_type _job_map_and_requirements_mutex;
+      mutable boost::mutex _job_map_and_requirements_mutex;
       job_map_t job_map_;
       requirements_map_t job_requirements_;
     };

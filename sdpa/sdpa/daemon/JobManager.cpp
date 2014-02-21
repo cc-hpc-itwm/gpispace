@@ -24,7 +24,7 @@ namespace sdpa
 
     Job* JobManager::findJob (const sdpa::job_id_t& job_id) const
     {
-      lock_type _ (_job_map_and_requirements_mutex);
+      boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
 
       const job_map_t::const_iterator it (job_map_.find( job_id ));
       return it != job_map_.end() ? it->second : NULL;
@@ -37,7 +37,7 @@ namespace sdpa
                             , const job_requirements_t& job_req_list
                             )
     {
-      lock_type _ (_job_map_and_requirements_mutex);
+      boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
 
       Job* pJob = new Job( job_id, desc, is_master_job, owner );
 
@@ -49,7 +49,7 @@ namespace sdpa
 
     void JobManager::deleteJob (const sdpa::job_id_t& job_id)
     {
-      lock_type _ (_job_map_and_requirements_mutex);
+      boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
 
       job_requirements_.erase (job_id);
 
@@ -69,7 +69,7 @@ namespace sdpa
     const job_requirements_t JobManager::getJobRequirements
       (const sdpa::job_id_t& jobId) const
     {
-      lock_type _ (_job_map_and_requirements_mutex);
+      boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
 
       const requirements_map_t::const_iterator it (job_requirements_.find (jobId));
       return it != job_requirements_.end() ? it->second : job_requirements_t();
@@ -78,14 +78,14 @@ namespace sdpa
     void JobManager::addJobRequirements
       (const sdpa::job_id_t& job_id, const job_requirements_t& job_req_list)
     {
-      lock_type _ (_job_map_and_requirements_mutex);
+      boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
 
       job_requirements_.insert (std::make_pair (job_id, job_req_list));
     }
 
     void JobManager::resubmitResults (GenericDaemon* pComm) const
     {
-      lock_type _ (_job_map_and_requirements_mutex);
+      boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
 
       BOOST_FOREACH ( Job* job
                     , job_map_
