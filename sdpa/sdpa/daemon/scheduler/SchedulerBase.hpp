@@ -28,7 +28,6 @@
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 
 #include <boost/optional.hpp>
-#include <sdpa/daemon/JobManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 //#include <sdpa/daemon/SynchronizedQueue.hpp>
 
