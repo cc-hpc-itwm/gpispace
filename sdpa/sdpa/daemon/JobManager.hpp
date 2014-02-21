@@ -20,7 +20,6 @@ namespace sdpa
         requirements_map_t;
       typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
         job_map_t;
-      typedef job_map_t::iterator iterator;
 
       Job* findJob (const sdpa::job_id_t&) const;
 
