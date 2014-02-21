@@ -1195,9 +1195,9 @@ BOOST_AUTO_TEST_CASE (positions)
   BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
 
   pnet::type::value::poke ("c.1", value, std::string ("foo"));
-  positions.push_back (std::make_pair (split ("c.1"), "foo"));
+  positions.push_back (std::make_pair (split ("c.1"), std::string ("foo")));
   pnet::type::value::poke ("c.2", value, std::string ("bar"));
-  positions.push_back (std::make_pair (split ("c.2"), "bar"));
+  positions.push_back (std::make_pair (split ("c.2"), std::string ("bar")));
 
   BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
 }
