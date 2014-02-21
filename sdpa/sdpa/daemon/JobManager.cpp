@@ -53,8 +53,13 @@ namespace sdpa
 
       job_requirements_.erase (job_id);
 
-      delete findJob(job_id );
-      if (!job_map_.erase (job_id))
+      const job_map_t::const_iterator it (job_map_.find( job_id ));
+      if (it != job_map_.end())
+      {
+        delete it->second;
+        job_map_.erase (it);
+      }
+      else
       {
         throw JobNotDeletedException(job_id);
       }
