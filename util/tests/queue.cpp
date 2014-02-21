@@ -90,32 +90,6 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_by_multiple_threads)
   }
 }
 
-static bool is_even (int i)
-{
-  return (i % 2) == 0;
-}
-
-BOOST_AUTO_TEST_CASE (thread_queue_remove_if)
-{
-  static const int NUM_ITEMS_TO_PUT = 10000;
-
-  items_t items;
-  fill_items (items, NUM_ITEMS_TO_PUT);
-
-  BOOST_REQUIRE_EQUAL ( items.size()
-                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT)
-                      );
-
-  std::size_t num_removed = items.remove_if (is_even);
-
-  BOOST_REQUIRE_EQUAL ( num_removed
-                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT / 2)
-                      );
-  BOOST_REQUIRE_EQUAL ( items.size ()
-                      , static_cast<items_t::size_type>(NUM_ITEMS_TO_PUT / 2)
-                      );
-}
-
 BOOST_AUTO_TEST_CASE (thread_queue_clear)
 {
   static const int NUM_ITEMS_TO_PUT = 10000;
