@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <jpn/Types.h>
+#include <pnetv/jpn/Types.h>
 
 namespace jpn {
 namespace analysis {

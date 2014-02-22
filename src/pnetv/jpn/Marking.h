@@ -1,6 +1,6 @@
 #pragma once
 
-#include <jpn/config.h>
+#include <pnetv/jpn/config.h>
 
 #include <vector>
 
@@ -9,8 +9,8 @@
 #endif
 
 #include <fhg/assert.hpp>
-#include <jpn/PlaceMarking.h>
-#include <jpn/common/Foreach.h>
+#include <pnetv/jpn/PlaceMarking.h>
+#include <pnetv/jpn/common/Foreach.h>
 
 namespace jpn {
 

@@ -1,8 +1,8 @@
 #include "Verification.h"
 
-#include <jpn/common/Foreach.h>
-#include <jpn/common/PrintRange.h>
-#include <jpn/analysis/StateSpace.h>
+#include <pnetv/jpn/common/Foreach.h>
+#include <pnetv/jpn/common/PrintRange.h>
+#include <pnetv/jpn/analysis/StateSpace.h>
 
 #include "PetriNet.h"
 

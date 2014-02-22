@@ -2,7 +2,7 @@
 
 #include <boost/unordered_map.hpp>
 
-#include <jpn/common/Printable.h>
+#include <pnetv/jpn/common/Printable.h>
 
 #include "Place.h"
 #include "Transition.h"

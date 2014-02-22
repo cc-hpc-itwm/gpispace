@@ -3,12 +3,12 @@
 
 #include <boost/program_options.hpp>
 
-#include <jpn/common/Foreach.h>
-#include <jpn/common/Unreachable.h>
+#include <pnetv/jpn/common/Foreach.h>
+#include <pnetv/jpn/common/Unreachable.h>
 
-#include <jpna/Parsing.h>
-#include <jpna/PetriNet.h>
-#include <jpna/Verification.h>
+#include <pnetv/jpna/Parsing.h>
+#include <pnetv/jpna/PetriNet.h>
+#include <pnetv/jpna/Verification.h>
 
 #include <fhg/revision.hpp>
 
