@@ -4,16 +4,10 @@ include_directories (${CMAKE_SOURCE_DIR}/src)
 
 include_directories (${UTIL_INCLUDE_DIR})
 
-include_directories (${FhgKernel_INCLUDE_DIR})
-
 find_package(ZLIB REQUIRED QUIET)
 include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 
 include_directories (${FhgLog_INCLUDE_DIR})
-
-include_directories (${FhgCom_INCLUDE_DIR})
-
-include_directories (${MMGR_INCLUDE_DIR})
 
 add_subdirectory (sdpa)
 add_subdirectory (apps)
