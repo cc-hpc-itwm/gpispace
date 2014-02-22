@@ -167,7 +167,7 @@ set (FhgCom_LIBRARY fhgcom)
 
 set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc ${CMAKE_BINARY_DIR}/fvm-pc)
 
-set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 set (GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
 
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
@@ -179,7 +179,6 @@ add_subdirectory (fhglog)
   add_subdirectory (fvm-pc)
 add_subdirectory (util)
 add_subdirectory (fhgkernel)
-  add_subdirectory (gpi-space)
 add_subdirectory (application)
 add_subdirectory (src)
 add_subdirectory (sdpa)
