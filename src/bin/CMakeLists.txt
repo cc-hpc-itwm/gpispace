@@ -142,3 +142,12 @@ fhg_add_runtime_executable (
                  ${Boost_SERIALIZATION_LIBRARY}
                  ${Boost_SYSTEM_LIBRARY}
 )
+
+fhg_add_runtime_executable (
+  pnetv.cpp
+  LINK_LIBRARIES fhg-revision
+                 pnetv-jpna
+                 pnetv-jpn
+                 pnet
+                 ${Boost_PROGRAM_OPTIONS_LIBRARY}
+)
