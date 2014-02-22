@@ -1,11 +1,4 @@
-set (hdrs
-  )
-
-set (srcs
-  gpi-space.cpp
-  )
-
-add_executable (gpi-space ${srcs})
+add_executable (gpi-space gpi-space.cpp)
 target_link_libraries (gpi-space
   gpi-space-gpiapi
   gpi-space-pc-container
@@ -28,11 +21,7 @@ target_link_libraries (gpi-space
 find_package (LibReadline REQUIRED QUIET)
 include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 
-set (srcs
-  gpish.cpp
-  )
-
-add_executable (gpish ${srcs})
+add_executable (gpish gpish.cpp)
 target_link_libraries (gpish
   gpi-space-pc-client-static
   gpi-space-pc-segment
