@@ -162,7 +162,7 @@ set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgkernel ${CMAKE_BINARY_DIR}/fhg
 
 set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
 
-set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 set (FhgCom_LIBRARY fhgcom)
 
 set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc ${CMAKE_BINARY_DIR}/fvm-pc)
@@ -179,7 +179,6 @@ add_subdirectory (fhglog)
   add_subdirectory (fvm-pc)
 add_subdirectory (util)
 add_subdirectory (fhgkernel)
-add_subdirectory (fhgcom)
   add_subdirectory (gpi-space)
 add_subdirectory (application)
 add_subdirectory (src)
