@@ -70,10 +70,20 @@ include_directories(${FhgKernel_INCLUDE_DIR})
 
 include_directories(${MMGR_INCLUDE_DIR})
 
+include_directories(${GPI_SPACE_INCLUDE_DIR})
+
 find_package (LibRT REQUIRED QUIET)
 include_directories(SYSTEM ${LIBRT_INCLUDE_DIR})
 
-add_subdirectory (gpi-space)
+set (hdrs
+  types.hpp
+  exception.hpp
+  )
+
+add_subdirectory(gpi)
+add_subdirectory(pc)
+add_subdirectory (tests)
+
 add_subdirectory (bin)
 
 if (ENABLE_COMPATIBILITY_API)
