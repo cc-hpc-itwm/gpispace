@@ -25,11 +25,21 @@ fhg_add_runtime_executable (fhgkvsd.cpp
                  ${Boost_THREAD_LIBRARY}
 )
 
-add_executable(fhgcomd fhgcomd.cpp)
-target_link_libraries(fhgcomd fhgcom ${FhgLog_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_THREAD_LIBRARY})
+add_executable (fhgcomd fhgcomd.cpp)
+target_link_libraries (fhgcomd
+  fhgcom
+  ${FhgLog_LIBRARY}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_THREAD_LIBRARY}
+)
 
-add_executable(fhgcomc fhgcomc.cpp)
-target_link_libraries(fhgcomc fhgcom ${FhgLog_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_THREAD_LIBRARY})
+add_executable (fhgcomc fhgcomc.cpp)
+target_link_libraries (fhgcomc
+  fhgcom
+  ${FhgLog_LIBRARY}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
+  ${Boost_THREAD_LIBRARY}
+)
 
 find_package (LibReadline REQUIRED QUIET)
 include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
@@ -48,7 +58,7 @@ fhg_add_runtime_executable (gpish.cpp
                  fhg-revision
 )
 
-set_target_properties(gpish
+set_target_properties (gpish
   PROPERTIES
   INSTALL_RPATH "${CMAKE_INSTALL_RPATH}"
 )
