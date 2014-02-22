@@ -158,7 +158,7 @@ set (MMGR_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
 set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
 
-set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgkernel ${CMAKE_BINARY_DIR}/fhgkernel)
+set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 
 set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
 
@@ -178,7 +178,6 @@ include (CTest)
 add_subdirectory (fhglog)
   add_subdirectory (fvm-pc)
 add_subdirectory (util)
-add_subdirectory (fhgkernel)
 add_subdirectory (application)
 add_subdirectory (src)
 add_subdirectory (sdpa)
