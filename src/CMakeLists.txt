@@ -25,19 +25,9 @@ add_subdirectory (fhgcom)
 
 add_subdirectory (gpi-space)
 
-include_directories (${CMAKE_CURRENT_SOURCE_DIR})
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
-
-include_directories (${FhgLog_INCLUDE_DIR})
-include_directories (${FhgCom_INCLUDE_DIR})
-
-include_directories (${UTIL_INCLUDE_DIR})
-
   find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
 
   include_directories ( ${CMAKE_SOURCE_DIR}/sdpa
-                        ${FhgKernel_INCLUDE_DIR}
-                        ${CMAKE_SOURCE_DIR} # to have sdpa plugins in sdpa/plugins, not plugins/
                       )
   set (LIB_PREFIX "fhg_pnete_")
 
