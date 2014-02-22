@@ -8,9 +8,9 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
-#include <fhg/plugin/plugin.hpp>
-#include <fhg/plugin/core/plugin.hpp>
-#include <fhg/plugin/core/kernel.hpp>
+#include <plugin/plugin.hpp>
+#include <plugin/core/plugin.hpp>
+#include <plugin/core/kernel.hpp>
 
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>

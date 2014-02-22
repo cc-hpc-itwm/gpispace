@@ -7,7 +7,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/event.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/threadname.hpp>
 #include <fhg/error_codes.hpp>

@@ -1,7 +1,7 @@
 #include "kvs.hpp"
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/keep_alive.hpp>
 

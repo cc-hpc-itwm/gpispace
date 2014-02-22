@@ -2,8 +2,8 @@
 
 #include <drts/worker/drts.hpp>
 
-#include <fhg/plugin/core/kernel.hpp>
-#include <fhg/plugin/core/license.hpp>
+#include <plugin/core/kernel.hpp>
+#include <plugin/core/license.hpp>
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/signal_handler_manager.hpp>

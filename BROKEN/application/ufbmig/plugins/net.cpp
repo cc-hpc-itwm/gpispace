@@ -7,7 +7,7 @@
 
 #include <fhgcom/peer.hpp>
 #include <fhglog/LogMacros.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/threadname.hpp>
 

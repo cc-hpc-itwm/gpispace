@@ -15,7 +15,7 @@
 #include <boost/unordered_map.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 
 class GPICompatPluginImpl;
 static GPICompatPluginImpl * gpi_compat = 0;

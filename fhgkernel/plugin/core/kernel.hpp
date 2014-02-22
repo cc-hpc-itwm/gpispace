@@ -9,7 +9,7 @@
 #include <fhg/util/thread/event.hpp>
 #include <fhg/util/thread/queue.hpp>
 
-#include <fhg/plugin/core/plugin.hpp>
+#include <plugin/core/plugin.hpp>
 
 namespace fhg
 {

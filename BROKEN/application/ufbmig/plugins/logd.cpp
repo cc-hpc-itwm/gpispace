@@ -6,7 +6,7 @@
 #include <fhglog/remote/server.hpp>
 #include <fhglog/Appender.hpp>
 #include <fhglog/fhglog.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 
 #include <fhg/util/threadname.hpp>
 

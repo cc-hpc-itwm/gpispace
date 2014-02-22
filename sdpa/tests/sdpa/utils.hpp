@@ -11,8 +11,8 @@
 
 #include <drts/worker/drts.hpp>
 
-#include <fhg/plugin/core/kernel.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/core/kernel.hpp>
+#include <plugin/plugin.hpp>
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>

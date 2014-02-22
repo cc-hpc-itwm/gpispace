@@ -1,7 +1,7 @@
 #include <drts/worker/drts.hpp>
 
 //! \todo remove when redoing ctor
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
 #include <fhg/util/threadname.hpp>

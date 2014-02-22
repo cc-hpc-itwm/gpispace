@@ -3,7 +3,7 @@
 #include <boost/thread.hpp>
 
 #include <fhg/util/read_bool.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 #include <gpi-space/pc/plugin/gpi.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
