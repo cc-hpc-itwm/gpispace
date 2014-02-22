@@ -2,6 +2,36 @@
 
 add_subdirectory (fhgcom)
 
+add_executable(fhgcomd fhgcomd.cpp)
+target_link_libraries(fhgcomd fhgcom ${FhgLog_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_THREAD_LIBRARY})
+
+add_executable(fhgcomc fhgcomc.cpp)
+target_link_libraries(fhgcomc fhgcom ${FhgLog_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_THREAD_LIBRARY})
+
+add_executable(fhgkvsd fhgkvsd.cpp)
+target_link_libraries(fhgkvsd fhgcom ${FhgLog_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_SERIALIZATION_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_THREAD_LIBRARY})
+
+add_executable(fhgkvsc fhgkvsc.cpp)
+target_link_libraries(fhgkvsc fhgcom ${FhgLog_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_SERIALIZATION_LIBRARY} ${Boost_THREAD_LIBRARY})
+
+add_executable(fhgaddr fhgaddr.cpp)
+target_link_libraries(fhgaddr fhgcom ${FhgLog_LIBRARY})
+
+install(TARGETS fhgkvsd
+  RUNTIME
+  DESTINATION bin
+)
+
+install(TARGETS fhgkvsc
+  RUNTIME
+  DESTINATION bin
+)
+
+install(TARGETS fhgaddr
+  RUNTIME
+  DESTINATION bin
+)
+
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (${CMAKE_CURRENT_BINARY_DIR})
 

@@ -55,6 +55,4 @@ target_link_libraries (fhgcom ${ZLIB_LIBRARIES})
 #target_link_libraries (fhgcom-shared ${ZLIB_LIBRARIES} ${FhgLog_LIBRARY})
 set_target_properties(fhgcom-shared PROPERTIES OUTPUT_NAME fhgcom)
 
-add_subdirectory (bin)
-
   add_subdirectory (tests)
