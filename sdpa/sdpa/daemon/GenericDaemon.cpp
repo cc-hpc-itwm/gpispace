@@ -290,16 +290,8 @@ void GenericDaemon::handleWorkerRegistrationEvent
     }
   }
 
-  bool was_new_worker;
-  try
-  {
-    scheduler()->addWorker (worker_id, event->capacity(), workerCpbSet);
-    was_new_worker = true;
-  }
-  catch (WorkerAlreadyExistException& ex)
-  {
-    was_new_worker = false;
-  }
+  const bool was_new_worker
+    (scheduler()->addWorker (worker_id, event->capacity(), workerCpbSet));
 
   sendEventToOther
     ( events::WorkerRegistrationAckEvent::Ptr

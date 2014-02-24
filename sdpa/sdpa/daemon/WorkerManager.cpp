@@ -78,7 +78,7 @@ const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(co
   return boost::none;
 }
 
-void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
+bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
                                 boost::optional<unsigned int> capacity,
                                 const capabilities_set_t& cpbSet )
 {
@@ -91,7 +91,7 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
     if( it->first == workerId )
     {
       bFound = true;
-      throw WorkerAlreadyExistException(workerId);
+      return false;
     }
   }
 
@@ -99,6 +99,8 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
   pWorker->addCapabilities(cpbSet);
 
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
+
+  return true;
 }
 
 
