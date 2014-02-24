@@ -263,7 +263,7 @@ namespace
   }
 }
 
-sdpa::worker_id_t WorkerManager::getBestMatchingWorker
+boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
   (const job_requirements_t& listJobReq, const sdpa::worker_id_list_t& workerList) const
 {
   lock_type lock(mtx_);
@@ -298,9 +298,7 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker
     last_schedule_time = pWorker->lastScheduleTime();
   }
 
-  return maxMatchingDeg
-    ? *bestMatchingWorkerId
-    : throw NoWorkerFoundException();
+  return bestMatchingWorkerId;
 }
 
 void WorkerManager::reserveWorker(const sdpa::worker_id_t& worker_id)

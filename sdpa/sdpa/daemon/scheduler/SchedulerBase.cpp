@@ -156,10 +156,11 @@ sdpa::worker_id_t SchedulerBase::findSuitableWorker
   }
   else
   {
-    try {
-      matchingWorkerId = _worker_manager.getBestMatchingWorker(job_reqs, listAvailWorkers);
-    }
-    catch(NoWorkerFoundException& exc) {
+    const boost::optional<sdpa::worker_id_t> best
+      (_worker_manager.getBestMatchingWorker(job_reqs, listAvailWorkers));
+    if (best)
+    {
+      matchingWorkerId = *best;
     }
   }
 
