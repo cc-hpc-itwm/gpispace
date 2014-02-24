@@ -141,15 +141,12 @@ namespace sdpa {
 
       status::code getStatus() const;
 
-      //transitions
       void CancelJob();
       void CancelJobAck();
+      void Dispatch();
       void JobFailed (std::string error_message);
       void JobFinished (job_result_t);
-
       void Reschedule();
-
-      void Dispatch();
 
     private:
       mutable mutex_type mtx_;

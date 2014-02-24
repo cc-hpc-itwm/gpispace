@@ -56,7 +56,6 @@ namespace sdpa {
       return _is_master_job;
     }
 
-    //transitions
     void Job::CancelJob()
     {
       lock_type lock(mtx_);
@@ -67,6 +66,12 @@ namespace sdpa {
     {
       lock_type lock(mtx_);
       process_event (e_canceled());
+    }
+
+    void Job::Dispatch()
+    {
+      lock_type lock(mtx_);
+      process_event (e_dispatch());
     }
 
     void Job::JobFailed (std::string error_message)
@@ -89,9 +94,4 @@ namespace sdpa {
       process_event (e_reschedule());
     }
 
-    void Job::Dispatch()
-    {
-      lock_type lock(mtx_);
-      process_event (e_dispatch());
-    }
 }}
