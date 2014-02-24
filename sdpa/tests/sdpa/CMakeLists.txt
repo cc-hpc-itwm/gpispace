@@ -198,7 +198,6 @@ add_custom_target (workflow_coallocation_test2
 
 ################################################################################################
 
-#test_Capabilities
 fhg_add_test (test_Capabilities.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -209,7 +208,6 @@ fhg_add_test (test_Capabilities.cpp
           workflow_capabilities_no_mandatory
 )
 
-#test_Coallocation
 fhg_add_test (test_Coallocation.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -219,7 +217,6 @@ fhg_add_test (test_Coallocation.cpp
   DEPENDS workflow_coallocation_test
 )
 
-#test_Inotify
 fhg_add_test (test_Inotify.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -231,7 +228,6 @@ fhg_add_test (test_Inotify.cpp
           workflow_inotify
 )
 
-#test_CancelJob
 fhg_add_test (test_CancelJob.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -243,7 +239,6 @@ fhg_add_test (test_CancelJob.cpp
           workflow_capabilities
 )
 
-#test_CoallocationScheduler
 fhg_add_test (test_CoallocationScheduler.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -251,7 +246,6 @@ fhg_add_test (test_CoallocationScheduler.cpp
                  ${FhgLog_LIBRARY}
 )
 
-#test_SimpleScheduler
 fhg_add_test (test_SimpleScheduler.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -259,7 +253,6 @@ fhg_add_test (test_SimpleScheduler.cpp
                  ${FhgLog_LIBRARY}
 )
 
-#test_Topologies
 fhg_add_test (test_Topologies.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -269,7 +262,6 @@ fhg_add_test (test_Topologies.cpp
   DEPENDS workflow_transform_file
 )
 
-#test_Subscriber
 fhg_add_test (test_Subscriber.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -279,7 +271,6 @@ fhg_add_test (test_Subscriber.cpp
   DEPENDS workflow_transform_file
 )
 
-#test_SubmitJobFails
 fhg_add_test (test_SubmitJobFails.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -288,7 +279,6 @@ fhg_add_test (test_SubmitJobFails.cpp
                  ${FhgLog_LIBRARY}
 )
 
-#test_TransformFile
 fhg_add_test (test_TransformFile.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -298,7 +288,6 @@ fhg_add_test (test_TransformFile.cpp
   DEPENDS workflow_transform_file
   )
 
-#test_DiscoverJobStates
 fhg_add_test (test_DiscoverJobStates.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -309,7 +298,6 @@ fhg_add_test (test_DiscoverJobStates.cpp
           workflow_coallocation_test2
 )
 
-#test_FailOnBadRequirements.cpp
 fhg_add_test (test_FailOnBadRequirements.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -319,7 +307,6 @@ fhg_add_test (test_FailOnBadRequirements.cpp
   DEPENDS workflow_coallocation_bad_test
 )
 
-#test_Requirements.cpp
 fhg_add_test (test_Requirements.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -329,7 +316,6 @@ fhg_add_test (test_Requirements.cpp
   DEPENDS workflow_capabilities
 )
 
-#test_WorkflowEngineCancel.cpp
 fhg_add_test (test_WorkflowEngineCancel.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -339,7 +325,6 @@ fhg_add_test (test_WorkflowEngineCancel.cpp
   DEPENDS workflow_coallocation_test
 )
 
-#test_WorkflowEngineDiscover.cpp
 fhg_add_test (test_WorkflowEngineDiscover.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -349,7 +334,6 @@ fhg_add_test (test_WorkflowEngineDiscover.cpp
   DEPENDS workflow_coallocation_test
 )
 
-#test_RestartWorkers.cpp
 fhg_add_test (test_RestartWorkers.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
