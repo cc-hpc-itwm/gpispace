@@ -142,10 +142,10 @@ namespace sdpa {
       status::code getStatus() const;
 
       //transitions
-      void CancelJob(const events::CancelJobEvent*);
-      void CancelJobAck(const events::CancelJobAckEvent*);
-      void JobFailed(const events::JobFailedEvent*);
-      void JobFinished(const events::JobFinishedEvent*);
+      void CancelJob();
+      void CancelJobAck();
+      void JobFailed (std::string error_message);
+      void JobFinished (job_result_t);
 
       void Reschedule();
 

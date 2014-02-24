@@ -78,7 +78,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 
   if( !hasWorkflowEngine() )
   {
-      pJob->JobFinished(pEvt);
+      pJob->JobFinished (pEvt->result());
       // forward it up
       events::JobFinishedEvent::Ptr pEvtJobFinished(new events::JobFinishedEvent( name()
                                                                   , pJob->owner()
@@ -107,13 +107,13 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
             if(pJob->getStatus() == sdpa::status::CANCELING)
             {
                 events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
-                pJob->CancelJobAck(&evtCancelAck);
+                pJob->CancelJobAck();
                 workflowEngine()->canceled(actId);
             }
             else
               if(scheduler()->groupFinished(actId))
               {
-                pJob->JobFinished(pEvt);
+                pJob->JobFinished (pEvt->result());
                 workflowEngine()->finished
                   (actId, we::type::activity_t (pEvt->result()));
               }
@@ -123,7 +123,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
                                                                                  , pEvt->from()
                                                                                  , pEvt->job_id()
                                                                                  , "One of tasks of the group failed with the actual reservation!"));
-                pJob->JobFailed(pJobFailedEvt);
+                pJob->JobFailed (pJobFailedEvt->error_message());
                 delete pJobFailedEvt;
 
                 workflowEngine()->failed( actId,
@@ -177,7 +177,7 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 
   if( !hasWorkflowEngine() )
   {
-      pJob->JobFailed(pEvt);
+      pJob->JobFailed (pEvt->error_message());
       // forward it up
       events::JobFailedEvent::Ptr pEvtJobFailed
         (new events::JobFailedEvent ( name()
@@ -213,12 +213,12 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
               if(pJob->getStatus() == sdpa::status::CANCELING)
               {
                   events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
-                  pJob->CancelJobAck(&evtCancelAck);
+                  pJob->CancelJobAck();
                   workflowEngine()->canceled(actId);
               }
               else
               {
-                  pJob->JobFailed(pEvt);
+                  pJob->JobFailed (pEvt->error_message());
                   workflowEngine()->failed( actId
                                             , pEvt->error_message()
                                           );
@@ -274,7 +274,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 
       // a Cancel message came from the upper level -> forward cancellation request to WE
       workflowEngine()->cancel(pEvt->job_id());
-      pJob->CancelJob(pEvt);
+      pJob->CancelJob();
   }
   else // the workflow engine issued the cancelation order for this job
   {
@@ -284,7 +284,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
                                                                        , worker_id.get_value_or("")
                                                                        , pEvt->job_id() ) );
     // change the job status to "Canceling"
-    pJob->CancelJob(pEvt);
+    pJob->CancelJob();
 
     if(worker_id)
     {
@@ -296,7 +296,7 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
 
         // reply with an ack here
         events::CancelJobAckEvent evtCancelAck(name(), pEvt->from(), pEvt->job_id());
-        pJob->CancelJobAck(&evtCancelAck);
+        pJob->CancelJobAck();
         ptr_scheduler_->delete_job (pEvt->job_id());
 
         deleteJob(pEvt->job_id());
@@ -314,7 +314,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
       try
       {
         // update the job status to "Canceled"
-        pJob->CancelJobAck(pEvt);
+        pJob->CancelJobAck();
       }
       catch (std::exception const&)
       {

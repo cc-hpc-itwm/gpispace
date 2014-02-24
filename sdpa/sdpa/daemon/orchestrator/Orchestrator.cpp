@@ -68,7 +68,7 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   Job* pJob = findJob(pEvt->job_id());
   if(pJob)
   {
-      pJob->JobFinished(pEvt);
+      pJob->JobFinished (pEvt->result());
   }
   else
   {
@@ -125,7 +125,7 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
   Job* pJob = findJob(pEvt->job_id());
   if(pJob)
   {
-      pJob->JobFailed(pEvt);
+      pJob->JobFailed (pEvt->error_message());
   }
   else
   {
@@ -187,7 +187,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
       if(!isSubscriber(pEvt->from ()))
         sendEventToOther(pCancelAckEvt);
 
-      pJob->CancelJob(pEvt);
+      pJob->CancelJob();
 
       boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
       if(worker_id)
@@ -202,7 +202,7 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
       {
           // the job was not yet assigned to any worker
 
-          pJob->CancelJobAck(pCancelAckEvt.get());
+          pJob->CancelJobAck();
           ptr_scheduler_->delete_job (pEvt->job_id());
       }
   }
@@ -219,7 +219,7 @@ void Orchestrator::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt
   if(pJob)
   {
     // update the job status to "Canceled"
-    pJob->CancelJobAck(pEvt);
+    pJob->CancelJobAck();
 
     events::CancelJobAckEvent::Ptr ptrCancelAckEvt(new events::CancelJobAckEvent(*pEvt));
     notifySubscribers(ptrCancelAckEvt);

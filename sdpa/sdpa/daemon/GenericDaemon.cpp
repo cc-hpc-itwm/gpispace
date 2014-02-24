@@ -547,7 +547,7 @@ void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::typ
                                      )
                 );
 
-  pJob->JobFinished(pEvtJobFinished.get());
+  pJob->JobFinished (result.to_string());
 
   if(!isSubscriber(pJob->owner()))
   {
@@ -612,7 +612,7 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
     );
 
   // send the event to the master
-  pJob->JobFailed(pEvtJobFailed.get());
+  pJob->JobFailed (reason);
 
   if(!isSubscriber(pJob->owner()))
     sendEventToOther(pEvtJobFailed);
