@@ -84,13 +84,11 @@ bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 {
   lock_type lock(mtx_);
 
-  bool bFound = false;
-  for( worker_map_t::iterator it = worker_map_.begin(); !bFound && it != worker_map_.end(); it++ )
+  for( worker_map_t::iterator it = worker_map_.begin(); it != worker_map_.end(); it++ )
   {
     //if( it->second->name() ==  workerId )
     if( it->first == workerId )
     {
-      bFound = true;
       return false;
     }
   }
