@@ -273,7 +273,7 @@ namespace sdpa {
 
       void do_registration_after_sleep (const MasterInfo);
 
-
+      bool _event_handling_enabled;
       fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _event_queue;
       boost::thread _event_handler_thread;
       void handle_events();

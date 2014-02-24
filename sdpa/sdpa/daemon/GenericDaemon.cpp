@@ -99,6 +99,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _max_consecutive_registration_attempts (360)
   , _max_consecutive_network_faults (360)
   , _registration_timeout (boost::posix_time::seconds (1))
+  , _event_handling_enabled(true)
   , _event_queue()
   , _event_handler_thread (&GenericDaemon::handle_events, this)
   , _kvs_client
@@ -145,9 +146,7 @@ GenericDaemon::~GenericDaemon()
 
 void GenericDaemon::stop_all()
 {
-  _network_strategy->stop_forwarding();
-
-  _event_queue.clear();
+  _event_handling_enabled = false;
 
   _event_handler_thread.interrupt();
   if (_event_handler_thread.joinable())
@@ -741,7 +740,7 @@ void GenericDaemon::sendEventToSelf(const events::SDPAEvent::Ptr& pEvt)
 }
 void GenericDaemon::handle_events()
 {
-  while (true)
+  while (_event_handling_enabled)
   {
     const events::SDPAEvent::Ptr event (_event_queue.get());
     try
