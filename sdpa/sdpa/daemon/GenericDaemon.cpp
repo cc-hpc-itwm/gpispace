@@ -1023,8 +1023,6 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
  */
 void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEvent)
 {
-  assert (pEvent);
-
   Worker::worker_id_t worker_id = pEvent->from();
   // Only, now should be state of the job updated to RUNNING
   // since it was not rejected, no error occurred etc ....

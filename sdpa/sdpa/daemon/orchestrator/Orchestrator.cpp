@@ -17,7 +17,6 @@
  */
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
-#include <fhg/assert.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/job_states.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
@@ -50,8 +49,6 @@ void Orchestrator::notifySubscribers(const T& ptrEvt)
 
 void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 {
-  assert (pEvt);
-
   // check if the message comes from outside/slave or from WFE
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
@@ -108,8 +105,6 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 
 void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
 {
-  assert (pEvt);
-
   // check if the message comes from outside/slave or from WFE
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job

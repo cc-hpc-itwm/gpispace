@@ -22,7 +22,6 @@
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <we/type/value/poke.hpp>
-#include <fhg/assert.hpp>
 #include <sstream>
 
 
@@ -58,8 +57,6 @@ Agent::Agent ( const std::string& name
 
 void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 {
-  assert (pEvt);
-
   // check if the message comes from outside/slave or from WFE
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
@@ -207,8 +204,6 @@ void Agent::finished(const we::layer::id_type& wfid, const we::type::activity_t 
 
 void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 {
-  assert (pEvt);
-
   // check if the message comes from outside/slave or from WFE
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
