@@ -192,7 +192,7 @@ void CoallocationScheduler::workerFinished(const worker_id_t& wid, const job_id_
   if(it!=allocation_table_.end())
     it->second->workerFinished(wid);
   else
-    throw WorkerNotFoundException(wid);
+    throw WorkerNotFoundException();
 }
 
 void CoallocationScheduler::workerFailed(const worker_id_t& wid, const job_id_t& jid)
@@ -202,7 +202,7 @@ void CoallocationScheduler::workerFailed(const worker_id_t& wid, const job_id_t&
   if(it!=allocation_table_.end())
     it->second->workerFailed(wid);
   else
-    throw WorkerNotFoundException(wid);
+    throw WorkerNotFoundException();
 }
 
 void CoallocationScheduler::workerCanceled(const worker_id_t& wid, const job_id_t& jid)
@@ -212,7 +212,7 @@ void CoallocationScheduler::workerCanceled(const worker_id_t& wid, const job_id_
   if(it!=allocation_table_.end())
     it->second->workerCanceled(wid);
   else
-    throw WorkerNotFoundException(wid);
+    throw WorkerNotFoundException();
 }
 
 bool CoallocationScheduler::allPartialResultsCollected(const job_id_t& jid)
@@ -222,7 +222,7 @@ bool CoallocationScheduler::allPartialResultsCollected(const job_id_t& jid)
   if(it!=allocation_table_.end())
     return it->second->allWorkersTerminated();
   else
-    throw JobNotFoundException(jid);
+    throw JobNotFoundException();
 }
 
 bool CoallocationScheduler::groupFinished(const sdpa::job_id_t& jid)
@@ -232,7 +232,7 @@ bool CoallocationScheduler::groupFinished(const sdpa::job_id_t& jid)
   if(it!=allocation_table_.end())
     return it->second->allGroupTasksFinishedSuccessfully();
   else
-    throw JobNotFoundException(jid);
+    throw JobNotFoundException();
 }
 
 }}

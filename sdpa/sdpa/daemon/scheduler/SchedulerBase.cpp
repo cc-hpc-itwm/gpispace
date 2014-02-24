@@ -189,7 +189,7 @@ void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
 
     //put the job into the Running state: do this in acknowledge!
     if( !ptrWorker->acknowledge(job_id) )
-      throw JobNotFoundException(job_id);
+      throw JobNotFoundException();
 }
 
 void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &jobId )

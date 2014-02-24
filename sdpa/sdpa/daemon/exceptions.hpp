@@ -7,47 +7,21 @@
 
 namespace sdpa {
 namespace daemon {
-
-	class JobException : public std::runtime_error {
-	public:
-		JobException(const std::string &reason, const sdpa::job_id_t& job_id)
-			: std::runtime_error(reason), job_id_(job_id) {}
-
-		virtual ~JobException() throw() {}
-		const sdpa::job_id_t& job_id() const { return job_id_; }
-
-		private:
-		sdpa::job_id_t job_id_;
-	};
-
-	class WorkerException : public std::runtime_error {
-	public:
-		WorkerException(const std::string &reason, const sdpa::worker_id_t& worker_id)
-			: std::runtime_error(reason), worker_id_(worker_id){}
-
-		virtual ~WorkerException() throw() {}
-		const sdpa::worker_id_t& worker_id() const { return worker_id_; }
-
-		private:
-		sdpa::worker_id_t worker_id_;
-	};
-
-	class JobNotFoundException : public JobException {
+	class JobNotFoundException : public std::runtime_error {
 		public:
-		JobNotFoundException( const sdpa::job_id_t& job_id) : JobException("Job not found!", job_id) {}
+		JobNotFoundException() : std::runtime_error ("job not found") {}
 		virtual ~JobNotFoundException() throw() {}
 	};
 
-	class WorkerNotFoundException : public WorkerException {
+	class WorkerNotFoundException : public std::runtime_error {
 		public:
-		WorkerNotFoundException( const sdpa::worker_id_t& worker_id)
-			: WorkerException("Worker not found!", worker_id) {}
+		WorkerNotFoundException() : std::runtime_error ("worker not found") {}
 		virtual ~WorkerNotFoundException() throw() {}
 	};
 
-	class JobNotDeletedException : public JobException {
+	class JobNotDeletedException : public std::runtime_error {
 		public:
-		JobNotDeletedException( const sdpa::job_id_t& job_id) : JobException("Job not deleted!", job_id) {}
+		JobNotDeletedException() : std::runtime_error ("job not deleted") {}
 		virtual ~JobNotDeletedException() throw() {}
 	};
 }}

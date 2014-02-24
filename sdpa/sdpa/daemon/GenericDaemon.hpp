@@ -233,7 +233,7 @@ namespace sdpa {
         }
         else
         {
-          throw JobNotDeletedException(job_id);
+          throw JobNotDeletedException();
         }
       }
       //! \todo Why doesn't every job have an entry here?

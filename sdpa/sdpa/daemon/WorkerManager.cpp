@@ -44,7 +44,7 @@ Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
   if( it != worker_map_.end() )
     return it->second;
   else
-    throw WorkerNotFoundException(worker_id);
+    throw WorkerNotFoundException();
 }
 
 bool WorkerManager::hasWorker(const Worker::worker_id_t& worker_id) const
@@ -60,7 +60,7 @@ bool WorkerManager::isDisconnectedWorker(const Worker::worker_id_t& worker_id) c
    if( it != worker_map_.end() )
     return it->second->disconnected();
 
-   throw WorkerNotFoundException(worker_id);
+   throw WorkerNotFoundException();
 }
 
 const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
@@ -140,7 +140,7 @@ void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId )
   worker_map_t::iterator w (worker_map_.find (workerId));
 
   if (w == worker_map_.end())
-    throw WorkerNotFoundException(workerId);
+    throw WorkerNotFoundException();
 
   worker_map_.erase (w);
 }
