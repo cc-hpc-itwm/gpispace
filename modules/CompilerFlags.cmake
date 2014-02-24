@@ -1,4 +1,5 @@
 # definitions
+include (CheckCXXCompilerFlag)
 
 if (${CMAKE_BUILD_TYPE} MATCHES "Release")
   add_definitions ("-DNDEBUG")
@@ -8,6 +9,14 @@ if (NOT ENABLE_BACKTRACE_ON_PARSE_ERROR)
   add_definitions ("-DNO_BACKTRACE_ON_PARSE_ERROR")
 endif()
 
+macro (CHECK_AND_ADD_COMPILER_FLAG _VAR _FLAG)
+  STRING(REGEX REPLACE "-" _ __flag_literal ${_FLAG})
+  set(__flag_literal "FLAG${__flag_literal}")
+  CHECK_CXX_COMPILER_FLAG (${_FLAG} ${__flag_literal})
+  if (${__flag_literal})
+     set (${_VAR} "${_VAR} ${_FLAG}")
+  endif ()
+endmacro ()
 
 # warnings
 
