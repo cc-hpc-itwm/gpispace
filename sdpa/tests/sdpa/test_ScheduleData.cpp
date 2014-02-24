@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE (num_workers_required_is_0)
 
 BOOST_AUTO_TEST_CASE (valid_num_workers_required)
 {
-  // this workflow produces two activities, each requiring 0 workers
+  // this workflow produces two activities, each requiring 2 workers
   const std::string workflow
     (utils::require_and_read_file ("coallocation_test2.pnet"));
 
@@ -89,9 +89,7 @@ BOOST_AUTO_TEST_CASE (valid_num_workers_required)
   agent.wait_all_submitted();
 
   std::set<unsigned long> expected_set;
-  // task A expected to require 2 workers
   expected_set.insert(2ul);
-  // task A expected to require 3 workers
   expected_set.insert(3ul);
   BOOST_REQUIRE( agent.set_num_workers_req() == expected_set ) ;
 }

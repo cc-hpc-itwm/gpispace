@@ -328,16 +328,6 @@ fhg_add_test (test_Requirements.cpp
                  ${FhgLog_LIBRARY}
   DEPENDS workflow_capabilities
 )
-#test_ScheduleData.cpp
-fhg_add_test (test_ScheduleData.cpp
-  PROJECT sdpa
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-                 fhg-plugin
-                 ${FhgLog_LIBRARY}
-  DEPENDS workflow_coallocation_bad_test
-          workflow_coallocation_test2
-)
 
 #test_WorkflowEngineCancel.cpp
 fhg_add_test (test_WorkflowEngineCancel.cpp
