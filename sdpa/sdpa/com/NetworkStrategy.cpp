@@ -35,7 +35,6 @@ namespace sdpa
       , m_message()
       , m_thread (&fhg::com::peer_t::run, m_peer)
       , m_shutting_down (false)
-      , m_forward_to_agent_allowed (true)
     {
       m_peer->set_kvs_error_handler
         (boost::bind (&NetworkStrategy::kvs_error_handler, this, _1));
@@ -77,8 +76,7 @@ namespace sdpa
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                        , sdpa_event->str())
           );
-        if(m_forward_to_agent_allowed)
-          _event_handler (ptrErrEvt);
+        _event_handler (ptrErrEvt);
       }
     }
 
@@ -95,7 +93,6 @@ namespace sdpa
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                        , sdpa_event->str())
           );
-        if(m_forward_to_agent_allowed)
           _event_handler (ptrErrEvt);
       }
     }
@@ -110,8 +107,7 @@ namespace sdpa
         sdpa::events::SDPAEvent::Ptr evt
            (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
 
-        if(m_forward_to_agent_allowed)
-           _event_handler (evt);
+        _event_handler (evt);
 
         m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
       }
@@ -127,8 +123,7 @@ namespace sdpa
                                                , boost::lexical_cast<std::string>(ec)
                                                )
                  );
-          if(m_forward_to_agent_allowed)
-            _event_handler (error);
+          _event_handler (error);
           m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
         }
       }

@@ -27,7 +27,6 @@ namespace sdpa
       ~NetworkStrategy();
 
       void perform (boost::shared_ptr<events::SDPAEvent> const & to_send);
-      void stop_forwarding() { m_forward_to_agent_allowed = true; }
 
     private:
       void handle_send (boost::shared_ptr<events::SDPAEvent> const & e, boost::system::error_code const & ec);
@@ -46,7 +45,6 @@ namespace sdpa
       boost::thread m_thread;
 
       bool m_shutting_down;
-      bool m_forward_to_agent_allowed;
     };
   }
 }
