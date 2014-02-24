@@ -119,12 +119,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
               }
               else
               {
-                events::JobFailedEvent* pJobFailedEvt(new events::JobFailedEvent( name()
-                                                                                 , pEvt->from()
-                                                                                 , pEvt->job_id()
-                                                                                 , "One of tasks of the group failed with the actual reservation!"));
-                pJob->JobFailed (pJobFailedEvt->error_message());
-                delete pJobFailedEvt;
+                pJob->JobFailed ("One of tasks of the group failed with the actual reservation!");
 
                 workflowEngine()->failed( actId,
                                           "One of tasks of the group failed with the actual reservation!");
