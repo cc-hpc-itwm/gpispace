@@ -36,7 +36,7 @@ namespace sdpa {
 
     std::string Job::error_message () const
     {
-      lock_type lock(mtx_);
+      boost::mutex::scoped_lock const _ (mtx_);
       return m_error_message;
     }
 
@@ -47,7 +47,7 @@ namespace sdpa {
 
     status::code Job::getStatus() const
     {
-      lock_type lock(mtx_);
+      boost::mutex::scoped_lock const _ (mtx_);
       return state_code (*current_state());
     }
 
@@ -58,39 +58,39 @@ namespace sdpa {
 
     void Job::CancelJob()
     {
-      lock_type lock(mtx_);
+      boost::mutex::scoped_lock const _ (mtx_);
       process_event (e_begin_cancel());
     }
 
     void Job::CancelJobAck()
     {
-      lock_type lock(mtx_);
+      boost::mutex::scoped_lock const _ (mtx_);
       process_event (e_canceled());
     }
 
     void Job::Dispatch()
     {
-      lock_type lock(mtx_);
+      boost::mutex::scoped_lock const _ (mtx_);
       process_event (e_dispatch());
     }
 
     void Job::JobFailed (std::string error_message)
     {
-      lock_type lock(mtx_);
+      boost::mutex::scoped_lock const _ (mtx_);
       process_event (e_failed());
       m_error_message = error_message;
     }
 
     void Job::JobFinished (job_result_t result)
     {
-      lock_type lock(mtx_);
+      boost::mutex::scoped_lock const _ (mtx_);
       process_event (e_finished());
       result_ = result;
     }
 
     void Job::Reschedule()
     {
-      lock_type lock(mtx_);
+      boost::mutex::scoped_lock const _ (mtx_);
       process_event (e_reschedule());
     }
 

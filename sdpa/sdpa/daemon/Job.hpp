@@ -119,9 +119,6 @@ namespace sdpa {
     class Job : public boost::msm::back::state_machine<JobFSM_>
     {
     public:
-      typedef boost::mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-
       Job ( const job_id_t id
           , const job_desc_t desc
           , bool is_master_job
@@ -148,7 +145,7 @@ namespace sdpa {
       void Reschedule();
 
     private:
-      mutable mutex_type mtx_;
+      mutable boost::mutex mtx_;
       job_id_t id_;
       job_desc_t desc_;
 
