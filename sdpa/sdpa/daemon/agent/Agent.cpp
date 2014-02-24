@@ -455,13 +455,7 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
       // only if the job was already submitted
       sendEventToOther(pCancelAckEvt);
 
-      try
-      {
         deleteJob(pEvt->job_id());
-      }
-      catch(const JobNotDeletedException&)
-      {
-      }
     }
   }
   else // acknowledgment comes from a worker -> inform WE that the activity was canceled
@@ -492,15 +486,9 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     }
 
     // delete the job completely from the job manager
-    try
-    {
         if(bTaskGroupComputed) {
           deleteJob(pEvt->job_id());
         }
-    }
-    catch(const JobNotDeletedException&)
-    {
-    }
   }
 }
 
