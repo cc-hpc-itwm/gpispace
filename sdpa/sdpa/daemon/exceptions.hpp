@@ -1,8 +1,6 @@
 #ifndef SDPA_DAEMON_EXCEPTIONS_HPP
 #define SDPA_DAEMON_EXCEPTIONS_HPP 1
 
-#include <sdpa/capability.hpp>
-
 #include <stdexcept>
 
 namespace sdpa {

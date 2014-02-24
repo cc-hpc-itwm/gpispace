@@ -3,6 +3,7 @@
 
 #include <list>
 #include <string>
+#include <sdpa/capability.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/daemon/SynchronizedQueue.hpp>
