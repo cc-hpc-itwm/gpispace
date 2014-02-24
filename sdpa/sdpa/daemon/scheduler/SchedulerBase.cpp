@@ -149,14 +149,9 @@ boost::optional<sdpa::worker_id_t> SchedulerBase::findSuitableWorker
     return boost::none;
   }
 
-  if (job_reqs.empty())
-  {
-    return listAvailWorkers.front();
-  }
-  else
-  {
-    return _worker_manager.getBestMatchingWorker(job_reqs, listAvailWorkers);
-  }
+  return job_reqs.empty()
+    ? listAvailWorkers.front()
+    : _worker_manager.getBestMatchingWorker (job_reqs, listAvailWorkers);
 }
 
 void SchedulerBase::feedWorkers()
