@@ -48,16 +48,7 @@ namespace sdpa {
       struct Canceled : public boost::msm::front::state<>{};
 
       struct MSMRescheduleEvent {};
-
-      struct MSMDispatchJobEvent
-      {
-        MSMDispatchJobEvent(GenericDaemon* pAgent)
-          : m_pAgent(pAgent)
-        {}
-        GenericDaemon* ptrAgent() const { return m_pAgent; }
-      private:
-        GenericDaemon* m_pAgent;
-      };
+      struct MSMDispatchJobEvent {};
 
       // the initial state of the JobFSM SM. Must be defined
       typedef Pending initial_state;
