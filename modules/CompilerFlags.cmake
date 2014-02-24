@@ -19,31 +19,29 @@ macro (CHECK_AND_ADD_COMPILER_FLAG _VAR _FLAG)
 endmacro ()
 
 # warnings
-
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -W")
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wall")
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wextra")
-set (FLAGS_WARNINGS_CXX "${FLAGS_WARNINGS_CXX} -Wnon-virtual-dtor")
-
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-attributes")
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-system-headers")
-set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unknown-pragmas")
+CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -W)
+CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wall)
+CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wextra)
+CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS_CXX -Wnon-virtual-dtor)
+CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-attributes)
+CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-system-headers)
+CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-unknown-pragmas)
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-constant-logical-operand")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-delete-non-virtual-dtor")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-deprecated-writable-strings")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-format-zero-length")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-overloaded-virtual")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-parentheses")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unknown-warning-option")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-unneeded-internal-declaration")
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-constant-logical-operand)
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-delete-non-virtual-dtor)
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-deprecated-writable-strings)
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-format-zero-length)
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-overloaded-virtual)
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-parentheses)
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-unknown-warning-option)
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-unneeded-internal-declaration)
 endif()
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-format")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-ignored-qualifiers")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -Wno-write-strings")
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-format)
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-ignored-qualifiers)
+  CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-write-strings)
 endif()
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
@@ -54,27 +52,27 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
 endif()
 
 # to avoid warnings when using gcc 4.5
-add_definitions ("-fno-strict-aliasing")
-
+CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -fno-strict-aliasing)
 
 # other flags
 
-set (C_FLAGS "${C_FLAGS} -fpic -fPIC")
+CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS -fpic)
+CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS -fPIC)
 
-set (C_FLAGS_RELEASE "${C_FLAGS_RELEASE} -O3")
+CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS_RELEASE -O3)
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-  set(C_FLAGS_RELEASE "${C_FLAGS_RELEASE} -fstack-protector-all")
+  CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS_RELEASE -fstack-protector-all)
 
-  set(C_FLAGS_DEBUG "${C_FLAGS_DEBUG} -O0")
-  set(C_FLAGS_DEBUG "${C_FLAGS_DEBUG} -ggdb")
-  set(C_FLAGS_DEBUG "${C_FLAGS_DEBUG} -fno-omit-frame-pointer")
+  CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS_DEBUG -O0)
+  CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS_DEBUG -ggdb)
+  CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS_DEBUG -fno-omit-frame-pointer)
 
-  set(C_FLAGS_PROFILE "${C_FLAGS_PROFILE} -O0")
-  set(C_FLAGS_PROFILE "${C_FLAGS_PROFILE} -ggdb")
-  set(C_FLAGS_PROFILE "${C_FLAGS_PROFILE} -pg")
-  set(C_FLAGS_PROFILE "${C_FLAGS_PROFILE} -fprofile-arcs")
-  set(C_FLAGS_PROFILE "${C_FLAGS_PROFILE} -ftest-coverage")
+  CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS_PROFILE -O0)
+  CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS_PROFILE -ggdb)
+  CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS_PROFILE -pg)
+  CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS_PROFILE -fprofile-arcs)
+  CHECK_AND_ADD_COMPILER_FLAG (C_FLAGS_PROFILE -ftest-coverage)
 
   # TODO: Are these required?!
   set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO
