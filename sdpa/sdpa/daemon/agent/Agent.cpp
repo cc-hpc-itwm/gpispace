@@ -19,6 +19,7 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 
 #include <sdpa/daemon/Job.hpp>
+#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <we/type/value/poke.hpp>
