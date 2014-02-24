@@ -48,8 +48,6 @@ namespace sdpa {
       virtual void handleCancelJobEvent( const sdpa::events::CancelJobEvent* pEvt );
       virtual void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
       virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
-      virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
-      virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
       virtual void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt);
 
       template <typename T>

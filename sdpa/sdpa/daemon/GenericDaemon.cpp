@@ -1126,4 +1126,52 @@ void GenericDaemon::handleDiscoverJobStatesReplyEvent
   m_map_discover_ids.erase (e->discover_id());
 }
 
+
+void GenericDaemon::handleRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt )
+{
+  Job* pJob = findJob(pEvt->job_id());
+  if(pJob)
+  {
+      if(sdpa::status::is_terminal (pJob->getStatus()))
+      {
+          pJob->RetrieveJobResults(pEvt, this);
+      }
+      else
+      {
+        throw std::runtime_error
+          ( "Not allowed to request results for a non-terminated job, its current status is : "
+          +  sdpa::status::show(pJob->getStatus())
+          );
+      }
+  }
+  else
+  {
+    throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
+  }
+}
+
+void GenericDaemon::handleQueryJobStatusEvent(const events::QueryJobStatusEvent* pEvt )
+{
+  sdpa::job_id_t jobId = pEvt->job_id();
+
+  Job* pJob (findJob(jobId));
+  if(pJob)
+  {
+      events::JobStatusReplyEvent::Ptr const pStatReply
+        (new events::JobStatusReplyEvent ( pEvt->to()
+                                         , pEvt->from()
+                                         , pJob->id()
+                                         , pJob->getStatus()
+                                         , pJob->error_message()
+                                         )
+      );
+
+      sendEventToOther (pStatReply);
+  }
+  else
+  {
+    throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
+  }
+}
+
 }}
