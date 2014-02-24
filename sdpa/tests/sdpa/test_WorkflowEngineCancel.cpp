@@ -48,6 +48,7 @@ class TestAgent : public sdpa::daemon::Agent
       sdpa::daemon::Job* pJob = jobManager().findJob(pEvt->job_id());
       BOOST_REQUIRE(pJob);
       workflowEngine()->canceled(pEvt->job_id());
+      jobManager().deleteJob(pEvt->job_id());
     }
 
     void canceled(const we::layer::id_type&)
