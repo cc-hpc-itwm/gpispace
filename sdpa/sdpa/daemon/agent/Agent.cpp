@@ -96,9 +96,7 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   {
     Worker::worker_id_t worker_id = pEvt->from();
     we::layer::id_type actId = pEvt->job_id();
-    bool bAllPartResCollected(false);
 
-    try {
         // update the status of the reservation
         scheduler()->workerFinished(worker_id, actId);
 
@@ -141,10 +139,6 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
            scheduler()->releaseReservation(pJob->id());
         }
         scheduler()->deleteWorkerJob( worker_id, pJob->id() );
-      }
-      catch(const JobNotDeletedException&)
-      {
-      }
 
         //delete it also from job_map_
         if(bAllPartResCollected) {
@@ -274,7 +268,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
       // update the status of the reservation
 
       bool bAllPartResCollected(false);
-      try {
           scheduler()->workerFailed(worker_id, actId);
           bAllPartResCollected=scheduler()->allPartialResultsCollected(actId);
 
@@ -303,10 +296,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
               scheduler()->releaseReservation(pJob->id());
         }
         scheduler()->deleteWorkerJob( worker_id, pJob->id() );
-      }
-      catch(const JobNotDeletedException&)
-      {
-      }
 
         //delete it also from job_map_
         if(bAllPartResCollected) {
@@ -500,9 +489,6 @@ void Agent::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
     {
       // the job was not assigned to any worker yet -> this means that might
       // still be in the scheduler's queue
-    }
-    catch(const JobNotDeletedException& jnde)
-    {
     }
 
     // delete the job completely from the job manager

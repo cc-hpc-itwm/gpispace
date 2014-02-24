@@ -128,8 +128,6 @@ void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const 
 
     ptrWorker->deleteJob(job_id);
   }
-  catch(JobNotDeletedException const &) {
-  }
   catch(WorkerNotFoundException const &) {
   }
 }

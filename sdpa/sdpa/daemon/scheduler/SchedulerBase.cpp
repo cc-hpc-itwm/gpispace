@@ -58,9 +58,6 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
   catch (const WorkerNotFoundException& ex)
   {
   }
-  catch(JobNotDeletedException const & ex)
-  {
-  }
 
   rescheduleJob(job_id);
 }

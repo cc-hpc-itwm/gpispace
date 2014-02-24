@@ -94,9 +94,6 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
       catch(WorkerNotFoundException const &)
       {
       }
-      catch(const JobNotDeletedException& ex)
-      {
-      }
 
     }catch(...) {
     }
@@ -154,9 +151,6 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
             scheduler()->deleteWorkerJob(worker_id, pJob->id());
         }
         catch(const WorkerNotFoundException&)
-        {
-        }
-        catch(const JobNotDeletedException&)
         {
         }
       }
