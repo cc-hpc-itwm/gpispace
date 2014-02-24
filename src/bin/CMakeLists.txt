@@ -2,11 +2,6 @@
 
 include (fhg_executable_macros)
 
-fhg_add_runtime_executable (fhgaddr.cpp
-  LINK_LIBRARIES fhgcom
-                 ${FhgLog_LIBRARY}
-)
-
 fhg_add_runtime_executable (fhgkvsc.cpp
   LINK_LIBRARIES fhgcom
                  ${FhgLog_LIBRARY}
