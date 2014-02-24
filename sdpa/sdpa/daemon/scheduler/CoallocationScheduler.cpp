@@ -35,19 +35,19 @@ void CoallocationScheduler::assignJobsToWorkers()
       (ptr_comm_handler_->getJobRequirements (jobId));
 
     unsigned long nReqWorkers (job_reqs.numWorkers());
-    const sdpa::worker_id_t matchingWorkerId
+    const boost::optional<sdpa::worker_id_t> matchingWorkerId
       (findSuitableWorker(job_reqs, listAvailWorkers));
 
-    if( !matchingWorkerId.empty() ) // matching found
+    if (matchingWorkerId) // matching found
     {
       listAvailWorkers.erase ( std::find ( listAvailWorkers.begin()
                                          , listAvailWorkers.end()
-                                         , matchingWorkerId
+                                         , *matchingWorkerId
                                          )
                              );
 
         lock_type lock(mtx_alloc_table_);
-        reserveWorker(jobId, matchingWorkerId, nReqWorkers);
+        reserveWorker(jobId, *matchingWorkerId, nReqWorkers);
 
         // attention: what to do if job_reqs.n_workers_req > total number of registered workers?
         // if all the required resources were acquired, mark the job as submitted

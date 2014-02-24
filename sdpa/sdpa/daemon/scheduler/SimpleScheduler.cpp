@@ -31,21 +31,21 @@ void SimpleScheduler::assignJobsToWorkers()
     const job_requirements_t job_reqs
       (ptr_comm_handler_->getJobRequirements (jobId));
 
-    const sdpa::worker_id_t matchingWorkerId
+    const boost::optional<sdpa::worker_id_t> matchingWorkerId
       (findSuitableWorker(job_reqs, listAvailWorkers));
 
-    if( !matchingWorkerId.empty() )
+    if (matchingWorkerId)
     { // matching found
       listAvailWorkers.erase ( std::find ( listAvailWorkers.begin()
                                          , listAvailWorkers.end()
-                                         , matchingWorkerId
+                                         , *matchingWorkerId
                                          )
                              );
 
         try {
-           Worker::ptr_t pWorker(findWorker(matchingWorkerId));
+           Worker::ptr_t pWorker(findWorker(*matchingWorkerId));
            pWorker->submit(jobId);
-           ptr_comm_handler_->serveJob(sdpa::worker_id_list_t (1, matchingWorkerId), jobId);
+           ptr_comm_handler_->serveJob(sdpa::worker_id_list_t (1, *matchingWorkerId), jobId);
         }
         catch(const WorkerNotFoundException&) {
           schedule_first (jobId);

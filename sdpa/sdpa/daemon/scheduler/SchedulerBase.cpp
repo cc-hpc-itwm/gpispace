@@ -139,32 +139,24 @@ void SchedulerBase::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
   _worker_manager.getListNotFullWorkers(workerList);
 }
 
-sdpa::worker_id_t SchedulerBase::findSuitableWorker
+boost::optional<sdpa::worker_id_t> SchedulerBase::findSuitableWorker
   (const job_requirements_t& job_reqs, const sdpa::worker_id_list_t& listAvailWorkers)
 {
   lock_type lock(mtx_);
-  sdpa::worker_id_t matchingWorkerId;
 
   if (listAvailWorkers.empty())
   {
-    return matchingWorkerId;
+    return boost::none;
   }
 
   if (job_reqs.empty())
   {
-    matchingWorkerId = listAvailWorkers.front();
+    return listAvailWorkers.front();
   }
   else
   {
-    const boost::optional<sdpa::worker_id_t> best
-      (_worker_manager.getBestMatchingWorker(job_reqs, listAvailWorkers));
-    if (best)
-    {
-      matchingWorkerId = *best;
-    }
+    return _worker_manager.getBestMatchingWorker(job_reqs, listAvailWorkers);
   }
-
-  return matchingWorkerId;
 }
 
 void SchedulerBase::feedWorkers()

@@ -82,7 +82,7 @@ namespace sdpa {
 
       void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id );
 
-      sdpa::worker_id_t findSuitableWorker(const job_requirements_t&, const sdpa::worker_id_list_t&);
+      boost::optional<sdpa::worker_id_t> findSuitableWorker(const job_requirements_t&, const sdpa::worker_id_list_t&);
 
       void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id);
 
