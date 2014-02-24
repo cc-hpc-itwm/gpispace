@@ -15,7 +15,7 @@ namespace sdpa
       DiscoverJobStatesEvent ( const address_t& a_from
                               , const address_t& a_to
                               , const sdpa::job_id_t& a_job_id
-                              , const std::string& discover_id
+                              , const sdpa::job_id_t& discover_id
                               )
         : sdpa::events::JobEvent (a_from, a_to, a_job_id)
         , discover_id_(discover_id)
@@ -26,7 +26,7 @@ namespace sdpa
         return "DiscoverJobStatestEvent(" + job_id () + ")";
       }
 
-      const std::string& discover_id() const { return discover_id_; }
+      const sdpa::job_id_t& discover_id() const { return discover_id_; }
 
       virtual void handleBy (EventHandler* handler)
       {
@@ -34,7 +34,7 @@ namespace sdpa
       }
 
     private:
-      std::string discover_id_;
+      sdpa::job_id_t discover_id_;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (DiscoverJobStatesEvent, e)
@@ -46,7 +46,7 @@ namespace sdpa
     LOAD_CONSTRUCT_DATA_DEF (DiscoverJobStatesEvent, e)
     {
       LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
-      LOAD_FROM_ARCHIVE ( std::string, disc_id);
+      LOAD_FROM_ARCHIVE ( sdpa::job_id_t, disc_id);
       ::new (e) DiscoverJobStatesEvent (from, to, job_id, disc_id);
     }
   }
