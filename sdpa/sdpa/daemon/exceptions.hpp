@@ -53,28 +53,10 @@ namespace daemon {
 		virtual ~WorkerNotFoundException() throw() {}
 	};
 
-	class JobNotAddedException : public JobException {
-		public:
-		JobNotAddedException( const sdpa::job_id_t& job_id) : JobException("Job not added!", job_id) {}
-		virtual ~JobNotAddedException() throw() {}
-	};
-
 	class JobNotDeletedException : public JobException {
 		public:
 		JobNotDeletedException( const sdpa::job_id_t& job_id) : JobException("Job not deleted!", job_id) {}
 		virtual ~JobNotDeletedException() throw() {}
-	};
-
-	class NoJobRequirements : public JobException {
-		public:
-		NoJobRequirements( const sdpa::job_id_t& job_id) : JobException("No preferences set for this job!", job_id) {}
-		virtual ~NoJobRequirements() throw() {}
-	};
-
-	class JobNotAssignedException : public JobException {
-		public:
-		JobNotAssignedException( const sdpa::job_id_t& job_id) : JobException("Job not assigned yet to any worker!", job_id) {}
-		virtual ~JobNotAssignedException() throw() {}
 	};
 }}
 
