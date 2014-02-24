@@ -57,41 +57,41 @@ namespace sdpa {
     }
 
     //transitions
-    void Job::CancelJob(const events::CancelJobEvent* pEvt)
+    void Job::CancelJob(const events::CancelJobEvent*)
     {
       lock_type lock(mtx_);
-      process_event(*pEvt);
+      process_event (e_begin_cancel());
     }
 
-    void Job::CancelJobAck(const events::CancelJobAckEvent* pEvt)
+    void Job::CancelJobAck(const events::CancelJobAckEvent*)
     {
       lock_type lock(mtx_);
-      process_event(*pEvt);
+      process_event (e_canceled());
     }
 
     void Job::JobFailed(const events::JobFailedEvent* pEvt)
     {
       lock_type lock(mtx_);
-      process_event(*pEvt);
+      process_event (e_failed());
       m_error_message = pEvt->error_message();
     }
 
     void Job::JobFinished(const events::JobFinishedEvent* pEvt)
     {
       lock_type lock(mtx_);
-      process_event(*pEvt);
+      process_event (e_finished());
       result_ = pEvt->result();
     }
 
     void Job::Reschedule()
     {
       lock_type lock(mtx_);
-      process_event(MSMRescheduleEvent());
+      process_event (e_reschedule());
     }
 
     void Job::Dispatch()
     {
       lock_type lock(mtx_);
-      process_event (MSMDispatchJobEvent());
+      process_event (e_dispatch());
     }
 }}

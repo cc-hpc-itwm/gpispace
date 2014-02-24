@@ -39,51 +39,51 @@ namespace sdpa {
       fhg::log::Logger::ptr_t _logger;
       virtual ~JobFSM_() {}
 
-      // The list of FSM states
-      struct Pending : public boost::msm::front::state<>{};
-      struct Running : public boost::msm::front::state<>{};
-      struct Finished : public boost::msm::front::state<>{};
-      struct Failed : public boost::msm::front::state<>{};
-      struct Canceling : public boost::msm::front::state<>{};
-      struct Canceled : public boost::msm::front::state<>{};
+      struct s_pending : public boost::msm::front::state<>{};
+      struct s_running : public boost::msm::front::state<>{};
+      struct s_finished : public boost::msm::front::state<>{};
+      struct s_failed : public boost::msm::front::state<>{};
+      struct s_canceling : public boost::msm::front::state<>{};
+      struct s_canceled : public boost::msm::front::state<>{};
 
-      struct MSMRescheduleEvent {};
-      struct MSMDispatchJobEvent {};
+      struct e_begin_cancel {};
+      struct e_canceled {};
+      struct e_dispatch {};
+      struct e_failed {};
+      struct e_finished {};
+      struct e_reschedule {};
 
-      // the initial state of the JobFSM SM. Must be defined
-      typedef Pending initial_state;
-
-      typedef JobFSM_ sm; // makes transition table cleaner
+      typedef s_pending initial_state;
 
       struct transition_table : boost::mpl::vector
         <
-        //      Start           Event                                   Next           Action                Guard
-        //      +---------------+---------------------------------------+--------------+---------------------+-----
-        _row<   Pending,        MSMDispatchJobEvent,                      Running >,
-        _row<   Pending,        events::CancelJobEvent, 		Canceling>,
-        _row<   Pending,        events::JobFinishedEvent,               Finished>,
-        _row<   Pending,        events::JobFailedEvent,                 Failed>,
-        _irow<  Pending,        MSMRescheduleEvent>,
-        //      +---------------+-------------------------------------------+------------------+---------------------+-----
-        _row<   Running,        events::JobFinishedEvent,               Finished>,
-        _row<   Running,        events::JobFailedEvent,                 Failed>,
-        _row<   Running,        events::CancelJobEvent,                 Canceling>,
-        _row<   Running,        MSMRescheduleEvent,                 	Pending>,
-        _irow<  Running,        MSMDispatchJobEvent>,
-        //      +---------------+---------------------------------------+-------------------+---------------------+-----
-        _irow<  Finished,       events::JobFinishedEvent>,
-        //      +---------------+---------------------------------------+-------------------+---------------------+-----
-        _irow<  Failed,         events::JobFailedEvent>,
-        //      +---------------+---------------------------------------+-------------------+---------------------+-----
-        _row<   Canceling, 	sdpa::events::CancelJobAckEvent,     	Canceled>,
-        _row<   Canceling, 	sdpa::events::JobFinishedEvent,      	Canceled>,
-        _row<   Canceling, 	sdpa::events::JobFailedEvent,           Canceled>,
-        _irow<  Canceling,      sdpa::events::CancelJobEvent>,
-        _irow<  Canceling,      MSMDispatchJobEvent>,
-        //      +---------------+-------------------------------------------+-------------------+---------------------+-----
-        _irow<  Canceled,       events::CancelJobAckEvent>,
-        _irow<  Canceled,       events::JobFinishedEvent>,
-        _irow<  Canceled,       events::JobFailedEvent>
+        //     Start         Event              Next
+        //   +-------------+------------------+-------------+
+         _row< s_pending   , e_begin_cancel   , s_canceling >,
+         _row< s_pending   , e_dispatch       , s_running   >,
+         _row< s_pending   , e_failed         , s_failed    >,
+         _row< s_pending   , e_finished       , s_finished  >,
+        _irow< s_pending   , e_reschedule   /*, ignore */   >,
+        //   +-------------+------------------+-------------+
+         _row< s_running   , e_begin_cancel   , s_canceling >,
+        _irow< s_running   , e_dispatch     /*, ignore */   >,
+         _row< s_running   , e_failed         , s_failed    >,
+         _row< s_running   , e_finished       , s_finished  >,
+         _row< s_running   , e_reschedule     , s_pending   >,
+        //   +-------------+------------------+-------------+
+        _irow< s_finished  , e_finished     /*, ignore */   >,
+        //   +-------------+------------------+-------------+
+        _irow< s_failed    , e_failed       /*, ignore */   >,
+        //   +-------------+------------------+-------------+
+        _irow< s_canceling , e_begin_cancel /*, ignore */   >,
+         _row< s_canceling , e_canceled       , s_canceled  >,
+        _irow< s_canceling , e_dispatch     /*, ignore */   >,
+         _row< s_canceling , e_failed         , s_canceled  >,
+         _row< s_canceling , e_finished       , s_canceled  >,
+        //   +-------------+------------------+-------------+
+        _irow< s_canceled  , e_canceled     /*, ignore */   >,
+        _irow< s_canceled  , e_failed       /*, ignore */   >,
+        _irow< s_canceled  , e_finished     /*, ignore */   >
         >{};
 
       //! \note This table refers to the order in which states are
