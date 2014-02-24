@@ -56,18 +56,6 @@ namespace sdpa {
       return _is_master_job;
     }
 
-    void Job::action_job_finished(const events::JobFinishedEvent& evt/* evt */)
-    {
-      lock_type lock(mtx_);
-      result_ = evt.result();
-    }
-
-    void Job::action_job_failed(const events::JobFailedEvent& evt )
-    {
-      lock_type lock(mtx_);
-      m_error_message = evt.error_message();
-    }
-
     //transitions
     void Job::CancelJob(const events::CancelJobEvent* pEvt)
     {
@@ -85,12 +73,14 @@ namespace sdpa {
     {
       lock_type lock(mtx_);
       process_event(*pEvt);
+      m_error_message = pEvt->error_message();
     }
 
     void Job::JobFinished(const events::JobFinishedEvent* pEvt)
     {
       lock_type lock(mtx_);
       process_event(*pEvt);
+      result_ = pEvt->result();
     }
 
     void Job::Reschedule()
