@@ -86,7 +86,6 @@ bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 
   for( worker_map_t::iterator it = worker_map_.begin(); it != worker_map_.end(); it++ )
   {
-    //if( it->second->name() ==  workerId )
     if( it->first == workerId )
     {
       return false;
