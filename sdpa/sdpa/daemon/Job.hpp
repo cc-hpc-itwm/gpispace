@@ -119,7 +119,7 @@ namespace sdpa {
     class Job : public boost::msm::back::state_machine<JobFSM_>
     {
     public:
-      typedef boost::recursive_mutex mutex_type;
+      typedef boost::mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
       Job ( const job_id_t id
