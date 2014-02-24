@@ -1,15 +1,6 @@
 #ifndef SDPA_JOB_HPP
 #define SDPA_JOB_HPP 1
 
-#include <sdpa/events/CancelJobAckEvent.hpp>
-#include <sdpa/events/CancelJobEvent.hpp>
-#include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/JobFailedEvent.hpp>
-#include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/JobResultsReplyEvent.hpp>
-#include <sdpa/events/JobStatusReplyEvent.hpp>
-#include <sdpa/events/QueryJobStatusEvent.hpp>
-#include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/job_states.hpp>
 #include <sdpa/types.hpp>
 
@@ -18,18 +9,11 @@
 #include <boost/msm/back/state_machine.hpp>
 #include <boost/msm/front/state_machine_def.hpp>
 #include <boost/thread.hpp>
-#include <boost/unordered_map.hpp>
 
-#include <iostream>
-#include <string>
-#include <utility>
-#include <vector>
-
-namespace sdpa {
-  namespace daemon {
-    class GenericDaemon;
-    class SchedulerBase;
-
+namespace sdpa
+{
+  namespace daemon
+  {
     // front-end: define the FSM structure
     struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
     {

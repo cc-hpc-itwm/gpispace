@@ -1,7 +1,5 @@
 #include <sdpa/daemon/Job.hpp>
 
-#include <sdpa/daemon/GenericDaemon.hpp>
-
 namespace sdpa
 {
   namespace daemon
