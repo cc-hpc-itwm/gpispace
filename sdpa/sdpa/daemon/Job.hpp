@@ -15,8 +15,6 @@
 
 #include <fhg/assert.hpp>
 
-#include <fhglog/fhglog.hpp>
-
 #include <boost/msm/back/state_machine.hpp>
 #include <boost/msm/front/state_machine_def.hpp>
 #include <boost/thread.hpp>
@@ -35,8 +33,6 @@ namespace sdpa {
     // front-end: define the FSM structure
     struct JobFSM_ : public boost::msm::front::state_machine_def<JobFSM_>
     {
-      JobFSM_() : _logger (fhg::log::Logger::get ("JobFSM")) {}
-      fhg::log::Logger::ptr_t _logger;
       virtual ~JobFSM_() {}
 
       struct s_pending : public boost::msm::front::state<>{};
