@@ -251,13 +251,6 @@ fhg_add_test (test_CoallocationScheduler.cpp
                  ${FhgLog_LIBRARY}
 )
 
-fhg_add_test (test_SimpleScheduler.cpp
-  PROJECT sdpa
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-                 ${FhgLog_LIBRARY}
-)
-
 fhg_add_test (restart_drts_worker_while_jobs_are_running.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
