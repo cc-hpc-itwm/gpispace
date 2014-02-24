@@ -121,15 +121,13 @@ namespace sdpa {
           , const worker_id_t& owner
           );
 
-      const job_id_t& id() const;
       const job_desc_t& description() const;
-      const job_result_t& result() const;
+      const job_id_t& id() const;
+      bool isMasterJob() const;
+      worker_id_t owner() const;
 
       std::string error_message () const;
-
-      bool isMasterJob() const;
-
-      worker_id_t owner() const;
+      const job_result_t& result() const;
 
       status::code getStatus() const;
 
@@ -142,14 +140,13 @@ namespace sdpa {
 
     private:
       mutable boost::mutex mtx_;
-      job_id_t id_;
       job_desc_t desc_;
-
+      job_id_t id_;
       bool _is_master_job;
-      job_result_t result_;
-      std::string m_error_message;
-
       worker_id_t m_owner;
+
+      std::string m_error_message;
+      job_result_t result_;
     };
 }}
 
