@@ -25,6 +25,7 @@
 
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+#include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/id_generator.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
@@ -1210,7 +1211,14 @@ void GenericDaemon::handleRetrieveJobResultsEvent(const events::RetrieveJobResul
   {
       if(sdpa::status::is_terminal (pJob->getStatus()))
       {
-          pJob->RetrieveJobResults(pEvt, this);
+        sendEventToOther ( events::JobResultsReplyEvent::Ptr
+                           ( new events::JobResultsReplyEvent ( pEvt->to()
+                                                              , pEvt->from()
+                                                              , pEvt->job_id()
+                                                              , pJob->result()
+                                                              )
+                           )
+                         );
       }
       else
       {

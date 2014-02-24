@@ -68,16 +68,6 @@ namespace sdpa {
       m_error_message = evt.error_message();
     }
 
-    void Job::action_retrieve_job_results(const MSMRetrieveJobResultsEvent& e)
-    {
-      const events::JobResultsReplyEvent::Ptr pResReply(
-         new events::JobResultsReplyEvent( e.from()
-                                                 , e.to()
-                                                 , id()
-                                                 , result() ));
-      e.ptrAgent()->sendEventToOther(pResReply);
-    }
-
     //transitions
     void Job::CancelJob(const events::CancelJobEvent* pEvt)
     {
@@ -101,12 +91,6 @@ namespace sdpa {
     {
       lock_type lock(mtx_);
       process_event(*pEvt);
-    }
-
-    void Job::RetrieveJobResults(const events::RetrieveJobResultsEvent* pEvt, GenericDaemon* pAgent)
-    {
-      lock_type lock(mtx_);
-      process_event(MSMRetrieveJobResultsEvent(pEvt, pAgent));
     }
 
     void Job::Reschedule()
