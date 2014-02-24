@@ -18,12 +18,6 @@ namespace daemon {
 		WorkerNotFoundException() : std::runtime_error ("worker not found") {}
 		virtual ~WorkerNotFoundException() throw() {}
 	};
-
-	class JobNotDeletedException : public std::runtime_error {
-		public:
-		JobNotDeletedException() : std::runtime_error ("job not deleted") {}
-		virtual ~JobNotDeletedException() throw() {}
-	};
 }}
 
 #endif
