@@ -45,9 +45,6 @@ namespace sdpa {
           { throw std::runtime_error("Not implemented.The agent should not call handleDeleteJobEvent!"); }
         virtual void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt);
 
-        virtual void finished(const we::layer::id_type & id, const we::type::activity_t&);
-        virtual void failed( const we::layer::id_type& workflowId, std::string const& reason);
-
       private:
         CoallocationScheduler::ptr_t scheduler() const
         {

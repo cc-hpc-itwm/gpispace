@@ -144,64 +144,6 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   }
 }
 
-void Agent::finished(const we::layer::id_type& wfid, const we::type::activity_t & result)
-{
-  //put the job into the state Finished
-  job_id_t id(wfid);
-
-  Job* pJob = findJob(id);
-  if(!pJob)
-  {
-    throw std::runtime_error ("got finished message for old/unknown Job " + id);
-  }
-
-  // forward it up
-  events::JobFinishedEvent::Ptr pEvtJobFinished
-                (new events::JobFinishedEvent( name()
-                                     , pJob->owner()
-                                     , id
-                                     , result.to_string()
-                                     )
-                );
-
-  pJob->JobFinished(pEvtJobFinished.get());
-
-  if(!isSubscriber(pJob->owner()))
-  {
-    sendEventToOther(pEvtJobFinished);
-  }
-
-  if (m_guiService)
-  {
-    std::list<std::string> workers; workers.push_back (name());
-    const we::type::activity_t act (pJob->description());
-    const sdpa::daemon::NotificationEvent evt
-      ( workers
-      , pJob->id()
-      , NotificationEvent::STATE_FINISHED
-      , act
-      );
-
-    m_guiService->notify (evt);
-  }
-
-  BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
-  {
-    if(subscribedFor(pair_subscr_joblist.first, id))
-    {
-      events::SDPAEvent::Ptr ptrEvt
-        ( new events::JobFinishedEvent ( name()
-                               , pair_subscr_joblist.first
-                               , pEvtJobFinished->job_id()
-                               , pEvtJobFinished->result()
-                               )
-        );
-
-      sendEventToOther(ptrEvt);
-    }
-  }
-}
-
 void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
 {
   // check if the message comes from outside/slave or from WFE
@@ -296,64 +238,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
         if(bAllPartResCollected) {
             deleteJob(pEvt->job_id());
         }
-  }
-}
-
-void Agent::failed( const we::layer::id_type& wfid
-                  , std::string const & reason
-                  )
-{
-  job_id_t id(wfid);
-  //put the job into the state Failed
-
-  Job* pJob = findJob(id);
-  if(!pJob)
-  {
-    throw std::runtime_error ("got failed message for old/unknown Job " + id);
-  }
-
-  // forward it up
-  events::JobFailedEvent::Ptr pEvtJobFailed
-    (new events::JobFailedEvent ( name()
-                        , pJob->owner()
-                        , id
-                        , reason
-                        )
-    );
-
-  // send the event to the master
-  pJob->JobFailed(pEvtJobFailed.get());
-
-  if(!isSubscriber(pJob->owner()))
-    sendEventToOther(pEvtJobFailed);
-
-  if (m_guiService)
-  {
-    std::list<std::string> workers; workers.push_back (name());
-    const we::type::activity_t act (pJob->description());
-    const sdpa::daemon::NotificationEvent evt
-      ( workers
-      , pJob->id()
-      , NotificationEvent::STATE_FINISHED
-      , act
-      );
-
-    m_guiService->notify (evt);
-  }
-
-  BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
-  {
-    if(subscribedFor(pair_subscr_joblist.first, id))
-    {
-        events::JobFailedEvent::Ptr ptrEvt
-        ( new events::JobFailedEvent ( name()
-                             , pair_subscr_joblist.first
-                             , pEvtJobFailed->job_id()
-                             , reason
-                             )
-        );
-      sendEventToOther(ptrEvt);
-    }
   }
 }
 

@@ -528,19 +528,60 @@ void GenericDaemon::cancel(const we::layer::id_type& activityId)
  */
 void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::type::activity_t& result)
 {
-  // generate a JobFinishedEvent for self!
-  // cancel the job corresponding to that activity -> send downward a CancelJobEvent?
-  // look for the job_id corresponding to the received workflowId into job_map_
-  // in fact they should be the same!
-  // generate const JobFinishedEvent& event
-  // Job& job = job_map_[job_id];
-  // call job.JobFinished(event);
+  //put the job into the state Finished
+  job_id_t id(workflowId);
 
-  job_id_t job_id(workflowId);
-  events::JobFinishedEvent::Ptr pEvtJobFinished( new events::JobFinishedEvent( sdpa::daemon::WE, name(), job_id, result.to_string()));
-  sendEventToSelf(pEvtJobFinished);
+  Job* pJob = findJob(id);
+  if(!pJob)
+  {
+    throw std::runtime_error ("got finished message for old/unknown Job " + id);
+  }
 
-  // notify the GUI that the activity finished
+  // forward it up
+  events::JobFinishedEvent::Ptr pEvtJobFinished
+                (new events::JobFinishedEvent( name()
+                                     , pJob->owner()
+                                     , id
+                                     , result.to_string()
+                                     )
+                );
+
+  pJob->JobFinished(pEvtJobFinished.get());
+
+  if(!isSubscriber(pJob->owner()))
+  {
+    sendEventToOther(pEvtJobFinished);
+  }
+
+  if (m_guiService)
+  {
+    std::list<std::string> workers; workers.push_back (name());
+    const we::type::activity_t act (pJob->description());
+    const sdpa::daemon::NotificationEvent evt
+      ( workers
+      , pJob->id()
+      , NotificationEvent::STATE_FINISHED
+      , act
+      );
+
+    m_guiService->notify (evt);
+  }
+
+  BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  {
+    if(subscribedFor(pair_subscr_joblist.first, id))
+    {
+      events::SDPAEvent::Ptr ptrEvt
+        ( new events::JobFinishedEvent ( name()
+                               , pair_subscr_joblist.first
+                               , pEvtJobFinished->job_id()
+                               , pEvtJobFinished->result()
+                               )
+        );
+
+      sendEventToOther(ptrEvt);
+    }
+  }
 }
 
 /**
@@ -551,23 +592,58 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
                           , std::string const & reason
                           )
 {
-  LLOG( WARN
-      , _logger
-      , "job failed: " << workflowId
-      << " message := " << reason
-      );
+  job_id_t id(workflowId);
+  //put the job into the state Failed
 
-  job_id_t job_id(workflowId);
+  Job* pJob = findJob(id);
+  if(!pJob)
+  {
+    throw std::runtime_error ("got failed message for old/unknown Job " + id);
+  }
 
+  // forward it up
   events::JobFailedEvent::Ptr pEvtJobFailed
-    (new events::JobFailedEvent ( sdpa::daemon::WE
-                        , name()
-                        , job_id
+    (new events::JobFailedEvent ( name()
+                        , pJob->owner()
+                        , id
                         , reason
                         )
     );
 
-  sendEventToSelf(pEvtJobFailed);
+  // send the event to the master
+  pJob->JobFailed(pEvtJobFailed.get());
+
+  if(!isSubscriber(pJob->owner()))
+    sendEventToOther(pEvtJobFailed);
+
+  if (m_guiService)
+  {
+    std::list<std::string> workers; workers.push_back (name());
+    const we::type::activity_t act (pJob->description());
+    const sdpa::daemon::NotificationEvent evt
+      ( workers
+      , pJob->id()
+      , NotificationEvent::STATE_FINISHED
+      , act
+      );
+
+    m_guiService->notify (evt);
+  }
+
+  BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  {
+    if(subscribedFor(pair_subscr_joblist.first, id))
+    {
+        events::JobFailedEvent::Ptr ptrEvt
+        ( new events::JobFailedEvent ( name()
+                             , pair_subscr_joblist.first
+                             , pEvtJobFailed->job_id()
+                             , reason
+                             )
+        );
+      sendEventToOther(ptrEvt);
+    }
+  }
 }
 
 /**
