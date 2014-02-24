@@ -268,9 +268,6 @@ sdpa::worker_id_t WorkerManager::getBestMatchingWorker
 {
   lock_type lock(mtx_);
 
-  if (worker_map_.empty())
-    throw NoWorkerFoundException();
-
   boost::optional<double> last_schedule_time;
   boost::optional<worker_id_t> bestMatchingWorkerId;
   boost::optional<std::size_t> maxMatchingDeg;
