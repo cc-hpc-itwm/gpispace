@@ -31,6 +31,7 @@ namespace sdpa {
 
     const job_result_t& Job::result() const
     {
+      boost::mutex::scoped_lock const _ (mtx_);
       return result_;
     }
 
