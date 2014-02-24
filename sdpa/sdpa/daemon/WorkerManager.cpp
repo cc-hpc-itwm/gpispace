@@ -84,12 +84,9 @@ bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 {
   lock_type lock(mtx_);
 
-  for( worker_map_t::iterator it = worker_map_.begin(); it != worker_map_.end(); it++ )
+  if (worker_map_.count (workerId) != 0)
   {
-    if( it->first == workerId )
-    {
-      return false;
-    }
+    return false;
   }
 
   Worker::ptr_t pWorker( new Worker( workerId, capacity ) );
