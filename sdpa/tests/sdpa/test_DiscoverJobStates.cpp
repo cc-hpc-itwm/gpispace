@@ -431,5 +431,5 @@ BOOST_AUTO_TEST_CASE (agent_chain_2)
 }
 BOOST_AUTO_TEST_CASE (agent_chain_random_3_to_100)
 {
-  verify_child_count_in_agent_chain (3 + rand() % 96);
+  verify_child_count_in_agent_chain (3 + rand() % 98);
 }
