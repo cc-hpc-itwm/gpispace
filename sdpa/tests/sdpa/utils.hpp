@@ -52,6 +52,33 @@ namespace utils
 #endif
   }
 
+  we::type::activity_t dummy_module_call (std::string name)
+  {
+    we::type::transition_t transition
+      ( name
+      , we::type::module_call_t
+        (fhg::util::random_string(), fhg::util::random_string())
+      , boost::none
+      , true
+      , we::type::property::type()
+      , we::priority_type()
+      );
+    const std::string port_name (fhg::util::random_string());
+    transition.add_port ( we::type::port_t ( port_name
+                                           , we::type::PORT_IN
+                                           , std::string ("string")
+                                           , we::type::property::type()
+                                           )
+                        );
+    we::type::activity_t act (transition, boost::none);
+    act.add_input ( transition.input_port_by_name (port_name)
+                  //! \todo Investigate why we can't take a random
+                  //! string with \\ or \": parse error on deserialization
+                  , fhg::util::random_string_without ("\\\"")
+                  );
+    return act;
+  }
+
   struct orchestrator : boost::noncopyable
   {
     orchestrator ( const std::string& name, const std::string& url
