@@ -61,6 +61,12 @@ namespace utils
       , _kvs_port (kvs_port)
       , _ (name, url, kvs_host, kvs_port)
     {}
+    orchestrator (std::string kvs_host, std::string kvs_port)
+      : _kvs_host (kvs_host)
+      , _kvs_port (kvs_port)
+      , _ (random_peer_name(), "127.0.0.1", kvs_host, kvs_port)
+    {}
+
     std::string _kvs_host;
     std::string _kvs_port;
     sdpa::daemon::Orchestrator _;
@@ -108,6 +114,24 @@ namespace utils
           , const agent& master
           )
       : _ ( name, url
+          , kvs_host, kvs_port
+          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
+          , boost::none
+          )
+    {}
+    agent ( std::string kvs_host, std::string kvs_port
+          , const orchestrator& master
+          )
+      : _ ( random_peer_name(), "127.0.0.1"
+          , kvs_host, kvs_port
+          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
+          , boost::none
+          )
+    {}
+    agent ( std::string kvs_host, std::string kvs_port
+          , const agent& master
+          )
+      : _ ( random_peer_name(), "127.0.0.1"
           , kvs_host, kvs_port
           , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
           , boost::none
