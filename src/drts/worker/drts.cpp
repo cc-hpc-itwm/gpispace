@@ -448,8 +448,6 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
 
       notify_capabilities_to_master (master_it->first);
       resend_outstanding_events (master_it->first);
-
-      m_connected_event.notify(master_it->first);
     }
 
     {

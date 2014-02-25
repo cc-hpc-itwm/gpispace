@@ -6,7 +6,6 @@
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer.hpp>
 
-#include <fhg/util/thread/event.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/set.hpp>
 
@@ -167,8 +166,6 @@ private:
   mutable boost::mutex m_job_arrived_mutex;
   mutable boost::mutex m_reconnect_counter_mutex;
   boost::condition_variable     m_job_arrived;
-
-  fhg::util::thread::event<std::string> m_connected_event;
 
   mutable boost::mutex m_capabilities_mutex;
   map_of_capabilities_t m_virtual_capabilities;
