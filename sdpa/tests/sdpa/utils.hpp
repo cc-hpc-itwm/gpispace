@@ -237,7 +237,7 @@ namespace utils
       return c.queryJob (id);
     }
 
-    sdpa::status::code wait_for_job_termination ( sdpa::client::Client& c
+    sdpa::status::code wait_for_terminal_state_polling ( sdpa::client::Client& c
                                                 , const sdpa::job_id_t& id
                                                 )
     {
@@ -289,7 +289,7 @@ namespace utils
         (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
       {
         const sdpa::status::code state
-          (wait_for_job_termination (c, job_id_user));
+          (wait_for_terminal_state_polling (c, job_id_user));
         retrieve_job_results (c, job_id_user);
         delete_job (c, job_id_user);
         return state;
