@@ -416,8 +416,10 @@ namespace
     const wait_until_submitted_and_finish_on_scope_exit _
       (worker, activity_name, job_submitted);
 
+    //! \note top level has one child per agent (wrapper net for wfe)
+    //! plus one leaf
     BOOST_REQUIRE_EQUAL
-      (recursive_child_count (submitted_job.discover()), num_agents);
+      (recursive_child_count (submitted_job.discover()), num_agents + 1);
   }
 }
 
