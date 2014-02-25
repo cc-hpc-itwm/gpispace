@@ -11,6 +11,8 @@
 
 #include <drts/worker/drts.hpp>
 
+#include <fhg/util/random_string.hpp>
+
 #include <plugin/core/kernel.hpp>
 #include <plugin/plugin.hpp>
 
@@ -37,6 +39,17 @@ namespace utils
     return std::string ( std::istream_iterator<char> (f)
                        , std::istream_iterator<char>()
                        );
+  }
+
+  std::string random_peer_name()
+  {
+#define TEST_NO_HUMAN_READABLE_PEER_NAMES
+#ifndef TEST_NO_HUMAN_READABLE_PEER_NAMES
+    static std::size_t i (0);
+    return boost::lexical_cast<std::string> (i++);
+#else
+    return fhg::util::random_string_without (". ");
+#endif
   }
 
   struct orchestrator : boost::noncopyable
