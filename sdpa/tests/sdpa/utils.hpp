@@ -461,6 +461,28 @@ namespace utils
       sdpa::client::Client _;
     };
 
+    struct submitted_job : boost::noncopyable
+    {
+      submitted_job (we::type::activity_t workflow, orchestrator const& orch)
+        : _client (orch)
+        , _job_id (_client.submit_job (workflow.to_string()))
+      {}
+
+      ~submitted_job()
+      {
+        _client.wait_for_terminal_state (_job_id);
+      }
+
+      sdpa::discovery_info_t discover()
+      {
+        return _client.discover (_job_id);
+      }
+
+    private:
+      client_t _client;
+      sdpa::job_id_t _job_id;
+    };
+
     sdpa::job_id_t submit_job
       (sdpa::client::Client& c, std::string workflow)
     {
