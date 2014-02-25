@@ -216,6 +216,15 @@ namespace utils
 
   namespace client
   {
+    struct client_t : boost::noncopyable
+    {
+      client_t (orchestrator const& orch)
+        : _ (orch.name(), orch.kvs_host(), orch.kvs_port())
+      {}
+
+      sdpa::client::Client _;
+    };
+
     sdpa::job_id_t submit_job
       (sdpa::client::Client& c, std::string workflow)
     {
@@ -300,27 +309,27 @@ namespace utils
     sdpa::status::code submit_job_and_wait_for_termination
       (std::string workflow, const orchestrator& orch)
     {
-      sdpa::client::Client c (orch.name(), orch.kvs_host(), orch.kvs_port());
+      client_t c (orch);
 
-      return wait_for_termination_impl (submit_job (c, workflow), c);
+      return wait_for_termination_impl (submit_job (c._, workflow), c._);
     }
 
     sdpa::status::code submit_job_and_cancel_and_wait_for_termination
       (std::string workflow, const orchestrator& orch)
     {
-      sdpa::client::Client c (orch.name(), orch.kvs_host(), orch.kvs_port());
+      client_t c (orch);
 
-      sdpa::job_id_t job_id_user(submit_job (c, workflow));
-      cancel_job (c, job_id_user);
-      return wait_for_termination_impl (job_id_user, c);
+      sdpa::job_id_t job_id_user(submit_job (c._, workflow));
+      cancel_job (c._, job_id_user);
+      return wait_for_termination_impl (job_id_user, c._);
     }
 
     sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
       (std::string workflow, const orchestrator& orch)
     {
-      sdpa::client::Client c (orch.name(), orch.kvs_host(), orch.kvs_port());
+      client_t c (orch);
 
-      return wait_for_termination_as_subscriber_impl (submit_job (c, workflow), c);
+      return wait_for_termination_as_subscriber_impl (submit_job (c._, workflow), c._);
     }
 
     sdpa::status::code submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
@@ -328,13 +337,13 @@ namespace utils
     {
       sdpa::job_id_t job_id_user;
       {
-        sdpa::client::Client c (orch.name(), orch.kvs_host(), orch.kvs_port());
-        job_id_user = submit_job (c, workflow);
+        client_t c (orch);
+        job_id_user = submit_job (c._, workflow);
       }
 
       {
-        sdpa::client::Client c (orch.name(), orch.kvs_host(), orch.kvs_port());
-        return wait_for_termination_as_subscriber_impl (job_id_user, c);
+        client_t c (orch);
+        return wait_for_termination_as_subscriber_impl (job_id_user, c._);
       }
     }
   }
