@@ -275,6 +275,126 @@ namespace utils
     boost::thread _thread;
   };
 
+  namespace
+  {
+    //! \todo boost 1.53: replace with
+    //! boost::scoped_thread<boost::interrupt_and_join_if_joinable>
+    class scoped_thread : public boost::thread
+    {
+    public:
+      template<typename T1, typename T2> scoped_thread (T1 v1, T2 v2)
+        : boost::thread (v1, v2)
+      {}
+      ~scoped_thread()
+      {
+        interrupt();
+        if (joinable())
+        {
+          join();
+        }
+      }
+    };
+  }
+
+  class fake_drts_worker_notifying_module_call_submission : sdpa::events::EventHandler
+  {
+  public:
+    fake_drts_worker_notifying_module_call_submission
+        ( boost::function<void (std::string)> announce_job
+        , std::string kvs_host
+        , std::string kvs_port
+        , utils::agent const& master
+        )
+      : _name (random_peer_name())
+      , _kvs_client
+        ( new fhg::com::kvs::client::kvsc
+          (kvs_host, kvs_port, true, boost::posix_time::seconds (120), 1)
+        )
+      , _event_queue()
+      , _network
+        ( boost::bind
+          (&fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>::put, &_event_queue, _1)
+        , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+        , _kvs_client
+        )
+      , _event_thread
+        (&fake_drts_worker_notifying_module_call_submission::event_thread, this)
+      , _master_name (master._.name())
+      , _announce_job (announce_job)
+    {
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::WorkerRegistrationEvent (_name, master._.name(), 1))
+        );
+    }
+
+    virtual void handleWorkerRegistrationAckEvent
+      (const sdpa::events::WorkerRegistrationAckEvent* e)
+    {
+      BOOST_REQUIRE_EQUAL (e->from(), _master_name);
+    }
+    virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e)
+    {
+      const std::string name
+        (we::type::activity_t (e->description()).transition().name());
+
+      _jobs.insert (std::make_pair (name, job_t (*e->job_id(), e->from())));
+
+      _announce_job (name);
+
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::SubmitJobAckEvent (_name, e->from(), *e->job_id()))
+        );
+    }
+    virtual void handleJobFinishedAckEvent
+      (const sdpa::events::JobFinishedAckEvent*)
+    {
+      // can be ignored as we clean up in finish() already
+    }
+
+    void finish (std::string name)
+    {
+      const job_t job (_jobs.at (name));
+      _jobs.erase (name);
+
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          ( new sdpa::events::JobFinishedEvent
+            (_name, job._owner, job._id, we::type::activity_t().to_string())
+          )
+        );
+    }
+
+  private:
+    std::string _name;
+    fhg::com::kvs::kvsc_ptr_t _kvs_client;
+
+    fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>  _event_queue;
+    sdpa::com::NetworkStrategy _network;
+
+    scoped_thread _event_thread;
+    void event_thread()
+    {
+      for (;;)
+      {
+        _event_queue.get()->handleBy (this);
+      }
+    }
+
+    std::string _master_name;
+
+    struct job_t
+    {
+      sdpa::job_id_t _id;
+      std::string _owner;
+      job_t (sdpa::job_id_t id, std::string owner) : _id (id), _owner (owner) {}
+    };
+    std::map<std::string, job_t> _jobs;
+
+    boost::function<void (std::string)> _announce_job;
+  };
+
   namespace client
   {
     struct client_t : boost::noncopyable
