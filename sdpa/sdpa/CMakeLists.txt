@@ -6,7 +6,6 @@ set (srcs
   daemon/Job.cpp
   daemon/scheduler/SchedulerBase.cpp
   daemon/scheduler/CoallocationScheduler.cpp
-  daemon/scheduler/SimpleScheduler.cpp
   daemon/Worker.cpp
   daemon/WorkerManager.cpp
   daemon/agent/Agent.cpp
