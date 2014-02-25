@@ -62,6 +62,7 @@ namespace fhg
           : version (0)
           , flags (0)
           , type_of_msg (0)
+          , reserved (0)
           , length (0)
         {
           memset (&src, 0, sizeof(address_t));
