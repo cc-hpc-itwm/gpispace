@@ -25,18 +25,14 @@ namespace fhg
 
       void add_session (session_ptr session)
       {
-          {
-            lock_type lock (m_mutex);
-            sessions_.insert(session);
-          }
+        lock_type lock (m_mutex);
+        sessions_.insert(session);
       }
 
       void del_session (session_ptr session)
       {
-        {
-          lock_type lock (m_mutex);
-          sessions_.erase(session);
-        }
+        lock_type lock (m_mutex);
+        sessions_.erase(session);
       }
 
       void handle_data (session_ptr session, const std::string & data)
