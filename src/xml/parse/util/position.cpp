@@ -12,7 +12,7 @@ namespace xml
     {
       namespace
       {
-        void inc_line_and_column ( char* pos
+        void inc_line_and_column ( const char* pos
                                  , const char* end
                                  , unsigned int& line
                                  , unsigned int& column
@@ -41,7 +41,7 @@ namespace xml
         , _column (column)
         , _path (path)
       {
-        inc_line_and_column (const_cast<char*>(begin), pos, _line, _column);
+        inc_line_and_column (begin, pos, _line, _column);
       }
 
       const unsigned int& position_type::line() const
