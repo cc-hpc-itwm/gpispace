@@ -438,6 +438,11 @@ namespace utils
         return curr_status;
       }
 
+      sdpa::discovery_info_t discover (const sdpa::job_id_t& id)
+      {
+        return _.discoverJobStates (fhg::util::random_string(), id);
+      }
+
       sdpa::client::result_t retrieve_job_results (const sdpa::job_id_t& id)
       {
         return _.retrieveResults (id);
