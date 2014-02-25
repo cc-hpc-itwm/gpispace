@@ -361,7 +361,7 @@ namespace utils
     {
       client_t c (orch);
 
-      return wait_for_termination_impl (submit_job (c._, workflow), c);
+      return wait_for_termination_impl (c.submit_job (workflow), c);
     }
 
     sdpa::status::code submit_job_and_cancel_and_wait_for_termination
@@ -369,8 +369,8 @@ namespace utils
     {
       client_t c (orch);
 
-      sdpa::job_id_t job_id_user(submit_job (c._, workflow));
-      cancel_job (c._, job_id_user);
+      sdpa::job_id_t job_id_user (c.submit_job (workflow));
+      c.cancel_job (job_id_user);
       return wait_for_termination_impl (job_id_user, c);
     }
 
@@ -379,7 +379,7 @@ namespace utils
     {
       client_t c (orch);
 
-      return wait_for_termination_as_subscriber_impl (submit_job (c._, workflow), c);
+      return wait_for_termination_as_subscriber_impl (c.submit_job (workflow), c);
     }
 
     sdpa::status::code submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
@@ -388,7 +388,7 @@ namespace utils
       sdpa::job_id_t job_id_user;
       {
         client_t c (orch);
-        job_id_user = submit_job (c._, workflow);
+        job_id_user = c.submit_job (workflow);
       }
 
       {
