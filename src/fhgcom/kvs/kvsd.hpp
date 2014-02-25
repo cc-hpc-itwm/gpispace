@@ -489,8 +489,6 @@ namespace fhg
             }
           }
         protected:
-          void on_add_hook (session_ptr) {}
-          void on_del_hook (session_ptr) {}
           void on_data_hook (session_ptr client, const std::string &s)
           {
             try

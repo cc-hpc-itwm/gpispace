@@ -27,18 +27,12 @@ namespace fhg
       {
         try
         {
-          on_add_hook (session);
-
           {
             lock_type lock (m_mutex);
             sessions_.insert(session);
           }
         } catch (std::exception const & ex)
         {
-          // TODO: fine grained exceptions
-          //    maybe add something like permission denied...
-          LOG(ERROR, "on_add_hook failed: " << ex.what());
-          // throw?
         }
       }
 
@@ -48,14 +42,6 @@ namespace fhg
           lock_type lock (m_mutex);
           sessions_.erase(session);
         }
-
-        try
-        {
-          on_del_hook (session);
-        } catch (std::exception const & ex)
-        {
-          LOG(ERROR, "on_del_hook failed: " << ex.what());
-        }
       }
 
       void handle_data (session_ptr session, const std::string & data)
@@ -64,8 +50,6 @@ namespace fhg
       }
 
     protected:
-      virtual void on_add_hook (session_ptr) {}
-      virtual void on_del_hook (session_ptr) {}
       virtual void on_data_hook (session_ptr, const std::string &) {}
     private:
       mutex_type            m_mutex;
