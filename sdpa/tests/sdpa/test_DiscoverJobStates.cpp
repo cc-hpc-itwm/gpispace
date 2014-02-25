@@ -6,6 +6,7 @@
 
 #include <we/layer.hpp>
 
+#include <boost/ptr_container/ptr_list.hpp>
 #include <boost/test/unit_test.hpp>
 #include <sdpa/types.hpp>
 
@@ -350,4 +351,85 @@ BOOST_AUTO_TEST_CASE (remove_workers)
           (client.discoverJobStates (get_next_disc_id(), job_id))
         )
   {} // do nothing, discover again
+}
+
+namespace
+{
+  std::size_t recursive_child_count (sdpa::discovery_info_t info)
+  {
+    std::size_t count (info.children().size());
+    BOOST_FOREACH (sdpa::discovery_info_t child, info.children())
+    {
+      count += recursive_child_count (child);
+    }
+    return count;
+  }
+
+  struct wait_until_submitted_and_finish_on_scope_exit
+  {
+    wait_until_submitted_and_finish_on_scope_exit
+        ( utils::fake_drts_worker_notifying_module_call_submission& worker
+        , std::string expected_job_name
+        , fhg::util::thread::event<std::string>& job_submitted
+        )
+      : _worker (worker)
+      , _actual_job_name()
+    {
+      job_submitted.wait (_actual_job_name);
+      BOOST_REQUIRE_EQUAL (_actual_job_name, expected_job_name);
+    }
+    ~wait_until_submitted_and_finish_on_scope_exit()
+    {
+      _worker.finish (_actual_job_name);
+    }
+
+    utils::fake_drts_worker_notifying_module_call_submission& _worker;
+    std::string _actual_job_name;
+  };
+
+  void verify_child_count_in_agent_chain (const std::size_t num_agents)
+  {
+    const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+    const utils::agent top_agent (kvs_host(), kvs_port(), orchestrator);
+    boost::ptr_list<utils::agent> agents;
+
+    const utils::agent* last_agent = &top_agent;
+    for (std::size_t counter (1); counter < num_agents; ++counter)
+    {
+      agents.push_back (new utils::agent (kvs_host(), kvs_port(), *last_agent));
+      last_agent = &agents.back();
+    }
+
+    fhg::util::thread::event<std::string> job_submitted;
+
+    utils::fake_drts_worker_notifying_module_call_submission worker
+      ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
+      , kvs_host(), kvs_port()
+      , *last_agent
+      );
+
+    const std::string activity_name (fhg::util::random_string());
+
+    utils::client::submitted_job submitted_job
+      (utils::dummy_module_call (activity_name), orchestrator);
+
+    const wait_until_submitted_and_finish_on_scope_exit _
+      (worker, activity_name, job_submitted);
+
+    BOOST_REQUIRE_EQUAL
+      (recursive_child_count (submitted_job.discover()), num_agents);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (agent_chain_1)
+{
+  verify_child_count_in_agent_chain (1);
+}
+BOOST_AUTO_TEST_CASE (agent_chain_2)
+{
+  verify_child_count_in_agent_chain (2);
+}
+BOOST_AUTO_TEST_CASE (agent_chain_random_3_to_100)
+{
+  verify_child_count_in_agent_chain (3 + rand() % 96);
 }
