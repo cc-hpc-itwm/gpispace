@@ -24,7 +24,7 @@ namespace fhg
                   , public boost::enable_shared_from_this<session>
     {
     public:
-      typedef basic_session_manager<session> manager_t;
+      typedef basic_session_manager manager_t;
 
       session ( boost::asio::io_service & io_service
               , manager_t & manager

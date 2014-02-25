@@ -7,11 +7,12 @@ namespace fhg
 {
   namespace com
   {
-    template <typename Session>
+    class session;
+
     class basic_session_manager
     {
     public:
-      typedef shared_ptr<Session> session_ptr;
+      typedef shared_ptr<session> session_ptr;
       virtual ~basic_session_manager () {}
 
       virtual void add_session (session_ptr session) = 0;

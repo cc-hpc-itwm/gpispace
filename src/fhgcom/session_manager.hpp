@@ -16,7 +16,7 @@ namespace fhg
 {
   namespace com
   {
-    class session_manager : public basic_session_manager<session>
+    class session_manager : public basic_session_manager
     {
     public:
       typedef session session_type;
