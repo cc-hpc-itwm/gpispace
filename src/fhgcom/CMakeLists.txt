@@ -19,7 +19,6 @@ set (hdrs
   message.hpp
   message_io.hpp
 
-  basic_session.hpp
   session.hpp
   basic_session_manager.hpp
   session_manager.hpp

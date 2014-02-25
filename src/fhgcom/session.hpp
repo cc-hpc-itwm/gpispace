@@ -6,7 +6,6 @@
 #include <deque>
 #include <vector>
 
-#include <fhgcom/basic_session.hpp>
 #include <fhgcom/basic_session_manager.hpp>
 
 #include <boost/asio.hpp>
@@ -20,8 +19,7 @@ namespace fhg
 {
   namespace com
   {
-    class session : public basic_session
-                  , public boost::enable_shared_from_this<session>
+    class session : public boost::enable_shared_from_this<session>
     {
     public:
       typedef basic_session_manager manager_t;
