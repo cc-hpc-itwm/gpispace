@@ -10,15 +10,16 @@
 #include <fhgcom/basic_session_manager.hpp>
 #include <fhgcom/util/to_hex.hpp>
 
+#include <fhgcom/session.hpp>
+
 namespace fhg
 {
   namespace com
   {
-    template <typename Session>
-    class session_manager : public basic_session_manager<Session>
+    class session_manager : public basic_session_manager<session>
     {
     public:
-      typedef Session session_type;
+      typedef session session_type;
       typedef shared_ptr<session_type> session_ptr;
 
       void add_session (session_ptr session)

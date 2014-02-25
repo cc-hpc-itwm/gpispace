@@ -15,7 +15,7 @@ namespace fhg
     class tcp_server
     {
     public:
-      typedef session_manager<session> manager_t;
+      typedef session_manager manager_t;
       typedef manager_t::session_type session_type;
       typedef manager_t::session_ptr  session_ptr;
 

@@ -200,7 +200,7 @@ namespace fhg
 
       namespace server
       {
-        class kvsd : public session_manager<session>
+        class kvsd : public session_manager
         {
         private:
           template <typename T>
