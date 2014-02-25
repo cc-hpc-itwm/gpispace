@@ -25,15 +25,10 @@ namespace fhg
 
       void add_session (session_ptr session)
       {
-        try
-        {
           {
             lock_type lock (m_mutex);
             sessions_.insert(session);
           }
-        } catch (std::exception const & ex)
-        {
-        }
       }
 
       void del_session (session_ptr session)
