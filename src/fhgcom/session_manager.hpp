@@ -25,13 +25,13 @@ namespace fhg
 
       void add_session (session_ptr session)
       {
-        lock_type lock (m_mutex);
+        lock_type lock (_mutex_sessions);
         sessions_.insert(session);
       }
 
       void del_session (session_ptr session)
       {
-        lock_type lock (m_mutex);
+        lock_type lock (_mutex_sessions);
         sessions_.erase(session);
       }
 
@@ -43,7 +43,7 @@ namespace fhg
     protected:
       virtual void on_data_hook (session_ptr, const std::string &) {}
     private:
-      mutex_type            m_mutex;
+      mutex_type            _mutex_sessions;
       std::set<session_ptr> sessions_;
     };
   }
