@@ -84,36 +84,33 @@ namespace utils
           , const std::string& url
           , std::string kvs_host, std::string kvs_port
           , const agents_t& masters
-          , const boost::optional<std::string>& gui_url = boost::none
           )
       : _ ( name, url
           , kvs_host, kvs_port
           , assemble_master_info_list (masters)
-          , gui_url
+          , boost::none
           )
     {}
     agent ( const std::string& name
           , const std::string& url
           , std::string kvs_host, std::string kvs_port
           , const orchestrator& orchestrator
-          , const boost::optional<std::string>& gui_url = boost::none
           )
       : _ ( name, url
           , kvs_host, kvs_port
           , sdpa::master_info_list_t (1, sdpa::MasterInfo (orchestrator.name()))
-          , gui_url
+          , boost::none
           )
     {}
     agent ( const std::string& name
           , const std::string& url
           , std::string kvs_host, std::string kvs_port
           , const agent& master
-          , const boost::optional<std::string>& gui_url = boost::none
           )
       : _ ( name, url
           , kvs_host, kvs_port
           , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
-          , gui_url
+          , boost::none
           )
     {}
     sdpa::daemon::Agent _;
