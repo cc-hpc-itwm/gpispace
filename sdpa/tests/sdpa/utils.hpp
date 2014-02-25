@@ -222,6 +222,56 @@ namespace utils
         : _ (orch.name(), orch.kvs_host(), orch.kvs_port())
       {}
 
+      sdpa::job_id_t submit_job (std::string workflow)
+      {
+        return _.submitJob (workflow);
+      }
+
+      sdpa::status::code query_job_status (const sdpa::job_id_t& id)
+      {
+        return _.queryJob (id);
+      }
+
+      sdpa::status::code wait_for_terminal_state_polling (const sdpa::job_id_t& id)
+      {
+        sdpa::client::job_info_t UNUSED_job_info;
+        return _.wait_for_terminal_state_polling (id, UNUSED_job_info);
+      }
+
+      sdpa::status::code wait_for_terminal_state (const sdpa::job_id_t& id)
+      {
+        sdpa::client::job_info_t UNUSED_job_info;
+        return _.wait_for_terminal_state (id, UNUSED_job_info);
+      }
+
+      sdpa::status::code wait_for_state_polling
+        (const sdpa::job_id_t& id, const sdpa::status::code& exp_status)
+      {
+        static const boost::posix_time::milliseconds sleep_duration (1000);
+        sdpa::status::code curr_status (query_job_status (id));
+        while(curr_status!=exp_status)
+        {
+          boost::this_thread::sleep (sleep_duration);
+          curr_status = query_job_status (id);
+        }
+        return curr_status;
+      }
+
+      sdpa::client::result_t retrieve_job_results (const sdpa::job_id_t& id)
+      {
+        return _.retrieveResults (id);
+      }
+
+      void delete_job (const sdpa::job_id_t& id)
+      {
+        return _.deleteJob (id);
+      }
+
+      void cancel_job (const sdpa::job_id_t& id)
+      {
+        return _.cancelJob (id);
+      }
+
       sdpa::client::Client _;
     };
 
@@ -286,22 +336,22 @@ namespace utils
     namespace
     {
       sdpa::status::code wait_for_termination_impl
-        (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
+        (sdpa::job_id_t job_id_user, client_t& c)
       {
         const sdpa::status::code state
-          (wait_for_terminal_state_polling (c, job_id_user));
-        retrieve_job_results (c, job_id_user);
-        delete_job (c, job_id_user);
+          (c.wait_for_terminal_state_polling (job_id_user));
+        c.retrieve_job_results (job_id_user);
+        c.delete_job (job_id_user);
         return state;
       }
 
       sdpa::status::code wait_for_termination_as_subscriber_impl
-        (sdpa::job_id_t job_id_user, sdpa::client::Client& c)
+        (sdpa::job_id_t job_id_user, client_t& c)
       {
         const sdpa::status::code state
-          (wait_for_terminal_state (c, job_id_user));
-        retrieve_job_results (c, job_id_user);
-        delete_job (c, job_id_user);
+          (c.wait_for_terminal_state (job_id_user));
+        c.retrieve_job_results (job_id_user);
+        c.delete_job (job_id_user);
         return state;
       }
     }
@@ -311,7 +361,7 @@ namespace utils
     {
       client_t c (orch);
 
-      return wait_for_termination_impl (submit_job (c._, workflow), c._);
+      return wait_for_termination_impl (submit_job (c._, workflow), c);
     }
 
     sdpa::status::code submit_job_and_cancel_and_wait_for_termination
@@ -321,7 +371,7 @@ namespace utils
 
       sdpa::job_id_t job_id_user(submit_job (c._, workflow));
       cancel_job (c._, job_id_user);
-      return wait_for_termination_impl (job_id_user, c._);
+      return wait_for_termination_impl (job_id_user, c);
     }
 
     sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
@@ -329,7 +379,7 @@ namespace utils
     {
       client_t c (orch);
 
-      return wait_for_termination_as_subscriber_impl (submit_job (c._, workflow), c._);
+      return wait_for_termination_as_subscriber_impl (submit_job (c._, workflow), c);
     }
 
     sdpa::status::code submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
@@ -343,7 +393,7 @@ namespace utils
 
       {
         client_t c (orch);
-        return wait_for_termination_as_subscriber_impl (job_id_user, c._);
+        return wait_for_termination_as_subscriber_impl (job_id_user, c);
       }
     }
   }
