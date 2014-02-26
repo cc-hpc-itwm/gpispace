@@ -31,11 +31,8 @@ namespace sdpa {
       {
         if(!hasWorker(wid))
         {
-            std::string errMsg("No worker ");
-            errMsg+=wid;
-            errMsg+=" exists within the current reservation of the job ";
-            errMsg+=m_job_id;
-            throw std::runtime_error(errMsg);
+          throw std::runtime_error
+            ("tried storing result of worker that is not in reservation for job");
         }
 
           // take the rseult and store it!
