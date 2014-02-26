@@ -254,7 +254,7 @@ namespace sdpa
                                              )
                                  );
 
-          boost::recursive_mutex::scoped_lock const _ (mtx_alloc_table_);
+          boost::mutex::scoped_lock const _ (mtx_alloc_table_);
           {
             _worker_manager.reserveWorker (*matchingWorkerId);
             // allocate this worker to the job with the jobId
@@ -326,7 +326,7 @@ namespace sdpa
 
     void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& jobId)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_alloc_table_);
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
       // if the status is not terminal
       try
@@ -364,7 +364,7 @@ namespace sdpa
     void CoallocationScheduler::workerFinished
       (const worker_id_t& wid, const job_id_t& jid)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_alloc_table_);
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       allocation_table_t::iterator it = allocation_table_.find (jid);
       if (it != allocation_table_.end())
       {
@@ -379,7 +379,7 @@ namespace sdpa
     void CoallocationScheduler::workerFailed
       (const worker_id_t& wid, const job_id_t& jid)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_alloc_table_);
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       allocation_table_t::iterator it = allocation_table_.find (jid);
       if (it != allocation_table_.end())
       {
@@ -394,7 +394,7 @@ namespace sdpa
     void CoallocationScheduler::workerCanceled
       (const worker_id_t& wid, const job_id_t& jid)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_alloc_table_);
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       allocation_table_t::iterator it = allocation_table_.find (jid);
       if (it != allocation_table_.end())
       {
@@ -408,7 +408,7 @@ namespace sdpa
 
     bool CoallocationScheduler::allPartialResultsCollected (const job_id_t& jid)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_alloc_table_);
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       allocation_table_t::iterator it = allocation_table_.find (jid);
       if (it != allocation_table_.end())
       {
@@ -422,7 +422,7 @@ namespace sdpa
 
     bool CoallocationScheduler::groupFinished (const sdpa::job_id_t& jid)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_alloc_table_);
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       allocation_table_t::iterator it = allocation_table_.find (jid);
       if (it != allocation_table_.end())
       {

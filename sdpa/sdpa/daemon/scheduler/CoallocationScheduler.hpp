@@ -162,7 +162,7 @@ namespace sdpa
         std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
       };
 
-      mutable boost::recursive_mutex mtx_alloc_table_;
+      mutable boost::mutex mtx_alloc_table_;
       typedef boost::unordered_map<sdpa::job_id_t, Reservation*>
         allocation_table_t;
       allocation_table_t allocation_table_;
