@@ -123,16 +123,6 @@ const boost::optional<Worker::worker_id_t> CoallocationScheduler::findSubmOrAckW
   return _worker_manager.findSubmOrAckWorker(job_id);
 }
 
-boost::optional<sdpa::worker_id_t> CoallocationScheduler::findSuitableWorker
-  (const job_requirements_t& job_reqs, const sdpa::worker_id_list_t& listAvailWorkers)
-{
-  lock_type lock(mtx_);
-
-  return listAvailWorkers.empty() ? boost::none
-    : job_reqs.empty() ? listAvailWorkers.front()
-    : _worker_manager.getBestMatchingWorker (job_reqs, listAvailWorkers);
-}
-
 void CoallocationScheduler::feedWorkers()
 {
   for (;;)
@@ -241,7 +231,10 @@ void CoallocationScheduler::assignJobsToWorkers()
 
     unsigned long nReqWorkers (job_reqs.numWorkers());
     const boost::optional<sdpa::worker_id_t> matchingWorkerId
-      (findSuitableWorker(job_reqs, listAvailWorkers));
+      ( listAvailWorkers.empty() ? boost::none
+      : job_reqs.empty() ? listAvailWorkers.front()
+      : _worker_manager.getBestMatchingWorker (job_reqs, listAvailWorkers)
+      );
 
     if (matchingWorkerId) // matching found
     {
