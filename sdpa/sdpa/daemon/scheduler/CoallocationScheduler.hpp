@@ -44,18 +44,6 @@ namespace sdpa {
           }
       }
 
-      void workerFinished(const sdpa::worker_id_t& wid) {
-        storeWorkerResult(wid, FINISHED);
-      }
-
-      void workerFailed(const sdpa::worker_id_t& wid) {
-        storeWorkerResult(wid, FAILED);
-      }
-
-      void workerCanceled(const sdpa::worker_id_t& wid) {
-        storeWorkerResult(wid, CANCELED);
-      }
-
       // should protect this!!!!
       bool allWorkersTerminated() const {return m_map_worker_result.size() == capacity(); }
 

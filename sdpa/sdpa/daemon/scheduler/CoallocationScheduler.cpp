@@ -345,7 +345,7 @@ void CoallocationScheduler::workerFinished(const worker_id_t& wid, const job_id_
   lock_type lock_table(mtx_alloc_table_);
   allocation_table_t::iterator it=allocation_table_.find(jid);
   if(it!=allocation_table_.end())
-    it->second->workerFinished(wid);
+    it->second->storeWorkerResult (wid, Reservation::FINISHED);
   else
     throw WorkerNotFoundException();
 }
@@ -355,7 +355,7 @@ void CoallocationScheduler::workerFailed(const worker_id_t& wid, const job_id_t&
   lock_type lock_table(mtx_alloc_table_);
   allocation_table_t::iterator it=allocation_table_.find(jid);
   if(it!=allocation_table_.end())
-    it->second->workerFailed(wid);
+    it->second->storeWorkerResult (wid, Reservation::FAILED);
   else
     throw WorkerNotFoundException();
 }
@@ -365,7 +365,7 @@ void CoallocationScheduler::workerCanceled(const worker_id_t& wid, const job_id_
   lock_type lock_table(mtx_alloc_table_);
   allocation_table_t::iterator it=allocation_table_.find(jid);
   if(it!=allocation_table_.end())
-    it->second->workerCanceled(wid);
+    it->second->storeWorkerResult (wid, Reservation::CANCELED);
   else
     throw WorkerNotFoundException();
 }
