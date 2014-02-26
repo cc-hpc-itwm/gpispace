@@ -229,7 +229,6 @@ void CoallocationScheduler::assignJobsToWorkers()
     const job_requirements_t job_reqs
       (ptr_comm_handler_->getJobRequirements (jobId));
 
-    unsigned long nReqWorkers (job_reqs.numWorkers());
     const boost::optional<sdpa::worker_id_t> matchingWorkerId
       ( listAvailWorkers.empty() ? boost::none
       : job_reqs.empty() ? listAvailWorkers.front()
@@ -252,7 +251,7 @@ void CoallocationScheduler::assignJobsToWorkers()
 
           allocation_table_t::iterator it(allocation_table_.find(jobId));
           if(it==allocation_table_.end()) {
-            Reservation*  pReservation(new Reservation(jobId, nReqWorkers));
+            Reservation*  pReservation(new Reservation(jobId, job_reqs.numWorkers()));
             allocation_table_t::value_type pairJobRes(jobId, pReservation);
             allocation_table_.insert(pairJobRes);
           }
