@@ -257,7 +257,20 @@ void CoallocationScheduler::assignJobsToWorkers()
                              );
 
         lock_type lock(mtx_alloc_table_);
-        reserveWorker(jobId, *matchingWorkerId, nReqWorkers);
+        {
+          lock_type lock_table(mtx_alloc_table_);
+          _worker_manager.reserveWorker(*matchingWorkerId);
+          // allocate this worker to the job with the jobId
+
+          allocation_table_t::iterator it(allocation_table_.find(jobId));
+          if(it==allocation_table_.end()) {
+            Reservation*  pReservation(new Reservation(jobId, nReqWorkers));
+            allocation_table_t::value_type pairJobRes(jobId, pReservation);
+            allocation_table_.insert(pairJobRes);
+          }
+
+          allocation_table_[jobId]->addWorker(*matchingWorkerId);
+        }
 
         // attention: what to do if job_reqs.n_workers_req > total number of registered workers?
         // if all the required resources were acquired, mark the job as submitted
@@ -308,22 +321,6 @@ void CoallocationScheduler::assignJobsToWorkers()
   {
     _worker_manager.common_queue_.push_front(id);
   }
-}
-
-void CoallocationScheduler::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap)
-{
-  lock_type lock_table(mtx_alloc_table_);
-  _worker_manager.reserveWorker(matchingWorkerId);
-  // allocate this worker to the job with the jobId
-
-  allocation_table_t::iterator it(allocation_table_.find(jobId));
-  if(it==allocation_table_.end()) {
-      Reservation*  pReservation(new Reservation(jobId, cap));
-      allocation_table_t::value_type pairJobRes(jobId, pReservation);
-      allocation_table_.insert(pairJobRes);
-  }
-
-  allocation_table_[jobId]->addWorker(matchingWorkerId);
 }
 
 void CoallocationScheduler::releaseReservation(const sdpa::job_id_t& jobId)
