@@ -35,13 +35,7 @@ namespace sdpa {
             ("tried storing result of worker that is not in reservation for job");
         }
 
-          // take the rseult and store it!
-          map_worker_result_t::iterator it = m_map_worker_result.find(wid);
-          if( it != m_map_worker_result.end() ) {
-              it->second = result;
-          } else {
-              m_map_worker_result.insert(map_worker_result_t::value_type(wid, result));
-          }
+        m_map_worker_result[wid] = result;
       }
 
       // should protect this!!!!
