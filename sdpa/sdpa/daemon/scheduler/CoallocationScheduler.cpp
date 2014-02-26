@@ -260,7 +260,7 @@ void CoallocationScheduler::assignJobsToWorkers()
   std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
   // iterate over all jobs and see if there is one that prefers
-  while(schedulingAllowed() && !listAvailWorkers.empty())
+  while(!_worker_manager.common_queue_.empty() && !listAvailWorkers.empty())
   {
     sdpa::job_id_t jobId(_worker_manager.common_queue_.pop());
 
