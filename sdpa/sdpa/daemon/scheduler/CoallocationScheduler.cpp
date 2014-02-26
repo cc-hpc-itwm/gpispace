@@ -250,9 +250,6 @@ void CoallocationScheduler::assignJobsToWorkers()
 {
   lock_type lock(mtx_);
 
-  if(!schedulingAllowed())
-    return;
-
   // replace this with the list of workers not reserved
   //getListNotFullWorkers(listAvailWorkers);
   sdpa::worker_id_list_t listAvailWorkers;
