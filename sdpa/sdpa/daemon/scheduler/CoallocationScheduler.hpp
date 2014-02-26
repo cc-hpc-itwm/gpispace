@@ -8,7 +8,6 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <sdpa/engine/IWorkflowEngine.hpp>
-#include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/types.hpp>
 
 #include <boost/optional.hpp>
