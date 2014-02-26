@@ -279,8 +279,7 @@ void CoallocationScheduler::assignJobsToWorkers()
             }
             else
             {
-              // delete the invalid workers
-              BOOST_FOREACH(const Worker::worker_id_t& wid, list_reserved_workers)
+              BOOST_FOREACH(const Worker::worker_id_t& wid, list_invalid_workers)
               {
                 pReservation->delWorker(wid);
               }
