@@ -64,6 +64,7 @@ install(CODE "
                           -x libX.*so
                           -x libpthread.*
                           -x libgthread.*
+                          -x libreadline.*
                            ${APPS} \${PLUGINS}
                   RESULT_VARIABLE __res
                   ERROR_VARIABLE __err
