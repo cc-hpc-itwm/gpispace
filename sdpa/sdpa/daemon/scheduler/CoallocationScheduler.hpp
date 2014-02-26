@@ -43,9 +43,14 @@ namespace sdpa {
 
       bool allGroupTasksFinishedSuccessfully()
       {
-        for(map_worker_result_t::iterator it(m_map_worker_result.begin()); it!=m_map_worker_result.end(); it++)
-          if(it->second!=FINISHED)
+        BOOST_FOREACH
+          (result_type result, m_map_worker_result | boost::adaptors::map_values)
+        {
+          if (result != FINISHED)
+          {
             return false;
+          }
+        }
         return true;
       }
 
