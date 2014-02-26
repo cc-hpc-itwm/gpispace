@@ -21,7 +21,7 @@
 #include <fhg/assert.hpp>
 
 #include <sdpa/capability.hpp>
-#include <sdpa/daemon/scheduler/SchedulerBase.hpp>
+#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
 
 #include <sdpa/events/CancelJobAckEvent.hpp>
@@ -125,7 +125,7 @@ namespace sdpa {
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
-      SchedulerBase::ptr_t scheduler() const {return ptr_scheduler_;}
+      CoallocationScheduler::ptr_t scheduler() const {return ptr_scheduler_;}
     protected:
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
@@ -276,7 +276,7 @@ namespace sdpa {
       requirements_map_t job_requirements_;
 
     protected:
-      SchedulerBase::ptr_t ptr_scheduler_;
+      CoallocationScheduler::ptr_t ptr_scheduler_;
       boost::optional<boost::mt19937> _random_extraction_engine;
       we::layer* ptr_workflow_engine_;
 
