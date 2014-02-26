@@ -15,58 +15,6 @@
 
 namespace sdpa {
   namespace daemon {
-    class Reservation : boost::noncopyable
-    {
-    public:
-      typedef enum {FINISHED, FAILED, CANCELED} result_type;
-
-      Reservation(const sdpa::job_id_t& job_id, const size_t& n) : m_job_id(job_id), m_capacity(n) {}
-
-      size_t size() const { return m_list_workers.size(); }
-      void addWorker(const sdpa::worker_id_t& wid) { m_list_workers.push_back(wid); }
-      void delWorker(const sdpa::worker_id_t& wid) { m_list_workers.remove(wid); }
-
-      void storeWorkerResult(const sdpa::worker_id_t& wid, const result_type& result)
-      {
-        if(!hasWorker(wid))
-        {
-          throw std::runtime_error
-            ("tried storing result of worker that is not in reservation for job");
-        }
-
-        m_map_worker_result[wid] = result;
-      }
-
-      // should protect this!!!!
-      bool allWorkersTerminated() const {return m_map_worker_result.size() == capacity(); }
-
-      bool allGroupTasksFinishedSuccessfully()
-      {
-        BOOST_FOREACH
-          (result_type result, m_map_worker_result | boost::adaptors::map_values)
-        {
-          if (result != FINISHED)
-          {
-            return false;
-          }
-        }
-        return true;
-      }
-
-      bool acquired() const { return (size()==capacity()); }
-
-      bool hasWorker(const sdpa::worker_id_t& wid) const { return find(m_list_workers.begin(), m_list_workers.end(), wid)!=m_list_workers.end(); }
-      sdpa::worker_id_list_t getWorkerList() const { return m_list_workers; }
-
-    private:
-      size_t capacity() const { return m_capacity; }
-
-      sdpa::job_id_t m_job_id;
-      size_t m_capacity;
-      sdpa::worker_id_list_t m_list_workers;
-      std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
-    };
-
     class GenericDaemon;
     class CoallocationScheduler
     {
@@ -125,6 +73,58 @@ namespace sdpa {
 
       boost::thread m_thread_run;
       boost::thread m_thread_feed;
+
+    class Reservation : boost::noncopyable
+    {
+    public:
+      typedef enum {FINISHED, FAILED, CANCELED} result_type;
+
+      Reservation(const sdpa::job_id_t& job_id, const size_t& n) : m_job_id(job_id), m_capacity(n) {}
+
+      size_t size() const { return m_list_workers.size(); }
+      void addWorker(const sdpa::worker_id_t& wid) { m_list_workers.push_back(wid); }
+      void delWorker(const sdpa::worker_id_t& wid) { m_list_workers.remove(wid); }
+
+      void storeWorkerResult(const sdpa::worker_id_t& wid, const result_type& result)
+      {
+        if(!hasWorker(wid))
+        {
+          throw std::runtime_error
+            ("tried storing result of worker that is not in reservation for job");
+        }
+
+        m_map_worker_result[wid] = result;
+      }
+
+      // should protect this!!!!
+      bool allWorkersTerminated() const {return m_map_worker_result.size() == capacity(); }
+
+      bool allGroupTasksFinishedSuccessfully()
+      {
+        BOOST_FOREACH
+          (result_type result, m_map_worker_result | boost::adaptors::map_values)
+        {
+          if (result != FINISHED)
+          {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      bool acquired() const { return (size()==capacity()); }
+
+      bool hasWorker(const sdpa::worker_id_t& wid) const { return find(m_list_workers.begin(), m_list_workers.end(), wid)!=m_list_workers.end(); }
+      sdpa::worker_id_list_t getWorkerList() const { return m_list_workers; }
+
+    private:
+      size_t capacity() const { return m_capacity; }
+
+      sdpa::job_id_t m_job_id;
+      size_t m_capacity;
+      sdpa::worker_id_list_t m_list_workers;
+      std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
+    };
 
       mutable mutex_type mtx_alloc_table_;
       typedef boost::unordered_map<sdpa::job_id_t, Reservation*> allocation_table_t;
