@@ -347,7 +347,7 @@ void CoallocationScheduler::workerFinished(const worker_id_t& wid, const job_id_
   if(it!=allocation_table_.end())
     it->second->storeWorkerResult (wid, Reservation::FINISHED);
   else
-    throw WorkerNotFoundException();
+    throw JobNotFoundException();
 }
 
 void CoallocationScheduler::workerFailed(const worker_id_t& wid, const job_id_t& jid)
@@ -357,7 +357,7 @@ void CoallocationScheduler::workerFailed(const worker_id_t& wid, const job_id_t&
   if(it!=allocation_table_.end())
     it->second->storeWorkerResult (wid, Reservation::FAILED);
   else
-    throw WorkerNotFoundException();
+    throw JobNotFoundException();
 }
 
 void CoallocationScheduler::workerCanceled(const worker_id_t& wid, const job_id_t& jid)
@@ -367,7 +367,7 @@ void CoallocationScheduler::workerCanceled(const worker_id_t& wid, const job_id_
   if(it!=allocation_table_.end())
     it->second->storeWorkerResult (wid, Reservation::CANCELED);
   else
-    throw WorkerNotFoundException();
+    throw JobNotFoundException();
 }
 
 bool CoallocationScheduler::allPartialResultsCollected(const job_id_t& jid)
