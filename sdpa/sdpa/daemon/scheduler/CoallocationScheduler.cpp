@@ -339,7 +339,7 @@ namespace sdpa
         }
 
         boost::recursive_mutex::scoped_lock const _ (mtx_);
-        Reservation* pReservation (allocation_table_[jobId]);
+        Reservation* pReservation (it->second);
         worker_id_list_t listWorkers (pReservation->getWorkerList());
         BOOST_FOREACH (sdpa::worker_id_t const& workerId, listWorkers)
         {
@@ -352,9 +352,8 @@ namespace sdpa
           }
         }
 
-        delete allocation_table_[jobId];
-        allocation_table_[jobId] = NULL;
-        allocation_table_.erase (jobId);
+        delete it->second;
+        allocation_table_.erase (it);
       }
       catch (JobNotFoundException const&)
       {
