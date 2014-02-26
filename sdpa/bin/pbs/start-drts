@@ -298,7 +298,7 @@ cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f "${config_file}" -g 
 cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
 cfg="$cfg -s plugin.drts.gui_url=$gui"
 cfg="$cfg -s plugin.drts.library_path=${lib_path}"
-cfg="$cfg -s plugin.drts.numa_socket=$numa_socket"
+cfg="$cfg -s plugin.drts.socket=$numa_socket"
 
 # config values (gpi plugin)
 if [ -z "$gpi_socket" ] ; then
