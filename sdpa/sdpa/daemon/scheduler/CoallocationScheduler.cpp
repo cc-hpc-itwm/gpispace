@@ -63,10 +63,6 @@ void CoallocationScheduler::rescheduleWorkerJob( const Worker::worker_id_t& work
       schedule (job_id);
     }
   }
-  else //(JobNotFoundException const &ex)
-  {
-    LLOG (WARN, _logger, "Cannot re-schedule the job " << job_id << ". The job could not be found!");
-  }
 }
 
 void CoallocationScheduler::deleteWorker( const Worker::worker_id_t& worker_id )
