@@ -293,7 +293,14 @@ void CoallocationScheduler::assignJobsToWorkers()
         {
             sdpa::worker_id_list_t list_reserved_workers = pReservation->getWorkerList();
             // check if the reservation is valid
-            sdpa::worker_id_list_t list_invalid_workers = checkReservationIsValid(*pReservation);
+            sdpa::worker_id_list_t list_invalid_workers;
+            sdpa::worker_id_list_t res_worker_list(pReservation->getWorkerList());
+            BOOST_FOREACH(const Worker::worker_id_t& wid, res_worker_list)
+            {
+              if(!hasWorker(wid))
+                list_invalid_workers.push_back(wid);
+            }
+
             if(list_invalid_workers.empty())
             {
               // serve the same job to all reserved workers!!!!
@@ -327,19 +334,6 @@ void CoallocationScheduler::assignJobsToWorkers()
   {
     schedule_first (id);
   }
-}
-
-sdpa::worker_id_list_t CoallocationScheduler::checkReservationIsValid(const Reservation& res)
-{
-  lock_type lock(mtx_);
-  sdpa::worker_id_list_t list_del_workers;
-  sdpa::worker_id_list_t res_worker_list(res.getWorkerList());
-  BOOST_FOREACH(const Worker::worker_id_t& wid, res_worker_list)
-  {
-    if(!hasWorker(wid))
-      list_del_workers.push_back(wid);
-  }
-  return list_del_workers;
 }
 
 void CoallocationScheduler::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap)
