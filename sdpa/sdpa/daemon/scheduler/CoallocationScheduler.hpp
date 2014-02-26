@@ -19,28 +19,28 @@
 namespace sdpa {
   namespace daemon {
     class GenericDaemon;
-    class SchedulerBase
+    class CoallocationScheduler
     {
     public:
-      typedef boost::shared_ptr<SchedulerBase> ptr_t;
+      typedef boost::shared_ptr<CoallocationScheduler> ptr_t;
       typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
 
-      SchedulerBase(GenericDaemon* pHandler);
-      virtual ~SchedulerBase();
+      CoallocationScheduler(GenericDaemon* pHandler);
+      ~CoallocationScheduler();
 
       void enqueueJob(const sdpa::job_id_t&);
       void schedule(const sdpa::job_id_t&);
       void schedule(Job*);
       void delete_job(const sdpa::job_id_t&);
-      virtual void assignJobsToWorkers() = 0;
+      void assignJobsToWorkers();
 
       void schedule_first(const sdpa::job_id_t&);
 
       void rescheduleWorkerJob( const Worker::worker_id_t&, const sdpa::job_id_t&);
-      virtual void rescheduleJob(const sdpa::job_id_t&) = 0;
+      void rescheduleJob(const sdpa::job_id_t&);
       void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
       bool has_job(const sdpa::job_id_t&);
 
@@ -95,22 +95,9 @@ namespace sdpa {
 
       boost::thread m_thread_run;
       boost::thread m_thread_feed;
-    };
-  }
-}
 
-namespace sdpa {
-  namespace daemon {
-    class CoallocationScheduler : public SchedulerBase
-    {
     public:
-      typedef boost::shared_ptr<CoallocationScheduler> ptr_t;
       typedef boost::unordered_map<sdpa::job_id_t, Reservation*> allocation_table_t;
-
-      CoallocationScheduler(GenericDaemon*);
-
-      virtual void assignJobsToWorkers();
-      virtual void rescheduleJob(const sdpa::job_id_t& job_id );
 
       void reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap);
       void releaseReservation(const sdpa::job_id_t& jobId);

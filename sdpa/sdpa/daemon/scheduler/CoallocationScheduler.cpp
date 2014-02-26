@@ -6,23 +6,23 @@
 namespace sdpa {
    namespace daemon {
 
-SchedulerBase::SchedulerBase(GenericDaemon* pCommHandler)
+CoallocationScheduler::CoallocationScheduler(GenericDaemon* pCommHandler)
   : ptr_comm_handler_ ( pCommHandler
                       ? pCommHandler
                       : throw std::runtime_error
-                        ("SchedulerBase ctor with NULL ptr_comm_handler")
+                        ("CoallocationScheduler ctor with NULL ptr_comm_handler")
                       )
   , _logger (fhg::log::Logger::get (ptr_comm_handler_->name()))
   , _worker_manager()
 {}
 
-void SchedulerBase::start_threads()
+void CoallocationScheduler::start_threads()
 {
-  m_thread_run = boost::thread (&SchedulerBase::run, this);
-  m_thread_feed = boost::thread (&SchedulerBase::feedWorkers, this);
+  m_thread_run = boost::thread (&CoallocationScheduler::run, this);
+  m_thread_feed = boost::thread (&CoallocationScheduler::feedWorkers, this);
 }
 
-SchedulerBase::~SchedulerBase()
+CoallocationScheduler::~CoallocationScheduler()
 {
   m_thread_run.interrupt();
   m_thread_feed.interrupt();
@@ -35,7 +35,7 @@ SchedulerBase::~SchedulerBase()
 }
 
 
-bool SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
+bool CoallocationScheduler::addWorker(  const Worker::worker_id_t& workerId,
                                 const boost::optional<unsigned int>& capacity,
                                 const capabilities_set_t& cpbset )
 {
@@ -46,7 +46,7 @@ bool SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
   return ret;
 }
 
-void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
+void CoallocationScheduler::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
   lock_type lock(mtx_);
   try
@@ -62,7 +62,7 @@ void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, c
   rescheduleJob(job_id);
 }
 
-void SchedulerBase::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
+void CoallocationScheduler::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
 {
   lock_type lock(mtx_);
   while( !workerJobList.empty() ) {
@@ -72,7 +72,7 @@ void SchedulerBase::reschedule( const Worker::worker_id_t & worker_id, sdpa::job
   }
 }
 
-void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
+void CoallocationScheduler::deleteWorker( const Worker::worker_id_t& worker_id )
 {
   lock_type lock(mtx_);
     // mark the worker dirty -> don't take it in consideration for re-scheduling
@@ -86,7 +86,7 @@ void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
     _worker_manager.deleteWorker(worker_id);
 }
 
-void SchedulerBase::delete_job (sdpa::job_id_t const & job)
+void CoallocationScheduler::delete_job (sdpa::job_id_t const & job)
 {
   if (!pending_jobs_queue_.erase(job))
   {
@@ -94,7 +94,7 @@ void SchedulerBase::delete_job (sdpa::job_id_t const & job)
   }
 }
 
-void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
+void CoallocationScheduler::schedule(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
   Job* pJob = ptr_comm_handler_->findJob(jobId);
@@ -104,39 +104,39 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
   }
   schedule (pJob);
 }
-void SchedulerBase::schedule (Job* pJob)
+void CoallocationScheduler::schedule (Job* pJob)
 {
   _worker_manager.dispatchJob(pJob->id());
   cond_feed_workers.notify_one();
 }
 
-void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
+void CoallocationScheduler::enqueueJob(const sdpa::job_id_t& jobId)
 {
   pending_jobs_queue_.push(jobId);
 }
 
-Worker::ptr_t SchedulerBase::findWorker(const Worker::worker_id_t& worker_id )
+Worker::ptr_t CoallocationScheduler::findWorker(const Worker::worker_id_t& worker_id )
 {
   return _worker_manager.findWorker(worker_id);
 }
 
-bool SchedulerBase::hasWorker(const Worker::worker_id_t& worker_id) const
+bool CoallocationScheduler::hasWorker(const Worker::worker_id_t& worker_id) const
 {
   return _worker_manager.hasWorker(worker_id);
 }
 
-const boost::optional<Worker::worker_id_t> SchedulerBase::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
+const boost::optional<Worker::worker_id_t> CoallocationScheduler::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
 {
   return _worker_manager.findSubmOrAckWorker(job_id);
 }
 
-void SchedulerBase::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
+void CoallocationScheduler::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
 {
   workerList.clear();
   _worker_manager.getListNotFullWorkers(workerList);
 }
 
-boost::optional<sdpa::worker_id_t> SchedulerBase::findSuitableWorker
+boost::optional<sdpa::worker_id_t> CoallocationScheduler::findSuitableWorker
   (const job_requirements_t& job_reqs, const sdpa::worker_id_list_t& listAvailWorkers)
 {
   lock_type lock(mtx_);
@@ -151,7 +151,7 @@ boost::optional<sdpa::worker_id_t> SchedulerBase::findSuitableWorker
     : _worker_manager.getBestMatchingWorker (job_reqs, listAvailWorkers);
 }
 
-void SchedulerBase::feedWorkers()
+void CoallocationScheduler::feedWorkers()
 {
   for (;;)
   {
@@ -162,7 +162,7 @@ void SchedulerBase::feedWorkers()
   }
 }
 
-void SchedulerBase::run()
+void CoallocationScheduler::run()
 {
   for (;;)
   {
@@ -179,7 +179,7 @@ void SchedulerBase::run()
   }
 }
 
-void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
+void CoallocationScheduler::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
     Worker::ptr_t ptrWorker = findWorker(worker_id);
@@ -189,7 +189,7 @@ void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const s
       throw JobNotFoundException();
 }
 
-void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &jobId )
+void CoallocationScheduler::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &jobId )
 {
     lock_type lock(mtx_);
 
@@ -201,13 +201,13 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
     cond_feed_workers.notify_one();
 }
 
-bool SchedulerBase::has_job(const sdpa::job_id_t& job_id)
+bool CoallocationScheduler::has_job(const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);
   return pending_jobs_queue_.has_item(job_id)|| _worker_manager.has_job(job_id);
 }
 
-bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
+bool CoallocationScheduler::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
   lock_type lock(mtx_);
   if(_worker_manager.addCapabilities(worker_id, cpbset))
@@ -219,17 +219,17 @@ bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sd
     return false;
 }
 
-void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
+void CoallocationScheduler::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
   _worker_manager.removeCapabilities(worker_id, cpbset);
 }
 
-void SchedulerBase::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
+void CoallocationScheduler::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
 {
   _worker_manager.getCapabilities(cpbset);
 }
 
-sdpa::capabilities_set_t SchedulerBase::getWorkerCapabilities
+sdpa::capabilities_set_t CoallocationScheduler::getWorkerCapabilities
   (const sdpa::worker_id_t& worker_id)
 {
   lock_type lock(mtx_);
@@ -243,19 +243,10 @@ sdpa::capabilities_set_t SchedulerBase::getWorkerCapabilities
   }
 }
 
-void SchedulerBase::schedule_first(const sdpa::job_id_t& jid)
+void CoallocationScheduler::schedule_first(const sdpa::job_id_t& jid)
 {
   _worker_manager.common_queue_.push_front(jid);
 }
-
-}}
-
-namespace sdpa {
-  namespace daemon {
-
-CoallocationScheduler::CoallocationScheduler(GenericDaemon* pCommHandler)
-  : SchedulerBase(pCommHandler)
-{}
 
 void CoallocationScheduler::assignJobsToWorkers()
 {
