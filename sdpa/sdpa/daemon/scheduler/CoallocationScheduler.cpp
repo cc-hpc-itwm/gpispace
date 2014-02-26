@@ -51,15 +51,8 @@ bool CoallocationScheduler::addWorker(  const Worker::worker_id_t& workerId,
 void CoallocationScheduler::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
 {
   lock_type lock(mtx_);
-  try
-  {
-      // delete it from the worker's queues
-      Worker::ptr_t pWorker = findWorker(worker_id);
-      pWorker->deleteJob(job_id);
-  }
-  catch (const WorkerNotFoundException& ex)
-  {
-  }
+
+  deleteWorkerJob (worker_id, job_id);
 
   Job* pJob = ptr_comm_handler_->findJob(job_id);
   if(pJob)
