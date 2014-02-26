@@ -61,7 +61,19 @@ void CoallocationScheduler::rescheduleWorkerJob( const Worker::worker_id_t& work
   {
   }
 
-  rescheduleJob(job_id);
+  Job* pJob = ptr_comm_handler_->findJob(job_id);
+  if(pJob)
+  {
+    if(!sdpa::status::is_terminal (pJob->getStatus())) {
+      releaseReservation(job_id);
+      pJob->Reschedule(); // put the job back into the pending state
+      schedule (job_id);
+    }
+  }
+  else //(JobNotFoundException const &ex)
+  {
+    LLOG (WARN, _logger, "Cannot re-schedule the job " << job_id << ". The job could not be found!");
+  }
 }
 
 void CoallocationScheduler::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
@@ -335,23 +347,6 @@ sdpa::worker_id_list_t CoallocationScheduler::checkReservationIsValid(const Rese
       list_del_workers.push_back(wid);
   }
   return list_del_workers;
-}
-
-void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
-{
-  Job* pJob = ptr_comm_handler_->findJob(job_id);
-  if(pJob)
-  {
-    if(!sdpa::status::is_terminal (pJob->getStatus())) {
-      releaseReservation(job_id);
-      pJob->Reschedule(); // put the job back into the pending state
-      schedule (job_id);
-    }
-  }
-  else //(JobNotFoundException const &ex)
-  {
-    LLOG (WARN, _logger, "Cannot re-schedule the job " << job_id << ". The job could not be found!");
-  }
 }
 
 void CoallocationScheduler::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap)

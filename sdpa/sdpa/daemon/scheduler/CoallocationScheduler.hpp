@@ -33,7 +33,6 @@ namespace sdpa {
       void schedule_first(const sdpa::job_id_t&);
 
       void rescheduleWorkerJob( const Worker::worker_id_t&, const sdpa::job_id_t&);
-      void rescheduleJob(const sdpa::job_id_t&);
       void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
       bool has_job(const sdpa::job_id_t&);
 
