@@ -27,7 +27,6 @@ namespace sdpa {
 
       void enqueueJob(const sdpa::job_id_t&);
       void schedule(const sdpa::job_id_t&);
-      void schedule(Job*);
       void delete_job(const sdpa::job_id_t&);
       void assignJobsToWorkers();
 

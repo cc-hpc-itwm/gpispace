@@ -99,16 +99,7 @@ void CoallocationScheduler::delete_job (sdpa::job_id_t const & job)
 void CoallocationScheduler::schedule(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
-  Job* pJob = ptr_comm_handler_->findJob(jobId);
-  if(!pJob)
-  {
-    throw std::runtime_error ("tried scheduling non-existent job");
-  }
-  schedule (pJob);
-}
-void CoallocationScheduler::schedule (Job* pJob)
-{
-  _worker_manager.dispatchJob(pJob->id());
+  _worker_manager.dispatchJob(jobId);
   cond_feed_workers.notify_one();
 }
 
@@ -354,7 +345,7 @@ void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
     if(!sdpa::status::is_terminal (pJob->getStatus())) {
       releaseReservation(job_id);
       pJob->Reschedule(); // put the job back into the pending state
-      schedule (pJob);
+      schedule (job_id);
     }
   }
   else //(JobNotFoundException const &ex)
