@@ -57,8 +57,6 @@ namespace sdpa {
       void assignJobsToWorkers();
 
     private:
-      void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
-
       void feedWorkers();
       void run();
 

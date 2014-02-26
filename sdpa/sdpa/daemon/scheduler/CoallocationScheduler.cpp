@@ -69,16 +69,6 @@ void CoallocationScheduler::rescheduleWorkerJob( const Worker::worker_id_t& work
   }
 }
 
-void CoallocationScheduler::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
-{
-  lock_type lock(mtx_);
-  while( !workerJobList.empty() ) {
-      sdpa::job_id_t jobId = workerJobList.front();
-      rescheduleWorkerJob(worker_id, jobId);
-      workerJobList.pop_front();
-  }
-}
-
 void CoallocationScheduler::deleteWorker( const Worker::worker_id_t& worker_id )
 {
   lock_type lock(mtx_);
@@ -87,7 +77,15 @@ void CoallocationScheduler::deleteWorker( const Worker::worker_id_t& worker_id )
     pWorker->set_disconnected(true);
 
     sdpa::job_id_list_t workerJobList(_worker_manager.getJobListAndCleanQueues(pWorker));
-    reschedule(worker_id, workerJobList);
+
+    {
+      lock_type lock(mtx_);
+      while( !workerJobList.empty() ) {
+        sdpa::job_id_t jobId = workerJobList.front();
+        rescheduleWorkerJob(worker_id, jobId);
+        workerJobList.pop_front();
+      }
+    }
 
     // delete the worker from the worker map
     _worker_manager.deleteWorker(worker_id);
