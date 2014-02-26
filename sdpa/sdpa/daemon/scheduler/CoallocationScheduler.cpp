@@ -79,7 +79,6 @@ void CoallocationScheduler::deleteWorker( const Worker::worker_id_t& worker_id )
     sdpa::job_id_list_t workerJobList(_worker_manager.getJobListAndCleanQueues(pWorker));
 
     {
-      lock_type lock(mtx_);
       while( !workerJobList.empty() ) {
         sdpa::job_id_t jobId = workerJobList.front();
         rescheduleWorkerJob(worker_id, jobId);
@@ -243,7 +242,6 @@ void CoallocationScheduler::assignJobsToWorkers()
 
         lock_type lock(mtx_alloc_table_);
         {
-          lock_type lock_table(mtx_alloc_table_);
           _worker_manager.reserveWorker(*matchingWorkerId);
           // allocate this worker to the job with the jobId
 
