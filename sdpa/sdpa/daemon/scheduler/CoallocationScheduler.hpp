@@ -37,7 +37,7 @@ namespace sdpa {
             errMsg+=m_job_id;
             throw std::runtime_error(errMsg);
         }
-        else {
+
           // take the rseult and store it!
           map_worker_result_t::iterator it = m_map_worker_result.find(wid);
           if( it != m_map_worker_result.end() ) {
@@ -45,7 +45,6 @@ namespace sdpa {
           } else {
               m_map_worker_result.insert(map_worker_result_t::value_type(wid, result));
           }
-        }
       }
 
       void workerFinished(const sdpa::worker_id_t& wid) {
