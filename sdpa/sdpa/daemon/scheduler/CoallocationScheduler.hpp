@@ -81,7 +81,6 @@ namespace sdpa {
 
       Reservation(const sdpa::job_id_t& job_id, const size_t& n) : m_job_id(job_id), m_capacity(n) {}
 
-      size_t size() const { return m_list_workers.size(); }
       void addWorker(const sdpa::worker_id_t& wid) { m_list_workers.push_back(wid); }
       void delWorker(const sdpa::worker_id_t& wid) { m_list_workers.remove(wid); }
 
@@ -118,6 +117,7 @@ namespace sdpa {
       sdpa::worker_id_list_t getWorkerList() const { return m_list_workers; }
 
     private:
+      size_t size() const { return m_list_workers.size(); }
       size_t capacity() const { return m_capacity; }
 
       sdpa::job_id_t m_job_id;
