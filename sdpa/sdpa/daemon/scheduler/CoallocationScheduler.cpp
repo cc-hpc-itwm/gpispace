@@ -331,7 +331,8 @@ namespace sdpa
       // if the status is not terminal
       try
       {
-        allocation_table_t::const_iterator it = allocation_table_.find (jobId);
+        const allocation_table_t::const_iterator it
+          (allocation_table_.find (jobId));
 
         if (it == allocation_table_.end())
         {
