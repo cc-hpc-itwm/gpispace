@@ -93,8 +93,6 @@ namespace sdpa {
     public:
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
-      typedef boost::condition_variable_any condition_type;
-      typedef boost::shared_ptr<GenericDaemon> ptr_t;
 
       GenericDaemon( const std::string name
                    , const std::string url
@@ -125,7 +123,7 @@ namespace sdpa {
       void addCapability(const capability_t& cpb);
       void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
-      CoallocationScheduler::ptr_t scheduler() const {return ptr_scheduler_;}
+      boost::shared_ptr<CoallocationScheduler> scheduler() const {return ptr_scheduler_;}
     protected:
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
@@ -276,7 +274,7 @@ namespace sdpa {
       requirements_map_t job_requirements_;
 
     protected:
-      CoallocationScheduler::ptr_t ptr_scheduler_;
+      boost::shared_ptr<CoallocationScheduler> ptr_scheduler_;
       boost::optional<boost::mt19937> _random_extraction_engine;
       we::layer* ptr_workflow_engine_;
 
