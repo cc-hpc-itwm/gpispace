@@ -21,7 +21,7 @@ namespace sdpa {
       typedef enum {FINISHED, FAILED, CANCELED} result_type;
       typedef std::map<sdpa::worker_id_t, result_type> map_worker_result_t;
 
-      Reservation(const sdpa::job_id_t& job_id = "", const size_t& n=1) : m_job_id(job_id), m_capacity(n) {}
+      Reservation(const sdpa::job_id_t& job_id, const size_t& n) : m_job_id(job_id), m_capacity(n) {}
 
       size_t size() const { return m_list_workers.size(); }
       void addWorker(const sdpa::worker_id_t& wid) { m_list_workers.push_back(wid); }
