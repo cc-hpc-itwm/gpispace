@@ -27,6 +27,14 @@
 
 namespace sdpa {
   namespace daemon {
+    Orchestrator::Orchestrator ( const std::string& name
+                               , const std::string& url
+                               , std::string kvs_host, std::string kvs_port
+                               )
+      : GenericDaemon (name, url, kvs_host, kvs_port)
+    {}
+
+
 template <typename T>
 void Orchestrator::notifySubscribers(const T& ptrEvt)
 {

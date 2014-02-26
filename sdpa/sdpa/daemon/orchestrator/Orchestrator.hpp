@@ -26,9 +26,7 @@ namespace sdpa {
     class Orchestrator : public GenericDaemon
     {
       public:
-      Orchestrator (const std::string &name, const std::string& url, std::string kvs_host, std::string kvs_port)
-      : GenericDaemon ( name, url, kvs_host, kvs_port)
-      {}
+      Orchestrator (const std::string &name, const std::string& url, std::string kvs_host, std::string kvs_port);
 
       virtual void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
       virtual void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
