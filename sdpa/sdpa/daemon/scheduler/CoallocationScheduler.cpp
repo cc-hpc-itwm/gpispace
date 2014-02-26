@@ -128,13 +128,8 @@ boost::optional<sdpa::worker_id_t> CoallocationScheduler::findSuitableWorker
 {
   lock_type lock(mtx_);
 
-  if (listAvailWorkers.empty())
-  {
-    return boost::none;
-  }
-
-  return job_reqs.empty()
-    ? listAvailWorkers.front()
+  return listAvailWorkers.empty() ? boost::none
+    : job_reqs.empty() ? listAvailWorkers.front()
     : _worker_manager.getBestMatchingWorker (job_reqs, listAvailWorkers);
 }
 
