@@ -44,12 +44,6 @@ namespace sdpa {
         virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* )
           { throw std::runtime_error("Not implemented.The agent should not call handleDeleteJobEvent!"); }
         virtual void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt);
-
-      private:
-        CoallocationScheduler::ptr_t scheduler() const
-        {
-          return boost::static_pointer_cast<CoallocationScheduler> (ptr_scheduler_);
-        }
       };
   }
 }
