@@ -14,7 +14,6 @@ CoallocationScheduler::CoallocationScheduler
                       : throw std::runtime_error
                         ("CoallocationScheduler ctor with NULL ptr_comm_handler")
                       )
-  , _logger (fhg::log::Logger::get (ptr_comm_handler_->name()))
   , _worker_manager()
 {
   if (!TEST_without_threads)

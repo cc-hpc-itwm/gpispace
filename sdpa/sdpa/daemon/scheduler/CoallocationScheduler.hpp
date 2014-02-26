@@ -62,7 +62,6 @@ namespace sdpa {
 
 
       GenericDaemon* ptr_comm_handler_;
-      fhg::log::Logger::ptr_t _logger;
 
       SynchronizedQueue<std::list<sdpa::job_id_t> >  pending_jobs_queue_;
       WorkerManager _worker_manager;
