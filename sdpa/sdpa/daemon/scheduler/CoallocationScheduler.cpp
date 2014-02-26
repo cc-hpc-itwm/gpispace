@@ -388,16 +388,6 @@ void CoallocationScheduler::releaseReservation(const sdpa::job_id_t& jobId)
   }
 }
 
-sdpa::worker_id_list_t CoallocationScheduler::getListAllocatedWorkers(const sdpa::job_id_t& jobId)
-{
-  lock_type lock_table(mtx_alloc_table_);
-  allocation_table_t::iterator it=allocation_table_.find(jobId);
-  if(it!=allocation_table_.end())
-    return it->second->getWorkerList();
-  else
-    return sdpa::worker_id_list_t();
-}
-
 void CoallocationScheduler::workerFinished(const worker_id_t& wid, const job_id_t& jid)
 {
   lock_type lock_table(mtx_alloc_table_);
