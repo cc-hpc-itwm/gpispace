@@ -118,11 +118,6 @@ Worker::ptr_t CoallocationScheduler::findWorker(const Worker::worker_id_t& worke
   return _worker_manager.findWorker(worker_id);
 }
 
-bool CoallocationScheduler::hasWorker(const Worker::worker_id_t& worker_id) const
-{
-  return _worker_manager.hasWorker(worker_id);
-}
-
 const boost::optional<Worker::worker_id_t> CoallocationScheduler::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
 {
   return _worker_manager.findSubmOrAckWorker(job_id);
@@ -276,7 +271,7 @@ void CoallocationScheduler::assignJobsToWorkers()
             sdpa::worker_id_list_t res_worker_list(pReservation->getWorkerList());
             BOOST_FOREACH(const Worker::worker_id_t& wid, res_worker_list)
             {
-              if(!hasWorker(wid))
+              if (!_worker_manager.hasWorker(wid))
                 list_invalid_workers.push_back(wid);
             }
 
