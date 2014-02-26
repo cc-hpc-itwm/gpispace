@@ -19,7 +19,6 @@
 #define SDPA_AGENT_HPP 1
 
 #include <sdpa/daemon/GenericDaemon.hpp>
-#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
 namespace sdpa {
   namespace daemon {
