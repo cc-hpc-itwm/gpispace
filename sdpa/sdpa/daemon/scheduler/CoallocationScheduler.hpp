@@ -71,18 +71,14 @@ namespace sdpa {
         return true;
       }
 
-      bool isEmpty() const { return m_list_workers.empty(); }
       bool acquired() const { return (size()==capacity()); }
 
-      sdpa::worker_id_t headWorker() const { return m_list_workers.front(); }
       bool hasWorker(const sdpa::worker_id_t& wid) const { return find(m_list_workers.begin(), m_list_workers.end(), wid)!=m_list_workers.end(); }
       sdpa::worker_id_list_t getWorkerList() const { return m_list_workers; }
 
+    private:
       size_t capacity() const { return m_capacity; }
 
-      sdpa::job_id_t jobId() const { return m_job_id; }
-
-    private:
       sdpa::job_id_t m_job_id;
       size_t m_capacity;
       sdpa::worker_id_list_t m_list_workers;
