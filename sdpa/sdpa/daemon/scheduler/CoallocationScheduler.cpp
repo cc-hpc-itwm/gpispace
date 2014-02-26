@@ -4,6 +4,253 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 namespace sdpa {
+   namespace daemon {
+
+SchedulerBase::SchedulerBase(GenericDaemon* pCommHandler)
+  : ptr_comm_handler_ ( pCommHandler
+                      ? pCommHandler
+                      : throw std::runtime_error
+                        ("SchedulerBase ctor with NULL ptr_comm_handler")
+                      )
+  , _logger (fhg::log::Logger::get (ptr_comm_handler_->name()))
+  , _worker_manager()
+{}
+
+void SchedulerBase::start_threads()
+{
+  m_thread_run = boost::thread (&SchedulerBase::run, this);
+  m_thread_feed = boost::thread (&SchedulerBase::feedWorkers, this);
+}
+
+SchedulerBase::~SchedulerBase()
+{
+  m_thread_run.interrupt();
+  m_thread_feed.interrupt();
+
+  if (m_thread_run.joinable() )
+    m_thread_run.join();
+
+  if (m_thread_feed.joinable() )
+    m_thread_feed.join();
+}
+
+
+bool SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
+                                const boost::optional<unsigned int>& capacity,
+                                const capabilities_set_t& cpbset )
+{
+  lock_type lock(mtx_);
+  const bool ret (_worker_manager.addWorker(workerId, capacity, cpbset));
+  cond_workers_registered.notify_all();
+  cond_feed_workers.notify_one();
+  return ret;
+}
+
+void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
+{
+  lock_type lock(mtx_);
+  try
+  {
+      // delete it from the worker's queues
+      Worker::ptr_t pWorker = findWorker(worker_id);
+      pWorker->deleteJob(job_id);
+  }
+  catch (const WorkerNotFoundException& ex)
+  {
+  }
+
+  rescheduleJob(job_id);
+}
+
+void SchedulerBase::reschedule( const Worker::worker_id_t & worker_id, sdpa::job_id_list_t& workerJobList )
+{
+  lock_type lock(mtx_);
+  while( !workerJobList.empty() ) {
+      sdpa::job_id_t jobId = workerJobList.front();
+      rescheduleWorkerJob(worker_id, jobId);
+      workerJobList.pop_front();
+  }
+}
+
+void SchedulerBase::deleteWorker( const Worker::worker_id_t& worker_id )
+{
+  lock_type lock(mtx_);
+    // mark the worker dirty -> don't take it in consideration for re-scheduling
+    const Worker::ptr_t pWorker = findWorker(worker_id);
+    pWorker->set_disconnected(true);
+
+    sdpa::job_id_list_t workerJobList(_worker_manager.getJobListAndCleanQueues(pWorker));
+    reschedule(worker_id, workerJobList);
+
+    // delete the worker from the worker map
+    _worker_manager.deleteWorker(worker_id);
+}
+
+void SchedulerBase::delete_job (sdpa::job_id_t const & job)
+{
+  if (!pending_jobs_queue_.erase(job))
+  {
+    _worker_manager.deleteJob(job);
+  }
+}
+
+void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
+{
+  lock_type lock(mtx_);
+  Job* pJob = ptr_comm_handler_->findJob(jobId);
+  if(!pJob)
+  {
+    throw std::runtime_error ("tried scheduling non-existent job");
+  }
+  schedule (pJob);
+}
+void SchedulerBase::schedule (Job* pJob)
+{
+  _worker_manager.dispatchJob(pJob->id());
+  cond_feed_workers.notify_one();
+}
+
+void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
+{
+  pending_jobs_queue_.push(jobId);
+}
+
+Worker::ptr_t SchedulerBase::findWorker(const Worker::worker_id_t& worker_id )
+{
+  return _worker_manager.findWorker(worker_id);
+}
+
+bool SchedulerBase::hasWorker(const Worker::worker_id_t& worker_id) const
+{
+  return _worker_manager.hasWorker(worker_id);
+}
+
+const boost::optional<Worker::worker_id_t> SchedulerBase::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
+{
+  return _worker_manager.findSubmOrAckWorker(job_id);
+}
+
+void SchedulerBase::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
+{
+  workerList.clear();
+  _worker_manager.getListNotFullWorkers(workerList);
+}
+
+boost::optional<sdpa::worker_id_t> SchedulerBase::findSuitableWorker
+  (const job_requirements_t& job_reqs, const sdpa::worker_id_list_t& listAvailWorkers)
+{
+  lock_type lock(mtx_);
+
+  if (listAvailWorkers.empty())
+  {
+    return boost::none;
+  }
+
+  return job_reqs.empty()
+    ? listAvailWorkers.front()
+    : _worker_manager.getBestMatchingWorker (job_reqs, listAvailWorkers);
+}
+
+void SchedulerBase::feedWorkers()
+{
+  for (;;)
+  {
+    lock_type lock (mtx_);
+    cond_feed_workers.wait (lock);
+
+    assignJobsToWorkers();
+  }
+}
+
+void SchedulerBase::run()
+{
+  for (;;)
+  {
+      sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait();
+
+      if( numberOfWorkers()>0 ) {
+          schedule(jobId);
+      }
+      else {
+          enqueueJob(jobId);
+          lock_type lock(mtx_);
+          cond_workers_registered.wait(lock);
+      }
+  }
+}
+
+void SchedulerBase::acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
+{
+  lock_type lock(mtx_);
+    Worker::ptr_t ptrWorker = findWorker(worker_id);
+
+    //put the job into the Running state: do this in acknowledge!
+    if( !ptrWorker->acknowledge(job_id) )
+      throw JobNotFoundException();
+}
+
+void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t &jobId )
+{
+    lock_type lock(mtx_);
+
+    ///jobs_to_be_scheduled.erase( job_id );
+    // check if there is an allocation list for this job
+    // (assert that the head of this list id worker_id!)
+    // free all the workers in this list, i.e. mark them as not reserved
+    _worker_manager.deleteWorkerJob(worker_id, jobId);
+    cond_feed_workers.notify_one();
+}
+
+bool SchedulerBase::has_job(const sdpa::job_id_t& job_id)
+{
+  lock_type lock(mtx_);
+  return pending_jobs_queue_.has_item(job_id)|| _worker_manager.has_job(job_id);
+}
+
+bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
+{
+  lock_type lock(mtx_);
+  if(_worker_manager.addCapabilities(worker_id, cpbset))
+  {
+    cond_feed_workers.notify_one();
+    return true;
+  }
+  else
+    return false;
+}
+
+void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
+{
+  _worker_manager.removeCapabilities(worker_id, cpbset);
+}
+
+void SchedulerBase::getAllWorkersCapabilities(sdpa::capabilities_set_t& cpbset)
+{
+  _worker_manager.getCapabilities(cpbset);
+}
+
+sdpa::capabilities_set_t SchedulerBase::getWorkerCapabilities
+  (const sdpa::worker_id_t& worker_id)
+{
+  lock_type lock(mtx_);
+  try {
+      Worker::ptr_t ptrWorker = findWorker(worker_id);
+      return ptrWorker->capabilities();
+  }
+  catch(WorkerNotFoundException const &ex2 )
+  {
+      return sdpa::capabilities_set_t();
+  }
+}
+
+void SchedulerBase::schedule_first(const sdpa::job_id_t& jid)
+{
+  _worker_manager.common_queue_.push_front(jid);
+}
+
+}}
+
+namespace sdpa {
   namespace daemon {
 
 CoallocationScheduler::CoallocationScheduler(GenericDaemon* pCommHandler)
