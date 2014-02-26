@@ -274,7 +274,7 @@ void CoallocationScheduler::assignJobsToWorkers()
             {
               // serve the same job to all reserved workers!!!!
 
-              _worker_manager.markJobSubmitted(pReservation->getWorkerList(), jobId);
+              _worker_manager.markJobSubmitted(list_reserved_workers, jobId);
               ptr_comm_handler_->serveJob(list_reserved_workers, jobId);
             }
             else
