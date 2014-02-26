@@ -21,9 +21,6 @@ namespace sdpa
     class CoallocationScheduler
     {
     public:
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-
       CoallocationScheduler
         (GenericDaemon* pHandler, bool TEST_without_threads = false);
       ~CoallocationScheduler();
@@ -76,7 +73,7 @@ namespace sdpa
       SynchronizedQueue<std::list<sdpa::job_id_t> > pending_jobs_queue_;
       WorkerManager _worker_manager;
 
-      mutable mutex_type mtx_;
+      mutable boost::recursive_mutex mtx_;
       boost::condition_variable_any cond_feed_workers;
       boost::condition_variable_any cond_workers_registered;
 
@@ -165,7 +162,7 @@ namespace sdpa
         std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
       };
 
-      mutable mutex_type mtx_alloc_table_;
+      mutable boost::recursive_mutex mtx_alloc_table_;
       typedef boost::unordered_map<sdpa::job_id_t, Reservation*>
         allocation_table_t;
       allocation_table_t allocation_table_;
