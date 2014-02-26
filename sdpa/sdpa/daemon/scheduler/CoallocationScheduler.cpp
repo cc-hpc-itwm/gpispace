@@ -6,7 +6,8 @@
 namespace sdpa {
    namespace daemon {
 
-CoallocationScheduler::CoallocationScheduler(GenericDaemon* pCommHandler)
+CoallocationScheduler::CoallocationScheduler
+    (GenericDaemon* pCommHandler, bool TEST_without_threads)
   : ptr_comm_handler_ ( pCommHandler
                       ? pCommHandler
                       : throw std::runtime_error
@@ -14,12 +15,12 @@ CoallocationScheduler::CoallocationScheduler(GenericDaemon* pCommHandler)
                       )
   , _logger (fhg::log::Logger::get (ptr_comm_handler_->name()))
   , _worker_manager()
-{}
-
-void CoallocationScheduler::start_threads()
 {
-  m_thread_run = boost::thread (&CoallocationScheduler::run, this);
-  m_thread_feed = boost::thread (&CoallocationScheduler::feedWorkers, this);
+  if (!TEST_without_threads)
+  {
+    m_thread_run = boost::thread (&CoallocationScheduler::run, this);
+    m_thread_feed = boost::thread (&CoallocationScheduler::feedWorkers, this);
+  }
 }
 
 CoallocationScheduler::~CoallocationScheduler()

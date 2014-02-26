@@ -30,7 +30,6 @@ namespace sdpa {
       : GenericDaemon ( name, url, kvs_host, kvs_port, sdpa::master_info_list_t() /*, NULL*/)
       {
         ptr_scheduler_ = CoallocationScheduler::ptr_t (new CoallocationScheduler (this));
-        ptr_scheduler_->start_threads(); //! \note: can't do in ctor: vtable not set up yet
 
         if (!isTop())
         {

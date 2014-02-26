@@ -28,7 +28,7 @@ namespace sdpa {
       typedef boost::unique_lock<mutex_type> lock_type;
       typedef boost::condition_variable_any condition_type;
 
-      CoallocationScheduler(GenericDaemon* pHandler);
+      CoallocationScheduler(GenericDaemon* pHandler, bool TEST_without_threads = false);
       ~CoallocationScheduler();
 
       void enqueueJob(const sdpa::job_id_t&);
@@ -71,12 +71,6 @@ namespace sdpa {
 
       bool schedulingAllowed() { return !_worker_manager.common_queue_.empty(); }
       job_id_t nextJobToSchedule() { return _worker_manager.common_queue_.pop(); }
-
-      //! \note This is required to be called after the ctor, as the
-      //! threads use virtual functions, which are pure-virtual during
-      //! the ctor, thus there is a race if the ctor of derived
-      //! classes or the thread run first.
-      void start_threads();
 
     private:
       void feedWorkers();
