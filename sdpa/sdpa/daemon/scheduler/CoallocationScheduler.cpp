@@ -229,11 +229,6 @@ sdpa::capabilities_set_t CoallocationScheduler::getWorkerCapabilities
   }
 }
 
-void CoallocationScheduler::schedule_first(const sdpa::job_id_t& jid)
-{
-  _worker_manager.common_queue_.push_front(jid);
-}
-
 void CoallocationScheduler::assignJobsToWorkers()
 {
   lock_type lock(mtx_);
@@ -300,12 +295,12 @@ void CoallocationScheduler::assignJobsToWorkers()
                 pReservation->delWorker(wid);
               }
 
-              schedule_first(jobId);
+              _worker_manager.common_queue_.push_front(jobId);
             }
         }
         else
         {
-            schedule_first(jobId);
+          _worker_manager.common_queue_.push_front(jobId);
         }
     }
     else // put it back into the common queue
@@ -316,7 +311,7 @@ void CoallocationScheduler::assignJobsToWorkers()
 
   BOOST_REVERSE_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
   {
-    schedule_first (id);
+    _worker_manager.common_queue_.push_front(id);
   }
 }
 
