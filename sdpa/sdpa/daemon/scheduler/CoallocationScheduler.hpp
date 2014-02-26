@@ -19,7 +19,6 @@ namespace sdpa {
     {
     public:
       typedef enum {FINISHED, FAILED, CANCELED} result_type;
-      typedef std::map<sdpa::worker_id_t, result_type> map_worker_result_t;
 
       Reservation(const sdpa::job_id_t& job_id, const size_t& n) : m_job_id(job_id), m_capacity(n) {}
 
@@ -65,7 +64,7 @@ namespace sdpa {
       sdpa::job_id_t m_job_id;
       size_t m_capacity;
       sdpa::worker_id_list_t m_list_workers;
-      map_worker_result_t m_map_worker_result;
+      std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
     };
 
     class GenericDaemon;
