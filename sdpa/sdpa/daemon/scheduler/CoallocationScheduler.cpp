@@ -193,12 +193,6 @@ void CoallocationScheduler::deleteWorkerJob( const Worker::worker_id_t& worker_i
     cond_feed_workers.notify_one();
 }
 
-bool CoallocationScheduler::has_job(const sdpa::job_id_t& job_id)
-{
-  lock_type lock(mtx_);
-  return pending_jobs_queue_.has_item(job_id)|| _worker_manager.has_job(job_id);
-}
-
 bool CoallocationScheduler::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
   lock_type lock(mtx_);

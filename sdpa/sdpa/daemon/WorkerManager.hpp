@@ -67,8 +67,6 @@ namespace sdpa { namespace daemon {
 
     void reserveWorker(const sdpa::worker_id_t&);
 
-    bool has_job(const sdpa::job_id_t& job_id);
-
     friend class CoallocationScheduler; // CoallocationScheduler::schedule_first()
     void markJobSubmitted(const sdpa::worker_id_list_t& worker_id_list, const sdpa::job_id_t& job_id);
 protected:
