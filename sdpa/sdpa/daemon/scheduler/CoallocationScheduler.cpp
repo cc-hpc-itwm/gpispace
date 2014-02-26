@@ -160,7 +160,7 @@ void CoallocationScheduler::run()
   {
       sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait();
 
-      if( numberOfWorkers()>0 ) {
+      if( _worker_manager.numberOfWorkers()>0 ) {
           schedule(jobId);
       }
       else {

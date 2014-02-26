@@ -59,7 +59,6 @@ namespace sdpa {
     private:
       void reschedule( const Worker::worker_id_t&, sdpa::job_id_list_t& );
       bool hasWorker(const Worker::worker_id_t&) const;
-      size_t numberOfWorkers() { return _worker_manager.numberOfWorkers(); }
       boost::optional<sdpa::worker_id_t> findSuitableWorker(const job_requirements_t&, const sdpa::worker_id_list_t&);
       void reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap);
 
