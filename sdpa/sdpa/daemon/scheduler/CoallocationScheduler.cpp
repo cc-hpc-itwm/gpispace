@@ -128,12 +128,6 @@ const boost::optional<Worker::worker_id_t> CoallocationScheduler::findSubmOrAckW
   return _worker_manager.findSubmOrAckWorker(job_id);
 }
 
-void CoallocationScheduler::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
-{
-  workerList.clear();
-  _worker_manager.getListNotFullWorkers(workerList);
-}
-
 boost::optional<sdpa::worker_id_t> CoallocationScheduler::findSuitableWorker
   (const job_requirements_t& job_reqs, const sdpa::worker_id_list_t& listAvailWorkers)
 {
@@ -251,7 +245,6 @@ void CoallocationScheduler::assignJobsToWorkers()
   lock_type lock(mtx_);
 
   // replace this with the list of workers not reserved
-  //getListNotFullWorkers(listAvailWorkers);
   sdpa::worker_id_list_t listAvailWorkers;
   _worker_manager.getListWorkersNotReserved(listAvailWorkers);
 

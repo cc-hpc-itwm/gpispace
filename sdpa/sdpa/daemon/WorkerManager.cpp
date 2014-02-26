@@ -175,22 +175,6 @@ private:
   sdpa::daemon::WorkerManager* m_ptrWorkerMan;
 };
 
-void WorkerManager::getListNotFullWorkers(sdpa::worker_id_list_t& workerList)
-{
-  lock_type lock(mtx_);
-  for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
-  {
-    Worker::ptr_t ptrWorker = iter->second;
-    if( !ptrWorker->capacity()
-     || ptrWorker->nbAllocatedJobs()<ptrWorker->capacity()
-      )
-    	workerList.push_back(ptrWorker->name());
-  }
-
-  CComparator comparator(this);
-  workerList.sort (comparator);
-}
-
 void WorkerManager::getListWorkersNotReserved(sdpa::worker_id_list_t& workerList)
 {
   lock_type lock(mtx_);
