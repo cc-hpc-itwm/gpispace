@@ -1,6 +1,7 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
+
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 namespace sdpa {

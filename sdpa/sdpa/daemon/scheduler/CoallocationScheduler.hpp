@@ -2,19 +2,16 @@
 #ifndef SDPA_COALLOCSCHED_HPP
 #define SDPA_COALLOCSCHED_HPP 1
 
-#include <boost/thread.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/Worker.hpp>
+#include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/exceptions.hpp>
+#include <sdpa/daemon/scheduler/Reservation.hpp>
+#include <sdpa/engine/IWorkflowEngine.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <sdpa/engine/IWorkflowEngine.hpp>
-#include <sdpa/daemon/scheduler/Reservation.hpp>
-
 #include <boost/optional.hpp>
-#include <sdpa/daemon/WorkerManager.hpp>
-
-#include <boost/optional.hpp>
+#include <boost/thread.hpp>
 
 namespace sdpa {
   namespace daemon {
