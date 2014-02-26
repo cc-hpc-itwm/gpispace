@@ -80,7 +80,7 @@ GenericDaemon::GenericDaemon( const std::string name
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
   , m_arrMasterInfo(arrMasterInfo),
-    ptr_scheduler_()
+    ptr_scheduler_ (new CoallocationScheduler (this))
   , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer

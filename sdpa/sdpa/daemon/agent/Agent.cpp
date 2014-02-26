@@ -38,8 +38,6 @@ Agent::Agent ( const std::string& name
              )
   : GenericDaemon (name, url, kvs_host, kvs_port, arrMasterNames, guiUrl, true)
 {
-  ptr_scheduler_ = CoallocationScheduler::ptr_t (new CoallocationScheduler (this));
-
   //! \note Can't be moved to GenericDaemon::ctor, as
   //! requestRegistrations looks at this->capabilities, which are set
   //! after GenericDaemon::ctor. They should probably be handed down

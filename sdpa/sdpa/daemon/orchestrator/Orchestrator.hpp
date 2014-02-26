@@ -29,8 +29,6 @@ namespace sdpa {
       Orchestrator (const std::string &name, const std::string& url, std::string kvs_host, std::string kvs_port)
       : GenericDaemon ( name, url, kvs_host, kvs_port, sdpa::master_info_list_t() /*, NULL*/)
       {
-        ptr_scheduler_ = CoallocationScheduler::ptr_t (new CoallocationScheduler (this));
-
         if (!isTop())
         {
           lock_type lock (mtx_master_);
