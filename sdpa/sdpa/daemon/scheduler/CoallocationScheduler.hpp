@@ -62,7 +62,6 @@ namespace sdpa {
       void acknowledgeJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id);
 
       bool schedulingAllowed() { return !_worker_manager.common_queue_.empty(); }
-      job_id_t nextJobToSchedule() { return _worker_manager.common_queue_.pop(); }
 
     private:
       void feedWorkers();

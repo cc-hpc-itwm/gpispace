@@ -265,7 +265,7 @@ void CoallocationScheduler::assignJobsToWorkers()
   // iterate over all jobs and see if there is one that prefers
   while(schedulingAllowed() && !listAvailWorkers.empty())
   {
-    sdpa::job_id_t jobId(nextJobToSchedule());
+    sdpa::job_id_t jobId(_worker_manager.common_queue_.pop());
 
     const job_requirements_t job_reqs
       (ptr_comm_handler_->getJobRequirements (jobId));
