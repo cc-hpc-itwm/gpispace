@@ -264,8 +264,7 @@ void CoallocationScheduler::assignJobsToWorkers()
             sdpa::worker_id_list_t list_reserved_workers = pReservation->getWorkerList();
             // check if the reservation is valid
             sdpa::worker_id_list_t list_invalid_workers;
-            sdpa::worker_id_list_t res_worker_list(pReservation->getWorkerList());
-            BOOST_FOREACH(const Worker::worker_id_t& wid, res_worker_list)
+            BOOST_FOREACH(const Worker::worker_id_t& wid, list_reserved_workers)
             {
               if (!_worker_manager.hasWorker(wid))
                 list_invalid_workers.push_back(wid);
