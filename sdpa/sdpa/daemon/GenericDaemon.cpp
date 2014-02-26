@@ -126,6 +126,15 @@ GenericDaemon::GenericDaemon( const std::string name
   //             (fhg::com::)kvs::put ("sdpa.daemon.<name>.id", m_strAgentUID)
   //             kvs::put ("sdpa.daemon.<name>.pid", getpid())
   //                - remove them in destructor
+
+  if (!isTop())
+  {
+    lock_type lock (mtx_master_);
+    BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+    {
+      requestRegistration (masterInfo);
+    }
+  }
 }
 
 GenericDaemon::~GenericDaemon()

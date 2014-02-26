@@ -37,21 +37,7 @@ Agent::Agent ( const std::string& name
              , const boost::optional<std::string>& guiUrl
              )
   : GenericDaemon (name, url, kvs_host, kvs_port, arrMasterNames, guiUrl, true)
-{
-  //! \note Can't be moved to GenericDaemon::ctor, as
-  //! requestRegistrations looks at this->capabilities, which are set
-  //! after GenericDaemon::ctor. They should probably be handed down
-  //! to the ctor to allow moving this code there. (it is equivalent
-  //! to the one in orchestrator ctor)
-  if (!isTop())
-  {
-    lock_type lock (mtx_master_);
-    BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-    {
-      requestRegistration (masterInfo);
-    }
-  }
-}
+{}
 
 void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 {

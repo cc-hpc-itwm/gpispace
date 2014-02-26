@@ -28,16 +28,7 @@ namespace sdpa {
       public:
       Orchestrator (const std::string &name, const std::string& url, std::string kvs_host, std::string kvs_port)
       : GenericDaemon ( name, url, kvs_host, kvs_port, sdpa::master_info_list_t() /*, NULL*/)
-      {
-        if (!isTop())
-        {
-          lock_type lock (mtx_master_);
-          BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-          {
-            requestRegistration (masterInfo);
-          }
-        }
-      }
+      {}
 
       virtual void handleJobFinishedEvent( const sdpa::events::JobFinishedEvent* );
       virtual void handleJobFailedEvent( const sdpa::events::JobFailedEvent* );
