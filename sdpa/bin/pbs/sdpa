@@ -250,20 +250,6 @@ function setup_required ()
     return 1
 }
 
-function setup_state ()
-{
-    local sdpa_home="$SDPA_HOME"
-    if [ -z "$sdpa_home" ] ; then
-        mydir=$(cd $(dirname $( which $0 )) && pwd)
-        sdpa_home=$(dirname "$mydir")
-    fi
-    get_user_input "SDPA installation directory [$sdpa_home]:" sdpa_home
-
-    export SDPA_HOME="$sdpa_home"
-
-    return 0
-}
-
 function setup_kvs ()
 {
     put "plugin.drts.kvs_port" $(get "plugin.drts.kvs_port" "${DEFAULT_KVS_PORT:?}")
@@ -602,7 +588,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="state kvs logging gui gpi"
+        parts="kvs logging gui gpi"
     else
         shift
     fi
