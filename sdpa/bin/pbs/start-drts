@@ -29,6 +29,7 @@ numa_socket=
 DEFAULT_PLUGIN_DRTS_MAX_RECONNECT="128"
 DEFAULT_PLUGIN_DRTS_BACKLOG="1"
 DEFAULT_KERNEL_LOAD_LAZY="true"
+DEFAULT_PLUGIN_GPI_STARTMODE="nowait"
 
 function usage ()
 {
@@ -321,7 +322,7 @@ if [ -z "$gpi_socket" ] ; then
     gpi_socket="$gpi_socket/S-gpi-space.$(id -u).0"
 fi
 cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
-cfg="$cfg -s plugin.gpi.startmode=$(fhgcfg -f "${config_file}" -g plugin.gpi.startmode -v wait)"
+cfg="$cfg -s plugin.gpi.startmode=${DEFAULT_PLUGIN_GPI_STARTMODE}"
 
 # config values (gpi_compat plugin)
 cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"

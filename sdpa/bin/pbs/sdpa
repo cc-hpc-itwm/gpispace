@@ -86,7 +86,6 @@ DEFAULT_GPI_API="gpi.api.real"
 #
 # plugins
 #
-DEFAULT_PLUGIN_GPI_STARTMODE="nowait"
 
 #
 # override defaults by:
@@ -420,9 +419,6 @@ EOF
         log "E: SDPA_HOME is not defined!"
         return 1
     fi
-
-    log "-: configuring plugins"
-    put "plugin.gpi.startmode" $(get "plugin.gpi.startmode" "${DEFAULT_PLUGIN_GPI_STARTMODE:?}")
 }
 
 function parse_human_readable_size ()
