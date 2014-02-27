@@ -345,11 +345,6 @@ fi
 dry_run fhgcfg -f "${config_file}" -a "topology.per-node" -v 1
 dry_run fhgcfg -f "${config_file}" -a "topology.with-mediator" -v "false"
 
-scratch_dir=$(fhgcfg -f "${config_file}" -g sdpa.scratch_dir)
-if [ -z "$scratch_dir" ] ; then
-    scratch_dir="$HOME/.sdpa/scratch"
-fi
-
 log "starting base sdpa components on $master..."
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
