@@ -91,7 +91,7 @@ void WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
     if( it->first == workerId )
     {
       bFound = true;
-      throw WorkerAlreadyExistException(workerId);
+      throw std::runtime_error("A worker with the same id already exists!");
     }
   }
 
