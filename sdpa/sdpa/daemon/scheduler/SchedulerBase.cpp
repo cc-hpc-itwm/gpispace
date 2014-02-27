@@ -166,8 +166,6 @@ void SchedulerBase::feedWorkers()
   for (;;)
   {
     lock_type lock (mtx_);
-    cond_feed_workers.wait (lock);
-
     assignJobsToWorkers();
   }
 }

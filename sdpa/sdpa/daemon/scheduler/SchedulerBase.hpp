@@ -109,7 +109,6 @@ namespace sdpa {
       WorkerManager _worker_manager;
 
       mutable mutex_type mtx_;
-      condition_type cond_feed_workers;
       condition_type cond_workers_registered;
 
       boost::thread m_thread_run;
