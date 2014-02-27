@@ -296,9 +296,9 @@ namespace sdpa
         }
       }
 
-      BOOST_REVERSE_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
+      BOOST_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
       {
-        _worker_manager.common_queue_.push_front (id);
+        _worker_manager.common_queue_.push (id);
       }
     }
 
