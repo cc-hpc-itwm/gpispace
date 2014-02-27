@@ -306,8 +306,6 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
-      //! \todo Explain comment: The check is not for being terminal
-      // if the status is not terminal
       const allocation_table_t::const_iterator it
         (allocation_table_.find (jobId));
 
