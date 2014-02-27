@@ -225,13 +225,15 @@ boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
 
   BOOST_FOREACH (sdpa::worker_id_t workerId, workerList)
   {
-    if(!hasWorker(workerId))
+    const worker_map_t::const_iterator it (worker_map_.find (workerId));
+    if (it == worker_map_.end())
       continue;
 
-    if (worker_map_.at (workerId)->disconnected())
+    Worker::ptr_t pWorker (it->second);
+
+    if (pWorker->disconnected())
       continue;
 
-    Worker::ptr_t pWorker(worker_map_.at(workerId));
     const boost::optional<std::size_t> matchingDeg
       (matchRequirements (pWorker, listJobReq));
 
