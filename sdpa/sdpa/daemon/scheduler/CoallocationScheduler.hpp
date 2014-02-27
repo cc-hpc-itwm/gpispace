@@ -64,7 +64,6 @@ namespace sdpa
 
     private:
       void feedWorkers();
-      void schedule (const sdpa::job_id_t&);
 
 
       GenericDaemon* ptr_comm_handler_;

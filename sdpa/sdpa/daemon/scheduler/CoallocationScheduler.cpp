@@ -91,16 +91,11 @@ namespace sdpa
       }
     }
 
-    void CoallocationScheduler::schedule (const sdpa::job_id_t& jobId)
+    void CoallocationScheduler::enqueueJob (const sdpa::job_id_t& jobId)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       _common_queue.push (jobId);
       cond_feed_workers.notify_one();
-    }
-
-    void CoallocationScheduler::enqueueJob (const sdpa::job_id_t& jobId)
-    {
-      schedule (jobId);
     }
 
     Worker::ptr_t CoallocationScheduler::findWorker
