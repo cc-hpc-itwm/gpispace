@@ -90,7 +90,6 @@ void Agent::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
         {
             if(pJob->getStatus() == sdpa::status::CANCELING)
             {
-                events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
                 pJob->CancelJobAck();
                 workflowEngine()->canceled(actId);
             }
@@ -191,7 +190,6 @@ void Agent::handleJobFailedEvent(const events::JobFailedEvent* pEvt)
           {
               if(pJob->getStatus() == sdpa::status::CANCELING)
               {
-                  events::CancelJobAckEvent evtCancelAck(name(), name(), actId );
                   pJob->CancelJobAck();
                   workflowEngine()->canceled(actId);
               }
@@ -274,7 +272,6 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
         workflowEngine()->canceled(pEvt->job_id());
 
         // reply with an ack here
-        events::CancelJobAckEvent evtCancelAck(name(), pEvt->from(), pEvt->job_id());
         pJob->CancelJobAck();
         ptr_scheduler_->delete_job (pEvt->job_id());
 
