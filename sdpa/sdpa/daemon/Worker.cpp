@@ -86,7 +86,7 @@ const sdpa::capabilities_set_t& Worker::capabilities() const
 
 bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 {
-  if(recvCpbSet.empty())
+  if (recvCpbSet.empty())
     return false;
 
   lock_type const _ (mtx_);
@@ -94,16 +94,17 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
   bool bModified = false;
   BOOST_FOREACH (sdpa::Capability const& capability, recvCpbSet)
   {
-      sdpa::capabilities_set_t::iterator itwcpb = capabilities_.find(capability);
-      if( itwcpb == capabilities_.end() ) {
-          capabilities_.insert (capability);
-          bModified = true;
-      }
-      else
-	if( itwcpb->depth()>capability.depth() ) {
-	    const_cast<sdpa::capability_t&>(*itwcpb).setDepth(capability.depth());
-	    bModified = true;
-	}
+    sdpa::capabilities_set_t::iterator itwcpb (capabilities_.find (capability));
+    if (itwcpb == capabilities_.end())
+    {
+      capabilities_.insert (capability);
+      bModified = true;
+    }
+    else if (itwcpb->depth() > capability.depth())
+    {
+      const_cast<sdpa::capability_t&> (*itwcpb).setDepth (capability.depth());
+      bModified = true;
+    }
   }
 
   return bModified;
