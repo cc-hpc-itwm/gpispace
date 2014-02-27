@@ -80,15 +80,8 @@ logprefix="${logdir}/${name}"
 
 if [ -z "$kvs_url" ]
 then
-    kvs_url="$KVS_URL"
-fi
-
-# check environment
-
-if [ -z "$kvs_url" ]
-then
-    echo >&2 "E: kvs url was not specified!"
-    exit 2
+    echo >&2 "kvs url is required, please specify -k"
+    exit 4
 fi
 
 log "Running $name on $(hostname)"

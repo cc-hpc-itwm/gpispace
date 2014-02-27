@@ -169,13 +169,8 @@ fi
 
 if [ -z "$kvs_url" ]
 then
-    kvs_url="${KVS_URL}"
-fi
-
-
-if [ -z "$kvs_url" ] ; then
-    log "E: no kvs-url specified!"
-    exit 1
+    echo >&2 "kvs url is required, please specify -k"
+    exit 4
 fi
 
 if [ -z "$master" ] ; then

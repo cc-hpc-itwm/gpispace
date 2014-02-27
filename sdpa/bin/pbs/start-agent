@@ -111,7 +111,8 @@ logprefix="${logdir}/${name}"
 
 if [ -z "$kvs_url" ]
 then
-    kvs_url="$KVS_URL"
+    echo >&2 "kvs url is required, please specify -k"
+    exit 4
 fi
 
 if [ -z "$name" -o -z "$master" ] ; then
