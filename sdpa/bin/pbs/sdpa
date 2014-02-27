@@ -645,7 +645,6 @@ function generate_environment ()
         log "E: could not get kvs port from config!"
         return 1
     fi
-    echo export KVS_URL="$(hostname -s):${kvs_port:?}"
 
     # read variables from config and write them to an environment file
     #     replacing init-screen.env in principle
@@ -656,9 +655,6 @@ function generate_environment ()
                 ;;
             log.server.url)
                 echo export FHGLOG_to_server="$val"
-                ;;
-            kvs.url)
-                echo export KVS_URL="$val"
                 ;;
             gpi.priv_dir)
                 echo export GPI_PRIV_DIR="$val"
