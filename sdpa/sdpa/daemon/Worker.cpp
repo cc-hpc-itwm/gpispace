@@ -102,7 +102,8 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
     }
     else if (itwcpb->depth() > capability.depth())
     {
-      const_cast<sdpa::capability_t&> (*itwcpb).setDepth (capability.depth());
+      capabilities_.erase (itwcpb);
+      capabilities_.insert (capability);
       bModified = true;
     }
   }
