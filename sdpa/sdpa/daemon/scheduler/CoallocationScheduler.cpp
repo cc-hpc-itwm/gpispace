@@ -242,7 +242,10 @@ namespace sdpa
 
             if (list_invalid_workers.empty())
             {
-              _worker_manager.markJobSubmitted (list_reserved_workers, jobId);
+              BOOST_FOREACH (const Worker::worker_id_t& wid, list_reserved_workers)
+              {
+                _worker_manager.findWorker (wid)->submit (jobId);
+              }
               ptr_comm_handler_->serveJob (list_reserved_workers, jobId);
             }
             else
