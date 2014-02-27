@@ -95,7 +95,7 @@ namespace sdpa
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       if (!pending_jobs_queue_.erase (job))
       {
-        if (!_worker_manager.common_queue_.erase(job))
+        if (!_common_queue.erase(job))
         {
           _worker_manager.deleteJob (job);
         }
@@ -105,7 +105,7 @@ namespace sdpa
     void CoallocationScheduler::schedule (const sdpa::job_id_t& jobId)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      _worker_manager.common_queue_.push (jobId);
+      _common_queue.push (jobId);
       cond_feed_workers.notify_one();
     }
 
@@ -221,9 +221,9 @@ namespace sdpa
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
-      while (!_worker_manager.common_queue_.empty() && !listAvailWorkers.empty())
+      while (!_common_queue.empty() && !listAvailWorkers.empty())
       {
-        sdpa::job_id_t jobId (_worker_manager.common_queue_.pop());
+        sdpa::job_id_t jobId (_common_queue.pop());
 
         const job_requirements_t job_reqs
           (ptr_comm_handler_->getJobRequirements (jobId));
@@ -286,12 +286,12 @@ namespace sdpa
                 pReservation->delWorker (wid);
               }
 
-              _worker_manager.common_queue_.push_front (jobId);
+              _common_queue.push_front (jobId);
             }
           }
           else
           {
-            _worker_manager.common_queue_.push_front (jobId);
+            _common_queue.push_front (jobId);
           }
         }
         else
@@ -302,7 +302,7 @@ namespace sdpa
 
       BOOST_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
       {
-        _worker_manager.common_queue_.push (id);
+        _common_queue.push (id);
       }
     }
 

@@ -33,7 +33,6 @@ namespace sdpa { namespace daemon {
     typedef boost::unique_lock<mutex_type> lock_type;
     typedef boost::condition_variable_any condition_type;
 
-    typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
     typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
     typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
 
@@ -70,8 +69,6 @@ namespace sdpa { namespace daemon {
     void markJobSubmitted(const sdpa::worker_id_list_t& worker_id_list, const sdpa::job_id_t& job_id);
 protected:
     worker_map_t  worker_map_;
-
-    JobQueue common_queue_;
 
     mutable mutex_type mtx_;
   };

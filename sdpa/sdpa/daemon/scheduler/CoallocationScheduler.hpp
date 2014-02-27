@@ -72,6 +72,7 @@ namespace sdpa
 
       SynchronizedQueue<std::list<sdpa::job_id_t> > pending_jobs_queue_;
       WorkerManager _worker_manager;
+      SynchronizedQueue<std::list<sdpa::job_id_t> > _common_queue;
 
       mutable boost::recursive_mutex mtx_;
       boost::condition_variable_any cond_feed_workers;
