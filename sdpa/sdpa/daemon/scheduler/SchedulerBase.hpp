@@ -98,7 +98,6 @@ namespace sdpa {
       void stop_threads();
 
     private:
-      void feedWorkers();
       void run();
 
     protected:

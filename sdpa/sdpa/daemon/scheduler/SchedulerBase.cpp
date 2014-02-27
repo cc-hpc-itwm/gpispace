@@ -161,15 +161,6 @@ sdpa::worker_id_t SchedulerBase::findSuitableWorker
   return matchingWorkerId;
 }
 
-void SchedulerBase::feedWorkers()
-{
-  for (;;)
-  {
-    lock_type lock (mtx_);
-    assignJobsToWorkers();
-  }
-}
-
 void SchedulerBase::run()
 {
   for (;;)
