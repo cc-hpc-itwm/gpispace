@@ -86,7 +86,6 @@ DEFAULT_GPI_API="gpi.api.real"
 #
 # plugins
 #
-DEFAULT_KERNEL_LOAD_LAZY="true"
 DEFAULT_PLUGIN_GPI_STARTMODE="nowait"
 
 #
@@ -421,9 +420,6 @@ EOF
         log "E: SDPA_HOME is not defined!"
         return 1
     fi
-
-    log "-: setting up the DRTS"
-    put "kernel.lazy" $(get "kernel.lazy" "${DEFAULT_KERNEL_LOAD_LAZY:?}")
 
     log "-: configuring plugins"
     put "plugin.gpi.startmode" $(get "plugin.gpi.startmode" "${DEFAULT_PLUGIN_GPI_STARTMODE:?}")
