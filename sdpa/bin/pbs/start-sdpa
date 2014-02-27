@@ -341,10 +341,6 @@ else
     dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "false"
 fi
 
-# set up topology
-dry_run fhgcfg -f "${config_file}" -a "topology.per-node" -v 1
-dry_run fhgcfg -f "${config_file}" -a "topology.with-mediator" -v "false"
-
 log "starting base sdpa components on $master..."
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
