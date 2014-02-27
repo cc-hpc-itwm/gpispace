@@ -272,18 +272,7 @@ void GenericDaemon::handleWorkerRegistrationEvent (const events::WorkerRegistrat
   worker_id_t worker_id (evtRegWorker.from());
 
   // check if the worker evtRegWorker.from() has already registered!
-  try
-  {
-    registerWorker(evtRegWorker);
-  }
-  catch(WorkerAlreadyExistException& ex)
-  {
-      // just answer back with an acknowledgment
-      events::WorkerRegistrationAckEvent::Ptr const pWorkerRegAckEvt
-        (new events::WorkerRegistrationAckEvent ( name(), evtRegWorker.from()));
-
-      sendEventToOther(pWorkerRegAckEvt);
-  }
+  registerWorker(evtRegWorker);
 }
 
 void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
