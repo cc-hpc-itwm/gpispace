@@ -108,26 +108,6 @@ void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId )
   worker_map_.erase (w);
 }
 
-class CComparator
-{
-public:
-  CComparator(sdpa::daemon::WorkerManager* ptrWorkerMan)
-  {
-    m_ptrWorkerMan = ptrWorkerMan;
-  }
-
-  bool operator() (sdpa::worker_id_t widLeft, sdpa::worker_id_t widRight)
-  {
-    Worker::ptr_t ptrWorkerL = m_ptrWorkerMan->findWorker(widLeft);
-    Worker::ptr_t ptrWorkerR = m_ptrWorkerMan->findWorker(widRight);
-
-    return (ptrWorkerL->lastTimeServed( )< ptrWorkerR->lastTimeServed() );
-  }
-
-private:
-  sdpa::daemon::WorkerManager* m_ptrWorkerMan;
-};
-
 sdpa::worker_id_list_t WorkerManager::getListWorkersNotReserved()
 {
   lock_type lock(mtx_);
@@ -138,9 +118,6 @@ sdpa::worker_id_list_t WorkerManager::getListWorkersNotReserved()
     if( !ptrWorker->isReserved() )
     	workerList.push_back(ptrWorker->name());
   }
-
-  CComparator comparator(this);
-  workerList.sort (comparator);
 
   return workerList;
 }
