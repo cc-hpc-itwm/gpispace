@@ -160,6 +160,7 @@ delete_logfiles=true
 app_path="${SDPA_APP_PATH}"
 number_of_groups=1
 kvs_port=
+log_port=
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -348,6 +349,15 @@ then
     if [ -z "$kvs_port" ]
     then
         error 2 "setup incomplete, kvs port is not set"
+    fi
+fi
+
+if [ -z "${log_port}" ]
+then
+    log_url=$(fhgcfg -f "${config_file}" -g "log.server.url")
+    log_port=$(echo "$log_url" | grep -o -- ':[[:digit:]]\+' | tr -d ':')
+    if [ -z "$log_port" ] ; then
+        error 2 "setup incomplete, log port was not set"
     fi
 fi
 
