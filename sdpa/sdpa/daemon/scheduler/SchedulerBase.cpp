@@ -226,13 +226,7 @@ bool SchedulerBase::has_job(const sdpa::job_id_t& job_id)
 bool SchedulerBase::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
 {
   lock_type lock(mtx_);
-  if(_worker_manager.addCapabilities(worker_id, cpbset))
-  {
-    cond_feed_workers.notify_one();
-    return true;
-  }
-  else
-    return false;
+  return _worker_manager.addCapabilities(worker_id, cpbset);
 }
 
 void SchedulerBase::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
