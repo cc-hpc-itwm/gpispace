@@ -122,16 +122,6 @@ sdpa::worker_id_list_t WorkerManager::getListWorkersNotReserved()
   return workerList;
 }
 
-bool WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbSet)
-{
-  return findWorker (worker_id)->addCapabilities (cpbSet);
-}
-
-void WorkerManager::removeCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& TCpbSet)
-{
-  findWorker (worker_id)->removeCapabilities (TCpbSet);
-}
-
 void WorkerManager::getCapabilities(sdpa::capabilities_set_t& agentCpbSet)
 {
   lock_type lock(mtx_);

@@ -153,7 +153,7 @@ namespace sdpa
       (const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      if (_worker_manager.addCapabilities (worker_id, cpbset))
+      if (_worker_manager.findWorker (worker_id)->addCapabilities (cpbset))
       {
         cond_feed_workers.notify_one();
         return true;
@@ -167,7 +167,7 @@ namespace sdpa
     void CoallocationScheduler::removeCapabilities
       (const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
     {
-      _worker_manager.removeCapabilities (worker_id, cpbset);
+      _worker_manager.findWorker (worker_id)->removeCapabilities (cpbset);
     }
 
     void CoallocationScheduler::getAllWorkersCapabilities
