@@ -113,7 +113,6 @@ namespace sdpa {
       condition_type cond_workers_registered;
 
       boost::thread m_thread_run;
-      boost::thread m_thread_feed;
     };
   }
 }

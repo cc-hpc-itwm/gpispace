@@ -19,19 +19,14 @@ SchedulerBase::SchedulerBase(GenericDaemon* pCommHandler)
 void SchedulerBase::start_threads()
 {
   m_thread_run = boost::thread (&SchedulerBase::run, this);
-  m_thread_feed = boost::thread (&SchedulerBase::feedWorkers, this);
 }
 
 void SchedulerBase::stop_threads()
 {
   m_thread_run.interrupt();
-  m_thread_feed.interrupt();
 
   if (m_thread_run.joinable() )
     m_thread_run.join();
-
-  if (m_thread_feed.joinable() )
-    m_thread_feed.join();
 }
 
 SchedulerBase::~SchedulerBase()
