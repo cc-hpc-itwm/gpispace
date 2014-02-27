@@ -7,8 +7,8 @@
 ###
 ###
 # set some default values
-state_dir=~/.sdpa/state
-config_file="~/.sdpa/configs/sdpa.rc"
+state_dir=
+config_file=
 logdir=
 gui=
 kvs_url=
