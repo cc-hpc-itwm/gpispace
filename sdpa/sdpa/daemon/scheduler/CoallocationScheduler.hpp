@@ -111,8 +111,6 @@ namespace sdpa
           m_map_worker_result[wid] = result;
         }
 
-        //! \todo Explain comment: Is this a todo? Why should it be protected?
-        // should protect this!!!!
         bool allWorkersTerminated() const
         {
           return m_map_worker_result.size() == capacity();

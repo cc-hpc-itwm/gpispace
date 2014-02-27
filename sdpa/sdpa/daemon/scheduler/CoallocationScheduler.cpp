@@ -159,8 +159,6 @@ namespace sdpa
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       Worker::ptr_t ptrWorker = findWorker(worker_id);
 
-      //! \todo Explain comment: Is this a todo or is this done?
-      //put the job into the Running state: do this in acknowledge!
       if (!ptrWorker->acknowledge(job_id))
       {
         throw JobNotFoundException();
@@ -172,10 +170,6 @@ namespace sdpa
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
 
-      //! \todo Explain comment: Is this a todo or is this done?
-      // check if there is an allocation list for this job
-      // (assert that the head of this list id worker_id!)
-      // free all the workers in this list, i.e. mark them as not reserved
       _worker_manager.deleteWorkerJob (worker_id, jobId);
       cond_feed_workers.notify_one();
     }
@@ -226,14 +220,9 @@ namespace sdpa
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
 
-      //! \todo Explain comment: Is this a todo or is this done?
-      // replace this with the list of workers not reserved
       sdpa::worker_id_list_t listAvailWorkers;
       _worker_manager.getListWorkersNotReserved (listAvailWorkers);
 
-      //! \todo Explain comment: Is this a todo or is this done?
-      // check if there are jobs that can already be scheduled on
-      // these workers
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
       while (!_worker_manager.common_queue_.empty() && !listAvailWorkers.empty())
@@ -273,10 +262,6 @@ namespace sdpa
             allocation_table_[jobId]->addWorker (*matchingWorkerId);
           }
 
-          //! \todo Explain comment: Is this a todo or is this done?
-          // attention: what to do if job_reqs.n_workers_req > total
-          // number of registered workers?  if all the required
-          // resources were acquired, mark the job as submitted
           Reservation* pReservation (allocation_table_[jobId]);
 
           if (pReservation->acquired())
@@ -295,9 +280,6 @@ namespace sdpa
 
             if (list_invalid_workers.empty())
             {
-              //! \todo Explain comment: Is this a todo or is this done?
-              // serve the same job to all reserved workers!!!!
-
               _worker_manager.markJobSubmitted (list_reserved_workers, jobId);
               ptr_comm_handler_->serveJob (list_reserved_workers, jobId);
             }
