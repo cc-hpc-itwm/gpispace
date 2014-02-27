@@ -300,6 +300,11 @@ if [ ! -x "${script_start_agent}" ] ; then
     error 2 "utility script '${script_start_agent}' is not executable"
 fi
 
+script_start_gpi="${SDPA_HOME}/libexec/sdpa/scripts/start-gpi"
+if [ ! -x "${script_start_gpi}" ] ; then
+    error 2 "utility script '${script_start_gpi}' is not executable"
+fi
+
 hosts=( $(cat "$nodefile" | uniq) )
 
 if [ ${#hosts[@]} -eq 0 ] ; then
@@ -365,7 +370,16 @@ log "starting base sdpa components on $master..."
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
 if $gpi_enabled ; then
-    dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start gpi
+    "${script_start_gpi}" -s "$state_dir" \
+                          -F "${config_file}" \
+                          -f \
+                          -P "$state_dir/gpi-space.pid" \
+                          -m "$gpi_mem" \
+                          -k "${master}" \
+                          -K "$kvs_port" \
+                          -l "${master}" \
+                          -S "${socket_path}" \
+                          -L "${log_port}"
 fi
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start orch
 
