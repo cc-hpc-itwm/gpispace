@@ -50,16 +50,6 @@ bool WorkerManager::hasWorker(const Worker::worker_id_t& worker_id) const
   return worker_map_.find(worker_id) != worker_map_.end();
 }
 
-bool WorkerManager::isDisconnectedWorker(const Worker::worker_id_t& worker_id) const
-{
-  lock_type lock(mtx_);
-  worker_map_t::const_iterator it = worker_map_.find(worker_id);
-   if( it != worker_map_.end() )
-    return it->second->disconnected();
-
-   throw WorkerNotFoundException();
-}
-
 const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
 {
   lock_type lock(mtx_);
@@ -238,7 +228,7 @@ boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
     if(!hasWorker(workerId))
       continue;
 
-    if(isDisconnectedWorker(workerId))
+    if (worker_map_.at (workerId)->disconnected())
       continue;
 
     Worker::ptr_t pWorker(worker_map_.at(workerId));
