@@ -632,6 +632,8 @@ void GenericDaemon::registerWorker(const events::WorkerRegistrationEvent& evtReg
 
   sendEventToOther(pWorkerRegAckEvt);
 
+  scheduler()->assignJobsToWorkers();
+
   if( !workerCpbSet.empty() && !isTop() )
   {
     lock_type lock(mtx_master_);
