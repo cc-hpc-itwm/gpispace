@@ -214,7 +214,7 @@ void SchedulerBase::deleteWorkerJob( const Worker::worker_id_t& worker_id, const
     // (assert that the head of this list id worker_id!)
     // free all the workers in this list, i.e. mark them as not reserved
     _worker_manager.deleteWorkerJob(worker_id, jobId);
-    cond_feed_workers.notify_one();
+    assignJobsToWorkers();
 }
 
 bool SchedulerBase::has_job(const sdpa::job_id_t& job_id)
