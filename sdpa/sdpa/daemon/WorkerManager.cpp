@@ -208,11 +208,6 @@ boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
   return bestMatchingWorkerId;
 }
 
-void WorkerManager::reserveWorker(const sdpa::worker_id_t& worker_id)
-{
-  findWorker (worker_id)->reserve();
-}
-
 void addToList(Worker::JobQueue* pQueue, sdpa::job_id_list_t& jobList)
 {
   while( !pQueue->empty() )

@@ -54,8 +54,6 @@ namespace sdpa { namespace daemon {
 
     boost::optional<sdpa::worker_id_t> getBestMatchingWorker( const job_requirements_t&, const sdpa::worker_id_list_t&) const;
 
-    void reserveWorker(const sdpa::worker_id_t&);
-
     void markJobSubmitted(const sdpa::worker_id_list_t& worker_id_list, const sdpa::job_id_t& job_id);
 private:
     worker_map_t  worker_map_;

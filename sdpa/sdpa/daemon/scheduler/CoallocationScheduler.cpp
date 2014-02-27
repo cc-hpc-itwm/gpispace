@@ -215,7 +215,7 @@ namespace sdpa
 
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
           {
-            _worker_manager.reserveWorker (*matchingWorkerId);
+            _worker_manager.findWorker (*matchingWorkerId)->reserve();
 
             allocation_table_t::iterator it (allocation_table_.find(jobId));
             if (it == allocation_table_.end())
