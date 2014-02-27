@@ -66,8 +66,6 @@ DEFAULT_CLUSTER_HEAD="" # if needed
 #
 # SDPA
 #
-DEFAULT_TMP_DIR="/var/tmp"
-
 DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
 DEFAULT_KVS_PORT=2439
