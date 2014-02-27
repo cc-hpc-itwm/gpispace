@@ -92,9 +92,13 @@ namespace sdpa
 
     void CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
     {
+      boost::recursive_mutex::scoped_lock const _ (mtx_);
       if (!pending_jobs_queue_.erase (job))
       {
-        _worker_manager.deleteJob (job);
+        if (!_worker_manager.common_queue_.erase(job))
+        {
+          _worker_manager.deleteJob (job);
+        }
       }
     }
 

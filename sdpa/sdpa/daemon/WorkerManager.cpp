@@ -101,15 +101,12 @@ bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 void WorkerManager::deleteJob (sdpa::job_id_t const & job)
 {
   lock_type lock(mtx_);
-  if (!common_queue_.erase(job))
+  BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
+                | boost::adaptors::filtered
+                  (boost::bind (&Worker::has_job, _1, job))
+                )
   {
-    BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
-                  | boost::adaptors::filtered
-                    (boost::bind (&Worker::has_job, _1, job))
-                  )
-    {
-      worker->deleteJob (job);
-    }
+    worker->deleteJob (job);
   }
 }
 
