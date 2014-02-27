@@ -964,7 +964,10 @@ function start_agent ()
     # name format: name[-node]
     local node=$(get_master_node)
 
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -s "$state_dir" -F "${config_file}" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" $@ </dev/null 2>&1)
+    local kvs_host="$(get_master_node)"
+    local kvs_port=$(get "plugin.drts.kvs_port" "${DEFAULT_KVS_PORT:?}")
+
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -s "$state_dir" -F "${config_file}" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" -k "${kvs_host}:${kvs_port}" $@ </dev/null 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         echo "$name" >&2
@@ -1049,7 +1052,10 @@ function start_orch ()
         log "E: Orchestrator must be started on the master node"
         exit 1
     fi
-    if ! start_proc "orchestrator" "$SDPA_SCRIPT_DIR/start-orch" "-s" "$state_dir" "-P" "$state_dir/orchestrator.pid" "-D" ; then
+    local kvs_host="$(get_master_node)"
+    local kvs_port=$(get "plugin.drts.kvs_port" "${DEFAULT_KVS_PORT:?}")
+
+    if ! start_proc "orchestrator" "$SDPA_SCRIPT_DIR/start-orch" "-s" "$state_dir" "-P" "$state_dir/orchestrator.pid" "-D" -k "${kvs_host}:${kvs_port}" ; then
         echo "E: could not start orchestrator, giving up!" >&2
         return 1
     else
@@ -1318,8 +1324,10 @@ function start_drts_on_node ()
     if [ -z "$per_node" ] ; then
         per_node=0
     fi
+    local kvs_host="$(get_master_node)"
+    local kvs_port=$(get "plugin.drts.kvs_port" "${DEFAULT_KVS_PORT:?}")
 
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-drts" -F "${config_file}" -s "$state_dir" -D -m "$master" -c "$per_node" $@ 2>&1)
+    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-drts" -F "${config_file}" -s "$state_dir" -D -m "$master" -c "$per_node" -k "${kvs_host}:${kvs_port}" $@ 2>&1)
     ec=$?
     if [ $ec -eq 0 ] ; then
         return 0

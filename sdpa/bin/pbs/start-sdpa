@@ -159,6 +159,7 @@ gpi_enabled=true
 delete_logfiles=true
 app_path="${SDPA_APP_PATH}"
 number_of_groups=1
+kvs_port=
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -341,6 +342,15 @@ else
     dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "false"
 fi
 
+if [ -z "$kvs_port" ]
+then
+    kvs_port=$(fhgcfg -f "${config_file}" -g "plugin.drts.kvs_port")
+    if [ -z "$kvs_port" ]
+    then
+        error 2 "setup incomplete, kvs port is not set"
+    fi
+fi
+
 log "starting base sdpa components on $master..."
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
@@ -416,6 +426,7 @@ function start_agent
         -n "${name}" \
         -m "${parent}" \
         -s "${state_dir}" \
+        -k "${master}:${kvs_port}" \
         -F "${config_file}" &
     pids+=( $! )
 }
@@ -478,6 +489,7 @@ function start_workers_for_capability
         argv+=(-c $num_per_node)
         argv+=(-n "$name")
         argv+=(-m "$parent")
+        argv+=(-k "$master:${kvs_port}")
         argv+=($caps_arg)
         argv+=(-s "$state_dir")
         argv+=(-F "$config_file")
