@@ -121,7 +121,6 @@ namespace sdpa {
       OVERWRITTEN_IN_TEST void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
 
       void addCapability(const capability_t& cpb);
-      void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
       boost::shared_ptr<CoallocationScheduler> scheduler() const {return ptr_scheduler_;}
     protected:

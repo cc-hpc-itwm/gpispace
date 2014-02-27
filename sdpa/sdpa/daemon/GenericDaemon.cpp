@@ -933,7 +933,17 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
   if( !masterInfo.is_registered() )
   {
     capabilities_set_t cpbSet;
-    getCapabilities(cpbSet);
+    {
+      lock_type lock(mtx_cpb_);
+      BOOST_FOREACH ( const sdpa::capabilities_set_t::value_type & capability
+                    , m_capabilities
+                    )
+      {
+        cpbSet.insert (capability);
+      }
+
+      scheduler()->getAllWorkersCapabilities(cpbSet);
+    }
 
     //std::cout<<cpbSet;
 
@@ -956,19 +966,6 @@ void GenericDaemon::removeMasters(const agent_id_list_t& listMasters)
     if( it != m_arrMasterInfo.end() )
       m_arrMasterInfo.erase(it);
   }
-}
-
-void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
-{
-  lock_type lock(mtx_cpb_);
-  BOOST_FOREACH ( const sdpa::capabilities_set_t::value_type & capability
-                , m_capabilities
-                )
-  {
-    cpbset.insert (capability);
-  }
-
-   scheduler()->getAllWorkersCapabilities(cpbset);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)
