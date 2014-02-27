@@ -25,12 +25,6 @@
 #include <stdexcept>
 
 namespace sdpa { namespace daemon {
-  class QueueEmpty : public std::runtime_error
-  {
-    public:
-      QueueEmpty() : std::runtime_error("queue is empty") {}
-  };
-
   /*
    * Implementation of a synchronized queue on top of a container.
    *
@@ -52,7 +46,7 @@ namespace sdpa { namespace daemon {
     inline value_type pop()
     {
       lock_type lock(mtx_);
-      if (container_.empty()) throw QueueEmpty();
+      if (container_.empty()) throw std::runtime_error ("queue is empty");
 
       value_type item = container_.front();
       container_.pop_front();
@@ -62,7 +56,7 @@ namespace sdpa { namespace daemon {
     inline value_type pop_back()
     {
     	lock_type lock(mtx_);
-    	if (container_.empty()) throw QueueEmpty();
+    	if (container_.empty()) throw std::runtime_error ("queue is empty");
 
     	value_type item = container_.back();
     	container_.pop_back();
