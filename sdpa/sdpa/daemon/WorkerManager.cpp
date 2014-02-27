@@ -97,19 +97,6 @@ void WorkerManager::deleteJob (sdpa::job_id_t const & job)
   }
 }
 
-void WorkerManager::deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id )
-{
-  lock_type lock(mtx_);
-  try {
-    Worker::ptr_t ptrWorker = findWorker(worker_id);
-    // delete job from worker's queues
-
-    ptrWorker->deleteJob(job_id);
-  }
-  catch(WorkerNotFoundException const &) {
-  }
-}
-
 void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId )
 {
   lock_type lock(mtx_);
