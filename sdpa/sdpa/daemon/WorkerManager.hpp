@@ -28,7 +28,7 @@
 namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
-    typedef boost::recursive_mutex mutex_type;
+    typedef boost::mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
 
     typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
