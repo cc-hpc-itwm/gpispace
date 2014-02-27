@@ -27,6 +27,7 @@ logdir=
 shm_size=
 numa_socket=
 DEFAULT_PLUGIN_DRTS_MAX_RECONNECT="128"
+DEFAULT_PLUGIN_DRTS_BACKLOG="1"
 
 function usage ()
 {
@@ -156,7 +157,7 @@ fi
 
 gpi_enabled=$(fhgcfg -f "${config_file}" -g gpi.enabled -v true)
 if [ -z "$backlog" ] ; then
-    backlog=$(fhgcfg -f "${config_file}" -g plugin.drts.backlog -v 1)
+    backlog=${DEFAULT_PLUGIN_DRTS_BACKLOG}
 fi
 
 if [ -z "$lib_path" ]
