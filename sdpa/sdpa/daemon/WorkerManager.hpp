@@ -55,7 +55,6 @@ namespace sdpa { namespace daemon {
     void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
     void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
-    void dispatchJob(const sdpa::job_id_t& jobId);
     void deleteJob(const sdpa::job_id_t& jobId);
     void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id );
 

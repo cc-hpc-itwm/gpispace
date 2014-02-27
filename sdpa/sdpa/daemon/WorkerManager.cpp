@@ -98,12 +98,6 @@ bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 }
 
 
-void WorkerManager::dispatchJob(const sdpa::job_id_t& jobId)
-{
-  lock_type lock(mtx_);
-  common_queue_.push(jobId);
-}
-
 void WorkerManager::deleteJob (sdpa::job_id_t const & job)
 {
   lock_type lock(mtx_);

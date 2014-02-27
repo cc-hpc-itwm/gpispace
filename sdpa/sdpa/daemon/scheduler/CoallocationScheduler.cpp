@@ -101,7 +101,7 @@ namespace sdpa
     void CoallocationScheduler::schedule (const sdpa::job_id_t& jobId)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      _worker_manager.dispatchJob (jobId);
+      _worker_manager.common_queue_.push (jobId);
       cond_feed_workers.notify_one();
     }
 
