@@ -205,15 +205,7 @@ namespace sdpa
       (const sdpa::worker_id_t& worker_id)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      try
-      {
-        Worker::ptr_t ptrWorker = findWorker(worker_id);
-        return ptrWorker->capabilities();
-      }
-      catch (WorkerNotFoundException const&)
-      {
-        return sdpa::capabilities_set_t();
-      }
+      return findWorker (worker_id)->capabilities();
     }
 
     void CoallocationScheduler::assignJobsToWorkers()
