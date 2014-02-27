@@ -306,37 +306,23 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
-      //! \todo Explain comment: This is a try, not an if
+      //! \todo Explain comment: The check is not for being terminal
       // if the status is not terminal
-      try
+      const allocation_table_t::const_iterator it
+        (allocation_table_.find (jobId));
+
+      if (it != allocation_table_.end())
       {
-        const allocation_table_t::const_iterator it
-          (allocation_table_.find (jobId));
-
-        if (it == allocation_table_.end())
-        {
-          return;
-        }
-
         boost::recursive_mutex::scoped_lock const _ (mtx_);
         Reservation* pReservation (it->second);
         worker_id_list_t listWorkers (pReservation->getWorkerList());
         BOOST_FOREACH (sdpa::worker_id_t const& workerId, listWorkers)
         {
-          try
-          {
-            findWorker (workerId)->free();
-          }
-          catch (WorkerNotFoundException const&)
-          {
-          }
+          findWorker (workerId)->free();
         }
 
         delete it->second;
         allocation_table_.erase (it);
-      }
-      catch (JobNotFoundException const&)
-      {
       }
     }
 
