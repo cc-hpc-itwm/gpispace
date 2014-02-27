@@ -676,6 +676,8 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
 
     if(bModified)
     {
+      scheduler()->assignJobsToWorkers();
+
       if( !isTop() )
       {
         const sdpa::capabilities_set_t newWorkerCpbSet
