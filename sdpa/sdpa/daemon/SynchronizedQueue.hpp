@@ -53,16 +53,6 @@ namespace sdpa { namespace daemon {
       return item;
     }
 
-    inline value_type pop_back()
-    {
-    	lock_type lock(mtx_);
-    	if (container_.empty()) throw std::runtime_error ("queue is empty");
-
-    	value_type item = container_.back();
-    	container_.pop_back();
-    	return item;
-    }
-
     inline value_type pop_and_wait()
     {
       lock_type lock(mtx_);
