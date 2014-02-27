@@ -34,8 +34,6 @@ namespace sdpa { namespace daemon {
     typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
     typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
 
-    WorkerManager();
-
     Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id);
     bool hasWorker(const Worker::worker_id_t& worker_id) const;
     bool isDisconnectedWorker(const Worker::worker_id_t& worker_id) const;

@@ -34,9 +34,6 @@
 using namespace std;
 using namespace sdpa::daemon;
 
-WorkerManager::WorkerManager()
-{}
-
 Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
 {
   lock_type lock(mtx_);
