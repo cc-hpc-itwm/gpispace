@@ -371,33 +371,6 @@ to. It should be on the same host that you run the GUI on.
     put "log.server.level" "$lvl"
 }
 
-function setup_temp ()
-{
-    local doc='
-
-                 ================================
-                 *     Node local directory     *
-                 ================================
-
-This  directory  should point  to  a  path that  is  local  to  each node,  like
-/var/tmp. It is used to create local temporary files that might be necessary for
-some components.
-'
-    local key="sdpa.temp_dir"
-    local val=$(get "$key" "${DEFAULT_TMP_DIR:?}")
-    local prompt="temporary directory to use [$val]:"
-    get_user_input "$prompt" val "$doc"
-
-    if ! test -d "$val" ; then
-        if ! mkdir -p "$val" ; then
-            log "E: failed to create temporary directory: $val"
-            return 1
-        fi
-    fi
-
-    put "$key" "$val"
-}
-
 function setup_gui ()
 {
     local doc='
@@ -628,8 +601,7 @@ to adjust the amount.
     put "gpi.port" $(get gpi.port "default")
     put "gpi.processes" $(get gpi.processes "default")
 
-    local sdpa_temp_dir=$(get "sdpa.temp_dir")
-    local gpi_socket_path=$(get gpi.socket_path "${sdpa_temp_dir}")
+    local gpi_socket_path=$(get gpi.socket_path "/tmp")
     put "gpi.socket_path" "$gpi_socket_path"
     if ! test -d "$gpi_socket_path" ; then
         if ! mkdir -p "$gpi_socket_path" ; then
@@ -675,7 +647,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="state kvs logging temp gui plugins gpi"
+        parts="state kvs logging gui plugins gpi"
     else
         shift
     fi
@@ -738,9 +710,6 @@ function generate_environment ()
                 ;;
             sdpa.gui)
                 echo export SDPA_GUI="$val"
-                ;;
-            sdpa.temp_dir)
-                echo export SDPA_TEMP_DIR="$val"
                 ;;
             sdpa.home)
                 ;;
