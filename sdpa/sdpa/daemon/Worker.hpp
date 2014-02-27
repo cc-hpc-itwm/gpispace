@@ -67,10 +67,6 @@ namespace sdpa { namespace daemon {
     bool acknowledge(const sdpa::job_id_t&);
 
     // update last service time
-    double lastTimeServed() {lock_type lock(mtx_); return last_time_served_; }
-    void setLastTimeServed(const double& last_time_srv ) { lock_type lock(mtx_);last_time_served_ = last_time_srv; }
-
-    // update last service time
     double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
     void setLastScheduleTime(const double& last_schedule_time ) { lock_type lock(mtx_); last_schedule_time_ = last_schedule_time; }
 
@@ -154,7 +150,6 @@ namespace sdpa { namespace daemon {
     sdpa::capabilities_set_t capabilities_;
     location_t location_; //! location where to reach the worker
     double tstamp_; //! time of last message received
-    double last_time_served_; //! time of last message received
     double last_schedule_time_;
 
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)

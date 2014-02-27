@@ -18,7 +18,6 @@ Worker::Worker(	const worker_id_t& name,
     capacity_(cap),
     location_(location),
     tstamp_(fhg::util::now()),
-    last_time_served_(0),
     last_schedule_time_(0),
     timedout_(false),
     disconnected_(false),
@@ -49,7 +48,6 @@ void Worker::update()
 void Worker::submit(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
-  setLastTimeServed(fhg::util::now());
   submitted_.push(jobId);
 }
 
