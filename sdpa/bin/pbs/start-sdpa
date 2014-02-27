@@ -407,14 +407,14 @@ function start_agent
 {
     local host="$1" ; shift
     local name="$1" ; shift
-    local master="$1" ; shift
+    local parent="$1" ; shift
 
-    info "starting agent: ${name} on host ${host} with parent ${master}"
+    info "starting agent: ${name} on host ${host} with parent ${parent}"
 
     dry_run rexec ${host} "${script_start_agent}" \
         -D \
         -n "${name}" \
-        -m "${master}" \
+        -m "${parent}" \
         -s "${state_dir}" \
         -F "${config_file}" &
     pids+=( $! )
@@ -460,7 +460,7 @@ function start_workers_for_capability
     num_nodes=0
     caps_arg=$(echo "$capability" | tr '+' '\n' | xargs -n1 echo '-C')
 
-    master=${segment_master[$segment]}
+    parent=${segment_master[$segment]}
     group_start=${segment_host_index[$segment]}
     group_size=${segment_size[$segment]}
     group_end=$((group_start + group_size))
@@ -477,7 +477,7 @@ function start_workers_for_capability
         argv+=(-D)
         argv+=(-c $num_per_node)
         argv+=(-n "$name")
-        argv+=(-m "$master")
+        argv+=(-m "$parent")
         argv+=($caps_arg)
         argv+=(-s "$state_dir")
         argv+=(-F "$config_file")
