@@ -142,6 +142,8 @@ namespace sdpa { namespace daemon {
     void reserve();
     void free();
 
+    sdpa::job_id_list_t getJobListAndCleanQueues();
+
   private:
     fhg::log::Logger::ptr_t _logger;
 

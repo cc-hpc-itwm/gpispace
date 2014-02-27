@@ -150,3 +150,25 @@ void Worker::free()
   lock_type lock(mtx_);
   reserved_ = false;
 }
+
+namespace
+{
+  void addToList (Worker::JobQueue* pQueue, sdpa::job_id_list_t& jobList)
+  {
+    while (!pQueue->empty())
+    {
+      jobList.push_back (pQueue->pop());
+    }
+  }
+}
+
+sdpa::job_id_list_t Worker::getJobListAndCleanQueues()
+{
+  lock_type const _ (mtx_);
+  sdpa::job_id_list_t listAssignedJobs;
+
+  addToList (&submitted_, listAssignedJobs);
+  addToList (&acknowledged_, listAssignedJobs);
+
+  return listAssignedJobs;
+}

@@ -208,26 +208,6 @@ boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
   return bestMatchingWorkerId;
 }
 
-void addToList(Worker::JobQueue* pQueue, sdpa::job_id_list_t& jobList)
-{
-  while( !pQueue->empty() )
-  {
-      sdpa::job_id_t jobId = pQueue->pop();
-      jobList.push_back(jobId);
-  }
-}
-
-sdpa::job_id_list_t WorkerManager::getJobListAndCleanQueues(const Worker::ptr_t& pWorker)
-{
-  lock_type lock(mtx_);
-  sdpa::job_id_list_t listAssignedJobs;
-
-  addToList(&pWorker->submitted(), listAssignedJobs);
-  addToList(&pWorker->acknowledged(), listAssignedJobs);
-
-  return listAssignedJobs;
-}
-
 void WorkerManager::markJobSubmitted(const sdpa::worker_id_list_t& worker_id_list, const sdpa::job_id_t& job_id)
 {
   lock_type lock(mtx_);

@@ -69,8 +69,7 @@ namespace sdpa
       const Worker::ptr_t pWorker = findWorker (worker_id);
       pWorker->set_disconnected (true);
 
-      sdpa::job_id_list_t workerJobList
-        (_worker_manager.getJobListAndCleanQueues (pWorker));
+      sdpa::job_id_list_t workerJobList (pWorker->getJobListAndCleanQueues());
 
       while (!workerJobList.empty())
       {
