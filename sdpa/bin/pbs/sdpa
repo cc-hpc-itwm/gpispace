@@ -399,14 +399,6 @@ function setup_plugins ()
 Setting up plugins....
 EOF
 
-    local plugin_dir="$HOME/.sdpa/plugins"
-    if ! test -d "$plugin_dir" ; then
-        if ! mkdir -p "$plugin_dir" ; then
-            log "E: failed to create plugin directory: $plugin_dir"
-            return 1
-        fi
-    fi
-
     local prefix="$SDPA_HOME"
     if [ -z "$prefix" ] ; then
         log "E: SDPA_HOME is not defined!"
