@@ -3,7 +3,6 @@ set (prgs
 )
 
 set (scripts
-  clear-logs
   start-gpi
   start-gui
   start-orch
