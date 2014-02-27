@@ -28,10 +28,8 @@
 namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
-    typedef boost::shared_ptr<WorkerManager> ptr_t;
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
-    typedef boost::condition_variable_any condition_type;
 
     typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
     typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
