@@ -399,13 +399,6 @@ function setup_plugins ()
 Setting up plugins....
 EOF
 
-    local mod_dir="$HOME/.sdpa/modules"
-    if ! test -d "$mod_dir" ; then
-        if ! mkdir -p "$mod_dir" ; then
-            log "E: failed to create modules directory: $mod_dir"
-            return 1
-        fi
-    fi
     local plugin_dir="$HOME/.sdpa/plugins"
     if ! test -d "$plugin_dir" ; then
         if ! mkdir -p "$plugin_dir" ; then
