@@ -111,7 +111,6 @@ void SchedulerBase::schedule(const sdpa::job_id_t& jobId)
 void SchedulerBase::schedule (Job* pJob)
 {
   _worker_manager.dispatchJob(pJob->id());
-  cond_feed_workers.notify_one();
 }
 
 void SchedulerBase::enqueueJob(const sdpa::job_id_t& jobId)
@@ -186,6 +185,7 @@ void SchedulerBase::run()
 
       if( numberOfWorkers()>0 ) {
           schedule(jobId);
+          assignJobsToWorkers();
       }
       else {
           enqueueJob(jobId);
