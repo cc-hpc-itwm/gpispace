@@ -52,7 +52,6 @@ namespace sdpa { namespace daemon {
     void deleteJob(const sdpa::job_id_t& jobId);
     void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id );
 
-    size_t numberOfWorkers() { return worker_map_.size(); }
     sdpa::job_id_list_t getJobListAndCleanQueues(const  Worker::ptr_t& pWorker);
     worker_id_list_t getListWorkersNotReserved();
 
