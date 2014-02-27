@@ -65,7 +65,6 @@ namespace sdpa
 
     private:
       void feedWorkers();
-      void run();
 
 
       GenericDaemon* ptr_comm_handler_;
@@ -76,9 +75,7 @@ namespace sdpa
 
       mutable boost::recursive_mutex mtx_;
       boost::condition_variable_any cond_feed_workers;
-      boost::condition_variable_any cond_workers_registered;
 
-      boost::thread m_thread_run;
       boost::thread m_thread_feed;
 
       class Reservation : boost::noncopyable

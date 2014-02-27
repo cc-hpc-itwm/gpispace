@@ -19,20 +19,13 @@ namespace sdpa
     {
       if (!TEST_without_threads)
       {
-        m_thread_run = boost::thread (&CoallocationScheduler::run, this);
         m_thread_feed = boost::thread (&CoallocationScheduler::feedWorkers, this);
       }
     }
 
     CoallocationScheduler::~CoallocationScheduler()
     {
-      m_thread_run.interrupt();
       m_thread_feed.interrupt();
-
-      if (m_thread_run.joinable())
-      {
-        m_thread_run.join();
-      }
 
       if (m_thread_feed.joinable())
       {
@@ -49,7 +42,6 @@ namespace sdpa
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       const bool ret (_worker_manager.addWorker (workerId, capacity, cpbset));
-      cond_workers_registered.notify_all();
       cond_feed_workers.notify_one();
       return ret;
     }
@@ -93,12 +85,9 @@ namespace sdpa
     void CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      if (!pending_jobs_queue_.erase (job))
+      if (!_common_queue.erase(job))
       {
-        if (!_common_queue.erase(job))
-        {
-          _worker_manager.deleteJob (job);
-        }
+        _worker_manager.deleteJob (job);
       }
     }
 
@@ -111,7 +100,7 @@ namespace sdpa
 
     void CoallocationScheduler::enqueueJob (const sdpa::job_id_t& jobId)
     {
-      pending_jobs_queue_.push (jobId);
+      schedule (jobId);
     }
 
     Worker::ptr_t CoallocationScheduler::findWorker
@@ -135,15 +124,6 @@ namespace sdpa
         cond_feed_workers.wait (lock);
 
         assignJobsToWorkers();
-      }
-    }
-
-    void CoallocationScheduler::run()
-    {
-      for (;;)
-      {
-        sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait();
-        schedule (jobId);
       }
     }
 
