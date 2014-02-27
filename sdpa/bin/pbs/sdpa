@@ -84,10 +84,6 @@ DEFAULT_GPI_SHMSIZE="1G"
 DEFAULT_GPI_API="gpi.api.real"
 
 #
-# plugins
-#
-
-#
 # override defaults by:
 #
 #     1. /etc/sdpa/defaults
@@ -392,20 +388,6 @@ this location.
     put "$key" "$val"
 }
 
-function setup_plugins ()
-{
-    cat <<EOF
-
-Setting up plugins....
-EOF
-
-    local prefix="$SDPA_HOME"
-    if [ -z "$prefix" ] ; then
-        log "E: SDPA_HOME is not defined!"
-        return 1
-    fi
-}
-
 function parse_human_readable_size ()
 {
     local size_value="$1"; shift
@@ -620,7 +602,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="state kvs logging gui plugins gpi"
+        parts="state kvs logging gui gpi"
     else
         shift
     fi
