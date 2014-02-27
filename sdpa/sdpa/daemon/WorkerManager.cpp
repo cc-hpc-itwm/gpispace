@@ -36,7 +36,7 @@ using namespace sdpa::daemon;
 
 Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
 {
-  lock_type lock(mtx_);
+  boost::mutex::scoped_lock const _ (mtx_);
   worker_map_t::iterator it = worker_map_.find(worker_id);
   if( it != worker_map_.end() )
     return it->second;
@@ -46,13 +46,13 @@ Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
 
 bool WorkerManager::hasWorker(const Worker::worker_id_t& worker_id) const
 {
-  lock_type lock(mtx_);
+  boost::mutex::scoped_lock const _ (mtx_);
   return worker_map_.find(worker_id) != worker_map_.end();
 }
 
 const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
 {
-  lock_type lock(mtx_);
+  boost::mutex::scoped_lock const _ (mtx_);
 
   BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
                 | boost::adaptors::filtered
@@ -69,7 +69,7 @@ bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
                                 boost::optional<unsigned int> capacity,
                                 const capabilities_set_t& cpbSet )
 {
-  lock_type lock(mtx_);
+  boost::mutex::scoped_lock const _ (mtx_);
 
   if (worker_map_.count (workerId) != 0)
   {
@@ -87,7 +87,7 @@ bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
 
 void WorkerManager::deleteJob (sdpa::job_id_t const & job)
 {
-  lock_type lock(mtx_);
+  boost::mutex::scoped_lock const _ (mtx_);
   BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
                 | boost::adaptors::filtered
                   (boost::bind (&Worker::has_job, _1, job))
@@ -99,7 +99,7 @@ void WorkerManager::deleteJob (sdpa::job_id_t const & job)
 
 void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId )
 {
-  lock_type lock(mtx_);
+  boost::mutex::scoped_lock const _ (mtx_);
   worker_map_t::iterator w (worker_map_.find (workerId));
 
   if (w == worker_map_.end())
@@ -110,7 +110,7 @@ void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId )
 
 sdpa::worker_id_list_t WorkerManager::getListWorkersNotReserved()
 {
-  lock_type lock(mtx_);
+  boost::mutex::scoped_lock const _ (mtx_);
   worker_id_list_t workerList;
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
   {
@@ -124,7 +124,7 @@ sdpa::worker_id_list_t WorkerManager::getListWorkersNotReserved()
 
 void WorkerManager::getCapabilities(sdpa::capabilities_set_t& agentCpbSet)
 {
-  lock_type lock(mtx_);
+  boost::mutex::scoped_lock const _ (mtx_);
 
   BOOST_FOREACH (Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values)
   {
@@ -171,7 +171,7 @@ namespace
 boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
   (const job_requirements_t& listJobReq, const sdpa::worker_id_list_t& workerList) const
 {
-  lock_type lock(mtx_);
+  boost::mutex::scoped_lock const _ (mtx_);
 
   boost::optional<double> last_schedule_time;
   boost::optional<worker_id_t> bestMatchingWorkerId;
