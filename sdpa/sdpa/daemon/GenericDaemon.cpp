@@ -932,18 +932,10 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 {
   if( !masterInfo.is_registered() )
   {
-    capabilities_set_t cpbSet;
-    {
-      lock_type lock(mtx_cpb_);
-      BOOST_FOREACH ( const sdpa::capabilities_set_t::value_type & capability
-                    , m_capabilities
-                    )
-      {
-        cpbSet.insert (capability);
-      }
+    lock_type lock(mtx_cpb_);
+    capabilities_set_t cpbSet (m_capabilities);
 
-      scheduler()->getAllWorkersCapabilities(cpbSet);
-    }
+    scheduler()->getAllWorkersCapabilities(cpbSet);
 
     //std::cout<<cpbSet;
 
