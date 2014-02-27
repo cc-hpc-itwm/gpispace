@@ -259,15 +259,15 @@ void Agent::handleCancelJobEvent(const events::CancelJobEvent* pEvt )
   {
     boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
 
-    events::CancelJobEvent::Ptr pCancelEvt( new events::CancelJobEvent( name()
-                                                                       , worker_id.get_value_or("")
-                                                                       , pEvt->job_id() ) );
     // change the job status to "Canceling"
     pJob->CancelJob();
 
     if(worker_id)
     {
-      sendEventToOther(pCancelEvt);
+      sendEventToOther
+        ( events::CancelJobEvent::Ptr
+          (new events::CancelJobEvent (name(), *worker_id, pEvt->job_id()))
+        );
     }
     else
     {
