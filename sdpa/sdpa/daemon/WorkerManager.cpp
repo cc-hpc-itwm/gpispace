@@ -163,9 +163,10 @@ private:
   sdpa::daemon::WorkerManager* m_ptrWorkerMan;
 };
 
-void WorkerManager::getListWorkersNotReserved(sdpa::worker_id_list_t& workerList)
+sdpa::worker_id_list_t WorkerManager::getListWorkersNotReserved()
 {
   lock_type lock(mtx_);
+  worker_id_list_t workerList;
   for( worker_map_t::iterator iter = worker_map_.begin(); iter != worker_map_.end(); iter++ )
   {
     Worker::ptr_t ptrWorker = iter->second;
@@ -175,6 +176,8 @@ void WorkerManager::getListWorkersNotReserved(sdpa::worker_id_list_t& workerList
 
   CComparator comparator(this);
   workerList.sort (comparator);
+
+  return workerList;
 }
 
 bool WorkerManager::addCapabilities(const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbSet)

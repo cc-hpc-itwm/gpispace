@@ -212,8 +212,8 @@ namespace sdpa
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
 
-      sdpa::worker_id_list_t listAvailWorkers;
-      _worker_manager.getListWorkersNotReserved (listAvailWorkers);
+      sdpa::worker_id_list_t listAvailWorkers
+        (_worker_manager.getListWorkersNotReserved());
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 

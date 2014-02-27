@@ -61,7 +61,7 @@ namespace sdpa { namespace daemon {
 
     size_t numberOfWorkers() { return worker_map_.size(); }
     sdpa::job_id_list_t getJobListAndCleanQueues(const  Worker::ptr_t& pWorker);
-    void getListWorkersNotReserved(sdpa::worker_id_list_t& workerList);
+    worker_id_list_t getListWorkersNotReserved();
 
     boost::optional<sdpa::worker_id_t> getBestMatchingWorker( const job_requirements_t&, const sdpa::worker_id_list_t&) const;
 
