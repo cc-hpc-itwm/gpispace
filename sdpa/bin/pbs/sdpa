@@ -66,7 +66,6 @@ DEFAULT_CLUSTER_HEAD="" # if needed
 #
 # SDPA
 #
-DEFAULT_SCRATCH_DIR="$HOME/.sdpa/scratch"
 DEFAULT_TMP_DIR="/var/tmp"
 DEFAULT_WORKER_PER_NODE="1"
 DEFAULT_WITH_MEDIATOR="false"
@@ -343,31 +342,6 @@ EOF
         new_val=$(eval echo "$new_val")
         eval "$var=$new_val"
     fi
-}
-
-function setup_scratch ()
-{
-    local doc='
-
-                 ================================
-                 *       Scratch directory      *
-                 ================================
-
-The "scratch"  directory should be a directory  you are allowed to  write to and
-that is shared among all nodes.
-'
-
-    local scratch_dir=$(get "sdpa.scratch_dir" "${DEFAULT_SCRATCH_DIR:?}")
-    get_user_input "scratch directory to use [$scratch_dir]:" scratch_dir "$doc"
-
-    if ! test -d "$scratch_dir" ; then
-        if ! mkdir -p "$scratch_dir" ; then
-            log "E: failed to create scratch directory: $scratch_dir"
-            return 1
-        fi
-    fi
-
-    put "sdpa.scratch_dir" "$scratch_dir"
 }
 
 function setup_logging ()
@@ -757,7 +731,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="state kvs scratch logging temp gui plugins gpi topology"
+        parts="state kvs logging temp gui plugins gpi topology"
     else
         shift
     fi
@@ -820,9 +794,6 @@ function generate_environment ()
                 ;;
             sdpa.gui)
                 echo export SDPA_GUI="$val"
-                ;;
-            sdpa.scratch_dir)
-                echo export SDPA_SCRATCH_DIR="$val"
                 ;;
             sdpa.temp_dir)
                 echo export SDPA_TEMP_DIR="$val"
@@ -980,13 +951,6 @@ function cleanup ()
     test -r "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
 
     echo "cleaning up" >&2
-
-    echo "  * state" >&2
-    if [ -n "$SDPA_SCRATCH_DIR" ] ; then
-        if [ -d "$SDPA_SCRATCH_DIR"/state ] ; then
-            find "$SDPA_SCRATCH_DIR"/state -mindepth 1 -delete
-        fi
-    fi
 
     echo "  * logs" >&2
     clear-logs -f -a -x
