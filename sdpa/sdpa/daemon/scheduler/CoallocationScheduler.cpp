@@ -58,7 +58,7 @@ namespace sdpa
       {
         releaseReservation (job_id);
         pJob->Reschedule(); // put the job back into the pending state
-        schedule (job_id);
+        enqueueJob (job_id);
       }
     }
 

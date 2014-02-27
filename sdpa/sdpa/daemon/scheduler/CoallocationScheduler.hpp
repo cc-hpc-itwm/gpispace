@@ -60,11 +60,11 @@ namespace sdpa
       void releaseReservation (const sdpa::job_id_t&);
 
       // -- used by self and test
-      void schedule (const sdpa::job_id_t&);
       void assignJobsToWorkers();
 
     private:
       void feedWorkers();
+      void schedule (const sdpa::job_id_t&);
 
 
       GenericDaemon* ptr_comm_handler_;
