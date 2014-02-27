@@ -45,7 +45,6 @@ void SchedulerBase::addWorker(  const Worker::worker_id_t& workerId,
   lock_type lock(mtx_);
   _worker_manager.addWorker(workerId, capacity, cpbset);
   cond_workers_registered.notify_all();
-  cond_feed_workers.notify_one();
 }
 
 void SchedulerBase::rescheduleWorkerJob( const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id )
