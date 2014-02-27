@@ -143,17 +143,7 @@ namespace sdpa
       for (;;)
       {
         sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait();
-
-        if (_worker_manager.numberOfWorkers() > 0)
-        {
-          schedule (jobId);
-        }
-        else
-        {
-          enqueueJob (jobId);
-          boost::recursive_mutex::scoped_lock lock (mtx_);
-          cond_workers_registered.wait (lock);
-        }
+        schedule (jobId);
       }
     }
 
