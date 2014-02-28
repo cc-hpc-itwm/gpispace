@@ -12,7 +12,7 @@ force=false
 debug=false
 verbose=false
 daemonize=false
-backlog=
+backlog=1
 identity=0
 name_prefix="drts"
 master=
@@ -27,7 +27,6 @@ logdir=
 shm_size=
 numa_socket=
 DEFAULT_PLUGIN_DRTS_MAX_RECONNECT="128"
-DEFAULT_PLUGIN_DRTS_BACKLOG="1"
 DEFAULT_KERNEL_LOAD_LAZY="true"
 DEFAULT_PLUGIN_GPI_STARTMODE="nowait"
 
@@ -85,6 +84,16 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
             identity=$OPTARG
             ;;
         b)
+            if [ -z "$OPTARG" ]
+            then
+                echo >&2 "backlog must not be empty"
+                exit 2
+            fi
+            if [ $OPTARG -le 0 ]
+            then
+                echo >&2 "backlog must not be less-or-equal 0"
+                exit 2
+            fi
             backlog=$OPTARG
             ;;
         S)
@@ -158,9 +167,6 @@ then
 fi
 
 gpi_enabled=$(fhgcfg -f "${config_file}" -g gpi.enabled -v true)
-if [ -z "$backlog" ] ; then
-    backlog=${DEFAULT_PLUGIN_DRTS_BACKLOG}
-fi
 
 if [ -z "$lib_path" ]
 then
@@ -191,10 +197,7 @@ if [ x"$identity" = x"0" ] ; then
         opts=
         opts="$opts -m $master"
         opts="$opts -k $kvs_url"
-        if [ -n "$backlog" ]
-        then
-            opts="$opts -b $backlog"
-        fi
+        opts="$opts -b $backlog"
         if [ -n "$gpi_socket" ] ; then
             opts="$opts -S $gpi_socket"
         fi
@@ -298,10 +301,7 @@ kvs_port=$(echo "$kvs_url" | cut -d: -f2)
 cfg="$cfg -s plugin.drts.kvs_host=$kvs_host"
 cfg="$cfg -s plugin.drts.kvs_port=$kvs_port"
 cfg="$cfg -s plugin.drts.master=$master"
-if [ -n "$backlog" ]
-then
-    cfg="$cfg -s plugin.drts.backlog=$backlog"
-fi
+cfg="$cfg -s plugin.drts.backlog=$backlog"
 cfg="$cfg -s plugin.drts.max_reconnect_attempts=${DEFAULT_PLUGIN_DRTS_MAX_RECONNECT}"
 cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
 cfg="$cfg -s plugin.drts.gui_url=$gui"
