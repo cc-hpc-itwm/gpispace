@@ -154,7 +154,6 @@ namespace sdpa
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       if (_worker_manager.findWorker (worker_id)->addCapabilities (cpbset))
       {
-        request_scheduling();
         return true;
       }
       else
