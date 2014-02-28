@@ -531,14 +531,6 @@ void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::typ
   }
 
   // forward it up
-  events::JobFinishedEvent::Ptr pEvtJobFinished
-                (new events::JobFinishedEvent( name()
-                                     , pJob->owner()
-                                     , id
-                                     , result.to_string()
-                                     )
-                );
-
   pJob->JobFinished (result.to_string());
 
   if(!isSubscriber(pJob->owner()))
@@ -567,8 +559,8 @@ void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::typ
       events::SDPAEvent::Ptr ptrEvt
         ( new events::JobFinishedEvent ( name()
                                , pair_subscr_joblist.first
-                               , pEvtJobFinished->job_id()
-                               , pEvtJobFinished->result()
+                               , id
+                               , result.to_string()
                                )
         );
 
@@ -593,15 +585,6 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
   {
     throw std::runtime_error ("got failed message for old/unknown Job " + id);
   }
-
-  // forward it up
-  events::JobFailedEvent::Ptr pEvtJobFailed
-    (new events::JobFailedEvent ( name()
-                        , pJob->owner()
-                        , id
-                        , reason
-                        )
-    );
 
   // send the event to the master
   pJob->JobFailed (reason);
@@ -632,7 +615,7 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
         events::JobFailedEvent::Ptr ptrEvt
         ( new events::JobFailedEvent ( name()
                              , pair_subscr_joblist.first
-                             , pEvtJobFailed->job_id()
+                             , id
                              , reason
                              )
         );
