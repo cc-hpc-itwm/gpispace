@@ -491,16 +491,9 @@ try
     return;
   }
 
-  try {
     // One should parse the workflow in order to be able to create a valid job
     bool b_master_job(false);
     addJob(job_id, activity.to_string(), b_master_job, sdpa::daemon::WE, job_requirements_t());
-  }
-  catch (std::runtime_error const &ex)
-  {
-        workflowEngine()->failed (job_id, ex.what());
-    return;
-  }
 
   // check if the message comes from outside or from WFE
   // if it comes from outside and the agent has an WFE, submit it to it
