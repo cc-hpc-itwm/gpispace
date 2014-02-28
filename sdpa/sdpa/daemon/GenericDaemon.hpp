@@ -202,6 +202,7 @@ namespace sdpa {
         if (!job_map_.insert(std::make_pair (job_id, pJob)).second)
         {
           delete pJob;
+          throw std::runtime_error ("job with same id already exists");
         }
 
         if (!job_req_list.empty())
