@@ -99,8 +99,8 @@ namespace sdpa
           sdpa::events::ErrorEvent::Ptr
             error(new sdpa::events::ErrorEvent ( m_peer.resolve(addr, "*unknown*")
                                                , m_peer.name()
-                                               , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                               , boost::lexical_cast<std::string>(ec)
+                                               , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+                                               , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
                                                )
                  );
           m_incoming_events.put (error);
