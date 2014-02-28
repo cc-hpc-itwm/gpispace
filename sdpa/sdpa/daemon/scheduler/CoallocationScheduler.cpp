@@ -45,8 +45,7 @@ namespace sdpa
       )
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      const bool ret (_worker_manager.addWorker (workerId, capacity, cpbset));
-      return ret;
+      return _worker_manager.addWorker (workerId, capacity, cpbset);
     }
 
     void CoallocationScheduler::rescheduleWorkerJob
