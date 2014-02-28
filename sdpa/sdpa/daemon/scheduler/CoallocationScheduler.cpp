@@ -33,6 +33,10 @@ namespace sdpa
       }
     }
 
+    void CoallocationScheduler::request_scheduling()
+    {
+      cond_feed_workers.notify_one();
+    }
 
     bool CoallocationScheduler::addWorker
       ( const Worker::worker_id_t& workerId
@@ -42,7 +46,7 @@ namespace sdpa
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       const bool ret (_worker_manager.addWorker (workerId, capacity, cpbset));
-      cond_feed_workers.notify_one();
+      request_scheduling();
       return ret;
     }
 
@@ -90,7 +94,7 @@ namespace sdpa
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       _common_queue.push (jobId);
-      cond_feed_workers.notify_one();
+      request_scheduling();
     }
 
     Worker::ptr_t CoallocationScheduler::findWorker
@@ -137,7 +141,7 @@ namespace sdpa
       try
       {
         _worker_manager.findWorker (worker_id)->deleteJob (jobId);
-        cond_feed_workers.notify_one();
+        request_scheduling();
       }
       catch (WorkerNotFoundException const&)
       {
@@ -150,7 +154,7 @@ namespace sdpa
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       if (_worker_manager.findWorker (worker_id)->addCapabilities (cpbset))
       {
-        cond_feed_workers.notify_one();
+        request_scheduling();
         return true;
       }
       else
