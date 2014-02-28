@@ -213,7 +213,6 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 {
   const events::SubmitJobEvent& e (*evt);
 
-  if(true)
   {
     lock_type lock(mtx_master_);
     // check if the incoming event was produced by a master to which the current agent has already registered
@@ -231,11 +230,8 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   {
     // The job already exists -> generate an error message that the job already exists
 
-    if( true )
-    {
         events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
         sendEventToOther(pErrorEvt);
-    }
 
     return;
   }
@@ -249,25 +245,15 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   }
   catch (std::runtime_error const &ex)
   {
-    if( true )
-    {
       throw;
-    }
-    else
-    {
-        workflowEngine()->failed (job_id, ex.what());
-    }
     return;
   }
 
-  if( true)
-  {
     parent_proxy (this, e.from()).submit_job_ack (job_id);
-  }
 
   // check if the message comes from outside or from WFE
   // if it comes from outside and the agent has an WFE, submit it to it
-  if( true && hasWorkflowEngine() )
+  if(hasWorkflowEngine() )
   {
     submitWorkflow(job_id);
   }
