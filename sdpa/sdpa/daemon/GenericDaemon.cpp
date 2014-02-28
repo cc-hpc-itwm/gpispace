@@ -494,8 +494,6 @@ try
     // One should parse the workflow in order to be able to create a valid job
     addJob(job_id, activity.to_string(), false, sdpa::daemon::WE, job_requirements_t());
 
-  // check if the message comes from outside or from WFE
-  // if it comes from outside and the agent has an WFE, submit it to it
     scheduler()->enqueueJob(job_id);
   }
 }
