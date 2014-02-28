@@ -199,7 +199,10 @@ namespace sdpa {
 
         Job* pJob = new Job( job_id, desc, is_master_job, owner );
 
-        job_map_.insert(std::make_pair (job_id, pJob));
+        if (!job_map_.insert(std::make_pair (job_id, pJob)).second)
+        {
+          delete pJob;
+        }
 
         if (!job_req_list.empty())
           job_requirements_.insert(std::make_pair(job_id, job_req_list));
