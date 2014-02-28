@@ -75,7 +75,6 @@ namespace sdpa
       {
         rescheduleWorkerJob (worker_id, jobId);
       }
-      request_scheduling();
 
       _worker_manager.deleteWorker (worker_id);
     }

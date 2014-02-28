@@ -371,6 +371,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
           // if there still are registered workers, otherwise declare the remaining
           // jobs failed
           scheduler()->deleteWorker(worker_id); // do a re-scheduling here
+          scheduler()->request_scheduling();
         }
       }
       catch (WorkerNotFoundException const& /*ignored*/)
