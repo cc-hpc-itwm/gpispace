@@ -487,14 +487,12 @@ try
 
   {
   // First, check if the job 'job_id' wasn't already submitted!
-  if(e.job_id() && findJob(*e.job_id()))
+  if(findJob(job_id))
   {
     // The job already exists -> generate an error message that the job already exists
 
     return;
   }
-
-  const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
   try {
     // One should parse the workflow in order to be able to create a valid job
