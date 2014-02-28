@@ -1,2 +1,1 @@
-add_subdirectory(capabilities_no_mandatory)
 add_subdirectory(inotify)
