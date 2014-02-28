@@ -23,7 +23,6 @@ namespace sdpa
     public:
       CoallocationScheduler
         (GenericDaemon* pHandler, bool TEST_without_threads = false);
-      ~CoallocationScheduler();
 
       // -- used by daemon
       void delete_job (const sdpa::job_id_t&);
@@ -59,13 +58,9 @@ namespace sdpa
       // used by daemon and self and test
       void deleteWorkerJob (const Worker::worker_id_t&, const sdpa::job_id_t&);
       void releaseReservation (const sdpa::job_id_t&);
-
-      // -- used by self and test
       void assignJobsToWorkers();
 
     private:
-      void feedWorkers();
-
       GenericDaemon* ptr_comm_handler_;
 
       SynchronizedQueue<std::list<sdpa::job_id_t> > pending_jobs_queue_;
@@ -73,9 +68,6 @@ namespace sdpa
       SynchronizedQueue<std::list<sdpa::job_id_t> > _common_queue;
 
       mutable boost::recursive_mutex mtx_;
-      boost::condition_variable_any cond_feed_workers;
-
-      boost::thread m_thread_feed;
 
       class Reservation : boost::noncopyable
       {

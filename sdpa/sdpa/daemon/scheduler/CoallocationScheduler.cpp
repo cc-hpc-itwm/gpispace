@@ -19,23 +19,7 @@ namespace sdpa
     {
       if (!TEST_without_threads)
       {
-        m_thread_feed = boost::thread (&CoallocationScheduler::feedWorkers, this);
       }
-    }
-
-    CoallocationScheduler::~CoallocationScheduler()
-    {
-      m_thread_feed.interrupt();
-
-      if (m_thread_feed.joinable())
-      {
-        m_thread_feed.join();
-      }
-    }
-
-    void CoallocationScheduler::request_scheduling()
-    {
-      cond_feed_workers.notify_one();
     }
 
     bool CoallocationScheduler::addWorker
@@ -105,17 +89,6 @@ namespace sdpa
         (const sdpa::job_id_t& job_id) const
     {
       return _worker_manager.findSubmOrAckWorker (job_id);
-    }
-
-    void CoallocationScheduler::feedWorkers()
-    {
-      for (;;)
-      {
-        boost::recursive_mutex::scoped_lock lock (mtx_);
-        cond_feed_workers.wait (lock);
-
-        assignJobsToWorkers();
-      }
     }
 
     void CoallocationScheduler::acknowledgeJob

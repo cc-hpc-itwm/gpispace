@@ -82,6 +82,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _name (name)
   , m_arrMasterInfo(arrMasterInfo)
   , ptr_scheduler_ (new CoallocationScheduler (this))
+  , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
   , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer
@@ -163,6 +164,11 @@ GenericDaemon::~GenericDaemon()
     _event_handler_thread.join();
   }
 
+  _scheduling_thread.interrupt();
+  if (_scheduling_thread.joinable())
+  {
+    _scheduling_thread.join();
+  }
   ptr_scheduler_.reset();
 
   delete ptr_workflow_engine_;
@@ -251,7 +257,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   }
   else {
     scheduler()->enqueueJob(job_id);
-    scheduler()->request_scheduling();
+    request_scheduling();
   }
 }
 
@@ -282,7 +288,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
 
   child_proxy (this, worker_id).worker_registration_ack();
 
-  scheduler()->request_scheduling();
+  request_scheduling();
 
   if (was_new_worker && !workerCpbSet.empty() && !isTop())
   {
@@ -315,7 +321,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       sdpa::worker_id_t worker_id(error.from());
 
       scheduler()->rescheduleWorkerJob(worker_id, jobId);
-      scheduler()->request_scheduling();
+      request_scheduling();
       break;
     }
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
@@ -371,7 +377,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
           // if there still are registered workers, otherwise declare the remaining
           // jobs failed
           scheduler()->deleteWorker(worker_id); // do a re-scheduling here
-          scheduler()->request_scheduling();
+          request_scheduling();
         }
       }
       catch (WorkerNotFoundException const& /*ignored*/)
@@ -462,7 +468,7 @@ try
          );
 
   scheduler()->enqueueJob (job_id);
-  scheduler()->request_scheduling();
+  request_scheduling();
 }
 catch (std::exception const& ex)
 {
@@ -759,7 +765,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
 
     if(bModified)
     {
-      scheduler()->request_scheduling();
+      request_scheduling();
       if( !isTop() )
       {
         const sdpa::capabilities_set_t newWorkerCpbSet
@@ -1172,6 +1178,23 @@ namespace sdpa
 {
   namespace daemon
   {
+    void GenericDaemon::scheduling_thread()
+    {
+      for (;;)
+      {
+        boost::mutex::scoped_lock lock (_scheduling_thread_mutex);
+        _scheduling_thread_notifier.wait (lock);
+
+        scheduler()->assignJobsToWorkers();
+      }
+    }
+
+    void GenericDaemon::request_scheduling()
+    {
+      boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
+      _scheduling_thread_notifier.notify_one();
+    }
+
     GenericDaemon::child_proxy::child_proxy
         (GenericDaemon* that, worker_id_t name)
       : _that (that)

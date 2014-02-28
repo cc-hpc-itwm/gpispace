@@ -92,7 +92,7 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 
       try {
           scheduler()->deleteWorkerJob ( worker_id, act_id );
-          scheduler()->request_scheduling();
+          request_scheduling();
       }
       catch(WorkerNotFoundException const &)
       {
@@ -143,7 +143,7 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
 
         try {
             scheduler()->deleteWorkerJob(worker_id, pJob->id());
-            scheduler()->request_scheduling();
+            request_scheduling();
         }
         catch(const WorkerNotFoundException&)
         {

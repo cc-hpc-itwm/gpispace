@@ -278,6 +278,13 @@ namespace sdpa {
 
     protected:
       boost::shared_ptr<CoallocationScheduler> ptr_scheduler_;
+
+      boost::mutex _scheduling_thread_mutex;
+      boost::condition_variable _scheduling_thread_notifier;
+      boost::thread _scheduling_thread;
+      void scheduling_thread();
+      void request_scheduling();
+
       boost::optional<boost::mt19937> _random_extraction_engine;
       we::layer* ptr_workflow_engine_;
 

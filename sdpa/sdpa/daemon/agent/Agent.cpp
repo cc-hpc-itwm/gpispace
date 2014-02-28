@@ -87,7 +87,7 @@ namespace sdpa
           scheduler()->releaseReservation (pJob->id());
         }
         scheduler()->deleteWorkerJob (worker_id, pJob->id());
-        scheduler()->request_scheduling();
+        request_scheduling();
 
         //delete it also from job_map_
         if(bAllPartResCollected)
@@ -170,7 +170,7 @@ namespace sdpa
           scheduler()->releaseReservation (pJob->id());
         }
         scheduler()->deleteWorkerJob (worker_id, pJob->id());
-        scheduler()->request_scheduling();
+        request_scheduling();
 
         //delete it also from job_map_
         if (bAllPartResCollected)
@@ -292,7 +292,7 @@ namespace sdpa
           }
           LLOG (TRACE, _logger, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
           scheduler()->deleteWorkerJob (worker_id, pEvt->job_id());
-          scheduler()->request_scheduling();
+          request_scheduling();
         }
         catch (const WorkerNotFoundException&)
         {
