@@ -42,14 +42,8 @@ namespace sdpa
       if (!hasWorkflowEngine())
       {
         pJob->JobFinished (pEvt->result());
-        // forward it up
-        events::JobFinishedEvent::Ptr pEvtJobFinished
-          ( new events::JobFinishedEvent
-            (name(), pJob->owner(), pEvt->job_id(), pEvt->result())
-          );
-
-        // send the event to the master
-        sendEventToOther(pEvtJobFinished);
+        parent_proxy (this, pJob->owner()).job_finished
+          (pEvt->job_id(), pEvt->result());
       }
       else
       {
@@ -131,17 +125,8 @@ namespace sdpa
       if (!hasWorkflowEngine())
       {
         pJob->JobFailed (pEvt->error_message());
-        // forward it up
-        events::JobFailedEvent::Ptr pEvtJobFailed
-          ( new events::JobFailedEvent ( name()
-                                       , pJob->owner()
-                                       , pEvt->job_id()
-                                       , pEvt->error_message()
-                                       )
-          );
-
-        // send the event to the master
-        sendEventToOther(pEvtJobFailed);
+        parent_proxy (this, pJob->owner()).job_failed
+          (pEvt->job_id(), pEvt->error_message());
       }
       else
       {
@@ -277,10 +262,8 @@ namespace sdpa
         // send an acknowledgment to the component that requested the cancellation
         if (!isTop())
         {
-          events::CancelJobAckEvent::Ptr pCancelAckEvt
-            (new events::CancelJobAckEvent (name(), pJob->owner(), pEvt->job_id()));
           // only if the job was already submitted
-          sendEventToOther (pCancelAckEvt);
+          parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
 
           deleteJob (pEvt->job_id());
         }
@@ -332,16 +315,10 @@ namespace sdpa
       {
         if (!pJob)
         {
-          sendEventToOther
-            ( events::DiscoverJobStatesReplyEvent::Ptr
-              ( new events::DiscoverJobStatesReplyEvent
-                ( name()
-                , pEvt->from()
-                , pEvt->discover_id()
-                , sdpa::discovery_info_t
-                  (pEvt->job_id(), boost::none, sdpa::discovery_info_set_t())
-                )
-              )
+          parent_proxy (this, pEvt->from()).discover_job_states_reply
+            ( pEvt->discover_id()
+            , sdpa::discovery_info_t
+              (pEvt->job_id(), boost::none, sdpa::discovery_info_set_t())
             );
 
           return;

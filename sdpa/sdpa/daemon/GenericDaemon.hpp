@@ -326,6 +326,37 @@ namespace sdpa {
         GenericDaemon* _that;
         worker_id_t _name;
       };
+
+      struct parent_proxy
+      {
+        parent_proxy (GenericDaemon*, worker_id_t);
+
+        void worker_registration
+          (boost::optional<unsigned int> capacity, capabilities_set_t) const;
+
+        void job_failed (job_id_t, std::string error_message) const;
+        void job_finished (job_id_t, job_result_t) const;
+
+        void cancel_job_ack (job_id_t) const;
+        //! \todo Client only. Move to client_proxy?
+        void delete_job_ack (job_id_t) const;
+        void submit_job_ack (job_id_t) const;
+
+        void capabilities_gained (capabilities_set_t) const;
+        void capabilities_lost (capabilities_set_t) const;
+
+        void discover_job_states_reply
+          (job_id_t discover_id, discovery_info_t) const;
+        //! \todo Client only. Move to client_proxy?
+        void query_job_status_reply
+          (job_id_t, status::code, std::string error_message) const;
+        //! \todo Client only. Move to client_proxy?
+        void retrieve_job_results_reply (job_id_t, job_result_t) const;
+
+      private:
+        GenericDaemon* _that;
+        worker_id_t _name;
+      };
     };
   }
 }

@@ -180,10 +180,10 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
       }
 
         // send immediately an acknowledgment to the component that requested the cancellation
-      events::CancelJobAckEvent::Ptr pCancelAckEvt(new  events::CancelJobAckEvent(name(), pEvt->from (), pEvt->job_id()));
-
       if(!isSubscriber(pEvt->from ()))
-        sendEventToOther(pCancelAckEvt);
+      {
+        parent_proxy (this, pEvt->from()).cancel_job_ack (pEvt->job_id());
+      }
 
       pJob->CancelJob();
 
@@ -238,9 +238,7 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
       }
 
           deleteJob(e.job_id());
-          sendEventToOther( events::DeleteJobAckEvent::Ptr( new events::DeleteJobAckEvent(e.to(),
-                                                                                  e.from(),
-                                                                                  e.job_id())) );
+    parent_proxy (this, e.from()).delete_job_ack (e.job_id());
   }
   else
   {
@@ -254,11 +252,13 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
 
   if(!pJob)
   {
-      sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
-                                                                                                         , pEvt->from()
-                                                                                                         , pEvt->discover_id()
-                                                                                                         , sdpa::discovery_info_t (pEvt->job_id(), boost::none, sdpa::discovery_info_set_t()))));
-      return;
+    parent_proxy (this, pEvt->from()).discover_job_states_reply
+      ( pEvt->discover_id()
+      , sdpa::discovery_info_t
+        (pEvt->job_id(), boost::none, sdpa::discovery_info_set_t())
+      );
+
+    return;
   }
 
   boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
@@ -271,12 +271,11 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   }
   else
   {
-      events::DiscoverJobStatesReplyEvent::Ptr pDiscReplyEvt(new events::DiscoverJobStatesReplyEvent( name()
-                                                                                                   , pEvt->from()
-                                                                                                   , pEvt->discover_id()
-                                                                                                   , sdpa::discovery_info_t (pEvt->job_id(),pJob->getStatus(), sdpa::discovery_info_set_t()) ));
-
-      sendEventToOther(pDiscReplyEvt);
+    parent_proxy (this, pEvt->from()).discover_job_states_reply
+      ( pEvt->discover_id()
+      , sdpa::discovery_info_t
+        (pEvt->job_id(), pJob->getStatus(), sdpa::discovery_info_set_t())
+      );
   }
 }
 
