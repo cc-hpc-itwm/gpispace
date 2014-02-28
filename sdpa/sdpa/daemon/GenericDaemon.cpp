@@ -473,9 +473,7 @@ try
 
   if (findJob (job_id))
   {
-    // The job already exists -> generate an error message that the
-    // job already exists
-    return;
+    throw std::runtime_error ("job with same id already exists");
   }
 
   addJob ( job_id
