@@ -61,7 +61,6 @@ namespace sdpa
         releaseReservation (job_id);
         pJob->Reschedule(); // put the job back into the pending state
         enqueueJob (job_id);
-        request_scheduling();
       }
     }
 
@@ -76,6 +75,7 @@ namespace sdpa
       {
         rescheduleWorkerJob (worker_id, jobId);
       }
+      request_scheduling();
 
       _worker_manager.deleteWorker (worker_id);
     }

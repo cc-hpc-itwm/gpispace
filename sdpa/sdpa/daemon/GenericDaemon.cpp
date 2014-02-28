@@ -315,6 +315,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       sdpa::worker_id_t worker_id(error.from());
 
       scheduler()->rescheduleWorkerJob(worker_id, jobId);
+      scheduler()->request_scheduling();
       break;
     }
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
