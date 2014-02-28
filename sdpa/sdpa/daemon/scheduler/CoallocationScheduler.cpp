@@ -139,7 +139,6 @@ namespace sdpa
       try
       {
         _worker_manager.findWorker (worker_id)->deleteJob (jobId);
-        request_scheduling();
       }
       catch (WorkerNotFoundException const&)
       {
