@@ -471,17 +471,6 @@ try
     throw std::runtime_error ("invalid number of workers required: 0UL");
   }
 
-  {
-    boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
-
-    job_requirements_.insert
-      ( std::make_pair ( job_id
-                       , job_requirements_t
-                         (activity.transition().requirements(), schedule_data)
-                       )
-      );
-  }
-
   if (findJob (job_id))
   {
     // The job already exists -> generate an error message that the
@@ -495,6 +484,17 @@ try
          , sdpa::daemon::WE
          , job_requirements_t()
          );
+
+  {
+    boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+
+    job_requirements_.insert
+      ( std::make_pair ( job_id
+                       , job_requirements_t
+                         (activity.transition().requirements(), schedule_data)
+                       )
+      );
+  }
 
   scheduler()->enqueueJob (job_id);
 }
