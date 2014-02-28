@@ -251,6 +251,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   }
   else {
     scheduler()->enqueueJob(job_id);
+    scheduler()->request_scheduling();
   }
 }
 
@@ -457,6 +458,7 @@ try
          );
 
   scheduler()->enqueueJob (job_id);
+  scheduler()->request_scheduling();
 }
 catch (std::exception const& ex)
 {

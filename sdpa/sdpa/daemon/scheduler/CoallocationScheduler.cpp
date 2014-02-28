@@ -63,6 +63,7 @@ namespace sdpa
         releaseReservation (job_id);
         pJob->Reschedule(); // put the job back into the pending state
         enqueueJob (job_id);
+        request_scheduling();
       }
     }
 
@@ -94,7 +95,6 @@ namespace sdpa
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       _common_queue.push (jobId);
-      request_scheduling();
     }
 
     Worker::ptr_t CoallocationScheduler::findWorker
