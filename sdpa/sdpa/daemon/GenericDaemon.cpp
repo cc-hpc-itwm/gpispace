@@ -482,20 +482,24 @@ try
       );
   }
 
-  {
   // First, check if the job 'job_id' wasn't already submitted!
-  if(findJob(job_id))
+  if (findJob (job_id))
   {
-    // The job already exists -> generate an error message that the job already exists
-
+    // The job already exists -> generate an error message that the
+    // job already exists
     return;
   }
 
-    // One should parse the workflow in order to be able to create a valid job
-    addJob(job_id, activity.to_string(), false, sdpa::daemon::WE, job_requirements_t());
+  // One should parse the workflow in order to be able to create a
+  // valid job
+  addJob ( job_id
+         , activity.to_string()
+         , false
+         , sdpa::daemon::WE
+         , job_requirements_t()
+         );
 
-    scheduler()->enqueueJob(job_id);
-  }
+  scheduler()->enqueueJob (job_id);
 }
 catch (std::exception const& ex)
 {
