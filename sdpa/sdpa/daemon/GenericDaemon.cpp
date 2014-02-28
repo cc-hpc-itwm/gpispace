@@ -482,7 +482,6 @@ try
       );
   }
 
-  // First, check if the job 'job_id' wasn't already submitted!
   if (findJob (job_id))
   {
     // The job already exists -> generate an error message that the
