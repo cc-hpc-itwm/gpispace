@@ -330,21 +330,6 @@ if $delete_logfiles ; then
     find "${state_dir}/log" -type f -delete
 fi
 
-if $gpi_enabled ; then
-    # compute memory sizes
-    if [ ${gpi_mem} -eq 0 ] ; then
-        gpi_mem=$(( avl_mem * 50 / 100 ))
-    fi
-
-    socket_path=$(fhgcfg -f "${config_file}" -g "gpi.socket_path" -v "/tmp")
-
-    dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "true"
-
-    info "using GPI mem: ${gpi_mem} bytes per node"
-else
-    dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "false"
-fi
-
 if [ -z "$kvs_port" ]
 then
     kvs_port=$(fhgcfg -f "${config_file}" -g "plugin.drts.kvs_port")
@@ -367,6 +352,17 @@ log "starting base sdpa components on $master..."
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
 if $gpi_enabled ; then
+    # compute memory sizes
+    if [ ${gpi_mem} -eq 0 ] ; then
+        gpi_mem=$(( avl_mem * 50 / 100 ))
+    fi
+
+    socket_path=$(fhgcfg -f "${config_file}" -g "gpi.socket_path" -v "/tmp")
+
+    dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "true"
+
+    info "using GPI mem: ${gpi_mem} bytes per node"
+
     "${script_start_gpi}" -s "$state_dir" \
                           -F "${config_file}" \
                           -f \
@@ -377,6 +373,8 @@ if $gpi_enabled ; then
                           -l "${master}" \
                           -S "${socket_path}" \
                           -L "${log_port}"
+else
+    dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "false"
 fi
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start orch
 
