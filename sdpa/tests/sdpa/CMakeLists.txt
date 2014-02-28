@@ -65,7 +65,6 @@ pnet_compile (capabilities_no_mandatory-test-wf
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
-           -I${CMAKE_SOURCE_DIR}/application/example
            -O3
   BUILD
   COMPONENT tests
