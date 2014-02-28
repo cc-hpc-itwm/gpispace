@@ -490,8 +490,6 @@ try
     return;
   }
 
-  // One should parse the workflow in order to be able to create a
-  // valid job
   addJob ( job_id
          , activity.to_string()
          , false
