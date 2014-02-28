@@ -482,9 +482,6 @@ try
       );
   }
 
-  const events::SubmitJobEvent e
-    (sdpa::daemon::WE, name(), job_id, activity.to_string());
-
   {
   // First, check if the job 'job_id' wasn't already submitted!
   if(findJob(job_id))
@@ -497,7 +494,7 @@ try
   try {
     // One should parse the workflow in order to be able to create a valid job
     bool b_master_job(false);
-    addJob(job_id, e.description(), b_master_job, e.from(), job_requirements_t());
+    addJob(job_id, activity.to_string(), b_master_job, sdpa::daemon::WE, job_requirements_t());
   }
   catch (std::runtime_error const &ex)
   {
