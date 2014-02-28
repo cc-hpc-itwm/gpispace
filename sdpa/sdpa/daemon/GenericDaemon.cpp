@@ -482,19 +482,8 @@ try
          , activity.to_string()
          , false
          , sdpa::daemon::WE
-         , job_requirements_t()
+         , job_requirements_t (activity.transition().requirements(), schedule_data)
          );
-
-  {
-    boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
-
-    job_requirements_.insert
-      ( std::make_pair ( job_id
-                       , job_requirements_t
-                         (activity.transition().requirements(), schedule_data)
-                       )
-      );
-  }
 
   scheduler()->enqueueJob (job_id);
 }
