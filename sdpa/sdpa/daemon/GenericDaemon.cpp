@@ -482,11 +482,72 @@ try
       );
   }
 
-  sendEventToSelf ( events::SubmitJobEvent::Ptr
-                    ( new events::SubmitJobEvent
-                      (sdpa::daemon::WE, name(), job_id, activity.to_string())
-                    )
-                  );
+  const events::SubmitJobEvent e
+    (sdpa::daemon::WE, name(), job_id, activity.to_string());
+
+  {
+  if(e.is_external())
+  {
+    lock_type lock(mtx_master_);
+    // check if the incoming event was produced by a master to which the current agent has already registered
+    master_info_list_t::iterator itMaster = find_if(m_arrMasterInfo.begin(), m_arrMasterInfo.end(), boost::bind(hasName, _1, e.from()));
+
+    if( itMaster != m_arrMasterInfo.end() && !itMaster->is_registered() )
+    {
+      throw std::runtime_error
+        ("job submission from master not yet registered or unknown");
+    }
+  }
+
+  // First, check if the job 'job_id' wasn't already submitted!
+  if(e.job_id() && findJob(*e.job_id()))
+  {
+    // The job already exists -> generate an error message that the job already exists
+
+    if( e.is_external() )
+    {
+        events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
+        sendEventToOther(pErrorEvt);
+    }
+
+    return;
+  }
+
+  const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
+
+  try {
+    // One should parse the workflow in order to be able to create a valid job
+    bool b_master_job(e.is_external() && hasWorkflowEngine());
+    addJob(job_id, e.description(), b_master_job, e.from(), job_requirements_t());
+  }
+  catch (std::runtime_error const &ex)
+  {
+    if( e.is_external() )
+    {
+      throw;
+    }
+    else
+    {
+        workflowEngine()->failed (job_id, ex.what());
+    }
+    return;
+  }
+
+  if( e.is_external())
+  {
+    parent_proxy (this, e.from()).submit_job_ack (job_id);
+  }
+
+  // check if the message comes from outside or from WFE
+  // if it comes from outside and the agent has an WFE, submit it to it
+  if( e.is_external() && hasWorkflowEngine() )
+  {
+    submitWorkflow(job_id);
+  }
+  else {
+    scheduler()->enqueueJob(job_id);
+  }
+  }
 }
 catch (std::exception const& ex)
 {
