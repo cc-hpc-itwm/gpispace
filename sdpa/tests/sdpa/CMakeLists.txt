@@ -121,7 +121,7 @@ pnet_compile (transform_file-test-wf
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc
-           -I${CMAKE_SOURCE_DIR}/application/transform_file
+           -I${TEST_WORKFLOWS_SOURCE_DIR}/transform_file
            -O3
   BUILD
   COMPONENT tests
