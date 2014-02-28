@@ -192,13 +192,8 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
 
       BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
       {
-        events::SubmitJobEvent::Ptr pSubmitEvt(new events::SubmitJobEvent(name(),
-                                                          worker_id,
-                                                          ptrJob->id(),
-                                                          ptrJob->description(),
-                                                          worker_list));
-
-        sendEventToOther(pSubmitEvt);
+        child_proxy (this, worker_id).submit_job
+          (ptrJob->id(), ptrJob->description(), worker_list);
       }
   }
 }
@@ -307,10 +302,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
   const bool was_new_worker
     (scheduler()->addWorker (worker_id, event->capacity(), workerCpbSet));
 
-  sendEventToOther
-    ( events::WorkerRegistrationAckEvent::Ptr
-      (new events::WorkerRegistrationAckEvent (name(), worker_id))
-    );
+  child_proxy (this, worker_id).worker_registration_ack();
 
   if (was_new_worker && !workerCpbSet.empty() && !isTop())
   {
@@ -1261,3 +1253,71 @@ void GenericDaemon::handleQueryJobStatusEvent(const events::QueryJobStatusEvent*
 }
 
 }}
+
+namespace sdpa
+{
+  namespace daemon
+  {
+    GenericDaemon::child_proxy::child_proxy
+        (GenericDaemon* that, worker_id_t name)
+      : _that (that)
+      , _name (name)
+    {}
+
+    void GenericDaemon::child_proxy::worker_registration_ack() const
+    {
+      _that->sendEventToOther
+        ( events::WorkerRegistrationAckEvent::Ptr
+          (new events::WorkerRegistrationAckEvent (_that->name(), _name))
+        );
+    }
+
+    void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
+                                                , job_desc_t description
+                                                , sdpa::worker_id_list_t workers
+                                                ) const
+    {
+      _that->sendEventToOther
+        ( events::SubmitJobEvent::Ptr
+          ( new events::SubmitJobEvent
+            (_that->name(), _name, id, description, workers)
+          )
+        );
+    }
+
+    void GenericDaemon::child_proxy::cancel_job (job_id_t id) const
+    {
+      _that->sendEventToOther
+        ( events::CancelJobEvent::Ptr
+          (new events::CancelJobEvent (_that->name(), _name, id))
+        );
+    }
+
+    void GenericDaemon::child_proxy::job_failed_ack (job_id_t id) const
+    {
+      _that->sendEventToOther
+        ( events::JobFailedAckEvent::Ptr
+          (new events::JobFailedAckEvent (_that->name(), _name, id))
+        );
+    }
+
+    void GenericDaemon::child_proxy::job_finished_ack (job_id_t id) const
+    {
+      _that->sendEventToOther
+        ( events::JobFinishedAckEvent::Ptr
+          (new events::JobFinishedAckEvent (_that->name(), _name, id))
+        );
+    }
+
+    void GenericDaemon::child_proxy::discover_job_states
+      (job_id_t job_id, job_id_t discover_id) const
+    {
+      _that->sendEventToOther
+        ( events::DiscoverJobStatesEvent::Ptr
+          ( new events::DiscoverJobStatesEvent
+            (_that->name(), _name, job_id, discover_id)
+          )
+        );
+    }
+  }
+}

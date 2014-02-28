@@ -30,10 +30,7 @@ namespace sdpa
       // if it comes from WFE -> concerns the master job
 
       // send a JobFinishedAckEvent back to the worker/slave
-      events::JobFinishedAckEvent::Ptr pEvtJobFinishedAckEvt
-        (new events::JobFinishedAckEvent( name(), pEvt->from(), pEvt->job_id()));
-      // send the event to the slave
-      sendEventToOther (pEvtJobFinishedAckEvt);
+      child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
 
       // put the job into the state Finished
       Job* pJob (findJob (pEvt->job_id()));
@@ -122,10 +119,7 @@ namespace sdpa
       }
 
       // send a JobFailedAckEvent back to the worker/slave
-      events::JobFailedAckEvent::Ptr pEvtJobFailedAckEvt
-        (new events::JobFailedAckEvent (name(), pEvt->from(), pEvt->job_id()));
-      // send the event to the slave
-      sendEventToOther (pEvtJobFailedAckEvt);
+      child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
 
       //put the job into the state Failed
       Job* pJob (findJob (pEvt->job_id()));
@@ -243,10 +237,7 @@ namespace sdpa
 
         if (worker_id)
         {
-          sendEventToOther
-            ( events::CancelJobEvent::Ptr
-              (new events::CancelJobEvent (name(), *worker_id, pEvt->job_id()))
-            );
+          child_proxy (this, *worker_id).cancel_job (pEvt->job_id());
         }
         else
         {

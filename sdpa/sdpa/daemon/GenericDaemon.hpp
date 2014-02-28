@@ -305,6 +305,27 @@ namespace sdpa {
 
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
+
+    protected:
+      struct child_proxy
+      {
+        child_proxy (GenericDaemon*, worker_id_t);
+
+        void worker_registration_ack() const;
+
+        void submit_job
+          (boost::optional<job_id_t>, job_desc_t, sdpa::worker_id_list_t) const;
+        void cancel_job (job_id_t) const;
+
+        void job_failed_ack (job_id_t) const;
+        void job_finished_ack (job_id_t) const;
+
+        void discover_job_states (job_id_t, job_id_t discover_id) const;
+
+      private:
+        GenericDaemon* _that;
+        worker_id_t _name;
+      };
     };
   }
 }
