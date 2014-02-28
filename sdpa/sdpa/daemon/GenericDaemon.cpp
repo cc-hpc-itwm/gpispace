@@ -239,8 +239,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
     // One should parse the workflow in order to be able to create a valid job
-    bool b_master_job(true && hasWorkflowEngine());
-    addJob(job_id, e.description(), b_master_job, e.from(), job_requirements_t());
+    addJob(job_id, e.description(), hasWorkflowEngine(), e.from(), job_requirements_t());
 
     parent_proxy (this, e.from()).submit_job_ack (job_id);
 
