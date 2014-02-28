@@ -471,11 +471,6 @@ try
     throw std::runtime_error ("invalid number of workers required: 0UL");
   }
 
-  if (findJob (job_id))
-  {
-    throw std::runtime_error ("job with same id already exists");
-  }
-
   addJob ( job_id
          , activity.to_string()
          , false
