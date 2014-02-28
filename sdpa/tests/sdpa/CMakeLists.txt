@@ -148,7 +148,6 @@ pnet_compile (coallocation_test-wf
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
            -I${CMAKE_SOURCE_DIR}/fvm-pc
-           -I${CMAKE_SOURCE_DIR}/application/example/coallocation_test
            -O3
   BUILD
   COMPONENT tests
