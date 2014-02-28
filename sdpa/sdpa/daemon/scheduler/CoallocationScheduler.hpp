@@ -21,8 +21,7 @@ namespace sdpa
     class CoallocationScheduler
     {
     public:
-      CoallocationScheduler
-        (GenericDaemon* pHandler, bool TEST_without_threads = false);
+      CoallocationScheduler (GenericDaemon* pHandler);
 
       // -- used by daemon
       void delete_job (const sdpa::job_id_t&);

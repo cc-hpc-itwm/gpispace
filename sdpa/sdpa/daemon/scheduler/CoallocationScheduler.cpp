@@ -8,19 +8,14 @@ namespace sdpa
 {
   namespace daemon
   {
-    CoallocationScheduler::CoallocationScheduler
-        (GenericDaemon* pCommHandler, bool TEST_without_threads)
+    CoallocationScheduler::CoallocationScheduler (GenericDaemon* pCommHandler)
       : ptr_comm_handler_ ( pCommHandler
                           ? pCommHandler
                           : throw std::runtime_error
                             ("CoallocationScheduler ctor with NULL ptr_comm_handler")
                           )
       , _worker_manager()
-    {
-      if (!TEST_without_threads)
-      {
-      }
-    }
+    {}
 
     bool CoallocationScheduler::addWorker
       ( const Worker::worker_id_t& workerId
