@@ -486,7 +486,7 @@ try
     (sdpa::daemon::WE, name(), job_id, activity.to_string());
 
   {
-  if(e.is_external())
+  if(false)
   {
     lock_type lock(mtx_master_);
     // check if the incoming event was produced by a master to which the current agent has already registered
@@ -504,7 +504,7 @@ try
   {
     // The job already exists -> generate an error message that the job already exists
 
-    if( e.is_external() )
+    if( false )
     {
         events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
         sendEventToOther(pErrorEvt);
@@ -517,12 +517,12 @@ try
 
   try {
     // One should parse the workflow in order to be able to create a valid job
-    bool b_master_job(e.is_external() && hasWorkflowEngine());
+    bool b_master_job(false && true);
     addJob(job_id, e.description(), b_master_job, e.from(), job_requirements_t());
   }
   catch (std::runtime_error const &ex)
   {
-    if( e.is_external() )
+    if( false )
     {
       throw;
     }
@@ -533,14 +533,14 @@ try
     return;
   }
 
-  if( e.is_external())
+  if( false)
   {
     parent_proxy (this, e.from()).submit_job_ack (job_id);
   }
 
   // check if the message comes from outside or from WFE
   // if it comes from outside and the agent has an WFE, submit it to it
-  if( e.is_external() && hasWorkflowEngine() )
+  if( false && true )
   {
     submitWorkflow(job_id);
   }
