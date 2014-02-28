@@ -492,8 +492,7 @@ try
   }
 
     // One should parse the workflow in order to be able to create a valid job
-    bool b_master_job(false);
-    addJob(job_id, activity.to_string(), b_master_job, sdpa::daemon::WE, job_requirements_t());
+    addJob(job_id, activity.to_string(), false, sdpa::daemon::WE, job_requirements_t());
 
   // check if the message comes from outside or from WFE
   // if it comes from outside and the agent has an WFE, submit it to it
