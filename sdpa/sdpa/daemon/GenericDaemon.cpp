@@ -279,6 +279,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
 
   const bool was_new_worker
     (scheduler()->addWorker (worker_id, event->capacity(), workerCpbSet));
+  scheduler()->request_scheduling();
 
   child_proxy (this, worker_id).worker_registration_ack();
 
