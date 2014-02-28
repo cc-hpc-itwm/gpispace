@@ -338,9 +338,6 @@ if $gpi_enabled ; then
 
     socket_path=$(fhgcfg -f "${config_file}" -g "gpi.socket_path" -v "/tmp")
 
-    # set memory sizes - choose reasonable defaults (depending on local machines)
-    dry_run fhgcfg -f "${config_file}" -a "gpi.memory_size" -v "$gpi_mem"
-    dry_run fhgcfg -f "${config_file}" -a "gpi.socket_path" -v "$socket_path"
     dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "true"
 
     info "using GPI mem: ${gpi_mem} bytes per node"
