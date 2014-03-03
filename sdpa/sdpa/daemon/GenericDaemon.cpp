@@ -535,36 +535,9 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
       Job* pJob (findJob(job_id));
       if (!pJob)
       {
-        if (false)
-        {
-          throw std::runtime_error ("No such job found");
-        }
-
         return;
       }
 
-      if (false)
-      {
-        if (pJob->getStatus() == sdpa::status::CANCELING)
-        {
-          throw std::runtime_error
-            ("A cancelation request for this job was already posted!");
-        }
-
-        if (sdpa::status::is_terminal (pJob->getStatus()))
-        {
-          throw std::runtime_error
-            ( "Cannot cancel an already terminated job, its current status is: "
-            + sdpa::status::show (pJob->getStatus())
-            );
-        }
-
-        // a Cancel message came from the upper level -> forward
-        // cancellation request to WE
-        workflowEngine()->cancel (job_id);
-        pJob->CancelJob();
-      }
-      else // the workflow engine issued the cancelation order for this job
       {
         boost::optional<sdpa::worker_id_t> worker_id
           (scheduler()->findSubmOrAckWorker(job_id));
