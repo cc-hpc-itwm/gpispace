@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
     ("orchestrator_2", "127.0.0.1", kvs_host(), kvs_port());
 
   utils::agent agent
-      ("agent_2", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   Worker worker("worker_0", agent._.name());
 
