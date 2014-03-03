@@ -8,39 +8,50 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <sdpa/events/CapabilitiesGainedEvent.hpp>
+#include <sdpa/daemon/GenericDaemon.hpp>
+
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public sdpa::daemon::Agent
- {
-  public:
-    Worker (const std::string& name, const std::string& master_name)
-    : Agent ( name
-            , "127.0.0.1"
-            , kvs_host()
-            , kvs_port()
-            , sdpa::master_info_list_t(1, sdpa::MasterInfo(master_name))
-            , boost::none)
-    {}
+class Worker : public utils::BasicWorker
+{
+public:
+  Worker( std::string name
+         , std::string master_name
+         , std::string cpb_name = "" )
+   : utils::BasicWorker(name, master_name, cpb_name)
+  {}
 
-    void submit ( const we::layer::id_type& activity_id
-                , const we::type::activity_t& activity
-                )
-    {
-      sdpa::daemon::GenericDaemon::submit(activity_id, activity);
-      _cond_got_job.notify_one();
-    }
+  void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
+  {
+    sdpa::events::SubmitJobAckEvent::Ptr
+      pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent( _name
+                                                            , pEvt->from()
+                                                            , *pEvt->job_id()));
+    _network_strategy->perform (pSubmitJobAckEvt);
+    _cond_got_job.notify_one();
+  }
 
-    void wait_for_jobs()
-    {
-      boost::unique_lock<boost::mutex> lock(_mtx_got_job);
-      _cond_got_job.wait(lock);
-    }
+  void handleCancelJobEvent(const sdpa::events::CancelJobEvent* pEvt )
+  {
+    sdpa::events::CancelJobAckEvent::Ptr
+      pEvtCancelAck(new sdpa::events::CancelJobAckEvent( _name
+                                                         , pEvt->from()
+                                                         , pEvt->job_id()));
+    _network_strategy->perform (pEvtCancelAck);
+  }
 
-  private:
+  void wait_for_jobs()
+  {
+    boost::unique_lock<boost::mutex> lock(_mtx_got_job);
+    _cond_got_job.wait(lock);
+  }
 
-    boost::mutex _mtx_got_job;
-    boost::condition_variable_any _cond_got_job;
- };
+private:
+  boost::mutex _mtx_got_job;
+  boost::condition_variable_any _cond_got_job;
+};
+
 
 BOOST_AUTO_TEST_CASE (cancel_no_agent)
 {
