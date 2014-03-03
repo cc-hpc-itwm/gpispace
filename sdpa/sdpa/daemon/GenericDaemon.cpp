@@ -667,9 +667,6 @@ void GenericDaemon::canceled(const we::layer::id_type& job_id)
         }
       }
 
-      // the acknowledgment comes from WE or from a slave and there is no WE
-      if (!false || !hasWorkflowEngine())
-      {
         // just send an acknowledgment to the master
         // send an acknowledgment to the component that requested the cancellation
         if (!isTop())
@@ -679,43 +676,6 @@ void GenericDaemon::canceled(const we::layer::id_type& job_id)
 
           deleteJob (job_id);
         }
-      }
-      else // acknowledgment comes from a worker -> inform WE that the activity was canceled
-      {
-        LLOG (TRACE, _logger, "informing workflow engine that the activity "<< job_id <<" was canceled");
-        we::layer::id_type actId = job_id;
-        Worker::worker_id_t worker_id = sdpa::daemon::WE;
-
-        scheduler()->workerCanceled (worker_id, actId);
-        bool bTaskGroupComputed (scheduler()->allPartialResultsCollected (actId));
-
-        if (bTaskGroupComputed)
-        {
-          workflowEngine()->canceled (job_id);
-        }
-
-        try
-        {
-          if (bTaskGroupComputed)
-          {
-            scheduler()->releaseReservation (job_id);
-          }
-          LLOG (TRACE, _logger, "Remove job " << job_id << " from the worker "<<worker_id);
-          scheduler()->deleteWorkerJob (worker_id, job_id);
-          request_scheduling();
-        }
-        catch (const WorkerNotFoundException&)
-        {
-          // the job was not assigned to any worker yet -> this means that might
-          // still be in the scheduler's queue
-        }
-
-        // delete the job completely from the job manager
-        if (bTaskGroupComputed)
-        {
-          deleteJob(job_id);
-        }
-      }
     }
 
 }
