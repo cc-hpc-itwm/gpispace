@@ -1204,8 +1204,15 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
       const sdpa::discovery_info_t discovery_info
         (job_info.job_id(), job_info.job_status(), e->discover_result().children());
 
-      parent_proxy (this, job_info.disc_issuer()).discover_job_states_reply
-        (e->discover_id(), discovery_info);
+      if (job_info.disc_issuer() == name())
+      {
+        workflowEngine()->discovered (e->discover_id(), discovery_info);
+      }
+      else
+      {
+        parent_proxy (this, job_info.disc_issuer()).discover_job_states_reply
+          (e->discover_id(), discovery_info);
+      }
 
       m_map_discover_ids.erase (e->discover_id());
     }
