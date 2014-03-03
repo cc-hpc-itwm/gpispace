@@ -518,7 +518,7 @@ catch (std::exception const& ex)
  * Cancel an atomic activity that has previously been submitted to
  * the SDPA.
  */
-void GenericDaemon::cancel(const we::layer::id_type& activityId)
+void GenericDaemon::cancel(const we::layer::id_type& job_id)
 {
   // cancel the job corresponding to that activity -> send downward a CancelJobEvent?
   // look for the job_id corresponding to the received workflowId into job_map_
@@ -527,19 +527,15 @@ void GenericDaemon::cancel(const we::layer::id_type& activityId)
   // Job& job = job_map_[job_id];
   // call job.CancelJob(event);
 
-  delay (boost::bind (&GenericDaemon::delayed_cancel, this, activityId));
+  delay (boost::bind (&GenericDaemon::delayed_cancel, this, job_id));
 }
 void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 {
-  events::CancelJobEvent evt( sdpa::daemon::WE
-                            , name()
-                            , job_id );
-  const events::CancelJobEvent* pEvt (&evt);
     {
-      Job* pJob (findJob(pEvt->job_id()));
+      Job* pJob (findJob(job_id));
       if (!pJob)
       {
-        if (pEvt->is_external())
+        if (false)
         {
           throw std::runtime_error ("No such job found");
         }
@@ -547,7 +543,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
         return;
       }
 
-      if (pEvt->is_external())
+      if (false)
       {
         if (pJob->getStatus() == sdpa::status::CANCELING)
         {
@@ -565,30 +561,30 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 
         // a Cancel message came from the upper level -> forward
         // cancellation request to WE
-        workflowEngine()->cancel (pEvt->job_id());
+        workflowEngine()->cancel (job_id);
         pJob->CancelJob();
       }
       else // the workflow engine issued the cancelation order for this job
       {
         boost::optional<sdpa::worker_id_t> worker_id
-          (scheduler()->findSubmOrAckWorker(pEvt->job_id()));
+          (scheduler()->findSubmOrAckWorker(job_id));
 
         // change the job status to "Canceling"
         pJob->CancelJob();
 
         if (worker_id)
         {
-          child_proxy (this, *worker_id).cancel_job (pEvt->job_id());
+          child_proxy (this, *worker_id).cancel_job (job_id);
         }
         else
         {
-          workflowEngine()->canceled (pEvt->job_id());
+          workflowEngine()->canceled (job_id);
 
           // reply with an ack here
           pJob->CancelJobAck();
-          ptr_scheduler_->delete_job (pEvt->job_id());
+          ptr_scheduler_->delete_job (job_id);
 
-          deleteJob (pEvt->job_id());
+          deleteJob (job_id);
         }
       }
     }
