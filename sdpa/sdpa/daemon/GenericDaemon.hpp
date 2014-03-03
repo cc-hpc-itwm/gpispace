@@ -161,6 +161,8 @@ namespace sdpa {
 
       virtual void handleDiscoverJobStatesReplyEvent
         (const sdpa::events::DiscoverJobStatesReplyEvent*);
+      virtual void handleDiscoverJobStatesEvent
+        (const sdpa::events::DiscoverJobStatesEvent*);
 
       // event communication
       void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);

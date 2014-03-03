@@ -30,7 +30,6 @@ namespace sdpa
       {
         throw std::runtime_error("The agent should not call handleDeleteJobEvent!");
       }
-      virtual void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent*);
     };
   }
 }
