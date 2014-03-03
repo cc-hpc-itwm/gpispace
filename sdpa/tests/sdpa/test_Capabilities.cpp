@@ -10,28 +10,57 @@
 
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
+#include <sdpa/daemon/GenericDaemon.hpp>
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public sdpa::daemon::Agent
+class Worker : public sdpa::events::EventHandler,
+                    boost::noncopyable
 {
-  public:
-    Worker (const std::string& name, const std::string& master_name, const std::string cpb_name)
-      : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(1, sdpa::MasterInfo(master_name)), boost::none)
-    {
-        sdpa::capability_t  cpb(cpb_name, name);
-        addCapability(cpb);
-        sdpa::events::CapabilitiesGainedEvent::Ptr
-            ptrCpbGainEvt( new sdpa::events::CapabilitiesGainedEvent(name, master_name, cpb) );
-        sendEventToOther(ptrCpbGainEvt);
-    }
+public:
+  Worker( std::string name
+               , std::string master_name
+               , std::string cpb_name
+               )
+   : _name (name)
+   , _master_name(master_name)
+   , _kvs_client
+     ( new fhg::com::kvs::client::kvsc
+       (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
+     )
+   , _network_strategy
+     ( new sdpa::com::NetworkStrategy ( boost::bind (&Worker::sendEventToSelf, this, _1)
+                                      , name
+                                      , fhg::com::host_t ("127.0.0.1")
+                                      , fhg::com::port_t ("0")
+                                      , _kvs_client
+                                      )
+     )
+  {
+    sdpa::capability_t cpb(cpb_name, name);
+    _capabilities.insert(cpb);
 
-    void submit ( const we::layer::id_type& activity_id
-                , const we::type::activity_t& activity )
-    {
-      sdpa::daemon::GenericDaemon::submit(activity_id, activity);
-      workflowEngine()->finished(activity_id, activity);
-    }
+    sdpa::events::WorkerRegistrationEvent::Ptr
+      pEvtWorkerReg (new sdpa::events::WorkerRegistrationEvent( _name
+                                                                , _master_name
+                                                                , boost::none
+                                                                , _capabilities ));
+    _network_strategy->perform (pEvtWorkerReg);
+
+    sdpa::events::CapabilitiesGainedEvent::Ptr
+      ptrCpbGainEvt( new sdpa::events::CapabilitiesGainedEvent(name, master_name, cpb) );
+    _network_strategy->perform (ptrCpbGainEvt);
+  }
+
+  void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr&) {}
+  void getCapabilities(sdpa::capabilities_set_t& cpbset) { cpbset = _capabilities; }
+
+private:
+  std::string _name;
+  std::string _master_name;
+  sdpa::capabilities_set_t _capabilities;
+  fhg::com::kvs::kvsc_ptr_t _kvs_client;
+  boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
 };
 
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
@@ -68,7 +97,7 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
   BOOST_REQUIRE(acquired_cpbs == expected_cpbs);
 }
 
-BOOST_AUTO_TEST_CASE (lose_capabilities)
+BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
 {
   const std::string workflow
     (utils::require_and_read_file ("capabilities.pnet"));
