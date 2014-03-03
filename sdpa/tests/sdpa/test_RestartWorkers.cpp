@@ -43,40 +43,31 @@ namespace
   }
 }
 
-class Worker : public sdpa::daemon::Agent
+class Worker : public utils::BasicWorker
 {
   public:
+    Worker (const std::string& name, const std::string& master_name, const std::string cpb_name = "")
+      :  utils::BasicWorker (name, master_name, cpb_name)
+    {}
 
-    Worker (const std::string& name, const std::string& master_name, const std::string& cpbs = "")
-         : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(1, sdpa::MasterInfo(master_name)), boost::none)
+    void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
     {
-      sdpa::capabilities_set_t cpb_set;
+      sdpa::events::SubmitJobAckEvent::Ptr
+      pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent( _name
+                                                          , pEvt->from()
+                                                          , *pEvt->job_id()));
+      _network_strategy->perform (pSubmitJobAckEvt);
 
-      const boost::tokenizer<boost::char_separator<char> > tok
-           (cpbs, boost::char_separator<char> (","));
+      sdpa::events::JobFinishedEvent::Ptr
+      pJobFinishedEvt(new sdpa::events::JobFinishedEvent( _name
+                                                        , pEvt->from()
+                                                        , *pEvt->job_id()
+                                                        , pEvt->description() ));
 
-      const std::vector<std::string> v (tok.begin(), tok.end());
-      BOOST_FOREACH(const std::string& cpb_name, v)
-      {
-        sdpa::capability_t cpb(cpb_name, name);
-        addCapability(cpb);
-        cpb_set.insert(cpb);
-      }
-
-      if(!cpb_set.empty())
-      {
-        sdpa::events::CapabilitiesGainedEvent::Ptr
-           ptrCpbGainEvt( new sdpa::events::CapabilitiesGainedEvent(name, master_name, cpb_set) );
-        sendEventToOther(ptrCpbGainEvt);
-      }
+      _network_strategy->perform (pJobFinishedEvt);
     }
 
-    void submit ( const we::layer::id_type& activity_id
-                , const we::type::activity_t& activity )
-    {
-      sdpa::daemon::GenericDaemon::submit(activity_id, activity);
-      workflowEngine()->finished(activity_id, activity);
-    }
+    void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* ){}
 };
 
 BOOST_AUTO_TEST_CASE (restart_worker_polling_client)
@@ -157,7 +148,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig
   const Worker worker_1( "worker_1", agent._.name(), "A");
   const Worker worker_2( "worker_2", agent._.name(), "B");
   const Worker worker_3( "worker_3", agent._.name(), "B");
-  Worker* pWorker_4(new Worker( "worker_4", agent._.name(), "A,B"));
+  Worker* pWorker_4(new Worker( "worker_4", agent._.name(), "B"));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -169,7 +160,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig
          (client.discoverJobStates (fhg::util::random_string(), job_id)) )
    {}
 
-  const Worker worker_4( "worker_4", agent._.name(), "A,B");
+  const Worker worker_4( "worker_4", agent._.name(), "B");
 
   sdpa::client::job_info_t job_info;
   BOOST_REQUIRE_EQUAL
