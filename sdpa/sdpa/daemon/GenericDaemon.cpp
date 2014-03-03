@@ -650,12 +650,79 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
  */
 void GenericDaemon::canceled(const we::layer::id_type& workflowId)
 {
-  // generate a JobCanceledEvent for self!
-
   job_id_t job_id(workflowId);
 
-  events::CancelJobAckEvent::Ptr pEvtCancelJobAck( new events::CancelJobAckEvent(sdpa::daemon::WE, name(), job_id ));
-  sendEventToSelf(pEvtCancelJobAck);
+  events::CancelJobAckEvent evt(sdpa::daemon::WE, name(), job_id );
+
+  const events::CancelJobAckEvent* pEvt (&evt);
+    {
+      Job* pJob (findJob(pEvt->job_id()));
+
+      if (pJob)
+      {
+        try
+        {
+          // update the job status to "Canceled"
+          pJob->CancelJobAck();
+        }
+        catch (std::exception const&)
+        {
+          workflowEngine()->canceled (pEvt->job_id());
+          throw;
+        }
+      }
+
+      // the acknowledgment comes from WE or from a slave and there is no WE
+      if (!pEvt->is_external() || !hasWorkflowEngine())
+      {
+        // just send an acknowledgment to the master
+        // send an acknowledgment to the component that requested the cancellation
+        if (!isTop())
+        {
+          // only if the job was already submitted
+          parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
+
+          deleteJob (pEvt->job_id());
+        }
+      }
+      else // acknowledgment comes from a worker -> inform WE that the activity was canceled
+      {
+        LLOG (TRACE, _logger, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
+        we::layer::id_type actId = pEvt->job_id();
+        Worker::worker_id_t worker_id = pEvt->from();
+
+        scheduler()->workerCanceled (worker_id, actId);
+        bool bTaskGroupComputed (scheduler()->allPartialResultsCollected (actId));
+
+        if (bTaskGroupComputed)
+        {
+          workflowEngine()->canceled (pEvt->job_id());
+        }
+
+        try
+        {
+          if (bTaskGroupComputed)
+          {
+            scheduler()->releaseReservation (pEvt->job_id());
+          }
+          LLOG (TRACE, _logger, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
+          scheduler()->deleteWorkerJob (worker_id, pEvt->job_id());
+          request_scheduling();
+        }
+        catch (const WorkerNotFoundException&)
+        {
+          // the job was not assigned to any worker yet -> this means that might
+          // still be in the scheduler's queue
+        }
+
+        // delete the job completely from the job manager
+        if (bTaskGroupComputed)
+        {
+          deleteJob(pEvt->job_id());
+        }
+      }
+    }
+
 }
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
