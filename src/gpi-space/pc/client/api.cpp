@@ -370,7 +370,8 @@ namespace gpi
               {
                 if (se.code ().value () == ENOENT)
                 {
-                  // ignore
+                  // unlink() always throws, even  if the file did not
+                  // exist, so we have to ignore this error here.
                 }
                 else
                 {
