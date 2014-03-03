@@ -283,28 +283,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     {
       LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
 
-      const events::JobFailedEvent evt( sdpa::daemon::WE
-                                   , name()
-                                   , job_id
-                                   , ex.what()
-        );
-
-      const events::JobFailedEvent* pEvt (&evt);
-    {
-      // check if the message comes from outside/slave or from WFE
-      // if it comes from a slave, one should inform WFE -> subjob
-      // if it comes from WFE -> concerns the master job
-
-      // if the event comes from the workflow engine (e.g. submission failed,
-      // see the scheduler
-
-      if (!false)
-      {
-        failed (pEvt->job_id(), pEvt->error_message());
-
-        return;
-      }
-    }
+      failed (job_id, ex.what());
     }
   }
   else {
