@@ -257,8 +257,8 @@ namespace sdpa
         }
       }
 
-      // the acknowledgment comes from WE or from a slave and there is no WE
-      if (!pEvt->is_external() || !hasWorkflowEngine())
+      // the acknowledgment comes from a slave and there is no WE
+      if (!hasWorkflowEngine())
       {
         // just send an acknowledgment to the master
         // send an acknowledgment to the component that requested the cancellation
