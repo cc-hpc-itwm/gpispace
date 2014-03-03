@@ -70,7 +70,7 @@ namespace gpi
 
       bool is_end_of_hostname (fhg::util::parse::position const& pos)
       {
-        return ! (isalnum (*pos) || *pos == '.');
+        return ! (isalnum (*pos) || *pos == '.' || *pos == '-' || *pos == '_');
       }
 
       bool is_end_of_path (fhg::util::parse::position const &pos)
