@@ -648,15 +648,10 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
  * Notify the SDPA that a workflow has been canceled (state
  * transition from * to terminated.
  */
-void GenericDaemon::canceled(const we::layer::id_type& workflowId)
+void GenericDaemon::canceled(const we::layer::id_type& job_id)
 {
-  job_id_t job_id(workflowId);
-
-  events::CancelJobAckEvent evt(sdpa::daemon::WE, name(), job_id );
-
-  const events::CancelJobAckEvent* pEvt (&evt);
     {
-      Job* pJob (findJob(pEvt->job_id()));
+      Job* pJob (findJob(job_id));
 
       if (pJob)
       {
@@ -667,46 +662,46 @@ void GenericDaemon::canceled(const we::layer::id_type& workflowId)
         }
         catch (std::exception const&)
         {
-          workflowEngine()->canceled (pEvt->job_id());
+          workflowEngine()->canceled (job_id);
           throw;
         }
       }
 
       // the acknowledgment comes from WE or from a slave and there is no WE
-      if (!pEvt->is_external() || !hasWorkflowEngine())
+      if (!false || !hasWorkflowEngine())
       {
         // just send an acknowledgment to the master
         // send an acknowledgment to the component that requested the cancellation
         if (!isTop())
         {
           // only if the job was already submitted
-          parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
+          parent_proxy (this, pJob->owner()).cancel_job_ack (job_id);
 
-          deleteJob (pEvt->job_id());
+          deleteJob (job_id);
         }
       }
       else // acknowledgment comes from a worker -> inform WE that the activity was canceled
       {
-        LLOG (TRACE, _logger, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
-        we::layer::id_type actId = pEvt->job_id();
-        Worker::worker_id_t worker_id = pEvt->from();
+        LLOG (TRACE, _logger, "informing workflow engine that the activity "<< job_id <<" was canceled");
+        we::layer::id_type actId = job_id;
+        Worker::worker_id_t worker_id = sdpa::daemon::WE;
 
         scheduler()->workerCanceled (worker_id, actId);
         bool bTaskGroupComputed (scheduler()->allPartialResultsCollected (actId));
 
         if (bTaskGroupComputed)
         {
-          workflowEngine()->canceled (pEvt->job_id());
+          workflowEngine()->canceled (job_id);
         }
 
         try
         {
           if (bTaskGroupComputed)
           {
-            scheduler()->releaseReservation (pEvt->job_id());
+            scheduler()->releaseReservation (job_id);
           }
-          LLOG (TRACE, _logger, "Remove job " << pEvt->job_id() << " from the worker "<<worker_id);
-          scheduler()->deleteWorkerJob (worker_id, pEvt->job_id());
+          LLOG (TRACE, _logger, "Remove job " << job_id << " from the worker "<<worker_id);
+          scheduler()->deleteWorkerJob (worker_id, job_id);
           request_scheduling();
         }
         catch (const WorkerNotFoundException&)
@@ -718,7 +713,7 @@ void GenericDaemon::canceled(const we::layer::id_type& workflowId)
         // delete the job completely from the job manager
         if (bTaskGroupComputed)
         {
-          deleteJob(pEvt->job_id());
+          deleteJob(job_id);
         }
       }
     }
