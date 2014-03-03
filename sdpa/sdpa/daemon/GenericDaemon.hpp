@@ -177,11 +177,6 @@ namespace sdpa {
       we::layer* workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
-    protected:
-      // workflow engine notifications
-      OVERWRITTEN_IN_TEST void submitWorkflow(const job_id_t& id);
-
-    public:
       // workers
       OVERWRITTEN_IN_TEST void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 

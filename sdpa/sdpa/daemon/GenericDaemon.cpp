@@ -253,7 +253,60 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   // if it comes from outside and the agent has an WFE, submit it to it
   if(hasWorkflowEngine() )
   {
-    submitWorkflow(job_id);
+/*
+   Submit a workflow to the workflow engine
+*/
+{
+  const sdpa::job_id_t &jobId (job_id);
+  try {
+    Job* pJob = findJob(jobId);
+
+    // Should set the workflow_id here, or send it together with the workflow description
+    pJob->Dispatch();
+
+    const we::type::activity_t act (pJob->description());
+    if (m_guiService)
+    {
+      std::list<std::string> workers; workers.push_back (name());
+      const sdpa::daemon::NotificationEvent evt
+        ( workers
+        , jobId
+        , NotificationEvent::STATE_STARTED
+        , act
+        );
+
+      m_guiService->notify (evt);
+    }
+
+    workflowEngine()->submit (jobId, act);
+  }
+  catch(const JobNotFoundException& ex)
+  {
+    events::JobFailedEvent::Ptr pEvtJobFailed
+      (new events::JobFailedEvent( sdpa::daemon::WE
+                                 , name()
+                                 , jobId
+                                 , "job could not be found"
+                                 )
+      );
+
+    sendEventToSelf(pEvtJobFailed);
+  }
+  catch(const std::exception& ex)
+  {
+    LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<jobId<<" to the workflow engine!");
+
+     events::JobFailedEvent::Ptr pEvtJobFailed
+       (new events::JobFailedEvent( sdpa::daemon::WE
+                                  , name()
+                                  , jobId
+                                  , ex.what()
+                                  )
+     );
+
+     sendEventToSelf(pEvtJobFailed);
+   }
+}
   }
   else {
     scheduler()->enqueueJob(job_id);
@@ -619,62 +672,6 @@ void GenericDaemon::canceled(const we::layer::id_type& workflowId)
   events::CancelJobAckEvent::Ptr pEvtCancelJobAck( new events::CancelJobAckEvent(sdpa::daemon::WE, name(), job_id ));
   sendEventToSelf(pEvtCancelJobAck);
 }
-
-/*
-   Submit a workflow to the workflow engine
-*/
-void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
-{
-  try {
-    Job* pJob = findJob(jobId);
-
-    // Should set the workflow_id here, or send it together with the workflow description
-    pJob->Dispatch();
-
-    const we::type::activity_t act (pJob->description());
-    if (m_guiService)
-    {
-      std::list<std::string> workers; workers.push_back (name());
-      const sdpa::daemon::NotificationEvent evt
-        ( workers
-        , jobId
-        , NotificationEvent::STATE_STARTED
-        , act
-        );
-
-      m_guiService->notify (evt);
-    }
-
-    workflowEngine()->submit (jobId, act);
-  }
-  catch(const JobNotFoundException& ex)
-  {
-    events::JobFailedEvent::Ptr pEvtJobFailed
-      (new events::JobFailedEvent( sdpa::daemon::WE
-                                 , name()
-                                 , jobId
-                                 , "job could not be found"
-                                 )
-      );
-
-    sendEventToSelf(pEvtJobFailed);
-  }
-  catch(const std::exception& ex)
-  {
-    LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<jobId<<" to the workflow engine!");
-
-     events::JobFailedEvent::Ptr pEvtJobFailed
-       (new events::JobFailedEvent( sdpa::daemon::WE
-                                  , name()
-                                  , jobId
-                                  , ex.what()
-                                  )
-     );
-
-     sendEventToSelf(pEvtJobFailed);
-   }
-}
-
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
