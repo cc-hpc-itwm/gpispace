@@ -203,21 +203,14 @@ namespace gpi
           }
           catch (boost::system::system_error const& se)
           {
-            if (! m_stopping)
+            if (m_stopping)
             {
-              LOG(ERROR, "could not accept: " << se.what());
-
-              if (se.code().value())
-              {
-                LOG( ERROR
-                   , "connector had an error: " << se.what() << ", restarting it"
-                   );
-
-                stop ();
-                start ();
-              }
+              break;
             }
-            break;
+            else
+            {
+              continue;
+            }
           }
 
           try
