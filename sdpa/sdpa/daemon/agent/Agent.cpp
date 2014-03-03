@@ -185,7 +185,7 @@ namespace sdpa
       Job* pJob (findJob(pEvt->job_id()));
       if (!pJob)
       {
-        if (pEvt->is_external())
+        if (true)
         {
           throw std::runtime_error ("No such job found");
         }
@@ -193,7 +193,7 @@ namespace sdpa
         return;
       }
 
-      if (pEvt->is_external())
+      if (true)
       {
         if (pJob->getStatus() == sdpa::status::CANCELING)
         {
