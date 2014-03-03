@@ -650,34 +650,31 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
  */
 void GenericDaemon::canceled(const we::layer::id_type& job_id)
 {
+  Job* pJob (findJob(job_id));
+
+  if (pJob)
+  {
+    try
     {
-      Job* pJob (findJob(job_id));
-
-      if (pJob)
-      {
-        try
-        {
-          // update the job status to "Canceled"
-          pJob->CancelJobAck();
-        }
-        catch (std::exception const&)
-        {
-          workflowEngine()->canceled (job_id);
-          throw;
-        }
-      }
-
-        // just send an acknowledgment to the master
-        // send an acknowledgment to the component that requested the cancellation
-        if (!isTop())
-        {
-          // only if the job was already submitted
-          parent_proxy (this, pJob->owner()).cancel_job_ack (job_id);
-
-          deleteJob (job_id);
-        }
+      // update the job status to "Canceled"
+      pJob->CancelJobAck();
     }
+    catch (std::exception const&)
+    {
+      workflowEngine()->canceled (job_id);
+      throw;
+    }
+  }
 
+  // just send an acknowledgment to the master
+  // send an acknowledgment to the component that requested the cancellation
+  if (!isTop())
+  {
+    // only if the job was already submitted
+    parent_proxy (this, pJob->owner()).cancel_job_ack (job_id);
+
+    deleteJob (job_id);
+  }
 }
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
