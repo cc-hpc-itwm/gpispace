@@ -644,13 +644,9 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
   }
 }
 
-/**
- * Notify the SDPA that a workflow has been canceled (state
- * transition from * to terminated.
- */
-void GenericDaemon::canceled(const we::layer::id_type& job_id)
+void GenericDaemon::canceled (const we::layer::id_type& job_id)
 {
-  Job* pJob (findJob(job_id));
+  Job* pJob (findJob (job_id));
   if (!pJob)
   {
     throw std::runtime_error ("rts_canceled (unknown job)");
@@ -658,11 +654,9 @@ void GenericDaemon::canceled(const we::layer::id_type& job_id)
 
   pJob->CancelJobAck();
 
-  // just send an acknowledgment to the master
-  // send an acknowledgment to the component that requested the cancellation
+  //! \todo Should be if (job-has-owner), i.e. was-submitted-to-this-daemon
   if (!isTop())
   {
-    // only if the job was already submitted
     parent_proxy (this, pJob->owner()).cancel_job_ack (job_id);
 
     deleteJob (job_id);
