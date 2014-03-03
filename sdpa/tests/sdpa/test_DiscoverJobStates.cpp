@@ -47,36 +47,39 @@ namespace
   }
 }
 
-class Worker : public sdpa::daemon::Agent
+class Worker : public utils::BasicWorker
 {
   public:
     Worker (const std::string& name, const std::string& master_name, const std::string cpb_name)
-      : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(1, sdpa::MasterInfo(master_name)), boost::none)
+      :  utils::BasicWorker (name, master_name, cpb_name)
+    {}
+
+    void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
     {
-        sdpa::capability_t  cpb(cpb_name, name);
-        addCapability(cpb);
-        sdpa::events::CapabilitiesGainedEvent::Ptr
-            ptrCpbGainEvtA( new sdpa::events::CapabilitiesGainedEvent(name, master_name, cpb) );
-        sendEventToOther(ptrCpbGainEvtA);
+      sdpa::events::SubmitJobAckEvent::Ptr
+      pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent( _name
+                                                          , pEvt->from()
+                                                          , *pEvt->job_id()));
+      _network_strategy->perform (pSubmitJobAckEvt);
+
+      sdpa::events::JobFinishedEvent::Ptr
+      pJobFinishedEvt(new sdpa::events::JobFinishedEvent( _name
+                                                        , pEvt->from()
+                                                        , *pEvt->job_id()
+                                                        , pEvt->description() ));
+
+      _network_strategy->perform (pJobFinishedEvt);
     }
 
-    void submit ( const we::layer::id_type& activity_id
-                , const we::type::activity_t& activity )
-    {
-      sdpa::daemon::GenericDaemon::submit(activity_id, activity);
-      workflowEngine()->finished(activity_id, activity);
-    }
+    void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* ){}
 
     void remove_capability(const std::string& cpb_name)
     {
-      sdpa::capability_t cpb(cpb_name, name());
-      BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
-      {
-        sdpa::events::CapabilitiesLostEvent::Ptr
-           ptrCpbLostEvt( new sdpa::events::CapabilitiesLostEvent(name(), masterInfo.name(), cpb) );
-        sendEventToOther(ptrCpbLostEvt);
-      }
-    }
+      sdpa::capability_t cpb(cpb_name, _name);
+      sdpa::events::CapabilitiesLostEvent::Ptr
+        ptrCpbLostEvt( new sdpa::events::CapabilitiesLostEvent(_name, _master_name, cpb) );
+      _network_strategy->perform (ptrCpbLostEvt);
+   }
 };
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
