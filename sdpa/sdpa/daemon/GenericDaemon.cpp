@@ -254,10 +254,12 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   if(hasWorkflowEngine() )
   {
   try {
+    const we::type::activity_t act (pJob->description());
+    workflowEngine()->submit (job_id, act);
+
     // Should set the workflow_id here, or send it together with the workflow description
     pJob->Dispatch();
 
-    const we::type::activity_t act (pJob->description());
     if (m_guiService)
     {
       std::list<std::string> workers; workers.push_back (name());
@@ -270,8 +272,6 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
       m_guiService->notify (evt);
     }
-
-    workflowEngine()->submit (job_id, act);
   }
   catch(const JobNotFoundException& ex)
   {
@@ -1148,9 +1148,7 @@ void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_
           //! \todo There is a race here: between SubmitJobAck and
           //! we->submit(), there's still a lot of stuff. We can't
           //! guarantee, that the job is already submitted to the
-          //! wfe!  We need to handle the "pending" state, but can't
-          //! even do that: between setting state to pending and
-          //! submitting to wfe, there also is a race.
+          //! wfe! We need to handle the "pending" state.
           workflowEngine()->discover (pEvt->discover_id(), pEvt->job_id());
         }
         else if (pJob)
