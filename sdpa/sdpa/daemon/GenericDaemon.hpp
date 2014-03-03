@@ -258,6 +258,7 @@ namespace sdpa {
 
     private:
       void delayed_cancel (const we::layer::id_type&);
+      void delayed_discover (we::layer::id_type discover_id, we::layer::id_type);
 
       // data members
     protected:

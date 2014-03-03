@@ -1085,13 +1085,44 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
 
 void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
 {
-  events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( sdpa::daemon::WE
-                                                                                    , name()
-                                                                                    , job_id
-                                                                                    , discover_id ));
-
-  sendEventToSelf(pDiscEvt);
+  delay (boost::bind (&GenericDaemon::delayed_discover, this, discover_id, job_id));
 }
+    void GenericDaemon::delayed_discover
+      (we::layer::id_type discover_id, we::layer::id_type job_id)
+    {
+      Job* pJob (findJob (job_id));
+
+      const boost::optional<worker_id_t> worker_id
+        (scheduler()->findSubmOrAckWorker(job_id));
+
+        if (pJob && worker_id)
+        {
+          m_map_discover_ids.insert
+            ( std::make_pair ( discover_id
+                             , job_info_t ( sdpa::daemon::WE
+                                          , job_id
+                                          , pJob->getStatus()
+                                          )
+                             )
+            );
+          child_proxy (this, *worker_id).discover_job_states
+            (job_id, discover_id);
+        }
+        else if (pJob)
+        {
+          workflowEngine()->discovered
+            ( discover_id
+            , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
+            );
+        }
+        else
+        {
+          workflowEngine()->discovered
+            ( discover_id
+            , discovery_info_t (job_id, boost::none, discovery_info_set_t())
+            );
+        }
+    }
 
     void GenericDaemon::handleDiscoverJobStatesEvent
       (const sdpa::events::DiscoverJobStatesEvent *pEvt)
@@ -1101,8 +1132,6 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
       const boost::optional<worker_id_t> worker_id
         (scheduler()->findSubmOrAckWorker(pEvt->job_id()));
 
-      if (pEvt->is_external())
-      {
         if (pJob && worker_id)
         {
           m_map_discover_ids.insert
@@ -1151,37 +1180,6 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
             , discovery_info_t (pEvt->job_id(), boost::none, discovery_info_set_t())
             );
         }
-      }
-      else
-      {
-        if (pJob && worker_id)
-        {
-          m_map_discover_ids.insert
-            ( std::make_pair ( pEvt->discover_id()
-                             , job_info_t ( pEvt->from()
-                                          , pEvt->job_id()
-                                          , pJob->getStatus()
-                                          )
-                             )
-            );
-          child_proxy (this, *worker_id).discover_job_states
-            (pEvt->job_id(), pEvt->discover_id());
-        }
-        else if (pJob)
-        {
-          workflowEngine()->discovered
-            ( pEvt->discover_id()
-            , discovery_info_t (pEvt->job_id(), pJob->getStatus(), discovery_info_set_t())
-            );
-        }
-        else
-        {
-          workflowEngine()->discovered
-            ( pEvt->discover_id()
-            , discovery_info_t (pEvt->job_id(), boost::none, discovery_info_set_t())
-            );
-        }
-      }
     }
 
 void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
