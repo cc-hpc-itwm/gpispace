@@ -514,57 +514,39 @@ catch (std::exception const& ex)
   workflowEngine()->failed (job_id, ex.what());
 }
 
-/**
- * Cancel an atomic activity that has previously been submitted to
- * the SDPA.
- */
-void GenericDaemon::cancel(const we::layer::id_type& job_id)
+void GenericDaemon::cancel (const we::layer::id_type& job_id)
 {
-  // cancel the job corresponding to that activity -> send downward a CancelJobEvent?
-  // look for the job_id corresponding to the received workflowId into job_map_
-  // in fact they should be the same!
-  // generate const CancelJobEvent& event
-  // Job& job = job_map_[job_id];
-  // call job.CancelJob(event);
-
   delay (boost::bind (&GenericDaemon::delayed_cancel, this, job_id));
 }
 void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 {
-    {
-      Job* pJob (findJob(job_id));
-      if (!pJob)
-      {
-        //! \note Job may have been removed between wfe requesting
-        //! cancel and event thread handling this, which is not an
-        //! error: wfe correctly handles that situation and expects us
-        //! to ignore it.
-        return;
-      }
+  Job* pJob (findJob (job_id));
+  if (!pJob)
+  {
+    //! \note Job may have been removed between wfe requesting cancel
+    //! and event thread handling this, which is not an error: wfe
+    //! correctly handles that situation and expects us to ignore it.
+    return;
+  }
 
-      {
-        boost::optional<sdpa::worker_id_t> worker_id
-          (scheduler()->findSubmOrAckWorker(job_id));
+  const boost::optional<sdpa::worker_id_t> worker_id
+    (scheduler()->findSubmOrAckWorker (job_id));
 
-        // change the job status to "Canceling"
-        pJob->CancelJob();
+  pJob->CancelJob();
 
-        if (worker_id)
-        {
-          child_proxy (this, *worker_id).cancel_job (job_id);
-        }
-        else
-        {
-          workflowEngine()->canceled (job_id);
+  if (worker_id)
+  {
+    child_proxy (this, *worker_id).cancel_job (job_id);
+  }
+  else
+  {
+    workflowEngine()->canceled (job_id);
 
-          // reply with an ack here
-          pJob->CancelJobAck();
-          ptr_scheduler_->delete_job (job_id);
+    pJob->CancelJobAck();
+    ptr_scheduler_->delete_job (job_id);
 
-          deleteJob (job_id);
-        }
-      }
-    }
+    deleteJob (job_id);
+  }
 }
 
 void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activity_t& result)
