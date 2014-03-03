@@ -244,49 +244,54 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-    // One should parse the workflow in order to be able to create a valid job
+  // One should parse the workflow in order to be able to create a valid job
   Job* pJob (addJob(job_id, e.description(), hasWorkflowEngine(), e.from(), job_requirements_t()));
 
-    parent_proxy (this, e.from()).submit_job_ack (job_id);
+  //! \todo Don't ack before we know that we can: may fail 20 lines
+  //! below. add Nack event of some sorts to not need
+  //! submitack+jobfailed to fail submission. this would also resolve
+  //! the race in handleDiscoverJobStatesEvent.
+  parent_proxy (this, e.from()).submit_job_ack (job_id);
 
   // check if the message comes from outside or from WFE
   // if it comes from outside and the agent has an WFE, submit it to it
   if(hasWorkflowEngine() )
   {
-  try {
-    const we::type::activity_t act (pJob->description());
-    workflowEngine()->submit (job_id, act);
-
-    // Should set the workflow_id here, or send it together with the workflow description
-    pJob->Dispatch();
-
-    if (m_guiService)
+    try
     {
-      std::list<std::string> workers; workers.push_back (name());
-      const sdpa::daemon::NotificationEvent evt
-        ( workers
-        , job_id
-        , NotificationEvent::STATE_STARTED
-        , act
+      const we::type::activity_t act (pJob->description());
+      workflowEngine()->submit (job_id, act);
+
+      // Should set the workflow_id here, or send it together with the workflow description
+      pJob->Dispatch();
+
+      if (m_guiService)
+      {
+        std::list<std::string> workers; workers.push_back (name());
+        const sdpa::daemon::NotificationEvent evt
+          ( workers
+          , job_id
+          , NotificationEvent::STATE_STARTED
+          , act
+          );
+
+        m_guiService->notify (evt);
+      }
+    }
+    catch(const std::exception& ex)
+    {
+      LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
+
+      events::JobFailedEvent::Ptr pEvtJobFailed
+        (new events::JobFailedEvent( sdpa::daemon::WE
+                                   , name()
+                                   , job_id
+                                   , ex.what()
+                                   )
         );
 
-      m_guiService->notify (evt);
+      sendEventToSelf(pEvtJobFailed);
     }
-  }
-  catch(const std::exception& ex)
-  {
-    LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
-
-     events::JobFailedEvent::Ptr pEvtJobFailed
-       (new events::JobFailedEvent( sdpa::daemon::WE
-                                  , name()
-                                  , job_id
-                                  , ex.what()
-                                  )
-     );
-
-     sendEventToSelf(pEvtJobFailed);
-   }
   }
   else {
     scheduler()->enqueueJob(job_id);
