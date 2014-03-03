@@ -69,6 +69,8 @@ namespace
     const std::vector<std::string> vec (require_proper_url (url));
     return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
   }
+
+  const std::string WE ("WE");
 }
 
 GenericDaemon::GenericDaemon( const std::string name
