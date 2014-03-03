@@ -298,77 +298,11 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
       // if the event comes from the workflow engine (e.g. submission failed,
       // see the scheduler
 
-      if (!pEvt->is_external())
+      if (!false)
       {
         failed (pEvt->job_id(), pEvt->error_message());
 
         return;
-      }
-
-      // send a JobFailedAckEvent back to the worker/slave
-      child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
-
-      //put the job into the state Failed
-      Job* pJob (findJob (pEvt->job_id()));
-      if (!pJob)
-      {
-        return;
-      }
-
-      if (!hasWorkflowEngine())
-      {
-        pJob->JobFailed (pEvt->error_message());
-        parent_proxy (this, pJob->owner()).job_failed
-          (pEvt->job_id(), pEvt->error_message());
-      }
-      else
-      {
-        Worker::worker_id_t worker_id = pEvt->from();
-
-        we::layer::id_type actId = pEvt->job_id();
-
-        // this should only be called once, therefore the state
-        // machine when we switch the job from one state to another,
-        // the code belonging to exactly that transition should be
-        // executed. I.e. all this code should go to the FSM callback
-        // routine.
-
-        // update the status of the reservation
-
-        bool bAllPartResCollected (false);
-        scheduler()->workerFailed (worker_id, actId);
-        bAllPartResCollected = scheduler()->allPartialResultsCollected (actId);
-
-        if (bAllPartResCollected)
-        {
-          if (pJob->getStatus() == sdpa::status::CANCELING)
-          {
-            pJob->CancelJobAck();
-            workflowEngine()->canceled (actId);
-          }
-          else
-          {
-            pJob->JobFailed (pEvt->error_message());
-            workflowEngine()->failed (actId, pEvt->error_message());
-          }
-
-          // cancel the other jobs assigned to the workers which are
-          // in the reservation list
-        }
-
-        // if all the partial results were collected, release the reservation
-        if(bAllPartResCollected)
-        {
-          scheduler()->releaseReservation (pJob->id());
-        }
-        scheduler()->deleteWorkerJob (worker_id, pJob->id());
-        request_scheduling();
-
-        //delete it also from job_map_
-        if (bAllPartResCollected)
-        {
-          deleteJob (pEvt->job_id());
-        }
       }
     }
     }
