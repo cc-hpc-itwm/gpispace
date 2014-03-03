@@ -233,7 +233,7 @@ namespace gpi
                   ( new process_t
                     ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
                     , id
-                    , fd
+                    , cfd
                     , _memory_manager
                     , _topology
                     , _gpi_api
