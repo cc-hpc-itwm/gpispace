@@ -99,19 +99,7 @@ namespace sdpa
 
     void Agent::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
     {
-      // check if the message comes from outside/slave or from WFE
       // if it comes from a slave, one should inform WFE -> subjob
-      // if it comes from WFE -> concerns the master job
-
-      // if the event comes from the workflow engine (e.g. submission failed,
-      // see the scheduler
-
-      if (!pEvt->is_external())
-      {
-        failed (pEvt->job_id(), pEvt->error_message());
-
-        return;
-      }
 
       // send a JobFailedAckEvent back to the worker/slave
       child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
