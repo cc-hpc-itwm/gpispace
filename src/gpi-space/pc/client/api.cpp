@@ -362,7 +362,22 @@ namespace gpi
           {
             if (flags & gpi::pc::F_FORCE_UNLINK)
             {
-              seg->unlink();
+              try
+              {
+                seg->unlink();
+              }
+              catch (boost::system::system_error const &se)
+              {
+                if (se.code ().value () == ENOENT)
+                {
+                  // unlink() always throws, even  if the file did not
+                  // exist, so we have to ignore this error here.
+                }
+                else
+                {
+                  throw;
+                }
+              }
             }
             seg->create ();
           }

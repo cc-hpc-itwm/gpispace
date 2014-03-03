@@ -694,11 +694,21 @@ void initialize_state ( boost::filesystem::path const & socket_dir
     try
     {
       state->capi.start ();
-      state->setup_transfer_buffer();
     }
     catch (std::exception const & ex)
     {
       std::cerr << "could not connect to " << socket_file << ": " << ex.what() << std::endl;
+      return;
+    }
+
+    try
+    {
+      state->setup_transfer_buffer();
+    }
+    catch (std::exception const & ex)
+    {
+      std::cerr << "could not setup transfer buffer: " << ex.what() << std::endl;
+      return;
     }
   }
 }
