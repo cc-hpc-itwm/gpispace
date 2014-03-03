@@ -158,6 +158,8 @@ GenericDaemon::~GenericDaemon()
 
   _registration_threads.stop_all();
 
+  delete ptr_workflow_engine_;
+
   _event_handler_thread.interrupt();
   if (_event_handler_thread.joinable())
   {
@@ -170,8 +172,6 @@ GenericDaemon::~GenericDaemon()
     _scheduling_thread.join();
   }
   ptr_scheduler_.reset();
-
-  delete ptr_workflow_engine_;
 
   _network_strategy.reset();
 
