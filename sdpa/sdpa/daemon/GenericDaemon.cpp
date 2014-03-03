@@ -1083,10 +1083,13 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
   }
 }
 
-void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
-{
-  delay (boost::bind (&GenericDaemon::delayed_discover, this, discover_id, job_id));
-}
+    void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
+    {
+      delay ( boost::bind ( &GenericDaemon::delayed_discover, this
+                          , discover_id, job_id
+                          )
+            );
+    }
     void GenericDaemon::delayed_discover
       (we::layer::id_type discover_id, we::layer::id_type job_id)
     {
@@ -1095,33 +1098,33 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
       const boost::optional<worker_id_t> worker_id
         (scheduler()->findSubmOrAckWorker(job_id));
 
-        if (pJob && worker_id)
-        {
-          m_map_discover_ids.insert
-            ( std::make_pair ( discover_id
-                             , job_info_t ( sdpa::daemon::WE
-                                          , job_id
-                                          , pJob->getStatus()
-                                          )
-                             )
-            );
-          child_proxy (this, *worker_id).discover_job_states
-            (job_id, discover_id);
-        }
-        else if (pJob)
-        {
-          workflowEngine()->discovered
-            ( discover_id
-            , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
-            );
-        }
-        else
-        {
-          workflowEngine()->discovered
-            ( discover_id
-            , discovery_info_t (job_id, boost::none, discovery_info_set_t())
-            );
-        }
+      if (pJob && worker_id)
+      {
+        m_map_discover_ids.insert
+          ( std::make_pair ( discover_id
+                           , job_info_t ( sdpa::daemon::WE
+                                        , job_id
+                                        , pJob->getStatus()
+                                        )
+                           )
+          );
+        child_proxy (this, *worker_id).discover_job_states
+          (job_id, discover_id);
+      }
+      else if (pJob)
+      {
+        workflowEngine()->discovered
+          ( discover_id
+          , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
+          );
+      }
+      else
+      {
+        workflowEngine()->discovered
+          ( discover_id
+          , discovery_info_t (job_id, boost::none, discovery_info_set_t())
+          );
+      }
     }
 
     void GenericDaemon::handleDiscoverJobStatesEvent
@@ -1132,76 +1135,80 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
       const boost::optional<worker_id_t> worker_id
         (scheduler()->findSubmOrAckWorker(pEvt->job_id()));
 
-        if (pJob && worker_id)
-        {
-          m_map_discover_ids.insert
-            ( std::make_pair ( pEvt->discover_id()
-                             , job_info_t ( pEvt->from()
-                                          , pEvt->job_id()
-                                          , pJob->getStatus()
-                                          )
-                             )
-            );
+      if (pJob && worker_id)
+      {
+        m_map_discover_ids.insert
+          ( std::make_pair ( pEvt->discover_id()
+                           , job_info_t ( pEvt->from()
+                                        , pEvt->job_id()
+                                        , pJob->getStatus()
+                                        )
+                           )
+          );
 
-          child_proxy (this, *worker_id).discover_job_states
-            (pEvt->job_id(), pEvt->discover_id());
-        }
-        //! \todo Other criteria to know it was submitted to the
-        //! wfe. All jobs are regarded as going to the wfe and the
-        //! only way to prevent a loop is to check whether the
-        //! discover comes out of the wfe. Special "worker" id?
-        else if (pJob && workflowEngine())
-        {
-          m_map_discover_ids.insert
-            ( std::make_pair ( pEvt->discover_id()
-                             , job_info_t ( pEvt->from()
-                                          , pEvt->job_id()
-                                          , pJob->getStatus()
-                                          )
-                             )
-            );
-          //! \todo There is a race here: between SubmitJobAck and
-          //! we->submit(), there's still a lot of stuff. We can't
-          //! guarantee, that the job is already submitted to the
-          //! wfe! We need to handle the "pending" state.
-          workflowEngine()->discover (pEvt->discover_id(), pEvt->job_id());
-        }
-        else if (pJob)
-        {
-          parent_proxy (this, pEvt->from()).discover_job_states_reply
-            ( pEvt->discover_id()
-            , discovery_info_t (pEvt->job_id(), pJob->getStatus(), discovery_info_set_t())
-            );
-        }
-        else
-        {
-          parent_proxy (this, pEvt->from()).discover_job_states_reply
-            ( pEvt->discover_id()
-            , discovery_info_t (pEvt->job_id(), boost::none, discovery_info_set_t())
-            );
-        }
+        child_proxy (this, *worker_id).discover_job_states
+          (pEvt->job_id(), pEvt->discover_id());
+      }
+      //! \todo Other criteria to know it was submitted to the
+      //! wfe. All jobs are regarded as going to the wfe and the only
+      //! way to prevent a loop is to check whether the discover comes
+      //! out of the wfe. Special "worker" id?
+      else if (pJob && workflowEngine())
+      {
+        m_map_discover_ids.insert
+          ( std::make_pair ( pEvt->discover_id()
+                           , job_info_t ( pEvt->from()
+                                        , pEvt->job_id()
+                                        , pJob->getStatus()
+                                        )
+                           )
+          );
+        //! \todo There is a race here: between SubmitJobAck and
+        //! we->submit(), there's still a lot of stuff. We can't
+        //! guarantee, that the job is already submitted to the wfe!
+        //! We need to handle the "pending" state.
+        workflowEngine()->discover (pEvt->discover_id(), pEvt->job_id());
+      }
+      else if (pJob)
+      {
+        parent_proxy (this, pEvt->from()).discover_job_states_reply
+          ( pEvt->discover_id()
+          , discovery_info_t (pEvt->job_id(), pJob->getStatus(), discovery_info_set_t())
+          );
+      }
+      else
+      {
+        parent_proxy (this, pEvt->from()).discover_job_states_reply
+          ( pEvt->discover_id()
+          , discovery_info_t (pEvt->job_id(), boost::none, discovery_info_set_t())
+          );
+      }
     }
 
-void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
-{
-  sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
-  parent_proxy (this, master_name).discover_job_states_reply
-    (discover_id, discover_result);
-  m_map_discover_ids.erase(discover_id);
-}
+    void GenericDaemon::discovered
+      (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
+    {
+      sdpa::agent_id_t master_name
+        (m_map_discover_ids.at (discover_id).disc_issuer());
 
-void GenericDaemon::handleDiscoverJobStatesReplyEvent
-  (const sdpa::events::DiscoverJobStatesReplyEvent* e)
-{
-  const sdpa::job_info_t& job_info (m_map_discover_ids.at (e->discover_id()));
-  const sdpa::discovery_info_t discovery_info
-    (job_info.job_id(), job_info.job_status(), e->discover_result().children());
+      parent_proxy (this, master_name).discover_job_states_reply
+        (discover_id, discover_result);
 
-  parent_proxy (this, job_info.disc_issuer()).discover_job_states_reply
-    (e->discover_id(), discovery_info);
+      m_map_discover_ids.erase (discover_id);
+    }
 
-  m_map_discover_ids.erase (e->discover_id());
-}
+    void GenericDaemon::handleDiscoverJobStatesReplyEvent
+      (const sdpa::events::DiscoverJobStatesReplyEvent* e)
+    {
+      const sdpa::job_info_t& job_info (m_map_discover_ids.at (e->discover_id()));
+      const sdpa::discovery_info_t discovery_info
+        (job_info.job_id(), job_info.job_status(), e->discover_result().children());
+
+      parent_proxy (this, job_info.disc_issuer()).discover_job_states_reply
+        (e->discover_id(), discovery_info);
+
+      m_map_discover_ids.erase (e->discover_id());
+    }
 
 
 void GenericDaemon::handleRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt )
