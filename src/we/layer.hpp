@@ -149,7 +149,6 @@ namespace we
                           );
       void discover_delayed (activity_data_type&, id_type discover_id);
 
-      void request_cancel (id_type, boost::function<void()> after);
       void cancel_child_jobs (activity_data_type, boost::function<void()> after);
 
       boost::unordered_map<id_type, boost::function<void()> >
