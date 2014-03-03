@@ -423,7 +423,7 @@ namespace gpi
 
       void process_t::reader_thread_main(const int fd)
       {
-        LOG(TRACE, "process container (" << m_id << ") started");
+        LOG(TRACE, "process container (" << m_id << ") started on fd " << fd);
         for (;;)
         {
           try
