@@ -4,6 +4,9 @@
 #include "tests_config.hpp"
 #include <utils.hpp>
 
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+
 #include <we/layer.hpp>
 
 #include <boost/ptr_container/ptr_list.hpp>
@@ -355,6 +358,37 @@ BOOST_AUTO_TEST_CASE (remove_workers)
 
 namespace
 {
+  class fake_drts_worker_discovering_running :
+    public utils::fake_drts_worker_notifying_module_call_submission
+  {
+  public:
+    fake_drts_worker_discovering_running
+        ( boost::function<void (std::string)> announce_job
+        , std::string kvs_host
+        , std::string kvs_port
+        , utils::agent const& master
+        )
+      : utils::fake_drts_worker_notifying_module_call_submission
+        (announce_job, kvs_host, kvs_port, master)
+    {}
+
+    virtual void handleDiscoverJobStatesEvent
+      (const sdpa::events::DiscoverJobStatesEvent* e)
+    {
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          ( new sdpa::events::DiscoverJobStatesReplyEvent
+            ( _name
+            , e->from()
+            , e->discover_id()
+            , sdpa::discovery_info_t
+              (e->job_id(), sdpa::status::RUNNING, sdpa::discovery_info_set_t())
+            )
+          )
+        );
+    }
+  };
+
   std::size_t recursive_child_count (sdpa::discovery_info_t info)
   {
     std::size_t count (info.children().size());
@@ -402,7 +436,7 @@ namespace
 
     fhg::util::thread::event<std::string> job_submitted;
 
-    utils::fake_drts_worker_notifying_module_call_submission worker
+    fake_drts_worker_discovering_running worker
       ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
       , kvs_host(), kvs_port()
       , *last_agent
