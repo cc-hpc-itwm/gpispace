@@ -8,6 +8,7 @@
 #include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <sdpa/events/CapabilitiesGainedEvent.hpp>
 
 #include <drts/worker/drts.hpp>
 
@@ -227,6 +228,67 @@ namespace utils
     std::map<std::string, std::string> _config_variables;
     boost::shared_ptr<fhg::core::kernel_t> _kernel;
     boost::thread _thread;
+  };
+
+  class BasicWorker : public sdpa::events::EventHandler,
+                      boost::noncopyable
+  {
+  public:
+    BasicWorker( std::string name
+                 , std::string master_name
+                 , std::string cpb_name = ""
+                 )
+     : _name (name)
+     , _master_name(master_name)
+     , _kvs_client
+       ( new fhg::com::kvs::client::kvsc
+         (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
+       )
+     , _network_strategy
+       ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicWorker::sendEventToSelf, this, _1)
+                                        , name
+                                        , fhg::com::host_t ("127.0.0.1")
+                                        , fhg::com::port_t ("0")
+                                        , _kvs_client
+                                        )
+       )
+    {
+      if(!cpb_name.empty())
+      {
+          sdpa::capability_t cpb(cpb_name, name);
+          _capabilities.insert(cpb);
+      }
+
+      sdpa::events::WorkerRegistrationEvent::Ptr
+        pEvtWorkerReg (new sdpa::events::WorkerRegistrationEvent( _name
+                                                                  , _master_name
+                                                                  , boost::none
+                                                                  , _capabilities ));
+      _network_strategy->perform (pEvtWorkerReg);
+
+      if(!_capabilities.empty())
+      {
+          sdpa::events::CapabilitiesGainedEvent::Ptr
+            ptrCpbGainEvt( new sdpa::events::CapabilitiesGainedEvent(name, master_name, _capabilities) );
+          _network_strategy->perform (ptrCpbGainEvt);
+      }
+    }
+
+    virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
+    {
+      pEvt->handleBy (this);
+    }
+
+    void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*){}
+
+    void getCapabilities(sdpa::capabilities_set_t& cpbset) { cpbset = _capabilities; }
+
+  protected:
+    std::string _name;
+    std::string _master_name;
+    sdpa::capabilities_set_t _capabilities;
+    fhg::com::kvs::kvsc_ptr_t _kvs_client;
+    boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
   };
 
   namespace client
