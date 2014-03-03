@@ -535,6 +535,10 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
       Job* pJob (findJob(job_id));
       if (!pJob)
       {
+        //! \note Job may have been removed between wfe requesting
+        //! cancel and event thread handling this, which is not an
+        //! error: wfe correctly handles that situation and expects us
+        //! to ignore it.
         return;
       }
 
