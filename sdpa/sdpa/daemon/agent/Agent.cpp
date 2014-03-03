@@ -313,40 +313,66 @@ namespace sdpa
     {
       Job* pJob (findJob (pEvt->job_id()));
 
-      // if the event came from outside, forward it to the workflow engine
       if (pEvt->is_external())
       {
-        if (!pJob)
+        if (pJob)
+        {
+          m_map_discover_ids.insert
+            ( std::make_pair ( pEvt->discover_id()
+                             , job_info_t ( pEvt->from()
+                                          , pEvt->job_id()
+                                          , pJob->getStatus()
+                                          )
+                             )
+            );
+          //! \todo There is a race here: between SubmitJobAck and
+          //! we->submit(), there's still a lot of stuff. We can't
+          //! guarantee, that the job is already submitted to the wfe!
+          //! We need to handle the "pending" state, but can't even do
+          //! that: between setting state to pending and submitting to
+          //! wfe, there also is a race.
+          workflowEngine()->discover (pEvt->discover_id(), pEvt->job_id());
+        }
+        else
         {
           parent_proxy (this, pEvt->from()).discover_job_states_reply
             ( pEvt->discover_id()
-            , sdpa::discovery_info_t
-              (pEvt->job_id(), boost::none, sdpa::discovery_info_set_t())
+            , discovery_info_t (pEvt->job_id(), boost::none, discovery_info_set_t())
             );
-
-          return;
         }
-
-        m_map_discover_ids.insert
-          ( std::make_pair ( pEvt->discover_id()
-                           , job_info_t ( pEvt->from()
-                                        , pEvt->job_id()
-                                        , pJob->getStatus()
-                                        )
-                           )
-          );
-        workflowEngine()->discover (pEvt->discover_id(), pEvt->job_id());
       }
       else
       {
-        //! Note: the layer guarantees that the job was already submitted
-        workflowEngine()->discovered ( pEvt->discover_id()
-                                     , sdpa::discovery_info_t
-                                       ( pEvt->job_id()
-                                       , pJob->getStatus()
-                                       , sdpa::discovery_info_set_t()
-                                       )
-                                     );
+        const boost::optional<worker_id_t> worker_id
+          (scheduler()->findSubmOrAckWorker(pEvt->job_id()));
+
+        if (worker_id)
+        {
+          m_map_discover_ids.insert
+            ( std::make_pair ( pEvt->discover_id()
+                             , job_info_t ( pEvt->from()
+                                          , pEvt->job_id()
+                                          , pJob->getStatus()
+                                          )
+                             )
+            );
+          child_proxy (this, *worker_id).discover_job_states
+            (pEvt->job_id(), pEvt->discover_id());
+        }
+        else if (pJob)
+        {
+          workflowEngine()->discovered
+            ( pEvt->discover_id()
+            , discovery_info_t (pEvt->job_id(), pJob->getStatus(), discovery_info_set_t())
+            );
+        }
+        else
+        {
+          workflowEngine()->discovered
+            ( pEvt->discover_id()
+            , discovery_info_t (pEvt->job_id(), boost::none, discovery_info_set_t())
+            );
+        }
       }
     }
   }
