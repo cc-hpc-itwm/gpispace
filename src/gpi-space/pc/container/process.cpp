@@ -466,7 +466,6 @@ namespace gpi
         catch (boost::system::system_error const& se)
         {
           LOG(ERROR, "could not read " << len << " bytes from client: " << se.what());
-          close_socket (fd);
           m_handle_process_error (m_id, se.code().value());
           return -se.code().value();
         }
