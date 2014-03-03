@@ -180,32 +180,30 @@ namespace sdpa
       }
     }
 
-    void Agent::handleCancelJobEvent (const events::CancelJobEvent* pEvt )
+    void Agent::handleCancelJobEvent (const events::CancelJobEvent* pEvt)
     {
-      Job* pJob (findJob(pEvt->job_id()));
+      Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
-          throw std::runtime_error ("No such job found");
+        throw std::runtime_error ("No such job found");
       }
 
-        if (pJob->getStatus() == sdpa::status::CANCELING)
-        {
-          throw std::runtime_error
-            ("A cancelation request for this job was already posted!");
-        }
+      if (pJob->getStatus() == sdpa::status::CANCELING)
+      {
+        throw std::runtime_error
+          ("A cancelation request for this job was already posted!");
+      }
 
-        if (sdpa::status::is_terminal (pJob->getStatus()))
-        {
-          throw std::runtime_error
-            ( "Cannot cancel an already terminated job, its current status is: "
-            + sdpa::status::show (pJob->getStatus())
-            );
-        }
+      if (sdpa::status::is_terminal (pJob->getStatus()))
+      {
+        throw std::runtime_error
+          ( "Cannot cancel an already terminated job, its current status is: "
+          + sdpa::status::show (pJob->getStatus())
+          );
+      }
 
-        // a Cancel message came from the upper level -> forward
-        // cancellation request to WE
-        workflowEngine()->cancel (pEvt->job_id());
-        pJob->CancelJob();
+      workflowEngine()->cancel (pEvt->job_id());
+      pJob->CancelJob();
     }
 
     void Agent::handleCancelJobAckEvent (const events::CancelJobAckEvent* pEvt)
