@@ -253,13 +253,8 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   // if it comes from outside and the agent has an WFE, submit it to it
   if(hasWorkflowEngine() )
   {
-/*
-   Submit a workflow to the workflow engine
-*/
-{
-  const sdpa::job_id_t &jobId (job_id);
   try {
-    Job* pJob = findJob(jobId);
+    Job* pJob = findJob(job_id);
 
     // Should set the workflow_id here, or send it together with the workflow description
     pJob->Dispatch();
@@ -270,7 +265,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
       std::list<std::string> workers; workers.push_back (name());
       const sdpa::daemon::NotificationEvent evt
         ( workers
-        , jobId
+        , job_id
         , NotificationEvent::STATE_STARTED
         , act
         );
@@ -278,14 +273,14 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
       m_guiService->notify (evt);
     }
 
-    workflowEngine()->submit (jobId, act);
+    workflowEngine()->submit (job_id, act);
   }
   catch(const JobNotFoundException& ex)
   {
     events::JobFailedEvent::Ptr pEvtJobFailed
       (new events::JobFailedEvent( sdpa::daemon::WE
                                  , name()
-                                 , jobId
+                                 , job_id
                                  , "job could not be found"
                                  )
       );
@@ -294,19 +289,18 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   }
   catch(const std::exception& ex)
   {
-    LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<jobId<<" to the workflow engine!");
+    LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
 
      events::JobFailedEvent::Ptr pEvtJobFailed
        (new events::JobFailedEvent( sdpa::daemon::WE
                                   , name()
-                                  , jobId
+                                  , job_id
                                   , ex.what()
                                   )
      );
 
      sendEventToSelf(pEvtJobFailed);
    }
-}
   }
   else {
     scheduler()->enqueueJob(job_id);
