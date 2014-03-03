@@ -58,12 +58,14 @@ namespace we
       void failed (id_type, std::string reason);
 
       // reply to _rts_cancel (after top level canceled/failure) -> childs only
+      // shall not be called from within rts_cancel!
       void canceled (id_type);
 
       // initial from exec_layer -> top level, unique discover_id
       void discover (id_type discover_id, id_type);
 
       // reply to _rts_discover (after top level discovered/failure) -> childs only
+      // shall not be called from within rts_discover!
       void discovered (id_type discover_id, sdpa::discovery_info_t);
 
     private:
