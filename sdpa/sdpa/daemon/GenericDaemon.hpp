@@ -185,7 +185,7 @@ namespace sdpa {
       std::string gen_id();
 
     private:
-      void addJob ( const sdpa::job_id_t& job_id
+      Job* addJob ( const sdpa::job_id_t& job_id
                   , const job_desc_t desc
                   , bool is_master_job
                   , const worker_id_t& owner
@@ -204,13 +204,15 @@ namespace sdpa {
 
         if (!job_req_list.empty())
           job_requirements_.insert(std::make_pair(job_id, job_req_list));
+
+        return pJob;
       }
 
     public:
       void TEST_add_dummy_job
         (const sdpa::job_id_t& job_id, const job_requirements_t& req_list)
       {
-        return addJob (job_id, job_id, false, "", req_list);
+        addJob (job_id, job_id, false, "", req_list);
       }
       Job* findJob(const sdpa::job_id_t& job_id ) const
       {
