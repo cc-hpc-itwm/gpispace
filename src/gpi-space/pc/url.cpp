@@ -73,6 +73,11 @@ namespace gpi
         return ! (isalnum (*pos) || *pos == '.');
       }
 
+      bool is_end_of_path (fhg::util::parse::position const &pos)
+      {
+        return *pos == '?';
+      }
+
       std::string require_host (fhg::util::parse::position& pos)
       {
         if (pos.end() || ! (isalnum (*pos) || *pos == '*'))
@@ -115,7 +120,7 @@ namespace gpi
           {
             m_path += *pos;
             ++pos;
-            m_path += fhg::util::parse::require::identifier (pos);
+            m_path += fhg::util::parse::until (pos, &is_end_of_path);
           }
 
           char sep ('?');
