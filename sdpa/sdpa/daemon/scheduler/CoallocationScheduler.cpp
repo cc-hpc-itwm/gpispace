@@ -8,38 +8,14 @@ namespace sdpa
 {
   namespace daemon
   {
-    CoallocationScheduler::CoallocationScheduler
-        (GenericDaemon* pCommHandler, bool TEST_without_threads)
+    CoallocationScheduler::CoallocationScheduler (GenericDaemon* pCommHandler)
       : ptr_comm_handler_ ( pCommHandler
                           ? pCommHandler
                           : throw std::runtime_error
                             ("CoallocationScheduler ctor with NULL ptr_comm_handler")
                           )
       , _worker_manager()
-    {
-      if (!TEST_without_threads)
-      {
-        m_thread_run = boost::thread (&CoallocationScheduler::run, this);
-        m_thread_feed = boost::thread (&CoallocationScheduler::feedWorkers, this);
-      }
-    }
-
-    CoallocationScheduler::~CoallocationScheduler()
-    {
-      m_thread_run.interrupt();
-      m_thread_feed.interrupt();
-
-      if (m_thread_run.joinable())
-      {
-        m_thread_run.join();
-      }
-
-      if (m_thread_feed.joinable())
-      {
-        m_thread_feed.join();
-      }
-    }
-
+    {}
 
     bool CoallocationScheduler::addWorker
       ( const Worker::worker_id_t& workerId
@@ -48,10 +24,7 @@ namespace sdpa
       )
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      const bool ret (_worker_manager.addWorker (workerId, capacity, cpbset));
-      cond_workers_registered.notify_all();
-      cond_feed_workers.notify_one();
-      return ret;
+      return _worker_manager.addWorker (workerId, capacity, cpbset);
     }
 
     void CoallocationScheduler::rescheduleWorkerJob
@@ -66,7 +39,7 @@ namespace sdpa
       {
         releaseReservation (job_id);
         pJob->Reschedule(); // put the job back into the pending state
-        schedule (job_id);
+        enqueueJob (job_id);
       }
     }
 
@@ -77,14 +50,9 @@ namespace sdpa
       const Worker::ptr_t pWorker = findWorker (worker_id);
       pWorker->set_disconnected (true);
 
-      sdpa::job_id_list_t workerJobList
-        (_worker_manager.getJobListAndCleanQueues (pWorker));
-
-      while (!workerJobList.empty())
+      BOOST_FOREACH (sdpa::job_id_t jobId, pWorker->getJobListAndCleanQueues())
       {
-        sdpa::job_id_t jobId = workerJobList.front();
         rescheduleWorkerJob (worker_id, jobId);
-        workerJobList.pop_front();
       }
 
       _worker_manager.deleteWorker (worker_id);
@@ -92,22 +60,17 @@ namespace sdpa
 
     void CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
     {
-      if (!pending_jobs_queue_.erase (job))
+      boost::recursive_mutex::scoped_lock const _ (mtx_);
+      if (!_common_queue.erase(job))
       {
         _worker_manager.deleteJob (job);
       }
     }
 
-    void CoallocationScheduler::schedule (const sdpa::job_id_t& jobId)
-    {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
-      _worker_manager.dispatchJob (jobId);
-      cond_feed_workers.notify_one();
-    }
-
     void CoallocationScheduler::enqueueJob (const sdpa::job_id_t& jobId)
     {
-      pending_jobs_queue_.push (jobId);
+      boost::recursive_mutex::scoped_lock const _ (mtx_);
+      _common_queue.push (jobId);
     }
 
     Worker::ptr_t CoallocationScheduler::findWorker
@@ -121,36 +84,6 @@ namespace sdpa
         (const sdpa::job_id_t& job_id) const
     {
       return _worker_manager.findSubmOrAckWorker (job_id);
-    }
-
-    void CoallocationScheduler::feedWorkers()
-    {
-      for (;;)
-      {
-        boost::recursive_mutex::scoped_lock lock (mtx_);
-        cond_feed_workers.wait (lock);
-
-        assignJobsToWorkers();
-      }
-    }
-
-    void CoallocationScheduler::run()
-    {
-      for (;;)
-      {
-        sdpa::job_id_t jobId = pending_jobs_queue_.pop_and_wait();
-
-        if (_worker_manager.numberOfWorkers() > 0)
-        {
-          schedule (jobId);
-        }
-        else
-        {
-          enqueueJob (jobId);
-          boost::recursive_mutex::scoped_lock lock (mtx_);
-          cond_workers_registered.wait (lock);
-        }
-      }
     }
 
     void CoallocationScheduler::acknowledgeJob
@@ -170,29 +103,26 @@ namespace sdpa
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
 
-      _worker_manager.deleteWorkerJob (worker_id, jobId);
-      cond_feed_workers.notify_one();
+      try
+      {
+        _worker_manager.findWorker (worker_id)->deleteJob (jobId);
+      }
+      catch (WorkerNotFoundException const&)
+      {
+      }
     }
 
     bool CoallocationScheduler::addCapabilities
       (const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      if (_worker_manager.addCapabilities (worker_id, cpbset))
-      {
-        cond_feed_workers.notify_one();
-        return true;
-      }
-      else
-      {
-        return false;
-      }
+      return _worker_manager.findWorker (worker_id)->addCapabilities (cpbset);
     }
 
     void CoallocationScheduler::removeCapabilities
       (const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
     {
-      _worker_manager.removeCapabilities (worker_id, cpbset);
+      _worker_manager.findWorker (worker_id)->removeCapabilities (cpbset);
     }
 
     void CoallocationScheduler::getAllWorkersCapabilities
@@ -205,29 +135,21 @@ namespace sdpa
       (const sdpa::worker_id_t& worker_id)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      try
-      {
-        Worker::ptr_t ptrWorker = findWorker(worker_id);
-        return ptrWorker->capabilities();
-      }
-      catch (WorkerNotFoundException const&)
-      {
-        return sdpa::capabilities_set_t();
-      }
+      return findWorker (worker_id)->capabilities();
     }
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
 
-      sdpa::worker_id_list_t listAvailWorkers;
-      _worker_manager.getListWorkersNotReserved (listAvailWorkers);
+      sdpa::worker_id_list_t listAvailWorkers
+        (_worker_manager.getListWorkersNotReserved());
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
-      while (!_worker_manager.common_queue_.empty() && !listAvailWorkers.empty())
+      while (!_common_queue.empty() && !listAvailWorkers.empty())
       {
-        sdpa::job_id_t jobId (_worker_manager.common_queue_.pop());
+        sdpa::job_id_t jobId (_common_queue.pop());
 
         const job_requirements_t job_reqs
           (ptr_comm_handler_->getJobRequirements (jobId));
@@ -248,7 +170,7 @@ namespace sdpa
 
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
           {
-            _worker_manager.reserveWorker (*matchingWorkerId);
+            _worker_manager.findWorker (*matchingWorkerId)->reserve();
 
             allocation_table_t::iterator it (allocation_table_.find(jobId));
             if (it == allocation_table_.end())
@@ -280,7 +202,10 @@ namespace sdpa
 
             if (list_invalid_workers.empty())
             {
-              _worker_manager.markJobSubmitted (list_reserved_workers, jobId);
+              BOOST_FOREACH (const Worker::worker_id_t& wid, list_reserved_workers)
+              {
+                _worker_manager.findWorker (wid)->submit (jobId);
+              }
               ptr_comm_handler_->serveJob (list_reserved_workers, jobId);
             }
             else
@@ -290,12 +215,12 @@ namespace sdpa
                 pReservation->delWorker (wid);
               }
 
-              _worker_manager.common_queue_.push_front (jobId);
+              _common_queue.push_front (jobId);
             }
           }
           else
           {
-            _worker_manager.common_queue_.push_front (jobId);
+            _common_queue.push_front (jobId);
           }
         }
         else
@@ -304,9 +229,9 @@ namespace sdpa
         }
       }
 
-      BOOST_REVERSE_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
+      BOOST_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
       {
-        _worker_manager.common_queue_.push_front (id);
+        _common_queue.push (id);
       }
     }
 
@@ -314,37 +239,21 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
-      //! \todo Explain comment: This is a try, not an if
-      // if the status is not terminal
-      try
+      const allocation_table_t::const_iterator it
+        (allocation_table_.find (jobId));
+
+      if (it != allocation_table_.end())
       {
-        const allocation_table_t::const_iterator it
-          (allocation_table_.find (jobId));
-
-        if (it == allocation_table_.end())
-        {
-          return;
-        }
-
         boost::recursive_mutex::scoped_lock const _ (mtx_);
         Reservation* pReservation (it->second);
         worker_id_list_t listWorkers (pReservation->getWorkerList());
         BOOST_FOREACH (sdpa::worker_id_t const& workerId, listWorkers)
         {
-          try
-          {
-            findWorker (workerId)->free();
-          }
-          catch (WorkerNotFoundException const&)
-          {
-          }
+          findWorker (workerId)->free();
         }
 
         delete it->second;
         allocation_table_.erase (it);
-      }
-      catch (JobNotFoundException const&)
-      {
       }
     }
 

@@ -18,7 +18,6 @@ Worker::Worker(	const worker_id_t& name,
     capacity_(cap),
     location_(location),
     tstamp_(fhg::util::now()),
-    last_time_served_(0),
     last_schedule_time_(0),
     timedout_(false),
     disconnected_(false),
@@ -49,7 +48,6 @@ void Worker::update()
 void Worker::submit(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
-  setLastTimeServed(fhg::util::now());
   submitted_.push(jobId);
 }
 
@@ -88,7 +86,7 @@ const sdpa::capabilities_set_t& Worker::capabilities() const
 
 bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 {
-  if(recvCpbSet.empty())
+  if (recvCpbSet.empty())
     return false;
 
   lock_type const _ (mtx_);
@@ -96,16 +94,18 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
   bool bModified = false;
   BOOST_FOREACH (sdpa::Capability const& capability, recvCpbSet)
   {
-      sdpa::capabilities_set_t::iterator itwcpb = capabilities_.find(capability);
-      if( itwcpb == capabilities_.end() ) {
-          capabilities_.insert (capability);
-          bModified = true;
-      }
-      else
-	if( itwcpb->depth()>capability.depth() ) {
-	    const_cast<sdpa::capability_t&>(*itwcpb).setDepth(capability.depth());
-	    bModified = true;
-	}
+    sdpa::capabilities_set_t::iterator itwcpb (capabilities_.find (capability));
+    if (itwcpb == capabilities_.end())
+    {
+      capabilities_.insert (capability);
+      bModified = true;
+    }
+    else if (itwcpb->depth() > capability.depth())
+    {
+      capabilities_.erase (itwcpb);
+      capabilities_.insert (capability);
+      bModified = true;
+    }
   }
 
   return bModified;
@@ -149,4 +149,26 @@ void Worker::free()
 {
   lock_type lock(mtx_);
   reserved_ = false;
+}
+
+namespace
+{
+  void addToList (Worker::JobQueue* pQueue, sdpa::job_id_list_t& jobList)
+  {
+    while (!pQueue->empty())
+    {
+      jobList.push_back (pQueue->pop());
+    }
+  }
+}
+
+sdpa::job_id_list_t Worker::getJobListAndCleanQueues()
+{
+  lock_type const _ (mtx_);
+  sdpa::job_id_list_t listAssignedJobs;
+
+  addToList (&submitted_, listAssignedJobs);
+  addToList (&acknowledged_, listAssignedJobs);
+
+  return listAssignedJobs;
 }

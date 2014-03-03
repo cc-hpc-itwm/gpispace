@@ -21,9 +21,7 @@ namespace sdpa
     class CoallocationScheduler
     {
     public:
-      CoallocationScheduler
-        (GenericDaemon* pHandler, bool TEST_without_threads = false);
-      ~CoallocationScheduler();
+      CoallocationScheduler (GenericDaemon* pHandler);
 
       // -- used by daemon
       void delete_job (const sdpa::job_id_t&);
@@ -45,6 +43,7 @@ namespace sdpa
         (const Worker::worker_id_t&, const sdpa::job_id_t&);
       void enqueueJob (const sdpa::job_id_t&);
       Worker::ptr_t findWorker (const Worker::worker_id_t&);
+      void request_scheduling();
 
       // used by daemon and test
       bool addWorker ( const Worker::worker_id_t&
@@ -58,27 +57,16 @@ namespace sdpa
       // used by daemon and self and test
       void deleteWorkerJob (const Worker::worker_id_t&, const sdpa::job_id_t&);
       void releaseReservation (const sdpa::job_id_t&);
-
-      // -- used by self and test
-      void schedule (const sdpa::job_id_t&);
       void assignJobsToWorkers();
 
     private:
-      void feedWorkers();
-      void run();
-
-
       GenericDaemon* ptr_comm_handler_;
 
       SynchronizedQueue<std::list<sdpa::job_id_t> > pending_jobs_queue_;
       WorkerManager _worker_manager;
+      SynchronizedQueue<std::list<sdpa::job_id_t> > _common_queue;
 
       mutable boost::recursive_mutex mtx_;
-      boost::condition_variable_any cond_feed_workers;
-      boost::condition_variable_any cond_workers_registered;
-
-      boost::thread m_thread_run;
-      boost::thread m_thread_feed;
 
       class Reservation : boost::noncopyable
       {

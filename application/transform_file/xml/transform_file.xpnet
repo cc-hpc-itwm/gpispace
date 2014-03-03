@@ -123,7 +123,7 @@
           n_read_slots  = input_n_read_slots;
           n_write_slots = input_n_write_slots;
 
-          LOG (INFO, "The config is: " << config);
+          MLOG (INFO, "The config is: " << config);
 
           return config;
           ]]></code>
@@ -265,7 +265,7 @@
           )
           );
 
-          LOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully into the virtual memory");
+          MLOG ( INFO, "The chunk "<<chunk_and_slot.chunk<<" was successfully into the virtual memory");
 
           pnetc::type::chunk_read_info::chunk_read_info c_r_info;
 
@@ -298,7 +298,7 @@
           <cinclude href="fvm-pc/pc.hpp"/>
           <cinclude href="ctype.h"/>
           <code><![CDATA[
-          LOG (INFO, "Transform the chunk "<<chunk_read_info.chunk_id<<" now ...");
+          MLOG (INFO, "Transform the chunk "<<chunk_read_info.chunk_id<<" now ...");
 
           pnetc::type::chunk_write_info::chunk_write_info c_w_info;
 
@@ -456,7 +456,7 @@
           <cinclude href="fhglog/fhglog.hpp"/>
           <cinclude href="util/memory.hpp"/>
           <code><![CDATA[
-          	LOG (INFO, "finalize: " << config);
+          	MLOG (INFO, "finalize: " << config);
 			namespace vmem = ::transform_file::util::memory::global;
 
           	vmem::free(config.read_area);

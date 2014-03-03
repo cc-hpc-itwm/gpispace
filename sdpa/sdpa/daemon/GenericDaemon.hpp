@@ -121,7 +121,6 @@ namespace sdpa {
       OVERWRITTEN_IN_TEST void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
 
       void addCapability(const capability_t& cpb);
-      void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
       boost::shared_ptr<CoallocationScheduler> scheduler() const {return ptr_scheduler_;}
     protected:
@@ -200,7 +199,11 @@ namespace sdpa {
 
         Job* pJob = new Job( job_id, desc, is_master_job, owner );
 
-        job_map_.insert(std::make_pair (job_id, pJob));
+        if (!job_map_.insert(std::make_pair (job_id, pJob)).second)
+        {
+          delete pJob;
+          throw std::runtime_error ("job with same id already exists");
+        }
 
         if (!job_req_list.empty())
           job_requirements_.insert(std::make_pair(job_id, job_req_list));
@@ -275,6 +278,13 @@ namespace sdpa {
 
     protected:
       boost::shared_ptr<CoallocationScheduler> ptr_scheduler_;
+
+      boost::mutex _scheduling_thread_mutex;
+      boost::condition_variable _scheduling_thread_notifier;
+      boost::thread _scheduling_thread;
+      void scheduling_thread();
+      void request_scheduling();
+
       boost::optional<boost::mt19937> _random_extraction_engine;
       we::layer* ptr_workflow_engine_;
 
@@ -306,6 +316,58 @@ namespace sdpa {
 
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
+
+    protected:
+      struct child_proxy
+      {
+        child_proxy (GenericDaemon*, worker_id_t);
+
+        void worker_registration_ack() const;
+
+        void submit_job
+          (boost::optional<job_id_t>, job_desc_t, sdpa::worker_id_list_t) const;
+        void cancel_job (job_id_t) const;
+
+        void job_failed_ack (job_id_t) const;
+        void job_finished_ack (job_id_t) const;
+
+        void discover_job_states (job_id_t, job_id_t discover_id) const;
+
+      private:
+        GenericDaemon* _that;
+        worker_id_t _name;
+      };
+
+      struct parent_proxy
+      {
+        parent_proxy (GenericDaemon*, worker_id_t);
+
+        void worker_registration
+          (boost::optional<unsigned int> capacity, capabilities_set_t) const;
+
+        void job_failed (job_id_t, std::string error_message) const;
+        void job_finished (job_id_t, job_result_t) const;
+
+        void cancel_job_ack (job_id_t) const;
+        //! \todo Client only. Move to client_proxy?
+        void delete_job_ack (job_id_t) const;
+        void submit_job_ack (job_id_t) const;
+
+        void capabilities_gained (capabilities_set_t) const;
+        void capabilities_lost (capabilities_set_t) const;
+
+        void discover_job_states_reply
+          (job_id_t discover_id, discovery_info_t) const;
+        //! \todo Client only. Move to client_proxy?
+        void query_job_status_reply
+          (job_id_t, status::code, std::string error_message) const;
+        //! \todo Client only. Move to client_proxy?
+        void retrieve_job_results_reply (job_id_t, job_result_t) const;
+
+      private:
+        GenericDaemon* _that;
+        worker_id_t _name;
+      };
     };
   }
 }

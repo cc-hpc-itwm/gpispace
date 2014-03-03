@@ -62,8 +62,7 @@ namespace gpi
         int close_socket (const int fd);
         int checked_read (const int fd, void *buf, const size_t len);
 
-        boost::function <void (gpi::pc::type::process_id_t const&, int)> const&
-          m_handle_process_error;
+        boost::function <void (gpi::pc::type::process_id_t const&, int)> m_handle_process_error;
         const gpi::pc::type::process_id_t m_id;
         int const m_socket;
         memory::manager_t& _memory_manager;

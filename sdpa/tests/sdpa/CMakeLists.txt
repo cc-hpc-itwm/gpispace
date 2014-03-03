@@ -163,19 +163,6 @@ add_custom_target (workflow_coallocation_test
           pnetput
 )
 
-add_custom_target (workflow_coallocation_bad_test
-  COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
-          -p n_tasks_A="1L"
-          -p n_workers_A="0UL"
-          -p n_tasks_B="1L"
-          -p n_workers_B="0UL"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/coallocation_bad_test.pnet"
-  COMMENT "putting tokens into coallocation_bad_test workflow"
-  DEPENDS pnet-coallocation_test-wf
-          pnetput
-)
-
 add_custom_target (workflow_coallocation_test2
   COMMAND ${PNETPUT_LOCATION}
           --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
@@ -314,7 +301,6 @@ fhg_add_test (test_InvalidNbWorkersReq.cpp
                  fhg-plugin
                  ${FhgLog_LIBRARY}
   DEPENDS fvm-fake-plugin
-          workflow_coallocation_bad_test
 )
 
 fhg_add_test (test_DiscoverJobStates.cpp

@@ -82,6 +82,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _name (name)
   , m_arrMasterInfo(arrMasterInfo)
   , ptr_scheduler_ (new CoallocationScheduler (this))
+  , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
   , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer
@@ -163,6 +164,11 @@ GenericDaemon::~GenericDaemon()
     _event_handler_thread.join();
   }
 
+  _scheduling_thread.interrupt();
+  if (_scheduling_thread.joinable())
+  {
+    _scheduling_thread.join();
+  }
   ptr_scheduler_.reset();
 
   delete ptr_workflow_engine_;
@@ -192,13 +198,8 @@ void GenericDaemon::serveJob(const sdpa::worker_id_list_t& worker_list, const jo
 
       BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
       {
-        events::SubmitJobEvent::Ptr pSubmitEvt(new events::SubmitJobEvent(name(),
-                                                          worker_id,
-                                                          ptrJob->id(),
-                                                          ptrJob->description(),
-                                                          worker_list));
-
-        sendEventToOther(pSubmitEvt);
+        child_proxy (this, worker_id).submit_job
+          (ptrJob->id(), ptrJob->description(), worker_list);
       }
   }
 }
@@ -218,7 +219,6 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 {
   const events::SubmitJobEvent& e (*evt);
 
-  if(e.is_external())
   {
     lock_type lock(mtx_master_);
     // check if the incoming event was produced by a master to which the current agent has already registered
@@ -236,49 +236,28 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
   {
     // The job already exists -> generate an error message that the job already exists
 
-    if( e.is_external() )
-    {
         events::ErrorEvent::Ptr pErrorEvt(new events::ErrorEvent(name(), e.from(), events::ErrorEvent::SDPA_EJOBEXISTS, "The job already exists!", e.job_id()) );
         sendEventToOther(pErrorEvt);
-    }
 
     return;
   }
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-  try {
     // One should parse the workflow in order to be able to create a valid job
-    bool b_master_job(e.is_external() && hasWorkflowEngine());
-    addJob(job_id, e.description(), b_master_job, e.from(), job_requirements_t());
-  }
-  catch (std::runtime_error const &ex)
-  {
-    if( e.is_external() )
-    {
-      throw;
-    }
-    else
-    {
-        workflowEngine()->failed (job_id, ex.what());
-    }
-    return;
-  }
+    addJob(job_id, e.description(), hasWorkflowEngine(), e.from(), job_requirements_t());
 
-  if( e.is_external())
-  {
-    events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt(new events::SubmitJobAckEvent(name(), e.from(), job_id));
-    sendEventToOther(pSubmitJobAckEvt);
-  }
+    parent_proxy (this, e.from()).submit_job_ack (job_id);
 
   // check if the message comes from outside or from WFE
   // if it comes from outside and the agent has an WFE, submit it to it
-  if( e.is_external() && hasWorkflowEngine() )
+  if(hasWorkflowEngine() )
   {
     submitWorkflow(job_id);
   }
   else {
     scheduler()->enqueueJob(job_id);
+    request_scheduling();
   }
 }
 
@@ -307,10 +286,9 @@ void GenericDaemon::handleWorkerRegistrationEvent
   const bool was_new_worker
     (scheduler()->addWorker (worker_id, event->capacity(), workerCpbSet));
 
-  sendEventToOther
-    ( events::WorkerRegistrationAckEvent::Ptr
-      (new events::WorkerRegistrationAckEvent (name(), worker_id))
-    );
+  child_proxy (this, worker_id).worker_registration_ack();
+
+  request_scheduling();
 
   if (was_new_worker && !workerCpbSet.empty() && !isTop())
   {
@@ -320,14 +298,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
     {
       if (master.is_registered() && master.name() != worker_id)
       {
-        sendEventToOther
-          ( events::CapabilitiesGainedEvent::Ptr
-            ( new events::CapabilitiesGainedEvent ( name()
-                                                  , master.name()
-                                                  , workerCpbSet
-                                                  )
-            )
-          );
+        parent_proxy (this, master.name()).capabilities_gained (workerCpbSet);
       }
     }
   }
@@ -350,6 +321,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       sdpa::worker_id_t worker_id(error.from());
 
       scheduler()->rescheduleWorkerJob(worker_id, jobId);
+      request_scheduling();
       break;
     }
     case events::ErrorEvent::SDPA_EWORKERNOTREG:
@@ -398,18 +370,14 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
           lock_type lock(mtx_master_);
           BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
           {
-            events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(
-                                  new events::CapabilitiesLostEvent( name(),
-                                                                           masterInfo.name(),
-                                                                           ptrWorker->capabilities()
-                                                                           ));
-
-            sendEventToOther(shpCpbLostEvt);
+            parent_proxy (this, masterInfo.name()).capabilities_lost
+              (ptrWorker->capabilities());
           }
 
           // if there still are registered workers, otherwise declare the remaining
           // jobs failed
           scheduler()->deleteWorker(worker_id); // do a re-scheduling here
+          request_scheduling();
         }
       }
       catch (WorkerNotFoundException const& /*ignored*/)
@@ -492,22 +460,15 @@ try
     throw std::runtime_error ("invalid number of workers required: 0UL");
   }
 
-  {
-    boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+  addJob ( job_id
+         , activity.to_string()
+         , false
+         , sdpa::daemon::WE
+         , job_requirements_t (activity.transition().requirements(), schedule_data)
+         );
 
-    job_requirements_.insert
-      ( std::make_pair ( job_id
-                       , job_requirements_t
-                         (activity.transition().requirements(), schedule_data)
-                       )
-      );
-  }
-
-  sendEventToSelf ( events::SubmitJobEvent::Ptr
-                    ( new events::SubmitJobEvent
-                      (sdpa::daemon::WE, name(), job_id, activity.to_string())
-                    )
-                  );
+  scheduler()->enqueueJob (job_id);
+  request_scheduling();
 }
 catch (std::exception const& ex)
 {
@@ -552,19 +513,11 @@ void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::typ
   }
 
   // forward it up
-  events::JobFinishedEvent::Ptr pEvtJobFinished
-                (new events::JobFinishedEvent( name()
-                                     , pJob->owner()
-                                     , id
-                                     , result.to_string()
-                                     )
-                );
-
   pJob->JobFinished (result.to_string());
 
   if(!isSubscriber(pJob->owner()))
   {
-    sendEventToOther(pEvtJobFinished);
+    parent_proxy (this, pJob->owner()).job_finished (id, result.to_string());
   }
 
   if (m_guiService)
@@ -588,8 +541,8 @@ void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::typ
       events::SDPAEvent::Ptr ptrEvt
         ( new events::JobFinishedEvent ( name()
                                , pair_subscr_joblist.first
-                               , pEvtJobFinished->job_id()
-                               , pEvtJobFinished->result()
+                               , id
+                               , result.to_string()
                                )
         );
 
@@ -615,20 +568,13 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
     throw std::runtime_error ("got failed message for old/unknown Job " + id);
   }
 
-  // forward it up
-  events::JobFailedEvent::Ptr pEvtJobFailed
-    (new events::JobFailedEvent ( name()
-                        , pJob->owner()
-                        , id
-                        , reason
-                        )
-    );
-
   // send the event to the master
   pJob->JobFailed (reason);
 
   if(!isSubscriber(pJob->owner()))
-    sendEventToOther(pEvtJobFailed);
+  {
+    parent_proxy (this, pJob->owner()).job_failed (id, reason);
+  }
 
   if (m_guiService)
   {
@@ -651,7 +597,7 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
         events::JobFailedEvent::Ptr ptrEvt
         ( new events::JobFailedEvent ( name()
                              , pair_subscr_joblist.first
-                             , pEvtJobFailed->job_id()
+                             , id
                              , reason
                              )
         );
@@ -756,41 +702,26 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
       {
       case sdpa::status::FINISHED:
         {
-          sdpa::events::JobFinishedEvent::Ptr pEvtJobFinished
-            ( new sdpa::events::JobFinishedEvent
-              (name(), job->owner(), job->id(), job->result())
-            );
-          sendEventToOther(pEvtJobFinished);
+          parent_proxy (this, job->owner()).job_finished (job->id(), job->result());
         }
         break;
 
       case sdpa::status::FAILED:
         {
-          sdpa::events::JobFailedEvent::Ptr pEvtJobFailed
-            ( new sdpa::events::JobFailedEvent
-              (name(), job->owner(), job->id(), "unknown error: error event resent")
-            );
-          sendEventToOther(pEvtJobFailed);
+          parent_proxy (this, job->owner()).job_failed
+            (job->id(), "unknown error: error event resent");
         }
         break;
 
       case sdpa::status::CANCELED:
         {
-          sdpa::events::CancelJobAckEvent::Ptr pEvtJobCanceled
-            ( new sdpa::events::CancelJobAckEvent
-              (name(), job->owner(), job->id())
-            );
-          sendEventToOther(pEvtJobCanceled);
+          parent_proxy (this, job->owner()).cancel_job_ack (job->id());
         }
         break;
 
       case sdpa::status::PENDING:
         {
-          sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt
-            ( new sdpa::events::SubmitJobAckEvent
-              (name(), job->owner(), job->id())
-            );
-          sendEventToOther(pSubmitJobAckEvt);
+          parent_proxy (this, job->owner()).submit_job_ack (job->id());
         }
         break;
 
@@ -834,6 +765,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
 
     if(bModified)
     {
+      request_scheduling();
       if( !isTop() )
       {
         const sdpa::capabilities_set_t newWorkerCpbSet
@@ -845,8 +777,8 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
           for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++ )
             if( it->is_registered() && it->name() != worker_id  )
             {
-                events::CapabilitiesGainedEvent::Ptr shpCpbGainEvt(new events::CapabilitiesGainedEvent(name(), it->name(), newWorkerCpbSet));
-              sendEventToOther(shpCpbGainEvt);
+              parent_proxy (this, it->name()).capabilities_gained
+                (newWorkerCpbSet);
             }
         }
       }
@@ -869,8 +801,8 @@ void GenericDaemon::handleCapabilitiesLostEvent(const events::CapabilitiesLostEv
     for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
       if (it->is_registered() && it->name() != worker_id )
       {
-        events::CapabilitiesLostEvent::Ptr shpCpbLostEvt(new events::CapabilitiesLostEvent(name(), it->name(), pCpbLostEvt->capabilities()));
-        sendEventToOther(shpCpbLostEvt);
+        parent_proxy (this, it->name()).capabilities_lost
+          (pCpbLostEvt->capabilities());
       }
   }
   catch( const WorkerNotFoundException& ex)
@@ -932,13 +864,15 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
 {
   if( !masterInfo.is_registered() )
   {
-    capabilities_set_t cpbSet;
-    getCapabilities(cpbSet);
+    lock_type lock(mtx_cpb_);
+    capabilities_set_t cpbSet (m_capabilities);
+
+    scheduler()->getAllWorkersCapabilities(cpbSet);
 
     //std::cout<<cpbSet;
 
-    events::WorkerRegistrationEvent::Ptr pEvtWorkerReg(new events::WorkerRegistrationEvent( name(), masterInfo.name(), boost::none, cpbSet));
-    sendEventToOther(pEvtWorkerReg);
+    parent_proxy (this, masterInfo.name()).worker_registration
+      (boost::none, cpbSet);
   }
 }
 
@@ -956,19 +890,6 @@ void GenericDaemon::removeMasters(const agent_id_list_t& listMasters)
     if( it != m_arrMasterInfo.end() )
       m_arrMasterInfo.erase(it);
   }
-}
-
-void GenericDaemon::getCapabilities(sdpa::capabilities_set_t& cpbset)
-{
-  lock_type lock(mtx_cpb_);
-  BOOST_FOREACH ( const sdpa::capabilities_set_t::value_type & capability
-                , m_capabilities
-                )
-  {
-    cpbset.insert (capability);
-  }
-
-   scheduler()->getAllWorkersCapabilities(cpbset);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)
@@ -1192,10 +1113,8 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
 void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
 {
   sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
-  sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
-                                                                                                      , master_name
-                                                                                                      , discover_id
-                                                                                                      , discover_result)));
+  parent_proxy (this, master_name).discover_job_states_reply
+    (discover_id, discover_result);
   m_map_discover_ids.erase(discover_id);
 }
 
@@ -1206,12 +1125,8 @@ void GenericDaemon::handleDiscoverJobStatesReplyEvent
   const sdpa::discovery_info_t discovery_info
     (job_info.job_id(), job_info.job_status(), e->discover_result().children());
 
-  sendEventToOther
-    ( events::DiscoverJobStatesReplyEvent::Ptr
-      ( new events::DiscoverJobStatesReplyEvent
-        (name(), job_info.disc_issuer(), e->discover_id(), discovery_info)
-      )
-    );
+  parent_proxy (this, job_info.disc_issuer()).discover_job_states_reply
+    (e->discover_id(), discovery_info);
 
   m_map_discover_ids.erase (e->discover_id());
 }
@@ -1224,14 +1139,8 @@ void GenericDaemon::handleRetrieveJobResultsEvent(const events::RetrieveJobResul
   {
       if(sdpa::status::is_terminal (pJob->getStatus()))
       {
-        sendEventToOther ( events::JobResultsReplyEvent::Ptr
-                           ( new events::JobResultsReplyEvent ( pEvt->to()
-                                                              , pEvt->from()
-                                                              , pEvt->job_id()
-                                                              , pJob->result()
-                                                              )
-                           )
-                         );
+        parent_proxy (this, pEvt->from()).retrieve_job_results_reply
+          (pEvt->job_id(), pJob->result());
       }
       else
       {
@@ -1254,16 +1163,8 @@ void GenericDaemon::handleQueryJobStatusEvent(const events::QueryJobStatusEvent*
   Job* pJob (findJob(jobId));
   if(pJob)
   {
-      events::JobStatusReplyEvent::Ptr const pStatReply
-        (new events::JobStatusReplyEvent ( pEvt->to()
-                                         , pEvt->from()
-                                         , pJob->id()
-                                         , pJob->getStatus()
-                                         , pJob->error_message()
-                                         )
-      );
-
-      sendEventToOther (pStatReply);
+    parent_proxy (this, pEvt->from()).query_job_status_reply
+      (pJob->id(), pJob->getStatus(), pJob->error_message());
   }
   else
   {
@@ -1272,3 +1173,202 @@ void GenericDaemon::handleQueryJobStatusEvent(const events::QueryJobStatusEvent*
 }
 
 }}
+
+namespace sdpa
+{
+  namespace daemon
+  {
+    void GenericDaemon::scheduling_thread()
+    {
+      for (;;)
+      {
+        boost::mutex::scoped_lock lock (_scheduling_thread_mutex);
+        _scheduling_thread_notifier.wait (lock);
+
+        scheduler()->assignJobsToWorkers();
+      }
+    }
+
+    void GenericDaemon::request_scheduling()
+    {
+      boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
+      _scheduling_thread_notifier.notify_one();
+    }
+
+    GenericDaemon::child_proxy::child_proxy
+        (GenericDaemon* that, worker_id_t name)
+      : _that (that)
+      , _name (name)
+    {}
+
+    void GenericDaemon::child_proxy::worker_registration_ack() const
+    {
+      _that->sendEventToOther
+        ( events::WorkerRegistrationAckEvent::Ptr
+          (new events::WorkerRegistrationAckEvent (_that->name(), _name))
+        );
+    }
+
+    void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
+                                                , job_desc_t description
+                                                , sdpa::worker_id_list_t workers
+                                                ) const
+    {
+      _that->sendEventToOther
+        ( events::SubmitJobEvent::Ptr
+          ( new events::SubmitJobEvent
+            (_that->name(), _name, id, description, workers)
+          )
+        );
+    }
+
+    void GenericDaemon::child_proxy::cancel_job (job_id_t id) const
+    {
+      _that->sendEventToOther
+        ( events::CancelJobEvent::Ptr
+          (new events::CancelJobEvent (_that->name(), _name, id))
+        );
+    }
+
+    void GenericDaemon::child_proxy::job_failed_ack (job_id_t id) const
+    {
+      _that->sendEventToOther
+        ( events::JobFailedAckEvent::Ptr
+          (new events::JobFailedAckEvent (_that->name(), _name, id))
+        );
+    }
+
+    void GenericDaemon::child_proxy::job_finished_ack (job_id_t id) const
+    {
+      _that->sendEventToOther
+        ( events::JobFinishedAckEvent::Ptr
+          (new events::JobFinishedAckEvent (_that->name(), _name, id))
+        );
+    }
+
+    void GenericDaemon::child_proxy::discover_job_states
+      (job_id_t job_id, job_id_t discover_id) const
+    {
+      _that->sendEventToOther
+        ( events::DiscoverJobStatesEvent::Ptr
+          ( new events::DiscoverJobStatesEvent
+            (_that->name(), _name, job_id, discover_id)
+          )
+        );
+    }
+
+    GenericDaemon::parent_proxy::parent_proxy
+        (GenericDaemon* that, worker_id_t name)
+      : _that (that)
+      , _name (name)
+    {}
+
+    void GenericDaemon::parent_proxy::worker_registration
+      ( boost::optional<unsigned int> capacity
+      , capabilities_set_t capabilities
+      ) const
+    {
+      _that->sendEventToOther
+        ( events::WorkerRegistrationEvent::Ptr
+          ( new events::WorkerRegistrationEvent
+            (_that->name(), _name, capacity, capabilities)
+          )
+        );
+    }
+
+    void GenericDaemon::parent_proxy::job_failed
+      (job_id_t id, std::string message) const
+    {
+      _that->sendEventToOther
+        ( events::JobFailedEvent::Ptr
+          (new events::JobFailedEvent (_that->name(), _name, id, message))
+        );
+    }
+
+    void GenericDaemon::parent_proxy::job_finished
+      (job_id_t id, job_result_t result) const
+    {
+      _that->sendEventToOther
+        ( events::JobFinishedEvent::Ptr
+          (new events::JobFinishedEvent (_that->name(), _name, id, result))
+        );
+    }
+
+    void GenericDaemon::parent_proxy::cancel_job_ack (job_id_t id) const
+    {
+      _that->sendEventToOther
+        ( events::CancelJobAckEvent::Ptr
+          (new events::CancelJobAckEvent (_that->name(), _name, id))
+        );
+    }
+
+    void GenericDaemon::parent_proxy::delete_job_ack (job_id_t id) const
+    {
+      _that->sendEventToOther
+        ( events::DeleteJobAckEvent::Ptr
+          (new events::DeleteJobAckEvent (_that->name(), _name, id))
+        );
+    }
+
+    void GenericDaemon::parent_proxy::submit_job_ack (job_id_t id) const
+    {
+      _that->sendEventToOther
+        ( events::SubmitJobAckEvent::Ptr
+          (new events::SubmitJobAckEvent (_that->name(), _name, id))
+        );
+    }
+
+    void GenericDaemon::parent_proxy::capabilities_gained
+      (capabilities_set_t capabilities) const
+    {
+      _that->sendEventToOther
+        ( events::CapabilitiesGainedEvent::Ptr
+          ( new events::CapabilitiesGainedEvent
+            (_that->name(), _name, capabilities)
+          )
+        );
+    }
+
+    void GenericDaemon::parent_proxy::capabilities_lost
+      (capabilities_set_t capabilities) const
+    {
+      _that->sendEventToOther
+        ( events::CapabilitiesLostEvent::Ptr
+          ( new events::CapabilitiesLostEvent
+            (_that->name(), _name, capabilities)
+          )
+        );
+    }
+
+    void GenericDaemon::parent_proxy::discover_job_states_reply
+      (job_id_t discover_id, discovery_info_t info) const
+    {
+      _that->sendEventToOther
+        ( events::DiscoverJobStatesReplyEvent::Ptr
+          ( new events::DiscoverJobStatesReplyEvent
+            (_that->name(), _name, discover_id, info)
+          )
+        );
+    }
+
+    void GenericDaemon::parent_proxy::query_job_status_reply
+      (job_id_t id, status::code status, std::string error_message) const
+    {
+      _that->sendEventToOther
+        ( events::JobStatusReplyEvent::Ptr
+          ( new events::JobStatusReplyEvent
+            (_that->name(), _name, id, status, error_message)
+          )
+        );
+    }
+
+    void GenericDaemon::parent_proxy::retrieve_job_results_reply
+      (job_id_t id, job_result_t result) const
+    {
+      _that->sendEventToOther
+        ( events::JobResultsReplyEvent::Ptr
+          (new events::JobResultsReplyEvent (_that->name(), _name, id, result))
+        );
+    }
+  }
+}

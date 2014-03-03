@@ -203,21 +203,14 @@ namespace gpi
           }
           catch (boost::system::system_error const& se)
           {
-            if (! m_stopping)
+            if (m_stopping)
             {
-              LOG(ERROR, "could not accept: " << se.what());
-
-              if (se.code().value())
-              {
-                LOG( ERROR
-                   , "connector had an error: " << se.what() << ", restarting it"
-                   );
-
-                stop ();
-                start ();
-              }
+              break;
             }
-            break;
+            else
+            {
+              continue;
+            }
           }
 
           try
@@ -233,7 +226,7 @@ namespace gpi
                   ( new process_t
                     ( boost::bind (&manager_t::handle_process_error, this, _1, _2)
                     , id
-                    , fd
+                    , cfd
                     , _memory_manager
                     , _topology
                     , _gpi_api

@@ -63,7 +63,8 @@ private:
 class WFEImpl
 {
 public:
-  WFEImpl ( boost::optional<std::size_t> target_socket
+  WFEImpl ( fhg::log::Logger::ptr_t
+          , boost::optional<std::size_t> target_socket
           , std::string search_path
           , boost::optional<std::string> gui_url
           , std::string worker_name
@@ -84,6 +85,8 @@ public:
   void cancel (std::string const &job_id);
 
 private:
+  fhg::log::Logger::ptr_t _logger;
+
   boost::optional<numa_socket_setter> _numa_socket_setter;
 
   std::string _worker_name;
@@ -137,6 +140,8 @@ private:
   void send_event (sdpa::events::SDPAEvent::Ptr const & evt);
 
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt);
+
+  fhg::log::Logger::ptr_t _logger;
 
   boost::function<void()> _request_stop;
 

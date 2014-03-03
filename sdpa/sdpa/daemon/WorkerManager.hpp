@@ -28,20 +28,11 @@
 namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
-    typedef boost::shared_ptr<WorkerManager> ptr_t;
-    typedef boost::recursive_mutex mutex_type;
-    typedef boost::unique_lock<mutex_type> lock_type;
-    typedef boost::condition_variable_any condition_type;
-
-    typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
     typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
     typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
 
-    WorkerManager();
-
     Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id);
     bool hasWorker(const Worker::worker_id_t& worker_id) const;
-    bool isDisconnectedWorker(const Worker::worker_id_t& worker_id) const;
     const boost::optional<Worker::worker_id_t> findSubmOrAckWorker(const sdpa::job_id_t& job_id) const;
 
     //! returns whether worker was actually added (i.e. false when already there)
@@ -51,30 +42,19 @@ namespace sdpa { namespace daemon {
 
     void deleteWorker( const Worker::worker_id_t& workerId);
 
-    bool addCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
-    void removeCapabilities(const sdpa::worker_id_t&, const sdpa::capabilities_set_t& cpbset);
     void getCapabilities(sdpa::capabilities_set_t& cpbset);
 
-    void dispatchJob(const sdpa::job_id_t& jobId);
     void deleteJob(const sdpa::job_id_t& jobId);
-    void deleteWorkerJob(const Worker::worker_id_t& worker_id, const sdpa::job_id_t &job_id );
 
-    size_t numberOfWorkers() { return worker_map_.size(); }
     sdpa::job_id_list_t getJobListAndCleanQueues(const  Worker::ptr_t& pWorker);
-    void getListWorkersNotReserved(sdpa::worker_id_list_t& workerList);
+    worker_id_list_t getListWorkersNotReserved();
 
     boost::optional<sdpa::worker_id_t> getBestMatchingWorker( const job_requirements_t&, const sdpa::worker_id_list_t&) const;
 
-    void reserveWorker(const sdpa::worker_id_t&);
-
-    friend class CoallocationScheduler; // CoallocationScheduler::schedule_first()
-    void markJobSubmitted(const sdpa::worker_id_list_t& worker_id_list, const sdpa::job_id_t& job_id);
-protected:
+private:
     worker_map_t  worker_map_;
 
-    JobQueue common_queue_;
-
-    mutable mutex_type mtx_;
+    mutable boost::mutex mtx_;
   };
 }}
 
