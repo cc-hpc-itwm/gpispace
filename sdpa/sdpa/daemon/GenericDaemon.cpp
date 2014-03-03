@@ -1093,14 +1093,6 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
   sendEventToSelf(pDiscEvt);
 }
 
-void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
-{
-  sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
-  parent_proxy (this, master_name).discover_job_states_reply
-    (discover_id, discover_result);
-  m_map_discover_ids.erase(discover_id);
-}
-
     void GenericDaemon::handleDiscoverJobStatesEvent
       (const sdpa::events::DiscoverJobStatesEvent *pEvt)
     {
@@ -1191,6 +1183,14 @@ void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_
         }
       }
     }
+
+void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
+{
+  sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
+  parent_proxy (this, master_name).discover_job_states_reply
+    (discover_id, discover_result);
+  m_map_discover_ids.erase(discover_id);
+}
 
 void GenericDaemon::handleDiscoverJobStatesReplyEvent
   (const sdpa::events::DiscoverJobStatesReplyEvent* e)
