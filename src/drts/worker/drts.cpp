@@ -8,6 +8,8 @@
 
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 
 #include <we/loader/module_call.hpp>
 #include <we/type/expression.fwd.hpp>
@@ -654,6 +656,31 @@ void DRTSImpl::handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent
   }
 
   m_jobs.erase (job_it);
+}
+
+void DRTSImpl::handleDiscoverJobStatesEvent
+  (const sdpa::events::DiscoverJobStatesEvent* event)
+{
+  boost::mutex::scoped_lock const _ (m_job_map_mutex);
+
+  const map_of_jobs_t::iterator job_it (m_jobs.find (event->job_id()));
+  send_event ( new sdpa::events::DiscoverJobStatesReplyEvent
+               ( m_my_name
+               , event->from()
+               , event->discover_id()
+               , sdpa::discovery_info_t
+                 ( event->job_id()
+                 , job_it == m_jobs.end() ? boost::optional<sdpa::status::code>()
+                 : job_it->second->state() == drts::Job::PENDING ? sdpa::status::PENDING
+                 : job_it->second->state() == drts::Job::RUNNING ? sdpa::status::RUNNING
+                 : job_it->second->state() == drts::Job::FINISHED ? sdpa::status::FINISHED
+                 : job_it->second->state() == drts::Job::FAILED ? sdpa::status::FAILED
+                 : job_it->second->state() == drts::Job::CANCELED ? sdpa::status::CANCELED
+                 : throw std::runtime_error ("invalid job state")
+                 , sdpa::discovery_info_set_t()
+                 )
+               )
+             );
 }
 
   // threads

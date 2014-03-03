@@ -116,6 +116,8 @@ public:
   virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *e);
   virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e);
   virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e);
+  virtual void handleDiscoverJobStatesEvent
+    (const sdpa::events::DiscoverJobStatesEvent*);
 
 private:
   // threads
