@@ -185,16 +185,9 @@ namespace sdpa
       Job* pJob (findJob(pEvt->job_id()));
       if (!pJob)
       {
-        if (true)
-        {
           throw std::runtime_error ("No such job found");
-        }
-
-        return;
       }
 
-      if (true)
-      {
         if (pJob->getStatus() == sdpa::status::CANCELING)
         {
           throw std::runtime_error
@@ -213,30 +206,6 @@ namespace sdpa
         // cancellation request to WE
         workflowEngine()->cancel (pEvt->job_id());
         pJob->CancelJob();
-      }
-      else // the workflow engine issued the cancelation order for this job
-      {
-        boost::optional<sdpa::worker_id_t> worker_id
-          (scheduler()->findSubmOrAckWorker(pEvt->job_id()));
-
-        // change the job status to "Canceling"
-        pJob->CancelJob();
-
-        if (worker_id)
-        {
-          child_proxy (this, *worker_id).cancel_job (pEvt->job_id());
-        }
-        else
-        {
-          workflowEngine()->canceled (pEvt->job_id());
-
-          // reply with an ack here
-          pJob->CancelJobAck();
-          ptr_scheduler_->delete_job (pEvt->job_id());
-
-          deleteJob (pEvt->job_id());
-        }
-      }
     }
 
     void Agent::handleCancelJobAckEvent (const events::CancelJobAckEvent* pEvt)
