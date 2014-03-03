@@ -114,7 +114,7 @@ namespace sdpa
       }
 
       // send a JobFailedAckEvent back to the worker/slave
-      child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
+      child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
 
       //put the job into the state Failed
       Job* pJob (findJob (pEvt->job_id()));
