@@ -256,6 +256,9 @@ namespace sdpa {
         return scheduler()->findWorker(worker_id);
       }
 
+    private:
+      void delayed_cancel (const we::layer::id_type&);
+
       // data members
     protected:
       fhg::log::Logger::ptr_t _logger;

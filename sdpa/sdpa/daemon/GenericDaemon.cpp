@@ -527,13 +527,71 @@ void GenericDaemon::cancel(const we::layer::id_type& activityId)
   // Job& job = job_map_[job_id];
   // call job.CancelJob(event);
 
-  job_id_t job_id(activityId);
-  events::CancelJobEvent::Ptr pEvtCancelJob
-          (new events::CancelJobEvent( sdpa::daemon::WE
-                              , name()
-                              , job_id )
-          );
-  sendEventToSelf(pEvtCancelJob);
+  delay (boost::bind (&GenericDaemon::delayed_cancel, this, activityId));
+}
+void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
+{
+  events::CancelJobEvent evt( sdpa::daemon::WE
+                            , name()
+                            , job_id );
+  const events::CancelJobEvent* pEvt (&evt);
+    {
+      Job* pJob (findJob(pEvt->job_id()));
+      if (!pJob)
+      {
+        if (pEvt->is_external())
+        {
+          throw std::runtime_error ("No such job found");
+        }
+
+        return;
+      }
+
+      if (pEvt->is_external())
+      {
+        if (pJob->getStatus() == sdpa::status::CANCELING)
+        {
+          throw std::runtime_error
+            ("A cancelation request for this job was already posted!");
+        }
+
+        if (sdpa::status::is_terminal (pJob->getStatus()))
+        {
+          throw std::runtime_error
+            ( "Cannot cancel an already terminated job, its current status is: "
+            + sdpa::status::show (pJob->getStatus())
+            );
+        }
+
+        // a Cancel message came from the upper level -> forward
+        // cancellation request to WE
+        workflowEngine()->cancel (pEvt->job_id());
+        pJob->CancelJob();
+      }
+      else // the workflow engine issued the cancelation order for this job
+      {
+        boost::optional<sdpa::worker_id_t> worker_id
+          (scheduler()->findSubmOrAckWorker(pEvt->job_id()));
+
+        // change the job status to "Canceling"
+        pJob->CancelJob();
+
+        if (worker_id)
+        {
+          child_proxy (this, *worker_id).cancel_job (pEvt->job_id());
+        }
+        else
+        {
+          workflowEngine()->canceled (pEvt->job_id());
+
+          // reply with an ack here
+          pJob->CancelJobAck();
+          ptr_scheduler_->delete_job (pEvt->job_id());
+
+          deleteJob (pEvt->job_id());
+        }
+      }
+    }
 }
 
 void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activity_t& result)
