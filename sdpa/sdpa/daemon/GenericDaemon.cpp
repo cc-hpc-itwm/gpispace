@@ -535,22 +535,14 @@ void GenericDaemon::cancel(const we::layer::id_type& activityId)
   sendEventToSelf(pEvtCancelJob);
 }
 
-/**
- * Notify the SDPA that a workflow finished (state transition
- * from running to finished).
- */
-void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::type::activity_t& result)
+void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activity_t& result)
 {
-  //put the job into the state Finished
-  job_id_t id(workflowId);
-
   Job* pJob = findJob(id);
   if(!pJob)
   {
     throw std::runtime_error ("got finished message for old/unknown Job " + id);
   }
 
-  // forward it up
   pJob->JobFinished (result.to_string());
 
   if(!isSubscriber(pJob->owner()))
@@ -589,24 +581,16 @@ void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::typ
   }
 }
 
-/**
- * Notify the SDPA that a workflow failed (state transition
- * from running to failed).
- */
-void GenericDaemon::failed( const we::layer::id_type& workflowId
+void GenericDaemon::failed( const we::layer::id_type& id
                           , std::string const & reason
                           )
 {
-  job_id_t id(workflowId);
-  //put the job into the state Failed
-
   Job* pJob = findJob(id);
   if(!pJob)
   {
     throw std::runtime_error ("got failed message for old/unknown Job " + id);
   }
 
-  // send the event to the master
   pJob->JobFailed (reason);
 
   if(!isSubscriber(pJob->owner()))
