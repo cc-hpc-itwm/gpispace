@@ -69,8 +69,6 @@ namespace
     const std::vector<std::string> vec (require_proper_url (url));
     return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
   }
-
-  const std::string WE ("WE");
 }
 
 GenericDaemon::GenericDaemon( const std::string name
@@ -496,7 +494,7 @@ try
   addJob ( job_id
          , activity.to_string()
          , false
-         , sdpa::daemon::WE
+         , name()
          , job_requirements_t (activity.transition().requirements(), schedule_data)
          );
 
@@ -1104,7 +1102,7 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
       {
         m_map_discover_ids.insert
           ( std::make_pair ( discover_id
-                           , job_info_t ( sdpa::daemon::WE
+                           , job_info_t ( name()
                                         , job_id
                                         , pJob->getStatus()
                                         )
