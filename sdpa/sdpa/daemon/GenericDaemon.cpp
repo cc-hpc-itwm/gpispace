@@ -273,18 +273,6 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
       m_guiService->notify (evt);
     }
   }
-  catch(const JobNotFoundException& ex)
-  {
-    events::JobFailedEvent::Ptr pEvtJobFailed
-      (new events::JobFailedEvent( sdpa::daemon::WE
-                                 , name()
-                                 , job_id
-                                 , "job could not be found"
-                                 )
-      );
-
-    sendEventToSelf(pEvtJobFailed);
-  }
   catch(const std::exception& ex)
   {
     LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
