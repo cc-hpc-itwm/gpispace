@@ -654,16 +654,8 @@ void GenericDaemon::canceled(const we::layer::id_type& job_id)
 
   if (pJob)
   {
-    try
-    {
       // update the job status to "Canceled"
       pJob->CancelJobAck();
-    }
-    catch (std::exception const&)
-    {
-      workflowEngine()->canceled (job_id);
-      throw;
-    }
   }
 
   // just send an acknowledgment to the master
