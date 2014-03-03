@@ -651,12 +651,12 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
 void GenericDaemon::canceled(const we::layer::id_type& job_id)
 {
   Job* pJob (findJob(job_id));
-
-  if (pJob)
+  if (!pJob)
   {
-      // update the job status to "Canceled"
-      pJob->CancelJobAck();
+    throw std::runtime_error ("rts_canceled (unknown job)");
   }
+
+  pJob->CancelJobAck();
 
   // just send an acknowledgment to the master
   // send an acknowledgment to the component that requested the cancellation
