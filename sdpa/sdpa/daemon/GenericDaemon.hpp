@@ -167,7 +167,10 @@ namespace sdpa {
       // event communication
       void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
       OVERWRITTEN_IN_TEST void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
+    private:
+      void delay (boost::function<void()>);
 
+    public:
       // registration
       void requestRegistration(const MasterInfo& masterInfo);
       void request_registration_soon (const MasterInfo& info);

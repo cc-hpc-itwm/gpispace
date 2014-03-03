@@ -23,6 +23,7 @@
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
+#include <sdpa/events/delayed_function_call.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
@@ -817,6 +818,12 @@ void GenericDaemon::handle_events()
 void GenericDaemon::sendEventToOther(const events::SDPAEvent::Ptr& pEvt)
 {
   _network_strategy->perform (pEvt);
+}
+
+void GenericDaemon::delay (boost::function<void()> fun)
+{
+  sendEventToSelf
+    (events::SDPAEvent::Ptr (new events::delayed_function_call (fun)));
 }
 
 void GenericDaemon::request_registration_soon (const MasterInfo& info)
