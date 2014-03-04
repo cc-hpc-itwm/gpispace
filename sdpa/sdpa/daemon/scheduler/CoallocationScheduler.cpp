@@ -94,12 +94,6 @@ namespace sdpa
       }
     }
 
-    sdpa::capabilities_set_t CoallocationScheduler::getWorkerCapabilities
-      (const sdpa::worker_id_t& worker_id)
-    {
-      return worker_manager().findWorker (worker_id)->capabilities();
-    }
-
     void CoallocationScheduler::assignJobsToWorkers()
     {
       sdpa::worker_id_list_t listAvailWorkers
