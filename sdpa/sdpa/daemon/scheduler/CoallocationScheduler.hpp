@@ -44,7 +44,6 @@ namespace sdpa
       void deleteWorker (const Worker::worker_id_t&);
 
       // used by daemon and self and test
-      void deleteWorkerJob (const Worker::worker_id_t&, const sdpa::job_id_t&);
       void releaseReservation (const sdpa::job_id_t&);
       void assignJobsToWorkers();
 

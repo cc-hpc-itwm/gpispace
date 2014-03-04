@@ -73,7 +73,7 @@ namespace sdpa
 
           scheduler()->releaseReservation (pJob->id());
         }
-        scheduler()->deleteWorkerJob (pEvt->from(), pJob->id());
+        scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
 
         if(bAllPartResCollected)
@@ -130,7 +130,7 @@ namespace sdpa
 
           scheduler()->releaseReservation (pJob->id());
         }
-        scheduler()->deleteWorkerJob (pEvt->from(), pJob->id());
+        scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
 
         if (bAllPartResCollected)
@@ -216,7 +216,7 @@ namespace sdpa
             scheduler()->releaseReservation (pEvt->job_id());
           }
           LLOG (TRACE, _logger, "Remove job " << pEvt->job_id() << " from the worker "<<pEvt->from());
-          scheduler()->deleteWorkerJob (pEvt->from(), pEvt->job_id());
+          scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
           request_scheduling();
         }
         catch (const WorkerNotFoundException&)

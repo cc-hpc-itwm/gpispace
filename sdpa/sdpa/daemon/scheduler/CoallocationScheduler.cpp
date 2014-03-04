@@ -29,7 +29,7 @@ namespace sdpa
     void CoallocationScheduler::rescheduleWorkerJob
       (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
     {
-      deleteWorkerJob (worker_id, job_id);
+      worker_manager().findWorker (worker_id)->deleteJob (job_id);
 
       Job* pJob = ptr_comm_handler_->findJob (job_id);
       if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
@@ -65,18 +65,6 @@ namespace sdpa
     void CoallocationScheduler::enqueueJob (const sdpa::job_id_t& jobId)
     {
       _common_queue.push (jobId);
-    }
-
-    void CoallocationScheduler::deleteWorkerJob
-      (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& jobId)
-    {
-      try
-      {
-        worker_manager().findWorker (worker_id)->deleteJob (jobId);
-      }
-      catch (WorkerNotFoundException const&)
-      {
-      }
     }
 
     void CoallocationScheduler::assignJobsToWorkers()

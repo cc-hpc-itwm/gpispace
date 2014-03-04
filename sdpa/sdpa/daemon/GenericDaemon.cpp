@@ -351,6 +351,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       sdpa::job_id_t jobId(*error.job_id());
       sdpa::worker_id_t worker_id(error.from());
 
+      //! \todo ignore if worker no longer exists?
       scheduler()->rescheduleWorkerJob(worker_id, jobId);
       request_scheduling();
       break;

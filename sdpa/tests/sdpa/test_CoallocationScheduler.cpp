@@ -184,16 +184,16 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.deleteWorkerJob ("worker_9", "job_0");
-  _scheduler.deleteWorkerJob ("worker_8", "job_1");
-  _scheduler.deleteWorkerJob ("worker_7", "job_2");
-  _scheduler.deleteWorkerJob ("worker_5", "job_3");
-  _scheduler.deleteWorkerJob ("worker_4", "job_4");
-  _scheduler.deleteWorkerJob ("worker_6", "job_5");
-  _scheduler.deleteWorkerJob ("worker_3", "job_6");
-  _scheduler.deleteWorkerJob ("worker_2", "job_7");
-  _scheduler.deleteWorkerJob ("worker_1", "job_8");
-  _scheduler.deleteWorkerJob ("worker_0", "job_9");
+  _scheduler.worker_manager().findWorker ("worker_9")->deleteJob ("job_0");
+  _scheduler.worker_manager().findWorker ("worker_8")->deleteJob ("job_1");
+  _scheduler.worker_manager().findWorker ("worker_7")->deleteJob ("job_2");
+  _scheduler.worker_manager().findWorker ("worker_5")->deleteJob ("job_3");
+  _scheduler.worker_manager().findWorker ("worker_4")->deleteJob ("job_4");
+  _scheduler.worker_manager().findWorker ("worker_6")->deleteJob ("job_5");
+  _scheduler.worker_manager().findWorker ("worker_3")->deleteJob ("job_6");
+  _scheduler.worker_manager().findWorker ("worker_2")->deleteJob ("job_7");
+  _scheduler.worker_manager().findWorker ("worker_1")->deleteJob ("job_8");
+  _scheduler.worker_manager().findWorker ("worker_0")->deleteJob ("job_9");
 
   _scheduler.releaseReservation ("job_0");
   _scheduler.releaseReservation ("job_1");

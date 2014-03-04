@@ -68,7 +68,7 @@ namespace sdpa
 
       try
       {
-        scheduler()->deleteWorkerJob (pEvt->from(), pEvt->job_id());
+        scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
         request_scheduling();
       }
       catch (WorkerNotFoundException const&)
@@ -101,7 +101,7 @@ namespace sdpa
 
       try
       {
-        scheduler()->deleteWorkerJob (pEvt->from(), pJob->id());
+        scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
       }
       catch (const WorkerNotFoundException&)
