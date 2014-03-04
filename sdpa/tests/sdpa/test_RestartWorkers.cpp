@@ -73,7 +73,7 @@ class Worker : public utils::BasicWorker
 BOOST_AUTO_TEST_CASE (restart_worker_polling_client)
 {
   const std::string workflow
-    (utils::require_and_read_file ("transform_file.pnet"));
+    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_polling_client)
 BOOST_AUTO_TEST_CASE (restart_worker_subscribing_client)
 {
   const std::string workflow
-    (utils::require_and_read_file ("transform_file.pnet"));
+    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());

@@ -351,6 +351,6 @@ fhg_add_test (test_RestartWorkers.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS workflow_transform_file
+  DEPENDS dummy_workflow
           workflow_coallocation_test2
 )
