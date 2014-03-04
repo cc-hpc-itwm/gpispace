@@ -36,6 +36,7 @@ namespace sdpa
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
+        //! \todo Explain why we can ignore this
         return;
       }
 
@@ -108,6 +109,7 @@ namespace sdpa
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
+        //! \todo Explain why we can ignore this
         return;
       }
 
@@ -173,7 +175,7 @@ namespace sdpa
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
-        throw std::runtime_error ("No such job found");
+        throw std::runtime_error ("CancelJobEvent for unknown job");
       }
 
       if (pJob->getStatus() == sdpa::status::CANCELING)

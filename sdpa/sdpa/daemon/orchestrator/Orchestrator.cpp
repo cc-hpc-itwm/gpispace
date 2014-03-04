@@ -67,15 +67,14 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
   child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
 
   //put the job into the state Finished or Cancelled
-  Job* pJob = findJob(pEvt->job_id());
-  if(pJob)
+  Job* pJob (findJob (pEvt->job_id()));
+  if (!pJob)
   {
+    //! \todo Explain why we can ignore this
+    return;
+  }
+
       pJob->JobFinished (pEvt->result());
-  }
-  else
-  {
-      return;
-  }
 
     Worker::worker_id_t worker_id = pEvt->from();
     we::layer::id_type act_id = pEvt->job_id();
@@ -105,15 +104,14 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
   child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
 
   //put the job into the state Failed or Cancelled
-  Job* pJob = findJob(pEvt->job_id());
-  if(pJob)
+  Job* pJob (findJob (pEvt->job_id()));
+  if (!pJob)
   {
+    //! \todo Explain why we can ignore this
+    return;
+  }
+
       pJob->JobFailed (pEvt->error_message());
-  }
-  else
-  {
-      return;
-  }
 
       Worker::worker_id_t worker_id = pEvt->from();
       we::layer::id_type actId = pJob->id();
@@ -136,11 +134,12 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
 
 void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
 {
-  Job* pJob;
-
-  pJob = findJob(pEvt->job_id());
-  if(pJob)
+  Job* pJob (findJob (pEvt->job_id()));
+  if (!pJob)
   {
+    throw std::runtime_error ("CancelJobEvent for unknown job");
+  }
+
       if(pJob->getStatus() == sdpa::status::CANCELING)
       {
         throw std::runtime_error
@@ -175,38 +174,34 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
           pJob->CancelJobAck();
           ptr_scheduler_->delete_job (pEvt->job_id());
       }
-  }
-  else
-  {
-    throw std::runtime_error ("No such job found" );
-  }
 }
 
 void Orchestrator::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
 {
-
-  Job* pJob(findJob(pEvt->job_id()));
-  if(pJob)
+  Job* pJob (findJob (pEvt->job_id()));
+  if (!pJob)
   {
+    //! \todo Explain why we can ignore this
+    return;
+  }
+
     // update the job status to "Canceled"
     pJob->CancelJobAck();
 
     events::CancelJobAckEvent::Ptr ptrCancelAckEvt(new events::CancelJobAckEvent(*pEvt));
     notifySubscribers(ptrCancelAckEvt);
-
-    return;
-  }
-
 }
 
 void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
 {
   const  events::DeleteJobEvent& e (*evt);
 
-
-  Job* pJob = findJob(e.job_id());
-  if(pJob)
+  Job* pJob (findJob (e.job_id()));
+  if (!pJob)
   {
+    throw std::runtime_error ("DeleteJobEvent for unknown job");
+  }
+
       if(!sdpa::status::is_terminal (pJob->getStatus()))
       {
         throw std::runtime_error
@@ -215,11 +210,6 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
 
           deleteJob(e.job_id());
     parent_proxy (this, e.from()).delete_job_ack (e.job_id());
-  }
-  else
-  {
-    throw std::runtime_error ("no such job");
-  }
 }
 
 }} // end namespaces
