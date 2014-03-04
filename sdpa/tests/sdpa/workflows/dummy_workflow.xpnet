@@ -1,0 +1,22 @@
+<defun name="dummy_workflow">
+  <in name="in" type="control" place="in"/>
+  <out name="out" type="control" place="out"/>
+  <net>
+    <place name="in" type="control"/>
+    <place name="out" type="control"/>
+    <transition name="dummy_transition">
+	<defun>
+	  <in name="in" type="control"/>
+	  <out name="out" type="control"/>
+	  <module name="dummy_module" function="out dummy_function (in)">	
+	    <code><![CDATA[
+	      return we::type::literal::control();
+	    ]]></code>
+	  </module>
+	</defun>		
+      <connect-in port="in" place="in"/>
+      <connect-out port="out" place="out"/>
+    </transition>
+  </net>
+</defun>
+
