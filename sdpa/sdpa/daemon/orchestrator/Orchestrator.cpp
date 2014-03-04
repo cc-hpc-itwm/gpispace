@@ -25,8 +25,6 @@ namespace sdpa
     template <typename T>
       void Orchestrator::notifySubscribers (const T& ptrEvt)
     {
-      sdpa::job_id_t jobId = ptrEvt->job_id();
-
       BOOST_FOREACH ( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist
                     , m_listSubscribers
                     )
@@ -38,7 +36,7 @@ namespace sdpa
             ; it++
             )
         {
-          if (*it == jobId)
+          if (*it == ptrEvt->job_id())
           {
             //! \todo eliminate, do not use non-const getter
             ptrEvt->to() = pair_subscr_joblist.first;
@@ -66,16 +64,13 @@ namespace sdpa
 
       pJob->JobFinished (pEvt->result());
 
-      Worker::worker_id_t worker_id = pEvt->from();
-      we::layer::id_type act_id = pEvt->job_id();
-
       events::JobFinishedEvent::Ptr ptrEvtJobFinished
         (new events::JobFinishedEvent (*pEvt));
       notifySubscribers (ptrEvtJobFinished);
 
       try
       {
-        scheduler()->deleteWorkerJob (worker_id, act_id);
+        scheduler()->deleteWorkerJob (pEvt->from(), pEvt->job_id());
         request_scheduling();
       }
       catch (WorkerNotFoundException const&)
@@ -96,16 +91,13 @@ namespace sdpa
 
       pJob->JobFailed (pEvt->error_message());
 
-      Worker::worker_id_t worker_id = pEvt->from();
-      we::layer::id_type actId = pJob->id();
-
       events::JobFailedEvent::Ptr ptrEvtJobFailed
         (new events::JobFailedEvent (*pEvt));
       notifySubscribers (ptrEvtJobFailed);
 
       try
       {
-        scheduler()->deleteWorkerJob (worker_id, pJob->id());
+        scheduler()->deleteWorkerJob (pEvt->from(), pJob->id());
         request_scheduling();
       }
       catch (const WorkerNotFoundException&)
