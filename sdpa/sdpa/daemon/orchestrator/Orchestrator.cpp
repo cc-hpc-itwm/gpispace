@@ -174,9 +174,7 @@ namespace sdpa
 
     void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
     {
-      const events::DeleteJobEvent& e (*evt);
-
-      Job* pJob (findJob (e.job_id()));
+      Job* pJob (findJob (evt->job_id()));
       if (!pJob)
       {
         throw std::runtime_error ("DeleteJobEvent for unknown job");
@@ -190,8 +188,8 @@ namespace sdpa
           );
       }
 
-      deleteJob(e.job_id());
-      parent_proxy (this, e.from()).delete_job_ack (e.job_id());
+      deleteJob (evt->job_id());
+      parent_proxy (this, evt->from()).delete_job_ack (evt->job_id());
     }
   }
 }
