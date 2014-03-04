@@ -38,7 +38,6 @@ namespace sdpa
       void rescheduleWorkerJob
         (const Worker::worker_id_t&, const sdpa::job_id_t&);
       void enqueueJob (const sdpa::job_id_t&);
-      Worker::ptr_t findWorker (const Worker::worker_id_t&);
       void request_scheduling();
 
       // used by daemon and test

@@ -67,12 +67,6 @@ namespace sdpa
       _common_queue.push (jobId);
     }
 
-    Worker::ptr_t CoallocationScheduler::findWorker
-      (const Worker::worker_id_t& worker_id)
-    {
-      return worker_manager().findWorker (worker_id);
-    }
-
     void CoallocationScheduler::deleteWorkerJob
       (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& jobId)
     {
