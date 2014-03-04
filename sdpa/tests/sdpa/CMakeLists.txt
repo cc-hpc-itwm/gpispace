@@ -314,7 +314,7 @@ fhg_add_test (test_DiscoverJobStates.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS workflow_coallocation_test
+  DEPENDS dummy_workflow
           workflow_coallocation_test2
 )
 
