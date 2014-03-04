@@ -246,7 +246,8 @@ namespace sdpa {
       mutex_type mtx_;
 
       sdpa::master_info_list_t m_arrMasterInfo;
-      sdpa::subscriber_map_t m_listSubscribers;
+      typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
+      subscriber_map_t m_listSubscribers;
 
     private:
       boost::unordered_map<std::pair<job_id_t, job_id_t>, std::string>

@@ -570,7 +570,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
     m_guiService->notify (evt);
   }
 
-  BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  BOOST_FOREACH(const subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
   {
     if(subscribedFor(pair_subscr_joblist.first, id))
     {
@@ -618,7 +618,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
     m_guiService->notify (evt);
   }
 
-  BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  BOOST_FOREACH( const subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
   {
     if(subscribedFor(pair_subscr_joblist.first, id))
     {
@@ -927,7 +927,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   }
   else
   {
-    m_listSubscribers.insert(sdpa::subscriber_map_t::value_type(subscriber, listJobIds));
+    m_listSubscribers.insert(subscriber_map_t::value_type(subscriber, listJobIds));
   }
 
   // TODO: we should only send an ack *if* the job actually exists....

@@ -25,7 +25,7 @@ namespace sdpa
     template <typename T>
       void Orchestrator::notifySubscribers (const T& ptrEvt)
     {
-      BOOST_FOREACH ( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist
+      BOOST_FOREACH ( const subscriber_map_t::value_type& pair_subscr_joblist
                     , m_listSubscribers
                     )
       {
