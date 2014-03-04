@@ -56,7 +56,7 @@ namespace sdpa
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       // mark the worker dirty -> don't take it in consideration for re-scheduling
-      const Worker::ptr_t pWorker = findWorker (worker_id);
+      const Worker::ptr_t pWorker = worker_manager().findWorker (worker_id);
       pWorker->set_disconnected (true);
 
       BOOST_FOREACH (sdpa::job_id_t jobId, pWorker->getJobListAndCleanQueues())
@@ -92,7 +92,7 @@ namespace sdpa
       (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      Worker::ptr_t ptrWorker = findWorker(worker_id);
+      Worker::ptr_t ptrWorker = worker_manager().findWorker(worker_id);
 
       if (!ptrWorker->acknowledge(job_id))
       {
@@ -137,7 +137,7 @@ namespace sdpa
       (const sdpa::worker_id_t& worker_id)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      return findWorker (worker_id)->capabilities();
+      return worker_manager().findWorker (worker_id)->capabilities();
     }
 
     void CoallocationScheduler::assignJobsToWorkers()
@@ -251,7 +251,7 @@ namespace sdpa
         worker_id_list_t listWorkers (pReservation->getWorkerList());
         BOOST_FOREACH (sdpa::worker_id_t const& workerId, listWorkers)
         {
-          findWorker (workerId)->free();
+          worker_manager().findWorker (workerId)->free();
         }
 
         delete it->second;
