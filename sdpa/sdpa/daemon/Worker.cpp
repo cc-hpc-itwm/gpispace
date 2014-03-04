@@ -53,10 +53,6 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
       acknowledged_.push(job_id);
       const bool was_found (submitted_.erase(job_id) > 0);
 
-  if (!was_found)
-  {
-    LLOG (WARN, _logger, "The job " << job_id << " could not be acknowledged. It was not found into the worker's submitted queue!");
-  }
   return was_found;
 }
 
