@@ -75,7 +75,7 @@ namespace gpi
 
       bool is_end_of_path (fhg::util::parse::position const &pos)
       {
-        return *pos == '?';
+        return *pos == '?' || *pos == '&';
       }
 
       std::string require_host (fhg::util::parse::position& pos)
