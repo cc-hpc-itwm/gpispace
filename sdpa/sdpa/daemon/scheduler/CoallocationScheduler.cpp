@@ -42,7 +42,7 @@ namespace sdpa
 
     bool CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
     {
-      return _common_queue.erase(job);
+      return _common_queue.erase (job);
     }
 
     void CoallocationScheduler::enqueueJob (const sdpa::job_id_t& jobId)
