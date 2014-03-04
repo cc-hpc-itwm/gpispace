@@ -424,7 +424,13 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
 
           BOOST_FOREACH (sdpa::job_id_t jobId, pWorker->getJobListAndCleanQueues())
           {
-            scheduler()->rescheduleWorkerJob (worker_id, jobId);
+            Job* pJob = findJob (jobId);
+            if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
+            {
+              scheduler()->releaseReservation (jobId);
+              pJob->Reschedule(); // put the job back into the pending state
+              scheduler()->enqueueJob (jobId);
+            }
           }
 
           scheduler()->worker_manager().deleteWorker (worker_id);

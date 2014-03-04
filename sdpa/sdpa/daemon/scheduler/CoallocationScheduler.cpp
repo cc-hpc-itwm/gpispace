@@ -26,20 +26,6 @@ namespace sdpa
       return _worker_manager;
     }
 
-    void CoallocationScheduler::rescheduleWorkerJob
-      (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
-    {
-      worker_manager().findWorker (worker_id)->deleteJob (job_id);
-
-      Job* pJob = ptr_comm_handler_->findJob (job_id);
-      if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
-      {
-        releaseReservation (job_id);
-        pJob->Reschedule(); // put the job back into the pending state
-        enqueueJob (job_id);
-      }
-    }
-
     bool CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
     {
       return _common_queue.erase (job);
