@@ -100,11 +100,6 @@ namespace sdpa { namespace daemon {
     bool isJobSubmittedOrAcknowleged( const sdpa::job_id_t& job_id );
 
 
-    /**
-		 Return true if the worker is timedout, false otherwise
-     */
-    bool timedout() const { lock_type lock(mtx_); return false; }
-
     bool disconnected() const { lock_type lock(mtx_); return disconnected_; }
     void set_disconnected(bool bValue = true) { lock_type lock(mtx_); disconnected_ = bValue; }
 
