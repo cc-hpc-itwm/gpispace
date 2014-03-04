@@ -71,8 +71,7 @@ namespace sdpa
             allocation_table_t::iterator it (allocation_table_.find(jobId));
             if (it == allocation_table_.end())
             {
-              Reservation* pReservation
-                (new Reservation (jobId, job_reqs.numWorkers()));
+              Reservation* pReservation (new Reservation (job_reqs.numWorkers()));
               allocation_table_t::value_type pairJobRes (jobId, pReservation);
               allocation_table_.insert (pairJobRes);
             }
