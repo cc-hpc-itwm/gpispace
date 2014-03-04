@@ -21,30 +21,35 @@ namespace sdpa
       : GenericDaemon (name, url, kvs_host, kvs_port)
     {}
 
+    std::list<agent_id_t> Orchestrator::subscribers (job_id_t job_id) const
+    {
+      std::list<agent_id_t> ret;
+
+      BOOST_FOREACH ( const subscriber_map_t::value_type& subscription
+                    , m_listSubscribers
+                    )
+      {
+        BOOST_FOREACH (job_id_t id, subscription.second)
+        {
+          if (id == ptrEvt->job_id())
+          {
+            ret.push_back (subscription.first);
+            break;
+          }
+        }
+      }
+
+      return ret;
+    }
 
     template <typename T>
       void Orchestrator::notifySubscribers (const T& ptrEvt)
     {
-      BOOST_FOREACH ( const subscriber_map_t::value_type& pair_subscr_joblist
-                    , m_listSubscribers
-                    )
+      BOOST_FOREACH (agent_id_t subscriber, subscribers (ptrEvt->job_id()))
       {
-        sdpa::job_id_list_t listSubscrJobs = pair_subscr_joblist.second;
-
-        for ( sdpa::job_id_list_t::iterator it = listSubscrJobs.begin()
-            ; it != listSubscrJobs.end()
-            ; it++
-            )
-        {
-          if (*it == ptrEvt->job_id())
-          {
-            //! \todo eliminate, do not use non-const getter
-            ptrEvt->to() = pair_subscr_joblist.first;
-            sendEventToOther (ptrEvt);
-
-            break;
-          }
-        }
+        //! \todo eliminate, do not use non-const getter
+        ptrEvt->to() = subscriber;
+        sendEventToOther (ptrEvt);
       }
     }
 
