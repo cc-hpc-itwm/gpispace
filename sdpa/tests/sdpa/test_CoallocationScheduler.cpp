@@ -126,16 +126,16 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
-  _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
-  _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
-  _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
-  _scheduler.addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
-  _scheduler.addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
-  _scheduler.addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
-  _scheduler.addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
-  _scheduler.addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
-  _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
-  _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
+  _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
+  _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
+  _scheduler.worker_manager().addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
+  _scheduler.worker_manager().addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
+  _scheduler.worker_manager().addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
+  _scheduler.worker_manager().addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
+  _scheduler.worker_manager().addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
+  _scheduler.worker_manager().addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
+  _scheduler.worker_manager().addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
+  _scheduler.worker_manager().addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
   _agent.TEST_add_dummy_job ("job_0", require ("C"));
   _agent.TEST_add_dummy_job ("job_1", require ("C"));
@@ -218,15 +218,15 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 {
-  _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
-  _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
-  _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
-  _scheduler.addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
-  _scheduler.addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
-  _scheduler.addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
-  _scheduler.addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
-  _scheduler.addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
-  _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
+  _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
+  _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
+  _scheduler.worker_manager().addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
+  _scheduler.worker_manager().addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
+  _scheduler.worker_manager().addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
+  _scheduler.worker_manager().addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
+  _scheduler.worker_manager().addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
+  _scheduler.worker_manager().addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
+  _scheduler.worker_manager().addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
 
   _agent.TEST_add_dummy_job ("job_0", require ("C"));
   _agent.TEST_add_dummy_job ("job_1", require ("C"));
@@ -274,7 +274,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
+  _scheduler.worker_manager().addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
@@ -283,16 +283,16 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
 
 BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 {
-  _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
-  _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
-  _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
-  _scheduler.addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
-  _scheduler.addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
-  _scheduler.addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
-  _scheduler.addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
-  _scheduler.addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
-  _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
-  _scheduler.addWorker ("worker_9", 1);
+  _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
+  _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
+  _scheduler.worker_manager().addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
+  _scheduler.worker_manager().addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
+  _scheduler.worker_manager().addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
+  _scheduler.worker_manager().addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
+  _scheduler.worker_manager().addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
+  _scheduler.worker_manager().addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
+  _scheduler.worker_manager().addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
+  _scheduler.worker_manager().addWorker ("worker_9", 1);
 
   _agent.TEST_add_dummy_job ("job_0", require ("C"));
   _agent.TEST_add_dummy_job ("job_1", require ("C"));
@@ -349,18 +349,18 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
 
 BOOST_AUTO_TEST_CASE(testCoallocSched)
 {
-  _scheduler.addWorker ("0", 1, capabilities ("0", "A"));
-  _scheduler.addWorker ("1", 1, capabilities ("1", "B"));
-  _scheduler.addWorker ("2", 1, capabilities ("2", "C"));
-  _scheduler.addWorker ("3", 1, capabilities ("3", "A"));
-  _scheduler.addWorker ("4", 1, capabilities ("4", "B"));
-  _scheduler.addWorker ("5", 1, capabilities ("5", "C"));
-  _scheduler.addWorker ("6", 1, capabilities ("6", "A"));
-  _scheduler.addWorker ("7", 1, capabilities ("7", "B"));
-  _scheduler.addWorker ("8", 1, capabilities ("8", "C"));
-  _scheduler.addWorker ("9", 1, capabilities ("9", "A"));
-  _scheduler.addWorker ("10", 1, capabilities ("10", "B"));
-  _scheduler.addWorker ("11", 1, capabilities ("11", "C"));
+  _scheduler.worker_manager().addWorker ("0", 1, capabilities ("0", "A"));
+  _scheduler.worker_manager().addWorker ("1", 1, capabilities ("1", "B"));
+  _scheduler.worker_manager().addWorker ("2", 1, capabilities ("2", "C"));
+  _scheduler.worker_manager().addWorker ("3", 1, capabilities ("3", "A"));
+  _scheduler.worker_manager().addWorker ("4", 1, capabilities ("4", "B"));
+  _scheduler.worker_manager().addWorker ("5", 1, capabilities ("5", "C"));
+  _scheduler.worker_manager().addWorker ("6", 1, capabilities ("6", "A"));
+  _scheduler.worker_manager().addWorker ("7", 1, capabilities ("7", "B"));
+  _scheduler.worker_manager().addWorker ("8", 1, capabilities ("8", "C"));
+  _scheduler.worker_manager().addWorker ("9", 1, capabilities ("9", "A"));
+  _scheduler.worker_manager().addWorker ("10", 1, capabilities ("10", "B"));
+  _scheduler.worker_manager().addWorker ("11", 1, capabilities ("11", "C"));
 
   _agent.TEST_add_dummy_job ("job_0", require ("A", 4));
   _agent.TEST_add_dummy_job ("job_1", require ("B", 4));
@@ -394,16 +394,16 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
 BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 {
-  _scheduler.addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
-  _scheduler.addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
-  _scheduler.addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
-  _scheduler.addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
-  _scheduler.addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
-  _scheduler.addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
-  _scheduler.addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
-  _scheduler.addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
-  _scheduler.addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
-  _scheduler.addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
+  _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
+  _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
+  _scheduler.worker_manager().addWorker ("worker_2", 1, capabilities ("worker_2", "C"));
+  _scheduler.worker_manager().addWorker ("worker_3", 1, capabilities ("worker_3", "C"));
+  _scheduler.worker_manager().addWorker ("worker_4", 1, capabilities ("worker_4", "C"));
+  _scheduler.worker_manager().addWorker ("worker_5", 1, capabilities ("worker_5", "C"));
+  _scheduler.worker_manager().addWorker ("worker_6", 1, capabilities ("worker_6", "C"));
+  _scheduler.worker_manager().addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
+  _scheduler.worker_manager().addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
+  _scheduler.worker_manager().addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
   _agent.TEST_add_dummy_job ("job_0", require ("C"));
   _agent.TEST_add_dummy_job ("job_1", require ("C"));
@@ -443,7 +443,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
 
   _scheduler.deleteWorker("worker_9");
-  _scheduler.addWorker("worker_9", 1, capabilities ("worker_9", "C"));
+  _scheduler.worker_manager().addWorker("worker_9", 1, capabilities ("worker_9", "C"));
 
   _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
 

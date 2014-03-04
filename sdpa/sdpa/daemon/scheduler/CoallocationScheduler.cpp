@@ -26,15 +26,6 @@ namespace sdpa
       return _worker_manager;
     }
 
-    bool CoallocationScheduler::addWorker
-      ( const Worker::worker_id_t& workerId
-      , const boost::optional<unsigned int>& capacity
-      , const capabilities_set_t& cpbset
-      )
-    {
-      return worker_manager().addWorker (workerId, capacity, cpbset);
-    }
-
     void CoallocationScheduler::rescheduleWorkerJob
       (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
     {

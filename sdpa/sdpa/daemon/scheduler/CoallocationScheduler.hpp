@@ -42,10 +42,6 @@ namespace sdpa
       void request_scheduling();
 
       // used by daemon and test
-      bool addWorker ( const Worker::worker_id_t&
-                     , const boost::optional<unsigned int>& capacity = boost::none
-                     , const capabilities_set_t& = capabilities_set_t()
-                     );
       void deleteWorker (const Worker::worker_id_t&);
 
       // used by daemon and self and test
