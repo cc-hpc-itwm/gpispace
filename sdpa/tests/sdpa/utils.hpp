@@ -296,15 +296,11 @@ namespace utils
     };
   }
 
-  class fake_drts_worker_notifying_module_call_submission : sdpa::events::EventHandler
+  class basic_drts_worker : sdpa::events::EventHandler
   {
   public:
-    fake_drts_worker_notifying_module_call_submission
-        ( boost::function<void (std::string)> announce_job
-        , std::string kvs_host
-        , std::string kvs_port
-        , utils::agent const& master
-        )
+    basic_drts_worker
+        (std::string kvs_host, std::string kvs_port, utils::agent const& master)
       : _name (random_peer_name())
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
@@ -317,10 +313,8 @@ namespace utils
         , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
         )
-      , _event_thread
-        (&fake_drts_worker_notifying_module_call_submission::event_thread, this)
+      , _event_thread (&basic_drts_worker::event_thread, this)
       , _master_name (master._.name())
-      , _announce_job (announce_job)
     {
       _network.perform
         ( sdpa::events::SDPAEvent::Ptr
@@ -333,6 +327,45 @@ namespace utils
     {
       BOOST_REQUIRE_EQUAL (e->from(), _master_name);
     }
+
+  protected:
+    std::string _name;
+
+  private:
+    fhg::com::kvs::kvsc_ptr_t _kvs_client;
+
+    fhg::thread::queue<sdpa::events::SDPAEvent::Ptr> _event_queue;
+
+  protected:
+    sdpa::com::NetworkStrategy _network;
+
+  private:
+    scoped_thread _event_thread;
+    void event_thread()
+    {
+      for (;;)
+      {
+        _event_queue.get()->handleBy (this);
+      }
+    }
+
+    std::string _master_name;
+  };
+
+  class fake_drts_worker_notifying_module_call_submission
+    : public basic_drts_worker
+  {
+  public:
+    fake_drts_worker_notifying_module_call_submission
+        ( boost::function<void (std::string)> announce_job
+        , std::string kvs_host
+        , std::string kvs_port
+        , utils::agent const& master
+        )
+      : basic_drts_worker (kvs_host, kvs_port, master)
+      , _announce_job (announce_job)
+    {}
+
     virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e)
     {
       const std::string name
@@ -367,23 +400,6 @@ namespace utils
     }
 
   private:
-    std::string _name;
-    fhg::com::kvs::kvsc_ptr_t _kvs_client;
-
-    fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>  _event_queue;
-    sdpa::com::NetworkStrategy _network;
-
-    scoped_thread _event_thread;
-    void event_thread()
-    {
-      for (;;)
-      {
-        _event_queue.get()->handleBy (this);
-      }
-    }
-
-    std::string _master_name;
-
     struct job_t
     {
       sdpa::job_id_t _id;

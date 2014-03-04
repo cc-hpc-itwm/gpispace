@@ -60,29 +60,6 @@
 
 #include <fhglog/fhglog.hpp>
 
-namespace sdpa {
-  struct job_info_t{
-    job_info_t( const sdpa::agent_id_t& disc_issuer,
-                const sdpa::job_id_t& job_id,
-                const sdpa::status::code& job_status )
-      : _disc_issuer(disc_issuer)
-        , _job_id(job_id)
-        , _job_status(job_status)
-    {}
-
-    sdpa::agent_id_t disc_issuer() const { return _disc_issuer; }
-    sdpa::job_id_t job_id() const { return _job_id; }
-    sdpa::status::code job_status() const { return _job_status; }
-
-  private:
-    sdpa::agent_id_t _disc_issuer;
-    sdpa::job_id_t _job_id;
-    sdpa::status::code _job_status;
-  };
-}
-
-typedef boost::unordered_map<we::layer::id_type, sdpa::job_info_t> map_discover_ids_t;
-
 #define OVERWRITTEN_IN_TEST virtual
 
 namespace sdpa {
@@ -161,11 +138,16 @@ namespace sdpa {
 
       virtual void handleDiscoverJobStatesReplyEvent
         (const sdpa::events::DiscoverJobStatesReplyEvent*);
+      virtual void handleDiscoverJobStatesEvent
+        (const sdpa::events::DiscoverJobStatesEvent*);
 
       // event communication
       void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
       OVERWRITTEN_IN_TEST void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
+    private:
+      void delay (boost::function<void()>);
 
+    public:
       // registration
       void requestRegistration(const MasterInfo& masterInfo);
       void request_registration_soon (const MasterInfo& info);
@@ -175,11 +157,6 @@ namespace sdpa {
       we::layer* workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
-    protected:
-      // workflow engine notifications
-      OVERWRITTEN_IN_TEST void submitWorkflow(const job_id_t& id);
-
-    public:
       // workers
       OVERWRITTEN_IN_TEST void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
@@ -188,7 +165,7 @@ namespace sdpa {
       std::string gen_id();
 
     private:
-      void addJob ( const sdpa::job_id_t& job_id
+      Job* addJob ( const sdpa::job_id_t& job_id
                   , const job_desc_t desc
                   , bool is_master_job
                   , const worker_id_t& owner
@@ -207,13 +184,15 @@ namespace sdpa {
 
         if (!job_req_list.empty())
           job_requirements_.insert(std::make_pair(job_id, job_req_list));
+
+        return pJob;
       }
 
     public:
       void TEST_add_dummy_job
         (const sdpa::job_id_t& job_id, const job_requirements_t& req_list)
       {
-        return addJob (job_id, job_id, false, "", req_list);
+        addJob (job_id, job_id, false, "", req_list);
       }
       Job* findJob(const sdpa::job_id_t& job_id ) const
       {
@@ -254,6 +233,10 @@ namespace sdpa {
         return scheduler()->findWorker(worker_id);
       }
 
+    private:
+      void delayed_cancel (const we::layer::id_type&);
+      void delayed_discover (we::layer::id_type discover_id, we::layer::id_type);
+
       // data members
     protected:
       fhg::log::Logger::ptr_t _logger;
@@ -264,7 +247,10 @@ namespace sdpa {
 
       sdpa::master_info_list_t m_arrMasterInfo;
       sdpa::subscriber_map_t m_listSubscribers;
-      map_discover_ids_t m_map_discover_ids;
+
+    private:
+      boost::unordered_map<std::pair<job_id_t, job_id_t>, std::string>
+        _discover_sources;
 
     private:
       typedef boost::unordered_map<sdpa::job_id_t, job_requirements_t>

@@ -99,22 +99,10 @@ namespace sdpa
 
     void Agent::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
     {
-      // check if the message comes from outside/slave or from WFE
       // if it comes from a slave, one should inform WFE -> subjob
-      // if it comes from WFE -> concerns the master job
-
-      // if the event comes from the workflow engine (e.g. submission failed,
-      // see the scheduler
-
-      if (!pEvt->is_external())
-      {
-        failed (pEvt->job_id(), pEvt->error_message());
-
-        return;
-      }
 
       // send a JobFailedAckEvent back to the worker/slave
-      child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
+      child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
 
       //put the job into the state Failed
       Job* pJob (findJob (pEvt->job_id()));
@@ -180,63 +168,30 @@ namespace sdpa
       }
     }
 
-    void Agent::handleCancelJobEvent (const events::CancelJobEvent* pEvt )
+    void Agent::handleCancelJobEvent (const events::CancelJobEvent* pEvt)
     {
-      Job* pJob (findJob(pEvt->job_id()));
+      Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
-        if (pEvt->is_external())
-        {
-          throw std::runtime_error ("No such job found");
-        }
-
-        return;
+        throw std::runtime_error ("No such job found");
       }
 
-      if (pEvt->is_external())
+      if (pJob->getStatus() == sdpa::status::CANCELING)
       {
-        if (pJob->getStatus() == sdpa::status::CANCELING)
-        {
-          throw std::runtime_error
-            ("A cancelation request for this job was already posted!");
-        }
-
-        if (sdpa::status::is_terminal (pJob->getStatus()))
-        {
-          throw std::runtime_error
-            ( "Cannot cancel an already terminated job, its current status is: "
-            + sdpa::status::show (pJob->getStatus())
-            );
-        }
-
-        // a Cancel message came from the upper level -> forward
-        // cancellation request to WE
-        workflowEngine()->cancel (pEvt->job_id());
-        pJob->CancelJob();
+        throw std::runtime_error
+          ("A cancelation request for this job was already posted!");
       }
-      else // the workflow engine issued the cancelation order for this job
+
+      if (sdpa::status::is_terminal (pJob->getStatus()))
       {
-        boost::optional<sdpa::worker_id_t> worker_id
-          (scheduler()->findSubmOrAckWorker(pEvt->job_id()));
-
-        // change the job status to "Canceling"
-        pJob->CancelJob();
-
-        if (worker_id)
-        {
-          child_proxy (this, *worker_id).cancel_job (pEvt->job_id());
-        }
-        else
-        {
-          workflowEngine()->canceled (pEvt->job_id());
-
-          // reply with an ack here
-          pJob->CancelJobAck();
-          ptr_scheduler_->delete_job (pEvt->job_id());
-
-          deleteJob (pEvt->job_id());
-        }
+        throw std::runtime_error
+          ( "Cannot cancel an already terminated job, its current status is: "
+          + sdpa::status::show (pJob->getStatus())
+          );
       }
+
+      workflowEngine()->cancel (pEvt->job_id());
+      pJob->CancelJob();
     }
 
     void Agent::handleCancelJobAckEvent (const events::CancelJobAckEvent* pEvt)
@@ -257,8 +212,8 @@ namespace sdpa
         }
       }
 
-      // the acknowledgment comes from WE or from a slave and there is no WE
-      if (!pEvt->is_external() || !hasWorkflowEngine())
+      // the acknowledgment comes from a slave and there is no WE
+      if (!hasWorkflowEngine())
       {
         // just send an acknowledgment to the master
         // send an acknowledgment to the component that requested the cancellation
@@ -305,48 +260,6 @@ namespace sdpa
         {
           deleteJob(pEvt->job_id());
         }
-      }
-    }
-
-    void Agent::handleDiscoverJobStatesEvent
-      (const sdpa::events::DiscoverJobStatesEvent *pEvt)
-    {
-      Job* pJob (findJob (pEvt->job_id()));
-
-      // if the event came from outside, forward it to the workflow engine
-      if (pEvt->is_external())
-      {
-        if (!pJob)
-        {
-          parent_proxy (this, pEvt->from()).discover_job_states_reply
-            ( pEvt->discover_id()
-            , sdpa::discovery_info_t
-              (pEvt->job_id(), boost::none, sdpa::discovery_info_set_t())
-            );
-
-          return;
-        }
-
-        m_map_discover_ids.insert
-          ( std::make_pair ( pEvt->discover_id()
-                           , job_info_t ( pEvt->from()
-                                        , pEvt->job_id()
-                                        , pJob->getStatus()
-                                        )
-                           )
-          );
-        workflowEngine()->discover (pEvt->discover_id(), pEvt->job_id());
-      }
-      else
-      {
-        //! Note: the layer guarantees that the job was already submitted
-        workflowEngine()->discovered ( pEvt->discover_id()
-                                     , sdpa::discovery_info_t
-                                       ( pEvt->job_id()
-                                       , pJob->getStatus()
-                                       , sdpa::discovery_info_set_t()
-                                       )
-                                     );
       }
     }
   }

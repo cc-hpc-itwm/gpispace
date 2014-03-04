@@ -23,6 +23,7 @@
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
+#include <sdpa/events/delayed_function_call.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
@@ -158,6 +159,8 @@ GenericDaemon::~GenericDaemon()
 
   _registration_threads.stop_all();
 
+  delete ptr_workflow_engine_;
+
   _event_handler_thread.interrupt();
   if (_event_handler_thread.joinable())
   {
@@ -170,8 +173,6 @@ GenericDaemon::~GenericDaemon()
     _scheduling_thread.join();
   }
   ptr_scheduler_.reset();
-
-  delete ptr_workflow_engine_;
 
   _network_strategy.reset();
 
@@ -244,16 +245,46 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-    // One should parse the workflow in order to be able to create a valid job
-    addJob(job_id, e.description(), hasWorkflowEngine(), e.from(), job_requirements_t());
+  // One should parse the workflow in order to be able to create a valid job
+  Job* pJob (addJob(job_id, e.description(), hasWorkflowEngine(), e.from(), job_requirements_t()));
 
-    parent_proxy (this, e.from()).submit_job_ack (job_id);
+  //! \todo Don't ack before we know that we can: may fail 20 lines
+  //! below. add Nack event of some sorts to not need
+  //! submitack+jobfailed to fail submission. this would also resolve
+  //! the race in handleDiscoverJobStatesEvent.
+  parent_proxy (this, e.from()).submit_job_ack (job_id);
 
   // check if the message comes from outside or from WFE
   // if it comes from outside and the agent has an WFE, submit it to it
   if(hasWorkflowEngine() )
   {
-    submitWorkflow(job_id);
+    try
+    {
+      const we::type::activity_t act (pJob->description());
+      workflowEngine()->submit (job_id, act);
+
+      // Should set the workflow_id here, or send it together with the workflow description
+      pJob->Dispatch();
+
+      if (m_guiService)
+      {
+        std::list<std::string> workers; workers.push_back (name());
+        const sdpa::daemon::NotificationEvent evt
+          ( workers
+          , job_id
+          , NotificationEvent::STATE_STARTED
+          , act
+          );
+
+        m_guiService->notify (evt);
+      }
+    }
+    catch(const std::exception& ex)
+    {
+      LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
+
+      failed (job_id, ex.what());
+    }
   }
   else {
     scheduler()->enqueueJob(job_id);
@@ -463,7 +494,7 @@ try
   addJob ( job_id
          , activity.to_string()
          , false
-         , sdpa::daemon::WE
+         , name()
          , job_requirements_t (activity.transition().requirements(), schedule_data)
          );
 
@@ -475,44 +506,49 @@ catch (std::exception const& ex)
   workflowEngine()->failed (job_id, ex.what());
 }
 
-/**
- * Cancel an atomic activity that has previously been submitted to
- * the SDPA.
- */
-void GenericDaemon::cancel(const we::layer::id_type& activityId)
+void GenericDaemon::cancel (const we::layer::id_type& job_id)
 {
-  // cancel the job corresponding to that activity -> send downward a CancelJobEvent?
-  // look for the job_id corresponding to the received workflowId into job_map_
-  // in fact they should be the same!
-  // generate const CancelJobEvent& event
-  // Job& job = job_map_[job_id];
-  // call job.CancelJob(event);
+  delay (boost::bind (&GenericDaemon::delayed_cancel, this, job_id));
+}
+void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
+{
+  Job* pJob (findJob (job_id));
+  if (!pJob)
+  {
+    //! \note Job may have been removed between wfe requesting cancel
+    //! and event thread handling this, which is not an error: wfe
+    //! correctly handles that situation and expects us to ignore it.
+    return;
+  }
 
-  job_id_t job_id(activityId);
-  events::CancelJobEvent::Ptr pEvtCancelJob
-          (new events::CancelJobEvent( sdpa::daemon::WE
-                              , name()
-                              , job_id )
-          );
-  sendEventToSelf(pEvtCancelJob);
+  const boost::optional<sdpa::worker_id_t> worker_id
+    (scheduler()->findSubmOrAckWorker (job_id));
+
+  pJob->CancelJob();
+
+  if (worker_id)
+  {
+    child_proxy (this, *worker_id).cancel_job (job_id);
+  }
+  else
+  {
+    workflowEngine()->canceled (job_id);
+
+    pJob->CancelJobAck();
+    ptr_scheduler_->delete_job (job_id);
+
+    deleteJob (job_id);
+  }
 }
 
-/**
- * Notify the SDPA that a workflow finished (state transition
- * from running to finished).
- */
-void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::type::activity_t& result)
+void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activity_t& result)
 {
-  //put the job into the state Finished
-  job_id_t id(workflowId);
-
   Job* pJob = findJob(id);
   if(!pJob)
   {
     throw std::runtime_error ("got finished message for old/unknown Job " + id);
   }
 
-  // forward it up
   pJob->JobFinished (result.to_string());
 
   if(!isSubscriber(pJob->owner()))
@@ -551,24 +587,16 @@ void GenericDaemon::finished(const we::layer::id_type& workflowId, const we::typ
   }
 }
 
-/**
- * Notify the SDPA that a workflow failed (state transition
- * from running to failed).
- */
-void GenericDaemon::failed( const we::layer::id_type& workflowId
+void GenericDaemon::failed( const we::layer::id_type& id
                           , std::string const & reason
                           )
 {
-  job_id_t id(workflowId);
-  //put the job into the state Failed
-
   Job* pJob = findJob(id);
   if(!pJob)
   {
     throw std::runtime_error ("got failed message for old/unknown Job " + id);
   }
 
-  // send the event to the master
   pJob->JobFailed (reason);
 
   if(!isSubscriber(pJob->owner()))
@@ -606,75 +634,24 @@ void GenericDaemon::failed( const we::layer::id_type& workflowId
   }
 }
 
-/**
- * Notify the SDPA that a workflow has been canceled (state
- * transition from * to terminated.
- */
-void GenericDaemon::canceled(const we::layer::id_type& workflowId)
+void GenericDaemon::canceled (const we::layer::id_type& job_id)
 {
-  // generate a JobCanceledEvent for self!
-
-  job_id_t job_id(workflowId);
-
-  events::CancelJobAckEvent::Ptr pEvtCancelJobAck( new events::CancelJobAckEvent(sdpa::daemon::WE, name(), job_id ));
-  sendEventToSelf(pEvtCancelJobAck);
-}
-
-/*
-   Submit a workflow to the workflow engine
-*/
-void GenericDaemon::submitWorkflow(const sdpa::job_id_t &jobId)
-{
-  try {
-    Job* pJob = findJob(jobId);
-
-    // Should set the workflow_id here, or send it together with the workflow description
-    pJob->Dispatch();
-
-    const we::type::activity_t act (pJob->description());
-    if (m_guiService)
-    {
-      std::list<std::string> workers; workers.push_back (name());
-      const sdpa::daemon::NotificationEvent evt
-        ( workers
-        , jobId
-        , NotificationEvent::STATE_STARTED
-        , act
-        );
-
-      m_guiService->notify (evt);
-    }
-
-    workflowEngine()->submit (jobId, act);
-  }
-  catch(const JobNotFoundException& ex)
+  Job* pJob (findJob (job_id));
+  if (!pJob)
   {
-    events::JobFailedEvent::Ptr pEvtJobFailed
-      (new events::JobFailedEvent( sdpa::daemon::WE
-                                 , name()
-                                 , jobId
-                                 , "job could not be found"
-                                 )
-      );
-
-    sendEventToSelf(pEvtJobFailed);
+    throw std::runtime_error ("rts_canceled (unknown job)");
   }
-  catch(const std::exception& ex)
+
+  pJob->CancelJobAck();
+
+  //! \todo Should be if (job-has-owner), i.e. was-submitted-to-this-daemon
+  if (!isTop())
   {
-    LLOG (ERROR, _logger, "Exception occurred: " << ex.what() << ". Failed to submit the job "<<jobId<<" to the workflow engine!");
+    parent_proxy (this, pJob->owner()).cancel_job_ack (job_id);
 
-     events::JobFailedEvent::Ptr pEvtJobFailed
-       (new events::JobFailedEvent( sdpa::daemon::WE
-                                  , name()
-                                  , jobId
-                                  , ex.what()
-                                  )
-     );
-
-     sendEventToSelf(pEvtJobFailed);
-   }
+    deleteJob (job_id);
+  }
 }
-
 
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
@@ -846,6 +823,12 @@ void GenericDaemon::handle_events()
 void GenericDaemon::sendEventToOther(const events::SDPAEvent::Ptr& pEvt)
 {
   _network_strategy->perform (pEvt);
+}
+
+void GenericDaemon::delay (boost::function<void()> fun)
+{
+  sendEventToSelf
+    (events::SDPAEvent::Ptr (new events::delayed_function_call (fun)));
 }
 
 void GenericDaemon::request_registration_soon (const MasterInfo& info)
@@ -1100,36 +1083,127 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
   }
 }
 
-void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
-{
-  events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( sdpa::daemon::WE
-                                                                                    , name()
-                                                                                    , job_id
-                                                                                    , discover_id ));
+    void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
+    {
+      delay ( boost::bind ( &GenericDaemon::delayed_discover, this
+                          , discover_id, job_id
+                          )
+            );
+    }
+    void GenericDaemon::delayed_discover
+      (we::layer::id_type discover_id, we::layer::id_type job_id)
+    {
+      Job* pJob (findJob (job_id));
 
-  sendEventToSelf(pDiscEvt);
-}
+      const boost::optional<worker_id_t> worker_id
+        (scheduler()->findSubmOrAckWorker(job_id));
 
-void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
-{
-  sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
-  parent_proxy (this, master_name).discover_job_states_reply
-    (discover_id, discover_result);
-  m_map_discover_ids.erase(discover_id);
-}
+      if (pJob && worker_id)
+      {
+        child_proxy (this, *worker_id).discover_job_states
+          (job_id, discover_id);
+      }
+      else if (pJob)
+      {
+        workflowEngine()->discovered
+          ( discover_id
+          , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
+          );
+      }
+      else
+      {
+        workflowEngine()->discovered
+          ( discover_id
+          , discovery_info_t (job_id, boost::none, discovery_info_set_t())
+          );
+      }
+    }
 
-void GenericDaemon::handleDiscoverJobStatesReplyEvent
-  (const sdpa::events::DiscoverJobStatesReplyEvent* e)
-{
-  const sdpa::job_info_t& job_info (m_map_discover_ids.at (e->discover_id()));
-  const sdpa::discovery_info_t discovery_info
-    (job_info.job_id(), job_info.job_status(), e->discover_result().children());
+    void GenericDaemon::handleDiscoverJobStatesEvent
+      (const sdpa::events::DiscoverJobStatesEvent *pEvt)
+    {
+      Job* pJob (findJob (pEvt->job_id()));
 
-  parent_proxy (this, job_info.disc_issuer()).discover_job_states_reply
-    (e->discover_id(), discovery_info);
+      const boost::optional<worker_id_t> worker_id
+        (scheduler()->findSubmOrAckWorker(pEvt->job_id()));
 
-  m_map_discover_ids.erase (e->discover_id());
-}
+      if (pJob && worker_id)
+      {
+        _discover_sources.insert
+          ( std::make_pair ( std::make_pair (pEvt->discover_id(), pEvt->job_id())
+                           , pEvt->from()
+                           )
+          );
+
+        child_proxy (this, *worker_id).discover_job_states
+          (pEvt->job_id(), pEvt->discover_id());
+      }
+      //! \todo Other criteria to know it was submitted to the
+      //! wfe. All jobs are regarded as going to the wfe and the only
+      //! way to prevent a loop is to check whether the discover comes
+      //! out of the wfe. Special "worker" id?
+      else if (pJob && workflowEngine())
+      {
+        _discover_sources.insert
+          ( std::make_pair ( std::make_pair (pEvt->discover_id(), pEvt->job_id())
+                           , pEvt->from()
+                           )
+          );
+
+        //! \todo There is a race here: between SubmitJobAck and
+        //! we->submit(), there's still a lot of stuff. We can't
+        //! guarantee, that the job is already submitted to the wfe!
+        //! We need to handle the "pending" state.
+        workflowEngine()->discover (pEvt->discover_id(), pEvt->job_id());
+      }
+      else if (pJob)
+      {
+        parent_proxy (this, pEvt->from()).discover_job_states_reply
+          ( pEvt->discover_id()
+          , discovery_info_t (pEvt->job_id(), pJob->getStatus(), discovery_info_set_t())
+          );
+      }
+      else
+      {
+        parent_proxy (this, pEvt->from()).discover_job_states_reply
+          ( pEvt->discover_id()
+          , discovery_info_t (pEvt->job_id(), boost::none, discovery_info_set_t())
+          );
+      }
+    }
+
+    void GenericDaemon::discovered
+      (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
+    {
+      const std::pair<job_id_t, job_id_t> source_id
+        (discover_id, discover_result.job_id());
+
+      parent_proxy (this, _discover_sources.at (source_id))
+        .discover_job_states_reply (discover_id, discover_result);
+
+      _discover_sources.erase (source_id);
+    }
+
+    void GenericDaemon::handleDiscoverJobStatesReplyEvent
+      (const sdpa::events::DiscoverJobStatesReplyEvent* e)
+    {
+      const std::pair<job_id_t, job_id_t> source_id
+        (e->discover_id(), e->discover_result().job_id());
+      const boost::unordered_map<std::pair<job_id_t, job_id_t>, std::string>::iterator
+        source (_discover_sources.find (source_id));
+
+      if (source == _discover_sources.end())
+      {
+        workflowEngine()->discovered (e->discover_id(), e->discover_result());
+      }
+      else
+      {
+        parent_proxy (this, source->second).discover_job_states_reply
+          (e->discover_id(), e->discover_result());
+
+        _discover_sources.erase (source);
+      }
+    }
 
 
 void GenericDaemon::handleRetrieveJobResultsEvent(const events::RetrieveJobResultsEvent* pEvt )

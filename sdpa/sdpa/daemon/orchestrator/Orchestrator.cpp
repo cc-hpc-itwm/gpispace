@@ -64,10 +64,7 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 
   LLOG (TRACE, _logger, "The job " << pEvt->job_id() << " has finished!");
 
-  if (pEvt->is_external())
-  {
-    child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
-  }
+  child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
 
   //put the job into the state Finished or Cancelled
   Job* pJob = findJob(pEvt->job_id());
@@ -80,9 +77,6 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
       return;
   }
 
-  // It's an worker who has sent the message
-  if( (pEvt->is_external()) )
-  {
     Worker::worker_id_t worker_id = pEvt->from();
     we::layer::id_type act_id = pEvt->job_id();
 
@@ -100,13 +94,6 @@ void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
 
     }catch(...) {
     }
-  }
-  else
-  {
-    LLOG (INFO, _logger, "Notify the subscribers that the job "<<pEvt->job_id()<<" has finished!");
-    events::JobFinishedEvent::Ptr ptrEvtJobFinished(new  events::JobFinishedEvent(*pEvt));
-    notifySubscribers(ptrEvtJobFinished);
-  }
 }
 
 void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
@@ -115,10 +102,7 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
   // if it comes from a slave, one should inform WFE -> subjob
   // if it comes from WFE -> concerns the master job
 
-  if (pEvt->is_external())
-  {
-    child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
-  }
+  child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
 
   //put the job into the state Failed or Cancelled
   Job* pJob = findJob(pEvt->job_id());
@@ -131,9 +115,6 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
       return;
   }
 
-  // It's an worker who has sent the message
-  if( pEvt->is_external() )
-  {
       Worker::worker_id_t worker_id = pEvt->from();
       we::layer::id_type actId = pJob->id();
 
@@ -151,13 +132,6 @@ void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
       }
       catch(...) {
       }
-  }
-  else
-  {
-    LLOG (INFO, _logger, "Notify the subscribers that the job "<<pEvt->job_id()<<" has failed!");
-      events::JobFailedEvent::Ptr ptrEvtJobFailed(new  events::JobFailedEvent(*pEvt));
-      notifySubscribers(ptrEvtJobFailed);
-  }
 }
 
 void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
@@ -245,39 +219,6 @@ void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
   else
   {
     throw std::runtime_error ("no such job");
-  }
-}
-
-void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
-{
-  Job* pJob = findJob(pEvt->job_id());
-
-  if(!pJob)
-  {
-    parent_proxy (this, pEvt->from()).discover_job_states_reply
-      ( pEvt->discover_id()
-      , sdpa::discovery_info_t
-        (pEvt->job_id(), boost::none, sdpa::discovery_info_set_t())
-      );
-
-    return;
-  }
-
-  boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
-
-  if(worker_id)
-  {
-      m_map_discover_ids.insert( std::make_pair( pEvt->discover_id(), job_info_t(pEvt->from(), pEvt->job_id(), pJob->getStatus()) ));
-      child_proxy (this, *worker_id).discover_job_states
-        (pEvt->job_id(), pEvt->discover_id());
-  }
-  else
-  {
-    parent_proxy (this, pEvt->from()).discover_job_states_reply
-      ( pEvt->discover_id()
-      , sdpa::discovery_info_t
-        (pEvt->job_id(), pJob->getStatus(), sdpa::discovery_info_set_t())
-      );
   }
 }
 
