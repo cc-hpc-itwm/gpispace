@@ -1,32 +1,19 @@
-/*
- * =====================================================================================
- *
- *       Filename:  Orchestrator.hpp
- *
- *    Description:  Contains the Orchestrator class
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
+// tiberiu.rotaru@itwm.fraunhofer.de
 
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+
 #include <sdpa/daemon/Job.hpp>
-#include <sdpa/job_states.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+#include <sdpa/job_states.hpp>
+
 #include <we/type/value/poke.hpp>
 
-
-namespace sdpa {
-  namespace daemon {
+namespace sdpa
+{
+  namespace daemon
+  {
     Orchestrator::Orchestrator ( const std::string& name
                                , const std::string& url
                                , std::string kvs_host, std::string kvs_port
@@ -35,110 +22,116 @@ namespace sdpa {
     {}
 
 
-template <typename T>
-void Orchestrator::notifySubscribers(const T& ptrEvt)
-{
-  sdpa::job_id_t jobId = ptrEvt->job_id();
-
-  BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
-  {
-    sdpa::job_id_list_t listSubscrJobs = pair_subscr_joblist.second;
-
-    for( sdpa::job_id_list_t::iterator it = listSubscrJobs.begin(); it != listSubscrJobs.end(); it++ )
-    if( *it == jobId )
+    template <typename T>
+      void Orchestrator::notifySubscribers (const T& ptrEvt)
     {
-      //! \todo eliminate, do not use non-const getter
-      ptrEvt->to() = pair_subscr_joblist.first;
-      sendEventToOther (ptrEvt);
+      sdpa::job_id_t jobId = ptrEvt->job_id();
 
-      break;
+      BOOST_FOREACH ( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist
+                    , m_listSubscribers
+                    )
+      {
+        sdpa::job_id_list_t listSubscrJobs = pair_subscr_joblist.second;
+
+        for ( sdpa::job_id_list_t::iterator it = listSubscrJobs.begin()
+            ; it != listSubscrJobs.end()
+            ; it++
+            )
+        {
+          if (*it == jobId)
+          {
+            //! \todo eliminate, do not use non-const getter
+            ptrEvt->to() = pair_subscr_joblist.first;
+            sendEventToOther (ptrEvt);
+
+            break;
+          }
+        }
+      }
     }
-  }
-}
 
-void Orchestrator::handleJobFinishedEvent(const events::JobFinishedEvent* pEvt )
-{
-  // check if the message comes from outside/slave or from WFE
-  // if it comes from a slave, one should inform WFE -> subjob
-  // if it comes from WFE -> concerns the master job
+    void Orchestrator::handleJobFinishedEvent
+      (const events::JobFinishedEvent* pEvt)
+    {
+      LLOG (TRACE, _logger, "The job " << pEvt->job_id() << " has finished!");
 
-  LLOG (TRACE, _logger, "The job " << pEvt->job_id() << " has finished!");
+      child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
 
-  child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
-
-  //put the job into the state Finished or Cancelled
-  Job* pJob (findJob (pEvt->job_id()));
-  if (!pJob)
-  {
-    //! \todo Explain why we can ignore this
-    return;
-  }
+      Job* pJob (findJob (pEvt->job_id()));
+      if (!pJob)
+      {
+        //! \todo Explain why we can ignore this
+        return;
+      }
 
       pJob->JobFinished (pEvt->result());
 
-    Worker::worker_id_t worker_id = pEvt->from();
-    we::layer::id_type act_id = pEvt->job_id();
+      Worker::worker_id_t worker_id = pEvt->from();
+      we::layer::id_type act_id = pEvt->job_id();
 
-    try {
-      events::JobFinishedEvent::Ptr ptrEvtJobFinished(new  events::JobFinishedEvent(*pEvt));
-      notifySubscribers(ptrEvtJobFinished);
+      try
+      {
+        events::JobFinishedEvent::Ptr ptrEvtJobFinished
+          (new events::JobFinishedEvent (*pEvt));
+        notifySubscribers (ptrEvtJobFinished);
 
-      try {
-          scheduler()->deleteWorkerJob ( worker_id, act_id );
+        try
+        {
+          scheduler()->deleteWorkerJob (worker_id, act_id);
           request_scheduling();
+        }
+        catch (WorkerNotFoundException const&)
+        {
+        }
       }
-      catch(WorkerNotFoundException const &)
+      catch (...)
       {
       }
-
-    }catch(...) {
     }
-}
 
-void Orchestrator::handleJobFailedEvent(const  events::JobFailedEvent* pEvt )
-{
-  // check if the message comes from outside/slave or from WFE
-  // if it comes from a slave, one should inform WFE -> subjob
-  // if it comes from WFE -> concerns the master job
+    void Orchestrator::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
+    {
+      child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
 
-  child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
-
-  //put the job into the state Failed or Cancelled
-  Job* pJob (findJob (pEvt->job_id()));
-  if (!pJob)
-  {
-    //! \todo Explain why we can ignore this
-    return;
-  }
+      Job* pJob (findJob (pEvt->job_id()));
+      if (!pJob)
+      {
+        //! \todo Explain why we can ignore this
+        return;
+      }
 
       pJob->JobFailed (pEvt->error_message());
 
       Worker::worker_id_t worker_id = pEvt->from();
       we::layer::id_type actId = pJob->id();
 
-      try {
-        events::JobFailedEvent::Ptr ptrEvtJobFailed(new  events::JobFailedEvent(*pEvt));
-        notifySubscribers(ptrEvtJobFailed);
+      try
+      {
+        events::JobFailedEvent::Ptr ptrEvtJobFailed
+          (new events::JobFailedEvent (*pEvt));
+        notifySubscribers (ptrEvtJobFailed);
 
-        try {
-            scheduler()->deleteWorkerJob(worker_id, pJob->id());
-            request_scheduling();
+        try
+        {
+          scheduler()->deleteWorkerJob (worker_id, pJob->id());
+          request_scheduling();
         }
-        catch(const WorkerNotFoundException&)
+        catch (const WorkerNotFoundException&)
         {
         }
       }
-      catch(...) {
+      catch (...)
+      {
       }
-}
+    }
 
-void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
-{
-  Job* pJob (findJob (pEvt->job_id()));
-  if (!pJob)
-  {
-    throw std::runtime_error ("CancelJobEvent for unknown job");
-  }
+    void Orchestrator::handleCancelJobEvent (const events::CancelJobEvent* pEvt)
+    {
+      Job* pJob (findJob (pEvt->job_id()));
+      if (!pJob)
+      {
+        throw std::runtime_error ("CancelJobEvent for unknown job");
+      }
 
       if(pJob->getStatus() == sdpa::status::CANCELING)
       {
@@ -154,62 +147,67 @@ void Orchestrator::handleCancelJobEvent(const  events::CancelJobEvent* pEvt )
           );
       }
 
-        // send immediately an acknowledgment to the component that requested the cancellation
-      if(!isSubscriber(pEvt->from ()))
+      // send immediately an acknowledgment to the component that
+      // requested the cancellation
+      if (!isSubscriber (pEvt->from()))
       {
         parent_proxy (this, pEvt->from()).cancel_job_ack (pEvt->job_id());
       }
 
       pJob->CancelJob();
 
-      boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
-      if(worker_id)
+      boost::optional<sdpa::worker_id_t> worker_id =
+        scheduler()->findSubmOrAckWorker(pEvt->job_id());
+      if (worker_id)
       {
         child_proxy (this, *worker_id).cancel_job (pEvt->job_id());
       }
       else
       {
-          // the job was not yet assigned to any worker
+        // the job was not yet assigned to any worker
 
-          pJob->CancelJobAck();
-          ptr_scheduler_->delete_job (pEvt->job_id());
+        pJob->CancelJobAck();
+        ptr_scheduler_->delete_job (pEvt->job_id());
       }
-}
+    }
 
-void Orchestrator::handleCancelJobAckEvent(const events::CancelJobAckEvent* pEvt)
-{
-  Job* pJob (findJob (pEvt->job_id()));
-  if (!pJob)
-  {
-    //! \todo Explain why we can ignore this
-    return;
-  }
+    void Orchestrator::handleCancelJobAckEvent
+      (const events::CancelJobAckEvent* pEvt)
+    {
+      Job* pJob (findJob (pEvt->job_id()));
+      if (!pJob)
+      {
+        //! \todo Explain why we can ignore this
+        return;
+      }
 
-    // update the job status to "Canceled"
-    pJob->CancelJobAck();
+      pJob->CancelJobAck();
 
-    events::CancelJobAckEvent::Ptr ptrCancelAckEvt(new events::CancelJobAckEvent(*pEvt));
-    notifySubscribers(ptrCancelAckEvt);
-}
+      events::CancelJobAckEvent::Ptr ptrCancelAckEvt
+        (new events::CancelJobAckEvent (*pEvt));
+      notifySubscribers (ptrCancelAckEvt);
+    }
 
-void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
-{
-  const  events::DeleteJobEvent& e (*evt);
+    void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
+    {
+      const events::DeleteJobEvent& e (*evt);
 
-  Job* pJob (findJob (e.job_id()));
-  if (!pJob)
-  {
-    throw std::runtime_error ("DeleteJobEvent for unknown job");
-  }
+      Job* pJob (findJob (e.job_id()));
+      if (!pJob)
+      {
+        throw std::runtime_error ("DeleteJobEvent for unknown job");
+      }
 
       if(!sdpa::status::is_terminal (pJob->getStatus()))
       {
         throw std::runtime_error
-          ("Cannot delete a job which is in a non-terminal state. Please, cancel it first!");
+          ( "Cannot delete a job which is in a non-terminal state. "
+            "Please, cancel it first!"
+          );
       }
 
-          deleteJob(e.job_id());
-    parent_proxy (this, e.from()).delete_job_ack (e.job_id());
+      deleteJob(e.job_id());
+      parent_proxy (this, e.from()).delete_job_ack (e.job_id());
+    }
+  }
 }
-
-}} // end namespaces
