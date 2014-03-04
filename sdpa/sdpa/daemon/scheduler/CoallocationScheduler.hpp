@@ -27,7 +27,7 @@ namespace sdpa
       WorkerManager& worker_manager();
 
       // -- used by daemon
-      void delete_job (const sdpa::job_id_t&);
+      bool delete_job (const sdpa::job_id_t&);
       void workerFinished (const worker_id_t&, const job_id_t&);
       void workerFailed (const worker_id_t&, const job_id_t&);
       void workerCanceled (const worker_id_t&, const job_id_t&);

@@ -54,12 +54,9 @@ namespace sdpa
       worker_manager().deleteWorker (worker_id);
     }
 
-    void CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
+    bool CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
     {
-      if (!_common_queue.erase(job))
-      {
-        worker_manager().deleteJob (job);
-      }
+      return _common_queue.erase(job);
     }
 
     void CoallocationScheduler::enqueueJob (const sdpa::job_id_t& jobId)
