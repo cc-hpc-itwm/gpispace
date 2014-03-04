@@ -11,12 +11,10 @@ using namespace sdpa;
 using namespace sdpa::daemon;
 
 Worker::Worker(	const worker_id_t& name,
-				const boost::optional<unsigned int>& cap,
-				const location_t &location)
+				const boost::optional<unsigned int>& cap)
   : _logger (fhg::log::Logger::get ("sdpa.daemon.worker." + name)),
     name_(name),
     capacity_(cap),
-    location_(location),
     tstamp_(fhg::util::now()),
     last_schedule_time_(0),
     disconnected_(false),

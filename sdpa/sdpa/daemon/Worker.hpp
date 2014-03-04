@@ -27,7 +27,6 @@ namespace sdpa { namespace daemon {
 
     typedef boost::shared_ptr<Worker> ptr_t;
 
-    typedef sdpa::location_t location_t;
     typedef sdpa::worker_id_t worker_id_t;
     typedef sdpa::capabilities_set_t capabilities_set_t;
 
@@ -37,18 +36,12 @@ namespace sdpa { namespace daemon {
     typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
 
     /**
-      A worker has a globally unique name and a location.
-
-      The location can for example represent an ip/port tuple or a queue name etc.
-      IDEA: this information should actually be kept in some kind of a
-            distributed storage space accessible via the worker's name.
+      A worker has a globally unique name.
 
       @param name a unique name for the worker
-      @param location how to reach that worker (might be the same as the former)
       */
     explicit Worker( 	const worker_id_t& name = worker_id_t(""),
-    					const boost::optional<unsigned int>& cap = boost::none,
-    					const location_t &location = "" );
+    					const boost::optional<unsigned int>& cap = boost::none);
 
     /**
       Take an event related to that particular worker and update the internal
@@ -74,11 +67,6 @@ namespace sdpa { namespace daemon {
       Return the name of the worker.
     */
     const worker_id_t &name() const { lock_type lock(mtx_); return name_; }
-
-    /**
-      Return the location of this worker.
-     */
-    const location_t &location() const { lock_type lock(mtx_); return location_; }
 
     /**
          Return the rank of the worker.
@@ -144,7 +132,6 @@ namespace sdpa { namespace daemon {
     worker_id_t name_; //! name of the worker
     boost::optional<unsigned int> capacity_;
     sdpa::capabilities_set_t capabilities_;
-    location_t location_; //! location where to reach the worker
     double tstamp_; //! time of last message received
     double last_schedule_time_;
 
