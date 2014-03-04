@@ -53,9 +53,8 @@ namespace sdpa { namespace daemon {
 	 Acknowledge a given job id and move it to the acknowledged_ queue.
 
 	 @param job_id the job_id to acknowledge
-	 @return true iff a job was moved
 	 */
-    bool acknowledge(const sdpa::job_id_t&);
+    void acknowledge(const sdpa::job_id_t&);
 
     // update last service time
     double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }

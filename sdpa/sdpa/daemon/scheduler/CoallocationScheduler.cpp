@@ -93,10 +93,7 @@ namespace sdpa
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
 
-      if (!worker_manager().findWorker(worker_id)->acknowledge (job_id))
-      {
-        throw JobNotFoundException();
-      }
+      worker_manager().findWorker(worker_id)->acknowledge (job_id);
     }
 
     void CoallocationScheduler::deleteWorkerJob
