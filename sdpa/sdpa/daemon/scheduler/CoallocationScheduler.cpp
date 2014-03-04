@@ -94,12 +94,6 @@ namespace sdpa
       }
     }
 
-    bool CoallocationScheduler::addCapabilities
-      (const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
-    {
-      return worker_manager().findWorker (worker_id)->addCapabilities (cpbset);
-    }
-
     void CoallocationScheduler::removeCapabilities
       (const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
     {

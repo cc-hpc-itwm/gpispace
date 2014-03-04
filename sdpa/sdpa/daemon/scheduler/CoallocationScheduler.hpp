@@ -51,8 +51,6 @@ namespace sdpa
                      , const capabilities_set_t& = capabilities_set_t()
                      );
       void deleteWorker (const Worker::worker_id_t&);
-      bool addCapabilities
-        (const sdpa::worker_id_t&, const sdpa::capabilities_set_t&);
 
       // used by daemon and self and test
       void deleteWorkerJob (const Worker::worker_id_t&, const sdpa::job_id_t&);

@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.addCapabilities ("worker_9", capabilities ("worker_9", "C"));
+  _scheduler.worker_manager().findWorker ("worker_9")->addCapabilities (capabilities ("worker_9", "C"));
 
   _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
