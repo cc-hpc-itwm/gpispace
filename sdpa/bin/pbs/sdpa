@@ -586,11 +586,6 @@ EOF
         setup_$p $@ || { log "E: setup_$p failed!" ; return 1 ; }
     done
 
-    put "config.version" "$CONFIG_VERSION"
-    put "config.modified" "$(date)"
-    put "config.sdpa_version" "$(sdpac --dumpversion 2>/dev/null)"
-    put "config.sdpa_revision" "$(sdpac --revision 2>/dev/null)"
-
     cp "$real_config_file" "${real_config_file}.bak"
     mv "$temp_config_file" "$real_config_file"
 
