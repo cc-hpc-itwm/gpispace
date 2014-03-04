@@ -29,10 +29,8 @@ namespace sdpa
       // if it comes from a slave, one should inform WFE -> subjob
       // if it comes from WFE -> concerns the master job
 
-      // send a JobFinishedAckEvent back to the worker/slave
       child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
 
-      // put the job into the state Finished
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
@@ -51,14 +49,10 @@ namespace sdpa
         Worker::worker_id_t worker_id = pEvt->from();
         we::layer::id_type actId = pEvt->job_id();
 
-        // update the status of the reservation
         scheduler()->workerFinished (worker_id, actId);
 
         bool bAllPartResCollected = scheduler()->allPartialResultsCollected (actId);
 
-        // if all the partial results were collected, notify the workflow
-        // engine about the status of the job (either finished, or failed
-        // the group is finished when all the partial results are "finished"
         if (bAllPartResCollected)
         {
           if (pJob->getStatus() == sdpa::status::CANCELING)
@@ -82,7 +76,6 @@ namespace sdpa
           }
         }
 
-        // if all partial results were collected, release the reservation
         if (bAllPartResCollected)
         {
           scheduler()->releaseReservation (pJob->id());
@@ -90,7 +83,6 @@ namespace sdpa
         scheduler()->deleteWorkerJob (worker_id, pJob->id());
         request_scheduling();
 
-        //delete it also from job_map_
         if(bAllPartResCollected)
         {
           deleteJob (pEvt->job_id());
@@ -100,12 +92,8 @@ namespace sdpa
 
     void Agent::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
     {
-      // if it comes from a slave, one should inform WFE -> subjob
-
-      // send a JobFailedAckEvent back to the worker/slave
       child_proxy (this, pEvt->from()).job_failed_ack (pEvt->job_id());
 
-      //put the job into the state Failed
       Job* pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
@@ -131,8 +119,6 @@ namespace sdpa
         // executed. I.e. all this code should go to the FSM callback
         // routine.
 
-        // update the status of the reservation
-
         bool bAllPartResCollected (false);
         scheduler()->workerFailed (worker_id, actId);
         bAllPartResCollected = scheduler()->allPartialResultsCollected (actId);
@@ -154,7 +140,6 @@ namespace sdpa
           // in the reservation list
         }
 
-        // if all the partial results were collected, release the reservation
         if(bAllPartResCollected)
         {
           scheduler()->releaseReservation (pJob->id());
@@ -162,7 +147,6 @@ namespace sdpa
         scheduler()->deleteWorkerJob (worker_id, pJob->id());
         request_scheduling();
 
-        //delete it also from job_map_
         if (bAllPartResCollected)
         {
           deleteJob (pEvt->job_id());
@@ -204,7 +188,6 @@ namespace sdpa
       {
         try
         {
-          // update the job status to "Canceled"
           pJob->CancelJobAck();
         }
         catch (std::exception const&)
@@ -257,7 +240,6 @@ namespace sdpa
           // still be in the scheduler's queue
         }
 
-        // delete the job completely from the job manager
         if (bTaskGroupComputed)
         {
           deleteJob(pEvt->job_id());
