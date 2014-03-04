@@ -9,8 +9,6 @@
 #include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 
-#include <fhglog/fhglog.hpp>
-
 #include <boost/optional.hpp>
 
 namespace sdpa { namespace daemon {
@@ -127,8 +125,6 @@ namespace sdpa { namespace daemon {
     sdpa::job_id_list_t getJobListAndCleanQueues();
 
   private:
-    fhg::log::Logger::ptr_t _logger;
-
     worker_id_t name_; //! name of the worker
     boost::optional<unsigned int> capacity_;
     sdpa::capabilities_set_t capabilities_;
