@@ -38,8 +38,8 @@ namespace sdpa { namespace daemon {
 
       @param name a unique name for the worker
       */
-    explicit Worker( 	const worker_id_t& name = worker_id_t(""),
-    					const boost::optional<unsigned int>& cap = boost::none);
+    explicit Worker( 	const worker_id_t& name,
+    					const boost::optional<unsigned int>& cap);
 
     /**
       Take an event related to that particular worker and update the internal
