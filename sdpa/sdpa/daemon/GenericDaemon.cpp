@@ -355,12 +355,13 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       scheduler()->worker_manager().findWorker (worker_id)->deleteJob (jobId);
 
       Job* pJob (findJob (jobId));
-      if (pJob)
+      if (!pJob)
       {
-        scheduler()->releaseReservation (jobId);
-        pJob->Reschedule(); // put the job back into the pending state
-        scheduler()->enqueueJob (jobId);
+        throw std::runtime_error ("EJOBREJECTED for unknown job");
       }
+      scheduler()->releaseReservation (jobId);
+      pJob->Reschedule(); // put the job back into the pending state
+      scheduler()->enqueueJob (jobId);
 
       request_scheduling();
       break;
