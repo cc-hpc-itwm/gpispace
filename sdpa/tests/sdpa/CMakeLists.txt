@@ -279,9 +279,11 @@ fhg_add_test (test_TransformFile.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
   LINK_LIBRARIES sdpa
+  				 fake-drts-kernel-plugin
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS workflow_transform_file
+  DEPENDS fvm-fake-plugin
+          workflow_transform_file
   )
 
 fhg_add_test (test_DiscoverJobStates.cpp

@@ -8,23 +8,7 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public sdpa::daemon::Agent
-{
-  public:
-    Worker (const std::string& name, const std::string& master_name)
-      : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(1, sdpa::MasterInfo(master_name)), boost::none)
-    {}
-
-    void submit ( const we::layer::id_type& activity_id
-                , const we::type::activity_t& activity
-                )
-    {
-      sdpa::daemon::GenericDaemon::submit(activity_id, activity);
-      workflowEngine()->finished(activity_id, activity);
-    }
-};
-
-BOOST_AUTO_TEST_CASE (transform_file_with_mock_worker)
+BOOST_AUTO_TEST_CASE (test_transform_file)
 {
   const std::string workflow
     (utils::require_and_read_file ("transform_file.pnet"));
@@ -34,10 +18,17 @@ BOOST_AUTO_TEST_CASE (transform_file_with_mock_worker)
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  const Worker worker_0( "worker_0", agent._.name());
+  const utils::drts_worker worker_0
+    ( "drts_0", agent
+    , ""
+    , TESTS_TRANSFORM_FILE_MODULES_PATH
+    , kvs_host(), kvs_port()
+    );
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)
                       , sdpa::status::FINISHED
                       );
+
+        // tr [a-z] [A-Z] < in.txt > out.txt.expected
 }
