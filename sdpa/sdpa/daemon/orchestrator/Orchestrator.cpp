@@ -148,6 +148,10 @@ namespace sdpa
 
         pJob->CancelJobAck();
         ptr_scheduler_->delete_job (pEvt->job_id());
+
+        events::CancelJobAckEvent::Ptr ptrCancelAckEvt
+          (new events::CancelJobAckEvent (*pEvt));
+        notifySubscribers (ptrCancelAckEvt);
       }
     }
 
