@@ -19,7 +19,6 @@ Worker::Worker(	const worker_id_t& name,
     location_(location),
     tstamp_(fhg::util::now()),
     last_schedule_time_(0),
-    timedout_(false),
     disconnected_(false),
     reserved_(false)
 {
@@ -42,7 +41,6 @@ void Worker::update()
 {
   lock_type lock(mtx_);
   tstamp_ = fhg::util::now();
-  set_timedout (false);
 }
 
 void Worker::submit(const sdpa::job_id_t& jobId)

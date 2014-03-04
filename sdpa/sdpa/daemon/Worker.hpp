@@ -103,8 +103,7 @@ namespace sdpa { namespace daemon {
     /**
 		 Return true if the worker is timedout, false otherwise
      */
-    bool timedout() const { lock_type lock(mtx_); return timedout_; }
-    void set_timedout(bool bValue = true ) { lock_type lock(mtx_); timedout_ = bValue; }
+    bool timedout() const { lock_type lock(mtx_); return false; }
 
     bool disconnected() const { lock_type lock(mtx_); return disconnected_; }
     void set_disconnected(bool bValue = true) { lock_type lock(mtx_); disconnected_ = bValue; }
@@ -157,7 +156,6 @@ namespace sdpa { namespace daemon {
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
     JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
-    bool timedout_;
     bool disconnected_;
     bool reserved_;
 
