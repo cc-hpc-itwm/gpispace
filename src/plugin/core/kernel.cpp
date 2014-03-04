@@ -141,7 +141,7 @@ namespace fhg
 
       std::list<boost::shared_ptr<plugin_t> > dependencies;
 
-      std::list<std::string> const depends;
+      std::list<std::string> const depends
         (fhg::util::split<std::string, std::string> (desc->depends, ','));
 
       BOOST_FOREACH(std::string const &dep, depends)
