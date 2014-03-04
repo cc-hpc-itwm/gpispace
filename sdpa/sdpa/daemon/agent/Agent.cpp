@@ -7,8 +7,6 @@
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 
-#include <we/type/value/poke.hpp>
-
 namespace sdpa
 {
   namespace daemon
