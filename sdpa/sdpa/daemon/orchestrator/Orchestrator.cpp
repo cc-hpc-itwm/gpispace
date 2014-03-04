@@ -31,7 +31,7 @@ namespace sdpa
       {
         BOOST_FOREACH (job_id_t id, subscription.second)
         {
-          if (id == ptrEvt->job_id())
+          if (id == job_id)
           {
             ret.push_back (subscription.first);
             break;
@@ -40,17 +40,6 @@ namespace sdpa
       }
 
       return ret;
-    }
-
-    template <typename T>
-      void Orchestrator::notifySubscribers (const T& ptrEvt)
-    {
-      BOOST_FOREACH (agent_id_t subscriber, subscribers (ptrEvt->job_id()))
-      {
-        //! \todo eliminate, do not use non-const getter
-        ptrEvt->to() = subscriber;
-        sendEventToOther (ptrEvt);
-      }
     }
 
     void Orchestrator::handleJobFinishedEvent
@@ -69,9 +58,15 @@ namespace sdpa
 
       pJob->JobFinished (pEvt->result());
 
-      events::JobFinishedEvent::Ptr ptrEvtJobFinished
-        (new events::JobFinishedEvent (*pEvt));
-      notifySubscribers (ptrEvtJobFinished);
+      BOOST_FOREACH (agent_id_t subscriber, subscribers (pEvt->job_id()))
+      {
+        sendEventToOther
+          ( events::JobFinishedEvent::Ptr
+            ( new events::JobFinishedEvent
+              (pEvt->from(), subscriber, pEvt->job_id(), pEvt->result())
+            )
+          );
+      }
 
       try
       {
@@ -96,9 +91,15 @@ namespace sdpa
 
       pJob->JobFailed (pEvt->error_message());
 
-      events::JobFailedEvent::Ptr ptrEvtJobFailed
-        (new events::JobFailedEvent (*pEvt));
-      notifySubscribers (ptrEvtJobFailed);
+      BOOST_FOREACH (agent_id_t subscriber, subscribers (pEvt->job_id()))
+      {
+        sendEventToOther
+          ( events::JobFailedEvent::Ptr
+            ( new events::JobFailedEvent
+              (pEvt->from(), subscriber, pEvt->job_id(), pEvt->error_message())
+            )
+          );
+      }
 
       try
       {
@@ -154,9 +155,15 @@ namespace sdpa
         pJob->CancelJobAck();
         ptr_scheduler_->delete_job (pEvt->job_id());
 
-        events::CancelJobAckEvent::Ptr ptrCancelAckEvt
-          (new events::CancelJobAckEvent (*pEvt));
-        notifySubscribers (ptrCancelAckEvt);
+        BOOST_FOREACH (agent_id_t subscriber, subscribers (pEvt->job_id()))
+        {
+          sendEventToOther
+            ( events::CancelJobAckEvent::Ptr
+              ( new events::CancelJobAckEvent
+                (pEvt->from(), subscriber, pEvt->job_id())
+              )
+            );
+        }
       }
     }
 
@@ -172,9 +179,15 @@ namespace sdpa
 
       pJob->CancelJobAck();
 
-      events::CancelJobAckEvent::Ptr ptrCancelAckEvt
-        (new events::CancelJobAckEvent (*pEvt));
-      notifySubscribers (ptrCancelAckEvt);
+      BOOST_FOREACH (agent_id_t subscriber, subscribers (pEvt->job_id()))
+      {
+        sendEventToOther
+          ( events::CancelJobAckEvent::Ptr
+            ( new events::CancelJobAckEvent
+              (pEvt->from(), subscriber, pEvt->job_id())
+            )
+          );
+      }
     }
 
     void Orchestrator::handleDeleteJobEvent (const events::DeleteJobEvent* evt)
