@@ -8,24 +8,32 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public sdpa::daemon::Agent
- {
+class Worker : public utils::BasicWorker
+{
   public:
-    Worker (const std::string& name, const std::string& master_name)
-      : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(1, sdpa::MasterInfo(master_name)), boost::none)
+    Worker (const std::string& name, const std::string& master_name, const std::string cpb_name = "")
+      :  utils::BasicWorker (name, master_name, cpb_name)
     {}
 
-    Worker (const std::string& name,const utils::agents_t& masters)
-          : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), utils::assemble_master_info_list (masters), boost::none)
-        {}
-
-    void submit ( const we::layer::id_type& activity_id
-                , const we::type::activity_t& activity )
+    void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
     {
-      sdpa::daemon::GenericDaemon::submit(activity_id, activity);
-      workflowEngine()->finished(activity_id, activity);
+      sdpa::events::SubmitJobAckEvent::Ptr
+      pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent( _name
+                                                          , pEvt->from()
+                                                          , *pEvt->job_id()));
+      _network_strategy->perform (pSubmitJobAckEvt);
+
+      sdpa::events::JobFinishedEvent::Ptr
+      pJobFinishedEvt(new sdpa::events::JobFinishedEvent( _name
+                                                        , pEvt->from()
+                                                        , *pEvt->job_id()
+                                                        , pEvt->description() ));
+
+      _network_strategy->perform (pJobFinishedEvt);
     }
- };
+
+    void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* ){}
+};
 
 BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
 {
