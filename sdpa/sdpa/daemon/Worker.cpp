@@ -43,11 +43,11 @@ void Worker::submit(const sdpa::job_id_t& jobId)
 void Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
   lock_type lock(mtx_);
-      acknowledged_.push(job_id);
       if (submitted_.erase(job_id) == 0)
       {
         throw JobNotFoundException();
       }
+      acknowledged_.push(job_id);
 }
 
 void Worker::deleteJob(const sdpa::job_id_t &job_id)
