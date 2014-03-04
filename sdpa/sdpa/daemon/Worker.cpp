@@ -75,9 +75,6 @@ const sdpa::capabilities_set_t& Worker::capabilities() const
 
 bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 {
-  if (recvCpbSet.empty())
-    return false;
-
   lock_type const _ (mtx_);
 
   bool bModified = false;
