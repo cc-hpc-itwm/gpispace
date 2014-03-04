@@ -254,9 +254,7 @@ fhg_add_test (test_CancelJob.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS workflow_coallocation_test2
-          workflow_transform_file
-          workflow_capabilities
+  DEPENDS dummy_workflow
 )
 
 fhg_add_test (test_CoallocationScheduler.cpp
