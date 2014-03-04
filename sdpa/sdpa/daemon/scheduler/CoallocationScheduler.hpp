@@ -32,7 +32,6 @@ namespace sdpa
         (const sdpa::worker_id_t&, const sdpa::capabilities_set_t&);
       void getAllWorkersCapabilities (sdpa::capabilities_set_t&);
       sdpa::capabilities_set_t getWorkerCapabilities (const sdpa::worker_id_t&);
-      void acknowledgeJob (const Worker::worker_id_t&, const sdpa::job_id_t&);
       void workerFinished (const worker_id_t&, const job_id_t&);
       void workerFailed (const worker_id_t&, const job_id_t&);
       void workerCanceled (const worker_id_t&, const job_id_t&);

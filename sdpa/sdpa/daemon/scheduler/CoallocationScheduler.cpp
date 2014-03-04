@@ -82,12 +82,6 @@ namespace sdpa
       return worker_manager().findWorker (worker_id);
     }
 
-    void CoallocationScheduler::acknowledgeJob
-      (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
-    {
-      worker_manager().findWorker(worker_id)->acknowledge (job_id);
-    }
-
     void CoallocationScheduler::deleteWorkerJob
       (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& jobId)
     {
