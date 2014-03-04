@@ -72,10 +72,7 @@ namespace sdpa
             workflowEngine()->failed
               (actId, "One of tasks of the group failed with the actual reservation!");
           }
-        }
 
-        if (bAllPartResCollected)
-        {
           scheduler()->releaseReservation (pJob->id());
         }
         scheduler()->deleteWorkerJob (worker_id, pJob->id());
@@ -136,10 +133,7 @@ namespace sdpa
 
           // cancel the other jobs assigned to the workers which are
           // in the reservation list
-        }
 
-        if(bAllPartResCollected)
-        {
           scheduler()->releaseReservation (pJob->id());
         }
         scheduler()->deleteWorkerJob (worker_id, pJob->id());
