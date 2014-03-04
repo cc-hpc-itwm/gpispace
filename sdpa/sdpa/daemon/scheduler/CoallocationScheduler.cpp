@@ -17,6 +17,15 @@ namespace sdpa
       , _worker_manager()
     {}
 
+    const WorkerManager& CoallocationScheduler::worker_manager() const
+    {
+      return _worker_manager;
+    }
+    WorkerManager& CoallocationScheduler::worker_manager()
+    {
+      return _worker_manager;
+    }
+
     bool CoallocationScheduler::addWorker
       ( const Worker::worker_id_t& workerId
       , const boost::optional<unsigned int>& capacity
@@ -24,7 +33,7 @@ namespace sdpa
       )
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      return _worker_manager.addWorker (workerId, capacity, cpbset);
+      return worker_manager().addWorker (workerId, capacity, cpbset);
     }
 
     void CoallocationScheduler::rescheduleWorkerJob
@@ -55,7 +64,7 @@ namespace sdpa
         rescheduleWorkerJob (worker_id, jobId);
       }
 
-      _worker_manager.deleteWorker (worker_id);
+      worker_manager().deleteWorker (worker_id);
     }
 
     void CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
@@ -63,7 +72,7 @@ namespace sdpa
       boost::recursive_mutex::scoped_lock const _ (mtx_);
       if (!_common_queue.erase(job))
       {
-        _worker_manager.deleteJob (job);
+        worker_manager().deleteJob (job);
       }
     }
 
@@ -76,14 +85,14 @@ namespace sdpa
     Worker::ptr_t CoallocationScheduler::findWorker
       (const Worker::worker_id_t& worker_id)
     {
-      return _worker_manager.findWorker (worker_id);
+      return worker_manager().findWorker (worker_id);
     }
 
     const boost::optional<Worker::worker_id_t>
       CoallocationScheduler::findSubmOrAckWorker
         (const sdpa::job_id_t& job_id) const
     {
-      return _worker_manager.findSubmOrAckWorker (job_id);
+      return worker_manager().findSubmOrAckWorker (job_id);
     }
 
     void CoallocationScheduler::acknowledgeJob
@@ -105,7 +114,7 @@ namespace sdpa
 
       try
       {
-        _worker_manager.findWorker (worker_id)->deleteJob (jobId);
+        worker_manager().findWorker (worker_id)->deleteJob (jobId);
       }
       catch (WorkerNotFoundException const&)
       {
@@ -116,19 +125,19 @@ namespace sdpa
       (const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      return _worker_manager.findWorker (worker_id)->addCapabilities (cpbset);
+      return worker_manager().findWorker (worker_id)->addCapabilities (cpbset);
     }
 
     void CoallocationScheduler::removeCapabilities
       (const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
     {
-      _worker_manager.findWorker (worker_id)->removeCapabilities (cpbset);
+      worker_manager().findWorker (worker_id)->removeCapabilities (cpbset);
     }
 
     void CoallocationScheduler::getAllWorkersCapabilities
       (sdpa::capabilities_set_t& cpbset)
     {
-      _worker_manager.getCapabilities (cpbset);
+      worker_manager().getCapabilities (cpbset);
     }
 
     sdpa::capabilities_set_t CoallocationScheduler::getWorkerCapabilities
@@ -143,7 +152,7 @@ namespace sdpa
       boost::recursive_mutex::scoped_lock const _ (mtx_);
 
       sdpa::worker_id_list_t listAvailWorkers
-        (_worker_manager.getListWorkersNotReserved());
+        (worker_manager().getListWorkersNotReserved());
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
@@ -157,7 +166,7 @@ namespace sdpa
         const boost::optional<sdpa::worker_id_t> matchingWorkerId
           ( listAvailWorkers.empty() ? boost::none
           : job_reqs.empty() ? listAvailWorkers.front()
-          : _worker_manager.getBestMatchingWorker (job_reqs, listAvailWorkers)
+          : worker_manager().getBestMatchingWorker (job_reqs, listAvailWorkers)
          );
 
         if (matchingWorkerId)
@@ -170,7 +179,7 @@ namespace sdpa
 
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
           {
-            _worker_manager.findWorker (*matchingWorkerId)->reserve();
+            worker_manager().findWorker (*matchingWorkerId)->reserve();
 
             allocation_table_t::iterator it (allocation_table_.find(jobId));
             if (it == allocation_table_.end())
@@ -194,7 +203,7 @@ namespace sdpa
             sdpa::worker_id_list_t list_invalid_workers;
             BOOST_FOREACH (const Worker::worker_id_t& wid, list_reserved_workers)
             {
-              if (!_worker_manager.hasWorker (wid))
+              if (!worker_manager().hasWorker (wid))
               {
                 list_invalid_workers.push_back (wid);
               }
@@ -204,7 +213,7 @@ namespace sdpa
             {
               BOOST_FOREACH (const Worker::worker_id_t& wid, list_reserved_workers)
               {
-                _worker_manager.findWorker (wid)->submit (jobId);
+                worker_manager().findWorker (wid)->submit (jobId);
               }
               ptr_comm_handler_->serveJob (list_reserved_workers, jobId);
             }

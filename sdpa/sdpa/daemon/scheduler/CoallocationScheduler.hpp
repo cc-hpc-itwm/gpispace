@@ -23,6 +23,9 @@ namespace sdpa
     public:
       CoallocationScheduler (GenericDaemon* pHandler);
 
+      const WorkerManager& worker_manager() const;
+      WorkerManager& worker_manager();
+
       // -- used by daemon
       void delete_job (const sdpa::job_id_t&);
       const boost::optional<Worker::worker_id_t> findSubmOrAckWorker
