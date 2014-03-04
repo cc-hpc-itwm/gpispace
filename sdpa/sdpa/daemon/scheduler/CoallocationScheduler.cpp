@@ -92,9 +92,8 @@ namespace sdpa
       (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
     {
       boost::recursive_mutex::scoped_lock const _ (mtx_);
-      Worker::ptr_t ptrWorker = worker_manager().findWorker(worker_id);
 
-      if (!ptrWorker->acknowledge(job_id))
+      if (!worker_manager().findWorker(worker_id)->acknowledge (job_id))
       {
         throw JobNotFoundException();
       }
