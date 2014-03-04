@@ -32,15 +32,12 @@ namespace sdpa
       , const capabilities_set_t& cpbset
       )
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
       return worker_manager().addWorker (workerId, capacity, cpbset);
     }
 
     void CoallocationScheduler::rescheduleWorkerJob
       (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
-
       deleteWorkerJob (worker_id, job_id);
 
       Job* pJob = ptr_comm_handler_->findJob (job_id);
@@ -54,7 +51,6 @@ namespace sdpa
 
     void CoallocationScheduler::deleteWorker (const Worker::worker_id_t& worker_id)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
       // mark the worker dirty -> don't take it in consideration for re-scheduling
       const Worker::ptr_t pWorker = worker_manager().findWorker (worker_id);
       pWorker->set_disconnected (true);
@@ -69,7 +65,6 @@ namespace sdpa
 
     void CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
       if (!_common_queue.erase(job))
       {
         worker_manager().deleteJob (job);
@@ -78,7 +73,6 @@ namespace sdpa
 
     void CoallocationScheduler::enqueueJob (const sdpa::job_id_t& jobId)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
       _common_queue.push (jobId);
     }
 
@@ -91,16 +85,12 @@ namespace sdpa
     void CoallocationScheduler::acknowledgeJob
       (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
-
       worker_manager().findWorker(worker_id)->acknowledge (job_id);
     }
 
     void CoallocationScheduler::deleteWorkerJob
       (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& jobId)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
-
       try
       {
         worker_manager().findWorker (worker_id)->deleteJob (jobId);
@@ -113,7 +103,6 @@ namespace sdpa
     bool CoallocationScheduler::addCapabilities
       (const sdpa::worker_id_t& worker_id, const sdpa::capabilities_set_t& cpbset)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
       return worker_manager().findWorker (worker_id)->addCapabilities (cpbset);
     }
 
@@ -132,14 +121,11 @@ namespace sdpa
     sdpa::capabilities_set_t CoallocationScheduler::getWorkerCapabilities
       (const sdpa::worker_id_t& worker_id)
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
       return worker_manager().findWorker (worker_id)->capabilities();
     }
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
-      boost::recursive_mutex::scoped_lock const _ (mtx_);
-
       sdpa::worker_id_list_t listAvailWorkers
         (worker_manager().getListWorkersNotReserved());
 
@@ -242,7 +228,6 @@ namespace sdpa
 
       if (it != allocation_table_.end())
       {
-        boost::recursive_mutex::scoped_lock const _ (mtx_);
         Reservation* pReservation (it->second);
         worker_id_list_t listWorkers (pReservation->getWorkerList());
         BOOST_FOREACH (sdpa::worker_id_t const& workerId, listWorkers)

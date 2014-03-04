@@ -67,8 +67,6 @@ namespace sdpa
       WorkerManager _worker_manager;
       SynchronizedQueue<std::list<sdpa::job_id_t> > _common_queue;
 
-      mutable boost::recursive_mutex mtx_;
-
       class Reservation : boost::noncopyable
       {
       public:
