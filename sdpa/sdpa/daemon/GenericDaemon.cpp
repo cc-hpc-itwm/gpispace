@@ -395,8 +395,6 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       {
         Worker::ptr_t ptrWorker = scheduler()->worker_manager().findWorker(worker_id);
 
-        if(ptrWorker)
-        {
           // notify capability losses...
           lock_type lock(mtx_master_);
           BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
@@ -409,7 +407,6 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
           // jobs failed
           scheduler()->deleteWorker(worker_id); // do a re-scheduling here
           request_scheduling();
-        }
       }
       catch (WorkerNotFoundException const& /*ignored*/)
       {
