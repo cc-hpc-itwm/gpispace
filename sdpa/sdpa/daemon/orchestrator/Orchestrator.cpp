@@ -69,18 +69,18 @@ namespace sdpa
       Worker::worker_id_t worker_id = pEvt->from();
       we::layer::id_type act_id = pEvt->job_id();
 
-        events::JobFinishedEvent::Ptr ptrEvtJobFinished
-          (new events::JobFinishedEvent (*pEvt));
-        notifySubscribers (ptrEvtJobFinished);
+      events::JobFinishedEvent::Ptr ptrEvtJobFinished
+        (new events::JobFinishedEvent (*pEvt));
+      notifySubscribers (ptrEvtJobFinished);
 
-        try
-        {
-          scheduler()->deleteWorkerJob (worker_id, act_id);
-          request_scheduling();
-        }
-        catch (WorkerNotFoundException const&)
-        {
-        }
+      try
+      {
+        scheduler()->deleteWorkerJob (worker_id, act_id);
+        request_scheduling();
+      }
+      catch (WorkerNotFoundException const&)
+      {
+      }
     }
 
     void Orchestrator::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
@@ -99,18 +99,18 @@ namespace sdpa
       Worker::worker_id_t worker_id = pEvt->from();
       we::layer::id_type actId = pJob->id();
 
-        events::JobFailedEvent::Ptr ptrEvtJobFailed
-          (new events::JobFailedEvent (*pEvt));
-        notifySubscribers (ptrEvtJobFailed);
+      events::JobFailedEvent::Ptr ptrEvtJobFailed
+        (new events::JobFailedEvent (*pEvt));
+      notifySubscribers (ptrEvtJobFailed);
 
-        try
-        {
-          scheduler()->deleteWorkerJob (worker_id, pJob->id());
-          request_scheduling();
-        }
-        catch (const WorkerNotFoundException&)
-        {
-        }
+      try
+      {
+        scheduler()->deleteWorkerJob (worker_id, pJob->id());
+        request_scheduling();
+      }
+      catch (const WorkerNotFoundException&)
+      {
+      }
     }
 
     void Orchestrator::handleCancelJobEvent (const events::CancelJobEvent* pEvt)
