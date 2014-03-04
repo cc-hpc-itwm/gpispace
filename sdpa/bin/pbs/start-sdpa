@@ -151,7 +151,7 @@ parse_capability()
 
 # Execute function on_ctrlC() receiving SIGINT signal
 #
-#trap 'on_ctrlC' SIGINT
+trap 'on_ctrlC' SIGINT
 
 nodefile="$PBS_NODEFILE"
 state_dir="$HOME/.sdpa/state"
