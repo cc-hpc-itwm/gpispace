@@ -442,11 +442,10 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _scheduler.assignJobsToWorkers();
 
 
-  _scheduler.worker_manager().findWorker ("worker_9")->set_disconnected (true);
   _scheduler.worker_manager().findWorker ("worker_9")->deleteJob ("job_0");
   _scheduler.releaseReservation ("job_0");
-  _scheduler.enqueueJob ("job_0");
   _scheduler.worker_manager().deleteWorker ("worker_9");
+  _scheduler.enqueueJob ("job_0");
 
   _scheduler.worker_manager().addWorker("worker_9", 1, capabilities ("worker_9", "C"));
 
