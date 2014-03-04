@@ -84,9 +84,6 @@ namespace sdpa { namespace daemon {
     bool has_job( const sdpa::job_id_t& job_id );
 
 
-    bool disconnected() const { lock_type lock(mtx_); return disconnected_; }
-    void set_disconnected(bool bValue = true) { lock_type lock(mtx_); disconnected_ = bValue; }
-
     /**
       Remove a job that was finished or failed from the acknowledged_ queue
 
@@ -132,7 +129,6 @@ namespace sdpa { namespace daemon {
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
     JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
-    bool disconnected_;
     bool reserved_;
 
     mutable mutex_type mtx_;

@@ -16,7 +16,6 @@ Worker::Worker(	const worker_id_t& name,
     capacity_(cap),
     tstamp_(fhg::util::now()),
     last_schedule_time_(0),
-    disconnected_(false),
     reserved_(false)
 {
 

@@ -185,9 +185,6 @@ boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
 
     Worker::ptr_t pWorker (it->second);
 
-    if (pWorker->disconnected())
-      continue;
-
     const boost::optional<std::size_t> matchingDeg
       (matchRequirements (pWorker, listJobReq));
 
