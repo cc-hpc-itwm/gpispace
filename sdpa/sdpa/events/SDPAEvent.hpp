@@ -29,11 +29,6 @@ namespace sdpa
       {
         return to_;
       }
-      //! \todo eliminate, used in Orchestrator::notifySubscriber
-      address_t& to()
-      {
-        return to_;
-      }
 
       virtual std::string str() const = 0;
       virtual void handleBy (EventHandler*) = 0;
