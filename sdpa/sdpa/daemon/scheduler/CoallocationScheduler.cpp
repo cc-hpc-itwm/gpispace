@@ -94,12 +94,6 @@ namespace sdpa
       }
     }
 
-    void CoallocationScheduler::getAllWorkersCapabilities
-      (sdpa::capabilities_set_t& cpbset)
-    {
-      worker_manager().getCapabilities (cpbset);
-    }
-
     sdpa::capabilities_set_t CoallocationScheduler::getWorkerCapabilities
       (const sdpa::worker_id_t& worker_id)
     {

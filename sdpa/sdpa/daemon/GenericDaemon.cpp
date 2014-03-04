@@ -850,7 +850,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
     lock_type lock(mtx_cpb_);
     capabilities_set_t cpbSet (m_capabilities);
 
-    scheduler()->getAllWorkersCapabilities(cpbSet);
+    scheduler()->worker_manager().getCapabilities (cpbSet);
 
     //std::cout<<cpbSet;
 

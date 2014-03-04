@@ -28,7 +28,6 @@ namespace sdpa
 
       // -- used by daemon
       void delete_job (const sdpa::job_id_t&);
-      void getAllWorkersCapabilities (sdpa::capabilities_set_t&);
       sdpa::capabilities_set_t getWorkerCapabilities (const sdpa::worker_id_t&);
       void workerFinished (const worker_id_t&, const job_id_t&);
       void workerFailed (const worker_id_t&, const job_id_t&);
