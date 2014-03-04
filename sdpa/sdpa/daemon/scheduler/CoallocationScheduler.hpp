@@ -71,7 +71,9 @@ namespace sdpa
         void storeWorkerResult
           (const sdpa::worker_id_t& wid, const result_type& result)
         {
-          if (!hasWorker (wid))
+          if ( std::find (m_list_workers.begin(), m_list_workers.end(), wid)
+             == m_list_workers.end()
+             )
           {
             throw std::runtime_error
               ("tried storing result of worker that is not in reservation for job");
@@ -104,11 +106,6 @@ namespace sdpa
           return size() == capacity();
         }
 
-        bool hasWorker (const sdpa::worker_id_t& wid) const
-        {
-          return find (m_list_workers.begin(), m_list_workers.end(), wid)
-            != m_list_workers.end();
-        }
         sdpa::worker_id_list_t getWorkerList() const
         {
           return m_list_workers;
