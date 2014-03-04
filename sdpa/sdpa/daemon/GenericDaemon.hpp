@@ -227,12 +227,6 @@ namespace sdpa {
         return it != job_requirements_.end() ? it->second : job_requirements_t();
       }
 
-      // forwaring to scheduler() only:
-      Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id ) const
-      {
-        return scheduler()->findWorker(worker_id);
-      }
-
     private:
       void delayed_cancel (const we::layer::id_type&);
       void delayed_discover (we::layer::id_type discover_id, we::layer::id_type);

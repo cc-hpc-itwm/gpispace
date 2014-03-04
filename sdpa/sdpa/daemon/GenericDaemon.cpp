@@ -393,7 +393,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
 
       try
       {
-        Worker::ptr_t ptrWorker = findWorker(worker_id);
+        Worker::ptr_t ptrWorker = scheduler()->findWorker(worker_id);
 
         if(ptrWorker)
         {
