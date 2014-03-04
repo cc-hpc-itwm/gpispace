@@ -772,7 +772,7 @@ void GenericDaemon::handleCapabilitiesLostEvent(const events::CapabilitiesLostEv
 
   sdpa::worker_id_t worker_id = pCpbLostEvt->from();
   try {
-    scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
+    scheduler()->worker_manager().findWorker (worker_id)->removeCapabilities(pCpbLostEvt->capabilities());
 
     lock_type lock(mtx_master_);
     for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
