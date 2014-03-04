@@ -51,9 +51,7 @@ bool Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
   lock_type lock(mtx_);
       acknowledged_.push(job_id);
-      const bool was_found (submitted_.erase(job_id) > 0);
-
-  return was_found;
+      return submitted_.erase(job_id) > 0;
 }
 
 void Worker::deleteJob(const sdpa::job_id_t &job_id)
@@ -66,8 +64,7 @@ void Worker::deleteJob(const sdpa::job_id_t &job_id)
 unsigned int Worker::nbAllocatedJobs()
 {
   lock_type lock(mtx_);
-  unsigned int nJobs = /*pending().size() + */ submitted_.size() + acknowledged_.size();
-  return nJobs;
+  return /*pending().size() + */ submitted_.size() + acknowledged_.size();
 }
 
 const sdpa::capabilities_set_t& Worker::capabilities() const
