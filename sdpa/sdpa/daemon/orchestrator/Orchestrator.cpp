@@ -69,8 +69,6 @@ namespace sdpa
       Worker::worker_id_t worker_id = pEvt->from();
       we::layer::id_type act_id = pEvt->job_id();
 
-      try
-      {
         events::JobFinishedEvent::Ptr ptrEvtJobFinished
           (new events::JobFinishedEvent (*pEvt));
         notifySubscribers (ptrEvtJobFinished);
@@ -83,10 +81,6 @@ namespace sdpa
         catch (WorkerNotFoundException const&)
         {
         }
-      }
-      catch (...)
-      {
-      }
     }
 
     void Orchestrator::handleJobFailedEvent (const events::JobFailedEvent* pEvt)
@@ -105,8 +99,6 @@ namespace sdpa
       Worker::worker_id_t worker_id = pEvt->from();
       we::layer::id_type actId = pJob->id();
 
-      try
-      {
         events::JobFailedEvent::Ptr ptrEvtJobFailed
           (new events::JobFailedEvent (*pEvt));
         notifySubscribers (ptrEvtJobFailed);
@@ -119,10 +111,6 @@ namespace sdpa
         catch (const WorkerNotFoundException&)
         {
         }
-      }
-      catch (...)
-      {
-      }
     }
 
     void Orchestrator::handleCancelJobEvent (const events::CancelJobEvent* pEvt)
