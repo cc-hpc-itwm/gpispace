@@ -417,12 +417,13 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
           // if there still are registered workers, otherwise declare the remaining
           // jobs failed
 
-          // mark the worker dirty -> don't take it in consideration for re-scheduling
-          const Worker::ptr_t pWorker
-            (scheduler()->worker_manager().findWorker (worker_id));
-          pWorker->set_disconnected (true);
+          const sdpa::job_id_list_t jobs_to_reschedule
+            ( scheduler()->worker_manager().findWorker (worker_id)
+            ->getJobListAndCleanQueues()
+            );
+          scheduler()->worker_manager().deleteWorker (worker_id);
 
-          BOOST_FOREACH (sdpa::job_id_t jobId, pWorker->getJobListAndCleanQueues())
+          BOOST_FOREACH (sdpa::job_id_t jobId, jobs_to_reschedule)
           {
             Job* pJob = findJob (jobId);
             if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
@@ -432,8 +433,6 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
               scheduler()->enqueueJob (jobId);
             }
           }
-
-          scheduler()->worker_manager().deleteWorker (worker_id);
 
           request_scheduling();
       }
