@@ -61,3 +61,14 @@ BOOST_AUTO_TEST_CASE (non_empty_elements_are_preserved)
   BOOST_REQUIRE_EQUAL_COLLECTIONS
     (path.begin(), path.end(), expected.begin(), expected.end());
 }
+
+BOOST_AUTO_TEST_CASE (no_separator_in_input)
+{
+  const std::list<std::string> path (fhg::util::split<std::string, std::string> ("test", '.'));
+
+  std::list<std::string> expected;
+  expected.push_back("test");
+
+  BOOST_REQUIRE_EQUAL_COLLECTIONS
+    (path.begin(), path.end(), expected.begin(), expected.end());
+}
