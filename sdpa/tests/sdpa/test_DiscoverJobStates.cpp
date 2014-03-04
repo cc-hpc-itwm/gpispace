@@ -219,13 +219,6 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
   const Worker worker_3( "worker_3", agent._.name(), "B");
   const Worker worker_4( "worker_4", agent._.name(), "B");
 
-  // the task A requires 2 workers, task B requires 3 workers
-  // initially, there are sufficient resources and the workflow computation should finish
-  BOOST_REQUIRE_EQUAL
-      ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-        (workflow, orchestrator)
-      , sdpa::status::FINISHED
-      );
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -238,7 +231,6 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
         )
   {} // do nothing, discover again
 }
-
 
 BOOST_AUTO_TEST_CASE (discover_after_restarting_workers)
 {
