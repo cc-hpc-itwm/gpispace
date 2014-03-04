@@ -352,7 +352,16 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       sdpa::worker_id_t worker_id(error.from());
 
       //! \todo ignore if worker no longer exists?
-      scheduler()->rescheduleWorkerJob(worker_id, jobId);
+      scheduler()->worker_manager().findWorker (worker_id)->deleteJob (jobId);
+
+      Job* pJob (findJob (jobId));
+      if (pJob)
+      {
+        scheduler()->releaseReservation (jobId);
+        pJob->Reschedule(); // put the job back into the pending state
+        scheduler()->enqueueJob (jobId);
+      }
+
       request_scheduling();
       break;
     }
