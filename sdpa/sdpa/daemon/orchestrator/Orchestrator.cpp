@@ -141,7 +141,7 @@ namespace sdpa
       pJob->CancelJob();
 
       boost::optional<sdpa::worker_id_t> worker_id =
-        scheduler()->findSubmOrAckWorker(pEvt->job_id());
+        scheduler()->worker_manager().findSubmOrAckWorker(pEvt->job_id());
       if (worker_id)
       {
         child_proxy (this, *worker_id).cancel_job (pEvt->job_id());

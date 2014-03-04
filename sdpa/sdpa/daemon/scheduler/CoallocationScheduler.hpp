@@ -28,8 +28,6 @@ namespace sdpa
 
       // -- used by daemon
       void delete_job (const sdpa::job_id_t&);
-      const boost::optional<Worker::worker_id_t> findSubmOrAckWorker
-        (const sdpa::job_id_t&) const;
       void removeCapabilities
         (const sdpa::worker_id_t&, const sdpa::capabilities_set_t&);
       void getAllWorkersCapabilities (sdpa::capabilities_set_t&);

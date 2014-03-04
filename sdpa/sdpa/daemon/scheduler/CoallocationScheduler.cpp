@@ -88,13 +88,6 @@ namespace sdpa
       return worker_manager().findWorker (worker_id);
     }
 
-    const boost::optional<Worker::worker_id_t>
-      CoallocationScheduler::findSubmOrAckWorker
-        (const sdpa::job_id_t& job_id) const
-    {
-      return worker_manager().findSubmOrAckWorker (job_id);
-    }
-
     void CoallocationScheduler::acknowledgeJob
       (const Worker::worker_id_t& worker_id, const sdpa::job_id_t& job_id)
     {

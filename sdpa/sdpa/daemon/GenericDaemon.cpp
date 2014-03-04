@@ -522,7 +522,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
   }
 
   const boost::optional<sdpa::worker_id_t> worker_id
-    (scheduler()->findSubmOrAckWorker (job_id));
+    (scheduler()->worker_manager().findSubmOrAckWorker (job_id));
 
   pJob->CancelJob();
 
@@ -1096,7 +1096,7 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
       Job* pJob (findJob (job_id));
 
       const boost::optional<worker_id_t> worker_id
-        (scheduler()->findSubmOrAckWorker(job_id));
+        (scheduler()->worker_manager().findSubmOrAckWorker(job_id));
 
       if (pJob && worker_id)
       {
@@ -1125,7 +1125,7 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
       Job* pJob (findJob (pEvt->job_id()));
 
       const boost::optional<worker_id_t> worker_id
-        (scheduler()->findSubmOrAckWorker(pEvt->job_id()));
+        (scheduler()->worker_manager().findSubmOrAckWorker(pEvt->job_id()));
 
       if (pJob && worker_id)
       {
