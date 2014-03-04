@@ -40,20 +40,6 @@ namespace sdpa
       }
     }
 
-    void CoallocationScheduler::deleteWorker (const Worker::worker_id_t& worker_id)
-    {
-      // mark the worker dirty -> don't take it in consideration for re-scheduling
-      const Worker::ptr_t pWorker = worker_manager().findWorker (worker_id);
-      pWorker->set_disconnected (true);
-
-      BOOST_FOREACH (sdpa::job_id_t jobId, pWorker->getJobListAndCleanQueues())
-      {
-        rescheduleWorkerJob (worker_id, jobId);
-      }
-
-      worker_manager().deleteWorker (worker_id);
-    }
-
     bool CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
     {
       return _common_queue.erase(job);

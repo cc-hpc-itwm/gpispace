@@ -406,7 +406,19 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
 
           // if there still are registered workers, otherwise declare the remaining
           // jobs failed
-          scheduler()->deleteWorker(worker_id); // do a re-scheduling here
+
+          // mark the worker dirty -> don't take it in consideration for re-scheduling
+          const Worker::ptr_t pWorker
+            (scheduler()->worker_manager().findWorker (worker_id));
+          pWorker->set_disconnected (true);
+
+          BOOST_FOREACH (sdpa::job_id_t jobId, pWorker->getJobListAndCleanQueues())
+          {
+            scheduler()->rescheduleWorkerJob (worker_id, jobId);
+          }
+
+          scheduler()->worker_manager().deleteWorker (worker_id);
+
           request_scheduling();
       }
       catch (WorkerNotFoundException const& /*ignored*/)

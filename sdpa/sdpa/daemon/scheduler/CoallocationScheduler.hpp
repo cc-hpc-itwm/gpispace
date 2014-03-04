@@ -40,9 +40,6 @@ namespace sdpa
       void enqueueJob (const sdpa::job_id_t&);
       void request_scheduling();
 
-      // used by daemon and test
-      void deleteWorker (const Worker::worker_id_t&);
-
       // used by daemon and self and test
       void releaseReservation (const sdpa::job_id_t&);
       void assignJobsToWorkers();
