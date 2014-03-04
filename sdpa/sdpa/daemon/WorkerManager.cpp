@@ -56,7 +56,7 @@ const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(co
 
   BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
                 | boost::adaptors::filtered
-                  (boost::bind (&Worker::isJobSubmittedOrAcknowleged, _1, job_id))
+                  (boost::bind (&Worker::has_job, _1, job_id))
                 )
   {
     return worker->name();

@@ -83,7 +83,6 @@ namespace sdpa { namespace daemon {
          Checks if the worker has job
     */
     bool has_job( const sdpa::job_id_t& job_id );
-    bool isJobSubmittedOrAcknowleged( const sdpa::job_id_t& job_id );
 
 
     bool disconnected() const { lock_type lock(mtx_); return disconnected_; }
