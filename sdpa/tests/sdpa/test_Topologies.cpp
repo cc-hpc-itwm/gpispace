@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   // W
 
   const std::string workflow
-    (utils::require_and_read_file ("transform_file.pnet"));
+    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE (chained_agents)
 	// W
 
   const std::string workflow
-    (utils::require_and_read_file ("transform_file.pnet"));
+    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   // W W
 
   const std::string workflow
-    (utils::require_and_read_file ("transform_file.pnet"));
+    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   // W
 
   const std::string workflow
-    (utils::require_and_read_file ("transform_file.pnet"));
+    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());

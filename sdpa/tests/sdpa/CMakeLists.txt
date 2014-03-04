@@ -277,7 +277,7 @@ fhg_add_test (test_Topologies.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS workflow_transform_file
+  DEPENDS dummy_workflow
 )
 
 fhg_add_test (test_Subscriber.cpp
