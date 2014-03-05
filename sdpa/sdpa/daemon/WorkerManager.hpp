@@ -28,19 +28,19 @@
 namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
-    typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
+    typedef boost::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
     typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
 
-    Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id);
-    bool hasWorker(const Worker::worker_id_t& worker_id) const;
-    const boost::optional<Worker::worker_id_t> findSubmOrAckWorker(const sdpa::job_id_t& job_id) const;
+    Worker::ptr_t findWorker(const worker_id_t& worker_id);
+    bool hasWorker(const worker_id_t& worker_id) const;
+    const boost::optional<worker_id_t> findSubmOrAckWorker(const sdpa::job_id_t& job_id) const;
 
     //! returns whether worker was actually added (i.e. false when already there)
-    bool addWorker( const Worker::worker_id_t& workerId,
+    bool addWorker( const worker_id_t& workerId,
                     boost::optional<unsigned int> capacity,
                     const capabilities_set_t& cpbset = capabilities_set_t() );
 
-    void deleteWorker( const Worker::worker_id_t& workerId);
+    void deleteWorker( const worker_id_t& workerId);
 
     void getCapabilities(sdpa::capabilities_set_t& cpbset);
 

@@ -23,10 +23,6 @@ namespace sdpa { namespace daemon {
   public:
 
     typedef boost::shared_ptr<Worker> ptr_t;
-
-    typedef sdpa::worker_id_t worker_id_t;
-    typedef sdpa::capabilities_set_t capabilities_set_t;
-
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
 

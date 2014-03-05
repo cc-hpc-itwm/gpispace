@@ -467,7 +467,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
     {
       // do the same as when receiving a SubmitJobAckEvent
 
-      Worker::worker_id_t worker_id = error.from();
+      worker_id_t worker_id = error.from();
 
       // Only now should be the job state machine make a transition to RUNNING
       // this means that the job was not rejected, no error occurred etc ....
@@ -1045,7 +1045,7 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
  */
 void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEvent)
 {
-  Worker::worker_id_t worker_id = pEvent->from();
+  worker_id_t worker_id = pEvent->from();
   // Only, now should be state of the job updated to RUNNING
   // since it was not rejected, no error occurred etc ....
   //find the job ptrJob and call
@@ -1082,7 +1082,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
   // The result was successfully delivered by the worker and the WE was notified
   // therefore, I can delete the job from the job map
   std::ostringstream os;
-  Worker::worker_id_t worker_id = pEvt->from();
+  worker_id_t worker_id = pEvt->from();
   if(findJob(pEvt->job_id()))
   {
       // delete it from the map when you receive a JobFinishedAckEvent!
@@ -1098,7 +1098,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
 void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEvt )
 {
   std::ostringstream os;
-  Worker::worker_id_t worker_id = pEvt->from();
+  worker_id_t worker_id = pEvt->from();
 
   if(findJob(pEvt->job_id()))
   {
