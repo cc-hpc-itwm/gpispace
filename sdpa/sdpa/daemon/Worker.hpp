@@ -39,7 +39,8 @@ namespace sdpa { namespace daemon {
       @param name a unique name for the worker
       */
     explicit Worker( 	const worker_id_t& name,
-    					const boost::optional<unsigned int>& cap);
+    					const boost::optional<unsigned int>& cap
+                   , const capabilities_set_t&);
 
     void submit(const sdpa::job_id_t&);
 

@@ -11,10 +11,13 @@ using namespace sdpa;
 using namespace sdpa::daemon;
 
 Worker::Worker(	const worker_id_t& name,
-				const boost::optional<unsigned int>& cap)
+				const boost::optional<unsigned int>& cap
+              , const capabilities_set_t& capabilities
+              )
   : name_(name),
-    capacity_(cap),
-    last_schedule_time_(0),
+    capacity_(cap)
+  , capabilities_ (capabilities)
+  , last_schedule_time_(0),
     reserved_(false)
 {
 

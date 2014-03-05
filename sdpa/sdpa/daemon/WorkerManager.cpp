@@ -76,9 +76,7 @@ bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
     return false;
   }
 
-  Worker::ptr_t pWorker( new Worker( workerId, capacity ) );
-  pWorker->addCapabilities(cpbSet);
-
+  Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet ) );
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
   return true;
