@@ -9,11 +9,6 @@
 #include <boost/test/unit_test.hpp>
 #include <sdpa/types.hpp>
 
-#include <deque>
-
-#include <sdpa/events/CapabilitiesGainedEvent.hpp>
-#include <sdpa/events/CapabilitiesLostEvent.hpp>
-
 namespace
 {
   bool has_state_pending (sdpa::discovery_info_t const& disc_res)
