@@ -28,12 +28,12 @@ namespace sdpa
 
     bool CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
     {
-      return _common_queue.erase (job);
+      return _jobs_to_schedule.erase (job);
     }
 
     void CoallocationScheduler::enqueueJob (const sdpa::job_id_t& jobId)
     {
-      _common_queue.push (jobId);
+      _jobs_to_schedule.push (jobId);
     }
 
     void CoallocationScheduler::assignJobsToWorkers()
@@ -45,7 +45,7 @@ namespace sdpa
 
       while (!listAvailWorkers.empty())
       {
-        const boost::optional<job_id_t> job_id (_common_queue.pop());
+        const boost::optional<job_id_t> job_id (_jobs_to_schedule.pop());
         if (!job_id)
         {
           break;
@@ -114,12 +114,12 @@ namespace sdpa
                 pReservation->delWorker (wid);
               }
 
-              _common_queue.push_front (jobId);
+              _jobs_to_schedule.push_front (jobId);
             }
           }
           else
           {
-            _common_queue.push_front (jobId);
+            _jobs_to_schedule.push_front (jobId);
           }
         }
         else
@@ -130,7 +130,7 @@ namespace sdpa
 
       BOOST_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
       {
-        _common_queue.push (id);
+        _jobs_to_schedule.push (id);
       }
     }
 

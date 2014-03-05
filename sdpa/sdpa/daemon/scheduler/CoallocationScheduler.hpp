@@ -58,7 +58,7 @@ namespace sdpa
       private:
         mutable boost::mutex mtx_;
         std::list<job_id_t> container_;
-      } _common_queue;
+      } _jobs_to_schedule;
 
       class Reservation : boost::noncopyable
       {
