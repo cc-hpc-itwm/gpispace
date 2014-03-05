@@ -25,19 +25,19 @@ Worker::Worker(	const worker_id_t& name,
 
 bool Worker::has_job( const sdpa::job_id_t& job_id )
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   return submitted_.has_item(job_id) || acknowledged_.has_item(job_id);
 }
 
 void Worker::submit(const sdpa::job_id_t& jobId)
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   submitted_.push(jobId);
 }
 
 void Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
       if (submitted_.erase(job_id) == 0)
       {
         throw JobNotFoundException();
@@ -47,14 +47,14 @@ void Worker::acknowledge(const sdpa::job_id_t &job_id)
 
 void Worker::deleteJob(const sdpa::job_id_t &job_id)
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   submitted_.erase (job_id);
   acknowledged_.erase (job_id);
 }
 
 const sdpa::capabilities_set_t& Worker::capabilities() const
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   return capabilities_;
 }
 
@@ -84,7 +84,7 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 
 void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   BOOST_FOREACH (sdpa::Capability const& capability, cpbset)
   {
     capabilities_.erase (capability);
@@ -93,7 +93,7 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 
 bool Worker::hasCapability(const std::string& cpbName)
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
 
   return std::find_if ( capabilities_.begin(), capabilities_.end()
                       , boost::bind (&capability_t::name, _1) == cpbName
@@ -102,20 +102,20 @@ bool Worker::hasCapability(const std::string& cpbName)
 
 void Worker::reserve()
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   reserved_ = true;
   last_schedule_time_ = fhg::util::now();
 }
 
 bool Worker::isReserved()
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   return reserved_;
 }
 
 void Worker::free()
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   reserved_ = false;
 }
 
