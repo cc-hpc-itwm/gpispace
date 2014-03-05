@@ -25,10 +25,10 @@ static const int EX_STILL_RUNNING = 4;
 
 int main (int argc, char **argv)
 {
-    string orchName;
-    string orchUrl;
-    string kvsUrl;
-    string pidfile;
+    std::string orchName;
+    std::string orchUrl;
+    std::string kvsUrl;
+    std::string pidfile;
 
     FHGLOG_SETUP();
 
@@ -37,7 +37,7 @@ int main (int argc, char **argv)
        ("help,h", "Display this message")
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-       ("kvs_url,k",  po::value<string>()->required(), "The kvs daemon's url")
+       ("kvs_url,k",  po::value<std::string>()->required(), "The kvs daemon's url")
        ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
        ("daemonize", "daemonize after all checks were successful")
        ;
