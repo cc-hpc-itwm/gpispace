@@ -559,4 +559,9 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
   }
 }
 
+void Agent::handleDiscoverJobStatesReplyEvent(const sdpa::events::DiscoverJobStatesReplyEvent* pEvt)
+{
+  workflowEngine()->discovered(pEvt->discover_id(), pEvt->discover_result());
+}
+
 }} // end namespaces
