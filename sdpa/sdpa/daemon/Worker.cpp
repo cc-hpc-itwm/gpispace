@@ -85,8 +85,9 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 {
   lock_type lock(mtx_);
-  for(capabilities_set_t::const_iterator it = cpbset.begin(); it != cpbset.end(); ++it ) {
-      capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
+  BOOST_FOREACH (sdpa::Capability const& capability, cpbset)
+  {
+      capabilities_set_t::iterator itwcpb = capabilities_.find(capability);
       if( itwcpb != capabilities_.end() ) {
           capabilities_.erase(itwcpb);
 
