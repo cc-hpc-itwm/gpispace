@@ -41,12 +41,6 @@ namespace sdpa { namespace daemon {
     explicit Worker( 	const worker_id_t& name,
     					const boost::optional<unsigned int>& cap);
 
-    /**
-      Take an event related to that particular worker and update the internal
-      data structures.
-      */
-    void update();
-
     void submit(const sdpa::job_id_t&);
 
     /**

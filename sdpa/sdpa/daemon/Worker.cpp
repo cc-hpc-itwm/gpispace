@@ -27,12 +27,6 @@ bool Worker::has_job( const sdpa::job_id_t& job_id )
   return submitted_.has_item(job_id) || acknowledged_.has_item(job_id);
 }
 
-void Worker::update()
-{
-  lock_type lock(mtx_);
-  tstamp_ = fhg::util::now();
-}
-
 void Worker::submit(const sdpa::job_id_t& jobId)
 {
   lock_type lock(mtx_);
