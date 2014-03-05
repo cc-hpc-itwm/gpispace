@@ -900,40 +900,6 @@ function stop_proc ()
     fi
 }
 
-function start_agent ()
-{
-    local name="$1" ; shift
-    local master="$1" ; shift
-
-    if [ -z "$name" ] ; then
-        echo "E: start_agent(): no name given!" >&2
-        return 1
-    fi
-
-    if [ -z "$master" ] ; then
-        echo "E: start_agent(): no master given!" >&2
-        return 1
-    fi
-
-    # name format: name[-node]
-    local node=$(get_master_node)
-
-    local kvs_host="$(get_master_node)"
-    local kvs_port=$(get "plugin.drts.kvs_port" "${DEFAULT_KVS_PORT:?}")
-
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-agent" -s "$state_dir" -F "${config_file}" -P "$state_dir/agent.$name.pid" -D -n "$name" -m "$master" -k "${kvs_host}:${kvs_port}" $@ </dev/null 2>&1)
-    ec=$?
-    if [ $ec -eq 0 ] ; then
-        echo "$name" >&2
-        return 0
-    elif [ $ec -eq 2 ] ; then
-        return 0
-    else
-        echo "- $name: $ec: $err" >&2
-        return $ec
-    fi
-}
-
 function stop_agent_on_node ()
 {
     local node="${1}" ; shift
@@ -1026,16 +992,6 @@ function stop_orch ()
     fi
 }
 
-function start_agg ()
-{
-    if ! start_agent "agent-$(get_master_node)-0" "orchestrator" ; then
-        echo "E: could not start agent, giving up!" >&2
-        return 1
-    else
-        return 0
-    fi
-}
-
 function stop_agg ()
 {
     if ! stop_agent ; then
@@ -1089,75 +1045,6 @@ function node_loop ()
     done
     echo >&2
     return $rc
-}
-
-function start_drts ()
-{
-    local node=
-    local master=agent-$(get_master_node)-0
-    local ident=
-    local count=
-    local force=
-
-    argv="$@"
-    OPTIND=1
-    while getopts ":hfN:i:c:m:" opt $argv; do
-        case $opt in
-            h)
-                echo "usage: drts: [-h] [-f] [-N node [-i identity|-c count] [-m master]]" >&2
-                echo "    -h: print this help" >&2
-                echo "    -f: force" >&2
-                return 0
-                ;;
-            f)
-                force="-f"
-                ;;
-            N)
-                node=$OPTARG
-                shift 2
-                ;;
-            i)
-                ident=$OPTARG
-                shift 2
-                ;;
-            m)
-                master=$OPTARG
-                shift 2
-                ;;
-            c)
-                count=$OPTARG
-                shift 2
-                ;;
-            \?)
-                ;;
-        esac
-    done
-
-    if [ -z "$node" ] ; then
-        echo "process container (all nodes)" >&2
-        node_loop start_drts_on_node "$master" "" $force $@
-        ec=$?
-        if [ -n "$err" ] ; then
-            echo "$err"
-        fi
-        if [ $ec -ne 0 ] ; then
-            echo "$err"
-            return $ec
-        fi
-    else
-        if [ -z "$ident" ] ; then
-            echo "process container $node" >&2
-            start_drts_on_node "$node" "$master" "$count" $force $@
-            ec=$?
-            return $ec
-        else
-            count=1
-            echo "process container $node-$ident with master $master" >&2
-            start_drts_on_node "$node" "$master" "$count" -i "$ident" $force $@
-            ec=$?
-            return $ec
-        fi
-    fi
 }
 
 function stop_drts ()
@@ -1267,34 +1154,6 @@ function status_drts ()
     fi
 }
 
-function start_drts_on_node ()
-{
-    local node=$1 ; shift
-    local master="$1" ; shift
-    local per_node="$1"; shift
-    if [ -z "$master" ] ; then
-        master="agent-$(get_master_node)-0"
-    fi
-    if [ -z "$per_node" ] ; then
-        per_node=0
-    fi
-    local kvs_host="$(get_master_node)"
-    local kvs_port=$(get "plugin.drts.kvs_port" "${DEFAULT_KVS_PORT:?}")
-
-    err=$(rexec "$node" "$SDPA_SCRIPT_DIR/start-drts" -F "${config_file}" -s "$state_dir" -D -m "$master" -c "$per_node" -k "${kvs_host}:${kvs_port}" $@ 2>&1)
-    ec=$?
-    if [ $ec -eq 0 ] ; then
-        return 0
-    elif [ $ec -eq 1 ] ; then
-        log "E: pc did not startup on node $node: $err" >&2
-        return 1
-    elif [ $ec -eq 2 ] ; then
-        return 0
-    else
-        return 0
-    fi
-}
-
 function stop_drts_on_node ()
 {
     local node=$1 ; shift
@@ -1344,40 +1203,6 @@ function start_gui ()
     local cmd="ssh -X $gui_host /usr/bin/env LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH\" $SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port -r $SDPA_HOME"
     log "I: starting gui with $cmd ..."
     $cmd &
-}
-
-function start_gpi ()
-{
-    if ! on_master_node ; then
-        log "E: GPI must be started on the master node"
-        exit 1
-    fi
-    local gpi_enabled=$(get "gpi.enabled" "true")
-
-    local log_url=$(get "log.server.url")
-    local log_port=$(echo "$log_url" | grep -o -- ':[[:digit:]]\+' | tr -d ':')
-    if [ -z "$log_port" ] ; then
-        log "E: log url ($log_url) does not contain a port!"
-        return 1
-    fi
-    local log_host=$(echo "$log_url" | cut -d ':' -f 1)
-
-    local kvs_port=$(get "plugin.drts.kvs_port" "2439")
-
-    if [ x"$gpi_enabled" = x"true" ] ; then
-        if ! status_kvs ; then
-            start_kvs
-        fi
-
-        if ! start_proc "gpi-space" "$SDPA_SCRIPT_DIR/start-gpi" "-s" "$state_dir" -F "${config_file}" "-f" "-P" "$state_dir/gpi-space.pid" "-m" $(get "gpi.memory_size" "${DEFAULT_GPI_MEMSIZE:?}") "-k" $(hostname -s) -K $kvs_port -l $log_host -L $log_port ; then
-            log "E: could not start GPI, giving up!"
-            return 1
-        else
-            return 0
-        fi
-    else
-        log "gpi (deactivated)" >&2
-    fi
 }
 
 function stop_gpi ()
