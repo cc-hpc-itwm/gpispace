@@ -26,30 +26,48 @@ Worker::Worker(	const worker_id_t& name,
 bool Worker::has_job( const sdpa::job_id_t& job_id )
 {
   lock_type const _ (mtx_);
-  return submitted_.has_item(job_id) || acknowledged_.has_item(job_id);
+  return std::find (submitted_.begin(), submitted_.end(), job_id) != submitted_.end()
+    || std::find (acknowledged_.begin(), acknowledged_.end(), job_id) != acknowledged_.end();
 }
 
 void Worker::submit(const sdpa::job_id_t& jobId)
 {
   lock_type const _ (mtx_);
-  submitted_.push(jobId);
+  submitted_.push_back (jobId);
 }
 
 void Worker::acknowledge(const sdpa::job_id_t &job_id)
 {
   lock_type const _ (mtx_);
-      if (submitted_.erase(job_id) == 0)
-      {
-        throw JobNotFoundException();
-      }
-      acknowledged_.push(job_id);
+  const job_id_list_t::iterator it
+    (std::find (submitted_.begin(), submitted_.end(), job_id));
+  if (it == submitted_.end())
+  {
+    throw JobNotFoundException();
+  }
+  submitted_.erase (it);
+  acknowledged_.push_back (job_id);
 }
 
 void Worker::deleteJob(const sdpa::job_id_t &job_id)
 {
   lock_type const _ (mtx_);
-  submitted_.erase (job_id);
-  acknowledged_.erase (job_id);
+  {
+    const job_id_list_t::iterator it
+      (std::find (submitted_.begin(), submitted_.end(), job_id));
+    if (it != submitted_.end())
+    {
+      submitted_.erase (it);
+    }
+  }
+  {
+    const job_id_list_t::iterator it
+      (std::find (acknowledged_.begin(), acknowledged_.end(), job_id));
+    if (it != acknowledged_.end())
+    {
+      acknowledged_.erase (it);
+    }
+  }
 }
 
 const sdpa::capabilities_set_t& Worker::capabilities() const
@@ -119,24 +137,21 @@ void Worker::free()
   reserved_ = false;
 }
 
-namespace
-{
-  void addToList (Worker::JobQueue* pQueue, sdpa::job_id_list_t& jobList)
-  {
-    while (!pQueue->empty())
-    {
-      jobList.push_back (pQueue->pop());
-    }
-  }
-}
-
 sdpa::job_id_list_t Worker::getJobListAndCleanQueues()
 {
   lock_type const _ (mtx_);
   sdpa::job_id_list_t listAssignedJobs;
 
-  addToList (&submitted_, listAssignedJobs);
-  addToList (&acknowledged_, listAssignedJobs);
+  BOOST_FOREACH (job_id_t const& id, submitted_)
+  {
+    listAssignedJobs.push_back (id);
+  }
+  BOOST_FOREACH (job_id_t const& id, acknowledged_)
+  {
+    listAssignedJobs.push_back (id);
+  }
+  submitted_.clear();
+  acknowledged_.clear();
 
   return listAssignedJobs;
 }

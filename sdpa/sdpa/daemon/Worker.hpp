@@ -31,8 +31,6 @@ namespace sdpa { namespace daemon {
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
 
-    typedef SynchronizedQueue<std::list<sdpa::job_id_t> > JobQueue;
-
     /**
       A worker has a globally unique name.
 
@@ -99,8 +97,8 @@ namespace sdpa { namespace daemon {
     sdpa::capabilities_set_t capabilities_;
     double last_schedule_time_;
 
-    JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
-    JobQueue acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
+    job_id_list_t submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
+    job_id_list_t acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
     bool reserved_;
 
