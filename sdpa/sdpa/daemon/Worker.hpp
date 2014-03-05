@@ -84,7 +84,7 @@ namespace sdpa { namespace daemon {
     void reserve();
     void free();
 
-    job_id_list_t getJobListAndCleanQueues();
+    std::set<job_id_t> getJobListAndCleanQueues();
 
   private:
     worker_id_t name_; //! name of the worker
@@ -92,8 +92,8 @@ namespace sdpa { namespace daemon {
     capabilities_set_t capabilities_;
     double last_schedule_time_;
 
-    job_id_list_t submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
-    job_id_list_t acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
+    std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)
+    std::set<job_id_t> acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
     bool reserved_;
 

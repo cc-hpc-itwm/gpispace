@@ -417,7 +417,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
           // if there still are registered workers, otherwise declare the remaining
           // jobs failed
 
-          const sdpa::job_id_list_t jobs_to_reschedule
+          const std::set<job_id_t> jobs_to_reschedule
             ( scheduler()->worker_manager().findWorker (worker_id)
             ->getJobListAndCleanQueues()
             );
