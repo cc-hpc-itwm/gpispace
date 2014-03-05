@@ -118,6 +118,12 @@ namespace
     reqs.push_back (we::type::requirement_t (name_1, true));
     return job_requirements_t (reqs, we::type::schedule_data (workers));
   }
+
+  job_requirements_t require (unsigned long workers)
+  {
+    requirement_list_t reqs;
+    return job_requirements_t (reqs, we::type::schedule_data (workers));
+  }
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_agent_and_scheduler)
@@ -455,3 +461,20 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_FIXTURE_TEST_CASE
+  (not_schedulable_job_does_not_block_others, allocate_test_agent_and_scheduler)
+{
+  _scheduler.worker_manager().addWorker ("worker", 1);
+
+  _agent.TEST_add_dummy_job ("2", require (2));
+  _scheduler.enqueueJob ("2");
+
+  _scheduler.assignJobsToWorkers();
+
+  _agent.TEST_add_dummy_job ("1", require (1));
+  _scheduler.enqueueJob ("1");
+
+  _agent.expect_serveJob_call ("1", worker_list ("A"));
+  _scheduler.assignJobsToWorkers();
+}
