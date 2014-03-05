@@ -1,24 +1,25 @@
 #ifndef SDPA_DISCOVER_JOB_STATES_REPLY_EVENT_HPP
 #define SDPA_DISCOVER_JOB_STATES_REPLY_EVENT_HPP 1
 
-#include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/events/JobEvent.hpp>
 #include <sstream>
 
 namespace sdpa
 {
   namespace events
   {
-    class DiscoverJobStatesReplyEvent : public MgmtEvent
+    class DiscoverJobStatesReplyEvent : public JobEvent
     {
     public:
       typedef boost::shared_ptr<DiscoverJobStatesReplyEvent> Ptr;
 
       DiscoverJobStatesReplyEvent ( const address_t& a_from
                                     , const address_t& a_to
+                                    , const sdpa::job_id_t& a_job_id
                                     , const std::string& discover_id
                                     , const sdpa::discovery_info_t& discover_result
                                     )
-        : MgmtEvent (a_from, a_to)
+        : JobEvent (a_from, a_to, a_job_id)
         , discover_id_(discover_id)
         , discover_result_(discover_result)
       {}
@@ -45,17 +46,17 @@ namespace sdpa
 
     SAVE_CONSTRUCT_DATA_DEF (DiscoverJobStatesReplyEvent, e)
      {
-       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
+       SAVE_JOBEVENT_CONSTRUCT_DATA (e);
        SAVE_TO_ARCHIVE (e->discover_id());
        SAVE_TO_ARCHIVE (e->discover_result());
      }
 
      LOAD_CONSTRUCT_DATA_DEF (DiscoverJobStatesReplyEvent, e)
      {
-       LOAD_MGMTEVENT_CONSTRUCT_DATA (from, to);
+       LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
        LOAD_FROM_ARCHIVE (std::string, disc_id);
        LOAD_FROM_ARCHIVE (sdpa::discovery_info_t, disc_res);
-       ::new (e) DiscoverJobStatesReplyEvent (from, to, disc_id, disc_res);
+       ::new (e) DiscoverJobStatesReplyEvent (from, to, job_id, disc_id, disc_res);
      }
   }
 }

@@ -1039,8 +1039,11 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
 void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
 {
   sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
+  sdpa::agent_id_t job_id(m_map_discover_ids.at(discover_id).job_id());
+
   sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
                                                                                                       , master_name
+                                                                                                      , job_id
                                                                                                       , discover_id
                                                                                                       , discover_result)));
   m_map_discover_ids.erase(discover_id);
@@ -1056,7 +1059,7 @@ void GenericDaemon::handleDiscoverJobStatesReplyEvent
   sendEventToOther
     ( events::DiscoverJobStatesReplyEvent::Ptr
       ( new events::DiscoverJobStatesReplyEvent
-        (name(), job_info.disc_issuer(), e->discover_id(), discovery_info)
+        (name(), job_info.disc_issuer(), e->job_id(), e->discover_id(), discovery_info)
       )
     );
 

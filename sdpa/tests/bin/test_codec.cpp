@@ -246,8 +246,8 @@ BOOST_AUTO_TEST_CASE (DiscoverJobStatesReply)
 
   sdpa::discovery_info_t disc_res("job_0", boost::none, disc_info_set);
 
-  DiscoverJobStatesReplyEvent e("foo", "bar", "disc_0", disc_res);
-  DiscoverJobStatesReplyEvent* r (encode_decode_mgmt_event (e));
+  DiscoverJobStatesReplyEvent e("foo", "bar", "job_0", "disc_0", disc_res);
+  DiscoverJobStatesReplyEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->discover_id(), e.discover_id());
   BOOST_REQUIRE(r->discover_result() == e.discover_result());
