@@ -47,12 +47,10 @@ namespace sdpa
 
       WorkerManager _worker_manager;
 
-      template <class Container> class SynchronizedQueue
+      class SynchronizedQueue
       {
       public:
-        typedef typename Container::value_type value_type;
-
-        inline boost::optional<value_type> pop()
+        inline boost::optional<job_id_t> pop()
         {
           boost::mutex::scoped_lock const _ (mtx_);
           if (container_.empty())
@@ -60,28 +58,28 @@ namespace sdpa
             return boost::none;
           }
 
-          value_type item = container_.front();
+          job_id_t item = container_.front();
           container_.pop_front();
           return item;
         }
 
-        inline void push (value_type item)
+        inline void push (job_id_t item)
         {
           boost::mutex::scoped_lock const _ (mtx_);
           container_.push_back (item);
         }
 
-        inline void push_front (value_type item)
+        inline void push_front (job_id_t item)
         {
           boost::mutex::scoped_lock const _ (mtx_);
           container_.push_front (item);
         }
 
-        inline size_t erase (const value_type& item)
+        inline size_t erase (const job_id_t& item)
         {
           boost::mutex::scoped_lock const _ (mtx_);
           size_t count (0);
-          typename Container::iterator iter (container_.begin());
+          std::list<job_id_t>::iterator iter (container_.begin());
           while (iter != container_.end())
           {
             if (item == *iter)
@@ -99,10 +97,8 @@ namespace sdpa
 
       private:
         mutable boost::mutex mtx_;
-        Container container_;
-      };
-
-      SynchronizedQueue<std::list<sdpa::job_id_t> > _common_queue;
+        std::list<job_id_t> container_;
+      } _common_queue;
 
       class Reservation : boost::noncopyable
       {
