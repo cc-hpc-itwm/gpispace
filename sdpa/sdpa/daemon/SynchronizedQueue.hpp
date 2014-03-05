@@ -40,12 +40,6 @@ namespace sdpa
         container_.push_front (item);
       }
 
-      inline bool empty() const
-      {
-        boost::mutex::scoped_lock const _ (mtx_);
-        return container_.empty();
-      }
-
       inline size_t erase (const value_type& item)
       {
         boost::mutex::scoped_lock const _ (mtx_);
