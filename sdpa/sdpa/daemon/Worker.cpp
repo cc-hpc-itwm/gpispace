@@ -87,11 +87,7 @@ void Worker::removeCapabilities( const capabilities_set_t& cpbset )
   lock_type lock(mtx_);
   BOOST_FOREACH (sdpa::Capability const& capability, cpbset)
   {
-      capabilities_set_t::iterator itwcpb = capabilities_.find(capability);
-      if( itwcpb != capabilities_.end() ) {
-          capabilities_.erase(itwcpb);
-
-      }
+    capabilities_.erase (capability);
   }
 }
 
