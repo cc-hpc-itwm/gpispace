@@ -227,5 +227,50 @@ namespace sdpa
         throw JobNotFoundException();
       }
     }
+
+    boost::optional<job_id_t> CoallocationScheduler::locked_job_id_list::pop()
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+      if (container_.empty())
+      {
+        return boost::none;
+      }
+
+      job_id_t item = container_.front();
+      container_.pop_front();
+      return item;
+    }
+
+    void CoallocationScheduler::locked_job_id_list::push (job_id_t item)
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+      container_.push_back (item);
+    }
+
+    void CoallocationScheduler::locked_job_id_list::push_front (job_id_t item)
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+      container_.push_front (item);
+    }
+
+    size_t CoallocationScheduler::locked_job_id_list::erase (const job_id_t& item)
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+      size_t count (0);
+      std::list<job_id_t>::iterator iter (container_.begin());
+      while (iter != container_.end())
+      {
+        if (item == *iter)
+        {
+          iter = container_.erase(iter);
+          ++count;
+        }
+        else
+        {
+          ++iter;
+        }
+      }
+      return count;
+    }
   }
 }

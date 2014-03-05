@@ -50,50 +50,10 @@ namespace sdpa
       class locked_job_id_list
       {
       public:
-        inline boost::optional<job_id_t> pop()
-        {
-          boost::mutex::scoped_lock const _ (mtx_);
-          if (container_.empty())
-          {
-            return boost::none;
-          }
-
-          job_id_t item = container_.front();
-          container_.pop_front();
-          return item;
-        }
-
-        inline void push (job_id_t item)
-        {
-          boost::mutex::scoped_lock const _ (mtx_);
-          container_.push_back (item);
-        }
-
-        inline void push_front (job_id_t item)
-        {
-          boost::mutex::scoped_lock const _ (mtx_);
-          container_.push_front (item);
-        }
-
-        inline size_t erase (const job_id_t& item)
-        {
-          boost::mutex::scoped_lock const _ (mtx_);
-          size_t count (0);
-          std::list<job_id_t>::iterator iter (container_.begin());
-          while (iter != container_.end())
-          {
-            if (item == *iter)
-            {
-              iter = container_.erase(iter);
-              ++count;
-            }
-            else
-            {
-              ++iter;
-            }
-          }
-          return count;
-        }
+        inline boost::optional<job_id_t> pop();
+        inline void push (job_id_t item);
+        inline void push_front (job_id_t item);
+        inline size_t erase (const job_id_t& item);
 
       private:
         mutable boost::mutex mtx_;
