@@ -32,9 +32,10 @@
 #include <boost/range/algorithm/count_if.hpp>
 
 using namespace std;
-using namespace sdpa;
-using namespace sdpa::daemon;
-
+namespace sdpa
+{
+  namespace daemon
+  {
 Worker::ptr_t WorkerManager::findWorker(const worker_id_t& worker_id )
 {
   boost::mutex::scoped_lock const _ (mtx_);
@@ -202,4 +203,6 @@ boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
   }
 
   return bestMatchingWorkerId;
+}
+  }
 }
