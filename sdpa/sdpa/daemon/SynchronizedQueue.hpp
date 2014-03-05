@@ -15,7 +15,7 @@ namespace sdpa
     {
     public:
       typedef typename Container::value_type value_type;
-      typedef boost::recursive_mutex mutex_type;
+      typedef boost::mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
 
       inline value_type pop()
