@@ -34,14 +34,9 @@ namespace sdpa { namespace daemon {
    */
   template <class Container> class SynchronizedQueue {
   public:
-    typedef Container container_type;
-    typedef typename container_type::value_type value_type;
-    typedef typename container_type::size_type size_type;
-    typedef typename container_type::iterator iterator;
-    typedef typename container_type::const_iterator const_iterator;
+    typedef typename Container::value_type value_type;
     typedef boost::recursive_mutex mutex_type;
     typedef boost::unique_lock<mutex_type> lock_type;
-    typedef boost::condition_variable_any condition_type;
 
     inline value_type pop()
     {
@@ -77,7 +72,7 @@ namespace sdpa { namespace daemon {
     {
     	lock_type lock(mtx_);
         size_t count(0);
-        iterator iter (container_.begin());
+        typename Container::iterator iter (container_.begin());
         while (iter != container_.end())
         {
           if( item == *iter )
@@ -93,16 +88,10 @@ namespace sdpa { namespace daemon {
         return count;
     }
 
-    inline void clear()
-    {
-      lock_type lock(mtx_);
-      container_.clear();
-    }
-
   private:
     mutable mutex_type mtx_;
-    condition_type not_empty_;
-    container_type container_;
+    boost::condition_variable_any not_empty_;
+    Container container_;
   };
 }}
 #endif
