@@ -33,14 +33,12 @@ namespace sdpa
       {
         boost::mutex::scoped_lock const _ (mtx_);
         container_.push_back (item);
-        not_empty_.notify_one();
       }
 
       inline void push_front (value_type item)
       {
         boost::mutex::scoped_lock const _ (mtx_);
         container_.push_front (item);
-        not_empty_.notify_one();
       }
 
       inline bool empty() const
@@ -71,7 +69,6 @@ namespace sdpa
 
     private:
       mutable boost::mutex mtx_;
-      boost::condition_variable_any not_empty_;
       Container container_;
     };
   }
