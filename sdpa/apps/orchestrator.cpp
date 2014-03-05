@@ -19,7 +19,6 @@
 
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
-using namespace std;
 
 static const int EX_STILL_RUNNING = 4;
 

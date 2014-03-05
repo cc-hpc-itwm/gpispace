@@ -31,7 +31,6 @@
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/count_if.hpp>
 
-using namespace std;
 namespace sdpa
 {
   namespace daemon

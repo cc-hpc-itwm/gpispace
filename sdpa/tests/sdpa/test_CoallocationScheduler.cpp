@@ -8,9 +8,6 @@
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::Capability)
 
-using namespace std;
-using namespace sdpa::daemon;
-
 const std::string WORKER_CPBS[] = {"A", "B", "C"};
 
 typedef std::map<sdpa::job_id_t, sdpa::worker_id_t> mapJob2Worker_t;
