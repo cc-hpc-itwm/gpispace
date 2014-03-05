@@ -110,8 +110,6 @@ namespace sdpa { namespace daemon {
     JobQueue& acknowledged() { lock_type lock(mtx_); return acknowledged_; }
     const JobQueue& acknowledged() const { lock_type lock(mtx_); return acknowledged_; }
 
-    unsigned int nbAllocatedJobs();
-
     // methods related to reservation
     bool isReserved();
     void reserve();

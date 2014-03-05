@@ -56,12 +56,6 @@ void Worker::deleteJob(const sdpa::job_id_t &job_id)
   acknowledged_.erase (job_id);
 }
 
-unsigned int Worker::nbAllocatedJobs()
-{
-  lock_type lock(mtx_);
-  return submitted_.size() + acknowledged_.size();
-}
-
 const sdpa::capabilities_set_t& Worker::capabilities() const
 {
   lock_type lock(mtx_);
