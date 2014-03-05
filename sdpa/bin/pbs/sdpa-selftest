@@ -70,6 +70,9 @@ if ! cat "$xml" | pnetc | pnetput -p challenge=\"$challenge\" > "$job_desc" ; th
     exit 5
 fi
 
+tmpnodes=$(mktemp)
+echo "$(hostname -s)" > "${tmpnodes}"
+
 runtime_started=false
 cleanup()
 {
@@ -78,13 +81,19 @@ cleanup()
         sdpa stop >/dev/null 2>&1
         runtime_started=false
     fi
+    if [ -n "$tmpnodes" ]
+    then
+        rm -f "${tmpnodes}"
+    fi
 }
 trap cleanup EXIT TERM INT
 
 log_info "(re-)starting SDPA..."
 
+err=$(sdpa stop 2>&1)
+
 runtime_started=true
-err=$(sdpa restart 2>&1)
+err=$(sdpa boot -M -f "${tmpnodes}" -A "${SDPA_HOME}/libexec/sdpa/apps/selftest/modules" work:1 2>&1)
 ec=$?
 if [ $ec -ne 0 ] ; then
     sdpa stop >/dev/null 2>&1
