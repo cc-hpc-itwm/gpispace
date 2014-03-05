@@ -43,9 +43,14 @@ namespace sdpa
 
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
-      while (!_common_queue.empty() && !listAvailWorkers.empty())
+      while (!listAvailWorkers.empty())
       {
-        sdpa::job_id_t jobId (*_common_queue.pop());
+        const boost::optional<job_id_t> job_id (_common_queue.pop());
+        if (!job_id)
+        {
+          break;
+        }
+        sdpa::job_id_t jobId (*job_id);
 
         const job_requirements_t job_reqs
           (ptr_comm_handler_->getJobRequirements (jobId));
