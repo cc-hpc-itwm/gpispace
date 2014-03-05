@@ -35,14 +35,14 @@ namespace sdpa { namespace daemon {
     					const boost::optional<unsigned int>& cap
                    , const capabilities_set_t&);
 
-    void submit(const sdpa::job_id_t&);
+    void submit(const job_id_t&);
 
     /**
 	 Acknowledge a given job id and move it to the acknowledged_ queue.
 
 	 @param job_id the job_id to acknowledge
 	 */
-    void acknowledge(const sdpa::job_id_t&);
+    void acknowledge(const job_id_t&);
 
     // update last service time
     double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
@@ -59,7 +59,7 @@ namespace sdpa { namespace daemon {
     boost::optional<unsigned int> capacity() const { lock_type lock(mtx_); return capacity_; }
 
     // capabilities
-    const sdpa::capabilities_set_t& capabilities() const;
+    const capabilities_set_t& capabilities() const;
 
     bool addCapabilities(const capabilities_set_t& cpbset);
     void removeCapabilities(const capabilities_set_t& cpbset);
@@ -68,7 +68,7 @@ namespace sdpa { namespace daemon {
     /**
          Checks if the worker has job
     */
-    bool has_job( const sdpa::job_id_t& job_id );
+    bool has_job( const job_id_t& job_id );
 
 
     /**
@@ -77,19 +77,19 @@ namespace sdpa { namespace daemon {
       a second flag is needed in the case the job is canceled (in order to look into the other queues, as well)
       @param last_job_id the id of the last sucessfully submitted job
     */
-    void deleteJob(const sdpa::job_id_t &job_id );
+    void deleteJob(const job_id_t &job_id );
 
     // methods related to reservation
     bool isReserved();
     void reserve();
     void free();
 
-    sdpa::job_id_list_t getJobListAndCleanQueues();
+    job_id_list_t getJobListAndCleanQueues();
 
   private:
     worker_id_t name_; //! name of the worker
     boost::optional<unsigned int> capacity_;
-    sdpa::capabilities_set_t capabilities_;
+    capabilities_set_t capabilities_;
     double last_schedule_time_;
 
     job_id_list_t submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)

@@ -24,20 +24,20 @@ Worker::Worker(	const worker_id_t& name,
 
 }
 
-bool Worker::has_job( const sdpa::job_id_t& job_id )
+bool Worker::has_job( const job_id_t& job_id )
 {
   lock_type const _ (mtx_);
   return std::find (submitted_.begin(), submitted_.end(), job_id) != submitted_.end()
     || std::find (acknowledged_.begin(), acknowledged_.end(), job_id) != acknowledged_.end();
 }
 
-void Worker::submit(const sdpa::job_id_t& jobId)
+void Worker::submit(const job_id_t& jobId)
 {
   lock_type const _ (mtx_);
   submitted_.push_back (jobId);
 }
 
-void Worker::acknowledge(const sdpa::job_id_t &job_id)
+void Worker::acknowledge(const job_id_t &job_id)
 {
   lock_type const _ (mtx_);
   const job_id_list_t::iterator it
@@ -50,7 +50,7 @@ void Worker::acknowledge(const sdpa::job_id_t &job_id)
   acknowledged_.push_back (job_id);
 }
 
-void Worker::deleteJob(const sdpa::job_id_t &job_id)
+void Worker::deleteJob(const job_id_t &job_id)
 {
   lock_type const _ (mtx_);
   {
@@ -71,7 +71,7 @@ void Worker::deleteJob(const sdpa::job_id_t &job_id)
   }
 }
 
-const sdpa::capabilities_set_t& Worker::capabilities() const
+const capabilities_set_t& Worker::capabilities() const
 {
   lock_type const _ (mtx_);
   return capabilities_;
@@ -82,9 +82,9 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
   lock_type const _ (mtx_);
 
   bool bModified = false;
-  BOOST_FOREACH (sdpa::Capability const& capability, recvCpbSet)
+  BOOST_FOREACH (Capability const& capability, recvCpbSet)
   {
-    sdpa::capabilities_set_t::iterator itwcpb (capabilities_.find (capability));
+    capabilities_set_t::iterator itwcpb (capabilities_.find (capability));
     if (itwcpb == capabilities_.end())
     {
       capabilities_.insert (capability);
@@ -104,7 +104,7 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 {
   lock_type const _ (mtx_);
-  BOOST_FOREACH (sdpa::Capability const& capability, cpbset)
+  BOOST_FOREACH (Capability const& capability, cpbset)
   {
     capabilities_.erase (capability);
   }
@@ -138,10 +138,10 @@ void Worker::free()
   reserved_ = false;
 }
 
-sdpa::job_id_list_t Worker::getJobListAndCleanQueues()
+job_id_list_t Worker::getJobListAndCleanQueues()
 {
   lock_type const _ (mtx_);
-  sdpa::job_id_list_t listAssignedJobs;
+  job_id_list_t listAssignedJobs;
 
   BOOST_FOREACH (job_id_t const& id, submitted_)
   {
