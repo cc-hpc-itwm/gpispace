@@ -53,19 +53,6 @@ namespace sdpa { namespace daemon {
       return item;
     }
 
-    inline value_type pop_and_wait()
-    {
-      lock_type lock(mtx_);
-      while (container_.empty())
-      {
-        not_empty_.wait(lock);
-      }
-
-      value_type item = container_.front();
-      container_.pop_front();
-      return item;
-    }
-
     inline void push(value_type item)
     {
       lock_type lock(mtx_);
@@ -80,26 +67,10 @@ namespace sdpa { namespace daemon {
     	not_empty_.notify_one();
     }
 
-    inline size_type size() const
-    {
-      lock_type lock(mtx_);
-      return container_.size();
-    }
-
     inline bool empty() const
     {
       lock_type lock(mtx_);
       return container_.empty();
-    }
-
-    inline bool has_item (const value_type& item)
-    {
-       	lock_type lock(mtx_);
-       	for( iterator iter=container_.begin(); iter!=container_.end(); iter++ )
-       		if( *iter==item )
-       			return true;
-
-       	return false;
     }
 
     inline size_t erase(const value_type& item)
