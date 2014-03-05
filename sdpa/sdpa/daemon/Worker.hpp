@@ -96,7 +96,6 @@ namespace sdpa { namespace daemon {
     worker_id_t name_; //! name of the worker
     boost::optional<unsigned int> capacity_;
     sdpa::capabilities_set_t capabilities_;
-    double tstamp_; //! time of last message received
     double last_schedule_time_;
 
     JobQueue submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)

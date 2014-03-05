@@ -14,7 +14,6 @@ Worker::Worker(	const worker_id_t& name,
 				const boost::optional<unsigned int>& cap)
   : name_(name),
     capacity_(cap),
-    tstamp_(fhg::util::now()),
     last_schedule_time_(0),
     reserved_(false)
 {
