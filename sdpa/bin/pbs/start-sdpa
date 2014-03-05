@@ -167,8 +167,10 @@ log_port=
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
 avl_mem=$(( ($tot_mem * 80) / 100 ))
 gpi_mem=0
+gpi_socket_dir=
 def_shm_mem=0
 def_num_proc=1
+def_gpi_socket_dir=/tmp
 
 if [ ${#@} -eq 0 ] ; then
     usage
@@ -349,6 +351,11 @@ then
     fi
 fi
 
+if [ -z "${gpi_socket_dir}" ]
+then
+    gpi_socket_dir="$def_gpi_socket_dir"
+fi
+
 log "starting base sdpa components on $master..."
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
@@ -359,8 +366,6 @@ if $gpi_enabled ; then
     if [ ${gpi_mem} -eq 0 ] ; then
         gpi_mem=$(( avl_mem * 50 / 100 ))
     fi
-
-    socket_path=$(fhgcfg -f "${config_file}" -g "gpi.socket_path" -v "/tmp")
 
     dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "true"
 
@@ -374,7 +379,7 @@ if $gpi_enabled ; then
                           -k "${master}" \
                           -K "$kvs_port" \
                           -l "${master}" \
-                          -S "${socket_path}" \
+                          -S "${socket_dir}" \
                           -L "${log_port}"
 else
     dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "false"
