@@ -72,8 +72,7 @@ namespace sdpa
             if (it == allocation_table_.end())
             {
               Reservation* pReservation (new Reservation (job_reqs.numWorkers()));
-              allocation_table_t::value_type pairJobRes (jobId, pReservation);
-              allocation_table_.insert (pairJobRes);
+              allocation_table_.insert (std::make_pair (jobId, pReservation));
             }
 
             allocation_table_[jobId]->addWorker (*matchingWorkerId);
