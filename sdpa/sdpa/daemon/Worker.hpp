@@ -92,24 +92,6 @@ namespace sdpa { namespace daemon {
     */
     void deleteJob(const sdpa::job_id_t &job_id );
 
-    /**
-      Provide access to the submitted queue.
-
-      We are required to have access to the submitted queue of a worker because
-      we might need to reschedule tasks.
-      */
-    JobQueue& submitted() { lock_type lock(mtx_); return submitted_; }
-    const JobQueue& submitted() const { lock_type lock(mtx_); return submitted_; }
-
-    /**
-      Provide access to the acknowledged queue.
-
-      We are required to have access to the submitted queue of a worker because
-      we might need to reschedule tasks.
-      */
-    JobQueue& acknowledged() { lock_type lock(mtx_); return acknowledged_; }
-    const JobQueue& acknowledged() const { lock_type lock(mtx_); return acknowledged_; }
-
     // methods related to reservation
     bool isReserved();
     void reserve();
