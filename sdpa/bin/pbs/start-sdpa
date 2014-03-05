@@ -521,6 +521,7 @@ function start_workers_for_capability
         argv+=(-F "$config_file")
         if $gpi_enabled ; then
             argv+=(-M "$shm_size")
+            argv+=(-S "$gpi_socket_dir/S-gpi-space.$(id -u).0")
         fi
         if [ $socket -ne -1 ] ; then
             argv+=(-N "$socket")

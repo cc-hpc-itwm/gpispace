@@ -292,6 +292,18 @@ if [ x"$gpi_enabled" = x"true" ] ; then
     else
       capabilities="$capabilities,${fake_gpi_capability}"
     fi
+
+    # config values (gpi plugin)
+    if [ -z "$gpi_socket" ] ; then
+        log "E: GPI socket is not set"
+        exit 1
+    fi
+
+    cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
+    cfg="$cfg -s plugin.gpi.startmode=${DEFAULT_PLUGIN_GPI_STARTMODE}"
+
+    # config values (gpi_compat plugin)
+    cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
 fi
 
 # config values (drts plugin)
@@ -309,17 +321,6 @@ if [ -n "$numa_socket" ]
 then
     cfg="$cfg -s plugin.drts.socket=$numa_socket"
 fi
-
-# config values (gpi plugin)
-if [ -z "$gpi_socket" ] ; then
-    gpi_socket=$(fhgcfg -f "${config_file}" -g gpi.socket_path -v "/tmp")
-    gpi_socket="$gpi_socket/S-gpi-space.$(id -u).0"
-fi
-cfg="$cfg -s plugin.gpi.socket=${gpi_socket}"
-cfg="$cfg -s plugin.gpi.startmode=${DEFAULT_PLUGIN_GPI_STARTMODE}"
-
-# config values (gpi_compat plugin)
-cfg="$cfg -s plugin.gpi_compat.shm_size=$shm_size"
 
 cmd="${bin} $cfg"
 
