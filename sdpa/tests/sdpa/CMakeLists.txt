@@ -225,12 +225,6 @@ fhg_add_test (test_CancelJob.cpp
           workflow_capabilities
 )
 
-fhg_add_test (test_SynchronizedQueue.cpp
-  PROJECT sdpa
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-)
-
 fhg_add_test (test_CoallocationScheduler.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST

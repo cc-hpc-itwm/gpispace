@@ -4,7 +4,6 @@
 #define SDPA_COALLOCSCHED_HPP 1
 
 #include <sdpa/daemon/Job.hpp>
-#include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/exceptions.hpp>
@@ -47,6 +46,62 @@ namespace sdpa
       GenericDaemon* ptr_comm_handler_;
 
       WorkerManager _worker_manager;
+
+      template <class Container> class SynchronizedQueue
+      {
+      public:
+        typedef typename Container::value_type value_type;
+
+        inline boost::optional<value_type> pop()
+        {
+          boost::mutex::scoped_lock const _ (mtx_);
+          if (container_.empty())
+          {
+            return boost::none;
+          }
+
+          value_type item = container_.front();
+          container_.pop_front();
+          return item;
+        }
+
+        inline void push (value_type item)
+        {
+          boost::mutex::scoped_lock const _ (mtx_);
+          container_.push_back (item);
+        }
+
+        inline void push_front (value_type item)
+        {
+          boost::mutex::scoped_lock const _ (mtx_);
+          container_.push_front (item);
+        }
+
+        inline size_t erase (const value_type& item)
+        {
+          boost::mutex::scoped_lock const _ (mtx_);
+          size_t count (0);
+          typename Container::iterator iter (container_.begin());
+          while (iter != container_.end())
+          {
+            if (item == *iter)
+            {
+              iter = container_.erase(iter);
+              ++count;
+            }
+            else
+            {
+              ++iter;
+            }
+          }
+          return count;
+        }
+
+      private:
+        mutable boost::mutex mtx_;
+        Container container_;
+      };
+
       SynchronizedQueue<std::list<sdpa::job_id_t> > _common_queue;
 
       class Reservation : boost::noncopyable
