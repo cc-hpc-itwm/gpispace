@@ -541,8 +541,21 @@ void Agent::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesE
   }
   else
   {
-      //! Note: the layer guarantees that the job was already submitted
-      workflowEngine()->discovered(pEvt->discover_id(), sdpa::discovery_info_t (pEvt->job_id(), pJob->getStatus(), sdpa::discovery_info_set_t()));
+      boost::optional<sdpa::worker_id_t> worker_id = scheduler()->findSubmOrAckWorker(pEvt->job_id());
+
+      if(worker_id)
+      {
+          events::DiscoverJobStatesEvent::Ptr pDiscEvt( new events::DiscoverJobStatesEvent( name()
+                                                                                           , *worker_id
+                                                                                           , pEvt->job_id()
+                                                                                           , pEvt->discover_id()) );
+          sendEventToOther(pDiscEvt);
+      }
+      else
+      {
+          //! Note: the layer guarantees that the job was already submitted
+          workflowEngine()->discovered(pEvt->discover_id(), sdpa::discovery_info_t (pEvt->job_id(), pJob->getStatus(), sdpa::discovery_info_set_t()));
+      }
   }
 }
 
