@@ -18,5 +18,5 @@ BOOST_AUTO_TEST_CASE (testQueue)
     BOOST_REQUIRE_EQUAL (test_queue.pop(), cnt);
   }
 
-  BOOST_REQUIRE_THROW (test_queue.pop(), std::runtime_error);
+  BOOST_REQUIRE_EQUAL (test_queue.pop(), boost::none);
 }

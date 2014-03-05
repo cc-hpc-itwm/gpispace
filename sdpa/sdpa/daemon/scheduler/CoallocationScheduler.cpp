@@ -45,7 +45,7 @@ namespace sdpa
 
       while (!_common_queue.empty() && !listAvailWorkers.empty())
       {
-        sdpa::job_id_t jobId (_common_queue.pop());
+        sdpa::job_id_t jobId (*_common_queue.pop());
 
         const job_requirements_t job_reqs
           (ptr_comm_handler_->getJobRequirements (jobId));

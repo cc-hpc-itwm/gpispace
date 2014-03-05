@@ -3,9 +3,8 @@
 #ifndef SDPA_DAEMON_SYNCHRONIZED_QUEUE_HPP
 #define SDPA_DAEMON_SYNCHRONIZED_QUEUE_HPP
 
+#include <boost/optional.hpp>
 #include <boost/thread.hpp>
-
-#include <stdexcept>
 
 namespace sdpa
 {
@@ -16,12 +15,12 @@ namespace sdpa
     public:
       typedef typename Container::value_type value_type;
 
-      inline value_type pop()
+      inline boost::optional<value_type> pop()
       {
         boost::mutex::scoped_lock const _ (mtx_);
         if (container_.empty())
         {
-          throw std::runtime_error ("queue is empty");
+          return boost::none;
         }
 
         value_type item = container_.front();
