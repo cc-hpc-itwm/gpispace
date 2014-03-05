@@ -27,8 +27,7 @@ Worker::Worker(	const worker_id_t& name,
 bool Worker::has_job( const job_id_t& job_id )
 {
   lock_type const _ (mtx_);
-  return std::find (submitted_.begin(), submitted_.end(), job_id) != submitted_.end()
-    || std::find (acknowledged_.begin(), acknowledged_.end(), job_id) != acknowledged_.end();
+  return submitted_.count (job_id) || acknowledged_.count (job_id);
 }
 
 void Worker::submit(const job_id_t& jobId)
@@ -40,35 +39,18 @@ void Worker::submit(const job_id_t& jobId)
 void Worker::acknowledge(const job_id_t &job_id)
 {
   lock_type const _ (mtx_);
-  const std::set<job_id_t>::iterator it
-    (std::find (submitted_.begin(), submitted_.end(), job_id));
-  if (it == submitted_.end())
+  if (submitted_.erase (job_id) == 0)
   {
     throw JobNotFoundException();
   }
-  submitted_.erase (it);
   acknowledged_.insert (job_id);
 }
 
 void Worker::deleteJob(const job_id_t &job_id)
 {
   lock_type const _ (mtx_);
-  {
-    const std::set<job_id_t>::iterator it
-      (std::find (submitted_.begin(), submitted_.end(), job_id));
-    if (it != submitted_.end())
-    {
-      submitted_.erase (it);
-    }
-  }
-  {
-    const std::set<job_id_t>::iterator it
-      (std::find (acknowledged_.begin(), acknowledged_.end(), job_id));
-    if (it != acknowledged_.end())
-    {
-      acknowledged_.erase (it);
-    }
-  }
+  submitted_.erase (job_id);
+  acknowledged_.erase (job_id);
 }
 
 const capabilities_set_t& Worker::capabilities() const
@@ -143,14 +125,8 @@ std::set<job_id_t> Worker::getJobListAndCleanQueues()
   lock_type const _ (mtx_);
   std::set<job_id_t> listAssignedJobs;
 
-  BOOST_FOREACH (job_id_t const& id, submitted_)
-  {
-    listAssignedJobs.insert (id);
-  }
-  BOOST_FOREACH (job_id_t const& id, acknowledged_)
-  {
-    listAssignedJobs.insert (id);
-  }
+  listAssignedJobs.insert (submitted_.begin(), submitted_.end());
+  listAssignedJobs.insert (acknowledged_.begin(), acknowledged_.end());
   submitted_.clear();
   acknowledged_.clear();
 
