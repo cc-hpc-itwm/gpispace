@@ -53,12 +53,11 @@ usage: $(basename "$0") [options]
     -s state-dir
     -F config file
     -M shared memory size
-    -B communication buffer size
     -N numa socket
 EOF
 }
 
-while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
+while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:N:" opt; do
     case $opt in
         h)
             usage
@@ -132,9 +131,6 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:F:B:N:" opt; do
             ;;
         M)
             shm_size=$OPTARG
-            ;;
-        B)
-            echo >&2 "W: ignoring obosolete option -B <com_size>"
             ;;
         N)
             numa_socket=$OPTARG
