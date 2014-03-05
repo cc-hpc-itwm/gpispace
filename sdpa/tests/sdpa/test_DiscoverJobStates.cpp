@@ -72,14 +72,6 @@ class Worker : public utils::BasicWorker
     }
 
     void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* ){}
-
-    void remove_capability(const std::string& cpb_name)
-    {
-      sdpa::capability_t cpb(cpb_name, _name);
-      sdpa::events::CapabilitiesLostEvent::Ptr
-        ptrCpbLostEvt( new sdpa::events::CapabilitiesLostEvent(_name, _master_name, cpb) );
-      _network_strategy->perform (ptrCpbLostEvt);
-   }
 };
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
@@ -160,35 +152,6 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   while (!has_two_childs_that_are_pending
-          (client.discoverJobStates (get_next_disc_id(), job_id))
-        )
-  {} // do nothing, discover again
-}
-
-BOOST_AUTO_TEST_CASE (discover_after_losing_capabilities)
-{
-  const std::string workflow
-    (utils::require_and_read_file ("coallocation_test2.pnet"));
-
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-
-  const utils::agent agent
-     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
-
-  Worker worker_0( "worker_0", agent._.name(), "A");
-  Worker worker_1( "worker_1", agent._.name(), "B");
-  const Worker worker_2( "worker_2", agent._.name(), "A");
-  const Worker worker_3( "worker_3", agent._.name(), "B");
-  const Worker worker_4( "worker_4", agent._.name(), "B");
-
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (workflow));
-
-  worker_0.remove_capability("A");
-  worker_1.remove_capability("B");
-
-  while (!has_children_and_all_children_are_pending
           (client.discoverJobStates (get_next_disc_id(), job_id))
         )
   {} // do nothing, discover again
