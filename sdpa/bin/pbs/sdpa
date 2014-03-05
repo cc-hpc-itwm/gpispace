@@ -812,12 +812,6 @@ EOF
                       return 0
 }
 
-function start_log ()
-{
-    echo "  - fhglog (disabled)" >&2
-    return 0
-}
-
 function is_proc_alive ()
 {
     local name="$1" ; shift
