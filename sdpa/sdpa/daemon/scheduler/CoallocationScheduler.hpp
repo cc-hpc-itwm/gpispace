@@ -46,7 +46,6 @@ namespace sdpa
     private:
       GenericDaemon* ptr_comm_handler_;
 
-      SynchronizedQueue<std::list<sdpa::job_id_t> > pending_jobs_queue_;
       WorkerManager _worker_manager;
       SynchronizedQueue<std::list<sdpa::job_id_t> > _common_queue;
 
