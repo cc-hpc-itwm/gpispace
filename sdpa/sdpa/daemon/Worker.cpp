@@ -7,9 +7,10 @@
 
 #include <boost/foreach.hpp>
 
-using namespace sdpa;
-using namespace sdpa::daemon;
-
+namespace sdpa
+{
+  namespace daemon
+  {
 Worker::Worker(	const worker_id_t& name,
 				const boost::optional<unsigned int>& cap
               , const capabilities_set_t& capabilities
@@ -154,4 +155,6 @@ sdpa::job_id_list_t Worker::getJobListAndCleanQueues()
   acknowledged_.clear();
 
   return listAssignedJobs;
+}
+  }
 }
