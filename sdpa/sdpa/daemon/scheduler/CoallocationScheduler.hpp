@@ -4,6 +4,7 @@
 #define SDPA_COALLOCSCHED_HPP 1
 
 #include <sdpa/daemon/Job.hpp>
+#include <sdpa/daemon/SynchronizedQueue.hpp>
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/exceptions.hpp>
