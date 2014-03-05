@@ -1393,21 +1393,19 @@ function stop_gpi ()
 
 function start ()
 {
-    local parts=$1
-    if [ -z "$parts" ] ; then
-        parts="kvs gpi orch agg drts"
-    else
-        shift
+    local part=$1; shift
+    if [ -z "$part" ] ; then
+        echo >&2 "start: requires a component to start: kvs|orch"
+        return 1
     fi
 
-    local p
-    local rc=0
-    for p in $parts ; do
-        if ! start_$p $@ ; then
-            log "Start of $p failed!"
-            rc=$(( rc + 1 ))
-        fi
-    done
+    start_${part} $@
+    rc=$?
+
+    if [ $rc -ne 0 ] ; then
+        log "Start of $part failed!"
+    fi
+
     return $rc
 }
 
