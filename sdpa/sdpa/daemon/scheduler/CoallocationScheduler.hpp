@@ -47,7 +47,7 @@ namespace sdpa
 
       WorkerManager _worker_manager;
 
-      class SynchronizedQueue
+      class locked_job_id_list
       {
       public:
         inline boost::optional<job_id_t> pop()
