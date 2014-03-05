@@ -153,7 +153,7 @@ parse_capability()
 #
 trap 'on_ctrlC' SIGINT
 
-nodefile="$PBS_NODEFILE"
+nodefile=
 state_dir="$HOME/.sdpa/state"
 config_file="$HOME/.sdpa/configs/sdpa.rc"
 gpi_enabled=true
