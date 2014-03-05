@@ -21,7 +21,6 @@
 
 #include <boost/thread.hpp>
 
-#include <iostream>
 #include <stdexcept>
 
 namespace sdpa { namespace daemon {
