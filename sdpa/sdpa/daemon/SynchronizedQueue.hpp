@@ -18,7 +18,7 @@ namespace sdpa
 
       inline value_type pop()
       {
-        boost::mutex::scoped_lock lock (mtx_);
+        boost::mutex::scoped_lock const _ (mtx_);
         if (container_.empty())
         {
           throw std::runtime_error ("queue is empty");
@@ -31,27 +31,27 @@ namespace sdpa
 
       inline void push (value_type item)
       {
-        boost::mutex::scoped_lock lock (mtx_);
+        boost::mutex::scoped_lock const _ (mtx_);
         container_.push_back (item);
         not_empty_.notify_one();
       }
 
       inline void push_front (value_type item)
       {
-        boost::mutex::scoped_lock lock (mtx_);
+        boost::mutex::scoped_lock const _ (mtx_);
         container_.push_front (item);
         not_empty_.notify_one();
       }
 
       inline bool empty() const
       {
-        boost::mutex::scoped_lock lock (mtx_);
+        boost::mutex::scoped_lock const _ (mtx_);
         return container_.empty();
       }
 
       inline size_t erase (const value_type& item)
       {
-        boost::mutex::scoped_lock lock (mtx_);
+        boost::mutex::scoped_lock const _ (mtx_);
         size_t count (0);
         typename Container::iterator iter (container_.begin());
         while (iter != container_.end())
