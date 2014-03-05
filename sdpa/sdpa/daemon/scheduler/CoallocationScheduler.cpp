@@ -139,9 +139,9 @@ namespace sdpa
 
       if (it != allocation_table_.end())
       {
-        Reservation* pReservation (it->second);
-        worker_id_list_t listWorkers (pReservation->getWorkerList());
-        BOOST_FOREACH (sdpa::worker_id_t const& workerId, listWorkers)
+        BOOST_FOREACH ( sdpa::worker_id_t const& workerId
+                      , it->second->getWorkerList()
+                      )
         {
           worker_manager().findWorker (workerId)->free();
         }
