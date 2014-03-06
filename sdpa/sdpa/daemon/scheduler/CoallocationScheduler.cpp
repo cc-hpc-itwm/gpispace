@@ -36,6 +36,45 @@ namespace sdpa
       _jobs_to_schedule.push (jobId);
     }
 
+    namespace
+    {
+      std::set<worker_id_t> find_assignment_for_job
+        ( worker_id_list_t available_workers
+        , job_requirements_t requirements
+        , boost::function<boost::optional<worker_id_t>
+                            (job_requirements_t, worker_id_list_t)
+                         > best_match
+        )
+      {
+        std::size_t remaining_workers_needed (requirements.numWorkers());
+        std::set<worker_id_t> workers;
+
+        while (remaining_workers_needed --> 0)
+        {
+          const boost::optional<worker_id_t> matching_worker
+            ( available_workers.empty() ? boost::none
+            : requirements.empty() ? available_workers.front()
+            : best_match (requirements, available_workers)
+            );
+
+          if (!matching_worker)
+          {
+            return std::set<worker_id_t>();
+          }
+
+          available_workers.erase
+            ( std::find ( available_workers.begin(), available_workers.end()
+                        , *matching_worker
+                        )
+            );
+
+          workers.insert (*matching_worker);
+        }
+
+        return workers;
+      }
+    }
+
     void CoallocationScheduler::assignJobsToWorkers()
     {
       sdpa::worker_id_list_t listAvailWorkers
@@ -55,32 +94,43 @@ namespace sdpa
         const job_requirements_t job_reqs
           (ptr_comm_handler_->getJobRequirements (jobId));
 
-        const boost::optional<sdpa::worker_id_t> matchingWorkerId
-          ( listAvailWorkers.empty() ? boost::none
-          : job_reqs.empty() ? listAvailWorkers.front()
-          : worker_manager().getBestMatchingWorker (job_reqs, listAvailWorkers)
-         );
+        const std::set<worker_id_t> matching_workers
+          ( find_assignment_for_job
+            ( listAvailWorkers
+            , job_reqs
+            , boost::bind
+              (&WorkerManager::getBestMatchingWorker, &worker_manager(), _1, _2)
+            )
+          );
 
-        if (matchingWorkerId)
+        if (!matching_workers.empty())
         {
-          listAvailWorkers.erase ( std::find ( listAvailWorkers.begin()
-                                             , listAvailWorkers.end()
-                                             , *matchingWorkerId
-                                             )
-                                 );
+          BOOST_FOREACH (worker_id_t const& worker, matching_workers)
+          {
+            listAvailWorkers.erase
+              ( std::find
+                (listAvailWorkers.begin(), listAvailWorkers.end(), worker)
+              );
+          }
 
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
           {
-            worker_manager().findWorker (*matchingWorkerId)->reserve();
+            BOOST_FOREACH (worker_id_t const& worker, matching_workers)
+            {
+              worker_manager().findWorker (worker)->reserve();
+            }
 
-            allocation_table_t::iterator it (allocation_table_.find(jobId));
+            allocation_table_t::iterator it (allocation_table_.find (jobId));
             if (it == allocation_table_.end())
             {
               Reservation* pReservation (new Reservation (job_reqs.numWorkers()));
               allocation_table_.insert (std::make_pair (jobId, pReservation));
             }
 
-            allocation_table_[jobId]->addWorker (*matchingWorkerId);
+            BOOST_FOREACH (worker_id_t const& worker, matching_workers)
+            {
+              allocation_table_[jobId]->addWorker (worker);
+            }
           }
 
           Reservation* pReservation (allocation_table_[jobId]);

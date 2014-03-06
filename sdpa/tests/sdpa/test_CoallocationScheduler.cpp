@@ -374,9 +374,9 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.enqueueJob ("job_2");
 
 
-  _agent.expect_serveJob_call ("job_0", worker_list ("6", "3", "9", "0"));
-  _agent.expect_serveJob_call ("job_1", worker_list ("10", "7", "4", "1"));
-  _agent.expect_serveJob_call ("job_2", worker_list ("8", "11", "2", "5"));
+  _agent.expect_serveJob_call ("job_0", worker_list ("0", "3", "6", "9"));
+  _agent.expect_serveJob_call ("job_1", worker_list ("1", "10", "4", "7"));
+  _agent.expect_serveJob_call ("job_2", worker_list ("11", "2", "5", "8"));
 
   _scheduler.assignJobsToWorkers();
 
@@ -390,7 +390,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
   _scheduler.releaseReservation("job_0");
 
-  _agent.expect_serveJob_call ("job_3", worker_list ("6", "3"));
+  _agent.expect_serveJob_call ("job_3", worker_list ("0", "3"));
 
   _scheduler.assignJobsToWorkers();
 }
