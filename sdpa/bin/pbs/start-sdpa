@@ -332,7 +332,7 @@ info "using nodefile: $nodefile"
 
 info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
 
-dry_run rexec $master /usr/bin/env SDPA_APP_PATH="${app_path}" "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
+dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
@@ -528,6 +528,10 @@ function start_workers_for_capability
         fi
         if [ $socket -ne -1 ] ; then
             argv+=(-N "$socket")
+        fi
+        if [ -n "${app_path}" ]
+        then
+            argv+=(-l "${app_path}")
         fi
 
         dry_run rexec $host "$script_start_drts" "${argv[@]}" &
