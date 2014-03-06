@@ -9,6 +9,15 @@
 #include <boost/test/unit_test.hpp>
 #include <sdpa/types.hpp>
 
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+
+#include <fhg/util/random_string.hpp>
+
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
+#include <ctime>
+
 namespace
 {
   bool has_state_pending (sdpa::discovery_info_t const& disc_res)
@@ -35,18 +44,48 @@ namespace
     return disc_res.children().size() == 2 && all_childs_are_pending (disc_res);
   }
 
-  bool has_children_and_all_children_are_pending
-    (sdpa::discovery_info_t const& disc_res)
+  std::list<sdpa::status::code> get_leaf_job_info(const sdpa::discovery_info_t& disc_res)
   {
-    return !disc_res.children().empty() && all_childs_are_pending (disc_res);
+    std::list<sdpa::status::code> list_info;
+    if(disc_res.children().empty())
+    {
+        list_info.push_back(*disc_res.state());
+    }
+    else
+    {
+      BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children() )
+      {
+        std::list<sdpa::status::code> list_info_child(get_leaf_job_info(child_info));
+        list_info.insert(list_info.end(), list_info_child.begin(), list_info_child.end());
+      }
+    }
+
+    return list_info;
+  }
+
+  unsigned int max_depth(const sdpa::discovery_info_t& disc_res)
+  {
+    unsigned int maxd = 1;
+    BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children() )
+    {
+      unsigned int depth(max_depth(child_info)+1);
+      if(maxd<depth) maxd = depth;
+    }
+
+    return maxd;
   }
 }
 
 class Worker : public utils::BasicWorker
 {
   public:
-    Worker (const std::string& name, const std::string& master_name, const std::string cpb_name)
+    Worker( const std::string& name
+          , const std::string& master_name
+          , const std::string& cpb_name
+          , boost::optional<sdpa::status::code> reply_status = boost::none)
       :  utils::BasicWorker (name, master_name, cpb_name)
+      , _reply_status(reply_status)
+      , _logger (fhg::log::Logger::get (name))
     {}
 
     void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
@@ -56,18 +95,39 @@ class Worker : public utils::BasicWorker
                                                           , pEvt->from()
                                                           , *pEvt->job_id()));
       _network_strategy->perform (pSubmitJobAckEvt);
-
-      sdpa::events::JobFinishedEvent::Ptr
-      pJobFinishedEvt(new sdpa::events::JobFinishedEvent( _name
-                                                        , pEvt->from()
-                                                        , *pEvt->job_id()
-                                                        , pEvt->description() ));
-
-      _network_strategy->perform (pJobFinishedEvt);
+      _cond_got_job.notify_one();
     }
 
-    void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* ){}
+    void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
+    {
+      sdpa::discovery_info_t disc_res( pEvt->job_id()
+                                     , _reply_status
+                                     , sdpa::discovery_info_set_t());
+
+
+      sdpa::events::DiscoverJobStatesReplyEvent::Ptr
+        pDiscRplEvt( new sdpa::events::DiscoverJobStatesReplyEvent ( _name
+                                                                   , pEvt->from()
+                                                                   , pEvt->job_id()
+                                                                   , pEvt->discover_id()
+                                                                   , disc_res ));
+
+      _network_strategy->perform (pDiscRplEvt);
+    }
+
+    void wait_for_jobs()
+    {
+      boost::unique_lock<boost::mutex> lock(_mtx_got_job);
+      _cond_got_job.wait(lock);
+    }
+
+  private:
+    boost::optional<sdpa::status::code> _reply_status;
+    fhg::log::Logger::ptr_t _logger;
+    boost::mutex _mtx_got_job;
+    boost::condition_variable_any _cond_got_job;
 };
+
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
@@ -79,6 +139,84 @@ namespace
 
     return (boost::format ("discover_%1%") % i++).str();
   }
+}
+
+BOOST_AUTO_TEST_CASE (discover_worker_job_status)
+{
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+
+  const utils::agent agent
+     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+
+  const std::string workflow
+         (utils::require_and_read_file ("dummy_workflow.pnet"));
+
+  srand (time(NULL));
+  sdpa::status::code reply_status(static_cast<sdpa::status::code>(rand()%6));
+
+  Worker worker("worker_0", agent._.name(), "", reply_status);
+
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
+  sdpa::job_id_t const job_id (client.submitJob (workflow));
+
+  worker.wait_for_jobs();
+
+  sdpa::discovery_info_t disc_res(client.discoverJobStates (get_next_disc_id(), job_id));
+  BOOST_REQUIRE_EQUAL(max_depth(disc_res), 2);
+
+  std::list<sdpa::status::code> list_leaf_job_status(get_leaf_job_info(disc_res));
+  BOOST_REQUIRE_EQUAL(list_leaf_job_status.size(), 1);
+
+  BOOST_FOREACH(const sdpa::status::code& leaf_job_status, list_leaf_job_status)
+  {
+    BOOST_REQUIRE_EQUAL(leaf_job_status, reply_status);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
+{
+  srand (time(NULL));
+  const std::string workflow
+     (utils::require_and_read_file ("dummy_workflow.pnet"));
+
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+
+  const unsigned int n_agents_in_chain(rand()%5+2);
+  utils::agent* arr_ptr_agents[n_agents_in_chain];
+
+  arr_ptr_agents[0]= new utils::agent("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+
+  for(unsigned int k=1;k<n_agents_in_chain;k++) {
+     std::string agent_name ((boost::format ("agent_%1%") % k).str());
+     arr_ptr_agents[k] = new utils::agent(agent_name, "127.0.0.1", kvs_host(), kvs_port(), *arr_ptr_agents[k-1]);
+  }
+
+  const sdpa::status::code reply_status(static_cast<sdpa::status::code>(rand()%6));
+
+  Worker* pWorker = new Worker("worker_0", arr_ptr_agents[n_agents_in_chain-1]->_.name(), "", reply_status);
+
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
+  sdpa::job_id_t const job_id (client.submitJob (workflow));
+
+  pWorker->wait_for_jobs();
+
+  sdpa::discovery_info_t disc_res(client.discoverJobStates (get_next_disc_id(), job_id));
+  BOOST_REQUIRE_EQUAL(max_depth(disc_res), n_agents_in_chain+1);
+
+  std::list<sdpa::status::code> list_leaf_job_states(get_leaf_job_info(disc_res));
+  BOOST_REQUIRE_EQUAL(list_leaf_job_states.size(), 1);
+
+  BOOST_FOREACH(const sdpa::status::code& leaf_job_status, list_leaf_job_states)
+  {
+    BOOST_REQUIRE_EQUAL(leaf_job_status, reply_status);
+  }
+
+  delete pWorker;
+
+  for(int k=n_agents_in_chain-1;k>0;k--)
+    delete arr_ptr_agents[k];
 }
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
@@ -103,10 +241,14 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  while (!has_state_pending
-          (client.discoverJobStates (get_next_disc_id(), job_id))
-        )
-  {}; // do nothing, discover again
+  std::list<sdpa::status::code>
+    list_leaf_job_status(get_leaf_job_info(client.discoverJobStates (get_next_disc_id(), job_id)));
+
+  BOOST_REQUIRE_EQUAL(list_leaf_job_status.size(), 1);
+  BOOST_FOREACH(const sdpa::status::code& leaf_job_status, list_leaf_job_status)
+  {
+    BOOST_REQUIRE_EQUAL(leaf_job_status, sdpa::status::PENDING);
+  }
 }
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
@@ -121,10 +263,19 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  while (!all_childs_are_pending
-          (client.discoverJobStates (get_next_disc_id(), job_id))
+  sdpa::discovery_info_t disc_res;
+  while (max_depth
+          (disc_res=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
         )
   {} // do nothing, discover again
+
+  std::list<sdpa::status::code> list_leaf_job_status(get_leaf_job_info(disc_res));
+
+  BOOST_REQUIRE_EQUAL(list_leaf_job_status.size(), 1);
+  BOOST_FOREACH(const sdpa::status::code& leaf_job_status, list_leaf_job_status)
+  {
+    BOOST_REQUIRE_EQUAL(leaf_job_status, sdpa::status::PENDING);
+  }
 }
 
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
@@ -176,7 +327,7 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
   delete pWorker_0;
   delete pWorker_1;
 
-  while (!has_children_and_all_children_are_pending
+  while (!has_two_childs_that_are_pending
           (client.discoverJobStates (get_next_disc_id(), job_id))
         )
   {} // do nothing, discover again
