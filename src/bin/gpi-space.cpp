@@ -156,7 +156,6 @@ int main (int ac, char *av[])
   unsigned int gpi_mtu = 0;
   int gpi_net = -1;
   int gpi_np = -1;
-  int gpi_numa_socket = 0;
   unsigned int gpi_timeout = 120;
 
   std::vector<std::string> mem_urls;
