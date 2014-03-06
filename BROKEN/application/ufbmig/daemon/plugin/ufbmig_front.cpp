@@ -7,7 +7,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/event.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/threadname.hpp>
 #include <fhg/error_codes.hpp>
@@ -97,7 +97,6 @@ public:
         );
 
     m_chunk_size = fhg_kernel()->get<std::size_t>("chunk_size", "4194304");
-    DMLOG(TRACE, "using chunk size for GUI messages of: " << m_chunk_size);
 
     m_current_transfer = transfer::request_ptr_t(new transfer::request_t());
     m_current_transfer->set_state(transfer::CANCELED);
@@ -578,9 +577,6 @@ private:
   {
     int ec = 0;
 
-    DMLOG(TRACE, "got command: " << cmd);
-    DMLOG(TRACE, "custom size: " << payload.size());
-
     switch (cmd)
     {
     case client::command::INITIALIZE:
@@ -712,7 +708,6 @@ private:
     }
     else
     {
-      DMLOG(TRACE, "meta data opened: fd := " << fd);
     }
 
     uint64_t sz;
@@ -734,8 +729,6 @@ private:
       m_backend->close(fd);
       return -EIO;
     }
-
-    DMLOG(TRACE, "transfering meta data with size " << sz);
 
     isim::msg_t *msg = m_isim->msg_new (server::command::MIGRATE_META_DATA, sz);
     size_t num_read;

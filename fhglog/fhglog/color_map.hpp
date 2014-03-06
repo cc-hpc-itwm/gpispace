@@ -39,7 +39,6 @@ namespace fhg
 
       std::string const & colorize (const Level & lvl) const;
       std::string const & operator[](const Level & lvl) const;
-      std::string & operator[](const Level & lvl);
 
       static std::string const & reset_escape_code ();
       static std::string color_escape_code ( ColorEnum fg

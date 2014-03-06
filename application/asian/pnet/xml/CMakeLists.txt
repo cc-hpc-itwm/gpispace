@@ -11,5 +11,4 @@ pnet_compile(asian wrapper.xml
            -O3
   BUILD
   DEPENDS process
-  COMPONENT applications
 )

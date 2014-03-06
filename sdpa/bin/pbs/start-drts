@@ -25,7 +25,7 @@ state_dir="$HOME/.sdpa/state"
 config_file="$HOME/.sdpa/configs/sdpa.rc"
 logdir=
 shm_size=
-numa_socket=-1
+numa_socket=
 
 function usage ()
 {
@@ -202,7 +202,10 @@ if [ x"$identity" = x"0" ] ; then
         opts="$opts -F $config_file"
         opts="$opts -n $name_prefix"
         opts="$opts -M $shm_size"
-        opts="$opts -N $numa_socket"
+        if [ -n "$numa_socket" ]
+        then
+            opts="$opts -N $numa_socket"
+        fi
 
         for cap in ${capabilities//,/ } ; do
             opts="$opts -C $cap"
@@ -298,7 +301,10 @@ cfg="$cfg -s plugin.drts.max_reconnect_attempts=$(fhgcfg -f "${config_file}" -g 
 cfg="$cfg -s plugin.drts.capabilities=${capabilities}"
 cfg="$cfg -s plugin.drts.gui_url=$gui"
 cfg="$cfg -s plugin.drts.library_path=${lib_path}"
-cfg="$cfg -s plugin.drts.numa_socket=$numa_socket"
+if [ -n "$numa_socket" ]
+then
+    cfg="$cfg -s plugin.drts.socket=$numa_socket"
+fi
 
 # config values (gpi plugin)
 if [ -z "$gpi_socket" ] ; then

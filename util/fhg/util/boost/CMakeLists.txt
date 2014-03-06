@@ -9,7 +9,3 @@ set (hdrs
 
 set (srcs
 )
-
-install(FILES ${hdrs}
-  DESTINATION include/fhg/util/boost
-  COMPONENT headers)

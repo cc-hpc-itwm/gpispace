@@ -306,6 +306,11 @@ namespace fhg
         log_follower->start (refresh_rate);
       }
 
+      void log_widget::clearContents ()
+      {
+        setRowCount (0);
+      }
+
       // ------------------------------------------------------------------------
 
       namespace

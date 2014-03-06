@@ -1,6 +1,6 @@
 #pragma once
 
-#include <jpn/Types.h>
+#include <pnetv/jpn/Types.h>
 
 namespace jpna {
 

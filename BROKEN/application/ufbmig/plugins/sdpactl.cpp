@@ -8,7 +8,7 @@
 #include <errno.h>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 
 struct child_arg_t
 {

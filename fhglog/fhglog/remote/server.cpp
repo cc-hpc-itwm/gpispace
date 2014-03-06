@@ -1,4 +1,4 @@
-#include "server.hpp"
+#include <fhglog/remote/server.hpp>
 
 #include <fhglog/fhglog.hpp>
 

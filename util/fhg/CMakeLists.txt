@@ -26,19 +26,9 @@ endif()
 
 add_library (fhg-revision ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
 
-install (FILES revision.hpp
-               assert.hpp
-               assert_helper.hpp
-               assertion_failed.hpp
-               error_codes.hpp
-  DESTINATION include/fhg
-  COMPONENT headers
-  )
-
 install (FILES
   util/parse/position.hpp
   util/parse/error.hpp
   util/parse/require.hpp
   DESTINATION include/fhg/util/parse
-  COMPONENT sdk
 )

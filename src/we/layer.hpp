@@ -33,7 +33,7 @@ namespace we
               // reply to submit on success -> top level
             , boost::function<void (id_type, type::activity_t)> rts_finished
               // reply to submit on failure (of child) -> top level
-            , boost::function<void (id_type, int errorcode, std::string reason)> rts_failed
+            , boost::function<void (id_type, std::string reason)> rts_failed
               // reply to cancel (parent) -> top level
             , boost::function<void (id_type)> rts_canceled
               // reply to discover (parent) -> child jobs
@@ -55,29 +55,31 @@ namespace we
       void finished (id_type, type::activity_t);
 
       // reply to _rts_submit -> childs only
-      void failed (id_type, int error_code, std::string reason);
+      void failed (id_type, std::string reason);
 
       // reply to _rts_cancel (after top level canceled/failure) -> childs only
+      // shall not be called from within rts_cancel!
       void canceled (id_type);
 
       // initial from exec_layer -> top level, unique discover_id
       void discover (id_type discover_id, id_type);
 
       // reply to _rts_discover (after top level discovered/failure) -> childs only
+      // shall not be called from within rts_discover!
       void discovered (id_type discover_id, sdpa::discovery_info_t);
 
     private:
       boost::function<void (id_type, type::activity_t)> _rts_submit;
       boost::function<void (id_type)> _rts_cancel;
       boost::function<void (id_type, type::activity_t)> _rts_finished;
-      boost::function<void (id_type, int, std::string)> _rts_failed;
+      boost::function<void (id_type, std::string)> _rts_failed;
       boost::function<void (id_type)> _rts_canceled;
       boost::function<void (id_type, id_type)> _rts_discover;
       boost::function<void (id_type, sdpa::discovery_info_t)> _rts_discovered;
       boost::function<id_type()> _rts_id_generator;
 
       void rts_finished_and_forget (id_type, type::activity_t);
-      void rts_failed_and_forget (id_type, int ec, std::string);
+      void rts_failed_and_forget (id_type, std::string);
       void rts_canceled_and_forget (id_type);
 
 
@@ -143,11 +145,10 @@ namespace we
 
       void failed_delayed ( activity_data_type& parent_activity
                           , id_type id
-                          , int error_code
                           , std::string reason
                           );
+      void discover_delayed (activity_data_type&, id_type discover_id);
 
-      void request_cancel (id_type, boost::function<void()> after);
       void cancel_child_jobs (activity_data_type, boost::function<void()> after);
 
       boost::unordered_map<id_type, boost::function<void()> >

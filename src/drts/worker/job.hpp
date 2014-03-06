@@ -82,15 +82,6 @@ namespace drts
       return *this;
     }
 
-    int result_code () const {
-      lock_type lck(m_mutex); return m_result_code;
-    }
-
-    Job& set_result_code (const int rc) {
-      lock_type lck(m_mutex); m_result_code = rc;
-      return *this;
-    }
-
     std::string const & message() const {
       lock_type lck(m_mutex); return m_message;
     }
@@ -125,7 +116,6 @@ namespace drts
 
       if (version > 1)
       {
-        ar & BOOST_SERIALIZATION_NVP(m_result_code);
         ar & BOOST_SERIALIZATION_NVP(m_message);
       }
 
@@ -143,7 +133,6 @@ namespace drts
     std::string m_owner;
     state_t     m_state;
     std::string m_result;
-    int         m_result_code;
     std::string m_message;
     std::list<std::string> m_worker_list;
   };

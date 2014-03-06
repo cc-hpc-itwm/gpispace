@@ -1,1 +1,0 @@
-configure_file(in.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/in.txt COPYONLY)

@@ -2,6 +2,7 @@
 
 #include <fhg/util/signal_handler_manager.hpp>
 
+#include <fhg/syscall.hpp>
 #include <fhg/util/backtracing_exception.hpp>
 
 #include <fhglog/LogMacros.hpp>
@@ -42,12 +43,12 @@ namespace fhg
     signal_handler_manager::~signal_handler_manager()
     {
       boost::mutex::scoped_lock const _ (GLOBAL_manager_mutex);
-      assert (GLOBAL_manager);
+      assert (GLOBAL_manager == this);
       GLOBAL_manager = NULL;
 
       BOOST_FOREACH (int sig_num, _handlers | boost::adaptors::map_keys)
       {
-        signal (sig_num, SIG_DFL);
+        fhg::syscall::signal (sig_num, SIG_DFL);
       }
     }
 
@@ -59,13 +60,11 @@ namespace fhg
       if (_handlers.find (sig_num) == _handlers.end())
       {
         struct sigaction sigact;
+        memset (&sigact, 0, sizeof (sigact));
         sigact.sa_sigaction = signal_handler;
         sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
-        if (sigaction (sig_num, &sigact, NULL) < 0)
-        {
-          throw std::runtime_error ("unable to set up signal handler for " + std::string (strsignal (sig_num)));
-        }
+        fhg::syscall::sigaction (sig_num, &sigact, NULL);
       }
 
       _handlers[sig_num].push_back (fun);

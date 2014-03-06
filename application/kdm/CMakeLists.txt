@@ -7,7 +7,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src
 		    ${CMAKE_CURRENT_SOURCE_DIR}/src/filehandler
 		    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
                     ${CMAKE_SOURCE_DIR}/share
-                    ${CMAKE_SOURCE_DIR}/gspc
                     )
 
 set(SRC ./src/main.cpp
@@ -189,14 +188,11 @@ set_target_properties(filter_trace_mod PROPERTIES OUTPUT_NAME filter_trace)
 add_executable(standalone_test ${STANDALONE_SRCS})
 target_link_libraries(standalone_test pthread)
 
-set (hdrs src/do_load.hpp src/determine_size.hpp src/do_write.hpp)
-
-install(FILES ${hdrs}
+install(FILES src/do_load.hpp src/determine_size.hpp src/do_write.hpp
   DESTINATION include/seis
-  COMPONENT sdk
   )
 
 install(TARGETS determine_size do_load do_write
   LIBRARY
   DESTINATION libexec/sdpa
-  COMPONENT modules)
+)

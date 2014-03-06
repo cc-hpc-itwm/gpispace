@@ -5,5 +5,4 @@ set (files
 
 install (FILES ${files}
   DESTINATION ${PNETC_EXAMPLES_DIR}/grid/gen_grid_points
-  COMPONENT examples
 )

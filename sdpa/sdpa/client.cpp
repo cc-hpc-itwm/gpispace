@@ -35,10 +35,20 @@ namespace sdpa
       }
     }
 
-    Client::Client (std::string orchestrator)
+    Client::Client ( std::string orchestrator
+                   , std::string kvs_host, std::string kvs_port
+                   )
       : _name ("gspcc-" + boost::uuids::to_string (boost::uuids::random_generator()()))
       , orchestrator_ (orchestrator)
-      , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"), fhg::com::kvs::global_kvs())
+      , _kvs_client
+        ( new fhg::com::kvs::client::kvsc ( kvs_host
+                                          , kvs_port
+                                          , true
+                                          , boost::posix_time::seconds(120)
+                                          , 1
+                                          )
+        )
+      , m_peer (_name, fhg::com::host_t ("*"), fhg::com::port_t ("0"), _kvs_client)
       , _peer_thread (&fhg::com::peer_t::run, &m_peer)
       , _stopping (false)
     {
@@ -89,8 +99,8 @@ namespace sdpa
           sdpa::events::ErrorEvent::Ptr
             error(new sdpa::events::ErrorEvent ( m_peer.resolve(addr, "*unknown*")
                                                , m_peer.name()
-                                               , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                               , boost::lexical_cast<std::string>(ec)
+                                               , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+                                               , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
                                                )
                  );
           m_incoming_events.put (error);
@@ -127,7 +137,7 @@ namespace sdpa
     template<typename Expected, typename Sent>
       Expected Client::send_and_wait_for_reply (Sent event)
     {
-      m_incoming_events.clear();
+      m_incoming_events.INDICATES_A_RACE_clear();
 
       fhg::com::message_t msg (message_for_event (&event));
 
@@ -167,7 +177,6 @@ namespace sdpa
         {
           throw std::runtime_error ("got status change for different job");
         }
-        job_info.error_code = evt->error_code();
         job_info.error_message = evt->error_message();
         return sdpa::status::FAILED;
       }
@@ -228,7 +237,6 @@ namespace sdpa
         (sdpa::events::QueryJobStatusEvent (_name, orchestrator_, jid))
         );
 
-      info.error_code = reply.error_code();
       info.error_message = reply.error_message();
 
       return reply.status();

@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include "level.hpp"
+#include <fhglog/level.hpp>
 
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/from_string.hpp>
@@ -32,7 +32,6 @@ namespace fhg
 
       static std::string const map[] =
         { "TRACE"
-        , "DEBUG"
         , "INFO"
         , "WARN"
         , "ERROR"
@@ -49,7 +48,7 @@ namespace fhg
         namespace parse = fhg::util::parse;
 
         std::string const any
-          ("one of 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
+          ("one of 'TRACE', 'INFO', 'WARN', 'ERROR' or 'FATAL'");
 
         if (pos.end())
         {
@@ -59,7 +58,6 @@ namespace fhg
         switch (*pos)
         {
         case 'T': ++pos; parse::require::require (pos, "RACE"); return TRACE;
-        case 'D': ++pos; parse::require::require (pos, "EBUG"); return DEBUG;
         case 'I': ++pos; parse::require::require (pos, "NFO"); return INFO;
         case 'W': ++pos; parse::require::require (pos, "ARN"); return WARN;
         case 'E': ++pos; parse::require::require (pos, "RROR"); return ERROR;

@@ -1,4 +1,4 @@
-#include "job.hpp"
+#include <drts/worker/job.hpp>
 
 namespace drts
 {
@@ -11,7 +11,6 @@ namespace drts
     , m_owner (owner.value)
     , m_state (Job::PENDING)
     , m_result ()
-    , m_result_code (0)
     , m_message ("")
   {}
 

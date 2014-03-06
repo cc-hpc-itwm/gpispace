@@ -24,7 +24,7 @@ namespace fhg
                      . resolve
                        ( udp::resolver::query
                          ( udp::v4()
-                         , fhg::util::split_string (location, ":").first.c_str()
+                         , fhg::util::split_string (location, ':').first.c_str()
                          , "0"
                          )
                        )
@@ -32,7 +32,7 @@ namespace fhg
         , socket_ (new udp::socket (io_service_, udp::v4()))
       {
         logserver_.port ( boost::lexical_cast<unsigned long>
-                          (fhg::util::split_string (location, ":").second)
+                          (fhg::util::split_string (location, ':').second)
                         );
       }
 

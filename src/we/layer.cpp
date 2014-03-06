@@ -12,7 +12,7 @@ namespace we
         ( boost::function<void (id_type, type::activity_t)> rts_submit
         , boost::function<void (id_type)> rts_cancel
         , boost::function<void (id_type, type::activity_t)> rts_finished
-        , boost::function<void (id_type, int, std::string)> rts_failed
+        , boost::function<void (id_type, std::string)> rts_failed
         , boost::function<void (id_type)> rts_canceled
         , boost::function<void (id_type, id_type)> rts_discover
         , boost::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
@@ -183,31 +183,28 @@ namespace we
 
     void layer::cancel (id_type id)
     {
-      request_cancel
-        (id, boost::bind (&layer::rts_canceled_and_forget, this, id));
+      const boost::function<void()> after
+        (boost::bind (&layer::rts_canceled_and_forget, this, id));
+      _nets_to_extract_from.remove_and_apply
+        (id, boost::bind (&layer::cancel_child_jobs, this, _1, after));
     }
 
-    void layer::failed (id_type id, int error_code, std::string reason)
+    void layer::failed (id_type id, std::string reason)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (id));
       assert (parent);
 
       _nets_to_extract_from.remove_and_apply
-        ( *parent
-        , boost::bind ( &layer::failed_delayed, this
-                      , _1, id, error_code, reason
-                      )
-        );
+        (*parent, boost::bind (&layer::failed_delayed, this, _1, id, reason));
     }
     void layer::failed_delayed ( activity_data_type& parent_activity
                                , id_type id
-                               , int error_code
                                , std::string reason
                                )
     {
       const boost::function<void()> after
         ( boost::bind ( &layer::rts_failed_and_forget
-                      , this, parent_activity._id, error_code, reason
+                      , this, parent_activity._id, reason
                       )
         );
 
@@ -222,12 +219,6 @@ namespace we
         _running_jobs.apply
           (parent_activity._id, boost::bind (_rts_cancel, _1));
       }
-    }
-
-    void layer::request_cancel (id_type id, boost::function<void()> after)
-    {
-      _nets_to_extract_from.remove_and_apply
-        (id, boost::bind (&layer::cancel_child_jobs, this, _1, after));
     }
 
     void layer::cancel_child_jobs
@@ -279,6 +270,14 @@ namespace we
 
     void layer::discover (id_type discover_id, id_type id)
     {
+      _nets_to_extract_from.apply
+        (id, boost::bind (&layer::discover_delayed, this, _1, discover_id));
+    }
+    void layer::discover_delayed
+      (activity_data_type& activity_data, id_type discover_id)
+    {
+      const id_type id (activity_data._id);
+
       boost::mutex::scoped_lock const _ (_discover_state_mutex);
       assert (_discover_state.find (discover_id) == _discover_state.end());
 
@@ -377,9 +376,9 @@ namespace we
       _rts_finished (id, activity);
       _nets_to_extract_from.forget (id);
     }
-    void layer::rts_failed_and_forget (id_type id, int ec, std::string message)
+    void layer::rts_failed_and_forget (id_type id, std::string message)
     {
-      _rts_failed (id, ec, message);
+      _rts_failed (id, message);
       _nets_to_extract_from.forget (id);
     }
     void layer::rts_canceled_and_forget (id_type id)

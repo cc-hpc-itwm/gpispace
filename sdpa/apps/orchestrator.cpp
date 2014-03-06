@@ -19,16 +19,15 @@
 
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
-using namespace std;
 
 static const int EX_STILL_RUNNING = 4;
 
 int main (int argc, char **argv)
 {
-    string orchName;
-    string orchUrl;
-    string kvsUrl;
-    string pidfile;
+    std::string orchName;
+    std::string orchUrl;
+    std::string kvsUrl;
+    std::string pidfile;
 
     FHGLOG_SETUP();
 
@@ -37,14 +36,13 @@ int main (int argc, char **argv)
        ("help,h", "Display this message")
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
-       ("kvs_url,k",  po::value<string>(), "The kvs daemon's url")
+       ("kvs_url,k",  po::value<std::string>()->required(), "The kvs daemon's url")
        ("pidfile", po::value<std::string>(&pidfile)->default_value(pidfile), "write pid to pidfile")
        ("daemonize", "daemonize after all checks were successful")
        ;
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
-    po::notify(vm);
 
     fhg::log::Logger::ptr_t logger (fhg::log::Logger::get (orchName));
 
@@ -55,29 +53,25 @@ int main (int argc, char **argv)
       return 0;
     }
 
-    if( !vm.count("kvs_url") )
-    {
-      LLOG (ERROR, logger, "The url of the kvs daemon was not specified!");
-      return -1;
-    }
-    else
-    {
-      boost::char_separator<char> sep(":");
-      boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
+    po::notify(vm);
 
-      vector< string > vec;
-      vec.assign(tok.begin(),tok.end());
+  std::vector< std::string > vec;
 
-      if( vec.size() != 2 )
-      {
-        LLOG (ERROR, logger, "Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
-        return -1;
-      }
-      else
-      {
-        fhg::com::kvs::global::get_kvs_info().init( vec[0], vec[1], boost::posix_time::seconds(120), 1);
-      }
+  {
+    boost::char_separator<char> sep(":");
+    boost::tokenizer<boost::char_separator<char> > tok(vm["kvs_url"].as<std::string>(), sep);
+
+    vec.assign(tok.begin(),tok.end());
+
+    if( vec.size() != 2 )
+    {
+      throw std::runtime_error
+        ("Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
     }
+  }
+
+  const std::string kvs_host (vec[0]);
+  const std::string kvs_port (vec[1]);
 
     if (not pidfile.empty())
     {
@@ -98,7 +92,8 @@ int main (int argc, char **argv)
       }
     }
 
-  const sdpa::daemon::Orchestrator orchestrator (orchName, orchUrl);
+  const sdpa::daemon::Orchestrator orchestrator
+    (orchName, orchUrl, kvs_host, kvs_port);
 
 
   fhg::util::thread::event<> stop_requested;

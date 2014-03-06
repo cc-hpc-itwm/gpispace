@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE (formatting_performance)
   for (std::size_t count (0); count < 100000; ++count)
   {
     format ( fhg::log::default_format::LONG()
-           , FHGLOG_MKEVENT_HERE (DEBUG, "hello world!")
+           , FHGLOG_MKEVENT_HERE (TRACE, "hello world!")
            );
   }
 
@@ -39,7 +39,6 @@ BOOST_AUTO_TEST_CASE (short_severity)
     (fhg::log::format ("%s", FHGLOG_MKEVENT_HERE (SEV, "")), SEV_STR)
 
   CHECK (TRACE, "T");
-  CHECK (DEBUG, "D");
   CHECK (INFO, "I");
   CHECK (WARN, "W");
   CHECK (ERROR, "E");
@@ -55,7 +54,6 @@ BOOST_AUTO_TEST_CASE (severity)
     (fhg::log::format ("%S", FHGLOG_MKEVENT_HERE (SEV, "")), SEV_STR)
 
   CHECK (TRACE, "TRACE");
-  CHECK (DEBUG, "DEBUG");
   CHECK (INFO, "INFO");
   CHECK (WARN, "WARN");
   CHECK (ERROR, "ERROR");
@@ -66,7 +64,7 @@ BOOST_AUTO_TEST_CASE (severity)
 
 BOOST_AUTO_TEST_CASE (file)
 {
-  const fhg::log::LogEvent event ( fhg::log::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::TRACE
                                  , "tests/test_formatter.cpp"
                                  , "main", __LINE__, "hello"
                                  );
@@ -75,7 +73,7 @@ BOOST_AUTO_TEST_CASE (file)
 
 BOOST_AUTO_TEST_CASE (path)
 {
-  const fhg::log::LogEvent event ( fhg::log::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::TRACE
                                  , "tests/test_formatter.cpp"
                                  , "main", __LINE__, "hello"
                                  );
@@ -84,7 +82,7 @@ BOOST_AUTO_TEST_CASE (path)
 
 BOOST_AUTO_TEST_CASE (function)
 {
-  const fhg::log::LogEvent event ( fhg::log::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::TRACE
                                  , "tests/test_formatter.cpp"
                                  , "main (int ac, char** av)", __LINE__, "hello"
                                  );
@@ -93,7 +91,7 @@ BOOST_AUTO_TEST_CASE (function)
 
 BOOST_AUTO_TEST_CASE (module)
 {
-  const fhg::log::LogEvent event ( fhg::log::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::TRACE
                                  , "tests/test_formatter.cpp"
                                  , "main", __LINE__, "hello"
                                  );
@@ -102,7 +100,7 @@ BOOST_AUTO_TEST_CASE (module)
 
 BOOST_AUTO_TEST_CASE (line)
 {
-  const fhg::log::LogEvent event ( fhg::log::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::TRACE
                                  , "tests/test_formatter.cpp"
                                  , "main", 1002, "hello"
                                  );
@@ -112,7 +110,7 @@ BOOST_AUTO_TEST_CASE (line)
 BOOST_AUTO_TEST_CASE (message)
 {
   BOOST_REQUIRE_EQUAL
-    (fhg::log::format ("%m", FHGLOG_MKEVENT_HERE (DEBUG, "hello")), "hello");
+    (fhg::log::format ("%m", FHGLOG_MKEVENT_HERE (TRACE, "hello")), "hello");
 }
 
 //! \todo date
@@ -125,7 +123,7 @@ BOOST_AUTO_TEST_CASE (logger)
 {
   //! \todo This should actually test something:
   //! put mutiple loggers in a chain, send event through
-  const fhg::log::LogEvent event ( fhg::log::DEBUG
+  const fhg::log::LogEvent event ( fhg::log::TRACE
                                  , "tests/test_formatter.cpp"
                                  , "main", 1002, "hello"
                                  );

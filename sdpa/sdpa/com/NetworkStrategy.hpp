@@ -22,6 +22,7 @@ namespace sdpa
                       , std::string const & peer_name
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
+                      , fhg::com::kvs::kvsc_ptr_t kvs_client
                       );
       ~NetworkStrategy();
 

@@ -8,51 +8,69 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
+namespace
+{
+  we::type::activity_t net_with_one_child_requiring_0_workers()
+  {
+    we::type::property::type props;
+    props.set ("fhg.drts.schedule.num_worker", "0UL");
+    we::type::transition_t transition
+      ( fhg::util::random_string()
+      , we::type::module_call_t
+        (fhg::util::random_string(), fhg::util::random_string())
+      , boost::none
+      , true
+      , props
+      , we::priority_type()
+      );
+    const std::string port_name (fhg::util::random_string());
+    we::port_id_type const port_id_in
+      ( transition.add_port ( we::type::port_t ( port_name
+                                               , we::type::PORT_IN
+                                               , std::string ("string")
+                                               , we::type::property::type()
+                                               )
+                            )
+      );
+
+    we::type::net_type net;
+
+    we::place_id_type const place_id_in
+      (net.add_place (place::type (port_name, std::string ("string"))));
+
+    net.put_value (place_id_in, fhg::util::random_string_without ("\\\""));
+
+    we::transition_id_type const transition_id
+      (net.add_transition (transition));
+
+    net.add_connection ( we::edge::PT
+                       , transition_id
+                       , place_id_in
+                       , port_id_in
+                       , we::type::property::type()
+                       );
+
+    return we::type::activity_t
+      ( we::type::transition_t ( fhg::util::random_string()
+                               , net
+                               , boost::none
+                               , true
+                               , we::type::property::type()
+                               , we::priority_type()
+                               )
+      , boost::none
+      );
+  }
+}
+
 BOOST_AUTO_TEST_CASE (testInvalidNumberOfWorkersRequired)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_bad_test.pnet"));
-
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
-
-  const utils::drts_worker worker_A_0
-    ( "drts_A_0", agent
-    , "A"
-    , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-  const utils::drts_worker worker_A_1
-    ( "drts_A_1", agent
-    , "A"
-    , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-
-  const utils::drts_worker worker_B_0
-    ( "drts_B_0", agent
-    , "B"
-    , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-  const utils::drts_worker worker_B_1
-    ( "drts_B_1", agent
-    , "B"
-    , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
-  const utils::drts_worker worker_B_2
-    ( "drts_B_2", agent
-    , "B"
-    , TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (workflow, orchestrator)
+      (net_with_one_child_requiring_0_workers().to_string(), orchestrator)
     , sdpa::status::FAILED
     );
 }

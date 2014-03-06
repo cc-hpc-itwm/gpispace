@@ -1,4 +1,4 @@
-#include "threadname.hpp"
+#include <fhg/util/threadname.hpp>
 
 #include <pthread.h>
 

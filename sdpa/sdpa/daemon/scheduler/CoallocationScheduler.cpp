@@ -1,292 +1,276 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
+
 #include <sdpa/daemon/GenericDaemon.hpp>
 
-namespace sdpa {
-  namespace daemon {
-
-CoallocationScheduler::CoallocationScheduler(GenericDaemon* pCommHandler)
-  : SchedulerBase(pCommHandler)
-{}
-
-void CoallocationScheduler::assignJobsToWorkers()
+namespace sdpa
 {
-  lock_type lock(mtx_);
-  sdpa::worker_id_list_t listAvailWorkers;
-
-  if(!schedulingAllowed())
-    return;
-
-  // replace this with the list of workers not reserved
-  //getListNotFullWorkers(listAvailWorkers);
-  getListNotAllocatedWorkers(listAvailWorkers);
-
-  // check if there are jobs that can already be scheduled on
-  // these workers
-  std::list<sdpa::job_id_t> nonmatching_jobs_queue;
-
-  // iterate over all jobs and see if there is one that prefers
-  while(schedulingAllowed() && !listAvailWorkers.empty())
+  namespace daemon
   {
-    sdpa::job_id_t jobId(nextJobToSchedule());
+    CoallocationScheduler::CoallocationScheduler (GenericDaemon* pCommHandler)
+      : ptr_comm_handler_ ( pCommHandler
+                          ? pCommHandler
+                          : throw std::runtime_error
+                            ("CoallocationScheduler ctor with NULL ptr_comm_handler")
+                          )
+      , _worker_manager()
+    {}
 
-    const job_requirements_t job_reqs
-      (ptr_comm_handler_->getJobRequirements (jobId));
-
-    unsigned long nReqWorkers (job_reqs.numWorkers());
-    const sdpa::worker_id_t matchingWorkerId
-      (findSuitableWorker(job_reqs, listAvailWorkers));
-
-    if( !matchingWorkerId.empty() ) // matching found
+    const WorkerManager& CoallocationScheduler::worker_manager() const
     {
-        lock_type lock(mtx_alloc_table_);
-        reserveWorker(jobId, matchingWorkerId, nReqWorkers);
+      return _worker_manager;
+    }
+    WorkerManager& CoallocationScheduler::worker_manager()
+    {
+      return _worker_manager;
+    }
 
-        // attention: what to do if job_reqs.n_workers_req > total number of registered workers?
-        // if all the required resources were acquired, mark the job as submitted
-        Reservation* pReservation(allocation_table_[jobId]);
+    bool CoallocationScheduler::delete_job (sdpa::job_id_t const& job)
+    {
+      return _jobs_to_schedule.erase (job);
+    }
 
-        if( pReservation->acquired() )
+    void CoallocationScheduler::enqueueJob (const sdpa::job_id_t& jobId)
+    {
+      _jobs_to_schedule.push (jobId);
+    }
+
+    void CoallocationScheduler::assignJobsToWorkers()
+    {
+      sdpa::worker_id_list_t listAvailWorkers
+        (worker_manager().getListWorkersNotReserved());
+
+      std::list<sdpa::job_id_t> nonmatching_jobs_queue;
+
+      while (!listAvailWorkers.empty())
+      {
+        const boost::optional<job_id_t> job_id (_jobs_to_schedule.pop());
+        if (!job_id)
         {
-            sdpa::worker_id_list_t list_reserved_workers = pReservation->getWorkerList();
-            // check if the reservation is valid
-            sdpa::worker_id_list_t list_invalid_workers = checkReservationIsValid(*pReservation);
-            if(list_invalid_workers.empty())
-            {
-              DLLOG (DEBUG, _logger, "A reservation for the job "<<jobId<<" has been acquired! List of assigned workers: "<<list_reserved_workers);
-              // serve the same job to all reserved workers!!!!
+          break;
+        }
+        sdpa::job_id_t jobId (*job_id);
 
-              _worker_manager.markJobSubmitted(pReservation->getWorkerList(), jobId);
-              ptr_comm_handler_->serveJob(list_reserved_workers, jobId);
+        const job_requirements_t job_reqs
+          (ptr_comm_handler_->getJobRequirements (jobId));
+
+        const boost::optional<sdpa::worker_id_t> matchingWorkerId
+          ( listAvailWorkers.empty() ? boost::none
+          : job_reqs.empty() ? listAvailWorkers.front()
+          : worker_manager().getBestMatchingWorker (job_reqs, listAvailWorkers)
+         );
+
+        if (matchingWorkerId)
+        {
+          listAvailWorkers.erase ( std::find ( listAvailWorkers.begin()
+                                             , listAvailWorkers.end()
+                                             , *matchingWorkerId
+                                             )
+                                 );
+
+          boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+          {
+            worker_manager().findWorker (*matchingWorkerId)->reserve();
+
+            allocation_table_t::iterator it (allocation_table_.find(jobId));
+            if (it == allocation_table_.end())
+            {
+              Reservation* pReservation (new Reservation (job_reqs.numWorkers()));
+              allocation_table_.insert (std::make_pair (jobId, pReservation));
+            }
+
+            allocation_table_[jobId]->addWorker (*matchingWorkerId);
+          }
+
+          Reservation* pReservation (allocation_table_[jobId]);
+
+          if (pReservation->acquired())
+          {
+            sdpa::worker_id_list_t list_reserved_workers =
+              pReservation->getWorkerList();
+
+            sdpa::worker_id_list_t list_invalid_workers;
+            BOOST_FOREACH (const worker_id_t& wid, list_reserved_workers)
+            {
+              if (!worker_manager().hasWorker (wid))
+              {
+                list_invalid_workers.push_back (wid);
+              }
+            }
+
+            if (list_invalid_workers.empty())
+            {
+              BOOST_FOREACH (const worker_id_t& wid, list_reserved_workers)
+              {
+                worker_manager().findWorker (wid)->submit (jobId);
+              }
+              ptr_comm_handler_->serveJob (list_reserved_workers, jobId);
             }
             else
             {
-              // delete the invalid workers
-              BOOST_FOREACH(const Worker::worker_id_t& wid, list_reserved_workers)
+              BOOST_FOREACH (const worker_id_t& wid, list_invalid_workers)
               {
-                pReservation->delWorker(wid);
+                pReservation->delWorker (wid);
               }
 
-              schedule_first(jobId);
+              _jobs_to_schedule.push_front (jobId);
             }
+          }
+          else
+          {
+            _jobs_to_schedule.push_front (jobId);
+          }
         }
         else
         {
-            schedule_first(jobId);
+          nonmatching_jobs_queue.push_back (jobId);
         }
-    }
-    else // put it back into the common queue
-    {
-        nonmatching_jobs_queue.push_back(jobId);
-    }
-  }
-
-  BOOST_REVERSE_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
-  {
-    schedule_first (id);
-  }
-}
-
-sdpa::worker_id_list_t CoallocationScheduler::checkReservationIsValid(const Reservation& res)
-{
-  lock_type lock(mtx_);
-  sdpa::worker_id_list_t list_del_workers;
-  sdpa::worker_id_list_t res_worker_list(res.getWorkerList());
-  BOOST_FOREACH(const Worker::worker_id_t& wid, res_worker_list)
-  {
-    if(!hasWorker(wid))
-      list_del_workers.push_back(wid);
-  }
-  return list_del_workers;
-}
-
-void CoallocationScheduler::rescheduleJob(const sdpa::job_id_t& job_id )
-{
-  Job* pJob = ptr_comm_handler_->findJob(job_id);
-  if(pJob)
-  {
-    if(!pJob->completed()) {
-      releaseReservation(job_id);
-      pJob->Reschedule(this); // put the job back into the pending state
-    }
-  }
-  else //(JobNotFoundException const &ex)
-  {
-    LLOG (WARN, _logger, "Cannot re-schedule the job " << job_id << ". The job could not be found!");
-  }
-}
-
-void CoallocationScheduler::reserveWorker(const sdpa::job_id_t& jobId, const sdpa::worker_id_t& matchingWorkerId, const size_t& cap)
-{
-  lock_type lock_table(mtx_alloc_table_);
-  _worker_manager.reserveWorker(matchingWorkerId);
-  // allocate this worker to the job with the jobId
-
-  allocation_table_t::iterator it(allocation_table_.find(jobId));
-  if(it==allocation_table_.end()) {
-      Reservation*  pReservation(new Reservation(jobId, cap));
-      allocation_table_t::value_type pairJobRes(jobId, pReservation);
-      allocation_table_.insert(pairJobRes);
-  }
-
-  allocation_table_[jobId]->addWorker(matchingWorkerId);
-}
-
-void CoallocationScheduler::releaseReservation(const sdpa::job_id_t& jobId)
-{
-  lock_type lock_table(mtx_alloc_table_);
-
-  // if the status is not terminal
-  try {
-      allocation_table_t::const_iterator it = allocation_table_.find(jobId);
-
-      // if there are allocated resources
-      if(it==allocation_table_.end()) {
-        DLLOG (WARN, _logger, "No reservation was found for the job "<<jobId);
-          return;
       }
 
-      lock_type lock_worker (mtx_);
-      Reservation* pReservation(allocation_table_[jobId]);
-      worker_id_list_t listWorkers(pReservation->getWorkerList());
-      BOOST_FOREACH (sdpa::worker_id_t const& workerId, listWorkers)
+      BOOST_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
       {
-        try
+        _jobs_to_schedule.push (id);
+      }
+    }
+
+    void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& jobId)
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+
+      const allocation_table_t::const_iterator it
+        (allocation_table_.find (jobId));
+
+      if (it != allocation_table_.end())
+      {
+        BOOST_FOREACH ( sdpa::worker_id_t const& workerId
+                      , it->second->getWorkerList()
+                      )
         {
-          findWorker(workerId)->free();
+          worker_manager().findWorker (workerId)->free();
         }
-        catch (WorkerNotFoundException const& ex)
-        {
-          DLLOG (WARN, _logger, "The worker "<<workerId<<" was not found, it was already released!");
-        }
+
+        delete it->second;
+        allocation_table_.erase (it);
+      }
+    }
+
+    void CoallocationScheduler::workerFinished
+      (const worker_id_t& wid, const job_id_t& jid)
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      allocation_table_t::iterator it = allocation_table_.find (jid);
+      if (it != allocation_table_.end())
+      {
+        it->second->storeWorkerResult (wid, Reservation::FINISHED);
+      }
+      else
+      {
+        throw JobNotFoundException();
+      }
+    }
+
+    void CoallocationScheduler::workerFailed
+      (const worker_id_t& wid, const job_id_t& jid)
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      allocation_table_t::iterator it = allocation_table_.find (jid);
+      if (it != allocation_table_.end())
+      {
+        it->second->storeWorkerResult (wid, Reservation::FAILED);
+      }
+      else
+      {
+        throw JobNotFoundException();
+      }
+    }
+
+    void CoallocationScheduler::workerCanceled
+      (const worker_id_t& wid, const job_id_t& jid)
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      allocation_table_t::iterator it = allocation_table_.find (jid);
+      if (it != allocation_table_.end())
+      {
+        it->second->storeWorkerResult (wid, Reservation::CANCELED);
+      }
+      else
+      {
+        throw JobNotFoundException();
+      }
+    }
+
+    bool CoallocationScheduler::allPartialResultsCollected (const job_id_t& jid)
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      allocation_table_t::iterator it = allocation_table_.find (jid);
+      if (it != allocation_table_.end())
+      {
+        return it->second->allWorkersTerminated();
+      }
+      else
+      {
+        throw JobNotFoundException();
+      }
+    }
+
+    bool CoallocationScheduler::groupFinished (const sdpa::job_id_t& jid)
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      allocation_table_t::iterator it = allocation_table_.find (jid);
+      if (it != allocation_table_.end())
+      {
+        return it->second->allGroupTasksFinishedSuccessfully();
+      }
+      else
+      {
+        throw JobNotFoundException();
+      }
+    }
+
+    boost::optional<job_id_t> CoallocationScheduler::locked_job_id_list::pop()
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+      if (container_.empty())
+      {
+        return boost::none;
       }
 
-      delete allocation_table_[jobId];
-      allocation_table_[jobId] = NULL;
-      allocation_table_.erase(jobId);
-  }
-  catch(JobNotFoundException const& ex2)
-  {
-    DLLOG (WARN, _logger, "The job "<<jobId<<" was not found!");
-  }
-}
+      job_id_t item = container_.front();
+      container_.pop_front();
+      return item;
+    }
 
-void CoallocationScheduler::getListNotAllocatedWorkers(sdpa::worker_id_list_t& workerList)
-{
-  workerList.clear();
-  _worker_manager.getListWorkersNotReserved(workerList);
-}
-
-sdpa::job_id_t CoallocationScheduler::getAssignedJob(const sdpa::worker_id_t& wid)
-{
-  lock_type lock(mtx_alloc_table_);
-
-  allocation_table_t::iterator it = allocation_table_.begin();
-  while(it != allocation_table_.end())
-  {
-      if(it->second->hasWorker(wid))
-        return it->first;
-      else
-        it++;
-  }
-
-  return job_id_t("");
-}
-
-void CoallocationScheduler::checkAllocations()
-{
-  lock_type lock(mtx_alloc_table_);
-  typedef std::map<worker_id_t,int> worker_cnt_map_t;
-  worker_cnt_map_t worker_cnt_map;
-  worker_id_list_t worker_list;
-  getWorkerList(worker_list);
-
-  BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
-  {
-    worker_cnt_map.insert(worker_cnt_map_t::value_type(worker_id, 0));
-  }
-
-  BOOST_FOREACH(const allocation_table_t::value_type& pairJLW, allocation_table_)
-  {
-    worker_id_list_t workerList(pairJLW.second->getWorkerList());
-    BOOST_FOREACH(const sdpa::worker_id_t& wid, workerList)
+    void CoallocationScheduler::locked_job_id_list::push (job_id_t item)
     {
-      worker_cnt_map[wid]++;
-      if(worker_cnt_map[wid]>1)
+      boost::mutex::scoped_lock const _ (mtx_);
+      container_.push_back (item);
+    }
+
+    void CoallocationScheduler::locked_job_id_list::push_front (job_id_t item)
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+      container_.push_front (item);
+    }
+
+    size_t CoallocationScheduler::locked_job_id_list::erase (const job_id_t& item)
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+      size_t count (0);
+      std::list<job_id_t>::iterator iter (container_.begin());
+      while (iter != container_.end())
+      {
+        if (item == *iter)
         {
-          DLLOG (FATAL, _logger, "Error! The worker "<<wid<<" was allocated to two different jobs!");
-          throw;
+          iter = container_.erase(iter);
+          ++count;
         }
+        else
+        {
+          ++iter;
+        }
+      }
+      return count;
     }
   }
-
-  std::ostringstream oss;
-  BOOST_FOREACH(const worker_id_t& worker_id, worker_list)
-  {
-    oss<<worker_id<<":"<<worker_cnt_map[worker_id]<<" ";
-  }
-  DLLOG (TRACE, _logger, oss.str());
 }
-
-sdpa::worker_id_list_t CoallocationScheduler::getListAllocatedWorkers(const sdpa::job_id_t& jobId)
-{
-  lock_type lock_table(mtx_alloc_table_);
-  allocation_table_t::iterator it=allocation_table_.find(jobId);
-  if(it!=allocation_table_.end())
-    return it->second->getWorkerList();
-  else
-    return sdpa::worker_id_list_t();
-}
-
-void CoallocationScheduler::workerFinished(const worker_id_t& wid, const job_id_t& jid)
-{
-  lock_type lock_table(mtx_alloc_table_);
-  allocation_table_t::iterator it=allocation_table_.find(jid);
-  if(it!=allocation_table_.end())
-    it->second->workerFinished(wid);
-  else
-    throw WorkerNotFoundException(wid);
-}
-
-void CoallocationScheduler::workerFailed(const worker_id_t& wid, const job_id_t& jid)
-{
-  lock_type lock_table(mtx_alloc_table_);
-  allocation_table_t::iterator it=allocation_table_.find(jid);
-  if(it!=allocation_table_.end())
-    it->second->workerFailed(wid);
-  else
-    throw WorkerNotFoundException(wid);
-}
-
-void CoallocationScheduler::workerCanceled(const worker_id_t& wid, const job_id_t& jid)
-{
-  lock_type lock_table(mtx_alloc_table_);
-  allocation_table_t::iterator it=allocation_table_.find(jid);
-  if(it!=allocation_table_.end())
-    it->second->workerCanceled(wid);
-  else
-    throw WorkerNotFoundException(wid);
-}
-
-bool CoallocationScheduler::allPartialResultsCollected(const job_id_t& jid)
-{
-  lock_type lock_table(mtx_alloc_table_);
-  allocation_table_t::iterator it=allocation_table_.find(jid);
-  if(it!=allocation_table_.end())
-    return it->second->allWorkersTerminated();
-  else
-    throw JobNotFoundException(jid);
-}
-
-bool CoallocationScheduler::groupFinished(const sdpa::job_id_t& jid)
-{
-  lock_type lock(mtx_alloc_table_);
-  allocation_table_t::iterator it=allocation_table_.find(jid);
-  if(it!=allocation_table_.end())
-    return it->second->allGroupTasksFinishedSuccessfully();
-  else
-    throw JobNotFoundException(jid);
-}
-
-}}

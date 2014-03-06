@@ -1,4 +1,4 @@
-#include "color_map.hpp"
+#include <fhglog/color_map.hpp>
 
 #include <sstream>
 
@@ -12,7 +12,6 @@ namespace fhg
       //    0 - normal
       //    5 - blink
       m_color_table[TRACE] = color_escape_code(FG_WHITE, BG_DEFAULT, 0);
-      m_color_table[DEBUG] = color_escape_code(FG_WHITE, BG_DEFAULT, 0);
       m_color_table[INFO]  = color_escape_code(FG_CYAN);
       m_color_table[WARN]  = color_escape_code(FG_YELLOW);
       m_color_table[ERROR] = color_escape_code(FG_RED);
@@ -40,17 +39,13 @@ namespace fhg
       return m_color_table.at (lvl);
     }
 
-    std::string const & color_map_t::operator[](const Level &level) const
-    {
-      return const_cast<color_map_t&>(*this).operator[](level);
-    }
-    std::string & color_map_t::operator[](const Level &level)
+    const std::string & color_map_t::operator[](const Level &level) const
     {
       if (m_color_table.find(level) == m_color_table.end())
       {
-        m_color_table[level] = reset_escape_code();
+        return reset_escape_code();
       }
-      return m_color_table[level];
+      return m_color_table.at (level);
     }
   }
 }

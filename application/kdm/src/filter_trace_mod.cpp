@@ -42,7 +42,7 @@ namespace
 // ************************************************************************* //
 
 static void
-generic_filter ( gspc::drts::context * state
+generic_filter ( drts::worker::context * state
 	       , const expr::eval::context & input
 	       , expr::eval::context & output
 	       , boost::function <void (void *, const long &)> filter_impl
@@ -112,7 +112,7 @@ static void unblank_impl (void * ptr, const long & num)
     }
 }
 
-static void unblank ( gspc::drts::context * state
+static void unblank ( drts::worker::context * state
                     , const expr::eval::context & input
                     , expr::eval::context & output
                     )
@@ -156,7 +156,7 @@ static void clip_impl (void * ptr, const long & num
    }
 }
 
-static void clip ( gspc::drts::context * state
+static void clip ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -196,7 +196,7 @@ static void trap_impl (void * ptr, const long & num
    }
 }
 
-static void trap ( gspc::drts::context * state
+static void trap ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -285,7 +285,7 @@ static void bandpass_impl ( void * ptr, const long & num
     delete[] filterarray;
 }
 
-static void bandpass ( gspc::drts::context * state
+static void bandpass ( drts::worker::context * state
 		     , const expr::eval::context & input
 		     , expr::eval::context & output
 		     )
@@ -368,7 +368,7 @@ static void frac_impl (void * ptr, const long & num)
     delete[] filterarray;
 }
 
-static void frac ( gspc::drts::context * state
+static void frac ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -417,7 +417,7 @@ static void tpow_impl (void * ptr, const long & num,
     delete[] filterarray;
 }
 
-static void tpow ( gspc::drts::context * state
+static void tpow ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )
@@ -429,7 +429,7 @@ static void tpow ( gspc::drts::context * state
 
 // ************************************************************************* //
 
-static void execW ( gspc::drts::context * state
+static void execW ( drts::worker::context * state
 		 , const expr::eval::context & input
 		 , expr::eval::context & output
 		 )

@@ -90,9 +90,6 @@ int main (int argc, char *argv[])
       workflow = "/dev/stdin";
     }
 
-  fhg::com::kvs::get_or_create_global_kvs
-    ("", "", false, boost::posix_time::seconds (2), 1);
-
   setting::library_transition::update (paths_trusted_new, paths_untrusted_new);
   setting::splash::update (show_splash);
   setting::template_filename::update (QString::fromStdString (template_filename));

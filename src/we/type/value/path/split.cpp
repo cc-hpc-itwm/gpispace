@@ -14,9 +14,7 @@ namespace pnet
       {
         std::list<std::string> split (const std::string& path)
         {
-          return fhg::util::split< std::string
-                                 , std::list<std::string>
-                                 > (path, '.');
+          return fhg::util::split<std::string, std::string> (path, '.');
         }
       }
     }

@@ -84,7 +84,6 @@ DEFAULT_GPI_PRIV_DIR=""
 DEFAULT_GPI_ENABLED="false"
 DEFAULT_GPI_MEMSIZE="5G"
 DEFAULT_GPI_SHMSIZE="1G"
-DEFAULT_GPI_COMSIZE="16M"
 DEFAULT_GPI_API="gpi.api.real"
 
 #
@@ -963,7 +962,7 @@ function initialize ()
 function log()
 {
   echo "\$@" >&2
-  test -x "\$SDPA_HOME/bin/fhglogc" && "\$SDPA_HOME/bin/fhglogc" -t "\$0" -p 2 -m "\$*"
+  test -x "\$SDPA_HOME/bin/fhglogc" && "\$SDPA_HOME/bin/fhglogc" -t "\$0" -m "\$*"
 }
 EOF
     echo test -e "$state_dir/sdpa.post.env" \&\& source "$state_dir/sdpa.post.env" >> "$tmp_file"
@@ -974,11 +973,6 @@ EOF
         log "E: SDPA_HOME is not defined!"
     fi
     mv "$tmp_file" "$state_dir/sdpa.env"
-
-    # HACK  (until all  the sdpa*  scripts are  gone):  initialize the
-    # GSPC_COOKIE once (as a  side-effect, this will generate a cookie
-    # and save it to ~/.gspc.cookie)
-    gspc net init
 }
 
 function cleanup ()
@@ -2128,8 +2122,9 @@ case "$1" in
     selftest)
         shift
         tmpnodes=$(mktemp)
-        echo "$(hostname)" > "${tmpnodes}"
+        echo "$(hostname -s)" > "${tmpnodes}"
         export PBS_NODEFILE="${tmpnodes}"
+        export SDPA_APP_PATH="${SDPA_HOME}/libexec/sdpa/apps/selftest/modules"
         "$0" -s "$state_dir" -c "$config_file" init || {
             echo >&2 "sdpa: could not initialize!"
             rm -f "${tmpnodes}"

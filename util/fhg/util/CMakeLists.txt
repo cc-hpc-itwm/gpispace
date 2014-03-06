@@ -31,20 +31,18 @@ set (hdrs
   backtracing_exception.hpp
   backtracing_exception.fwd.hpp
 
-  url.hpp
   threadname.hpp
 
   remove_prefix.hpp
 
   now.hpp
-  get_home_dir.hpp
   hex.hpp
   read_file.hpp
-
-  get_cpucount.h
 )
 
 set (srcs
+  ../syscall.cpp
+
   backtracing_exception.cpp
   daemonize.cpp
   signal_handler_manager.cpp
@@ -56,11 +54,8 @@ set (srcs
   read_bool.cpp
   now.cpp
   ini-parser.cpp
-  lift_error_code_to_exception.cpp
 
   ostream_modifier.cpp
-
-  thread/pool.cpp
 
   parse/position.cpp
   parse/error.cpp
@@ -78,11 +73,8 @@ set (srcs
   cpp/struct.cpp
 
   xml.cpp
-  get_home_dir.cpp
   hex.cpp
   read_file.cpp
-
-  get_cpucount.c
 
   hostname.cpp
 )
@@ -108,16 +100,13 @@ target_link_libraries (fhg-util-shared
 
 install(FILES ${hdrs}
   DESTINATION include/fhg/util
-  COMPONENT runtime-headers)
+)
 install (TARGETS fhg-util
   ARCHIVE DESTINATION lib
-  COMPONENT runtime
 )
 install (TARGETS fhg-util-shared
   LIBRARY DESTINATION lib
-  COMPONENT runtime
 )
 
 add_subdirectory (boost)
-add_subdirectory(thread)
   add_subdirectory(test)

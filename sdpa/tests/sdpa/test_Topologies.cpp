@@ -17,12 +17,12 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   // W
 
   const std::string workflow
-    (utils::require_and_read_file ("workflows/transform_file.pnet"));
+    (utils::require_and_read_file ("transform_file.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent
@@ -50,17 +50,17 @@ BOOST_AUTO_TEST_CASE (chained_agents)
 	// W
 
   const std::string workflow
-    (utils::require_and_read_file ("workflows/transform_file.pnet"));
+    (utils::require_and_read_file ("transform_file.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
   //! \note "variable agents #" was hardcoded to 1 when this test got
   //! rewritten. Probably should be more, so got bumped to 2.
   const utils::agent agent_0
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
   const utils::agent agent_1
-    ("agent_1", "127.0.0.1", agent_0);
+    ("agent_1", "127.0.0.1", kvs_host(), kvs_port(), agent_0);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent_1
@@ -86,16 +86,16 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   // W W
 
   const std::string workflow
-    (utils::require_and_read_file ("workflows/transform_file.pnet"));
+    (utils::require_and_read_file ("transform_file.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent_0
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
   const utils::agent agent_1
-    ("agent_1", "127.0.0.1", agent_0);
+    ("agent_1", "127.0.0.1", kvs_host(), kvs_port(), agent_0);
   const utils::agent agent_2
-    ("agent_2", "127.0.0.1", agent_0);
+    ("agent_2", "127.0.0.1", kvs_host(), kvs_port(), agent_0);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent_1
@@ -125,17 +125,17 @@ BOOST_AUTO_TEST_CASE (one_worker_with_multiple_master_agents)
   // W-+-+
 
   const std::string workflow
-    (utils::require_and_read_file ("workflows/transform_file.pnet"));
+    (utils::require_and_read_file ("transform_file.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
   //! \note "variable agents #" was hardcoded to 1 when this test got
   //! rewritten. Probably should be more, so got bumped to 2.
   const utils::agent agent_0
-    ("agent_0", "127.0.0.1", orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
   const utils::agent agent_1
-    ("agent_1", "127.0.0.1", orchestrator);
+    ("agent_1", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   utils::agents_t agents;
   agents.push_back (boost::cref (agent_0));
@@ -165,22 +165,22 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   // W
 
   const std::string workflow
-    (utils::require_and_read_file ("workflows/transform_file.pnet"));
+    (utils::require_and_read_file ("transform_file.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1");
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
   const utils::agent agent_0
-    ("agent_0", "127.0.0.1:7700", orchestrator);
+    ("agent_0", "127.0.0.1:7700", kvs_host(), kvs_port(), orchestrator);
   const utils::agent agent_1
-    ("agent_1", "127.0.0.1:7701", orchestrator);
+    ("agent_1", "127.0.0.1:7701", kvs_host(), kvs_port(), orchestrator);
 
   utils::agents_t agents;
   agents.push_back (boost::cref (agent_0));
   agents.push_back (boost::cref (agent_1));
 
   const utils::agent agent_2
-    ("agent_2", "127.0.0.1:7702", agents);
+    ("agent_2", "127.0.0.1:7702", kvs_host(), kvs_port(), agents);
 
   const utils::drts_worker worker_0
     ( "drts_0", agent_2
