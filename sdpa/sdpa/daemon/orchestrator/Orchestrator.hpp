@@ -53,6 +53,7 @@ namespace sdpa {
       virtual void handleRetrieveJobResultsEvent(const sdpa::events::RetrieveJobResultsEvent* );
       virtual void handleQueryJobStatusEvent(const sdpa::events::QueryJobStatusEvent* );
       virtual void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt);
+      virtual void handleDiscoverJobStatesReplyEvent(const sdpa::events::DiscoverJobStatesReplyEvent*);
 
       template <typename T>
       void notifySubscribers(const T& ptrEvt);

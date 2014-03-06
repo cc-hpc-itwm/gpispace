@@ -349,4 +349,21 @@ void Orchestrator::handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJob
   }
 }
 
+void Orchestrator::handleDiscoverJobStatesReplyEvent
+  (const sdpa::events::DiscoverJobStatesReplyEvent* e)
+{
+  const sdpa::job_info_t& job_info (m_map_discover_ids.at (e->discover_id()));
+  const sdpa::discovery_info_t discovery_info
+    (job_info.job_id(), job_info.job_status(), e->discover_result().children());
+
+  sendEventToOther
+    ( events::DiscoverJobStatesReplyEvent::Ptr
+      ( new events::DiscoverJobStatesReplyEvent
+        (name(), job_info.disc_issuer(), e->job_id(), e->discover_id(), discovery_info)
+      )
+    );
+
+  m_map_discover_ids.erase (e->discover_id());
+}
+
 }} // end namespaces

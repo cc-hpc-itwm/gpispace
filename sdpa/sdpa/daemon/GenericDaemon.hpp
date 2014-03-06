@@ -164,9 +164,6 @@ namespace sdpa {
       virtual void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*);
       virtual void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* );
 
-      virtual void handleDiscoverJobStatesReplyEvent
-        (const sdpa::events::DiscoverJobStatesReplyEvent*);
-
       // event communication
       void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
       OVERWRITTEN_IN_TEST void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
