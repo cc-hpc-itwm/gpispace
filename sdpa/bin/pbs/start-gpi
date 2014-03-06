@@ -6,7 +6,6 @@
 ###     source anything
 ###
 ###
-gpi_priv_dir=""
 gpi_exe=""
 debug=false
 mem_size=
@@ -29,7 +28,6 @@ function usage ()
 usage: $0 [options]
 
     -h: print this help
-    -d gpid directory: priviledged binary path for the gpid
     -x gpi-exe: gpi program to use
     -g run within debugger
     -m size: memory size
@@ -48,14 +46,11 @@ usage: $0 [options]
 EOF
 }
 
-while getopts ":hd:x:gm:p:P:fDk:K:l:L:vs:F:S:" opt; do
+while getopts ":hx:gm:p:P:fDk:K:l:L:vs:F:S:" opt; do
     case $opt in
         h)
             usage
             exit 0
-            ;;
-        d)
-            gpi_priv_dir=$OPTARG
             ;;
         x)
             gpi_exe=$OPTARG
