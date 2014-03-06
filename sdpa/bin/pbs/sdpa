@@ -473,13 +473,8 @@ function generate_environment ()
             log.server.url)
                 echo export FHGLOG_to_server="$val"
                 ;;
-            gpi.priv_dir)
-                echo export GPI_PRIV_DIR="$val"
-                ;;
             sdpa.gui)
                 echo export SDPA_GUI="$val"
-                ;;
-            sdpa.home)
                 ;;
             *)
                 ;;
@@ -494,17 +489,11 @@ function generate_environment ()
         export SDPA_HOME="$(echo $SDPA_HOME | sed -e 's,/\+$,,')"
     fi
 
-    export SDPA_LIBEXEC="$SDPA_HOME/libexec/sdpa"
-    export SDPA_PLUGINS="$SDPA_HOME/libexec/fhg/plugins"
-
     echo export SDPA_HOME="$SDPA_HOME"
-    echo export SDPA_LIBEXEC="$SDPA_LIBEXEC"
-    echo export SDPA_PLUGINS="$SDPA_PLUGINS"
 
     prepend_to_path PATH "$SDPA_HOME/bin"
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/lib"
-    prepend_to_path LD_LIBRARY_PATH "$SDPA_LIBEXEC"
-
+    prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/libexec/sdpa"
 
     echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:\$LD_LIBRARY_PATH"
     echo export PATH="$PATH:\$PATH"
