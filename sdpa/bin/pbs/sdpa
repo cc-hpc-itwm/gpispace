@@ -286,12 +286,7 @@ function get_user_input ()
 {
     local prompt="$1"; shift
     local var="$1"; shift
-    local doc="$1"; shift
-    if [ -n "$doc" ] ; then
-        cat <<EOF
-$doc
-EOF
-    fi
+
     if is_unattended ; then
         return
     fi
@@ -305,15 +300,6 @@ EOF
 
 function setup_logging ()
 {
-    local doc='
-
-                 ================================
-                 *     Logging Configuration    *
-                 ================================
-
-This "host:port" definition  defines where all the components  send log messages
-to. It should be on the same host that you run the GUI on.
-'
     def_log_server_url="${DEFAULT_LOG_URL}"
     if [ -z "${DEFAULT_LOG_URL}" ] ; then
         def_log_server_url="$(guess_head_node):${DEFAULT_LOG_PORT:?}"
@@ -321,7 +307,7 @@ to. It should be on the same host that you run the GUI on.
 
     local url=$(get "log.server.url" "${def_log_server_url}")
     local prompt="remote logging to (host:port) [$url]:"
-    get_user_input "$prompt" url "$doc"
+    get_user_input "$prompt" url
 
     local lvl=$(get "log.server.level" "INFO")
     local prompt="log level [$lvl]:"
@@ -334,18 +320,6 @@ to. It should be on the same host that you run the GUI on.
 
 function setup_gui ()
 {
-    local doc='
-
-                 ================================
-                 *   Graphical User Interface   *
-                 ================================
-
-Now I need a "host:port" string on which the graphical monitor interface will be
-running.  It  does not  have to run  all the  time, but if  you want  to monitor
-activities, I need to know that location. Please make sure that nobody else uses
-this location.
-'
-    def_gui_server_url="${DEFAULT_GUI_URL}"
     if [ -z "${DEFAULT_GUI_URL}" ] ; then
         def_gui_server_url="$(guess_head_node):${DEFAULT_GUI_PORT:?}"
     fi
@@ -353,7 +327,7 @@ this location.
     local key="sdpa.gui"
     local val=$(get "$key" "${def_gui_server_url}")
     local prompt="location of the monitor gui (host:port) [$val]:"
-    get_user_input "$prompt" val "$doc"
+    get_user_input "$prompt" val
     put "$key" "$val"
 }
 
@@ -407,25 +381,6 @@ function to_human_readable_size ()
 
 function setup_gpi ()
 {
-    local doc='
-
-                 ================================
-                 *        Fraunhofer GPI        *
-                 ================================
-
-This step configures  the GPI part of  the SDPA.  I will ask  for the privileged
-directory from which user binaries are  allowed to be executed (the -p parameter
-to the  gpid.exe). Additionally I will  ask for the  amount of GPI memory  to be
-used on each node.
-
-On  each   node,  so  called  process-containers  (worker   processes)  will  be
-started.   Those  need   a  bit   of  memory   to  communicate   with   the  GPI
-process. Depending on  how many workers you are planning to  use, you might have
-to adjust the amount.
-
-'
-    echo "$doc"
-
     local p_gpi_enabled=$(get "gpi.enabled" "${DEFAULT_GPI_ENABLED:?}")
     if [ x"$p_gpi_enabled" = x"true" ] ; then
         y_n_p "Do you want to enable GPI? [Y/n] "
