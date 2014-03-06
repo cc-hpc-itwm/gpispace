@@ -379,6 +379,7 @@ if $gpi_enabled ; then
 
     "${script_start_gpi}" -s "$state_dir" \
                           -F "${config_file}" \
+                          -D \
                           -f \
                           -P "$state_dir/gpi-space.pid" \
                           -m "$gpi_mem" \
