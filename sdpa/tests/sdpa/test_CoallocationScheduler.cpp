@@ -472,6 +472,6 @@ BOOST_FIXTURE_TEST_CASE
   _agent.TEST_add_dummy_job ("1", require (1));
   _scheduler.enqueueJob ("1");
 
-  _agent.expect_serveJob_call ("1", worker_list ("A"));
+  _agent.expect_serveJob_call ("1", worker_list ("worker"));
   _scheduler.assignJobsToWorkers();
 }
