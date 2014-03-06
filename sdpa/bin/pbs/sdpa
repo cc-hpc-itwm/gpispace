@@ -482,7 +482,6 @@ function generate_environment ()
 
     echo export SDPA_HOME="$SDPA_HOME"
 
-    prepend_to_path PATH "$SDPA_HOME/bin"
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/lib"
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/libexec/sdpa"
 
