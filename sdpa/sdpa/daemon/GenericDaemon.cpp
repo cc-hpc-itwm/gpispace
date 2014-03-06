@@ -587,12 +587,11 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
   if (m_guiService)
   {
     std::list<std::string> workers; workers.push_back (name());
-    const we::type::activity_t act (pJob->description());
     const sdpa::daemon::NotificationEvent evt
       ( workers
       , pJob->id()
       , NotificationEvent::STATE_FINISHED
-      , act
+      , result
       );
 
     m_guiService->notify (evt);
