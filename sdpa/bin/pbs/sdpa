@@ -483,33 +483,6 @@ to adjust the amount.
     get_user_input "GPI privileged directory to use [$gpid_dir]:" gpid_dir
 
     put "gpi.priv_dir" "$gpid_dir"
-
-    put "gpi.api" $(get gpi.api "${DEFAULT_GPI_API:?}")
-    put "gpi.timeout" $(get gpi.timeout "30")
-    put "gpi.socket_mode" $(get gpi.socket_mode "0700")
-    put "gpi.mtu" $(get gpi.mtu "default")
-    put "gpi.network_type" $(get gpi.network_type "default")
-    put "gpi.port" $(get gpi.port "default")
-    put "gpi.processes" $(get gpi.processes "default")
-
-    local gpi_socket_path=$(get gpi.socket_path "/tmp")
-    put "gpi.socket_path" "$gpi_socket_path"
-    if ! test -d "$gpi_socket_path" ; then
-        if ! mkdir -p "$gpi_socket_path" ; then
-            log "E: failed to create gpi socket directory: $gpi_socket_path"
-            return 1
-        else
-            if ! chmod 1777 "$gpi_socket_path" ; then
-                log "E: failed to adjust mode on $gpi_socket_path"
-                return 1
-            fi
-        fi
-    else
-        if ! test -w "${gpi_socket_path}" ; then
-            log "E: cannot write to gpi socket path: ${gpi_socket_path}"
-            return 1
-        fi
-    fi
 }
 
 function setup ()
