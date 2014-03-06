@@ -177,19 +177,6 @@ pnet_compile (coallocation_test-wf
   COMPONENT tests
 )
 
-add_custom_target (workflow_coallocation_test
-  COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
-          -p n_tasks_A="20L"
-          -p n_workers_A="2UL"
-          -p n_tasks_B="10L"
-          -p n_workers_B="3UL"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/coallocation_test.pnet"
-  COMMENT "putting tokens into coallocation_test workflow"
-  DEPENDS pnet-coallocation_test-wf
-          pnetput
-)
-
 add_custom_target (workflow_coallocation_bad_test
   COMMAND ${PNETPUT_LOCATION}
           --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
