@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_subscribing_client)
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig)
 {
   const std::string workflow
-    (utils::require_and_read_file ("coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -145,22 +145,20 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const Worker worker_0( "worker_0", agent._.name(), "A");
-  const Worker worker_1( "worker_1", agent._.name(), "A");
-  const Worker worker_2( "worker_2", agent._.name(), "B");
-  const Worker worker_3( "worker_3", agent._.name(), "B");
-  Worker* pWorker_4(new Worker( "worker_4", agent._.name(), "B"));
+
+  Worker* pWorker_1(new Worker( "worker_1", agent._.name(), "A"));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  delete pWorker_4;
+  delete pWorker_1;
 
   // wait until all remaining jobs are discovered pending
   while (!has_children_and_all_children_are_pending
          (client.discoverJobStates (fhg::util::random_string(), job_id)) )
    {}
 
-  const Worker worker_4( "worker_4", agent._.name(), "B");
+  const Worker worker_1( "worker_1", agent._.name(), "A");
 
   sdpa::client::job_info_t job_info;
   BOOST_REQUIRE_EQUAL

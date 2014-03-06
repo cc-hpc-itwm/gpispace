@@ -11,7 +11,7 @@ set(TESTS_EXAMPLE_CAPABILITIES_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabil
 set(TESTS_EXAMPLE_CAPABILITIES_NO_MANDATORY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory")
 set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/inotify")
 set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
-set(TESTS_EXAMPLE_COALLOCATION_TEST_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/coallocation_test")
+set(TESTS_EXAMPLE_coallocation_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/coallocation")
 
 fhg_add_plugin (fvm-fake fvm-fake.cpp LINK_LIBRARIES fvm-pc-fake.shared)
 
@@ -164,10 +164,10 @@ add_custom_target (workflow_transform_file
 
 ################################################################################################
 
-pnet_compile (coallocation_test-wf
-  ${TEST_WORKFLOWS_SOURCE_DIR}/coallocation_test.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
-  GENERATE coallocation_test
+pnet_compile (coallocation-wf
+  ${TEST_WORKFLOWS_SOURCE_DIR}/coallocation.xpnet
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/coallocation-wf.in.pnet
+  GENERATE coallocation
   INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
   CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
            -I${CMAKE_BINARY_DIR}/fhglog
@@ -179,27 +179,23 @@ pnet_compile (coallocation_test-wf
 
 add_custom_target (workflow_coallocation_bad_test
   COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
-          -p n_tasks_A="1L"
-          -p n_workers_A="0UL"
-          -p n_tasks_B="1L"
-          -p n_workers_B="0UL"
+          --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation-wf.in.pnet
+          -p n_tasks="1L"
+          -p n_workers="0UL"
           --of "${CMAKE_CURRENT_BINARY_DIR}/coallocation_bad_test.pnet"
   COMMENT "putting tokens into coallocation_bad_test workflow"
-  DEPENDS pnet-coallocation_test-wf
+  DEPENDS pnet-coallocation-wf
           pnetput
 )
 
-add_custom_target (workflow_coallocation_test2
+add_custom_target (workflow_coallocation
   COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation_test-wf.in.pnet
-          -p n_tasks_A="1L"
-          -p n_workers_A="2UL"
-          -p n_tasks_B="1L"
-          -p n_workers_B="3UL"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/coallocation_test2.pnet"
-  COMMENT "putting tokens into coallocation_test2 workflow"
-  DEPENDS pnet-coallocation_test-wf
+          --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation-wf.in.pnet
+          -p n_tasks="1L"
+          -p n_workers="2UL"
+          --of "${CMAKE_CURRENT_BINARY_DIR}/coallocation.pnet"
+  COMMENT "putting tokens into coallocation workflow"
+  DEPENDS pnet-coallocation-wf
           pnetput
 )
 
@@ -221,7 +217,7 @@ fhg_add_test (test_Coallocation.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS workflow_coallocation_test2
+  DEPENDS workflow_coallocation
 )
 
 fhg_add_test (test_Inotify.cpp
@@ -302,7 +298,7 @@ fhg_add_test (test_DiscoverJobStates.cpp
                  fhg-plugin
                  ${FhgLog_LIBRARY}
   DEPENDS dummy_workflow
-          workflow_coallocation_test2
+          workflow_coallocation
 )
 
 fhg_add_test (test_FailOnBadRequirements.cpp
@@ -330,5 +326,5 @@ fhg_add_test (test_RestartWorkers.cpp
                  fhg-plugin
                  ${FhgLog_LIBRARY}
   DEPENDS dummy_workflow
-          workflow_coallocation_test2
+          workflow_coallocation
 )

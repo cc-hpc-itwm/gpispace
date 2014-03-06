@@ -39,11 +39,6 @@ namespace
     return true;
   }
 
-  bool has_two_childs_that_are_pending (sdpa::discovery_info_t const& disc_res)
-  {
-    return disc_res.children().size() == 2 && all_childs_are_pending (disc_res);
-  }
-
   std::list<sdpa::status::code> get_leaf_job_info(const sdpa::discovery_info_t& disc_res)
   {
     std::list<sdpa::status::code> list_info;
@@ -283,7 +278,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   // this workflow produces 2 activities
   // one requires 2 workers, the other 3 workers
   const std::string workflow
-    (utils::require_and_read_file ("coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -291,13 +286,11 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const Worker worker_0( "worker_0", agent._.name(), "A");
-  const Worker worker_1( "worker_1", agent._.name(), "B");
-  const Worker worker_2( "worker_2", agent._.name(), "B");
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  while (!has_two_childs_that_are_pending
+  while (!all_childs_are_pending
           (client.discoverJobStates (get_next_disc_id(), job_id))
         )
   {} // do nothing, discover again
@@ -306,7 +299,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
 {
   const std::string workflow
-    (utils::require_and_read_file ("coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -315,19 +308,14 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   Worker*  pWorker_0 = new Worker( "worker_0", agent._.name(), "A");
-  Worker*  pWorker_1 = new Worker( "worker_1", agent._.name(), "B");
   const Worker worker_2( "worker_2", agent._.name(), "A");
-  const Worker worker_3( "worker_3", agent._.name(), "B");
-  const Worker worker_4( "worker_4", agent._.name(), "B");
-
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   delete pWorker_0;
-  delete pWorker_1;
 
-  while (!has_two_childs_that_are_pending
+  while (!all_childs_are_pending
           (client.discoverJobStates (get_next_disc_id(), job_id))
         )
   {} // do nothing, discover again

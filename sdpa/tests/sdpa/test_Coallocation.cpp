@@ -41,7 +41,7 @@ class Worker : public utils::BasicWorker
 BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
 {
   const std::string workflow
-    (utils::require_and_read_file ("coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -50,9 +50,6 @@ BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
 
   const Worker worker_0( "worker_0", agent._.name(), "A");
   const Worker worker_1( "worker_1", agent._.name(), "A");
-  const Worker worker_2( "worker_2", agent._.name(), "B");
-  const Worker worker_3( "worker_3", agent._.name(), "B");
-  const Worker worker_4( "worker_4", agent._.name(), "B");
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
