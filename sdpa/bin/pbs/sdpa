@@ -482,40 +482,7 @@ to adjust the amount.
     gpid_dir=$(get "gpi.priv_dir" "$gpid_dir")
     get_user_input "GPI privileged directory to use [$gpid_dir]:" gpid_dir
 
-    local gpi_size=$(get "gpi.memory_size" "${DEFAULT_GPI_MEMSIZE:?}")
-    get_user_input "gpi memory size (per node) [$gpi_size]:" gpi_size
-    parse_human_readable_size $gpi_size gpi_size
-    if [ $gpi_size -le 0 ] ; then
-        log "E: size must be larger than 0: $gpi_size"
-        return 1
-    fi
-
-    local shm_size=$(get "plugin.gpi_compat.shm_size" "${DEFAULT_GPI_SHMSIZE:?}")
-    get_user_input "shm memory size (per worker) [$shm_size]:" shm_size
-    parse_human_readable_size $shm_size shm_size
-    if [ $shm_size -le 0 ] ; then
-        log "E: size must be larger than 0: $shm_size"
-        return 1
-    fi
-
-    local mem_size=$(( $gpi_size + $shm_size ))
-
-    # try to get total memory size
-    local total_mem=$( grep ^MemTotal: /proc/meminfo | awk '{print $2}')
-    total_mem=$(( total_mem * 1024 ))
-    if [ $mem_size -gt $total_mem ] ; then
-        log "W: the sum of your specified memory sizes exceeds your available memory!"
-        log "-:     max available: $total_mem"
-        log "-:          gpi size: $gpi_size"
-        log "-:          shm size: $shm_size"
-        if ! y_n_p "Are you really sure to use these values? [y/N] " ; then
-            return 1
-        fi
-    fi
-
-    put "gpi.memory_size" "$gpi_size"
     put "gpi.priv_dir" "$gpid_dir"
-    put "plugin.gpi_compat.shm_size" "$shm_size"
 
     put "gpi.api" $(get gpi.api "${DEFAULT_GPI_API:?}")
     put "gpi.timeout" $(get gpi.timeout "30")
