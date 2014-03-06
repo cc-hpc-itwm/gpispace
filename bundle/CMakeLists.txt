@@ -1,9 +1,5 @@
 # bundle up
 
-install (PROGRAMS bundle.sh
-  DESTINATION libexec/sdpa/scripts
-)
-
 set (APPS)
 
 macro (BUNDLE_APPS)
@@ -41,7 +37,7 @@ bundle_apps(
 install(CODE "
   file(GLOB_RECURSE PLUGINS
          \"\${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/*.so\")
-  execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bundle.sh
+  execute_process(COMMAND ${CMAKE_SOURCE_DIR}/sdpa/bin/pbs/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
                           -d
                           -L \"\${CMAKE_INSTALL_PREFIX}/lib\"
