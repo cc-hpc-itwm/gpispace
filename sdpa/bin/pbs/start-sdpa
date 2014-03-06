@@ -303,6 +303,11 @@ if [ ! -x "${script_start_agent}" ] ; then
     error 2 "utility script '${script_start_agent}' is not executable"
 fi
 
+script_start_orchestrator="${SDPA_HOME}/libexec/sdpa/scripts/start-orch"
+if [ ! -x "${script_start_orchestrator}" ] ; then
+    error 2 "utility script '${script_start_orchestrator}' is not executable"
+fi
+
 script_start_gpi="${SDPA_HOME}/libexec/sdpa/scripts/start-gpi"
 if [ ! -x "${script_start_gpi}" ] ; then
     error 2 "utility script '${script_start_gpi}' is not executable"
@@ -359,7 +364,12 @@ fi
 log "starting base sdpa components on $master..."
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
-dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start orch
+dry_run rexec $master "${script_start_orchestrator}" \
+    -s "$state_dir" \
+    -P "$state_dir/orchestrator.pid" \
+    -D \
+    -k "${master}:${kvs_port}" \
+    -n "orchestrator"
 
 if $gpi_enabled ; then
     # compute memory sizes

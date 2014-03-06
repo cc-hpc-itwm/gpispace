@@ -829,23 +829,6 @@ function stop_kvs ()
     fi
 }
 
-function start_orch ()
-{
-    if ! on_master_node ; then
-        log "E: Orchestrator must be started on the master node"
-        exit 1
-    fi
-    local kvs_host="$(get_master_node)"
-    local kvs_port=$(get "plugin.drts.kvs_port" "${DEFAULT_KVS_PORT:?}")
-
-    if ! start_proc "orchestrator" "$SDPA_SCRIPT_DIR/start-orch" "-s" "$state_dir" "-P" "$state_dir/orchestrator.pid" "-D" -k "${kvs_host}:${kvs_port}" ; then
-        echo "E: could not start orchestrator, giving up!" >&2
-        return 1
-    else
-        return 0
-    fi
-}
-
 function stop_orch ()
 {
     echo "orchestrator"
@@ -1083,7 +1066,7 @@ function start ()
 {
     local part=$1; shift
     if [ -z "$part" ] ; then
-        echo >&2 "start: requires a component to start: kvs|orch"
+        echo >&2 "start: requires a component to start: kvs"
         return 1
     fi
 
