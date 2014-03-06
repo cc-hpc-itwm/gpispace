@@ -20,39 +20,19 @@
 
 namespace
 {
-  bool has_state_pending (sdpa::discovery_info_t const& disc_res)
-  {
-    return disc_res.state() && disc_res.state().get() == sdpa::status::PENDING;
-  }
-
-  bool all_childs_are_pending (sdpa::discovery_info_t const& disc_res)
-  {
-    BOOST_FOREACH
-      (const sdpa::discovery_info_t& child_info, disc_res.children())
-    {
-      if (!has_state_pending (child_info))
-      {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   std::list<sdpa::status::code> get_leaf_job_info(const sdpa::discovery_info_t& disc_res)
   {
     std::list<sdpa::status::code> list_info;
-    if(disc_res.children().empty())
-    {
-        list_info.push_back(*disc_res.state());
-    }
-    else
+    if(!disc_res.children().empty())
     {
       BOOST_FOREACH(const sdpa::discovery_info_t& child_info, disc_res.children() )
       {
         std::list<sdpa::status::code> list_info_child(get_leaf_job_info(child_info));
         list_info.insert(list_info.end(), list_info_child.begin(), list_info_child.end());
       }
+    }
+    else {
+       list_info.push_back(*disc_res.state());
     }
 
     return list_info;
@@ -68,6 +48,18 @@ namespace
     }
 
     return maxd;
+  }
+
+  void check_has_one_leaf_job_with_expected_status( const sdpa::discovery_info_t& disc_res
+                                                    , const sdpa::status::code expected_status)
+  {
+     std::list<sdpa::status::code> list_leaf_job_status(get_leaf_job_info(disc_res));
+     BOOST_REQUIRE_EQUAL(list_leaf_job_status.size(), 1);
+
+     BOOST_FOREACH(const sdpa::status::code& leaf_job_status, list_leaf_job_status)
+     {
+       BOOST_REQUIRE_EQUAL(leaf_job_status, expected_status);
+     }
   }
 }
 
@@ -160,13 +152,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
   sdpa::discovery_info_t disc_res(client.discoverJobStates (get_next_disc_id(), job_id));
   BOOST_REQUIRE_EQUAL(max_depth(disc_res), 2);
 
-  std::list<sdpa::status::code> list_leaf_job_status(get_leaf_job_info(disc_res));
-  BOOST_REQUIRE_EQUAL(list_leaf_job_status.size(), 1);
-
-  BOOST_FOREACH(const sdpa::status::code& leaf_job_status, list_leaf_job_status)
-  {
-    BOOST_REQUIRE_EQUAL(leaf_job_status, reply_status);
-  }
+  check_has_one_leaf_job_with_expected_status(disc_res, reply_status);
 }
 
 BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
@@ -200,16 +186,9 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
   sdpa::discovery_info_t disc_res(client.discoverJobStates (get_next_disc_id(), job_id));
   BOOST_REQUIRE_EQUAL(max_depth(disc_res), n_agents_in_chain+1);
 
-  std::list<sdpa::status::code> list_leaf_job_states(get_leaf_job_info(disc_res));
-  BOOST_REQUIRE_EQUAL(list_leaf_job_states.size(), 1);
-
-  BOOST_FOREACH(const sdpa::status::code& leaf_job_status, list_leaf_job_states)
-  {
-    BOOST_REQUIRE_EQUAL(leaf_job_status, reply_status);
-  }
+  check_has_one_leaf_job_with_expected_status(disc_res, reply_status);
 
   delete pWorker;
-
   for(int k=n_agents_in_chain-1;k>0;k--)
     delete arr_ptr_agents[k];
 }
@@ -236,14 +215,8 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  std::list<sdpa::status::code>
-    list_leaf_job_status(get_leaf_job_info(client.discoverJobStates (get_next_disc_id(), job_id)));
-
-  BOOST_REQUIRE_EQUAL(list_leaf_job_status.size(), 1);
-  BOOST_FOREACH(const sdpa::status::code& leaf_job_status, list_leaf_job_status)
-  {
-    BOOST_REQUIRE_EQUAL(leaf_job_status, sdpa::status::PENDING);
-  }
+  check_has_one_leaf_job_with_expected_status( client.discoverJobStates (get_next_disc_id()
+                                               , job_id), sdpa::status::PENDING );
 }
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
@@ -264,13 +237,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
         )
   {} // do nothing, discover again
 
-  std::list<sdpa::status::code> list_leaf_job_status(get_leaf_job_info(disc_res));
-
-  BOOST_REQUIRE_EQUAL(list_leaf_job_status.size(), 1);
-  BOOST_FOREACH(const sdpa::status::code& leaf_job_status, list_leaf_job_status)
-  {
-    BOOST_REQUIRE_EQUAL(leaf_job_status, sdpa::status::PENDING);
-  }
+  check_has_one_leaf_job_with_expected_status(disc_res, sdpa::status::PENDING );
 }
 
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
@@ -290,10 +257,14 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  while (!all_childs_are_pending
-          (client.discoverJobStates (get_next_disc_id(), job_id))
-        )
-  {} // do nothing, discover again
+  sdpa::discovery_info_t disc_res;
+
+  while (max_depth
+           (disc_res=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
+         )
+   {} // do nothing, discover again
+
+  check_has_one_leaf_job_with_expected_status(disc_res, sdpa::status::PENDING );
 }
 
 BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
@@ -305,18 +276,21 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
   const utils::agent agent
-     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   Worker*  pWorker_0 = new Worker( "worker_0", agent._.name(), "A");
-  const Worker worker_2( "worker_2", agent._.name(), "A");
+  const Worker worker_1( "worker_1", agent._.name(), "A");
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   delete pWorker_0;
 
-  while (!all_childs_are_pending
-          (client.discoverJobStates (get_next_disc_id(), job_id))
-        )
-  {} // do nothing, discover again
+  sdpa::discovery_info_t disc_res;
+  while (max_depth
+           (disc_res=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
+         )
+   {} // do nothing, discover again
+
+  check_has_one_leaf_job_with_expected_status(disc_res, sdpa::status::PENDING );
 }
