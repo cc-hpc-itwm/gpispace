@@ -623,7 +623,6 @@ usage: `basename $0` command [parameters...]
 
   start [component] - start all components or "component"
    stop [component] - stop all components or "component"
-restart [component] - restart all components or "component"
  status [component] - get the current status of component
                 gui - start the GUI
 
@@ -1054,17 +1053,6 @@ function stop ()
     return $rc
 }
 
-function restart ()
-{
-    if stop $@ ; then
-        sleep 3
-        start $@
-    else
-        log "E: stop failed, not starting!"
-        return 1
-    fi
-}
-
 function program_status ()
 {
     local p=$1 ; shift
@@ -1387,15 +1375,6 @@ case "$1" in
         fi
         shift
         stop $@
-        ;;
-    restart)
-        require_state
-        if ! on_master_node ; then
-            log "E: not on master node"
-            exit 1
-        fi
-        shift
-        restart $@
         ;;
     status)
         require_state
