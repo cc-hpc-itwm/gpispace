@@ -527,7 +527,7 @@ function dump_config ()
 
 function initialize ()
 {
-    local hostfile="$PBS_NODEFILE"
+    local hostfile=""
     local node_file=
 
     app_path="${SDPA_APP_PATH}"
