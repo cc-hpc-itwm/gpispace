@@ -381,38 +381,6 @@ function to_human_readable_size ()
 
 function setup_gpi ()
 {
-    local p_gpi_enabled=$(get "gpi.enabled" "${DEFAULT_GPI_ENABLED:?}")
-    if [ x"$p_gpi_enabled" = x"true" ] ; then
-        y_n_p "Do you want to enable GPI? [Y/n] "
-    else
-        y_n_p "Do you want to enable GPI? [y/N] "
-    fi
-    local ec=$?
-    if [ $ec -eq 0 ] ; then
-        p_gpi_enabled="true"
-    elif [ $ec -eq 1 ] ; then
-        p_gpi_enabled="false"
-    fi
-
-    case "$p_gpi_enabled" in
-        true)
-            put "gpi.enabled" "true"
-            ;;
-        false)
-            put "gpi.enabled" "false"
-            ;;
-        *)
-            log "E: gpi.enabled must be one of true/false"
-            return 1
-            ;;
-    esac
-
-    if [ "$p_gpi_enabled" = "false" ] ; then
-        log "I: GPI support has been disabled."
-        log "I: to activate it, run 'sdpa setup gpi'"
-        return
-    fi
-
     local gpid_pid=""
     local gpid_dir="$DEFAULT_GPI_PRIV_DIR"
 
@@ -1190,15 +1158,7 @@ function status_kvs ()
 
 function status_gpi ()
 {
-    local ec=0
-    local gpi_enabled=$(get "gpi.enabled" "true")
-    if [ x"$gpi_enabled" = x"true" ] ; then
-        program_status "gpi-space"
-        ec=$?
-    else
-        ec=23
-    fi
-    return $ec
+    program_status "gpi-space"
 }
 
 function status ()

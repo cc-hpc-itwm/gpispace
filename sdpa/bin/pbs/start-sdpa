@@ -367,8 +367,6 @@ if $gpi_enabled ; then
         gpi_mem=$(( avl_mem * 50 / 100 ))
     fi
 
-    dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "true"
-
     info "using GPI mem: ${gpi_mem} bytes per node"
 
     "${script_start_gpi}" -s "$state_dir" \
@@ -381,8 +379,6 @@ if $gpi_enabled ; then
                           -l "${master}" \
                           -S "${gpi_socket_dir}" \
                           -L "${log_port}"
-else
-    dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "false"
 fi
 
 # for each capability:
