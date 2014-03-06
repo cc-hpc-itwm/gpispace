@@ -379,7 +379,7 @@ if $gpi_enabled ; then
                           -k "${master}" \
                           -K "$kvs_port" \
                           -l "${master}" \
-                          -S "${socket_dir}" \
+                          -S "${gpi_socket_dir}" \
                           -L "${log_port}"
 else
     dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "false"
