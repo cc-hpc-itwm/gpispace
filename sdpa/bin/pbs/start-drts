@@ -239,6 +239,10 @@ if [ x"$identity" = x"0" ] ; then
 fi
 
 name="${name_prefix}-$(hostname -s)-${identity}"
+if [ -n "${numa_socket}" ]
+then
+    name="${name}.${numa_socket}"
+fi
 
 if [ -z "$logdir" ]
 then
