@@ -9,5 +9,4 @@ pnet_compile(capabilities_no_mandatory capabilities_no_mandatory.xml
            -I${CMAKE_SOURCE_DIR}/application/example
            -O3
   BUILD
-  COMPONENT applications
 )

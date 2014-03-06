@@ -1,6 +1,6 @@
 #pragma once
 
-#include <jpn/config.h>
+#include <pnetv/jpn/config.h>
 
 #include <we/type/id.hpp>
 

@@ -2,8 +2,8 @@
 
 #include <drts/worker/drts.hpp>
 
-#include <fhg/plugin/core/kernel.hpp>
-#include <fhg/plugin/core/license.hpp>
+#include <plugin/core/kernel.hpp>
+#include <plugin/core/license.hpp>
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/pidfile_writer.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
@@ -77,14 +77,13 @@ int main(int ac, char **av)
   std::map<std::string, std::string> config_variables;
   BOOST_FOREACH (const std::string& p, config_vars)
   {
-    const std::pair<std::string, std::string> kv (fhg::util::split_string (p, "="));
+    const std::pair<std::string, std::string> kv (fhg::util::split_string (p, '='));
     if (kv.first.empty())
     {
       LLOG (ERROR, logger, "invalid config variable: must not be empty");
       throw std::runtime_error ("invalid config variable: must not be empty");
     }
 
-    DLLOG (TRACE, logger, "setting " << kv.first << " to " << kv.second);
     config_variables.insert (kv);
   }
   config_variables["kernel_name"] = kernel_name;

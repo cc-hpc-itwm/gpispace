@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
+
 project (sdpa_main)
 
 set(V_MAJOR 13)
@@ -14,19 +16,12 @@ set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" 
 set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
-OPTION (WITH_MANPAGES "Build manpages" YES)
-OPTION (ENABLE_SDPA_GUI "Build the monitor gui" YES)
-OPTION (ENABLE_GPI_FUSE "Build the gpi fuse module" OFF)
-OPTION (ENABLE_PNET_EDITOR "Build the pnet editor" YES)
-OPTION (INSTALL_AS_BUNDLE "Install as a bundle" NO)
-OPTION (DEBUG_FHGLOG "Additional debug output from fhglog self" NO)
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
 option (FHG_ASSERT_REPLACE_LEGACY "Replace legacy assert with fhg_assert" ON)
 option (ENABLE_BACKTRACE_ON_PARSE_ERROR "Show a backtrace on (pnet) parser errors" OFF)
 
-function (get_revision_info REV_INFO)
   execute_process (
     COMMAND git rev-parse HEAD
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -36,11 +31,14 @@ function (get_revision_info REV_INFO)
     )
   if (${_res_git} EQUAL 0)
     string (STRIP "${_out_git}" _out_git)
-    set (${REV_INFO} ${_out_git} PARENT_SCOPE)
+    set (PROJECT_REVISION ${_out_git})
   endif()
-endfunction()
 
-function (get_version_info VSN_INFO)
+if (NOT PROJECT_REVISION)
+  message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
+endif (NOT PROJECT_REVISION)
+set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
+
   execute_process (
     COMMAND git describe
     COMMAND sed -e "s/^v//"
@@ -51,7 +49,7 @@ function (get_version_info VSN_INFO)
   )
   if (${_res} EQUAL 0)
     string (STRIP "${_out}" _out)
-    set (${VSN_INFO} ${_out} PARENT_SCOPE)
+    set (PROJECT_VERSION ${_out})
   else()
     set(__new_vsn "${V_MAJOR}.${V_MINOR}")
     if (NOT ${V_PATCH} STREQUAL "")
@@ -60,31 +58,14 @@ function (get_version_info VSN_INFO)
     if (NOT ${V_EXTRA} STREQUAL "")
       set(__new_vsn "${__new_vsn}-${V_EXTRA}")
     endif()
-    set (${VSN_INFO} ${__new_vsn} PARENT_SCOPE)
+    set (PROJECT_VERSION ${__new_vsn})
   endif ()
-endfunction()
 
-get_revision_info (PROJECT_REVISION)
-if (NOT PROJECT_REVISION)
-  message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
-endif (NOT PROJECT_REVISION)
-set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
-
-math (EXPR GSPC_VERSION "${V_MAJOR}*10000 + ${V_MINOR} * 100")
-
-if (V_PATCH)
-  math(EXPR GSPC_VERSION "${GSPC_VERSION} + ${V_PATCH}")
-endif()
-
-get_version_info (PROJECT_VERSION)
 if (NOT PROJECT_VERSION)
   message (FATAL_ERROR "could not discover version info, please define -DPROJECT_VERSION by hand!")
 endif()
 set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
 
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
-
-cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
@@ -92,10 +73,6 @@ set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$EN
 include (fhg_test_macros)
 
 include (CompilerFlags)
-
-if (NOT DEBUG_FHGLOG)
-  add_definitions("-DNDEBUG_FHGLOG")
-endif()
 
 if (NOT FHG_ASSERT_MODE)
   if (${CMAKE_BUILD_TYPE} MATCHES "Release")
@@ -177,24 +154,21 @@ set (FhgLog_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhglog ${CMAKE_BINARY_DIR}/fhglog)
 set (FhgLog_LIBRARY fhglog)
 set (FhgLog_LIBRARY_SHARED fhglog-shared)
 
-set (MMGR_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
+set (MMGR_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
 set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
 
-set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgkernel ${CMAKE_BINARY_DIR}/fhgkernel)
+set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 
 set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
 
-set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgcom ${CMAKE_BINARY_DIR}/fhgcom)
+set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 set (FhgCom_LIBRARY fhgcom)
 
 set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc ${CMAKE_BINARY_DIR}/fvm-pc)
 
-set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/gpi-space ${CMAKE_BINARY_DIR}/gpi-space)
+set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 set (GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
-
-set (GSPC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/gspc ${CMAKE_BINARY_DIR}/gspc)
-set (GSPC_LIBRARY_SHARED libgspc.shared)
 
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
 set (PNETC_EXAMPLES_DIR "share/sdpa/xml/examples")
@@ -204,13 +178,6 @@ include (CTest)
 add_subdirectory (fhglog)
   add_subdirectory (fvm-pc)
 add_subdirectory (util)
-add_subdirectory (fhgkernel)
-add_subdirectory (gspc)
-add_subdirectory (fhgcom)
-  add_subdirectory (gpi-space)
-if (ENABLE_GPI_FUSE)
-  add_subdirectory (gpi-fuse)
-endif (ENABLE_GPI_FUSE)
 add_subdirectory (application)
 add_subdirectory (src)
 add_subdirectory (sdpa)
@@ -219,15 +186,6 @@ add_subdirectory(bundle)
 add_subdirectory (test)
 
 INCLUDE (InstallRequiredSystemLibraries)
-#set (CPACK_GENERATOR "RPM;STGZ;TGZ;TBZ2")
-set (CPACK_GENERATOR "TBZ2")
-set (CPACK_SOURCE_GENERATOR "TBZ2")
-set (CPACK_PACKAGE_VENDOR "${PROJECT_VENDOR}")
-set (CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set (CPACK_PACKAGE_VERSION_MAJOR "${V_MAJOR}")
-set (CPACK_PACKAGE_VERSION_MINOR "${V_MINOR}")
-set (CPACK_PACKAGE_VERSION_PATCH "${V_PATCH}")
-INCLUDE (CPack)
 
 add_subdirectory (playground/ap/licensing)
 add_subdirectory (playground/bl)

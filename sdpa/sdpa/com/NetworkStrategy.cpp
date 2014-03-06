@@ -1,4 +1,4 @@
-#include "NetworkStrategy.hpp"
+#include <sdpa/com/NetworkStrategy.hpp>
 #include <fhg/assert.hpp>
 
 #include <csignal>
@@ -22,13 +22,14 @@ namespace sdpa
                                      , std::string const & peer_name
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
+                                     , fhg::com::kvs::kvsc_ptr_t kvs_client
                                      )
       : _logger (fhg::log::Logger::get ("NetworkStrategy " + peer_name))
       , _event_handler (event_handler)
       , m_peer ( new fhg::com::peer_t ( peer_name
                                       , fhg::com::host_t (host)
                                       , fhg::com::port_t (port)
-                                      , fhg::com::kvs::global_kvs()
+                                      , kvs_client
                                       )
                )
       , m_message()
@@ -54,8 +55,6 @@ namespace sdpa
       static sdpa::events::Codec codec;
 
       // convert event to fhg::com::message_t
-
-      DLLOG(TRACE, _logger, "sending event: " << sdpa_event->str());
 
       fhg::com::message_t msg;
       msg.header.dst = m_peer->resolve_name (sdpa_event->to());
@@ -87,16 +86,6 @@ namespace sdpa
     {
       if (ec)
       {
-        DLLOG ( WARN
-              , _logger
-              , "send failed:"
-              << " ec := " << ec
-              << " msg := " << ec.message ()
-              << " event := " << sdpa_event->str()
-              << " to := " << sdpa_event->to ()
-              << " from := " << sdpa_event->from ()
-              );
-
         //sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
         sdpa::events::ErrorEvent::Ptr ptrErrEvt
           (new sdpa::events::ErrorEvent( sdpa_event->to()
@@ -115,17 +104,9 @@ namespace sdpa
       if (! ec)
       {
         // convert m_message to event
-        try
-        {
-          sdpa::events::SDPAEvent::Ptr evt
-            (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
-          DLLOG(TRACE, _logger, "received event: " << evt->str());
-          _event_handler (evt);
-        }
-        catch (std::exception const & ex)
-        {
-          LLOG(WARN, _logger, "could not handle incoming message: " << ex.what());
-        }
+        sdpa::events::SDPAEvent::Ptr evt
+          (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
+        _event_handler (evt);
 
         m_peer->async_recv (&m_message, boost::bind(&NetworkStrategy::handle_recv, this, _1));
       }

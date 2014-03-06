@@ -69,7 +69,7 @@ namespace fhg
             )
         {
           const std::pair<std::string, std::string> key_value
-            (fhg::util::split_string (*env_p, "="));
+            (fhg::util::split_string (*env_p, '='));
 
           if (key_value.first.find ("FHGLOG_") != std::string::npos)
           {

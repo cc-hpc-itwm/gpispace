@@ -91,7 +91,7 @@ namespace we
       return path_;
     }
     void Module::call ( const std::string& function
-                      , gspc::drts::context *info
+                      , drts::worker::context *info
                       , const expr::eval::context& input
                       , expr::eval::context& output
                       )

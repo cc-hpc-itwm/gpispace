@@ -9,5 +9,4 @@ pnet_compile(capabilities capabilities.xpnet
            -I${CMAKE_SOURCE_DIR}/application/example
            -O3
   BUILD
-  COMPONENT applications
 )

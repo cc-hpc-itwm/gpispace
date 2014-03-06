@@ -8,4 +8,4 @@ target_link_libraries (fhgcfg
 install (TARGETS fhgcfg
   RUNTIME
   DESTINATION bin
-  COMPONENT runtime)
+)

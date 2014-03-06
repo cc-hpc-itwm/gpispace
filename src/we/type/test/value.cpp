@@ -47,17 +47,14 @@ namespace
                                  )
   {
     using pnet::type::value::value_type;
-    using pnet::type::value::show;
-    using pnet::type::value::read;
-    using fhg::util::parse::position_string;
 
     {
       std::ostringstream oss;
-      oss << show (value_type (x));
+      oss << pnet::type::value::show (value_type (x));
       BOOST_CHECK_EQUAL (expected_show, oss.str());
       const std::string inp (oss.str());
-      position_string pos (inp);
-      BOOST_CHECK_EQUAL (value_type (x), read (pos));
+      fhg::util::parse::position_string pos (inp);
+      BOOST_CHECK_EQUAL (value_type (x), pnet::type::value::read (pos));
       BOOST_CHECK (pos.end());
     }
   }
@@ -316,7 +313,7 @@ BOOST_AUTO_TEST_CASE (peek_ref)
     const std::list<value_type>& g
       (boost::get<const std::list<value_type>&> (*peek ("l", m)));
 
-    BOOST_CHECK_EQUAL (g.size(), 1);
+    BOOST_CHECK_EQUAL (g.size(), 1U);
     BOOST_CHECK_EQUAL (*g.begin(), value_type (19));
   }
 }
@@ -1175,7 +1172,7 @@ BOOST_AUTO_TEST_CASE (positions)
   LITERAL (0.0f);
   LITERAL (0.0);
   LITERAL ('c');
-  LITERAL ("");
+  LITERAL (std::string (""));
   LITERAL (bitsetofint::type());
   LITERAL (bytearray::type());
   LITERAL (std::list<value_type>());
@@ -1197,10 +1194,10 @@ BOOST_AUTO_TEST_CASE (positions)
 
   BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
 
-  pnet::type::value::poke ("c.1", value, "foo");
-  positions.push_back (std::make_pair (split ("c.1"), "foo"));
-  pnet::type::value::poke ("c.2", value, "bar");
-  positions.push_back (std::make_pair (split ("c.2"), "bar"));
+  pnet::type::value::poke ("c.1", value, std::string ("foo"));
+  positions.push_back (std::make_pair (split ("c.1"), std::string ("foo")));
+  pnet::type::value::poke ("c.2", value, std::string ("bar"));
+  positions.push_back (std::make_pair (split ("c.2"), std::string ("bar")));
 
   BOOST_REQUIRE_EQUAL (pnet::type::value::positions (value), positions);
 }

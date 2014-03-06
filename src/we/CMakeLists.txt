@@ -28,25 +28,21 @@ set_target_properties (we-dev PROPERTIES OUTPUT_NAME we-dev VERSION 1)
 
 install (TARGETS we-dev
   LIBRARY DESTINATION lib
-  COMPONENT runtime
 )
 
 install (FILES
   expr/eval/context.hpp
   DESTINATION include/we/expr/eval
-  COMPONENT sdk
 )
 install (FILES
   expr/token/type.hpp
   DESTINATION include/we/expr/token
-  COMPONENT sdk
 )
 install (FILES
   loader/IModule.hpp
   loader/api-guard.hpp
   loader/macros.hpp
   DESTINATION include/we/loader
-  COMPONENT sdk
 )
 install (FILES
   type/bitsetofint.hpp
@@ -55,7 +51,6 @@ install (FILES
   type/signature.hpp
   type/id.hpp
   DESTINATION include/we/type
-  COMPONENT sdk
 )
 install (FILES
   type/value/peek.hpp
@@ -67,36 +62,32 @@ install (FILES
   type/value/wrap.hpp
   type/value/unwrap.hpp
   DESTINATION include/we/type/value
-  COMPONENT sdk
 )
 install (FILES
   type/value/path/append.hpp
   DESTINATION include/we/type/value/path
-  COMPONENT sdk
 )
 install (FILES
   field.hpp
   signature_of.hpp
   exception.hpp
   DESTINATION include/we/
-  COMPONENT sdk
 )
 install (FILES
   type/literal/control.hpp
   DESTINATION include/we/type/literal
-  COMPONENT sdk
 )
 
 add_executable (generate_parser_action_table expr/parse/table.cpp)
 target_link_libraries (generate_parser_action_table pnet)
 
+find_package (LibReadline REQUIRED QUIET)
+include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
+
 add_executable (expression_shell expr/shell.cpp)
 target_link_libraries (expression_shell pnet ${LibReadline_LIBRARY})
 
 add_subdirectory (util)
-
-find_package (LibReadline REQUIRED QUIET)
-include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 
 add_subdirectory (expr/parse/test)
 add_subdirectory (expr/test)

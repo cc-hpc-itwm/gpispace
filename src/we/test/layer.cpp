@@ -64,7 +64,7 @@ struct daemon
     , layer ( boost::bind (&daemon::submit, this, _1, _2)
             , boost::bind (&daemon::cancel, this, _1)
             , boost::bind (&daemon::finished, this, _1, _2)
-            , boost::bind (&daemon::failed, this, _1, _2, _3)
+            , boost::bind (&daemon::failed, this, _1, _2)
             , boost::bind (&daemon::canceled, this, _1)
             , boost::bind (&daemon::discover, this, _1, _2)
             , boost::bind (&daemon::discovered, this, _1, _2)
@@ -191,25 +191,19 @@ struct daemon
 
   DECLARE_EXPECT_CLASS ( failed
                        , we::layer::id_type id
-        BOOST_PP_COMMA() int ec
         BOOST_PP_COMMA() std::string message
                        , _id (id)
-        BOOST_PP_COMMA() _ec (ec)
         BOOST_PP_COMMA() _message (message)
                        , we::layer::id_type _id
-                       ; int _ec
                        ; std::string _message
-                       , _id == id && _ec == ec && _message == message
+                       , _id == id && _message == message
                        );
 
-  void failed ( we::layer::id_type id
-              , int ec
-              , std::string message
-              )
+  void failed (we::layer::id_type id, std::string message)
   {
     std::list<expect_failed*>::iterator const e
       ( boost::find_if ( _to_failed
-                       , boost::bind (&expect_failed::eq, _1, id, ec, message)
+                       , boost::bind (&expect_failed::eq, _1, id, message)
                        )
       );
 
@@ -325,14 +319,11 @@ struct daemon
     layer.cancel (id);
   }
 
-  void do_failed ( we::layer::id_type id
-                 , int ec
-                 , std::string message
-                 )
+  void do_failed (we::layer::id_type id, std::string message)
   {
     DEC_IN_PROGRESS (jobs_rts);
 
-    layer.failed (id, ec, message);
+    layer.failed (id, message);
   }
 
   void do_canceled (we::layer::id_type id)
@@ -790,13 +781,12 @@ BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
     do_submit (id, activity_input);
   }
 
-  const int ec (rand());
   const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
 
   {
-    expect_failed const _ (this, id, ec, message);
+    expect_failed const _ (this, id, message);
 
-    do_failed (child_id, ec, message);
+    do_failed (child_id, message);
   }
 }
 
@@ -822,17 +812,16 @@ BOOST_FIXTURE_TEST_CASE
     do_submit (id, activity_input);
   }
 
-  const int ec (rand());
   const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
 
   {
     expect_cancel const _ (this, child_id_B);
 
-    do_failed (child_id_A, ec, message);
+    do_failed (child_id_A, message);
   }
 
   {
-    expect_failed const _ (this, id, ec, message);
+    expect_failed const _ (this, id, message);
 
     //! \todo There is an uncheckable(?) race here: rts_failed may
     //! be called before do_canceled (second child)!
@@ -900,7 +889,7 @@ namespace
   }
 
   void cancel (we::layer::id_type){}
-  void failed (we::layer::id_type, int, std::string){}
+  void failed (we::layer::id_type, std::string){}
   void canceled (we::layer::id_type){}
   void discover (we::layer::id_type, we::layer::id_type){}
   void discovered (we::layer::id_type, sdpa::discovery_info_t){}

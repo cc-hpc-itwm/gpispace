@@ -4,8 +4,12 @@
 #include "tests_config.hpp"
 #include <utils.hpp>
 
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+
 #include <we/layer.hpp>
 
+#include <boost/ptr_container/ptr_list.hpp>
 #include <boost/test/unit_test.hpp>
 #include <sdpa/types.hpp>
 
@@ -55,10 +59,11 @@ namespace sdpa
     public:
       TestAgent ( const std::string& name
                 , const std::string& url
+                , std::string kvs_host, std::string kvs_port
                 , const sdpa::master_info_list_t arrMasterNames
-                , int rank
                 )
-        : Agent (name, url, arrMasterNames, rank, boost::none)
+        : Agent (name, url, kvs_host, kvs_port, arrMasterNames, boost::none)
+        , _number_of_jobs_submitted (0)
       {}
 
       std::string gen_id()
@@ -87,8 +92,9 @@ namespace sdpa
                   )
       {
         GenericDaemon::submit (activityId, activity);
+        ++_number_of_jobs_submitted;
 
-        if (jobManager().numberOfJobs() < 2)
+        if (_number_of_jobs_submitted < 2)
         {
           _cond_all_submitted.notify_one();
         }
@@ -113,7 +119,7 @@ namespace sdpa
               (_jobs_to_discover.front());
             _jobs_to_discover.pop_front();
 
-            Job* const pJob (jobManager().findJob (pair.second));
+            Job* const pJob (findJob (pair.second));
 
             sdpa::discovery_info_t const discover_result
               ( pair.second
@@ -151,6 +157,8 @@ namespace sdpa
       std::deque<std::pair<we::layer::id_type, sdpa::job_id_t> > _jobs_to_discover;
       sdpa::discovery_info_t _discovery_result;
       we::layer::id_type _discover_id;
+
+      int _number_of_jobs_submitted;
     };
   }
 }
@@ -168,12 +176,13 @@ namespace
 BOOST_AUTO_TEST_CASE (test_discover_activities)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation_test2.pnet"));
 
   const we::type::activity_t activity (workflow);
 
   sdpa::master_info_list_t listMasterInfo;
-  sdpa::daemon::TestAgent agent ("agent_0", "127.0.0.1", listMasterInfo, 0);
+  sdpa::daemon::TestAgent agent
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), listMasterInfo);
 
   we::layer::id_type const id ("test_job");
 
@@ -201,8 +210,9 @@ BOOST_AUTO_TEST_CASE (test_discover_activities)
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 {
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
-  sdpa::client::Client client (orchestrator.name());
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
   BOOST_REQUIRE_EQUAL
     ( client.discoverJobStates ("disc_id_0", "inexistent_job_id").state()
@@ -213,10 +223,11 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+    (utils::require_and_read_file ("coallocation_test.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
-  sdpa::client::Client client (orchestrator.name());
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   while (!has_state_pending
@@ -228,11 +239,13 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+    (utils::require_and_read_file ("coallocation_test.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
-  const utils::agent agent ("agent_0", "127.0.0.1", orchestrator);
-  sdpa::client::Client client (orchestrator.name());
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  const utils::agent agent
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   while (!all_childs_are_pending
@@ -244,10 +257,12 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test2.pnet"));
+    (utils::require_and_read_file ("coallocation_test2.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
-  const utils::agent agent ("agent_0", "127.0.0.1", orchestrator);
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  const utils::agent agent
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_A_0
     ( "drts_A_0", agent
@@ -270,7 +285,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 
   // the task A requires 2 workers, task B requires 3 workers
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   while (!has_two_childs_that_are_pending
@@ -282,10 +297,12 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 BOOST_AUTO_TEST_CASE (remove_workers)
 {
   const std::string workflow
-    (utils::require_and_read_file ("workflows/coallocation_test.pnet"));
+    (utils::require_and_read_file ("coallocation_test.pnet"));
 
-  const utils::orchestrator orchestrator ("orchestrator_0", "127.0.0.1");
-  const utils::agent agent ("agent_0", "127.0.0.1", orchestrator);
+  const utils::orchestrator orchestrator
+    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  const utils::agent agent
+    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_A_0
     ( "drts_A_0", agent
@@ -327,7 +344,7 @@ BOOST_AUTO_TEST_CASE (remove_workers)
 
   // the task A requires 2 workers, task B requires 3 workers
 
-  sdpa::client::Client client (orchestrator.name());
+  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   ptr_worker_A_1.reset();
@@ -337,4 +354,116 @@ BOOST_AUTO_TEST_CASE (remove_workers)
           (client.discoverJobStates (get_next_disc_id(), job_id))
         )
   {} // do nothing, discover again
+}
+
+namespace
+{
+  class fake_drts_worker_discovering_running :
+    public utils::fake_drts_worker_notifying_module_call_submission
+  {
+  public:
+    fake_drts_worker_discovering_running
+        ( boost::function<void (std::string)> announce_job
+        , std::string kvs_host
+        , std::string kvs_port
+        , utils::agent const& master
+        )
+      : utils::fake_drts_worker_notifying_module_call_submission
+        (announce_job, kvs_host, kvs_port, master)
+    {}
+
+    virtual void handleDiscoverJobStatesEvent
+      (const sdpa::events::DiscoverJobStatesEvent* e)
+    {
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          ( new sdpa::events::DiscoverJobStatesReplyEvent
+            ( _name
+            , e->from()
+            , e->discover_id()
+            , sdpa::discovery_info_t
+              (e->job_id(), sdpa::status::RUNNING, sdpa::discovery_info_set_t())
+            )
+          )
+        );
+    }
+  };
+
+  std::size_t recursive_child_count (sdpa::discovery_info_t info)
+  {
+    std::size_t count (info.children().size());
+    BOOST_FOREACH (sdpa::discovery_info_t child, info.children())
+    {
+      count += recursive_child_count (child);
+    }
+    return count;
+  }
+
+  struct wait_until_submitted_and_finish_on_scope_exit
+  {
+    wait_until_submitted_and_finish_on_scope_exit
+        ( utils::fake_drts_worker_notifying_module_call_submission& worker
+        , std::string expected_job_name
+        , fhg::util::thread::event<std::string>& job_submitted
+        )
+      : _worker (worker)
+      , _actual_job_name()
+    {
+      job_submitted.wait (_actual_job_name);
+      BOOST_REQUIRE_EQUAL (_actual_job_name, expected_job_name);
+    }
+    ~wait_until_submitted_and_finish_on_scope_exit()
+    {
+      _worker.finish (_actual_job_name);
+    }
+
+    utils::fake_drts_worker_notifying_module_call_submission& _worker;
+    std::string _actual_job_name;
+  };
+
+  void verify_child_count_in_agent_chain (const std::size_t num_agents)
+  {
+    const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+    const utils::agent top_agent (kvs_host(), kvs_port(), orchestrator);
+    boost::ptr_list<utils::agent> agents;
+
+    const utils::agent* last_agent = &top_agent;
+    for (std::size_t counter (1); counter < num_agents; ++counter)
+    {
+      agents.push_back (new utils::agent (kvs_host(), kvs_port(), *last_agent));
+      last_agent = &agents.back();
+    }
+
+    fhg::util::thread::event<std::string> job_submitted;
+
+    fake_drts_worker_discovering_running worker
+      ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
+      , kvs_host(), kvs_port()
+      , *last_agent
+      );
+
+    const std::string activity_name (fhg::util::random_string());
+
+    utils::client::submitted_job submitted_job
+      (utils::dummy_module_call (activity_name), orchestrator);
+
+    const wait_until_submitted_and_finish_on_scope_exit _
+      (worker, activity_name, job_submitted);
+
+    BOOST_REQUIRE_EQUAL
+      (recursive_child_count (submitted_job.discover()), num_agents);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (agent_chain_1)
+{
+  verify_child_count_in_agent_chain (1);
+}
+BOOST_AUTO_TEST_CASE (agent_chain_2)
+{
+  verify_child_count_in_agent_chain (2);
+}
+BOOST_AUTO_TEST_CASE (agent_chain_random_3_to_100)
+{
+  verify_child_count_in_agent_chain (3 + rand() % 98);
 }

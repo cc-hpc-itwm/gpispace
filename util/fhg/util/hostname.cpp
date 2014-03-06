@@ -1,6 +1,6 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#include "hostname.hpp"
+#include <fhg/util/hostname.hpp>
 
 #include <boost/format.hpp>
 

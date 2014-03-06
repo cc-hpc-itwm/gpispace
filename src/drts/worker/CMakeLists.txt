@@ -9,7 +9,6 @@ target_link_libraries (fake-drts-kernel-plugin
   ${UTIL_LIBRARIES}
   sdpa
   ${FhgCom_LIBRARY}
-  ${GSPC_LIBRARY_SHARED}
   ${HWLOC_SHARED_LIBRARY}
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
@@ -30,4 +29,9 @@ target_link_libraries (drts-kernel
 install (TARGETS drts-kernel
   RUNTIME
   DESTINATION bin
-  COMPONENT runtime)
+)
+
+install (FILES context_fwd.hpp context.hpp
+
+  DESTINATION include/drts/worker
+)

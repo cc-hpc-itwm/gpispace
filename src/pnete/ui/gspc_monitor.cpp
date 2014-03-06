@@ -57,7 +57,7 @@ namespace fhg
 
           QPushButton* clear_log
             (new QPushButton (QObject::tr ("clear log"), sidebar));
-          log->connect (clear_log, SIGNAL (clicked()), SLOT (clear()));
+          log->connect (clear_log, SIGNAL (clicked()), SLOT (clearContents()));
 
           QCheckBox* follow_logging
             (new QCheckBox (QObject::tr ("follow logging"), sidebar));

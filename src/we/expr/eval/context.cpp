@@ -22,7 +22,7 @@ namespace expr
     {
       std::list<std::string> split (const std::string& s)
       {
-        return fhg::util::split<std::string, std::list<std::string> > (s, '.');
+        return fhg::util::split<std::string, std::string> (s, '.');
       }
     }
 

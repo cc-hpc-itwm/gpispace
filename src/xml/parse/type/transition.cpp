@@ -17,7 +17,7 @@
 
 #include <boost/variant.hpp>
 
-#include <rewrite/validprefix.hpp>
+#include <xml/parse/rewrite/validprefix.hpp>
 
 namespace xml
 {

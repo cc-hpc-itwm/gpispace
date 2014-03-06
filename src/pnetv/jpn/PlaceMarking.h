@@ -1,16 +1,16 @@
 #pragma once
 
-#include <jpn/config.h>
+#include <pnetv/jpn/config.h>
 
 #ifdef JPN_BOOST_HASH
 #include <boost/functional/hash.hpp>
 #endif
 
-#include <jpn/Types.h>
+#include <pnetv/jpn/Types.h>
 #ifdef JPN_EXTENDED_MARKINGS
-#include <jpn/common/ExtendedInteger.h>
+#include <pnetv/jpn/common/ExtendedInteger.h>
 #endif
-#include <jpn/common/Printable.h>
+#include <pnetv/jpn/common/Printable.h>
 
 namespace jpn {
 

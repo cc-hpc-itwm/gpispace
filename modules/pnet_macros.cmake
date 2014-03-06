@@ -3,7 +3,7 @@ include(car_cdr_macros)
 
 macro(PNET_COMPILE)
   PARSE_ARGUMENTS(PNET
-    "INCLUDES;GENERATE;OUTPUT;FLAGS;INSTALL;DEPENDS;LDFLAGS;CXXFLAGS;COMPONENT"
+    "INCLUDES;GENERATE;OUTPUT;FLAGS;INSTALL;DEPENDS;LDFLAGS;CXXFLAGS"
     "VERBOSE;BUILD"
     ${ARGN}
     )
@@ -48,11 +48,6 @@ macro(PNET_COMPILE)
     set(PNET_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PNET_OUTPUT})
   endif()
 
-  if (PNET_COMPONENT)
-  else()
-    set(PNET_COMPONENT "pnet")
-  endif()
-
   set(__pnet_sources)
   if (PNET_SOURCES)
     foreach (s ${PNET_SOURCES})
@@ -73,7 +68,7 @@ macro(PNET_COMPILE)
   foreach(flag ${PNET_CXXFLAGS})
     set (PNET_FLAGS ${PNET_FLAGS} --gen-cxxflags=${flag})
   endforeach()
-  set (PNET_FLAGS ${PNET_FLAGS} --gen-cxxflags="-I${CMAKE_SOURCE_DIR}/gspc")
+  set (PNET_FLAGS ${PNET_FLAGS} --gen-cxxflags="-I${CMAKE_SOURCE_DIR}/src")
 
   set(PNETC_ARGS ${PNET__default_flags}
                  ${PNET_FLAGS}
@@ -126,7 +121,7 @@ macro(PNET_COMPILE)
   set_target_properties(pnet-${PNET_NAME} PROPERTIES GEN_OUTPUTS "${PNET_GEN_OUTPUTS}")
 
   if (PNET_INSTALL)
-    install (FILES ${__pnet_sources} ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL} COMPONENT ${PNET_COMPONENT})
+    install (FILES ${__pnet_sources} ${PNET_OUTPUT} DESTINATION ${PNET_INSTALL})
     if (PNET_BUILD)
       install(CODE "
          file(GLOB_RECURSE MODULES \"${CMAKE_CURRENT_BINARY_DIR}/${PNET_GENERATE}/*.so\")
@@ -134,7 +129,7 @@ macro(PNET_COMPILE)
          file(INSTALL \${MODULES} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PNET_INSTALL}/modules\"
                       USE_SOURCE_PERMISSIONS
              )
-      " COMPONENT ${PNET_COMPONENT})
+      " )
     endif()
   endif()
 endmacro()

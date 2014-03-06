@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/Codec.hpp>

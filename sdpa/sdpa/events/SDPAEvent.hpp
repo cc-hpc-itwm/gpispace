@@ -10,8 +10,6 @@
 
 namespace sdpa
 {
-  namespace daemon {  const std::string WE("WE"); }
-
   namespace events
   {
     class SDPAEvent
@@ -31,15 +29,9 @@ namespace sdpa
       {
         return to_;
       }
-      //! \todo eliminate, used in Orchestrator::notifySubscriber
-      address_t& to()
-      {
-        return to_;
-      }
 
       virtual std::string str() const = 0;
       virtual void handleBy (EventHandler*) = 0;
-      bool is_external() const { return from() != sdpa::daemon::WE; }
 
     protected:
       SDPAEvent (const address_t & a_from, const address_t &a_to)

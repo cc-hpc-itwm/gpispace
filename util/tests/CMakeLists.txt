@@ -1,9 +1,3 @@
-fhg_add_test(atomic.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES ${Boost_THREAD_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-)
-
 fhg_add_test(event.cpp
   BOOST_UNIT_TEST
   PROJECT util
@@ -27,18 +21,7 @@ fhg_add_test(counter.cpp
   PROJECT util
 )
 
-fhg_add_test(url.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-)
-
 fhg_add_test(hex.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES fhg-util
-)
-
-fhg_add_test(pool.cpp
   BOOST_UNIT_TEST
   PROJECT util
   LINK_LIBRARIES fhg-util

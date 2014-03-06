@@ -2,6 +2,8 @@
 
 #include <fhg/util/daemonize.hpp>
 
+#include <fhg/syscall.hpp>
+
 #include <stdexcept>
 
 #include <errno.h>
@@ -20,61 +22,37 @@ namespace fhg
       // -> child -> returns child_child
       //  -> child_child -> returns none
 
-      const pid_t child (fork());
-      if (child < 0)
-      {
-        throw std::runtime_error ("could not fork: " + std::string (strerror (errno)));
-      }
-      else if (child)
+      if (fhg::syscall::fork())
       {
         exit (EXIT_SUCCESS);
       }
 
-      if (setsid() < 0)
-      {
-        throw std::runtime_error ("could not setsid: " + std::string (strerror (errno)));
-      }
-      if (chdir ("/") < 0)
-      {
-        throw std::runtime_error ("could not chdir: " + std::string (strerror (errno)));
-      }
+      fhg::syscall::setsid();
+      fhg::syscall::chdir ("/");
 
       umask (0);
 
-      const pid_t child_child (fork());
-      if (child_child < 0)
-      {
-        throw std::runtime_error ("could not fork (2): " + std::string (strerror (errno)));
-      }
-      else if (child_child)
+      const pid_t child_child (fhg::syscall::fork());
+      if (child_child)
       {
         return child_child;
       }
 
-      if (close (0) < 0)
-      {
-        throw std::runtime_error ("could not close stdin: " + std::string (strerror (errno)));
-      }
-      if (close (1) < 0)
-      {
-        throw std::runtime_error ("could not close stdout: " + std::string (strerror (errno)));
-      }
-      if (close (2) < 0)
-      {
-        throw std::runtime_error ("could not close stderr: " + std::string (strerror (errno)));
-      }
+      fhg::syscall::close (0); // stdin
+      fhg::syscall::close (1); // stdout
+      fhg::syscall::close (2); // stderr
 
-      if (open ("/dev/null", O_RDONLY) != 0)
+      if (fhg::syscall::open ("/dev/null", O_RDONLY) != 0)
       {
-        throw std::runtime_error ("could not set stdin to /dev/null: " + std::string (strerror (errno)));
+        throw std::runtime_error ("could not set stdin to /dev/null: open did not return fd 0");
       }
-      if (open ("/dev/null", O_WRONLY) != 1)
+      if (fhg::syscall::open ("/dev/null", O_WRONLY) != 1)
       {
-        throw std::runtime_error ("could not set stdout to /dev/null: " + std::string (strerror (errno)));
+        throw std::runtime_error ("could not set stdout to /dev/null: open did not return fd 1");
       }
-      if (open ("/dev/null", O_WRONLY) != 2)
+      if (fhg::syscall::open ("/dev/null", O_WRONLY) != 2)
       {
-        throw std::runtime_error ("could not set stderr to /dev/null: " + std::string (strerror (errno)));
+        throw std::runtime_error ("could not set stderr to /dev/null: open did not return fd 2");
       }
 
       return boost::none;

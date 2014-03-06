@@ -1,6 +1,8 @@
 #ifndef SDPA_EVENT_HANDLER_HPP
 #define SDPA_EVENT_HANDLER_HPP 1
 
+#include <stdexcept>
+
 namespace sdpa
 {
   namespace events
@@ -34,28 +36,50 @@ namespace sdpa
     public:
       virtual ~EventHandler() {}
 
-      virtual void handleCancelJobAckEvent (const sdpa::events::CancelJobAckEvent *) {}
-      virtual void handleCancelJobEvent (const sdpa::events::CancelJobEvent *) {}
-      virtual void handleDeleteJobEvent (const sdpa::events::DeleteJobEvent *) {}
-      virtual void handleErrorEvent (const sdpa::events::ErrorEvent *) {}
-      virtual void handleJobFailedAckEvent (const sdpa::events::JobFailedAckEvent *){}
-      virtual void handleJobFailedEvent (const sdpa::events::JobFailedEvent *) {}
-      virtual void handleJobFinishedAckEvent (const sdpa::events::JobFinishedAckEvent *) {}
-      virtual void handleJobFinishedEvent (const sdpa::events::JobFinishedEvent *) {}
-      virtual void handleJobResultsReplyEvent (const sdpa::events::JobResultsReplyEvent *) {}
-      virtual void handleJobStatusReplyEvent (const sdpa::events::JobStatusReplyEvent *) {}
-      virtual void handleQueryJobStatusEvent (const sdpa::events::QueryJobStatusEvent *) {}
-      virtual void handleRetrieveJobResultsEvent (const sdpa::events::RetrieveJobResultsEvent *) {}
-      virtual void handleSubmitJobAckEvent (const sdpa::events::SubmitJobAckEvent *) {}
-      virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent *) {}
-      virtual void handleWorkerRegistrationAckEvent (const sdpa::events::WorkerRegistrationAckEvent *) {}
-      virtual void handleWorkerRegistrationEvent (const sdpa::events::WorkerRegistrationEvent *) {}
-      virtual void handleCapabilitiesGainedEvent (const sdpa::events::CapabilitiesGainedEvent*) {}
-      virtual void handleCapabilitiesLostEvent (const sdpa::events::CapabilitiesLostEvent*) {}
-      virtual void handleSubscribeEvent (const sdpa::events::SubscribeEvent*) {}
-      virtual void handleSubscribeAckEvent (const sdpa::events::SubscribeAckEvent*) {}
-      virtual void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *) {}
-      virtual void handleDiscoverJobStatesReplyEvent (const sdpa::events::DiscoverJobStatesReplyEvent *) {}
+      virtual void handleCancelJobAckEvent (const CancelJobAckEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: CancelJobAck"); }
+      virtual void handleCancelJobEvent (const CancelJobEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: CancelJob"); }
+      virtual void handleDeleteJobEvent (const DeleteJobEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: DeleteJob"); }
+      virtual void handleErrorEvent (const ErrorEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: ErrorEvent"); }
+      virtual void handleJobFailedAckEvent (const JobFailedAckEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: JobFailedAck"); }
+      virtual void handleJobFailedEvent (const JobFailedEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: JobFailed"); }
+      virtual void handleJobFinishedAckEvent (const JobFinishedAckEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: JobFinishedAck"); }
+      virtual void handleJobFinishedEvent (const JobFinishedEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: JobFinished"); }
+      virtual void handleJobResultsReplyEvent (const JobResultsReplyEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: JobResultsReply"); }
+      virtual void handleJobStatusReplyEvent (const JobStatusReplyEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: JobStatusReply"); }
+      virtual void handleQueryJobStatusEvent (const QueryJobStatusEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: QueryJobStatus"); }
+      virtual void handleRetrieveJobResultsEvent (const RetrieveJobResultsEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: RetrieveJobResults"); }
+      virtual void handleSubmitJobAckEvent (const SubmitJobAckEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: SubmitJobAck"); }
+      virtual void handleSubmitJobEvent (const SubmitJobEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: SubmitJob"); }
+      virtual void handleWorkerRegistrationAckEvent (const WorkerRegistrationAckEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: WorkerRegistrationAck"); }
+      virtual void handleWorkerRegistrationEvent (const WorkerRegistrationEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: WorkerRegistration"); }
+      virtual void handleCapabilitiesGainedEvent (const CapabilitiesGainedEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: CapabilitiesGained"); }
+      virtual void handleCapabilitiesLostEvent (const CapabilitiesLostEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: CapabilitiesLost"); }
+      virtual void handleSubscribeEvent (const SubscribeEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: Subscribe"); }
+      virtual void handleSubscribeAckEvent (const SubscribeAckEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: SubscribeAck"); }
+      virtual void handleDiscoverJobStatesEvent (const DiscoverJobStatesEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: DiscoverJobStates"); }
+      virtual void handleDiscoverJobStatesReplyEvent (const DiscoverJobStatesReplyEvent*)
+      { throw std::runtime_error ("UNHANDLED EVENT: DiscoverJobStatesReply"); }
     };
   }
 }

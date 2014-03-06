@@ -2,5 +2,4 @@
 
 install ( FILES common.mk
           DESTINATION share/sdpa/make
-          COMPONENT sdk
         )

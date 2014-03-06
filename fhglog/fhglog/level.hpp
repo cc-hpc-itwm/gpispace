@@ -10,7 +10,6 @@ namespace fhg
   namespace log
   {
     enum Level { TRACE
-               , DEBUG
                , INFO
                , WARN
                , ERROR

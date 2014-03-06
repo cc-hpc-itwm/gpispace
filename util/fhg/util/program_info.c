@@ -1,4 +1,4 @@
-#include "program_info.h"
+#include <fhg/util/program_info.h>
 
 #include <errno.h>
 #include <unistd.h>

@@ -6,7 +6,7 @@
 #include <we/expr/eval/context.hpp>
 #include <we/loader/api-guard.hpp>
 
-#include <gspc/drts/context_fwd.hpp>
+#include <drts/worker/context_fwd.hpp>
 
 #include <list>
 #include <string>
@@ -15,7 +15,7 @@ namespace we
 {
   namespace loader
   {
-    typedef void (*WrapperFunction)( gspc::drts::context *
+    typedef void (*WrapperFunction)( drts::worker::context *
                                    , const expr::eval::context&
                                    , expr::eval::context&
                                    );

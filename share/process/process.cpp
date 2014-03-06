@@ -249,7 +249,7 @@ namespace process
                        , std::size_t bytes_left
                        )
     {
-      char * buf (static_cast<char *> (const_cast<void *> (input)));
+      const char * buf (static_cast<const char*> (input));
 
       while (fd != -1 && bytes_left > 0)
         {
@@ -555,15 +555,15 @@ namespace process
 
     reader_barrier.wait ();
 
-    std::vector<std::string> cmdline;
-    fhg::util::split (command, " ", std::back_inserter (cmdline));
+    std::list<std::string> const cmdline
+      (fhg::util::split<std::string, std::string> (command, ' '));
 
     char ** av = new char*[cmdline.size()+1];
     av[cmdline.size()] = (char*)(NULL);
 
     {
       std::size_t idx (0);
-      for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+      for ( std::list<std::string>::const_iterator it (cmdline.begin())
           ; it != cmdline.end()
           ; ++it, ++idx
           )
@@ -677,7 +677,7 @@ namespace process
     {
       std::size_t idx (0);
 
-      for ( std::vector<std::string>::const_iterator it (cmdline.begin())
+      for ( std::list<std::string>::const_iterator it (cmdline.begin())
           ; it != cmdline.end()
           ; ++it, ++idx
           )

@@ -41,16 +41,6 @@ namespace fhg
           {
             BOOST_REQUIRE_EQUAL (e.what(), what);
           }
-          catch (...)
-          {
-            BOOST_FAIL
-              ( boost::format ( "missing exception '%1%' with message '%2%'"
-                                ", got exception of different type"
-                              )
-              % typeid (E).name()
-              % what
-              );
-          }
         }
 
         template<typename E>

@@ -122,7 +122,6 @@ set (monitor_ui_tomoc
 )
 
 
-if (ENABLE_PNET_EDITOR)
   qt4_wrap_cpp (base_wrapped_cpps ${base_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
   qt4_wrap_cpp (base_ui_wrapped_cpps ${base_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
   qt4_wrap_cpp (editor_ui_wrapped_cpps ${editor_ui_tomoc} OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
@@ -149,12 +148,10 @@ if (ENABLE_PNET_EDITOR)
                           ${Boost_THREAD_LIBRARY}
                           ${QT_LIBRARIES})
 
-  install (TARGETS pnete RUNTIME DESTINATION bin COMPONENT runtime)
+  install (TARGETS pnete RUNTIME DESTINATION bin)
 
   add_subdirectory (ui/graph/style/test)
-endif()
 
-if (ENABLE_SDPA_GUI)
   qt4_wrap_cpp (monitor_ui_wrapped_cpps ${monitor_ui_tomoc}
     OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
 
@@ -172,7 +169,7 @@ if (ENABLE_SDPA_GUI)
                           ${Boost_THREAD_LIBRARY}
                           ${QT_LIBRARIES})
 
-  install (TARGETS sdpa-gui RUNTIME DESTINATION bin COMPONENT runtime)
+  install (TARGETS sdpa-gui RUNTIME DESTINATION bin)
 
   target_link_libraries ( gspcmonc
                           pnet
@@ -182,7 +179,6 @@ if (ENABLE_SDPA_GUI)
                           ${Boost_THREAD_LIBRARY}
                           ${QT_LIBRARIES})
 
-  install (TARGETS gspcmonc RUNTIME DESTINATION bin COMPONENT runtime)
+  install (TARGETS gspcmonc RUNTIME DESTINATION bin)
 
   add_subdirectory (test)
-endif()

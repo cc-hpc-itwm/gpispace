@@ -112,10 +112,9 @@ BOOST_AUTO_TEST_CASE (JobFailedAck)
 
 BOOST_AUTO_TEST_CASE (JobFailed)
 {
-  JobFailedEvent e ("foo", "bar", "job-id-1", fhg::error::UNASSIGNED_ERROR, "testing");
+  JobFailedEvent e ("foo", "bar", "job-id-1", "testing");
   JobFailedEvent* r (encode_decode_job_event (e));
 
-  BOOST_REQUIRE_EQUAL (r->error_code(), e.error_code());
   BOOST_REQUIRE_EQUAL (r->error_message(), e.error_message());
 }
 
@@ -143,11 +142,10 @@ BOOST_AUTO_TEST_CASE (JobResultsReply)
 
 BOOST_AUTO_TEST_CASE (JobStatusReply)
 {
-  JobStatusReplyEvent e ("foo", "bar", "job-id-1", sdpa::status::RUNNING, fhg::error::UNASSIGNED_ERROR, "testing");
+  JobStatusReplyEvent e ("foo", "bar", "job-id-1", sdpa::status::RUNNING, "testing");
   JobStatusReplyEvent* r (encode_decode_job_event (e));
 
   BOOST_REQUIRE_EQUAL (r->status(), e.status());
-  BOOST_REQUIRE_EQUAL (r->error_code(), e.error_code());
   BOOST_REQUIRE_EQUAL (r->error_message(), e.error_message());
 }
 
@@ -220,13 +218,11 @@ BOOST_AUTO_TEST_CASE (WorkerRegistration)
   caps.insert (sdpa::Capability ("foo", fhg::util::random_string()));
   caps.insert (sdpa::Capability ("bar", fhg::util::random_string()));
 
-  WorkerRegistrationEvent e ("foo", "bar", 10, caps, 50, "fooagent");
+  WorkerRegistrationEvent e ("foo", "bar", 10, caps);
   WorkerRegistrationEvent* r (encode_decode_mgmt_event (e));
 
   BOOST_REQUIRE_EQUAL (r->capacity(), e.capacity());
-  BOOST_REQUIRE_EQUAL (r->rank(), e.rank());
   BOOST_REQUIRE_EQUAL (r->capabilities(), e.capabilities());
-  BOOST_REQUIRE_EQUAL (r->agent_uuid(), e.agent_uuid());
 }
 
 BOOST_AUTO_TEST_CASE (DiscoverJobStates)

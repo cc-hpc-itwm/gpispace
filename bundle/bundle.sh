@@ -1,8 +1,8 @@
 #!/bin/bash
 
 prefix=/usr/local
-exclude=()
-whitelist=()
+exclusion=""
+inclusion=""
 verbose=false
 dry=false
 force=false
@@ -10,6 +10,7 @@ keep_going=false
 dst=lib # folder within prefix where libs shall be copied to
 delete=false
 library_path="$LD_LIBRARY_PATH"
+copied=""
 
 function usage ()
 {
@@ -42,55 +43,21 @@ function dry_run ()
     $dry && echo $@ || $@ || $keep_going || exit 1
 }
 
-function locate_file ()
-{
-  local file="$1" ; shift
-  OLDIFS="$IFS"
-  export IFS=":"
-  for dir in $LD_LIBRARY_PATH ; do
-    if [ -e "$dir/$file" ] ; then
-       echo "$dir/$file"
-       break
-    fi
-  done
-  IFS="$OLDIFS"
-}
-
-function is_in_whitelist ()
-{
-    local name="$1"
-    for ((p=0 ; p < ${#whitelist[@]}; ++p)) ; do
-        if echo "$name" | grep -q "${whitelist[$p]}"
-        then
-            return 0
-        fi
-    done
-    return 1
-}
-
-function is_in_blacklist ()
-{
-    local name="$1"
-    for ((p=0 ; p < ${#exclude[@]}; ++p)) ; do
-        if echo "$name" | grep -q "${exclude[$p]}" ; then
-            return 0
-        fi
-    done
-    return 1
-}
-
 function is_filtered ()
 {
     local name=$(basename "$1")
 
-    if is_in_blacklist "$name"
+    if [ -n "${exclusion}" ]
     then
-        return 0
+        if echo "$name" | grep -q "${exclusion}"
+        then
+            return 0
+        fi
     fi
 
-    if [ ${#whitelist[@]} -gt 0 ]
+    if [ -n "${inclusion}" ]
     then
-        if is_in_whitelist "$name"
+        if echo "$name" | grep -q "${inclusion}"
         then
             return 1
         else
@@ -101,11 +68,16 @@ function is_filtered ()
     return 1
 }
 
-function normalize()
+function is_copied_already()
 {
-    local name="$1"; shift
+    local name="${1}"; shift;
 
-    readlink -f "${name}"
+    if [ -n "${copied}" ]
+    then
+        if echo "$name" | grep -q "${copied}"; then return 0; fi
+    fi
+
+    return 1
 }
 
 function bundle_dependencies ()
@@ -117,6 +89,9 @@ function bundle_dependencies ()
     OLDIFS="$IFS"
     export IFS="
 "
+
+    echo "-- Bundle: Examining $file"
+
     for dep_and_path in $(ldd "$file" | grep '=> \(not\|/\)' | awk '{printf("%s:%s\n", $1, $3)}') ; do
         dep=$(echo -n "$dep_and_path" | cut -d: -f 1)
         pth=$(echo -n "$dep_and_path" | cut -d: -f 2)
@@ -142,15 +117,29 @@ function bundle_dependencies ()
             debug $(printf "%${indent}s" "") "$file <- $pth"
         fi
 
-        pth=$(normalize "${pth}")
-        tgt=$(normalize "$dst/$dep")
+        pth=$(readlink -f "${pth}")
+        tgt=$(readlink -f "$dst/$dep")
 
+        if is_copied_already "$pth"
+        then
+            debug $(printf "%$((indent + 2))s" "") "already copied: ${pth}"
+        else
         if [[ ! "$pth" = "$tgt" ]] ; then
+            if [ -z "${copied}" ]
+            then
+                copied="^$pth$"
+            else
+                copied="$copied\|^$pth$"
+            fi
             if test "$pth" -nt "$tgt" || $force ; then
+                echo "-- Installing: Bundle: $tgt"
                 debug $(printf "%$((indent + 2))s" "") cp "$pth" "$tgt"
                 dry_run cp "$pth" "$tgt"
                 bundle_dependencies "$pth" "$dst" $(( lvl + 1 ))
+            else
+                echo "-- Up-to-date: Bundle: $tgt"
             fi
+        fi
         fi
     done
     IFS="$OLDIFS"
@@ -184,11 +173,21 @@ while getopts ":hvnkfp:x:w:o:dL:" opt ; do
             shiftcount=$(( shiftcount + 2 ))
             ;;
         x)
-            exclude=( ${exclude[@]} $OPTARG )
+            if [ -z "${exclusion}" ]
+            then
+                exclusion="$OPTARG"
+            else
+                exclusion="$exclusion\|$OPTARG"
+            fi
             shiftcount=$(( shiftcount + 2 ))
             ;;
         w)
-            whitelist=( ${whitelist[@]} $OPTARG )
+            if [ -z "${inclusion}" ]
+            then
+                inclusion="$OPTARG"
+            else
+                inclusion="$inclusion\|$OPTARG"
+            fi
             shiftcount=$(( shiftcount + 2 ))
             ;;
         o)

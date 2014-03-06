@@ -1,6 +1,6 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#include "stream.hpp"
+#include <fhglog/appender/stream.hpp>
 
 #include <fhglog/format.hpp>
 

@@ -24,12 +24,10 @@
 
 #include <fhgcom/kvs/kvsc.hpp>
 
-#include <fhg/error_codes.hpp>
 #include <fhg/revision.hpp>
 #include <fhg/util/read_bool.hpp>
 
 #include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/id_generator.hpp>
@@ -85,11 +83,6 @@ namespace
     if (sdpa::status::FAILED == status)
     {
       std::cerr << "failed: "
-                << "error-code"
-                << " := "
-                << fhg::error::show(job_info.error_code)
-                << " (" << job_info.error_code << ")"
-                << std::endl
                 << "error-message := " << job_info.error_message
                 << std::endl
         ;
@@ -296,7 +289,7 @@ namespace
 int main (int argc, char **argv) {
   const std::string name(argv[0]);
 
-  std::string kvs_url (fhg::util::getenv("KVS_URL", "localhost:2439"));
+  std::string kvs_url (fhg::util::getenv("KVS_URL").get_value_or ("localhost:2439"));
 
   NewConfig cfg;
   cfg.tool_opts().add_options()
@@ -392,8 +385,7 @@ int main (int argc, char **argv) {
   {
     int lvl(cfg.get<int>("verbose"));
     if (lvl > 0) fhg::log::Logger::get()->setLevel(fhg::log::INFO);
-    if (lvl > 1) fhg::log::Logger::get()->setLevel(fhg::log::DEBUG);
-    if (lvl > 2) fhg::log::Logger::get()->setLevel(fhg::log::TRACE);
+    if (lvl > 1) fhg::log::Logger::get()->setLevel(fhg::log::TRACE);
   }
 
   try
@@ -416,33 +408,23 @@ int main (int argc, char **argv) {
 
     fhg::log::Logger::ptr_t logger (fhg::log::Logger::get ("sdpac"));
 
-    try
+    std::vector< std::string > vec;
+
     {
-      // initialize the KVS
+      boost::char_separator<char> sep(":");
+      boost::tokenizer<boost::char_separator<char> > tok(kvs_url, sep);
 
-      LLOG (INFO, logger, "initializing KVS at " << kvs_url);
+      vec.assign(tok.begin(),tok.end());
 
-      std::vector<std::string> parts;
-      fhg::util::split(kvs_url, ":", std::back_inserter(parts));
-      if (parts.size() != 2)
+      if( vec.size() != 2 )
       {
-        LLOG (ERROR, logger, "invalid kvs url: expected host:port, got: " << kvs_url);
-        return EXIT_FAILURE;
-      }
-      else
-      {
-        fhg::com::kvs::global::get_kvs_info().init( parts[0]
-                                                  , parts[1]
-                                                  , boost::posix_time::seconds(120)
-                                                  , 1
-                                                  );
+        throw std::runtime_error
+          ("Invalid kvs url.  Please specify it in the form <hostname (IP)>:<port>!");
       }
     }
-    catch (std::exception const & ex)
-    {
-      std::cerr << "E: could not connect to KVS: " << ex.what() << std::endl;
-      return EXIT_FAILURE;
-    }
+
+    const std::string kvs_host (vec[0]);
+    const std::string kvs_port (vec[1]);
 
     if (! cfg.is_set("command"))
     {
@@ -466,6 +448,7 @@ int main (int argc, char **argv) {
     sdpa::client::Client api ( cfg.is_set("orchestrator")
                              ? cfg.get<std::string>("orchestrator")
                              : throw std::runtime_error ("no orchestrator specified!")
+                             , kvs_host, kvs_port
                              );
 
     if (command == "submit")
@@ -524,12 +507,7 @@ int main (int argc, char **argv) {
       std::cout << sdpa::status::show(status) << std::endl;
       if (status == sdpa::status::FAILED)
       {
-        std::cerr << "error-code"
-                  << " := "
-                  << fhg::error::show(job_info.error_code)
-                  << " (" << job_info.error_code << ")"
-                  << std::endl
-                  << "error-message := " << job_info.error_message
+        std::cerr << "error-message := " << job_info.error_message
                   << std::endl
           ;
       }

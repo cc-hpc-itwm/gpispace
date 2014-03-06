@@ -6,7 +6,7 @@
 #include <string>
 #include <fstream>
 
-static void selftest (gspc::drts::context *, const expr::eval::context & , expr::eval::context & output)
+static void selftest (drts::worker::context *, const expr::eval::context & , expr::eval::context & output)
 {
   std::cerr << "rank := " << fvmGetRank() << std::endl;
   output.bind ("result", 0L);

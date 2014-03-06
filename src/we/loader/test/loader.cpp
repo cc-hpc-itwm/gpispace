@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE loader
 #include <boost/test/unit_test.hpp>
 
-#include "order/stack.hpp"
+#include <we/loader/test/order/stack.hpp>
 
 #include <we/loader/loader.hpp>
 #include <we/loader/exceptions.hpp>

@@ -85,6 +85,7 @@ namespace fhg
 
       public slots:
         void follow (bool);
+        void clearContents ();
       };
 
       // ------------------------------------------------------------------------

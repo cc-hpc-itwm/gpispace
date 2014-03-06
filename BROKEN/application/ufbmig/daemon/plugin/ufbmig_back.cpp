@@ -9,7 +9,7 @@
 #include <stack>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 #include <fhg/error_codes.hpp>
 #include <fhg/util/read_bool.hpp>
 
@@ -348,19 +348,15 @@ public:
       int rc = 0;
 
       rc += sdpa_ctl->start ("gpi")  ? 1 : 0;
-      MLOG(DEBUG, "start(gpi) = " << rc);
       update_progress (20);
 
       rc += sdpa_ctl->start ("orch") ? 2 : 0;
-      MLOG(DEBUG, "start(orch) = " << rc);
       update_progress (40);
 
       rc += sdpa_ctl->start ("agg")  ? 4 : 0;
-      MLOG(DEBUG, "start(agg) = " << rc);
       update_progress (60);
 
       rc += sdpa_ctl->start ("drts") ? 8 : 0;
-      MLOG(DEBUG, "start(drts) = " << rc);
       update_progress (80);
 
       /*
@@ -1005,13 +1001,9 @@ private:
     MLOG (INFO, "checking worker status...");
     int ec = 0;
     ec += sdpa_ctl->status ("orch");
-    MLOG (DEBUG, "status(orch) = " << ec);
     ec += sdpa_ctl->status ("agg");
-    MLOG (DEBUG, "status(agg) = " << ec);
     ec += sdpa_ctl->status ("drts");
-    MLOG (DEBUG, "status(drts) = " << ec);
     ec += sdpa_ctl->status ("gpi");
-    MLOG (DEBUG, "status(gpi) = " << ec);
 
     if (0 != ec)
     {

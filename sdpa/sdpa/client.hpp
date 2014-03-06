@@ -37,14 +37,15 @@ namespace sdpa
     typedef sdpa::job_result_t result_t;
     struct job_info_t
     {
-      int error_code;
       std::string error_message;
     };
 
     class Client : boost::noncopyable
     {
     public:
-      Client (std::string orchestrator);
+      Client ( std::string orchestrator
+             , std::string kvs_host, std::string kvs_port
+             );
       ~Client();
 
       job_id_t submitJob(const job_desc_t &);
@@ -73,6 +74,7 @@ namespace sdpa
 
       void handle_recv (boost::system::error_code const & ec);
 
+      fhg::com::kvs::kvsc_ptr_t _kvs_client;
       fhg::com::peer_t m_peer;
       fhg::com::message_t m_message;
       boost::thread _peer_thread;

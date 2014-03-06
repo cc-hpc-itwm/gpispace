@@ -4,8 +4,8 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
-#include <jpn/Marking.h>
-#include <jpn/Transition.h>
+#include <pnetv/jpn/Marking.h>
+#include <pnetv/jpn/Transition.h>
 
 #include "State.h"
 

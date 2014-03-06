@@ -1,4 +1,4 @@
-#include "event.hpp"
+#include <fhglog/event.hpp>
 
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/position.hpp>
@@ -112,7 +112,6 @@ namespace fhg
         switch (*pos)
         {
         case 'T': ++pos; return TRACE;
-        case 'D': ++pos; return DEBUG;
         case 'I': ++pos; return INFO;
         case 'W': ++pos; return WARN;
         case 'E': ++pos; return ERROR;
@@ -172,7 +171,6 @@ namespace
       switch (level)
       {
       case fhg::log::TRACE: return 'T';
-      case fhg::log::DEBUG: return 'D';
       case fhg::log::INFO: return 'I';
       case fhg::log::WARN: return 'W';
       case fhg::log::ERROR: return 'E';

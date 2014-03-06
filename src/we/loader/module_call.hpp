@@ -15,7 +15,7 @@ namespace we
   namespace loader
   {
     static void module_call ( we::loader::loader& loader
-                            , gspc::drts::context* context
+                            , drts::worker::context* context
                             , we::type::activity_t& act
                             , const we::type::module_call_t& module_call
                             )
