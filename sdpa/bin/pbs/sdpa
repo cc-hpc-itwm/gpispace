@@ -546,18 +546,6 @@ EOF
     mv "$tmp_file" "$state_dir/sdpa.env"
 }
 
-function cleanup ()
-{
-    test -r "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
-
-    echo "cleaning up" >&2
-
-    echo "  * logs" >&2
-    clear-logs -f -a -x
-
-    return 0
-}
-
 function help ()
 {
     cat >&2 <<EOF
@@ -1335,14 +1323,6 @@ case "$1" in
         fi
         shift
         status $@
-        ;;
-    cleanup)
-        if status >/dev/null 2>&1 ; then
-            echo "E: still running!" >&2
-            exit 1
-        else
-            cleanup
-        fi
         ;;
     cancel)
         require_state
