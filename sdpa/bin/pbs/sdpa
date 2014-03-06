@@ -43,8 +43,8 @@ then
     export HOME=$(echo ~)
 fi
 
-export SDPA_HOME=$(dirname $(dirname $(which "$0")))
-export SDPA_SCRIPT_DIR="${SDPA_HOME}/libexec/sdpa/scripts"
+SDPA_HOME=$(dirname $(dirname $(which "$0")))
+SDPA_SCRIPT_DIR="${SDPA_HOME}/libexec/sdpa/scripts"
 prepend_to_path PATH "$SDPA_HOME/bin"
 
 config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
