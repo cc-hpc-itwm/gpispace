@@ -102,15 +102,6 @@ if [ $ec -ne 0 ] ; then
     exit $ec
 fi
 
-err=$(sdpa status 2>&1)
-ec=$?
-if [ $ec -ne 0 ] ; then
-    sdpa stop >/dev/null 2>&1
-    runtime_started=false
-    log_error "status failed (may indicate license problems): $err"
-    exit $ec
-fi
-
 log_info "computing response for challenge: $challenge"
 
 log_info "submitting job..."
