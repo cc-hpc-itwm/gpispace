@@ -327,54 +327,6 @@ function setup_gui ()
     put "$key" "$val"
 }
 
-function parse_human_readable_size ()
-{
-    local size_value="$1"; shift
-    local var="$1"; shift
-    size_value=$( echo "$size_value" | tr 'a-z' 'A-Z' )
-    size_value=$( echo "$size_value" | sed -e 's/E$/*1024T/' )
-    size_value=$( echo "$size_value" | sed -e 's/T$/*1024G/' )
-    size_value=$( echo "$size_value" | sed -e 's/G$/*1024M/' )
-    size_value=$( echo "$size_value" | sed -e 's/M$/*1024K/' )
-    size_value=$( echo "$size_value" | sed -e 's/K$/*1024B/'  )
-    size_value=$( echo "$size_value" | sed -e 's/B$/*1/'  )
-
-    # compute the total and round to an integer
-    size_value=$( echo "$size_value" | bc | xargs printf "%1.0f" )
-    if [ -n "$var" ] ; then
-        eval "$var=$size_value"
-    else
-        echo "$size_value"
-    fi
-}
-
-function to_human_readable_size ()
-{
-    local size_value="$1"; shift
-    local var="$1"; shift
-
-    local new_val="1"
-    local tmp=$( echo "$size_value > 1024" | bc )
-    while test "$tmp" = "1" ; do
-        new_val="$new_val*1024"
-        size_value=$( echo "scale=2; $size_value/1024.0" | bc )
-        tmp=$( echo "$size_value > 1024" | bc )
-    done
-
-    new_val=$( echo "$new_val" | sed -e 's/*1024$/K/' )
-    new_val=$( echo "$new_val" | sed -e 's/*1024K$/M/' )
-    new_val=$( echo "$new_val" | sed -e 's/*1024M$/G/' )
-    new_val=$( echo "$new_val" | sed -e 's/*1024G$/T/' )
-    new_val=$( echo "$new_val" | sed -e 's/^1//')
-
-    new_val="${size_value}${new_val}"
-    if [ -n "$var" ] ; then
-        eval "$var=$new_val"
-    else
-        echo "$new_val"
-    fi
-}
-
 function setup_gpi ()
 {
     local gpid_pid=""
