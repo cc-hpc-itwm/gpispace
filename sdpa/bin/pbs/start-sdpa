@@ -167,10 +167,10 @@ log_port=
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
 avl_mem=$(( ($tot_mem * 80) / 100 ))
 gpi_mem=0
-gpi_socket_dir=
+gpi_socket=
 def_shm_mem=0
 def_num_proc=1
-def_gpi_socket_dir=/tmp
+def_gpi_socket="/tmp/S-gpi-space.$(id -u)"
 
 if [ ${#@} -eq 0 ] ; then
     usage
@@ -351,9 +351,9 @@ then
     fi
 fi
 
-if [ -z "${gpi_socket_dir}" ]
+if [ -z "${gpi_socket}" ]
 then
-    gpi_socket_dir="$def_gpi_socket_dir"
+    gpi_socket="$def_gpi_socket"
 fi
 
 log "starting base sdpa components on $master..."
@@ -377,7 +377,7 @@ if $gpi_enabled ; then
                           -k "${master}" \
                           -K "$kvs_port" \
                           -l "${master}" \
-                          -S "${gpi_socket_dir}" \
+                          -S "${gpi_socket}" \
                           -L "${log_port}"
 fi
 
@@ -517,7 +517,7 @@ function start_workers_for_capability
         argv+=(-F "$config_file")
         if $gpi_enabled ; then
             argv+=(-M "$shm_size")
-            argv+=(-S "$gpi_socket_dir/S-gpi-space.$(id -u).0")
+            argv+=(-S "$gpi_socket")
         fi
         if [ $socket -ne -1 ] ; then
             argv+=(-N "$socket")

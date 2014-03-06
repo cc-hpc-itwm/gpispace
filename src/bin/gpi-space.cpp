@@ -272,13 +272,11 @@ int main (int ac, char *av[])
       ++i;
       if (i < ac)
       {
-        if ( ( (strlen(av[i]) + strlen("/S-gpi-space.XXXXX.XXXX") + 1)
-             > sizeof(config.socket))
-           )
+        if ((strlen(av[i]) + 1) > sizeof(config.socket))
         {
           fprintf(stderr, "%s: path to socket is too large!\n", program_name);
           fprintf(stderr, "    at most %lu characters are supported\n"
-                 , sizeof(config.socket) - (strlen("/S-gpi-space.XXXXX.XXXX")+1)
+                 , sizeof(config.socket) - 1
                  );
           exit(EX_INVAL);
         }
@@ -642,10 +640,8 @@ int main (int ac, char *av[])
 
   snprintf ( config.socket
            , sizeof(config.socket)
-           , "%s/S-gpi-space.%d.%d"
+           , "%s"
            , socket_path
-           , getuid()
-           , gpi_numa_socket
            );
 
   // initialize gpi api
