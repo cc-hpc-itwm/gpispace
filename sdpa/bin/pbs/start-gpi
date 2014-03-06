@@ -121,7 +121,8 @@ if [ -z "$gpi_priv_dir" ] ; then
 fi
 
 if [ -z "$socket_path" ] ; then
-    socket_path=$(fhgcfg -f "${config_file}" -g gpi.socket_path -v "/tmp")
+    log "E: socket path is missing, please specify it with -S"
+    exit 1
 fi
 
 if [ -z "$gpi_priv_dir" ] ; then
@@ -237,9 +238,9 @@ if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
     if test -n "$log_port" ; then
         cmdline="$cmdline --log-port $log_port"
     fi
-    if test -n "$socket_path" ; then
-        cmdline="$cmdline --socket $socket_path"
-    fi
+
+    cmdline="$cmdline --socket $socket_path"
+
     if test -n "$log_file" ; then
         cmdline="$cmdline --log-file $log_file"
     fi
