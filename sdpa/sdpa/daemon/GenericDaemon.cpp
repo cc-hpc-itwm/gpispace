@@ -1038,14 +1038,15 @@ void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type
 
 void GenericDaemon::discovered (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
 {
-  sdpa::agent_id_t master_name(m_map_discover_ids.at(discover_id).disc_issuer());
-  sdpa::agent_id_t job_id(m_map_discover_ids.at(discover_id).job_id());
+  const sdpa::job_info_t& job_info (m_map_discover_ids.at (discover_id));
+  const sdpa::discovery_info_t discovery_info
+    (job_info.job_id(), job_info.job_status(), discover_result.children());
 
   sendEventToOther( events::DiscoverJobStatesReplyEvent::Ptr(new events::DiscoverJobStatesReplyEvent( name()
-                                                                                                      , master_name
-                                                                                                      , job_id
+                                                                                                      , job_info.disc_issuer()
+                                                                                                      , job_info.job_id()
                                                                                                       , discover_id
-                                                                                                      , discover_result)));
+                                                                                                      , discovery_info)));
   m_map_discover_ids.erase(discover_id);
 }
 
