@@ -182,8 +182,7 @@ namespace sdpa {
           throw std::runtime_error ("job with same id already exists");
         }
 
-        if (!job_req_list.empty())
-          job_requirements_.insert(std::make_pair(job_id, job_req_list));
+        job_requirements_.insert(std::make_pair(job_id, job_req_list));
 
         return pJob;
       }
