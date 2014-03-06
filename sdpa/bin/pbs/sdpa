@@ -480,14 +480,6 @@ function generate_environment ()
         esac
     done
 
-    if [ -z "$SDPA_HOME" ] ; then
-        mydir="$(cd $(dirname $( which $0 )) && pwd)"
-        export SDPA_HOME=$(dirname "$mydir")
-    else
-        # sanitize HOME
-        export SDPA_HOME="$(echo $SDPA_HOME | sed -e 's,/\+$,,')"
-    fi
-
     echo export SDPA_HOME="$SDPA_HOME"
 
     prepend_to_path PATH "$SDPA_HOME/bin"
