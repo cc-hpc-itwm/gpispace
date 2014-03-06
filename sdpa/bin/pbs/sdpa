@@ -1042,12 +1042,7 @@ function start ()
 
 function stop ()
 {
-    local parts=$1
-    if [ -z "$parts" ] ; then
-        parts="drts agg orch gpi kvs"
-    else
-        shift
-    fi
+    local parts="drts agg orch gpi kvs"
 
     local p
     local rc=0
