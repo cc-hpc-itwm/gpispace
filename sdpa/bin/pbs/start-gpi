@@ -243,6 +243,9 @@ if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
     if test -n "$log_file" ; then
         cmdline="$cmdline --log-file $log_file"
     fi
+    if test -n "$gpi_port" ; then
+        cmdline="$cmdline --gpi-port $gpi_port"
+    fi
 
     log "executing $cmdline"
     exec ${cmdline}
