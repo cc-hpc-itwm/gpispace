@@ -505,11 +505,6 @@ function generate_environment ()
     prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/lib"
     prepend_to_path LD_LIBRARY_PATH "$SDPA_LIBEXEC"
 
-    prepend_to_path PC_LIBRARY_PATH "$SDPA_LIBEXEC/apps"
-    if [ -n "$SDPA_APP_PATH" ] ; then
-        prepend_to_path PC_LIBRARY_PATH "$SDPA_APP_PATH"
-        prepend_to_path LD_LIBRARY_PATH "$SDPA_APP_PATH"
-    fi
 
     echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:\$LD_LIBRARY_PATH"
     echo export PC_LIBRARY_PATH="$PC_LIBRARY_PATH:\$PC_LIBRARY_PATH"
@@ -530,7 +525,6 @@ function initialize ()
     local hostfile=""
     local node_file=
 
-    app_path="${SDPA_APP_PATH}"
     argv="$@"
     OPTIND=1
     while getopts "hF:n:s:A:" opt $argv ; do
@@ -556,8 +550,6 @@ function initialize ()
                 ;;
         esac
     done
-
-    export SDPA_APP_PATH="${app_path}"
 
     if [ -n "$1" ] ; then
         hostfile="$1"; shift
