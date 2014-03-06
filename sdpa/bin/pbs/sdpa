@@ -408,10 +408,9 @@ function setup_gpi ()
 function setup ()
 {
     cat <<EOF
-$(sdpac --version 2>/dev/null)
+$(sdpac --version)
 
-Initiating the  setup routine of  SDPA. In case  of errors or  questions, please
-contact 'Alexander Petry <petry@itwm.fhg.de>'.
+Initiating the  setup routine of  SDPA.
 EOF
 
     if is_unattended ; then
