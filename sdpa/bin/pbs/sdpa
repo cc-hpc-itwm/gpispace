@@ -1092,11 +1092,6 @@ function cancel ()
 
 function submit ()
 {
-    # check system health
-    #    if not running:
-    #       abort/ask
-    #    else
-    #       submit
     local net="$1" ; shift
     if [ ! -r "$net" ] ; then
         log "E: submit: cannot read file: $net"
@@ -1108,25 +1103,6 @@ function submit ()
     local output="$1"; shift
     if [ -z "$output" ] ; then
         output=/dev/null
-    fi
-
-    log "I: checking system status..."
-    if ! status kvs >/dev/null 2>&1 || ! status orch >/dev/null 2>&1 ; then
-        log "W: system not completely up and running"
-        read -t 15 -n 1 -p "Do you want me to start it? [Y/n] " do_start
-        case "$do_start" in
-            n|N)
-                ;;
-            *)
-                echo
-                if ! start ; then
-                    log "E: could not start, please check the logs"
-                    return 3
-                else
-                    sleep 5
-                fi
-                ;;
-        esac
     fi
 
     log "I: submitting file: $net"
