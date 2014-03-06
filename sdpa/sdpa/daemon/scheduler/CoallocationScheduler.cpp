@@ -90,16 +90,7 @@ namespace sdpa
             sdpa::worker_id_list_t list_reserved_workers =
               pReservation->getWorkerList();
 
-            sdpa::worker_id_list_t list_invalid_workers;
-            BOOST_FOREACH (const worker_id_t& wid, list_reserved_workers)
-            {
-              if (!worker_manager().hasWorker (wid))
-              {
-                list_invalid_workers.push_back (wid);
-              }
-            }
-
-            if (list_invalid_workers.empty())
+            try
             {
               BOOST_FOREACH (const worker_id_t& wid, list_reserved_workers)
               {
@@ -107,10 +98,12 @@ namespace sdpa
               }
               ptr_comm_handler_->serveJob (list_reserved_workers, jobId);
             }
-            else
+            catch (std::runtime_error const&)
             {
-              BOOST_FOREACH (const worker_id_t& wid, list_invalid_workers)
+              BOOST_FOREACH (const worker_id_t& wid, list_reserved_workers)
               {
+                worker_manager().findWorker (wid)->deleteJob (jobId);
+                worker_manager().findWorker (wid)->free();
                 pReservation->delWorker (wid);
               }
 
