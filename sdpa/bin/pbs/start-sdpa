@@ -153,6 +153,8 @@ parse_capability()
 #
 trap 'on_ctrlC' SIGINT
 
+DEFAULT_KVS_PORT=2439
+
 nodefile=
 state_dir="$HOME/.sdpa/state"
 config_file="$HOME/.sdpa/configs/sdpa.rc"
@@ -340,11 +342,7 @@ fi
 
 if [ -z "$kvs_port" ]
 then
-    kvs_port=$(fhgcfg -f "${config_file}" -g "plugin.drts.kvs_port")
-    if [ -z "$kvs_port" ]
-    then
-        error 2 "setup incomplete, kvs port is not set"
-    fi
+    kvs_port="${DEFAULT_KVS_PORT}"
 fi
 
 if [ -z "${log_port}" ]
@@ -363,7 +361,7 @@ fi
 
 log "starting base sdpa components on $master..."
 
-dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
+dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs ${kvs_port}
 dry_run rexec $master "${script_start_orchestrator}" \
     -s "$state_dir" \
     -P "$state_dir/orchestrator.pid" \

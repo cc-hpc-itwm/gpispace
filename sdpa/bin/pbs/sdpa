@@ -68,7 +68,6 @@ DEFAULT_CLUSTER_HEAD="" # if needed
 #
 DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
 DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
-DEFAULT_KVS_PORT=2439
 DEFAULT_LOG_URL=""
 DEFAULT_GUI_URL=""
 
@@ -235,8 +234,6 @@ function setup_required ()
 
 function setup_kvs ()
 {
-    put "plugin.drts.kvs_port" $(get "plugin.drts.kvs_port" "${DEFAULT_KVS_PORT:?}")
-
     log "I: kvs setup"
 
     return 0
@@ -799,9 +796,9 @@ function start_kvs ()
         log "E: kvs must be started on the master node"
         exit 1
     fi
-    kvs_port=$(get "plugin.drts.kvs_port")
+    kvs_port="${1}" ; shift
     if [ -z "$kvs_port" ] ; then
-        log "E: could not get kvs port from config!"
+        log "E: kvs port is missing!"
         return 1
     fi
 
