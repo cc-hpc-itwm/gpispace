@@ -128,13 +128,9 @@ namespace sdpa
             {
               BOOST_FOREACH (worker_id_t const& worker, matching_workers)
               {
-                worker_manager().findWorker (worker)->reserve();
                 pReservation->addWorker (worker);
-              }
-
-              BOOST_FOREACH (const worker_id_t& wid, matching_workers)
-              {
-                worker_manager().findWorker (wid)->submit (jobId);
+                worker_manager().findWorker (worker)->reserve();
+                worker_manager().findWorker (worker)->submit (jobId);
               }
               ptr_comm_handler_->serveJob (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
             }
