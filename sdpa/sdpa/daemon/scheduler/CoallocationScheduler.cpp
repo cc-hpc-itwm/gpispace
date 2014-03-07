@@ -114,7 +114,6 @@ namespace sdpa
           }
 
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-          {
             BOOST_FOREACH (worker_id_t const& worker, matching_workers)
             {
               worker_manager().findWorker (worker)->reserve();
@@ -131,7 +130,6 @@ namespace sdpa
             {
               allocation_table_[jobId]->addWorker (worker);
             }
-          }
 
           Reservation* pReservation (allocation_table_[jobId]);
 
