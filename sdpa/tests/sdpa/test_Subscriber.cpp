@@ -11,8 +11,8 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 class Worker : public utils::BasicWorker
 {
   public:
-    Worker (const std::string& name, const std::string& master_name, const std::string cpb_name = "")
-      :  utils::BasicWorker (name, master_name, cpb_name)
+    Worker (const std::string& name, const utils::agent& master_agent, const std::string cpb_name = "")
+      :  utils::BasicWorker (name, master_agent, cpb_name)
     {}
 
     void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  const Worker worker( "worker_0", agent._.name());
+  const Worker worker( "worker_0", agent);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  const Worker worker( "worker_0", agent._.name());
+  const Worker worker( "worker_0", agent);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients

@@ -46,8 +46,8 @@ namespace
 class Worker : public utils::BasicWorker
 {
   public:
-    Worker (const std::string& name, const std::string& master_name, const std::string cpb_name = "")
-      :  utils::BasicWorker (name, master_name, cpb_name)
+    Worker (const std::string& name, const utils::agent& master_agent, const std::string cpb_name = "")
+      :  utils::BasicWorker (name, master_agent, cpb_name)
     {}
 
     void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_polling_client)
   const utils::agent agent
      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  Worker* pWorker(new Worker("worker_0", agent._.name()));
+  Worker* pWorker(new Worker("worker_0", agent));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_polling_client)
           )
   {}
 
-  Worker worker_0( "worker_0", agent._.name());
+  Worker worker_0( "worker_0", agent);
 
   BOOST_REQUIRE_EQUAL
      ( utils::client::wait_for_job_termination(client, job_id)
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_subscribing_client)
   const utils::agent agent
        ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  Worker* pWorker(new Worker("worker_0", agent._.name()));
+  Worker* pWorker(new Worker("worker_0", agent));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_subscribing_client)
            )
    {}
 
-  Worker worker_0( "worker_0", agent._.name());
+  Worker worker_0( "worker_0", agent);
 
   sdpa::client::job_info_t job_info;
   BOOST_REQUIRE_EQUAL
@@ -144,9 +144,9 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  const Worker worker_0( "worker_0", agent._.name(), "A");
+  const Worker worker_0( "worker_0", agent, "A");
 
-  Worker* pWorker_1(new Worker( "worker_1", agent._.name(), "A"));
+  Worker* pWorker_1(new Worker( "worker_1", agent, "A"));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig
          (client.discoverJobStates (fhg::util::random_string(), job_id)) )
    {}
 
-  const Worker worker_1( "worker_1", agent._.name(), "A");
+  const Worker worker_1( "worker_1", agent, "A");
 
   sdpa::client::job_info_t job_info;
   BOOST_REQUIRE_EQUAL

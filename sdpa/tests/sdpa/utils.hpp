@@ -235,11 +235,11 @@ namespace utils
   {
   public:
     BasicWorker( std::string name
-                 , std::string master_name
+                 , const utils::agent& master_agent
                  , std::string cpb_name = ""
                  )
      : _name (name)
-     , _master_name(master_name)
+     , _master_name(master_agent.name())
      , _kvs_client
        ( new fhg::com::kvs::client::kvsc
          (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
@@ -269,7 +269,7 @@ namespace utils
       if(!_capabilities.empty())
       {
           sdpa::events::CapabilitiesGainedEvent::Ptr
-            ptrCpbGainEvt( new sdpa::events::CapabilitiesGainedEvent(name, master_name, _capabilities) );
+            ptrCpbGainEvt( new sdpa::events::CapabilitiesGainedEvent(name, _master_name, _capabilities) );
           _network_strategy->perform (ptrCpbGainEvt);
       }
     }

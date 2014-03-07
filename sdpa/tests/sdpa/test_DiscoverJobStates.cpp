@@ -67,10 +67,10 @@ class Worker : public utils::BasicWorker
 {
   public:
     Worker( const std::string& name
-          , const std::string& master_name
+          , const utils::agent& master_agent
           , const std::string& cpb_name
           , boost::optional<sdpa::status::code> reply_status = boost::none)
-      :  utils::BasicWorker (name, master_name, cpb_name)
+      :  utils::BasicWorker (name, master_agent, cpb_name)
       , _reply_status(reply_status)
       , _logger (fhg::log::Logger::get (name))
     {}
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
   srand (time(NULL));
   sdpa::status::code reply_status(static_cast<sdpa::status::code>(rand()%6));
 
-  Worker worker("worker_0", agent._.name(), "", reply_status);
+  Worker worker("worker_0", agent, "", reply_status);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 
   const sdpa::status::code reply_status(static_cast<sdpa::status::code>(rand()%6));
 
-  Worker* pWorker = new Worker("worker_0", arr_ptr_agents[n_agents_in_chain-1]->_.name(), "", reply_status);
+  Worker* pWorker = new Worker("worker_0", *arr_ptr_agents[n_agents_in_chain-1], "", reply_status);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  const Worker worker_0( "worker_0", agent._.name(), "A");
+  const Worker worker_0( "worker_0", agent, "A");
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -278,8 +278,8 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  Worker*  pWorker_0 = new Worker( "worker_0", agent._.name(), "A");
-  const Worker worker_1( "worker_1", agent._.name(), "A");
+  Worker*  pWorker_0 = new Worker( "worker_0", agent, "A");
+  const Worker worker_1( "worker_1", agent, "A");
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));

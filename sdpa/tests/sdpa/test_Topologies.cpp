@@ -11,8 +11,8 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 class Worker : public utils::BasicWorker
 {
   public:
-    Worker (const std::string& name, const std::string& master_name, const std::string cpb_name = "")
-      :  utils::BasicWorker (name, master_name, cpb_name)
+    Worker (const std::string& name, const utils::agent& master_agent, const std::string cpb_name = "")
+      :  utils::BasicWorker (name, master_agent, cpb_name)
     {}
 
     void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  const Worker worker( "worker_0", "agent_0");
+  const Worker worker( "worker_0", agent);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE (chained_agents)
   const utils::agent agent_1
     ("agent_1", "127.0.0.1", kvs_host(), kvs_port(), agent_0);
 
-  const Worker worker( "worker_0", "agent_1");
+  const Worker worker( "worker_0", agent_1);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)
@@ -115,8 +115,8 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   const utils::agent agent_2
     ("agent_2", "127.0.0.1", kvs_host(), kvs_port(), agent_0);
 
-  const Worker worker_0( "worker_0", "agent_1");
-  const Worker worker_1( "worker_1", "agent_2");
+  const Worker worker_0( "worker_0", agent_1);
+  const Worker worker_1( "worker_1", agent_2);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   const utils::agent agent_2
     ("agent_2", "127.0.0.1", kvs_host(), kvs_port(), agents);
 
-  const Worker worker("worker_0", "agent_2");
+  const Worker worker("worker_0", agent_2);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)

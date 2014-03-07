@@ -17,9 +17,9 @@ class Worker : public utils::BasicWorker
 {
 public:
   Worker( std::string name
-         , std::string master_name
-         , std::string cpb_name = "" )
-   : utils::BasicWorker(name, master_name, cpb_name)
+      , const utils::agent& master_agent
+      , std::string cpb_name = "" )
+     : utils::BasicWorker(name, master_agent, cpb_name)
   {}
 
   void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
   utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  Worker worker("worker_0", agent._.name());
+  Worker worker("worker_0", agent);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
   utils::agent agent
       ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  Worker worker("worker_0", agent._.name());
+  Worker worker("worker_0", agent);
 
   sdpa::client::Client client (orchestrator.name(),  kvs_host(), kvs_port());
   sdpa::job_id_t job_id(client.submitJob (workflow));
