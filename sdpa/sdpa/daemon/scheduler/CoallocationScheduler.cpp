@@ -114,15 +114,16 @@ namespace sdpa
           }
 
           boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-            BOOST_FOREACH (worker_id_t const& worker, matching_workers)
-            {
-              worker_manager().findWorker (worker)->reserve();
-            }
 
             allocation_table_t::iterator it (allocation_table_.find (jobId));
             if (it != allocation_table_.end())
             {
               throw std::runtime_error ("already have reservation for job");
+            }
+
+            BOOST_FOREACH (worker_id_t const& worker, matching_workers)
+            {
+              worker_manager().findWorker (worker)->reserve();
             }
 
               Reservation* pReservation (new Reservation (job_reqs.numWorkers()));
