@@ -424,9 +424,6 @@ function generate_environment ()
             log.server.url)
                 echo export FHGLOG_to_server="$val"
                 ;;
-            sdpa.gui)
-                echo export SDPA_GUI="$val"
-                ;;
             *)
                 ;;
         esac
