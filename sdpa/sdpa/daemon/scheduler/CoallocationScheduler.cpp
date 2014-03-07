@@ -120,7 +120,11 @@ namespace sdpa
             }
 
             allocation_table_t::iterator it (allocation_table_.find (jobId));
-            if (it == allocation_table_.end())
+            if (it != allocation_table_.end())
+            {
+              throw std::runtime_error ("already have reservation for job");
+            }
+
             {
               Reservation* pReservation (new Reservation (job_reqs.numWorkers()));
               allocation_table_.insert (std::make_pair (jobId, pReservation));
