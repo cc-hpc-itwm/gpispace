@@ -19,6 +19,7 @@ usage: $(basename $0) [options]
   -d: do not delete logfiles
   -C: capability specification
   -G: number of segments
+  -k: kvs port (=$kvs_port)
 
         format:
            <CAP>[+CAP1...][#socket][:N[xM][,shm]]
@@ -178,7 +179,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hnf:S:m:s:C:F:p:MA:dG:" opt; do
+while getopts ":hnf:S:m:s:C:F:p:MA:dG:k:" opt; do
     case $opt in
         h)
             usage
@@ -235,6 +236,10 @@ while getopts ":hnf:S:m:s:C:F:p:MA:dG:" opt; do
             ;;
         G)
             number_of_groups=$OPTARG
+            shiftcount=$((shiftcount + 2))
+            ;;
+        k)
+            kvs_port=$OPTARG
             shiftcount=$((shiftcount + 2))
             ;;
         \?)
