@@ -15,7 +15,6 @@ usage: $(basename $0) [options]
   -M: disable use of the memory layer
   -s: default amount of shared memory to use (=0)
   -d: do not delete logfiles
-  -c: ignored (accepted for backward compatibility)
   -C: capability specification
   -G: number of segments
 
@@ -180,7 +179,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hnf:S:m:s:c:C:F:p:MA:dG:" opt; do
+while getopts ":hnf:S:m:s:C:F:p:MA:dG:" opt; do
     case $opt in
         h)
             usage
@@ -204,9 +203,6 @@ while getopts ":hnf:S:m:s:c:C:F:p:MA:dG:" opt; do
             ;;
         s)
             def_shm_mem=$(( $OPTARG ))
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
-        c)
             shiftcount=$(( shiftcount + 2 ))
             ;;
         C)
