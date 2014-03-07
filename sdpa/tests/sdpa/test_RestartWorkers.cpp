@@ -4,50 +4,18 @@
 #include "tests_config.hpp"
 #include <utils.hpp>
 
-#include <boost/scoped_ptr.hpp>
 #include <boost/test/unit_test.hpp>
-#include <boost/tokenizer.hpp>
-
-#include <fhg/util/random_string.hpp>
-
-#include <sdpa/events/CapabilitiesGainedEvent.hpp>
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-namespace
-{
-  bool has_state_pending (sdpa::discovery_info_t const& disc_res)
-  {
-   return disc_res.state() && disc_res.state().get() == sdpa::status::PENDING;
-  }
-
-  bool all_childs_are_pending (sdpa::discovery_info_t const& disc_res)
-  {
-   BOOST_FOREACH
-     (const sdpa::discovery_info_t& child_info, disc_res.children())
-   {
-     if (!has_state_pending (child_info))
-     {
-       return false;
-     }
-   }
-
-   return true;
-  }
-
-  bool has_children_and_all_children_are_pending
-    (sdpa::discovery_info_t const& disc_res)
-  {
-    std::cout<<disc_res<<std::endl;
-    return !disc_res.children().empty() && all_childs_are_pending (disc_res);
-  }
-}
+#include <fhg/util/random_string.hpp>
 
 class Worker : public utils::BasicWorker
 {
   public:
-    Worker (const std::string& name, const utils::agent& master_agent, const std::string cpb_name = "")
+    Worker (const std::string& name, const utils::agent& master_agent, const std::string cpb_name = "", bool notify_finished = false)
       :  utils::BasicWorker (name, master_agent, cpb_name)
+      , _notify_finished(notify_finished)
     {}
 
     void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
@@ -58,17 +26,24 @@ class Worker : public utils::BasicWorker
                                                           , *pEvt->job_id()));
       _network_strategy->perform (pSubmitJobAckEvt);
 
-      sdpa::events::JobFinishedEvent::Ptr
-      pJobFinishedEvt(new sdpa::events::JobFinishedEvent( _name
-                                                        , pEvt->from()
-                                                        , *pEvt->job_id()
-                                                        , pEvt->description() ));
+      if(_notify_finished)
+      {
+          sdpa::events::JobFinishedEvent::Ptr
+          pJobFinishedEvt(new sdpa::events::JobFinishedEvent( _name
+                                                            , pEvt->from()
+                                                            , *pEvt->job_id()
+                                                            , pEvt->description() ));
 
-      _network_strategy->perform (pJobFinishedEvt);
+          _network_strategy->perform (pJobFinishedEvt);
+      }
     }
 
     void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* ){}
+
+  private:
+    bool _notify_finished;
 };
+
 
 BOOST_AUTO_TEST_CASE (restart_worker_polling_client)
 {
@@ -88,13 +63,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_polling_client)
 
   delete pWorker;
 
-  // wait until all remaining jobs are discovered pending
-  while (!has_children_and_all_children_are_pending
-        (client.discoverJobStates (fhg::util::random_string(), job_id))
-          )
-  {}
-
-  Worker worker_0( "worker_0", agent);
+  Worker worker_0("worker_0", agent, "", true);
 
   BOOST_REQUIRE_EQUAL
      ( utils::client::wait_for_job_termination(client, job_id)
@@ -119,13 +88,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_subscribing_client)
 
   delete pWorker;
 
-  // wait until all remaining jobs are discovered pending
-  while (!has_children_and_all_children_are_pending
-         (client.discoverJobStates (fhg::util::random_string(), job_id))
-           )
-   {}
-
-  Worker worker_0( "worker_0", agent);
+  Worker worker_0("worker_0", agent, "", true);
 
   sdpa::client::job_info_t job_info;
   BOOST_REQUIRE_EQUAL
@@ -144,21 +107,17 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  const Worker worker_0( "worker_0", agent, "A");
+  const Worker worker_0("worker_0", agent, "A", true);
 
-  Worker* pWorker_1(new Worker( "worker_1", agent, "A"));
+  std::string worker_id_1("worker_1");
+  Worker* pWorker_1(new Worker(worker_id_1, agent, "A"));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   delete pWorker_1;
 
-  // wait until all remaining jobs are discovered pending
-  while (!has_children_and_all_children_are_pending
-         (client.discoverJobStates (fhg::util::random_string(), job_id)) )
-   {}
-
-  const Worker worker_1( "worker_1", agent, "A");
+  const Worker worker_1(worker_id_1, agent, "A", true);
 
   sdpa::client::job_info_t job_info;
   BOOST_REQUIRE_EQUAL
