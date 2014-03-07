@@ -567,5 +567,7 @@ function start_workers
 
 assign_segments
 start_agents
+wait_on_pids
+
 start_workers
-wait_if_necessary
+wait_on_pids
