@@ -133,21 +133,17 @@ namespace sdpa
               pReservation->addWorker (worker);
             }
 
-
-            sdpa::worker_id_list_t list_reserved_workers =
-              pReservation->getWorkerList();
-
             try
             {
-              BOOST_FOREACH (const worker_id_t& wid, list_reserved_workers)
+              BOOST_FOREACH (const worker_id_t& wid, matching_workers)
               {
                 worker_manager().findWorker (wid)->submit (jobId);
               }
-              ptr_comm_handler_->serveJob (list_reserved_workers, jobId);
+              ptr_comm_handler_->serveJob (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
             }
             catch (std::runtime_error const&)
             {
-              BOOST_FOREACH (const worker_id_t& wid, list_reserved_workers)
+              BOOST_FOREACH (const worker_id_t& wid, matching_workers)
               {
                 worker_manager().findWorker (wid)->deleteJob (jobId);
                 worker_manager().findWorker (wid)->free();
