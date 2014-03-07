@@ -73,10 +73,6 @@ namespace sdpa
         {
           m_list_workers.push_back(wid);
         }
-        void delWorker (const sdpa::worker_id_t& wid)
-        {
-          m_list_workers.remove(wid);
-        }
 
         void storeWorkerResult
           (const sdpa::worker_id_t& wid, const result_type& result)

@@ -140,7 +140,6 @@ namespace sdpa
               {
                 worker_manager().findWorker (wid)->deleteJob (jobId);
                 worker_manager().findWorker (wid)->free();
-                pReservation->delWorker (wid);
               }
 
               delete pReservation;
