@@ -121,9 +121,6 @@ namespace sdpa
               throw std::runtime_error ("already have reservation for job");
             }
 
-              Reservation* pReservation (new Reservation (matching_workers));
-              allocation_table_.insert (std::make_pair (jobId, pReservation));
-
             try
             {
               BOOST_FOREACH (worker_id_t const& worker, matching_workers)
@@ -132,6 +129,9 @@ namespace sdpa
                 worker_manager().findWorker (worker)->submit (jobId);
               }
               ptr_comm_handler_->serveJob (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
+
+              Reservation* pReservation (new Reservation (matching_workers));
+              allocation_table_.insert (std::make_pair (jobId, pReservation));
             }
             catch (std::runtime_error const&)
             {
@@ -140,9 +140,6 @@ namespace sdpa
                 worker_manager().findWorker (wid)->deleteJob (jobId);
                 worker_manager().findWorker (wid)->free();
               }
-
-              delete pReservation;
-              allocation_table_.erase (jobId);
 
               _jobs_to_schedule.push_front (jobId);
             }
