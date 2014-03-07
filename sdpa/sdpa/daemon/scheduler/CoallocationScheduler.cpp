@@ -91,13 +91,10 @@ namespace sdpa
         }
         sdpa::job_id_t jobId (*job_id);
 
-        const job_requirements_t job_reqs
-          (ptr_comm_handler_->getJobRequirements (jobId));
-
         const std::set<worker_id_t> matching_workers
           ( find_assignment_for_job
             ( listAvailWorkers
-            , job_reqs
+            , ptr_comm_handler_->getJobRequirements (jobId)
             , boost::bind
               (&WorkerManager::getBestMatchingWorker, &worker_manager(), _1, _2)
             )
