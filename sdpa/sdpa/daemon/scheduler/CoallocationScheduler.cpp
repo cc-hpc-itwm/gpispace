@@ -135,8 +135,6 @@ namespace sdpa
 
           Reservation* pReservation (allocation_table_[jobId]);
 
-          if (pReservation->acquired())
-          {
             sdpa::worker_id_list_t list_reserved_workers =
               pReservation->getWorkerList();
 
@@ -159,11 +157,6 @@ namespace sdpa
 
               _jobs_to_schedule.push_front (jobId);
             }
-          }
-          else
-          {
-            _jobs_to_schedule.push_front (jobId);
-          }
         }
         else
         {
