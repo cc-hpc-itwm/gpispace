@@ -121,14 +121,13 @@ namespace sdpa
               throw std::runtime_error ("already have reservation for job");
             }
 
-              Reservation* pReservation (new Reservation);
+              Reservation* pReservation (new Reservation (matching_workers));
               allocation_table_.insert (std::make_pair (jobId, pReservation));
 
             try
             {
               BOOST_FOREACH (worker_id_t const& worker, matching_workers)
               {
-                pReservation->addWorker (worker);
                 worker_manager().findWorker (worker)->reserve();
                 worker_manager().findWorker (worker)->submit (jobId);
               }

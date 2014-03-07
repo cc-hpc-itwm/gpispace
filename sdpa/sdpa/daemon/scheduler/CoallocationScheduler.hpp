@@ -65,10 +65,9 @@ namespace sdpa
       public:
         typedef enum {FINISHED, FAILED, CANCELED} result_type;
 
-        void addWorker (const sdpa::worker_id_t& wid)
-        {
-          m_list_workers.push_back(wid);
-        }
+        Reservation (std::set<worker_id_t> workers)
+          : m_list_workers (workers.begin(), workers.end())
+        {}
 
         void storeWorkerResult
           (const sdpa::worker_id_t& wid, const result_type& result)
