@@ -84,18 +84,6 @@ bool WorkerManager::addWorker(  const worker_id_t& workerId,
 }
 
 
-void WorkerManager::deleteJob (sdpa::job_id_t const & job)
-{
-  boost::mutex::scoped_lock const _ (mtx_);
-  BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
-                | boost::adaptors::filtered
-                  (boost::bind (&Worker::has_job, _1, job))
-                )
-  {
-    worker->deleteJob (job);
-  }
-}
-
 void WorkerManager::deleteWorker( const worker_id_t& workerId )
 {
   boost::mutex::scoped_lock const _ (mtx_);
