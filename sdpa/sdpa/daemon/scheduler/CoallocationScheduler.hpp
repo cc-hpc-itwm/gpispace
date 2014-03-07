@@ -111,21 +111,12 @@ namespace sdpa
           return true;
         }
 
-        bool acquired() const
-        {
-          return size() == capacity();
-        }
-
         sdpa::worker_id_list_t getWorkerList() const
         {
           return m_list_workers;
         }
 
       private:
-        size_t size() const
-        {
-          return m_list_workers.size();
-        }
         size_t capacity() const
         {
           return m_capacity;
