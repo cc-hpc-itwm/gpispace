@@ -389,6 +389,10 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
   _scheduler.assignJobsToWorkers();
 
+  _scheduler.worker_manager().findWorker ("0")->deleteJob ("job_0");
+  _scheduler.worker_manager().findWorker ("3")->deleteJob ("job_0");
+  _scheduler.worker_manager().findWorker ("6")->deleteJob ("job_0");
+  _scheduler.worker_manager().findWorker ("9")->deleteJob ("job_0");
 
   _scheduler.releaseReservation("job_0");
 
