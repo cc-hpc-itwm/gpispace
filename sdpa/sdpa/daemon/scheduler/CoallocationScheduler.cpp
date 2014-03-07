@@ -80,16 +80,14 @@ namespace sdpa
       sdpa::worker_id_list_t listAvailWorkers
         (worker_manager().getListWorkersNotReserved());
 
+      std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
+
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
-      while (!listAvailWorkers.empty())
+      while (!listAvailWorkers.empty() && !jobs_to_schedule.empty())
       {
-        const boost::optional<job_id_t> job_id (_jobs_to_schedule.pop());
-        if (!job_id)
-        {
-          break;
-        }
-        sdpa::job_id_t jobId (*job_id);
+        sdpa::job_id_t jobId (jobs_to_schedule.front());
+        jobs_to_schedule.pop_front();
 
         const std::set<worker_id_t> matching_workers
           ( find_assignment_for_job
@@ -138,13 +136,18 @@ namespace sdpa
                 worker_manager().findWorker (wid)->free();
               }
 
-              _jobs_to_schedule.push_front (jobId);
+              jobs_to_schedule.push_front (jobId);
             }
         }
         else
         {
           nonmatching_jobs_queue.push_back (jobId);
         }
+      }
+
+      BOOST_FOREACH (job_id_t id, jobs_to_schedule)
+      {
+        _jobs_to_schedule.push (id);
       }
 
       BOOST_FOREACH (const sdpa::job_id_t& id, nonmatching_jobs_queue)
@@ -247,29 +250,10 @@ namespace sdpa
       }
     }
 
-    boost::optional<job_id_t> CoallocationScheduler::locked_job_id_list::pop()
-    {
-      boost::mutex::scoped_lock const _ (mtx_);
-      if (container_.empty())
-      {
-        return boost::none;
-      }
-
-      job_id_t item = container_.front();
-      container_.pop_front();
-      return item;
-    }
-
     void CoallocationScheduler::locked_job_id_list::push (job_id_t item)
     {
       boost::mutex::scoped_lock const _ (mtx_);
       container_.push_back (item);
-    }
-
-    void CoallocationScheduler::locked_job_id_list::push_front (job_id_t item)
-    {
-      boost::mutex::scoped_lock const _ (mtx_);
-      container_.push_front (item);
     }
 
     size_t CoallocationScheduler::locked_job_id_list::erase (const job_id_t& item)
@@ -290,6 +274,15 @@ namespace sdpa
         }
       }
       return count;
+    }
+
+    std::list<job_id_t> CoallocationScheduler::locked_job_id_list::get_and_clear()
+    {
+      boost::mutex::scoped_lock const _ (mtx_);
+
+      std::list<job_id_t> ret;
+      std::swap (ret, container_);
+      return ret;
     }
   }
 }

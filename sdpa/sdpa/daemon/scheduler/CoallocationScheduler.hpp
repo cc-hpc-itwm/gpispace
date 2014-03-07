@@ -50,10 +50,10 @@ namespace sdpa
       class locked_job_id_list
       {
       public:
-        inline boost::optional<job_id_t> pop();
         inline void push (job_id_t item);
-        inline void push_front (job_id_t item);
         inline size_t erase (const job_id_t& item);
+
+        std::list<job_id_t> get_and_clear();
 
       private:
         mutable boost::mutex mtx_;
