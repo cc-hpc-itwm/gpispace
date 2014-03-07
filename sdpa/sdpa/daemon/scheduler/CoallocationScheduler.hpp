@@ -65,10 +65,6 @@ namespace sdpa
       public:
         typedef enum {FINISHED, FAILED, CANCELED} result_type;
 
-        Reservation (const size_t& n)
-          : m_capacity (n)
-        {}
-
         void addWorker (const sdpa::worker_id_t& wid)
         {
           m_list_workers.push_back(wid);
@@ -113,12 +109,6 @@ namespace sdpa
         }
 
       private:
-        size_t capacity() const
-        {
-          return m_capacity;
-        }
-
-        size_t m_capacity;
         sdpa::worker_id_list_t m_list_workers;
         std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
       };

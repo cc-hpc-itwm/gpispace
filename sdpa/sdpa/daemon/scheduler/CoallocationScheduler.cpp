@@ -121,7 +121,7 @@ namespace sdpa
               throw std::runtime_error ("already have reservation for job");
             }
 
-              Reservation* pReservation (new Reservation (job_reqs.numWorkers()));
+              Reservation* pReservation (new Reservation);
               allocation_table_.insert (std::make_pair (jobId, pReservation));
 
             try
