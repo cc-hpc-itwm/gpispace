@@ -68,6 +68,7 @@ namespace sdpa
 
       try
       {
+        scheduler()->releaseReservation (pEvt->job_id());
         scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
         request_scheduling();
       }
@@ -101,6 +102,7 @@ namespace sdpa
 
       try
       {
+        scheduler()->releaseReservation (pEvt->job_id());
         scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
       }
