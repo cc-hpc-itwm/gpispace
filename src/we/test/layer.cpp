@@ -648,6 +648,100 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
+  (two_sequential_jobs_shall_be_properly_handled, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (1);
+
+  {
+    we::layer::id_type const id (generate_id());
+
+    we::layer::id_type child_id;
+
+    {
+      expect_submit const _ (this, &child_id, activity_child);
+
+      do_submit (id, activity_input);
+    }
+
+    {
+      expect_finished const _ (this, id, activity_output);
+
+      do_finished (child_id, activity_result);
+    }
+  }
+  {
+    we::layer::id_type const id (generate_id());
+
+    we::layer::id_type child_id;
+
+    {
+      expect_submit const _ (this, &child_id, activity_child);
+
+      do_submit (id, activity_input);
+    }
+
+    {
+      expect_finished const _ (this, id, activity_output);
+
+      do_finished (child_id, activity_result);
+    }
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (two_interleaving_jobs_shall_be_properly_handled, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  boost::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (2);
+
+  we::layer::id_type const id_0 (generate_id());
+  we::layer::id_type const id_1 (generate_id());
+
+  we::layer::id_type child_id_0_0;
+  we::layer::id_type child_id_0_1;
+  we::layer::id_type child_id_1_0;
+  we::layer::id_type child_id_1_1;
+
+  {
+    expect_submit const _0 (this, &child_id_0_0, activity_child);
+    expect_submit const _1 (this, &child_id_0_1, activity_child);
+
+    do_submit (id_0, activity_input);
+  }
+
+  {
+    expect_submit const _0 (this, &child_id_1_0, activity_child);
+    expect_submit const _1 (this, &child_id_1_1, activity_child);
+
+    do_submit (id_1, activity_input);
+  }
+
+  do_finished (child_id_1_1, activity_result);
+  do_finished (child_id_0_0, activity_result);
+
+  {
+    expect_finished const _ (this, id_1, activity_output);
+
+    do_finished (child_id_1_0, activity_result);
+  }
+
+  {
+    expect_finished const _ (this, id_0, activity_output);
+
+    do_finished (child_id_0_1, activity_result);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE
   (canceled_shall_be_called_after_cancel_one_child, daemon)
 {
   we::type::activity_t activity_input;
