@@ -560,10 +560,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
     workflowEngine()->canceled (job_id);
 
     pJob->CancelJobAck();
-    if (!ptr_scheduler_->delete_job (job_id))
-    {
-      ptr_scheduler_->worker_manager().deleteJob (job_id);
-    }
+    ptr_scheduler_->delete_job (job_id);
 
     deleteJob (job_id);
   }
