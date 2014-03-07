@@ -33,7 +33,11 @@ public:
   void serveJob(const sdpa::worker_id_list_t& worker_list, const sdpa::job_id_t& jobId)
   {
     BOOST_REQUIRE_GE (_expected_serveJob_calls.count (jobId), 1);
-    BOOST_CHECK_EQUAL (_expected_serveJob_calls[jobId], worker_list);
+    BOOST_CHECK_EQUAL (_expected_serveJob_calls[jobId].first, worker_list.size());
+    BOOST_FOREACH (sdpa::worker_id_t worker, worker_list)
+    {
+      BOOST_REQUIRE (_expected_serveJob_calls[jobId].second.count (worker));
+    }
 
     _expected_serveJob_calls.erase (_expected_serveJob_calls.find (jobId));
   }
@@ -43,12 +47,19 @@ public:
     throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
-  void expect_serveJob_call (sdpa::job_id_t id, sdpa::worker_id_list_t list)
+  void expect_serveJob_call
+    (sdpa::job_id_t id, std::size_t count, std::set<sdpa::worker_id_t> list)
   {
-    _expected_serveJob_calls.insert (std::make_pair (id, list));
+    _expected_serveJob_calls.insert
+      (std::make_pair (id, std::make_pair (count, list)));
+  }
+  void expect_serveJob_call (sdpa::job_id_t id, std::set<sdpa::worker_id_t> list)
+  {
+    expect_serveJob_call (id, list.size(), list);
   }
 
-  std::map<sdpa::job_id_t, sdpa::worker_id_list_t> _expected_serveJob_calls;
+  std::map<sdpa::job_id_t, std::pair<std::size_t, std::set<sdpa::worker_id_t> > >
+    _expected_serveJob_calls;
 };
 
 struct allocate_test_agent_and_scheduler
@@ -64,33 +75,24 @@ struct allocate_test_agent_and_scheduler
 
 namespace
 {
-  sdpa::worker_id_list_t worker_list (sdpa::worker_id_t w1)
+  std::set<sdpa::worker_id_t> worker_list (sdpa::worker_id_t w1)
   {
-    sdpa::worker_id_list_t list;
-    list.push_back (w1);
-    return list;
+    std::set<sdpa::worker_id_t> workers;
+    workers.insert (w1);
+    return workers;
   }
-  sdpa::worker_id_list_t worker_list ( sdpa::worker_id_t w1
-                                     , sdpa::worker_id_t w2
-                                     )
+  std::set<sdpa::worker_id_t> worker_list ( sdpa::worker_id_t w1
+                                          , sdpa::worker_id_t w2
+                                          , sdpa::worker_id_t w3
+                                          , sdpa::worker_id_t w4
+                                          )
   {
-    sdpa::worker_id_list_t list;
-    list.push_back (w1);
-    list.push_back (w2);
-    return list;
-  }
-  sdpa::worker_id_list_t worker_list ( sdpa::worker_id_t w1
-                                     , sdpa::worker_id_t w2
-                                     , sdpa::worker_id_t w3
-                                     , sdpa::worker_id_t w4
-                                     )
-  {
-    sdpa::worker_id_list_t list;
-    list.push_back (w1);
-    list.push_back (w2);
-    list.push_back (w3);
-    list.push_back (w4);
-    return list;
+    std::set<sdpa::worker_id_t> workers;
+    workers.insert (w1);
+    workers.insert (w2);
+    workers.insert (w3);
+    workers.insert (w4);
+    return workers;
   }
 
   sdpa::capabilities_set_t capabilities ( sdpa::worker_id_t worker
@@ -390,7 +392,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
   _scheduler.releaseReservation("job_0");
 
-  _agent.expect_serveJob_call ("job_3", worker_list ("0", "3"));
+  _agent.expect_serveJob_call ("job_3", 2, worker_list ("0", "3", "6", "9"));
 
   _scheduler.assignJobsToWorkers();
 }
