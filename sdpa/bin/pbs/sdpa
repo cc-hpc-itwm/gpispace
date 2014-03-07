@@ -451,38 +451,8 @@ function dump_config ()
 
 function initialize ()
 {
-    local hostfile=""
     local node_file=
-
-    argv="$@"
-    OPTIND=1
-    while getopts "hF:n:s:A:" opt $argv ; do
-        case $opt in
-            h)
-                echo >&2 "usage: init: [-h] [-F hostfile] [-s state-dir] [-A module-dir]"
-                return 0
-                ;;
-            F)
-                hostfile="$OPTARG"
-                shift 2
-                ;;
-            s)
-                state_dir="$OPTARG"
-                shift 2
-                ;;
-            A)
-                app_path="${OPTARG}:${app_path}"
-                shift 2
-                ;;
-            \?)
-                shift
-                ;;
-        esac
-    done
-
-    if [ -n "$1" ] ; then
-        hostfile="$1"; shift
-    fi
+    local hostfile="${1}"; shift
 
     if [ -z "$hostfile" ] ; then
         log "E: hostfile not set"
@@ -539,10 +509,6 @@ EOF
     echo test -e "$state_dir/sdpa.post.env" \&\& source "$state_dir/sdpa.post.env" >> "$tmp_file"
     echo ":" >> "$tmp_file"
 
-    local sdpa_home="$SDPA_HOME"
-    if [ -z "$sdpa_home" ] ; then
-        log "E: SDPA_HOME is not defined!"
-    fi
     mv "$tmp_file" "$state_dir/sdpa.env"
 }
 
