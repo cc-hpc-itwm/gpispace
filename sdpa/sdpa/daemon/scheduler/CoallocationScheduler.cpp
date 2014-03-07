@@ -120,7 +120,6 @@ namespace sdpa
             {
               BOOST_FOREACH (worker_id_t const& worker, matching_workers)
               {
-                worker_manager().findWorker (worker)->reserve();
                 worker_manager().findWorker (worker)->submit (jobId);
               }
               ptr_comm_handler_->serveJob (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
@@ -133,7 +132,6 @@ namespace sdpa
               BOOST_FOREACH (const worker_id_t& wid, matching_workers)
               {
                 worker_manager().findWorker (wid)->deleteJob (jobId);
-                worker_manager().findWorker (wid)->free();
               }
 
               jobs_to_schedule.push_front (jobId);
@@ -165,13 +163,6 @@ namespace sdpa
 
       if (it != allocation_table_.end())
       {
-        BOOST_FOREACH ( sdpa::worker_id_t const& workerId
-                      , it->second->getWorkerList()
-                      )
-        {
-          worker_manager().findWorker (workerId)->free();
-        }
-
         delete it->second;
         allocation_table_.erase (it);
       }

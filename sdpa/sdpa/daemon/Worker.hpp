@@ -81,8 +81,10 @@ namespace sdpa { namespace daemon {
 
     // methods related to reservation
     bool isReserved();
+  private:
     void reserve();
     void free();
+  public:
 
     std::set<job_id_t> getJobListAndCleanQueues();
 

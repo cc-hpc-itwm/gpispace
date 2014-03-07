@@ -34,6 +34,7 @@ void Worker::submit(const job_id_t& jobId)
 {
   lock_type const _ (mtx_);
   submitted_.insert (jobId);
+  reserve();
 }
 
 void Worker::acknowledge(const job_id_t &job_id)
@@ -51,6 +52,7 @@ void Worker::deleteJob(const job_id_t &job_id)
   lock_type const _ (mtx_);
   submitted_.erase (job_id);
   acknowledged_.erase (job_id);
+  free();
 }
 
 const capabilities_set_t& Worker::capabilities() const
