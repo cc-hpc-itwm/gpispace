@@ -124,14 +124,14 @@ namespace sdpa
               Reservation* pReservation (new Reservation (job_reqs.numWorkers()));
               allocation_table_.insert (std::make_pair (jobId, pReservation));
 
-            BOOST_FOREACH (worker_id_t const& worker, matching_workers)
-            {
-              worker_manager().findWorker (worker)->reserve();
-              pReservation->addWorker (worker);
-            }
-
             try
             {
+              BOOST_FOREACH (worker_id_t const& worker, matching_workers)
+              {
+                worker_manager().findWorker (worker)->reserve();
+                pReservation->addWorker (worker);
+              }
+
               BOOST_FOREACH (const worker_id_t& wid, matching_workers)
               {
                 worker_manager().findWorker (wid)->submit (jobId);
