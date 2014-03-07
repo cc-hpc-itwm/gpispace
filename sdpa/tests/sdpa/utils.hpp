@@ -280,9 +280,6 @@ namespace utils
     }
 
     void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*){}
-
-    void getCapabilities(sdpa::capabilities_set_t& cpbset) { cpbset = _capabilities; }
-
   protected:
     std::string _name;
     std::string _master_name;

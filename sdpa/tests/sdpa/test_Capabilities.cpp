@@ -12,7 +12,15 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-typedef utils::BasicWorker Worker;
+class Worker : public utils::BasicWorker
+{
+  public:
+    Worker (const std::string& name, const std::string& master_name, const std::string cpb_name)
+      :  utils::BasicWorker (name, master_name, cpb_name)
+    {}
+
+    void getCapabilities(sdpa::capabilities_set_t& cpbset) { cpbset = _capabilities; }
+};
 
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 {
