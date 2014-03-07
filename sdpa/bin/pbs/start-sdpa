@@ -1,5 +1,7 @@
 #!/bin/bash
 
+kvs_port=2439
+
 function usage ()
 {
     cat >&2 <<EOF
@@ -152,8 +154,6 @@ parse_capability()
 #
 trap 'on_ctrlC' SIGINT
 
-DEFAULT_KVS_PORT=2439
-
 nodefile=
 state_dir="$HOME/.sdpa/state"
 config_file="$HOME/.sdpa/configs/sdpa.rc"
@@ -161,7 +161,6 @@ gpi_enabled=true
 delete_logfiles=true
 app_path="${SDPA_APP_PATH}"
 number_of_groups=1
-kvs_port=
 log_port=
 
 # guess memory sizes
@@ -334,11 +333,6 @@ dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" -c "${config_file
 
 if $delete_logfiles ; then
     find "${state_dir}/log" -type f -delete
-fi
-
-if [ -z "$kvs_port" ]
-then
-    kvs_port="${DEFAULT_KVS_PORT}"
 fi
 
 if [ -z "${log_port}" ]
