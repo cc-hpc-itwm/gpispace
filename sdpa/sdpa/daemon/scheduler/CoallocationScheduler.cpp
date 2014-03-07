@@ -153,6 +153,9 @@ namespace sdpa
                 pReservation->delWorker (wid);
               }
 
+              delete pReservation;
+              allocation_table_.erase (jobId);
+
               _jobs_to_schedule.push_front (jobId);
             }
         }
