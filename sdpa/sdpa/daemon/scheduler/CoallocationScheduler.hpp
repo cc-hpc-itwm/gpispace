@@ -90,7 +90,7 @@ namespace sdpa
 
         bool allWorkersTerminated() const
         {
-          return m_map_worker_result.size() == capacity();
+          return m_map_worker_result.size() == m_list_workers.size();
         }
 
         bool allGroupTasksFinishedSuccessfully()
