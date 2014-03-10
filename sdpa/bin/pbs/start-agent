@@ -8,7 +8,6 @@
 ###
 # set some default values
 state_dir=
-config_file=
 logdir=
 gui=
 kvs_url=
@@ -39,11 +38,10 @@ usage: $(basename "$0") [options]
     -P pidfile
     -L logdir
     -s state-dir
-    -F config file
 EOF
 }
 
-while getopts ":hDfdm:g:b:n:k:L:P:s:F:" opt; do
+while getopts ":hDfdm:g:b:n:k:L:P:s:" opt; do
     case $opt in
         h)
             usage
@@ -81,9 +79,6 @@ while getopts ":hDfdm:g:b:n:k:L:P:s:F:" opt; do
             ;;
         s)
             state_dir=$OPTARG
-            ;;
-        F)
-            config_file=$OPTARG
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
