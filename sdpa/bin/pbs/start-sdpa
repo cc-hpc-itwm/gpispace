@@ -550,7 +550,6 @@ function start_workers_for_capability
         argv+=(-g "${gui_host}:${gui_port}")
         argv+=($caps_arg)
         argv+=(-s "$state_dir")
-        argv+=(-F "$config_file")
         if $gpi_enabled ; then
             argv+=(-M "$shm_size")
             argv+=(-S "$gpi_socket")
