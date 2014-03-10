@@ -1028,31 +1028,6 @@ function status ()
     return $rc
 }
 
-function cancel ()
-{
-    local jobs="$@"
-    if [ -z "$jobs" ] ; then
-        if test -e "$state_dir/current_job" ; then
-            jobs=$(cat "$state_dir/current_job")
-        fi
-    fi
-
-    if [ -z "$jobs" ] ; then
-        log "E: nothing to cancel"
-        return 1
-    fi
-
-    local err
-    for job in $jobs ; do
-        log "I: canceling job $job"
-        err=$(sdpac cancel "$job" 2>&1)
-        local ec=$?
-        if [ $ec -ne 0 ] ; then
-            log "E: failed: $ec: $err"
-        fi
-    done
-}
-
 function submit ()
 {
     local net="$1" ; shift
@@ -1262,11 +1237,6 @@ case "$1" in
         fi
         shift
         status $@
-        ;;
-    cancel)
-        require_state
-        shift
-        cancel $@
         ;;
     submit)
         require_state
