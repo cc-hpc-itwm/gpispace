@@ -159,7 +159,8 @@ fi
 
 if [ -z "$gui" ]
 then
-  gui=$(fhgcfg -f "${config_file}" -g sdpa.gui -v "$GUI_URL")
+    echo >&2 "gui url is required, please specify -g"
+    exit 4
 fi
 
 if [ -z "$kvs_url" ]

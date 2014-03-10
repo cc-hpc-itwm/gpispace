@@ -99,7 +99,8 @@ fi
 
 if [ -z "$gui" ]
 then
-  gui=$(fhgcfg -f "${config_file}" -g sdpa.gui)
+    echo >&2 "gui url is required, please specify -g"
+    exit 4
 fi
 
 if [ -z "$logdir" ]
