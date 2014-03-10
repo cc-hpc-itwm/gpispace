@@ -14,16 +14,6 @@ namespace gpi
         , m_thread (boost::bind (&transfer_queue_t::worker, this))
       {}
 
-      transfer_queue_t::~transfer_queue_t ()
-      {
-        // clear all pending and all finished
-        m_thread.interrupt ();
-        if (m_thread.joinable())
-        {
-          m_thread.join ();
-        }
-      }
-
       void
       transfer_queue_t::worker ()
       {
