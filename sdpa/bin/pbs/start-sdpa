@@ -380,11 +380,9 @@ if $gpi_enabled ; then
                           -f \
                           -P "$state_dir/gpi-space.pid" \
                           -m "$gpi_mem" \
-                          -k "${master}" \
-                          -K "$kvs_port" \
-                          -l "${master}" \
-                          -S "${gpi_socket}" \
-                          -L "${log_port}"
+                          -k "${master}" -K "$kvs_port" \
+                          -l "${log_host}" -L "${log_port}" \
+                          -S "${gpi_socket}"
 fi
 
 # for each capability:
