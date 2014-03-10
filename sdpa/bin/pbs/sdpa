@@ -222,13 +222,6 @@ function setup_required ()
     test ! -e "${config_file}"
 }
 
-function setup_kvs ()
-{
-    log "I: kvs setup"
-
-    return 0
-}
-
 function y_n_p ()
 {
     local prompt="$1" ; shift
@@ -343,7 +336,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="kvs logging gui"
+        parts="logging gui"
     else
         shift
     fi
