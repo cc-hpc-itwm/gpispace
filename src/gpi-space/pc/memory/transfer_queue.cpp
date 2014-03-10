@@ -11,7 +11,7 @@ namespace gpi
     {
       transfer_queue_t::transfer_queue_t()
         : m_enabled (true)
-        , m_thread (boost::bind (&transfer_queue_t::worker, this))
+        , m_thread (&transfer_queue_t::worker, this)
       {}
 
       void
