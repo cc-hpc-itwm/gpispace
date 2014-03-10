@@ -71,15 +71,6 @@ DEFAULT_LOG_URL=""
 DEFAULT_GUI_URL=""
 
 #
-# GPI
-#
-DEFAULT_GPI_PRIV_DIR=""
-DEFAULT_GPI_ENABLED="false"
-DEFAULT_GPI_MEMSIZE="5G"
-DEFAULT_GPI_SHMSIZE="1G"
-DEFAULT_GPI_API="gpi.api.real"
-
-#
 # override defaults by:
 #
 #     1. /etc/sdpa/defaults
