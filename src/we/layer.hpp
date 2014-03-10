@@ -141,8 +141,6 @@ namespace we
 
       boost::mt19937& _random_extraction_engine;
       void extract_from_nets();
-      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-        _extract_from_nets_thread;
 
       void failed_delayed ( activity_data_type& parent_activity
                           , id_type id
@@ -182,6 +180,9 @@ namespace we
 
       void finalize_finished
         (activity_data_type&, type::activity_t, id_type parent, id_type child);
+
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _extract_from_nets_thread;
     };
 }
 
