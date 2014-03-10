@@ -107,107 +107,19 @@ done
 
 test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
 
-if [ -z "$gpi_priv_dir" ] ; then
-    if [ -n "$GPI_PRIV_DIR" ] ; then
-        gpi_priv_dir="$GPI_PRIV_DIR"
-    else
-        gpi_priv_dir=$(fhgcfg -f "${config_file}" -g gpi.priv_dir)
-    fi
-fi
-
 if [ -z "$socket_path" ] ; then
     log "E: socket path is missing, please specify it with -S"
     exit 1
 fi
 
-if [ -z "$gpi_priv_dir" ] ; then
-    log "could not deduce GPI_PRIV_DIR, please export GPI_PRIV_DIR or pass via commandline!"
-    exit 1
-fi
-gpi_app_path="${gpi_priv_dir}/gpi-space.app"
-gpi_bin_path="${gpi_app_path}/bin"
-gpi_lib_path="${gpi_app_path}/lib"
-
 log_file="${state_dir}/log/gpi-space.log"
 
-if [ -z "$gpi_exe" ] ; then
-    gpi_exe="${SDPA_HOME}/bin/gpi-space"
-fi
-
-if [ ! -x "${gpi_exe}" ] ; then
-    log "Sorry, ${gpi_exe} is not executable"
-    exit 1
-fi
-gpi_bin=$(basename "$gpi_exe")
-
-need_copy=false
-if [ ! -x "${gpi_bin_path}/${gpi_bin}" ] ; then
-    log "${gpi_bin} does not seem to be installed in $gpi_bin_path"
-    need_copy=true
-else
-    md_inst=$( md5sum "${gpi_bin_path}/${gpi_bin}" | cut -d ' ' -f 1 )
-    md_cand=$( md5sum "${gpi_exe}" | cut -d ' ' -f 1 )
-    if [ "$md_inst" != "$md_cand" ] ; then
-        log "candidate ${gpi_exe} is different than the one in ${gpi_bin_path}"
-        need_copy=true
-    fi
-fi
-
-do_copy=false
-if [ $need_copy = "true" -a $force = "true" ] ; then
-    do_copy=true
-fi
-if [ $need_copy = "true" -a $do_copy = "false" ] ; then
-    read -t 5 -n 1 -p "Do you want me to copy \"$gpi_exe\" to \"$gpi_bin_path\"? [y/N] " ans
-    case "$ans" in
-        y|Y)
-            do_copy=true
-            ;;
-        *)
-            ;;
-    esac
-fi
-
-if [ $do_copy = "true" ] ; then
-    if [ ! -d "${gpi_bin_path}" ] ; then
-        tmp=$( mkdir -p "$gpi_bin_path" 2>&1 )
-        if [ $? -ne 0 ] ; then
-            log "could not create $gpi_bin_path: $tmp"
-            exit 1
-        fi
-    fi
-    if [ ! -d "${gpi_lib_path}" ] ; then
-        tmp=$( mkdir -p "$gpi_lib_path" 2>&1 )
-        if [ $? -ne 0 ] ; then
-            log "could not create $gpi_lib_path: $tmp"
-            exit 1
-        fi
-    fi
-    if [ ! -w "${gpi_bin_path}" -o ! -w "${gpi_lib_path}" ] ; then
-        log "W: I am not allowed to write to '${gpi_bin_path}' or '${gpi_lib_path}'"
-    else
-        cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}" && {
-            log "I: installed new ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
-        } || {
-            log "E: could not update ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
-            exit 1
-        }
-        "${SDPA_HOME}/libexec/sdpa/scripts/bundle.sh" -o "${gpi_lib_path}" "${gpi_bin_path}/${gpi_bin}" && {
-            log "I: bundled ${gpi_bin} in ${gpi_app_path}"
-        } || {
-            log "E: could not install ${gpi_bin} in ${gpi_app_path}"
-            rm -rf "${gpi_app_path}"
-            exit 1
-        }
-    fi
-fi
-
-if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
+if [ -x "$gpi_exe" ] ; then
     cmdline=
     if $debug ; then
         cmdline="gdb -ex run --args $cmdline"
     fi
-    cmdline="$cmdline ${gpi_bin_path}/${gpi_bin}"
+    cmdline="$cmdline ${gpi_exe}"
 
     if $verbose ; then
         cmdline="$cmdline --log-level TRACE"
@@ -246,6 +158,6 @@ if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
     log "executing $cmdline"
     exec ${cmdline}
 else
-    log "cannot execute $gpi_bin_path/$gpi_bin, giving up."
-    exit 2
+    log "Sorry, ${gpi_exe} is not executable"
+    exit 1
 fi
