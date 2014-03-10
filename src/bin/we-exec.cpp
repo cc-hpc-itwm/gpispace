@@ -17,6 +17,7 @@
 #include <boost/program_options.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <list>
@@ -148,29 +149,13 @@ namespace
     {
       for (std::size_t n (0); n < num_worker; ++n)
       {
-        worker_.push_back (new boost::thread (&sdpa_daemon::worker, this, n));
+        worker_.push_back
+          ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+            (&sdpa_daemon::worker, this, n)
+          );
       }
 
       mgmt_layer_.submit (_job_id, act);
-    }
-
-    ~sdpa_daemon()
-    {
-      BOOST_FOREACH (boost::thread& t, worker_)
-      {
-        t.interrupt();
-        if (t.joinable())
-        {
-          t.join();
-        }
-      }
-      worker_.clear();
-
-      _timeout_thread.interrupt();
-      if (_timeout_thread.joinable())
-      {
-        _timeout_thread.join();
-      }
     }
 
     void worker (const std::size_t rank)
@@ -372,8 +357,10 @@ namespace
     sdpa::status::code _job_status;
     boost::optional<std::string> _result;
     we::layer::id_type _job_id;
-    boost::thread _timeout_thread;
-    boost::ptr_vector<boost::thread> worker_;
+    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      _timeout_thread;
+    boost::ptr_vector<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+      worker_;
   };
 }
 
