@@ -261,6 +261,7 @@ namespace sdpa {
 
       boost::mutex _scheduling_thread_mutex;
       boost::condition_variable _scheduling_thread_notifier;
+      //! \todo boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
       boost::thread _scheduling_thread;
       void scheduling_thread();
       void request_scheduling();
@@ -291,6 +292,7 @@ namespace sdpa {
 
 
       fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _event_queue;
+      //! \todo boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
       boost::thread _event_handler_thread;
       void handle_events();
 
