@@ -393,16 +393,17 @@ if $gpi_enabled ; then
     info "using GPI mem: ${gpi_mem} bytes per node"
     info "starting GPI using: '$gpi_exe' on '${gpi_socket}'"
 
-    "${script_start_gpi}" -s "$state_dir" \
-                          -x "${gpi_exe}" \
-                          -F "${config_file}" \
-                          -D \
-                          -f \
-                          -P "$state_dir/gpi-space.pid" \
-                          -m "$gpi_mem" \
-                          -k "${master}" -K "$kvs_port" \
-                          -l "${log_host}" -L "${log_port}" \
-                          -S "${gpi_socket}"
+    dry_run "${script_start_gpi}" \
+        -s "$state_dir" \
+        -x "${gpi_exe}" \
+        -F "${config_file}" \
+        -D \
+        -f \
+        -P "$state_dir/gpi-space.pid" \
+        -m "$gpi_mem" \
+        -k "${master}" -K "$kvs_port" \
+        -l "${log_host}" -L "${log_port}" \
+        -S "${gpi_socket}"
 fi
 
 # for each capability:
