@@ -4,7 +4,6 @@
 #include <plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
-#include <fhg/util/threadname.hpp>
 
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
@@ -364,12 +363,10 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   }
 
   m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
-  fhg::util::set_threadname (*m_event_thread, "[drts-events]");
 
   // initialize peer
   m_peer.reset (new fhg::com::peer_t (m_my_name, host, port, _kvs_client));
   m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
-  fhg::util::set_threadname (*m_peer_thread, "[drts-peer]");
   m_peer->start();
 
   start_receiver();
@@ -400,7 +397,6 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
 
   m_execution_thread.reset
     (new boost::thread(&DRTSImpl::job_execution_thread, this));
-  fhg::util::set_threadname (*m_execution_thread, "[drts-execute]");
 
   start_connect ();
 }
