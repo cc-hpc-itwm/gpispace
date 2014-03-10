@@ -61,10 +61,6 @@ namespace sdpa
     {
       _stopping = true;
       m_peer.stop();
-      if (_peer_thread.joinable())
-      {
-        _peer_thread.join();
-      }
     }
 
     fhg::com::message_t Client::message_for_event
