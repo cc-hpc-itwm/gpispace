@@ -164,6 +164,7 @@ delete_logfiles=true
 app_path="${SDPA_APP_PATH}"
 number_of_groups=1
 log_url=
+gui_url=
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -368,6 +369,17 @@ fi
 log_host=${log_url%:*}
 log_port=${log_url#*:}
 
+if [ -z "${gui_url}" ]
+then
+    gui_url=$(fhgcfg -f "${config_file}" -g "sdpa.gui")
+    if [ -z "$gui_url" ] ; then
+        error 2 "setup incomplete, gui url was not set"
+    fi
+fi
+
+gui_host=${gui_url%:*}
+gui_port=${gui_url#*:}
+
 if [ -z "${gpi_socket}" ]
 then
     gpi_socket="$def_gpi_socket"
@@ -474,6 +486,7 @@ function start_agent
         -m "${parent}" \
         -s "${state_dir}" \
         -k "${master}:${kvs_port}" \
+        -g "${gui_host}:${gui_port}" \
         -F "${config_file}" &
     pids+=( $! )
 }
@@ -535,6 +548,7 @@ function start_workers_for_capability
         argv+=(-n "$name")
         argv+=(-m "$parent")
         argv+=(-k "$master:${kvs_port}")
+        argv+=(-g "${gui_host}:${gui_port}")
         argv+=($caps_arg)
         argv+=(-s "$state_dir")
         argv+=(-F "$config_file")
