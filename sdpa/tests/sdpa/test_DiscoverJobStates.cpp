@@ -13,6 +13,8 @@
 #include <boost/test/unit_test.hpp>
 #include <sdpa/types.hpp>
 
+#include <boost/thread/scoped_thread.hpp>
+
 #include <deque>
 
 namespace
@@ -191,20 +193,14 @@ BOOST_AUTO_TEST_CASE (test_discover_activities)
   // layer discover immediately (deadlock)
   agent.wait_all_submitted();
 
-  boost::thread thrd_notify
-    (boost::thread (&sdpa::daemon::TestAgent::notify_discovered, &agent));
+  const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+    thrd_notify (&sdpa::daemon::TestAgent::notify_discovered, &agent);
 
   while (!agent.has_two_pending_children())
   {
     we::layer::id_type const sent_disc_id(get_next_disc_id());
     agent.workflowEngine()->discover (sent_disc_id, id);
     BOOST_REQUIRE_EQUAL (agent.wait_for_discovery_result(), sent_disc_id);
-  }
-
-  thrd_notify.interrupt();
-  if (thrd_notify.joinable())
-  {
-    thrd_notify.join();
   }
 }
 
