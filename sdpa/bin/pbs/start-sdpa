@@ -486,8 +486,7 @@ function start_agent
         -m "${parent}" \
         -s "${state_dir}" \
         -k "${master}:${kvs_port}" \
-        -g "${gui_host}:${gui_port}" \
-        -F "${config_file}" &
+        -g "${gui_host}:${gui_port}" &
     pids+=( $! )
 }
 
