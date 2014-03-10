@@ -152,11 +152,6 @@ else
     exit 4
 fi
 
-if [ ! -r "${config_file}" ] ; then
-    echo >&2 "config file '${config_file}' does not exist, aborting."
-    exit 4
-fi
-
 if [ -z "$gui" ]
 then
     echo >&2 "gui url is required, please specify -g"
