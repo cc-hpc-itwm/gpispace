@@ -6,6 +6,7 @@
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
@@ -27,7 +28,7 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_polling_clie
                              )
     );
 
-  boost::thread client_thread
+  const boost::scoped_thread<> client_thread
     ( &utils::client::submit_job_and_wait_for_termination
     , workflow
     , boost::cref (orchestrator)
@@ -49,7 +50,6 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_polling_clie
     );
 
   BOOST_REQUIRE (client_thread.joinable());
-  client_thread.join();
 }
 BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_subscribing_client)
 {
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_subscribing_
                              )
     );
 
-  boost::thread client_thread
+  const boost::scoped_thread<> client_thread
     ( &utils::client::submit_job_and_wait_for_termination_as_subscriber
     , workflow
     , boost::cref (orchestrator)
@@ -91,7 +91,6 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_job_is_running_with_subscribing_
     );
 
   BOOST_REQUIRE (client_thread.joinable());
-  client_thread.join();
 }
 
 BOOST_AUTO_TEST_CASE (restart_drts_worker_while_coallocated_job_is_running_with_subscribing_client)
@@ -138,7 +137,7 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_coallocated_job_is_running_with_
                              )
     );
 
-  boost::thread client_thread
+  const boost::scoped_thread<> client_thread
     ( &utils::client::submit_job_and_wait_for_termination_as_subscriber
     , workflow
     , boost::cref (orchestrator)
@@ -160,5 +159,4 @@ BOOST_AUTO_TEST_CASE (restart_drts_worker_while_coallocated_job_is_running_with_
     );
 
   BOOST_REQUIRE (client_thread.joinable());
-  client_thread.join();
 }
