@@ -346,9 +346,8 @@ if [ $number_of_groups -gt $num_hosts ] ; then
     error 2 "number of groups must not be larger than number of hosts: $number_of_groups > $num_hosts"
 fi
 
-info "using nodefile: $nodefile"
 
-info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
+info "using nodefile: $nodefile"
 
 dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
@@ -390,7 +389,9 @@ if $gpi_enabled ; then
         gpi_mem=$(( avl_mem * 50 / 100 ))
     fi
 
+    info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
     info "using GPI mem: ${gpi_mem} bytes per node"
+    info "starting GPI using: '$gpi_exe' on '${gpi_socket}'"
 
     "${script_start_gpi}" -s "$state_dir" \
                           -x "${gpi_exe}" \
