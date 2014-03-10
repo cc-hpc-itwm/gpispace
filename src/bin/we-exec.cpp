@@ -143,14 +143,12 @@ namespace
         , _job_status (sdpa::status::RUNNING)
         , _result()
         , _job_id (gen_id())
-        , _timeout_thread
-          (boost::bind (&sdpa_daemon::maybe_cancel_after_ms, this, timeout))
+        , _timeout_thread (&sdpa_daemon::maybe_cancel_after_ms, this, timeout)
         , worker_()
     {
       for (std::size_t n (0); n < num_worker; ++n)
       {
-        worker_.push_back
-          (new boost::thread (boost::bind (&sdpa_daemon::worker, this, n)));
+        worker_.push_back (new boost::thread (&sdpa_daemon::worker, this, n));
       }
 
       mgmt_layer_.submit (_job_id, act);
