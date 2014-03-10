@@ -381,7 +381,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="kvs logging gui gpi"
+        parts="kvs logging gui"
     else
         shift
     fi
