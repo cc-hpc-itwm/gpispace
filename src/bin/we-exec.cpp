@@ -15,6 +15,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
@@ -157,12 +158,12 @@ namespace
 
     ~sdpa_daemon()
     {
-      BOOST_FOREACH (boost::thread* t, worker_)
+      BOOST_FOREACH (boost::thread& t, worker_)
       {
-        t->interrupt();
-        t->join();
-        delete t;
+        t.interrupt();
+        t.join();
       }
+      worker_.clear();
 
       _timeout_thread.interrupt();
       if (_timeout_thread.joinable())
@@ -366,7 +367,7 @@ namespace
     mutable boost::recursive_mutex _mutex_id_map;
     id_map_t  id_map_;
     fhg::thread::queue<job_t> jobs_;
-    std::vector<boost::thread*> worker_;
+    boost::ptr_vector<boost::thread> worker_;
     we::loader::loader* _loader;
     sdpa::status::code _job_status;
     boost::optional<std::string> _result;
