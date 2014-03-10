@@ -362,11 +362,17 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     }
   }
 
-  m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
+  m_event_thread.reset
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&DRTSImpl::event_thread, this)
+    );
 
   // initialize peer
   m_peer.reset (new fhg::com::peer_t (m_my_name, host, port, _kvs_client));
-  m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
+  m_peer_thread.reset
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&fhg::com::peer_t::run, m_peer)
+    );
   m_peer->start();
 
   start_receiver();
@@ -396,7 +402,9 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   }
 
   m_execution_thread.reset
-    (new boost::thread(&DRTSImpl::job_execution_thread, this));
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&DRTSImpl::job_execution_thread, this)
+    );
 
   start_connect ();
 }
@@ -405,32 +413,12 @@ DRTSImpl::~DRTSImpl()
 {
   m_shutting_down = true;
 
-  if (m_execution_thread)
-  {
-    m_execution_thread->interrupt();
-    if (m_execution_thread->joinable ())
-      m_execution_thread->join ();
-    m_execution_thread.reset();
-  }
-
-  if (m_event_thread)
-  {
-    m_event_thread->interrupt();
-    if (m_event_thread->joinable ())
-      m_event_thread->join();
-    m_event_thread.reset();
-  }
+  m_execution_thread.reset();
+  m_event_thread.reset();
 
   if (m_peer)
   {
     m_peer->stop();
-  }
-
-  if (m_peer_thread)
-  {
-    m_peer_thread->interrupt();
-    if (m_peer_thread->joinable ())
-      m_peer_thread->join();
   }
 
   m_peer_thread.reset();
