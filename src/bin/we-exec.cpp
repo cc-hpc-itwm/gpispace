@@ -161,7 +161,10 @@ namespace
       BOOST_FOREACH (boost::thread& t, worker_)
       {
         t.interrupt();
-        t.join();
+        if (t.joinable())
+        {
+          t.join();
+        }
       }
       worker_.clear();
 
