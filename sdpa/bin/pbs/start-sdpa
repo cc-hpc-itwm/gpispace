@@ -162,7 +162,7 @@ gpi_enabled=true
 delete_logfiles=true
 app_path="${SDPA_APP_PATH}"
 number_of_groups=1
-log_port=
+log_url=
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -340,14 +340,16 @@ if $delete_logfiles ; then
     find "${state_dir}/log" -type f -delete
 fi
 
-if [ -z "${log_port}" ]
+if [ -z "${log_url}" ]
 then
     log_url=$(fhgcfg -f "${config_file}" -g "log.server.url")
-    log_port=$(echo "$log_url" | grep -o -- ':[[:digit:]]\+' | tr -d ':')
-    if [ -z "$log_port" ] ; then
-        error 2 "setup incomplete, log port was not set"
+    if [ -z "$log_url" ] ; then
+        error 2 "setup incomplete, log url was not set"
     fi
 fi
+
+log_host=${log_url%:*}
+log_port=${log_url#*:}
 
 if [ -z "${gpi_socket}" ]
 then
