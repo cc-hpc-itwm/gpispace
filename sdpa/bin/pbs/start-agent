@@ -19,7 +19,6 @@ master=
 pidfile=
 force=false
 logfile=
-backlog=1000
 
 function usage ()
 {
@@ -32,7 +31,6 @@ usage: $(basename "$0") [options]
     -n name (*): name of this agent
     -m master (*): master to connect to
     -g ip:port: gui address
-    -b N (=$backlog): set the backlog size
     -k kvs-url: url to the key-value-store
     -D daemonize
     -P pidfile
@@ -41,7 +39,7 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hDfdm:g:b:n:k:L:P:s:" opt; do
+while getopts ":hDfdm:g:n:k:L:P:s:" opt; do
     case $opt in
         h)
             usage
@@ -61,9 +59,6 @@ while getopts ":hDfdm:g:b:n:k:L:P:s:" opt; do
             ;;
         g)
             gui=$OPTARG
-            ;;
-        b)
-            backlog=$OPTARG
             ;;
         k)
             kvs_url=$OPTARG
