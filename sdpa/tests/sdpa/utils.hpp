@@ -22,6 +22,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -275,27 +276,6 @@ namespace utils
     boost::thread _thread;
   };
 
-  namespace
-  {
-    //! \todo boost 1.53: replace with
-    //! boost::scoped_thread<boost::interrupt_and_join_if_joinable>
-    class scoped_thread : public boost::thread
-    {
-    public:
-      template<typename T1, typename T2> scoped_thread (T1 v1, T2 v2)
-        : boost::thread (v1, v2)
-      {}
-      ~scoped_thread()
-      {
-        interrupt();
-        if (joinable())
-        {
-          join();
-        }
-      }
-    };
-  }
-
   class basic_drts_worker : sdpa::events::EventHandler
   {
   public:
@@ -340,7 +320,8 @@ namespace utils
     sdpa::com::NetworkStrategy _network;
 
   private:
-    scoped_thread _event_thread;
+    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      _event_thread;
     void event_thread()
     {
       for (;;)
