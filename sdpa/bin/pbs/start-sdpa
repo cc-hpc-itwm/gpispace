@@ -19,6 +19,7 @@ usage: $(basename $0) [options]
   -d: do not delete logfiles
   -C: capability specification
   -G: number of segments
+  -x: GPI binary to execute
   -k: kvs port (=$kvs_port)
 
         format:
@@ -167,6 +168,7 @@ log_url=
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
 avl_mem=$(( ($tot_mem * 80) / 100 ))
+gpi_exe=
 gpi_mem=0
 gpi_socket=
 def_shm_mem=0
@@ -179,7 +181,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hnf:S:m:s:C:F:p:MA:dG:k:" opt; do
+while getopts ":hnf:S:m:s:C:F:p:MA:dG:k:x:" opt; do
     case $opt in
         h)
             usage
@@ -240,6 +242,10 @@ while getopts ":hnf:S:m:s:C:F:p:MA:dG:k:" opt; do
             ;;
         k)
             kvs_port=$OPTARG
+            shiftcount=$((shiftcount + 2))
+            ;;
+        x)
+            gpi_exe="$OPTARG"
             shiftcount=$((shiftcount + 2))
             ;;
         \?)
@@ -324,6 +330,18 @@ fi
 master=${hosts[0]}
 num_hosts=${#hosts[@]}
 
+# sanity checks
+if $gpi_enabled ; then
+    if [ -z "${gpi_exe}" ]
+    then
+        error 2 "GPI was requested but no binary was specified"
+    fi
+    if [ ! -x "${gpi_exe}" ]
+    then
+        error 2 "GPI binary ($gpi_exe) is not executable!"
+    fi
+fi
+
 if [ $number_of_groups -gt $num_hosts ] ; then
     error 2 "number of groups must not be larger than number of hosts: $number_of_groups > $num_hosts"
 fi
@@ -375,6 +393,7 @@ if $gpi_enabled ; then
     info "using GPI mem: ${gpi_mem} bytes per node"
 
     "${script_start_gpi}" -s "$state_dir" \
+                          -x "${gpi_exe}" \
                           -F "${config_file}" \
                           -D \
                           -f \
