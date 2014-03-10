@@ -106,7 +106,7 @@ if (BOOST_ROOT)
   set (Boost_NO_SYSTEM_PATHS ON)
 endif()
 
-find_package (Boost 1.53 REQUIRED QUIET COMPONENTS
+find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
   thread system filesystem serialization program_options
   regex signals date_time test_exec_monitor unit_test_framework random)
 
