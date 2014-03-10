@@ -139,13 +139,13 @@ namespace
         , _mutex_id_map()
         , id_map_()
         , jobs_()
-        , worker_()
         , _loader (loader)
         , _job_status (sdpa::status::RUNNING)
         , _result()
         , _job_id (gen_id())
         , _timeout_thread
           (boost::bind (&sdpa_daemon::maybe_cancel_after_ms, this, timeout))
+        , worker_()
     {
       for (std::size_t n (0); n < num_worker; ++n)
       {
@@ -367,12 +367,12 @@ namespace
     mutable boost::recursive_mutex _mutex_id_map;
     id_map_t  id_map_;
     fhg::thread::queue<job_t> jobs_;
-    boost::ptr_vector<boost::thread> worker_;
     we::loader::loader* _loader;
     sdpa::status::code _job_status;
     boost::optional<std::string> _result;
     we::layer::id_type _job_id;
     boost::thread _timeout_thread;
+    boost::ptr_vector<boost::thread> worker_;
   };
 }
 
