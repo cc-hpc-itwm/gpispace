@@ -539,7 +539,7 @@ function start_workers_for_capability
     for ((i=${group_start} ; i < ${group_end} ; ++i)) ; do
         host=${hosts[$i]}
 
-        local name="$capability"
+        local name="${capability/[+#.]/_}"
 
         argv=()
         argv+=(-D)
