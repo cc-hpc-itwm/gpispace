@@ -97,7 +97,6 @@ class Worker : public utils::BasicWorker
       sdpa::events::DiscoverJobStatesReplyEvent::Ptr
         pDiscRplEvt( new sdpa::events::DiscoverJobStatesReplyEvent ( _name
                                                                    , pEvt->from()
-                                                                   , pEvt->job_id()
                                                                    , pEvt->discover_id()
                                                                    , disc_res ));
 
@@ -321,7 +320,6 @@ namespace
           ( new sdpa::events::DiscoverJobStatesReplyEvent
             ( _name
             , e->from()
-            , sdpa::job_id_t()
             , e->discover_id()
             , sdpa::discovery_info_t
               (e->job_id(), sdpa::status::RUNNING, sdpa::discovery_info_set_t())

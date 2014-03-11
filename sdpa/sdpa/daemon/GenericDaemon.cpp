@@ -1444,7 +1444,7 @@ namespace sdpa
       _that->sendEventToOther
         ( events::DiscoverJobStatesReplyEvent::Ptr
           ( new events::DiscoverJobStatesReplyEvent
-            (_that->name(), _name, job_id_t(), discover_id, info)
+            (_that->name(), _name, discover_id, info)
           )
         );
     }

@@ -651,7 +651,6 @@ void DRTSImpl::handleDiscoverJobStatesEvent
   send_event ( new sdpa::events::DiscoverJobStatesReplyEvent
                ( m_my_name
                , event->from()
-               , sdpa::job_id_t()
                , event->discover_id()
                , sdpa::discovery_info_t
                  ( event->job_id()
