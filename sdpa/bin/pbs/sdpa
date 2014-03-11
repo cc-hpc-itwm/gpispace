@@ -298,19 +298,6 @@ function setup_logging ()
     put "log.server.level" "$lvl"
 }
 
-function setup_gui ()
-{
-    if [ -z "${DEFAULT_GUI_URL}" ] ; then
-        def_gui_server_url="$(guess_head_node):${DEFAULT_GUI_PORT:?}"
-    fi
-
-    local key="sdpa.gui"
-    local val=$(get "$key" "${def_gui_server_url}")
-    local prompt="location of the monitor gui (host:port) [$val]:"
-    get_user_input "$prompt" val
-    put "$key" "$val"
-}
-
 function setup ()
 {
     cat <<EOF
