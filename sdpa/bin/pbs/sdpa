@@ -279,11 +279,6 @@ function generate_environment ()
     debug "I: LD_LIBRARY_PATH := ${LD_LIBRARY_PATH}"
 }
 
-function dump_config ()
-{
-    ${fhgcfg} -f "$config_file" -p
-}
-
 function initialize ()
 {
     local node_file=
@@ -359,7 +354,6 @@ usage: `basename $0` command [parameters...]
         load        - print instructions to load
                       the environment file: eval \$(sdpa load)
      selftest       - perform a self-test
-       config       - dump the current config
 
   start [component] - start all components or "component"
    stop [component] - stop all components or "component"
@@ -1072,9 +1066,6 @@ case "$1" in
     gui)
         shift
         start_gui $@
-        ;;
-    config)
-        dump_config
         ;;
     boot)
         shift
