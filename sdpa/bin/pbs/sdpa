@@ -284,9 +284,6 @@ function generate_environment ()
             log.server.level)
                 echo export FHGLOG_level="$val"
                 ;;
-            log.server.url)
-                echo export FHGLOG_to_server="$val"
-                ;;
             *)
                 ;;
         esac
