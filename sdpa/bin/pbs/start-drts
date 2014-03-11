@@ -19,6 +19,7 @@ master=
 gpi_socket=
 lib_path=
 kvs_url=
+log_url=
 count=
 capabilities=""
 state_dir="$HOME/.sdpa/state"
@@ -54,7 +55,7 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hvfg:m:i:b:S:k:Dc:C:L:s:n:M:N:" opt; do
+while getopts ":hvfg:l:m:i:b:S:k:Dc:C:L:s:n:M:N:" opt; do
     case $opt in
         h)
             usage
@@ -68,6 +69,9 @@ while getopts ":hvfg:m:i:b:S:k:Dc:C:L:s:n:M:N:" opt; do
             ;;
         g)
             gui=$OPTARG
+            ;;
+        l)
+            log_url=$OPTARG
             ;;
         m)
             master=$OPTARG
@@ -199,6 +203,10 @@ if [ x"$identity" = x"0" ] ; then
         then
             opts="$opts -N $numa_socket"
         fi
+        if [ -n "${log_url}" ]
+        then
+            opts="$opts -l ${log_url}"
+        fi
 
         for cap in ${capabilities//,/ } ; do
             opts="$opts -C $cap"
@@ -318,6 +326,10 @@ fi
 cmd="${bin} $cfg"
 
 export FHGLOG_to_file="${logprefix}.log"
+if [ -n "${log_url}" ]
+then
+    export FHGLOG_to_server="${log_url}"
+fi
 log "Running $cmd on node $hostname" >/dev/null 2>&1
 if [ x"$daemonize" = x"true" ] ; then
     $cmd --daemonize >"${logprefix}.out" 2>"${logprefix}.err"
