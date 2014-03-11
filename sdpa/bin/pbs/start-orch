@@ -9,18 +9,22 @@
 bind_addr='0'
 name="orchestrator"
 kvs_url=
+log_url=
 daemonize=false
 pidfile=
 state_dir="$HOME/.sdpa/state"
 logdir=
 
-while getopts ":hn:d:k:DP:L:s:" opt; do
+while getopts ":hn:d:l:k:DP:L:s:" opt; do
     case $opt in
         n)
             name=$OPTARG
             ;;
         k)
             kvs_url=$OPTARG
+            ;;
+        l)
+            log_url=$OPTARG
             ;;
         D)
             daemonize=true
@@ -39,6 +43,7 @@ while getopts ":hn:d:k:DP:L:s:" opt; do
             echo "    -h : print this help" >&2
             echo "    -n : name (default: $name)" >&2
             echo "    -k : kvs url" >&2
+            echo "    -l : log url" >&2
             echo "    -D : daemonize" >&2
             echo "    -P pidfile: write pid to this file and lock it" >&2
             echo "    -s dir: sdpa state dir to use" >&2
@@ -80,4 +85,8 @@ if [ -n "$pidfile" ] ; then
     argv="$argv --pidfile $pidfile"
 fi
 
+if [ -n "${log_url}" ]
+then
+    export FHGLOG_to_server="${log_url}"
+fi
 FHGLOG_to_file="${logprefix}.log" exec $argv >"${logprefix}.out" 2>"${logprefix}.err"
