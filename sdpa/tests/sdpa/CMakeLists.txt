@@ -116,7 +116,6 @@ pnet_compile (dummy-test-wf
            -I${CMAKE_BINARY_DIR}/fhglog
            -O3
   BUILD
-  COMPONENT tests
 )
 
 add_custom_target (dummy_workflow
