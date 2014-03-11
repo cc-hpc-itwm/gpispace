@@ -2,6 +2,11 @@
 
 kvs_port=2439
 
+DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
+DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
+log_url="$(hostname -s):${DEFAULT_LOG_PORT}"
+gui_url="$(hostname -s):${DEFAULT_GUI_PORT}"
+
 function usage ()
 {
     cat >&2 <<EOF
@@ -21,6 +26,8 @@ usage: $(basename $0) [options]
   -G: number of segments
   -x: GPI binary to execute
   -k: kvs port (=$kvs_port)
+  -l: log url (=${log_url})
+  -g: gui url (=${gui_url})
 
         format:
            <CAP>[+CAP1...][#socket][:N[xM][,shm]]
@@ -163,8 +170,6 @@ gpi_enabled=true
 delete_logfiles=true
 app_path="${SDPA_APP_PATH}"
 number_of_groups=1
-log_url=
-gui_url=
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
@@ -182,7 +187,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hnf:S:m:s:C:F:p:MA:dG:k:x:" opt; do
+while getopts ":hnf:S:m:s:C:F:p:MA:dG:k:x:l:g:" opt; do
     case $opt in
         h)
             usage
@@ -247,6 +252,14 @@ while getopts ":hnf:S:m:s:C:F:p:MA:dG:k:x:" opt; do
             ;;
         x)
             gpi_exe="$OPTARG"
+            shiftcount=$((shiftcount + 2))
+            ;;
+        l)
+            log_url="$OPTARG"
+            shiftcount=$((shiftcount + 2))
+            ;;
+        g)
+            gui_url="$OPTARG"
             shiftcount=$((shiftcount + 2))
             ;;
         \?)
@@ -347,7 +360,6 @@ if [ $number_of_groups -gt $num_hosts ] ; then
     error 2 "number of groups must not be larger than number of hosts: $number_of_groups > $num_hosts"
 fi
 
-
 info "using nodefile: $nodefile"
 
 dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
@@ -360,10 +372,7 @@ fi
 
 if [ -z "${log_url}" ]
 then
-    log_url=$(fhgcfg -f "${config_file}" -g "log.server.url")
-    if [ -z "$log_url" ] ; then
-        error 2 "setup incomplete, log url was not set"
-    fi
+    error 2 "log url must not be empty!"
 fi
 
 log_host=${log_url%:*}
@@ -371,10 +380,7 @@ log_port=${log_url#*:}
 
 if [ -z "${gui_url}" ]
 then
-    gui_url=$(fhgcfg -f "${config_file}" -g "sdpa.gui")
-    if [ -z "$gui_url" ] ; then
-        error 2 "setup incomplete, gui url was not set"
-    fi
+    error 2 "gui url must not be empty"
 fi
 
 gui_host=${gui_url%:*}
@@ -386,6 +392,8 @@ then
 fi
 
 log "starting base sdpa components on $master..."
+info "sending log events to: ${log_url}"
+info "sending execution events to: ${gui_url}"
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs ${kvs_port}
 dry_run rexec $master "${script_start_orchestrator}" \
@@ -393,6 +401,7 @@ dry_run rexec $master "${script_start_orchestrator}" \
     -P "$state_dir/orchestrator.pid" \
     -D \
     -k "${master}:${kvs_port}" \
+    -l "${log_host}:${log_port}" \
     -n "orchestrator"
 
 if $gpi_enabled ; then
@@ -486,6 +495,7 @@ function start_agent
         -m "${parent}" \
         -s "${state_dir}" \
         -k "${master}:${kvs_port}" \
+        -l "${log_host}:${log_port}" \
         -g "${gui_host}:${gui_port}" &
     pids+=( $! )
 }
@@ -548,6 +558,7 @@ function start_workers_for_capability
         argv+=(-m "$parent")
         argv+=(-k "$master:${kvs_port}")
         argv+=(-g "${gui_host}:${gui_port}")
+        argv+=(-l "${log_host}:${log_port}")
         argv+=($caps_arg)
         argv+=(-s "$state_dir")
         if $gpi_enabled ; then
