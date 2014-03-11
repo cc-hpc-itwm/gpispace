@@ -209,16 +209,6 @@ function get_user_input ()
     fi
 }
 
-function setup_logging ()
-{
-    local lvl=$(get "log.server.level" "INFO")
-    local prompt="log level [$lvl]:"
-    get_user_input "log level to use [$lvl]:" lvl ""
-    lvl=$( echo "$lvl" | tr 'a-z' 'A-Z' )
-
-    put "log.server.level" "$lvl"
-}
-
 function setup ()
 {
     cat <<EOF
@@ -244,7 +234,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="logging"
+        parts=""
     else
         shift
     fi
@@ -276,18 +266,6 @@ function generate_environment ()
         log "E: cannot generate environment on slave node!"
         return 1
     fi
-
-    # read variables from config and write them to an environment file
-    #     replacing init-screen.env in principle
-    ${fhgcfg} -f "$config_file" -l | while read key dummy val ; do
-        case "$key" in
-            log.server.level)
-                echo export FHGLOG_level="$val"
-                ;;
-            *)
-                ;;
-        esac
-    done
 
     echo export SDPA_HOME="$SDPA_HOME"
 
