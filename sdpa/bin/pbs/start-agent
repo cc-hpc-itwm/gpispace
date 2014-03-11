@@ -11,6 +11,7 @@ state_dir=
 logdir=
 gui=
 kvs_url=
+log_url=
 debug=false
 daemonize=false
 bind_addr='0'
@@ -39,7 +40,7 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hDfdm:g:n:k:L:P:s:" opt; do
+while getopts ":hDfdm:g:l:n:k:L:P:s:" opt; do
     case $opt in
         h)
             usage
@@ -59,6 +60,9 @@ while getopts ":hDfdm:g:n:k:L:P:s:" opt; do
             ;;
         g)
             gui=$OPTARG
+            ;;
+        l)
+            log_url=$OPTARG
             ;;
         k)
             kvs_url=$OPTARG
@@ -169,5 +173,9 @@ if "$debug" ; then
     log "running within gdb..."
     gdb -ex run --args ${cmd}
 else
+    if [ -n "${log_url}" ]
+    then
+        export FHGLOG_to_server="${log_url}"
+    fi
     FHGLOG_to_file="${logprefix}.log" exec ${cmd} >"${logprefix}.out" 2>"${logprefix}.err"
 fi
