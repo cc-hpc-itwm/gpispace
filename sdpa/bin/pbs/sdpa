@@ -74,30 +74,9 @@ function require()
     return 0
 }
 
-if ! require fhgcfg ; then
-    exit 1
-fi
-
 if ! require fhglogc ; then
     exit 1
 fi
-
-function get ()
-{
-    local key="$1"; shift
-    local def="$1"; shift
-
-    ${fhgcfg} -f "$config_file" -g "$key" -v "$def"
-}
-
-function put ()
-{
-    local key="$1"; shift
-    local val="$1"; shift
-
-    ${fhgcfg} -f "$config_file" -a "$key" -v "$val"
-    log "-: set $key to '$val'"
-}
 
 function rexec ()
 {
