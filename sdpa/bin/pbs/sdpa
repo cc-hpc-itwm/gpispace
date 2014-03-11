@@ -44,7 +44,6 @@ export SDPA_HOME=$(dirname $(dirname $(which "$0")))
 SDPA_SCRIPT_DIR="${SDPA_HOME}/libexec/sdpa/scripts"
 prepend_to_path PATH "$SDPA_HOME/bin"
 
-config_file=${SDPA_CONFIG:="$HOME/.sdpa/configs/sdpa.rc"}
 state_dir=${SDPA_STATE_DIR:="$HOME/.sdpa/state"}
 debug_enabled=false
 
@@ -888,16 +887,6 @@ if [ "$1" = "-s" ] ; then
         exit 1
     fi
     export SDPA_STATE_DIR="$state_dir"
-fi
-
-if [ "$1" = "-c" ] ; then
-    shift
-    config_file="$1"; shift
-    if [ -z "$config_file" ] ; then
-        log "E: empty config file"
-        exit 1
-    fi
-    export SDPA_CONFIG="config_file"
 fi
 
 if [ "$1" = "init" ] ; then
