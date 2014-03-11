@@ -178,17 +178,6 @@ function rexec ()
     fi
 }
 
-function guess_head_node ()
-{
-    if [ -n "${DEFAULT_CLUSTER_HEAD}" ] ; then
-        echo "${DEFAULT_CLUSTER_HEAD}"
-    elif [ -n "$PBS_O_HOST" ] ; then
-        echo "$PBS_O_HOST"
-    else
-        echo "$(hostname -f)"
-    fi
-}
-
 function isatty()
 {
     local f="$1" ; shift
