@@ -18,7 +18,6 @@ usage: $(basename $0) [options]
   -A path: add a path to the list of application search paths
   -f: node file to use
   -S: state directory to use
-  -F: config file
   -m: amount of gpi memory to use
   -M: disable use of the memory layer
   -s: default amount of shared memory to use (=0)
@@ -188,7 +187,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hvnf:S:m:s:C:F:p:MA:dG:k:x:l:g:" opt; do
+while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:" opt; do
     case $opt in
         h)
             usage
@@ -221,9 +220,6 @@ while getopts ":hvnf:S:m:s:C:F:p:MA:dG:k:x:l:g:" opt; do
         C)
             new_cap=$(parse_capability "$OPTARG")
             capabilities=( "${capabilities[@]}" $new_cap )
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
-        F)
             shiftcount=$(( shiftcount + 2 ))
             ;;
         p)
