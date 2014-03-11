@@ -336,7 +336,7 @@ EOF
 
     local parts=$1
     if [ -z "$parts" ] ; then
-        parts="logging gui"
+        parts="logging"
     else
         shift
     fi
