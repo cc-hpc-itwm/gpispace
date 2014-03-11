@@ -85,20 +85,6 @@ if ! require fhglogc ; then
     exit 1
 fi
 
-function log_helper ()
-{
-    local fn="$1"; shift
-    local ln="$1"; shift
-    local file="$0"
-
-    echo "$file:$ln - $@" >&2
-    if [ -n "$fhglogc" ] ; then
-        ${fhglogc} -L "$ln" -F "$file" -p 2 -m "$@"
-    fi
-}
-
-do_log="eval log_helper \"\$FUNCNAME\" \"\$LINENO\""
-
 function get ()
 {
     local key="$1"; shift
