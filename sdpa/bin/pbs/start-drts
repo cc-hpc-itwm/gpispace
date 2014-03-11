@@ -212,6 +212,10 @@ if [ x"$identity" = x"0" ] ; then
         then
             opts="$opts -l ${log_url}"
         fi
+        if $verbose
+        then
+            opts="$opts -v"
+        fi
 
         for cap in ${capabilities//,/ } ; do
             opts="$opts -C $cap"
@@ -329,6 +333,13 @@ then
 fi
 
 cmd="${bin} $cfg"
+
+if $verbose
+then
+    export FHGLOG_level=TRACE
+else
+    export FHGLOG_level=INFO
+fi
 
 export FHGLOG_to_file="${logprefix}.log"
 log "Running $cmd on node $hostname" >/dev/null 2>&1

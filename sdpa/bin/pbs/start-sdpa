@@ -13,6 +13,7 @@ function usage ()
 usage: $(basename $0) [options]
 
   -h: this help
+  -v: be verbose
   -n: dry run
   -A path: add a path to the list of application search paths
   -f: node file to use
@@ -164,6 +165,7 @@ parse_capability()
 trap 'on_ctrlC' SIGINT
 
 nodefile=
+verbose=false
 state_dir="$HOME/.sdpa/state"
 config_file="$HOME/.sdpa/configs/sdpa.rc"
 gpi_enabled=true
@@ -187,11 +189,15 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hnf:S:m:s:C:F:p:MA:dG:k:x:l:g:" opt; do
+while getopts ":hvnf:S:m:s:C:F:p:MA:dG:k:x:l:g:" opt; do
     case $opt in
         h)
             usage
             exit 0
+            ;;
+        v)
+            verbose=true
+            shiftcount=$((shiftcount + 1))
             ;;
         n)
             dry_run_p=true
@@ -395,8 +401,16 @@ log "starting base sdpa components on $master..."
 info "sending log events to: ${log_url}"
 info "sending execution events to: ${gui_url}"
 
+if $verbose
+then
+    opt_verbose_flag="-v"
+else
+    opt_verbose_flag=""
+fi
+
 dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs ${kvs_port}
 dry_run rexec $master "${script_start_orchestrator}" \
+    $opt_verbose_flag \
     -s "$state_dir" \
     -P "$state_dir/orchestrator.pid" \
     -D \
@@ -490,6 +504,7 @@ function start_agent
     info "starting agent: ${name} on host ${host} with parent ${parent}"
 
     dry_run rexec ${host} "${script_start_agent}" \
+        $opt_verbose_flag \
         -D \
         -n "${name}" \
         -m "${parent}" \
@@ -551,7 +566,7 @@ function start_workers_for_capability
 
         local name="${capability/[+#.]/_}"
 
-        argv=()
+        argv=($opt_verbose_flag)
         argv+=(-D)
         argv+=(-c $num_per_node)
         argv+=(-n "$name")

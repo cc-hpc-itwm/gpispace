@@ -14,8 +14,9 @@ daemonize=false
 pidfile=
 state_dir="$HOME/.sdpa/state"
 logdir=
+verbose=false
 
-while getopts ":hn:d:l:k:DP:L:s:" opt; do
+while getopts ":hvn:d:l:k:DP:L:s:" opt; do
     case $opt in
         n)
             name=$OPTARG
@@ -38,9 +39,13 @@ while getopts ":hn:d:l:k:DP:L:s:" opt; do
         s)
             state_dir=$OPTARG
             ;;
+        v)
+            verbose=true
+            ;;
         h)
-            echo "usage: $0 [-h] [-g] [-l interface] [-n name]" >&2
+            echo "usage: $0 [-h] [-v] [-g] [-l interface] [-n name]" >&2
             echo "    -h : print this help" >&2
+            echo "    -v : be verbose" >&2
             echo "    -n : name (default: $name)" >&2
             echo "    -k : kvs url" >&2
             echo "    -l : log url" >&2
@@ -78,6 +83,13 @@ if [ -z "$kvs_url" ]
 then
     echo >&2 "kvs url is required, please specify -k"
     exit 4
+fi
+
+if $verbose
+then
+    export FHGLOG_level=TRACE
+else
+    export FHGLOG_level=INFO
 fi
 
 log "Running $name on $(hostname)"

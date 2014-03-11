@@ -20,6 +20,7 @@ master=
 pidfile=
 force=false
 logfile=
+verbose=false
 
 function usage ()
 {
@@ -27,6 +28,7 @@ function usage ()
 usage: $(basename "$0") [options]
 
     -h: print this help
+    -v: be verbose
     -f: force: kill still running processes
     -d: debug mode
     -n name (*): name of this agent
@@ -40,11 +42,14 @@ usage: $(basename "$0") [options]
 EOF
 }
 
-while getopts ":hDfdm:g:l:n:k:L:P:s:" opt; do
+while getopts ":hvDfdm:g:l:n:k:L:P:s:" opt; do
     case $opt in
         h)
             usage
             exit 0
+            ;;
+        v)
+            verbose=true
             ;;
         f)
             force=true
@@ -170,6 +175,13 @@ if [ -n "$gui" ]; then
 fi
 
 cmd="${SDPA_HOME}/bin/agent $opts"
+
+if $verbose
+then
+    export FHGLOG_level=TRACE
+else
+    export FHGLOG_level=INFO
+fi
 
 log "Running $name on $(hostname -s) with master $master"
 
