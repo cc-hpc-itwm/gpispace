@@ -20,7 +20,6 @@ log_port=
 verbose=false
 socket_path=
 state_dir=~/.sdpa/state
-config_file="$HOME/.sdpa/configs/sdpa.rc"
 
 function usage ()
 {
@@ -41,12 +40,11 @@ usage: $0 [options]
     -L port: log port
     -v: verbose
     -s dir: state-dir
-    -F config file
     -S socket path
 EOF
 }
 
-while getopts ":hx:gm:p:P:fDk:K:l:L:vs:F:S:" opt; do
+while getopts ":hx:gm:p:P:fDk:K:l:L:vs:S:" opt; do
     case $opt in
         h)
             usage
@@ -90,9 +88,6 @@ while getopts ":hx:gm:p:P:fDk:K:l:L:vs:F:S:" opt; do
             ;;
         s)
             state_dir=$OPTARG
-            ;;
-        F)
-            config_file=$OPTARG
             ;;
         S)
             socket_path=$OPTARG
