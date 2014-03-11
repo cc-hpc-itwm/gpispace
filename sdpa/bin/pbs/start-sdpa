@@ -559,7 +559,7 @@ function start_workers_for_capability
         fi
         if [ -n "${app_path}" ]
         then
-            argv+=(-l "${app_path}")
+            argv+=(-L "${app_path}")
         fi
 
         dry_run rexec $host "$script_start_drts" "${argv[@]}" &

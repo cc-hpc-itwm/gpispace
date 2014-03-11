@@ -43,19 +43,18 @@ usage: $(basename "$0") [options]
     -g ip:port (=$gui): gui address
     -b N (=$backlog): set the backlog
     -S path (=$gpi_socket): gpi socket path
-    -l path: library path
+    -L path: library path
     -k kvs-url (=$kvs_url): url to the key-value-store
     -c count: start this many processes (0==#cores)
     -C capability: start with this capability (can be specified more than once
     -D daemonize
-    -L logfile
     -s state-dir
     -M shared memory size, if not specified or empty, GPI is disabled
     -N numa socket
 EOF
 }
 
-while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:N:" opt; do
+while getopts ":hvfg:m:i:b:S:k:Dc:C:L:s:n:M:N:" opt; do
     case $opt in
         h)
             usage
@@ -96,9 +95,6 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:N:" opt; do
         S)
             gpi_socket=$OPTARG
             ;;
-        l)
-            lib_path=$OPTARG
-            ;;
         k)
             kvs_url=$OPTARG
             ;;
@@ -116,7 +112,7 @@ while getopts ":hvfg:m:i:b:S:l:k:Dc:C:L:s:n:M:N:" opt; do
             fi
             ;;
         L)
-            logdir="$OPTARG"
+            lib_path="$OPTARG"
             ;;
         s)
             state_dir="$OPTARG"
@@ -186,7 +182,7 @@ if [ x"$identity" = x"0" ] ; then
         opts="$opts -g $gui"
         if [ -n "${lib_path}" ]
         then
-            opts="$opts -l ${lib_path}"
+            opts="$opts -L ${lib_path}"
         fi
         opts="$opts -s $state_dir"
         opts="$opts -n $name_prefix"
