@@ -58,19 +58,6 @@ debug_enabled=false
 ##############################################
 
 #
-# cluster related
-#
-DEFAULT_CLUSTER_HEAD="" # if needed
-
-#
-# SDPA
-#
-DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
-DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
-DEFAULT_LOG_URL=""
-DEFAULT_GUI_URL=""
-
-#
 # override defaults by:
 #
 #     1. /etc/sdpa/defaults
