@@ -143,6 +143,11 @@ while getopts ":hvfg:l:m:i:b:S:k:Dc:C:L:s:n:M:N:" opt; do
     esac
 done
 
+if [ -n "${log_url}" ]
+then
+    export FHGLOG_to_server="${log_url}"
+fi
+
 # read sdpa state if it exists
 
 if [ -r "${state_dir}/sdpa.env" ] ; then
@@ -326,10 +331,6 @@ fi
 cmd="${bin} $cfg"
 
 export FHGLOG_to_file="${logprefix}.log"
-if [ -n "${log_url}" ]
-then
-    export FHGLOG_to_server="${log_url}"
-fi
 log "Running $cmd on node $hostname" >/dev/null 2>&1
 if [ x"$daemonize" = x"true" ] ; then
     $cmd --daemonize >"${logprefix}.out" 2>"${logprefix}.err"

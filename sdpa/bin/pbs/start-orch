@@ -55,6 +55,11 @@ while getopts ":hn:d:l:k:DP:L:s:" opt; do
     esac
 done
 
+if [ -n "${log_url}" ]
+then
+    export FHGLOG_to_server="${log_url}"
+fi
+
 if [ -r "${state_dir}/sdpa.env" ] ; then
     source "${state_dir}/sdpa.env"
 else
@@ -83,10 +88,5 @@ if $daemonize ; then
 fi
 if [ -n "$pidfile" ] ; then
     argv="$argv --pidfile $pidfile"
-fi
-
-if [ -n "${log_url}" ]
-then
-    export FHGLOG_to_server="${log_url}"
 fi
 FHGLOG_to_file="${logprefix}.log" exec $argv >"${logprefix}.out" 2>"${logprefix}.err"

@@ -85,6 +85,10 @@ while getopts ":hDfdm:g:l:n:k:L:P:s:" opt; do
     esac
 done
 
+if [ -n "${log_url}" ]
+then
+    export FHGLOG_to_server="${log_url}"
+fi
 
 # load state
 if test -e "${state_dir}/sdpa.env" ; then
@@ -173,9 +177,5 @@ if "$debug" ; then
     log "running within gdb..."
     gdb -ex run --args ${cmd}
 else
-    if [ -n "${log_url}" ]
-    then
-        export FHGLOG_to_server="${log_url}"
-    fi
     FHGLOG_to_file="${logprefix}.log" exec ${cmd} >"${logprefix}.out" 2>"${logprefix}.err"
 fi
