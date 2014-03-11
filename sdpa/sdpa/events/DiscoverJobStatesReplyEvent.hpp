@@ -58,7 +58,7 @@ namespace sdpa
      LOAD_CONSTRUCT_DATA_DEF (DiscoverJobStatesReplyEvent, e)
      {
        LOAD_JOBEVENT_CONSTRUCT_DATA (from, to, job_id);
-       LOAD_FROM_ARCHIVE (std::string, disc_id);
+       LOAD_FROM_ARCHIVE (sdpa::job_id_t, disc_id);
        LOAD_FROM_ARCHIVE (sdpa::discovery_info_t, disc_res);
        ::new (e) DiscoverJobStatesReplyEvent (from, to, job_id, disc_id, disc_res);
      }
