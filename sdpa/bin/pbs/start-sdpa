@@ -167,7 +167,6 @@ trap 'on_ctrlC' SIGINT
 nodefile=
 verbose=false
 state_dir="$HOME/.sdpa/state"
-config_file="$HOME/.sdpa/configs/sdpa.rc"
 gpi_enabled=true
 delete_logfiles=true
 app_path="${SDPA_APP_PATH}"
@@ -225,7 +224,6 @@ while getopts ":hvnf:S:m:s:C:F:p:MA:dG:k:x:l:g:" opt; do
             shiftcount=$(( shiftcount + 2 ))
             ;;
         F)
-            config_file="$OPTARG"
             shiftcount=$(( shiftcount + 2 ))
             ;;
         p)
@@ -358,7 +356,7 @@ fi
 
 info "using nodefile: $nodefile"
 
-dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
+dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
@@ -398,7 +396,7 @@ else
     opt_verbose_flag=""
 fi
 
-dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs ${kvs_port}
+dry_run rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
 dry_run rexec $master "${script_start_orchestrator}" \
     $opt_verbose_flag \
     -s "$state_dir" \
@@ -421,7 +419,6 @@ if $gpi_enabled ; then
     dry_run "${script_start_gpi}" \
         -s "$state_dir" \
         -x "${gpi_exe}" \
-        -F "${config_file}" \
         -D \
         -f \
         -P "$state_dir/gpi-space.pid" \
