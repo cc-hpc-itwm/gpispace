@@ -846,25 +846,19 @@ function status_drts_on_node ()
 
 function start_gui ()
 {
-    local log_url=$(get "log.server.url")
-    local log_port=$(echo "$log_url" | grep -o -- ':[[:digit:]]\+' | tr -d ':')
+    local gui_port="${1}" ; shift
+    if [ -z "${gui_port}" ]
+    then
+        log "usage: gui: gui-port log-port!"
+        return 1
+    fi
+    local log_port="${1}" ; shift
     if [ -z "$log_port" ] ; then
-        log "E: log url ($log_url) does not contain a port!"
+        log "usage: gui: gui-port log-port!"
         return 1
     fi
-    local log_host=$(echo "$log_url" | cut -d ':' -f 1)
 
-    local gui_url=$(get "sdpa.gui")
-    local gui_port=$(echo "$gui_url" | grep -o -- ':[[:digit:]]\+' | tr -d ':')
-    if [ -z "$gui_port" ] ; then
-        log "E: gui url ($gui_url) does not contain a port!"
-        return 1
-    fi
-    local gui_host=$(echo "$gui_url" | cut -d ':' -f 1)
-
-    local cmd="ssh -X $gui_host $SDPA_SCRIPT_DIR/start-gui -s $state_dir -G $gui_port -L $log_port -r $SDPA_HOME"
-    log "I: starting gui with $cmd ..."
-    $cmd &
+    "$SDPA_HOME/bin/sdpa-gui" $gui_port $log_port &
 }
 
 function stop_gpi ()
