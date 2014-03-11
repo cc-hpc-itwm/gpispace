@@ -9,4 +9,4 @@ target_link_libraries(fhglog-dump fhglog ${Boost_PROGRAM_OPTIONS_LIBRARY})
 install(TARGETS fhglogd fhglogc fhglog-dump
   RUNTIME
   DESTINATION bin
-  COMPONENT runtime)
+)

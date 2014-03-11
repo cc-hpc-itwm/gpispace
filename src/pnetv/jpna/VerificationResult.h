@@ -4,7 +4,7 @@
 #include <vector>
 #include <fhg/assert.hpp>
 
-#include <jpn/common/Printable.h>
+#include <pnetv/jpn/common/Printable.h>
 
 namespace jpna {
 

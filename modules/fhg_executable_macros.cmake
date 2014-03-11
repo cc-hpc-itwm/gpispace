@@ -15,5 +15,5 @@ macro (FHG_ADD_RUNTIME_EXECUTABLE)
 
   target_link_libraries (${exe_name} ${EXECUTABLE_LINK_LIBRARIES})
 
-  install (TARGETS ${exe_name} RUNTIME DESTINATION bin COMPONENT runtime)
+  install (TARGETS ${exe_name} RUNTIME DESTINATION bin)
 endmacro()

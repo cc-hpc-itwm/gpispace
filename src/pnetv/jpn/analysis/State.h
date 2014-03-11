@@ -1,7 +1,7 @@
 #pragma once
 
-#include <jpn/Transition.h>
-#include <jpn/Marking.h>
+#include <pnetv/jpn/Transition.h>
+#include <pnetv/jpn/Marking.h>
 
 namespace jpn {
 namespace analysis {

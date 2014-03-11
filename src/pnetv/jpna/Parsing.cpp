@@ -6,8 +6,8 @@
 #include <boost/format.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <jpn/common/Foreach.h>
-#include <jpn/common/Unreachable.h>
+#include <pnetv/jpn/common/Foreach.h>
+#include <pnetv/jpn/common/Unreachable.h>
 
 #include <we/type/expression.fwd.hpp>
 #include <we/type/module_call.fwd.hpp>

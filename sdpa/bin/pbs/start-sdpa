@@ -115,10 +115,6 @@ parse_capability()
     capability_with_socket=$(echo "$cap_spec" | cut -d: -f1)
     capability=$(echo "$capability_with_socket" | cut -d# -f1)
     socket=$(echo "$capability_with_socket" | cut -s -d# -f 2)
-    if [ -z "$socket" ]
-    then
-        socket=-1
-    fi
     rest=$(echo "$cap_spec" | cut -s -d: -f 2)
     if [ -n "$rest" ] ; then
         amount_spec=$(echo "$rest" | cut -d, -f 1)
@@ -139,7 +135,10 @@ parse_capability()
         if [ -n "$rest" ] ; then
             shm_size=$(echo "$rest" | cut -d, -f 1)
         fi
+    fi
 
+    if [ -z $socket ] ; then
+        socket=-1
     fi
 
     shm_size=$(( $shm_size ))
@@ -479,18 +478,25 @@ function start_workers_for_capability
         host=${hosts[$i]}
 
         local name="$capability"
-        if [ $socket -ne -1 ] ; then
-            name="$name#$socket"
+        if [ "$socket" -ne -1 ] ; then
+            dry_run rexec $host "$script_start_drts" \
+		-D \
+		-c $num_per_node -n "$name#$socket" \
+		-m "$master" $caps_arg \
+		-s "$state_dir" \
+		-F "$config_file" \
+		-M "$shm_size" \
+		-N "$socket" &
+	else
+            dry_run rexec $host "$script_start_drts" \
+		-D \
+		-c $num_per_node -n "$name" \
+		-m "$master" $caps_arg \
+		-s "$state_dir" \
+		-F "$config_file" \
+		-M "$shm_size" &
         fi
 
-        dry_run rexec $host "$script_start_drts" \
-            -D \
-            -c $num_per_node -n "$name" \
-            -m "$master" $caps_arg \
-            -s "$state_dir" \
-            -F "$config_file" \
-            -M "$shm_size" \
-            -N "$socket" &
         pids+=( $! )
 
         wait_if_necessary

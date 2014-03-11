@@ -16,7 +16,7 @@ namespace sdpa
       DiscoverJobStatesReplyEvent ( const address_t& a_from
                                     , const address_t& a_to
                                     , const sdpa::job_id_t& a_job_id
-                                    , const std::string& discover_id
+                                    , const sdpa::job_id_t& discover_id
                                     , const sdpa::discovery_info_t& discover_result
                                     )
         : JobEvent (a_from, a_to, a_job_id)
@@ -34,13 +34,17 @@ namespace sdpa
         handler->handleDiscoverJobStatesReplyEvent (this);
       }
 
-      const std::string& discover_id() const { return discover_id_; }
+      const sdpa::job_id_t& discover_id() const
+      {
+        return discover_id_;
+      }
       const sdpa::discovery_info_t& discover_result() const
       {
         return discover_result_;
       }
+
     private:
-      std::string discover_id_;
+      sdpa::job_id_t discover_id_;
       sdpa::discovery_info_t discover_result_;
     };
 

@@ -4,19 +4,21 @@
 #include "tests_config.hpp"
 #include <utils.hpp>
 
-#include <we/layer.hpp>
-
-#include <boost/test/unit_test.hpp>
-#include <sdpa/types.hpp>
-
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 
+#include <we/layer.hpp>
+
+#include <boost/ptr_container/ptr_list.hpp>
+#include <boost/test/unit_test.hpp>
+#include <sdpa/types.hpp>
+
 #include <fhg/util/random_string.hpp>
 
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
+#include <boost/thread/scoped_thread.hpp>
+
 #include <ctime>
+#include <deque>
 
 namespace
 {
@@ -293,4 +295,117 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
    {} // do nothing, discover again
 
   check_has_one_leaf_job_with_expected_status(disc_res, sdpa::status::PENDING );
+}
+
+namespace
+{
+  class fake_drts_worker_discovering_running :
+    public utils::fake_drts_worker_notifying_module_call_submission
+  {
+  public:
+    fake_drts_worker_discovering_running
+        ( boost::function<void (std::string)> announce_job
+        , std::string kvs_host
+        , std::string kvs_port
+        , utils::agent const& master
+        )
+      : utils::fake_drts_worker_notifying_module_call_submission
+        (announce_job, kvs_host, kvs_port, master)
+    {}
+
+    virtual void handleDiscoverJobStatesEvent
+      (const sdpa::events::DiscoverJobStatesEvent* e)
+    {
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          ( new sdpa::events::DiscoverJobStatesReplyEvent
+            ( _name
+            , e->from()
+            , sdpa::job_id_t()
+            , e->discover_id()
+            , sdpa::discovery_info_t
+              (e->job_id(), sdpa::status::RUNNING, sdpa::discovery_info_set_t())
+            )
+          )
+        );
+    }
+  };
+
+  std::size_t recursive_child_count (sdpa::discovery_info_t info)
+  {
+    std::size_t count (info.children().size());
+    BOOST_FOREACH (sdpa::discovery_info_t child, info.children())
+    {
+      count += recursive_child_count (child);
+    }
+    return count;
+  }
+
+  struct wait_until_submitted_and_finish_on_scope_exit
+  {
+    wait_until_submitted_and_finish_on_scope_exit
+        ( utils::fake_drts_worker_notifying_module_call_submission& worker
+        , std::string expected_job_name
+        , fhg::util::thread::event<std::string>& job_submitted
+        )
+      : _worker (worker)
+      , _actual_job_name()
+    {
+      job_submitted.wait (_actual_job_name);
+      BOOST_REQUIRE_EQUAL (_actual_job_name, expected_job_name);
+    }
+    ~wait_until_submitted_and_finish_on_scope_exit()
+    {
+      _worker.finish (_actual_job_name);
+    }
+
+    utils::fake_drts_worker_notifying_module_call_submission& _worker;
+    std::string _actual_job_name;
+  };
+
+  void verify_child_count_in_agent_chain (const std::size_t num_agents)
+  {
+    const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+    const utils::agent top_agent (kvs_host(), kvs_port(), orchestrator);
+    boost::ptr_list<utils::agent> agents;
+
+    const utils::agent* last_agent = &top_agent;
+    for (std::size_t counter (1); counter < num_agents; ++counter)
+    {
+      agents.push_back (new utils::agent (kvs_host(), kvs_port(), *last_agent));
+      last_agent = &agents.back();
+    }
+
+    fhg::util::thread::event<std::string> job_submitted;
+
+    fake_drts_worker_discovering_running worker
+      ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
+      , kvs_host(), kvs_port()
+      , *last_agent
+      );
+
+    const std::string activity_name (fhg::util::random_string());
+
+    utils::client::submitted_job submitted_job
+      (utils::dummy_module_call (activity_name), orchestrator);
+
+    const wait_until_submitted_and_finish_on_scope_exit _
+      (worker, activity_name, job_submitted);
+
+    BOOST_REQUIRE_EQUAL
+      (recursive_child_count (submitted_job.discover()), num_agents);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (agent_chain_1)
+{
+  verify_child_count_in_agent_chain (1);
+}
+BOOST_AUTO_TEST_CASE (agent_chain_2)
+{
+  verify_child_count_in_agent_chain (2);
+}
+BOOST_AUTO_TEST_CASE (agent_chain_random_3_to_100)
+{
+  verify_child_count_in_agent_chain (3 + rand() % 98);
 }

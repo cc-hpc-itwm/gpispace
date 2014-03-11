@@ -6,8 +6,8 @@
 #include <ostream>
 
 #include <fhg/assert.hpp>
-#include <jpn/common/Foreach.h>
-#include <jpn/common/PrintRange.h>
+#include <pnetv/jpn/common/Foreach.h>
+#include <pnetv/jpn/common/PrintRange.h>
 
 namespace jpn {
 

@@ -1,4 +1,4 @@
-#include "NetworkStrategy.hpp"
+#include <sdpa/com/NetworkStrategy.hpp>
 #include <fhg/assert.hpp>
 
 #include <csignal>

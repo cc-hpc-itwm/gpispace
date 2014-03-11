@@ -1,13 +1,14 @@
 #include <drts/worker/drts.hpp>
 
 //! \todo remove when redoing ctor
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
-#include <fhg/util/threadname.hpp>
 
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 
 #include <we/loader/module_call.hpp>
 #include <we/type/expression.fwd.hpp>
@@ -138,12 +139,14 @@ namespace
   };
 }
 
-WFEImpl::WFEImpl ( boost::optional<std::size_t> target_socket
+WFEImpl::WFEImpl ( fhg::log::Logger::ptr_t logger
+                 , boost::optional<std::size_t> target_socket
                  , std::string search_path
                  , boost::optional<std::string> gui_url
                  , std::string worker_name
                  )
-  : _numa_socket_setter ( target_socket
+  : _logger (logger)
+  , _numa_socket_setter ( target_socket
                         ? numa_socket_setter (*target_socket)
                         : boost::optional<numa_socket_setter>()
                         )
@@ -216,7 +219,7 @@ int WFEImpl::execute ( std::string const &job_id
   }
   catch (std::exception const & ex)
   {
-    MLOG(ERROR, "could not parse activity: " << ex.what());
+    LLOG (ERROR, _logger, "could not parse activity: " << ex.what());
     task.state = wfe_task_t::FAILED;
     error_message = std::string ("Invalid job description: ") + ex.what();
 
@@ -267,14 +270,14 @@ int WFEImpl::execute ( std::string const &job_id
 
   if (wfe_task_t::FINISHED == task.state)
   {
-    MLOG(TRACE, "task finished: " << task.id);
+    LLOG (TRACE, _logger, "task finished: " << task.id);
   }
   else if (wfe_task_t::CANCELED == task.state)
   {
   }
   else // if (wfe_task_t::FAILED == task.state)
   {
-    MLOG (ERROR, "task failed: " << task.id << ": " << task.error_message);
+    LLOG (ERROR, _logger, "task failed: " << task.id << ": " << task.error_message);
   }
 
   emit_task (task);
@@ -299,7 +302,9 @@ void WFEImpl::cancel (std::string const &job_id)
 
 
 DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, std::string> config_variables)
-  : _request_stop (request_stop)
+  : _logger
+    (fhg::log::Logger::get (*get<std::string> ("kernel_name", config_variables)))
+  , _request_stop (request_stop)
   , _kvs_client
     (new fhg::com::kvs::client::kvsc
       ( get<std::string> ("plugin.drts.kvs_host", config_variables).get_value_or ("localhost")
@@ -315,7 +320,8 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     )
   , m_shutting_down (false)
   , m_my_name (*get<std::string> ("kernel_name", config_variables))
-  , m_wfe ( get<std::size_t> ("plugin.drts.socket", config_variables)
+  , m_wfe ( _logger
+          , get<std::size_t> ("plugin.drts.socket", config_variables)
           , get<std::string> ("plugin.drts.library_path", config_variables).get_value_or (fhg::util::getenv("PC_LIBRARY_PATH").get_value_or (""))
           , get<std::string> ("plugin.drts.gui_url", config_variables)
           , m_my_name
@@ -356,13 +362,17 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     }
   }
 
-  m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
-  fhg::util::set_threadname (*m_event_thread, "[drts-events]");
+  m_event_thread.reset
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&DRTSImpl::event_thread, this)
+    );
 
   // initialize peer
   m_peer.reset (new fhg::com::peer_t (m_my_name, host, port, _kvs_client));
-  m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
-  fhg::util::set_threadname (*m_peer_thread, "[drts-peer]");
+  m_peer_thread.reset
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&fhg::com::peer_t::run, m_peer)
+    );
   m_peer->start();
 
   start_receiver();
@@ -385,15 +395,16 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
     }
     else
     {
-      MLOG( WARN
+      LLOG ( WARN, _logger
           , "master already specified, ignoring new one: " << master
           );
     }
   }
 
   m_execution_thread.reset
-    (new boost::thread(&DRTSImpl::job_execution_thread, this));
-  fhg::util::set_threadname (*m_execution_thread, "[drts-execute]");
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&DRTSImpl::job_execution_thread, this)
+    );
 
   start_connect ();
 }
@@ -402,32 +413,12 @@ DRTSImpl::~DRTSImpl()
 {
   m_shutting_down = true;
 
-  if (m_execution_thread)
-  {
-    m_execution_thread->interrupt();
-    if (m_execution_thread->joinable ())
-      m_execution_thread->join ();
-    m_execution_thread.reset();
-  }
-
-  if (m_event_thread)
-  {
-    m_event_thread->interrupt();
-    if (m_event_thread->joinable ())
-      m_event_thread->join();
-    m_event_thread.reset();
-  }
+  m_execution_thread.reset();
+  m_event_thread.reset();
 
   if (m_peer)
   {
     m_peer->stop();
-  }
-
-  if (m_peer_thread)
-  {
-    m_peer_thread->interrupt();
-    if (m_peer_thread->joinable ())
-      m_peer_thread->join();
   }
 
   m_peer_thread.reset();
@@ -448,8 +439,6 @@ void DRTSImpl::handleWorkerRegistrationAckEvent
 
       notify_capabilities_to_master (master_it->first);
       resend_outstanding_events (master_it->first);
-
-      m_connected_event.notify(master_it->first);
     }
 
     {
@@ -484,9 +473,9 @@ void DRTSImpl::handleSubmitJobEvent(const sdpa::events::SubmitJobEvent *e)
   {
     boost::mutex::scoped_lock job_map_lock(m_job_map_mutex);
 
-    if (m_backlog_size && m_pending_jobs.size() >= m_backlog_size)
+    if (m_backlog_size && m_pending_jobs.INDICATES_A_RACE_size() >= m_backlog_size)
     {
-      MLOG( WARN
+      LLOG ( WARN, _logger
           , "cannot accept new job (" << job->id() << "), backlog is full."
           );
       send_event (new sdpa::events::ErrorEvent
@@ -521,7 +510,7 @@ void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
-  MLOG(TRACE, "got cancelation request for job: " << e->job_id());
+  LLOG (TRACE, _logger, "got cancelation request for job: " << e->job_id());
 
   if (job_it == m_jobs.end())
   {
@@ -550,7 +539,7 @@ void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
                                            )
        )
     {
-      MLOG(TRACE, "canceling pending job: " << e->job_id());
+      LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
       send_event
         (new sdpa::events::CancelJobAckEvent ( m_my_name
                                              , job_it->second->owner()
@@ -560,20 +549,20 @@ void DRTSImpl::handleCancelJobEvent(const sdpa::events::CancelJobEvent *e)
     }
     else if (job_it->second->state() == drts::Job::RUNNING)
     {
-      MLOG (TRACE, "trying to cancel running job " << e->job_id());
+      LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
       m_wfe.cancel (e->job_id());
     }
     else if (job_it->second->state() == drts::Job::FAILED)
     {
-      MLOG(TRACE, "canceling already failed job: " << e->job_id());
+      LLOG (TRACE, _logger, "canceling already failed job: " << e->job_id());
     }
     else if (job_it->second->state() == drts::Job::CANCELED)
     {
-      MLOG(TRACE, "canceling already canceled job: " << e->job_id());
+      LLOG (TRACE, _logger, "canceling already canceled job: " << e->job_id());
     }
     else
     {
-      MLOG( WARN
+      LLOG ( WARN, _logger
           , "what shall I do with an already computed job? "
           << "(" << e->job_id() << ")"
           );
@@ -588,7 +577,7 @@ void DRTSImpl::handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
   if (job_it == m_jobs.end())
   {
-    MLOG( ERROR
+    LLOG ( ERROR, _logger
         , "could not acknowledge failed job: " << e->job_id() << ": not found"
         );
     send_event (new sdpa::events::ErrorEvent
@@ -601,7 +590,7 @@ void DRTSImpl::handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e)
   }
   else if (job_it->second->owner() != e->from())
   {
-    MLOG( ERROR
+    LLOG ( ERROR, _logger
         , "could not acknowledge failed job: " << e->job_id() << ": not owner"
         );
     send_event (new sdpa::events::ErrorEvent
@@ -623,7 +612,7 @@ void DRTSImpl::handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
   if (job_it == m_jobs.end())
   {
-    MLOG( ERROR
+    LLOG ( ERROR, _logger
         , "could not acknowledge finished job: " << e->job_id()
         << ": not found"
         );
@@ -637,7 +626,7 @@ void DRTSImpl::handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent
   }
   else if (job_it->second->owner() != e->from())
   {
-    MLOG( ERROR
+    LLOG ( ERROR, _logger
         , "could not acknowledge finished job: " << e->job_id()
         << ": not owner"
         );
@@ -651,6 +640,32 @@ void DRTSImpl::handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent
   }
 
   m_jobs.erase (job_it);
+}
+
+void DRTSImpl::handleDiscoverJobStatesEvent
+  (const sdpa::events::DiscoverJobStatesEvent* event)
+{
+  boost::mutex::scoped_lock const _ (m_job_map_mutex);
+
+  const map_of_jobs_t::iterator job_it (m_jobs.find (event->job_id()));
+  send_event ( new sdpa::events::DiscoverJobStatesReplyEvent
+               ( m_my_name
+               , event->from()
+               , sdpa::job_id_t()
+               , event->discover_id()
+               , sdpa::discovery_info_t
+                 ( event->job_id()
+                 , job_it == m_jobs.end() ? boost::optional<sdpa::status::code>()
+                 : job_it->second->state() == drts::Job::PENDING ? sdpa::status::PENDING
+                 : job_it->second->state() == drts::Job::RUNNING ? sdpa::status::RUNNING
+                 : job_it->second->state() == drts::Job::FINISHED ? sdpa::status::FINISHED
+                 : job_it->second->state() == drts::Job::FAILED ? sdpa::status::FAILED
+                 : job_it->second->state() == drts::Job::CANCELED ? sdpa::status::CANCELED
+                 : throw std::runtime_error ("invalid job state")
+                 , sdpa::discovery_info_set_t()
+                 )
+               )
+             );
 }
 
   // threads
@@ -678,7 +693,7 @@ void DRTSImpl::job_execution_thread ()
         const boost::posix_time::ptime started
           (boost::posix_time::microsec_clock::universal_time());
 
-        MLOG(TRACE, "executing job " << job->id());
+        LLOG (TRACE, _logger, "executing job " << job->id());
 
         we::type::activity_t result;
         std::string error_message;
@@ -693,7 +708,7 @@ void DRTSImpl::job_execution_thread ()
         const boost::posix_time::ptime completed
           (boost::posix_time::microsec_clock::universal_time());
 
-        MLOG( TRACE
+        LLOG ( TRACE, _logger
             , "job returned."
             << " error-message := " << job->message()
             << " total-time := " << (completed - started)
@@ -708,7 +723,7 @@ void DRTSImpl::job_execution_thread ()
       }
       catch (std::exception const & ex)
       {
-        MLOG( ERROR
+        LLOG ( ERROR, _logger
             , "unexpected exception during job execution: " << ex.what()
             );
         job->set_state (drts::Job::FAILED);
@@ -762,7 +777,7 @@ void DRTSImpl::notify_capabilities_to_master (std::string const &master)
 
 void DRTSImpl::resend_outstanding_events (std::string const &master)
 {
-  MLOG(TRACE, "resending outstanding notifications to " << master);
+  LLOG (TRACE, _logger, "resending outstanding notifications to " << master);
   boost::mutex::scoped_lock job_map_lock (m_job_map_mutex);
   for ( map_of_jobs_t::iterator job_it (m_jobs.begin()), end (m_jobs.end())
       ; job_it != end
@@ -770,7 +785,7 @@ void DRTSImpl::resend_outstanding_events (std::string const &master)
       )
   {
     boost::shared_ptr<drts::Job> job (job_it->second);
-    MLOG( TRACE
+    LLOG ( TRACE, _logger
         , "checking job"
         << " id := " << job->id()
         << " state := " << job->state()
@@ -780,7 +795,7 @@ void DRTSImpl::resend_outstanding_events (std::string const &master)
        && (job->state() >= drts::Job::FINISHED)
        )
     {
-      MLOG(TRACE, "resending outcome of job " << job->id());
+      LLOG (TRACE, _logger, "resending outcome of job " << job->id());
       send_job_result_to_master (job);
     }
   }
@@ -875,7 +890,7 @@ void DRTSImpl::start_connect ()
       }
       else
       {
-        MLOG( WARN
+        LLOG ( WARN, _logger
             , "still not connected after " << m_reconnect_counter
             << " trials: shutting down"
             );
@@ -920,7 +935,7 @@ void DRTSImpl::handle_recv (boost::system::error_code const & ec)
     }
     catch (std::exception const & ex)
     {
-      MLOG(WARN, "could not handle incoming message: " << ex.what());
+      LLOG (WARN, _logger, "could not handle incoming message: " << ex.what());
     }
     start_receiver();
   }
@@ -943,7 +958,7 @@ void DRTSImpl::handle_recv (boost::system::error_code const & ec)
     }
     else
     {
-      MLOG(TRACE, m_peer->name() << " is shutting down");
+      LLOG (TRACE, _logger, m_peer->name() << " is shutting down");
     }
   }
 }
@@ -970,6 +985,6 @@ void DRTSImpl::dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt)
   }
   else
   {
-    MLOG(WARN, "got invalid message from suspicious source");
+    LLOG (WARN, _logger, "got invalid message from suspicious source");
   }
 }

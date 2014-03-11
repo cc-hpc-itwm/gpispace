@@ -17,15 +17,15 @@ namespace we
   {
     boost::optional<const expression_t&> transition_t::expression() const
     {
-      return fhg::util::boost::get_or_none<const expression_t&> (data());
+      return fhg::util::boost::get_or_none<expression_t> (data());
     }
     boost::optional<const we::type::net_type&> transition_t::net() const
     {
-      return fhg::util::boost::get_or_none<const we::type::net_type&> (data());
+      return fhg::util::boost::get_or_none<we::type::net_type> (data());
     }
     boost::optional<const module_call_t&> transition_t::module_call() const
     {
-      return fhg::util::boost::get_or_none<const module_call_t&> (data());
+      return fhg::util::boost::get_or_none<module_call_t> (data());
     }
 
     boost::optional<expression_t> const& transition_t::condition() const

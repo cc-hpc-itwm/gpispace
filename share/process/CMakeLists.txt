@@ -17,13 +17,11 @@ target_link_libraries (process.shared
 
 install (FILES process.hpp
   DESTINATION include/process
-  COMPONENT module-headers
 )
 
 install (TARGETS process.shared
   LIBRARY
   DESTINATION libexec/sdpa
-  COMPONENT modules
 )
 
 add_subdirectory (test)

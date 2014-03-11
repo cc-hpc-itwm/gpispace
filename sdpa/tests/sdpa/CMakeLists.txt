@@ -40,7 +40,6 @@ pnet_compile (capabilities-test-wf
            -I${CMAKE_BINARY_DIR}/fhglog
            -O3
   BUILD
-  COMPONENT tests
 )
 
 add_custom_target (workflow_capabilities
@@ -67,7 +66,6 @@ pnet_compile (capabilities_no_mandatory-test-wf
            -I${CMAKE_BINARY_DIR}/fhglog
            -O3
   BUILD
-  COMPONENT tests
 )
 
 add_custom_target (workflow_capabilities_no_mandatory
@@ -94,7 +92,6 @@ pnet_compile (inotify-test-wf
            -I${CMAKE_BINARY_DIR}/fhglog
            -O3
   BUILD
-  COMPONENT tests
 )
 
 add_custom_target (workflow_inotify
@@ -145,7 +142,6 @@ pnet_compile (transform_file-test-wf
            -I${TEST_WORKFLOWS_SOURCE_DIR}/transform_file
            -O3
   BUILD
-  COMPONENT tests
 )
 
 add_custom_target (workflow_transform_file
@@ -174,18 +170,6 @@ pnet_compile (coallocation-wf
            -I${CMAKE_SOURCE_DIR}/fvm-pc
            -O3
   BUILD
-  COMPONENT tests
-)
-
-add_custom_target (workflow_coallocation_bad_test
-  COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/coallocation-wf.in.pnet
-          -p n_tasks="1L"
-          -p n_workers="0UL"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/coallocation_bad_test.pnet"
-  COMMENT "putting tokens into coallocation_bad_test workflow"
-  DEPENDS pnet-coallocation-wf
-          pnetput
 )
 
 add_custom_target (workflow_coallocation
@@ -247,13 +231,6 @@ fhg_add_test (test_CoallocationScheduler.cpp
                  ${FhgLog_LIBRARY}
 )
 
-fhg_add_test (test_SimpleScheduler.cpp
-  PROJECT sdpa
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-                 ${FhgLog_LIBRARY}
-)
-
 fhg_add_test (test_Topologies.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -299,15 +276,6 @@ fhg_add_test (test_DiscoverJobStates.cpp
                  ${FhgLog_LIBRARY}
   DEPENDS dummy_workflow
           workflow_coallocation
-)
-
-fhg_add_test (test_FailOnBadRequirements.cpp
-  PROJECT sdpa
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-                 fhg-plugin
-                 ${FhgLog_LIBRARY}
-  DEPENDS workflow_coallocation_bad_test
 )
 
 fhg_add_test (test_Requirements.cpp

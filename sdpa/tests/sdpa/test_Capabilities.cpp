@@ -38,24 +38,7 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
   Worker worker_0( "worker_0", agent, "A");
   Worker worker_1( "worker_1", agent, "B");
 
-  sdpa::capabilities_set_t set_cpbs_0;
-  worker_0.getCapabilities(set_cpbs_0);
-  sdpa::capabilities_set_t set_cpbs_1;
-  worker_1.getCapabilities(set_cpbs_1);
-  sdpa::capabilities_set_t expected_cpbs(set_cpbs_0);
-  BOOST_FOREACH(const sdpa::capability_t& cpb, set_cpbs_1)
-  {
-    expected_cpbs.insert(cpb);
-  }
-
-  sdpa::capabilities_set_t acquired_cpbs;
-  while(acquired_cpbs.size()!=2)
-  {
-     acquired_cpbs.clear();
-     agent._.getCapabilities(acquired_cpbs);
-  }
-
-  BOOST_REQUIRE(acquired_cpbs == expected_cpbs);
+  BOOST_FAIL ("capabilities lost shall be checked by a mock master");
 }
 
 BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
@@ -75,20 +58,9 @@ BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
   sdpa::capabilities_set_t set_cpbs_0;
   worker_0.getCapabilities(set_cpbs_0);
 
-  sdpa::capabilities_set_t acquired_cpbs;
-  while (acquired_cpbs.size()!=2)
-  {
-     acquired_cpbs.clear();
-     agent._.getCapabilities(acquired_cpbs);
-  }
+  BOOST_FAIL ("capabilities lost shall be checked by a mock master");
 
   delete pWorker_1;
 
-  while (acquired_cpbs.size()!=1)
-  {
-     acquired_cpbs.clear();
-     agent._.getCapabilities(acquired_cpbs);
-  }
-
-  BOOST_REQUIRE(acquired_cpbs == set_cpbs_0);
+  BOOST_FAIL ("capabilities lost shall be checked by a mock master");
 }

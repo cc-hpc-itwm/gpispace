@@ -9,7 +9,7 @@
 #include <stack>
 
 #include <fhglog/LogMacros.hpp>
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 #include <fhg/error_codes.hpp>
 #include <fhg/util/read_bool.hpp>
 

@@ -249,7 +249,7 @@ namespace process
                        , std::size_t bytes_left
                        )
     {
-      char * buf (static_cast<char *> (const_cast<void *> (input)));
+      const char * buf (static_cast<const char*> (input));
 
       while (fd != -1 && bytes_left > 0)
         {

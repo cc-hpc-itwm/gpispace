@@ -7,6 +7,7 @@
 #include <fhg/util/read_file.hpp>
 
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 
 #include <stdexcept>
 
@@ -33,7 +34,17 @@ namespace fhg
 
     void ini::put (std::string const& key, std::string const& value)
     {
-      _key_value.insert (std::make_pair (key, value));
+      if (!_key_value.insert (std::make_pair (key, value)).second)
+      {
+        throw std::runtime_error
+          ( boost::str
+            ( boost::format
+              ( "ini: try to overwrite key '%1%'"
+              " with value '%2%', old value is '%3%'"
+              ) % key % value % _key_value.at (key)
+            )
+          );
+      }
     }
 
     void ini::del (std::string const& key)

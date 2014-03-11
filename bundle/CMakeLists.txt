@@ -2,29 +2,40 @@
 
 install (PROGRAMS bundle.sh
   DESTINATION libexec/sdpa/scripts
-  COMPONENT runtime)
-
-if (INSTALL_AS_BUNDLE)
+)
 
 set (APPS)
 
 macro (BUNDLE_APPS)
   foreach (app ${ARGN})
-    if (TARGET ${app})
       get_target_property (_loc ${app} LOCATION)
       list(APPEND APPS "${_loc}")
       unset (_loc)
-    endif()
   endforeach()
 endmacro()
 
 bundle_apps(
-  sdpac
-  sdpa-gui
-  gpish
-  gpi-space
-  pnete
+  agent
   drts-kernel
+  fhgcfg
+  fhgkvsc
+  fhgkvsd
+  fhglog-dump
+  fhglogc
+  fhglogd
+  gpi-space
+  gpish
+  orchestrator
+  pnet2dot
+  pnetc
+  pnetget
+  pnetput
+  pnetv
+  sdpac
+  we-exec
+  sdpa-gui
+  gspcmonc
+  pnete
 )
 
 install(CODE "
@@ -33,7 +44,6 @@ install(CODE "
   execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bundle.sh
                           -p \"\${CMAKE_INSTALL_PREFIX}\"
                           -d
-                          -f
                           -L \"\${CMAKE_INSTALL_PREFIX}/lib\"
                           -x libibverbs.*
                           -x libxcb.*
@@ -54,6 +64,7 @@ install(CODE "
                           -x libX.*so
                           -x libpthread.*
                           -x libgthread.*
+                          -x libreadline.*
                            ${APPS} \${PLUGINS}
                   RESULT_VARIABLE __res
                   ERROR_VARIABLE __err
@@ -61,6 +72,4 @@ install(CODE "
   if (NOT \${__res} EQUAL 0)
      message(FATAL_ERROR \"Could not bundle dependencies: \${__err}\")
   endif()
-  " COMPONENT dependencies)
-
-endif()
+  " )

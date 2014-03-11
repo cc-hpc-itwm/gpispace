@@ -30,14 +30,6 @@ namespace we
       , _random_extraction_engine (random_extraction_engine)
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
     {}
-    layer::~layer()
-    {
-      _extract_from_nets_thread.interrupt();
-      if (_extract_from_nets_thread.joinable())
-      {
-        _extract_from_nets_thread.join();
-      }
-    }
 
     namespace
     {
@@ -183,8 +175,10 @@ namespace we
 
     void layer::cancel (id_type id)
     {
-      request_cancel
-        (id, boost::bind (&layer::rts_canceled_and_forget, this, id));
+      const boost::function<void()> after
+        (boost::bind (&layer::rts_canceled_and_forget, this, id));
+      _nets_to_extract_from.remove_and_apply
+        (id, boost::bind (&layer::cancel_child_jobs, this, _1, after));
     }
 
     void layer::failed (id_type id, std::string reason)
@@ -217,12 +211,6 @@ namespace we
         _running_jobs.apply
           (parent_activity._id, boost::bind (_rts_cancel, _1));
       }
-    }
-
-    void layer::request_cancel (id_type id, boost::function<void()> after)
-    {
-      _nets_to_extract_from.remove_and_apply
-        (id, boost::bind (&layer::cancel_child_jobs, this, _1, after));
     }
 
     void layer::cancel_child_jobs

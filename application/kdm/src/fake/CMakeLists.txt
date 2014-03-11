@@ -12,5 +12,4 @@ set_target_properties(kdm_mod_fake PROPERTIES OUTPUT_NAME kdm_complex)
 install(TARGETS kdm_mod_fake
   LIBRARY
   DESTINATION libexec/fake
-  COMPONENT modules
   )

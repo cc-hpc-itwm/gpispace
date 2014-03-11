@@ -1,7 +1,7 @@
 #pragma once
 
-#include <jpn/config.h>
-#include <jpn/Marking.h>
+#include <pnetv/jpn/config.h>
+#include <pnetv/jpn/Marking.h>
 
 #include <we/type/id.hpp>
 

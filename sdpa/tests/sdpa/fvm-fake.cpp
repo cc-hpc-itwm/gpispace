@@ -1,4 +1,4 @@
-#include <fhg/plugin/plugin.hpp>
+#include <plugin/plugin.hpp>
 
 #include <fvm-pc/pc.hpp>
 

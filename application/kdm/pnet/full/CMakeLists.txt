@@ -12,7 +12,6 @@ pnet_compile (kdm kdm.xpnet
            -I${CMAKE_SOURCE_DIR}/sdpa
            -O3
 #  BUILD
-  COMPONENT applications
 )
 
 pnet_compile (kdmopt kdmopt.xpnet
@@ -27,5 +26,4 @@ pnet_compile (kdmopt kdmopt.xpnet
            -I${CMAKE_SOURCE_DIR}/sdpa
            -O3
 #  BUILD
-  COMPONENT applications
 )

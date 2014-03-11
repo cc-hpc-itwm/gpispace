@@ -8,6 +8,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 

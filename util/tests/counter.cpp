@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE ( test_multiple_counters )
   }
 }
 
-#include "boost/mpl/equal.hpp"
+#include <boost/mpl/equal.hpp>
 
 BOOST_AUTO_TEST_CASE ( test_value_type )
 {

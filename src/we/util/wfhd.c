@@ -1,4 +1,4 @@
-#include "wfhd.h"
+#include <we/util/wfhd.h>
 
 #include <stdio.h>
 #include <stdlib.h>

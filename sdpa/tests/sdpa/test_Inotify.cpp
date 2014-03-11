@@ -6,6 +6,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
@@ -43,11 +44,8 @@ BOOST_AUTO_TEST_CASE (testInotifyExecution)
     );
 
   bool keep_on_touching (true);
-  boost::thread toucher ( boost::bind ( &touch_file_until_flag_set
-                                      , &keep_on_touching
-                                      , "inotify_test.txt"
-                                      )
-                        );
+  const boost::strict_scoped_thread<> toucher
+    (&touch_file_until_flag_set, &keep_on_touching, "inotify_test.txt");
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)
@@ -55,8 +53,4 @@ BOOST_AUTO_TEST_CASE (testInotifyExecution)
                       );
 
   keep_on_touching = false;
-  if (toucher.joinable())
-  {
-    toucher.join();
-  }
 }

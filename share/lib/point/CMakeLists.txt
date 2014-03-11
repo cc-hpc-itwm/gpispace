@@ -4,5 +4,4 @@ set (xpnets
 
 install (FILES ${xpnets}
   DESTINATION ${PNETC_LIB_DIR}/point
-  COMPONENT examples
 )

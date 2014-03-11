@@ -15,7 +15,6 @@ add_definitions (-DSHMEM)
   add_definitions (-DMAX_SHMEM_SIZE=${MAX_SHMEM_SIZE})
   add_definitions (-DMAX_FVM_SIZE=${MAX_FVM_SIZE})
 
-include_directories (${CMAKE_SOURCE_DIR}/gspc)
 include_directories (${CMAKE_SOURCE_DIR}/src)
 
 include_directories (${FhgLog_INCLUDE_DIR})

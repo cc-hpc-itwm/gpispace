@@ -17,6 +17,7 @@
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 #include <boost/unordered_map.hpp>
 
 namespace we
@@ -43,7 +44,6 @@ namespace we
             , boost::function<id_type()> rts_id_generator
             , boost::mt19937& random_extraction_engine
             );
-      ~layer();
 
       // initial from exec_layer -> top level
       void submit (id_type, type::activity_t);
@@ -58,12 +58,14 @@ namespace we
       void failed (id_type, std::string reason);
 
       // reply to _rts_cancel (after top level canceled/failure) -> childs only
+      // shall not be called from within rts_cancel!
       void canceled (id_type);
 
       // initial from exec_layer -> top level, unique discover_id
       void discover (id_type discover_id, id_type);
 
       // reply to _rts_discover (after top level discovered/failure) -> childs only
+      // shall not be called from within rts_discover!
       void discovered (id_type discover_id, sdpa::discovery_info_t);
 
     private:
@@ -139,7 +141,6 @@ namespace we
 
       boost::mt19937& _random_extraction_engine;
       void extract_from_nets();
-      boost::thread _extract_from_nets_thread;
 
       void failed_delayed ( activity_data_type& parent_activity
                           , id_type id
@@ -147,7 +148,6 @@ namespace we
                           );
       void discover_delayed (activity_data_type&, id_type discover_id);
 
-      void request_cancel (id_type, boost::function<void()> after);
       void cancel_child_jobs (activity_data_type, boost::function<void()> after);
 
       boost::unordered_map<id_type, boost::function<void()> >
@@ -180,6 +180,9 @@ namespace we
 
       void finalize_finished
         (activity_data_type&, type::activity_t, id_type parent, id_type child);
+
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _extract_from_nets_thread;
     };
 }
 

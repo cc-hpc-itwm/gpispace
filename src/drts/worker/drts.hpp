@@ -6,7 +6,6 @@
 #include <fhgcom/message.hpp>
 #include <fhgcom/peer.hpp>
 
-#include <fhg/util/thread/event.hpp>
 #include <fhg/util/thread/queue.hpp>
 #include <fhg/util/thread/set.hpp>
 
@@ -27,6 +26,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 #include <list>
 #include <map>
@@ -64,7 +64,8 @@ private:
 class WFEImpl
 {
 public:
-  WFEImpl ( boost::optional<std::size_t> target_socket
+  WFEImpl ( fhg::log::Logger::ptr_t
+          , boost::optional<std::size_t> target_socket
           , std::string search_path
           , boost::optional<std::string> gui_url
           , std::string worker_name
@@ -85,6 +86,8 @@ public:
   void cancel (std::string const &job_id);
 
 private:
+  fhg::log::Logger::ptr_t _logger;
+
   boost::optional<numa_socket_setter> _numa_socket_setter;
 
   std::string _worker_name;
@@ -114,6 +117,8 @@ public:
   virtual void handleCancelJobEvent(const sdpa::events::CancelJobEvent *e);
   virtual void handleJobFailedAckEvent(const sdpa::events::JobFailedAckEvent *e);
   virtual void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent *e);
+  virtual void handleDiscoverJobStatesEvent
+    (const sdpa::events::DiscoverJobStatesEvent*);
 
 private:
   // threads
@@ -139,6 +144,8 @@ private:
 
   void dispatch_event (sdpa::events::SDPAEvent::Ptr const &evt);
 
+  fhg::log::Logger::ptr_t _logger;
+
   boost::function<void()> _request_stop;
 
   fhg::com::kvs::kvsc_ptr_t _kvs_client;
@@ -149,7 +156,8 @@ private:
 
   WFEImpl m_wfe;
 
-  boost::shared_ptr<boost::thread>    m_peer_thread;
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+    m_peer_thread;
   boost::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
@@ -158,8 +166,10 @@ private:
   std::size_t m_reconnect_counter;
 
   fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>  m_event_queue;
-  boost::shared_ptr<boost::thread>    m_event_thread;
-  boost::shared_ptr<boost::thread>    m_execution_thread;
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+    m_event_thread;
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+    m_execution_thread;
 
   mutable boost::mutex m_job_map_mutex;
   mutable boost::mutex m_job_computed_mutex;
@@ -167,8 +177,6 @@ private:
   mutable boost::mutex m_job_arrived_mutex;
   mutable boost::mutex m_reconnect_counter_mutex;
   boost::condition_variable     m_job_arrived;
-
-  fhg::util::thread::event<std::string> m_connected_event;
 
   mutable boost::mutex m_capabilities_mutex;
   map_of_capabilities_t m_virtual_capabilities;

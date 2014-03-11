@@ -66,7 +66,7 @@ namespace we
           return boost::none;
         }
 
-        return fhg::util::boost::get_or_none<const value_type&> (*mapped);
+        return fhg::util::boost::get_or_none<value_type> (*mapped);
       }
 
       boost::optional<const value_type&>

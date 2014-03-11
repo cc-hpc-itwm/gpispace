@@ -61,10 +61,6 @@ namespace sdpa
     {
       _stopping = true;
       m_peer.stop();
-      if (_peer_thread.joinable())
-      {
-        _peer_thread.join();
-      }
     }
 
     fhg::com::message_t Client::message_for_event
@@ -99,8 +95,8 @@ namespace sdpa
           sdpa::events::ErrorEvent::Ptr
             error(new sdpa::events::ErrorEvent ( m_peer.resolve(addr, "*unknown*")
                                                , m_peer.name()
-                                               , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                               , boost::lexical_cast<std::string>(ec)
+                                               , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+                                               , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
                                                )
                  );
           m_incoming_events.put (error);
@@ -137,7 +133,7 @@ namespace sdpa
     template<typename Expected, typename Sent>
       Expected Client::send_and_wait_for_reply (Sent event)
     {
-      m_incoming_events.clear();
+      m_incoming_events.INDICATES_A_RACE_clear();
 
       fhg::com::message_t msg (message_for_event (&event));
 

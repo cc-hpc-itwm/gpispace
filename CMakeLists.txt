@@ -16,7 +16,6 @@ set (PROJECT_VENDOR      "Fraunhofer Institute for Industrial Mathematics ITWM" 
 set (PROJECT_COPYRIGHT   "Copyright 2009-2014 Fraunhofer ITWM" CACHE STRING "Copyright")
 set (PROJECT_CONTACT     "Developer Team <sdpa-dev@itwm.fraunhofer.de>" CACHE STRING "Contact information")
 
-OPTION (INSTALL_AS_BUNDLE "Install as a bundle" NO)
 OPTION (ENABLE_LICENSE_CHECK "enable license check" OFF)
 set (FHGLOG_STRIP_LEVEL "-1" CACHE STRING "Strip log messages with a level >= N")
 set (FHG_ASSERT_MODE CACHE INTEGER "fhg assert mode: 0 ignore, 1 enable, 2 use assert, 3 throw, 4 just log, 5 log and abort")
@@ -67,8 +66,6 @@ if (NOT PROJECT_VERSION)
 endif()
 set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
 
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/cpack-rel.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cpack-rel.cmake @ONLY)
-
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
 set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/modules" "$ENV{CMAKE_MODULE_PATH}")
@@ -109,25 +106,15 @@ if (BOOST_ROOT)
   set (Boost_NO_SYSTEM_PATHS ON)
 endif()
 
-find_package (Boost 1.47 REQUIRED QUIET COMPONENTS
+find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
   thread system filesystem serialization program_options
   regex signals date_time test_exec_monitor unit_test_framework random)
 
-if (Boost_MAJOR_VERSION EQUAL 1)
-  if (Boost_MINOR_VERSION EQUAL 48)
-    message (FATAL_ERROR "Incompatible Boost 1.48 detected")
-  endif()
-endif()
-
-if (Boost_MAJOR_VERSION EQUAL 1)
-  if (Boost_MINOR_VERSION GREATER 51)
-    # Boost.Thread now throws when preconditions are not met.
-    # This is the case when calling join() in some tests, while
-    # joinable() == false.  This define is only a hacky workaround and
-    # the precondition shall be checked everywhere, where needed.
-    add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
-  endif()
-endif()
+# Boost.Thread now throws when preconditions are not met.
+# This is the case when calling join() in some tests, while
+# joinable() == false.  This define is only a hacky workaround and
+# the precondition shall be checked everywhere, where needed.
+add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 
 get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH CACHE)
 
@@ -161,16 +148,16 @@ set (MMGR_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src)
 set (MMGR_LIBRARY mmgr)
 set (MMGR_LIBRARY_SHARED mmgr.shared)
 
-set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgkernel ${CMAKE_BINARY_DIR}/fhgkernel)
+set (FhgKernel_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 
 set (SDPA_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/sdpa ${CMAKE_BINARY_DIR}/sdpa)
 
-set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fhgcom ${CMAKE_BINARY_DIR}/fhgcom)
+set (FhgCom_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 set (FhgCom_LIBRARY fhgcom)
 
 set (FVM_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/fvm-pc ${CMAKE_BINARY_DIR}/fvm-pc)
 
-set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/gpi-space ${CMAKE_BINARY_DIR}/gpi-space)
+set (GPI_SPACE_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 set (GPI_SPACE_LIBRARY gpi-space-pc-client-static gpi-space-pc-segment)
 
 set (PNETC_LIB_DIR "share/sdpa/xml/lib")
@@ -181,9 +168,6 @@ include (CTest)
 add_subdirectory (fhglog)
   add_subdirectory (fvm-pc)
 add_subdirectory (util)
-add_subdirectory (fhgkernel)
-add_subdirectory (fhgcom)
-  add_subdirectory (gpi-space)
 add_subdirectory (application)
 add_subdirectory (src)
 add_subdirectory (sdpa)
@@ -192,15 +176,6 @@ add_subdirectory(bundle)
 add_subdirectory (test)
 
 INCLUDE (InstallRequiredSystemLibraries)
-#set (CPACK_GENERATOR "RPM;STGZ;TGZ;TBZ2")
-set (CPACK_GENERATOR "TBZ2")
-set (CPACK_SOURCE_GENERATOR "TBZ2")
-set (CPACK_PACKAGE_VENDOR "${PROJECT_VENDOR}")
-set (CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set (CPACK_PACKAGE_VERSION_MAJOR "${V_MAJOR}")
-set (CPACK_PACKAGE_VERSION_MINOR "${V_MINOR}")
-set (CPACK_PACKAGE_VERSION_PATCH "${V_PATCH}")
-INCLUDE (CPack)
 
 add_subdirectory (playground/ap/licensing)
 add_subdirectory (playground/bl)
