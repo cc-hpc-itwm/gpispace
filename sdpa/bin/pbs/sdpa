@@ -931,11 +931,6 @@ function submit ()
     fi
 }
 
-function configure()
-{
-    test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
-}
-
 function on_valid_host ()
 {
     local host="$(hostname -s)"
@@ -1061,11 +1056,6 @@ function require_state ()
 #    log "W: this might not be what you want"
 #    log "I: please run 'sdpa init' on the master node first!"
         :
-    fi
-
-    if ! configure ; then
-        log "E: configure() failed"
-        exit $?
     fi
 }
 
