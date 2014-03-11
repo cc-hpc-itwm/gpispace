@@ -53,34 +53,6 @@ debug_enabled=false
 
 ##############################################
 #                                            #
-#      Default configuration section         #
-#                                            #
-##############################################
-
-#
-# override defaults by:
-#
-#     1. /etc/sdpa/defaults
-#     2. /usr/etc/sdpa/defaults
-#     3. /usr/local/etc/sdpa/defaults
-#     4. $SDPA_HOME/etc/sdpa/defaults
-#     5. $HOME/.sdpa.defaults
-#
-
-for system_default in "/etc/sdpa/defaults"               \
-                      "/usr/etc/sdpa/defaults"           \
-                      "/usr/local/etc/sdpa/defaults"     \
-                      "${SDPA_HOME}/etc/sdpa/defaults"   \
-                      "${SDPA_SYSTEM_DEFAULTS}"          \
-                      ~/.sdpa.defaults                   ; do
-    if [ -r "$system_default" ] ; then
-        debug "reading system default from: '$system_default'" >&2
-        source "$system_default"
-    fi
-done
-
-##############################################
-#                                            #
 #  F U N C T I O N    D E F I N I T I O N S  #
 #                                            #
 ##############################################
