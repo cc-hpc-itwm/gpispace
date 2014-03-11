@@ -280,21 +280,11 @@ function get_user_input ()
 
 function setup_logging ()
 {
-    def_log_server_url="${DEFAULT_LOG_URL}"
-    if [ -z "${DEFAULT_LOG_URL}" ] ; then
-        def_log_server_url="$(guess_head_node):${DEFAULT_LOG_PORT:?}"
-    fi
-
-    local url=$(get "log.server.url" "${def_log_server_url}")
-    local prompt="remote logging to (host:port) [$url]:"
-    get_user_input "$prompt" url
-
     local lvl=$(get "log.server.level" "INFO")
     local prompt="log level [$lvl]:"
     get_user_input "log level to use [$lvl]:" lvl ""
     lvl=$( echo "$lvl" | tr 'a-z' 'A-Z' )
 
-    put "log.server.url" "$url"
     put "log.server.level" "$lvl"
 }
 
