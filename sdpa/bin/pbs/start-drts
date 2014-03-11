@@ -112,7 +112,12 @@ while getopts ":hvfg:m:i:b:S:k:Dc:C:L:s:n:M:N:" opt; do
             fi
             ;;
         L)
-            lib_path="$OPTARG"
+            if [ -z "${lib_path}" ]
+            then
+                lib_path="$OPTARG"
+            else
+                lib_path="${lib_path}:${OPTARG}"
+            fi
             ;;
         s)
             state_dir="$OPTARG"
