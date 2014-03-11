@@ -8,8 +8,6 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-#include <fhg/util/random_string.hpp>
-
 class Worker : public utils::BasicWorker
 {
   public:
@@ -44,25 +42,18 @@ class Worker : public utils::BasicWorker
     bool _notify_finished;
 };
 
-namespace {
-  std::string gen_name() { return fhg::util::random_string_without (". "); }
-}
-
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig)
 {
   const std::string workflow
     (utils::require_and_read_file ("coallocation.pnet"));
 
-  const utils::orchestrator orchestrator
-    (gen_name(), "127.0.0.1", kvs_host(), kvs_port());
-
-  const utils::agent agent
-    (gen_name(), "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
 
-  const Worker worker_0(gen_name(), agent, "A", true);
+  const Worker worker_0 (utils::random_peer_name(), agent, "A", true);
 
-  sdpa::worker_id_t worker_id_1(gen_name());
+  sdpa::worker_id_t worker_id_1 (utils::random_peer_name());
   Worker* pWorker_1(new Worker(worker_id_1, agent, "A"));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
