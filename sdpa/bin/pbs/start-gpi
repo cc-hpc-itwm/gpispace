@@ -105,6 +105,11 @@ while getopts ":hx:gm:p:P:fDk:K:l:L:vs:F:S:" opt; do
     esac
 done
 
+if [ -n "${log_host}" -a -n "${log_port}" ]
+then
+    export FHGLOG_to_server="${log_host}:${log_port}"
+fi
+
 test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
 
 if [ -z "$socket_path" ] ; then
