@@ -6,7 +6,6 @@
 ###     source anything
 ###
 ###
-debug=false
 bind_addr='0'
 name="orchestrator"
 kvs_url=
@@ -15,14 +14,8 @@ pidfile=
 state_dir="$HOME/.sdpa/state"
 logdir=
 
-while getopts ":hgn:l:d:k:DP:L:s:" opt; do
+while getopts ":hn:d:k:DP:L:s:" opt; do
     case $opt in
-        g)
-            debug=true
-            ;;
-        l)
-            bind_addr=$OPTARG
-            ;;
         n)
             name=$OPTARG
             ;;
@@ -44,10 +37,8 @@ while getopts ":hgn:l:d:k:DP:L:s:" opt; do
         h)
             echo "usage: $0 [-h] [-g] [-l interface] [-n name]" >&2
             echo "    -h : print this help" >&2
-            echo "    -l : address to listen on (default: $bind_addr)" >&2
             echo "    -n : name (default: $name)" >&2
             echo "    -k : kvs url" >&2
-            echo "    -g : run within gdb" >&2
             echo "    -D : daemonize" >&2
             echo "    -P pidfile: write pid to this file and lock it" >&2
             echo "    -s dir: sdpa state dir to use" >&2
@@ -82,16 +73,11 @@ fi
 log "Running $name on $(hostname)"
 
 argv="$SDPA_HOME/bin/orchestrator -u $bind_addr -n ${name} -k ${kvs_url}"
-if $daemonize && ! $debug ; then
+if $daemonize ; then
     argv="$argv --daemonize"
 fi
 if [ -n "$pidfile" ] ; then
     argv="$argv --pidfile $pidfile"
 fi
 
-if $debug ; then
-    log "running within gdb..."
-    FHGLOG_to_console="stderr" gdb -ex run --args $argv
-else
-    FHGLOG_to_file="${logprefix}.log" exec $argv >"${logprefix}.out" 2>"${logprefix}.err"
-fi
+FHGLOG_to_file="${logprefix}.log" exec $argv >"${logprefix}.out" 2>"${logprefix}.err"
