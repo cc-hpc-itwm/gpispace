@@ -124,14 +124,6 @@ function is_unattended ()
     return 1
 }
 
-#
-# check, if we have to start the setup routine
-#
-function setup_required ()
-{
-    test ! -e "${config_file}"
-}
-
 function y_n_p ()
 {
     local prompt="$1" ; shift
@@ -186,57 +178,6 @@ function get_user_input ()
         new_val=$(eval echo "$new_val")
         eval "$var=$new_val"
     fi
-}
-
-function setup ()
-{
-    cat <<EOF
-Initiating the setup routine of SDPA.
-
-$(sdpac --version)
-EOF
-
-    if is_unattended ; then
-        log "I: performing automatic setup"
-    fi
-
-    if ! test -e "$config_file" ; then
-        mkdir -p $(dirname "$config_file") 2>/dev/null
-        touch "$config_file"
-    fi
-
-    local real_config_file="$config_file"
-    local temp_config_file="${config_file}~"
-
-    local old_trap=$(trap -p EXIT)
-    trap -- "rm -f $temp_config_file" EXIT
-
-    local parts=$1
-    if [ -z "$parts" ] ; then
-        parts=""
-    else
-        shift
-    fi
-
-    if test -f "$real_config_file" ; then
-        cp "$real_config_file" "$temp_config_file"
-    fi
-    config_file="$temp_config_file"
-
-    local p
-    for p in $parts ; do
-        setup_$p $@ || { log "E: setup_$p failed!" ; return 1 ; }
-    done
-
-    cp "$real_config_file" "${real_config_file}.bak"
-    mv "$temp_config_file" "$real_config_file"
-
-    # putting config in place
-    config_file="$real_config_file"
-    eval $old_trap
-
-    echo
-    log "I: setup complete."
 }
 
 function generate_environment ()
@@ -327,7 +268,6 @@ function help ()
 usage: `basename $0` command [parameters...]
 
    available commands:
-        setup       - setup SDPA
         init        - initialize environment file
                       execute this in a a fresh allocation
      selftest       - perform a self-test
@@ -958,22 +898,6 @@ if [ "$1" = "-c" ] ; then
         exit 1
     fi
     export SDPA_CONFIG="config_file"
-fi
-
-if [ "$1" = "setup" ] ; then
-    shift
-    setup $@
-    exit $?
-fi
-
-if setup_required ; then
-    if setup ; then
-        log "I: setup complete"
-    else
-        rc=$?
-        log E: setup was unsuccessful: $rc
-        exit $rc
-    fi
 fi
 
 if [ "$1" = "init" ] ; then
