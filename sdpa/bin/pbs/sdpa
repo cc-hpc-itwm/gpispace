@@ -351,8 +351,6 @@ usage: `basename $0` command [parameters...]
         setup       - setup SDPA
         init        - initialize environment file
                       execute this in a a fresh allocation
-        load        - print instructions to load
-                      the environment file: eval \$(sdpa load)
      selftest       - perform a self-test
 
   start [component] - start all components or "component"
