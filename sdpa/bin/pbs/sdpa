@@ -3,9 +3,6 @@
 # usage: sdpa {start|stop|status|submit file}
 #
 
-# increment this value if anything config related changes!
-CONFIG_VERSION=11
-
 function log ()
 {
     echo "$@" >&2
