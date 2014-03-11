@@ -1144,7 +1144,8 @@ if [ "$1" = "init" ] ; then
 fi
 
 if [ "$1" = "gui" ] ; then
-    start_gui
+    shift
+    start_gui $@
     exit $?
 fi
 
@@ -1202,7 +1203,8 @@ case "$1" in
         help
         ;;
     gui)
-        start_gui
+        shift
+        start_gui $@
         ;;
     config)
         dump_config
