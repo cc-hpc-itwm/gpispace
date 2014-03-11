@@ -970,7 +970,7 @@ case "$1" in
         ;;
     boot)
         shift
-        "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" -F "$config_file" "$@"
+        "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" "$@"
         ;;
     selftest)
         shift
