@@ -26,11 +26,6 @@ namespace sdpa
           , cpbset_ (cpbset)
       {}
 
-      std::string str() const
-      {
-        return "WorkerRegistrationEvent";
-      }
-
       const boost::optional<unsigned int>& capacity() const
       {
         return capacity_;

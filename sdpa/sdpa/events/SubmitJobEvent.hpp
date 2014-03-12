@@ -27,11 +27,6 @@ namespace sdpa
           , worker_list_ (worker_list)
       {}
 
-      std::string str() const
-      {
-        return "SubmitJobEvent(" + job_id ().get_value_or ("NONE") + ")";
-      }
-
       const boost::optional<sdpa::job_id_t>& job_id() const
       {
         return _job_id;
