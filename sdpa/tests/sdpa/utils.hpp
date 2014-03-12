@@ -343,13 +343,6 @@ namespace utils
                                                                     , boost::none
                                                                     , _capabilities ));
         _network_strategy->perform (pEvtWorkerReg);
-
-        if(!_capabilities.empty())
-        {
-            sdpa::events::CapabilitiesGainedEvent::Ptr
-              ptrCpbGainEvt( new sdpa::events::CapabilitiesGainedEvent(name, _master_name, _capabilities) );
-            _network_strategy->perform (ptrCpbGainEvt);
-        }
       }
     }
 
