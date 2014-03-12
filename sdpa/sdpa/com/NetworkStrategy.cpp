@@ -119,7 +119,7 @@ namespace sdpa
             error(new sdpa::events::ErrorEvent ( m_peer->resolve(addr, "*unknown*")
                                                , m_peer->name()
                                                , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                               , boost::lexical_cast<std::string>(ec)
+                                               , ec.message()
                                                )
                  );
           _event_handler (error);
