@@ -19,6 +19,7 @@ namespace sdpa
       , PENDING
       , RUNNING
       , CANCELING
+      , UNKNOWN
       };
 
     inline bool is_terminal (code c)
@@ -43,7 +44,7 @@ namespace sdpa
       case CANCELING:
         return "SDPA::Canceling";
       default:
-        return "Strange state";
+        return "SDPA::Unknown";
       }
     }
   };
