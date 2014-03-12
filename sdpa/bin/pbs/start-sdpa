@@ -168,7 +168,7 @@ verbose=false
 state_dir="$HOME/.sdpa/state"
 gpi_enabled=true
 delete_logfiles=true
-app_path="${SDPA_APP_PATH}"
+app_path=
 number_of_groups=1
 
 # guess memory sizes
