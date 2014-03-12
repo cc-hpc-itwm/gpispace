@@ -353,6 +353,7 @@ else
     export FHGLOG_level=INFO
 fi
 
+export LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa:$LD_LIBRARY_PATH"
 export FHGLOG_to_file="${logprefix}.log"
 echo >&2 "Running $cmd on node $hostname" >/dev/null 2>&1
 if [ x"$daemonize" = x"true" ] ; then
