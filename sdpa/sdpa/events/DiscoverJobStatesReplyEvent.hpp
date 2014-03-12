@@ -14,13 +14,13 @@ namespace sdpa
       typedef boost::shared_ptr<DiscoverJobStatesReplyEvent> Ptr;
 
       DiscoverJobStatesReplyEvent ( const address_t& a_from
-                                    , const address_t& a_to
-                                    , const sdpa::job_id_t& discover_id
-                                    , const sdpa::discovery_info_t& discover_result
-                                    )
+                                  , const address_t& a_to
+                                  , const sdpa::job_id_t& discover_id
+                                  , const sdpa::discovery_info_t& discover_result
+                                  )
         : MgmtEvent (a_from, a_to)
-        , discover_id_(discover_id)
-        , discover_result_(discover_result)
+        , discover_id_ (discover_id)
+        , discover_result_ (discover_result)
       {}
 
       std::string str() const
