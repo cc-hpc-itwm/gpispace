@@ -397,6 +397,12 @@ else
 fi
 
 dry_run rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
+ec=$?
+if [ $ec -ne 0 ]
+then
+    "${sdpa}" stop
+    error 3 "could not start kvs"
+fi
 dry_run rexec $master "${script_start_orchestrator}" \
     $opt_verbose_flag \
     -s "$state_dir" \
@@ -406,6 +412,12 @@ dry_run rexec $master "${script_start_orchestrator}" \
     -l "${log_host}:${log_port}" \
     -H "${sdpa_home}" \
     -n "orchestrator"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    "${sdpa}" stop
+    error 3 "could not start orchestrator"
+fi
 
 if $gpi_enabled ; then
     # compute memory sizes
@@ -427,6 +439,13 @@ if $gpi_enabled ; then
         -k "${master}" -K "$kvs_port" \
         -l "${log_host}" -L "${log_port}" \
         -S "${gpi_socket}"
+
+    ec=$?
+    if [ $ec -ne 0 ]
+    then
+        "${sdpa}" stop
+        error 3 "could not start gpi-space"
+    fi
 fi
 
 # for each capability:
@@ -440,10 +459,13 @@ max_background_tasks=8
 function wait_on_pids ()
 {
     local pid=
+    local ec=0
     for pid in ${pids[@]} ; do
         wait $pid
+        ec+=$?
     done
     pids=()
+    return $ec
 }
 
 function wait_if_necessary ()
@@ -521,6 +543,12 @@ function start_agents
 
         start_agent "${host}" "${name}" "agent-${master}-0"
         wait_if_necessary
+        ec=$?
+        if [ $ec -ne 0 ]
+        then
+            ${sdpa} stop
+            error 3 "at least one agent could not be started!"
+        fi
     done
 }
 
@@ -583,6 +611,12 @@ function start_workers_for_capability
         pids+=( $! )
 
         wait_if_necessary
+        ec=$?
+        if [ $ec -ne 0 ]
+        then
+            ${sdpa} stop
+            error 3 "at least one worker could not be started!"
+        fi
 
         num_nodes=$(( num_nodes + 1 ))
 
@@ -612,6 +646,18 @@ function start_workers
 assign_segments
 start_agents
 wait_on_pids
+ec=$?
+if [ $ec -ne 0 ]
+then
+    ${sdpa} stop
+    error 3 "at least one agent could not be started!"
+fi
 
 start_workers
 wait_on_pids
+ec=$?
+if [ $ec -ne 0 ]
+then
+    ${sdpa} stop
+    error 3 "at least one worker could not be started!"
+fi
