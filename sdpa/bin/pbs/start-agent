@@ -21,6 +21,7 @@ pidfile=
 force=false
 logfile=
 verbose=false
+sdpa_home=
 
 function usage ()
 {
@@ -39,10 +40,11 @@ usage: $(basename "$0") [options]
     -P pidfile
     -L logdir
     -s state-dir
+    -H sdpa-home
 EOF
 }
 
-while getopts ":hvDfdm:g:l:n:k:L:P:s:" opt; do
+while getopts ":hvDfdm:g:l:n:k:L:P:s:H:" opt; do
     case $opt in
         h)
             usage
@@ -84,6 +86,9 @@ while getopts ":hvDfdm:g:l:n:k:L:P:s:" opt; do
         s)
             state_dir=$OPTARG
             ;;
+        H)
+            sdpa_home="$OPTARG"
+            ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
             exit 1
@@ -93,6 +98,12 @@ done
 if [ -n "${log_url}" ]
 then
     export FHGLOG_to_server="${log_url}"
+fi
+
+if [ -z "${sdpa_home}" ]
+then
+    echo >&2 "sdpa-home is empty, please specify -H"
+    exit 4
 fi
 
 # load state
@@ -174,7 +185,7 @@ if [ -n "$gui" ]; then
     opts="$opts -a $gui"
 fi
 
-cmd="${SDPA_HOME}/bin/agent $opts"
+cmd="${sdpa_home}/bin/agent $opts"
 
 if $verbose
 then

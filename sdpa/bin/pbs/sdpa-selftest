@@ -1,10 +1,34 @@
 #!/bin/bash
 
-if [ -z "$SDPA_HOME" ] ; then
-    echo >&2 "SDPA_HOME is not set"
+sdpa_home=
+verbose=false
+
+while getopts ":hvH:" opt; do
+    case $opt in
+        h)
+            usage
+            exit 0
+            ;;
+        v)
+            verbose=true
+            ;;
+        H)
+            sdpa_home="$OPTARG"
+            ;;
+        \?)
+            echo "invalid option: -$OPTARG" >&2
+            echo "try: $0 -h" >&2
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z "$sdpa_home" ] ; then
+    echo >&2 "sdpa home is empty, please specify -H"
+    exit 4
 fi
 
-. "${SDPA_HOME}/etc/sdpa/sdpa.env"
+. "${sdpa_home}/etc/sdpa/sdpa.env"
 
 function log_info ()
 {
@@ -39,7 +63,7 @@ function require_readable ()
 
 log_info "performing self-test"
 
-xml="$SDPA_HOME/libexec/sdpa/apps/selftest/selftest.xml"
+xml="$sdpa_home/libexec/sdpa/apps/selftest/selftest.xml"
 require_readable "$xml"
 
 require_executable pnetc
@@ -93,7 +117,7 @@ log_info "(re-)starting SDPA..."
 err=$(sdpa stop 2>&1)
 
 runtime_started=true
-err=$(sdpa boot -M -f "${tmpnodes}" -A "${SDPA_HOME}/libexec/sdpa/apps/selftest/modules" work:1 2>&1)
+err=$(sdpa boot -M -f "${tmpnodes}" -A "${sdpa_home}/libexec/sdpa/apps/selftest/modules" work:1 2>&1)
 ec=$?
 if [ $ec -ne 0 ] ; then
     sdpa stop >/dev/null 2>&1

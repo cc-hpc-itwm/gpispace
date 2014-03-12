@@ -864,11 +864,11 @@ case "$1" in
         ;;
     boot)
         shift
-        "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" "$@"
+        "${SDPA_SCRIPT_DIR}/start-sdpa" -S "$state_dir" -H "${SDPA_HOME}" "$@"
         ;;
     selftest)
         shift
-        "${SDPA_SCRIPT_DIR}/sdpa-selftest" "${@}"
+        "${SDPA_SCRIPT_DIR}/sdpa-selftest" -H "${SDPA_HOME}" "${@}"
         ;;
     '')
         help

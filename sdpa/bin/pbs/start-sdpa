@@ -51,7 +51,7 @@ EOF
 on_ctrlC()
 {
         echo >&2 "Canceled..."
-        sdpa stop
+        "${sdpa_home}/bin/sdpa" stop
         exit 0
 }
 
@@ -187,7 +187,7 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:" opt; do
+while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
     case $opt in
         h)
             usage
@@ -262,6 +262,10 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:" opt; do
             gui_url="$OPTARG"
             shiftcount=$((shiftcount + 2))
             ;;
+        H)
+            sdpa_home="$OPTARG"
+            shiftcount=$((shiftcount + 2))
+            ;;
         \?)
             echo >&2 "invalid option: $OPTARG"
             exit 1
@@ -280,8 +284,8 @@ if [ -z "$nodefile" ] ; then
     error 1 "nodefile is missing"
 fi
 
-if [ -z "$SDPA_HOME" ] ; then
-    error 2 "SDPA_HOME is not set!"
+if [ -z "$sdpa_home" ] ; then
+    error 2 "sdpa home is not set, please specify -H"
 fi
 
 if [ $number_of_groups -le 0 ] ; then
@@ -300,27 +304,27 @@ if [ -z "${state_dir}" ] ; then
     error 1 "state directory not set"
 fi
 
-sdpa=$(which sdpa)
+sdpa="${sdpa_home}/bin/sdpa"
 if [ $? -ne 0 ] ; then
     error 2 "could not locate 'sdpa' executable!"
 fi
 
-script_start_drts="${SDPA_HOME}/libexec/sdpa/scripts/start-drts"
+script_start_drts="${sdpa_home}/libexec/sdpa/scripts/start-drts"
 if [ ! -x "${script_start_drts}" ] ; then
     error 2 "utility script '${script_start_drts}' is not executable"
 fi
 
-script_start_agent="${SDPA_HOME}/libexec/sdpa/scripts/start-agent"
+script_start_agent="${sdpa_home}/libexec/sdpa/scripts/start-agent"
 if [ ! -x "${script_start_agent}" ] ; then
     error 2 "utility script '${script_start_agent}' is not executable"
 fi
 
-script_start_orchestrator="${SDPA_HOME}/libexec/sdpa/scripts/start-orch"
+script_start_orchestrator="${sdpa_home}/libexec/sdpa/scripts/start-orch"
 if [ ! -x "${script_start_orchestrator}" ] ; then
     error 2 "utility script '${script_start_orchestrator}' is not executable"
 fi
 
-script_start_gpi="${SDPA_HOME}/libexec/sdpa/scripts/start-gpi"
+script_start_gpi="${sdpa_home}/libexec/sdpa/scripts/start-gpi"
 if [ ! -x "${script_start_gpi}" ] ; then
     error 2 "utility script '${script_start_gpi}' is not executable"
 fi
@@ -400,6 +404,7 @@ dry_run rexec $master "${script_start_orchestrator}" \
     -D \
     -k "${master}:${kvs_port}" \
     -l "${log_host}:${log_port}" \
+    -H "${sdpa_home}" \
     -n "orchestrator"
 
 if $gpi_enabled ; then
@@ -494,6 +499,7 @@ function start_agent
         -s "${state_dir}" \
         -k "${master}:${kvs_port}" \
         -l "${log_host}:${log_port}" \
+        -H "${sdpa_home}" \
         -g "${gui_host}:${gui_port}" &
     pids+=( $! )
 }
@@ -570,6 +576,7 @@ function start_workers_for_capability
         then
             argv+=(-L "${app_path}")
         fi
+        argv+=(-H "${sdpa_home}")
 
         dry_run rexec $host "$script_start_drts" "${argv[@]}" &
 

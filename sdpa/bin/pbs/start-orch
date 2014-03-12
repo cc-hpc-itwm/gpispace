@@ -15,8 +15,9 @@ pidfile=
 state_dir="$HOME/.sdpa/state"
 logdir=
 verbose=false
+sdpa_home=
 
-while getopts ":hvn:d:l:k:DP:L:s:" opt; do
+while getopts ":hvn:d:l:k:DP:L:s:H:" opt; do
     case $opt in
         n)
             name=$OPTARG
@@ -42,6 +43,9 @@ while getopts ":hvn:d:l:k:DP:L:s:" opt; do
         v)
             verbose=true
             ;;
+        H)
+            sdpa_home="$OPTARG"
+            ;;
         h)
             echo "usage: $0 [-h] [-v] [-g] [-l interface] [-n name]" >&2
             echo "    -h : print this help" >&2
@@ -52,6 +56,7 @@ while getopts ":hvn:d:l:k:DP:L:s:" opt; do
             echo "    -D : daemonize" >&2
             echo "    -P pidfile: write pid to this file and lock it" >&2
             echo "    -s dir: sdpa state dir to use" >&2
+            echo "    -H sdpa-hom: path to the sdpa installation"
             exit 0
             ;;
         \?)
@@ -63,6 +68,12 @@ done
 if [ -n "${log_url}" ]
 then
     export FHGLOG_to_server="${log_url}"
+fi
+
+if [ -z "${sdpa_home}" ]
+then
+    echo >&2 "sdpa-home is empty, please specify -H"
+    exit 4
 fi
 
 if [ -r "${state_dir}/sdpa.env" ] ; then
@@ -94,7 +105,7 @@ fi
 
 log "Running $name on $(hostname)"
 
-argv="$SDPA_HOME/bin/orchestrator -u $bind_addr -n ${name} -k ${kvs_url}"
+argv="$sdpa_home/bin/orchestrator -u $bind_addr -n ${name} -k ${kvs_url}"
 if $daemonize ; then
     argv="$argv --daemonize"
 fi
