@@ -98,25 +98,6 @@ function rexec ()
     fi
 }
 
-function generate_environment ()
-{
-    if ! on_master_node ; then
-        log "E: cannot generate environment on slave node!"
-        return 1
-    fi
-
-    echo export SDPA_HOME="$SDPA_HOME"
-
-    prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/lib"
-    prepend_to_path LD_LIBRARY_PATH "$SDPA_HOME/libexec/sdpa"
-
-    echo export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:\$LD_LIBRARY_PATH"
-    echo export PATH="$PATH:\$PATH"
-
-    debug "I: PATH := ${PATH}"
-    debug "I: LD_LIBRARY_PATH := ${LD_LIBRARY_PATH}"
-}
-
 function initialize ()
 {
     local node_file=
@@ -159,25 +140,6 @@ function initialize ()
         log "E: could not copy nodefile from '$hostfile' to '$node_file'"
         return 1
     fi
-
-    local tmp_file="$state_dir/sdpa.env~"
-    :> "$tmp_file"
-    echo test -e "$state_dir/sdpa.pre.env" \&\& source "$state_dir/sdpa.pre.env" >> "$tmp_file"
-    if ! generate_environment >> "$tmp_file" ; then
-        log "E: could not generate environment"
-        return 1
-    fi
-    cat >>"$tmp_file" <<EOF
-function log()
-{
-  echo "\$@" >&2
-  test -x "\$SDPA_HOME/bin/fhglogc" && "\$SDPA_HOME/bin/fhglogc" -t "\$0" -m "\$*"
-}
-EOF
-    echo test -e "$state_dir/sdpa.post.env" \&\& source "$state_dir/sdpa.post.env" >> "$tmp_file"
-    echo ":" >> "$tmp_file"
-
-    mv "$tmp_file" "$state_dir/sdpa.env"
 }
 
 function help ()
