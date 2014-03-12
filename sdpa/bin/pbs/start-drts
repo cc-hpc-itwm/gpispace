@@ -281,7 +281,7 @@ fi
 if [ x"$gpi_enabled" = x"true" ] ; then
     cfg="$cfg --gpi_enabled"
 
-    fake_gpi_capability="GPI-PGAS"
+    fake_gpi_capability="GPI"
 
     if [ -z "$capabilities" ] ; then
       capabilities="${fake_gpi_capability}"
