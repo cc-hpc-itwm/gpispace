@@ -12,23 +12,23 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public utils::BasicWorker
+class Worker : public utils::BasicAgent
 {
   public:
     Worker (const std::string& name
             , const utils::agent& master_agent
             , const std::string cpb_name)
-      :  utils::BasicWorker (name, master_agent, cpb_name)
+      :  utils::BasicAgent (name, master_agent, cpb_name)
     {}
 
     void getCapabilities(sdpa::capabilities_set_t& cpbset) { cpbset = _capabilities; }
 };
 
-class Master : public utils::BasicWorker
+class Master : public utils::BasicAgent
 {
   public:
     Master (const std::string& name)
-      :  utils::BasicWorker (name, boost::none)
+      :  utils::BasicAgent (name, boost::none)
     {}
 
     void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pRegEvt)

@@ -8,11 +8,11 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public utils::BasicWorker
+class Worker : public utils::BasicAgent
 {
   public:
     Worker (const std::string& name, const utils::agent& master_agent, const std::string cpb_name = "", bool notify_finished = false)
-      :  utils::BasicWorker (name, master_agent, cpb_name)
+      :  utils::BasicAgent (name, master_agent, cpb_name)
       , _notify_finished(notify_finished)
     {}
 

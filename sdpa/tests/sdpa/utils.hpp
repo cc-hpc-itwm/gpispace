@@ -305,11 +305,11 @@ namespace utils
     boost::thread _thread;
   };
 
-  class BasicWorker : public sdpa::events::EventHandler,
+  class BasicAgent : public sdpa::events::EventHandler,
                       boost::noncopyable
   {
   public:
-    BasicWorker( std::string name
+    BasicAgent( std::string name
                  , boost::optional<const utils::agent&> master_agent
                  , std::string cpb_name = ""
                  )
@@ -320,7 +320,7 @@ namespace utils
          (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
        )
      , _network_strategy
-       ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicWorker::sendEventToSelf, this, _1)
+       ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicAgent::sendEventToSelf, this, _1)
                                         , name
                                         , fhg::com::host_t ("127.0.0.1")
                                         , fhg::com::port_t ("0")
@@ -353,7 +353,7 @@ namespace utils
       }
     }
 
-    virtual ~BasicWorker() { _event_handling_allowed = false; }
+    virtual ~BasicAgent() { _event_handling_allowed = false; }
 
     virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
     {
