@@ -74,7 +74,7 @@ namespace sdpa
           (new sdpa::events::ErrorEvent( sdpa_event->to()
                                        , sdpa_event->from()
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                       , sdpa_event->str())
+                                       , ex.what())
           );
         _event_handler (ptrErrEvt);
       }
@@ -91,7 +91,7 @@ namespace sdpa
           (new sdpa::events::ErrorEvent( sdpa_event->to()
                                        , sdpa_event->from()
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                       , sdpa_event->str())
+                                       , ec.message())
           );
         _event_handler (ptrErrEvt);
       }
