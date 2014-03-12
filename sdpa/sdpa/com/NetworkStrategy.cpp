@@ -86,7 +86,6 @@ namespace sdpa
     {
       if (ec)
       {
-        //sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
         sdpa::events::ErrorEvent::Ptr ptrErrEvt
           (new sdpa::events::ErrorEvent( sdpa_event->to()
                                        , sdpa_event->from()
