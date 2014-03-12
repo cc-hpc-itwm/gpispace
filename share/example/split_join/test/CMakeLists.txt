@@ -19,7 +19,7 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
   )
 endforeach()
 
-set (PUT_PORT "\"I=10000L\\ I=20000L\"")
+set (PUT_PORT "\"I=10000L I=20000L\"")
 set (EXPECTED_OUTPUT "333383335000L\\n2666866670000L")
 set (REENTRANT_VERSION reentrant.sequential)
 
