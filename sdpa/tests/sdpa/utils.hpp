@@ -310,11 +310,11 @@ namespace utils
   {
   public:
     BasicWorker( std::string name
-                 , const utils::agent& master_agent
+                 , boost::optional<const utils::agent&> master_agent
                  , std::string cpb_name = ""
                  )
      : _name (name)
-     , _master_name(master_agent.name())
+     , _master_name(master_agent?master_agent.get().name():"")
      , _kvs_client
        ( new fhg::com::kvs::client::kvsc
          (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
