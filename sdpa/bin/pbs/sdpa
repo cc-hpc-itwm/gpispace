@@ -728,7 +728,7 @@ function status_kvs ()
 
 function status_gpi ()
 {
-    program_status "gpi-space"
+    is_proc_alive "gpi-space" $(cat "$state_dir/gpi-space.pid" 2>/dev/null)
 }
 
 function status ()
