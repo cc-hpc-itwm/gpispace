@@ -327,6 +327,7 @@ namespace utils
                                         , _kvs_client
                                         )
        )
+    , _event_handling_allowed(true)
     {
       if(!cpb_name.empty())
       {
@@ -334,24 +335,30 @@ namespace utils
           _capabilities.insert(cpb);
       }
 
-      sdpa::events::WorkerRegistrationEvent::Ptr
-        pEvtWorkerReg (new sdpa::events::WorkerRegistrationEvent( _name
-                                                                  , _master_name
-                                                                  , boost::none
-                                                                  , _capabilities ));
-      _network_strategy->perform (pEvtWorkerReg);
-
-      if(!_capabilities.empty())
+      if(master_agent)
       {
-          sdpa::events::CapabilitiesGainedEvent::Ptr
-            ptrCpbGainEvt( new sdpa::events::CapabilitiesGainedEvent(name, _master_name, _capabilities) );
-          _network_strategy->perform (ptrCpbGainEvt);
+        sdpa::events::WorkerRegistrationEvent::Ptr
+          pEvtWorkerReg (new sdpa::events::WorkerRegistrationEvent( _name
+                                                                    , _master_name
+                                                                    , boost::none
+                                                                    , _capabilities ));
+        _network_strategy->perform (pEvtWorkerReg);
+
+        if(!_capabilities.empty())
+        {
+            sdpa::events::CapabilitiesGainedEvent::Ptr
+              ptrCpbGainEvt( new sdpa::events::CapabilitiesGainedEvent(name, _master_name, _capabilities) );
+            _network_strategy->perform (ptrCpbGainEvt);
+        }
       }
     }
 
+    virtual ~BasicWorker() { _event_handling_allowed = false; }
+
     virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
     {
-      pEvt->handleBy (this);
+      if(_event_handling_allowed)
+        pEvt->handleBy (this);
     }
 
     void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*){}
@@ -361,6 +368,7 @@ namespace utils
     sdpa::capabilities_set_t _capabilities;
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
     boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
+    bool _event_handling_allowed;
   };
 
   class basic_drts_worker : sdpa::events::EventHandler
