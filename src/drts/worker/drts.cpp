@@ -350,11 +350,8 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   // parse virtual capabilities
   BOOST_FOREACH (std::string const & cap, capability_list)
   {
-    if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
-    {
-      m_virtual_capabilities.insert
-        (std::make_pair (cap, sdpa::Capability (cap, m_my_name)));
-    }
+    m_virtual_capabilities.insert
+      (std::make_pair (cap, sdpa::Capability (cap, m_my_name)));
   }
 
   m_event_thread.reset
