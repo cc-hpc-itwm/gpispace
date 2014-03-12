@@ -105,8 +105,6 @@ then
     export FHGLOG_to_server="${log_host}:${log_port}"
 fi
 
-test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
-
 if [ -z "$socket_path" ] ; then
     echo >&2 "E: socket path is missing, please specify it with -S"
     exit 1

@@ -76,13 +76,6 @@ then
     exit 4
 fi
 
-if [ -r "${state_dir}/sdpa.env" ] ; then
-    source "${state_dir}/sdpa.env"
-else
-    echo >&2 "needs to be executed under SDPA"
-    exit 4
-fi
-
 if [ -z "$logdir" ]
 then
     logdir="${state_dir}/log"

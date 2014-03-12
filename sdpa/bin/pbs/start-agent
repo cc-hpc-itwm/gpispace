@@ -106,11 +106,6 @@ then
     exit 4
 fi
 
-# load state
-if test -e "${state_dir}/sdpa.env" ; then
-    source "${state_dir}/sdpa.env"
-fi
-
 if [ -z "$gui" ]
 then
     echo >&2 "gui url is required, please specify -g"
