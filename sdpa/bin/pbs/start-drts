@@ -268,7 +268,7 @@ then
 fi
 logprefix="${logdir}/${name}"
 
-bin="$(which drts-kernel)"
+bin="${sdpa_home}/bin/drts-kernel"
 if [ ! -x "$bin" ] ; then
   log "# could not find drts-kernel in the path!"
   exit 1
