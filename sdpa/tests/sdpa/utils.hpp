@@ -49,7 +49,7 @@ namespace utils
     static std::size_t i (0);
     return boost::lexical_cast<std::string> (i++);
 #else
-    return fhg::util::random_string_without (". ");
+    return fhg::util::random_string();
 #endif
   }
 
