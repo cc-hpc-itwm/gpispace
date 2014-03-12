@@ -98,87 +98,6 @@ function rexec ()
     fi
 }
 
-function isatty()
-{
-    local f="$1" ; shift
-    f=$(readlink -f "$f")
-    if [ -e "$f" ] ; then
-        tty -s < "$f" >/dev/null 2>&1
-        return $?
-    else
-        return 1
-    fi
-}
-
-function is_unattended ()
-{
-    if [ -n "$SDPA_PERFORM_UNATTENDED_SETUP" ] ; then
-        return 0
-    fi
-
-    if ! isatty /dev/stdin ; then
-        return 0
-    fi
-
-    return 1
-}
-
-function y_n_p ()
-{
-    local prompt="$1" ; shift
-
-    if is_unattended ; then
-        return 2
-    fi
-
-    read -n 1 -p "$prompt" yes_or_no
-    case "$yes_or_no" in
-        y|Y)
-            echo
-            return 0
-            ;;
-        n|N)
-            echo
-            return 1
-            ;;
-        ?)
-            echo
-            return 2
-            ;;
-        *)
-            return 2
-            ;;
-    esac
-}
-
-function append_to_path ()
-{
-    local var="$1"; shift
-    local val=$(eval echo \$${var})
-    for v ; do
-        if ! echo "$val" | grep -q -- "$v" ; then
-            val="$val:$v"
-        fi
-    done
-    eval "$var=$val"
-}
-
-function get_user_input ()
-{
-    local prompt="$1"; shift
-    local var="$1"; shift
-
-    if is_unattended ; then
-        return
-    fi
-
-    read -e -p "  $prompt " new_val
-    if [ -n "$new_val" ] ; then
-        new_val=$(eval echo "$new_val")
-        eval "$var=$new_val"
-    fi
-}
-
 function generate_environment ()
 {
     if ! on_master_node ; then
@@ -695,20 +614,6 @@ function stop ()
         fi
     done
     return $rc
-}
-
-function program_status ()
-{
-    local p=$1 ; shift
-    local rc=0
-    local pid
-    pid=$("${SDPA_SCRIPT_DIR}/pidof" "$p")
-
-    if is_proc_alive "$p" "$pid" ; then
-        return 0
-    else
-        return 1
-    fi
 }
 
 function status_orch ()
