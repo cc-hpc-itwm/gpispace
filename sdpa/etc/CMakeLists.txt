@@ -1,3 +1,3 @@
-INSTALL(FILES defaults.template sdpa.env
+INSTALL(FILES sdpa.env
   DESTINATION etc/sdpa
 )
