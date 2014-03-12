@@ -157,15 +157,15 @@ GenericDaemon::~GenericDaemon()
     }
   }
 
+  _registration_threads.stop_all();
+
+  delete ptr_workflow_engine_;
+
   _event_handler_thread.interrupt();
   if (_event_handler_thread.joinable())
   {
     _event_handler_thread.join();
   }
-
-  delete ptr_workflow_engine_;
-
-  _registration_threads.stop_all();
 
   _scheduling_thread.interrupt();
   if (_scheduling_thread.joinable())
