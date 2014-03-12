@@ -194,10 +194,10 @@ else
     export FHGLOG_level=INFO
 fi
 
-log "Running $name on $(hostname -s) with master $master"
+echo >&2 "Running $name on $(hostname -s) with master $master"
 
 if "$debug" ; then
-    log "running within gdb..."
+    echo >&2 "running within gdb..."
     gdb -ex run --args ${cmd}
 else
     FHGLOG_to_file="${logprefix}.log" exec ${cmd} >"${logprefix}.out" 2>"${logprefix}.err"

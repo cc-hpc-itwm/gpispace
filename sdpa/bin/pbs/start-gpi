@@ -108,7 +108,7 @@ fi
 test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
 
 if [ -z "$socket_path" ] ; then
-    log "E: socket path is missing, please specify it with -S"
+    echo >&2 "E: socket path is missing, please specify it with -S"
     exit 1
 fi
 
@@ -155,9 +155,9 @@ if [ -x "$gpi_exe" ] ; then
         cmdline="$cmdline --gpi-port $gpi_port"
     fi
 
-    log "executing $cmdline"
+    echo >&2 "executing $cmdline"
     exec ${cmdline}
 else
-    log "Sorry, ${gpi_exe} is not executable"
+    echo >&2 "Sorry, ${gpi_exe} is not executable"
     exit 1
 fi

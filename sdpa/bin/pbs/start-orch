@@ -103,7 +103,7 @@ else
     export FHGLOG_level=INFO
 fi
 
-log "Running $name on $(hostname)"
+echo >&2 "Running $name on $(hostname)"
 
 argv="$sdpa_home/bin/orchestrator -u $bind_addr -n ${name} -k ${kvs_url}"
 if $daemonize ; then

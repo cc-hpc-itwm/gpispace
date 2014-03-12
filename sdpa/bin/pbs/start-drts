@@ -181,7 +181,7 @@ then
 fi
 
 if [ -z "$master" ] ; then
-    log "E: no master specified!"
+    echo >&2 "E: no master specified!"
     exit 1
 fi
 
@@ -270,7 +270,7 @@ logprefix="${logdir}/${name}"
 
 bin="${sdpa_home}/bin/drts-kernel"
 if [ ! -x "$bin" ] ; then
-  log "# could not find drts-kernel in the path!"
+  echo >&2 "# could not find drts-kernel in '${sdpa_home}/bin'!"
   exit 1
 fi
 
@@ -281,12 +281,12 @@ for p in $still_running ; do
 
     if [ "$name_opt" = "${name}" ] ; then
         if [ "$force" = "true" ] ; then
-            log "W: $name is still running, terminating it"
+            echo >&2 "W: $name is still running, terminating it"
             kill -TERM "$p"
             sleep 3
             kill -KILL "$p" &>/dev/null
         else
-            log "E: $name still running, not starting again"
+            echo >&2 "E: $name still running, not starting again"
             exit 2
         fi
     fi
@@ -317,7 +317,7 @@ if [ x"$gpi_enabled" = x"true" ] ; then
 
     # config values (gpi plugin)
     if [ -z "$gpi_socket" ] ; then
-        log "E: GPI socket is not set"
+        echo >&2 "E: GPI socket is not set"
         exit 1
     fi
 
@@ -354,7 +354,7 @@ else
 fi
 
 export FHGLOG_to_file="${logprefix}.log"
-log "Running $cmd on node $hostname" >/dev/null 2>&1
+echo >&2 "Running $cmd on node $hostname" >/dev/null 2>&1
 if [ x"$daemonize" = x"true" ] ; then
     $cmd --daemonize >"${logprefix}.out" 2>"${logprefix}.err"
 else
