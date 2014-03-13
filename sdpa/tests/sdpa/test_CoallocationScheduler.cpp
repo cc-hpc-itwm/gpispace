@@ -8,40 +8,18 @@
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::Capability)
 
-class TestAgent : public sdpa::daemon::Agent
+struct serveJob_checking_scheduler_and_job_manager
 {
-public:
-  typedef boost::shared_ptr<TestAgent > ptr_t;
-  TestAgent( const std::string& name
-             , const std::string& url
-           , std::string kvs_host, std::string kvs_port
-             , const sdpa::master_info_list_t& arrMasterNames
-             , const boost::optional<std::string>& appGuiUrl = boost::none)
-    : sdpa::daemon::Agent(name, url, kvs_host, kvs_port, arrMasterNames, appGuiUrl)
-  {
-  }
-
-
-  void sendEventToOther(const sdpa::events::SDPAEvent::Ptr&)
-  {
-    throw std::runtime_error ("trying to send message in test case which should not send messages");
-  }
-};
-
-struct allocate_test_agent_and_scheduler
-{
-  allocate_test_agent_and_scheduler()
-    : _agent ("agent", "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t())
-    , _scheduler
-      ( boost::bind (&allocate_test_agent_and_scheduler::serveJob, this, _1, _2)
-      , boost::bind (&allocate_test_agent_and_scheduler::requirements, this, _1)
+  serveJob_checking_scheduler_and_job_manager()
+    : _scheduler
+      ( boost::bind (&serveJob_checking_scheduler_and_job_manager::serveJob, this, _1, _2)
+      , boost::bind (&serveJob_checking_scheduler_and_job_manager::requirements, this, _1)
       )
   {}
 
-  TestAgent _agent;
   sdpa::daemon::CoallocationScheduler _scheduler;
 
-  ~allocate_test_agent_and_scheduler()
+  ~serveJob_checking_scheduler_and_job_manager()
   {
     BOOST_REQUIRE (_expected_serveJob_calls.empty());
   }
@@ -141,7 +119,7 @@ namespace
   }
 }
 
-BOOST_FIXTURE_TEST_SUITE( test_Scheduler, allocate_test_agent_and_scheduler)
+BOOST_FIXTURE_TEST_SUITE( test_Scheduler, serveJob_checking_scheduler_and_job_manager)
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
@@ -482,7 +460,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_FIXTURE_TEST_CASE
-  (not_schedulable_job_does_not_block_others, allocate_test_agent_and_scheduler)
+  (not_schedulable_job_does_not_block_others, serveJob_checking_scheduler_and_job_manager)
 {
   _scheduler.worker_manager().addWorker ("worker", 1);
 
