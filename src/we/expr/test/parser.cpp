@@ -521,3 +521,48 @@ BOOST_AUTO_TEST_CASE (token_cmp)
   CHECK (y(4), y(4), true);
 #undef CHECK
 }
+
+BOOST_AUTO_TEST_CASE (token_add)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression).eval_front (context)          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("'a' + 'a'", std::string ("aa"));
+  CHECK ("\"\" + \"\"", std::string (""));
+  CHECK ("\"a\" + \"\"", std::string ("a"));
+  CHECK ("\"a\" + \"a\"", std::string ("aa"));
+  CHECK ("\"ab\" + \"a\"", std::string ("aba"));
+
+#define CHECK_INTEGRAL(_type, _suffix)                                 \
+  {                                                                    \
+    _type const l (rand());                                            \
+    _type const r (rand());                                            \
+                                                                       \
+    BOOST_REQUIRE_EQUAL                                                \
+      ( expr::parse::parser                                            \
+        ((boost::format ("%1%%3% + %2%%3%") % l % r % _suffix).str())  \
+      . eval_front (context)                                           \
+      , pnet::type::value::value_type (l + r)                          \
+      );                                                               \
+  }
+
+  CHECK_INTEGRAL (int, "");
+  CHECK_INTEGRAL (unsigned int, "U");
+  CHECK_INTEGRAL (long, "L");
+  CHECK_INTEGRAL (unsigned long, "UL");
+#undef CHECK_INTEGRAL
+
+  CHECK ("0.0 + 0.0", 0.0);
+  CHECK ("0.0 + 1.0", 1.0);
+  CHECK ("1.0 + 1.0", 2.0);
+  CHECK ("0.0f + 0.0f", 0.0f);
+  CHECK ("0.0f + 1.0f", 1.0f);
+  CHECK ("1.0f + 1.0f", 2.0f);
+
+#undef CHECK
+}
