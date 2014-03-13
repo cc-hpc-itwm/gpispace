@@ -1,12 +1,7 @@
 #define BOOST_TEST_MODULE TestScheduler
 #include <boost/test/unit_test.hpp>
-#include <sdpa/daemon/agent/Agent.hpp>
-#include "kvs_setup_fixture.hpp"
 
-#include <fhg/util/boost/test/printer/list.hpp>
-#include <fhg/util/boost/test/printer/set.hpp>
-
-BOOST_TEST_DONT_PRINT_LOG_VALUE (sdpa::Capability)
+#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
 struct serveJob_checking_scheduler_and_job_manager
 {
@@ -120,8 +115,6 @@ namespace
 }
 
 BOOST_FIXTURE_TEST_SUITE( test_Scheduler, serveJob_checking_scheduler_and_job_manager)
-
-BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE(testLoadBalancing)
 {
