@@ -34,7 +34,7 @@ struct allocate_test_agent_and_scheduler
     : _agent ("agent", "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t())
     , _scheduler
       ( boost::bind (&allocate_test_agent_and_scheduler::serveJob, this, _1, _2)
-      , boost::bind (&TestAgent::findJob, &_agent, _1)
+      , boost::bind (&allocate_test_agent_and_scheduler::requirements, this, _1)
       )
   {}
 
@@ -44,6 +44,11 @@ struct allocate_test_agent_and_scheduler
   ~allocate_test_agent_and_scheduler()
   {
     BOOST_REQUIRE (_expected_serveJob_calls.empty());
+  }
+
+  job_requirements_t requirements (sdpa::job_id_t id)
+  {
+    return _agent.findJob (id)->requirements();
   }
 
   void serveJob

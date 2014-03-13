@@ -10,10 +10,10 @@ namespace sdpa
   {
     CoallocationScheduler::CoallocationScheduler
         ( boost::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve_job
-        , boost::function<Job* (const sdpa::job_id_t&)> find_job
+        , boost::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements
         )
       : _serve_job (serve_job)
-      , _find_job (find_job)
+      , _job_requirements (job_requirements)
       , _worker_manager()
     {}
 
@@ -92,7 +92,7 @@ namespace sdpa
         const std::set<worker_id_t> matching_workers
           ( find_assignment_for_job
             ( listAvailWorkers
-            , _find_job (jobId)->requirements()
+            , _job_requirements (jobId)
             , boost::bind
               (&WorkerManager::getBestMatchingWorker, &worker_manager(), _1, _2)
             )

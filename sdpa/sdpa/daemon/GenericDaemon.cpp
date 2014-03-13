@@ -69,6 +69,11 @@ namespace
     const std::vector<std::string> vec (require_proper_url (url));
     return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
   }
+
+  job_requirements_t job_requirements (GenericDaemon* daemon, job_id_t job_id)
+  {
+    return daemon->findJob (job_id)->requirements();
+  }
 }
 
 GenericDaemon::GenericDaemon( const std::string name
@@ -89,7 +94,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , ptr_scheduler_
     ( new CoallocationScheduler
       ( boost::bind (&GenericDaemon::serveJob, this, _1, _2)
-      , boost::bind (&GenericDaemon::findJob, this, _1)
+      , boost::bind (&job_requirements, this, _1)
       )
     )
   , _scheduling_thread_mutex()
