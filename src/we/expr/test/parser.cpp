@@ -367,3 +367,29 @@ BOOST_AUTO_TEST_CASE (token_and_short_circuit)
 
 #undef CHECK
 }
+
+BOOST_AUTO_TEST_CASE (token_not)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression).eval_front (context)          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("!true", false);
+  CHECK ("!false", true);
+  CHECK ("!!true", true);
+  CHECK ("!!false", false);
+  CHECK ("!0", true);
+  CHECK ("!1", false);
+  CHECK ("!0U", true);
+  CHECK ("!1U", false);
+  CHECK ("!0L", true);
+  CHECK ("!1L", false);
+  CHECK ("!0UL", true);
+  CHECK ("!1UL", false);
+
+#undef CHECK
+}
