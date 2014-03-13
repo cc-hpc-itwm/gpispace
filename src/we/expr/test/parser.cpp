@@ -566,3 +566,65 @@ BOOST_AUTO_TEST_CASE (token_add)
 
 #undef CHECK
 }
+
+namespace
+{
+  void parser_ctor (std::string const& input)
+  {
+    (void)expr::parse::parser (input);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_sub)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression).eval_front (context)          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+#define CHECK_INTEGRAL(_type, _suffix)                                 \
+  {                                                                    \
+    _type const l (rand());                                            \
+    _type const r (rand());                                            \
+                                                                       \
+    BOOST_REQUIRE_EQUAL                                                \
+      ( expr::parse::parser                                            \
+        ((boost::format ("%1%%3% - %2%%3%") % l % r % _suffix).str())  \
+      . eval_front (context)                                           \
+      , pnet::type::value::value_type (l - r)                          \
+      );                                                               \
+  }
+
+  CHECK_INTEGRAL (int, "");
+  CHECK_INTEGRAL (long, "L");
+#undef CHECK_INTEGRAL
+
+  CHECK ("0.0 - 0.0", 0.0);
+  CHECK ("0.0 - 1.0", -1.0);
+  CHECK ("1.0 - 1.0", 0.0);
+  CHECK ("0.0f - 0.0f", 0.0f);
+  CHECK ("0.0f - 1.0f", -1.0f);
+  CHECK ("1.0f - 1.0f", 0.0f);
+
+  CHECK ("0U - 0U", 0U);
+  CHECK ("1U - 0U", 1U);
+  CHECK ("2U - 1U", 1U);
+  CHECK ("0UL - 0UL", 0UL);
+  CHECK ("1UL - 0UL", 1UL);
+  CHECK ("2UL - 1UL", 1UL);
+
+#undef CHECK
+
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ( boost::bind (&parser_ctor, "0U - 1U")
+    , "r > l => neg result"
+    );
+
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ( boost::bind (&parser_ctor, "0UL - 1UL")
+    , "r > l => neg result"
+    );
+}
