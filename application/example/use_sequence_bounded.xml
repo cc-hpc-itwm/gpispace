@@ -1,0 +1,33 @@
+<defun name="use_sequence_bounded">
+  <in name="n" type="long" place="n"/>
+  <out name="out" type="long" place="out"/>
+  <net>
+    <place name="n" type="long"/>
+    <place name="out" type="long"/>
+    <place name="id" type="long"/>
+
+    <place name="credit" type="control">
+      <token><value>[]</value></token>
+      <token><value>[]</value></token>
+      <token><value>[]</value></token>
+    </place>
+
+    <transition name="generate" inline="true">
+      <include-function href="lib/sequence_bounded.xml"/>
+      <connect-in port="amount" place="n"/>
+      <connect-out port="out" place="id"/>
+      <place-map virtual="credit" real="credit"/>
+    </transition>
+
+    <transition name="consume">
+      <defun>
+        <inout name="id" type="long"/>
+        <out name="credit" type="control"/>
+        <expression>${credit} := []</expression>
+      </defun>
+      <connect-in port="id" place="id"/>
+      <connect-out port="id" place="out"/>
+      <connect-out port="credit" place="credit"/>
+    </transition>
+  </net>
+</defun>
