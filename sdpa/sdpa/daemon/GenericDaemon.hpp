@@ -185,11 +185,6 @@ namespace sdpa {
       }
 
     public:
-      void TEST_add_dummy_job
-        (const sdpa::job_id_t& job_id, const job_requirements_t& req_list)
-      {
-        addJob (job_id, job_id, false, "", req_list);
-      }
       Job* findJob(const sdpa::job_id_t& job_id ) const
       {
         boost::mutex::scoped_lock const _ (_job_map_mutex);
