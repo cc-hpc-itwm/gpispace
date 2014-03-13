@@ -212,10 +212,6 @@ namespace sdpa {
           throw JobNotFoundException();
         }
       }
-      const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const
-      {
-        return findJob (jobId)->requirements();
-      }
 
     private:
       void delayed_cancel (const we::layer::id_type&);

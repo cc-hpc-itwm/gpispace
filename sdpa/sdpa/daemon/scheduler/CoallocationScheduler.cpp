@@ -92,7 +92,7 @@ namespace sdpa
         const std::set<worker_id_t> matching_workers
           ( find_assignment_for_job
             ( listAvailWorkers
-            , ptr_comm_handler_->getJobRequirements (jobId)
+            , ptr_comm_handler_->findJob (jobId)->requirements()
             , boost::bind
               (&WorkerManager::getBestMatchingWorker, &worker_manager(), _1, _2)
             )
