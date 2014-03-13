@@ -8,11 +8,13 @@ namespace sdpa
              , const job_desc_t desc
              , bool is_master_job
              , const worker_id_t& owner
+             , job_requirements_t requirements
              )
       : desc_ (desc)
       , id_ (id)
       , _is_master_job (is_master_job)
       , m_owner (owner)
+      , _requirements (requirements)
       , m_error_message()
       , result_()
     {
@@ -34,6 +36,10 @@ namespace sdpa
     worker_id_t Job::owner() const
     {
       return m_owner;
+    }
+    job_requirements_t Job::requirements() const
+    {
+      return _requirements;
     }
 
     std::string Job::error_message () const

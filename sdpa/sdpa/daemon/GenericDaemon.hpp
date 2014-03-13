@@ -171,17 +171,15 @@ namespace sdpa {
                   , const job_requirements_t& job_req_list
                   )
       {
-        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+        boost::mutex::scoped_lock const _ (_job_map_mutex);
 
-        Job* pJob = new Job( job_id, desc, is_master_job, owner );
+        Job* pJob = new Job( job_id, desc, is_master_job, owner, job_req_list);
 
         if (!job_map_.insert(std::make_pair (job_id, pJob)).second)
         {
           delete pJob;
           throw std::runtime_error ("job with same id already exists");
         }
-
-        job_requirements_.insert(std::make_pair(job_id, job_req_list));
 
         return pJob;
       }
@@ -194,16 +192,14 @@ namespace sdpa {
       }
       Job* findJob(const sdpa::job_id_t& job_id ) const
       {
-        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+        boost::mutex::scoped_lock const _ (_job_map_mutex);
 
         const job_map_t::const_iterator it (job_map_.find( job_id ));
         return it != job_map_.end() ? it->second : NULL;
       }
       void deleteJob(const sdpa::job_id_t& job_id)
       {
-        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
-
-        job_requirements_.erase (job_id);
+        boost::mutex::scoped_lock const _ (_job_map_mutex);
 
         const job_map_t::const_iterator it (job_map_.find( job_id ));
         if (it != job_map_.end())
@@ -216,13 +212,9 @@ namespace sdpa {
           throw JobNotFoundException();
         }
       }
-      //! \todo Why doesn't every job have an entry here?
       const job_requirements_t getJobRequirements(const sdpa::job_id_t& jobId) const
       {
-        boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
-
-        const requirements_map_t::const_iterator it (job_requirements_.find (jobId));
-        return it != job_requirements_.end() ? it->second : job_requirements_t();
+        return findJob (jobId)->requirements();
       }
 
     private:
@@ -244,14 +236,11 @@ namespace sdpa {
         _discover_sources;
 
     private:
-      typedef boost::unordered_map<sdpa::job_id_t, job_requirements_t>
-        requirements_map_t;
       typedef boost::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
         job_map_t;
 
-      mutable boost::mutex _job_map_and_requirements_mutex;
+      mutable boost::mutex _job_map_mutex;
       job_map_t job_map_;
-      requirements_map_t job_requirements_;
 
     protected:
       boost::shared_ptr<CoallocationScheduler> ptr_scheduler_;

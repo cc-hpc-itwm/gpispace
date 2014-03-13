@@ -84,9 +84,8 @@ GenericDaemon::GenericDaemon( const std::string name
   , m_arrMasterInfo(arrMasterInfo)
   , m_listSubscribers()
   , _discover_sources()
-  , _job_map_and_requirements_mutex()
+  , _job_map_mutex()
   , job_map_()
-  , job_requirements_()
   , ptr_scheduler_ (new CoallocationScheduler (this))
   , _scheduling_thread_mutex()
   , _scheduling_thread_notifier()
@@ -702,7 +701,7 @@ void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerR
 
   if(!isTop())
   {
-    boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+    boost::mutex::scoped_lock const _ (_job_map_mutex);
 
     BOOST_FOREACH ( Job* job
                   , job_map_
