@@ -6,7 +6,13 @@
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
 
+#include <we/exception.hpp>
+
 #include <we/type/value/boost/test/printer.hpp>
+
+#include <fhg/util/boost/test/require_exception.hpp>
+
+#include <boost/bind.hpp>
 
 #include <string>
 
@@ -201,4 +207,88 @@ BOOST_AUTO_TEST_CASE (renamed_at_depth_greater_zero)
 
   BOOST_REQUIRE_EQUAL
     (parser.string(), expr::parse::parser ("sin (${A})").string());
+}
+
+BOOST_AUTO_TEST_CASE (token_or_table)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression, context).get_front()          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("true || true", true);
+  CHECK ("true || false", true);
+  CHECK ("false || true", true);
+  CHECK ("false || false", false);
+
+  CHECK ("true :or: true", true);
+  CHECK ("true :or: false", true);
+  CHECK ("false :or: true", true);
+  CHECK ("false :or: false", false);
+
+  CHECK ("0 || 0", 0);
+  CHECK ("0 || 1", 1);
+  CHECK ("1 || 1", 1);
+  CHECK ("1 || 0", 1);
+  CHECK ("1 || 2", 3);
+  CHECK ("2 || 1", 3);
+
+  CHECK ("0U || 0U", 0U);
+  CHECK ("0U || 1U", 1U);
+  CHECK ("1U || 1U", 1U);
+  CHECK ("1U || 0U", 1U);
+  CHECK ("1U || 2U", 3U);
+  CHECK ("2U || 1U", 3U);
+
+  CHECK ("0L || 0L", 0L);
+  CHECK ("0L || 1L", 1L);
+  CHECK ("1L || 1L", 1L);
+  CHECK ("1L || 0L", 1L);
+  CHECK ("1L || 2L", 3L);
+  CHECK ("2L || 1L", 3L);
+
+  CHECK ("0UL || 0UL", 0UL);
+  CHECK ("0UL || 1UL", 1UL);
+  CHECK ("1UL || 1UL", 1UL);
+  CHECK ("1UL || 0UL", 1UL);
+  CHECK ("1UL || 2UL", 3UL);
+  CHECK ("2UL || 1UL", 3UL);
+#undef CHECK
+}
+
+namespace
+{
+  void get_and_ignore_value_from_context
+    (expr::eval::context const& context, std::string const& key)
+  {
+    (void)context.value (key);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_or_short_circuit)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression).eval_front (context)          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("true || (${a} := true)", true);
+
+  fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
+    ( boost::bind (&get_and_ignore_value_from_context, context, "a")
+    , "missing binding for: ${a}"
+    );
+
+  CHECK ("false || (${a} := true)", true);
+
+  BOOST_REQUIRE_EQUAL
+    (context.value ("a"), pnet::type::value::value_type (true));
+
+#undef CHECK
 }
