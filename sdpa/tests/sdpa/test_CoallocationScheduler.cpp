@@ -114,9 +114,7 @@ namespace
   }
 }
 
-BOOST_FIXTURE_TEST_SUITE( test_Scheduler, serveJob_checking_scheduler_and_job_manager)
-
-BOOST_AUTO_TEST_CASE(testLoadBalancing)
+BOOST_FIXTURE_TEST_CASE (testLoadBalancing, serveJob_checking_scheduler_and_job_manager)
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
@@ -208,7 +206,7 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _scheduler.assignJobsToWorkers();
 }
 
-BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
+BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, serveJob_checking_scheduler_and_job_manager)
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
@@ -273,7 +271,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   _scheduler.assignJobsToWorkers();
 }
 
-BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
+BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, serveJob_checking_scheduler_and_job_manager)
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
@@ -339,7 +337,7 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _scheduler.assignJobsToWorkers();
 }
 
-BOOST_AUTO_TEST_CASE(testCoallocSched)
+BOOST_FIXTURE_TEST_CASE (testCoallocSched, serveJob_checking_scheduler_and_job_manager)
 {
   _scheduler.worker_manager().addWorker ("0", 1, capabilities ("0", "A"));
   _scheduler.worker_manager().addWorker ("1", 1, capabilities ("1", "B"));
@@ -388,7 +386,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.assignJobsToWorkers();
 }
 
-BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
+BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, serveJob_checking_scheduler_and_job_manager)
 {
   _scheduler.worker_manager().addWorker ("worker_0", 1, capabilities ("worker_0", "C"));
   _scheduler.worker_manager().addWorker ("worker_1", 1, capabilities ("worker_1", "C"));
@@ -449,8 +447,6 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   _scheduler.assignJobsToWorkers();
 }
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_FIXTURE_TEST_CASE
   (not_schedulable_job_does_not_block_others, serveJob_checking_scheduler_and_job_manager)
