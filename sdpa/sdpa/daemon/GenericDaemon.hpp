@@ -235,8 +235,6 @@ namespace sdpa {
 
       std::string _name;
 
-      mutex_type mtx_;
-
       sdpa::master_info_list_t m_arrMasterInfo;
       typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
       subscriber_map_t m_listSubscribers;
