@@ -82,7 +82,14 @@ GenericDaemon::GenericDaemon( const std::string name
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
   , m_arrMasterInfo(arrMasterInfo)
+  , m_listSubscribers()
+  , _discover_sources()
+  , _job_map_and_requirements_mutex()
+  , job_map_()
+  , job_requirements_()
   , ptr_scheduler_ (new CoallocationScheduler (this))
+  , _scheduling_thread_mutex()
+  , _scheduling_thread_notifier()
   , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
   , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
   , ptr_workflow_engine_ ( create_wfe
@@ -99,6 +106,10 @@ GenericDaemon::GenericDaemon( const std::string name
                            )
                          : NULL
                          )
+  , mtx_subscriber_()
+  , mtx_master_()
+  , mtx_cpb_()
+  , m_capabilities()
   , m_guiService ( guiUrl && !guiUrl->empty()
                  ? boost::optional<NotificationService>
                    (NotificationService (*guiUrl))
@@ -107,6 +118,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _max_consecutive_registration_attempts (360)
   , _max_consecutive_network_faults (360)
   , _registration_timeout (boost::posix_time::seconds (1))
+  , _registration_threads()
   , _event_queue()
   , _event_handler_thread (&GenericDaemon::handle_events, this)
   , _kvs_client
