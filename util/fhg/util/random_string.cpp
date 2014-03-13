@@ -13,25 +13,32 @@ namespace fhg
 {
   namespace util
   {
-    std::string random_string_of (std::string const& chars)
+    char random_char_of (std::string const& chars)
     {
       if (chars.empty())
       {
-        throw std::runtime_error ("random_string_of (empty_string)");
+        throw std::runtime_error ("random_char_of (empty_string)");
       }
 
+      boost::random::random_device rng;
+
+      boost::random::uniform_int_distribution<> index (0, chars.size() - 1);
+
+      return chars [index (rng)];
+    }
+
+    std::string random_string_of (std::string const& chars)
+    {
       boost::random::random_device rng;
 
       int const length
         (boost::random::uniform_int_distribution<> (0, 1 << 10) (rng));
 
-      boost::random::uniform_int_distribution<> index (0, chars.size() - 1);
-
       std::string s;
 
       for (int i = 0; i < length; ++i)
       {
-        s.push_back (chars [index (rng)]);
+        s.push_back (random_char_of (chars));
       }
 
       return s;

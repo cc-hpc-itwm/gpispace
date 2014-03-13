@@ -9,6 +9,9 @@ namespace fhg
 {
   namespace util
   {
+    // uniformly select a char from chars
+    char random_char_of (std::string const& chars);
+
     // random string of random length <= 2^10, character uniform from chars
     std::string random_string_of (std::string const& chars);
 
