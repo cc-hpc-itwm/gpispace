@@ -64,7 +64,7 @@ static void cleanUp()
 
   if (dtmmgr)
   {
-    Size_t Bytes = dtmmgr_finalize (&dtmmgr);
+    dtmmgr_finalize (&dtmmgr);
   }
 }
 
