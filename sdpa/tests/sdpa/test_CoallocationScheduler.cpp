@@ -34,16 +34,16 @@ public:
 
 struct allocate_test_agent_and_scheduler
 {
-    allocate_test_agent_and_scheduler()
-      : _agent ("agent", "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t())
-      , _scheduler
-        ( boost::bind (&allocate_test_agent_and_scheduler::serveJob, this, _1, _2)
-        , boost::bind (&TestAgent::findJob, &_agent, _1)
-        )
-    {}
+  allocate_test_agent_and_scheduler()
+    : _agent ("agent", "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t())
+    , _scheduler
+      ( boost::bind (&allocate_test_agent_and_scheduler::serveJob, this, _1, _2)
+      , boost::bind (&TestAgent::findJob, &_agent, _1)
+      )
+  {}
 
-    TestAgent _agent;
-    sdpa::daemon::CoallocationScheduler _scheduler;
+  TestAgent _agent;
+  sdpa::daemon::CoallocationScheduler _scheduler;
 
   ~allocate_test_agent_and_scheduler()
   {
