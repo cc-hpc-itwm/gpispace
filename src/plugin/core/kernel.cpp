@@ -60,8 +60,6 @@ namespace fhg
       BOOST_REVERSE_FOREACH (std::string plugin_to_unload, m_load_order)
       {
         m_plugins.erase (m_plugins.find (plugin_to_unload));
-
-        LOG (TRACE, "plugin '" << plugin_to_unload << "' unloaded");
       }
     }
 
