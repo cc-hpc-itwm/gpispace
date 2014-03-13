@@ -84,7 +84,6 @@ namespace sdpa {
       const std::string& name() const;
 
       void removeMasters(const agent_id_list_t& );
-      size_t numberOfMasterAgents() { return m_arrMasterInfo.size(); }
 
       bool isTop() { return m_arrMasterInfo.empty(); }
 
