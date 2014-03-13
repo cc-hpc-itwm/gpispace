@@ -292,3 +292,78 @@ BOOST_AUTO_TEST_CASE (token_or_short_circuit)
 
 #undef CHECK
 }
+
+BOOST_AUTO_TEST_CASE (token_and_table)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression, context).get_front()          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("true && true", true);
+  CHECK ("true && false", false);
+  CHECK ("false && true", false);
+  CHECK ("false && false", false);
+
+  CHECK ("true :and: true", true);
+  CHECK ("true :and: false", false);
+  CHECK ("false :and: true", false);
+  CHECK ("false :and: false", false);
+
+  CHECK ("0 && 0", 0);
+  CHECK ("0 && 1", 0);
+  CHECK ("1 && 1", 1);
+  CHECK ("1 && 0", 0);
+  CHECK ("1 && 2", 0);
+  CHECK ("2 && 1", 0);
+
+  CHECK ("0U && 0U", 0U);
+  CHECK ("0U && 1U", 0U);
+  CHECK ("1U && 1U", 1U);
+  CHECK ("1U && 0U", 0U);
+  CHECK ("1U && 2U", 0U);
+  CHECK ("2U && 1U", 0U);
+
+  CHECK ("0L && 0L", 0L);
+  CHECK ("0L && 1L", 0L);
+  CHECK ("1L && 1L", 1L);
+  CHECK ("1L && 0L", 0L);
+  CHECK ("1L && 2L", 0L);
+  CHECK ("2L && 1L", 0L);
+
+  CHECK ("0UL && 0UL", 0UL);
+  CHECK ("0UL && 1UL", 0UL);
+  CHECK ("1UL && 1UL", 1UL);
+  CHECK ("1UL && 0UL", 0UL);
+  CHECK ("1UL && 2UL", 0UL);
+  CHECK ("2UL && 1UL", 0UL);
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (token_and_short_circuit)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression).eval_front (context)          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("false && (${a} := false)", false);
+
+  fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
+    ( boost::bind (&get_and_ignore_value_from_context, context, "a")
+    , "missing binding for: ${a}"
+    );
+
+  CHECK ("true && (${a} := false)", false);
+
+  BOOST_REQUIRE_EQUAL
+    (context.value ("a"), pnet::type::value::value_type (false));
+
+#undef CHECK
+}
