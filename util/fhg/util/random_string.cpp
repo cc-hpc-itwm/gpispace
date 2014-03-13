@@ -13,7 +13,7 @@ namespace fhg
 {
   namespace util
   {
-    std::string const random_string_of (std::string const& chars)
+    std::string random_string_of (std::string const& chars)
     {
       if (chars.empty())
       {
@@ -37,7 +37,7 @@ namespace fhg
       return s;
     }
 
-    std::string const random_string()
+    std::string random_string()
     {
       std::string chars;
 
@@ -49,7 +49,7 @@ namespace fhg
       return random_string_of (chars);
     }
 
-    std::string const random_string_without (std::string const& except)
+    std::string random_string_without (std::string const& except)
     {
       std::string chars;
 
