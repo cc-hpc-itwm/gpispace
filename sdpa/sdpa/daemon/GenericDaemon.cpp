@@ -86,7 +86,12 @@ GenericDaemon::GenericDaemon( const std::string name
   , _discover_sources()
   , _job_map_mutex()
   , job_map_()
-  , ptr_scheduler_ (new CoallocationScheduler (this))
+  , ptr_scheduler_
+    ( new CoallocationScheduler
+      ( boost::bind (&GenericDaemon::serveJob, this, _1, _2)
+      , boost::bind (&GenericDaemon::findJob, this, _1)
+      )
+    )
   , _scheduling_thread_mutex()
   , _scheduling_thread_notifier()
   , _scheduling_thread (&GenericDaemon::scheduling_thread, this)

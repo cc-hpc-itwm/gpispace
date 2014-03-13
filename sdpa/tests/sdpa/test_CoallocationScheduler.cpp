@@ -66,7 +66,10 @@ struct allocate_test_agent_and_scheduler
 {
     allocate_test_agent_and_scheduler()
       : _agent ("agent", "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t())
-      , _scheduler (&_agent)
+      , _scheduler
+        ( boost::bind (&TestAgent::serveJob, &_agent, _1, _2)
+        , boost::bind (&TestAgent::findJob, &_agent, _1)
+        )
     {}
 
     TestAgent _agent;

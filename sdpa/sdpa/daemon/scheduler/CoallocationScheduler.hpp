@@ -17,11 +17,12 @@ namespace sdpa
 {
   namespace daemon
   {
-    class GenericDaemon;
     class CoallocationScheduler
     {
     public:
-      CoallocationScheduler (GenericDaemon* pHandler);
+      CoallocationScheduler ( boost::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve
+                            , boost::function<Job* (const sdpa::job_id_t&)> find
+                            );
 
       const WorkerManager& worker_manager() const;
       WorkerManager& worker_manager();
@@ -43,7 +44,9 @@ namespace sdpa
       void assignJobsToWorkers();
 
     private:
-      GenericDaemon* ptr_comm_handler_;
+      boost::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
+        _serve_job;
+      boost::function<Job* (const sdpa::job_id_t&)> _find_job;
 
       WorkerManager _worker_manager;
 

@@ -8,12 +8,12 @@ namespace sdpa
 {
   namespace daemon
   {
-    CoallocationScheduler::CoallocationScheduler (GenericDaemon* pCommHandler)
-      : ptr_comm_handler_ ( pCommHandler
-                          ? pCommHandler
-                          : throw std::runtime_error
-                            ("CoallocationScheduler ctor with NULL ptr_comm_handler")
-                          )
+    CoallocationScheduler::CoallocationScheduler
+        ( boost::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve_job
+        , boost::function<Job* (const sdpa::job_id_t&)> find_job
+        )
+      : _serve_job (serve_job)
+      , _find_job (find_job)
       , _worker_manager()
     {}
 
@@ -92,7 +92,7 @@ namespace sdpa
         const std::set<worker_id_t> matching_workers
           ( find_assignment_for_job
             ( listAvailWorkers
-            , ptr_comm_handler_->findJob (jobId)->requirements()
+            , _find_job (jobId)->requirements()
             , boost::bind
               (&WorkerManager::getBestMatchingWorker, &worker_manager(), _1, _2)
             )
@@ -122,7 +122,7 @@ namespace sdpa
               {
                 worker_manager().findWorker (worker)->submit (jobId);
               }
-              ptr_comm_handler_->serveJob (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
+              _serve_job (worker_id_list_t (matching_workers.begin(), matching_workers.end()), jobId);
 
               Reservation* pReservation (new Reservation (matching_workers));
               allocation_table_.insert (std::make_pair (jobId, pReservation));
