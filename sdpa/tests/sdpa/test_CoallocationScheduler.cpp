@@ -46,10 +46,20 @@ struct allocate_test_agent_and_scheduler
     BOOST_REQUIRE (_expected_serveJob_calls.empty());
   }
 
+  void add_job (const sdpa::job_id_t& job_id, const job_requirements_t& reqs)
+  {
+    if (!_requirements.insert (std::make_pair (job_id, reqs)).second)
+    {
+      throw std::runtime_error ("added job twice");
+    }
+  }
+
   job_requirements_t requirements (sdpa::job_id_t id)
   {
-    return _agent.findJob (id)->requirements();
+    return _requirements.find (id)->second;
   }
+
+  std::map<sdpa::job_id_t, job_requirements_t> _requirements;
 
   void serveJob
     (const sdpa::worker_id_list_t& worker_list, const sdpa::job_id_t& jobId)
@@ -148,21 +158,21 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _scheduler.worker_manager().addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
   _scheduler.worker_manager().addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
-  _agent.TEST_add_dummy_job ("job_0", require ("C"));
-  _agent.TEST_add_dummy_job ("job_1", require ("C"));
-  _agent.TEST_add_dummy_job ("job_2", require ("C"));
-  _agent.TEST_add_dummy_job ("job_3", require ("C"));
-  _agent.TEST_add_dummy_job ("job_4", require ("C"));
-  _agent.TEST_add_dummy_job ("job_5", require ("C"));
-  _agent.TEST_add_dummy_job ("job_6", require ("C"));
-  _agent.TEST_add_dummy_job ("job_7", require ("C"));
-  _agent.TEST_add_dummy_job ("job_8", require ("C"));
-  _agent.TEST_add_dummy_job ("job_9", require ("C"));
-  _agent.TEST_add_dummy_job ("job_10", require ("C"));
-  _agent.TEST_add_dummy_job ("job_11", require ("C"));
-  _agent.TEST_add_dummy_job ("job_12", require ("C"));
-  _agent.TEST_add_dummy_job ("job_13", require ("C"));
-  _agent.TEST_add_dummy_job ("job_14", require ("C"));
+  add_job ("job_0", require ("C"));
+  add_job ("job_1", require ("C"));
+  add_job ("job_2", require ("C"));
+  add_job ("job_3", require ("C"));
+  add_job ("job_4", require ("C"));
+  add_job ("job_5", require ("C"));
+  add_job ("job_6", require ("C"));
+  add_job ("job_7", require ("C"));
+  add_job ("job_8", require ("C"));
+  add_job ("job_9", require ("C"));
+  add_job ("job_10", require ("C"));
+  add_job ("job_11", require ("C"));
+  add_job ("job_12", require ("C"));
+  add_job ("job_13", require ("C"));
+  add_job ("job_14", require ("C"));
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -239,21 +249,21 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   _scheduler.worker_manager().addWorker ("worker_7", 1, capabilities ("worker_7", "C"));
   _scheduler.worker_manager().addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
 
-  _agent.TEST_add_dummy_job ("job_0", require ("C"));
-  _agent.TEST_add_dummy_job ("job_1", require ("C"));
-  _agent.TEST_add_dummy_job ("job_2", require ("C"));
-  _agent.TEST_add_dummy_job ("job_3", require ("C"));
-  _agent.TEST_add_dummy_job ("job_4", require ("C"));
-  _agent.TEST_add_dummy_job ("job_5", require ("C"));
-  _agent.TEST_add_dummy_job ("job_6", require ("C"));
-  _agent.TEST_add_dummy_job ("job_7", require ("C"));
-  _agent.TEST_add_dummy_job ("job_8", require ("C"));
-  _agent.TEST_add_dummy_job ("job_9", require ("C"));
-  _agent.TEST_add_dummy_job ("job_10", require ("C"));
-  _agent.TEST_add_dummy_job ("job_11", require ("C"));
-  _agent.TEST_add_dummy_job ("job_12", require ("C"));
-  _agent.TEST_add_dummy_job ("job_13", require ("C"));
-  _agent.TEST_add_dummy_job ("job_14", require ("C"));
+  add_job ("job_0", require ("C"));
+  add_job ("job_1", require ("C"));
+  add_job ("job_2", require ("C"));
+  add_job ("job_3", require ("C"));
+  add_job ("job_4", require ("C"));
+  add_job ("job_5", require ("C"));
+  add_job ("job_6", require ("C"));
+  add_job ("job_7", require ("C"));
+  add_job ("job_8", require ("C"));
+  add_job ("job_9", require ("C"));
+  add_job ("job_10", require ("C"));
+  add_job ("job_11", require ("C"));
+  add_job ("job_12", require ("C"));
+  add_job ("job_13", require ("C"));
+  add_job ("job_14", require ("C"));
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -305,21 +315,21 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _scheduler.worker_manager().addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
   _scheduler.worker_manager().addWorker ("worker_9", 1);
 
-  _agent.TEST_add_dummy_job ("job_0", require ("C"));
-  _agent.TEST_add_dummy_job ("job_1", require ("C"));
-  _agent.TEST_add_dummy_job ("job_2", require ("C"));
-  _agent.TEST_add_dummy_job ("job_3", require ("C"));
-  _agent.TEST_add_dummy_job ("job_4", require ("C"));
-  _agent.TEST_add_dummy_job ("job_5", require ("C"));
-  _agent.TEST_add_dummy_job ("job_6", require ("C"));
-  _agent.TEST_add_dummy_job ("job_7", require ("C"));
-  _agent.TEST_add_dummy_job ("job_8", require ("C"));
-  _agent.TEST_add_dummy_job ("job_9", require ("C"));
-  _agent.TEST_add_dummy_job ("job_10", require ("C"));
-  _agent.TEST_add_dummy_job ("job_11", require ("C"));
-  _agent.TEST_add_dummy_job ("job_12", require ("C"));
-  _agent.TEST_add_dummy_job ("job_13", require ("C"));
-  _agent.TEST_add_dummy_job ("job_14", require ("C"));
+  add_job ("job_0", require ("C"));
+  add_job ("job_1", require ("C"));
+  add_job ("job_2", require ("C"));
+  add_job ("job_3", require ("C"));
+  add_job ("job_4", require ("C"));
+  add_job ("job_5", require ("C"));
+  add_job ("job_6", require ("C"));
+  add_job ("job_7", require ("C"));
+  add_job ("job_8", require ("C"));
+  add_job ("job_9", require ("C"));
+  add_job ("job_10", require ("C"));
+  add_job ("job_11", require ("C"));
+  add_job ("job_12", require ("C"));
+  add_job ("job_13", require ("C"));
+  add_job ("job_14", require ("C"));
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -373,9 +383,9 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.worker_manager().addWorker ("10", 1, capabilities ("10", "B"));
   _scheduler.worker_manager().addWorker ("11", 1, capabilities ("11", "C"));
 
-  _agent.TEST_add_dummy_job ("job_0", require ("A", 4));
-  _agent.TEST_add_dummy_job ("job_1", require ("B", 4));
-  _agent.TEST_add_dummy_job ("job_2", require ("C", 4));
+  add_job ("job_0", require ("A", 4));
+  add_job ("job_1", require ("B", 4));
+  add_job ("job_2", require ("C", 4));
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -389,7 +399,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.assignJobsToWorkers();
 
 
-  _agent.TEST_add_dummy_job ("job_3", require ("A", 2));
+  add_job ("job_3", require ("A", 2));
 
   _scheduler.enqueueJob ("job_3");
 
@@ -420,16 +430,16 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _scheduler.worker_manager().addWorker ("worker_8", 1, capabilities ("worker_8", "C"));
   _scheduler.worker_manager().addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
-  _agent.TEST_add_dummy_job ("job_0", require ("C"));
-  _agent.TEST_add_dummy_job ("job_1", require ("C"));
-  _agent.TEST_add_dummy_job ("job_2", require ("C"));
-  _agent.TEST_add_dummy_job ("job_3", require ("C"));
-  _agent.TEST_add_dummy_job ("job_4", require ("C"));
-  _agent.TEST_add_dummy_job ("job_5", require ("C"));
-  _agent.TEST_add_dummy_job ("job_6", require ("C"));
-  _agent.TEST_add_dummy_job ("job_7", require ("C"));
-  _agent.TEST_add_dummy_job ("job_8", require ("C"));
-  _agent.TEST_add_dummy_job ("job_9", require ("C"));
+  add_job ("job_0", require ("C"));
+  add_job ("job_1", require ("C"));
+  add_job ("job_2", require ("C"));
+  add_job ("job_3", require ("C"));
+  add_job ("job_4", require ("C"));
+  add_job ("job_5", require ("C"));
+  add_job ("job_6", require ("C"));
+  add_job ("job_7", require ("C"));
+  add_job ("job_8", require ("C"));
+  add_job ("job_9", require ("C"));
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -476,12 +486,12 @@ BOOST_FIXTURE_TEST_CASE
 {
   _scheduler.worker_manager().addWorker ("worker", 1);
 
-  _agent.TEST_add_dummy_job ("2", require (2));
+  add_job ("2", require (2));
   _scheduler.enqueueJob ("2");
 
   _scheduler.assignJobsToWorkers();
 
-  _agent.TEST_add_dummy_job ("1", require (1));
+  add_job ("1", require (1));
   _scheduler.enqueueJob ("1");
 
   expect_serveJob_call ("1", worker_list ("worker"));
