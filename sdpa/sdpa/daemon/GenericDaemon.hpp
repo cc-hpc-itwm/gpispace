@@ -140,6 +140,7 @@ namespace sdpa {
       virtual void handleDiscoverJobStatesEvent
         (const sdpa::events::DiscoverJobStatesEvent*);
 
+    protected:
       // event communication
       void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& e);
       void sendEventToOther(const sdpa::events::SDPAEvent::Ptr& e);
