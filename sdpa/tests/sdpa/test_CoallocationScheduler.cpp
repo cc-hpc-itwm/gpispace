@@ -25,12 +25,33 @@ public:
   {
   }
 
-  ~TestAgent()
+
+  void sendEventToOther(const sdpa::events::SDPAEvent::Ptr&)
+  {
+    throw std::runtime_error ("trying to send message in test case which should not send messages");
+  }
+};
+
+struct allocate_test_agent_and_scheduler
+{
+    allocate_test_agent_and_scheduler()
+      : _agent ("agent", "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t())
+      , _scheduler
+        ( boost::bind (&allocate_test_agent_and_scheduler::serveJob, this, _1, _2)
+        , boost::bind (&TestAgent::findJob, &_agent, _1)
+        )
+    {}
+
+    TestAgent _agent;
+    sdpa::daemon::CoallocationScheduler _scheduler;
+
+  ~allocate_test_agent_and_scheduler()
   {
     BOOST_REQUIRE (_expected_serveJob_calls.empty());
   }
 
-  void serveJob(const sdpa::worker_id_list_t& worker_list, const sdpa::job_id_t& jobId)
+  void serveJob
+    (const sdpa::worker_id_list_t& worker_list, const sdpa::job_id_t& jobId)
   {
     BOOST_REQUIRE_GE (_expected_serveJob_calls.count (jobId), 1);
     BOOST_CHECK_EQUAL (_expected_serveJob_calls[jobId].first, worker_list.size());
@@ -40,11 +61,6 @@ public:
     }
 
     _expected_serveJob_calls.erase (_expected_serveJob_calls.find (jobId));
-  }
-
-  void sendEventToOther(const sdpa::events::SDPAEvent::Ptr&)
-  {
-    throw std::runtime_error ("trying to send message in test case which should not send messages");
   }
 
   void expect_serveJob_call
@@ -60,20 +76,6 @@ public:
 
   std::map<sdpa::job_id_t, std::pair<std::size_t, std::set<sdpa::worker_id_t> > >
     _expected_serveJob_calls;
-};
-
-struct allocate_test_agent_and_scheduler
-{
-    allocate_test_agent_and_scheduler()
-      : _agent ("agent", "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t())
-      , _scheduler
-        ( boost::bind (&TestAgent::serveJob, &_agent, _1, _2)
-        , boost::bind (&TestAgent::findJob, &_agent, _1)
-        )
-    {}
-
-    TestAgent _agent;
-    sdpa::daemon::CoallocationScheduler _scheduler;
 };
 
 namespace
@@ -178,16 +180,16 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _scheduler.enqueueJob ("job_14");
 
 
-  _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
-  _agent.expect_serveJob_call ("job_1", worker_list ("worker_8"));
-  _agent.expect_serveJob_call ("job_2", worker_list ("worker_7"));
-  _agent.expect_serveJob_call ("job_3", worker_list ("worker_5"));
-  _agent.expect_serveJob_call ("job_4", worker_list ("worker_4"));
-  _agent.expect_serveJob_call ("job_5", worker_list ("worker_6"));
-  _agent.expect_serveJob_call ("job_6", worker_list ("worker_3"));
-  _agent.expect_serveJob_call ("job_7", worker_list ("worker_2"));
-  _agent.expect_serveJob_call ("job_8", worker_list ("worker_1"));
-  _agent.expect_serveJob_call ("job_9", worker_list ("worker_0"));
+  expect_serveJob_call ("job_0", worker_list ("worker_9"));
+  expect_serveJob_call ("job_1", worker_list ("worker_8"));
+  expect_serveJob_call ("job_2", worker_list ("worker_7"));
+  expect_serveJob_call ("job_3", worker_list ("worker_5"));
+  expect_serveJob_call ("job_4", worker_list ("worker_4"));
+  expect_serveJob_call ("job_5", worker_list ("worker_6"));
+  expect_serveJob_call ("job_6", worker_list ("worker_3"));
+  expect_serveJob_call ("job_7", worker_list ("worker_2"));
+  expect_serveJob_call ("job_8", worker_list ("worker_1"));
+  expect_serveJob_call ("job_9", worker_list ("worker_0"));
 
   _scheduler.assignJobsToWorkers();
 
@@ -215,11 +217,11 @@ BOOST_AUTO_TEST_CASE(testLoadBalancing)
   _scheduler.releaseReservation ("job_9");
 
 
-  _agent.expect_serveJob_call ("job_10", worker_list ("worker_9"));
-  _agent.expect_serveJob_call ("job_11", worker_list ("worker_8"));
-  _agent.expect_serveJob_call ("job_12", worker_list ("worker_7"));
-  _agent.expect_serveJob_call ("job_13", worker_list ("worker_5"));
-  _agent.expect_serveJob_call ("job_14", worker_list ("worker_4"));
+  expect_serveJob_call ("job_10", worker_list ("worker_9"));
+  expect_serveJob_call ("job_11", worker_list ("worker_8"));
+  expect_serveJob_call ("job_12", worker_list ("worker_7"));
+  expect_serveJob_call ("job_13", worker_list ("worker_5"));
+  expect_serveJob_call ("job_14", worker_list ("worker_4"));
 
   _scheduler.assignJobsToWorkers();
 }
@@ -269,22 +271,22 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerJoinsLater)
   _scheduler.enqueueJob ("job_14");
 
 
-  _agent.expect_serveJob_call ("job_0", worker_list ("worker_8"));
-  _agent.expect_serveJob_call ("job_1", worker_list ("worker_7"));
-  _agent.expect_serveJob_call ("job_2", worker_list ("worker_5"));
-  _agent.expect_serveJob_call ("job_3", worker_list ("worker_4"));
-  _agent.expect_serveJob_call ("job_4", worker_list ("worker_6"));
-  _agent.expect_serveJob_call ("job_5", worker_list ("worker_3"));
-  _agent.expect_serveJob_call ("job_6", worker_list ("worker_2"));
-  _agent.expect_serveJob_call ("job_7", worker_list ("worker_1"));
-  _agent.expect_serveJob_call ("job_8", worker_list ("worker_0"));
+  expect_serveJob_call ("job_0", worker_list ("worker_8"));
+  expect_serveJob_call ("job_1", worker_list ("worker_7"));
+  expect_serveJob_call ("job_2", worker_list ("worker_5"));
+  expect_serveJob_call ("job_3", worker_list ("worker_4"));
+  expect_serveJob_call ("job_4", worker_list ("worker_6"));
+  expect_serveJob_call ("job_5", worker_list ("worker_3"));
+  expect_serveJob_call ("job_6", worker_list ("worker_2"));
+  expect_serveJob_call ("job_7", worker_list ("worker_1"));
+  expect_serveJob_call ("job_8", worker_list ("worker_0"));
 
   _scheduler.assignJobsToWorkers();
 
 
   _scheduler.worker_manager().addWorker ("worker_9", 1, capabilities ("worker_9", "C"));
 
-  _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
+  expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
 }
@@ -335,22 +337,22 @@ BOOST_AUTO_TEST_CASE(tesLBOneWorkerGainsCpbLater)
   _scheduler.enqueueJob ("job_14");
 
 
-  _agent.expect_serveJob_call ("job_0", worker_list ("worker_8"));
-  _agent.expect_serveJob_call ("job_1", worker_list ("worker_7"));
-  _agent.expect_serveJob_call ("job_2", worker_list ("worker_5"));
-  _agent.expect_serveJob_call ("job_3", worker_list ("worker_4"));
-  _agent.expect_serveJob_call ("job_4", worker_list ("worker_6"));
-  _agent.expect_serveJob_call ("job_5", worker_list ("worker_3"));
-  _agent.expect_serveJob_call ("job_6", worker_list ("worker_2"));
-  _agent.expect_serveJob_call ("job_7", worker_list ("worker_1"));
-  _agent.expect_serveJob_call ("job_8", worker_list ("worker_0"));
+  expect_serveJob_call ("job_0", worker_list ("worker_8"));
+  expect_serveJob_call ("job_1", worker_list ("worker_7"));
+  expect_serveJob_call ("job_2", worker_list ("worker_5"));
+  expect_serveJob_call ("job_3", worker_list ("worker_4"));
+  expect_serveJob_call ("job_4", worker_list ("worker_6"));
+  expect_serveJob_call ("job_5", worker_list ("worker_3"));
+  expect_serveJob_call ("job_6", worker_list ("worker_2"));
+  expect_serveJob_call ("job_7", worker_list ("worker_1"));
+  expect_serveJob_call ("job_8", worker_list ("worker_0"));
 
   _scheduler.assignJobsToWorkers();
 
 
   _scheduler.worker_manager().findWorker ("worker_9")->addCapabilities (capabilities ("worker_9", "C"));
 
-  _agent.expect_serveJob_call ("job_9", worker_list ("worker_9"));
+  expect_serveJob_call ("job_9", worker_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
 }
@@ -379,9 +381,9 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
   _scheduler.enqueueJob ("job_2");
 
 
-  _agent.expect_serveJob_call ("job_0", worker_list ("0", "3", "6", "9"));
-  _agent.expect_serveJob_call ("job_1", worker_list ("1", "10", "4", "7"));
-  _agent.expect_serveJob_call ("job_2", worker_list ("11", "2", "5", "8"));
+  expect_serveJob_call ("job_0", worker_list ("0", "3", "6", "9"));
+  expect_serveJob_call ("job_1", worker_list ("1", "10", "4", "7"));
+  expect_serveJob_call ("job_2", worker_list ("11", "2", "5", "8"));
 
   _scheduler.assignJobsToWorkers();
 
@@ -399,7 +401,7 @@ BOOST_AUTO_TEST_CASE(testCoallocSched)
 
   _scheduler.releaseReservation("job_0");
 
-  _agent.expect_serveJob_call ("job_3", 2, worker_list ("0", "3", "6", "9"));
+  expect_serveJob_call ("job_3", 2, worker_list ("0", "3", "6", "9"));
 
   _scheduler.assignJobsToWorkers();
 }
@@ -440,16 +442,16 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
   _scheduler.enqueueJob ("job_9");
 
 
-  _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
-  _agent.expect_serveJob_call ("job_1", worker_list ("worker_8"));
-  _agent.expect_serveJob_call ("job_2", worker_list ("worker_7"));
-  _agent.expect_serveJob_call ("job_3", worker_list ("worker_5"));
-  _agent.expect_serveJob_call ("job_4", worker_list ("worker_4"));
-  _agent.expect_serveJob_call ("job_5", worker_list ("worker_6"));
-  _agent.expect_serveJob_call ("job_6", worker_list ("worker_3"));
-  _agent.expect_serveJob_call ("job_7", worker_list ("worker_2"));
-  _agent.expect_serveJob_call ("job_8", worker_list ("worker_1"));
-  _agent.expect_serveJob_call ("job_9", worker_list ("worker_0"));
+  expect_serveJob_call ("job_0", worker_list ("worker_9"));
+  expect_serveJob_call ("job_1", worker_list ("worker_8"));
+  expect_serveJob_call ("job_2", worker_list ("worker_7"));
+  expect_serveJob_call ("job_3", worker_list ("worker_5"));
+  expect_serveJob_call ("job_4", worker_list ("worker_4"));
+  expect_serveJob_call ("job_5", worker_list ("worker_6"));
+  expect_serveJob_call ("job_6", worker_list ("worker_3"));
+  expect_serveJob_call ("job_7", worker_list ("worker_2"));
+  expect_serveJob_call ("job_8", worker_list ("worker_1"));
+  expect_serveJob_call ("job_9", worker_list ("worker_0"));
 
   _scheduler.assignJobsToWorkers();
 
@@ -461,7 +463,7 @@ BOOST_AUTO_TEST_CASE(tesLBStopRestartWorker)
 
   _scheduler.worker_manager().addWorker("worker_9", 1, capabilities ("worker_9", "C"));
 
-  _agent.expect_serveJob_call ("job_0", worker_list ("worker_9"));
+  expect_serveJob_call ("job_0", worker_list ("worker_9"));
 
   _scheduler.assignJobsToWorkers();
 }
@@ -481,6 +483,6 @@ BOOST_FIXTURE_TEST_CASE
   _agent.TEST_add_dummy_job ("1", require (1));
   _scheduler.enqueueJob ("1");
 
-  _agent.expect_serveJob_call ("1", worker_list ("worker"));
+  expect_serveJob_call ("1", worker_list ("worker"));
   _scheduler.assignJobsToWorkers();
 }

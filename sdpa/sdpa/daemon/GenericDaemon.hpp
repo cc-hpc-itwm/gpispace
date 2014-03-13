@@ -157,7 +157,7 @@ namespace sdpa {
       bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
       // workers
-      OVERWRITTEN_IN_TEST void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
+      void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
 
     protected:
       // jobs
