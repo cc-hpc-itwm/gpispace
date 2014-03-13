@@ -10,8 +10,7 @@ namespace expr
   namespace token
   {
     enum type
-    { _token_begin
-    , _or = _token_begin      // prec  0, left associative
+    { _or                     // prec  0, left associative
     , _and                    // prec  1, left associative
     , _not                    // prec 30, right associative
     , lt, le, gt, ge, ne, eq  // prec 10, left associative
@@ -51,7 +50,6 @@ namespace expr
     , define                  // prec -99, right associative
 
     , eof
-    , _token_end = eof
     };
 
     std::ostream& operator<< (std::ostream&, const type&);
