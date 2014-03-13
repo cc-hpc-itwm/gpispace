@@ -192,7 +192,6 @@ GenericDaemon::~GenericDaemon()
   {
     delete pJob;
   }
-  job_map_.clear();
 }
 
 const std::string& GenericDaemon::name() const
