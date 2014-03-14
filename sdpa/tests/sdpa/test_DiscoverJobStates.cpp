@@ -174,52 +174,6 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
   check_discover_worker_job_status (sdpa::status::CANCELING);
 }
 
-BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
-{
-  srand (time (NULL));
-
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-
-  const unsigned int num_agents (rand() % 5 + 2);
-
-  boost::ptr_list<utils::agent> agents;
-
-  for (unsigned int k (0); k < num_agents; ++k)
-  {
-     std::string const agent_name
-       ((boost::format ("%1%%2%") % fhg::util::random_string() % k).str());
-
-     utils::agent* agent =
-       k
-       ? new utils::agent ( agent_name, "127.0.0.1", kvs_host(), kvs_port()
-                          , agents.front()
-                          )
-       : new utils::agent ( agent_name, "127.0.0.1", kvs_host(), kvs_port()
-                          , orchestrator
-                          );
-
-     agents.push_front (agent);
-  }
-
-  const sdpa::status::code reply_status
-    (static_cast<sdpa::status::code> (rand() % 6));
-
-  Worker worker (agents.front(), "", reply_status);
-
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-
-  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
-
-  worker.wait_for_jobs();
-
-  sdpa::discovery_info_t const discovery_result
-    (client.discoverJobStates (get_next_discovery_id(), job_id));
-
-  BOOST_REQUIRE_EQUAL (max_depth (discovery_result), num_agents + 1);
-
-  check_has_one_leaf_job_with_expected_status (discovery_result, reply_status);
-}
-
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
