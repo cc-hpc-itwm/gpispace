@@ -82,55 +82,6 @@ namespace
   }
 }
 
-class Worker : public utils::BasicAgent
-{
-  public:
-    Worker( const utils::agent& master_agent
-          , const std::string& cpb_name
-          , boost::optional<sdpa::status::code> reply_status)
-      :  utils::BasicAgent (utils::random_peer_name(), master_agent, cpb_name)
-      , _reply_status(reply_status)
-    {}
-
-    void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
-    {
-      sdpa::events::SubmitJobAckEvent::Ptr
-      pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent( _name
-                                                          , pEvt->from()
-                                                          , *pEvt->job_id()));
-      _network_strategy->perform (pSubmitJobAckEvt);
-      _cond_got_job.notify_one();
-    }
-
-    void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
-    {
-      sdpa::discovery_info_t discovery_result( pEvt->job_id()
-                                     , _reply_status
-                                     , sdpa::discovery_info_set_t());
-
-
-      sdpa::events::DiscoverJobStatesReplyEvent::Ptr
-        pDiscRplEvt( new sdpa::events::DiscoverJobStatesReplyEvent ( _name
-                                                                   , pEvt->from()
-                                                                   , pEvt->discover_id()
-                                                                   , discovery_result ));
-
-      _network_strategy->perform (pDiscRplEvt);
-    }
-
-    void wait_for_jobs()
-    {
-      boost::unique_lock<boost::mutex> lock(_mtx_got_job);
-      _cond_got_job.wait(lock);
-    }
-
-  private:
-    boost::optional<sdpa::status::code> _reply_status;
-    boost::mutex _mtx_got_job;
-    boost::condition_variable_any _cond_got_job;
-};
-
-
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 namespace
