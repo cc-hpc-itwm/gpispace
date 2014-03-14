@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
   check_has_one_leaf_job_with_expected_status (discovery_result, reply_status);
 
   delete pWorker;
-  for (int k (num_agents - 1); k > 0; --k)
+  for (int k (num_agents - 1); k >= 0; --k)
   {
     delete agents[k];
   }
