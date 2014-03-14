@@ -345,21 +345,25 @@ namespace utils
         )
       , _event_thread (&basic_drts_worker::event_thread, this)
     {
-      _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          (new sdpa::events::WorkerRegistrationEvent (_name, master._.name(), 1))
-        );
+      if (_master_name)
+      {
+        _network.perform
+          ( sdpa::events::SDPAEvent::Ptr
+            (new sdpa::events::WorkerRegistrationEvent (_name, *_master_name, 1))
+          );
+      }
     }
 
     virtual void handleWorkerRegistrationAckEvent
       (const sdpa::events::WorkerRegistrationAckEvent* e)
     {
+      BOOST_REQUIRE (_master_name);
       BOOST_REQUIRE_EQUAL (e->from(), _master_name);
     }
 
   protected:
     std::string _name;
-    std::string _master_name;
+    boost::optional<std::string> _master_name;
 
   private:
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
