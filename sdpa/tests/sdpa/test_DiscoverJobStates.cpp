@@ -223,12 +223,12 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
   BOOST_REQUIRE_EQUAL
-    ( client.discoverJobStates ( fhg::util::random_string()
-                               , fhg::util::random_string()
-                               ).state()
+    ( sdpa::client::Client (orchestrator.name(), kvs_host(), kvs_port())
+    . discoverJobStates ( fhg::util::random_string()
+                        , fhg::util::random_string()
+                        ).state()
     , boost::none
     );
 }
