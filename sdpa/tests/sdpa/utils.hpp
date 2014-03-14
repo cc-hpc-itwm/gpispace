@@ -266,8 +266,8 @@ namespace utils
     boost::thread _thread;
   };
 
-  class BasicAgent : public sdpa::events::EventHandler,
-                      boost::noncopyable
+  class BasicAgent : public sdpa::events::EventHandler
+                   , boost::noncopyable
   {
   public:
     BasicAgent ( std::string name
