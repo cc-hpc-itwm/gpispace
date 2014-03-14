@@ -8,7 +8,7 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
+BOOST_AUTO_TEST_CASE (restart_worker_with_dummy_workflow)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (orchestrator);
