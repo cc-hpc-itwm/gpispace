@@ -91,6 +91,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _discover_sources()
   , _job_map_mutex()
   , job_map_()
+  , _cleanup_job_map_on_dtor_helper (job_map_)
   , ptr_scheduler_
     ( new CoallocationScheduler
       ( boost::bind (&GenericDaemon::serveJob, this, _1, _2)
@@ -177,24 +178,15 @@ GenericDaemon::~GenericDaemon()
         );
     }
   }
+}
 
-  _event_handler_thread.interrupt();
-  if (_event_handler_thread.joinable())
-  {
-    _event_handler_thread.join();
-  }
-
-  _scheduling_thread.interrupt();
-  if (_scheduling_thread.joinable())
-  {
-    _scheduling_thread.join();
-  }
-
-  _registration_threads.stop_all();
-
-  delete ptr_workflow_engine_;
-
-  BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
+GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
+    (job_map_t& m)
+  : _ (m)
+{}
+GenericDaemon::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
+{
+  BOOST_FOREACH (const Job* const pJob, _ | boost::adaptors::map_values )
   {
     delete pJob;
   }

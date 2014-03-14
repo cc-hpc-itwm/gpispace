@@ -47,6 +47,8 @@
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
@@ -154,7 +156,7 @@ namespace sdpa {
 
       // workflow engine
     public:
-      we::layer* workflowEngine() const { return ptr_workflow_engine_; }
+      const boost::scoped_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
 
       // workers
@@ -233,6 +235,12 @@ namespace sdpa {
 
       mutable boost::mutex _job_map_mutex;
       job_map_t job_map_;
+      struct cleanup_job_map_on_dtor_helper
+      {
+        cleanup_job_map_on_dtor_helper (GenericDaemon::job_map_t&);
+        ~cleanup_job_map_on_dtor_helper();
+        GenericDaemon::job_map_t& _;
+      } _cleanup_job_map_on_dtor_helper;
 
     protected:
       boost::shared_ptr<CoallocationScheduler> ptr_scheduler_;
@@ -268,16 +276,16 @@ namespace sdpa {
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
 
-      we::layer* ptr_workflow_engine_;
+      boost::scoped_ptr<we::layer> ptr_workflow_engine_;
 
       fhg::thread::set _registration_threads;
 
-      //! \todo boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-      boost::thread _scheduling_thread;
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _scheduling_thread;
       void scheduling_thread();
 
-      //! \todo boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-      boost::thread _event_handler_thread;
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _event_handler_thread;
       void handle_events();
 
     protected:
