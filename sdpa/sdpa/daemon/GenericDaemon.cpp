@@ -163,14 +163,7 @@ GenericDaemon::~GenericDaemon()
   {
     if (!masterInfo.name().empty() && masterInfo.is_registered())
     {
-      sendEventToOther
-        ( events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
-                                           , masterInfo.name()
-                                           , events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                           , "node shutdown"
-                                           )
-                          )
-        );
+      parent_proxy (this, masterInfo.name()).notify_shutdown();
     }
   }
 }
@@ -1374,6 +1367,16 @@ namespace sdpa
         ( events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
             (_that->name(), _name, capacity, capabilities)
+          )
+        );
+    }
+
+    void GenericDaemon::parent_proxy::notify_shutdown() const
+    {
+      _that->sendEventToOther
+        ( events::ErrorEvent::Ptr
+          ( new events::ErrorEvent
+            (_that->name(), _name, events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "")
           )
         );
     }
