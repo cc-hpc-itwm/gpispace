@@ -273,8 +273,6 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
-  const Worker worker_0( fhg::util::random_string(), agent, "A", boost::none);
-
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
