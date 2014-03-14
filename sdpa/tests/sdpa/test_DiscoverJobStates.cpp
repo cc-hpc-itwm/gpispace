@@ -142,36 +142,99 @@ namespace
     return (boost::format ("%1%%2%") % fhg::util::random_string() % i++).str();
   }
 
-  void check_discover_worker_job_status (sdpa::status::code const reply_status)
+  template<sdpa::status::code reply>
+  class fake_drts_worker_discovering :
+    public utils::fake_drts_worker_notifying_module_call_submission
+  {
+  public:
+    fake_drts_worker_discovering
+        ( boost::function<void (std::string)> announce_job
+        , std::string kvs_host
+        , std::string kvs_port
+        , utils::agent const& master
+        )
+      : utils::fake_drts_worker_notifying_module_call_submission
+        (announce_job, kvs_host, kvs_port, master)
+    {}
+
+    virtual void handleDiscoverJobStatesEvent
+      (const sdpa::events::DiscoverJobStatesEvent* e)
+    {
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          ( new sdpa::events::DiscoverJobStatesReplyEvent
+            ( _name
+            , e->from()
+            , e->discover_id()
+            , sdpa::discovery_info_t
+              (e->job_id(), reply, sdpa::discovery_info_set_t())
+            )
+          )
+        );
+    }
+  };
+
+  struct wait_until_submitted_and_finish_on_scope_exit
+  {
+    wait_until_submitted_and_finish_on_scope_exit
+        ( utils::fake_drts_worker_notifying_module_call_submission& worker
+        , std::string expected_job_name
+        , fhg::util::thread::event<std::string>& job_submitted
+        )
+      : _worker (worker)
+      , _actual_job_name()
+    {
+      job_submitted.wait (_actual_job_name);
+      BOOST_REQUIRE_EQUAL (_actual_job_name, expected_job_name);
+    }
+    ~wait_until_submitted_and_finish_on_scope_exit()
+    {
+      _worker.finish (_actual_job_name);
+    }
+
+    utils::fake_drts_worker_notifying_module_call_submission& _worker;
+    std::string _actual_job_name;
+  };
+
+  template<sdpa::status::code reply>
+  void check_discover_worker_job_status()
   {
     const utils::orchestrator orchestrator (kvs_host(), kvs_port());
     const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
-    Worker worker (agent, "", reply_status);
+    fhg::util::thread::event<std::string> job_submitted;
 
-    sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-    sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
+    fake_drts_worker_discovering<reply> worker
+      ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
+      , kvs_host(), kvs_port()
+      , agent
+      );
 
-    worker.wait_for_jobs();
+    const std::string activity_name (fhg::util::random_string());
+
+    utils::client::submitted_job submitted_job
+      (utils::module_call (activity_name), orchestrator);
+
+    const wait_until_submitted_and_finish_on_scope_exit _
+      (worker, activity_name, job_submitted);
 
     sdpa::discovery_info_t const discovery_result
-      (client.discoverJobStates (get_next_discovery_id(), job_id));
+      (submitted_job.discover());
 
     BOOST_REQUIRE_EQUAL (max_depth (discovery_result), 2);
 
-    check_has_one_leaf_job_with_expected_status
-      (discovery_result, reply_status);
+    check_has_one_leaf_job_with_expected_status (discovery_result, reply);
   }
 }
 
 BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 {
-  check_discover_worker_job_status (sdpa::status::FINISHED);
-  check_discover_worker_job_status (sdpa::status::FAILED);
-  check_discover_worker_job_status (sdpa::status::CANCELED);
-  check_discover_worker_job_status (sdpa::status::PENDING);
-  check_discover_worker_job_status (sdpa::status::RUNNING);
-  check_discover_worker_job_status (sdpa::status::CANCELING);
+  check_discover_worker_job_status<sdpa::status::FINISHED>();
+  check_discover_worker_job_status<sdpa::status::FAILED>();
+  check_discover_worker_job_status<sdpa::status::CANCELED>();
+  check_discover_worker_job_status<sdpa::status::PENDING>();
+  check_discover_worker_job_status<sdpa::status::RUNNING>();
+  check_discover_worker_job_status<sdpa::status::CANCELING>();
 }
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
@@ -218,38 +281,6 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 
 namespace
 {
-  template<sdpa::status::code reply>
-  class fake_drts_worker_discovering :
-    public utils::fake_drts_worker_notifying_module_call_submission
-  {
-  public:
-    fake_drts_worker_discovering
-        ( boost::function<void (std::string)> announce_job
-        , std::string kvs_host
-        , std::string kvs_port
-        , utils::agent const& master
-        )
-      : utils::fake_drts_worker_notifying_module_call_submission
-        (announce_job, kvs_host, kvs_port, master)
-    {}
-
-    virtual void handleDiscoverJobStatesEvent
-      (const sdpa::events::DiscoverJobStatesEvent* e)
-    {
-      _network.perform
-        ( sdpa::events::SDPAEvent::Ptr
-          ( new sdpa::events::DiscoverJobStatesReplyEvent
-            ( _name
-            , e->from()
-            , e->discover_id()
-            , sdpa::discovery_info_t
-              (e->job_id(), reply, sdpa::discovery_info_set_t())
-            )
-          )
-        );
-    }
-  };
-
   std::size_t recursive_child_count (sdpa::discovery_info_t info)
   {
     std::size_t count (info.children().size());
@@ -259,28 +290,6 @@ namespace
     }
     return count;
   }
-
-  struct wait_until_submitted_and_finish_on_scope_exit
-  {
-    wait_until_submitted_and_finish_on_scope_exit
-        ( utils::fake_drts_worker_notifying_module_call_submission& worker
-        , std::string expected_job_name
-        , fhg::util::thread::event<std::string>& job_submitted
-        )
-      : _worker (worker)
-      , _actual_job_name()
-    {
-      job_submitted.wait (_actual_job_name);
-      BOOST_REQUIRE_EQUAL (_actual_job_name, expected_job_name);
-    }
-    ~wait_until_submitted_and_finish_on_scope_exit()
-    {
-      _worker.finish (_actual_job_name);
-    }
-
-    utils::fake_drts_worker_notifying_module_call_submission& _worker;
-    std::string _actual_job_name;
-  };
 
   void verify_child_count_in_agent_chain (const std::size_t num_agents)
   {
