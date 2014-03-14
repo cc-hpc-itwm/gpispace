@@ -265,10 +265,8 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 {
-  // this workflow produces 2 activities
-  // one requires 2 workers, the other 3 workers
   const std::string workflow
-    (utils::require_and_read_file ("coallocation.pnet"));
+    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
