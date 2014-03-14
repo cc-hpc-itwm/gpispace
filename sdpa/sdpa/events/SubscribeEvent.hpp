@@ -21,11 +21,6 @@ namespace sdpa
         , listJobIds_ (listJobIds)
       {}
 
-      std::string str() const
-      {
-        return "SubscribeEvent";
-      }
-
       const sdpa::agent_id_t& subscriber() const
       {
         return from();

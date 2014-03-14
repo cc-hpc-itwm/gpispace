@@ -19,11 +19,6 @@ namespace sdpa
         : sdpa::events::JobEvent (from, to, job_id)
       {}
 
-      std::string str() const
-      {
-        return "DeleteJobEvent(" + job_id () + ")";
-      }
-
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleDeleteJobEvent (this);

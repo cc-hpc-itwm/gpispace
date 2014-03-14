@@ -24,11 +24,6 @@ namespace sdpa
         _function();
       }
 
-      virtual std::string str() const
-      {
-        return "delayed_function_call (<function_pointer>)";
-      }
-
     private:
       boost::function<void()> _function;
     };

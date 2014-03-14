@@ -52,11 +52,6 @@ namespace sdpa
         return job_id_;
       }
 
-      std::string str() const
-      {
-        return "ErrorEvent";
-      }
-
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleErrorEvent (this);

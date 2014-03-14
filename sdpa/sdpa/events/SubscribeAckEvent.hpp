@@ -30,11 +30,6 @@ namespace sdpa
         handler->handleSubscribeAckEvent (this);
       }
 
-      std::string str() const
-      {
-        return "SubscribeAckEvent";
-      }
-
     private:
       sdpa::job_id_list_t listJobIds_;
     };

@@ -30,7 +30,6 @@ namespace sdpa
         return to_;
       }
 
-      virtual std::string str() const = 0;
       virtual void handleBy (EventHandler*) = 0;
 
     protected:

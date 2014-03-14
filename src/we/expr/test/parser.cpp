@@ -6,7 +6,13 @@
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
 
+#include <we/exception.hpp>
+
 #include <we/type/value/boost/test/printer.hpp>
+
+#include <fhg/util/boost/test/require_exception.hpp>
+
+#include <boost/bind.hpp>
 
 #include <string>
 
@@ -201,4 +207,424 @@ BOOST_AUTO_TEST_CASE (renamed_at_depth_greater_zero)
 
   BOOST_REQUIRE_EQUAL
     (parser.string(), expr::parse::parser ("sin (${A})").string());
+}
+
+BOOST_AUTO_TEST_CASE (token_or_table)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression, context).get_front()          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("true || true", true);
+  CHECK ("true || false", true);
+  CHECK ("false || true", true);
+  CHECK ("false || false", false);
+
+  CHECK ("true :or: true", true);
+  CHECK ("true :or: false", true);
+  CHECK ("false :or: true", true);
+  CHECK ("false :or: false", false);
+
+  CHECK ("0 || 0", 0);
+  CHECK ("0 || 1", 1);
+  CHECK ("1 || 1", 1);
+  CHECK ("1 || 0", 1);
+  CHECK ("1 || 2", 3);
+  CHECK ("2 || 1", 3);
+
+  CHECK ("0U || 0U", 0U);
+  CHECK ("0U || 1U", 1U);
+  CHECK ("1U || 1U", 1U);
+  CHECK ("1U || 0U", 1U);
+  CHECK ("1U || 2U", 3U);
+  CHECK ("2U || 1U", 3U);
+
+  CHECK ("0L || 0L", 0L);
+  CHECK ("0L || 1L", 1L);
+  CHECK ("1L || 1L", 1L);
+  CHECK ("1L || 0L", 1L);
+  CHECK ("1L || 2L", 3L);
+  CHECK ("2L || 1L", 3L);
+
+  CHECK ("0UL || 0UL", 0UL);
+  CHECK ("0UL || 1UL", 1UL);
+  CHECK ("1UL || 1UL", 1UL);
+  CHECK ("1UL || 0UL", 1UL);
+  CHECK ("1UL || 2UL", 3UL);
+  CHECK ("2UL || 1UL", 3UL);
+#undef CHECK
+}
+
+namespace
+{
+  void get_and_ignore_value_from_context
+    (expr::eval::context const& context, std::string const& key)
+  {
+    (void)context.value (key);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_or_short_circuit)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression).eval_front (context)          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("true || (${a} := true)", true);
+
+  fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
+    ( boost::bind (&get_and_ignore_value_from_context, context, "a")
+    , "missing binding for: ${a}"
+    );
+
+  CHECK ("false || (${a} := true)", true);
+
+  BOOST_REQUIRE_EQUAL
+    (context.value ("a"), pnet::type::value::value_type (true));
+
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (token_and_table)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression, context).get_front()          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("true && true", true);
+  CHECK ("true && false", false);
+  CHECK ("false && true", false);
+  CHECK ("false && false", false);
+
+  CHECK ("true :and: true", true);
+  CHECK ("true :and: false", false);
+  CHECK ("false :and: true", false);
+  CHECK ("false :and: false", false);
+
+  CHECK ("0 && 0", 0);
+  CHECK ("0 && 1", 0);
+  CHECK ("1 && 1", 1);
+  CHECK ("1 && 0", 0);
+  CHECK ("1 && 2", 0);
+  CHECK ("2 && 1", 0);
+
+  CHECK ("0U && 0U", 0U);
+  CHECK ("0U && 1U", 0U);
+  CHECK ("1U && 1U", 1U);
+  CHECK ("1U && 0U", 0U);
+  CHECK ("1U && 2U", 0U);
+  CHECK ("2U && 1U", 0U);
+
+  CHECK ("0L && 0L", 0L);
+  CHECK ("0L && 1L", 0L);
+  CHECK ("1L && 1L", 1L);
+  CHECK ("1L && 0L", 0L);
+  CHECK ("1L && 2L", 0L);
+  CHECK ("2L && 1L", 0L);
+
+  CHECK ("0UL && 0UL", 0UL);
+  CHECK ("0UL && 1UL", 0UL);
+  CHECK ("1UL && 1UL", 1UL);
+  CHECK ("1UL && 0UL", 0UL);
+  CHECK ("1UL && 2UL", 0UL);
+  CHECK ("2UL && 1UL", 0UL);
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (token_and_short_circuit)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression).eval_front (context)          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("false && (${a} := false)", false);
+
+  fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
+    ( boost::bind (&get_and_ignore_value_from_context, context, "a")
+    , "missing binding for: ${a}"
+    );
+
+  CHECK ("true && (${a} := false)", false);
+
+  BOOST_REQUIRE_EQUAL
+    (context.value ("a"), pnet::type::value::value_type (false));
+
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (token_not)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression).eval_front (context)          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("!true", false);
+  CHECK ("!false", true);
+  CHECK ("!!true", true);
+  CHECK ("!!false", false);
+  CHECK ("!0", true);
+  CHECK ("!1", false);
+  CHECK ("!0U", true);
+  CHECK ("!1U", false);
+  CHECK ("!0L", true);
+  CHECK ("!1L", false);
+  CHECK ("!0UL", true);
+  CHECK ("!1UL", false);
+
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (token_cmp)
+{
+  expr::eval::context context;
+
+#define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge, _ne, _eq)                 \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% < %2%") % #_lhs % #_rhs).str())             \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_lt)                               \
+    );                                                                  \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% <= %2%") % #_lhs % #_rhs).str())            \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_le)                               \
+    );                                                                  \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% > %2%") % #_lhs % #_rhs).str())             \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_gt)                               \
+    );                                                                  \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% >= %2%") % #_lhs % #_rhs).str())            \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_ge)                               \
+    );                                                                  \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% != %2%") % #_lhs % #_rhs).str())            \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_ne)                               \
+    );                                                                  \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str())            \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_eq)                               \
+    )
+
+  CHECK ('a', 'a', false, true, false, true, false, true);
+  CHECK ('a', 'b', true, true, false, false, true, false);
+  CHECK ('b', 'a', false, false, true, true, true, false);
+  CHECK ("\"\"", "\"\"", false, true, false, true, false, true);
+  CHECK ("\"\"", "\"a\"", true, true, false, false, true, false);
+  CHECK ("\"a\"", "\"a\"", false, true, false, true, false, true);
+  CHECK ("\"a\"", "\"b\"", true, true, false, false, true, false);
+  CHECK ("\"a\"", "\"ab\"", true, true, false, false, true, false);
+  CHECK ("\"a\"", "\"\"", false, false, true, true, true, false);
+  CHECK ("\"b\"", "\"a\"", false, false, true, true, true, false);
+  CHECK ("\"ab\"", "\"a\"", false, false, true, true, true, false);
+  CHECK (true, true, false, true, false, true, false, true);
+  CHECK (false, true, true, true, false, false, true, false);
+  CHECK (true, false, false, false, true, true, true, false);
+  CHECK (0, 0, false, true, false, true, false, true);
+  CHECK (0, 1, true, true, false, false, true, false);
+  CHECK (1, 0, false, false, true, true, true, false);
+  CHECK (0U, 0U, false, true, false, true, false, true);
+  CHECK (0U, 1U, true, true, false, false, true, false);
+  CHECK (1U, 0U, false, false, true, true, true, false);
+  CHECK (0L, 0L, false, true, false, true, false, true);
+  CHECK (0L, 1L, true, true, false, false, true, false);
+  CHECK (1L, 0L, false, false, true, true, true, false);
+  CHECK (0UL, 0UL, false, true, false, true, false, true);
+  CHECK (0UL, 1UL, true, true, false, false, true, false);
+  CHECK (1UL, 0UL, false, false, true, true, true, false);
+#undef CHECK
+
+#define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge)                           \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% < %2%") % #_lhs % #_rhs).str())             \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_lt)                               \
+    );                                                                  \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% <= %2%") % #_lhs % #_rhs).str())            \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_le)                               \
+    );                                                                  \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% > %2%") % #_lhs % #_rhs).str())             \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_gt)                               \
+    );                                                                  \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% >= %2%") % #_lhs % #_rhs).str())            \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_ge)                               \
+    )
+
+  CHECK (0.0, 0.0, false, true, false, true);
+  CHECK (0.0, 1.0, true, true, false, false);
+  CHECK (1.0, 0.0, false, false, true, true);
+  CHECK (0.0f, 0.0f, false, true, false, true);
+  CHECK (0.0f, 1.0f, true, true, false, false);
+  CHECK (1.0f, 0.0f, false, false, true, true);
+#undef CHECK
+
+#define CHECK(_lhs, _rhs, _eq)                                          \
+  BOOST_REQUIRE_EQUAL                                                   \
+    ( expr::parse::parser                                               \
+      ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str())            \
+    . eval_front (context)                                              \
+    , pnet::type::value::value_type (_eq)                               \
+    )
+
+  CHECK ({}, {}, true);
+  CHECK ({}, bitset_insert {} 1L, false);
+  CHECK (bitset_insert {} 1L, {}, false);
+  CHECK (bitset_insert {} 1L, bitset_insert {} 2L, false);
+  CHECK (bitset_insert (bitset_insert {} 1L) 2L, bitset_insert {} 2L, false);
+  CHECK ( bitset_insert (bitset_insert {} 1L) 2L
+        , bitset_insert (bitset_insert {} 2L) 1L, true
+        );
+
+  CHECK (y(), y(), true);
+  CHECK (y(4), y(), false);
+  CHECK (y(), y(4), false);
+  CHECK (y(4), y(4), true);
+#undef CHECK
+}
+
+BOOST_AUTO_TEST_CASE (token_add)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression).eval_front (context)          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+  CHECK ("'a' + 'a'", std::string ("aa"));
+  CHECK ("\"\" + \"\"", std::string (""));
+  CHECK ("\"a\" + \"\"", std::string ("a"));
+  CHECK ("\"a\" + \"a\"", std::string ("aa"));
+  CHECK ("\"ab\" + \"a\"", std::string ("aba"));
+
+#define CHECK_INTEGRAL(_type, _suffix)                                 \
+  {                                                                    \
+    _type const l (rand());                                            \
+    _type const r (rand());                                            \
+                                                                       \
+    BOOST_REQUIRE_EQUAL                                                \
+      ( expr::parse::parser                                            \
+        ((boost::format ("%1%%3% + %2%%3%") % l % r % _suffix).str())  \
+      . eval_front (context)                                           \
+      , pnet::type::value::value_type (l + r)                          \
+      );                                                               \
+  }
+
+  CHECK_INTEGRAL (int, "");
+  CHECK_INTEGRAL (unsigned int, "U");
+  CHECK_INTEGRAL (long, "L");
+  CHECK_INTEGRAL (unsigned long, "UL");
+#undef CHECK_INTEGRAL
+
+  CHECK ("0.0 + 0.0", 0.0);
+  CHECK ("0.0 + 1.0", 1.0);
+  CHECK ("1.0 + 1.0", 2.0);
+  CHECK ("0.0f + 0.0f", 0.0f);
+  CHECK ("0.0f + 1.0f", 1.0f);
+  CHECK ("1.0f + 1.0f", 2.0f);
+
+#undef CHECK
+}
+
+namespace
+{
+  void parser_ctor (std::string const& input)
+  {
+    (void)expr::parse::parser (input);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_sub)
+{
+  expr::eval::context context;
+
+#define CHECK(_expression, _value)                                    \
+  BOOST_REQUIRE_EQUAL                                                 \
+    ( expr::parse::parser (_expression).eval_front (context)          \
+    , pnet::type::value::value_type (_value)                          \
+    )
+
+#define CHECK_INTEGRAL(_type, _suffix)                                 \
+  {                                                                    \
+    _type const l (rand());                                            \
+    _type const r (rand());                                            \
+                                                                       \
+    BOOST_REQUIRE_EQUAL                                                \
+      ( expr::parse::parser                                            \
+        ((boost::format ("%1%%3% - %2%%3%") % l % r % _suffix).str())  \
+      . eval_front (context)                                           \
+      , pnet::type::value::value_type (l - r)                          \
+      );                                                               \
+  }
+
+  CHECK_INTEGRAL (int, "");
+  CHECK_INTEGRAL (long, "L");
+#undef CHECK_INTEGRAL
+
+  CHECK ("0.0 - 0.0", 0.0);
+  CHECK ("0.0 - 1.0", -1.0);
+  CHECK ("1.0 - 1.0", 0.0);
+  CHECK ("0.0f - 0.0f", 0.0f);
+  CHECK ("0.0f - 1.0f", -1.0f);
+  CHECK ("1.0f - 1.0f", 0.0f);
+
+  CHECK ("0U - 0U", 0U);
+  CHECK ("1U - 0U", 1U);
+  CHECK ("2U - 1U", 1U);
+  CHECK ("0UL - 0UL", 0UL);
+  CHECK ("1UL - 0UL", 1UL);
+  CHECK ("2UL - 1UL", 1UL);
+
+#undef CHECK
+
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ( boost::bind (&parser_ctor, "0U - 1U")
+    , "r > l => neg result"
+    );
+
+  fhg::util::boost::test::require_exception<std::runtime_error>
+    ( boost::bind (&parser_ctor, "0UL - 1UL")
+    , "r > l => neg result"
+    );
 }

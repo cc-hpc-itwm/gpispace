@@ -126,7 +126,8 @@ namespace sdpa
             );
         }
 
-        throw std::runtime_error ("Unexpected reply: " + reply->str());
+        throw std::runtime_error
+          ("Unexpected reply: " + std::string (typeid (reply.get()).name()));
       }
     }
 

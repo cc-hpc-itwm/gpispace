@@ -21,11 +21,6 @@ namespace sdpa
         , m_error_message (error_message)
       {}
 
-      std::string str() const
-      {
-        return "JobFailedEvent(" + job_id () + ")";
-      }
-
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleJobFailedEvent (this);
