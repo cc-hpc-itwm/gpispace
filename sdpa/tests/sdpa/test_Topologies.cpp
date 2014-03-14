@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   agents.push_back (boost::cref (agent_0));
   agents.push_back (boost::cref (agent_1));
 
-  const utils::agent agent_2 (kvs_host(), kvs_port(), agents);
+  const utils::agent agent_2 (agents);
 
   const Worker worker (agent_2);
 
