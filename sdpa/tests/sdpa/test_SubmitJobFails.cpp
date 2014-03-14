@@ -10,10 +10,8 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE (fail_on_invalid_workflow)
 {
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (orchestrator);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         ("invalid workflow", orchestrator)
@@ -23,10 +21,8 @@ BOOST_AUTO_TEST_CASE (fail_on_invalid_workflow)
 
 BOOST_AUTO_TEST_CASE (fail_on_empty_workflow)
 {
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (orchestrator);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         ("", orchestrator)
