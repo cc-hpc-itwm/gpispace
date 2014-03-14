@@ -176,16 +176,6 @@ namespace utils
 
   namespace
   {
-    std::string assemble_string (const agents_t& masters)
-    {
-      std::string result;
-      BOOST_FOREACH (const utils::agent& agent, masters)
-      {
-        result += agent.name() + ",";
-      }
-      return result.substr (0, result.size() - 1);
-    }
-
     sdpa::master_info_list_t assemble_master_info_list (const agents_t& masters)
     {
       sdpa::master_info_list_t result;
@@ -244,21 +234,6 @@ namespace utils
       , _config_variables()
       , _kernel ( createDRTSWorker
                   (name, master.name(), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop(), _config_variables)
-                )
-      , _thread (&drts_worker::thread, this)
-    {
-    }
-    drts_worker ( std::string name
-                , const agents_t& masters
-                , std::string capabilities
-                , std::string modules_path
-                , std::string kvs_host
-                , std::string kvs_port
-                )
-      : _waiter()
-      , _config_variables()
-      , _kernel ( createDRTSWorker
-                  (name, assemble_string (masters), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop(), _config_variables)
                 )
       , _thread (&drts_worker::thread, this)
     {
