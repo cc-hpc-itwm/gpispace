@@ -55,7 +55,7 @@ namespace utils
   }
 
   //! \todo unify with test/layer
-  we::type::activity_t dummy_module_call (std::string name)
+  we::type::activity_t module_call (std::string name)
   {
     we::type::transition_t transition
       ( name
@@ -82,9 +82,9 @@ namespace utils
     return act;
   }
 
-  std::string simple_module_call()
+  std::string module_call()
   {
-    return dummy_module_call (fhg::util::random_string()).to_string();
+    return module_call (fhg::util::random_string()).to_string();
   }
 
   struct orchestrator : boost::noncopyable

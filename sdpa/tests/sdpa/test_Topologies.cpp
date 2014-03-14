@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   const Worker worker( "worker_0", agent);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
-                        (utils::simple_module_call(), orchestrator)
+                        (utils::module_call(), orchestrator)
                       , sdpa::status::FINISHED
                       );
 }
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE (chained_agents)
   const Worker worker( "worker_0", agent_1);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
-                        (utils::simple_module_call(), orchestrator)
+                        (utils::module_call(), orchestrator)
                       , sdpa::status::FINISHED
                       );
 }
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   const Worker worker_1( "worker_1", agent_2);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
-                        (utils::simple_module_call(), orchestrator)
+                        (utils::module_call(), orchestrator)
                       , sdpa::status::FINISHED
                       );
 }
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   const Worker worker("worker_0", agent_2);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
-                        (utils::simple_module_call(), orchestrator)
+                        (utils::module_call(), orchestrator)
                       , sdpa::status::FINISHED
                       );
 }

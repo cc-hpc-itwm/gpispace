@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE (cancel_no_agent)
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
-  sdpa::job_id_t job_id(client.submitJob (utils::simple_module_call()));
+  sdpa::job_id_t job_id(client.submitJob (utils::module_call()));
   client.cancelJob(job_id);
 
   BOOST_REQUIRE_EQUAL
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
-  sdpa::job_id_t job_id(client.submitJob (utils::simple_module_call()));
+  sdpa::job_id_t job_id(client.submitJob (utils::module_call()));
 
   worker.wait_for_jobs();
 
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
-  sdpa::job_id_t job_id(client.submitJob (utils::simple_module_call()));
+  sdpa::job_id_t job_id(client.submitJob (utils::module_call()));
   client.cancelJob(job_id);
 
   BOOST_REQUIRE_EQUAL
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
   Worker worker("worker_0", agent);
 
   sdpa::client::Client client (orchestrator.name(),  kvs_host(), kvs_port());
-  sdpa::job_id_t job_id(client.submitJob (utils::simple_module_call()));
+  sdpa::job_id_t job_id(client.submitJob (utils::module_call()));
 
   worker.wait_for_jobs();
 

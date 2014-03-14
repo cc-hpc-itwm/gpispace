@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
   Worker* pWorker(new Worker(worker_id, agent));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
+  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
 
   delete pWorker;
 

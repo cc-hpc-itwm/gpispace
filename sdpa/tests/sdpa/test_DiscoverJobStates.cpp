@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
   Worker worker(fhg::util::random_string(), agent, "", reply_status);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
+  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
 
   worker.wait_for_jobs();
 
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
-  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
+  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
 
   worker.wait_for_jobs();
 
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
+  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
 
   check_has_one_leaf_job_with_expected_status( client.discoverJobStates (get_next_discovery_id()
                                                , job_id), sdpa::status::PENDING );
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
+  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
 
   sdpa::discovery_info_t discovery_result;
   while (max_depth
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
+  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
 
   sdpa::discovery_info_t discovery_result;
 
@@ -358,7 +358,7 @@ namespace
     const std::string activity_name (fhg::util::random_string());
 
     utils::client::submitted_job submitted_job
-      (utils::dummy_module_call (activity_name), orchestrator);
+      (utils::module_call (activity_name), orchestrator);
 
     const wait_until_submitted_and_finish_on_scope_exit _
       (worker, activity_name, job_submitted);

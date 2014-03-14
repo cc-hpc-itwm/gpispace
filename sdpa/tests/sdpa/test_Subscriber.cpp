@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (utils::simple_module_call(), orchestrator)
+      (utils::module_call(), orchestrator)
     , sdpa::status::FINISHED
     );
 }
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
-      (utils::simple_module_call(), orchestrator)
+      (utils::module_call(), orchestrator)
     , sdpa::status::FINISHED
     );
 }
