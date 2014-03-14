@@ -142,28 +142,37 @@ namespace
 
     return (boost::format ("%1%%2%") % fhg::util::random_string() % i++).str();
   }
+
+  void check_discover_worker_job_status (sdpa::status::code const reply_status)
+  {
+    const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+    const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
+
+    Worker worker (fhg::util::random_string(), agent, "", reply_status);
+
+    sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
+    sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
+
+    worker.wait_for_jobs();
+
+    sdpa::discovery_info_t const discovery_result
+      (client.discoverJobStates (get_next_discovery_id(), job_id));
+
+    BOOST_REQUIRE_EQUAL (max_depth (discovery_result), 2);
+
+    check_has_one_leaf_job_with_expected_status
+      (discovery_result, reply_status);
+  }
 }
 
 BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-
-  const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
-
-  srand (time(NULL));
-  sdpa::status::code const reply_status(static_cast<sdpa::status::code>(rand()%6));
-
-  Worker worker(fhg::util::random_string(), agent, "", reply_status);
-
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
-
-  worker.wait_for_jobs();
-
-  sdpa::discovery_info_t const discovery_result(client.discoverJobStates (get_next_discovery_id(), job_id));
-  BOOST_REQUIRE_EQUAL(max_depth(discovery_result), 2);
-
-  check_has_one_leaf_job_with_expected_status(discovery_result, reply_status);
+  check_discover_worker_job_status (sdpa::status::FINISHED);
+  check_discover_worker_job_status (sdpa::status::FAILED);
+  check_discover_worker_job_status (sdpa::status::CANCELED);
+  check_discover_worker_job_status (sdpa::status::PENDING);
+  check_discover_worker_job_status (sdpa::status::RUNNING);
+  check_discover_worker_job_status (sdpa::status::CANCELING);
 }
 
 BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
