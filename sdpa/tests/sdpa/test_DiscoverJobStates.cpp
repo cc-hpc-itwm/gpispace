@@ -237,10 +237,11 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
 
   check_has_one_leaf_job_with_expected_status
-    ( client.discoverJobStates (get_next_discovery_id(), job_id)
+    ( client.discoverJobStates ( get_next_discovery_id()
+                               , client.submitJob (utils::module_call())
+                               )
     , sdpa::status::PENDING
     );
 }
