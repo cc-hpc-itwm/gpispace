@@ -207,14 +207,13 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
   const sdpa::status::code reply_status
     (static_cast<sdpa::status::code> (rand() % 6));
 
-  Worker* pWorker = new Worker
-    (fhg::util::random_string(), agents.front(), "", reply_status);
+  Worker worker (fhg::util::random_string(), agents.front(), "", reply_status);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  pWorker->wait_for_jobs();
+  worker.wait_for_jobs();
 
   sdpa::discovery_info_t const discovery_result
     (client.discoverJobStates (get_next_discovery_id(), job_id));
@@ -222,8 +221,6 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
   BOOST_REQUIRE_EQUAL (max_depth (discovery_result), num_agents + 1);
 
   check_has_one_leaf_job_with_expected_status (discovery_result, reply_status);
-
-  delete pWorker;
 }
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
