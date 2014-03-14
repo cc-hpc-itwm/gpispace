@@ -121,19 +121,6 @@ namespace utils
 
   struct agent : boost::noncopyable
   {
-    agent ( const std::string& name
-          , const std::string& url
-          , std::string kvs_host, std::string kvs_port
-          , const agents_t& masters
-          )
-      : _kvs_host (kvs_host)
-      , _kvs_port (kvs_port)
-      , _ ( name, url
-          , _kvs_host, _kvs_port
-          , assemble_master_info_list (masters)
-          , boost::none
-          )
-    {}
     agent ( std::string kvs_host, std::string kvs_port
           , const agents_t& masters
           )
