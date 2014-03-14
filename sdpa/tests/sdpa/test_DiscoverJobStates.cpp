@@ -175,41 +175,57 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 
 BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 {
-  srand (time(NULL));
+  srand (time (NULL));
+
   const std::string workflow
-     (utils::require_and_read_file ("dummy_workflow.pnet"));
+    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
     (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port());
 
-  const unsigned int n_agents_in_chain(rand()%5+2);
-  utils::agent* arr_ptr_agents[n_agents_in_chain];
+  const unsigned int num_agents (rand() % 5 + 2);
 
-  for(unsigned int k=0;k<n_agents_in_chain;k++) {
-     std::string const agent_name ((boost::format ("%1%%2%") % fhg::util::random_string() % k).str());
-     arr_ptr_agents[k] =
+  utils::agent* agents[num_agents];
+
+  for (unsigned int k (0); k < num_agents; ++k)
+  {
+     std::string const agent_name
+       ((boost::format ("%1%%2%") % fhg::util::random_string() % k).str());
+
+     agents[k] =
        k
-       ? new utils::agent(agent_name, "127.0.0.1", kvs_host(), kvs_port(), *arr_ptr_agents[k-1])
-       : new utils::agent(agent_name, "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+       ? new utils::agent ( agent_name, "127.0.0.1", kvs_host(), kvs_port()
+                          , *agents[k-1]
+                          )
+       : new utils::agent ( agent_name, "127.0.0.1", kvs_host(), kvs_port()
+                          , orchestrator
+                          );
   }
 
-  const sdpa::status::code reply_status(static_cast<sdpa::status::code>(rand()%6));
+  const sdpa::status::code reply_status
+    (static_cast<sdpa::status::code> (rand() % 6));
 
-  Worker* pWorker = new Worker(fhg::util::random_string(), *arr_ptr_agents[n_agents_in_chain-1], "", reply_status);
+  Worker* pWorker = new Worker
+    (fhg::util::random_string(), *agents[num_agents - 1], "", reply_status);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
+
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
   pWorker->wait_for_jobs();
 
-  sdpa::discovery_info_t const discovery_result(client.discoverJobStates (get_next_discovery_id(), job_id));
-  BOOST_REQUIRE_EQUAL(max_depth(discovery_result), n_agents_in_chain+1);
+  sdpa::discovery_info_t const discovery_result
+    (client.discoverJobStates (get_next_discovery_id(), job_id));
 
-  check_has_one_leaf_job_with_expected_status(discovery_result, reply_status);
+  BOOST_REQUIRE_EQUAL (max_depth (discovery_result), num_agents + 1);
+
+  check_has_one_leaf_job_with_expected_status (discovery_result, reply_status);
 
   delete pWorker;
-  for(int k=n_agents_in_chain-1;k>0;k--)
-    delete arr_ptr_agents[k];
+  for (int k (num_agents - 1); k > 0; --k)
+  {
+    delete agents[k];
+  }
 }
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
