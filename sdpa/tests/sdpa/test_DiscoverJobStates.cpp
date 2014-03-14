@@ -147,10 +147,12 @@ namespace
 BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 {
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+    (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port());
 
   const utils::agent agent
-     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+    ( fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port()
+    , orchestrator
+    );
 
   const std::string workflow
          (utils::require_and_read_file ("dummy_workflow.pnet"));
@@ -158,7 +160,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
   srand (time(NULL));
   sdpa::status::code const reply_status(static_cast<sdpa::status::code>(rand()%6));
 
-  Worker worker("worker_0", agent, "", reply_status);
+  Worker worker(fhg::util::random_string(), agent, "", reply_status);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -178,7 +180,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
      (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+    (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port());
 
   const unsigned int n_agents_in_chain(rand()%5+2);
   utils::agent* arr_ptr_agents[n_agents_in_chain];
@@ -192,7 +194,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 
   const sdpa::status::code reply_status(static_cast<sdpa::status::code>(rand()%6));
 
-  Worker* pWorker = new Worker("worker_0", *arr_ptr_agents[n_agents_in_chain-1], "", reply_status);
+  Worker* pWorker = new Worker(fhg::util::random_string(), *arr_ptr_agents[n_agents_in_chain-1], "", reply_status);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -212,11 +214,13 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 {
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+    (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port());
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
   BOOST_REQUIRE_EQUAL
-    ( client.discoverJobStates ("discovery_id_0", "inexistent_job_id").state()
+    ( client.discoverJobStates ( fhg::util::random_string()
+                               , fhg::util::random_string()
+                               ).state()
     , boost::none
     );
 }
@@ -227,7 +231,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
     (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+    (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port());
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
@@ -241,9 +245,9 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
     (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+    (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+    (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
@@ -264,11 +268,11 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
     (utils::require_and_read_file ("coallocation.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+    (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+    (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  const Worker worker_0( "worker_0", agent, "A", boost::none);
+  const Worker worker_0( fhg::util::random_string(), agent, "A", boost::none);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -289,13 +293,13 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
     (utils::require_and_read_file ("coallocation.pnet"));
 
   const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+    (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port());
 
   const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+    (fhg::util::random_string(), "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  Worker*  pWorker_0 = new Worker( "worker_0", agent, "A", boost::none);
-  const Worker worker_1( "worker_1", agent, "A", boost::none);
+  Worker*  pWorker_0 = new Worker( fhg::util::random_string() + "0", agent, "A", boost::none);
+  const Worker worker_1( fhg::util::random_string() + "1", agent, "A", boost::none);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
