@@ -44,10 +44,8 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   // |
   // W
 
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
   const Worker worker( "worker_0", agent);
 
@@ -69,15 +67,12 @@ BOOST_AUTO_TEST_CASE (chained_agents)
 	// |
 	// W
 
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
 
   //! \note "variable agents #" was hardcoded to 1 when this test got
   //! rewritten. Probably should be more, so got bumped to 2.
-  const utils::agent agent_0
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
-  const utils::agent agent_1
-    ("agent_1", "127.0.0.1", kvs_host(), kvs_port(), agent_0);
+  const utils::agent agent_0 (kvs_host(), kvs_port(), orchestrator);
+  const utils::agent agent_1 (kvs_host(), kvs_port(), agent_0);
 
   const Worker worker( "worker_0", agent_1);
 
@@ -97,14 +92,10 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   // | |
   // W W
 
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent_0
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
-  const utils::agent agent_1
-    ("agent_1", "127.0.0.1", kvs_host(), kvs_port(), agent_0);
-  const utils::agent agent_2
-    ("agent_2", "127.0.0.1", kvs_host(), kvs_port(), agent_0);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent_0 (kvs_host(), kvs_port(), orchestrator);
+  const utils::agent agent_1 (kvs_host(), kvs_port(), agent_0);
+  const utils::agent agent_2 (kvs_host(), kvs_port(), agent_0);
 
   const Worker worker_0( "worker_0", agent_1);
   const Worker worker_1( "worker_1", agent_2);
@@ -125,21 +116,16 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   // |
   // W
 
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
 
-  const utils::agent agent_0
-
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
-  const utils::agent agent_1
-    ("agent_1", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::agent agent_0 (kvs_host(), kvs_port(), orchestrator);
+  const utils::agent agent_1 (kvs_host(), kvs_port(), orchestrator);
 
   utils::agents_t agents;
   agents.push_back (boost::cref (agent_0));
   agents.push_back (boost::cref (agent_1));
 
-  const utils::agent agent_2
-    ("agent_2", "127.0.0.1", kvs_host(), kvs_port(), agents);
+  const utils::agent agent_2 (kvs_host(), kvs_port(), agents);
 
   const Worker worker("worker_0", agent_2);
 
