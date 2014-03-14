@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (orchestrator);
 
-  const Worker worker (agent);
+  const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (utils::module_call(), orchestrator)
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE (chained_agents)
   const utils::agent agent_0 (orchestrator);
   const utils::agent agent_1 (agent_0);
 
-  const Worker worker (agent_1);
+  const utils::fake_drts_worker_directly_finishing_jobs worker (agent_1);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (utils::module_call(), orchestrator)
@@ -97,8 +97,8 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   const utils::agent agent_1 (agent_0);
   const utils::agent agent_2 (agent_0);
 
-  const Worker worker_0 (agent_1);
-  const Worker worker_1 (agent_2);
+  const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent_1);
+  const utils::fake_drts_worker_directly_finishing_jobs worker_1 (agent_2);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (utils::module_call(), orchestrator)
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   const utils::agent agent_1 (orchestrator);
   const utils::agent agent_2 (agent_0, agent_1);
 
-  const Worker worker (agent_2);
+  const utils::fake_drts_worker_directly_finishing_jobs worker (agent_2);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (utils::module_call(), orchestrator)
