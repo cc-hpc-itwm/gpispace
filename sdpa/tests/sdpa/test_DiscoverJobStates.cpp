@@ -150,16 +150,13 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
-  const std::string workflow
-         (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   srand (time(NULL));
   sdpa::status::code const reply_status(static_cast<sdpa::status::code>(rand()%6));
 
   Worker worker(fhg::util::random_string(), agent, "", reply_status);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (workflow));
+  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
 
   worker.wait_for_jobs();
 
@@ -172,9 +169,6 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 {
   srand (time (NULL));
-
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
 
@@ -206,7 +200,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
-  sdpa::job_id_t const job_id (client.submitJob (workflow));
+  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
 
   worker.wait_for_jobs();
 
@@ -233,12 +227,9 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (workflow));
+  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
 
   check_has_one_leaf_job_with_expected_status( client.discoverJobStates (get_next_discovery_id()
                                                , job_id), sdpa::status::PENDING );
@@ -246,13 +237,10 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (workflow));
+  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
 
   sdpa::discovery_info_t discovery_result;
   while (max_depth
@@ -265,14 +253,11 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (workflow));
+  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
 
   sdpa::discovery_info_t discovery_result;
 
@@ -286,9 +271,6 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 
 BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
 
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
@@ -296,7 +278,7 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
   Worker*  pWorker_0 = new Worker( fhg::util::random_string() + "0", agent, "A", boost::none);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (workflow));
+  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
 
   delete pWorker_0;
 
