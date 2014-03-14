@@ -126,8 +126,10 @@ namespace utils
           , std::string kvs_host, std::string kvs_port
           , const agents_t& masters
           )
-      : _ ( name, url
-          , kvs_host, kvs_port
+      : _kvs_host (kvs_host)
+      , _kvs_port (kvs_port)
+      , _ ( name, url
+          , _kvs_host, _kvs_port
           , assemble_master_info_list (masters)
           , boost::none
           )
@@ -135,8 +137,10 @@ namespace utils
     agent ( std::string kvs_host, std::string kvs_port
           , const agents_t& masters
           )
-      : _ ( random_peer_name(), "127.0.0.1"
-          , kvs_host, kvs_port
+      : _kvs_host (kvs_host)
+      , _kvs_port (kvs_port)
+      , _ ( random_peer_name(), "127.0.0.1"
+          , _kvs_host, _kvs_port
           , assemble_master_info_list (masters)
           , boost::none
           )
@@ -147,8 +151,10 @@ namespace utils
           , std::string kvs_host, std::string kvs_port
           , const T& master
           )
-      : _ ( name, url
-          , kvs_host, kvs_port
+      : _kvs_host (kvs_host)
+      , _kvs_port (kvs_port)
+      , _ ( name, url
+          , _kvs_host, _kvs_port
           , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
           , boost::none
           )
@@ -157,14 +163,20 @@ namespace utils
     agent ( std::string kvs_host, std::string kvs_port
           , const T& master
           )
-      : _ ( random_peer_name(), "127.0.0.1"
-          , kvs_host, kvs_port
+      : _kvs_host (kvs_host)
+      , _kvs_port (kvs_port)
+      , _ ( random_peer_name(), "127.0.0.1"
+          , _kvs_host, _kvs_port
           , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
           , boost::none
           )
     {}
+    std::string _kvs_host;
+    std::string _kvs_port;
     sdpa::daemon::Agent _;
     std::string name() const { return _.name(); }
+    std::string kvs_host() const { return _kvs_host; }
+    std::string kvs_port() const { return _kvs_port; }
   };
 
   namespace
