@@ -140,7 +140,7 @@ namespace
   {
     static int i (0);
 
-    return (boost::format ("discover_%1%") % i++).str();
+    return (boost::format ("%1%%2%") % fhg::util::random_string() % i++).str();
   }
 }
 
