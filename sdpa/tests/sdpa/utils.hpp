@@ -233,21 +233,6 @@ namespace utils
       , _thread (&drts_worker::thread, this)
     {
     }
-    drts_worker ( std::string name
-                  , std::string master_name
-                  , std::string capabilities
-                  , std::string modules_path
-                  , std::string kvs_host
-                  , std::string kvs_port
-                  )
-      : _waiter()
-      , _config_variables()
-      , _kernel ( createDRTSWorker
-                  (name, master_name, capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop(), _config_variables)
-                )
-      , _thread (&drts_worker::thread, this)
-    {
-    }
 
     ~drts_worker()
     {
