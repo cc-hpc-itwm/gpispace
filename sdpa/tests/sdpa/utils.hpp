@@ -337,6 +337,33 @@ namespace utils
       }
     }
 
+    basic_drts_worker (std::string name, utils::agent const& master)
+      : _name (name)
+      , _master_name (master.name())
+      , _kvs_client
+        ( new fhg::com::kvs::client::kvsc
+          ( master.kvs_host(), master.kvs_port()
+          , true, boost::posix_time::seconds (120), 1
+          )
+        )
+      , _event_queue()
+      , _network
+        ( boost::bind
+          (&fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>::put, &_event_queue, _1)
+        , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+        , _kvs_client
+        )
+      , _event_thread (&basic_drts_worker::event_thread, this)
+    {
+      if (_master_name)
+      {
+        _network.perform
+          ( sdpa::events::SDPAEvent::Ptr
+            (new sdpa::events::WorkerRegistrationEvent (_name, *_master_name, 1))
+          );
+      }
+    }
+
     virtual void handleWorkerRegistrationAckEvent
       (const sdpa::events::WorkerRegistrationAckEvent* e)
     {
@@ -430,6 +457,10 @@ namespace utils
   public:
     fake_drts_worker_directly_finishing_jobs (utils::agent const& master)
       : basic_drts_worker (master)
+    {}
+    fake_drts_worker_directly_finishing_jobs
+        (std::string name, utils::agent const& master)
+      : basic_drts_worker (name, master)
     {}
 
     virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e)
