@@ -274,7 +274,7 @@ namespace sdpa {
       fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _event_queue;
 
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
-      boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
+      sdpa::com::NetworkStrategy _network_strategy;
 
       boost::scoped_ptr<we::layer> ptr_workflow_engine_;
 

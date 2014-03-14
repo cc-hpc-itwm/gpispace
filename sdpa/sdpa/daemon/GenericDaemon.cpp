@@ -118,14 +118,12 @@ GenericDaemon::GenericDaemon( const std::string name
     ( new fhg::com::kvs::client::kvsc
       (kvs_host, kvs_port, true, boost::posix_time::seconds(120), 1)
     )
-  , _network_strategy
-    ( new sdpa::com::NetworkStrategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
-                                     , name /*name for peer*/
-                                     , host_from_url (url)
-                                     , port_from_url (url)
-                                     , _kvs_client
-                                     )
-    )
+  , _network_strategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
+                      , name /*name for peer*/
+                      , host_from_url (url)
+                      , port_from_url (url)
+                      , _kvs_client
+                      )
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer
                            ( boost::bind (&GenericDaemon::submit, this, _1, _2)
@@ -855,7 +853,7 @@ void GenericDaemon::handle_events()
 
 void GenericDaemon::sendEventToOther(const events::SDPAEvent::Ptr& pEvt)
 {
-  _network_strategy->perform (pEvt);
+  _network_strategy.perform (pEvt);
 }
 
 void GenericDaemon::delay (boost::function<void()> fun)
