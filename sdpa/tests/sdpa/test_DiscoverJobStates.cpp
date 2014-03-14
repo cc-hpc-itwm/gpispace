@@ -216,24 +216,6 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   check_has_one_leaf_job_with_expected_status(discovery_result, sdpa::status::PENDING );
 }
 
-BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
-{
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-  const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
-
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
-
-  sdpa::discovery_info_t discovery_result;
-
-  while (max_depth
-           (discovery_result=client.discoverJobStates (get_next_discovery_id(), job_id)) !=2
-         )
-   {} // do nothing, discover again
-
-  check_has_one_leaf_job_with_expected_status(discovery_result, sdpa::status::PENDING );
-}
-
 namespace
 {
   class fake_drts_worker_discovering_running :
