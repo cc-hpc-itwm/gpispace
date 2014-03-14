@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
   utils::agent* arr_ptr_agents[n_agents_in_chain];
 
   for(unsigned int k=0;k<n_agents_in_chain;k++) {
-     std::string const agent_name ((boost::format ("agent_%1%") % k).str());
+     std::string const agent_name ((boost::format ("%1%%2%") % fhg::util::random_string() % k).str());
      arr_ptr_agents[k] =
        k
        ? new utils::agent(agent_name, "127.0.0.1", kvs_host(), kvs_port(), *arr_ptr_agents[k-1])
