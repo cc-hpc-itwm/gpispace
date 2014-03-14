@@ -105,7 +105,7 @@ class Worker : public utils::BasicAgent
 
     void handleDiscoverJobStatesEvent (const sdpa::events::DiscoverJobStatesEvent *pEvt)
     {
-      sdpa::discovery_info_t disc_res( pEvt->job_id()
+      sdpa::discovery_info_t discovery_result( pEvt->job_id()
                                      , _reply_status
                                      , sdpa::discovery_info_set_t());
 
@@ -114,7 +114,7 @@ class Worker : public utils::BasicAgent
         pDiscRplEvt( new sdpa::events::DiscoverJobStatesReplyEvent ( _name
                                                                    , pEvt->from()
                                                                    , pEvt->discover_id()
-                                                                   , disc_res ));
+                                                                   , discovery_result ));
 
       _network_strategy->perform (pDiscRplEvt);
     }
@@ -165,10 +165,10 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 
   worker.wait_for_jobs();
 
-  sdpa::discovery_info_t disc_res(client.discoverJobStates (get_next_disc_id(), job_id));
-  BOOST_REQUIRE_EQUAL(max_depth(disc_res), 2);
+  sdpa::discovery_info_t discovery_result(client.discoverJobStates (get_next_disc_id(), job_id));
+  BOOST_REQUIRE_EQUAL(max_depth(discovery_result), 2);
 
-  check_has_one_leaf_job_with_expected_status(disc_res, reply_status);
+  check_has_one_leaf_job_with_expected_status(discovery_result, reply_status);
 }
 
 BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
@@ -199,10 +199,10 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 
   pWorker->wait_for_jobs();
 
-  sdpa::discovery_info_t disc_res(client.discoverJobStates (get_next_disc_id(), job_id));
-  BOOST_REQUIRE_EQUAL(max_depth(disc_res), n_agents_in_chain+1);
+  sdpa::discovery_info_t discovery_result(client.discoverJobStates (get_next_disc_id(), job_id));
+  BOOST_REQUIRE_EQUAL(max_depth(discovery_result), n_agents_in_chain+1);
 
-  check_has_one_leaf_job_with_expected_status(disc_res, reply_status);
+  check_has_one_leaf_job_with_expected_status(discovery_result, reply_status);
 
   delete pWorker;
   for(int k=n_agents_in_chain-1;k>0;k--)
@@ -247,13 +247,13 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  sdpa::discovery_info_t disc_res;
+  sdpa::discovery_info_t discovery_result;
   while (max_depth
-          (disc_res=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
+          (discovery_result=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
         )
   {} // do nothing, discover again
 
-  check_has_one_leaf_job_with_expected_status(disc_res, sdpa::status::PENDING );
+  check_has_one_leaf_job_with_expected_status(discovery_result, sdpa::status::PENDING );
 }
 
 BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
@@ -273,14 +273,14 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  sdpa::discovery_info_t disc_res;
+  sdpa::discovery_info_t discovery_result;
 
   while (max_depth
-           (disc_res=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
+           (discovery_result=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
          )
    {} // do nothing, discover again
 
-  check_has_one_leaf_job_with_expected_status(disc_res, sdpa::status::PENDING );
+  check_has_one_leaf_job_with_expected_status(discovery_result, sdpa::status::PENDING );
 }
 
 BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
@@ -302,13 +302,13 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
 
   delete pWorker_0;
 
-  sdpa::discovery_info_t disc_res;
+  sdpa::discovery_info_t discovery_result;
   while (max_depth
-           (disc_res=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
+           (discovery_result=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
          )
    {} // do nothing, discover again
 
-  check_has_one_leaf_job_with_expected_status(disc_res, sdpa::status::PENDING );
+  check_has_one_leaf_job_with_expected_status(discovery_result, sdpa::status::PENDING );
 }
 
 namespace
