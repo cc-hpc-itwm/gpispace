@@ -153,17 +153,9 @@ namespace utils
           , boost::none
           )
     {}
+    template <typename T>
     agent ( std::string kvs_host, std::string kvs_port
-          , const orchestrator& master
-          )
-      : _ ( random_peer_name(), "127.0.0.1"
-          , kvs_host, kvs_port
-          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
-          , boost::none
-          )
-    {}
-    agent ( std::string kvs_host, std::string kvs_port
-          , const agent& master
+          , const T& master
           )
       : _ ( random_peer_name(), "127.0.0.1"
           , kvs_host, kvs_port
