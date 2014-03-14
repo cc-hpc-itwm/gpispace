@@ -31,7 +31,7 @@ namespace
       BOOST_FOREACH
         (const sdpa::discovery_info_t& child_info, discovery_result.children())
       {
-        std::list<sdpa::status::code> list_info_child
+        std::list<sdpa::status::code> const list_info_child
           (get_leaf_job_info (child_info));
 
         list_info.insert
@@ -53,7 +53,7 @@ namespace
     BOOST_FOREACH
       (const sdpa::discovery_info_t& child_info, discovery_result.children())
     {
-      unsigned int depth (max_depth (child_info) + 1);
+      unsigned int const depth (max_depth (child_info) + 1);
 
       if (maxd < depth)
       {
@@ -69,7 +69,7 @@ namespace
     , const sdpa::status::code expected_status
     )
   {
-     std::list<sdpa::status::code> list_leaf_job_status
+     std::list<sdpa::status::code> const list_leaf_job_status
        (get_leaf_job_info (discovery_result));
 
      BOOST_REQUIRE_EQUAL (list_leaf_job_status.size(), 1);
