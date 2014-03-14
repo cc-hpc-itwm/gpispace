@@ -44,9 +44,6 @@ class Worker : public utils::BasicAgent
 
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("coallocation.pnet"));
-
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
@@ -57,7 +54,8 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig
   Worker* pWorker_1(new Worker(worker_id_1, agent, "A"));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (workflow));
+  sdpa::job_id_t const job_id
+    (client.submitJob (utils::net_with_one_child_requiring_workers (2).to_string()));
 
   delete pWorker_1;
 
