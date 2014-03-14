@@ -218,11 +218,12 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 
 namespace
 {
-  class fake_drts_worker_discovering_running :
+  template<sdpa::status::code reply>
+  class fake_drts_worker_discovering :
     public utils::fake_drts_worker_notifying_module_call_submission
   {
   public:
-    fake_drts_worker_discovering_running
+    fake_drts_worker_discovering
         ( boost::function<void (std::string)> announce_job
         , std::string kvs_host
         , std::string kvs_port
@@ -242,7 +243,7 @@ namespace
             , e->from()
             , e->discover_id()
             , sdpa::discovery_info_t
-              (e->job_id(), sdpa::status::RUNNING, sdpa::discovery_info_set_t())
+              (e->job_id(), reply, sdpa::discovery_info_set_t())
             )
           )
         );
@@ -295,7 +296,7 @@ namespace
 
     fhg::util::thread::event<std::string> job_submitted;
 
-    fake_drts_worker_discovering_running worker
+    fake_drts_worker_discovering<sdpa::status::RUNNING> worker
       ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
       , kvs_host(), kvs_port()
       , agents.back()
