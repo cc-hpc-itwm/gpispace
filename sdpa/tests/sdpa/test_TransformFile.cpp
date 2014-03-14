@@ -19,11 +19,7 @@ BOOST_AUTO_TEST_CASE (test_transform_file)
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_0
-    ( "drts_0", agent
-    , ""
-    , TESTS_TRANSFORM_FILE_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
+    (agent, "", TESTS_TRANSFORM_FILE_MODULES_PATH);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
                         (workflow, orchestrator)

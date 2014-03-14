@@ -218,17 +218,14 @@ namespace utils
 
   struct drts_worker : boost::noncopyable
   {
-    drts_worker ( std::string name
-                , const agent& master
+    drts_worker ( const agent& master
                 , std::string capabilities
                 , std::string modules_path
-                , std::string kvs_host
-                , std::string kvs_port
                 )
       : _waiter()
       , _config_variables()
       , _kernel ( createDRTSWorker
-                  (name, master.name(), capabilities, modules_path, kvs_host, kvs_port, _waiter.make_request_stop(), _config_variables)
+                  (random_peer_name(), master.name(), capabilities, modules_path, master.kvs_host(), master.kvs_port(), _waiter.make_request_stop(), _config_variables)
                 )
       , _thread (&drts_worker::thread, this)
     {

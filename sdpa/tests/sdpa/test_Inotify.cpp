@@ -37,11 +37,7 @@ BOOST_AUTO_TEST_CASE (testInotifyExecution)
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   const utils::drts_worker worker_0
-    ( "drts_0", agent
-    , "ATOMIC"
-    , TESTS_EXAMPLE_INOTIFY_MODULES_PATH
-    , kvs_host(), kvs_port()
-    );
+    (agent, "ATOMIC", TESTS_EXAMPLE_INOTIFY_MODULES_PATH);
 
   bool keep_on_touching (true);
   const boost::strict_scoped_thread<> toucher
