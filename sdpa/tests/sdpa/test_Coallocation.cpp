@@ -45,10 +45,8 @@ BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
   const std::string workflow
     (utils::require_and_read_file ("coallocation.pnet"));
 
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (orchestrator);
 
   const Worker worker_0( "worker_0", agent, "A");
   const Worker worker_1( "worker_1", agent, "A");
