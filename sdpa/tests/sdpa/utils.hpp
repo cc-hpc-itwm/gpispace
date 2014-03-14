@@ -43,6 +43,47 @@ namespace utils
                        );
   }
 
+  //! \todo copied from test/layer, unify
+  namespace value
+  {
+    pnet::type::value::value_type const CONTROL
+      (pnet::type::value::read ("[]"));
+  }
+  namespace signature
+  {
+    pnet::type::signature::signature_type CONTROL (std::string ("control"));
+  }
+
+  std::string simple_module_call()
+  {
+    we::type::transition_t transition
+      ( "module call"
+      , we::type::module_call_t ("m", "f")
+      , boost::none
+      , true
+      , we::type::property::type()
+      , we::priority_type()
+      );
+    transition.add_port ( we::type::port_t ( "in"
+                                           , we::type::PORT_IN
+                                           , signature::CONTROL
+                                           , we::type::property::type()
+                                           )
+                        );
+    transition.add_port ( we::type::port_t ( "out"
+                                           , we::type::PORT_OUT
+                                           , signature::CONTROL
+                                           , we::type::property::type()
+                                           )
+                        );
+
+    we::type::activity_t activity_input (transition, boost::none);
+    activity_input.add_input
+      (transition.input_port_by_name ("in"), value::CONTROL);
+
+    return activity_input.to_string();
+  }
+
   std::string random_peer_name()
   {
 #define TEST_NO_HUMAN_READABLE_PEER_NAMES
