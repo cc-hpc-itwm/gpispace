@@ -270,39 +270,39 @@ namespace utils
                       boost::noncopyable
   {
   public:
-    BasicAgent( std::string name
-                 , boost::optional<const utils::agent&> master_agent
-                 , std::string cpb_name = ""
-                 )
-     : _name (name)
-     , _master_name(master_agent?master_agent.get().name():"")
-     , _kvs_client
-       ( new fhg::com::kvs::client::kvsc
-         (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
-       )
-     , _network_strategy
-       ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicAgent::sendEventToSelf, this, _1)
-                                        , name
-                                        , fhg::com::host_t ("127.0.0.1")
-                                        , fhg::com::port_t ("0")
-                                        , _kvs_client
-                                        )
-       )
-    , _event_handling_allowed(true)
+    BasicAgent ( std::string name
+               , boost::optional<const utils::agent&> master_agent
+               , std::string cpb_name = ""
+               )
+      : _name (name)
+      , _master_name(master_agent?master_agent.get().name():"")
+      , _kvs_client
+        ( new fhg::com::kvs::client::kvsc
+          (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
+        )
+      , _network_strategy
+        ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicAgent::sendEventToSelf, this, _1)
+                                         , name
+                                         , fhg::com::host_t ("127.0.0.1")
+                                         , fhg::com::port_t ("0")
+                                         , _kvs_client
+                                         )
+        )
+      , _event_handling_allowed(true)
     {
       if(!cpb_name.empty())
       {
-          sdpa::capability_t cpb(cpb_name, name);
-          _capabilities.insert(cpb);
+        sdpa::capability_t cpb(cpb_name, name);
+        _capabilities.insert(cpb);
       }
 
       if(master_agent)
       {
         sdpa::events::WorkerRegistrationEvent::Ptr
           pEvtWorkerReg (new sdpa::events::WorkerRegistrationEvent( _name
-                                                                    , _master_name
-                                                                    , boost::none
-                                                                    , _capabilities ));
+                                                                  , _master_name
+                                                                  , boost::none
+                                                                  , _capabilities ));
         _network_strategy->perform (pEvtWorkerReg);
       }
     }
