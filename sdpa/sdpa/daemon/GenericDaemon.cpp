@@ -677,13 +677,12 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
   std::string masterName = pRegAckEvt->from();
-  bool bFound = false;
   lock_type lock(mtx_master_);
-  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end() && !bFound; it++)
+  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
     if( it->name() == masterName )
     {
       it->set_registered(true);
-      bFound=true;
+      break;
     }
 
   if(!isTop())
