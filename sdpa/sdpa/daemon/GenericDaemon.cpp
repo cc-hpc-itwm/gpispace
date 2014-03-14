@@ -92,7 +92,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _job_map_mutex()
   , job_map_()
   , _cleanup_job_map_on_dtor_helper (job_map_)
-  , ptr_scheduler_
+  , _scheduler
     ( new CoallocationScheduler
       ( boost::bind (&GenericDaemon::serveJob, this, _1, _2)
       , boost::bind (&job_requirements, this, _1)
@@ -567,7 +567,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
     workflowEngine()->canceled (job_id);
 
     pJob->CancelJobAck();
-    ptr_scheduler_->delete_job (job_id);
+    _scheduler->delete_job (job_id);
 
     deleteJob (job_id);
   }

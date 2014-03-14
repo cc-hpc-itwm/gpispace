@@ -100,7 +100,7 @@ namespace sdpa {
 
       void addCapability(const capability_t& cpb);
 
-      boost::shared_ptr<CoallocationScheduler> scheduler() const {return ptr_scheduler_;}
+      boost::shared_ptr<CoallocationScheduler> scheduler() const {return _scheduler;}
     protected:
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
@@ -243,7 +243,7 @@ namespace sdpa {
       } _cleanup_job_map_on_dtor_helper;
 
     protected:
-      boost::shared_ptr<CoallocationScheduler> ptr_scheduler_;
+      boost::shared_ptr<CoallocationScheduler> _scheduler;
 
       boost::mutex _scheduling_thread_mutex;
       boost::condition_variable _scheduling_thread_notifier;

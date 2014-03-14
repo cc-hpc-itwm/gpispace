@@ -153,7 +153,7 @@ namespace sdpa
         // the job was not yet assigned to any worker
 
         pJob->CancelJobAck();
-        ptr_scheduler_->delete_job (pEvt->job_id());
+        _scheduler->delete_job (pEvt->job_id());
 
         BOOST_FOREACH (agent_id_t subscriber, subscribers (pEvt->job_id()))
         {
