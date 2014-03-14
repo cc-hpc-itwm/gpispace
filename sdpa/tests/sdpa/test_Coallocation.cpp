@@ -45,8 +45,8 @@ BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (orchestrator);
 
-  const Worker worker_0( "worker_0", agent, "A");
-  const Worker worker_1( "worker_1", agent, "A");
+  const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent);
+  const utils::fake_drts_worker_directly_finishing_jobs worker_1 (agent);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
