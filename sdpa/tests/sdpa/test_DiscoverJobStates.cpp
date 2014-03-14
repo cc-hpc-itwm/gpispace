@@ -88,7 +88,7 @@ class Worker : public utils::BasicAgent
     Worker( const std::string& name
           , const utils::agent& master_agent
           , const std::string& cpb_name
-          , boost::optional<sdpa::status::code> reply_status = boost::none)
+          , boost::optional<sdpa::status::code> reply_status)
       :  utils::BasicAgent (name, master_agent, cpb_name)
       , _reply_status(reply_status)
       , _logger (fhg::log::Logger::get (name))
@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  const Worker worker_0( "worker_0", agent, "A");
+  const Worker worker_0( "worker_0", agent, "A", boost::none);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
@@ -296,8 +296,8 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
   const utils::agent agent
     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
-  Worker*  pWorker_0 = new Worker( "worker_0", agent, "A");
-  const Worker worker_1( "worker_1", agent, "A");
+  Worker*  pWorker_0 = new Worker( "worker_0", agent, "A", boost::none);
+  const Worker worker_1( "worker_1", agent, "A", boost::none);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
