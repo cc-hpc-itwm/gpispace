@@ -33,15 +33,13 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
   Worker* pWorker(new Worker(worker_id, agent));
 
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
+  utils::client::client_t client (orchestrator);
+  sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
 
   delete pWorker;
 
   utils::fake_drts_worker_directly_finishing_jobs worker_0 (worker_id, agent);
 
-  sdpa::client::job_info_t job_info;
   BOOST_REQUIRE_EQUAL
-    ( client.wait_for_terminal_state (job_id, job_info)
-    , sdpa::status::FINISHED );
+    (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
