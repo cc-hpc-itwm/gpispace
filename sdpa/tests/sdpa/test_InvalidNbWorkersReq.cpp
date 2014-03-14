@@ -10,10 +10,12 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 namespace
 {
-  we::type::activity_t net_with_one_child_requiring_0_workers()
+  we::type::activity_t net_with_one_child_requiring_workers (unsigned long count)
   {
     we::type::property::type props;
-    props.set ("fhg.drts.schedule.num_worker", "0UL");
+    props.set ( "fhg.drts.schedule.num_worker"
+              , boost::lexical_cast<std::string> (count) + "UL"
+              );
     we::type::transition_t transition
       ( fhg::util::random_string()
       , we::type::module_call_t
@@ -70,7 +72,7 @@ BOOST_AUTO_TEST_CASE (testInvalidNumberOfWorkersRequired)
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (net_with_one_child_requiring_0_workers().to_string(), orchestrator)
+      (net_with_one_child_requiring_workers (0).to_string(), orchestrator)
     , sdpa::status::FAILED
     );
 }
