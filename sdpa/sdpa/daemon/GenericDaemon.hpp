@@ -100,9 +100,10 @@ namespace sdpa {
 
       void addCapability(const capability_t& cpb);
 
+    protected:
       const CoallocationScheduler& scheduler() const {return _scheduler;}
       CoallocationScheduler& scheduler() {return _scheduler;}
-    protected:
+
       // masters and subscribers
       void unsubscribe(const sdpa::agent_id_t&);
       void subscribe(const sdpa::agent_id_t&, const sdpa::job_id_list_t&);
