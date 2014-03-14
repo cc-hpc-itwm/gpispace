@@ -141,34 +141,11 @@ namespace utils
           , boost::none
           )
     {}
-    agent ( const std::string& name
-          , const std::string& url
-          , std::string kvs_host, std::string kvs_port
-          , const orchestrator& orchestrator
-          )
-      : _ ( name, url
-          , kvs_host, kvs_port
-          , sdpa::master_info_list_t (1, sdpa::MasterInfo (orchestrator.name()))
-          , boost::none
-          )
-    {}
-
     template <typename T>
     agent ( const std::string& name
           , const std::string& url
           , std::string kvs_host, std::string kvs_port
           , const T& master
-          )
-      : _ ( name, url
-          , kvs_host, kvs_port
-          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
-          , boost::none
-          )
-    {}
-    agent ( const std::string& name
-          , const std::string& url
-          , std::string kvs_host, std::string kvs_port
-          , const agent& master
           )
       : _ ( name, url
           , kvs_host, kvs_port
