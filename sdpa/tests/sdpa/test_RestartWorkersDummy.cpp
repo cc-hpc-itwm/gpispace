@@ -8,12 +8,6 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-#include <fhg/util/random_string.hpp>
-
-namespace {
-  std::string gen_name() { return fhg::util::random_string_without (". "); }
-}
-
 class Worker : public utils::BasicAgent
 {
   public:
@@ -36,7 +30,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (orchestrator);
 
-  sdpa::worker_id_t worker_id(gen_name());
+  sdpa::worker_id_t const worker_id (utils::random_peer_name());
   Worker* pWorker(new Worker(worker_id, agent));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
