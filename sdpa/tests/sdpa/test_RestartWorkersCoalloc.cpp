@@ -8,40 +8,6 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public utils::BasicAgent
-{
-  public:
-    Worker (const std::string& name, const utils::agent& master_agent, const std::string cpb_name = "", bool notify_finished = false)
-      :  utils::BasicAgent (name, master_agent, cpb_name)
-      , _notify_finished(notify_finished)
-    {}
-
-    void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
-    {
-      sdpa::events::SubmitJobAckEvent::Ptr
-      pSubmitJobAckEvt(new sdpa::events::SubmitJobAckEvent( _name
-                                                          , pEvt->from()
-                                                          , *pEvt->job_id()));
-      _network_strategy->perform (pSubmitJobAckEvt);
-
-      if(_notify_finished)
-      {
-          sdpa::events::JobFinishedEvent::Ptr
-          pJobFinishedEvt(new sdpa::events::JobFinishedEvent( _name
-                                                            , pEvt->from()
-                                                            , *pEvt->job_id()
-                                                            , pEvt->description() ));
-
-          _network_strategy->perform (pJobFinishedEvt);
-      }
-    }
-
-    void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* ){}
-
-  private:
-    bool _notify_finished;
-};
-
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
