@@ -107,29 +107,6 @@ add_custom_target (workflow_inotify
 
 ################################################################################################
 
-pnet_compile (dummy-test-wf
-  ${TEST_WORKFLOWS_SOURCE_DIR}/dummy_workflow.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dummy-test-wf.in.pnet
-  GENERATE dummy_workflow
-  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
-  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
-           -I${CMAKE_BINARY_DIR}/fhglog
-           -O3
-  BUILD
-)
-
-add_custom_target (dummy_workflow
-  COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/dummy-test-wf.in.pnet
-          -p in=[]
-          --of "${CMAKE_CURRENT_BINARY_DIR}/dummy_workflow.pnet"
-  COMMENT "putting tokens into dummy workflow"
-  DEPENDS pnet-dummy-test-wf
-          pnetput
-)
-
-################################################################################################
-
 pnet_compile (transform_file-test-wf
   ${TEST_WORKFLOWS_SOURCE_DIR}/transform_file/transform_file.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/transform_file-test-wf.in.pnet
@@ -220,7 +197,6 @@ fhg_add_test (test_CancelJob.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS dummy_workflow
 )
 
 fhg_add_test (test_CoallocationScheduler.cpp
@@ -236,7 +212,6 @@ fhg_add_test (test_Topologies.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS dummy_workflow
 )
 
 fhg_add_test (test_Subscriber.cpp
@@ -245,7 +220,6 @@ fhg_add_test (test_Subscriber.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS dummy_workflow
 )
 
 fhg_add_test (test_SubmitJobFails.cpp
@@ -273,8 +247,7 @@ fhg_add_test (test_DiscoverJobStates.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS dummy_workflow
-          workflow_coallocation
+  DEPENDS workflow_coallocation
 )
 
 fhg_add_test (test_Requirements.cpp
@@ -301,5 +274,4 @@ fhg_add_test (test_RestartWorkersDummy.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS dummy_workflow
 )

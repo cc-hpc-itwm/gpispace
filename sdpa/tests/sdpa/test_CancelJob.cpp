@@ -54,15 +54,12 @@ private:
 
 BOOST_AUTO_TEST_CASE (cancel_no_agent)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
-  sdpa::job_id_t job_id(client.submitJob (workflow));
+  sdpa::job_id_t job_id(client.submitJob (utils::simple_module_call()));
   client.cancelJob(job_id);
 
   BOOST_REQUIRE_EQUAL
@@ -72,9 +69,6 @@ BOOST_AUTO_TEST_CASE (cancel_no_agent)
 
 BOOST_AUTO_TEST_CASE (cancel_with_agent)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
@@ -85,7 +79,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
-  sdpa::job_id_t job_id(client.submitJob (workflow));
+  sdpa::job_id_t job_id(client.submitJob (utils::simple_module_call()));
 
   worker.wait_for_jobs();
 
@@ -98,9 +92,6 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
@@ -109,7 +100,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
-  sdpa::job_id_t job_id(client.submitJob (workflow));
+  sdpa::job_id_t job_id(client.submitJob (utils::simple_module_call()));
   client.cancelJob(job_id);
 
   BOOST_REQUIRE_EQUAL
@@ -121,9 +112,6 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator
     ("orchestrator_2", "127.0.0.1", kvs_host(), kvs_port());
 
@@ -133,7 +121,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
   Worker worker("worker_0", agent);
 
   sdpa::client::Client client (orchestrator.name(),  kvs_host(), kvs_port());
-  sdpa::job_id_t job_id(client.submitJob (workflow));
+  sdpa::job_id_t job_id(client.submitJob (utils::simple_module_call()));
 
   worker.wait_for_jobs();
 

@@ -37,9 +37,6 @@ class Worker : public utils::BasicAgent
 
 BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
@@ -49,16 +46,13 @@ BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (workflow, orchestrator)
+      (utils::simple_module_call(), orchestrator)
     , sdpa::status::FINISHED
     );
 }
 
 BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
@@ -68,7 +62,7 @@ BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
-      (workflow, orchestrator)
+      (utils::simple_module_call(), orchestrator)
     , sdpa::status::FINISHED
     );
 }

@@ -50,9 +50,6 @@ class Worker : public utils::BasicAgent
 
 BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
 {
-  const std::string workflow
-     (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator
    (gen_name(), "127.0.0.1", kvs_host(), kvs_port());
 
@@ -63,7 +60,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
   Worker* pWorker(new Worker(worker_id, agent));
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (workflow));
+  sdpa::job_id_t const job_id (client.submitJob (utils::simple_module_call()));
 
   delete pWorker;
 

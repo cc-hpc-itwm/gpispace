@@ -44,9 +44,6 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   // |
   // W
 
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent
@@ -55,7 +52,7 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   const Worker worker( "worker_0", agent);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
-                        (workflow, orchestrator)
+                        (utils::simple_module_call(), orchestrator)
                       , sdpa::status::FINISHED
                       );
 }
@@ -72,9 +69,6 @@ BOOST_AUTO_TEST_CASE (chained_agents)
 	// |
 	// W
 
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
 
@@ -88,7 +82,7 @@ BOOST_AUTO_TEST_CASE (chained_agents)
   const Worker worker( "worker_0", agent_1);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
-                        (workflow, orchestrator)
+                        (utils::simple_module_call(), orchestrator)
                       , sdpa::status::FINISHED
                       );
 }
@@ -103,9 +97,6 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   // | |
   // W W
 
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
-
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
   const utils::agent agent_0
@@ -119,7 +110,7 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   const Worker worker_1( "worker_1", agent_2);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
-                        (workflow, orchestrator)
+                        (utils::simple_module_call(), orchestrator)
                       , sdpa::status::FINISHED
                       );
 }
@@ -133,9 +124,6 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   // A-+
   // |
   // W
-
-  const std::string workflow
-    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator
     ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
@@ -156,7 +144,7 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
   const Worker worker("worker_0", agent_2);
 
   BOOST_REQUIRE_EQUAL ( utils::client::submit_job_and_wait_for_termination
-                        (workflow, orchestrator)
+                        (utils::simple_module_call(), orchestrator)
                       , sdpa::status::FINISHED
                       );
 }

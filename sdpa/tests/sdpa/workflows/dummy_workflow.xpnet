@@ -1,9 +1,0 @@
-<defun name="dummy_workflow">
-	  <in name="in" type="control"/>
-	  <out name="out" type="control"/>
-	  <module name="dummy_module" function="out dummy_function (in)">
-	    <code><![CDATA[
-	      return we::type::literal::control();
-	    ]]></code>
-	  </module>
-</defun>
