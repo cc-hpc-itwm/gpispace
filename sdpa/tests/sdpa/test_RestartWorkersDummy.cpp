@@ -38,7 +38,8 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
 
   delete pWorker;
 
-  utils::fake_drts_worker_directly_finishing_jobs worker_0 (worker_id, agent);
+  const utils::fake_drts_worker_directly_finishing_jobs worker_0
+    (worker_id, agent);
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
