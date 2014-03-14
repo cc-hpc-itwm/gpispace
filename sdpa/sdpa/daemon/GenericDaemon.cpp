@@ -161,7 +161,7 @@ GenericDaemon::~GenericDaemon()
   lock_type const _ (mtx_master_);
   BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
   {
-    if (!masterInfo.name().empty() && masterInfo.is_registered())
+    if (masterInfo.is_registered())
     {
       parent_proxy (this, masterInfo.name()).notify_shutdown();
     }
