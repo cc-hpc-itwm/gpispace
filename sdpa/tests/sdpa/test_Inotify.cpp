@@ -31,10 +31,8 @@ BOOST_AUTO_TEST_CASE (testInotifyExecution)
   const std::string workflow
     (utils::require_and_read_file ("inotify.pnet"));
 
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator(kvs_host(), kvs_port());
+  const utils::agent agent (orchestrator);
 
   const utils::drts_worker worker_0
     (agent, "ATOMIC", TESTS_EXAMPLE_INOTIFY_MODULES_PATH);
