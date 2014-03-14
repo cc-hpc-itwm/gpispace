@@ -136,7 +136,7 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 namespace
 {
-  std::string get_next_disc_id()
+  std::string get_next_discovery_id()
   {
     static int i (0);
 
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 
   worker.wait_for_jobs();
 
-  sdpa::discovery_info_t discovery_result(client.discoverJobStates (get_next_disc_id(), job_id));
+  sdpa::discovery_info_t discovery_result(client.discoverJobStates (get_next_discovery_id(), job_id));
   BOOST_REQUIRE_EQUAL(max_depth(discovery_result), 2);
 
   check_has_one_leaf_job_with_expected_status(discovery_result, reply_status);
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 
   pWorker->wait_for_jobs();
 
-  sdpa::discovery_info_t discovery_result(client.discoverJobStates (get_next_disc_id(), job_id));
+  sdpa::discovery_info_t discovery_result(client.discoverJobStates (get_next_discovery_id(), job_id));
   BOOST_REQUIRE_EQUAL(max_depth(discovery_result), n_agents_in_chain+1);
 
   check_has_one_leaf_job_with_expected_status(discovery_result, reply_status);
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
   BOOST_REQUIRE_EQUAL
-    ( client.discoverJobStates ("disc_id_0", "inexistent_job_id").state()
+    ( client.discoverJobStates ("discovery_id_0", "inexistent_job_id").state()
     , boost::none
     );
 }
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
 
-  check_has_one_leaf_job_with_expected_status( client.discoverJobStates (get_next_disc_id()
+  check_has_one_leaf_job_with_expected_status( client.discoverJobStates (get_next_discovery_id()
                                                , job_id), sdpa::status::PENDING );
 }
 
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 
   sdpa::discovery_info_t discovery_result;
   while (max_depth
-          (discovery_result=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
+          (discovery_result=client.discoverJobStates (get_next_discovery_id(), job_id)) !=2
         )
   {} // do nothing, discover again
 
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
   sdpa::discovery_info_t discovery_result;
 
   while (max_depth
-           (discovery_result=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
+           (discovery_result=client.discoverJobStates (get_next_discovery_id(), job_id)) !=2
          )
    {} // do nothing, discover again
 
@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
 
   sdpa::discovery_info_t discovery_result;
   while (max_depth
-           (discovery_result=client.discoverJobStates (get_next_disc_id(), job_id)) !=2
+           (discovery_result=client.discoverJobStates (get_next_discovery_id(), job_id)) !=2
          )
    {} // do nothing, discover again
 
