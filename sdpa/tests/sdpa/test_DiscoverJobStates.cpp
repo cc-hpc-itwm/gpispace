@@ -340,8 +340,15 @@ BOOST_AUTO_TEST_CASE (agent_chain_2)
 {
   verify_child_count_in_agent_chain (2);
 }
-//! \note number of open files is the limiting factor
-BOOST_AUTO_TEST_CASE (agent_chain_random_3_to_89)
+BOOST_AUTO_TEST_CASE (agent_chain_3_to_9)
 {
-  verify_child_count_in_agent_chain (3 + rand() % 87);
+  for (std::size_t n (3); n < 10; ++n)
+  {
+    verify_child_count_in_agent_chain (n);
+  }
+}
+//! \note number of open files is the limiting factor
+BOOST_AUTO_TEST_CASE (agent_chain_89)
+{
+  verify_child_count_in_agent_chain (89);
 }
