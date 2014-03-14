@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
          (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   srand (time(NULL));
-  sdpa::status::code reply_status(static_cast<sdpa::status::code>(rand()%6));
+  sdpa::status::code const reply_status(static_cast<sdpa::status::code>(rand()%6));
 
   Worker worker("worker_0", agent, "", reply_status);
 
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 
   worker.wait_for_jobs();
 
-  sdpa::discovery_info_t discovery_result(client.discoverJobStates (get_next_discovery_id(), job_id));
+  sdpa::discovery_info_t const discovery_result(client.discoverJobStates (get_next_discovery_id(), job_id));
   BOOST_REQUIRE_EQUAL(max_depth(discovery_result), 2);
 
   check_has_one_leaf_job_with_expected_status(discovery_result, reply_status);
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
   arr_ptr_agents[0]= new utils::agent("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
 
   for(unsigned int k=1;k<n_agents_in_chain;k++) {
-     std::string agent_name ((boost::format ("agent_%1%") % k).str());
+     std::string const agent_name ((boost::format ("agent_%1%") % k).str());
      arr_ptr_agents[k] = new utils::agent(agent_name, "127.0.0.1", kvs_host(), kvs_port(), *arr_ptr_agents[k-1]);
   }
 
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 
   pWorker->wait_for_jobs();
 
-  sdpa::discovery_info_t discovery_result(client.discoverJobStates (get_next_discovery_id(), job_id));
+  sdpa::discovery_info_t const discovery_result(client.discoverJobStates (get_next_discovery_id(), job_id));
   BOOST_REQUIRE_EQUAL(max_depth(discovery_result), n_agents_in_chain+1);
 
   check_has_one_leaf_job_with_expected_status(discovery_result, reply_status);
