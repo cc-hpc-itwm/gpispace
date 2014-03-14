@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
   {
-    Worker worker (worker_id, agent);
+    const Worker worker (worker_id, agent);
   }
 
   const utils::fake_drts_worker_directly_finishing_jobs worker_0
