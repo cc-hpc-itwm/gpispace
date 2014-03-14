@@ -91,7 +91,6 @@ class Worker : public utils::BasicAgent
           , boost::optional<sdpa::status::code> reply_status)
       :  utils::BasicAgent (name, master_agent, cpb_name)
       , _reply_status(reply_status)
-      , _logger (fhg::log::Logger::get (name))
     {}
 
     void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
@@ -128,7 +127,6 @@ class Worker : public utils::BasicAgent
 
   private:
     boost::optional<sdpa::status::code> _reply_status;
-    fhg::log::Logger::ptr_t _logger;
     boost::mutex _mtx_got_job;
     boost::condition_variable_any _cond_got_job;
 };
