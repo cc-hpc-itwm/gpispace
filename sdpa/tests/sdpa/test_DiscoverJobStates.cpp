@@ -287,14 +287,13 @@ BOOST_AUTO_TEST_CASE (insufficient_number_of_workers)
 BOOST_AUTO_TEST_CASE (discover_after_removing_workers)
 {
   const std::string workflow
-    (utils::require_and_read_file ("coallocation.pnet"));
+    (utils::require_and_read_file ("dummy_workflow.pnet"));
 
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
 
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
   Worker*  pWorker_0 = new Worker( fhg::util::random_string() + "0", agent, "A", boost::none);
-  const Worker worker_1( fhg::util::random_string() + "1", agent, "A", boost::none);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (workflow));
