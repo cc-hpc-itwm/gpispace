@@ -44,10 +44,10 @@ namespace sdpa
       }
       else
       {
-        scheduler()->workerFinished (pEvt->from(), pEvt->job_id());
+        scheduler().workerFinished (pEvt->from(), pEvt->job_id());
 
         const bool bAllPartResCollected
-          (scheduler()->allPartialResultsCollected (pEvt->job_id()));
+          (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bAllPartResCollected)
         {
@@ -56,7 +56,7 @@ namespace sdpa
             pJob->CancelJobAck();
             workflowEngine()->canceled (pEvt->job_id());
           }
-          else if(scheduler()->groupFinished (pEvt->job_id()))
+          else if(scheduler().groupFinished (pEvt->job_id()))
           {
             pJob->JobFinished (pEvt->result());
             workflowEngine()->finished
@@ -71,9 +71,9 @@ namespace sdpa
               (pEvt->job_id(), "One of tasks of the group failed with the actual reservation!");
           }
 
-          scheduler()->releaseReservation (pJob->id());
+          scheduler().releaseReservation (pJob->id());
         }
-        scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
+        scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
 
         if(bAllPartResCollected)
@@ -109,8 +109,8 @@ namespace sdpa
         // routine.
 
 
-        scheduler()->workerFailed (pEvt->from(), pEvt->job_id());
-        bool bAllPartResCollected (scheduler()->allPartialResultsCollected (pEvt->job_id()));
+        scheduler().workerFailed (pEvt->from(), pEvt->job_id());
+        bool bAllPartResCollected (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bAllPartResCollected)
         {
@@ -128,9 +128,9 @@ namespace sdpa
           // cancel the other jobs assigned to the workers which are
           // in the reservation list
 
-          scheduler()->releaseReservation (pJob->id());
+          scheduler().releaseReservation (pJob->id());
         }
-        scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
+        scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
 
         if (bAllPartResCollected)
@@ -200,9 +200,9 @@ namespace sdpa
       {
         LLOG (TRACE, _logger, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
 
-        scheduler()->workerCanceled (pEvt->from(), pEvt->job_id());
+        scheduler().workerCanceled (pEvt->from(), pEvt->job_id());
         const bool bTaskGroupComputed
-          (scheduler()->allPartialResultsCollected (pEvt->job_id()));
+          (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
         if (bTaskGroupComputed)
         {
@@ -213,10 +213,10 @@ namespace sdpa
         {
           if (bTaskGroupComputed)
           {
-            scheduler()->releaseReservation (pEvt->job_id());
+            scheduler().releaseReservation (pEvt->job_id());
           }
           LLOG (TRACE, _logger, "Remove job " << pEvt->job_id() << " from the worker "<<pEvt->from());
-          scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
+          scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
           request_scheduling();
         }
         catch (const WorkerNotFoundException&)

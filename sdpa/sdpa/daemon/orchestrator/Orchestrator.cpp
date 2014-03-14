@@ -68,8 +68,8 @@ namespace sdpa
 
       try
       {
-        scheduler()->releaseReservation (pEvt->job_id());
-        scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
+        scheduler().releaseReservation (pEvt->job_id());
+        scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pEvt->job_id());
         request_scheduling();
       }
       catch (WorkerNotFoundException const&)
@@ -102,8 +102,8 @@ namespace sdpa
 
       try
       {
-        scheduler()->releaseReservation (pEvt->job_id());
-        scheduler()->worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
+        scheduler().releaseReservation (pEvt->job_id());
+        scheduler().worker_manager().findWorker (pEvt->from())->deleteJob (pJob->id());
         request_scheduling();
       }
       catch (const WorkerNotFoundException&)
@@ -143,7 +143,7 @@ namespace sdpa
       pJob->CancelJob();
 
       boost::optional<sdpa::worker_id_t> worker_id =
-        scheduler()->worker_manager().findSubmOrAckWorker(pEvt->job_id());
+        scheduler().worker_manager().findSubmOrAckWorker(pEvt->job_id());
       if (worker_id)
       {
         child_proxy (this, *worker_id).cancel_job (pEvt->job_id());
@@ -153,7 +153,7 @@ namespace sdpa
         // the job was not yet assigned to any worker
 
         pJob->CancelJobAck();
-        _scheduler->delete_job (pEvt->job_id());
+        _scheduler.delete_job (pEvt->job_id());
 
         BOOST_FOREACH (agent_id_t subscriber, subscribers (pEvt->job_id()))
         {
