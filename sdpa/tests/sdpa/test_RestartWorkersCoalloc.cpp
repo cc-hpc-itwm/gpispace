@@ -45,7 +45,7 @@ class Worker : public utils::BasicAgent
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-  const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
+  const utils::agent agent (orchestrator);
 
 
   const Worker worker_0 (utils::random_peer_name(), agent, "A", true);
