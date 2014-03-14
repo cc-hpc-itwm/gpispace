@@ -85,11 +85,10 @@ namespace
 class Worker : public utils::BasicAgent
 {
   public:
-    Worker( const std::string& name
-          , const utils::agent& master_agent
+    Worker( const utils::agent& master_agent
           , const std::string& cpb_name
           , boost::optional<sdpa::status::code> reply_status)
-      :  utils::BasicAgent (name, master_agent, cpb_name)
+      :  utils::BasicAgent (utils::random_peer_name(), master_agent, cpb_name)
       , _reply_status(reply_status)
     {}
 
@@ -148,7 +147,7 @@ namespace
     const utils::orchestrator orchestrator (kvs_host(), kvs_port());
     const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
 
-    Worker worker (fhg::util::random_string(), agent, "", reply_status);
+    Worker worker (agent, "", reply_status);
 
     sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
     sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
@@ -205,7 +204,7 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
   const sdpa::status::code reply_status
     (static_cast<sdpa::status::code> (rand() % 6));
 
-  Worker worker (fhg::util::random_string(), agents.front(), "", reply_status);
+  Worker worker (agents.front(), "", reply_status);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
