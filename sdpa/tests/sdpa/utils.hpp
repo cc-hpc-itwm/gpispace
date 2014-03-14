@@ -87,6 +87,60 @@ namespace utils
     return module_call (fhg::util::random_string()).to_string();
   }
 
+  we::type::activity_t net_with_one_child_requiring_workers (unsigned long count)
+  {
+    we::type::property::type props;
+    props.set ( "fhg.drts.schedule.num_worker"
+              , boost::lexical_cast<std::string> (count) + "UL"
+              );
+    we::type::transition_t transition
+      ( fhg::util::random_string()
+      , we::type::module_call_t
+        (fhg::util::random_string(), fhg::util::random_string())
+      , boost::none
+      , true
+      , props
+      , we::priority_type()
+      );
+    const std::string port_name (fhg::util::random_string());
+    we::port_id_type const port_id_in
+      ( transition.add_port ( we::type::port_t ( port_name
+                                               , we::type::PORT_IN
+                                               , std::string ("string")
+                                               , we::type::property::type()
+                                               )
+                            )
+      );
+
+    we::type::net_type net;
+
+    we::place_id_type const place_id_in
+      (net.add_place (place::type (port_name, std::string ("string"))));
+
+    net.put_value (place_id_in, fhg::util::random_string_without ("\\\""));
+
+    we::transition_id_type const transition_id
+      (net.add_transition (transition));
+
+    net.add_connection ( we::edge::PT
+                       , transition_id
+                       , place_id_in
+                       , port_id_in
+                       , we::type::property::type()
+                       );
+
+    return we::type::activity_t
+      ( we::type::transition_t ( fhg::util::random_string()
+                               , net
+                               , boost::none
+                               , true
+                               , we::type::property::type()
+                               , we::priority_type()
+                               )
+      , boost::none
+      );
+  }
+
   struct orchestrator : boost::noncopyable
   {
     orchestrator ( const std::string& name, const std::string& url
