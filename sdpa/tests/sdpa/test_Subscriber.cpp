@@ -37,10 +37,8 @@ class Worker : public utils::BasicAgent
 
 BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
 {
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (orchestrator);
 
   const Worker worker( "worker_0", agent);
 
@@ -53,10 +51,8 @@ BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
 
 BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
 {
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (orchestrator);
 
   const Worker worker( "worker_0", agent);
 
