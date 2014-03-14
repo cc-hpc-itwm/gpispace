@@ -91,12 +91,10 @@ namespace
   public:
     fake_drts_worker_discovering
         ( boost::function<void (std::string)> announce_job
-        , std::string kvs_host
-        , std::string kvs_port
         , utils::agent const& master
         )
       : utils::fake_drts_worker_notifying_module_call_submission
-        (announce_job, kvs_host, kvs_port, master)
+        (announce_job, master)
     {}
 
     virtual void handleDiscoverJobStatesEvent
@@ -148,7 +146,6 @@ namespace
 
     fake_drts_worker_discovering<reply> worker
       ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
-      , kvs_host(), kvs_port()
       , agent
       );
 
@@ -251,7 +248,6 @@ namespace
 
     fake_drts_worker_discovering<sdpa::status::RUNNING> worker
       ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
-      , kvs_host(), kvs_port()
       , agents.back()
       );
 

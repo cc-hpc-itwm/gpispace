@@ -328,13 +328,14 @@ namespace utils
   class basic_drts_worker : sdpa::events::EventHandler
   {
   public:
-    basic_drts_worker
-        (std::string kvs_host, std::string kvs_port, utils::agent const& master)
+    basic_drts_worker (utils::agent const& master)
       : _name (random_peer_name())
       , _master_name (master.name())
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
-          (kvs_host, kvs_port, true, boost::posix_time::seconds (120), 1)
+          ( master.kvs_host(), master.kvs_port()
+          , true, boost::posix_time::seconds (120), 1
+          )
         )
       , _event_queue()
       , _network
@@ -391,11 +392,9 @@ namespace utils
   public:
     fake_drts_worker_notifying_module_call_submission
         ( boost::function<void (std::string)> announce_job
-        , std::string kvs_host
-        , std::string kvs_port
         , utils::agent const& master
         )
-      : basic_drts_worker (kvs_host, kvs_port, master)
+      : basic_drts_worker (master)
       , _announce_job (announce_job)
     {}
 
