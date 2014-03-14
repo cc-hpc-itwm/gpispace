@@ -42,7 +42,7 @@ class Worker : public utils::BasicAgent
     bool _notify_finished;
 };
 
-BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnig)
+BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
