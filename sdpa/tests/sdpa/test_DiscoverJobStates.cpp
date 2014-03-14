@@ -185,11 +185,12 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
   const unsigned int n_agents_in_chain(rand()%5+2);
   utils::agent* arr_ptr_agents[n_agents_in_chain];
 
-  arr_ptr_agents[0]= new utils::agent("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
-
-  for(unsigned int k=1;k<n_agents_in_chain;k++) {
+  for(unsigned int k=0;k<n_agents_in_chain;k++) {
      std::string const agent_name ((boost::format ("agent_%1%") % k).str());
-     arr_ptr_agents[k] = new utils::agent(agent_name, "127.0.0.1", kvs_host(), kvs_port(), *arr_ptr_agents[k-1]);
+     arr_ptr_agents[k] =
+       k
+       ? new utils::agent(agent_name, "127.0.0.1", kvs_host(), kvs_port(), *arr_ptr_agents[k-1])
+       : new utils::agent(agent_name, "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
   }
 
   const sdpa::status::code reply_status(static_cast<sdpa::status::code>(rand()%6));
