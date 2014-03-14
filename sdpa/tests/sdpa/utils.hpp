@@ -425,6 +425,34 @@ namespace utils
     boost::function<void (std::string)> _announce_job;
   };
 
+  class fake_drts_worker_directly_finishing_jobs : public basic_drts_worker
+  {
+  public:
+    fake_drts_worker_directly_finishing_jobs (utils::agent const& master)
+      : basic_drts_worker (master)
+    {}
+
+    virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e)
+    {
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::SubmitJobAckEvent (_name, e->from(), *e->job_id()))
+        );
+
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          ( new sdpa::events::JobFinishedEvent
+            (_name, e->from(), *e->job_id(), we::type::activity_t().to_string())
+          )
+        );
+    }
+    virtual void handleJobFinishedAckEvent
+      (const sdpa::events::JobFinishedAckEvent*)
+    {
+      // can be ignored as we don't have any state
+    }
+  };
+
   namespace client
   {
     struct client_t : boost::noncopyable
