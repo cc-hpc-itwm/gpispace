@@ -50,11 +50,8 @@ class Worker : public utils::BasicAgent
 
 BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
 {
-  const utils::orchestrator orchestrator
-   (gen_name(), "127.0.0.1", kvs_host(), kvs_port());
-
-  const utils::agent agent
-    (gen_name(), "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (orchestrator);
 
   sdpa::worker_id_t worker_id(gen_name());
   Worker* pWorker(new Worker(worker_id, agent));
