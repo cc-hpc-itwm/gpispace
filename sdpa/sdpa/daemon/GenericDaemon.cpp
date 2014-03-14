@@ -147,7 +147,6 @@ GenericDaemon::GenericDaemon( const std::string name
   //             kvs::put ("sdpa.daemon.<name>.pid", getpid())
   //                - remove them in destructor
 
-  if (!isTop())
   {
     lock_type lock (mtx_master_);
     BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
@@ -325,7 +324,7 @@ void GenericDaemon::handleWorkerRegistrationEvent
 
   request_scheduling();
 
-  if (was_new_worker && !workerCpbSet.empty() && !isTop())
+  if (was_new_worker && !workerCpbSet.empty())
   {
     lock_type lock (mtx_master_);
     // send to the masters my new set of capabilities
