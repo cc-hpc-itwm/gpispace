@@ -21,45 +21,63 @@
 
 namespace
 {
-  std::list<sdpa::status::code> get_leaf_job_info(const sdpa::discovery_info_t& discovery_result)
+  std::list<sdpa::status::code>
+    get_leaf_job_info (const sdpa::discovery_info_t& discovery_result)
   {
     std::list<sdpa::status::code> list_info;
-    if(!discovery_result.children().empty())
+
+    if (!discovery_result.children().empty())
     {
-      BOOST_FOREACH(const sdpa::discovery_info_t& child_info, discovery_result.children() )
+      BOOST_FOREACH
+        (const sdpa::discovery_info_t& child_info, discovery_result.children())
       {
-        std::list<sdpa::status::code> list_info_child(get_leaf_job_info(child_info));
-        list_info.insert(list_info.end(), list_info_child.begin(), list_info_child.end());
+        std::list<sdpa::status::code> list_info_child
+          (get_leaf_job_info (child_info));
+
+        list_info.insert
+          (list_info.end(), list_info_child.begin(), list_info_child.end());
       }
     }
-    else {
-       list_info.push_back(*discovery_result.state());
+    else
+    {
+      list_info.push_back (*discovery_result.state());
     }
 
     return list_info;
   }
 
-  unsigned int max_depth(const sdpa::discovery_info_t& discovery_result)
+  unsigned int max_depth (const sdpa::discovery_info_t& discovery_result)
   {
     unsigned int maxd = 1;
-    BOOST_FOREACH(const sdpa::discovery_info_t& child_info, discovery_result.children() )
+
+    BOOST_FOREACH
+      (const sdpa::discovery_info_t& child_info, discovery_result.children())
     {
-      unsigned int depth(max_depth(child_info)+1);
-      if(maxd<depth) maxd = depth;
+      unsigned int depth (max_depth (child_info) + 1);
+
+      if (maxd < depth)
+      {
+        maxd = depth;
+      }
     }
 
     return maxd;
   }
 
-  void check_has_one_leaf_job_with_expected_status( const sdpa::discovery_info_t& discovery_result
-                                                    , const sdpa::status::code expected_status)
+  void check_has_one_leaf_job_with_expected_status
+    ( const sdpa::discovery_info_t& discovery_result
+    , const sdpa::status::code expected_status
+    )
   {
-     std::list<sdpa::status::code> list_leaf_job_status(get_leaf_job_info(discovery_result));
-     BOOST_REQUIRE_EQUAL(list_leaf_job_status.size(), 1);
+     std::list<sdpa::status::code> list_leaf_job_status
+       (get_leaf_job_info (discovery_result));
 
-     BOOST_FOREACH(const sdpa::status::code& leaf_job_status, list_leaf_job_status)
+     BOOST_REQUIRE_EQUAL (list_leaf_job_status.size(), 1);
+
+     BOOST_FOREACH
+       (const sdpa::status::code& leaf_job_status, list_leaf_job_status)
      {
-       BOOST_REQUIRE_EQUAL(leaf_job_status, expected_status);
+       BOOST_REQUIRE_EQUAL (leaf_job_status, expected_status);
      }
   }
 }
