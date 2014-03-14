@@ -331,6 +331,7 @@ namespace utils
     basic_drts_worker
         (std::string kvs_host, std::string kvs_port, utils::agent const& master)
       : _name (random_peer_name())
+      , _master_name (master._.name())
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
           (kvs_host, kvs_port, true, boost::posix_time::seconds (120), 1)
@@ -343,7 +344,6 @@ namespace utils
         , _kvs_client
         )
       , _event_thread (&basic_drts_worker::event_thread, this)
-      , _master_name (master._.name())
     {
       _network.perform
         ( sdpa::events::SDPAEvent::Ptr
@@ -359,6 +359,7 @@ namespace utils
 
   protected:
     std::string _name;
+    std::string _master_name;
 
   private:
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
@@ -378,8 +379,6 @@ namespace utils
         _event_queue.get()->handleBy (this);
       }
     }
-
-    std::string _master_name;
   };
 
   class fake_drts_worker_notifying_module_call_submission
