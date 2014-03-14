@@ -3,8 +3,6 @@
 #include "kvs_setup_fixture.hpp"
 #include "tests_config.hpp"
 #include <utils.hpp>
-#include <cstdlib>
-#include <ctime>
 
 #include <boost/test/unit_test.hpp>
 
