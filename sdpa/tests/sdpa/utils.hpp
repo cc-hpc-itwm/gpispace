@@ -331,7 +331,7 @@ namespace utils
     basic_drts_worker
         (std::string kvs_host, std::string kvs_port, utils::agent const& master)
       : _name (random_peer_name())
-      , _master_name (master._.name())
+      , _master_name (master.name())
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
           (kvs_host, kvs_port, true, boost::posix_time::seconds (120), 1)
