@@ -45,13 +45,13 @@ namespace utils
 
   std::string random_peer_name()
   {
-#define TEST_NO_HUMAN_READABLE_PEER_NAMES
-#ifndef TEST_NO_HUMAN_READABLE_PEER_NAMES
     static std::size_t i (0);
-    return boost::lexical_cast<std::string> (i++);
-#else
-    return fhg::util::random_string();
+    return boost::lexical_cast<std::string> (i++)
+#define TEST_NO_HUMAN_READABLE_PEER_NAMES
+#ifdef TEST_NO_HUMAN_READABLE_PEER_NAMES
+    + fhg::util::random_string()
 #endif
+      ;
   }
 
   //! \todo unify with test/layer
