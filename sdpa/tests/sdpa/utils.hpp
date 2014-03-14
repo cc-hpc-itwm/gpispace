@@ -110,23 +110,28 @@ namespace utils
     std::string kvs_port() const { return _kvs_port; }
   };
 
-  struct agent;
-
-  typedef std::vector<boost::reference_wrapper<const utils::agent> > agents_t;
-
   namespace
   {
-    sdpa::master_info_list_t assemble_master_info_list (const agents_t& masters);
+    template<typename T, typename U>
+    sdpa::master_info_list_t assemble_master_info_list
+      (const T& master_0, const U& master_1)
+    {
+      sdpa::master_info_list_t result;
+      result.push_back (sdpa::MasterInfo (master_0.name()));
+      result.push_back (sdpa::MasterInfo (master_1.name()));
+      return result;
+    }
   }
 
   struct agent : boost::noncopyable
   {
-    agent (const agents_t& masters)
-      : _kvs_host (masters.front().get().kvs_host())
-      , _kvs_port (masters.front().get().kvs_port())
+    template <typename T, typename U>
+    agent (const T& master_0, const U& master_1)
+      : _kvs_host (master_0.kvs_host())
+      , _kvs_port (master_0.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
           , _kvs_host, _kvs_port
-          , assemble_master_info_list (masters)
+          , assemble_master_info_list (master_0, master_1)
           , boost::none
           )
     {}
@@ -176,16 +181,6 @@ namespace utils
 
   namespace
   {
-    sdpa::master_info_list_t assemble_master_info_list (const agents_t& masters)
-    {
-      sdpa::master_info_list_t result;
-      BOOST_FOREACH (const utils::agent& agent, masters)
-      {
-        result.push_back (sdpa::MasterInfo (agent.name()));
-      }
-      return result;
-    }
-
     boost::shared_ptr<fhg::core::kernel_t>
       createDRTSWorker ( const std::string& drtsName
                        , const std::string& masterName

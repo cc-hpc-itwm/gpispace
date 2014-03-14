@@ -120,12 +120,7 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
 
   const utils::agent agent_0 (orchestrator);
   const utils::agent agent_1 (orchestrator);
-
-  utils::agents_t agents;
-  agents.push_back (boost::cref (agent_0));
-  agents.push_back (boost::cref (agent_1));
-
-  const utils::agent agent_2 (agents);
+  const utils::agent agent_2 (agent_0, agent_1);
 
   const Worker worker (agent_2);
 
