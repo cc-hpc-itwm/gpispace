@@ -17,9 +17,8 @@ namespace {
 class Worker : public utils::BasicAgent
 {
   public:
-    Worker (const std::string& name, const utils::agent& master_agent, const std::string cpb_name = "", bool notify_finished = false)
+    Worker (const std::string& name, const utils::agent& master_agent, const std::string cpb_name = "")
       :  utils::BasicAgent (name, master_agent, cpb_name)
-      , _notify_finished(notify_finished)
     {}
 
     void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
@@ -29,23 +28,7 @@ class Worker : public utils::BasicAgent
                                                           , pEvt->from()
                                                           , *pEvt->job_id()));
       _network_strategy->perform (pSubmitJobAckEvt);
-
-      if(_notify_finished)
-      {
-          sdpa::events::JobFinishedEvent::Ptr
-          pJobFinishedEvt(new sdpa::events::JobFinishedEvent( _name
-                                                            , pEvt->from()
-                                                            , *pEvt->job_id()
-                                                            , pEvt->description() ));
-
-          _network_strategy->perform (pJobFinishedEvt);
-      }
     }
-
-    void handleJobFinishedAckEvent(const sdpa::events::JobFinishedAckEvent* ){}
-
-  private:
-    bool _notify_finished;
 };
 
 BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
