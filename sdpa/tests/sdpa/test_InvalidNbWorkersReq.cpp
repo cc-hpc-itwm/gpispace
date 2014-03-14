@@ -11,7 +11,7 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 BOOST_AUTO_TEST_CASE (testInvalidNumberOfWorkersRequired)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-  const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
+  const utils::agent agent (orchestrator);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
