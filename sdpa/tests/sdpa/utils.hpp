@@ -132,6 +132,15 @@ namespace utils
           , boost::none
           )
     {}
+    agent ( std::string kvs_host, std::string kvs_port
+          , const agents_t& masters
+          )
+      : _ ( random_peer_name(), "127.0.0.1"
+          , kvs_host, kvs_port
+          , assemble_master_info_list (masters)
+          , boost::none
+          )
+    {}
     agent ( const std::string& name
           , const std::string& url
           , std::string kvs_host, std::string kvs_port
