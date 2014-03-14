@@ -239,13 +239,9 @@ namespace sdpa {
 
       boost::mutex _scheduling_thread_mutex;
       boost::condition_variable _scheduling_thread_notifier;
-      //! \todo boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-      boost::thread _scheduling_thread;
-      void scheduling_thread();
       void request_scheduling();
 
       boost::optional<boost::mt19937> _random_extraction_engine;
-      we::layer* ptr_workflow_engine_;
 
     private:
 
@@ -264,17 +260,25 @@ namespace sdpa {
       unsigned int _max_consecutive_registration_attempts;
       unsigned int _max_consecutive_network_faults;
       boost::posix_time::time_duration _registration_timeout;
-      fhg::thread::set _registration_threads;
 
       void do_registration_after_sleep (const MasterInfo);
 
       fhg::thread::queue<boost::shared_ptr<events::SDPAEvent> > _event_queue;
-      //! \todo boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-      boost::thread _event_handler_thread;
-      void handle_events();
 
       fhg::com::kvs::kvsc_ptr_t _kvs_client;
       boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
+
+      we::layer* ptr_workflow_engine_;
+
+      fhg::thread::set _registration_threads;
+
+      //! \todo boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      boost::thread _scheduling_thread;
+      void scheduling_thread();
+
+      //! \todo boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      boost::thread _event_handler_thread;
+      void handle_events();
 
     protected:
       struct child_proxy

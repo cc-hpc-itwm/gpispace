@@ -99,8 +99,32 @@ GenericDaemon::GenericDaemon( const std::string name
     )
   , _scheduling_thread_mutex()
   , _scheduling_thread_notifier()
-  , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
   , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
+  , mtx_subscriber_()
+  , mtx_master_()
+  , mtx_cpb_()
+  , m_capabilities()
+  , m_guiService ( guiUrl && !guiUrl->empty()
+                 ? boost::optional<NotificationService>
+                   (NotificationService (*guiUrl))
+                 : boost::none
+                 )
+  , _max_consecutive_registration_attempts (360)
+  , _max_consecutive_network_faults (360)
+  , _registration_timeout (boost::posix_time::seconds (1))
+  , _event_queue()
+  , _kvs_client
+    ( new fhg::com::kvs::client::kvsc
+      (kvs_host, kvs_port, true, boost::posix_time::seconds(120), 1)
+    )
+  , _network_strategy
+    ( new sdpa::com::NetworkStrategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
+                                     , name /*name for peer*/
+                                     , host_from_url (url)
+                                     , port_from_url (url)
+                                     , _kvs_client
+                                     )
+    )
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer
                            ( boost::bind (&GenericDaemon::submit, this, _1, _2)
@@ -115,33 +139,9 @@ GenericDaemon::GenericDaemon( const std::string name
                            )
                          : NULL
                          )
-  , mtx_subscriber_()
-  , mtx_master_()
-  , mtx_cpb_()
-  , m_capabilities()
-  , m_guiService ( guiUrl && !guiUrl->empty()
-                 ? boost::optional<NotificationService>
-                   (NotificationService (*guiUrl))
-                 : boost::none
-                 )
-  , _max_consecutive_registration_attempts (360)
-  , _max_consecutive_network_faults (360)
-  , _registration_timeout (boost::posix_time::seconds (1))
   , _registration_threads()
-  , _event_queue()
+  , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
   , _event_handler_thread (&GenericDaemon::handle_events, this)
-  , _kvs_client
-    ( new fhg::com::kvs::client::kvsc
-      (kvs_host, kvs_port, true, boost::posix_time::seconds(120), 1)
-    )
-  , _network_strategy
-    ( new sdpa::com::NetworkStrategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
-                                     , name /*name for peer*/
-                                     , host_from_url (url)
-                                     , port_from_url (url)
-                                     , _kvs_client
-                                     )
-    )
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -178,10 +178,6 @@ GenericDaemon::~GenericDaemon()
     }
   }
 
-  _registration_threads.stop_all();
-
-  delete ptr_workflow_engine_;
-
   _event_handler_thread.interrupt();
   if (_event_handler_thread.joinable())
   {
@@ -193,9 +189,10 @@ GenericDaemon::~GenericDaemon()
   {
     _scheduling_thread.join();
   }
-  ptr_scheduler_.reset();
 
-  _network_strategy.reset();
+  _registration_threads.stop_all();
+
+  delete ptr_workflow_engine_;
 
   BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
   {
