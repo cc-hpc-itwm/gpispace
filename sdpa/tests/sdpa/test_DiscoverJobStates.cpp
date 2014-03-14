@@ -302,14 +302,13 @@ namespace
   void verify_child_count_in_agent_chain (const std::size_t num_agents)
   {
     const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-    const utils::agent top_agent (kvs_host(), kvs_port(), orchestrator);
     boost::ptr_list<utils::agent> agents;
+    agents.push_back (new utils::agent (kvs_host(), kvs_port(), orchestrator));
 
-    const utils::agent* last_agent = &top_agent;
     for (std::size_t counter (1); counter < num_agents; ++counter)
     {
-      agents.push_back (new utils::agent (kvs_host(), kvs_port(), *last_agent));
-      last_agent = &agents.back();
+      agents.push_back
+        (new utils::agent (kvs_host(), kvs_port(), agents.back()));
     }
 
     fhg::util::thread::event<std::string> job_submitted;
@@ -317,7 +316,7 @@ namespace
     fake_drts_worker_discovering_running worker
       ( boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted, _1)
       , kvs_host(), kvs_port()
-      , *last_agent
+      , agents.back()
       );
 
     const std::string activity_name (fhg::util::random_string());
