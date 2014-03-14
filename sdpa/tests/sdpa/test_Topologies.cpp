@@ -17,6 +17,7 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   // W
 
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+
   const utils::agent agent (orchestrator);
 
   const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
@@ -65,6 +66,7 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   // W W
 
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+
   const utils::agent agent_0 (orchestrator);
   const utils::agent agent_1 (agent_0);
   const utils::agent agent_2 (agent_0);
