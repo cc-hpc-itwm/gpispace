@@ -17,7 +17,6 @@
 
 #include <boost/thread/scoped_thread.hpp>
 
-#include <ctime>
 #include <deque>
 
 namespace
