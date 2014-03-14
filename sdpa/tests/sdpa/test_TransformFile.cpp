@@ -13,10 +13,8 @@ BOOST_AUTO_TEST_CASE (test_transform_file)
   const std::string workflow
     (utils::require_and_read_file ("transform_file.pnet"));
 
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (orchestrator);
 
   const utils::drts_worker worker_0
     (agent, "", TESTS_TRANSFORM_FILE_MODULES_PATH);
