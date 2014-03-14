@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
   // W
 
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-  const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
+  const utils::agent agent (orchestrator);
 
   const Worker worker (agent);
 
@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE (chained_agents)
 
   //! \note "variable agents #" was hardcoded to 1 when this test got
   //! rewritten. Probably should be more, so got bumped to 2.
-  const utils::agent agent_0 (kvs_host(), kvs_port(), orchestrator);
-  const utils::agent agent_1 (kvs_host(), kvs_port(), agent_0);
+  const utils::agent agent_0 (orchestrator);
+  const utils::agent agent_1 (agent_0);
 
   const Worker worker (agent_1);
 
@@ -93,9 +93,9 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
   // W W
 
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-  const utils::agent agent_0 (kvs_host(), kvs_port(), orchestrator);
-  const utils::agent agent_1 (kvs_host(), kvs_port(), agent_0);
-  const utils::agent agent_2 (kvs_host(), kvs_port(), agent_0);
+  const utils::agent agent_0 (orchestrator);
+  const utils::agent agent_1 (agent_0);
+  const utils::agent agent_2 (agent_0);
 
   const Worker worker_0 (agent_1);
   const Worker worker_1 (agent_2);
@@ -118,8 +118,8 @@ BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
 
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
 
-  const utils::agent agent_0 (kvs_host(), kvs_port(), orchestrator);
-  const utils::agent agent_1 (kvs_host(), kvs_port(), orchestrator);
+  const utils::agent agent_0 (orchestrator);
+  const utils::agent agent_1 (orchestrator);
 
   utils::agents_t agents;
   agents.push_back (boost::cref (agent_0));
