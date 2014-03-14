@@ -406,6 +406,14 @@ namespace utils
       : basic_drts_worker (master)
       , _announce_job (announce_job)
     {}
+    fake_drts_worker_notifying_module_call_submission
+        ( std::string name
+        , boost::function<void (std::string)> announce_job
+        , utils::agent const& master
+        )
+      : basic_drts_worker (name, master)
+      , _announce_job (announce_job)
+    {}
 
     virtual void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* e)
     {
