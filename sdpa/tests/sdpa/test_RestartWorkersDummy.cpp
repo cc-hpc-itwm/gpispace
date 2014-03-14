@@ -36,7 +36,15 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
   {
-    const Worker worker (worker_id, agent);
+    fhg::util::thread::event<> job_submitted;
+
+    const utils::fake_drts_worker_notifying_module_call_submission worker
+      ( worker_id
+      , boost::bind (&fhg::util::thread::event<>::notify, &job_submitted)
+      , agent
+      );
+
+    job_submitted.wait();
   }
 
   const utils::fake_drts_worker_directly_finishing_jobs worker_0
