@@ -34,9 +34,10 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dumm_workflow)
   sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
 
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
-  Worker* pWorker(new Worker(worker_id, agent));
 
-  delete pWorker;
+  {
+    Worker worker (worker_id, agent);
+  }
 
   const utils::fake_drts_worker_directly_finishing_jobs worker_0
     (worker_id, agent);
