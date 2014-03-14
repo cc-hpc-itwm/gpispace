@@ -42,9 +42,6 @@ class Worker : public utils::BasicAgent
 
 BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("coallocation.pnet"));
-
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (orchestrator);
 
@@ -53,7 +50,7 @@ BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (workflow, orchestrator)
+      (utils::net_with_one_child_requiring_workers (2).to_string(), orchestrator)
     , sdpa::status::FINISHED
     );
 }
