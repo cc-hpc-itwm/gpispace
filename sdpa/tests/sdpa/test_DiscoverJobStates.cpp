@@ -80,12 +80,7 @@ namespace
        BOOST_REQUIRE_EQUAL (leaf_job_status, expected_status);
      }
   }
-}
 
-BOOST_GLOBAL_FIXTURE (KVSSetup)
-
-namespace
-{
   std::string get_next_discovery_id()
   {
     static int i (0);
@@ -177,6 +172,8 @@ namespace
     check_has_one_leaf_job_with_expected_status (discovery_result, reply);
   }
 }
+
+BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 {
