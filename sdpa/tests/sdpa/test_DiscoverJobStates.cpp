@@ -1,4 +1,5 @@
 #define BOOST_TEST_MODULE testDiscoverJobStates
+#include <boost/test/unit_test.hpp>
 
 #include "kvs_setup_fixture.hpp"
 #include "tests_config.hpp"
@@ -6,18 +7,13 @@
 
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+#include <sdpa/types.hpp>
 
 #include <we/layer.hpp>
 
-#include <boost/ptr_container/ptr_list.hpp>
-#include <boost/test/unit_test.hpp>
-#include <sdpa/types.hpp>
-
 #include <fhg/util/random_string.hpp>
 
-#include <boost/thread/scoped_thread.hpp>
-
-#include <deque>
+#include <boost/ptr_container/ptr_list.hpp>
 
 namespace
 {
