@@ -185,28 +185,30 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
 
   const unsigned int num_agents (rand() % 5 + 2);
 
-  utils::agent* agents[num_agents];
+  boost::ptr_list<utils::agent> agents;
 
   for (unsigned int k (0); k < num_agents; ++k)
   {
      std::string const agent_name
        ((boost::format ("%1%%2%") % fhg::util::random_string() % k).str());
 
-     agents[k] =
+     utils::agent* agent =
        k
        ? new utils::agent ( agent_name, "127.0.0.1", kvs_host(), kvs_port()
-                          , *agents[k-1]
+                          , agents.front()
                           )
        : new utils::agent ( agent_name, "127.0.0.1", kvs_host(), kvs_port()
                           , orchestrator
                           );
+
+     agents.push_front (agent);
   }
 
   const sdpa::status::code reply_status
     (static_cast<sdpa::status::code> (rand() % 6));
 
   Worker* pWorker = new Worker
-    (fhg::util::random_string(), *agents[num_agents - 1], "", reply_status);
+    (fhg::util::random_string(), agents.front(), "", reply_status);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
@@ -222,10 +224,6 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status_in_arbitrary_long_chain)
   check_has_one_leaf_job_with_expected_status (discovery_result, reply_status);
 
   delete pWorker;
-  for (int k (num_agents - 1); k >= 0; --k)
-  {
-    delete agents[k];
-  }
 }
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
