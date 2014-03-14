@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dummy_workflow)
     job_submitted.wait();
   }
 
-  const utils::fake_drts_worker_directly_finishing_jobs worker_0
+  const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
     (worker_id, agent);
 
   BOOST_REQUIRE_EQUAL
