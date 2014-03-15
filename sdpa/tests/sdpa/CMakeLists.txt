@@ -49,32 +49,6 @@ add_custom_target (workflow_capabilities
 
 ###########################################################################################
 
-pnet_compile (capabilities_no_mandatory-test-wf
-  ${TEST_WORKFLOWS_SOURCE_DIR}/capabilities_no_mandatory.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory-test-wf.in.pnet
-  GENERATE capabilities_no_mandatory
-  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
-  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
-           -I${CMAKE_BINARY_DIR}/fhglog
-           -O3
-  BUILD
-)
-
-add_custom_target (workflow_capabilities_no_mandatory
-  COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory-test-wf.in.pnet
-          -p n_A=10L
-          -p time_A=5000L
-          -p n_B=10L
-          -p time_B=5000L
-          --of "${CMAKE_CURRENT_BINARY_DIR}/capabilities_no_mandatory.pnet"
-  COMMENT "putting tokens into capabilities_no_mandatory workflow"
-  DEPENDS pnet-capabilities_no_mandatory-test-wf
-          pnetput
-)
-
-################################################################################################
-
 fhg_add_test (test_Capabilities.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -82,7 +56,6 @@ fhg_add_test (test_Capabilities.cpp
                  fhg-plugin
                  ${FhgLog_LIBRARY}
   DEPENDS workflow_capabilities
-          workflow_capabilities_no_mandatory
 )
 
 fhg_add_test (test_Coallocation.cpp
