@@ -46,7 +46,6 @@ namespace sdpa { namespace daemon {
 
     // update last service time
     double lastScheduleTime() {lock_type lock(mtx_); return last_schedule_time_; }
-    void setLastScheduleTime(const double& last_schedule_time ) { lock_type lock(mtx_); last_schedule_time_ = last_schedule_time; }
 
     /**
       Return the name of the worker.
