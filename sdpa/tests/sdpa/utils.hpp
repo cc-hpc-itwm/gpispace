@@ -3,8 +3,6 @@
 #ifndef SDPA_TEST_UTILS_HPP
 #define SDPA_TEST_UTILS_HPP
 
-#include "tests_config.hpp"
-
 #include <sdpa/client.hpp>
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
@@ -344,8 +342,6 @@ namespace utils
 
       boost::shared_ptr<fhg::core::kernel_t> kernel
         (new fhg::core::kernel_t (fhg::core::kernel_t::search_path_t(), request_stop, config_variables));
-
-      kernel->load_plugin_from_file (TESTS_FVM_FAKE_PLUGIN_PATH);
 
       return kernel;
     }
