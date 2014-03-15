@@ -7,7 +7,6 @@ include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
 set(TEST_WORKFLOWS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows")
 
-set(TESTS_EXAMPLE_INOTIFY_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/inotify")
 set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
 
 fhg_add_plugin (fvm-fake fvm-fake.cpp LINK_LIBRARIES fvm-pc-fake.shared)
@@ -80,30 +79,6 @@ add_custom_target (workflow_capabilities_no_mandatory
 
 ################################################################################################
 
-pnet_compile (inotify-test-wf
-  ${TEST_WORKFLOWS_SOURCE_DIR}/inotify.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/inotify-test-wf.in.pnet
-  GENERATE inotify
-  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
-  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
-           -I${CMAKE_BINARY_DIR}/fhglog
-           -O3
-  BUILD
-)
-
-add_custom_target (workflow_inotify
-  COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/inotify-test-wf.in.pnet
-          -p N=5L
-          -p watched_file=\\"inotify_test.txt\\"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/inotify.pnet"
-  COMMENT "putting tokens into inotify workflow"
-  DEPENDS pnet-inotify-test-wf
-          pnetput
-)
-
-################################################################################################
-
 pnet_compile (transform_file-test-wf
   ${TEST_WORKFLOWS_SOURCE_DIR}/transform_file/transform_file.xpnet
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/transform_file-test-wf.in.pnet
@@ -149,17 +124,6 @@ fhg_add_test (test_Coallocation.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-)
-
-fhg_add_test (test_Inotify.cpp
-  PROJECT sdpa
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-                 fake-drts-kernel-plugin
-                 fhg-plugin
-                 ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_inotify
 )
 
 fhg_add_test (test_CancelJob.cpp
