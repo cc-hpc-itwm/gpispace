@@ -40,7 +40,6 @@ enum return_codes_t
   , JOB_ID_MISSING        = 51
   , FILE_EXISTS           = 52
   , IO_ERROR              = 53
-  , NETWORK_ERROR         = 54
   , UNKNOWN_ERROR         = 100
   };
 
