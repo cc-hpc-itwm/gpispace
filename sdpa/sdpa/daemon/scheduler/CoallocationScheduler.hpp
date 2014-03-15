@@ -12,6 +12,7 @@
 
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace sdpa
 {
