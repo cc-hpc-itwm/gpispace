@@ -1,20 +1,12 @@
 <defun name="capabilities">
   <in name="n_A" type="long" place="n_A" />
-  <in name="time_A" type="long" place="time_A" />
-
   <in name="n_B" type="long" place="n_B" />
-  <in name="time_B" type="long" place="time_B" />
-
   <out name="done" type="control" place="done" />
 
   <net>
     <!-- input/output places -->
     <place name="n_A" type="long" />
-    <place name="time_A" type="long" />
-
     <place name="n_B" type="long" />
-    <place name="time_B" type="long" />
-
     <place name="done" type="control" />
 
     <!-- template specializations -->
@@ -66,12 +58,8 @@
 	<out name="done" type="control" />
 	<module name="capabilities_test" function="done A (id,t)">
           <cinclude href="fhglog/LogMacros.hpp"/>
-	  <cinclude href="unistd.h"/>
 	  <code><![CDATA[
 	  LOG(INFO, ">>> running  A(" << id << ", " << t << ")");
-
-	  usleep ((useconds_t)t);
-
 	  LOG(INFO, "<<< finished A(" << id << ", " << t << ")");
 
 	  return we::type::literal::control();
@@ -79,7 +67,6 @@
 	</module>
       </defun>
       <connect-in port="id" place="a" />
-      <connect-read port="t" place="time_A" />
       <connect-out port="done" place="finished_task_A" />
     </transition>
 
@@ -116,12 +103,8 @@
 		<out name="done" type="control" />
 		<module name="capabilities_test" function="done B(id, t)">
 	          <cinclude href="fhglog/LogMacros.hpp" />
-		  <cinclude href="unistd.h" />
 	          <code><![CDATA[
 		  LOG(INFO, ">>> running  B(" << id << ", " << t << ")");
-	
-		  usleep ((useconds_t)t);
-	
 		  LOG(INFO, "<<< finished B(" << id << ", " << t << ")");
 	
 		  return we::type::literal::control();
@@ -129,7 +112,6 @@
 		</module>
       </defun>
       <connect-in port="id" place="b" />
-      <connect-read port="t" place="time_B" />
       <connect-out port="done" place="finished_task_B" />
 	</transition>
 
@@ -153,18 +135,13 @@
 	<in name="done_A" type="control" />
 	<in name="done_B" type="control" />
 
-	<in name="time_A" type="long" />
-	<in name="time_B" type="long" />
-
 	<out name="done" type="control" />
 	<expression>
 	  ${done}:=[];
 	</expression>
       </defun>
       <connect-in  port="done_A" place="done_A" />
-      <connect-in  port="time_A" place="time_A" />
       <connect-in  port="done_B" place="done_B" />
-      <connect-in  port="time_B" place="time_B" />
       <connect-out port="done"   place="done" />
     </transition>
   </net>

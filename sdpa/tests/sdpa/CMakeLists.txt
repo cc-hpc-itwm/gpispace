@@ -38,9 +38,7 @@ add_custom_target (workflow_capabilities
   COMMAND ${PNETPUT_LOCATION}
           --if ${CMAKE_CURRENT_BINARY_DIR}/capabilities-test-wf.in.pnet
           -p n_A=20L
-          -p time_A=5000L
           -p n_B=10L
-          -p time_B=5000L
           --of "${CMAKE_CURRENT_BINARY_DIR}/capabilities.pnet"
   COMMENT "putting tokens into capabilities workflow"
   DEPENDS pnet-capabilities-test-wf
