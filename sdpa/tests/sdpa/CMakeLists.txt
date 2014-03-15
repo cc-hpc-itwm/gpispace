@@ -1,13 +1,9 @@
 include (fhg_plugin_macros)
 
-configure_file(in.txt ${CMAKE_BINARY_DIR}/sdpa/tests/sdpa/in.txt COPYONLY)
-
 include_directories (${FVM_INCLUDE_DIR})
 include_directories (SYSTEM ${HWLOC_INCLUDE_DIR})
 
 set(TEST_WORKFLOWS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/sdpa/tests/sdpa/workflows")
-
-set(TESTS_TRANSFORM_FILE_MODULES_PATH "${CMAKE_CURRENT_BINARY_DIR}/transform_file")
 
 fhg_add_plugin (fvm-fake fvm-fake.cpp LINK_LIBRARIES fvm-pc-fake.shared)
 
@@ -79,35 +75,6 @@ add_custom_target (workflow_capabilities_no_mandatory
 
 ################################################################################################
 
-pnet_compile (transform_file-test-wf
-  ${TEST_WORKFLOWS_SOURCE_DIR}/transform_file/transform_file.xpnet
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/transform_file-test-wf.in.pnet
-  GENERATE transform_file
-  INCLUDES ${CMAKE_SOURCE_DIR}/share/lib
-  CXXFLAGS -I${CMAKE_SOURCE_DIR}/fhglog
-           -I${CMAKE_BINARY_DIR}/fhglog
-           -I${CMAKE_SOURCE_DIR}/fvm-pc
-           -I${TEST_WORKFLOWS_SOURCE_DIR}/transform_file
-           -O3
-  BUILD
-)
-
-add_custom_target (workflow_transform_file
-  COMMAND ${PNETPUT_LOCATION}
-          --if ${CMAKE_CURRENT_BINARY_DIR}/transform_file-test-wf.in.pnet
-          -p input_file=\\"in.txt\\"
-          -p output_file=\\"\\"
-          -p input_n_read_slots="3L"
-          -p input_n_write_slots="3L"
-          -p chunk_size="512L"
-          --of "${CMAKE_CURRENT_BINARY_DIR}/transform_file.pnet"
-  COMMENT "putting tokens into transform_file workflow"
-  DEPENDS pnet-transform_file-test-wf
-          pnetput
-)
-
-################################################################################################
-
 fhg_add_test (test_Capabilities.cpp
   PROJECT sdpa
   BOOST_UNIT_TEST
@@ -164,17 +131,6 @@ fhg_add_test (test_SubmitJobFails.cpp
                  fhg-plugin
                  ${FhgLog_LIBRARY}
 )
-
-fhg_add_test (test_TransformFile.cpp
-  PROJECT sdpa
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-  				 fake-drts-kernel-plugin
-                 fhg-plugin
-                 ${FhgLog_LIBRARY}
-  DEPENDS fvm-fake-plugin
-          workflow_transform_file
-  )
 
 fhg_add_test (test_DiscoverJobStates.cpp
   PROJECT sdpa
