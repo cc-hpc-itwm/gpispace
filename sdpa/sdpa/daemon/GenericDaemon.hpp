@@ -41,6 +41,7 @@
 
 #include <sdpa/types.hpp>
 
+#include <we/layer.hpp>
 #include <we/type/schedule_data.hpp>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
