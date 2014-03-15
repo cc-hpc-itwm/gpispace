@@ -8,8 +8,6 @@
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 
-#include <drts/worker/drts.hpp>
-
 #include <fhg/util/random_string.hpp>
 
 #include <plugin/core/kernel.hpp>
@@ -310,73 +308,6 @@ namespace utils
     std::string name() const { return _.name(); }
     std::string kvs_host() const { return _kvs_host; }
     std::string kvs_port() const { return _kvs_port; }
-  };
-
-  namespace
-  {
-    boost::shared_ptr<fhg::core::kernel_t>
-      createDRTSWorker ( const std::string& drtsName
-                       , const std::string& masterName
-                       , const std::string& cpbList
-                       , const std::string& strModulesPath
-                       , const std::string& kvsHost
-                       , const std::string& kvsPort
-                       , boost::function<void()> request_stop
-                       , std::map<std::string, std::string>& config_variables
-                       )
-    {
-
-      config_variables ["plugin.drts.kvs_host"] = kvsHost;
-      config_variables ["plugin.drts.kvs_port"] = kvsPort;
-
-      //see ~/.sdpa/configs/sdpa.rc
-
-      config_variables["kernel_name"] = drtsName;
-      config_variables ["plugin.drts.master"] = masterName;
-      config_variables ["plugin.drts.backlog"] = "2";
-
-      if(!cpbList.empty())
-        config_variables ["plugin.drts.capabilities"] = cpbList;
-
-      config_variables ["plugin.drts.library_path"] = strModulesPath;
-
-      boost::shared_ptr<fhg::core::kernel_t> kernel
-        (new fhg::core::kernel_t (fhg::core::kernel_t::search_path_t(), request_stop, config_variables));
-
-      return kernel;
-    }
-  }
-
-  struct drts_worker : boost::noncopyable
-  {
-    drts_worker ( const agent& master
-                , std::string capabilities
-                , std::string modules_path
-                )
-      : _waiter()
-      , _config_variables()
-      , _kernel ( createDRTSWorker
-                  (random_peer_name(), master.name(), capabilities, modules_path, master.kvs_host(), master.kvs_port(), _waiter.make_request_stop(), _config_variables)
-                )
-      , _thread (&drts_worker::thread, this)
-    {
-    }
-
-    ~drts_worker()
-    {
-      _waiter.stop();
-    }
-
-    void thread()
-    {
-      DRTSImpl const plugin (_waiter.make_request_stop(), _config_variables);
-      _waiter.wait();
-    }
-
-    fhg::core::wait_until_stopped _waiter;
-    std::map<std::string, std::string> _config_variables;
-    boost::shared_ptr<fhg::core::kernel_t> _kernel;
-    boost::thread _thread;
   };
 
   class BasicAgent : public sdpa::events::EventHandler
