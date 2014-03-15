@@ -43,15 +43,6 @@ enum return_codes_t
   , UNKNOWN_ERROR         = 100
   };
 
-void get_user_input(std::string const & prompt, std::string & result, std::istream & in = std::cin)
-{
-  std::cout << prompt;
-  std::string tmp;
-  std::getline (in, tmp);
-  if (tmp.size())
-    result = tmp;
-}
-
 namespace
 {
   sdpa::status::code wait_for_terminal_state ( sdpa::client::Client& api
