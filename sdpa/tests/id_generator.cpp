@@ -14,7 +14,4 @@ BOOST_AUTO_TEST_CASE (id_generator)
   BOOST_REQUIRE_NE (jid1, jid2);
   BOOST_REQUIRE_NE (jid1, jid3);
   BOOST_REQUIRE_NE (jid2, jid3);
-  BOOST_REQUIRE_EQUAL (jid1, jid1);
-  BOOST_REQUIRE_EQUAL (jid2, jid2);
-  BOOST_REQUIRE_EQUAL (jid3, jid3);
 }
