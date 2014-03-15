@@ -26,19 +26,6 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (id_generator)
-{
-  sdpa::id_generator generator ("job");
-
-  const std::string jid1 (generator.next());
-  const std::string jid2 (generator.next());
-  const std::string jid3 (generator.next());
-
-  BOOST_REQUIRE_NE (jid1, jid2);
-  BOOST_REQUIRE_NE (jid1, jid3);
-  BOOST_REQUIRE_NE (jid2, jid3);
-}
-
 namespace
 {
   class threaded_unique_set_of_id
