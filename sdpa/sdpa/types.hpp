@@ -43,11 +43,9 @@ namespace sdpa {
 
     unsigned int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
     void incConsecNetFailCnt() { nConsecNetFailCnt_++;}
-    void resetConsecNetFailCnt() { nConsecNetFailCnt_=0; }
 
     unsigned int getConsecRegAttempts() { return nConsecRegAttempts_;}
     void incConsecRegAttempts() { nConsecRegAttempts_++;}
-    void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
 
   private:
     std::string name_;
