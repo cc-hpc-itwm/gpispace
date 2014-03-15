@@ -1,7 +1,6 @@
 #define BOOST_TEST_MODULE TestRequirements
 
 #include "kvs_setup_fixture.hpp"
-#include "tests_config.hpp"
 #include <utils.hpp>
 
 #include <we/layer.hpp>

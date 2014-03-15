@@ -2,7 +2,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "kvs_setup_fixture.hpp"
-#include "tests_config.hpp"
 #include <utils.hpp>
 
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
