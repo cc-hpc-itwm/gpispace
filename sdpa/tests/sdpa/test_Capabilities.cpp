@@ -76,9 +76,6 @@ class Master : public utils::BasicAgent
 
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 {
-  const std::string workflow
-    (utils::require_and_read_file ("capabilities.pnet"));
-
   Master master("orchestrator_0");
 
   const utils::agent agent
@@ -104,9 +101,6 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 
 BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
 {
-  const std::string workflow
-      (utils::require_and_read_file ("capabilities.pnet"));
-
   Master master("orchestrator_0");
 
   const utils::agent agent

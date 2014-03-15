@@ -53,7 +53,6 @@ fhg_add_test (test_Capabilities.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS workflow_capabilities
 )
 
 fhg_add_test (test_Coallocation.cpp
