@@ -3,7 +3,7 @@
 
 #include <sdpa/job_states.hpp>
 #include <sdpa/types.hpp>
-#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/job_requirements.hpp>
 
 #include <fhg/assert.hpp>
 

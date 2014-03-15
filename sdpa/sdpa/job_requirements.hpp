@@ -1,7 +1,7 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
 
-#ifndef IWORKFLOWENGINE_HPP
-#define IWORKFLOWENGINE_HPP
+#ifndef SDPA_JOB_REQUIREMENTS_HPP
+#define SDPA_JOB_REQUIREMENTS_HPP
 
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
@@ -27,5 +27,5 @@ private:
   we::type::schedule_data m_scheduleData;
 };
 
-#endif //IWORKFLOWENGINE_HPP
+#endif
 

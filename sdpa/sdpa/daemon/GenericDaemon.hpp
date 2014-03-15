@@ -54,7 +54,7 @@
 
 #include <sdpa/daemon/NotificationService.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
-#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/job_requirements.hpp>
 #include <sdpa/types.hpp>
 #include <sdpa/capability.hpp>
 

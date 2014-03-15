@@ -21,7 +21,7 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/unordered_map.hpp>
-#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/job_requirements.hpp>
 
 #include <boost/optional.hpp>
 
