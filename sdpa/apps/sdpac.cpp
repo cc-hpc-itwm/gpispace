@@ -549,7 +549,7 @@ int main (int argc, char **argv) {
     }
     else
     {
-      std::cerr << "illegal command: " << command << std::endl;
+      std::cerr << "unknown command: " << command << std::endl;
       return (ERR_USAGE);
     }
   }
