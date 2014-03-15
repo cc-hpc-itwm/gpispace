@@ -70,14 +70,15 @@ private:
 
 BOOST_AUTO_TEST_CASE (check_requirements)
 {
-  // this workflow has 20 tasks of type A and 10 tasks of type B
-  const std::string workflow
-    (utils::require_and_read_file ("capabilities.pnet"));
-
-  const we::type::activity_t activity (workflow);
   TestAgent agent ("agent_0");
 
-  agent.workflowEngine()->submit (fhg::util::random_string(), activity);
+  agent.workflowEngine()->submit
+    ( fhg::util::random_string()
+    , utils::net_with_two_childs_that_require_capabilities
+      ( we::type::requirement_t ("A", true), 20
+      , we::type::requirement_t ("B", true), 10
+      )
+    );
   agent.wait_all_submitted();
 
   BOOST_REQUIRE_EQUAL(agent.n_recv_tasks_A(), 20);

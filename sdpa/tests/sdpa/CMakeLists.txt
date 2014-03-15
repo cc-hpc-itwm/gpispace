@@ -116,7 +116,6 @@ fhg_add_test (test_Requirements.cpp
   LINK_LIBRARIES sdpa
                  fhg-plugin
                  ${FhgLog_LIBRARY}
-  DEPENDS workflow_capabilities
 )
 
 fhg_add_test (test_RestartWorkersCoalloc.cpp
