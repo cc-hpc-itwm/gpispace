@@ -16,10 +16,10 @@
         <in name="trigger" type="control"/>
         <in name="deposit" type="long"/>
         <expression>
-          ${counter} := ${counter}-1L
+          ${counter} := ${counter} - 1L
         </expression>
         <condition>
-          ${counter}:gt:0L
+          ${counter} :gt: 0L
         </condition>
       </defun>
       <connect-inout place="counter" port="counter"/>
@@ -37,7 +37,7 @@
         </expression>
       </defun>
       <condition>
-        ${counter}:eq:0L
+        ${counter} :eq: 0L
       </condition>
       <connect-in port="trigger" place="trigger"/>
       <connect-in place="counter" port="counter"/>

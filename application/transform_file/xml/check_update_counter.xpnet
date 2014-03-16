@@ -4,9 +4,9 @@
   <out name="done" type="control" place="done"/>
 
   <net>
-	<place name="counter" type="long" virtual="true"/>
-  	<place name="trigger" type="control"/>
-  	<place name="done" type="control"/>
+    <place name="counter" type="long" virtual="true"/>
+    <place name="trigger" type="control"/>
+    <place name="done" type="control"/>
 
     <transition name="decrement_counter">
       <defun>
@@ -16,7 +16,7 @@
           ${counter} := ${counter}-1L
         </expression>
         <condition>
-          ${counter}:gt:0L
+          ${counter} :gt: 0L
         </condition>
       </defun>
       <connect-inout place="counter" port="counter"/>
@@ -32,7 +32,7 @@
         </expression>
       </defun>
       <condition>
-        ${counter}:eq:0L
+        ${counter} :eq: 0L
       </condition>
       <connect-in place="counter" port="counter"/>
       <connect-out port="done" place="done"/>
