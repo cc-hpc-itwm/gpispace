@@ -25,7 +25,7 @@ make+=( BUILDDIR="${DIR_BUILD}" )
 make+=( WE_EXEC_OUTPUT="${RESULT}" )
 make+=( WE_EXEC_LOAD="${SDPA_HOME}/libexec/sdpa/fake/libfvm-pc.so" )
 make+=( 'PUT_PORT=input_file=\\\"${INPUT}\\\"\ output_file=\\\"${OUTPUT}\\\"\ chunk_size=1048576L\ input_n_read_slots=20L\ input_n_write_slots=20L' )
-make+=( CXXINCLUDEPATHS="${DIR_SOURCE}/.." )
+make+=( CXXINCLUDEPATHS="${DIR_SOURCE}" )
 make+=( CXXLIBRARYPATHS="${SDPA_HOME}/lib" )
 make+=( -C "${DIR_SOURCE}" )
 
