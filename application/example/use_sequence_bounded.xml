@@ -13,7 +13,7 @@
     </place>
 
     <transition name="generate" inline="true">
-      <include-function href="lib/sequence_bounded.xml"/>
+      <include-function href="sequence_bounded.xml"/>
       <connect-in port="amount" place="n"/>
       <connect-out port="out" place="id"/>
       <place-map virtual="credit" real="credit"/>
