@@ -12,6 +12,7 @@
 #include <we/type/value/poke.hpp>
 
 #include <fhg/util/now.hpp>
+#include <fhg/util/random_string.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -1172,4 +1173,192 @@ BOOST_FIXTURE_TEST_CASE
     do_finished (child_id_A, activity_result);
     do_finished (child_id_B, activity_result);
   }
+}
+
+namespace we
+{
+  namespace type
+  {
+    std::size_t hash_value (const requirement_t& requirement)
+    {
+      std::size_t seed (0);
+      boost::hash_combine (seed, requirement.value());
+      boost::hash_combine (seed, requirement.is_mandatory());
+      return seed;
+    }
+  }
+}
+namespace
+{
+  we::place_id_type add_transition_with_requirement_and_input_place
+    (we::type::net_type& net, we::type::requirement_t const& requirement)
+  {
+    we::type::transition_t transition
+      ( fhg::util::random_string()
+      , we::type::module_call_t
+        (fhg::util::random_string(), fhg::util::random_string())
+      , boost::none
+      , true
+      , we::type::property::type()
+      , we::priority_type()
+      );
+    transition.add_requirement (requirement);
+
+    const std::string port_name (fhg::util::random_string());
+    we::port_id_type const port_id
+      ( transition.add_port ( we::type::port_t ( port_name
+                                               , we::type::PORT_IN
+                                               , std::string ("control")
+                                               , we::type::property::type()
+                                               )
+                            )
+      );
+
+    we::transition_id_type const transition_id
+      (net.add_transition (transition));
+
+    we::place_id_type const place_id
+      (net.add_place (place::type (port_name, std::string ("control"))));
+
+    net.add_connection ( we::edge::PT
+                       , transition_id
+                       , place_id
+                       , port_id
+                       , we::type::property::type()
+                       );
+
+    return place_id;
+  }
+
+  we::type::activity_t net_with_two_childs_that_require_capabilities
+    ( we::type::requirement_t const& capability_A
+    , std::size_t num_worker_with_capability_A
+    , we::type::requirement_t const& capability_B
+    , std::size_t num_worker_with_capability_B
+    )
+  {
+    we::type::net_type net;
+
+    {
+      we::place_id_type const place_id
+        (add_transition_with_requirement_and_input_place (net, capability_A));
+
+      while (num_worker_with_capability_A --> 0)
+      {
+        net.put_value (place_id, we::type::literal::control());
+      }
+    }
+
+    {
+      we::place_id_type const place_id
+        (add_transition_with_requirement_and_input_place (net, capability_B));
+
+      while (num_worker_with_capability_B --> 0)
+      {
+        net.put_value (place_id, we::type::literal::control());
+      }
+    }
+
+    return we::type::activity_t
+      ( we::type::transition_t ( fhg::util::random_string()
+                               , net
+                               , boost::none
+                               , true
+                               , we::type::property::type()
+                               , we::priority_type()
+                               )
+      , boost::none
+      );
+  }
+
+  void disallow (std::string what)
+  {
+    throw std::runtime_error ("disallowed function called: " + what);
+  }
+
+  class wfe_and_counter_of_submitted_requirements
+  {
+  public:
+    wfe_and_counter_of_submitted_requirements (unsigned int expected_activities)
+      : _expected_activities (expected_activities)
+      , _received_requirements()
+      , _random_extraction_engine()
+      , _cnt (0)
+      , _layer ( boost::bind
+                 (&wfe_and_counter_of_submitted_requirements::submit, this, _2)
+               , boost::bind (&disallow, "cancel")
+               , boost::bind (&disallow, "finished")
+               , boost::bind (&disallow, "failed")
+               , boost::bind (&disallow, "canceled")
+               , boost::bind (&disallow, "discover")
+               , boost::bind (&disallow, "discovered")
+               , boost::bind
+                 (&wfe_and_counter_of_submitted_requirements::generate_id, this)
+               , _random_extraction_engine
+               )
+    {}
+
+    void submit (const we::type::activity_t& activity)
+    {
+      const std::list<we::type::requirement_t> list_req
+        (activity.transition().requirements());
+
+      BOOST_REQUIRE_EQUAL (list_req.size(), 1);
+
+      boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
+      ++_received_requirements[list_req.front()];
+
+      if (--_expected_activities == 0)
+      {
+        _cond_all_submitted.notify_one();
+      }
+    }
+
+    void wait_all_submitted()
+    {
+      boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
+      _cond_all_submitted.wait (_mtx_all_submitted);
+    }
+
+  private:
+    boost::mutex _mtx_all_submitted;
+    boost::condition_variable_any _cond_all_submitted;
+    unsigned int _expected_activities;
+
+  public:
+    boost::unordered_map<we::type::requirement_t, unsigned int>
+      _received_requirements;
+
+  private:
+    boost::mt19937 _random_extraction_engine;
+
+    boost::mutex _generate_id_mutex;
+    unsigned long _cnt;
+    we::layer::id_type generate_id()
+    {
+      boost::mutex::scoped_lock const _ (_generate_id_mutex);
+      return boost::lexical_cast<we::layer::id_type> (++_cnt);
+    }
+
+  public:
+    we::layer _layer;
+  };
+}
+
+BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
+{
+  wfe_and_counter_of_submitted_requirements agent (30);
+
+  const we::type::requirement_t req_A ("A", true);
+  const we::type::requirement_t req_B ("B", true);
+
+  agent._layer.submit
+    ( fhg::util::random_string()
+    , net_with_two_childs_that_require_capabilities (req_A, 20, req_B, 10)
+    );
+  agent.wait_all_submitted();
+
+  BOOST_REQUIRE_EQUAL (agent._received_requirements.size(), 2);
+  BOOST_REQUIRE_EQUAL (agent._received_requirements.at (req_A), 20);
+  BOOST_REQUIRE_EQUAL (agent._received_requirements.at (req_B), 10);
 }

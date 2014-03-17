@@ -63,14 +63,6 @@ fhg_add_test (DiscoverJobStates.cpp
                  ${FhgLog_LIBRARY}
 )
 
-fhg_add_test (Requirements.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa
-                 fhg-plugin
-                 ${FhgLog_LIBRARY}
-)
-
 fhg_add_test (RestartWorkersCoalloc.cpp
   PROJECT sdpa_test
   BOOST_UNIT_TEST
