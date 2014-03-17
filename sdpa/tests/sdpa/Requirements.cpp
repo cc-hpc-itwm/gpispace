@@ -192,10 +192,7 @@ BOOST_AUTO_TEST_CASE (check_requirements)
 
   agent._layer.submit
     ( fhg::util::random_string()
-    , net_with_two_childs_that_require_capabilities
-      ( we::type::requirement_t ("A", true), 20
-      , we::type::requirement_t ("B", true), 10
-      )
+    , net_with_two_childs_that_require_capabilities (req_A, 20, req_B, 10)
     );
   agent.wait_all_submitted();
 
