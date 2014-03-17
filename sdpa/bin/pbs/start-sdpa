@@ -77,6 +77,17 @@ error()
     exit $ec
 }
 
+assert_not_empty()
+{
+    local var="$1"; shift
+    local val=$(eval echo "\${$var}")
+
+    if [ -z "$val" ]
+    then
+        error 2 "'${var}' must not be empty"
+    fi
+}
+
 dry_run_p=false
 dry_run()
 {
