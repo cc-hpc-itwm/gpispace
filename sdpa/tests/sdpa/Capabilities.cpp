@@ -16,8 +16,8 @@ class Worker : public utils::BasicAgent
   public:
     Worker (const std::string& name
             , const utils::agent& master_agent
-            , const std::string cpb_name)
-      :  utils::BasicAgent (name, master_agent, cpb_name)
+           , sdpa::capability_t capability)
+      :  utils::BasicAgent (name, master_agent, capability)
     {}
 
     void getCapabilities(sdpa::capabilities_set_t& cpbset) { cpbset = _capabilities; }
@@ -27,7 +27,7 @@ class Master : public utils::BasicAgent
 {
   public:
     Master (const std::string& name)
-      :  utils::BasicAgent (name, boost::none)
+      :  utils::BasicAgent (name, boost::none, boost::none)
     {}
 
     void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pRegEvt)
@@ -80,8 +80,8 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
   const utils::agent agent
      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
 
-  Worker worker_0( "worker_0", agent, "A");
-  Worker worker_1( "worker_1", agent, "B");
+  Worker worker_0( "worker_0", agent, sdpa::capability_t ("A", "worker_0"));
+  Worker worker_1( "worker_1", agent, sdpa::capability_t ("B", "worker_1"));
 
   sdpa::capabilities_set_t set_cpbs_0;
   worker_0.getCapabilities(set_cpbs_0);
@@ -105,8 +105,8 @@ BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
   const utils::agent agent
      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
 
-  Worker worker_0( "worker_0", agent, "A");
-  Worker* pWorker_1(new Worker( "worker_1", agent, "B"));
+  Worker worker_0( "worker_0", agent, sdpa::capability_t ("A", "worker_0"));
+  Worker* pWorker_1(new Worker( "worker_1", agent, sdpa::capability_t ("B", "worker_1")));
 
   sdpa::capabilities_set_t set_cpbs_0;
   worker_0.getCapabilities(set_cpbs_0);

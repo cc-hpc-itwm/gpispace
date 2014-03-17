@@ -316,7 +316,7 @@ namespace utils
   public:
     BasicAgent ( std::string name
                , boost::optional<const utils::agent&> master_agent
-               , std::string cpb_name = ""
+               , boost::optional<sdpa::capability_t> capability
                )
       : _name (name)
       , _master_name(master_agent?master_agent.get().name():"")
@@ -334,10 +334,9 @@ namespace utils
         )
       , _event_handling_allowed(true)
     {
-      if(!cpb_name.empty())
+      if (capability)
       {
-        sdpa::capability_t cpb(cpb_name, name);
-        _capabilities.insert(cpb);
+        _capabilities.insert (*capability);
       }
 
       if(master_agent)
