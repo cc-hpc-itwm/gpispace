@@ -230,6 +230,19 @@ namespace
     }
     return count;
   }
+  boost::optional<sdpa::status::code>
+    leaf_state (sdpa::discovery_info_t info, std::size_t n)
+  {
+    sdpa::discovery_info_t i (info);
+
+    while (n --> 0)
+    {
+      BOOST_REQUIRE_EQUAL (i.children().size(), 1);
+      i = *i.children().begin();
+    }
+
+    return i.state();
+  }
 
   void verify_child_count_in_agent_chain (const std::size_t num_agents)
   {
@@ -258,8 +271,10 @@ namespace
     const wait_until_submitted_and_finish_on_scope_exit _
       (worker, activity_name, job_submitted);
 
-    BOOST_REQUIRE_EQUAL
-      (recursive_child_count (submitted_job.discover()), num_agents);
+    sdpa::discovery_info_t const info (submitted_job.discover());
+
+    BOOST_REQUIRE_EQUAL (recursive_child_count (info), num_agents);
+    BOOST_REQUIRE_EQUAL (leaf_state (info, num_agents), sdpa::status::RUNNING);
   }
 }
 
