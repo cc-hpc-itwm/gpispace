@@ -80,13 +80,15 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
   const utils::agent agent
      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
 
-  Worker worker_0( "worker_0", agent, sdpa::capability_t ("A", "worker_0"));
-  Worker worker_1( "worker_1", agent, sdpa::capability_t ("B", "worker_1"));
+  const sdpa::capability_t capability_0 ("A", "worker_0");
+  const sdpa::capability_t capability_1 ("B", "worker_1");
+  Worker worker_0( "worker_0", agent, capability_0);
+  Worker worker_1( "worker_1", agent, capability_1);
 
   sdpa::capabilities_set_t set_cpbs_0;
-  worker_0.getCapabilities(set_cpbs_0);
+  set_cpbs_0.insert (capability_0);
   sdpa::capabilities_set_t set_cpbs_1;
-  worker_1.getCapabilities(set_cpbs_1);
+  set_cpbs_1.insert (capability_1);
 
   sdpa::capabilities_set_t expected_cpbs(set_cpbs_0);
   BOOST_FOREACH(const sdpa::capability_t& cpb, set_cpbs_1)
@@ -105,13 +107,15 @@ BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
   const utils::agent agent
      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
 
-  Worker worker_0( "worker_0", agent, sdpa::capability_t ("A", "worker_0"));
-  Worker* pWorker_1(new Worker( "worker_1", agent, sdpa::capability_t ("B", "worker_1")));
+  const sdpa::capability_t capability_0 ("A", "worker_0");
+  const sdpa::capability_t capability_1 ("B", "worker_1");
+  Worker worker_0( "worker_0", agent, capability_0);
+  Worker* pWorker_1(new Worker( "worker_1", agent, capability_1));
 
   sdpa::capabilities_set_t set_cpbs_0;
-  worker_0.getCapabilities(set_cpbs_0);
+  set_cpbs_0.insert (capability_0);
   sdpa::capabilities_set_t set_cpbs_1;
-  pWorker_1->getCapabilities(set_cpbs_1);
+  set_cpbs_1.insert (capability_1);
 
   sdpa::capabilities_set_t expected_cpbs(set_cpbs_0);
   BOOST_FOREACH(const sdpa::capability_t& cpb, set_cpbs_1)
