@@ -19,8 +19,6 @@ class Worker : public utils::BasicAgent
            , sdpa::capability_t capability)
       :  utils::BasicAgent (name, master_agent, capability)
     {}
-
-    void getCapabilities(sdpa::capabilities_set_t& cpbset) { cpbset = _capabilities; }
 };
 
 class Master : public utils::BasicAgent
@@ -71,6 +69,7 @@ class Master : public utils::BasicAgent
   private:
    boost::mutex _mtx_capabilities;
    boost::condition_variable_any _cond_capabilities;
+   sdpa::capabilities_set_t _capabilities;
 };
 
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)

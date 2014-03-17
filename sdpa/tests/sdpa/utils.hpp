@@ -334,6 +334,7 @@ namespace utils
         )
       , _event_handling_allowed(true)
     {
+      sdpa::capabilities_set_t _capabilities;
       if (capability)
       {
         _capabilities.insert (*capability);
@@ -362,7 +363,6 @@ namespace utils
   protected:
     std::string _name;
     std::string _master_name;
-    sdpa::capabilities_set_t _capabilities;
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
     boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
     bool _event_handling_allowed;
