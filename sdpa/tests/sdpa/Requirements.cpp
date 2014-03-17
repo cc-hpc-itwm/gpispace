@@ -121,15 +121,16 @@ namespace
   }
 }
 
-class TestAgent
+class wfe_and_counter_of_submitted_requirements
 {
 public:
-  TestAgent (unsigned int expected_activities)
+  wfe_and_counter_of_submitted_requirements (unsigned int expected_activities)
     : _expected_activities (expected_activities)
     , _received_requirements()
     , _random_extraction_engine()
     , _id_gen ("job")
-    , _layer ( boost::bind (&TestAgent::submit, this, _2)
+    , _layer ( boost::bind
+               (&wfe_and_counter_of_submitted_requirements::submit, this, _2)
              , boost::bind (&disallow, "cancel")
              , boost::bind (&disallow, "finished")
              , boost::bind (&disallow, "failed")
@@ -182,7 +183,7 @@ public:
 
 BOOST_AUTO_TEST_CASE (check_requirements)
 {
-  TestAgent agent (30);
+  wfe_and_counter_of_submitted_requirements agent (30);
 
   agent._layer.submit
     ( fhg::util::random_string()
