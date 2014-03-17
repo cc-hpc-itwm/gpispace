@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 {
   Master master (kvs_host(), kvs_port());
 
-  const utils::agent agent (kvs_host(), kvs_port(), master);
+  const utils::agent agent (master);
 
   const std::string name_0 (utils::random_peer_name());
   const std::string name_1 (utils::random_peer_name());
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
 {
   Master master (kvs_host(), kvs_port());
 
-  const utils::agent agent (kvs_host(), kvs_port(), master);
+  const utils::agent agent (master);
 
   const std::string name_0 (utils::random_peer_name());
   const std::string name_1 (utils::random_peer_name());
