@@ -23,6 +23,87 @@ namespace {
 
   // this workflow has 20 tasks of type A and 10 tasks of type B (see CMakeLists)
   const unsigned int n_total_expectd_activities  = 30;
+
+  we::place_id_type add_transition_with_requirement_and_input_place
+    (we::type::net_type& net, we::type::requirement_t const& requirement)
+  {
+    we::type::transition_t transition
+      ( fhg::util::random_string()
+      , we::type::module_call_t
+        (fhg::util::random_string(), fhg::util::random_string())
+      , boost::none
+      , true
+      , we::type::property::type()
+      , we::priority_type()
+      );
+    transition.add_requirement (requirement);
+
+    const std::string port_name (fhg::util::random_string());
+    we::port_id_type const port_id
+      ( transition.add_port ( we::type::port_t ( port_name
+                                               , we::type::PORT_IN
+                                               , std::string ("control")
+                                               , we::type::property::type()
+                                               )
+                            )
+      );
+
+    we::transition_id_type const transition_id
+      (net.add_transition (transition));
+
+    we::place_id_type const place_id
+      (net.add_place (place::type (port_name, std::string ("control"))));
+
+    net.add_connection ( we::edge::PT
+                       , transition_id
+                       , place_id
+                       , port_id
+                       , we::type::property::type()
+                       );
+
+    return place_id;
+  }
+
+  we::type::activity_t net_with_two_childs_that_require_capabilities
+    ( we::type::requirement_t const& capability_A
+    , std::size_t num_worker_with_capability_A
+    , we::type::requirement_t const& capability_B
+    , std::size_t num_worker_with_capability_B
+    )
+  {
+    we::type::net_type net;
+
+    {
+      we::place_id_type const place_id
+        (add_transition_with_requirement_and_input_place (net, capability_A));
+
+      while (num_worker_with_capability_A --> 0)
+      {
+        net.put_value (place_id, we::type::literal::control());
+      }
+    }
+
+    {
+      we::place_id_type const place_id
+        (add_transition_with_requirement_and_input_place (net, capability_B));
+
+      while (num_worker_with_capability_B --> 0)
+      {
+        net.put_value (place_id, we::type::literal::control());
+      }
+    }
+
+    return we::type::activity_t
+      ( we::type::transition_t ( fhg::util::random_string()
+                               , net
+                               , boost::none
+                               , true
+                               , we::type::property::type()
+                               , we::priority_type()
+                               )
+      , boost::none
+      );
+  }
 }
 
 class TestAgent : public sdpa::daemon::Agent
@@ -74,7 +155,7 @@ BOOST_AUTO_TEST_CASE (check_requirements)
 
   agent.workflowEngine()->submit
     ( fhg::util::random_string()
-    , utils::net_with_two_childs_that_require_capabilities
+    , net_with_two_childs_that_require_capabilities
       ( we::type::requirement_t ("A", true), 20
       , we::type::requirement_t ("B", true), 10
       )
