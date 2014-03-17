@@ -53,8 +53,7 @@ private:
 
 BOOST_AUTO_TEST_CASE (cancel_no_agent)
 {
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
@@ -68,11 +67,9 @@ BOOST_AUTO_TEST_CASE (cancel_no_agent)
 
 BOOST_AUTO_TEST_CASE (cancel_with_agent)
 {
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
 
-  utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  utils::agent agent (orchestrator);
 
   Worker worker("worker_0", agent);
 
@@ -91,11 +88,8 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 {
-  const utils::orchestrator orchestrator
-    ("orchestrator_0", "127.0.0.1", kvs_host(), kvs_port());
-
-  const utils::agent agent
-    ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::agent agent (orchestrator);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
@@ -111,11 +105,8 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
 {
-  const utils::orchestrator orchestrator
-    ("orchestrator_2", "127.0.0.1", kvs_host(), kvs_port());
-
-  utils::agent agent
-      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), orchestrator);
+  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  utils::agent agent (orchestrator);
 
   Worker worker("worker_0", agent);
 
