@@ -136,16 +136,20 @@ public:
     const std::list<we::type::requirement_t> list_req
       (activity.transition().requirements());
 
-    BOOST_REQUIRE (list_req.front() == req_A || list_req.front() == req_B);
+    BOOST_REQUIRE_EQUAL (list_req.size(), 1);
 
     boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
     if (list_req.front() == req_A)
     {
       ++_n_recv_tasks_A;
     }
-    if (list_req.front() == req_B)
+    else if (list_req.front() == req_B)
     {
       ++_n_recv_tasks_B;
+    }
+    else
+    {
+      throw std::runtime_error ("neither A nor B!");
     }
 
     if (n_recv_tasks_A() + n_recv_tasks_B() == n_total_expectd_activities)
