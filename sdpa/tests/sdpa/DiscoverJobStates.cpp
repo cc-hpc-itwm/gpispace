@@ -139,7 +139,7 @@ namespace
   void check_discover_worker_job_status()
   {
     const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-    const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
+    const utils::agent agent (orchestrator);
 
     fhg::util::thread::event<std::string> job_submitted;
 
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-  const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
+  const utils::agent agent (orchestrator);
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
   sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
 
@@ -249,12 +249,11 @@ namespace
   {
     const utils::orchestrator orchestrator (kvs_host(), kvs_port());
     boost::ptr_list<utils::agent> agents;
-    agents.push_back (new utils::agent (kvs_host(), kvs_port(), orchestrator));
+    agents.push_back (new utils::agent (orchestrator));
 
     for (std::size_t counter (1); counter < num_agents; ++counter)
     {
-      agents.push_back
-        (new utils::agent (kvs_host(), kvs_port(), agents.back()));
+      agents.push_back (new utils::agent (boost::ref (agents.back())));
     }
 
     fhg::util::thread::event<std::string> job_submitted;
