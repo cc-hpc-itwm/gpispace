@@ -10,17 +10,19 @@
 #include <sdpa/types.hpp>
 #include <fhg/util/random_string.hpp>
 
-namespace {
-  bool operator==(const we::type::requirement_t& left, const we::type::requirement_t& right)
+namespace
+{
+  bool operator==
+    (const we::type::requirement_t& left, const we::type::requirement_t& right)
   {
-    return ( left.value() == right.value() ) && ( left.is_mandatory() == right.is_mandatory() );
+    return (left.value() == right.value())
+      && (left.is_mandatory() == right.is_mandatory());
   }
 
-  const we::type::requirement_t req_A("A", true);
-  const we::type::requirement_t req_B("B", true);
+  const we::type::requirement_t req_A ("A", true);
+  const we::type::requirement_t req_B ("B", true);
 
-  // this workflow has 20 tasks of type A and 10 tasks of type B (see CMakeLists)
-  const unsigned int n_total_expectd_activities  = 30;
+  const unsigned int n_total_expectd_activities = 30;
 
   we::place_id_type add_transition_with_requirement_and_input_place
     (we::type::net_type& net, we::type::requirement_t const& requirement)
@@ -131,15 +133,22 @@ public:
 
   void submit (const we::type::activity_t& activity)
   {
-    const std::list<we::type::requirement_t> list_req( activity.transition().requirements() );
+    const std::list<we::type::requirement_t> list_req
+      (activity.transition().requirements());
 
-    BOOST_REQUIRE(list_req.front()==req_A || list_req.front()==req_B);
+    BOOST_REQUIRE (list_req.front() == req_A || list_req.front() == req_B);
 
     boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
-    if(list_req.front()==req_A) {_n_recv_tasks_A++;}
-    if(list_req.front()==req_B) {_n_recv_tasks_B++;}
+    if (list_req.front() == req_A)
+    {
+      ++_n_recv_tasks_A;
+    }
+    if (list_req.front() == req_B)
+    {
+      ++_n_recv_tasks_B;
+    }
 
-    if (n_recv_tasks_A() + n_recv_tasks_B() == n_total_expectd_activities )
+    if (n_recv_tasks_A() + n_recv_tasks_B() == n_total_expectd_activities)
     {
       _cond_all_submitted.notify_one();
     }
@@ -151,11 +160,16 @@ public:
     _cond_all_submitted.wait (_mtx_all_submitted);
   }
 
-  unsigned int n_recv_tasks_A() const { return _n_recv_tasks_A;}
-  unsigned int n_recv_tasks_B() const { return _n_recv_tasks_B;}
+  unsigned int n_recv_tasks_A() const
+  {
+    return _n_recv_tasks_A;
+  }
+  unsigned int n_recv_tasks_B() const
+  {
+    return _n_recv_tasks_B;
+  }
 
 private:
-
   boost::mutex _mtx_all_submitted;
   boost::condition_variable_any _cond_all_submitted;
   unsigned int _n_recv_tasks_A;
@@ -163,6 +177,7 @@ private:
 
   boost::mt19937 _random_extraction_engine;
   sdpa::id_generator _id_gen;
+
 public:
   we::layer _layer;
 };
@@ -180,6 +195,6 @@ BOOST_AUTO_TEST_CASE (check_requirements)
     );
   agent.wait_all_submitted();
 
-  BOOST_REQUIRE_EQUAL(agent.n_recv_tasks_A(), 20);
-  BOOST_REQUIRE_EQUAL(agent.n_recv_tasks_B(), 10);
+  BOOST_REQUIRE_EQUAL (agent.n_recv_tasks_A(), 20);
+  BOOST_REQUIRE_EQUAL (agent.n_recv_tasks_B(), 10);
 }
