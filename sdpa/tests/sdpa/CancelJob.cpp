@@ -61,6 +61,8 @@ BOOST_AUTO_TEST_CASE (cancel_no_agent)
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
+  //! \todo Race.
+
   client.cancel_job (job_id);
 
   BOOST_REQUIRE_EQUAL
@@ -94,6 +96,8 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
   utils::client::client_t client (orchestrator);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
+
+  //! \todo Race.
 
   client.cancel_job (job_id);
 
