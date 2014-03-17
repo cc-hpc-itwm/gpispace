@@ -5,12 +5,6 @@
 
 namespace sdpa {
 namespace daemon {
-	class JobNotFoundException : public std::runtime_error {
-		public:
-		JobNotFoundException() : std::runtime_error ("job not found") {}
-		virtual ~JobNotFoundException() throw() {}
-	};
-
 	class WorkerNotFoundException : public std::runtime_error {
 		public:
 		WorkerNotFoundException() : std::runtime_error ("worker not found") {}

@@ -179,7 +179,8 @@ namespace sdpa
       }
       else
       {
-        throw JobNotFoundException();
+        throw std::runtime_error
+          ("workerFinished: job missing in allocation table");
       }
     }
 
@@ -194,7 +195,8 @@ namespace sdpa
       }
       else
       {
-        throw JobNotFoundException();
+        throw std::runtime_error
+          ("workerFailed: job missing in allocation table");
       }
     }
 
@@ -209,7 +211,8 @@ namespace sdpa
       }
       else
       {
-        throw JobNotFoundException();
+        throw std::runtime_error
+          ("workerCanceled: job missing in allocation table");
       }
     }
 
@@ -223,7 +226,8 @@ namespace sdpa
       }
       else
       {
-        throw JobNotFoundException();
+        throw std::runtime_error
+          ("allPartialResultsCollected: job missing in allocation table");
       }
     }
 
@@ -237,7 +241,8 @@ namespace sdpa
       }
       else
       {
-        throw JobNotFoundException();
+        throw std::runtime_error
+          ("groupFinished: job missing in allocation table");
       }
     }
 

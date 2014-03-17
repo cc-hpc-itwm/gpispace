@@ -210,7 +210,7 @@ namespace sdpa {
         }
         else
         {
-          throw JobNotFoundException();
+          throw std::runtime_error ("deleteJob: job not found");
         }
       }
 
