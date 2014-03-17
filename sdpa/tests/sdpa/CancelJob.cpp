@@ -11,13 +11,15 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public utils::fake_drts_worker_notifying_module_call_submission
+class fake_drts_worker_notifying_submission_and_cancel
+  : public utils::fake_drts_worker_notifying_module_call_submission
 {
 public:
-  Worker ( boost::function<void (std::string)> announce_job
-         , boost::function<void (std::string)> announce_cancel
-         , const utils::agent& master_agent
-         )
+  fake_drts_worker_notifying_submission_and_cancel
+      ( boost::function<void (std::string)> announce_job
+      , boost::function<void (std::string)> announce_cancel
+      , const utils::agent& master_agent
+      )
     : utils::fake_drts_worker_notifying_module_call_submission
       (announce_job, master_agent)
     , _announce_cancel (announce_cancel)
@@ -26,9 +28,14 @@ public:
   void handleCancelJobEvent (const sdpa::events::CancelJobEvent* e)
   {
     const std::map<std::string, job_t>::const_iterator it
-      ( std::find_if ( _jobs.begin(), _jobs.end()
-                     , boost::bind (&Worker::job_id_matches, _1, e->job_id())
-                     )
+      ( std::find_if
+        ( _jobs.begin(), _jobs.end()
+        , boost::bind
+          ( &fake_drts_worker_notifying_submission_and_cancel::job_id_matches
+          , _1
+          , e->job_id()
+          )
+        )
       );
     BOOST_REQUIRE (it != _jobs.end());
     BOOST_REQUIRE_EQUAL (e->from(), it->second._owner);
@@ -80,7 +87,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
   fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
-  Worker worker
+  fake_drts_worker_notifying_submission_and_cancel worker
     ( boost::bind (&fhg::util::thread::event<>::notify, &job_submitted)
     , boost::bind (&fhg::util::thread::event<std::string>::notify, &cancel_requested, _1)
     , agent
@@ -128,7 +135,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
 
   fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
-  Worker worker
+  fake_drts_worker_notifying_submission_and_cancel worker
     ( boost::bind (&fhg::util::thread::event<>::notify, &job_submitted)
     , boost::bind (&fhg::util::thread::event<std::string>::notify, &cancel_requested, _1)
     , agent
