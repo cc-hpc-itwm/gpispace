@@ -108,17 +108,17 @@ BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
   const sdpa::capability_t capability_0 ("A", name_0);
   const sdpa::capability_t capability_1 ("B", name_1);
   Worker worker_0( name_0, agent, capability_0);
-  Worker* pWorker_1(new Worker( name_1, agent, capability_1));
-
   {
-    sdpa::capabilities_set_t expected;
-    expected.insert (capability_0);
-    expected.insert (capability_1);
+    Worker pWorker_1( name_1, agent, capability_1);
 
-    master.wait_for_capabilities (2, expected);
+    {
+      sdpa::capabilities_set_t expected;
+      expected.insert (capability_0);
+      expected.insert (capability_1);
+
+      master.wait_for_capabilities (2, expected);
+    }
   }
-
-  delete pWorker_1;
 
   {
     sdpa::capabilities_set_t expected;
