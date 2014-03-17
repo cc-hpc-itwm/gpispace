@@ -6,6 +6,7 @@
 #include <we/layer.hpp>
 
 #include <boost/test/unit_test.hpp>
+#include <sdpa/id_generator.hpp>
 #include <sdpa/types.hpp>
 #include <fhg/util/random_string.hpp>
 
@@ -104,19 +105,34 @@ namespace {
       , boost::none
       );
   }
+
+  void disallow (std::string what)
+  {
+    throw std::runtime_error ("disallowed function called: " + what);
+  }
 }
 
-class TestAgent : public sdpa::daemon::Agent
+class TestAgent
 {
 public:
-  TestAgent (const std::string& name)
-    : Agent (name, "127.0.0.1", kvs_host(), kvs_port(), sdpa::master_info_list_t(), boost::none)
-      , _n_recv_tasks_A(0), _n_recv_tasks_B(0)
+  TestAgent()
+    : _n_recv_tasks_A (0)
+    , _n_recv_tasks_B (0)
+    , _random_extraction_engine (boost::mt19937())
+    , _id_gen ("job")
+    , _layer ( boost::bind (&TestAgent::submit, this, _2)
+             , boost::bind (&disallow, "cancel")
+             , boost::bind (&disallow, "finished")
+             , boost::bind (&disallow, "failed")
+             , boost::bind (&disallow, "canceled")
+             , boost::bind (&disallow, "discover")
+             , boost::bind (&disallow, "discovered")
+             , boost::bind (&sdpa::id_generator::next, &_id_gen)
+             , _random_extraction_engine
+             )
   {}
 
-  void submit ( const we::layer::id_type&
-              , const we::type::activity_t& activity
-              )
+  void submit (const we::type::activity_t& activity)
   {
     const std::list<we::type::requirement_t> list_req( activity.transition().requirements() );
 
@@ -147,13 +163,18 @@ private:
   boost::condition_variable_any _cond_all_submitted;
   unsigned int _n_recv_tasks_A;
   unsigned int _n_recv_tasks_B;
+
+  boost::mt19937 _random_extraction_engine;
+  sdpa::id_generator _id_gen;
+public:
+  we::layer _layer;
 };
 
 BOOST_AUTO_TEST_CASE (check_requirements)
 {
-  TestAgent agent ("agent_0");
+  TestAgent agent;
 
-  agent.workflowEngine()->submit
+  agent._layer.submit
     ( fhg::util::random_string()
     , net_with_two_childs_that_require_capabilities
       ( we::type::requirement_t ("A", true), 20
