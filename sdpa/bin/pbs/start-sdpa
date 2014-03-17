@@ -280,6 +280,8 @@ for arg ; do
     capabilities=( "${capabilities[@]}" $new_cap )
 done
 
+# sanity checks
+
 if [ -z "$nodefile" ] ; then
     error 1 "nodefile is missing"
 fi
@@ -303,6 +305,52 @@ fi
 if [ -z "${state_dir}" ] ; then
     error 1 "state directory not set"
 fi
+
+if [ -z "${log_url}" ]
+then
+    error 2 "log url must not be empty!"
+fi
+
+log_host=${log_url%:*}
+log_port=${log_url#*:}
+
+if [ -z "${gui_url}" ]
+then
+    error 2 "gui url must not be empty"
+fi
+
+gui_host=${gui_url%:*}
+gui_port=${gui_url#*:}
+
+if [ -z "${gpi_socket}" ]
+then
+    gpi_socket="$def_gpi_socket"
+fi
+
+hosts=( $(cat "$nodefile" | uniq) )
+
+if [ ${#hosts[@]} -eq 0 ] ; then
+    error 1 "hostfile empty"
+fi
+
+master=${hosts[0]}
+num_hosts=${#hosts[@]}
+
+if $gpi_enabled ; then
+    if [ -z "${gpi_exe}" ]
+    then
+        error 2 "GPI was requested but no binary was specified"
+    fi
+    if [ ! -x "${gpi_exe}" ]
+    then
+        error 2 "GPI binary ($gpi_exe) is not executable!"
+    fi
+fi
+
+if [ $number_of_groups -gt $num_hosts ] ; then
+    error 2 "number of groups must not be larger than number of hosts: $number_of_groups > $num_hosts"
+fi
+
 
 sdpa="${sdpa_home}/bin/sdpa"
 if [ $? -ne 0 ] ; then
@@ -329,31 +377,6 @@ if [ ! -x "${script_start_gpi}" ] ; then
     error 2 "utility script '${script_start_gpi}' is not executable"
 fi
 
-hosts=( $(cat "$nodefile" | uniq) )
-
-if [ ${#hosts[@]} -eq 0 ] ; then
-    error 1 "hostfile empty"
-fi
-
-master=${hosts[0]}
-num_hosts=${#hosts[@]}
-
-# sanity checks
-if $gpi_enabled ; then
-    if [ -z "${gpi_exe}" ]
-    then
-        error 2 "GPI was requested but no binary was specified"
-    fi
-    if [ ! -x "${gpi_exe}" ]
-    then
-        error 2 "GPI binary ($gpi_exe) is not executable!"
-    fi
-fi
-
-if [ $number_of_groups -gt $num_hosts ] ; then
-    error 2 "number of groups must not be larger than number of hosts: $number_of_groups > $num_hosts"
-fi
-
 info "using nodefile: $nodefile"
 
 dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
@@ -362,27 +385,6 @@ dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" 
 
 if $delete_logfiles ; then
     find "${state_dir}/log" -type f -delete
-fi
-
-if [ -z "${log_url}" ]
-then
-    error 2 "log url must not be empty!"
-fi
-
-log_host=${log_url%:*}
-log_port=${log_url#*:}
-
-if [ -z "${gui_url}" ]
-then
-    error 2 "gui url must not be empty"
-fi
-
-gui_host=${gui_url%:*}
-gui_port=${gui_url#*:}
-
-if [ -z "${gpi_socket}" ]
-then
-    gpi_socket="$def_gpi_socket"
 fi
 
 log "starting base sdpa components on $master..."
