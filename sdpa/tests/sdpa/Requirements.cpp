@@ -10,9 +10,6 @@
 #include <sdpa/types.hpp>
 #include <fhg/util/random_string.hpp>
 
-BOOST_GLOBAL_FIXTURE (setup_logging)
-BOOST_GLOBAL_FIXTURE (KVSSetup)
-
 namespace {
   bool operator==(const we::type::requirement_t& left, const we::type::requirement_t& right)
   {
