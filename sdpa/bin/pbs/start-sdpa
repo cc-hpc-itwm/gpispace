@@ -217,10 +217,12 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
             ;;
         f)
             nodefile="$OPTARG"
+            assert_not_empty nodefile
             shiftcount=$(( shiftcount + 2 ))
             ;;
         S)
             state_dir="$OPTARG"
+            assert_not_empty state_dir
             shiftcount=$(( shiftcount + 2 ))
             ;;
         m)
@@ -262,22 +264,27 @@ while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
             ;;
         k)
             kvs_port=$OPTARG
+            assert_not_empty kvs_port
             shiftcount=$((shiftcount + 2))
             ;;
         x)
             gpi_exe="$OPTARG"
+            assert_not_empty gpi_exe
             shiftcount=$((shiftcount + 2))
             ;;
         l)
             log_url="$OPTARG"
+            assert_not_empty log_url
             shiftcount=$((shiftcount + 2))
             ;;
         g)
             gui_url="$OPTARG"
+            assert_not_empty gui_url
             shiftcount=$((shiftcount + 2))
             ;;
         H)
             sdpa_home="$OPTARG"
+            assert_not_empty sdpa_home
             shiftcount=$((shiftcount + 2))
             ;;
         \?)
@@ -316,22 +323,8 @@ if [ ! -r "$nodefile" ] ; then
     error 2 "Could not read nodefile: $nodefile"
 fi
 
-if [ -z "${state_dir}" ] ; then
-    error 1 "state directory not set"
-fi
-
-if [ -z "${log_url}" ]
-then
-    error 2 "log url must not be empty!"
-fi
-
 log_host=${log_url%:*}
 log_port=${log_url#*:}
-
-if [ -z "${gui_url}" ]
-then
-    error 2 "gui url must not be empty"
-fi
 
 gui_host=${gui_url%:*}
 gui_port=${gui_url#*:}
