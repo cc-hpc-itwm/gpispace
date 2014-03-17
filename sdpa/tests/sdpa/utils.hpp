@@ -510,7 +510,7 @@ namespace utils
         );
     }
 
-  private:
+  protected:
     struct job_t
     {
       sdpa::job_id_t _id;
@@ -519,6 +519,7 @@ namespace utils
     };
     std::map<std::string, job_t> _jobs;
 
+  private:
     boost::function<void (std::string)> _announce_job;
   };
 
