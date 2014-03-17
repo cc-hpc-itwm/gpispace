@@ -11,58 +11,60 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class fake_drts_worker_notifying_submission_and_cancel
-  : public utils::fake_drts_worker_notifying_module_call_submission
+namespace
 {
-public:
-  fake_drts_worker_notifying_submission_and_cancel
-      ( boost::function<void (std::string)> announce_job
-      , boost::function<void (std::string)> announce_cancel
-      , const utils::agent& master_agent
-      )
-    : utils::fake_drts_worker_notifying_module_call_submission
-      (announce_job, master_agent)
-    , _announce_cancel (announce_cancel)
-  {}
-
-  void handleCancelJobEvent (const sdpa::events::CancelJobEvent* e)
+  class fake_drts_worker_notifying_submission_and_cancel
+    : public utils::fake_drts_worker_notifying_module_call_submission
   {
-    const std::map<std::string, job_t>::const_iterator it
-      ( std::find_if
-        ( _jobs.begin(), _jobs.end()
-        , boost::bind
-          ( &fake_drts_worker_notifying_submission_and_cancel::job_id_matches
-          , _1
-          , e->job_id()
-          )
+  public:
+    fake_drts_worker_notifying_submission_and_cancel
+        ( boost::function<void (std::string)> announce_job
+        , boost::function<void (std::string)> announce_cancel
+        , const utils::agent& master_agent
         )
-      );
-    BOOST_REQUIRE (it != _jobs.end());
-    BOOST_REQUIRE_EQUAL (e->from(), it->second._owner);
+      : utils::fake_drts_worker_notifying_module_call_submission
+        (announce_job, master_agent)
+      , _announce_cancel (announce_cancel)
+    {}
 
-    _announce_cancel (it->first);
-  }
+    void handleCancelJobEvent (const sdpa::events::CancelJobEvent* e)
+    {
+      const std::map<std::string, job_t>::const_iterator it
+        ( std::find_if
+          ( _jobs.begin(), _jobs.end()
+          , boost::bind
+            ( &fake_drts_worker_notifying_submission_and_cancel::job_id_matches
+            , _1
+            , e->job_id()
+            )
+          )
+        );
+      BOOST_REQUIRE (it != _jobs.end());
+      BOOST_REQUIRE_EQUAL (e->from(), it->second._owner);
 
-  void canceled (std::string name)
-  {
-    const job_t job (_jobs.at (name));
-    _jobs.erase (name);
+      _announce_cancel (it->first);
+    }
 
-    _network.perform
-      ( sdpa::events::SDPAEvent::Ptr
-        (new sdpa::events::CancelJobAckEvent (_name, job._owner, job._id))
-      );
-  }
+    void canceled (std::string name)
+    {
+      const job_t job (_jobs.at (name));
+      _jobs.erase (name);
 
-private:
-  static bool job_id_matches (std::pair<std::string, job_t> v, sdpa::job_id_t id)
-  {
-    return v.second._id == id;
-  }
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::CancelJobAckEvent (_name, job._owner, job._id))
+        );
+    }
 
-  boost::function<void (std::string)> _announce_cancel;
-};
+  private:
+    static bool job_id_matches (std::pair<std::string, job_t> v, sdpa::job_id_t id)
+    {
+      return v.second._id == id;
+    }
 
+    boost::function<void (std::string)> _announce_cancel;
+  };
+}
 
 BOOST_AUTO_TEST_CASE (cancel_no_agent)
 {
