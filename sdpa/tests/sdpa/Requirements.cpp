@@ -190,6 +190,7 @@ BOOST_AUTO_TEST_CASE (check_requirements)
     );
   agent.wait_all_submitted();
 
+  BOOST_REQUIRE_EQUAL (agent._received_requirements.size(), 2);
   BOOST_REQUIRE_EQUAL (agent._received_requirements.at (req_A), 20);
   BOOST_REQUIRE_EQUAL (agent._received_requirements.at (req_B), 10);
 }
