@@ -22,8 +22,6 @@ namespace
   const we::type::requirement_t req_A ("A", true);
   const we::type::requirement_t req_B ("B", true);
 
-  const unsigned int n_total_expectd_activities = 30;
-
   we::place_id_type add_transition_with_requirement_and_input_place
     (we::type::net_type& net, we::type::requirement_t const& requirement)
   {
@@ -114,8 +112,9 @@ namespace
 class TestAgent
 {
 public:
-  TestAgent()
-    : _n_recv_tasks_A (0)
+  TestAgent (unsigned int expected_activities)
+    : _expected_activities (expected_activities)
+    , _n_recv_tasks_A (0)
     , _n_recv_tasks_B (0)
     , _random_extraction_engine (boost::mt19937())
     , _id_gen ("job")
@@ -152,7 +151,7 @@ public:
       throw std::runtime_error ("neither A nor B!");
     }
 
-    if (n_recv_tasks_A() + n_recv_tasks_B() == n_total_expectd_activities)
+    if (n_recv_tasks_A() + n_recv_tasks_B() == _expected_activities)
     {
       _cond_all_submitted.notify_one();
     }
@@ -176,6 +175,7 @@ public:
 private:
   boost::mutex _mtx_all_submitted;
   boost::condition_variable_any _cond_all_submitted;
+  unsigned int _expected_activities;
   unsigned int _n_recv_tasks_A;
   unsigned int _n_recv_tasks_B;
 
@@ -188,7 +188,7 @@ public:
 
 BOOST_AUTO_TEST_CASE (check_requirements)
 {
-  TestAgent agent;
+  TestAgent agent (30);
 
   agent._layer.submit
     ( fhg::util::random_string()
