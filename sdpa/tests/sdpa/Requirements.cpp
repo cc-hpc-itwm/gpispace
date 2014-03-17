@@ -10,15 +10,27 @@
 #include <sdpa/types.hpp>
 #include <fhg/util/random_string.hpp>
 
+namespace we
+{
+  namespace type
+  {
+    bool operator== (const requirement_t& left, const requirement_t& right)
+    {
+      return (left.value() == right.value())
+        && (left.is_mandatory() == right.is_mandatory());
+    }
+
+    std::size_t hash_value (const requirement_t& requirement)
+    {
+      std::size_t seed (0);
+      boost::hash_combine (seed, requirement.value());
+      boost::hash_combine (seed, requirement.is_mandatory());
+      return seed;
+    }
+  }
+}
 namespace
 {
-  bool operator==
-    (const we::type::requirement_t& left, const we::type::requirement_t& right)
-  {
-    return (left.value() == right.value())
-      && (left.is_mandatory() == right.is_mandatory());
-  }
-
   const we::type::requirement_t req_A ("A", true);
   const we::type::requirement_t req_B ("B", true);
 
@@ -114,9 +126,8 @@ class TestAgent
 public:
   TestAgent (unsigned int expected_activities)
     : _expected_activities (expected_activities)
-    , _n_recv_tasks_A (0)
-    , _n_recv_tasks_B (0)
-    , _random_extraction_engine (boost::mt19937())
+    , _received_requirements()
+    , _random_extraction_engine()
     , _id_gen ("job")
     , _layer ( boost::bind (&TestAgent::submit, this, _2)
              , boost::bind (&disallow, "cancel")
@@ -138,20 +149,9 @@ public:
     BOOST_REQUIRE_EQUAL (list_req.size(), 1);
 
     boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
-    if (list_req.front() == req_A)
-    {
-      ++_n_recv_tasks_A;
-    }
-    else if (list_req.front() == req_B)
-    {
-      ++_n_recv_tasks_B;
-    }
-    else
-    {
-      throw std::runtime_error ("neither A nor B!");
-    }
+    ++_received_requirements[list_req.front()];
 
-    if (n_recv_tasks_A() + n_recv_tasks_B() == _expected_activities)
+    if (--_expected_activities == 0)
     {
       _cond_all_submitted.notify_one();
     }
@@ -165,19 +165,19 @@ public:
 
   unsigned int n_recv_tasks_A() const
   {
-    return _n_recv_tasks_A;
+    return _received_requirements.at (req_A);
   }
   unsigned int n_recv_tasks_B() const
   {
-    return _n_recv_tasks_B;
+    return _received_requirements.at (req_B);
   }
 
 private:
   boost::mutex _mtx_all_submitted;
   boost::condition_variable_any _cond_all_submitted;
   unsigned int _expected_activities;
-  unsigned int _n_recv_tasks_A;
-  unsigned int _n_recv_tasks_B;
+  boost::unordered_map<we::type::requirement_t, unsigned int>
+    _received_requirements;
 
   boost::mt19937 _random_extraction_engine;
   sdpa::id_generator _id_gen;
