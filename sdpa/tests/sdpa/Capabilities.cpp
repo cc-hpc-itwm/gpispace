@@ -11,21 +11,80 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public utils::BasicAgent
+namespace
+{
+  class BasicAgent : public sdpa::events::EventHandler
+                   , boost::noncopyable
+  {
+  public:
+    BasicAgent ( std::string name
+               , boost::optional<const utils::agent&> master_agent
+               , boost::optional<sdpa::capability_t> capability
+               )
+      : _name (name)
+      , _kvs_client
+        ( new fhg::com::kvs::client::kvsc
+          (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
+        )
+      , _network_strategy
+        ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicAgent::sendEventToSelf, this, _1)
+                                         , name
+                                         , fhg::com::host_t ("127.0.0.1")
+                                         , fhg::com::port_t ("0")
+                                         , _kvs_client
+                                         )
+        )
+      , _event_handling_allowed(true)
+    {
+      sdpa::capabilities_set_t _capabilities;
+      if (capability)
+      {
+        _capabilities.insert (*capability);
+      }
+
+      if(master_agent)
+      {
+        sdpa::events::WorkerRegistrationEvent::Ptr
+          pEvtWorkerReg (new sdpa::events::WorkerRegistrationEvent( _name
+                                                                  , master_agent->name()
+                                                                  , boost::none
+                                                                  , _capabilities ));
+        _network_strategy->perform (pEvtWorkerReg);
+      }
+    }
+
+    virtual ~BasicAgent() { _event_handling_allowed = false; }
+
+    virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
+    {
+      if(_event_handling_allowed)
+        pEvt->handleBy (this);
+    }
+
+    void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*){}
+  protected:
+    std::string _name;
+    fhg::com::kvs::kvsc_ptr_t _kvs_client;
+    boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
+    bool _event_handling_allowed;
+  };
+}
+
+class Worker : public BasicAgent
 {
   public:
     Worker (const std::string& name
             , const utils::agent& master_agent
            , sdpa::capability_t capability)
-      :  utils::BasicAgent (name, master_agent, capability)
+      :  BasicAgent (name, master_agent, capability)
     {}
 };
 
-class Master : public utils::BasicAgent
+class Master : public BasicAgent
 {
   public:
     Master()
-      :  utils::BasicAgent (utils::random_peer_name(), boost::none, boost::none)
+      :  BasicAgent (utils::random_peer_name(), boost::none, boost::none)
     {}
 
     void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pRegEvt)
