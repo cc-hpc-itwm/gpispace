@@ -1,14 +1,12 @@
 #define BOOST_TEST_MODULE TestRequirements
-
-#include "kvs_setup_fixture.hpp"
-#include <utils.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <we/layer.hpp>
 
-#include <boost/test/unit_test.hpp>
+#include <fhg/util/random_string.hpp>
+
 #include <sdpa/id_generator.hpp>
 #include <sdpa/types.hpp>
-#include <fhg/util/random_string.hpp>
 
 namespace we
 {
