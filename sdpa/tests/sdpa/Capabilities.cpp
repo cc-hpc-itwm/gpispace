@@ -24,8 +24,8 @@ class Worker : public utils::BasicAgent
 class Master : public utils::BasicAgent
 {
   public:
-    Master (const std::string& name)
-      :  utils::BasicAgent (name, boost::none, boost::none)
+    Master()
+      :  utils::BasicAgent (utils::random_peer_name(), boost::none, boost::none)
     {}
 
     void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pRegEvt)
@@ -74,7 +74,7 @@ class Master : public utils::BasicAgent
 
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 {
-  Master master("orchestrator_0");
+  Master master;
 
   const utils::agent agent
      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 
 BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
 {
-  Master master("orchestrator_0");
+  Master master;
 
   const utils::agent agent
      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
