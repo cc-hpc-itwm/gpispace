@@ -39,6 +39,13 @@ fhg_add_test (DiscoverJobStates.cpp
                  ${FhgLog_LIBRARY}
 )
 
+fhg_add_test (InvalidNbWorkersReq.cpp
+  PROJECT sdpa_test
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES sdpa
+                 ${FhgLog_LIBRARY}
+)
+
 fhg_add_test (RestartWorkersCoalloc.cpp
   PROJECT sdpa_test
   BOOST_UNIT_TEST
