@@ -259,6 +259,9 @@ then
 fi
 logprefix="${logdir}/${name}"
 
+exec 1> >(tee "${logprefix}.out")
+exec 2> >(tee "${logprefix}.err" >&2)
+
 bin="${sdpa_home}/bin/drts-kernel"
 if [ ! -x "$bin" ] ; then
   echo >&2 "# could not find drts-kernel in '${sdpa_home}/bin'!"
@@ -348,7 +351,7 @@ export LD_LIBRARY_PATH="${sdpa_home}/lib:${sdpa_home}/libexec/sdpa:$LD_LIBRARY_P
 export FHGLOG_to_file="${logprefix}.log"
 echo >&2 "Running $cmd on node $hostname"
 if [ x"$daemonize" = x"true" ] ; then
-    $cmd --daemonize >"${logprefix}.out" 2>"${logprefix}.err"
+    $cmd --daemonize
 else
     exec $cmd
 fi
