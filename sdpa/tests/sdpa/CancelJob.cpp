@@ -14,11 +14,10 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 class Worker : public utils::BasicAgent
 {
 public:
-  Worker ( std::string name
-         , const utils::agent& master_agent
+  Worker ( const utils::agent& master_agent
          , std::string cpb_name = ""
          )
-    : utils::BasicAgent (name, master_agent, cpb_name)
+    : utils::BasicAgent (utils::random_peer_name(), master_agent, cpb_name)
   {}
 
   void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
@@ -77,7 +76,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
   utils::agent agent (orchestrator);
 
-  Worker worker ("worker_0", agent);
+  Worker worker (agent);
 
   sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
 
@@ -116,7 +115,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   utils::agent agent (orchestrator);
 
-  Worker worker ("worker_0", agent);
+  Worker worker (agent);
 
   sdpa::client::Client client (orchestrator.name(),  kvs_host(), kvs_port());
   sdpa::job_id_t job_id (client.submitJob (utils::module_call()));
