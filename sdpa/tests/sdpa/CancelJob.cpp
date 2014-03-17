@@ -14,13 +14,12 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 class Worker : public utils::fake_drts_worker_notifying_module_call_submission
 {
 public:
-  Worker ( boost::function<void (std::string)> announce_cancel
+  Worker ( boost::function<void (std::string)> announce_job
+         , boost::function<void (std::string)> announce_cancel
          , const utils::agent& master_agent
          )
     : utils::fake_drts_worker_notifying_module_call_submission
-      ( boost::bind (&boost::condition_variable_any::notify_one, &_cond_got_job)
-      , master_agent
-      )
+      (announce_job, master_agent)
     , _announce_cancel (announce_cancel)
   {}
 
@@ -48,20 +47,11 @@ public:
       );
   }
 
-  void wait_for_jobs()
-  {
-    boost::unique_lock<boost::mutex> lock (_mtx_got_job);
-    _cond_got_job.wait (lock);
-  }
-
 private:
   static bool job_id_matches (std::pair<std::string, job_t> v, sdpa::job_id_t id)
   {
     return v.second._id == id;
   }
-
-  boost::mutex _mtx_got_job;
-  boost::condition_variable_any _cond_got_job;
 
   boost::function<void (std::string)> _announce_cancel;
 };
@@ -88,9 +78,11 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (orchestrator);
 
+  fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
   Worker worker
-    ( boost::bind (&fhg::util::thread::event<std::string>::notify, &cancel_requested, _1)
+    ( boost::bind (&fhg::util::thread::event<>::notify, &job_submitted)
+    , boost::bind (&fhg::util::thread::event<std::string>::notify, &cancel_requested, _1)
     , agent
     );
 
@@ -98,7 +90,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
-  worker.wait_for_jobs();
+  job_submitted.wait();
 
   client.cancel_job (job_id);
 
@@ -134,9 +126,11 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (orchestrator);
 
+  fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
   Worker worker
-    ( boost::bind (&fhg::util::thread::event<std::string>::notify, &cancel_requested, _1)
+    ( boost::bind (&fhg::util::thread::event<>::notify, &job_submitted)
+    , boost::bind (&fhg::util::thread::event<std::string>::notify, &cancel_requested, _1)
     , agent
     );
 
@@ -144,7 +138,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
-  worker.wait_for_jobs();
+  job_submitted.wait();
 
   client.cancel_job (job_id);
 
