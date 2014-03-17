@@ -70,7 +70,6 @@ BOOST_AUTO_TEST_CASE (cancel_no_agent)
 BOOST_AUTO_TEST_CASE (cancel_with_agent)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-
   const utils::agent agent (orchestrator);
 
   Worker worker (agent);
@@ -104,7 +103,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
     , sdpa::status::CANCELED
     );
 
-  BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
+  BOOST_REQUIRE_THROW (client.cancelJob (job_id), std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
@@ -126,5 +125,5 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
     , sdpa::status::CANCELED
     );
 
-  BOOST_REQUIRE_THROW (client.cancelJob(job_id), std::runtime_error);
+  BOOST_REQUIRE_THROW (client.cancelJob (job_id), std::runtime_error);
 }
