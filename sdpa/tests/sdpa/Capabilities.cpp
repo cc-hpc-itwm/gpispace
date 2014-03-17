@@ -18,14 +18,17 @@ namespace
                    , boost::noncopyable
   {
   public:
-    BasicAgent ( std::string name
+    BasicAgent ( std::string kvs_host, std::string kvs_port
+               , std::string name
                , boost::optional<const utils::agent&> master_agent
                , boost::optional<sdpa::capability_t> capability
                )
       : _name (name)
+      , _kvs_host (kvs_host)
+      , _kvs_port (kvs_port)
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
-          (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
+          (_kvs_host, _kvs_port, true, boost::posix_time::seconds(120), 1)
         )
       , _network_strategy
         ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicAgent::sendEventToSelf, this, _1)
@@ -63,8 +66,16 @@ namespace
     }
 
     void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*){}
+
+
+    std::string kvs_host() const { return _kvs_host; }
+    std::string kvs_port() const { return _kvs_port; }
+
   protected:
     std::string _name;
+    std::string _kvs_host;
+    std::string _kvs_port;
+
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
     boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
     bool _event_handling_allowed;
@@ -74,18 +85,19 @@ namespace
 class Worker : public BasicAgent
 {
   public:
-    Worker (const std::string& name
+  Worker ( std::string kvs_host, std::string kvs_port
+         , const std::string& name
             , const utils::agent& master_agent
            , sdpa::capability_t capability)
-      :  BasicAgent (name, master_agent, capability)
+      :  BasicAgent (kvs_host, kvs_port, name, master_agent, capability)
     {}
 };
 
 class Master : public BasicAgent
 {
   public:
-    Master()
-      :  BasicAgent (utils::random_peer_name(), boost::none, boost::none)
+    Master (std::string kvs_host, std::string kvs_port)
+      :  BasicAgent (kvs_host, kvs_port, utils::random_peer_name(), boost::none, boost::none)
     {}
 
     void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pRegEvt)
@@ -134,17 +146,16 @@ class Master : public BasicAgent
 
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 {
-  Master master;
+  Master master (kvs_host(), kvs_port());
 
-  const utils::agent agent
-     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
+  const utils::agent agent (kvs_host(), kvs_port(), master);
 
   const std::string name_0 (utils::random_peer_name());
   const std::string name_1 (utils::random_peer_name());
   const sdpa::capability_t capability_0 ("A", name_0);
   const sdpa::capability_t capability_1 ("B", name_1);
-  Worker worker_0( name_0, agent, capability_0);
-  Worker worker_1( name_1, agent, capability_1);
+  Worker worker_0( kvs_host(), kvs_port(), name_0, agent, capability_0);
+  Worker worker_1( kvs_host(), kvs_port(), name_1, agent, capability_1);
 
   {
     sdpa::capabilities_set_t expected;
@@ -158,18 +169,17 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 
 BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
 {
-  Master master;
+  Master master (kvs_host(), kvs_port());
 
-  const utils::agent agent
-     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
+  const utils::agent agent (kvs_host(), kvs_port(), master);
 
   const std::string name_0 (utils::random_peer_name());
   const std::string name_1 (utils::random_peer_name());
   const sdpa::capability_t capability_0 ("A", name_0);
   const sdpa::capability_t capability_1 ("B", name_1);
-  Worker worker_0( name_0, agent, capability_0);
+  Worker worker_0( kvs_host(), kvs_port(), name_0, agent, capability_0);
   {
-    Worker pWorker_1( name_1, agent, capability_1);
+    Worker pWorker_1( kvs_host(), kvs_port(), name_1, agent, capability_1);
 
     {
       sdpa::capabilities_set_t expected;
