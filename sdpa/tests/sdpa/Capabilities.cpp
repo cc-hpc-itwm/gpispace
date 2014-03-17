@@ -85,11 +85,10 @@ namespace
 class Worker : public BasicAgent
 {
   public:
-  Worker ( std::string kvs_host, std::string kvs_port
-         , const std::string& name
+  Worker ( const std::string& name
             , const utils::agent& master_agent
            , sdpa::capability_t capability)
-      :  BasicAgent (kvs_host, kvs_port, name, master_agent, capability)
+      :  BasicAgent (master_agent.kvs_host(), master_agent.kvs_port(), name, master_agent, capability)
     {}
 };
 
@@ -154,8 +153,8 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
   const std::string name_1 (utils::random_peer_name());
   const sdpa::capability_t capability_0 ("A", name_0);
   const sdpa::capability_t capability_1 ("B", name_1);
-  Worker worker_0( kvs_host(), kvs_port(), name_0, agent, capability_0);
-  Worker worker_1( kvs_host(), kvs_port(), name_1, agent, capability_1);
+  Worker worker_0( name_0, agent, capability_0);
+  Worker worker_1( name_1, agent, capability_1);
 
   {
     sdpa::capabilities_set_t expected;
@@ -177,9 +176,9 @@ BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
   const std::string name_1 (utils::random_peer_name());
   const sdpa::capability_t capability_0 ("A", name_0);
   const sdpa::capability_t capability_1 ("B", name_1);
-  Worker worker_0( kvs_host(), kvs_port(), name_0, agent, capability_0);
+  Worker worker_0( name_0, agent, capability_0);
   {
-    Worker pWorker_1( kvs_host(), kvs_port(), name_1, agent, capability_1);
+    Worker pWorker_1( name_1, agent, capability_1);
 
     {
       sdpa::capabilities_set_t expected;
