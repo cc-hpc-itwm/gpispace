@@ -86,18 +86,13 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
   Worker worker_0( name_0, agent, capability_0);
   Worker worker_1( name_1, agent, capability_1);
 
-  sdpa::capabilities_set_t set_cpbs_0;
-  set_cpbs_0.insert (capability_0);
-  sdpa::capabilities_set_t set_cpbs_1;
-  set_cpbs_1.insert (capability_1);
-
-  sdpa::capabilities_set_t expected_cpbs(set_cpbs_0);
-  BOOST_FOREACH(const sdpa::capability_t& cpb, set_cpbs_1)
   {
-    expected_cpbs.insert(cpb);
-  }
+    sdpa::capabilities_set_t expected;
+    expected.insert (capability_0);
+    expected.insert (capability_1);
 
-  master.wait_for_capabilities(2, expected_cpbs);
+    master.wait_for_capabilities (2, expected);
+  }
 }
 
 
@@ -115,20 +110,20 @@ BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
   Worker worker_0( name_0, agent, capability_0);
   Worker* pWorker_1(new Worker( name_1, agent, capability_1));
 
-  sdpa::capabilities_set_t set_cpbs_0;
-  set_cpbs_0.insert (capability_0);
-  sdpa::capabilities_set_t set_cpbs_1;
-  set_cpbs_1.insert (capability_1);
-
-  sdpa::capabilities_set_t expected_cpbs(set_cpbs_0);
-  BOOST_FOREACH(const sdpa::capability_t& cpb, set_cpbs_1)
   {
-    expected_cpbs.insert(cpb);
-  }
+    sdpa::capabilities_set_t expected;
+    expected.insert (capability_0);
+    expected.insert (capability_1);
 
-  master.wait_for_capabilities(2, expected_cpbs);
+    master.wait_for_capabilities (2, expected);
+  }
 
   delete pWorker_1;
 
-  master.wait_for_capabilities(1, set_cpbs_0);
+  {
+    sdpa::capabilities_set_t expected;
+    expected.insert (capability_0);
+
+    master.wait_for_capabilities (1, expected);
+  }
 }
