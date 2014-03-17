@@ -116,67 +116,67 @@ namespace
   {
     throw std::runtime_error ("disallowed function called: " + what);
   }
-}
 
-class wfe_and_counter_of_submitted_requirements
-{
-public:
-  wfe_and_counter_of_submitted_requirements (unsigned int expected_activities)
-    : _expected_activities (expected_activities)
-    , _received_requirements()
-    , _random_extraction_engine()
-    , _id_gen ("job")
-    , _layer ( boost::bind
-               (&wfe_and_counter_of_submitted_requirements::submit, this, _2)
-             , boost::bind (&disallow, "cancel")
-             , boost::bind (&disallow, "finished")
-             , boost::bind (&disallow, "failed")
-             , boost::bind (&disallow, "canceled")
-             , boost::bind (&disallow, "discover")
-             , boost::bind (&disallow, "discovered")
-             , boost::bind (&sdpa::id_generator::next, &_id_gen)
-             , _random_extraction_engine
-             )
-  {}
-
-  void submit (const we::type::activity_t& activity)
+  class wfe_and_counter_of_submitted_requirements
   {
-    const std::list<we::type::requirement_t> list_req
-      (activity.transition().requirements());
+  public:
+    wfe_and_counter_of_submitted_requirements (unsigned int expected_activities)
+      : _expected_activities (expected_activities)
+      , _received_requirements()
+      , _random_extraction_engine()
+      , _id_gen ("job")
+      , _layer ( boost::bind
+                 (&wfe_and_counter_of_submitted_requirements::submit, this, _2)
+               , boost::bind (&disallow, "cancel")
+               , boost::bind (&disallow, "finished")
+               , boost::bind (&disallow, "failed")
+               , boost::bind (&disallow, "canceled")
+               , boost::bind (&disallow, "discover")
+               , boost::bind (&disallow, "discovered")
+               , boost::bind (&sdpa::id_generator::next, &_id_gen)
+               , _random_extraction_engine
+               )
+    {}
 
-    BOOST_REQUIRE_EQUAL (list_req.size(), 1);
-
-    boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
-    ++_received_requirements[list_req.front()];
-
-    if (--_expected_activities == 0)
+    void submit (const we::type::activity_t& activity)
     {
-      _cond_all_submitted.notify_one();
+      const std::list<we::type::requirement_t> list_req
+        (activity.transition().requirements());
+
+      BOOST_REQUIRE_EQUAL (list_req.size(), 1);
+
+      boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
+      ++_received_requirements[list_req.front()];
+
+      if (--_expected_activities == 0)
+      {
+        _cond_all_submitted.notify_one();
+      }
     }
-  }
 
-  void wait_all_submitted()
-  {
-    boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
-    _cond_all_submitted.wait (_mtx_all_submitted);
-  }
+    void wait_all_submitted()
+    {
+      boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
+      _cond_all_submitted.wait (_mtx_all_submitted);
+    }
 
-private:
-  boost::mutex _mtx_all_submitted;
-  boost::condition_variable_any _cond_all_submitted;
-  unsigned int _expected_activities;
+  private:
+    boost::mutex _mtx_all_submitted;
+    boost::condition_variable_any _cond_all_submitted;
+    unsigned int _expected_activities;
 
-public:
-  boost::unordered_map<we::type::requirement_t, unsigned int>
-    _received_requirements;
+  public:
+    boost::unordered_map<we::type::requirement_t, unsigned int>
+      _received_requirements;
 
-private:
-  boost::mt19937 _random_extraction_engine;
-  sdpa::id_generator _id_gen;
+  private:
+    boost::mt19937 _random_extraction_engine;
+    sdpa::id_generator _id_gen;
 
-public:
-  we::layer _layer;
-};
+  public:
+    we::layer _layer;
+  };
+}
 
 BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 {
