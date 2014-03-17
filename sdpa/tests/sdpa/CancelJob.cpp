@@ -11,24 +11,15 @@
 
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public utils::BasicAgent
+class Worker : public utils::fake_drts_worker_notifying_module_call_submission
 {
 public:
   Worker (const utils::agent& master_agent)
-    : utils::BasicAgent (utils::random_peer_name(), master_agent, "")
+    : utils::fake_drts_worker_notifying_module_call_submission
+      ( boost::bind (&boost::condition_variable_any::notify_one, &_cond_got_job)
+      , master_agent
+      )
   {}
-
-  void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
-  {
-    sdpa::events::SubmitJobAckEvent::Ptr pSubmitJobAckEvt
-      (new sdpa::events::SubmitJobAckEvent ( _name
-                                           , pEvt->from()
-                                           , *pEvt->job_id()
-                                           )
-      );
-    _network_strategy->perform (pSubmitJobAckEvt);
-    _cond_got_job.notify_one();
-  }
 
   void handleCancelJobEvent (const sdpa::events::CancelJobEvent* pEvt)
   {
@@ -38,7 +29,7 @@ public:
                                             , pEvt->job_id()
                                             )
       );
-    _network_strategy->perform (pEvtCancelAck);
+    _network.perform (pEvtCancelAck);
   }
 
   void wait_for_jobs()
