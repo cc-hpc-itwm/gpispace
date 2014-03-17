@@ -31,9 +31,6 @@ namespace we
 }
 namespace
 {
-  const we::type::requirement_t req_A ("A", true);
-  const we::type::requirement_t req_B ("B", true);
-
   we::place_id_type add_transition_with_requirement_and_input_place
     (we::type::net_type& net, we::type::requirement_t const& requirement)
   {
@@ -184,6 +181,9 @@ public:
 BOOST_AUTO_TEST_CASE (check_requirements)
 {
   wfe_and_counter_of_submitted_requirements agent (30);
+
+  const we::type::requirement_t req_A ("A", true);
+  const we::type::requirement_t req_B ("B", true);
 
   agent._layer.submit
     ( fhg::util::random_string()
