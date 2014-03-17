@@ -163,22 +163,16 @@ public:
     _cond_all_submitted.wait (_mtx_all_submitted);
   }
 
-  unsigned int n_recv_tasks_A() const
-  {
-    return _received_requirements.at (req_A);
-  }
-  unsigned int n_recv_tasks_B() const
-  {
-    return _received_requirements.at (req_B);
-  }
-
 private:
   boost::mutex _mtx_all_submitted;
   boost::condition_variable_any _cond_all_submitted;
   unsigned int _expected_activities;
+
+public:
   boost::unordered_map<we::type::requirement_t, unsigned int>
     _received_requirements;
 
+private:
   boost::mt19937 _random_extraction_engine;
   sdpa::id_generator _id_gen;
 
@@ -196,6 +190,6 @@ BOOST_AUTO_TEST_CASE (check_requirements)
     );
   agent.wait_all_submitted();
 
-  BOOST_REQUIRE_EQUAL (agent.n_recv_tasks_A(), 20);
-  BOOST_REQUIRE_EQUAL (agent.n_recv_tasks_B(), 10);
+  BOOST_REQUIRE_EQUAL (agent._received_requirements.at (req_A), 20);
+  BOOST_REQUIRE_EQUAL (agent._received_requirements.at (req_B), 10);
 }
