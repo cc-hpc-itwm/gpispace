@@ -555,7 +555,10 @@ namespace utils
 
       sdpa::discovery_info_t discover (const sdpa::job_id_t& id)
       {
-        return _.discoverJobStates (fhg::util::random_string(), id);
+        static std::size_t i (0);
+        const std::string discover_id
+          ((boost::format ("%1%%2%") % fhg::util::random_string() % i++).str());
+        return _.discoverJobStates (discover_id, id);
       }
 
       sdpa::client::result_t retrieve_job_results (const sdpa::job_id_t& id)
