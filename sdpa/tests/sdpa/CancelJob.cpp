@@ -14,10 +14,8 @@ BOOST_GLOBAL_FIXTURE (KVSSetup)
 class Worker : public utils::BasicAgent
 {
 public:
-  Worker ( const utils::agent& master_agent
-         , std::string cpb_name = ""
-         )
-    : utils::BasicAgent (utils::random_peer_name(), master_agent, cpb_name)
+  Worker (const utils::agent& master_agent)
+    : utils::BasicAgent (utils::random_peer_name(), master_agent, "")
   {}
 
   void handleSubmitJobEvent (const sdpa::events::SubmitJobEvent* pEvt)
