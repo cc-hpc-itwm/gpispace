@@ -105,10 +105,7 @@ cleanup()
         sdpa stop >/dev/null 2>&1
         runtime_started=false
     fi
-    if [ -n "$tmpnodes" ]
-    then
-        rm -f "${tmpnodes}"
-    fi
+    rm -f "${tmpnodes}"
 }
 trap cleanup EXIT TERM INT
 
