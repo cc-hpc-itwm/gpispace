@@ -319,7 +319,6 @@ namespace utils
                , boost::optional<sdpa::capability_t> capability
                )
       : _name (name)
-      , _master_name(master_agent?master_agent.get().name():"")
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
           (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
@@ -344,7 +343,7 @@ namespace utils
       {
         sdpa::events::WorkerRegistrationEvent::Ptr
           pEvtWorkerReg (new sdpa::events::WorkerRegistrationEvent( _name
-                                                                  , _master_name
+                                                                  , master_agent->name()
                                                                   , boost::none
                                                                   , _capabilities ));
         _network_strategy->perform (pEvtWorkerReg);
@@ -362,7 +361,6 @@ namespace utils
     void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*){}
   protected:
     std::string _name;
-    std::string _master_name;
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
     boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
     bool _event_handling_allowed;
