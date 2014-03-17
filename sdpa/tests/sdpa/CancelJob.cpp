@@ -74,18 +74,16 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
   Worker worker (agent);
 
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
+  utils::client::client_t client (orchestrator);
 
-  const sdpa::job_id_t job_id (client.submitJob (utils::module_call()));
+  const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
   worker.wait_for_jobs();
 
-  client.cancelJob (job_id);
+  client.cancel_job (job_id);
 
   BOOST_REQUIRE_EQUAL
-    ( utils::client::wait_for_terminal_state (client, job_id)
-    , sdpa::status::CANCELED
-    );
+    (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 }
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
@@ -93,17 +91,16 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
   const utils::agent agent (orchestrator);
 
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
+  utils::client::client_t client (orchestrator);
 
-  const sdpa::job_id_t job_id (client.submitJob (utils::module_call()));
-  client.cancelJob (job_id);
+  const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
+
+  client.cancel_job (job_id);
 
   BOOST_REQUIRE_EQUAL
-    ( utils::client::wait_for_terminal_state (client, job_id)
-    , sdpa::status::CANCELED
-    );
+    (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 
-  BOOST_REQUIRE_THROW (client.cancelJob (job_id), std::runtime_error);
+  BOOST_REQUIRE_THROW (client.cancel_job (job_id), std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
@@ -113,17 +110,16 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
 
   Worker worker (agent);
 
-  sdpa::client::Client client (orchestrator.name(),  kvs_host(), kvs_port());
-  const sdpa::job_id_t job_id (client.submitJob (utils::module_call()));
+  utils::client::client_t client (orchestrator);
+
+  const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
   worker.wait_for_jobs();
 
-  client.cancelJob (job_id);
+  client.cancel_job (job_id);
 
   BOOST_REQUIRE_EQUAL
-    ( utils::client::wait_for_terminal_state (client, job_id)
-    , sdpa::status::CANCELED
-    );
+    (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 
-  BOOST_REQUIRE_THROW (client.cancelJob (job_id), std::runtime_error);
+  BOOST_REQUIRE_THROW (client.cancel_job (job_id), std::runtime_error);
 }
