@@ -178,7 +178,7 @@ public:
   we::layer _layer;
 };
 
-BOOST_AUTO_TEST_CASE (check_requirements)
+BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 {
   wfe_and_counter_of_submitted_requirements agent (30);
 
