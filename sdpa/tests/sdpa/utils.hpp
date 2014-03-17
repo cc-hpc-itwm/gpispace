@@ -220,13 +220,6 @@ namespace utils
 
   struct orchestrator : boost::noncopyable
   {
-    orchestrator ( const std::string& name, const std::string& url
-                 , std::string kvs_host, std::string kvs_port
-                 )
-      : _kvs_host (kvs_host)
-      , _kvs_port (kvs_port)
-      , _ (name, url, kvs_host, kvs_port)
-    {}
     orchestrator (std::string kvs_host, std::string kvs_port)
       : _kvs_host (kvs_host)
       , _kvs_port (kvs_port)
