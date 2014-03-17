@@ -10,6 +10,8 @@
 
 #include <fhg/util/random_string.hpp>
 
+#include <fhglog/fhglog.hpp>
+
 #include <plugin/core/kernel.hpp>
 #include <plugin/plugin.hpp>
 
@@ -24,6 +26,15 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+
+struct setup_logging
+{
+  setup_logging()
+  {
+    setenv ("FHGLOG_level", "TRACE", true);
+    FHGLOG_SETUP();
+  }
+};
 
 namespace utils
 {

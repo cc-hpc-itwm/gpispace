@@ -5,6 +5,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+BOOST_GLOBAL_FIXTURE (setup_logging)
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running)

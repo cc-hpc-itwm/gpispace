@@ -8,6 +8,7 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 
+BOOST_GLOBAL_FIXTURE (setup_logging)
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)

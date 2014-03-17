@@ -9,6 +9,7 @@
 
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
+BOOST_GLOBAL_FIXTURE (setup_logging)
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 namespace

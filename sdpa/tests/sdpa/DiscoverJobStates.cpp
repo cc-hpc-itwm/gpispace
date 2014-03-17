@@ -165,6 +165,7 @@ namespace
   }
 }
 
+BOOST_GLOBAL_FIXTURE (setup_logging)
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE (discover_worker_job_status)
