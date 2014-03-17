@@ -74,7 +74,7 @@ namespace sdpa
           (new sdpa::events::ErrorEvent( sdpa_event->to()
                                        , sdpa_event->from()
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                       , sdpa_event->str())
+                                       , ex.what())
           );
         _event_handler (ptrErrEvt);
       }
@@ -86,12 +86,11 @@ namespace sdpa
     {
       if (ec)
       {
-        //sdpa::events::SDPAEvent::Ptr err (sdpa_event->create_reply (ec));
         sdpa::events::ErrorEvent::Ptr ptrErrEvt
           (new sdpa::events::ErrorEvent( sdpa_event->to()
                                        , sdpa_event->from()
                                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                       , sdpa_event->str())
+                                       , ec.message())
           );
         _event_handler (ptrErrEvt);
       }
@@ -119,7 +118,7 @@ namespace sdpa
             error(new sdpa::events::ErrorEvent ( m_peer->resolve(addr, "*unknown*")
                                                , m_peer->name()
                                                , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                               , boost::lexical_cast<std::string>(ec)
+                                               , ec.message()
                                                )
                  );
           _event_handler (error);

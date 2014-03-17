@@ -145,7 +145,10 @@ parse_capability()
         if [ -n "$rest" ] ; then
             shm_size=$(echo "$rest" | cut -d, -f 1)
         fi
+    fi
 
+    if [ -z $socket ] ; then
+        socket=-1
     fi
 
     shm_size=$(( $shm_size ))

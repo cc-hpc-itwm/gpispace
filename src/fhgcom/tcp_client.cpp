@@ -144,7 +144,6 @@ namespace fhg
 
         if (!ec && socket_.is_open())
         {
-          MLOG (TRACE, "connected to " << socket_.remote_endpoint(ec));
           return;
         }
       }

@@ -24,8 +24,6 @@
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 
-static const int EX_STILL_RUNNING = 4;
-
 int main (int argc, char **argv)
 {
   std::string agentName;

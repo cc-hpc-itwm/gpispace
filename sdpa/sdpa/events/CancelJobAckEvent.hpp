@@ -20,10 +20,6 @@ namespace sdpa
         :  sdpa::events::JobEvent (a_from, a_to, a_job_id)
       {}
 
-      std::string str() const
-      {
-        return "CancelJobAckEvent(" + job_id () + ")";
-      }
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleCancelJobAckEvent (this);

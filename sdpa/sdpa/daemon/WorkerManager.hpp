@@ -21,30 +21,28 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/exceptions.hpp>
 #include <boost/unordered_map.hpp>
-#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/job_requirements.hpp>
 
 #include <boost/optional.hpp>
 
 namespace sdpa { namespace daemon {
   class WorkerManager  {
   public:
-    typedef boost::unordered_map<Worker::worker_id_t, Worker::ptr_t> worker_map_t;
+    typedef boost::unordered_map<worker_id_t, Worker::ptr_t> worker_map_t;
     typedef boost::unordered_map<sdpa::job_id_t, sdpa::list_match_workers_t> mapJob2PrefWorkersList_t;
 
-    Worker::ptr_t findWorker(const Worker::worker_id_t& worker_id);
-    bool hasWorker(const Worker::worker_id_t& worker_id) const;
-    const boost::optional<Worker::worker_id_t> findSubmOrAckWorker(const sdpa::job_id_t& job_id) const;
+    Worker::ptr_t findWorker(const worker_id_t& worker_id);
+    bool hasWorker(const worker_id_t& worker_id) const;
+    const boost::optional<worker_id_t> findSubmOrAckWorker(const sdpa::job_id_t& job_id) const;
 
     //! returns whether worker was actually added (i.e. false when already there)
-    bool addWorker( const Worker::worker_id_t& workerId,
+    bool addWorker( const worker_id_t& workerId,
                     boost::optional<unsigned int> capacity,
                     const capabilities_set_t& cpbset = capabilities_set_t() );
 
-    void deleteWorker( const Worker::worker_id_t& workerId);
+    void deleteWorker( const worker_id_t& workerId);
 
     void getCapabilities(sdpa::capabilities_set_t& cpbset);
-
-    void deleteJob(const sdpa::job_id_t& jobId);
 
     sdpa::job_id_list_t getJobListAndCleanQueues(const  Worker::ptr_t& pWorker);
     worker_id_list_t getListWorkersNotReserved();

@@ -21,7 +21,6 @@ namespace sdpa {
 	typedef std::string job_result_t;
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
 	typedef worker_id_list_t agent_id_list_t;
-	typedef std::map<agent_id_t, job_id_list_t> subscriber_map_t;
 	typedef std::pair<worker_id_t, job_id_t> worker_job_pair_t;
 
   typedef std::list<std::pair<sdpa::worker_id_t, int> > list_match_workers_t;
@@ -44,11 +43,9 @@ namespace sdpa {
 
     unsigned int getConsecNetFailCnt() { return nConsecNetFailCnt_;}
     void incConsecNetFailCnt() { nConsecNetFailCnt_++;}
-    void resetConsecNetFailCnt() { nConsecNetFailCnt_=0; }
 
     unsigned int getConsecRegAttempts() { return nConsecRegAttempts_;}
     void incConsecRegAttempts() { nConsecRegAttempts_++;}
-    void resetConsecRegAttempts() { nConsecRegAttempts_=0; }
 
   private:
     std::string name_;

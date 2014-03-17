@@ -34,8 +34,8 @@ namespace sdpa {
       virtual void handleCancelJobAckEvent( const sdpa::events::CancelJobAckEvent* pEvt );
       virtual void handleDeleteJobEvent(const sdpa::events::DeleteJobEvent* );
 
-      template <typename T>
-      void notifySubscribers(const T& ptrEvt);
+    private:
+      std::list<agent_id_t> subscribers (job_id_t job_id) const;
     };
   }
 }

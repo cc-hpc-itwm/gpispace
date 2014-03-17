@@ -26,6 +26,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 #include <list>
 #include <map>
@@ -155,7 +156,8 @@ private:
 
   WFEImpl m_wfe;
 
-  boost::shared_ptr<boost::thread>    m_peer_thread;
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+    m_peer_thread;
   boost::shared_ptr<fhg::com::peer_t> m_peer;
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
@@ -164,8 +166,10 @@ private:
   std::size_t m_reconnect_counter;
 
   fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>  m_event_queue;
-  boost::shared_ptr<boost::thread>    m_event_thread;
-  boost::shared_ptr<boost::thread>    m_execution_thread;
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+    m_event_thread;
+  boost::shared_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+    m_execution_thread;
 
   mutable boost::mutex m_job_map_mutex;
   mutable boost::mutex m_job_computed_mutex;

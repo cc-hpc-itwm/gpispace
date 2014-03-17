@@ -21,11 +21,6 @@ namespace sdpa
         , discover_id_ (discover_id)
       {}
 
-      std::string str() const
-      {
-        return "DiscoverJobStatestEvent(" + job_id () + ")";
-      }
-
       const sdpa::job_id_t& discover_id() const
       {
         return discover_id_;

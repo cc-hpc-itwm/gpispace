@@ -14,7 +14,6 @@
 
 #include <fhg/util/daemonize.hpp>
 #include <fhg/util/split.hpp>
-#include <fhg/util/threadname.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
@@ -61,8 +60,6 @@ namespace fhg
       BOOST_REVERSE_FOREACH (std::string plugin_to_unload, m_load_order)
       {
         m_plugins.erase (m_plugins.find (plugin_to_unload));
-
-        LOG (TRACE, "plugin '" << plugin_to_unload << "' unloaded");
       }
     }
 

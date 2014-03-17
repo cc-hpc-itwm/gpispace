@@ -1,15 +1,3 @@
-# check for 'pthread_setname_np'
-include(CheckCSourceCompiles)
-set (CMAKE_REQUIRED_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
-check_c_source_compiles("
-#include <pthread.h>
-int main () { pthread_setname_np (pthread_self (), \"test\"); }
-" HAVE_PTHREAD_SETNAME)
-
-if (HAVE_PTHREAD_SETNAME)
-  add_definitions (-DHAVE_PTHREAD_SETNAME)
-endif()
-
 set (hdrs
   alphanum.hpp
   daemonize.hpp
@@ -31,8 +19,6 @@ set (hdrs
   backtracing_exception.hpp
   backtracing_exception.fwd.hpp
 
-  threadname.hpp
-
   remove_prefix.hpp
 
   now.hpp
@@ -48,7 +34,6 @@ set (srcs
   signal_handler_manager.cpp
   pidfile_writer.cpp
   program_info.c
-  threadname.cpp
   random_string.cpp
   remove_prefix.cpp
   read_bool.cpp

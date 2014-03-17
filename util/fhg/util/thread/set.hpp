@@ -20,7 +20,7 @@ namespace fhg
     public:
       void start (const boost::function<void()> fun)
       {
-        boost::mutex::scoped_lock _ (_threads_mutex);
+        const boost::mutex::scoped_lock _ (_threads_mutex);
         _threads.push_back (new boost::thread (&set::thread_function, this, fun));
       }
 
@@ -32,7 +32,7 @@ namespace fhg
       //! \todo Should be removed. Exists because of bad dtor in use-case.
       void stop_all()
       {
-        boost::mutex::scoped_lock _ (_threads_mutex);
+        const boost::mutex::scoped_lock _ (_threads_mutex);
         BOOST_FOREACH (boost::thread& thread, _threads)
         {
           thread.interrupt();
@@ -51,7 +51,7 @@ namespace fhg
 
         //! \note Remove from set to avoid leaking.
         {
-          boost::mutex::scoped_lock _ (_threads_mutex);
+          const boost::mutex::scoped_lock _ (_threads_mutex);
           const boost::ptr_vector<boost::thread>::iterator it
             ( std::find_if ( _threads.begin(), _threads.end()
                            , boost::bind (&boost::thread::get_id, _1)

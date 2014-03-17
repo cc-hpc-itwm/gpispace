@@ -69,6 +69,11 @@ namespace
     const std::vector<std::string> vec (require_proper_url (url));
     return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
   }
+
+  job_requirements_t job_requirements (GenericDaemon* daemon, job_id_t job_id)
+  {
+    return daemon->findJob (job_id)->requirements();
+  }
 }
 
 GenericDaemon::GenericDaemon( const std::string name
@@ -82,9 +87,40 @@ GenericDaemon::GenericDaemon( const std::string name
   : _logger (fhg::log::Logger::get (name))
   , _name (name)
   , m_arrMasterInfo(arrMasterInfo)
-  , ptr_scheduler_ (new CoallocationScheduler (this))
-  , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
+  , m_listSubscribers()
+  , _discover_sources()
+  , _job_map_mutex()
+  , job_map_()
+  , _cleanup_job_map_on_dtor_helper (job_map_)
+  , _scheduler ( boost::bind (&GenericDaemon::serveJob, this, _1, _2)
+               , boost::bind (&job_requirements, this, _1)
+               )
+  , _scheduling_thread_mutex()
+  , _scheduling_thread_notifier()
   , _random_extraction_engine (boost::make_optional (create_wfe, boost::mt19937()))
+  , mtx_subscriber_()
+  , mtx_master_()
+  , mtx_cpb_()
+  , m_capabilities()
+  , m_guiService ( guiUrl && !guiUrl->empty()
+                 ? boost::optional<NotificationService>
+                   (NotificationService (*guiUrl))
+                 : boost::none
+                 )
+  , _max_consecutive_registration_attempts (360)
+  , _max_consecutive_network_faults (360)
+  , _registration_timeout (boost::posix_time::seconds (1))
+  , _event_queue()
+  , _kvs_client
+    ( new fhg::com::kvs::client::kvsc
+      (kvs_host, kvs_port, true, boost::posix_time::seconds(120), 1)
+    )
+  , _network_strategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
+                      , name /*name for peer*/
+                      , host_from_url (url)
+                      , port_from_url (url)
+                      , _kvs_client
+                      )
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer
                            ( boost::bind (&GenericDaemon::submit, this, _1, _2)
@@ -99,28 +135,9 @@ GenericDaemon::GenericDaemon( const std::string name
                            )
                          : NULL
                          )
-  , m_guiService ( guiUrl && !guiUrl->empty()
-                 ? boost::optional<NotificationService>
-                   (NotificationService (*guiUrl))
-                 : boost::none
-                 )
-  , _max_consecutive_registration_attempts (360)
-  , _max_consecutive_network_faults (360)
-  , _registration_timeout (boost::posix_time::seconds (1))
-  , _event_queue()
+  , _registration_threads()
+  , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
   , _event_handler_thread (&GenericDaemon::handle_events, this)
-  , _kvs_client
-    ( new fhg::com::kvs::client::kvsc
-      (kvs_host, kvs_port, true, boost::posix_time::seconds(120), 1)
-    )
-  , _network_strategy
-    ( new sdpa::com::NetworkStrategy ( boost::bind (&GenericDaemon::sendEventToSelf, this, _1)
-                                     , name /*name for peer*/
-                                     , host_from_url (url)
-                                     , port_from_url (url)
-                                     , _kvs_client
-                                     )
-    )
 {
   // ask kvs if there is already an entry for (name.id = m_strAgentUID)
   //     e.g. kvs::get ("sdpa.daemon.<name>")
@@ -130,7 +147,6 @@ GenericDaemon::GenericDaemon( const std::string name
   //             kvs::put ("sdpa.daemon.<name>.pid", getpid())
   //                - remove them in destructor
 
-  if (!isTop())
   {
     lock_type lock (mtx_master_);
     BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
@@ -142,45 +158,26 @@ GenericDaemon::GenericDaemon( const std::string name
 
 GenericDaemon::~GenericDaemon()
 {
+  lock_type const _ (mtx_master_);
   BOOST_FOREACH (sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
   {
-    if (!masterInfo.name().empty() && masterInfo.is_registered())
+    if (masterInfo.is_registered())
     {
-      sendEventToOther
-        ( events::ErrorEvent::Ptr ( new events::ErrorEvent ( name()
-                                           , masterInfo.name()
-                                           , events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                           , "node shutdown"
-                                           )
-                          )
-        );
+      parent_proxy (this, masterInfo.name()).notify_shutdown();
     }
   }
+}
 
-  _registration_threads.stop_all();
-
-  delete ptr_workflow_engine_;
-
-  _event_handler_thread.interrupt();
-  if (_event_handler_thread.joinable())
-  {
-    _event_handler_thread.join();
-  }
-
-  _scheduling_thread.interrupt();
-  if (_scheduling_thread.joinable())
-  {
-    _scheduling_thread.join();
-  }
-  ptr_scheduler_.reset();
-
-  _network_strategy.reset();
-
-  BOOST_FOREACH (const Job* const pJob, job_map_ | boost::adaptors::map_values )
+GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
+    (job_map_t& m)
+  : _ (m)
+{}
+GenericDaemon::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
+{
+  BOOST_FOREACH (const Job* const pJob, _ | boost::adaptors::map_values )
   {
     delete pJob;
   }
-  job_map_.clear();
 }
 
 const std::string& GenericDaemon::name() const
@@ -287,7 +284,7 @@ void GenericDaemon::handleSubmitJobEvent (const events::SubmitJobEvent* evt)
     }
   }
   else {
-    scheduler()->enqueueJob(job_id);
+    scheduler().enqueueJob(job_id);
     request_scheduling();
   }
 }
@@ -315,13 +312,13 @@ void GenericDaemon::handleWorkerRegistrationEvent
   }
 
   const bool was_new_worker
-    (scheduler()->addWorker (worker_id, event->capacity(), workerCpbSet));
+    (scheduler().worker_manager().addWorker (worker_id, event->capacity(), workerCpbSet));
 
   child_proxy (this, worker_id).worker_registration_ack();
 
   request_scheduling();
 
-  if (was_new_worker && !workerCpbSet.empty() && !isTop())
+  if (was_new_worker && !workerCpbSet.empty())
   {
     lock_type lock (mtx_master_);
     // send to the masters my new set of capabilities
@@ -351,7 +348,18 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       sdpa::job_id_t jobId(*error.job_id());
       sdpa::worker_id_t worker_id(error.from());
 
-      scheduler()->rescheduleWorkerJob(worker_id, jobId);
+      //! \todo ignore if worker no longer exists?
+      scheduler().worker_manager().findWorker (worker_id)->deleteJob (jobId);
+
+      Job* pJob (findJob (jobId));
+      if (!pJob)
+      {
+        throw std::runtime_error ("EJOBREJECTED for unknown job");
+      }
+      scheduler().releaseReservation (jobId);
+      pJob->Reschedule(); // put the job back into the pending state
+      scheduler().enqueueJob (jobId);
+
       request_scheduling();
       break;
     }
@@ -393,10 +401,8 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
 
       try
       {
-        Worker::ptr_t ptrWorker = findWorker(worker_id);
+        Worker::ptr_t ptrWorker = scheduler().worker_manager().findWorker(worker_id);
 
-        if(ptrWorker)
-        {
           // notify capability losses...
           lock_type lock(mtx_master_);
           BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
@@ -407,9 +413,25 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
 
           // if there still are registered workers, otherwise declare the remaining
           // jobs failed
-          scheduler()->deleteWorker(worker_id); // do a re-scheduling here
+
+          const std::set<job_id_t> jobs_to_reschedule
+            ( scheduler().worker_manager().findWorker (worker_id)
+            ->getJobListAndCleanQueues()
+            );
+          scheduler().worker_manager().deleteWorker (worker_id);
+
+          BOOST_FOREACH (sdpa::job_id_t jobId, jobs_to_reschedule)
+          {
+            Job* pJob = findJob (jobId);
+            if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
+            {
+              scheduler().releaseReservation (jobId);
+              pJob->Reschedule(); // put the job back into the pending state
+              scheduler().enqueueJob (jobId);
+            }
+          }
+
           request_scheduling();
-        }
       }
       catch (WorkerNotFoundException const& /*ignored*/)
       {
@@ -442,7 +464,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
     {
       // do the same as when receiving a SubmitJobAckEvent
 
-      Worker::worker_id_t worker_id = error.from();
+      worker_id_t worker_id = error.from();
 
       // Only now should be the job state machine make a transition to RUNNING
       // this means that the job was not rejected, no error occurred etc ....
@@ -452,7 +474,7 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       {
         try {
             ptrJob->Dispatch();
-            scheduler()->acknowledgeJob(worker_id, *error.job_id());
+            scheduler().worker_manager().findWorker (worker_id)->acknowledge (*error.job_id());
         }
         catch(WorkerNotFoundException const &)
         {
@@ -498,7 +520,7 @@ try
          , job_requirements_t (activity.transition().requirements(), schedule_data)
          );
 
-  scheduler()->enqueueJob (job_id);
+  scheduler().enqueueJob (job_id);
   request_scheduling();
 }
 catch (std::exception const& ex)
@@ -522,7 +544,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
   }
 
   const boost::optional<sdpa::worker_id_t> worker_id
-    (scheduler()->findSubmOrAckWorker (job_id));
+    (scheduler().worker_manager().findSubmOrAckWorker (job_id));
 
   pJob->CancelJob();
 
@@ -535,7 +557,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
     workflowEngine()->canceled (job_id);
 
     pJob->CancelJobAck();
-    ptr_scheduler_->delete_job (job_id);
+    _scheduler.delete_job (job_id);
 
     deleteJob (job_id);
   }
@@ -559,18 +581,17 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
   if (m_guiService)
   {
     std::list<std::string> workers; workers.push_back (name());
-    const we::type::activity_t act (pJob->description());
     const sdpa::daemon::NotificationEvent evt
       ( workers
       , pJob->id()
       , NotificationEvent::STATE_FINISHED
-      , act
+      , result
       );
 
     m_guiService->notify (evt);
   }
 
-  BOOST_FOREACH(const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  BOOST_FOREACH(const subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
   {
     if(subscribedFor(pair_subscr_joblist.first, id))
     {
@@ -618,7 +639,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
     m_guiService->notify (evt);
   }
 
-  BOOST_FOREACH( const sdpa::subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
+  BOOST_FOREACH( const subscriber_map_t::value_type& pair_subscr_joblist, m_listSubscribers )
   {
     if(subscribedFor(pair_subscr_joblist.first, id))
     {
@@ -656,18 +677,17 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
 void GenericDaemon::handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent* pRegAckEvt)
 {
   std::string masterName = pRegAckEvt->from();
-  bool bFound = false;
   lock_type lock(mtx_master_);
-  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end() && !bFound; it++)
+  for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
     if( it->name() == masterName )
     {
       it->set_registered(true);
-      bFound=true;
+      break;
     }
 
   if(!isTop())
   {
-    boost::mutex::scoped_lock const _ (_job_map_and_requirements_mutex);
+    boost::mutex::scoped_lock const _ (_job_map_mutex);
 
     BOOST_FOREACH ( Job* job
                   , job_map_
@@ -738,7 +758,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
       }
     }
 
-    bool bModified = scheduler()->addCapabilities(worker_id, workerCpbSet);
+    bool bModified = scheduler().worker_manager().findWorker (worker_id)->addCapabilities (workerCpbSet);
 
     if(bModified)
     {
@@ -746,7 +766,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent(const events::CapabilitiesGain
       if( !isTop() )
       {
         const sdpa::capabilities_set_t newWorkerCpbSet
-          (scheduler()->getWorkerCapabilities(worker_id));
+          (scheduler().worker_manager().findWorker (worker_id)->capabilities());
 
         if( !newWorkerCpbSet.empty() )
         {
@@ -772,7 +792,7 @@ void GenericDaemon::handleCapabilitiesLostEvent(const events::CapabilitiesLostEv
 
   sdpa::worker_id_t worker_id = pCpbLostEvt->from();
   try {
-    scheduler()->removeCapabilities(worker_id, pCpbLostEvt->capabilities());
+    scheduler().worker_manager().findWorker (worker_id)->removeCapabilities(pCpbLostEvt->capabilities());
 
     lock_type lock(mtx_master_);
     for( sdpa::master_info_list_t::iterator it = m_arrMasterInfo.begin(); it != m_arrMasterInfo.end(); it++)
@@ -822,7 +842,7 @@ void GenericDaemon::handle_events()
 
 void GenericDaemon::sendEventToOther(const events::SDPAEvent::Ptr& pEvt)
 {
-  _network_strategy->perform (pEvt);
+  _network_strategy.perform (pEvt);
 }
 
 void GenericDaemon::delay (boost::function<void()> fun)
@@ -850,7 +870,7 @@ void GenericDaemon::requestRegistration(const MasterInfo& masterInfo)
     lock_type lock(mtx_cpb_);
     capabilities_set_t cpbSet (m_capabilities);
 
-    scheduler()->getAllWorkersCapabilities(cpbSet);
+    scheduler().worker_manager().getCapabilities (cpbSet);
 
     //std::cout<<cpbSet;
 
@@ -927,7 +947,7 @@ void GenericDaemon::subscribe(const sdpa::agent_id_t& subscriber, const sdpa::jo
   }
   else
   {
-    m_listSubscribers.insert(sdpa::subscriber_map_t::value_type(subscriber, listJobIds));
+    m_listSubscribers.insert(subscriber_map_t::value_type(subscriber, listJobIds));
   }
 
   // TODO: we should only send an ack *if* the job actually exists....
@@ -1017,7 +1037,7 @@ bool GenericDaemon::isSubscriber(const sdpa::agent_id_t& agentId)
  */
 void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEvent)
 {
-  Worker::worker_id_t worker_id = pEvent->from();
+  worker_id_t worker_id = pEvent->from();
   // Only, now should be state of the job updated to RUNNING
   // since it was not rejected, no error occurred etc ....
   //find the job ptrJob and call
@@ -1027,7 +1047,7 @@ void GenericDaemon::handleSubmitJobAckEvent(const events::SubmitJobAckEvent* pEv
       try
       {
         ptrJob->Dispatch();
-        scheduler()->acknowledgeJob(worker_id, pEvent->job_id());
+        scheduler().worker_manager().findWorker (worker_id)->acknowledge (pEvent->job_id());
       }
       catch(WorkerNotFoundException const &ex1)
       {
@@ -1054,7 +1074,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
   // The result was successfully delivered by the worker and the WE was notified
   // therefore, I can delete the job from the job map
   std::ostringstream os;
-  Worker::worker_id_t worker_id = pEvt->from();
+  worker_id_t worker_id = pEvt->from();
   if(findJob(pEvt->job_id()))
   {
       // delete it from the map when you receive a JobFinishedAckEvent!
@@ -1070,7 +1090,7 @@ void GenericDaemon::handleJobFinishedAckEvent(const events::JobFinishedAckEvent*
 void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEvt )
 {
   std::ostringstream os;
-  Worker::worker_id_t worker_id = pEvt->from();
+  worker_id_t worker_id = pEvt->from();
 
   if(findJob(pEvt->job_id()))
   {
@@ -1096,7 +1116,7 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
       Job* pJob (findJob (job_id));
 
       const boost::optional<worker_id_t> worker_id
-        (scheduler()->findSubmOrAckWorker(job_id));
+        (scheduler().worker_manager().findSubmOrAckWorker(job_id));
 
       if (pJob && worker_id)
       {
@@ -1125,7 +1145,7 @@ void GenericDaemon::handleJobFailedAckEvent(const events::JobFailedAckEvent* pEv
       Job* pJob (findJob (pEvt->job_id()));
 
       const boost::optional<worker_id_t> worker_id
-        (scheduler()->findSubmOrAckWorker(pEvt->job_id()));
+        (scheduler().worker_manager().findSubmOrAckWorker(pEvt->job_id()));
 
       if (pJob && worker_id)
       {
@@ -1259,7 +1279,7 @@ namespace sdpa
         boost::mutex::scoped_lock lock (_scheduling_thread_mutex);
         _scheduling_thread_notifier.wait (lock);
 
-        scheduler()->assignJobsToWorkers();
+        scheduler().assignJobsToWorkers();
       }
     }
 
@@ -1346,6 +1366,16 @@ namespace sdpa
         ( events::WorkerRegistrationEvent::Ptr
           ( new events::WorkerRegistrationEvent
             (_that->name(), _name, capacity, capabilities)
+          )
+        );
+    }
+
+    void GenericDaemon::parent_proxy::notify_shutdown() const
+    {
+      _that->sendEventToOther
+        ( events::ErrorEvent::Ptr
+          ( new events::ErrorEvent
+            (_that->name(), _name, events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "")
           )
         );
     }

@@ -30,14 +30,6 @@ namespace we
       , _random_extraction_engine (random_extraction_engine)
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
     {}
-    layer::~layer()
-    {
-      _extract_from_nets_thread.interrupt();
-      if (_extract_from_nets_thread.joinable())
-      {
-        _extract_from_nets_thread.join();
-      }
-    }
 
     namespace
     {

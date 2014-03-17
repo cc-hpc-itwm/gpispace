@@ -4,7 +4,6 @@
 #include <plugin/plugin.hpp>
 #include <fhg/util/getenv.hpp>
 #include <fhg/util/split.hpp>
-#include <fhg/util/threadname.hpp>
 
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/events.hpp>
@@ -351,25 +350,21 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   // parse virtual capabilities
   BOOST_FOREACH (std::string const & cap, capability_list)
   {
-    if (m_virtual_capabilities.find(cap) == m_virtual_capabilities.end())
-    {
-      std::pair<std::string, std::string> const capability_and_type
-        = fhg::util::split_string (cap, '-');
-
-      m_virtual_capabilities.insert
-        ( std::make_pair
-         (cap, sdpa::Capability (capability_and_type.first, m_my_name))
-        );
-    }
+    m_virtual_capabilities.insert
+      (std::make_pair (cap, sdpa::Capability (cap, m_my_name)));
   }
 
-  m_event_thread.reset(new boost::thread(&DRTSImpl::event_thread, this));
-  fhg::util::set_threadname (*m_event_thread, "[drts-events]");
+  m_event_thread.reset
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&DRTSImpl::event_thread, this)
+    );
 
   // initialize peer
   m_peer.reset (new fhg::com::peer_t (m_my_name, host, port, _kvs_client));
-  m_peer_thread.reset(new boost::thread(&fhg::com::peer_t::run, m_peer));
-  fhg::util::set_threadname (*m_peer_thread, "[drts-peer]");
+  m_peer_thread.reset
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&fhg::com::peer_t::run, m_peer)
+    );
   m_peer->start();
 
   start_receiver();
@@ -399,8 +394,9 @@ DRTSImpl::DRTSImpl (boost::function<void()> request_stop, std::map<std::string, 
   }
 
   m_execution_thread.reset
-    (new boost::thread(&DRTSImpl::job_execution_thread, this));
-  fhg::util::set_threadname (*m_execution_thread, "[drts-execute]");
+    ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      (&DRTSImpl::job_execution_thread, this)
+    );
 
   start_connect ();
 }
@@ -409,32 +405,12 @@ DRTSImpl::~DRTSImpl()
 {
   m_shutting_down = true;
 
-  if (m_execution_thread)
-  {
-    m_execution_thread->interrupt();
-    if (m_execution_thread->joinable ())
-      m_execution_thread->join ();
-    m_execution_thread.reset();
-  }
-
-  if (m_event_thread)
-  {
-    m_event_thread->interrupt();
-    if (m_event_thread->joinable ())
-      m_event_thread->join();
-    m_event_thread.reset();
-  }
+  m_execution_thread.reset();
+  m_event_thread.reset();
 
   if (m_peer)
   {
     m_peer->stop();
-  }
-
-  if (m_peer_thread)
-  {
-    m_peer_thread->interrupt();
-    if (m_peer_thread->joinable ())
-      m_peer_thread->join();
   }
 
   m_peer_thread.reset();

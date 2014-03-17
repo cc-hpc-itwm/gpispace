@@ -54,14 +54,6 @@ namespace fhg
       , connections_()
       , m_kvs_error_handler (default_kvs_error_handler)
     {
-      if (name.find ('.') != std::string::npos)
-      {
-        throw std::runtime_error ("peer_t(): invalid argument: name must not contain '.'!");
-      }
-      if (name.find (' ') != std::string::npos)
-      {
-        throw std::runtime_error ("peer_t(): invalid argument: name must not contain ' '!");
-      }
     }
 
     peer_t::~peer_t()

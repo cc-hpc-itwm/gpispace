@@ -78,9 +78,6 @@ install (FILES
   DESTINATION include/we/type/literal
 )
 
-add_executable (generate_parser_action_table expr/parse/table.cpp)
-target_link_libraries (generate_parser_action_table pnet)
-
 find_package (LibReadline REQUIRED QUIET)
 include_directories (SYSTEM ${LibReadline_INCLUDE_DIR})
 

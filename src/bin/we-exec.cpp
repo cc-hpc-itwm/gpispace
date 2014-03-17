@@ -15,7 +15,9 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <list>
@@ -138,37 +140,22 @@ namespace
         , _mutex_id_map()
         , id_map_()
         , jobs_()
-        , worker_()
         , _loader (loader)
         , _job_status (sdpa::status::RUNNING)
         , _result()
         , _job_id (gen_id())
-        , _timeout_thread
-          (boost::bind (&sdpa_daemon::maybe_cancel_after_ms, this, timeout))
+        , _timeout_thread (&sdpa_daemon::maybe_cancel_after_ms, this, timeout)
+        , worker_()
     {
       for (std::size_t n (0); n < num_worker; ++n)
       {
         worker_.push_back
-          (new boost::thread (boost::bind (&sdpa_daemon::worker, this, n)));
+          ( new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+            (&sdpa_daemon::worker, this, n)
+          );
       }
 
       mgmt_layer_.submit (_job_id, act);
-    }
-
-    ~sdpa_daemon()
-    {
-      BOOST_FOREACH (boost::thread* t, worker_)
-      {
-        t->interrupt();
-        t->join();
-        delete t;
-      }
-
-      _timeout_thread.interrupt();
-      if (_timeout_thread.joinable())
-      {
-        _timeout_thread.join();
-      }
     }
 
     void worker (const std::size_t rank)
@@ -366,12 +353,14 @@ namespace
     mutable boost::recursive_mutex _mutex_id_map;
     id_map_t  id_map_;
     fhg::thread::queue<job_t> jobs_;
-    std::vector<boost::thread*> worker_;
     we::loader::loader* _loader;
     sdpa::status::code _job_status;
     boost::optional<std::string> _result;
     we::layer::id_type _job_id;
-    boost::thread _timeout_thread;
+    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+      _timeout_thread;
+    boost::ptr_vector<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> >
+      worker_;
   };
 }
 

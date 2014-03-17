@@ -12,6 +12,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/scoped_thread.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <fhg/assert.hpp>
@@ -70,22 +71,15 @@ public:
 
     api = gpi_api;
 
-    _reinitialize_thread = new boost::thread
-      (&GPICompatPluginImpl::schedule_reinitialize_gpi, this);
+    _reinitialize_thread =
+      new boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        (&GPICompatPluginImpl::schedule_reinitialize_gpi, this);
   }
 
   ~GPICompatPluginImpl()
   {
-    if (_reinitialize_thread)
-    {
-      _reinitialize_thread->interrupt();
-      if (_reinitialize_thread->joinable())
-      {
-        _reinitialize_thread->join();
-      }
-      _reinitialize_thread = NULL;
-      delete _reinitialize_thread;
-    }
+    _reinitialize_thread = NULL;
+    delete _reinitialize_thread;
 
     try
     {
@@ -262,7 +256,8 @@ private:
   boost::posix_time::time_duration   m_initialize_retry_interval;
   bool                               m_was_connected;
 
-  boost::thread* _reinitialize_thread;
+  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>*
+    _reinitialize_thread;
 };
 
 int fvmConnect()

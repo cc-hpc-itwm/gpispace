@@ -7,31 +7,29 @@
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/exceptions.hpp>
-#include <sdpa/engine/IWorkflowEngine.hpp>
+#include <sdpa/job_requirements.hpp>
 #include <sdpa/types.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace sdpa
 {
   namespace daemon
   {
-    class GenericDaemon;
     class CoallocationScheduler
     {
     public:
-      CoallocationScheduler (GenericDaemon* pHandler);
+      CoallocationScheduler ( boost::function<void (const sdpa::worker_id_list_t&, const job_id_t&)> serve
+                            , boost::function<job_requirements_t (const sdpa::job_id_t&)>
+                            );
+
+      const WorkerManager& worker_manager() const;
+      WorkerManager& worker_manager();
 
       // -- used by daemon
-      void delete_job (const sdpa::job_id_t&);
-      const boost::optional<Worker::worker_id_t> findSubmOrAckWorker
-        (const sdpa::job_id_t&) const;
-      void removeCapabilities
-        (const sdpa::worker_id_t&, const sdpa::capabilities_set_t&);
-      void getAllWorkersCapabilities (sdpa::capabilities_set_t&);
-      sdpa::capabilities_set_t getWorkerCapabilities (const sdpa::worker_id_t&);
-      void acknowledgeJob (const Worker::worker_id_t&, const sdpa::job_id_t&);
+      bool delete_job (const sdpa::job_id_t&);
       void workerFinished (const worker_id_t&, const job_id_t&);
       void workerFailed (const worker_id_t&, const job_id_t&);
       void workerCanceled (const worker_id_t&, const job_id_t&);
@@ -39,58 +37,49 @@ namespace sdpa
       bool groupFinished (const sdpa::job_id_t&);
 
       // -- used by daemon and self
-      void rescheduleWorkerJob
-        (const Worker::worker_id_t&, const sdpa::job_id_t&);
       void enqueueJob (const sdpa::job_id_t&);
-      Worker::ptr_t findWorker (const Worker::worker_id_t&);
       void request_scheduling();
 
-      // used by daemon and test
-      bool addWorker ( const Worker::worker_id_t&
-                     , const boost::optional<unsigned int>& capacity = boost::none
-                     , const capabilities_set_t& = capabilities_set_t()
-                     );
-      void deleteWorker (const Worker::worker_id_t&);
-      bool addCapabilities
-        (const sdpa::worker_id_t&, const sdpa::capabilities_set_t&);
-
       // used by daemon and self and test
-      void deleteWorkerJob (const Worker::worker_id_t&, const sdpa::job_id_t&);
       void releaseReservation (const sdpa::job_id_t&);
       void assignJobsToWorkers();
 
     private:
-      GenericDaemon* ptr_comm_handler_;
+      boost::function<void (const sdpa::worker_id_list_t&, const job_id_t&)>
+        _serve_job;
+      boost::function<job_requirements_t (const sdpa::job_id_t&)>
+        _job_requirements;
 
-      SynchronizedQueue<std::list<sdpa::job_id_t> > pending_jobs_queue_;
       WorkerManager _worker_manager;
-      SynchronizedQueue<std::list<sdpa::job_id_t> > _common_queue;
 
-      mutable boost::recursive_mutex mtx_;
+      class locked_job_id_list
+      {
+      public:
+        inline void push (job_id_t item);
+        inline size_t erase (const job_id_t& item);
+
+        std::list<job_id_t> get_and_clear();
+
+      private:
+        mutable boost::mutex mtx_;
+        std::list<job_id_t> container_;
+      } _jobs_to_schedule;
 
       class Reservation : boost::noncopyable
       {
       public:
         typedef enum {FINISHED, FAILED, CANCELED} result_type;
 
-        Reservation (const sdpa::job_id_t& job_id, const size_t& n)
-          : m_job_id (job_id)
-          , m_capacity (n)
+        Reservation (std::set<worker_id_t> workers)
+          : m_list_workers (workers.begin(), workers.end())
         {}
-
-        void addWorker (const sdpa::worker_id_t& wid)
-        {
-          m_list_workers.push_back(wid);
-        }
-        void delWorker (const sdpa::worker_id_t& wid)
-        {
-          m_list_workers.remove(wid);
-        }
 
         void storeWorkerResult
           (const sdpa::worker_id_t& wid, const result_type& result)
         {
-          if (!hasWorker (wid))
+          if ( std::find (m_list_workers.begin(), m_list_workers.end(), wid)
+             == m_list_workers.end()
+             )
           {
             throw std::runtime_error
               ("tried storing result of worker that is not in reservation for job");
@@ -101,7 +90,7 @@ namespace sdpa
 
         bool allWorkersTerminated() const
         {
-          return m_map_worker_result.size() == capacity();
+          return m_map_worker_result.size() == m_list_workers.size();
         }
 
         bool allGroupTasksFinishedSuccessfully()
@@ -118,33 +107,12 @@ namespace sdpa
           return true;
         }
 
-        bool acquired() const
-        {
-          return size() == capacity();
-        }
-
-        bool hasWorker (const sdpa::worker_id_t& wid) const
-        {
-          return find (m_list_workers.begin(), m_list_workers.end(), wid)
-            != m_list_workers.end();
-        }
         sdpa::worker_id_list_t getWorkerList() const
         {
           return m_list_workers;
         }
 
       private:
-        size_t size() const
-        {
-          return m_list_workers.size();
-        }
-        size_t capacity() const
-        {
-          return m_capacity;
-        }
-
-        sdpa::job_id_t m_job_id;
-        size_t m_capacity;
         sdpa::worker_id_list_t m_list_workers;
         std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
       };

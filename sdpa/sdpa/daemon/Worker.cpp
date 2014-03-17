@@ -7,94 +7,68 @@
 
 #include <boost/foreach.hpp>
 
-using namespace sdpa;
-using namespace sdpa::daemon;
-
+namespace sdpa
+{
+  namespace daemon
+  {
 Worker::Worker(	const worker_id_t& name,
-				const boost::optional<unsigned int>& cap,
-				const location_t &location)
-  : _logger (fhg::log::Logger::get ("sdpa.daemon.worker." + name)),
-    name_(name),
-    capacity_(cap),
-    location_(location),
-    tstamp_(fhg::util::now()),
-    last_schedule_time_(0),
-    timedout_(false),
-    disconnected_(false),
+				const boost::optional<unsigned int>& cap
+              , const capabilities_set_t& capabilities
+              )
+  : name_(name),
+    capacity_(cap)
+  , capabilities_ (capabilities)
+  , last_schedule_time_(0),
     reserved_(false)
 {
 
 }
 
-bool Worker::has_job( const sdpa::job_id_t& job_id )
+bool Worker::has_job( const job_id_t& job_id )
 {
-  lock_type lock(mtx_);
-  return submitted_.has_item(job_id) || acknowledged_.has_item(job_id);
+  lock_type const _ (mtx_);
+  return submitted_.count (job_id) || acknowledged_.count (job_id);
 }
 
-bool Worker::isJobSubmittedOrAcknowleged( const sdpa::job_id_t& job_id )
+void Worker::submit(const job_id_t& jobId)
 {
-  lock_type lock(mtx_);
-  return submitted_.has_item(job_id) || acknowledged_.has_item(job_id);
+  lock_type const _ (mtx_);
+  submitted_.insert (jobId);
+  reserve();
 }
 
-void Worker::update()
+void Worker::acknowledge(const job_id_t &job_id)
 {
-  lock_type lock(mtx_);
-  tstamp_ = fhg::util::now();
-  set_timedout (false);
-}
-
-void Worker::submit(const sdpa::job_id_t& jobId)
-{
-  lock_type lock(mtx_);
-  submitted_.push(jobId);
-}
-
-bool Worker::acknowledge(const sdpa::job_id_t &job_id)
-{
-  lock_type lock(mtx_);
-      acknowledged_.push(job_id);
-      const bool was_found (submitted_.erase(job_id) > 0);
-
-  if (!was_found)
+  lock_type const _ (mtx_);
+  if (submitted_.erase (job_id) == 0)
   {
-    LLOG (WARN, _logger, "The job " << job_id << " could not be acknowledged. It was not found into the worker's submitted queue!");
+    throw JobNotFoundException();
   }
-  return was_found;
+  acknowledged_.insert (job_id);
 }
 
-void Worker::deleteJob(const sdpa::job_id_t &job_id)
+void Worker::deleteJob(const job_id_t &job_id)
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   submitted_.erase (job_id);
   acknowledged_.erase (job_id);
+  free();
 }
 
-unsigned int Worker::nbAllocatedJobs()
+const capabilities_set_t& Worker::capabilities() const
 {
-  lock_type lock(mtx_);
-  unsigned int nJobs = /*pending().size() + */ submitted_.size() + acknowledged_.size();
-  return nJobs;
-}
-
-const sdpa::capabilities_set_t& Worker::capabilities() const
-{
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   return capabilities_;
 }
 
 bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 {
-  if (recvCpbSet.empty())
-    return false;
-
   lock_type const _ (mtx_);
 
   bool bModified = false;
-  BOOST_FOREACH (sdpa::Capability const& capability, recvCpbSet)
+  BOOST_FOREACH (Capability const& capability, recvCpbSet)
   {
-    sdpa::capabilities_set_t::iterator itwcpb (capabilities_.find (capability));
+    capabilities_set_t::iterator itwcpb (capabilities_.find (capability));
     if (itwcpb == capabilities_.end())
     {
       capabilities_.insert (capability);
@@ -113,19 +87,16 @@ bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
 
 void Worker::removeCapabilities( const capabilities_set_t& cpbset )
 {
-  lock_type lock(mtx_);
-  for(capabilities_set_t::const_iterator it = cpbset.begin(); it != cpbset.end(); ++it ) {
-      capabilities_set_t::iterator itwcpb = capabilities_.find(*it);
-      if( itwcpb != capabilities_.end() ) {
-          capabilities_.erase(itwcpb);
-
-      }
+  lock_type const _ (mtx_);
+  BOOST_FOREACH (Capability const& capability, cpbset)
+  {
+    capabilities_.erase (capability);
   }
 }
 
 bool Worker::hasCapability(const std::string& cpbName)
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
 
   return std::find_if ( capabilities_.begin(), capabilities_.end()
                       , boost::bind (&capability_t::name, _1) == cpbName
@@ -134,41 +105,34 @@ bool Worker::hasCapability(const std::string& cpbName)
 
 void Worker::reserve()
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   reserved_ = true;
   last_schedule_time_ = fhg::util::now();
 }
 
 bool Worker::isReserved()
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   return reserved_;
 }
 
 void Worker::free()
 {
-  lock_type lock(mtx_);
+  lock_type const _ (mtx_);
   reserved_ = false;
 }
 
-namespace
-{
-  void addToList (Worker::JobQueue* pQueue, sdpa::job_id_list_t& jobList)
-  {
-    while (!pQueue->empty())
-    {
-      jobList.push_back (pQueue->pop());
-    }
-  }
-}
-
-sdpa::job_id_list_t Worker::getJobListAndCleanQueues()
+std::set<job_id_t> Worker::getJobListAndCleanQueues()
 {
   lock_type const _ (mtx_);
-  sdpa::job_id_list_t listAssignedJobs;
+  std::set<job_id_t> listAssignedJobs;
 
-  addToList (&submitted_, listAssignedJobs);
-  addToList (&acknowledged_, listAssignedJobs);
+  listAssignedJobs.insert (submitted_.begin(), submitted_.end());
+  listAssignedJobs.insert (acknowledged_.begin(), acknowledged_.end());
+  submitted_.clear();
+  acknowledged_.clear();
 
   return listAssignedJobs;
+}
+  }
 }

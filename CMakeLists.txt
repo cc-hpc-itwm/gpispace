@@ -106,25 +106,15 @@ if (BOOST_ROOT)
   set (Boost_NO_SYSTEM_PATHS ON)
 endif()
 
-find_package (Boost 1.47 REQUIRED QUIET COMPONENTS
+find_package (Boost 1.55 REQUIRED QUIET COMPONENTS
   thread system filesystem serialization program_options
   regex signals date_time test_exec_monitor unit_test_framework random)
 
-if (Boost_MAJOR_VERSION EQUAL 1)
-  if (Boost_MINOR_VERSION EQUAL 48)
-    message (FATAL_ERROR "Incompatible Boost 1.48 detected")
-  endif()
-endif()
-
-if (Boost_MAJOR_VERSION EQUAL 1)
-  if (Boost_MINOR_VERSION GREATER 51)
-    # Boost.Thread now throws when preconditions are not met.
-    # This is the case when calling join() in some tests, while
-    # joinable() == false.  This define is only a hacky workaround and
-    # the precondition shall be checked everywhere, where needed.
-    add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
-  endif()
-endif()
+# Boost.Thread now throws when preconditions are not met.
+# This is the case when calling join() in some tests, while
+# joinable() == false.  This define is only a hacky workaround and
+# the precondition shall be checked everywhere, where needed.
+add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 
 get_filename_component (BOOST_ROOT "${Boost_INCLUDE_DIR}" PATH CACHE)
 

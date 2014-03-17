@@ -22,8 +22,6 @@ namespace
 
     BOOST_REQUIRE (r);
 
-    BOOST_REQUIRE_EQUAL (r->str(), e.str());
-
     BOOST_REQUIRE_EQUAL (r->from(), e.from());
     BOOST_REQUIRE_EQUAL (r->to(), e.to());
 

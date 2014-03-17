@@ -31,10 +31,11 @@
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/count_if.hpp>
 
-using namespace std;
-using namespace sdpa::daemon;
-
-Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
+namespace sdpa
+{
+  namespace daemon
+  {
+Worker::ptr_t WorkerManager::findWorker(const worker_id_t& worker_id )
 {
   boost::mutex::scoped_lock const _ (mtx_);
   worker_map_t::iterator it = worker_map_.find(worker_id);
@@ -44,19 +45,19 @@ Worker::ptr_t WorkerManager::findWorker(const Worker::worker_id_t& worker_id )
     throw WorkerNotFoundException();
 }
 
-bool WorkerManager::hasWorker(const Worker::worker_id_t& worker_id) const
+bool WorkerManager::hasWorker(const worker_id_t& worker_id) const
 {
   boost::mutex::scoped_lock const _ (mtx_);
   return worker_map_.find(worker_id) != worker_map_.end();
 }
 
-const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
+const boost::optional<worker_id_t> WorkerManager::findSubmOrAckWorker(const sdpa::job_id_t& job_id) const
 {
   boost::mutex::scoped_lock const _ (mtx_);
 
   BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
                 | boost::adaptors::filtered
-                  (boost::bind (&Worker::isJobSubmittedOrAcknowleged, _1, job_id))
+                  (boost::bind (&Worker::has_job, _1, job_id))
                 )
   {
     return worker->name();
@@ -65,7 +66,7 @@ const boost::optional<Worker::worker_id_t> WorkerManager::findSubmOrAckWorker(co
   return boost::none;
 }
 
-bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
+bool WorkerManager::addWorker(  const worker_id_t& workerId,
                                 boost::optional<unsigned int> capacity,
                                 const capabilities_set_t& cpbSet )
 {
@@ -76,28 +77,14 @@ bool WorkerManager::addWorker(  const Worker::worker_id_t& workerId,
     return false;
   }
 
-  Worker::ptr_t pWorker( new Worker( workerId, capacity ) );
-  pWorker->addCapabilities(cpbSet);
-
+  Worker::ptr_t pWorker( new Worker( workerId, capacity, cpbSet ) );
   worker_map_.insert(worker_map_t::value_type(pWorker->name(), pWorker));
 
   return true;
 }
 
 
-void WorkerManager::deleteJob (sdpa::job_id_t const & job)
-{
-  boost::mutex::scoped_lock const _ (mtx_);
-  BOOST_FOREACH ( Worker::ptr_t worker, worker_map_ | boost::adaptors::map_values
-                | boost::adaptors::filtered
-                  (boost::bind (&Worker::has_job, _1, job))
-                )
-  {
-    worker->deleteJob (job);
-  }
-}
-
-void WorkerManager::deleteWorker( const Worker::worker_id_t& workerId )
+void WorkerManager::deleteWorker( const worker_id_t& workerId )
 {
   boost::mutex::scoped_lock const _ (mtx_);
   worker_map_t::iterator w (worker_map_.find (workerId));
@@ -185,9 +172,6 @@ boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
 
     Worker::ptr_t pWorker (it->second);
 
-    if (pWorker->disconnected())
-      continue;
-
     const boost::optional<std::size_t> matchingDeg
       (matchRequirements (pWorker, listJobReq));
 
@@ -206,4 +190,6 @@ boost::optional<sdpa::worker_id_t> WorkerManager::getBestMatchingWorker
   }
 
   return bestMatchingWorkerId;
+}
+  }
 }

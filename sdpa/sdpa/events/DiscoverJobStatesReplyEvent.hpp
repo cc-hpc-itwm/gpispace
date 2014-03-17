@@ -23,11 +23,6 @@ namespace sdpa
         , discover_result_ (discover_result)
       {}
 
-      std::string str() const
-      {
-        return "DiscoverJobStatesReplyEvent";
-      }
-
       virtual void handleBy (EventHandler* handler)
       {
         handler->handleDiscoverJobStatesReplyEvent (this);
