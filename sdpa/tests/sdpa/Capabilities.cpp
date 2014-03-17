@@ -79,10 +79,12 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
   const utils::agent agent
      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
 
-  const sdpa::capability_t capability_0 ("A", "worker_0");
-  const sdpa::capability_t capability_1 ("B", "worker_1");
-  Worker worker_0( "worker_0", agent, capability_0);
-  Worker worker_1( "worker_1", agent, capability_1);
+  const std::string name_0 (utils::random_peer_name());
+  const std::string name_1 (utils::random_peer_name());
+  const sdpa::capability_t capability_0 ("A", name_0);
+  const sdpa::capability_t capability_1 ("B", name_1);
+  Worker worker_0( name_0, agent, capability_0);
+  Worker worker_1( name_1, agent, capability_1);
 
   sdpa::capabilities_set_t set_cpbs_0;
   set_cpbs_0.insert (capability_0);
@@ -106,10 +108,12 @@ BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
   const utils::agent agent
      ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
 
-  const sdpa::capability_t capability_0 ("A", "worker_0");
-  const sdpa::capability_t capability_1 ("B", "worker_1");
-  Worker worker_0( "worker_0", agent, capability_0);
-  Worker* pWorker_1(new Worker( "worker_1", agent, capability_1));
+  const std::string name_0 (utils::random_peer_name());
+  const std::string name_1 (utils::random_peer_name());
+  const sdpa::capability_t capability_0 ("A", name_0);
+  const sdpa::capability_t capability_1 ("B", name_1);
+  Worker worker_0( name_0, agent, capability_0);
+  Worker* pWorker_1(new Worker( name_1, agent, capability_1));
 
   sdpa::capabilities_set_t set_cpbs_0;
   set_cpbs_0.insert (capability_0);
