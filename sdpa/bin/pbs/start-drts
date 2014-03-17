@@ -250,7 +250,7 @@ fi
 name="${name_prefix}-$(hostname -s)-${identity}"
 if [ -n "${numa_socket}" ]
 then
-    name="${name}.${numa_socket}"
+    name="${name}_${numa_socket}"
 fi
 
 if [ -z "$logdir" ]
