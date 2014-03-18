@@ -85,17 +85,6 @@ namespace
     s.insert (v);
     return s;
   }
-
-  class Worker : public utils::basic_drts_worker
-  {
-  public:
-    Worker ( const utils::agent& master_agent
-           , std::string name
-           , sdpa::capability_t capability
-           )
-      : utils::basic_drts_worker (name, master_agent, set (capability))
-    {}
-  };
 }
 
 class Master : public BasicAgent
@@ -160,8 +149,8 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
   const std::string name_1 (utils::random_peer_name());
   const sdpa::capability_t capability_0 ("A", name_0);
   const sdpa::capability_t capability_1 ("B", name_1);
-  Worker worker_0( agent, name_0, capability_0);
-  Worker worker_1( agent, name_1, capability_1);
+  utils::basic_drts_worker worker_0 (name_0, agent, set (capability_0));
+  utils::basic_drts_worker worker_1 (name_1, agent, set (capability_1));
 
   {
     sdpa::capabilities_set_t expected;
@@ -184,9 +173,9 @@ BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
   const std::string name_1 (utils::random_peer_name());
   const sdpa::capability_t capability_0 ("A", name_0);
   const sdpa::capability_t capability_1 ("B", name_1);
-  Worker worker_0( agent, name_0, capability_0);
+  utils::basic_drts_worker worker_0 (name_0, agent, set (capability_0));
   {
-    Worker pWorker_1( agent, name_1, capability_1);
+    utils::basic_drts_worker pWorker_1 (name_1, agent, set (capability_1));
 
     {
       sdpa::capabilities_set_t expected;
