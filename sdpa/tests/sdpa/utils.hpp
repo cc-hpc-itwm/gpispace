@@ -597,6 +597,8 @@ namespace utils
       ~submitted_job()
       {
         _client.wait_for_terminal_state (_job_id);
+        _client.retrieve_job_results (_job_id);
+        _client.delete_job (_job_id);
       }
 
       sdpa::discovery_info_t discover()
