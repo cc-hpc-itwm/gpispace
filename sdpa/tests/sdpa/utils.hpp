@@ -282,44 +282,20 @@ namespace utils
     std::string kvs_port() const { return _kvs_port; }
   };
 
-  class basic_drts_worker : sdpa::events::EventHandler
+  class basic_drts_component : sdpa::events::EventHandler
   {
   public:
-    basic_drts_worker (utils::agent const& master)
-      : _name (random_peer_name())
-      , _master_name (master.name())
-      , _kvs_client
-        ( new fhg::com::kvs::client::kvsc
-          ( master.kvs_host(), master.kvs_port()
-          , true, boost::posix_time::seconds (120), 1
-          )
-        )
-      , _event_queue()
-      , _network
-        ( boost::bind
-          (&fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>::put, &_event_queue, _1)
-        , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
-        , _kvs_client
-        )
-      , _event_thread (&basic_drts_worker::event_thread, this)
-    {
-      if (_master_name)
-      {
-        _network.perform
-          ( sdpa::events::SDPAEvent::Ptr
-            (new sdpa::events::WorkerRegistrationEvent (_name, *_master_name, 1))
-          );
-      }
-    }
-
-    basic_drts_worker (std::string name, utils::agent const& master)
+    basic_drts_component ( std::string name
+                         , kvs_server const& kvs
+                         , sdpa::capabilities_set_t capabilities
+                         )
       : _name (name)
-      , _master_name (master.name())
+      , _kvs_host (kvs.kvs_host())
+      , _kvs_port (kvs.kvs_port())
+      , _master_name (boost::none)
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
-          ( master.kvs_host(), master.kvs_port()
-          , true, boost::posix_time::seconds (120), 1
-          )
+          (_kvs_host, _kvs_port, true, boost::posix_time::seconds (120), 1)
         )
       , _event_queue()
       , _network
@@ -328,28 +304,20 @@ namespace utils
         , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
         )
-      , _event_thread (&basic_drts_worker::event_thread, this)
-    {
-      if (_master_name)
-      {
-        _network.perform
-          ( sdpa::events::SDPAEvent::Ptr
-            (new sdpa::events::WorkerRegistrationEvent (_name, *_master_name, 1))
-          );
-      }
-    }
+      , _event_thread (&basic_drts_component::event_thread, this)
+    {}
 
-    basic_drts_worker ( std::string name
-                      , utils::agent const& master
-                      , sdpa::capabilities_set_t capabilities
-                      )
+    basic_drts_component ( std::string name
+                         , utils::agent const& master
+                         , sdpa::capabilities_set_t capabilities
+                         )
       : _name (name)
+      , _kvs_host (master.kvs_host())
+      , _kvs_port (master.kvs_port())
       , _master_name (master.name())
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
-          ( master.kvs_host(), master.kvs_port()
-          , true, boost::posix_time::seconds (120), 1
-          )
+          (_kvs_host, _kvs_port, true, boost::posix_time::seconds (120), 1)
         )
       , _event_queue()
       , _network
@@ -358,7 +326,7 @@ namespace utils
         , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
         )
-      , _event_thread (&basic_drts_worker::event_thread, this)
+      , _event_thread (&basic_drts_component::event_thread, this)
     {
       _network.perform
         ( sdpa::events::SDPAEvent::Ptr
@@ -375,8 +343,14 @@ namespace utils
       BOOST_REQUIRE_EQUAL (e->from(), _master_name);
     }
 
+    std::string name() const { return _name; }
+    std::string kvs_host() const { return _kvs_host; }
+    std::string kvs_port() const { return _kvs_port; }
+
   protected:
     std::string _name;
+    std::string _kvs_host;
+    std::string _kvs_port;
     boost::optional<std::string> _master_name;
 
   private:
@@ -397,6 +371,24 @@ namespace utils
         _event_queue.get()->handleBy (this);
       }
     }
+  };
+
+  class basic_drts_worker : public basic_drts_component
+  {
+  public:
+    basic_drts_worker (utils::agent const& master)
+      : basic_drts_component
+        (random_peer_name(), master, sdpa::capabilities_set_t())
+    {}
+    basic_drts_worker (std::string name, utils::agent const& master)
+      : basic_drts_component (name, master, sdpa::capabilities_set_t())
+    {}
+    basic_drts_worker ( std::string name
+                      , utils::agent const& master
+                      , sdpa::capabilities_set_t capabilities
+                      )
+      : basic_drts_component (name, master, capabilities)
+    {}
   };
 
   class fake_drts_worker_notifying_module_call_submission
