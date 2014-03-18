@@ -548,19 +548,6 @@ namespace utils
         return _.wait_for_terminal_state (id, UNUSED_job_info);
       }
 
-      sdpa::status::code wait_for_state_polling
-        (const sdpa::job_id_t& id, const sdpa::status::code& exp_status)
-      {
-        static const boost::posix_time::milliseconds sleep_duration (1000);
-        sdpa::status::code curr_status (query_job_status (id));
-        while(curr_status!=exp_status)
-        {
-          boost::this_thread::sleep (sleep_duration);
-          curr_status = query_job_status (id);
-        }
-        return curr_status;
-      }
-
       sdpa::discovery_info_t discover (const sdpa::job_id_t& id)
       {
         static std::size_t i (0);
