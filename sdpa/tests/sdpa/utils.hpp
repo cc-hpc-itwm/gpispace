@@ -7,6 +7,7 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
 
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/kvs/kvsd.hpp>
@@ -288,11 +289,13 @@ namespace utils
     basic_drts_component ( std::string name
                          , kvs_server const& kvs
                          , sdpa::capabilities_set_t capabilities
+                         , bool accept_workers
                          )
       : _name (name)
       , _kvs_host (kvs.kvs_host())
       , _kvs_port (kvs.kvs_port())
       , _master_name (boost::none)
+      , _accept_workers (accept_workers)
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
           (_kvs_host, _kvs_port, true, boost::posix_time::seconds (120), 1)
@@ -310,11 +313,13 @@ namespace utils
     basic_drts_component ( std::string name
                          , utils::agent const& master
                          , sdpa::capabilities_set_t capabilities
+                         , bool accept_workers
                          )
       : _name (name)
       , _kvs_host (master.kvs_host())
       , _kvs_port (master.kvs_port())
       , _master_name (master.name())
+      , _accept_workers (accept_workers)
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
           (_kvs_host, _kvs_port, true, boost::posix_time::seconds (120), 1)
@@ -343,6 +348,31 @@ namespace utils
       BOOST_REQUIRE_EQUAL (e->from(), _master_name);
     }
 
+    virtual void handleWorkerRegistrationEvent
+      (const sdpa::events::WorkerRegistrationEvent* e)
+    {
+      BOOST_REQUIRE (_accept_workers);
+      BOOST_REQUIRE (_accepted_workers.insert (e->from()).second);
+
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::WorkerRegistrationAckEvent (_name, e->from()))
+        );
+    }
+
+    virtual void handleErrorEvent (const sdpa::events::ErrorEvent* e)
+    {
+      if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
+      {
+        BOOST_REQUIRE (_accept_workers);
+        BOOST_REQUIRE (_accepted_workers.erase (e->from()));
+      }
+      else
+      {
+        throw std::runtime_error ("UNHANDLED EVENT: ErrorEvent");
+      }
+    }
+
     std::string name() const { return _name; }
     std::string kvs_host() const { return _kvs_host; }
     std::string kvs_port() const { return _kvs_port; }
@@ -352,6 +382,8 @@ namespace utils
     std::string _kvs_host;
     std::string _kvs_port;
     boost::optional<std::string> _master_name;
+    bool _accept_workers;
+    std::set<std::string> _accepted_workers;
 
   private:
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
@@ -378,16 +410,16 @@ namespace utils
   public:
     basic_drts_worker (utils::agent const& master)
       : basic_drts_component
-        (random_peer_name(), master, sdpa::capabilities_set_t())
+        (random_peer_name(), master, sdpa::capabilities_set_t(), false)
     {}
     basic_drts_worker (std::string name, utils::agent const& master)
-      : basic_drts_component (name, master, sdpa::capabilities_set_t())
+      : basic_drts_component (name, master, sdpa::capabilities_set_t(), false)
     {}
     basic_drts_worker ( std::string name
                       , utils::agent const& master
                       , sdpa::capabilities_set_t capabilities
                       )
-      : basic_drts_component (name, master, capabilities)
+      : basic_drts_component (name, master, capabilities, false)
     {}
   };
 
