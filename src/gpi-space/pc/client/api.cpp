@@ -87,7 +87,14 @@ namespace gpi
 
         if (m_socket != -1)
         {
-          close_socket (m_socket);
+          try
+          {
+            close_socket (m_socket);
+          }
+          catch (boost::system::system_error const &se)
+          {
+            // ignore already closed/invalid socket
+          }
           m_socket = -1;
 
           // move all segments to trash
