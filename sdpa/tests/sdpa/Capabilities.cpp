@@ -12,52 +12,6 @@ BOOST_GLOBAL_FIXTURE (setup_logging)
 
 namespace
 {
-  class BasicAgent : public sdpa::events::EventHandler
-                   , boost::noncopyable
-  {
-  public:
-    BasicAgent ( std::string kvs_host, std::string kvs_port
-               )
-      : _name (utils::random_peer_name())
-      , _kvs_host (kvs_host)
-      , _kvs_port (kvs_port)
-      , _kvs_client
-        ( new fhg::com::kvs::client::kvsc
-          (_kvs_host, _kvs_port, true, boost::posix_time::seconds(120), 1)
-        )
-      , _network_strategy
-        ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicAgent::sendEventToSelf, this, _1)
-                                         , _name
-                                         , fhg::com::host_t ("127.0.0.1")
-                                         , fhg::com::port_t ("0")
-                                         , _kvs_client
-                                         )
-        )
-      , _event_handling_allowed(true)
-    {
-    }
-
-    virtual ~BasicAgent() { _event_handling_allowed = false; }
-
-    virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
-    {
-      if(_event_handling_allowed)
-        pEvt->handleBy (this);
-    }
-
-    std::string kvs_host() const { return _kvs_host; }
-    std::string kvs_port() const { return _kvs_port; }
-
-  protected:
-    std::string _name;
-    std::string _kvs_host;
-    std::string _kvs_port;
-
-    fhg::com::kvs::kvsc_ptr_t _kvs_client;
-    boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
-    bool _event_handling_allowed;
-  };
-
   template<typename T> std::set<T> set (T v)
   {
     std::set<T> s;
@@ -66,20 +20,13 @@ namespace
   }
 }
 
-class Master : public BasicAgent
+class Master : public utils::basic_drts_component
 {
   public:
-    Master (std::string kvs_host, std::string kvs_port)
-      :  BasicAgent (kvs_host, kvs_port)
+    Master (utils::kvs_server const& kvs_server)
+      : utils::basic_drts_component
+        (utils::random_peer_name(), kvs_server, sdpa::capabilities_set_t(), true)
     {}
-
-    void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pRegEvt)
-    {
-      sdpa::events::WorkerRegistrationAckEvent::Ptr
-        pRegAckEvt(new sdpa::events::WorkerRegistrationAckEvent (_name, pRegEvt->from()));
-
-      _network_strategy->perform (pRegAckEvt);
-    }
 
    void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent* pEvt)
    {
@@ -99,10 +46,6 @@ class Master : public BasicAgent
      }
    }
 
-   void handleErrorEvent(const sdpa::events::ErrorEvent*) {}
-
-   const std::string name() const { return _name; }
-
    void wait_for_capabilities(const unsigned int n, const sdpa::capabilities_set_t& expected_cpb_set)
    {
      boost::unique_lock<boost::mutex> lock_cpbs (_mtx_capabilities);
@@ -120,7 +63,7 @@ class Master : public BasicAgent
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 {
   const utils::kvs_server kvs_server;
-  Master master (kvs_server.kvs_host(), kvs_server.kvs_port());
+  Master master (kvs_server);
 
   const utils::agent agent (master);
 
@@ -144,7 +87,7 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
 {
   const utils::kvs_server kvs_server;
-  Master master (kvs_server.kvs_host(), kvs_server.kvs_port());
+  Master master (kvs_server);
 
   const utils::agent agent (master);
 
