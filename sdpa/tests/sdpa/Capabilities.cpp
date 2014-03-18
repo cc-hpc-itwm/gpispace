@@ -17,11 +17,8 @@ namespace
   {
   public:
     BasicAgent ( std::string kvs_host, std::string kvs_port
-               , std::string name
-               , boost::optional<const utils::agent&> master_agent
-               , boost::optional<sdpa::capability_t> capability
                )
-      : _name (name)
+      : _name (utils::random_peer_name())
       , _kvs_host (kvs_host)
       , _kvs_port (kvs_port)
       , _kvs_client
@@ -30,7 +27,7 @@ namespace
         )
       , _network_strategy
         ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicAgent::sendEventToSelf, this, _1)
-                                         , name
+                                         , _name
                                          , fhg::com::host_t ("127.0.0.1")
                                          , fhg::com::port_t ("0")
                                          , _kvs_client
@@ -38,21 +35,6 @@ namespace
         )
       , _event_handling_allowed(true)
     {
-      sdpa::capabilities_set_t _capabilities;
-      if (capability)
-      {
-        _capabilities.insert (*capability);
-      }
-
-      if(master_agent)
-      {
-        sdpa::events::WorkerRegistrationEvent::Ptr
-          pEvtWorkerReg (new sdpa::events::WorkerRegistrationEvent( _name
-                                                                  , master_agent->name()
-                                                                  , boost::none
-                                                                  , _capabilities ));
-        _network_strategy->perform (pEvtWorkerReg);
-      }
     }
 
     virtual ~BasicAgent() { _event_handling_allowed = false; }
@@ -62,9 +44,6 @@ namespace
       if(_event_handling_allowed)
         pEvt->handleBy (this);
     }
-
-    void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*){}
-
 
     std::string kvs_host() const { return _kvs_host; }
     std::string kvs_port() const { return _kvs_port; }
@@ -91,7 +70,7 @@ class Master : public BasicAgent
 {
   public:
     Master (std::string kvs_host, std::string kvs_port)
-      :  BasicAgent (kvs_host, kvs_port, utils::random_peer_name(), boost::none, boost::none)
+      :  BasicAgent (kvs_host, kvs_port)
     {}
 
     void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pRegEvt)
