@@ -47,6 +47,12 @@ int main (int argc, char **argv) try
     return EXIT_SUCCESS;
   }
 
+  if (url.empty())
+  {
+    std::cerr << "logc: a url is required!" << std::endl;
+    return EXIT_FAILURE;
+  }
+
   if (message == "-")
   {
     message = "";

@@ -3,7 +3,7 @@ set (prgs
 )
 
 set (scripts
-  clear-logs
+  bundle.sh
   start-gpi
   start-gui
   start-orch

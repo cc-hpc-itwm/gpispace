@@ -36,8 +36,6 @@ measured "install" ${make[@]} install                       || die $EX_ERR_RUN
 
 hostname > "${HOSTFILE}"                                    || die $EX_ERR_RUN
 
-measured "setup" SDPA_PERFORM_UNATTENDED_SETUP=1 sdpa setup || die $EX_ERR_ENV
-
 measured "boot" sdpa boot -A "${DIR_BUILD}" -M -f "${HOSTFILE}" worker:1      \
                                                             || die $EX_ERR_BOOT
 

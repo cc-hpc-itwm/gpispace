@@ -6,14 +6,13 @@
 ###     source anything
 ###
 ###
-gpi_priv_dir=""
 gpi_exe=""
 debug=false
 mem_size=
 gpi_port=
 pidfile=
 force=false
-daemonize=true
+daemonize=false
 kvs_host=
 kvs_port=
 log_host=
@@ -21,7 +20,6 @@ log_port=
 verbose=false
 socket_path=
 state_dir=~/.sdpa/state
-config_file="$HOME/.sdpa/configs/sdpa.rc"
 
 function usage ()
 {
@@ -29,7 +27,6 @@ function usage ()
 usage: $0 [options]
 
     -h: print this help
-    -d gpid directory: priviledged binary path for the gpid
     -x gpi-exe: gpi program to use
     -g run within debugger
     -m size: memory size
@@ -43,19 +40,15 @@ usage: $0 [options]
     -L port: log port
     -v: verbose
     -s dir: state-dir
-    -F config file
     -S socket path
 EOF
 }
 
-while getopts ":hd:x:gm:p:P:fDk:K:l:L:vs:F:S:" opt; do
+while getopts ":hx:gm:p:P:fDk:K:l:L:vs:S:" opt; do
     case $opt in
         h)
             usage
             exit 0
-            ;;
-        d)
-            gpi_priv_dir=$OPTARG
             ;;
         x)
             gpi_exe=$OPTARG
@@ -96,9 +89,6 @@ while getopts ":hd:x:gm:p:P:fDk:K:l:L:vs:F:S:" opt; do
         s)
             state_dir=$OPTARG
             ;;
-        F)
-            config_file=$OPTARG
-            ;;
         S)
             socket_path=$OPTARG
             ;;
@@ -110,108 +100,24 @@ while getopts ":hd:x:gm:p:P:fDk:K:l:L:vs:F:S:" opt; do
     esac
 done
 
-test -e "$state_dir/sdpa.env" && source "$state_dir/sdpa.env"
-
-if [ -z "$gpi_priv_dir" ] ; then
-    if [ -n "$GPI_PRIV_DIR" ] ; then
-        gpi_priv_dir="$GPI_PRIV_DIR"
-    else
-        gpi_priv_dir=$(fhgcfg -f "${config_file}" -g gpi.priv_dir)
-    fi
+if [ -n "${log_host}" -a -n "${log_port}" ]
+then
+    export FHGLOG_to_server="${log_host}:${log_port}"
 fi
 
 if [ -z "$socket_path" ] ; then
-    socket_path=$(fhgcfg -f "${config_file}" -g gpi.socket_path -v "/tmp")
-fi
-
-if [ -z "$gpi_priv_dir" ] ; then
-    log "could not deduce GPI_PRIV_DIR, please export GPI_PRIV_DIR or pass via commandline!"
+    echo >&2 "E: socket path is missing, please specify it with -S"
     exit 1
 fi
-gpi_app_path="${gpi_priv_dir}/gpi-space.app"
-gpi_bin_path="${gpi_app_path}/bin"
-gpi_lib_path="${gpi_app_path}/lib"
 
 log_file="${state_dir}/log/gpi-space.log"
 
-if [ -z "$gpi_exe" ] ; then
-    gpi_exe="${SDPA_HOME}/bin/gpi-space"
-fi
-
-if [ ! -x "${gpi_exe}" ] ; then
-    log "Sorry, ${gpi_exe} is not executable"
-    exit 1
-fi
-gpi_bin=$(basename "$gpi_exe")
-
-need_copy=false
-if [ ! -x "${gpi_bin_path}/${gpi_bin}" ] ; then
-    log "${gpi_bin} does not seem to be installed in $gpi_bin_path"
-    need_copy=true
-else
-    md_inst=$( md5sum "${gpi_bin_path}/${gpi_bin}" | cut -d ' ' -f 1 )
-    md_cand=$( md5sum "${gpi_exe}" | cut -d ' ' -f 1 )
-    if [ "$md_inst" != "$md_cand" ] ; then
-        log "candidate ${gpi_exe} is different than the one in ${gpi_bin_path}"
-        need_copy=true
-    fi
-fi
-
-do_copy=false
-if [ $need_copy = "true" -a $force = "true" ] ; then
-    do_copy=true
-fi
-if [ $need_copy = "true" -a $do_copy = "false" ] ; then
-    read -t 5 -n 1 -p "Do you want me to copy \"$gpi_exe\" to \"$gpi_bin_path\"? [y/N] " ans
-    case "$ans" in
-        y|Y)
-            do_copy=true
-            ;;
-        *)
-            ;;
-    esac
-fi
-
-if [ $do_copy = "true" ] ; then
-    if [ ! -d "${gpi_bin_path}" ] ; then
-        tmp=$( mkdir -p "$gpi_bin_path" 2>&1 )
-        if [ $? -ne 0 ] ; then
-            log "could not create $gpi_bin_path: $tmp"
-            exit 1
-        fi
-    fi
-    if [ ! -d "${gpi_lib_path}" ] ; then
-        tmp=$( mkdir -p "$gpi_lib_path" 2>&1 )
-        if [ $? -ne 0 ] ; then
-            log "could not create $gpi_lib_path: $tmp"
-            exit 1
-        fi
-    fi
-    if [ ! -w "${gpi_bin_path}" -o ! -w "${gpi_lib_path}" ] ; then
-        log "W: I am not allowed to write to '${gpi_bin_path}' or '${gpi_lib_path}'"
-    else
-        cp "${gpi_exe}" "${gpi_bin_path}/${gpi_bin}" && {
-            log "I: installed new ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
-        } || {
-            log "E: could not update ${gpi_bin} in ${gpi_bin_path}/${gpi_bin}"
-            exit 1
-        }
-        "${SDPA_HOME}/libexec/sdpa/scripts/bundle.sh" -o "${gpi_lib_path}" "${gpi_bin_path}/${gpi_bin}" && {
-            log "I: bundled ${gpi_bin} in ${gpi_app_path}"
-        } || {
-            log "E: could not install ${gpi_bin} in ${gpi_app_path}"
-            rm -rf "${gpi_app_path}"
-            exit 1
-        }
-    fi
-fi
-
-if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
+if [ -x "$gpi_exe" ] ; then
     cmdline=
     if $debug ; then
         cmdline="gdb -ex run --args $cmdline"
     fi
-    cmdline="$cmdline ${gpi_bin_path}/${gpi_bin}"
+    cmdline="$cmdline ${gpi_exe}"
 
     if $verbose ; then
         cmdline="$cmdline --log-level TRACE"
@@ -237,16 +143,19 @@ if [ -x "$gpi_bin_path/$gpi_bin" ] ; then
     if test -n "$log_port" ; then
         cmdline="$cmdline --log-port $log_port"
     fi
-    if test -n "$socket_path" ; then
-        cmdline="$cmdline --socket $socket_path"
-    fi
+
+    cmdline="$cmdline --socket $socket_path"
+
     if test -n "$log_file" ; then
         cmdline="$cmdline --log-file $log_file"
     fi
+    if test -n "$gpi_port" ; then
+        cmdline="$cmdline --gpi-port $gpi_port"
+    fi
 
-    log "executing $cmdline"
+    echo >&2 "executing $cmdline"
     exec ${cmdline}
 else
-    log "cannot execute $gpi_bin_path/$gpi_bin, giving up."
-    exit 2
+    echo >&2 "Sorry, ${gpi_exe} is not executable"
+    exit 1
 fi

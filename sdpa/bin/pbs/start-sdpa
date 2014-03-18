@@ -1,23 +1,33 @@
 #!/bin/bash
 
+kvs_port=2439
+
+DEFAULT_LOG_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 0))"
+DEFAULT_GUI_PORT="$(( (65535 - 30000 + $(id -u) * 2) % 65535 + 1024 + 1))"
+log_url="$(hostname -s):${DEFAULT_LOG_PORT}"
+gui_url="$(hostname -s):${DEFAULT_GUI_PORT}"
+
 function usage ()
 {
     cat >&2 <<EOF
 usage: $(basename $0) [options]
 
   -h: this help
+  -v: be verbose
   -n: dry run
   -A path: add a path to the list of application search paths
   -f: node file to use
   -S: state directory to use
-  -F: config file
   -m: amount of gpi memory to use
   -M: disable use of the memory layer
   -s: default amount of shared memory to use (=0)
   -d: do not delete logfiles
-  -c: ignored (accepted for backward compatibility)
   -C: capability specification
   -G: number of segments
+  -x: GPI binary to execute
+  -k: kvs port (=$kvs_port)
+  -l: log url (=${log_url})
+  -g: gui url (=${gui_url})
 
         format:
            <CAP>[+CAP1...][#socket][:N[xM][,shm]]
@@ -41,7 +51,7 @@ EOF
 on_ctrlC()
 {
         echo >&2 "Canceled..."
-        sdpa stop
+        "${sdpa_home}/bin/sdpa" stop
         exit 0
 }
 
@@ -65,6 +75,17 @@ error()
     ec=$1; shift
     log "E: $*"
     exit $ec
+}
+
+assert_not_empty()
+{
+    local var="$1"; shift
+    local val=$(eval echo "\${$var}")
+
+    if [ -z "$val" ]
+    then
+        error 2 "'${var}' must not be empty"
+    fi
 }
 
 dry_run_p=false
@@ -102,7 +123,7 @@ parse_capability()
 {
     cap_spec="$1"; shift
 
-    cap_spec_regex='^[^:]+(#[0-9]+)?(:[0-9]+(x[0-9]+)?(,[^,]+)?)?$'
+    cap_spec_regex='^[^:#]+(#[0-9]+)?(:[0-9]+(x[0-9]+)?(,[^,]+)?)?$'
 
     if ! echo "$cap_spec" | grep -q -E "$cap_spec_regex" ; then
         error 1 "Invalid capability specification: $cap_spec"
@@ -143,28 +164,36 @@ parse_capability()
 
     shm_size=$(( $shm_size ))
 
+    if [ -z "${socket}" ]
+    then
+        socket=-1
+    fi
+
     echo "$capability $num_per_node $max_nodes $shm_size $socket"
     return 0
 }
 
 # Execute function on_ctrlC() receiving SIGINT signal
 #
-#trap 'on_ctrlC' SIGINT
+trap 'on_ctrlC' SIGINT
 
-nodefile="$PBS_NODEFILE"
+nodefile=
+verbose=false
 state_dir="$HOME/.sdpa/state"
-config_file="$HOME/.sdpa/configs/sdpa.rc"
 gpi_enabled=true
 delete_logfiles=true
-app_path="${SDPA_APP_PATH}"
+app_path=
 number_of_groups=1
 
 # guess memory sizes
 tot_mem=$(( $(grep ^MemTotal: /proc/meminfo | awk '{print $2}') * 1024 ))
 avl_mem=$(( ($tot_mem * 80) / 100 ))
+gpi_exe=
 gpi_mem=0
+gpi_socket=
 def_shm_mem=0
 def_num_proc=1
+def_gpi_socket="/tmp/S-gpi-space.$(id -u)"
 
 if [ ${#@} -eq 0 ] ; then
     usage
@@ -172,11 +201,15 @@ if [ ${#@} -eq 0 ] ; then
 fi
 
 shiftcount=0
-while getopts ":hnf:S:m:s:c:C:F:p:MA:dG:" opt; do
+while getopts ":hvnf:S:m:s:C:p:MA:dG:k:x:l:g:H:" opt; do
     case $opt in
         h)
             usage
             exit 0
+            ;;
+        v)
+            verbose=true
+            shiftcount=$((shiftcount + 1))
             ;;
         n)
             dry_run_p=true
@@ -184,10 +217,12 @@ while getopts ":hnf:S:m:s:c:C:F:p:MA:dG:" opt; do
             ;;
         f)
             nodefile="$OPTARG"
+            assert_not_empty nodefile
             shiftcount=$(( shiftcount + 2 ))
             ;;
         S)
             state_dir="$OPTARG"
+            assert_not_empty state_dir
             shiftcount=$(( shiftcount + 2 ))
             ;;
         m)
@@ -198,16 +233,9 @@ while getopts ":hnf:S:m:s:c:C:F:p:MA:dG:" opt; do
             def_shm_mem=$(( $OPTARG ))
             shiftcount=$(( shiftcount + 2 ))
             ;;
-        c)
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
         C)
             new_cap=$(parse_capability "$OPTARG")
             capabilities=( "${capabilities[@]}" $new_cap )
-            shiftcount=$(( shiftcount + 2 ))
-            ;;
-        F)
-            config_file="$OPTARG"
             shiftcount=$(( shiftcount + 2 ))
             ;;
         p)
@@ -234,6 +262,31 @@ while getopts ":hnf:S:m:s:c:C:F:p:MA:dG:" opt; do
             number_of_groups=$OPTARG
             shiftcount=$((shiftcount + 2))
             ;;
+        k)
+            kvs_port=$OPTARG
+            assert_not_empty kvs_port
+            shiftcount=$((shiftcount + 2))
+            ;;
+        x)
+            gpi_exe="$OPTARG"
+            assert_not_empty gpi_exe
+            shiftcount=$((shiftcount + 2))
+            ;;
+        l)
+            log_url="$OPTARG"
+            assert_not_empty log_url
+            shiftcount=$((shiftcount + 2))
+            ;;
+        g)
+            gui_url="$OPTARG"
+            assert_not_empty gui_url
+            shiftcount=$((shiftcount + 2))
+            ;;
+        H)
+            sdpa_home="$OPTARG"
+            assert_not_empty sdpa_home
+            shiftcount=$((shiftcount + 2))
+            ;;
         \?)
             echo >&2 "invalid option: $OPTARG"
             exit 1
@@ -248,12 +301,14 @@ for arg ; do
     capabilities=( "${capabilities[@]}" $new_cap )
 done
 
+# sanity checks
+
 if [ -z "$nodefile" ] ; then
     error 1 "nodefile is missing"
 fi
 
-if [ -z "$SDPA_HOME" ] ; then
-    error 2 "SDPA_HOME is not set!"
+if [ -z "$sdpa_home" ] ; then
+    error 2 "sdpa home is not set, please specify -H"
 fi
 
 if [ $number_of_groups -le 0 ] ; then
@@ -268,33 +323,15 @@ if [ ! -r "$nodefile" ] ; then
     error 2 "Could not read nodefile: $nodefile"
 fi
 
-if [ -z "${state_dir}" ] ; then
-    error 1 "state directory not set"
-fi
+log_host=${log_url%:*}
+log_port=${log_url#*:}
 
-sdpa=$(which sdpa)
-if [ $? -ne 0 ] ; then
-    error 2 "could not locate 'sdpa' executable!"
-fi
+gui_host=${gui_url%:*}
+gui_port=${gui_url#*:}
 
-export SDPA_PERFORM_UNATTENDED_SETUP=1
-if [ ! -e "${config_file}" ] ; then
-    info "I: sdpa config does not exist, performing automated SDPA setup"
-
-    dry_run "${sdpa}" -c "${config_file}" setup </dev/null || {
-        mv "$HOME/.sdpa/configs/sdpa.rc" "$HOME/.sdpa/configs/sdpa.rc~"
-        error 2 "I was unable to setup the SDPA environment for you."
-    }
-fi
-
-script_start_drts="${SDPA_HOME}/libexec/sdpa/scripts/start-drts"
-if [ ! -x "${script_start_drts}" ] ; then
-    error 2 "utility script '${script_start_drts}' is not executable"
-fi
-
-script_start_agent="${SDPA_HOME}/libexec/sdpa/scripts/start-agent"
-if [ ! -x "${script_start_agent}" ] ; then
-    error 2 "utility script '${script_start_agent}' is not executable"
+if [ -z "${gpi_socket}" ]
+then
+    gpi_socket="$def_gpi_socket"
 fi
 
 hosts=( $(cat "$nodefile" | uniq) )
@@ -306,20 +343,89 @@ fi
 master=${hosts[0]}
 num_hosts=${#hosts[@]}
 
+if $gpi_enabled ; then
+    if [ -z "${gpi_exe}" ]
+    then
+        error 2 "GPI was requested but no binary was specified"
+    fi
+    if [ ! -x "${gpi_exe}" ]
+    then
+        error 2 "GPI binary ($gpi_exe) is not executable!"
+    fi
+fi
+
 if [ $number_of_groups -gt $num_hosts ] ; then
     error 2 "number of groups must not be larger than number of hosts: $number_of_groups > $num_hosts"
 fi
 
+
+sdpa="${sdpa_home}/bin/sdpa"
+if [ $? -ne 0 ] ; then
+    error 2 "could not locate 'sdpa' executable!"
+fi
+
+script_start_drts="${sdpa_home}/libexec/sdpa/scripts/start-drts"
+if [ ! -x "${script_start_drts}" ] ; then
+    error 2 "utility script '${script_start_drts}' is not executable"
+fi
+
+script_start_agent="${sdpa_home}/libexec/sdpa/scripts/start-agent"
+if [ ! -x "${script_start_agent}" ] ; then
+    error 2 "utility script '${script_start_agent}' is not executable"
+fi
+
+script_start_orchestrator="${sdpa_home}/libexec/sdpa/scripts/start-orch"
+if [ ! -x "${script_start_orchestrator}" ] ; then
+    error 2 "utility script '${script_start_orchestrator}' is not executable"
+fi
+
+script_start_gpi="${sdpa_home}/libexec/sdpa/scripts/start-gpi"
+if [ ! -x "${script_start_gpi}" ] ; then
+    error 2 "utility script '${script_start_gpi}' is not executable"
+fi
+
 info "using nodefile: $nodefile"
 
-info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
-
-dry_run rexec $master /usr/bin/env SDPA_APP_PATH="${app_path}" "${sdpa}" -s "${state_dir}" -c "${config_file}" init "$nodefile" </dev/null || {
+dry_run rexec $master /usr/bin/env "${sdpa}" -s "${state_dir}" init "$nodefile" </dev/null || {
     error 2 "could not initialize SDPA!"
 }
 
 if $delete_logfiles ; then
     find "${state_dir}/log" -type f -delete
+fi
+
+log "starting base sdpa components on $master..."
+info "sending log events to: ${log_url}"
+info "sending execution events to: ${gui_url}"
+
+if $verbose
+then
+    opt_verbose_flag="-v"
+else
+    opt_verbose_flag=""
+fi
+
+dry_run rexec $master ${sdpa} -s "${state_dir}" start kvs ${kvs_port}
+ec=$?
+if [ $ec -ne 0 ]
+then
+    "${sdpa}" stop
+    error 3 "could not start kvs"
+fi
+dry_run rexec $master "${script_start_orchestrator}" \
+    $opt_verbose_flag \
+    -s "$state_dir" \
+    -P "$state_dir/orchestrator.pid" \
+    -D \
+    -k "${master}:${kvs_port}" \
+    -l "${log_host}:${log_port}" \
+    -H "${sdpa_home}" \
+    -n "orchestrator"
+ec=$?
+if [ $ec -ne 0 ]
+then
+    "${sdpa}" stop
+    error 3 "could not start orchestrator"
 fi
 
 if $gpi_enabled ; then
@@ -328,34 +434,28 @@ if $gpi_enabled ; then
         gpi_mem=$(( avl_mem * 50 / 100 ))
     fi
 
-    socket_path=$(fhgcfg -f "${config_file}" -g "gpi.socket_path" -v "/tmp")
-
-    # set memory sizes - choose reasonable defaults (depending on local machines)
-    dry_run fhgcfg -f "${config_file}" -a "gpi.memory_size" -v "$gpi_mem"
-    dry_run fhgcfg -f "${config_file}" -a "gpi.socket_path" -v "$socket_path"
-    dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "true"
-
+    info "using SHM mem: ${def_shm_mem} bytes per process (by default)"
     info "using GPI mem: ${gpi_mem} bytes per node"
-else
-    dry_run fhgcfg -f "${config_file}" -a "gpi.enabled" -v "false"
+    info "starting GPI using: '$gpi_exe' on '${gpi_socket}'"
+
+    dry_run "${script_start_gpi}" \
+        -s "$state_dir" \
+        -x "${gpi_exe}" \
+        -D \
+        -f \
+        -P "$state_dir/gpi-space.pid" \
+        -m "$gpi_mem" \
+        -k "${master}" -K "$kvs_port" \
+        -l "${log_host}" -L "${log_port}" \
+        -S "${gpi_socket}"
+
+    ec=$?
+    if [ $ec -ne 0 ]
+    then
+        "${sdpa}" stop
+        error 3 "could not start gpi-space"
+    fi
 fi
-
-# set up topology
-dry_run fhgcfg -f "${config_file}" -a "topology.per-node" -v 1
-dry_run fhgcfg -f "${config_file}" -a "topology.with-mediator" -v "false"
-
-scratch_dir=$(fhgcfg -f "${config_file}" -g sdpa.scratch_dir)
-if [ -z "$scratch_dir" ] ; then
-    scratch_dir="$HOME/.sdpa/scratch"
-fi
-
-log "starting base sdpa components on $master..."
-
-dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start kvs
-if $gpi_enabled ; then
-    dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start gpi
-fi
-dry_run rexec $master ${sdpa} -s "${state_dir}" -c "${config_file}" start orch
 
 # for each capability:
 #    for each host
@@ -368,10 +468,13 @@ max_background_tasks=8
 function wait_on_pids ()
 {
     local pid=
+    local ec=0
     for pid in ${pids[@]} ; do
         wait $pid
+        ec+=$?
     done
     pids=()
+    return $ec
 }
 
 function wait_if_necessary ()
@@ -415,16 +518,20 @@ function start_agent
 {
     local host="$1" ; shift
     local name="$1" ; shift
-    local master="$1" ; shift
+    local parent="$1" ; shift
 
-    info "starting agent: ${name} on host ${host} with parent ${master}"
+    info "starting agent: ${name} on host ${host} with parent ${parent}"
 
     dry_run rexec ${host} "${script_start_agent}" \
+        $opt_verbose_flag \
         -D \
         -n "${name}" \
-        -m "${master}" \
+        -m "${parent}" \
         -s "${state_dir}" \
-        -F "${config_file}" &
+        -k "${master}:${kvs_port}" \
+        -l "${log_host}:${log_port}" \
+        -H "${sdpa_home}" \
+        -g "${gui_host}:${gui_port}" &
     pids+=( $! )
 }
 
@@ -445,6 +552,12 @@ function start_agents
 
         start_agent "${host}" "${name}" "agent-${master}-0"
         wait_if_necessary
+        ec=$?
+        if [ $ec -ne 0 ]
+        then
+            ${sdpa} stop
+            error 3 "at least one agent could not be started!"
+        fi
     done
 }
 
@@ -468,7 +581,7 @@ function start_workers_for_capability
     num_nodes=0
     caps_arg=$(echo "$capability" | tr '+' '\n' | xargs -n1 echo '-C')
 
-    master=${segment_master[$segment]}
+    parent=${segment_master[$segment]}
     group_start=${segment_host_index[$segment]}
     group_size=${segment_size[$segment]}
     group_end=$((group_start + group_size))
@@ -477,29 +590,42 @@ function start_workers_for_capability
     for ((i=${group_start} ; i < ${group_end} ; ++i)) ; do
         host=${hosts[$i]}
 
-        local name="$capability"
-        if [ "$socket" -ne -1 ] ; then
-            dry_run rexec $host "$script_start_drts" \
-		-D \
-		-c $num_per_node -n "$name#$socket" \
-		-m "$master" $caps_arg \
-		-s "$state_dir" \
-		-F "$config_file" \
-		-M "$shm_size" \
-		-N "$socket" &
-	else
-            dry_run rexec $host "$script_start_drts" \
-		-D \
-		-c $num_per_node -n "$name" \
-		-m "$master" $caps_arg \
-		-s "$state_dir" \
-		-F "$config_file" \
-		-M "$shm_size" &
+        local name="${capability/[+#.]/_}"
+
+        argv=($opt_verbose_flag)
+        argv+=(-D)
+        argv+=(-c $num_per_node)
+        argv+=(-n "$name")
+        argv+=(-m "$parent")
+        argv+=(-k "$master:${kvs_port}")
+        argv+=(-g "${gui_host}:${gui_port}")
+        argv+=(-l "${log_host}:${log_port}")
+        argv+=($caps_arg)
+        argv+=(-s "$state_dir")
+        if $gpi_enabled ; then
+            argv+=(-M "$shm_size")
+            argv+=(-S "$gpi_socket")
         fi
+        if [ $socket -ne -1 ] ; then
+            argv+=(-N "$socket")
+        fi
+        if [ -n "${app_path}" ]
+        then
+            argv+=(-L "${app_path}")
+        fi
+        argv+=(-H "${sdpa_home}")
+
+        dry_run rexec $host "$script_start_drts" "${argv[@]}" &
 
         pids+=( $! )
 
         wait_if_necessary
+        ec=$?
+        if [ $ec -ne 0 ]
+        then
+            ${sdpa} stop
+            error 3 "at least one worker could not be started!"
+        fi
 
         num_nodes=$(( num_nodes + 1 ))
 
@@ -528,5 +654,19 @@ function start_workers
 
 assign_segments
 start_agents
+wait_on_pids
+ec=$?
+if [ $ec -ne 0 ]
+then
+    ${sdpa} stop
+    error 3 "at least one agent could not be started!"
+fi
+
 start_workers
-wait_if_necessary
+wait_on_pids
+ec=$?
+if [ $ec -ne 0 ]
+then
+    ${sdpa} stop
+    error 3 "at least one worker could not be started!"
+fi

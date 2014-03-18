@@ -156,7 +156,6 @@ int main (int ac, char *av[])
   unsigned int gpi_mtu = 0;
   int gpi_net = -1;
   int gpi_np = -1;
-  int gpi_numa_socket = 0;
   unsigned int gpi_timeout = 120;
 
   std::vector<std::string> mem_urls;
@@ -272,13 +271,11 @@ int main (int ac, char *av[])
       ++i;
       if (i < ac)
       {
-        if ( ( (strlen(av[i]) + strlen("/S-gpi-space.XXXXX.XXXX") + 1)
-             > sizeof(config.socket))
-           )
+        if ((strlen(av[i]) + 1) > sizeof(config.socket))
         {
           fprintf(stderr, "%s: path to socket is too large!\n", program_name);
           fprintf(stderr, "    at most %lu characters are supported\n"
-                 , sizeof(config.socket) - (strlen("/S-gpi-space.XXXXX.XXXX")+1)
+                 , sizeof(config.socket) - 1
                  );
           exit(EX_INVAL);
         }
@@ -642,10 +639,8 @@ int main (int ac, char *av[])
 
   snprintf ( config.socket
            , sizeof(config.socket)
-           , "%s/S-gpi-space.%d.%d"
+           , "%s"
            , socket_path
-           , getuid()
-           , gpi_numa_socket
            );
 
   // initialize gpi api
