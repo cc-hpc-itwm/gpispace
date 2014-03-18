@@ -23,39 +23,39 @@ namespace
     virtual void handleCapabilitiesGainedEvent
       (const sdpa::events::CapabilitiesGainedEvent* pEvt)
     {
-      boost::mutex::scoped_lock const _ (_mtx_capabilities);
+      boost::mutex::scoped_lock const _ (_mutex);
       BOOST_FOREACH (const sdpa::capability_t& cpb, pEvt->capabilities())
       {
         _capabilities.insert (cpb);
-        _cond_capabilities.notify_all();
+        _capabilitiy_added.notify_all();
       }
     }
 
     virtual void handleCapabilitiesLostEvent
       (const sdpa::events::CapabilitiesLostEvent* pEvt)
     {
-      boost::mutex::scoped_lock const _ (_mtx_capabilities);
+      boost::mutex::scoped_lock const _ (_mutex);
       BOOST_FOREACH (const sdpa::capability_t& cpb, pEvt->capabilities())
       {
         _capabilities.erase (cpb);
-        _cond_capabilities.notify_all();
+        _capabilitiy_added.notify_all();
       }
     }
 
     void wait_for_capabilities
       (const unsigned int n, const sdpa::capabilities_set_t& expected_cpb_set)
     {
-      boost::mutex::scoped_lock lock (_mtx_capabilities);
+      boost::mutex::scoped_lock lock (_mutex);
       while (_capabilities.size() != n)
       {
-        _cond_capabilities.wait (lock);
+        _capabilitiy_added.wait (lock);
       }
       BOOST_REQUIRE (_capabilities == expected_cpb_set);
     }
 
   private:
-    boost::mutex _mtx_capabilities;
-    boost::condition_variable_any _cond_capabilities;
+    boost::mutex _mutex;
+    boost::condition_variable_any _capabilitiy_added;
     sdpa::capabilities_set_t _capabilities;
   };
 
