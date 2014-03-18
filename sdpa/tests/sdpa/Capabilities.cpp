@@ -1,6 +1,5 @@
 #define BOOST_TEST_MODULE testCapabilities
 
-#include "kvs_setup_fixture.hpp"
 #include <utils.hpp>
 
 #include <boost/test/unit_test.hpp>
@@ -10,7 +9,6 @@
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
 BOOST_GLOBAL_FIXTURE (setup_logging)
-BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 namespace
 {
@@ -145,7 +143,8 @@ class Master : public BasicAgent
 
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 {
-  Master master (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  Master master (kvs_server.kvs_host(), kvs_server.kvs_port());
 
   const utils::agent agent (master);
 
@@ -168,7 +167,8 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 
 BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
 {
-  Master master (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  Master master (kvs_server.kvs_host(), kvs_server.kvs_port());
 
   const utils::agent agent (master);
 

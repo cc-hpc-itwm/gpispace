@@ -1,16 +1,15 @@
 #define BOOST_TEST_MODULE restart_worker_with_dummy_workflow
 
-#include "kvs_setup_fixture.hpp"
 #include <utils.hpp>
 
 #include <boost/test/unit_test.hpp>
 
 BOOST_GLOBAL_FIXTURE (setup_logging)
-BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE (restart_worker_with_dummy_workflow)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
 
   utils::client::client_t client (orchestrator);

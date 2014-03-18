@@ -1,6 +1,5 @@
 #define BOOST_TEST_MODULE testCoallocation
 
-#include "kvs_setup_fixture.hpp"
 #include <utils.hpp>
 
 #include <boost/test/unit_test.hpp>
@@ -9,11 +8,11 @@
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 
 BOOST_GLOBAL_FIXTURE (setup_logging)
-BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE (testCoallocationWorkflow)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
 
   const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent);

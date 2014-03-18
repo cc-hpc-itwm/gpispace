@@ -1,16 +1,15 @@
 #define BOOST_TEST_MODULE TestSubscriber
 
-#include "kvs_setup_fixture.hpp"
 #include <utils.hpp>
 
 #include <boost/test/unit_test.hpp>
 
 BOOST_GLOBAL_FIXTURE (setup_logging)
-BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
   const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
 
@@ -23,7 +22,8 @@ BOOST_AUTO_TEST_CASE (execute_workflow_with_subscribed_client)
 
 BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
   const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
 
