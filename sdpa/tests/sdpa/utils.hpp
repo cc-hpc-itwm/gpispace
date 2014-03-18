@@ -8,6 +8,10 @@
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 
+#include <fhgcom/io_service_pool.hpp>
+#include <fhgcom/kvs/kvsd.hpp>
+#include <fhgcom/tcp_server.hpp>
+
 #include <fhg/util/random_string.hpp>
 
 #include <fhglog/fhglog.hpp>
@@ -148,12 +152,47 @@ namespace utils
       );
   }
 
+  struct kvs_server : boost::noncopyable
+  {
+    kvs_server()
+      : _io_service_pool (1)
+      , _kvs_daemon ("")
+      , _tcp_server (_io_service_pool, _kvs_daemon, "localhost", "0", true)
+      , _io_thread (&fhg::com::io_service_pool::run, &_io_service_pool)
+    {}
+    ~kvs_server()
+    {
+      _tcp_server.stop();
+      _io_service_pool.stop();
+    }
+
+    std::string kvs_host() const
+    {
+      return "localhost";
+    }
+    std::string kvs_port() const
+    {
+      return boost::lexical_cast<std::string> (_tcp_server.port());
+    }
+
+  private:
+    fhg::com::io_service_pool _io_service_pool;
+    fhg::com::kvs::server::kvsd _kvs_daemon;
+    fhg::com::tcp_server _tcp_server;
+    boost::scoped_thread<boost::join_if_joinable> _io_thread;
+  };
+
   struct orchestrator : boost::noncopyable
   {
     orchestrator (std::string kvs_host, std::string kvs_port)
       : _kvs_host (kvs_host)
       , _kvs_port (kvs_port)
       , _ (random_peer_name(), "127.0.0.1", kvs_host, kvs_port)
+    {}
+    orchestrator (const kvs_server& kvs)
+      : _kvs_host (kvs.kvs_host())
+      , _kvs_port (kvs.kvs_port())
+      , _ (random_peer_name(), "127.0.0.1", _kvs_host, _kvs_port)
     {}
 
     std::string _kvs_host;
