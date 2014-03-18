@@ -23,6 +23,7 @@ namespace
     virtual void handleCapabilitiesGainedEvent
       (const sdpa::events::CapabilitiesGainedEvent* pEvt)
     {
+      boost::mutex::scoped_lock const _ (_mtx_capabilities);
       BOOST_FOREACH (const sdpa::capability_t& cpb, pEvt->capabilities())
       {
         _capabilities.insert (cpb);
@@ -33,6 +34,7 @@ namespace
     virtual void handleCapabilitiesLostEvent
       (const sdpa::events::CapabilitiesLostEvent* pEvt)
     {
+      boost::mutex::scoped_lock const _ (_mtx_capabilities);
       BOOST_FOREACH (const sdpa::capability_t& cpb, pEvt->capabilities())
       {
         _capabilities.erase (cpb);
@@ -43,10 +45,10 @@ namespace
     void wait_for_capabilities
       (const unsigned int n, const sdpa::capabilities_set_t& expected_cpb_set)
     {
-      boost::unique_lock<boost::mutex> lock_cpbs (_mtx_capabilities);
+      boost::mutex::scoped_lock lock (_mtx_capabilities);
       while (_capabilities.size() != n)
       {
-        _cond_capabilities.wait (lock_cpbs);
+        _cond_capabilities.wait (lock);
       }
       BOOST_REQUIRE (_capabilities == expected_cpb_set);
     }
