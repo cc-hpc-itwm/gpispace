@@ -10,7 +10,7 @@ DIR_SOURCE="${DIR_TEST}/.."
 DIR_MODULE="${DIR_SOURCE}/src"
 
 MAIN="hello_many"
-RESULT="$(mktemp --tmpdir="${DIR_BUILD}")"
+RESULT="$(mktemp -p "${DIR_BUILD}")"
 
 OUT="${DIR_BUILD}/${MAIN}.out"
 CMP="${DIR_BUILD}/run.out"

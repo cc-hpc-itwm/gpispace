@@ -7,10 +7,10 @@ source "@CMAKE_BINARY_DIR@/test/measured.sh"
 DIR_TEST="@CMAKE_CURRENT_SOURCE_DIR@"
 
 DIR_SOURCE="${DIR_TEST}/.."
-RESULT="$(mktemp --tmpdir="${DIR_BUILD}")"
-INPUT="$(mktemp --tmpdir="${DIR_BUILD}")"
-COMPARE="$(mktemp --tmpdir="${DIR_BUILD}")"
-OUTPUT="$(mktemp --tmpdir="${DIR_BUILD}")"
+RESULT="$(mktemp -p "${DIR_BUILD}")"
+INPUT="$(mktemp -p "${DIR_BUILD}")"
+COMPARE="$(mktemp -p "${DIR_BUILD}")"
+OUTPUT="$(mktemp -p "${DIR_BUILD}")"
 
 OUT="${DIR_BUILD}/transform_file.out"
 

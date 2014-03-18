@@ -172,7 +172,13 @@ then
 fi
 
 # uses TMPDIR as a prefix if set, otherwise /tmp
-tmpdir=$(mktemp --tmpdir -d "gspc-installer.XXXXXXXXXX" 2>&1)
+tmpdir=
+if [ -z "$TMPDIR" ]
+then
+  tmpdir=$(mktemp -p /tmp -d "gspc-installer.XXXXXXXXXX" 2>&1)
+else
+  tmpdir=$(mktemp -p "$TMPDIR" -d "gspc-installer.XXXXXXXXXX" 2>&1)
+fi
 if [ $? -ne 0 ]
 then
     echo >&2 "install: could not create temporary directory: $tmpdir"
