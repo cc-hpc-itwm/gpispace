@@ -21,10 +21,10 @@ namespace
     {}
 
     virtual void handleCapabilitiesGainedEvent
-      (const sdpa::events::CapabilitiesGainedEvent* pEvt)
+      (const sdpa::events::CapabilitiesGainedEvent* event)
     {
       boost::mutex::scoped_lock const _ (_mutex);
-      BOOST_FOREACH (const sdpa::capability_t& cpb, pEvt->capabilities())
+      BOOST_FOREACH (const sdpa::capability_t& cpb, event->capabilities())
       {
         _capabilities.insert (cpb);
         _capabilitiy_added.notify_all();
@@ -32,10 +32,10 @@ namespace
     }
 
     virtual void handleCapabilitiesLostEvent
-      (const sdpa::events::CapabilitiesLostEvent* pEvt)
+      (const sdpa::events::CapabilitiesLostEvent* event)
     {
       boost::mutex::scoped_lock const _ (_mutex);
-      BOOST_FOREACH (const sdpa::capability_t& cpb, pEvt->capabilities())
+      BOOST_FOREACH (const sdpa::capability_t& cpb, event->capabilities())
       {
         _capabilities.erase (cpb);
         _capabilitiy_added.notify_all();
@@ -43,14 +43,14 @@ namespace
     }
 
     void wait_for_capabilities
-      (const unsigned int n, const sdpa::capabilities_set_t& expected_cpb_set)
+      (const unsigned int n, const sdpa::capabilities_set_t& expected)
     {
       boost::mutex::scoped_lock lock (_mutex);
       while (_capabilities.size() != n)
       {
         _capabilitiy_added.wait (lock);
       }
-      BOOST_REQUIRE (_capabilities == expected_cpb_set);
+      BOOST_REQUIRE (_capabilities == expected);
     }
 
   private:
