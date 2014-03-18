@@ -609,64 +609,6 @@ namespace utils
       sdpa::job_id_t _job_id;
     };
 
-    sdpa::job_id_t submit_job
-      (sdpa::client::Client& c, std::string workflow)
-    {
-      return c.submitJob (workflow);
-    }
-
-    sdpa::status::code query_job_status
-      (sdpa::client::Client& c, const sdpa::job_id_t& id)
-    {
-      return c.queryJob (id);
-    }
-
-    sdpa::status::code wait_for_terminal_state_polling ( sdpa::client::Client& c
-                                                , const sdpa::job_id_t& id
-                                                )
-    {
-      sdpa::client::job_info_t UNUSED_job_info;
-      return c.wait_for_terminal_state_polling (id, UNUSED_job_info);
-    }
-
-    sdpa::client::result_t retrieve_job_results
-      (sdpa::client::Client& c, const sdpa::job_id_t& id)
-    {
-      return c.retrieveResults (id);
-    }
-
-    void delete_job (sdpa::client::Client& c, const sdpa::job_id_t& id)
-    {
-      return c.deleteJob (id);
-    }
-
-    void cancel_job (sdpa::client::Client& c, const sdpa::job_id_t& id)
-    {
-      return c.cancelJob (id);
-    }
-
-    sdpa::status::code wait_for_terminal_state
-      (sdpa::client::Client& c, const sdpa::job_id_t& id)
-    {
-      sdpa::client::job_info_t UNUSED_job_info;
-      return c.wait_for_terminal_state (id, UNUSED_job_info);
-    }
-
-    sdpa::status::code wait_for_state_polling
-      ( sdpa::client::Client& c
-        , const sdpa::job_id_t& id
-        , const sdpa::status::code& exp_status )
-    {
-      static const boost::posix_time::milliseconds sleep_duration (1000);
-      sdpa::status::code curr_status (c.queryJob (id));
-      while(curr_status!=exp_status)
-      {
-        boost::this_thread::sleep (sleep_duration);
-        curr_status = c.queryJob (id);
-      }
-      return curr_status;
-    }
-
     namespace
     {
       sdpa::status::code wait_for_termination_impl
@@ -696,16 +638,6 @@ namespace utils
       client_t c (orch);
 
       return wait_for_termination_impl (c.submit_job (workflow), c);
-    }
-
-    sdpa::status::code submit_job_and_cancel_and_wait_for_termination
-      (std::string workflow, const orchestrator& orch)
-    {
-      client_t c (orch);
-
-      sdpa::job_id_t job_id_user (c.submit_job (workflow));
-      c.cancel_job (job_id_user);
-      return wait_for_termination_impl (job_id_user, c);
     }
 
     sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
