@@ -339,6 +339,35 @@ namespace utils
       }
     }
 
+    basic_drts_worker ( std::string name
+                      , utils::agent const& master
+                      , sdpa::capabilities_set_t capabilities
+                      )
+      : _name (name)
+      , _master_name (master.name())
+      , _kvs_client
+        ( new fhg::com::kvs::client::kvsc
+          ( master.kvs_host(), master.kvs_port()
+          , true, boost::posix_time::seconds (120), 1
+          )
+        )
+      , _event_queue()
+      , _network
+        ( boost::bind
+          (&fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>::put, &_event_queue, _1)
+        , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+        , _kvs_client
+        )
+      , _event_thread (&basic_drts_worker::event_thread, this)
+    {
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          ( new sdpa::events::WorkerRegistrationEvent
+            (_name, *_master_name, 1, capabilities)
+          )
+        );
+    }
+
     virtual void handleWorkerRegistrationAckEvent
       (const sdpa::events::WorkerRegistrationAckEvent* e)
     {
