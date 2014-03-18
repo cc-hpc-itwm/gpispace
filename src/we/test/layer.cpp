@@ -1347,18 +1347,18 @@ namespace
 
 BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 {
-  wfe_and_counter_of_submitted_requirements agent (30);
+  wfe_and_counter_of_submitted_requirements helper (30);
 
   const we::type::requirement_t req_A ("A", true);
   const we::type::requirement_t req_B ("B", true);
 
-  agent._layer.submit
+  helper._layer.submit
     ( fhg::util::random_string()
     , net_with_two_childs_that_require_capabilities (req_A, 20, req_B, 10)
     );
-  agent.wait_all_submitted();
+  helper.wait_all_submitted();
 
-  BOOST_REQUIRE_EQUAL (agent._received_requirements.size(), 2);
-  BOOST_REQUIRE_EQUAL (agent._received_requirements.at (req_A), 20);
-  BOOST_REQUIRE_EQUAL (agent._received_requirements.at (req_B), 10);
+  BOOST_REQUIRE_EQUAL (helper._received_requirements.size(), 2);
+  BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_A), 20);
+  BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_B), 10);
 }
