@@ -9,25 +9,94 @@
 
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
+BOOST_GLOBAL_FIXTURE (setup_logging)
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
-class Worker : public utils::BasicAgent
+namespace
+{
+  class BasicAgent : public sdpa::events::EventHandler
+                   , boost::noncopyable
+  {
+  public:
+    BasicAgent ( std::string kvs_host, std::string kvs_port
+               , std::string name
+               , boost::optional<const utils::agent&> master_agent
+               , boost::optional<sdpa::capability_t> capability
+               )
+      : _name (name)
+      , _kvs_host (kvs_host)
+      , _kvs_port (kvs_port)
+      , _kvs_client
+        ( new fhg::com::kvs::client::kvsc
+          (_kvs_host, _kvs_port, true, boost::posix_time::seconds(120), 1)
+        )
+      , _network_strategy
+        ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicAgent::sendEventToSelf, this, _1)
+                                         , name
+                                         , fhg::com::host_t ("127.0.0.1")
+                                         , fhg::com::port_t ("0")
+                                         , _kvs_client
+                                         )
+        )
+      , _event_handling_allowed(true)
+    {
+      sdpa::capabilities_set_t _capabilities;
+      if (capability)
+      {
+        _capabilities.insert (*capability);
+      }
+
+      if(master_agent)
+      {
+        sdpa::events::WorkerRegistrationEvent::Ptr
+          pEvtWorkerReg (new sdpa::events::WorkerRegistrationEvent( _name
+                                                                  , master_agent->name()
+                                                                  , boost::none
+                                                                  , _capabilities ));
+        _network_strategy->perform (pEvtWorkerReg);
+      }
+    }
+
+    virtual ~BasicAgent() { _event_handling_allowed = false; }
+
+    virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
+    {
+      if(_event_handling_allowed)
+        pEvt->handleBy (this);
+    }
+
+    void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*){}
+
+
+    std::string kvs_host() const { return _kvs_host; }
+    std::string kvs_port() const { return _kvs_port; }
+
+  protected:
+    std::string _name;
+    std::string _kvs_host;
+    std::string _kvs_port;
+
+    fhg::com::kvs::kvsc_ptr_t _kvs_client;
+    boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
+    bool _event_handling_allowed;
+  };
+}
+
+class Worker : public BasicAgent
 {
   public:
-    Worker (const std::string& name
+  Worker ( const std::string& name
             , const utils::agent& master_agent
-            , const std::string cpb_name)
-      :  utils::BasicAgent (name, master_agent, cpb_name)
+           , sdpa::capability_t capability)
+      :  BasicAgent (master_agent.kvs_host(), master_agent.kvs_port(), name, master_agent, capability)
     {}
-
-    void getCapabilities(sdpa::capabilities_set_t& cpbset) { cpbset = _capabilities; }
 };
 
-class Master : public utils::BasicAgent
+class Master : public BasicAgent
 {
   public:
-    Master (const std::string& name)
-      :  utils::BasicAgent (name, boost::none)
+    Master (std::string kvs_host, std::string kvs_port)
+      :  BasicAgent (kvs_host, kvs_port, utils::random_peer_name(), boost::none, boost::none)
     {}
 
     void handleWorkerRegistrationEvent(const sdpa::events::WorkerRegistrationEvent* pRegEvt)
@@ -71,57 +140,59 @@ class Master : public utils::BasicAgent
   private:
    boost::mutex _mtx_capabilities;
    boost::condition_variable_any _cond_capabilities;
+   sdpa::capabilities_set_t _capabilities;
 };
 
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 {
-  Master master("orchestrator_0");
+  Master master (kvs_host(), kvs_port());
 
-  const utils::agent agent
-     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
+  const utils::agent agent (master);
 
-  Worker worker_0( "worker_0", agent, "A");
-  Worker worker_1( "worker_1", agent, "B");
+  const std::string name_0 (utils::random_peer_name());
+  const std::string name_1 (utils::random_peer_name());
+  const sdpa::capability_t capability_0 ("A", name_0);
+  const sdpa::capability_t capability_1 ("B", name_1);
+  Worker worker_0( name_0, agent, capability_0);
+  Worker worker_1( name_1, agent, capability_1);
 
-  sdpa::capabilities_set_t set_cpbs_0;
-  worker_0.getCapabilities(set_cpbs_0);
-  sdpa::capabilities_set_t set_cpbs_1;
-  worker_1.getCapabilities(set_cpbs_1);
-
-  sdpa::capabilities_set_t expected_cpbs(set_cpbs_0);
-  BOOST_FOREACH(const sdpa::capability_t& cpb, set_cpbs_1)
   {
-    expected_cpbs.insert(cpb);
-  }
+    sdpa::capabilities_set_t expected;
+    expected.insert (capability_0);
+    expected.insert (capability_1);
 
-  master.wait_for_capabilities(2, expected_cpbs);
+    master.wait_for_capabilities (2, expected);
+  }
 }
 
 
 BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
 {
-  Master master("orchestrator_0");
+  Master master (kvs_host(), kvs_port());
 
-  const utils::agent agent
-     ("agent_0", "127.0.0.1", kvs_host(), kvs_port(), master);
+  const utils::agent agent (master);
 
-  Worker worker_0( "worker_0", agent, "A");
-  Worker* pWorker_1(new Worker( "worker_1", agent, "B"));
-
-  sdpa::capabilities_set_t set_cpbs_0;
-  worker_0.getCapabilities(set_cpbs_0);
-  sdpa::capabilities_set_t set_cpbs_1;
-  pWorker_1->getCapabilities(set_cpbs_1);
-
-  sdpa::capabilities_set_t expected_cpbs(set_cpbs_0);
-  BOOST_FOREACH(const sdpa::capability_t& cpb, set_cpbs_1)
+  const std::string name_0 (utils::random_peer_name());
+  const std::string name_1 (utils::random_peer_name());
+  const sdpa::capability_t capability_0 ("A", name_0);
+  const sdpa::capability_t capability_1 ("B", name_1);
+  Worker worker_0( name_0, agent, capability_0);
   {
-    expected_cpbs.insert(cpb);
+    Worker pWorker_1( name_1, agent, capability_1);
+
+    {
+      sdpa::capabilities_set_t expected;
+      expected.insert (capability_0);
+      expected.insert (capability_1);
+
+      master.wait_for_capabilities (2, expected);
+    }
   }
 
-  master.wait_for_capabilities(2, expected_cpbs);
+  {
+    sdpa::capabilities_set_t expected;
+    expected.insert (capability_0);
 
-  delete pWorker_1;
-
-  master.wait_for_capabilities(1, set_cpbs_0);
+    master.wait_for_capabilities (1, expected);
+  }
 }

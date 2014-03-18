@@ -10,6 +10,8 @@
 
 #include <fhg/util/random_string.hpp>
 
+#include <fhglog/fhglog.hpp>
+
 #include <plugin/core/kernel.hpp>
 #include <plugin/plugin.hpp>
 
@@ -24,6 +26,15 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+
+struct setup_logging
+{
+  setup_logging()
+  {
+    setenv ("FHGLOG_level", "TRACE", true);
+    FHGLOG_SETUP();
+  }
+};
 
 namespace utils
 {
@@ -83,87 +94,6 @@ namespace utils
     return module_call (fhg::util::random_string()).to_string();
   }
 
-  we::place_id_type add_transition_with_requirement_and_input_place
-    (we::type::net_type& net, we::type::requirement_t const& requirement)
-  {
-    we::type::transition_t transition
-      ( fhg::util::random_string()
-      , we::type::module_call_t
-        (fhg::util::random_string(), fhg::util::random_string())
-      , boost::none
-      , true
-      , we::type::property::type()
-      , we::priority_type()
-      );
-    transition.add_requirement (requirement);
-
-    const std::string port_name (fhg::util::random_string());
-    we::port_id_type const port_id
-      ( transition.add_port ( we::type::port_t ( port_name
-                                               , we::type::PORT_IN
-                                               , std::string ("control")
-                                               , we::type::property::type()
-                                               )
-                            )
-      );
-
-    we::transition_id_type const transition_id
-      (net.add_transition (transition));
-
-    we::place_id_type const place_id
-      (net.add_place (place::type (port_name, std::string ("control"))));
-
-    net.add_connection ( we::edge::PT
-                       , transition_id
-                       , place_id
-                       , port_id
-                       , we::type::property::type()
-                       );
-
-    return place_id;
-  }
-
-  we::type::activity_t net_with_two_childs_that_require_capabilities
-    ( we::type::requirement_t const& capability_A
-    , std::size_t num_worker_with_capability_A
-    , we::type::requirement_t const& capability_B
-    , std::size_t num_worker_with_capability_B
-    )
-  {
-    we::type::net_type net;
-
-    {
-      we::place_id_type const place_id
-        (add_transition_with_requirement_and_input_place (net, capability_A));
-
-      while (num_worker_with_capability_A --> 0)
-      {
-        net.put_value (place_id, we::type::literal::control());
-      }
-    }
-
-    {
-      we::place_id_type const place_id
-        (add_transition_with_requirement_and_input_place (net, capability_B));
-
-      while (num_worker_with_capability_B --> 0)
-      {
-        net.put_value (place_id, we::type::literal::control());
-      }
-    }
-
-    return we::type::activity_t
-      ( we::type::transition_t ( fhg::util::random_string()
-                               , net
-                               , boost::none
-                               , true
-                               , we::type::property::type()
-                               , we::priority_type()
-                               )
-      , boost::none
-      );
-  }
-
   we::type::activity_t net_with_one_child_requiring_workers (unsigned long count)
   {
     we::type::property::type props;
@@ -220,13 +150,6 @@ namespace utils
 
   struct orchestrator : boost::noncopyable
   {
-    orchestrator ( const std::string& name, const std::string& url
-                 , std::string kvs_host, std::string kvs_port
-                 )
-      : _kvs_host (kvs_host)
-      , _kvs_port (kvs_port)
-      , _ (name, url, kvs_host, kvs_port)
-    {}
     orchestrator (std::string kvs_host, std::string kvs_port)
       : _kvs_host (kvs_host)
       , _kvs_port (kvs_port)
@@ -302,71 +225,22 @@ namespace utils
           , boost::none
           )
     {}
+    template <typename T>
+    agent (const boost::reference_wrapper<T>& master)
+      : _kvs_host (master.get().kvs_host())
+      , _kvs_port (master.get().kvs_port())
+      , _ ( random_peer_name(), "127.0.0.1"
+          , _kvs_host, _kvs_port
+          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.get().name()))
+          , boost::none
+          )
+    {}
     std::string _kvs_host;
     std::string _kvs_port;
     sdpa::daemon::Agent _;
     std::string name() const { return _.name(); }
     std::string kvs_host() const { return _kvs_host; }
     std::string kvs_port() const { return _kvs_port; }
-  };
-
-  class BasicAgent : public sdpa::events::EventHandler
-                   , boost::noncopyable
-  {
-  public:
-    BasicAgent ( std::string name
-               , boost::optional<const utils::agent&> master_agent
-               , std::string cpb_name = ""
-               )
-      : _name (name)
-      , _master_name(master_agent?master_agent.get().name():"")
-      , _kvs_client
-        ( new fhg::com::kvs::client::kvsc
-          (kvs_host(), kvs_port(), true, boost::posix_time::seconds(120), 1)
-        )
-      , _network_strategy
-        ( new sdpa::com::NetworkStrategy ( boost::bind (&BasicAgent::sendEventToSelf, this, _1)
-                                         , name
-                                         , fhg::com::host_t ("127.0.0.1")
-                                         , fhg::com::port_t ("0")
-                                         , _kvs_client
-                                         )
-        )
-      , _event_handling_allowed(true)
-    {
-      if(!cpb_name.empty())
-      {
-        sdpa::capability_t cpb(cpb_name, name);
-        _capabilities.insert(cpb);
-      }
-
-      if(master_agent)
-      {
-        sdpa::events::WorkerRegistrationEvent::Ptr
-          pEvtWorkerReg (new sdpa::events::WorkerRegistrationEvent( _name
-                                                                  , _master_name
-                                                                  , boost::none
-                                                                  , _capabilities ));
-        _network_strategy->perform (pEvtWorkerReg);
-      }
-    }
-
-    virtual ~BasicAgent() { _event_handling_allowed = false; }
-
-    virtual void sendEventToSelf(const sdpa::events::SDPAEvent::Ptr& pEvt)
-    {
-      if(_event_handling_allowed)
-        pEvt->handleBy (this);
-    }
-
-    void handleWorkerRegistrationAckEvent(const sdpa::events::WorkerRegistrationAckEvent*){}
-  protected:
-    std::string _name;
-    std::string _master_name;
-    sdpa::capabilities_set_t _capabilities;
-    fhg::com::kvs::kvsc_ptr_t _kvs_client;
-    boost::shared_ptr<sdpa::com::NetworkStrategy> _network_strategy;
-    bool _event_handling_allowed;
   };
 
   class basic_drts_worker : sdpa::events::EventHandler
@@ -510,7 +384,7 @@ namespace utils
         );
     }
 
-  private:
+  protected:
     struct job_t
     {
       sdpa::job_id_t _id;
@@ -519,6 +393,7 @@ namespace utils
     };
     std::map<std::string, job_t> _jobs;
 
+  private:
     boost::function<void (std::string)> _announce_job;
   };
 
@@ -599,7 +474,10 @@ namespace utils
 
       sdpa::discovery_info_t discover (const sdpa::job_id_t& id)
       {
-        return _.discoverJobStates (fhg::util::random_string(), id);
+        static std::size_t i (0);
+        const std::string discover_id
+          ((boost::format ("%1%%2%") % fhg::util::random_string() % i++).str());
+        return _.discoverJobStates (discover_id, id);
       }
 
       sdpa::client::result_t retrieve_job_results (const sdpa::job_id_t& id)

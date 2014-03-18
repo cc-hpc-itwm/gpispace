@@ -1,8 +1,6 @@
 #ifndef SDPA_TESTS_KVS_SETUP_FIXTURE
 #define SDPA_TESTS_KVS_SETUP_FIXTURE
 
-#include <fhglog/fhglog.hpp>
-
 #include <fhgcom/kvs/kvsd.hpp>
 #include <fhgcom/io_service_pool.hpp>
 #include <fhgcom/tcp_server.hpp>
@@ -21,9 +19,6 @@ struct KVSSetup
     , m_serv (m_pool, m_kvsd, kvs_host(), kvs_port(), true)
     , m_thrd (boost::bind (&fhg::com::io_service_pool::run, &m_pool))
   {
-	  setenv("FHGLOG_level", "TRACE", true);
-	  FHGLOG_SETUP();
-
 	  current_kvs_port = boost::lexical_cast<std::string>(m_serv.port());
   }
 

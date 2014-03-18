@@ -42,7 +42,7 @@ void Worker::acknowledge(const job_id_t &job_id)
   lock_type const _ (mtx_);
   if (submitted_.erase (job_id) == 0)
   {
-    throw JobNotFoundException();
+    throw std::runtime_error ("acknowledge: job not in submitted queue");
   }
   acknowledged_.insert (job_id);
 }

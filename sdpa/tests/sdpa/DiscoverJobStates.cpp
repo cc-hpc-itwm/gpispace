@@ -76,13 +76,6 @@ namespace
      }
   }
 
-  std::string get_next_discovery_id()
-  {
-    static int i (0);
-
-    return (boost::format ("%1%%2%") % fhg::util::random_string() % i++).str();
-  }
-
   template<sdpa::status::code reply>
   class fake_drts_worker_discovering :
     public utils::fake_drts_worker_notifying_module_call_submission
@@ -139,7 +132,7 @@ namespace
   void check_discover_worker_job_status()
   {
     const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-    const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
+    const utils::agent agent (orchestrator);
 
     fhg::util::thread::event<std::string> job_submitted;
 
@@ -165,6 +158,7 @@ namespace
   }
 }
 
+BOOST_GLOBAL_FIXTURE (setup_logging)
 BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE (discover_worker_job_status)
@@ -182,10 +176,8 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
 
   BOOST_REQUIRE_EQUAL
-    ( sdpa::client::Client (orchestrator.name(), kvs_host(), kvs_port())
-    . discoverJobStates ( fhg::util::random_string()
-                        , fhg::util::random_string()
-                        ).state()
+    ( utils::client::client_t (orchestrator)
+    . discover (fhg::util::random_string()).state()
     , boost::none
     );
 }
@@ -193,12 +185,11 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
+
+  utils::client::client_t client (orchestrator);
 
   check_has_one_leaf_job_with_expected_status
-    ( client.discoverJobStates ( get_next_discovery_id()
-                               , client.submitJob (utils::module_call())
-                               )
+    ( client.discover (client.submit_job (utils::module_call()))
     , sdpa::status::PENDING
     );
 }
@@ -206,14 +197,13 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 {
   const utils::orchestrator orchestrator (kvs_host(), kvs_port());
-  const utils::agent agent (kvs_host(), kvs_port(), orchestrator);
-  sdpa::client::Client client (orchestrator.name(), kvs_host(), kvs_port());
-  sdpa::job_id_t const job_id (client.submitJob (utils::module_call()));
+  const utils::agent agent (orchestrator);
+
+  utils::client::client_t client (orchestrator);
+  sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
 
   sdpa::discovery_info_t discovery_result;
-  while (max_depth
-          (discovery_result=client.discoverJobStates (get_next_discovery_id(), job_id)) !=2
-        )
+  while (max_depth (discovery_result = client.discover (job_id)) != 2)
   {} // do nothing, discover again
 
   check_has_one_leaf_job_with_expected_status(discovery_result, sdpa::status::PENDING );
@@ -248,12 +238,11 @@ namespace
   {
     const utils::orchestrator orchestrator (kvs_host(), kvs_port());
     boost::ptr_list<utils::agent> agents;
-    agents.push_back (new utils::agent (kvs_host(), kvs_port(), orchestrator));
+    agents.push_back (new utils::agent (orchestrator));
 
     for (std::size_t counter (1); counter < num_agents; ++counter)
     {
-      agents.push_back
-        (new utils::agent (kvs_host(), kvs_port(), agents.back()));
+      agents.push_back (new utils::agent (boost::ref (agents.back())));
     }
 
     fhg::util::thread::event<std::string> job_submitted;
