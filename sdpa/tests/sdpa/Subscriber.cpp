@@ -27,9 +27,15 @@ BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
   const utils::agent agent (orchestrator);
   const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
 
+  sdpa::job_id_t job_id_user;
+  {
+    utils::client::client_t c (orchestrator);
+    job_id_user = c.submit_job (utils::module_call());
+  }
+
+  utils::client::client_t c (orchestrator);
   BOOST_REQUIRE_EQUAL
-    ( utils::client::submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
-      (utils::module_call(), orchestrator)
+    ( utils::client::wait_for_termination_as_subscriber_impl (job_id_user, c)
     , sdpa::status::FINISHED
     );
 }

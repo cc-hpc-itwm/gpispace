@@ -648,20 +648,6 @@ namespace utils
       return wait_for_termination_as_subscriber_impl (c.submit_job (workflow), c);
     }
 
-    sdpa::status::code submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
-      (std::string workflow, const orchestrator& orch)
-    {
-      sdpa::job_id_t job_id_user;
-      {
-        client_t c (orch);
-        job_id_user = c.submit_job (workflow);
-      }
-
-      {
-        client_t c (orch);
-        return wait_for_termination_as_subscriber_impl (job_id_user, c);
-      }
-    }
   }
 }
 
