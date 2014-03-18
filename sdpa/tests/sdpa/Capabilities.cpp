@@ -20,7 +20,7 @@ namespace
         (utils::random_peer_name(), kvs_server, true)
     {}
 
-    void handleCapabilitiesGainedEvent
+    virtual void handleCapabilitiesGainedEvent
       (const sdpa::events::CapabilitiesGainedEvent* pEvt)
     {
       BOOST_FOREACH (const sdpa::capability_t& cpb, pEvt->capabilities())
@@ -30,7 +30,7 @@ namespace
       }
     }
 
-    void handleCapabilitiesLostEvent
+    virtual void handleCapabilitiesLostEvent
       (const sdpa::events::CapabilitiesLostEvent* pEvt)
     {
       BOOST_FOREACH (const sdpa::capability_t& cpb, pEvt->capabilities())
