@@ -17,7 +17,7 @@ namespace
   public:
     Master (utils::kvs_server const& kvs_server)
       : utils::basic_drts_component
-        (utils::random_peer_name(), kvs_server, sdpa::capabilities_set_t(), true)
+        (utils::random_peer_name(), kvs_server, true)
     {}
 
     void handleCapabilitiesGainedEvent

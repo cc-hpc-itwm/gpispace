@@ -286,11 +286,8 @@ namespace utils
   class basic_drts_component : sdpa::events::EventHandler
   {
   public:
-    basic_drts_component ( std::string name
-                         , kvs_server const& kvs
-                         , sdpa::capabilities_set_t capabilities
-                         , bool accept_workers
-                         )
+    basic_drts_component
+        (std::string name, kvs_server const& kvs, bool accept_workers)
       : _name (name)
       , _kvs_host (kvs.kvs_host())
       , _kvs_port (kvs.kvs_port())
