@@ -8,12 +8,6 @@ BOOST_GLOBAL_FIXTURE (setup_logging)
 
 BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
 {
-  // O
-  // |
-  // A
-  // |
-  // W
-
   const utils::kvs_server kvs_server;
   const utils::orchestrator orchestrator (kvs_server);
 
@@ -29,16 +23,6 @@ BOOST_AUTO_TEST_CASE (orchestrator_agent_worker)
 
 BOOST_AUTO_TEST_CASE (chained_agents)
 {
-	// O
-	// |
-	// A
-  // |
-  // ? -> variable agents #
-	// |
-	// A
-	// |
-	// W
-
   const utils::kvs_server kvs_server;
   const utils::orchestrator orchestrator (kvs_server);
 
@@ -57,14 +41,6 @@ BOOST_AUTO_TEST_CASE (chained_agents)
 
 BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
 {
-  // O
-  // |
-  // A-+
-  // | |
-  // A A
-  // | |
-  // W W
-
   const utils::kvs_server kvs_server;
   const utils::orchestrator orchestrator (kvs_server);
 
@@ -83,14 +59,6 @@ BOOST_AUTO_TEST_CASE (two_workers_with_seperate_master_agent)
 
 BOOST_AUTO_TEST_CASE (agent_with_multiple_master_agents)
 {
-  // O-+
-  // | |
-  // A A
-  // | |
-  // A-+
-  // |
-  // W
-
   const utils::kvs_server kvs_server;
   const utils::orchestrator orchestrator (kvs_server);
 
