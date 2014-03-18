@@ -1,6 +1,5 @@
 #define BOOST_TEST_MODULE TestCancelJob
 
-#include "kvs_setup_fixture.hpp"
 #include <utils.hpp>
 
 #include <boost/test/unit_test.hpp>
@@ -10,7 +9,6 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 BOOST_GLOBAL_FIXTURE (setup_logging)
-BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 namespace
 {
@@ -69,9 +67,10 @@ namespace
 
 BOOST_AUTO_TEST_CASE (cancel_no_agent)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -85,7 +84,8 @@ BOOST_AUTO_TEST_CASE (cancel_no_agent)
 
 BOOST_AUTO_TEST_CASE (cancel_with_agent)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
 
   fhg::util::thread::event<> job_submitted;
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
     , agent
     );
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -114,10 +114,11 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -133,7 +134,8 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
 
 BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
 
   fhg::util::thread::event<> job_submitted;
@@ -144,7 +146,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
     , agent
     );
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 

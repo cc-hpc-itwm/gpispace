@@ -7,6 +7,11 @@
 #include <sdpa/daemon/agent/Agent.hpp>
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
+
+#include <fhgcom/io_service_pool.hpp>
+#include <fhgcom/kvs/kvsd.hpp>
+#include <fhgcom/tcp_server.hpp>
 
 #include <fhg/util/random_string.hpp>
 
@@ -148,12 +153,47 @@ namespace utils
       );
   }
 
+  struct kvs_server : boost::noncopyable
+  {
+    kvs_server()
+      : _io_service_pool (1)
+      , _kvs_daemon ("")
+      , _tcp_server (_io_service_pool, _kvs_daemon, "localhost", "0", true)
+      , _io_thread (&fhg::com::io_service_pool::run, &_io_service_pool)
+    {}
+    ~kvs_server()
+    {
+      _tcp_server.stop();
+      _io_service_pool.stop();
+    }
+
+    std::string kvs_host() const
+    {
+      return "localhost";
+    }
+    std::string kvs_port() const
+    {
+      return boost::lexical_cast<std::string> (_tcp_server.port());
+    }
+
+  private:
+    fhg::com::io_service_pool _io_service_pool;
+    fhg::com::kvs::server::kvsd _kvs_daemon;
+    fhg::com::tcp_server _tcp_server;
+    boost::scoped_thread<boost::join_if_joinable> _io_thread;
+  };
+
   struct orchestrator : boost::noncopyable
   {
     orchestrator (std::string kvs_host, std::string kvs_port)
       : _kvs_host (kvs_host)
       , _kvs_port (kvs_port)
       , _ (random_peer_name(), "127.0.0.1", kvs_host, kvs_port)
+    {}
+    orchestrator (const kvs_server& kvs)
+      : _kvs_host (kvs.kvs_host())
+      , _kvs_port (kvs.kvs_port())
+      , _ (random_peer_name(), "127.0.0.1", _kvs_host, _kvs_port)
     {}
 
     std::string _kvs_host;
@@ -243,44 +283,19 @@ namespace utils
     std::string kvs_port() const { return _kvs_port; }
   };
 
-  class basic_drts_worker : sdpa::events::EventHandler
+  class basic_drts_component : sdpa::events::EventHandler
   {
   public:
-    basic_drts_worker (utils::agent const& master)
-      : _name (random_peer_name())
-      , _master_name (master.name())
-      , _kvs_client
-        ( new fhg::com::kvs::client::kvsc
-          ( master.kvs_host(), master.kvs_port()
-          , true, boost::posix_time::seconds (120), 1
-          )
-        )
-      , _event_queue()
-      , _network
-        ( boost::bind
-          (&fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>::put, &_event_queue, _1)
-        , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
-        , _kvs_client
-        )
-      , _event_thread (&basic_drts_worker::event_thread, this)
-    {
-      if (_master_name)
-      {
-        _network.perform
-          ( sdpa::events::SDPAEvent::Ptr
-            (new sdpa::events::WorkerRegistrationEvent (_name, *_master_name, 1))
-          );
-      }
-    }
-
-    basic_drts_worker (std::string name, utils::agent const& master)
+    basic_drts_component
+        (std::string name, kvs_server const& kvs, bool accept_workers)
       : _name (name)
-      , _master_name (master.name())
+      , _kvs_host (kvs.kvs_host())
+      , _kvs_port (kvs.kvs_port())
+      , _master_name (boost::none)
+      , _accept_workers (accept_workers)
       , _kvs_client
         ( new fhg::com::kvs::client::kvsc
-          ( master.kvs_host(), master.kvs_port()
-          , true, boost::posix_time::seconds (120), 1
-          )
+          (_kvs_host, _kvs_port, true, boost::posix_time::seconds (120), 1)
         )
       , _event_queue()
       , _network
@@ -289,15 +304,38 @@ namespace utils
         , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         , _kvs_client
         )
-      , _event_thread (&basic_drts_worker::event_thread, this)
+      , _event_thread (&basic_drts_component::event_thread, this)
+    {}
+
+    basic_drts_component ( std::string name
+                         , utils::agent const& master
+                         , sdpa::capabilities_set_t capabilities
+                         , bool accept_workers
+                         )
+      : _name (name)
+      , _kvs_host (master.kvs_host())
+      , _kvs_port (master.kvs_port())
+      , _master_name (master.name())
+      , _accept_workers (accept_workers)
+      , _kvs_client
+        ( new fhg::com::kvs::client::kvsc
+          (_kvs_host, _kvs_port, true, boost::posix_time::seconds (120), 1)
+        )
+      , _event_queue()
+      , _network
+        ( boost::bind
+          (&fhg::thread::queue<sdpa::events::SDPAEvent::Ptr>::put, &_event_queue, _1)
+        , _name, fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+        , _kvs_client
+        )
+      , _event_thread (&basic_drts_component::event_thread, this)
     {
-      if (_master_name)
-      {
-        _network.perform
-          ( sdpa::events::SDPAEvent::Ptr
-            (new sdpa::events::WorkerRegistrationEvent (_name, *_master_name, 1))
-          );
-      }
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          ( new sdpa::events::WorkerRegistrationEvent
+            (_name, *_master_name, 1, capabilities)
+          )
+        );
     }
 
     virtual void handleWorkerRegistrationAckEvent
@@ -307,9 +345,42 @@ namespace utils
       BOOST_REQUIRE_EQUAL (e->from(), _master_name);
     }
 
+    virtual void handleWorkerRegistrationEvent
+      (const sdpa::events::WorkerRegistrationEvent* e)
+    {
+      BOOST_REQUIRE (_accept_workers);
+      BOOST_REQUIRE (_accepted_workers.insert (e->from()).second);
+
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          (new sdpa::events::WorkerRegistrationAckEvent (_name, e->from()))
+        );
+    }
+
+    virtual void handleErrorEvent (const sdpa::events::ErrorEvent* e)
+    {
+      if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
+      {
+        BOOST_REQUIRE (_accept_workers);
+        BOOST_REQUIRE (_accepted_workers.erase (e->from()));
+      }
+      else
+      {
+        throw std::runtime_error ("UNHANDLED EVENT: ErrorEvent");
+      }
+    }
+
+    std::string name() const { return _name; }
+    std::string kvs_host() const { return _kvs_host; }
+    std::string kvs_port() const { return _kvs_port; }
+
   protected:
     std::string _name;
+    std::string _kvs_host;
+    std::string _kvs_port;
     boost::optional<std::string> _master_name;
+    bool _accept_workers;
+    std::set<std::string> _accepted_workers;
 
   private:
     fhg::com::kvs::kvsc_ptr_t _kvs_client;
@@ -329,6 +400,24 @@ namespace utils
         _event_queue.get()->handleBy (this);
       }
     }
+  };
+
+  class basic_drts_worker : public basic_drts_component
+  {
+  public:
+    basic_drts_worker (utils::agent const& master)
+      : basic_drts_component
+        (random_peer_name(), master, sdpa::capabilities_set_t(), false)
+    {}
+    basic_drts_worker (std::string name, utils::agent const& master)
+      : basic_drts_component (name, master, sdpa::capabilities_set_t(), false)
+    {}
+    basic_drts_worker ( std::string name
+                      , utils::agent const& master
+                      , sdpa::capabilities_set_t capabilities
+                      )
+      : basic_drts_component (name, master, capabilities, false)
+    {}
   };
 
   class fake_drts_worker_notifying_module_call_submission
@@ -429,219 +518,118 @@ namespace utils
     }
   };
 
-  namespace client
+  struct client : boost::noncopyable
   {
-    struct client_t : boost::noncopyable
+    client (orchestrator const& orch)
+      : _ (orch.name(), orch.kvs_host(), orch.kvs_port())
+    {}
+
+    sdpa::job_id_t submit_job (std::string workflow)
     {
-      client_t (orchestrator const& orch)
-        : _ (orch.name(), orch.kvs_host(), orch.kvs_port())
-      {}
+      return _.submitJob (workflow);
+    }
 
-      sdpa::job_id_t submit_job (std::string workflow)
-      {
-        return _.submitJob (workflow);
-      }
+    sdpa::status::code query_job_status (const sdpa::job_id_t& id)
+    {
+      return _.queryJob (id);
+    }
 
-      sdpa::status::code query_job_status (const sdpa::job_id_t& id)
-      {
-        return _.queryJob (id);
-      }
+    sdpa::status::code wait_for_terminal_state_polling (const sdpa::job_id_t& id)
+    {
+      sdpa::client::job_info_t UNUSED_job_info;
+      return _.wait_for_terminal_state_polling (id, UNUSED_job_info);
+    }
 
-      sdpa::status::code wait_for_terminal_state_polling (const sdpa::job_id_t& id)
-      {
-        sdpa::client::job_info_t UNUSED_job_info;
-        return _.wait_for_terminal_state_polling (id, UNUSED_job_info);
-      }
+    sdpa::status::code wait_for_terminal_state (const sdpa::job_id_t& id)
+    {
+      sdpa::client::job_info_t UNUSED_job_info;
+      return _.wait_for_terminal_state (id, UNUSED_job_info);
+    }
 
-      sdpa::status::code wait_for_terminal_state (const sdpa::job_id_t& id)
-      {
-        sdpa::client::job_info_t UNUSED_job_info;
-        return _.wait_for_terminal_state (id, UNUSED_job_info);
-      }
+    sdpa::status::code wait_for_terminal_state_and_cleanup_polling
+      (const sdpa::job_id_t& id)
+    {
+      const sdpa::status::code ret (wait_for_terminal_state_polling (id));
+      retrieve_job_results (id);
+      delete_job (id);
+      return ret;
+    }
+    sdpa::status::code wait_for_terminal_state_and_cleanup
+      (const sdpa::job_id_t& id)
+    {
+      const sdpa::status::code ret (wait_for_terminal_state (id));
+      retrieve_job_results (id);
+      delete_job (id);
+      return ret;
+    }
 
-      sdpa::status::code wait_for_state_polling
-        (const sdpa::job_id_t& id, const sdpa::status::code& exp_status)
-      {
-        static const boost::posix_time::milliseconds sleep_duration (1000);
-        sdpa::status::code curr_status (query_job_status (id));
-        while(curr_status!=exp_status)
-        {
-          boost::this_thread::sleep (sleep_duration);
-          curr_status = query_job_status (id);
-        }
-        return curr_status;
-      }
+    sdpa::discovery_info_t discover (const sdpa::job_id_t& id)
+    {
+      static std::size_t i (0);
+      const std::string discover_id
+        ((boost::format ("%1%%2%") % fhg::util::random_string() % i++).str());
+      return _.discoverJobStates (discover_id, id);
+    }
 
-      sdpa::discovery_info_t discover (const sdpa::job_id_t& id)
-      {
-        static std::size_t i (0);
-        const std::string discover_id
-          ((boost::format ("%1%%2%") % fhg::util::random_string() % i++).str());
-        return _.discoverJobStates (discover_id, id);
-      }
+    sdpa::client::result_t retrieve_job_results (const sdpa::job_id_t& id)
+    {
+      return _.retrieveResults (id);
+    }
 
-      sdpa::client::result_t retrieve_job_results (const sdpa::job_id_t& id)
-      {
-        return _.retrieveResults (id);
-      }
+    void delete_job (const sdpa::job_id_t& id)
+    {
+      return _.deleteJob (id);
+    }
 
-      void delete_job (const sdpa::job_id_t& id)
-      {
-        return _.deleteJob (id);
-      }
+    void cancel_job (const sdpa::job_id_t& id)
+    {
+      return _.cancelJob (id);
+    }
 
-      void cancel_job (const sdpa::job_id_t& id)
-      {
-        return _.cancelJob (id);
-      }
+    sdpa::client::Client _;
 
-      sdpa::client::Client _;
-    };
+
+    static sdpa::status::code submit_job_and_wait_for_termination
+      (std::string workflow, const orchestrator& orch)
+    {
+      client c (orch);
+
+      return c.wait_for_terminal_state_and_cleanup_polling
+        (c.submit_job (workflow));
+    }
+
+    static sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
+      (std::string workflow, const orchestrator& orch)
+    {
+      client c (orch);
+
+      return c.wait_for_terminal_state_and_cleanup (c.submit_job (workflow));
+    }
 
     struct submitted_job : boost::noncopyable
     {
       submitted_job (we::type::activity_t workflow, orchestrator const& orch)
-        : _client (orch)
-        , _job_id (_client.submit_job (workflow.to_string()))
+        : _client (new client (orch))
+        , _job_id (_client->submit_job (workflow.to_string()))
       {}
 
       ~submitted_job()
       {
-        _client.wait_for_terminal_state (_job_id);
+        _client->wait_for_terminal_state (_job_id);
+        _client->retrieve_job_results (_job_id);
+        _client->delete_job (_job_id);
       }
 
       sdpa::discovery_info_t discover()
       {
-        return _client.discover (_job_id);
+        return _client->discover (_job_id);
       }
 
     private:
-      client_t _client;
+      boost::scoped_ptr<client> _client;
       sdpa::job_id_t _job_id;
     };
-
-    sdpa::job_id_t submit_job
-      (sdpa::client::Client& c, std::string workflow)
-    {
-      return c.submitJob (workflow);
-    }
-
-    sdpa::status::code query_job_status
-      (sdpa::client::Client& c, const sdpa::job_id_t& id)
-    {
-      return c.queryJob (id);
-    }
-
-    sdpa::status::code wait_for_terminal_state_polling ( sdpa::client::Client& c
-                                                , const sdpa::job_id_t& id
-                                                )
-    {
-      sdpa::client::job_info_t UNUSED_job_info;
-      return c.wait_for_terminal_state_polling (id, UNUSED_job_info);
-    }
-
-    sdpa::client::result_t retrieve_job_results
-      (sdpa::client::Client& c, const sdpa::job_id_t& id)
-    {
-      return c.retrieveResults (id);
-    }
-
-    void delete_job (sdpa::client::Client& c, const sdpa::job_id_t& id)
-    {
-      return c.deleteJob (id);
-    }
-
-    void cancel_job (sdpa::client::Client& c, const sdpa::job_id_t& id)
-    {
-      return c.cancelJob (id);
-    }
-
-    sdpa::status::code wait_for_terminal_state
-      (sdpa::client::Client& c, const sdpa::job_id_t& id)
-    {
-      sdpa::client::job_info_t UNUSED_job_info;
-      return c.wait_for_terminal_state (id, UNUSED_job_info);
-    }
-
-    sdpa::status::code wait_for_state_polling
-      ( sdpa::client::Client& c
-        , const sdpa::job_id_t& id
-        , const sdpa::status::code& exp_status )
-    {
-      static const boost::posix_time::milliseconds sleep_duration (1000);
-      sdpa::status::code curr_status (c.queryJob (id));
-      while(curr_status!=exp_status)
-      {
-        boost::this_thread::sleep (sleep_duration);
-        curr_status = c.queryJob (id);
-      }
-      return curr_status;
-    }
-
-    namespace
-    {
-      sdpa::status::code wait_for_termination_impl
-        (sdpa::job_id_t job_id_user, client_t& c)
-      {
-        const sdpa::status::code state
-          (c.wait_for_terminal_state_polling (job_id_user));
-        c.retrieve_job_results (job_id_user);
-        c.delete_job (job_id_user);
-        return state;
-      }
-
-      sdpa::status::code wait_for_termination_as_subscriber_impl
-        (sdpa::job_id_t job_id_user, client_t& c)
-      {
-        const sdpa::status::code state
-          (c.wait_for_terminal_state (job_id_user));
-        c.retrieve_job_results (job_id_user);
-        c.delete_job (job_id_user);
-        return state;
-      }
-    }
-
-    sdpa::status::code submit_job_and_wait_for_termination
-      (std::string workflow, const orchestrator& orch)
-    {
-      client_t c (orch);
-
-      return wait_for_termination_impl (c.submit_job (workflow), c);
-    }
-
-    sdpa::status::code submit_job_and_cancel_and_wait_for_termination
-      (std::string workflow, const orchestrator& orch)
-    {
-      client_t c (orch);
-
-      sdpa::job_id_t job_id_user (c.submit_job (workflow));
-      c.cancel_job (job_id_user);
-      return wait_for_termination_impl (job_id_user, c);
-    }
-
-    sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
-      (std::string workflow, const orchestrator& orch)
-    {
-      client_t c (orch);
-
-      return wait_for_termination_as_subscriber_impl (c.submit_job (workflow), c);
-    }
-
-    sdpa::status::code submit_job_and_wait_for_termination_as_subscriber_with_two_different_clients
-      (std::string workflow, const orchestrator& orch)
-    {
-      sdpa::job_id_t job_id_user;
-      {
-        client_t c (orch);
-        job_id_user = c.submit_job (workflow);
-      }
-
-      {
-        client_t c (orch);
-        return wait_for_termination_as_subscriber_impl (job_id_user, c);
-      }
-    }
-  }
+  };
 }
 
 #endif

@@ -1,7 +1,6 @@
 #define BOOST_TEST_MODULE testDiscoverJobStates
 #include <boost/test/unit_test.hpp>
 
-#include "kvs_setup_fixture.hpp"
 #include <utils.hpp>
 
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
@@ -131,7 +130,8 @@ namespace
   template<sdpa::status::code reply>
   void check_discover_worker_job_status()
   {
-    const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+    const utils::kvs_server kvs_server;
+    const utils::orchestrator orchestrator (kvs_server);
     const utils::agent agent (orchestrator);
 
     fhg::util::thread::event<std::string> job_submitted;
@@ -159,7 +159,6 @@ namespace
 }
 
 BOOST_GLOBAL_FIXTURE (setup_logging)
-BOOST_GLOBAL_FIXTURE (KVSSetup)
 
 BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 {
@@ -173,10 +172,11 @@ BOOST_AUTO_TEST_CASE (discover_worker_job_status)
 
 BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
 
   BOOST_REQUIRE_EQUAL
-    ( utils::client::client_t (orchestrator)
+    ( utils::client (orchestrator)
     . discover (fhg::util::random_string()).state()
     , boost::none
     );
@@ -184,9 +184,10 @@ BOOST_AUTO_TEST_CASE (discover_discover_inexistent_job)
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
 
   check_has_one_leaf_job_with_expected_status
     ( client.discover (client.submit_job (utils::module_call()))
@@ -196,10 +197,11 @@ BOOST_AUTO_TEST_CASE (discover_one_orchestrator_no_agent)
 
 BOOST_AUTO_TEST_CASE (discover_one_orchestrator_one_agent)
 {
-  const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+  const utils::kvs_server kvs_server;
+  const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
   sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
 
   sdpa::discovery_info_t discovery_result;
@@ -236,7 +238,8 @@ namespace
 
   void verify_child_count_in_agent_chain (const std::size_t num_agents)
   {
-    const utils::orchestrator orchestrator (kvs_host(), kvs_port());
+    const utils::kvs_server kvs_server;
+    const utils::orchestrator orchestrator (kvs_server);
     boost::ptr_list<utils::agent> agents;
     agents.push_back (new utils::agent (orchestrator));
 
