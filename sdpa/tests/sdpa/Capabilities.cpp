@@ -2,16 +2,61 @@
 
 #include <utils.hpp>
 
-#include <boost/test/unit_test.hpp>
-
 #include <fhg/util/random_string.hpp>
 
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_GLOBAL_FIXTURE (setup_logging)
 
 namespace
 {
+  class Master : public utils::basic_drts_component
+  {
+  public:
+    Master (utils::kvs_server const& kvs_server)
+      : utils::basic_drts_component
+        (utils::random_peer_name(), kvs_server, sdpa::capabilities_set_t(), true)
+    {}
+
+    void handleCapabilitiesGainedEvent
+      (const sdpa::events::CapabilitiesGainedEvent* pEvt)
+    {
+      BOOST_FOREACH (const sdpa::capability_t& cpb, pEvt->capabilities())
+      {
+        _capabilities.insert (cpb);
+        _cond_capabilities.notify_all();
+      }
+    }
+
+    void handleCapabilitiesLostEvent
+      (const sdpa::events::CapabilitiesLostEvent* pEvt)
+    {
+      BOOST_FOREACH (const sdpa::capability_t& cpb, pEvt->capabilities())
+      {
+        _capabilities.erase (cpb);
+        _cond_capabilities.notify_all();
+      }
+    }
+
+    void wait_for_capabilities
+      (const unsigned int n, const sdpa::capabilities_set_t& expected_cpb_set)
+    {
+      boost::unique_lock<boost::mutex> lock_cpbs (_mtx_capabilities);
+      while (_capabilities.size() != n)
+      {
+        _cond_capabilities.wait (lock_cpbs);
+      }
+      BOOST_REQUIRE (_capabilities == expected_cpb_set);
+    }
+
+  private:
+    boost::mutex _mtx_capabilities;
+    boost::condition_variable_any _cond_capabilities;
+    sdpa::capabilities_set_t _capabilities;
+  };
+
   template<typename T> std::set<T> set (T v)
   {
     std::set<T> s;
@@ -19,46 +64,6 @@ namespace
     return s;
   }
 }
-
-class Master : public utils::basic_drts_component
-{
-  public:
-    Master (utils::kvs_server const& kvs_server)
-      : utils::basic_drts_component
-        (utils::random_peer_name(), kvs_server, sdpa::capabilities_set_t(), true)
-    {}
-
-   void handleCapabilitiesGainedEvent(const sdpa::events::CapabilitiesGainedEvent* pEvt)
-   {
-     BOOST_FOREACH(const sdpa::capability_t& cpb, pEvt->capabilities())
-    {
-       _capabilities.insert(cpb);
-       _cond_capabilities.notify_all();
-    }
-   }
-
-   void handleCapabilitiesLostEvent(const sdpa::events::CapabilitiesLostEvent* pEvt)
-   {
-      BOOST_FOREACH(const sdpa::capability_t& cpb, pEvt->capabilities())
-     {
-        _capabilities.erase (cpb);
-        _cond_capabilities.notify_all();
-     }
-   }
-
-   void wait_for_capabilities(const unsigned int n, const sdpa::capabilities_set_t& expected_cpb_set)
-   {
-     boost::unique_lock<boost::mutex> lock_cpbs (_mtx_capabilities);
-     while(_capabilities.size() != n)
-       _cond_capabilities.wait(lock_cpbs);
-     BOOST_REQUIRE(_capabilities == expected_cpb_set);
-   }
-
-  private:
-   boost::mutex _mtx_capabilities;
-   boost::condition_variable_any _cond_capabilities;
-   sdpa::capabilities_set_t _capabilities;
-};
 
 BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
 {
@@ -82,7 +87,6 @@ BOOST_AUTO_TEST_CASE (acquire_capabilities_from_workers)
     master.wait_for_capabilities (2, expected);
   }
 }
-
 
 BOOST_AUTO_TEST_CASE (lose_capabilities_after_worker_dies)
 {
