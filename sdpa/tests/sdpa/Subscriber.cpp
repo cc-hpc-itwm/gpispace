@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
 
   utils::client::client_t c (orchestrator);
   BOOST_REQUIRE_EQUAL
-    ( utils::client::wait_for_termination_as_subscriber_impl (job_id_user, c)
+    ( c.wait_for_terminal_state_and_cleanup (job_id_user)
     , sdpa::status::FINISHED
     );
 }

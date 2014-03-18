@@ -548,6 +548,23 @@ namespace utils
         return _.wait_for_terminal_state (id, UNUSED_job_info);
       }
 
+      sdpa::status::code wait_for_terminal_state_and_cleanup_polling
+        (const sdpa::job_id_t& id)
+      {
+        const sdpa::status::code ret (wait_for_terminal_state_polling (id));
+        retrieve_job_results (id);
+        delete_job (id);
+        return ret;
+      }
+      sdpa::status::code wait_for_terminal_state_and_cleanup
+        (const sdpa::job_id_t& id)
+      {
+        const sdpa::status::code ret (wait_for_terminal_state (id));
+        retrieve_job_results (id);
+        delete_job (id);
+        return ret;
+      }
+
       sdpa::discovery_info_t discover (const sdpa::job_id_t& id)
       {
         static std::size_t i (0);
@@ -598,35 +615,12 @@ namespace utils
       sdpa::job_id_t _job_id;
     };
 
-    namespace
-    {
-      sdpa::status::code wait_for_termination_impl
-        (sdpa::job_id_t job_id_user, client_t& c)
-      {
-        const sdpa::status::code state
-          (c.wait_for_terminal_state_polling (job_id_user));
-        c.retrieve_job_results (job_id_user);
-        c.delete_job (job_id_user);
-        return state;
-      }
-
-      sdpa::status::code wait_for_termination_as_subscriber_impl
-        (sdpa::job_id_t job_id_user, client_t& c)
-      {
-        const sdpa::status::code state
-          (c.wait_for_terminal_state (job_id_user));
-        c.retrieve_job_results (job_id_user);
-        c.delete_job (job_id_user);
-        return state;
-      }
-    }
-
     sdpa::status::code submit_job_and_wait_for_termination
       (std::string workflow, const orchestrator& orch)
     {
       client_t c (orch);
 
-      return wait_for_termination_impl (c.submit_job (workflow), c);
+      return c.wait_for_terminal_state_and_cleanup_polling (c.submit_job (workflow));
     }
 
     sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
@@ -634,9 +628,8 @@ namespace utils
     {
       client_t c (orch);
 
-      return wait_for_termination_as_subscriber_impl (c.submit_job (workflow), c);
+      return c.wait_for_terminal_state_and_cleanup (c.submit_job (workflow));
     }
-
   }
 }
 
