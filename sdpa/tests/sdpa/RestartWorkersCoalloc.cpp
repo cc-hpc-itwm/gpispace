@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
   const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2).to_string()));
 
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is
   const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2).to_string()));
 

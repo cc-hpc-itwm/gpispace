@@ -518,11 +518,9 @@ namespace utils
     }
   };
 
-  namespace client
-  {
-    struct client_t : boost::noncopyable
+    struct client : boost::noncopyable
     {
-      client_t (orchestrator const& orch)
+      client (orchestrator const& orch)
         : _ (orch.name(), orch.kvs_host(), orch.kvs_port())
       {}
 
@@ -589,48 +587,49 @@ namespace utils
       }
 
       sdpa::client::Client _;
-    };
 
-    struct submitted_job : boost::noncopyable
-    {
-      submitted_job (we::type::activity_t workflow, orchestrator const& orch)
-        : _client (orch)
-        , _job_id (_client.submit_job (workflow.to_string()))
-      {}
 
-      ~submitted_job()
+      static sdpa::status::code submit_job_and_wait_for_termination
+        (std::string workflow, const orchestrator& orch)
       {
-        _client.wait_for_terminal_state (_job_id);
-        _client.retrieve_job_results (_job_id);
-        _client.delete_job (_job_id);
+        client c (orch);
+
+        return c.wait_for_terminal_state_and_cleanup_polling
+          (c.submit_job (workflow));
       }
 
-      sdpa::discovery_info_t discover()
+      static sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
+        (std::string workflow, const orchestrator& orch)
       {
-        return _client.discover (_job_id);
+        client c (orch);
+
+        return c.wait_for_terminal_state_and_cleanup (c.submit_job (workflow));
       }
 
-    private:
-      client_t _client;
-      sdpa::job_id_t _job_id;
+      struct submitted_job : boost::noncopyable
+      {
+        submitted_job (we::type::activity_t workflow, orchestrator const& orch)
+          : _client (new client (orch))
+          , _job_id (_client->submit_job (workflow.to_string()))
+        {}
+
+        ~submitted_job()
+        {
+          _client->wait_for_terminal_state (_job_id);
+          _client->retrieve_job_results (_job_id);
+          _client->delete_job (_job_id);
+        }
+
+        sdpa::discovery_info_t discover()
+        {
+          return _client->discover (_job_id);
+        }
+
+      private:
+        boost::scoped_ptr<client> _client;
+        sdpa::job_id_t _job_id;
+      };
     };
-
-    sdpa::status::code submit_job_and_wait_for_termination
-      (std::string workflow, const orchestrator& orch)
-    {
-      client_t c (orch);
-
-      return c.wait_for_terminal_state_and_cleanup_polling (c.submit_job (workflow));
-    }
-
-    sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
-      (std::string workflow, const orchestrator& orch)
-    {
-      client_t c (orch);
-
-      return c.wait_for_terminal_state_and_cleanup (c.submit_job (workflow));
-    }
-  }
 }
 
 #endif

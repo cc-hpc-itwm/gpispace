@@ -29,11 +29,11 @@ BOOST_AUTO_TEST_CASE (execute_workflow_and_subscribe_with_second_client)
 
   sdpa::job_id_t job_id_user;
   {
-    utils::client::client_t c (orchestrator);
+    utils::client c (orchestrator);
     job_id_user = c.submit_job (utils::module_call());
   }
 
-  utils::client::client_t c (orchestrator);
+  utils::client c (orchestrator);
   BOOST_REQUIRE_EQUAL
     ( c.wait_for_terminal_state_and_cleanup (job_id_user)
     , sdpa::status::FINISHED

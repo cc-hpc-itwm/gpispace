@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE (cancel_no_agent)
   const utils::kvs_server kvs_server;
   const utils::orchestrator orchestrator (kvs_server);
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
     , agent
     );
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_orch)
   const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
     , agent
     );
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 

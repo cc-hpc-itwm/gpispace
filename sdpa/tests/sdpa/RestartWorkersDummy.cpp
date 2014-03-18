@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_CASE (restart_worker_with_dummy_workflow)
   const utils::orchestrator orchestrator (kvs_server);
   const utils::agent agent (orchestrator);
 
-  utils::client::client_t client (orchestrator);
+  utils::client client (orchestrator);
   sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
 
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
