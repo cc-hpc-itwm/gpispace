@@ -39,32 +39,15 @@ if (NOT PROJECT_REVISION)
 endif (NOT PROJECT_REVISION)
 set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
 
-  execute_process (
-    COMMAND git describe
-    COMMAND sed -e "s/^v//"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE _out
-    ERROR_VARIABLE _err
-    RESULT_VARIABLE _res
-  )
-  if (${_res} EQUAL 0)
-    string (STRIP "${_out}" _out)
-    set (PROJECT_VERSION ${_out})
-  else()
-    set(__new_vsn "${V_MAJOR}.${V_MINOR}")
-    if (NOT ${V_PATCH} STREQUAL "")
-      set(__new_vsn "${__new_vsn}-${V_PATCH}")
-    endif()
-    if (NOT ${V_EXTRA} STREQUAL "")
-      set(__new_vsn "${__new_vsn}-${V_EXTRA}")
-    endif()
-    set (PROJECT_VERSION ${__new_vsn})
-  endif ()
-
-if (NOT PROJECT_VERSION)
-  message (FATAL_ERROR "could not discover version info, please define -DPROJECT_VERSION by hand!")
+set(__new_vsn "${V_MAJOR}.${V_MINOR}")
+if (NOT ${V_PATCH} STREQUAL "")
+  set(__new_vsn "${__new_vsn}-${V_PATCH}")
 endif()
-set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
+if (NOT ${V_EXTRA} STREQUAL "")
+  set(__new_vsn "${__new_vsn}-${V_EXTRA}")
+endif()
+set (PROJECT_VERSION "${__new_vsn}" CACHE STRING "Project version" FORCE)
+set (__new_vsn)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
