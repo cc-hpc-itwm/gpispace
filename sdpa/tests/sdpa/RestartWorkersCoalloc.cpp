@@ -4,7 +4,50 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <sdpa/events/CancelJobEvent.hpp>
+
 BOOST_GLOBAL_FIXTURE (setup_logging)
+
+namespace
+{
+  class fake_drts_worker_waiting_finished_ack_and_replying_cancel_ack
+    : public utils::fake_drts_worker_notifying_module_call_submission
+  {
+  public:
+      fake_drts_worker_waiting_finished_ack_and_replying_cancel_ack
+        ( boost::function<void (std::string)> announce_job
+        , const utils::agent& master_agent
+        )
+      : utils::fake_drts_worker_notifying_module_call_submission
+        (announce_job, master_agent)
+    {}
+
+    void handleCancelJobEvent
+      (const sdpa::events::CancelJobEvent* pEvt)
+    {
+     _network.perform
+            ( sdpa::events::SDPAEvent::Ptr
+              (new sdpa::events::CancelJobAckEvent (_name, pEvt->from(), pEvt->job_id()))
+            );
+    }
+
+    void handleJobFinishedAckEvent
+      (const sdpa::events::JobFinishedAckEvent*)
+    {
+      _cond_finished.notify_all();
+    }
+
+    void wait_finished_ack ()
+    {
+      boost::unique_lock<boost::mutex> lock (_mtx_finished);
+      _cond_finished.wait(lock);
+    }
+
+  private:
+    boost::mutex _mtx_finished;
+    boost::condition_variable_any _cond_finished;
+  };
+}
 
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running)
 {
@@ -19,7 +62,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
   fhg::util::thread::event<std::string> job_submitted_0;
-  utils::fake_drts_worker_notifying_module_call_submission worker_0
+  fake_drts_worker_waiting_finished_ack_and_replying_cancel_ack worker_0
     (boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted_0, _1), agent);
 
   {
@@ -34,8 +77,6 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
     std::string ignore;
     job_submitted_0.wait (ignore);
     job_submitted_1.wait();
-
-    //! \todo At this point, worker_0 should get a cancelJob event for `ignore`!
   }
 
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
@@ -61,7 +102,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
   fhg::util::thread::event<std::string> job_submitted_0;
-  utils::fake_drts_worker_notifying_module_call_submission worker_0
+  fake_drts_worker_waiting_finished_ack_and_replying_cancel_ack worker_0
     (boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted_0, _1), agent);
 
   {
@@ -77,13 +118,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is
     job_submitted_0.wait (name_of_job_on_surviving_worker);
     worker_0.finish (name_of_job_on_surviving_worker);
 
-    //! \todo Don't sleep but somehow check that agent received the
-    //! event, allowing us to continue. If we do not wait here,
-    //! worker_1 may be killed before the agent handles the finish
-    //! event, thus deleting the job and the finish failing. If it
-    //! fails, the worker stays marked as reserved on the agent, thus
-    //! can't get a new job. Thus, the test case stalls.
-    sleep (1);
+    worker_0.wait_finished_ack ();
 
     job_submitted_1.wait();
   }
