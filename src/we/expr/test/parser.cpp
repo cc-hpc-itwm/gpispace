@@ -390,22 +390,23 @@ BOOST_AUTO_TEST_CASE (token_cmp)
   check_compare ("0.0f", "1.0f", true, true, false, false);
   check_compare ("1.0f", "0.0f", false, false, true, true);
 
-#define CHECK(_lhs, _rhs, _eq)                                          \
+#define CHECK(_lhs, _rhs, _ne, _eq)                                     \
+  check ((boost::format ("%1% != %2%") % #_lhs % #_rhs).str(), _ne);    \
   check ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str(), _eq)
 
-  CHECK ({}, {}, true);
-  CHECK ({}, bitset_insert {} 1L, false);
-  CHECK (bitset_insert {} 1L, {}, false);
-  CHECK (bitset_insert {} 1L, bitset_insert {} 2L, false);
-  CHECK (bitset_insert (bitset_insert {} 1L) 2L, bitset_insert {} 2L, false);
+  CHECK ({}, {}, false, true);
+  CHECK ({}, bitset_insert {} 1L, true, false);
+  CHECK (bitset_insert {} 1L, {}, true, false);
+  CHECK (bitset_insert {} 1L, bitset_insert {} 2L, true, false);
+  CHECK (bitset_insert (bitset_insert {} 1L) 2L, bitset_insert {} 2L, true, false);
   CHECK ( bitset_insert (bitset_insert {} 1L) 2L
-        , bitset_insert (bitset_insert {} 2L) 1L, true
+        , bitset_insert (bitset_insert {} 2L) 1L, false, true
         );
 
-  CHECK (y(), y(), true);
-  CHECK (y(4), y(), false);
-  CHECK (y(), y(4), false);
-  CHECK (y(4), y(4), true);
+  CHECK (y(), y(), false, true);
+  CHECK (y(4), y(), true, false);
+  CHECK (y(), y(4), true, false);
+  CHECK (y(4), y(4), false, true);
 #undef CHECK
 }
 

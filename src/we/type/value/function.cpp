@@ -317,6 +317,7 @@ namespace pnet
           {
             switch (_token)
             {
+            case expr::token::ne: return ! (l == r);
             case expr::token::eq: return l == r;
             case expr::token::_bitset_or: return l | r;
             case expr::token::_bitset_and: return l & r;
@@ -338,6 +339,7 @@ namespace pnet
           {
             switch (_token)
             {
+            case expr::token::ne: return ! (l == r);
             case expr::token::eq: return l == r;
             default: throw exception::eval (_token, l, r);
             }
