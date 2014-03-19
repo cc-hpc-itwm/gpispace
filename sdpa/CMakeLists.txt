@@ -4,9 +4,6 @@ include_directories (${CMAKE_SOURCE_DIR}/src)
 
 include_directories (${UTIL_INCLUDE_DIR})
 
-find_package(ZLIB REQUIRED QUIET)
-include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
-
 include_directories (${FhgLog_INCLUDE_DIR})
 
 add_subdirectory (sdpa)
