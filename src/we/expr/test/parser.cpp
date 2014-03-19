@@ -249,27 +249,18 @@ namespace
 
 BOOST_AUTO_TEST_CASE (token_or_short_circuit)
 {
-  expr::eval::context context;
-
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression).eval_front (context)          \
-    , pnet::type::value::value_type (_value)                          \
-    )
-
-  CHECK ("true || (${a} := true)", true);
-
   fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
-    ( boost::bind (&get_and_ignore_value_from_context, context, "a")
+    ( boost::bind ( &get_and_ignore_value_from_context
+                  , check ("true || (${a} := true)", true)
+                  , "a"
+                  )
     , "missing binding for: ${a}"
     );
 
-  CHECK ("false || (${a} := true)", true);
-
   BOOST_REQUIRE_EQUAL
-    (context.value ("a"), pnet::type::value::value_type (true));
-
-#undef CHECK
+    ( check ("false || (${a} := true)", true).value ("a")
+    , pnet::type::value::value_type (true)
+    );
 }
 
 BOOST_AUTO_TEST_CASE (token_and_table)
@@ -315,27 +306,18 @@ BOOST_AUTO_TEST_CASE (token_and_table)
 
 BOOST_AUTO_TEST_CASE (token_and_short_circuit)
 {
-  expr::eval::context context;
-
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression).eval_front (context)          \
-    , pnet::type::value::value_type (_value)                          \
-    )
-
-  CHECK ("false && (${a} := false)", false);
-
   fhg::util::boost::test::require_exception<pnet::exception::missing_binding>
-    ( boost::bind (&get_and_ignore_value_from_context, context, "a")
+    ( boost::bind ( &get_and_ignore_value_from_context
+                  , check ("false && (${a} := false)", false)
+                  , "a"
+                  )
     , "missing binding for: ${a}"
     );
 
-  CHECK ("true && (${a} := false)", false);
-
   BOOST_REQUIRE_EQUAL
-    (context.value ("a"), pnet::type::value::value_type (false));
-
-#undef CHECK
+    ( check ("true && (${a} := false)", false).value ("a")
+    , pnet::type::value::value_type (false)
+    );
 }
 
 BOOST_AUTO_TEST_CASE (token_not)
