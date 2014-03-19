@@ -212,8 +212,7 @@ namespace sdpa
         }
         catch (const WorkerNotFoundException&)
         {
-          // the job was not assigned to any worker yet -> this means that might
-          // still be in the scheduler's queue
+            scheduler().delete_job (pEvt->job_id());
         }
 
         if (bTaskGroupComputed)
