@@ -154,18 +154,30 @@ namespace sdpa
       }
     }
 
-    void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& jobId)
+    sdpa::worker_id_list_t CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
+      sdpa::worker_id_list_t list_not_terminated_workers;
+
       const allocation_table_t::const_iterator it
-        (allocation_table_.find (jobId));
+        (allocation_table_.find (job_id));
 
       if (it != allocation_table_.end())
       {
-        delete it->second;
+        Reservation* ptr_reservation(it->second);
+        list_not_terminated_workers = ptr_reservation->getListNotTerminatedWorkers();
+
+        BOOST_FOREACH(const worker_id_t& worker_id, list_not_terminated_workers)
+        {
+          worker_manager().findWorker (worker_id)->abort (job_id);
+        }
+
+        delete ptr_reservation;
         allocation_table_.erase (it);
       }
+
+      return list_not_terminated_workers;
     }
 
     void CoallocationScheduler::workerFinished

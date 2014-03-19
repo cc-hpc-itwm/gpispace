@@ -41,7 +41,7 @@ namespace sdpa
       void request_scheduling();
 
       // used by daemon and self and test
-      void releaseReservation (const sdpa::job_id_t&);
+      sdpa::worker_id_list_t releaseReservation (const sdpa::job_id_t&);
       void assignJobsToWorkers();
 
     private:
@@ -110,6 +110,19 @@ namespace sdpa
         sdpa::worker_id_list_t getWorkerList() const
         {
           return m_list_workers;
+        }
+
+        sdpa::worker_id_list_t getListNotTerminatedWorkers() const
+        {
+          sdpa::worker_id_list_t list_not_terminated_workers(m_list_workers);
+          BOOST_FOREACH ( const worker_id_t& wid
+                        , m_map_worker_result | boost::adaptors::map_keys
+                        )
+          {
+            list_not_terminated_workers.remove(wid);
+          }
+
+          return list_not_terminated_workers;
         }
 
       private:
