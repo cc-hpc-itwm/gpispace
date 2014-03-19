@@ -453,18 +453,21 @@ namespace
     boost::random::uniform_int_distribution<T> number
       (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
-    T const l (number (generator));
-    T const r (number (generator));
+    for (int i (0); i < 1000; ++i)
+    {
+      T const l (number (generator));
+      T const r (number (generator));
 
-    check
-      ( ( boost::format ("%1%%3% %4% %2%%3%")
-        % l
-        % r
-        % suffix<T>()()
-        % operation_string
-        ).str()
-      , operation (l, r)
-      );
+      check
+        ( ( boost::format ("%1%%3% %4% %2%%3%")
+          % l
+          % r
+          % suffix<T>()()
+          % operation_string
+          ).str()
+        , operation (l, r)
+        );
+    }
   }
 
   template<typename T>
