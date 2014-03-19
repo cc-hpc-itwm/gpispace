@@ -346,14 +346,19 @@ namespace
     check ((boost::format ("%1% > %2%") % lhs % rhs).str(), gt);
     check ((boost::format ("%1% >= %2%") % lhs % rhs).str(), ge);
   }
+
+  void check_equality (std::string lhs, std::string rhs, bool ne, bool eq)
+  {
+    check ((boost::format ("%1% != %2%") % lhs % rhs).str(), ne);
+    check ((boost::format ("%1% == %2%") % lhs % rhs).str(), eq);
+  }
 }
 
 BOOST_AUTO_TEST_CASE (token_cmp)
 {
 #define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge, _ne, _eq)                 \
   check_compare (#_lhs, #_rhs, _lt, _le, _gt, _ge);                     \
-  check ((boost::format ("%1% != %2%") % #_lhs % #_rhs).str(), _ne);    \
-  check ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str(), _eq)
+  check_equality (#_lhs, #_rhs, _ne, _eq)
 
   CHECK ('a', 'a', false, true, false, true, false, true);
   CHECK ('a', 'b', true, true, false, false, true, false);
@@ -390,24 +395,21 @@ BOOST_AUTO_TEST_CASE (token_cmp)
   check_compare ("0.0f", "1.0f", true, true, false, false);
   check_compare ("1.0f", "0.0f", false, false, true, true);
 
-#define CHECK(_lhs, _rhs, _ne, _eq)                                     \
-  check ((boost::format ("%1% != %2%") % #_lhs % #_rhs).str(), _ne);    \
-  check ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str(), _eq)
+  check_equality ("{}", "{}", false, true);
+  check_equality ("{}", "bitset_insert {} 1L", true, false);
+  check_equality ("bitset_insert {} 1L", "{}", true, false);
+  check_equality ("bitset_insert {} 1L", "bitset_insert {} 2L", true, false);
+  check_equality ( "bitset_insert (bitset_insert {} 1L) 2L"
+                 , "bitset_insert {} 2L", true, false
+                 );
+  check_equality ( "bitset_insert (bitset_insert {} 1L) 2L"
+                 , "bitset_insert (bitset_insert {} 2L) 1L", false, true
+                 );
 
-  CHECK ({}, {}, false, true);
-  CHECK ({}, bitset_insert {} 1L, true, false);
-  CHECK (bitset_insert {} 1L, {}, true, false);
-  CHECK (bitset_insert {} 1L, bitset_insert {} 2L, true, false);
-  CHECK (bitset_insert (bitset_insert {} 1L) 2L, bitset_insert {} 2L, true, false);
-  CHECK ( bitset_insert (bitset_insert {} 1L) 2L
-        , bitset_insert (bitset_insert {} 2L) 1L, false, true
-        );
-
-  CHECK (y(), y(), false, true);
-  CHECK (y(4), y(), true, false);
-  CHECK (y(), y(4), true, false);
-  CHECK (y(4), y(4), false, true);
-#undef CHECK
+  check_equality ("y()", "y()", false, true);
+  check_equality ("y(4)", "y()", true, false);
+  check_equality ("y()", "y(4)", true, false);
+  check_equality ("y(4)", "y(4)", false, true);
 }
 
 namespace
