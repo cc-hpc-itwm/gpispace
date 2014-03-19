@@ -464,9 +464,11 @@ BOOST_AUTO_TEST_CASE (token_add)
 
   check ("0.0 + 0.0", 0.0);
   check ("0.0 + 1.0", 1.0);
+  check ("1.0 + 0.0", 1.0);
   check ("1.0 + 1.0", 2.0);
   check ("0.0f + 0.0f", 0.0f);
   check ("0.0f + 1.0f", 1.0f);
+  check ("1.0f + 0.0f", 1.0f);
   check ("1.0f + 1.0f", 2.0f);
 }
 
