@@ -83,6 +83,10 @@ endif ()
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   set (C_FLAGS "${C_FLAGS} -ftemplate-depth=1024")
+
+  if ("${CMAKE_GENERATOR}" STREQUAL "Ninja")
+    set (C_FLAGS "${C_FLAGS} -fcolor-diagnostics")
+  endif()
 endif()
 
 
