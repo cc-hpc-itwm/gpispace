@@ -156,6 +156,7 @@ usage: `basename $0` command [parameters...]
    stop [component] - stop all components or "component"
  status [component] - get the current status of component
                 gui - start the GUI
+             bundle - bundle an application and its libraries
 
       submit <file> - submit a job
  cancel [job-id...] - cancel the given job or the current job
@@ -823,6 +824,10 @@ case "$1" in
     gui)
         shift
         start_gui $@
+        ;;
+    bundle)
+        shift
+        "${SDPA_SCRIPT_DIR}/bundle.sh" "$@"
         ;;
     boot)
         shift
