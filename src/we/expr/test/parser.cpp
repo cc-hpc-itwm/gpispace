@@ -74,21 +74,25 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
 }
 #endif
 
+namespace
+{
+  template<typename T>
+  void check_get_front (std::string const& expression, T const& value)
+  {
+    expr::eval::context context;
+
+    BOOST_REQUIRE_EQUAL ( expr::parse::parser (expression, context).get_front()
+                        , pnet::type::value::value_type (value)
+                        );
+  }
+}
+
 BOOST_AUTO_TEST_CASE (round_switches_between_half_up_and_half_down)
 {
-  const std::string input ("round (2.5)");
-  expr::eval::context context;
-
-#define CHECK(v)                                                         \
-  BOOST_REQUIRE_EQUAL ( expr::parse::parser (input, context).get_front() \
-                      , pnet::type::value::value_type (v)                \
-                      )
-
-  CHECK (2.0);
-  CHECK (3.0);
-  CHECK (2.0);
-  CHECK (3.0);
-#undef CHECK
+  check_get_front ("round (2.5)", 2.0);
+  check_get_front ("round (2.5)", 3.0);
+  check_get_front ("round (2.5)", 2.0);
+  check_get_front ("round (2.5)", 3.0);
 }
 
 BOOST_AUTO_TEST_CASE (comment)
@@ -124,46 +128,28 @@ BOOST_AUTO_TEST_CASE (parens_can_be_omitted_after_floor)
 
 BOOST_AUTO_TEST_CASE (ceiling)
 {
-  expr::eval::context context;
-
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression, context).get_front()          \
-    , pnet::type::value::value_type (_value)                          \
-    )
-
-  CHECK ("ceil (0.0)", 0.0);
-  CHECK ("ceil (0.25)", 1.0);
-  CHECK ("ceil (0.5)", 1.0);
-  CHECK ("ceil (0.75)", 1.0);
-  CHECK ("ceil (1.0)", 1.0);
-  CHECK ("ceil (1.25)", 2.0);
-  CHECK ("ceil (1.5)", 2.0);
-  CHECK ("ceil (1.75)", 2.0);
-  CHECK ("ceil (2.0)", 2.0);
-#undef CHECK
+  check_get_front ("ceil (0.0)", 0.0);
+  check_get_front ("ceil (0.25)", 1.0);
+  check_get_front ("ceil (0.5)", 1.0);
+  check_get_front ("ceil (0.75)", 1.0);
+  check_get_front ("ceil (1.0)", 1.0);
+  check_get_front ("ceil (1.25)", 2.0);
+  check_get_front ("ceil (1.5)", 2.0);
+  check_get_front ("ceil (1.75)", 2.0);
+  check_get_front ("ceil (2.0)", 2.0);
 }
 
 BOOST_AUTO_TEST_CASE (_floor)
 {
-  expr::eval::context context;
-
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression, context).get_front()          \
-    , pnet::type::value::value_type (_value)                          \
-    )
-
-  CHECK ("floor (0.0)", 0.0);
-  CHECK ("floor (0.25)", 0.0);
-  CHECK ("floor (0.5)", 0.0);
-  CHECK ("floor (0.75)", 0.0);
-  CHECK ("floor (1.0)", 1.0);
-  CHECK ("floor (1.25)", 1.0);
-  CHECK ("floor (1.5)", 1.0);
-  CHECK ("floor (1.75)", 1.0);
-  CHECK ("floor (2.0)", 2.0);
-#undef CHECK
+  check_get_front ("floor (0.0)", 0.0);
+  check_get_front ("floor (0.25)", 0.0);
+  check_get_front ("floor (0.5)", 0.0);
+  check_get_front ("floor (0.75)", 0.0);
+  check_get_front ("floor (1.0)", 1.0);
+  check_get_front ("floor (1.25)", 1.0);
+  check_get_front ("floor (1.5)", 1.0);
+  check_get_front ("floor (1.75)", 1.0);
+  check_get_front ("floor (2.0)", 2.0);
 }
 
 BOOST_AUTO_TEST_CASE (other_variable_not_renamed)
@@ -211,52 +197,43 @@ BOOST_AUTO_TEST_CASE (renamed_at_depth_greater_zero)
 
 BOOST_AUTO_TEST_CASE (token_or_table)
 {
-  expr::eval::context context;
+  check_get_front ("true || true", true);
+  check_get_front ("true || false", true);
+  check_get_front ("false || true", true);
+  check_get_front ("false || false", false);
 
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression, context).get_front()          \
-    , pnet::type::value::value_type (_value)                          \
-    )
+  check_get_front ("true :or: true", true);
+  check_get_front ("true :or: false", true);
+  check_get_front ("false :or: true", true);
+  check_get_front ("false :or: false", false);
 
-  CHECK ("true || true", true);
-  CHECK ("true || false", true);
-  CHECK ("false || true", true);
-  CHECK ("false || false", false);
+  check_get_front ("0 || 0", 0);
+  check_get_front ("0 || 1", 1);
+  check_get_front ("1 || 1", 1);
+  check_get_front ("1 || 0", 1);
+  check_get_front ("1 || 2", 3);
+  check_get_front ("2 || 1", 3);
 
-  CHECK ("true :or: true", true);
-  CHECK ("true :or: false", true);
-  CHECK ("false :or: true", true);
-  CHECK ("false :or: false", false);
+  check_get_front ("0U || 0U", 0U);
+  check_get_front ("0U || 1U", 1U);
+  check_get_front ("1U || 1U", 1U);
+  check_get_front ("1U || 0U", 1U);
+  check_get_front ("1U || 2U", 3U);
+  check_get_front ("2U || 1U", 3U);
 
-  CHECK ("0 || 0", 0);
-  CHECK ("0 || 1", 1);
-  CHECK ("1 || 1", 1);
-  CHECK ("1 || 0", 1);
-  CHECK ("1 || 2", 3);
-  CHECK ("2 || 1", 3);
+  check_get_front ("0L || 0L", 0L);
+  check_get_front ("0L || 1L", 1L);
+  check_get_front ("1L || 1L", 1L);
+  check_get_front ("1L || 0L", 1L);
+  check_get_front ("1L || 2L", 3L);
+  check_get_front ("2L || 1L", 3L);
 
-  CHECK ("0U || 0U", 0U);
-  CHECK ("0U || 1U", 1U);
-  CHECK ("1U || 1U", 1U);
-  CHECK ("1U || 0U", 1U);
-  CHECK ("1U || 2U", 3U);
-  CHECK ("2U || 1U", 3U);
-
-  CHECK ("0L || 0L", 0L);
-  CHECK ("0L || 1L", 1L);
-  CHECK ("1L || 1L", 1L);
-  CHECK ("1L || 0L", 1L);
-  CHECK ("1L || 2L", 3L);
-  CHECK ("2L || 1L", 3L);
-
-  CHECK ("0UL || 0UL", 0UL);
-  CHECK ("0UL || 1UL", 1UL);
-  CHECK ("1UL || 1UL", 1UL);
-  CHECK ("1UL || 0UL", 1UL);
-  CHECK ("1UL || 2UL", 3UL);
-  CHECK ("2UL || 1UL", 3UL);
-#undef CHECK
+  check_get_front ("0UL || 0UL", 0UL);
+  check_get_front ("0UL || 1UL", 1UL);
+  check_get_front ("1UL || 1UL", 1UL);
+  check_get_front ("1UL || 0UL", 1UL);
+  check_get_front ("1UL || 2UL", 3UL);
+  check_get_front ("2UL || 1UL", 3UL);
 }
 
 namespace
@@ -295,52 +272,43 @@ BOOST_AUTO_TEST_CASE (token_or_short_circuit)
 
 BOOST_AUTO_TEST_CASE (token_and_table)
 {
-  expr::eval::context context;
+  check_get_front ("true && true", true);
+  check_get_front ("true && false", false);
+  check_get_front ("false && true", false);
+  check_get_front ("false && false", false);
 
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression, context).get_front()          \
-    , pnet::type::value::value_type (_value)                          \
-    )
+  check_get_front ("true :and: true", true);
+  check_get_front ("true :and: false", false);
+  check_get_front ("false :and: true", false);
+  check_get_front ("false :and: false", false);
 
-  CHECK ("true && true", true);
-  CHECK ("true && false", false);
-  CHECK ("false && true", false);
-  CHECK ("false && false", false);
+  check_get_front ("0 && 0", 0);
+  check_get_front ("0 && 1", 0);
+  check_get_front ("1 && 1", 1);
+  check_get_front ("1 && 0", 0);
+  check_get_front ("1 && 2", 0);
+  check_get_front ("2 && 1", 0);
 
-  CHECK ("true :and: true", true);
-  CHECK ("true :and: false", false);
-  CHECK ("false :and: true", false);
-  CHECK ("false :and: false", false);
+  check_get_front ("0U && 0U", 0U);
+  check_get_front ("0U && 1U", 0U);
+  check_get_front ("1U && 1U", 1U);
+  check_get_front ("1U && 0U", 0U);
+  check_get_front ("1U && 2U", 0U);
+  check_get_front ("2U && 1U", 0U);
 
-  CHECK ("0 && 0", 0);
-  CHECK ("0 && 1", 0);
-  CHECK ("1 && 1", 1);
-  CHECK ("1 && 0", 0);
-  CHECK ("1 && 2", 0);
-  CHECK ("2 && 1", 0);
+  check_get_front ("0L && 0L", 0L);
+  check_get_front ("0L && 1L", 0L);
+  check_get_front ("1L && 1L", 1L);
+  check_get_front ("1L && 0L", 0L);
+  check_get_front ("1L && 2L", 0L);
+  check_get_front ("2L && 1L", 0L);
 
-  CHECK ("0U && 0U", 0U);
-  CHECK ("0U && 1U", 0U);
-  CHECK ("1U && 1U", 1U);
-  CHECK ("1U && 0U", 0U);
-  CHECK ("1U && 2U", 0U);
-  CHECK ("2U && 1U", 0U);
-
-  CHECK ("0L && 0L", 0L);
-  CHECK ("0L && 1L", 0L);
-  CHECK ("1L && 1L", 1L);
-  CHECK ("1L && 0L", 0L);
-  CHECK ("1L && 2L", 0L);
-  CHECK ("2L && 1L", 0L);
-
-  CHECK ("0UL && 0UL", 0UL);
-  CHECK ("0UL && 1UL", 0UL);
-  CHECK ("1UL && 1UL", 1UL);
-  CHECK ("1UL && 0UL", 0UL);
-  CHECK ("1UL && 2UL", 0UL);
-  CHECK ("2UL && 1UL", 0UL);
-#undef CHECK
+  check_get_front ("0UL && 0UL", 0UL);
+  check_get_front ("0UL && 1UL", 0UL);
+  check_get_front ("1UL && 1UL", 1UL);
+  check_get_front ("1UL && 0UL", 0UL);
+  check_get_front ("1UL && 2UL", 0UL);
+  check_get_front ("2UL && 1UL", 0UL);
 }
 
 BOOST_AUTO_TEST_CASE (token_and_short_circuit)
@@ -370,28 +338,18 @@ BOOST_AUTO_TEST_CASE (token_and_short_circuit)
 
 BOOST_AUTO_TEST_CASE (token_not)
 {
-  expr::eval::context context;
-
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression).eval_front (context)          \
-    , pnet::type::value::value_type (_value)                          \
-    )
-
-  CHECK ("!true", false);
-  CHECK ("!false", true);
-  CHECK ("!!true", true);
-  CHECK ("!!false", false);
-  CHECK ("!0", true);
-  CHECK ("!1", false);
-  CHECK ("!0U", true);
-  CHECK ("!1U", false);
-  CHECK ("!0L", true);
-  CHECK ("!1L", false);
-  CHECK ("!0UL", true);
-  CHECK ("!1UL", false);
-
-#undef CHECK
+  check_get_front ("!true", false);
+  check_get_front ("!false", true);
+  check_get_front ("!!true", true);
+  check_get_front ("!!false", false);
+  check_get_front ("!0", true);
+  check_get_front ("!1", false);
+  check_get_front ("!0U", true);
+  check_get_front ("!1U", false);
+  check_get_front ("!0L", true);
+  check_get_front ("!1L", false);
+  check_get_front ("!0UL", true);
+  check_get_front ("!1UL", false);
 }
 
 BOOST_AUTO_TEST_CASE (token_cmp)
@@ -524,22 +482,16 @@ BOOST_AUTO_TEST_CASE (token_cmp)
 
 BOOST_AUTO_TEST_CASE (token_add)
 {
-  expr::eval::context context;
-
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression).eval_front (context)          \
-    , pnet::type::value::value_type (_value)                          \
-    )
-
-  CHECK ("'a' + 'a'", std::string ("aa"));
-  CHECK ("\"\" + \"\"", std::string (""));
-  CHECK ("\"a\" + \"\"", std::string ("a"));
-  CHECK ("\"a\" + \"a\"", std::string ("aa"));
-  CHECK ("\"ab\" + \"a\"", std::string ("aba"));
+  check_get_front ("'a' + 'a'", std::string ("aa"));
+  check_get_front ("\"\" + \"\"", std::string (""));
+  check_get_front ("\"a\" + \"\"", std::string ("a"));
+  check_get_front ("\"a\" + \"a\"", std::string ("aa"));
+  check_get_front ("\"ab\" + \"a\"", std::string ("aba"));
 
 #define CHECK_INTEGRAL(_type, _suffix)                                 \
   {                                                                    \
+    expr::eval::context context;                                       \
+                                                                       \
     _type const l (rand());                                            \
     _type const r (rand());                                            \
                                                                        \
@@ -557,14 +509,12 @@ BOOST_AUTO_TEST_CASE (token_add)
   CHECK_INTEGRAL (unsigned long, "UL");
 #undef CHECK_INTEGRAL
 
-  CHECK ("0.0 + 0.0", 0.0);
-  CHECK ("0.0 + 1.0", 1.0);
-  CHECK ("1.0 + 1.0", 2.0);
-  CHECK ("0.0f + 0.0f", 0.0f);
-  CHECK ("0.0f + 1.0f", 1.0f);
-  CHECK ("1.0f + 1.0f", 2.0f);
-
-#undef CHECK
+  check_get_front ("0.0 + 0.0", 0.0);
+  check_get_front ("0.0 + 1.0", 1.0);
+  check_get_front ("1.0 + 1.0", 2.0);
+  check_get_front ("0.0f + 0.0f", 0.0f);
+  check_get_front ("0.0f + 1.0f", 1.0f);
+  check_get_front ("1.0f + 1.0f", 2.0f);
 }
 
 namespace
@@ -577,16 +527,10 @@ namespace
 
 BOOST_AUTO_TEST_CASE (token_sub)
 {
-  expr::eval::context context;
-
-#define CHECK(_expression, _value)                                    \
-  BOOST_REQUIRE_EQUAL                                                 \
-    ( expr::parse::parser (_expression).eval_front (context)          \
-    , pnet::type::value::value_type (_value)                          \
-    )
-
 #define CHECK_INTEGRAL(_type, _suffix)                                 \
   {                                                                    \
+    expr::eval::context context;                                       \
+                                                                       \
     _type const l (rand());                                            \
     _type const r (rand());                                            \
                                                                        \
@@ -602,21 +546,19 @@ BOOST_AUTO_TEST_CASE (token_sub)
   CHECK_INTEGRAL (long, "L");
 #undef CHECK_INTEGRAL
 
-  CHECK ("0.0 - 0.0", 0.0);
-  CHECK ("0.0 - 1.0", -1.0);
-  CHECK ("1.0 - 1.0", 0.0);
-  CHECK ("0.0f - 0.0f", 0.0f);
-  CHECK ("0.0f - 1.0f", -1.0f);
-  CHECK ("1.0f - 1.0f", 0.0f);
+  check_get_front ("0.0 - 0.0", 0.0);
+  check_get_front ("0.0 - 1.0", -1.0);
+  check_get_front ("1.0 - 1.0", 0.0);
+  check_get_front ("0.0f - 0.0f", 0.0f);
+  check_get_front ("0.0f - 1.0f", -1.0f);
+  check_get_front ("1.0f - 1.0f", 0.0f);
 
-  CHECK ("0U - 0U", 0U);
-  CHECK ("1U - 0U", 1U);
-  CHECK ("2U - 1U", 1U);
-  CHECK ("0UL - 0UL", 0UL);
-  CHECK ("1UL - 0UL", 1UL);
-  CHECK ("2UL - 1UL", 1UL);
-
-#undef CHECK
+  check_get_front ("0U - 0U", 0U);
+  check_get_front ("1U - 0U", 1U);
+  check_get_front ("2U - 1U", 1U);
+  check_get_front ("0UL - 0UL", 0UL);
+  check_get_front ("1UL - 0UL", 1UL);
+  check_get_front ("2UL - 1UL", 1UL);
 
   fhg::util::boost::test::require_exception<std::runtime_error>
     ( boost::bind (&parser_ctor, "0U - 1U")
