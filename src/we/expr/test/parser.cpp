@@ -525,6 +525,19 @@ BOOST_AUTO_TEST_CASE (token_add)
   check_integral<long> ("+", &plus<long>);
   check_integral<unsigned long> ("+", &plus<unsigned long>);
 
+  check ("0 + 0", 0);
+  check ("0 + 1", 1);
+  check ("1 + 0", 1);
+  check ("0U + 0U", 0U);
+  check ("0U + 1U", 1U);
+  check ("1U + 0U", 1U);
+  check ("0L + 0L", 0L);
+  check ("0L + 1L", 1L);
+  check ("1L + 0L", 1L);
+  check ("0UL + 0UL", 0UL);
+  check ("0UL + 1UL", 1UL);
+  check ("1UL + 0UL", 1UL);
+
   check_fractional<float> ("+", &plus<float>);
   check_fractional<double> ("+", &plus<double>);
 
