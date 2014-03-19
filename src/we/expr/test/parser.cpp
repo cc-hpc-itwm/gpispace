@@ -345,12 +345,20 @@ namespace
     check ((boost::format ("%1% <= %2%") % lhs % rhs).str(), le);
     check ((boost::format ("%1% > %2%") % lhs % rhs).str(), gt);
     check ((boost::format ("%1% >= %2%") % lhs % rhs).str(), ge);
+
+    check ((boost::format ("%1% :lt: %2%") % lhs % rhs).str(), lt);
+    check ((boost::format ("%1% :le: %2%") % lhs % rhs).str(), le);
+    check ((boost::format ("%1% :gt: %2%") % lhs % rhs).str(), gt);
+    check ((boost::format ("%1% :ge: %2%") % lhs % rhs).str(), ge);
   }
 
   void check_equality (std::string lhs, std::string rhs, bool eq)
   {
     check ((boost::format ("%1% != %2%") % lhs % rhs).str(), !eq);
     check ((boost::format ("%1% == %2%") % lhs % rhs).str(), eq);
+
+    check ((boost::format ("%1% :ne: %2%") % lhs % rhs).str(), !eq);
+    check ((boost::format ("%1% :eq: %2%") % lhs % rhs).str(), eq);
   }
 }
 
