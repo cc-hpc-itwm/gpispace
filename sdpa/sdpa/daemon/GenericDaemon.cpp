@@ -403,35 +403,40 @@ void GenericDaemon::handleErrorEvent (const events::ErrorEvent* evt)
       {
         Worker::ptr_t ptrWorker = scheduler().worker_manager().findWorker(worker_id);
 
-          // notify capability losses...
-          lock_type lock(mtx_master_);
-          BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+        // notify capability losses...
+        lock_type lock(mtx_master_);
+        BOOST_FOREACH(sdpa::MasterInfo& masterInfo, m_arrMasterInfo)
+        {
+          parent_proxy (this, masterInfo.name()).capabilities_lost
+            (ptrWorker->capabilities());
+        }
+
+        const std::set<job_id_t> jobs_to_reschedule
+          ( scheduler().worker_manager().findWorker (worker_id)
+          ->getJobListAndCleanQueues()
+          );
+
+        BOOST_FOREACH (sdpa::job_id_t jobId, jobs_to_reschedule)
+        {
+          Job* pJob = findJob (jobId);
+          if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
           {
-            parent_proxy (this, masterInfo.name()).capabilities_lost
-              (ptrWorker->capabilities());
-          }
+            scheduler().workerCanceled (worker_id, jobId);
+            sdpa::worker_id_list_t
+              list_not_terminated_workers(scheduler().releaseReservation (jobId));
 
-          // if there still are registered workers, otherwise declare the remaining
-          // jobs failed
-
-          const std::set<job_id_t> jobs_to_reschedule
-            ( scheduler().worker_manager().findWorker (worker_id)
-            ->getJobListAndCleanQueues()
-            );
-          scheduler().worker_manager().deleteWorker (worker_id);
-
-          BOOST_FOREACH (sdpa::job_id_t jobId, jobs_to_reschedule)
-          {
-            Job* pJob = findJob (jobId);
-            if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
+            BOOST_FOREACH( const worker_id_t& wid, list_not_terminated_workers)
             {
-              scheduler().releaseReservation (jobId);
-              pJob->Reschedule(); // put the job back into the pending state
-              scheduler().enqueueJob (jobId);
+              child_proxy (this, wid).cancel_job (jobId);
             }
-          }
 
-          request_scheduling();
+            pJob->Reschedule(); // put the job back into the pending state
+            scheduler().enqueueJob (jobId);
+          }
+        }
+
+        scheduler().worker_manager().deleteWorker (worker_id);
+        request_scheduling();
       }
       catch (WorkerNotFoundException const& /*ignored*/)
       {
