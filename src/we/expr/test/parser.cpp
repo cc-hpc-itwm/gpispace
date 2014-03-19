@@ -422,10 +422,27 @@ BOOST_AUTO_TEST_CASE (token_cmp)
 
 namespace
 {
+  template<typename T> struct suffix {};
+
+#define SUFFIX(_type, _suffix)                  \
+  template<>                                    \
+  struct suffix<_type>                          \
+  {                                             \
+    std::string operator() ()                   \
+    {                                           \
+      return _suffix;                           \
+    }                                           \
+  }
+
+  SUFFIX (int, "");
+  SUFFIX (unsigned int, "U");
+  SUFFIX (long, "L");
+  SUFFIX (unsigned long, "UL");
+#undef SUFFIX
+
   template<typename T>
   void check_integral ( std::string const& operation_string
                       , boost::function<T (T const&, T const&)> operation
-                      , std::string const& suffix
                       )
   {
     T const l (rand());
@@ -435,7 +452,7 @@ namespace
       ( ( boost::format ("%1%%3% %4% %2%%3%")
         % l
         % r
-        % suffix
+        % suffix<T>()()
         % operation_string
         ).str()
       , operation (l, r)
@@ -457,10 +474,10 @@ BOOST_AUTO_TEST_CASE (token_add)
   check ("\"a\" + \"a\"", std::string ("aa"));
   check ("\"ab\" + \"a\"", std::string ("aba"));
 
-  check_integral<int> ("+", &plus<int>, "");
-  check_integral<unsigned int> ("+", &plus<unsigned int>, "U");
-  check_integral<long> ("+", &plus<long>, "L");
-  check_integral<unsigned long> ("+", &plus<unsigned long>, "UL");
+  check_integral<int> ("+", &plus<int>);
+  check_integral<unsigned int> ("+", &plus<unsigned int>);
+  check_integral<long> ("+", &plus<long>);
+  check_integral<unsigned long> ("+", &plus<unsigned long>);
 
   check ("0.0 + 0.0", 0.0);
   check ("0.0 + 1.0", 1.0);
@@ -488,8 +505,8 @@ namespace
 
 BOOST_AUTO_TEST_CASE (token_sub)
 {
-  check_integral<int> ("-", &minus<int>, "");
-  check_integral<long> ("-", &minus<long>, "L");
+  check_integral<int> ("-", &minus<int>);
+  check_integral<long> ("-", &minus<long>);
 
   check ("0.0 - 0.0", 0.0);
   check ("0.0 - 1.0", -1.0);
