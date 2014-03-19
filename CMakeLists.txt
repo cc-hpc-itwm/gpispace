@@ -2,9 +2,9 @@ cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 
 project (sdpa_main)
 
-set(V_MAJOR 13)
-set(V_MINOR 09)
-set(V_PATCH 1)
+set(V_MAJOR 14)
+set(V_MINOR 03)
+set(V_PATCH )
 set(V_EXTRA )
 
 set (PROJECT_VERSION      CACHE STRING "Project version")
@@ -39,32 +39,15 @@ if (NOT PROJECT_REVISION)
 endif (NOT PROJECT_REVISION)
 set (PROJECT_REVISION "${PROJECT_REVISION}" CACHE STRING "Source code revision" FORCE)
 
-  execute_process (
-    COMMAND git describe
-    COMMAND sed -e "s/^v//"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE _out
-    ERROR_VARIABLE _err
-    RESULT_VARIABLE _res
-  )
-  if (${_res} EQUAL 0)
-    string (STRIP "${_out}" _out)
-    set (PROJECT_VERSION ${_out})
-  else()
-    set(__new_vsn "${V_MAJOR}.${V_MINOR}")
-    if (NOT ${V_PATCH} STREQUAL "")
-      set(__new_vsn "${__new_vsn}-${V_PATCH}")
-    endif()
-    if (NOT ${V_EXTRA} STREQUAL "")
-      set(__new_vsn "${__new_vsn}-${V_EXTRA}")
-    endif()
-    set (PROJECT_VERSION ${__new_vsn})
-  endif ()
-
-if (NOT PROJECT_VERSION)
-  message (FATAL_ERROR "could not discover version info, please define -DPROJECT_VERSION by hand!")
+set(__new_vsn "${V_MAJOR}.${V_MINOR}")
+if (NOT ${V_PATCH} STREQUAL "")
+  set(__new_vsn "${__new_vsn}-${V_PATCH}")
 endif()
-set (PROJECT_VERSION "${PROJECT_VERSION}" CACHE STRING "Project version" FORCE)
+if (NOT ${V_EXTRA} STREQUAL "")
+  set(__new_vsn "${__new_vsn}-${V_EXTRA}")
+endif()
+set (PROJECT_VERSION "${__new_vsn}" CACHE STRING "Project version" FORCE)
+set (__new_vsn)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
@@ -129,6 +112,7 @@ add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION")
 
 find_package(HWLOC REQUIRED QUIET)
+find_package (Graphviz COMPONENTS cdt gvc graph pathplan REQUIRED QUIET)
 
 # RPATH configuration
 set(CMAKE_SKIP_BUILD_RPATH FALSE)

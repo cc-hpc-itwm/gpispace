@@ -30,6 +30,12 @@ find_path (GRAPHVIZ_INCLUDE_DIR
   PATH_SUFFIXES graphviz
   )
 
+find_path (GRAPHVIZ_PLUGIN_DIR
+  NAMES libgvplugin_core.so
+  HINTS ${_graphviz_LIBRARIES_SEARCH_DIRS}
+  PATH_SUFFIXES graphviz
+  )
+
 foreach (comp ${Graphviz_FIND_COMPONENTS})
   find_library ( GRAPHVIZ_${comp}_LIBRARY
                  NAMES ${comp}
@@ -53,6 +59,7 @@ find_package_handle_standard_args ( Graphviz
                                   )
 
 mark_as_advanced (GRAPHVIZ_FOUND GRAPHVIZ_INCLUDE_DIR GRAPHVIZ_LIBRARIES)
+mark_as_advanced (GRAPHVIZ_PLUGIN_DIR)
 
 set (CMAKE_FIND_LIBRARY_SUFFIXES ${_graphviz_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
 unset (_graphviz_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES)
