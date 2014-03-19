@@ -347,45 +347,45 @@ namespace
     check ((boost::format ("%1% >= %2%") % lhs % rhs).str(), ge);
   }
 
-  void check_equality (std::string lhs, std::string rhs, bool ne, bool eq)
+  void check_equality (std::string lhs, std::string rhs, bool eq)
   {
-    check ((boost::format ("%1% != %2%") % lhs % rhs).str(), ne);
+    check ((boost::format ("%1% != %2%") % lhs % rhs).str(), !eq);
     check ((boost::format ("%1% == %2%") % lhs % rhs).str(), eq);
   }
 }
 
 BOOST_AUTO_TEST_CASE (token_cmp)
 {
-#define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge, _ne, _eq)                 \
+#define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge, _eq)                      \
   check_compare (#_lhs, #_rhs, _lt, _le, _gt, _ge);                     \
-  check_equality (#_lhs, #_rhs, _ne, _eq)
+  check_equality (#_lhs, #_rhs, _eq)
 
-  CHECK ('a', 'a', false, true, false, true, false, true);
-  CHECK ('a', 'b', true, true, false, false, true, false);
-  CHECK ('b', 'a', false, false, true, true, true, false);
-  CHECK ("\"\"", "\"\"", false, true, false, true, false, true);
-  CHECK ("\"\"", "\"a\"", true, true, false, false, true, false);
-  CHECK ("\"a\"", "\"a\"", false, true, false, true, false, true);
-  CHECK ("\"a\"", "\"b\"", true, true, false, false, true, false);
-  CHECK ("\"a\"", "\"ab\"", true, true, false, false, true, false);
-  CHECK ("\"a\"", "\"\"", false, false, true, true, true, false);
-  CHECK ("\"b\"", "\"a\"", false, false, true, true, true, false);
-  CHECK ("\"ab\"", "\"a\"", false, false, true, true, true, false);
-  CHECK (true, true, false, true, false, true, false, true);
-  CHECK (false, true, true, true, false, false, true, false);
-  CHECK (true, false, false, false, true, true, true, false);
-  CHECK (0, 0, false, true, false, true, false, true);
-  CHECK (0, 1, true, true, false, false, true, false);
-  CHECK (1, 0, false, false, true, true, true, false);
-  CHECK (0U, 0U, false, true, false, true, false, true);
-  CHECK (0U, 1U, true, true, false, false, true, false);
-  CHECK (1U, 0U, false, false, true, true, true, false);
-  CHECK (0L, 0L, false, true, false, true, false, true);
-  CHECK (0L, 1L, true, true, false, false, true, false);
-  CHECK (1L, 0L, false, false, true, true, true, false);
-  CHECK (0UL, 0UL, false, true, false, true, false, true);
-  CHECK (0UL, 1UL, true, true, false, false, true, false);
-  CHECK (1UL, 0UL, false, false, true, true, true, false);
+  CHECK ('a', 'a', false, true, false, true, true);
+  CHECK ('a', 'b', true, true, false, false, false);
+  CHECK ('b', 'a', false, false, true, true, false);
+  CHECK ("\"\"", "\"\"", false, true, false, true, true);
+  CHECK ("\"\"", "\"a\"", true, true, false, false, false);
+  CHECK ("\"a\"", "\"a\"", false, true, false, true, true);
+  CHECK ("\"a\"", "\"b\"", true, true, false, false, false);
+  CHECK ("\"a\"", "\"ab\"", true, true, false, false, false);
+  CHECK ("\"a\"", "\"\"", false, false, true, true, false);
+  CHECK ("\"b\"", "\"a\"", false, false, true, true, false);
+  CHECK ("\"ab\"", "\"a\"", false, false, true, true, false);
+  CHECK (true, true, false, true, false, true, true);
+  CHECK (false, true, true, true, false, false, false);
+  CHECK (true, false, false, false, true, true, false);
+  CHECK (0, 0, false, true, false, true, true);
+  CHECK (0, 1, true, true, false, false, false);
+  CHECK (1, 0, false, false, true, true, false);
+  CHECK (0U, 0U, false, true, false, true, true);
+  CHECK (0U, 1U, true, true, false, false, false);
+  CHECK (1U, 0U, false, false, true, true, false);
+  CHECK (0L, 0L, false, true, false, true, true);
+  CHECK (0L, 1L, true, true, false, false, false);
+  CHECK (1L, 0L, false, false, true, true, false);
+  CHECK (0UL, 0UL, false, true, false, true, true);
+  CHECK (0UL, 1UL, true, true, false, false, false);
+  CHECK (1UL, 0UL, false, false, true, true, false);
 #undef CHECK
 
   check_compare ("0.0", "0.0", false, true, false, true);
@@ -395,21 +395,21 @@ BOOST_AUTO_TEST_CASE (token_cmp)
   check_compare ("0.0f", "1.0f", true, true, false, false);
   check_compare ("1.0f", "0.0f", false, false, true, true);
 
-  check_equality ("{}", "{}", false, true);
-  check_equality ("{}", "bitset_insert {} 1L", true, false);
-  check_equality ("bitset_insert {} 1L", "{}", true, false);
-  check_equality ("bitset_insert {} 1L", "bitset_insert {} 2L", true, false);
+  check_equality ("{}", "{}", true);
+  check_equality ("{}", "bitset_insert {} 1L", false);
+  check_equality ("bitset_insert {} 1L", "{}", false);
+  check_equality ("bitset_insert {} 1L", "bitset_insert {} 2L", false);
   check_equality ( "bitset_insert (bitset_insert {} 1L) 2L"
-                 , "bitset_insert {} 2L", true, false
+                 , "bitset_insert {} 2L", false
                  );
   check_equality ( "bitset_insert (bitset_insert {} 1L) 2L"
-                 , "bitset_insert (bitset_insert {} 2L) 1L", false, true
+                 , "bitset_insert (bitset_insert {} 2L) 1L", true
                  );
 
-  check_equality ("y()", "y()", false, true);
-  check_equality ("y(4)", "y()", true, false);
-  check_equality ("y()", "y(4)", true, false);
-  check_equality ("y(4)", "y(4)", false, true);
+  check_equality ("y()", "y()", true);
+  check_equality ("y(4)", "y()", false);
+  check_equality ("y()", "y(4)", false);
+  check_equality ("y(4)", "y(4)", true);
 }
 
 namespace
