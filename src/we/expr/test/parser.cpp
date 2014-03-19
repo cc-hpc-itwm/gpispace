@@ -354,45 +354,13 @@ BOOST_AUTO_TEST_CASE (token_not)
 
 BOOST_AUTO_TEST_CASE (token_cmp)
 {
-  expr::eval::context context;
-
 #define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge, _ne, _eq)                 \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% < %2%") % #_lhs % #_rhs).str(), context)    \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_lt)                               \
-    );                                                                  \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% <= %2%") % #_lhs % #_rhs).str(), context)   \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_le)                               \
-    );                                                                  \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% > %2%") % #_lhs % #_rhs).str(), context)    \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_gt)                               \
-    );                                                                  \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% >= %2%") % #_lhs % #_rhs).str(), context)   \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_ge)                               \
-    );                                                                  \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% != %2%") % #_lhs % #_rhs).str(), context)   \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_ne)                               \
-    );                                                                  \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str(), context)   \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_eq)                               \
-    )
+  check_get_front ((boost::format ("%1% < %2%") % #_lhs % #_rhs).str(), _lt); \
+  check_get_front ((boost::format ("%1% <= %2%") % #_lhs % #_rhs).str(), _le); \
+  check_get_front ((boost::format ("%1% > %2%") % #_lhs % #_rhs).str(), _gt); \
+  check_get_front ((boost::format ("%1% >= %2%") % #_lhs % #_rhs).str(), _ge); \
+  check_get_front ((boost::format ("%1% != %2%") % #_lhs % #_rhs).str(), _ne); \
+  check_get_front ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str(), _eq)
 
   CHECK ('a', 'a', false, true, false, true, false, true);
   CHECK ('a', 'b', true, true, false, false, true, false);
@@ -423,30 +391,10 @@ BOOST_AUTO_TEST_CASE (token_cmp)
 #undef CHECK
 
 #define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge)                           \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% < %2%") % #_lhs % #_rhs).str(), context)    \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_lt)                               \
-    );                                                                  \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% <= %2%") % #_lhs % #_rhs).str(), context)   \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_le)                               \
-    );                                                                  \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% > %2%") % #_lhs % #_rhs).str(), context)    \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_gt)                               \
-    );                                                                  \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% >= %2%") % #_lhs % #_rhs).str(), context)   \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_ge)                               \
-    )
+  check_get_front ((boost::format ("%1% < %2%") % #_lhs % #_rhs).str(), _lt); \
+  check_get_front ((boost::format ("%1% <= %2%") % #_lhs % #_rhs).str(), _le); \
+  check_get_front ((boost::format ("%1% > %2%") % #_lhs % #_rhs).str(), _gt); \
+  check_get_front ((boost::format ("%1% >= %2%") % #_lhs % #_rhs).str(), _ge)
 
   CHECK (0.0, 0.0, false, true, false, true);
   CHECK (0.0, 1.0, true, true, false, false);
@@ -457,12 +405,7 @@ BOOST_AUTO_TEST_CASE (token_cmp)
 #undef CHECK
 
 #define CHECK(_lhs, _rhs, _eq)                                          \
-  BOOST_REQUIRE_EQUAL                                                   \
-    ( expr::parse::parser                                               \
-      ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str(), context)   \
-    . get_front()                                                       \
-    , pnet::type::value::value_type (_eq)                               \
-    )
+  check_get_front ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str(), _eq)
 
   CHECK ({}, {}, true);
   CHECK ({}, bitset_insert {} 1L, false);
@@ -490,19 +433,12 @@ BOOST_AUTO_TEST_CASE (token_add)
 
 #define CHECK_INTEGRAL(_type, _suffix)                                 \
   {                                                                    \
-    expr::eval::context context;                                       \
-                                                                       \
     _type const l (rand());                                            \
     _type const r (rand());                                            \
                                                                        \
-    BOOST_REQUIRE_EQUAL                                                \
-      ( expr::parse::parser                                            \
-        ((boost::format ("%1%%3% + %2%%3%") % l % r % _suffix).str()   \
-        , context                                                      \
-        )                                                              \
-      . get_front()                                                    \
-      , pnet::type::value::value_type (l + r)                          \
-      );                                                               \
+    check_get_front ((boost::format ("%1%%3% + %2%%3%") % l % r % _suffix).str() \
+                    , l + r                                             \
+                    );                                                  \
   }
 
   CHECK_INTEGRAL (int, "");
@@ -531,19 +467,12 @@ BOOST_AUTO_TEST_CASE (token_sub)
 {
 #define CHECK_INTEGRAL(_type, _suffix)                                 \
   {                                                                    \
-    expr::eval::context context;                                       \
-                                                                       \
     _type const l (rand());                                            \
     _type const r (rand());                                            \
                                                                        \
-    BOOST_REQUIRE_EQUAL                                                \
-      ( expr::parse::parser                                            \
-        ((boost::format ("%1%%3% - %2%%3%") % l % r % _suffix).str()   \
-        , context                                                      \
-        )                                                              \
-      . get_front()                                                    \
-      , pnet::type::value::value_type (l - r)                          \
-      );                                                               \
+    check_get_front ((boost::format ("%1%%3% - %2%%3%") % l % r % _suffix).str() \
+                    , l - r                                             \
+                    );                                                  \
   }
 
   CHECK_INTEGRAL (int, "");
