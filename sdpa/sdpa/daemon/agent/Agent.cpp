@@ -37,12 +37,6 @@ namespace sdpa
       }
 
       Job* pJob (findJob (pEvt->job_id()));
-      if (!pJob)
-      {
-        //! \todo Explain why we can ignore this
-        return;
-      }
-
       if (!hasWorkflowEngine())
       {
         pJob->JobFinished (pEvt->result());
@@ -102,12 +96,6 @@ namespace sdpa
       }
 
       Job* pJob (findJob (pEvt->job_id()));
-      if (!pJob)
-      {
-        //! \todo Explain why we can ignore this
-        return;
-      }
-
       if (!hasWorkflowEngine())
       {
         pJob->JobFailed (pEvt->error_message());
