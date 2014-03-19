@@ -3,23 +3,20 @@
 #define BOOST_TEST_MODULE we_expr_parser
 #include <boost/test/unit_test.hpp>
 
+#include <we/exception.hpp>
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
-
-#include <we/exception.hpp>
-
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <fhg/util/boost/test/require_exception.hpp>
 
 #include <boost/bind.hpp>
-
 #include <boost/random/random_device.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 
-#include <string>
 #include <limits>
+#include <string>
 
 #ifdef NDEBUG
 #include <fhg/util/now.hpp>
