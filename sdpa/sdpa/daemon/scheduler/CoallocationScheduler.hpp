@@ -112,6 +112,19 @@ namespace sdpa
           return m_list_workers;
         }
 
+        sdpa::worker_id_list_t getListNotTerminatedWorkers() const
+        {
+          sdpa::worker_id_list_t list_not_terminated_workers(m_list_workers);
+          BOOST_FOREACH ( const worker_id_t& wid
+                        , m_map_worker_result | boost::adaptors::map_keys
+                        )
+          {
+            list_not_terminated_workers.remove(wid);
+          }
+
+          return list_not_terminated_workers;
+        }
+
       private:
         sdpa::worker_id_list_t m_list_workers;
         std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
