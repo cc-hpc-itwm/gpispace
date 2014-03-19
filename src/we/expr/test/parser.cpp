@@ -553,6 +553,64 @@ BOOST_AUTO_TEST_CASE (token_add)
 
 namespace
 {
+  template<typename T>
+    T product (T const& l, T const& r)
+  {
+    return l * r;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_mul)
+{
+  check_integral<int> ("*", &product<int>);
+  check_integral<unsigned int> ("*", &product<unsigned int>);
+  check_integral<long> ("*", &product<long>);
+  check_integral<unsigned long> ("*", &product<unsigned long>);
+
+  check ("0 * 0", 0);
+  check ("0 * 1", 0);
+  check ("1 * 0", 0);
+  check ("1 * 1", 1);
+  check ("1 * 2", 2);
+  check ("2 * 1", 2);
+  check ("0U * 0U", 0U);
+  check ("0U * 1U", 0U);
+  check ("1U * 0U", 0U);
+  check ("1U * 1U", 1U);
+  check ("1U * 2U", 2U);
+  check ("2U * 1U", 2U);
+  check ("0L * 0L", 0L);
+  check ("0L * 1L", 0L);
+  check ("1L * 0L", 0L);
+  check ("1L * 1L", 1L);
+  check ("1L * 2L", 2L);
+  check ("2L * 1L", 2L);
+  check ("0UL * 0UL", 0UL);
+  check ("0UL * 1UL", 0UL);
+  check ("1UL * 0UL", 0UL);
+  check ("1UL * 1UL", 1UL);
+  check ("1UL * 2UL", 2UL);
+  check ("2UL * 1UL", 2UL);
+
+  check_fractional<float> ("*", &product<float>);
+  check_fractional<double> ("*", &product<double>);
+
+  check ("0.0 * 0.0", 0.0);
+  check ("0.0 * 1.0", 0.0);
+  check ("1.0 * 0.0", 0.0);
+  check ("1.0 * 1.0", 1.0);
+  check ("1.0 * 2.0", 2.0);
+  check ("2.0 * 1.0", 2.0);
+  check ("0.0f * 0.0f", 0.0f);
+  check ("0.0f * 1.0f", 0.0f);
+  check ("1.0f * 0.0f", 0.0f);
+  check ("1.0f * 1.0f", 1.0f);
+  check ("1.0f * 2.0f", 2.0f);
+  check ("2.0f * 1.0f", 2.0f);
+}
+
+namespace
+{
   void parser_ctor (std::string const& input)
   {
     (void)expr::parse::parser (input);
