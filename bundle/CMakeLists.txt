@@ -35,6 +35,14 @@ bundle_apps(
 )
 
 install(CODE "
+  file(MAKE_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/lib/graphviz\")
+  file(COPY \"${CMAKE_CURRENT_SOURCE_DIR}/graphviz/config6\"
+       DESTINATION \"\${CMAKE_INSTALL_PREFIX}/lib/graphviz\")
+  file(GLOB GRAPHVIZ_PLUGIN_CORE \"${GRAPHVIZ_PLUGIN_DIR}/libgvplugin_core.so*\")
+  file(GLOB GRAPHVIZ_PLUGIN_DOT \"${GRAPHVIZ_PLUGIN_DIR}/libgvplugin_dot_layout.so*\")
+  file(COPY \${GRAPHVIZ_PLUGIN_CORE} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/lib/graphviz\")
+  file(COPY \${GRAPHVIZ_PLUGIN_DOT} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/lib/graphviz\")
+
   file(GLOB_RECURSE PLUGINS
          \"\${CMAKE_INSTALL_PREFIX}/libexec/fhg/plugins/*.so\")
   execute_process(COMMAND ${CMAKE_SOURCE_DIR}/sdpa/bin/pbs/bundle.sh
