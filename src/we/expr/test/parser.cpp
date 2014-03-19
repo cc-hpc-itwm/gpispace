@@ -565,6 +565,47 @@ namespace
   }
 }
 
+namespace
+{
+  template<typename T>
+  void check_minus_for_unsigned_integral
+    ( std::string const& operation_string
+    , boost::function<T (T const&, T const&)> operation
+    )
+  {
+    boost::random::random_device generator;
+    boost::random::uniform_int_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 1000; ++i)
+    {
+      T const l (number (generator));
+      T const r (number (generator));
+
+      std::string const expression
+        ( ( boost::format ("%1%%3% %4% %2%%3%")
+          % l
+          % r
+          % suffix<T>()()
+          % operation_string
+          ).str()
+        );
+
+      if (l >= r)
+      {
+        check (expression, operation (l, r));
+      }
+      else
+      {
+        fhg::util::boost::test::require_exception<std::runtime_error>
+          ( boost::bind (&parser_ctor, expression)
+          , "r > l => neg result"
+          );
+      }
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE (token_sub)
 {
   check_integral<int> ("-", &minus<int>);
@@ -586,6 +627,9 @@ BOOST_AUTO_TEST_CASE (token_sub)
   check ("0.0f - 0.0f", 0.0f);
   check ("0.0f - 1.0f", -1.0f);
   check ("1.0f - 1.0f", 0.0f);
+
+  check_minus_for_unsigned_integral<unsigned int> ("-", &minus<unsigned int>);
+  check_minus_for_unsigned_integral<unsigned long> ("-", &minus<unsigned long>);
 
   check ("0U - 0U", 0U);
   check ("1U - 0U", 1U);
