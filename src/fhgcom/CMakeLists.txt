@@ -2,9 +2,6 @@ set (FHG_COM_NS_UUID "c9fe00cb-d9f7-432e-9235-66b7929b6e2a" CACHE STRING "The un
 
 include_directories (${FhgCom_INCLUDE_DIR})
 
-find_package (ZLIB REQUIRED QUIET)
-include_directories (SYSTEM ${ZLIB_INCLUDE_DIRS})
-
 include_directories (${FhgLog_INCLUDE_DIR})
 
 include_directories (${UTIL_INCLUDE_DIR})
@@ -50,8 +47,7 @@ set (srcs
 
 ADD_LIBRARY(fhgcom ${hdrs} ${srcs})
 ADD_LIBRARY(fhgcom-shared SHARED ${hdrs} ${srcs})
-target_link_libraries (fhgcom ${ZLIB_LIBRARIES})
-#target_link_libraries (fhgcom-shared ${ZLIB_LIBRARIES} ${FhgLog_LIBRARY})
+#target_link_libraries (fhgcom-shared ${FhgLog_LIBRARY})
 set_target_properties(fhgcom-shared PROPERTIES OUTPUT_NAME fhgcom)
 
   add_subdirectory (tests)
