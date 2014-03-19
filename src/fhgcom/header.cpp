@@ -1,4 +1,3 @@
-#include <fhgcom/ns_uuid.hpp>
 #include <fhgcom/header.hpp>
 
 #include <cstring>
@@ -20,7 +19,7 @@ namespace fhg
       static boost::uuids::uuid fhg_com_uuid ()
       {
         static boost::uuids::string_generator g;
-        static boost::uuids::uuid u = g(FHG_COM_NS_UUID);
+        static boost::uuids::uuid u = g("c9fe00cb-d9f7-432e-9235-66b7929b6e2a");
         return u;
       }
 

@@ -24,7 +24,6 @@ set (hdrs
   tcp_client.hpp
   io_service_pool.hpp
 
-  ns_uuid.hpp
   header.hpp
 )
 
@@ -37,7 +36,6 @@ set (srcs
   tcp_client.cpp
   io_service_pool.cpp
 
-  ns_uuid.cpp
   header.cpp
 )
 
