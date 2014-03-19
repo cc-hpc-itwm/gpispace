@@ -16,6 +16,7 @@
 
 #include <boost/random/random_device.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
 
 #include <string>
 #include <limits>
@@ -442,6 +443,8 @@ namespace
   SUFFIX (unsigned int, "U");
   SUFFIX (long, "L");
   SUFFIX (unsigned long, "UL");
+  SUFFIX (float, "f");
+  SUFFIX (double, "");
 #undef SUFFIX
 
   template<typename T>
@@ -471,6 +474,38 @@ namespace
   }
 
   template<typename T>
+  void check_fractional ( std::string const& operation_string
+                        , boost::function<T (T const&, T const&)> operation
+                        )
+  {
+    boost::random::random_device generator;
+    boost::random::uniform_real_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 1000; ++i)
+    {
+      std::string const l
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+      std::string const r
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      expr::eval::context context;
+
+      BOOST_REQUIRE_EQUAL
+        ( boost::get<T>
+          ( expr::parse::parser
+            ((boost::format ("%1% %3% %2%") % l % r % operation_string).str())
+          . eval_front (context)
+          )
+        , operation
+          ( boost::get<T> (expr::parse::parser (l).eval_front (context))
+          , boost::get<T> (expr::parse::parser (r).eval_front (context))
+          )
+        );
+    }
+  }
+
+  template<typename T>
     T plus (T const& l, T const& r)
   {
     return l + r;
@@ -489,6 +524,9 @@ BOOST_AUTO_TEST_CASE (token_add)
   check_integral<unsigned int> ("+", &plus<unsigned int>);
   check_integral<long> ("+", &plus<long>);
   check_integral<unsigned long> ("+", &plus<unsigned long>);
+
+  check_fractional<float> ("+", &plus<float>);
+  check_fractional<double> ("+", &plus<double>);
 
   check ("0.0 + 0.0", 0.0);
   check ("0.0 + 1.0", 1.0);
@@ -518,6 +556,9 @@ BOOST_AUTO_TEST_CASE (token_sub)
 {
   check_integral<int> ("-", &minus<int>);
   check_integral<long> ("-", &minus<long>);
+
+  check_fractional<float> ("-", &minus<float>);
+  check_fractional<double> ("-", &minus<double>);
 
   check ("0.0 - 0.0", 0.0);
   check ("0.0 - 1.0", -1.0);
