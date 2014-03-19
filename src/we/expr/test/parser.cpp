@@ -336,14 +336,23 @@ BOOST_AUTO_TEST_CASE (token_not)
   check ("!1UL", false);
 }
 
+namespace
+{
+  void check_compare
+    (std::string lhs, std::string rhs, bool lt, bool le, bool gt, bool ge)
+  {
+    check ((boost::format ("%1% < %2%") % lhs % rhs).str(), lt);
+    check ((boost::format ("%1% <= %2%") % lhs % rhs).str(), le);
+    check ((boost::format ("%1% > %2%") % lhs % rhs).str(), gt);
+    check ((boost::format ("%1% >= %2%") % lhs % rhs).str(), ge);
+  }
+}
+
 BOOST_AUTO_TEST_CASE (token_cmp)
 {
 #define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge, _ne, _eq)                 \
-  check ((boost::format ("%1% < %2%") % #_lhs % #_rhs).str(), _lt); \
-  check ((boost::format ("%1% <= %2%") % #_lhs % #_rhs).str(), _le); \
-  check ((boost::format ("%1% > %2%") % #_lhs % #_rhs).str(), _gt); \
-  check ((boost::format ("%1% >= %2%") % #_lhs % #_rhs).str(), _ge); \
-  check ((boost::format ("%1% != %2%") % #_lhs % #_rhs).str(), _ne); \
+  check_compare (#_lhs, #_rhs, _lt, _le, _gt, _ge);                     \
+  check ((boost::format ("%1% != %2%") % #_lhs % #_rhs).str(), _ne);    \
   check ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str(), _eq)
 
   CHECK ('a', 'a', false, true, false, true, false, true);
@@ -374,19 +383,12 @@ BOOST_AUTO_TEST_CASE (token_cmp)
   CHECK (1UL, 0UL, false, false, true, true, true, false);
 #undef CHECK
 
-#define CHECK(_lhs, _rhs, _lt, _le, _gt, _ge)                           \
-  check ((boost::format ("%1% < %2%") % #_lhs % #_rhs).str(), _lt); \
-  check ((boost::format ("%1% <= %2%") % #_lhs % #_rhs).str(), _le); \
-  check ((boost::format ("%1% > %2%") % #_lhs % #_rhs).str(), _gt); \
-  check ((boost::format ("%1% >= %2%") % #_lhs % #_rhs).str(), _ge)
-
-  CHECK (0.0, 0.0, false, true, false, true);
-  CHECK (0.0, 1.0, true, true, false, false);
-  CHECK (1.0, 0.0, false, false, true, true);
-  CHECK (0.0f, 0.0f, false, true, false, true);
-  CHECK (0.0f, 1.0f, true, true, false, false);
-  CHECK (1.0f, 0.0f, false, false, true, true);
-#undef CHECK
+  check_compare ("0.0", "0.0", false, true, false, true);
+  check_compare ("0.0", "1.0", true, true, false, false);
+  check_compare ("1.0", "0.0", false, false, true, true);
+  check_compare ("0.0f", "0.0f", false, true, false, true);
+  check_compare ("0.0f", "1.0f", true, true, false, false);
+  check_compare ("1.0f", "0.0f", false, false, true, true);
 
 #define CHECK(_lhs, _rhs, _eq)                                          \
   check ((boost::format ("%1% == %2%") % #_lhs % #_rhs).str(), _eq)
