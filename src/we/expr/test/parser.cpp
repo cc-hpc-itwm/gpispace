@@ -423,6 +423,21 @@ BOOST_AUTO_TEST_CASE (token_cmp)
 #undef CHECK
 }
 
+namespace
+{
+  template<typename T>
+  void check_integral_plus (std::string const& suffix)
+  {
+    T const l (rand());
+    T const r (rand());
+
+    check_get_front
+      ( (boost::format ("%1%%3% + %2%%3%") % l % r % suffix).str()
+      , l + r
+      );
+  }
+}
+
 BOOST_AUTO_TEST_CASE (token_add)
 {
   check_get_front ("'a' + 'a'", std::string ("aa"));
@@ -431,21 +446,10 @@ BOOST_AUTO_TEST_CASE (token_add)
   check_get_front ("\"a\" + \"a\"", std::string ("aa"));
   check_get_front ("\"ab\" + \"a\"", std::string ("aba"));
 
-#define CHECK_INTEGRAL(_type, _suffix)                                 \
-  {                                                                    \
-    _type const l (rand());                                            \
-    _type const r (rand());                                            \
-                                                                       \
-    check_get_front ((boost::format ("%1%%3% + %2%%3%") % l % r % _suffix).str() \
-                    , l + r                                             \
-                    );                                                  \
-  }
-
-  CHECK_INTEGRAL (int, "");
-  CHECK_INTEGRAL (unsigned int, "U");
-  CHECK_INTEGRAL (long, "L");
-  CHECK_INTEGRAL (unsigned long, "UL");
-#undef CHECK_INTEGRAL
+  check_integral_plus<int> ("");
+  check_integral_plus<unsigned int> ("U");
+  check_integral_plus<long> ("L");
+  check_integral_plus<unsigned long> ("UL");
 
   check_get_front ("0.0 + 0.0", 0.0);
   check_get_front ("0.0 + 1.0", 1.0);
@@ -461,23 +465,24 @@ namespace
   {
     (void)expr::parse::parser (input);
   }
+
+  template<typename T>
+  void check_integral_minus (std::string const& suffix)
+  {
+    T const l (rand());
+    T const r (rand());
+
+    check_get_front
+      ( (boost::format ("%1%%3% - %2%%3%") % l % r % suffix).str()
+      , l - r
+      );
+  }
 }
 
 BOOST_AUTO_TEST_CASE (token_sub)
 {
-#define CHECK_INTEGRAL(_type, _suffix)                                 \
-  {                                                                    \
-    _type const l (rand());                                            \
-    _type const r (rand());                                            \
-                                                                       \
-    check_get_front ((boost::format ("%1%%3% - %2%%3%") % l % r % _suffix).str() \
-                    , l - r                                             \
-                    );                                                  \
-  }
-
-  CHECK_INTEGRAL (int, "");
-  CHECK_INTEGRAL (long, "L");
-#undef CHECK_INTEGRAL
+  check_integral_minus<int> ("");
+  check_integral_minus<long> ("L");
 
   check_get_front ("0.0 - 0.0", 0.0);
   check_get_front ("0.0 - 1.0", -1.0);
