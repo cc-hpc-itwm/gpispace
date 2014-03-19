@@ -415,15 +415,29 @@ BOOST_AUTO_TEST_CASE (token_cmp)
 namespace
 {
   template<typename T>
-  void check_integral_plus (std::string const& suffix)
+  void check_integral ( std::string const& operation_string
+                      , boost::function<T (T const&, T const&)> operation
+                      , std::string const& suffix
+                      )
   {
     T const l (rand());
     T const r (rand());
 
     check
-      ( (boost::format ("%1%%3% + %2%%3%") % l % r % suffix).str()
-      , l + r
+      ( ( boost::format ("%1%%3% %4% %2%%3%")
+        % l
+        % r
+        % suffix
+        % operation_string
+        ).str()
+      , operation (l, r)
       );
+  }
+
+  template<typename T>
+    T plus (T const& l, T const& r)
+  {
+    return l + r;
   }
 }
 
@@ -435,10 +449,10 @@ BOOST_AUTO_TEST_CASE (token_add)
   check ("\"a\" + \"a\"", std::string ("aa"));
   check ("\"ab\" + \"a\"", std::string ("aba"));
 
-  check_integral_plus<int> ("");
-  check_integral_plus<unsigned int> ("U");
-  check_integral_plus<long> ("L");
-  check_integral_plus<unsigned long> ("UL");
+  check_integral<int> ("+", &plus<int>, "");
+  check_integral<unsigned int> ("+", &plus<unsigned int>, "U");
+  check_integral<long> ("+", &plus<long>, "L");
+  check_integral<unsigned long> ("+", &plus<unsigned long>, "UL");
 
   check ("0.0 + 0.0", 0.0);
   check ("0.0 + 1.0", 1.0);
@@ -456,22 +470,16 @@ namespace
   }
 
   template<typename T>
-  void check_integral_minus (std::string const& suffix)
+    T minus (T const& l, T const& r)
   {
-    T const l (rand());
-    T const r (rand());
-
-    check
-      ( (boost::format ("%1%%3% - %2%%3%") % l % r % suffix).str()
-      , l - r
-      );
+    return l - r;
   }
 }
 
 BOOST_AUTO_TEST_CASE (token_sub)
 {
-  check_integral_minus<int> ("");
-  check_integral_minus<long> ("L");
+  check_integral<int> ("-", &minus<int>, "");
+  check_integral<long> ("-", &minus<long>, "L");
 
   check ("0.0 - 0.0", 0.0);
   check ("0.0 - 1.0", -1.0);
