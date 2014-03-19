@@ -570,6 +570,13 @@ BOOST_AUTO_TEST_CASE (token_sub)
   check_integral<int> ("-", &minus<int>);
   check_integral<long> ("-", &minus<long>);
 
+  check ("0 - 0", 0);
+  check ("1 - 0", 1);
+  check ("0 - 1", -1);
+  check ("0L - 0L", 0L);
+  check ("1L - 0L", 1L);
+  check ("0L - 1L", -1L);
+
   check_fractional<float> ("-", &minus<float>);
   check_fractional<double> ("-", &minus<double>);
 
