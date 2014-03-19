@@ -23,10 +23,6 @@ namespace sdpa
 
     void Agent::handleJobFinishedEvent (const events::JobFinishedEvent* pEvt)
     {
-      // check if the message comes from outside/slave or from WFE
-      // if it comes from a slave, one should inform WFE -> subjob
-      // if it comes from WFE -> concerns the master job
-
       child_proxy (this, pEvt->from()).job_finished_ack (pEvt->job_id());
 
       if (scheduler().worker_manager().findWorker (pEvt->from())->isAborted (pEvt->job_id()))
@@ -104,13 +100,6 @@ namespace sdpa
       }
       else
       {
-        // this should only be called once, therefore the state
-        // machine when we switch the job from one state to another,
-        // the code belonging to exactly that transition should be
-        // executed. I.e. all this code should go to the FSM callback
-        // routine.
-
-
         scheduler().workerFailed (pEvt->from(), pEvt->job_id());
         bool bAllPartResCollected (scheduler().allPartialResultsCollected (pEvt->job_id()));
 
@@ -126,9 +115,6 @@ namespace sdpa
             pJob->JobFailed (pEvt->error_message());
             workflowEngine()->failed (pEvt->job_id(), pEvt->error_message());
           }
-
-          // cancel the other jobs assigned to the workers which are
-          // in the reservation list
 
           scheduler().releaseReservation (pJob->id());
         }
@@ -192,20 +178,16 @@ namespace sdpa
         }
       }
 
-      // the acknowledgment comes from a slave and there is no WE
       if (!hasWorkflowEngine())
       {
-        // just send an acknowledgment to the master
-        // send an acknowledgment to the component that requested the cancellation
         if (!isTop())
         {
-          // only if the job was already submitted
           parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
 
           deleteJob (pEvt->job_id());
         }
       }
-      else // acknowledgment comes from a worker -> inform WE that the activity was canceled
+      else
       {
         LLOG (TRACE, _logger, "informing workflow engine that the activity "<< pEvt->job_id() <<" was canceled");
 
