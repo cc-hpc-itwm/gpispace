@@ -50,6 +50,8 @@ void Worker::acknowledge(const job_id_t &job_id)
 void Worker::abort (const job_id_t& job_id)
 {
   lock_type const _ (mtx_);
+  submitted_.erase (job_id);
+  acknowledged_.erase(job_id);
   aborted_.insert (job_id);
 }
 
@@ -125,6 +127,7 @@ bool Worker::isReserved()
 
 bool Worker::isAborted (const job_id_t &job_id )
 {
+  lock_type const _ (mtx_);
   return aborted_.count(job_id);
 }
 
