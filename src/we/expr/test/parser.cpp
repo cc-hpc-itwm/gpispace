@@ -14,7 +14,11 @@
 
 #include <boost/bind.hpp>
 
+#include <boost/random/random_device.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
+
 #include <string>
+#include <limits>
 
 #ifdef NDEBUG
 #include <fhg/util/now.hpp>
@@ -445,8 +449,12 @@ namespace
                       , boost::function<T (T const&, T const&)> operation
                       )
   {
-    T const l (rand());
-    T const r (rand());
+    boost::random::random_device generator;
+    boost::random::uniform_int_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    T const l (number (generator));
+    T const r (number (generator));
 
     check
       ( ( boost::format ("%1%%3% %4% %2%%3%")
