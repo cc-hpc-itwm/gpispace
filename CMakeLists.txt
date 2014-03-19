@@ -2,9 +2,9 @@ cmake_minimum_required (VERSION "2.8.4" FATAL_ERROR)
 
 project (sdpa_main)
 
-set(V_MAJOR 13)
-set(V_MINOR 09)
-set(V_PATCH 1)
+set(V_MAJOR 14)
+set(V_MINOR 03)
+set(V_PATCH )
 set(V_EXTRA )
 
 set (PROJECT_VERSION      CACHE STRING "Project version")
