@@ -185,11 +185,6 @@ namespace utils
 
   struct orchestrator : boost::noncopyable
   {
-    orchestrator (std::string kvs_host, std::string kvs_port)
-      : _kvs_host (kvs_host)
-      , _kvs_port (kvs_port)
-      , _ (random_peer_name(), "127.0.0.1", kvs_host, kvs_port)
-    {}
     orchestrator (const kvs_server& kvs)
       : _kvs_host (kvs.kvs_host())
       , _kvs_port (kvs.kvs_port())
@@ -226,32 +221,6 @@ namespace utils
       , _ ( random_peer_name(), "127.0.0.1"
           , _kvs_host, _kvs_port
           , assemble_master_info_list (master_0, master_1)
-          , boost::none
-          )
-    {}
-    template <typename T>
-    agent ( const std::string& name
-          , const std::string& url
-          , std::string kvs_host, std::string kvs_port
-          , const T& master
-          )
-      : _kvs_host (kvs_host)
-      , _kvs_port (kvs_port)
-      , _ ( name, url
-          , _kvs_host, _kvs_port
-          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
-          , boost::none
-          )
-    {}
-    template <typename T>
-    agent ( std::string kvs_host, std::string kvs_port
-          , const T& master
-          )
-      : _kvs_host (kvs_host)
-      , _kvs_port (kvs_port)
-      , _ ( random_peer_name(), "127.0.0.1"
-          , _kvs_host, _kvs_port
-          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
           , boost::none
           )
     {}
