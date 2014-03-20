@@ -799,6 +799,61 @@ BOOST_AUTO_TEST_CASE (token_divint)
 namespace
 {
   template<typename T>
+    T remainder (T const& l, T const& r)
+  {
+    return l % r;
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_modint)
+{
+  check_divmod_for_integral<int> ("mod", &remainder<int>);
+  check_divmod_for_integral<unsigned int> ("mod", &remainder<unsigned int>);
+  check_divmod_for_integral<long> ("mod", &remainder<long>);
+  check_divmod_for_integral<unsigned long> ("mod", &remainder<unsigned long>);
+
+  require_evaluating_to ("0 mod 1", 0);
+  require_evaluating_to ("0U mod 1U", 0U);
+  require_evaluating_to ("0L mod 1L", 0L);
+  require_evaluating_to ("0UL mod 1UL", 0UL);
+  require_evaluating_to ("1 mod 1", 0);
+  require_evaluating_to ("1U mod 1U", 0U);
+  require_evaluating_to ("1L mod 1L", 0L);
+  require_evaluating_to ("1UL mod 1UL", 0UL);
+  require_evaluating_to ("2 mod 2", 0);
+  require_evaluating_to ("2U mod 2U", 0U);
+  require_evaluating_to ("2L mod 2L", 0L);
+  require_evaluating_to ("2UL mod 2UL", 0UL);
+  require_evaluating_to ("2 mod 1", 0);
+  require_evaluating_to ("2U mod 1U", 0U);
+  require_evaluating_to ("2L mod 1L", 0L);
+  require_evaluating_to ("2UL mod 1UL", 0UL);
+  require_evaluating_to ("1 mod 2", 1);
+  require_evaluating_to ("1U mod 2U", 1U);
+  require_evaluating_to ("1L mod 2L", 1L);
+  require_evaluating_to ("1UL mod 2UL", 1UL);
+  require_evaluating_to ("5 mod 3", 2);
+  require_evaluating_to ("5U mod 3U", 2U);
+  require_evaluating_to ("5L mod 3L", 2L);
+  require_evaluating_to ("5UL mod 3UL", 2UL);
+
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::divide_by_zero>
+    (boost::bind (&parser_ctor, "1 mod 0"), "divide by zero");
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::divide_by_zero>
+    (boost::bind (&parser_ctor, "1U mod 0U"), "divide by zero");
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::divide_by_zero>
+    (boost::bind (&parser_ctor, "1L mod 0L"), "divide by zero");
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::divide_by_zero>
+    (boost::bind (&parser_ctor, "1UL mod 0UL"), "divide by zero");
+}
+
+namespace
+{
+  template<typename T>
   void check_quotient_for_fractional()
   {
     boost::random::random_device generator;
