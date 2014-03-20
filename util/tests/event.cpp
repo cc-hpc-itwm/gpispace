@@ -15,4 +15,7 @@ BOOST_AUTO_TEST_CASE ( signal_event )
   e.wait (answer);
 
   BOOST_CHECK_EQUAL (42, answer);
+
+  e.notify (41);
+  BOOST_REQUIRE_EQUAL (41, e.wait());
 }
