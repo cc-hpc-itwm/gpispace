@@ -291,6 +291,7 @@ BOOST_AUTO_TEST_CASE (token_and_table)
   require_evaluating_to ("1 && 0", 0);
   require_evaluating_to ("1 && 2", 0);
   require_evaluating_to ("2 && 1", 0);
+  require_evaluating_to ("2 && 3", 2);
 
   require_evaluating_to ("0U && 0U", 0U);
   require_evaluating_to ("0U && 1U", 0U);
@@ -298,6 +299,7 @@ BOOST_AUTO_TEST_CASE (token_and_table)
   require_evaluating_to ("1U && 0U", 0U);
   require_evaluating_to ("1U && 2U", 0U);
   require_evaluating_to ("2U && 1U", 0U);
+  require_evaluating_to ("2U && 3U", 2U);
 
   require_evaluating_to ("0L && 0L", 0L);
   require_evaluating_to ("0L && 1L", 0L);
@@ -305,6 +307,7 @@ BOOST_AUTO_TEST_CASE (token_and_table)
   require_evaluating_to ("1L && 0L", 0L);
   require_evaluating_to ("1L && 2L", 0L);
   require_evaluating_to ("2L && 1L", 0L);
+  require_evaluating_to ("2L && 3L", 2L);
 
   require_evaluating_to ("0UL && 0UL", 0UL);
   require_evaluating_to ("0UL && 1UL", 0UL);
@@ -312,6 +315,7 @@ BOOST_AUTO_TEST_CASE (token_and_table)
   require_evaluating_to ("1UL && 0UL", 0UL);
   require_evaluating_to ("1UL && 2UL", 0UL);
   require_evaluating_to ("2UL && 1UL", 0UL);
+  require_evaluating_to ("2UL && 3UL", 2UL);
 }
 
 BOOST_AUTO_TEST_CASE (token_and_short_circuit)
