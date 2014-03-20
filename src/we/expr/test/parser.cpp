@@ -925,3 +925,51 @@ BOOST_AUTO_TEST_CASE (token_div)
     <expr::exception::eval::divide_by_zero>
     (boost::bind (&parser_ctor, "1.0f / 0.0f"), "divide by zero");
 }
+
+namespace
+{
+  template<typename T>
+    void check_pow_for_fractional()
+  {
+    boost::random::random_device generator;
+    //! \todo possible fix ::min to something else
+    boost::random::uniform_real_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 1000; ++i)
+    {
+      std::string const l
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+      std::string const r
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      expr::eval::context context;
+
+      BOOST_REQUIRE_EQUAL
+        ( boost::get<double>
+          ( expr::parse::parser
+            ((boost::format ("%1% ** %2%") % l % r).str()).eval_front (context)
+          )
+        , pow
+          ( boost::get<T> (expr::parse::parser (l).eval_front (context))
+          , boost::get<T> (expr::parse::parser (r).eval_front (context))
+          )
+        );
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_pow)
+{
+  check_pow_for_fractional<float>();
+  check_pow_for_fractional<double>();
+
+  require_evaluating_to ("1.0 ** 0.0", 1.0);
+  require_evaluating_to ("1.0f ** 0.0f", 1.0);
+  require_evaluating_to ("1.0 ** 1.0", 1.0);
+  require_evaluating_to ("1.0f ** 1.0f", 1.0);
+  require_evaluating_to ("1.0f ** 2.0f", 1.0);
+  require_evaluating_to ("2.0f ** 0.0f", 1.0);
+  require_evaluating_to ("2.0f ** 1.0f", 2.0);
+  require_evaluating_to ("2.0f ** 2.0f", 4.0);
+}
