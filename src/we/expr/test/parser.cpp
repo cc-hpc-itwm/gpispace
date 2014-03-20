@@ -489,9 +489,20 @@ namespace
   }
 
   template<typename T>
-  void check_fractional ( std::string const& operation_string
-                        , boost::function<T (T const&, T const&)> operation
-                        )
+    T parse_showed (T const& x)
+  {
+    expr::eval::context context;
+
+    return boost::get<T>
+      ( expr::parse::parser
+        ((boost::format ("%1%%2%") % x % suffix<T>()()).str())
+      . eval_front (context)
+      );
+  }
+
+  template<typename T>
+  void require_random_fractionals_evaluating_to
+    (boost::function<void (T const&, T const&)> check)
   {
     boost::random::random_device generator;
     //! \todo possible fix ::min to something else
@@ -500,24 +511,9 @@ namespace
 
     for (int i (0); i < 1000; ++i)
     {
-      std::string const l
-        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
-      std::string const r
-        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
-
-      expr::eval::context context;
-
-      BOOST_REQUIRE_EQUAL
-        ( boost::get<T>
-          ( expr::parse::parser
-            ((boost::format ("%1% %3% %2%") % l % r % operation_string).str())
-          . eval_front (context)
-          )
-        , operation
-          ( boost::get<T> (expr::parse::parser (l).eval_front (context))
-          , boost::get<T> (expr::parse::parser (r).eval_front (context))
-          )
-        );
+      check ( parse_showed (number (generator))
+            , parse_showed (number (generator))
+            );
     }
   }
 
@@ -558,8 +554,10 @@ BOOST_AUTO_TEST_CASE (token_add)
   require_evaluating_to ("0UL + 1UL", 1UL);
   require_evaluating_to ("1UL + 0UL", 1UL);
 
-  check_fractional<float> ("+", &plus<float>);
-  check_fractional<double> ("+", &plus<double>);
+  require_random_fractionals_evaluating_to<float>
+    (boost::bind (&check_binop<float>, "+", &plus<float>, _1, _2));
+  require_random_fractionals_evaluating_to<double>
+    (boost::bind (&check_binop<double>, "+", &plus<double>, _1, _2));
 
   require_evaluating_to ("0.0 + 0.0", 0.0);
   require_evaluating_to ("0.0 + 1.0", 1.0);
@@ -616,8 +614,10 @@ BOOST_AUTO_TEST_CASE (token_mul)
   require_evaluating_to ("1UL * 2UL", 2UL);
   require_evaluating_to ("2UL * 1UL", 2UL);
 
-  check_fractional<float> ("*", &product<float>);
-  check_fractional<double> ("*", &product<double>);
+  require_random_fractionals_evaluating_to<float>
+    (boost::bind (&check_binop<float>, "*", &product<float>, _1, _2));
+  require_random_fractionals_evaluating_to<double>
+    (boost::bind (&check_binop<double>, "*", &product<double>, _1, _2));
 
   require_evaluating_to ("0.0 * 0.0", 0.0);
   require_evaluating_to ("0.0 * 1.0", 0.0);
@@ -688,8 +688,10 @@ BOOST_AUTO_TEST_CASE (token_sub)
   require_evaluating_to ("1L - 0L", 1L);
   require_evaluating_to ("0L - 1L", -1L);
 
-  check_fractional<float> ("-", &minus<float>);
-  check_fractional<double> ("-", &minus<double>);
+  require_random_fractionals_evaluating_to<float>
+    (boost::bind (&check_binop<float>, "-", &minus<float>, _1, _2));
+  require_random_fractionals_evaluating_to<double>
+    (boost::bind (&check_binop<double>, "-", &minus<double>, _1, _2));
 
   require_evaluating_to ("0.0 - 0.0", 0.0);
   require_evaluating_to ("0.0 - 1.0", -1.0);
