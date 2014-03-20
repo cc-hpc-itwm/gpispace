@@ -20,8 +20,12 @@ namespace
         )
       : utils::fake_drts_worker_notifying_module_call_submission
         (announce_job, master_agent)
-      , _n_cancel_requests (0)
+      , _pending_cancel_requests (0)
     {}
+    ~fake_drts_worker_waiting_for_cancel()
+    {
+      BOOST_REQUIRE_EQUAL (_pending_cancel_requests, 0);
+    }
 
     void handleCancelJobEvent
       (const sdpa::events::CancelJobEvent* pEvt)
@@ -34,7 +38,7 @@ namespace
         );
 
       boost::unique_lock<boost::mutex> lock (_mtx_cancel);
-      _n_cancel_requests++;
+      ++_pending_cancel_requests;
       _cond_cancel.notify_one();
     }
 
@@ -42,17 +46,13 @@ namespace
     {
       boost::unique_lock<boost::mutex> lock (_mtx_cancel);
       _cond_cancel.wait (lock);
-    }
-
-    int n_cancel_requests ()
-    {
-      return _n_cancel_requests;
+      --_pending_cancel_requests;
     }
 
   private:
     boost::mutex _mtx_cancel;
     boost::condition_variable_any _cond_cancel;
-    int _n_cancel_requests;
+    std::size_t _pending_cancel_requests;
   };
 }
 
@@ -93,8 +93,6 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
-
-  BOOST_REQUIRE_EQUAL(worker_0.n_cancel_requests(), 1);
 }
 
 namespace
