@@ -109,20 +109,22 @@ namespace
     {}
 
     void handleJobFinishedAckEvent
-      (const sdpa::events::JobFinishedAckEvent*)
+      (const sdpa::events::JobFinishedAckEvent* e)
     {
-      _cond_finished.notify_all();
+      _finished_ack.notify (e->job_id());
     }
 
-    void wait_finished_ack ()
+    void finish_and_wait_for_ack (std::string name)
     {
-      boost::unique_lock<boost::mutex> lock (_mtx_finished);
-      _cond_finished.wait(lock);
+      const std::string expected_id (_jobs.at (name)._id);
+
+      finish (name);
+
+      BOOST_REQUIRE_EQUAL (_finished_ack.wait(), expected_id);
     }
 
   private:
-    boost::mutex _mtx_finished;
-    boost::condition_variable_any _cond_finished;
+    fhg::util::thread::event<std::string> _finished_ack;
   };
 }
 
@@ -153,9 +155,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is
 
     std::string name_of_job_on_surviving_worker;
     job_submitted_0.wait (name_of_job_on_surviving_worker);
-    worker_0.finish (name_of_job_on_surviving_worker);
-
-    worker_0.wait_finished_ack ();
+    worker_0.finish_and_wait_for_ack (name_of_job_on_surviving_worker);
 
     job_submitted_1.wait();
   }
