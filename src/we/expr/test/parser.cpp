@@ -711,3 +711,83 @@ BOOST_AUTO_TEST_CASE (token_sub)
     , "r > l => neg result"
     );
 }
+
+namespace
+{
+  template<typename T>
+    T quotient (T const& l, T const& r)
+  {
+    return l / r;
+  }
+
+  template<typename T>
+  void check_quotient_for_integral()
+  {
+    boost::random::random_device generator;
+    boost::random::uniform_int_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 1000; ++i)
+    {
+      T const l (number (generator));
+      T const r (number (generator));
+
+      std::string const expression
+        ( ( boost::format ("%1%%3% div %2%%3%")
+          % l
+          % r
+          % suffix<T>()()
+          ).str()
+        );
+
+      if (r != 0)
+      {
+        require_evaluating_to (expression, l / r);
+      }
+      else
+      {
+        fhg::util::boost::test::require_exception
+          <expr::exception::eval::divide_by_zero>
+          (boost::bind (&parser_ctor, expression), "divide by zero");
+      }
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_divint)
+{
+  check_quotient_for_integral<int>();
+  check_quotient_for_integral<unsigned int>();
+  check_quotient_for_integral<long>();
+  check_quotient_for_integral<unsigned long>();
+
+  require_evaluating_to ("0 div 1", 0);
+  require_evaluating_to ("0U div 1U", 0U);
+  require_evaluating_to ("0L div 1L", 0L);
+  require_evaluating_to ("0UL div 1UL", 0UL);
+  require_evaluating_to ("1 div 1", 1);
+  require_evaluating_to ("1U div 1U", 1U);
+  require_evaluating_to ("1L div 1L", 1L);
+  require_evaluating_to ("1UL div 1UL", 1UL);
+  require_evaluating_to ("2 div 2", 1);
+  require_evaluating_to ("2U div 2U", 1U);
+  require_evaluating_to ("2L div 2L", 1L);
+  require_evaluating_to ("2UL div 2UL", 1UL);
+  require_evaluating_to ("2 div 1", 2);
+  require_evaluating_to ("2U div 1U", 2U);
+  require_evaluating_to ("2L div 1L", 2L);
+  require_evaluating_to ("2UL div 1UL", 2UL);
+
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::divide_by_zero>
+    (boost::bind (&parser_ctor, "1 div 0"), "divide by zero");
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::divide_by_zero>
+    (boost::bind (&parser_ctor, "1U div 0U"), "divide by zero");
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::divide_by_zero>
+    (boost::bind (&parser_ctor, "1L div 0L"), "divide by zero");
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::divide_by_zero>
+    (boost::bind (&parser_ctor, "1UL div 0UL"), "divide by zero");
+}
