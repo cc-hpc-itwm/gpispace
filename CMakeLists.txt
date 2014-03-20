@@ -72,6 +72,7 @@ endif()
 
 add_definitions ("-DBOOST_FILESYSTEM_VERSION=3")
 add_definitions ("-DBOOST_FILESYSTEM_NO_DEPRECATED")
+add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
 
 add_definitions ("-DFHGLOG_STRIP_LEVEL=${FHGLOG_STRIP_LEVEL}")
 
