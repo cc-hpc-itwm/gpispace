@@ -113,9 +113,8 @@ namespace
         , fhg::util::thread::event<std::string>& job_submitted
         )
       : _worker (worker)
-      , _actual_job_name()
+      , _actual_job_name (job_submitted.wait())
     {
-      job_submitted.wait (_actual_job_name);
       BOOST_REQUIRE_EQUAL (_actual_job_name, expected_job_name);
     }
     ~wait_until_submitted_and_finish_on_scope_exit()

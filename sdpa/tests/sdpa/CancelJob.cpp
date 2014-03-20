@@ -104,9 +104,7 @@ BOOST_AUTO_TEST_CASE (cancel_with_agent)
 
   client.cancel_job (job_id);
 
-  std::string cancel_name;
-  cancel_requested.wait (cancel_name);
-  worker.canceled (cancel_name);
+  worker.canceled (cancel_requested.wait());
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
@@ -154,9 +152,7 @@ BOOST_AUTO_TEST_CASE (call_cancel_twice_agent)
 
   client.cancel_job (job_id);
 
-  std::string cancel_name;
-  cancel_requested.wait (cancel_name);
-  worker.canceled (cancel_name);
+  worker.canceled (cancel_requested.wait());
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
