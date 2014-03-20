@@ -20,6 +20,7 @@ namespace
         )
       : utils::fake_drts_worker_notifying_module_call_submission
         (announce_job, master_agent)
+      , _n_cancel_requests(0)
     {}
 
     void handleCancelJobEvent
@@ -29,6 +30,8 @@ namespace
             ( sdpa::events::SDPAEvent::Ptr
               (new sdpa::events::CancelJobAckEvent (_name, pEvt->from(), pEvt->job_id()))
             );
+
+     _n_cancel_requests++;
     }
 
     void handleJobFinishedAckEvent
@@ -43,9 +46,11 @@ namespace
       _cond_finished.wait(lock);
     }
 
+    bool n_cancel_requests () { return _n_cancel_requests; }
   private:
     boost::mutex _mtx_finished;
     boost::condition_variable_any _cond_finished;
+    int _n_cancel_requests;
   };
 }
 
@@ -84,6 +89,8 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
   std::string job_id_0;
   job_submitted_0.wait (job_id_0);
   worker_0.finish (job_id_0);
+
+  BOOST_REQUIRE_EQUAL(worker_0.n_cancel_requests(), 1);
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
@@ -128,6 +135,8 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is
   std::string job_id_0;
   job_submitted_0.wait (job_id_0);
   worker_0.finish (job_id_0);
+
+  BOOST_REQUIRE_EQUAL(worker_0.n_cancel_requests(), 0);
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
