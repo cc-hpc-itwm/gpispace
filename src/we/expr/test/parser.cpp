@@ -90,6 +90,13 @@ namespace
 
     return context;
   }
+
+  template<typename T>
+  expr::eval::context require_evaluating_to
+    (boost::format const& format, T const& value)
+  {
+    return require_evaluating_to (format.str(), value);
+  }
 }
 
 BOOST_AUTO_TEST_CASE (round_switches_between_half_up_and_half_down)
@@ -344,24 +351,24 @@ namespace
   void check_compare
     (std::string lhs, std::string rhs, bool lt, bool le, bool gt, bool ge)
   {
-    require_evaluating_to ((boost::format ("%1% < %2%") % lhs % rhs).str(), lt);
-    require_evaluating_to ((boost::format ("%1% <= %2%") % lhs % rhs).str(), le);
-    require_evaluating_to ((boost::format ("%1% > %2%") % lhs % rhs).str(), gt);
-    require_evaluating_to ((boost::format ("%1% >= %2%") % lhs % rhs).str(), ge);
+    require_evaluating_to (boost::format ("%1% < %2%") % lhs % rhs, lt);
+    require_evaluating_to (boost::format ("%1% <= %2%") % lhs % rhs, le);
+    require_evaluating_to (boost::format ("%1% > %2%") % lhs % rhs, gt);
+    require_evaluating_to (boost::format ("%1% >= %2%") % lhs % rhs, ge);
 
-    require_evaluating_to ((boost::format ("%1% :lt: %2%") % lhs % rhs).str(), lt);
-    require_evaluating_to ((boost::format ("%1% :le: %2%") % lhs % rhs).str(), le);
-    require_evaluating_to ((boost::format ("%1% :gt: %2%") % lhs % rhs).str(), gt);
-    require_evaluating_to ((boost::format ("%1% :ge: %2%") % lhs % rhs).str(), ge);
+    require_evaluating_to (boost::format ("%1% :lt: %2%") % lhs % rhs, lt);
+    require_evaluating_to (boost::format ("%1% :le: %2%") % lhs % rhs, le);
+    require_evaluating_to (boost::format ("%1% :gt: %2%") % lhs % rhs, gt);
+    require_evaluating_to (boost::format ("%1% :ge: %2%") % lhs % rhs, ge);
   }
 
   void check_equality (std::string lhs, std::string rhs, bool eq)
   {
-    require_evaluating_to ((boost::format ("%1% != %2%") % lhs % rhs).str(), !eq);
-    require_evaluating_to ((boost::format ("%1% == %2%") % lhs % rhs).str(), eq);
+    require_evaluating_to (boost::format ("%1% != %2%") % lhs % rhs, !eq);
+    require_evaluating_to (boost::format ("%1% == %2%") % lhs % rhs, eq);
 
-    require_evaluating_to ((boost::format ("%1% :ne: %2%") % lhs % rhs).str(), !eq);
-    require_evaluating_to ((boost::format ("%1% :eq: %2%") % lhs % rhs).str(), eq);
+    require_evaluating_to (boost::format ("%1% :ne: %2%") % lhs % rhs, !eq);
+    require_evaluating_to (boost::format ("%1% :eq: %2%") % lhs % rhs, eq);
   }
 }
 
