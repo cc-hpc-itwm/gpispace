@@ -245,7 +245,7 @@ namespace
 
     for (std::size_t counter (1); counter < num_agents; ++counter)
     {
-      agents.push_back (new utils::agent (boost::ref (agents.back())));
+      agents.push_back (new utils::agent (agents.back()));
     }
 
     fhg::util::thread::event<std::string> job_submitted;

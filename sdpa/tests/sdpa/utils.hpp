@@ -265,13 +265,12 @@ namespace utils
           , boost::none
           )
     {}
-    template <typename T>
-    agent (const boost::reference_wrapper<T>& master)
-      : _kvs_host (master.get().kvs_host())
-      , _kvs_port (master.get().kvs_port())
+    agent (const agent& master)
+      : _kvs_host (master.kvs_host())
+      , _kvs_port (master.kvs_port())
       , _ ( random_peer_name(), "127.0.0.1"
           , _kvs_host, _kvs_port
-          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.get().name()))
+          , sdpa::master_info_list_t (1, sdpa::MasterInfo (master.name()))
           , boost::none
           )
     {}
