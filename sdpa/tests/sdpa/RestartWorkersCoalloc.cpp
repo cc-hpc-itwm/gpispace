@@ -14,35 +14,41 @@ namespace
     : public utils::fake_drts_worker_notifying_module_call_submission
   {
   public:
-      fake_drts_worker_waiting_for_cancel
+    fake_drts_worker_waiting_for_cancel
         ( boost::function<void (std::string)> announce_job
         , const utils::agent& master_agent
         )
       : utils::fake_drts_worker_notifying_module_call_submission
         (announce_job, master_agent)
-      , _n_cancel_requests(0)
+      , _n_cancel_requests (0)
     {}
 
     void handleCancelJobEvent
       (const sdpa::events::CancelJobEvent* pEvt)
     {
-     _network.perform
-            ( sdpa::events::SDPAEvent::Ptr
-              (new sdpa::events::CancelJobAckEvent (_name, pEvt->from(), pEvt->job_id()))
-            );
+      _network.perform
+        ( sdpa::events::SDPAEvent::Ptr
+          ( new sdpa::events::CancelJobAckEvent
+            (_name, pEvt->from(), pEvt->job_id())
+          )
+        );
 
-     boost::unique_lock<boost::mutex> lock (_mtx_cancel);
-     _n_cancel_requests++;
-     _cond_cancel.notify_one();
+      boost::unique_lock<boost::mutex> lock (_mtx_cancel);
+      _n_cancel_requests++;
+      _cond_cancel.notify_one();
     }
 
-    void wait_for_cancel ()
+    void wait_for_cancel()
     {
       boost::unique_lock<boost::mutex> lock (_mtx_cancel);
-      _cond_cancel.wait(lock);
+      _cond_cancel.wait (lock);
     }
 
-    int n_cancel_requests () { return _n_cancel_requests; }
+    int n_cancel_requests ()
+    {
+      return _n_cancel_requests;
+    }
+
   private:
     boost::mutex _mtx_cancel;
     boost::condition_variable_any _cond_cancel;
@@ -79,7 +85,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
     job_submitted_1.wait();
   }
 
-  worker_0.wait_for_cancel ();
+  worker_0.wait_for_cancel();
 
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
     (worker_id, agent);
@@ -97,7 +103,7 @@ namespace
     : public utils::fake_drts_worker_notifying_module_call_submission
   {
   public:
-      fake_drts_worker_waiting_for_finished_ack
+    fake_drts_worker_waiting_for_finished_ack
         ( boost::function<void (std::string)> announce_job
         , const utils::agent& master_agent
         )
