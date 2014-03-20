@@ -10,11 +10,11 @@ BOOST_GLOBAL_FIXTURE (setup_logging)
 
 namespace
 {
-  class fake_drts_worker_waiting_finished_ack_and_replying_cancel_ack
+  class fake_drts_worker_waiting_for_cancel
     : public utils::fake_drts_worker_notifying_module_call_submission
   {
   public:
-      fake_drts_worker_waiting_finished_ack_and_replying_cancel_ack
+      fake_drts_worker_waiting_for_cancel
         ( boost::function<void (std::string)> announce_job
         , const utils::agent& master_agent
         )
@@ -31,25 +31,21 @@ namespace
               (new sdpa::events::CancelJobAckEvent (_name, pEvt->from(), pEvt->job_id()))
             );
 
+     boost::unique_lock<boost::mutex> lock (_mtx_cancel);
      _n_cancel_requests++;
+     _cond_cancel.notify_one();
     }
 
-    void handleJobFinishedAckEvent
-      (const sdpa::events::JobFinishedAckEvent*)
+    void wait_for_cancel ()
     {
-      _cond_finished.notify_all();
+      boost::unique_lock<boost::mutex> lock (_mtx_cancel);
+      _cond_cancel.wait(lock);
     }
 
-    void wait_finished_ack ()
-    {
-      boost::unique_lock<boost::mutex> lock (_mtx_finished);
-      _cond_finished.wait(lock);
-    }
-
-    bool n_cancel_requests () { return _n_cancel_requests; }
+    int n_cancel_requests () { return _n_cancel_requests; }
   private:
-    boost::mutex _mtx_finished;
-    boost::condition_variable_any _cond_finished;
+    boost::mutex _mtx_cancel;
+    boost::condition_variable_any _cond_cancel;
     int _n_cancel_requests;
   };
 }
@@ -67,7 +63,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
   fhg::util::thread::event<std::string> job_submitted_0;
-  fake_drts_worker_waiting_finished_ack_and_replying_cancel_ack worker_0
+  fake_drts_worker_waiting_for_cancel worker_0
     (boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted_0, _1), agent);
 
   {
@@ -84,16 +80,50 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
     job_submitted_1.wait();
   }
 
+  worker_0.wait_for_cancel ();
+
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
     (worker_id, agent);
   std::string job_id_0;
   job_submitted_0.wait (job_id_0);
   worker_0.finish (job_id_0);
 
-  BOOST_REQUIRE_EQUAL(worker_0.n_cancel_requests(), 1);
-
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+
+  BOOST_REQUIRE_EQUAL(worker_0.n_cancel_requests(), 1);
+}
+
+namespace
+{
+  class fake_drts_worker_waiting_for_finished_ack
+    : public utils::fake_drts_worker_notifying_module_call_submission
+  {
+  public:
+      fake_drts_worker_waiting_for_finished_ack
+        ( boost::function<void (std::string)> announce_job
+        , const utils::agent& master_agent
+        )
+      : utils::fake_drts_worker_notifying_module_call_submission
+        (announce_job, master_agent)
+    {}
+
+    void handleJobFinishedAckEvent
+      (const sdpa::events::JobFinishedAckEvent*)
+    {
+      _cond_finished.notify_all();
+    }
+
+    void wait_finished_ack ()
+    {
+      boost::unique_lock<boost::mutex> lock (_mtx_finished);
+      _cond_finished.wait(lock);
+    }
+
+  private:
+    boost::mutex _mtx_finished;
+    boost::condition_variable_any _cond_finished;
+  };
 }
 
 BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is_missing)
@@ -109,7 +139,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
   fhg::util::thread::event<std::string> job_submitted_0;
-  fake_drts_worker_waiting_finished_ack_and_replying_cancel_ack worker_0
+  fake_drts_worker_waiting_for_finished_ack worker_0
     (boost::bind (&fhg::util::thread::event<std::string>::notify, &job_submitted_0, _1), agent);
 
   {
@@ -135,8 +165,6 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is
   std::string job_id_0;
   job_submitted_0.wait (job_id_0);
   worker_0.finish (job_id_0);
-
-  BOOST_REQUIRE_EQUAL(worker_0.n_cancel_requests(), 0);
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
