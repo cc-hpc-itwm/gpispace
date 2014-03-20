@@ -791,3 +791,69 @@ BOOST_AUTO_TEST_CASE (token_divint)
     <expr::exception::eval::divide_by_zero>
     (boost::bind (&parser_ctor, "1UL div 0UL"), "divide by zero");
 }
+
+namespace
+{
+  template<typename T>
+  void check_quotient_for_fractional()
+  {
+    boost::random::random_device generator;
+    //! \todo possible fix ::min to something else
+    boost::random::uniform_real_distribution<T> number
+      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+    for (int i (0); i < 1000; ++i)
+    {
+      std::string const l
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+      std::string const r
+        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+
+      std::string const expression
+        ((boost::format ("%1% / %2%") % l % r).str());
+
+      expr::eval::context context;
+
+      T const r_value
+        (boost::get<T> (expr::parse::parser (r).eval_front (context)));
+
+      if (std::abs (r_value) >= std::numeric_limits<T>::min())
+      {
+        BOOST_REQUIRE_EQUAL
+          ( boost::get<T>
+            (expr::parse::parser (expression). eval_front (context))
+          , boost::get<T> (expr::parse::parser (l).eval_front (context))
+          / r_value
+          );
+      }
+      else
+      {
+        fhg::util::boost::test::require_exception
+          <expr::exception::eval::divide_by_zero>
+          (boost::bind (&parser_ctor, expression), "divide by zero");
+      }
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (token_div)
+{
+  check_quotient_for_fractional<float>();
+  check_quotient_for_fractional<double>();
+
+  require_evaluating_to ("0.0 / 1.0", 0.0);
+  require_evaluating_to ("0.0f / 1.0f", 0.0f);
+  require_evaluating_to ("1.0 / 1.0", 1.0);
+  require_evaluating_to ("1.0f / 1.0f", 1.0f);
+  require_evaluating_to ("2.0 / 1.0", 2.0);
+  require_evaluating_to ("2.0f / 1.0f", 2.0f);
+  require_evaluating_to ("2.0 / 2.0", 1.0);
+  require_evaluating_to ("2.0f / 2.0f", 1.0f);
+
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::divide_by_zero>
+    (boost::bind (&parser_ctor, "1.0 / 0.0"), "divide by zero");
+  fhg::util::boost::test::require_exception
+    <expr::exception::eval::divide_by_zero>
+    (boost::bind (&parser_ctor, "1.0f / 0.0f"), "divide by zero");
+}
