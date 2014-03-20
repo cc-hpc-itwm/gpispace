@@ -75,8 +75,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
       , agent
       );
 
-    std::string ignore;
-    job_submitted_0.wait (ignore);
+    job_submitted_0.wait();
     job_submitted_1.wait();
   }
 
@@ -84,9 +83,7 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_runnin
 
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
     (worker_id, agent);
-  std::string job_id_0;
-  job_submitted_0.wait (job_id_0);
-  worker_0.finish (job_id_0);
+  worker_0.finish (job_submitted_0.wait());
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
@@ -153,18 +150,14 @@ BOOST_AUTO_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is
       , agent
       );
 
-    std::string name_of_job_on_surviving_worker;
-    job_submitted_0.wait (name_of_job_on_surviving_worker);
-    worker_0.finish_and_wait_for_ack (name_of_job_on_surviving_worker);
+    worker_0.finish_and_wait_for_ack (job_submitted_0.wait());
 
     job_submitted_1.wait();
   }
 
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
     (worker_id, agent);
-  std::string job_id_0;
-  job_submitted_0.wait (job_id_0);
-  worker_0.finish (job_id_0);
+  worker_0.finish (job_submitted_0.wait());
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
