@@ -457,9 +457,8 @@ namespace
 #undef SUFFIX
 
   template<typename T>
-  void check_integral ( std::string const& operation_string
-                      , boost::function<T (T const&, T const&)> operation
-                      )
+  void require_random_integrals_evaluating_to
+    (boost::function<void (T const&, T const&)> check)
   {
     boost::random::random_device generator;
     boost::random::uniform_int_distribution<T> number
@@ -467,19 +466,26 @@ namespace
 
     for (int i (0); i < 1000; ++i)
     {
-      T const l (number (generator));
-      T const r (number (generator));
-
-      require_evaluating_to
-        ( ( boost::format ("%1%%3% %4% %2%%3%")
-          % l
-          % r
-          % suffix<T>()()
-          % operation_string
-          ).str()
-        , operation (l, r)
-        );
+      check (number (generator), number (generator));
     }
+  }
+
+  template<typename T>
+  void check_integral ( std::string const& operation_string
+                      , boost::function<T (T const&, T const&)> operation
+                      , T const& l
+                      , T const& r
+                      )
+  {
+    require_evaluating_to
+      ( ( boost::format ("%1%%3% %4% %2%%3%")
+        % l
+        % r
+        % suffix<T>()()
+        % operation_string
+        ).str()
+      , operation (l, r)
+      );
   }
 
   template<typename T>
@@ -488,6 +494,7 @@ namespace
                         )
   {
     boost::random::random_device generator;
+    //! \todo possible fix ::min to something else
     boost::random::uniform_real_distribution<T> number
       (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
 
@@ -529,10 +536,14 @@ BOOST_AUTO_TEST_CASE (token_add)
   require_evaluating_to ("\"a\" + \"a\"", std::string ("aa"));
   require_evaluating_to ("\"ab\" + \"a\"", std::string ("aba"));
 
-  check_integral<int> ("+", &plus<int>);
-  check_integral<unsigned int> ("+", &plus<unsigned int>);
-  check_integral<long> ("+", &plus<long>);
-  check_integral<unsigned long> ("+", &plus<unsigned long>);
+  require_random_integrals_evaluating_to<int>
+    (boost::bind (&check_integral<int>, "+", &plus<int>, _1, _2));
+  require_random_integrals_evaluating_to<unsigned int>
+    (boost::bind (&check_integral<unsigned int>, "+", &plus<unsigned int>, _1, _2));
+  require_random_integrals_evaluating_to<long>
+    (boost::bind (&check_integral<long>, "+", &plus<long>, _1, _2));
+  require_random_integrals_evaluating_to<unsigned long>
+    (boost::bind (&check_integral<unsigned long>, "+", &plus<unsigned long>, _1, _2));
 
   require_evaluating_to ("0 + 0", 0);
   require_evaluating_to ("0 + 1", 1);
@@ -571,10 +582,14 @@ namespace
 
 BOOST_AUTO_TEST_CASE (token_mul)
 {
-  check_integral<int> ("*", &product<int>);
-  check_integral<unsigned int> ("*", &product<unsigned int>);
-  check_integral<long> ("*", &product<long>);
-  check_integral<unsigned long> ("*", &product<unsigned long>);
+  require_random_integrals_evaluating_to<int>
+    (boost::bind (&check_integral<int>, "*", &product<int>, _1, _2));
+  require_random_integrals_evaluating_to<unsigned int>
+    (boost::bind (&check_integral<unsigned int>, "*", &product<unsigned int>, _1, _2));
+  require_random_integrals_evaluating_to<long>
+    (boost::bind (&check_integral<long>, "*", &product<long>, _1, _2));
+  require_random_integrals_evaluating_to<unsigned long>
+    (boost::bind (&check_integral<unsigned long>, "*", &product<unsigned long>, _1, _2));
 
   require_evaluating_to ("0 * 0", 0);
   require_evaluating_to ("0 * 1", 0);
@@ -635,44 +650,36 @@ namespace
 namespace
 {
   template<typename T>
-  void check_minus_for_unsigned_integral()
+  void check_minus_for_unsigned_integral (T const& l, T const& r)
   {
-    boost::random::random_device generator;
-    boost::random::uniform_int_distribution<T> number
-      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+    std::string const expression
+      ( ( boost::format ("%1%%3% - %2%%3%")
+        % l
+        % r
+        % suffix<T>()()
+        ).str()
+      );
 
-    for (int i (0); i < 1000; ++i)
+    if (l >= r)
     {
-      T const l (number (generator));
-      T const r (number (generator));
-
-      std::string const expression
-        ( ( boost::format ("%1%%3% - %2%%3%")
-          % l
-          % r
-          % suffix<T>()()
-          ).str()
+      require_evaluating_to (expression, l - r);
+    }
+    else
+    {
+      fhg::util::boost::test::require_exception<std::runtime_error>
+        ( boost::bind (&parser_ctor, expression)
+        , "r > l => neg result"
         );
-
-      if (l >= r)
-      {
-        require_evaluating_to (expression, l - r);
-      }
-      else
-      {
-        fhg::util::boost::test::require_exception<std::runtime_error>
-          ( boost::bind (&parser_ctor, expression)
-          , "r > l => neg result"
-          );
-      }
     }
   }
 }
 
 BOOST_AUTO_TEST_CASE (token_sub)
 {
-  check_integral<int> ("-", &minus<int>);
-  check_integral<long> ("-", &minus<long>);
+  require_random_integrals_evaluating_to<int>
+    (boost::bind (&check_integral<int>, "-", &minus<int>, _1, _2));
+  require_random_integrals_evaluating_to<long>
+    (boost::bind (&check_integral<long>, "-", &minus<long>, _1, _2));
 
   require_evaluating_to ("0 - 0", 0);
   require_evaluating_to ("1 - 0", 1);
@@ -691,8 +698,10 @@ BOOST_AUTO_TEST_CASE (token_sub)
   require_evaluating_to ("0.0f - 1.0f", -1.0f);
   require_evaluating_to ("1.0f - 1.0f", 0.0f);
 
-  check_minus_for_unsigned_integral<unsigned int>();
-  check_minus_for_unsigned_integral<unsigned long>();
+  require_random_integrals_evaluating_to<unsigned int>
+    (&check_minus_for_unsigned_integral<unsigned int>);
+  require_random_integrals_evaluating_to<unsigned int>
+    (&check_minus_for_unsigned_integral<unsigned long>);
 
   require_evaluating_to ("0U - 0U", 0U);
   require_evaluating_to ("1U - 0U", 1U);
@@ -724,46 +733,42 @@ namespace
   void check_divmod_for_integral
     ( std::string const& operation_string
     , boost::function<T (T const&, T const&)> operation
+    , T const& l
+    , T const& r
     )
   {
-    boost::random::random_device generator;
-    boost::random::uniform_int_distribution<T> number
-      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+    std::string const expression
+      ( ( boost::format ("%1%%3% %4% %2%%3%")
+        % l
+        % r
+        % suffix<T>()()
+        % operation_string
+        ).str()
+      );
 
-    for (int i (0); i < 1000; ++i)
+    if (r != 0)
     {
-      T const l (number (generator));
-      T const r (number (generator));
-
-      std::string const expression
-        ( ( boost::format ("%1%%3% %4% %2%%3%")
-          % l
-          % r
-          % suffix<T>()()
-          % operation_string
-          ).str()
-        );
-
-      if (r != 0)
-      {
-        require_evaluating_to (expression, operation (l, r));
-      }
-      else
-      {
-        fhg::util::boost::test::require_exception
-          <expr::exception::eval::divide_by_zero>
-          (boost::bind (&parser_ctor, expression), "divide by zero");
-      }
+      require_evaluating_to (expression, operation (l, r));
+    }
+    else
+    {
+      fhg::util::boost::test::require_exception
+        <expr::exception::eval::divide_by_zero>
+        (boost::bind (&parser_ctor, expression), "divide by zero");
     }
   }
 }
 
 BOOST_AUTO_TEST_CASE (token_divint)
 {
-  check_divmod_for_integral<int> ("div", &quotient<int>);
-  check_divmod_for_integral<unsigned int> ("div", &quotient<unsigned int>);
-  check_divmod_for_integral<long> ("div", &quotient<long>);
-  check_divmod_for_integral<unsigned long> ("div", &quotient<unsigned long>);
+  require_random_integrals_evaluating_to<int>
+    (boost::bind (&check_divmod_for_integral<int>, "div", &quotient<int>, _1, _2));
+  require_random_integrals_evaluating_to<int>
+    (boost::bind (&check_divmod_for_integral<unsigned int>, "div", &quotient<unsigned int>, _1, _2));
+  require_random_integrals_evaluating_to<int>
+    (boost::bind (&check_divmod_for_integral<long>, "div", &quotient<long>, _1, _2));
+  require_random_integrals_evaluating_to<int>
+    (boost::bind (&check_divmod_for_integral<unsigned long>, "div", &quotient<unsigned long>, _1, _2));
 
   require_evaluating_to ("0 div 1", 0);
   require_evaluating_to ("0U div 1U", 0U);
@@ -807,10 +812,14 @@ namespace
 
 BOOST_AUTO_TEST_CASE (token_modint)
 {
-  check_divmod_for_integral<int> ("mod", &remainder<int>);
-  check_divmod_for_integral<unsigned int> ("mod", &remainder<unsigned int>);
-  check_divmod_for_integral<long> ("mod", &remainder<long>);
-  check_divmod_for_integral<unsigned long> ("mod", &remainder<unsigned long>);
+  require_random_integrals_evaluating_to<int>
+    (boost::bind (&check_divmod_for_integral<int>, "mod", &remainder<int>, _1, _2));
+  require_random_integrals_evaluating_to<unsigned int>
+    (boost::bind (&check_divmod_for_integral<unsigned int>, "mod", &remainder<unsigned int>, _1, _2));
+  require_random_integrals_evaluating_to<long>
+    (boost::bind (&check_divmod_for_integral<long>, "mod", &remainder<long>, _1, _2));
+  require_random_integrals_evaluating_to<unsigned long>
+    (boost::bind (&check_divmod_for_integral<unsigned long>, "mod", &remainder<unsigned long>, _1, _2));
 
   require_evaluating_to ("0 mod 1", 0);
   require_evaluating_to ("0U mod 1U", 0U);
