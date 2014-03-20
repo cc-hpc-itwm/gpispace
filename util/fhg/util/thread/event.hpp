@@ -52,6 +52,13 @@ namespace fhg
           m_signalled = false;
         }
 
+        T wait()
+        {
+          T res;
+          wait (res);
+          return res;
+        }
+
         template <typename U>
         bool timed_wait(U & u, boost::system_time const& abs_time)
         {
