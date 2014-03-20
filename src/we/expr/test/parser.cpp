@@ -721,7 +721,10 @@ namespace
   }
 
   template<typename T>
-  void check_quotient_for_integral()
+  void check_divmod_for_integral
+    ( std::string const& operation_string
+    , boost::function<T (T const&, T const&)> operation
+    )
   {
     boost::random::random_device generator;
     boost::random::uniform_int_distribution<T> number
@@ -733,16 +736,17 @@ namespace
       T const r (number (generator));
 
       std::string const expression
-        ( ( boost::format ("%1%%3% div %2%%3%")
+        ( ( boost::format ("%1%%3% %4% %2%%3%")
           % l
           % r
           % suffix<T>()()
+          % operation_string
           ).str()
         );
 
       if (r != 0)
       {
-        require_evaluating_to (expression, l / r);
+        require_evaluating_to (expression, operation (l, r));
       }
       else
       {
@@ -756,10 +760,10 @@ namespace
 
 BOOST_AUTO_TEST_CASE (token_divint)
 {
-  check_quotient_for_integral<int>();
-  check_quotient_for_integral<unsigned int>();
-  check_quotient_for_integral<long>();
-  check_quotient_for_integral<unsigned long>();
+  check_divmod_for_integral<int> ("div", &quotient<int>);
+  check_divmod_for_integral<unsigned int> ("div", &quotient<unsigned int>);
+  check_divmod_for_integral<long> ("div", &quotient<long>);
+  check_divmod_for_integral<unsigned long> ("div", &quotient<unsigned long>);
 
   require_evaluating_to ("0 div 1", 0);
   require_evaluating_to ("0U div 1U", 0U);
