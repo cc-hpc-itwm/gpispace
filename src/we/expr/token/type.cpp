@@ -32,7 +32,6 @@ namespace expr
         case mul: return os << " * ";
         case div: return os << " / ";
         case divint: return os << " div ";
-        case mod: return os << " % ";
         case modint: return os << " mod ";
         case _pow: return os << "**";
         case _powint: return os << "^";

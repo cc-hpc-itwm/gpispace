@@ -17,7 +17,7 @@ namespace expr
 
     , add, sub                // prec 21, left associative
     , mul, div, divint        // prec 22, left associative
-    , mod, modint             // prec 23, left associative
+    , modint                  // prec 23, left associative
     , _pow                    // prec 24, right associative
     , _powint                 // prec 24, right associative
     , neg                     // prec 25, unary minus

@@ -24,8 +24,7 @@ namespace expr
         case token::mul:
         case token::div:
         case token::divint:
-        case token::modint:
-        case token::mod: return left;
+        case token::modint: return left;
         case token::_pow:
         case token::_powint:
         case token::neg: return right;

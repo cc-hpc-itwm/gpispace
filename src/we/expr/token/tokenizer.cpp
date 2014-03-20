@@ -121,7 +121,7 @@ namespace expr
         ACTION ("<", boost::bind (&tokenizer::cmp, _1, lt, le));
         ACTION (">", boost::bind (&tokenizer::cmp, _1, gt, ge));
 
-        SET_TOKEN ("%", mod);
+        SET_TOKEN ("%", modint);
         SET_TOKEN ("&&", _and);
         SET_TOKEN ("(", lpr);
         SET_TOKEN (")", rpr);

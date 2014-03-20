@@ -253,7 +253,6 @@ namespace expr
         case token::_substr:
         case token::mul:
         case token::div:
-        case token::mod:
         case token::divint:
         case token::modint:
         case token::_pow:
