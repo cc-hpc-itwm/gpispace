@@ -471,11 +471,11 @@ namespace
   }
 
   template<typename T>
-  void check_integral ( std::string const& operation_string
-                      , boost::function<T (T const&, T const&)> operation
-                      , T const& l
-                      , T const& r
-                      )
+  void check_binop ( std::string const& operation_string
+                   , boost::function<T (T const&, T const&)> operation
+                   , T const& l
+                   , T const& r
+                   )
   {
     require_evaluating_to
       ( ( boost::format ("%1%%3% %4% %2%%3%")
@@ -537,13 +537,13 @@ BOOST_AUTO_TEST_CASE (token_add)
   require_evaluating_to ("\"ab\" + \"a\"", std::string ("aba"));
 
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_integral<int>, "+", &plus<int>, _1, _2));
+    (boost::bind (&check_binop<int>, "+", &plus<int>, _1, _2));
   require_random_integrals_evaluating_to<unsigned int>
-    (boost::bind (&check_integral<unsigned int>, "+", &plus<unsigned int>, _1, _2));
+    (boost::bind (&check_binop<unsigned int>, "+", &plus<unsigned int>, _1, _2));
   require_random_integrals_evaluating_to<long>
-    (boost::bind (&check_integral<long>, "+", &plus<long>, _1, _2));
+    (boost::bind (&check_binop<long>, "+", &plus<long>, _1, _2));
   require_random_integrals_evaluating_to<unsigned long>
-    (boost::bind (&check_integral<unsigned long>, "+", &plus<unsigned long>, _1, _2));
+    (boost::bind (&check_binop<unsigned long>, "+", &plus<unsigned long>, _1, _2));
 
   require_evaluating_to ("0 + 0", 0);
   require_evaluating_to ("0 + 1", 1);
@@ -583,13 +583,13 @@ namespace
 BOOST_AUTO_TEST_CASE (token_mul)
 {
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_integral<int>, "*", &product<int>, _1, _2));
+    (boost::bind (&check_binop<int>, "*", &product<int>, _1, _2));
   require_random_integrals_evaluating_to<unsigned int>
-    (boost::bind (&check_integral<unsigned int>, "*", &product<unsigned int>, _1, _2));
+    (boost::bind (&check_binop<unsigned int>, "*", &product<unsigned int>, _1, _2));
   require_random_integrals_evaluating_to<long>
-    (boost::bind (&check_integral<long>, "*", &product<long>, _1, _2));
+    (boost::bind (&check_binop<long>, "*", &product<long>, _1, _2));
   require_random_integrals_evaluating_to<unsigned long>
-    (boost::bind (&check_integral<unsigned long>, "*", &product<unsigned long>, _1, _2));
+    (boost::bind (&check_binop<unsigned long>, "*", &product<unsigned long>, _1, _2));
 
   require_evaluating_to ("0 * 0", 0);
   require_evaluating_to ("0 * 1", 0);
@@ -677,9 +677,9 @@ namespace
 BOOST_AUTO_TEST_CASE (token_sub)
 {
   require_random_integrals_evaluating_to<int>
-    (boost::bind (&check_integral<int>, "-", &minus<int>, _1, _2));
+    (boost::bind (&check_binop<int>, "-", &minus<int>, _1, _2));
   require_random_integrals_evaluating_to<long>
-    (boost::bind (&check_integral<long>, "-", &minus<long>, _1, _2));
+    (boost::bind (&check_binop<long>, "-", &minus<long>, _1, _2));
 
   require_evaluating_to ("0 - 0", 0);
   require_evaluating_to ("1 - 0", 1);
