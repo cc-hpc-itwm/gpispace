@@ -37,7 +37,7 @@ namespace
           )
         );
 
-      boost::unique_lock<boost::mutex> lock (_mtx_cancel);
+      boost::unique_lock<boost::mutex> const _ (_mtx_cancel);
       ++_pending_cancel_requests;
       _cond_cancel.notify_one();
     }
