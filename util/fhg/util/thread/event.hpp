@@ -38,8 +38,7 @@ namespace fhg
           , m_signalled (false)
         {}
 
-        template <typename U>
-        void wait(U & u)
+        T wait()
         {
           lock_type lock(m_mutex);
 
@@ -48,15 +47,8 @@ namespace fhg
             m_condition.wait(lock);
           }
 
-          u = m_event;
           m_signalled = false;
-        }
-
-        T wait()
-        {
-          T res;
-          wait (res);
-          return res;
+          return m_event;
         }
 
         template <typename U>
