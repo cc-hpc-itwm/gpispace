@@ -160,7 +160,7 @@ namespace sdpa {
       // workflow engine
     public:
       const boost::scoped_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
-      bool hasWorkflowEngine() const { return ptr_workflow_engine_;}
+      bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
       // workers
       void serveJob(const sdpa::worker_id_list_t& worker_list, const job_id_t& jobId);
