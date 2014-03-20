@@ -635,10 +635,7 @@ namespace
 namespace
 {
   template<typename T>
-  void check_minus_for_unsigned_integral
-    ( std::string const& operation_string
-    , boost::function<T (T const&, T const&)> operation
-    )
+  void check_minus_for_unsigned_integral()
   {
     boost::random::random_device generator;
     boost::random::uniform_int_distribution<T> number
@@ -650,17 +647,16 @@ namespace
       T const r (number (generator));
 
       std::string const expression
-        ( ( boost::format ("%1%%3% %4% %2%%3%")
+        ( ( boost::format ("%1%%3% - %2%%3%")
           % l
           % r
           % suffix<T>()()
-          % operation_string
           ).str()
         );
 
       if (l >= r)
       {
-        require_evaluating_to (expression, operation (l, r));
+        require_evaluating_to (expression, l - r);
       }
       else
       {
@@ -695,8 +691,8 @@ BOOST_AUTO_TEST_CASE (token_sub)
   require_evaluating_to ("0.0f - 1.0f", -1.0f);
   require_evaluating_to ("1.0f - 1.0f", 0.0f);
 
-  check_minus_for_unsigned_integral<unsigned int> ("-", &minus<unsigned int>);
-  check_minus_for_unsigned_integral<unsigned long> ("-", &minus<unsigned long>);
+  check_minus_for_unsigned_integral<unsigned int>();
+  check_minus_for_unsigned_integral<unsigned long>();
 
   require_evaluating_to ("0U - 0U", 0U);
   require_evaluating_to ("1U - 0U", 1U);
