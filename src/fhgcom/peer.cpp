@@ -131,9 +131,8 @@ namespace fhg
                          );
       }
 
-      boost::system::error_code ec;
       // todo introduce timeout to event::wait()
-      started_.wait (ec);
+      const boost::system::error_code ec (started_.wait());
 
       if (ec)
       {
@@ -226,8 +225,7 @@ namespace fhg
       async_op_t send_finished;
       async_send (to, data, boost::bind (&async_op_t::notify, &send_finished, _1));
 
-      boost::system::error_code ec;
-      send_finished.wait (ec);
+      const boost::system::error_code ec (send_finished.wait());
       if (ec)
       {
         throw boost::system::system_error (ec);
@@ -354,8 +352,7 @@ namespace fhg
 
       async_send (m, boost::bind (&async_op_t::notify, &send_finished, _1));
 
-      boost::system::error_code ec;
-      send_finished.wait (ec);
+      const boost::system::error_code ec (send_finished.wait());
       if (ec)
       {
         throw boost::system::system_error (ec);
@@ -382,8 +379,7 @@ namespace fhg
       async_op_t recv_finished;
       async_recv (m, boost::bind (&async_op_t::notify, &recv_finished, _1));
 
-      boost::system::error_code ec;
-      recv_finished.wait (ec);
+      const boost::system::error_code ec (recv_finished.wait());
       if (ec)
       {
         throw boost::system::system_error (ec);
