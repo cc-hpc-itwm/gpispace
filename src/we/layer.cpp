@@ -198,7 +198,7 @@ namespace we
 
       _nets_to_extract_from.remove_and_apply
         ( *parent
-        , [this, id, reason] (activity_data_type& parent_activity)
+        , [this, id, reason] (activity_data_type parent_activity)
         {
           const boost::function<void()> after
             ([this, parent_activity, reason]()
